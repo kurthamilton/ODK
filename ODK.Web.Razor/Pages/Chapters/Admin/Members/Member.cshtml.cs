@@ -12,7 +12,7 @@ public class MemberModel : AdminPageModel
 {
     private readonly IMemberAdminService _memberAdminService;
 
-    public MemberModel(IRequestCache requestCache, IMemberAdminService memberAdminService) 
+    public MemberModel(IRequestCache requestCache, IMemberAdminService memberAdminService)
         : base(requestCache)
     {
         _memberAdminService = memberAdminService;

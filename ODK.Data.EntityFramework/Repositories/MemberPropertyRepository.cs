@@ -5,9 +5,10 @@ using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework.Repositories;
+
 public class MemberPropertyRepository : ReadWriteRepositoryBase<MemberProperty>, IMemberPropertyRepository
 {
-    public MemberPropertyRepository(OdkContext context) 
+    public MemberPropertyRepository(OdkContext context)
         : base(context)
     {
     }

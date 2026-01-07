@@ -5,7 +5,7 @@ namespace ODK.Services.Chapters.ViewModels;
 
 public class MemberChaptersViewModel
 {
-    public required IReadOnlyCollection<ChapterWithDistanceViewModel> Admin { get; init; }    
+    public required IReadOnlyCollection<ChapterWithDistanceViewModel> Admin { get; init; }
 
     public required IReadOnlyCollection<ChapterWithDistanceViewModel> Member { get; init; }
 

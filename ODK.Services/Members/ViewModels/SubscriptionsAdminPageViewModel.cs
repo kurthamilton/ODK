@@ -2,7 +2,6 @@
 using ODK.Core.Chapters.Dtos;
 using ODK.Core.Countries;
 using ODK.Core.Members;
-using ODK.Core.Payments;
 using ODK.Core.Platforms;
 using ODK.Services.Payments;
 

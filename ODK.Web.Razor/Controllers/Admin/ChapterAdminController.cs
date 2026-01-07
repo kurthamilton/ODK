@@ -80,10 +80,10 @@ public class ChapterAdminController : AdminControllerBase
         var request = new MemberChapterServiceRequest(id, MemberServiceRequest);
         await _chapterAdminService.UpdateChapterLinks(request, new UpdateChapterLinks
         {
-            Facebook = viewModel.Facebook ?? "",
-            Instagram = viewModel.Instagram ?? "",
+            Facebook = viewModel.Facebook ?? string.Empty,
+            Instagram = viewModel.Instagram ?? string.Empty,
             InstagramFeed = viewModel.ShowInstagramFeed,
-            Twitter = viewModel.Twitter ?? ""
+            Twitter = viewModel.Twitter ?? string.Empty
         });
 
         AddFeedback("Social media links updated", FeedbackType.Success);
@@ -110,7 +110,7 @@ public class ChapterAdminController : AdminControllerBase
     }
 
     [HttpPost("groups/{id:guid}/membership")]
-    public async Task<IActionResult> UpdateMembershipSettings(Guid id, 
+    public async Task<IActionResult> UpdateMembershipSettings(Guid id,
         [FromForm] MembershipSettingsFormViewModel viewModel)
     {
         var request = new MemberChapterServiceRequest(id, MemberServiceRequest);
@@ -139,11 +139,11 @@ public class ChapterAdminController : AdminControllerBase
     }
 
     [HttpPost("groups/{chapterId:guid}/messages/{id:guid}/reply")]
-    public async Task<IActionResult> ReplyToMessage(Guid chapterId, Guid id, 
+    public async Task<IActionResult> ReplyToMessage(Guid chapterId, Guid id,
         [FromForm] ChapterMessageReplyFormViewModel viewModel)
     {
         var request = new MemberChapterServiceRequest(chapterId, MemberServiceRequest);
-        var result = await _chapterAdminService.ReplyToMessage(request, id, viewModel.Message ?? "");
+        var result = await _chapterAdminService.ReplyToMessage(request, id, viewModel.Message ?? string.Empty);
         AddFeedback(result, "Reply sent");
         return RedirectToReferrer();
     }
@@ -183,8 +183,8 @@ public class ChapterAdminController : AdminControllerBase
         var request = new MemberChapterServiceRequest(chapterId, MemberServiceRequest);
         var model = new CreateChapterQuestion
         {
-            Answer = answer ?? "",
-            Name = name ?? ""
+            Answer = answer ?? string.Empty,
+            Name = name ?? string.Empty
         };
         var result = await _chapterAdminService.CreateChapterQuestion(request, model);
         AddFeedback(result, "Question created");
@@ -312,7 +312,7 @@ public class ChapterAdminController : AdminControllerBase
     }
 
     [HttpPost("{chapterName}/Admin/Chapter/Subscriptions/{id:guid}/Automatic")]
-    public async Task<IActionResult> SetUpAutomaticSubscription(string chapterName, Guid id, 
+    public async Task<IActionResult> SetUpAutomaticSubscription(string chapterName, Guid id,
         [FromForm] SiteSubscriptionFrequency frequency)
     {
         var serviceRequest = await GetAdminServiceRequest(chapterName);

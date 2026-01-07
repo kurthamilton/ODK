@@ -5,7 +5,7 @@ namespace ODK.Data.EntityFramework.Queries;
 
 internal static class ChapterQueries
 {
-    internal static IQueryable<Chapter> ToPlatformChapters(this IQueryable<Chapter> query, 
+    internal static IQueryable<Chapter> ToPlatformChapters(this IQueryable<Chapter> query,
         PlatformType platform)
     {
         if (platform != PlatformType.DrunkenKnitwits)

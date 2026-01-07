@@ -1,15 +1,16 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
 namespace ODK.Data.EntityFramework;
+
 public abstract class RepositoryBase
 {
     private readonly DbContext _context;
 
     protected RepositoryBase(OdkContext context)
-    {        
+    {
         _context = context;
         _context.SavedChanges += OnContextSavedChanges;
-    }    
+    }
 
     protected void AddSingle<T>(T entity) where T : class => _context.Set<T>().Add(entity);
 
@@ -20,7 +21,7 @@ public abstract class RepositoryBase
     public void UpdateSingle<T>(T entity) where T : class => _context.Set<T>().Update(entity);
 
     protected virtual void OnCommit()
-    {        
+    {
     }
 
     protected IQueryable<T> Set<T>() where T : class => _context.Set<T>();

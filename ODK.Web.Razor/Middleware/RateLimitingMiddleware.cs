@@ -23,8 +23,8 @@ public class RateLimitingMiddleware
         ILoggingService loggingService,
         AppSettings appSettings)
     {
-        var ipAddress = context.Connection.RemoteIpAddress?.ToString() ?? "";
-        
+        var ipAddress = context.Connection.RemoteIpAddress?.ToString() ?? string.Empty;
+
         // Get previous rate limit
         var blockedUntilUtc = GreyList.TryGetValue(ipAddress, out var value)
             ? value
@@ -44,7 +44,7 @@ public class RateLimitingMiddleware
         // Use 429 for lack of more accurate status code
         // The first instance of a grey-listed request will trigger a rate limit
         context.Response.StatusCode = (int)HttpStatusCode.TooManyRequests;
-        
+
         if (!isRateLimited)
         {
             // The current request doesn't warrant rate limiting - do not increase the block time
@@ -77,7 +77,7 @@ public class RateLimitingMiddleware
 
         var pattern = $@"^({string.Join('|', settings.BlockPatterns)})$";
 
-        var shouldBlock =  Regex.IsMatch(requestPath, pattern, RegexOptions.IgnoreCase);
+        var shouldBlock = Regex.IsMatch(requestPath, pattern, RegexOptions.IgnoreCase);
         return shouldBlock;
     }
 }

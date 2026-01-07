@@ -2,6 +2,7 @@
 using ODK.Data.Core;
 
 namespace ODK.Data.EntityFramework;
+
 public class UnitOfWorkFactory : IUnitOfWorkFactory
 {
     private readonly List<OdkContext> _created = new();

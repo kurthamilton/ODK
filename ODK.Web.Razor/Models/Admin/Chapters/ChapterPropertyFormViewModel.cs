@@ -21,10 +21,10 @@ public class ChapterPropertyFormViewModel
     public string? HelpText { get; set; }
 
     [Required]
-    public string Label { get; set; } = "";
+    public string Label { get; set; } = string.Empty;
 
     [Required]
-    public string Name { get; set; } = "";
+    public string Name { get; set; } = string.Empty;
 
     public string? Options { get; set; }
 

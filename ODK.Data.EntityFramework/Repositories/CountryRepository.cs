@@ -23,7 +23,7 @@ public class CountryRepository : CachingReadWriteRepositoryBase<Country>, ICount
 
     public IDeferredQuerySingle<Country> GetByChapterId(Guid chapterId)
     {
-        var query = 
+        var query =
             from country in Set()
             from chapter in Set<Chapter>()
                 .Where(x => country.Id == x.CountryId)

@@ -4,5 +4,5 @@ public class RecaptchaSettings
 {
     public double ScoreThreshold { get; set; }
 
-    public string VerifyUrl { get; set; } = "";
+    public string VerifyUrl { get; set; } = string.Empty;
 }

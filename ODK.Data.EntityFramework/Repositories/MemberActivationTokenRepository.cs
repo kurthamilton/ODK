@@ -4,9 +4,10 @@ using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework.Repositories;
+
 public class MemberActivationTokenRepository : WriteRepositoryBase<MemberActivationToken>, IMemberActivationTokenRepository
 {
-    public MemberActivationTokenRepository(OdkContext context) 
+    public MemberActivationTokenRepository(OdkContext context)
         : base(context)
     {
     }

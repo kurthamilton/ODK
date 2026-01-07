@@ -12,7 +12,7 @@ public class QuestionEditModel : AdminPageModel
 {
     private readonly IChapterAdminService _chapterAdminService;
 
-    public QuestionEditModel(IRequestCache requestCache, IChapterAdminService chapterAdminService) 
+    public QuestionEditModel(IRequestCache requestCache, IChapterAdminService chapterAdminService)
         : base(requestCache)
     {
         _chapterAdminService = chapterAdminService;

@@ -19,7 +19,7 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
     }
 
     public async Task DeleteError(Guid currentMemberId, Guid id)
-    {        
+    {
         var error = await GetSuperAdminRestrictedContent(currentMemberId,
             x => x.ErrorRepository.GetById(id));
 
@@ -77,7 +77,7 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
             {
                 ErrorId = error.Id,
                 Name = "REQUEST.USERNAME",
-                Value = request.Username ?? ""
+                Value = request.Username ?? string.Empty
             }
         };
 
@@ -105,7 +105,7 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
         {
             ErrorId = error.Id,
             Name = "EXCEPTION.STACKTRACE",
-            Value = exception.StackTrace?.Replace(Environment.NewLine, "<br>") ?? ""
+            Value = exception.StackTrace?.Replace(Environment.NewLine, "<br>") ?? string.Empty
         });
 
         var innerException = exception.InnerException;

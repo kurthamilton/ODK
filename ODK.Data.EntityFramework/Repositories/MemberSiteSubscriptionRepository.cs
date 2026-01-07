@@ -10,7 +10,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class MemberSiteSubscriptionRepository : ReadWriteRepositoryBase<MemberSiteSubscription>, IMemberSiteSubscriptionRepository
 {
-    public MemberSiteSubscriptionRepository(OdkContext context) 
+    public MemberSiteSubscriptionRepository(OdkContext context)
         : base(context)
     {
     }
@@ -27,7 +27,7 @@ public class MemberSiteSubscriptionRepository : ReadWriteRepositoryBase<MemberSi
 
     public IDeferredQuerySingleOrDefault<MemberSiteSubscription> GetByChapterId(Guid chapterId)
     {
-        var query = 
+        var query =
             from chapter in Set<Chapter>()
             from subscription in Set()
             where chapter.Id == chapterId

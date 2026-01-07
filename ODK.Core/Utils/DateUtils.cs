@@ -3,7 +3,7 @@
 public static class DateUtils
 {
     private static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-    
+
     public static long DateVersion(DateTime date)
     {
         return long.Parse($"{date:yyyyMMdd}");
@@ -35,7 +35,7 @@ public static class DateUtils
             .AddSeconds(unixTimestamp)
             .ToUniversalTime();
     }
-    
+
     public static DateTime Next(this DateTime date, DayOfWeek dayOfWeek)
     {
         date = date.AddDays(1);
@@ -60,19 +60,19 @@ public static class DateUtils
 
     public static DateTime SpecifyKind(this DateTime date, DateTimeKind kind) => DateTime.SpecifyKind(date, kind);
 
-    public static DateTime? SpecifyKind(this DateTime? date, DateTimeKind kind) 
+    public static DateTime? SpecifyKind(this DateTime? date, DateTimeKind kind)
         => date != null ? date.Value.SpecifyKind(kind) : new DateTime?();
 
     public static DateTime StartOfDay(this DateTime date) => date - date.TimeOfDay;
 
     public static string ToFriendlyDateString(this DateTime dateUtc, TimeZoneInfo? timeZone, bool forceIncludeYear = false)
     {
-        var localDate = timeZone != null 
+        var localDate = timeZone != null
             ? TimeZoneInfo.ConvertTimeFromUtc(dateUtc, timeZone)
             : dateUtc;
 
         var includeYear = forceIncludeYear || dateUtc.Year != DateTime.UtcNow.Year;
-        
+
         var format = "ddd, MMM d";
 
         if (includeYear)
@@ -109,6 +109,6 @@ public static class DateUtils
         return (long)Math.Floor(diff.TotalSeconds);
     }
 
-    public static DateTime ToUtc(this DateTime local, TimeZoneInfo timeZone) 
+    public static DateTime ToUtc(this DateTime local, TimeZoneInfo timeZone)
         => TimeZoneInfo.ConvertTimeToUtc(local.SpecifyKind(DateTimeKind.Unspecified), timeZone);
 }

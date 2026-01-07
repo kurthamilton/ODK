@@ -5,7 +5,7 @@ namespace ODK.Web.Razor.Pages.Chapters.Admin.Events;
 
 public class VenueEventsModel : VenueAdminPageModel
 {
-    public VenueEventsModel(IRequestCache requestCache, IVenueAdminService venueAdminService) 
+    public VenueEventsModel(IRequestCache requestCache, IVenueAdminService venueAdminService)
         : base(requestCache, venueAdminService)
     {
     }

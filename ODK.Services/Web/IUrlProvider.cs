@@ -18,7 +18,7 @@ public interface IUrlProvider
 
     string EventRsvpUrl(Chapter chapter, Guid eventId);
 
-    string EventsUrl(Chapter chapter);    
+    string EventsUrl(Chapter chapter);
 
     string EventUrl(Chapter chapter, Guid eventId);
 

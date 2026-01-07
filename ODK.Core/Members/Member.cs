@@ -48,7 +48,7 @@ public class Member : IVersioned, IDatabaseEntity, ITimeZoneEntity
         return name;
     }
 
-    public EmailAddressee ToEmailAddressee() => new EmailAddressee(EmailAddress, FullName);    
+    public EmailAddressee ToEmailAddressee() => new EmailAddressee(EmailAddress, FullName);
 
     public MemberChapter? MemberChapter(Guid chapterId) => Chapters
         .FirstOrDefault(x => x.ChapterId == chapterId);

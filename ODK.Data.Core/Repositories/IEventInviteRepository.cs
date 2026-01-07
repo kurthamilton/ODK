@@ -2,6 +2,7 @@
 using ODK.Data.Core.Deferred;
 
 namespace ODK.Data.Core.Repositories;
+
 public interface IEventInviteRepository : IWriteRepository<EventInvite>
 {
     IDeferredQueryMultiple<EventInvite> GetAllByMemberId(Guid memberId, Guid chapterId);

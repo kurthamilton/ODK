@@ -22,7 +22,7 @@ public class UrlProvider : IUrlProvider
     public string ActivateAccountUrl(Chapter? chapter, string token)
         => GetUrl(OdkRoutes.Account.Activate(chapter, token));
 
-    public string BaseUrl() => GetUrl("");
+    public string BaseUrl() => GetUrl(string.Empty);
 
     public string ConfirmEmailAddressUpdate(Chapter? chapter, string token)
         => GetUrl(OdkRoutes.Account.EmailAddressChangeConfirm(chapter, token));
@@ -39,7 +39,7 @@ public class UrlProvider : IUrlProvider
     public string EventRsvpUrl(Chapter chapter, Guid eventId)
         => GetUrl($"/events/{eventId}/attend");
 
-    public string EventsUrl(Chapter chapter) 
+    public string EventsUrl(Chapter chapter)
         => GetUrl(OdkRoutes.Groups.Events(_platform, chapter));
 
     public string EventUrl(Chapter chapter, Guid eventId)
@@ -66,7 +66,7 @@ public class UrlProvider : IUrlProvider
     public string MessageAdminUrl(Guid messageId)
         => GetUrl($"/superadmin/messages/{messageId}");
 
-    public string MessageAdminUrl(Chapter chapter, Guid messageId) 
+    public string MessageAdminUrl(Chapter chapter, Guid messageId)
         => GetUrl(OdkRoutes.MemberGroups.GroupMessage(_platform, chapter, messageId));
 
     public string PasswordReset(Chapter? chapter, string token)
@@ -75,6 +75,6 @@ public class UrlProvider : IUrlProvider
     public string TopicApprovalUrl()
         => GetUrl("/superadmin/topics");
 
-    private string GetUrl(string path) 
+    private string GetUrl(string path)
         => $"{_httpRequestContext.BaseUrl}{path}";
 }

@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using NUnit.Framework;
 using ODK.Core.Events;
-using ODK.Core.Utils;
 
 namespace ODK.Core.Tests.Events;
 

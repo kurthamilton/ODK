@@ -4,9 +4,10 @@ using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework.Repositories;
+
 public class EventEmailRepository : ReadWriteRepositoryBase<EventEmail>, IEventEmailRepository
 {
-    public EventEmailRepository(OdkContext context) 
+    public EventEmailRepository(OdkContext context)
         : base(context)
     {
     }

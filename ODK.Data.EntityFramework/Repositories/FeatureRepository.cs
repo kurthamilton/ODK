@@ -4,9 +4,10 @@ using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework.Repositories;
+
 public class FeatureRepository : ReadWriteRepositoryBase<Feature>, IFeatureRepository
 {
-    public FeatureRepository(OdkContext context) 
+    public FeatureRepository(OdkContext context)
         : base(context)
     {
     }
@@ -19,7 +20,7 @@ public class FeatureRepository : ReadWriteRepositoryBase<Feature>, IFeatureRepos
 
     public IDeferredQuerySingleOrDefault<Feature> GetUnseen(Guid memberId, string name)
     {
-        var query = 
+        var query =
             from feature in Set()
             from featureSeenByMember in Set<FeatureSeenByMember>()
                 .Where(x => x.FeatureId == feature.Id && x.MemberId == memberId)

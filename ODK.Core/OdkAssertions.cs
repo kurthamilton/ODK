@@ -6,7 +6,7 @@ namespace ODK.Core;
 
 public static class OdkAssertions
 {
-    public static T Exists<T>([NotNull] T? value) => Exists(value, "");
+    public static T Exists<T>([NotNull] T? value) => Exists(value, string.Empty);
 
     public static T Exists<T>([NotNull] T? value, string message)
     {
@@ -29,8 +29,8 @@ public static class OdkAssertions
     public static T BelongsToMember<T>([NotNull] T? value, Guid memberId) where T : IMemberEntity
         => MeetsCondition(value, x => x.MemberId == memberId);
 
-    public static T MeetsCondition<T>([NotNull] T? value, Func<T, bool> condition) 
-        => MeetsCondition(value, condition, "");
+    public static T MeetsCondition<T>([NotNull] T? value, Func<T, bool> condition)
+        => MeetsCondition(value, condition, string.Empty);
 
     public static T MeetsCondition<T>([NotNull] T? value, Func<T, bool> condition, string message)
     {

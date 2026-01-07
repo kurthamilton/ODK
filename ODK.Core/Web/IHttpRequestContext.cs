@@ -4,5 +4,5 @@ public interface IHttpRequestContext
 {
     string BaseUrl { get; }
 
-    string RequestUrl { get; }    
+    string RequestUrl { get; }
 }

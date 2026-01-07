@@ -53,7 +53,7 @@ public class PaymentProviderFactory : IPaymentProviderFactory
 
         return GetPaymentProvider(paymentSettings, connectedAccountId: null);
     }
-    
+
     private IPaymentProvider GetPaymentProvider(IPaymentSettings settings, string? connectedAccountId)
     {
         switch (settings.Provider)

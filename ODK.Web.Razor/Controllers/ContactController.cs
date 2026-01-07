@@ -24,9 +24,9 @@ public class ContactController : OdkControllerBase
     {
         await _contactService.SendSiteContactMessage(
             ServiceRequest,
-            viewModel.EmailAddress ?? "",
-            viewModel.Message ?? "",
-            viewModel.Recaptcha ?? "");
+            viewModel.EmailAddress ?? string.Empty  ,
+            viewModel.Message ?? string.Empty,
+            viewModel.Recaptcha ?? string.Empty);
 
         AddFeedback("Your message has been sent. Thank you for getting in touch.", FeedbackType.Success);
 

@@ -4,7 +4,7 @@ namespace ODK.Services.Users.ViewModels;
 
 public class ChapterJoinPageViewModel
 {
-    public required Chapter Chapter { get; init; }    
+    public required Chapter Chapter { get; init; }
 
     public required ChapterProfileFormViewModel Profile { get; init; }
 

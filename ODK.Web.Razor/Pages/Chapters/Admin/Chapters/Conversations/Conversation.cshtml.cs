@@ -4,7 +4,7 @@ namespace ODK.Web.Razor.Pages.Chapters.Admin.Chapters.Conversations;
 
 public class ConversationModel : AdminPageModel
 {
-    public ConversationModel(IRequestCache requestCache) 
+    public ConversationModel(IRequestCache requestCache)
         : base(requestCache)
     {
     }

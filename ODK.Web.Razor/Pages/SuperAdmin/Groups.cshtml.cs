@@ -4,7 +4,7 @@ namespace ODK.Web.Razor.Pages.SuperAdmin;
 
 public class GroupsModel : SuperAdminPageModel
 {
-    public GroupsModel(IRequestCache requestCache) 
+    public GroupsModel(IRequestCache requestCache)
         : base(requestCache)
     {
     }

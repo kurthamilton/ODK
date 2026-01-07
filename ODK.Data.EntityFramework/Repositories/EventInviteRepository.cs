@@ -4,9 +4,10 @@ using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework.Repositories;
+
 public class EventInviteRepository : WriteRepositoryBase<EventInvite>, IEventInviteRepository
 {
-    public EventInviteRepository(OdkContext context) 
+    public EventInviteRepository(OdkContext context)
         : base(context)
     {
     }
@@ -41,7 +42,7 @@ public class EventInviteRepository : WriteRepositoryBase<EventInvite>, IEventInv
 
     public IDeferredQueryMultiple<EventInvite> GetChapterInvites(Guid chapterId, IEnumerable<Guid> eventIds)
     {
-        var query = 
+        var query =
             from @event in Set<Event>()
             from eventInvite in Set()
             where @event.ChapterId == chapterId

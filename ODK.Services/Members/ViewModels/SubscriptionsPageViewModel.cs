@@ -17,5 +17,5 @@ public class SubscriptionsPageViewModel
 
     public required ExternalSubscription? ExternalSubscription { get; init; }
 
-    public required MemberSubscription? MemberSubscription { get; init; }    
+    public required MemberSubscription? MemberSubscription { get; init; }
 }

@@ -100,7 +100,7 @@ public class MemberViewModelService : IMemberViewModelService
     }
 
     public async Task<MembersPageViewModel> GetMembersPage(MemberServiceRequest request, string chapterName)
-    {        
+    {
         var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).Run();
         OdkAssertions.Exists(chapter, $"Chapter not found: '{chapterName}'");
 
@@ -112,9 +112,9 @@ public class MemberViewModelService : IMemberViewModelService
         var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
 
         var (
-            currentMember,             
+            currentMember,
             member,
-            chapterProperties, 
+            chapterProperties,
             memberProperties,
             hasQuestions,
             adminMembers,
@@ -151,12 +151,12 @@ public class MemberViewModelService : IMemberViewModelService
 
         // get current member separately as they might be hidden from the list of members
         var (
-            members, 
+            members,
             currentMember,
             hasProperties,
             hasQuestions,
             adminMembers,
-            ownerSubscription) = 
+            ownerSubscription) =
             await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetByChapterId(chapter.Id),
             x => x.MemberRepository.GetById(currentMemberId),

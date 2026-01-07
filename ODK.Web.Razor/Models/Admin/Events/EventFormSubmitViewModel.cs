@@ -13,7 +13,7 @@ public class EventFormSubmitViewModel
 
     public DateTime Date { get; set; }
 
-    public string? Description { get; set; } = "";
+    public string? Description { get; set; } = string.Empty;
 
     public bool Draft { get; set; }
 
@@ -26,10 +26,10 @@ public class EventFormSubmitViewModel
     public List<Guid> Hosts { get; set; } = new();
 
     [DisplayName("Image URL")]
-    public string? ImageUrl { get; set; } = "";
+    public string? ImageUrl { get; set; } = string.Empty;
 
     [Required]
-    public string Name { get; set; } = "";
+    public string Name { get; set; } = string.Empty;
 
     public bool Public { get; set; }
 
@@ -44,7 +44,7 @@ public class EventFormSubmitViewModel
     [Range(0, double.MaxValue, ErrorMessage = "{1} cannot be less than 0")]
     public decimal? TicketDepositCost { get; set; }
 
-    public string? Time { get; set; } = "";
+    public string? Time { get; set; } = string.Empty;
 
     [Required]
     public Guid Venue { get; set; }

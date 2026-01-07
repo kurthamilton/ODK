@@ -12,14 +12,14 @@ public class CreateModel : OdkGroupAdminPageModel
 {
     private readonly IChapterService _chapterService;
     private readonly IEventAdminService _eventAdminService;
-    
+
     public CreateModel(
         IEventAdminService eventAdminService,
         IChapterService chapterService)
     {
         _chapterService = chapterService;
         _eventAdminService = eventAdminService;
-    }    
+    }
 
     public Guid? VenueId { get; private set; }
 

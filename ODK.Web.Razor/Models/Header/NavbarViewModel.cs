@@ -6,7 +6,7 @@ namespace ODK.Web.Razor.Models.Header;
 
 public class NavbarViewModel : OdkComponentViewModel
 {
-    public NavbarViewModel(OdkComponentContext context) 
+    public NavbarViewModel(OdkComponentContext context)
         : base(context)
     {
     }

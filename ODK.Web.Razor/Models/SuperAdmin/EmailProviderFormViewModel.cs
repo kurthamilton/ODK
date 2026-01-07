@@ -14,15 +14,15 @@ public class EmailProviderFormViewModel
     public int? DailyLimit { get; set; }
 
     [Required]
-    public string Name { get; set; } = "";
+    public string Name { get; set; } = string.Empty;
 
     [Required]
     [Display(Name = "SMTP login")]
-    public string SmtpLogin { get; set; } = "";
+    public string SmtpLogin { get; set; } = string.Empty;
 
     [Required]
     [Display(Name = "SMTP password")]
-    public string SmtpPassword { get; set; } = "";
+    public string SmtpPassword { get; set; } = string.Empty;
 
     [Required]
     [Range(1, int.MaxValue)]
@@ -31,5 +31,5 @@ public class EmailProviderFormViewModel
 
     [Required]
     [Display(Name = "SMTP server")]
-    public string SmtpServer { get; set; } = "";
+    public string SmtpServer { get; set; } = string.Empty;
 }

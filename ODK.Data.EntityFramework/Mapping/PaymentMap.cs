@@ -22,7 +22,7 @@ public class PaymentMap : IEntityTypeConfiguration<Payment>
 
         builder.Property(x => x.PaidUtc)
             .HasColumnName("PaidDate")
-            .HasConversion<UtcDateTimeConverter>();        
+            .HasConversion<UtcDateTimeConverter>();
 
         builder.HasOne<Currency>()
             .WithMany()

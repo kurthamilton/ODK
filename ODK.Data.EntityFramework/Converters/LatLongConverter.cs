@@ -8,7 +8,7 @@ namespace ODK.Data.EntityFramework.Converters;
 internal class LatLongConverter : ValueConverter<LatLong, Point>
 {
     public LatLongConverter()
-        : base(            
+        : base(
             x => x.ToPoint(),
             x => x.ToLatLong())
     {

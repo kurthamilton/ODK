@@ -5,7 +5,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class MemberPrivacySettingsRepository : WriteRepositoryBase<MemberChapterPrivacySettings>, IMemberPrivacySettingsRepository
 {
-    public MemberPrivacySettingsRepository(OdkContext context) 
+    public MemberPrivacySettingsRepository(OdkContext context)
         : base(context)
     {
     }

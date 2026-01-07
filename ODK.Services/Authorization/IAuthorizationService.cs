@@ -7,7 +7,7 @@ using ODK.Core.Venues;
 namespace ODK.Services.Authorization;
 
 public interface IAuthorizationService
-{    
+{
     bool CanRespondToEvent(
         Event @event,
         Member? member,
@@ -23,9 +23,9 @@ public interface IAuthorizationService
         ChapterPrivacySettings? privacySettings);
 
     bool CanViewEvent(
-        Event @event, 
-        Member? member, 
-        MemberSubscription? subscription, 
+        Event @event,
+        Member? member,
+        MemberSubscription? subscription,
         ChapterMembershipSettings? membershipSettings,
         ChapterPrivacySettings? privacySettings);
 
@@ -46,6 +46,6 @@ public interface IAuthorizationService
 
     SubscriptionStatus GetSubscriptionStatus(
         Member? member,
-        MemberSubscription? subscription, 
-        ChapterMembershipSettings? membershipSettings);   
+        MemberSubscription? subscription,
+        ChapterMembershipSettings? membershipSettings);
 }

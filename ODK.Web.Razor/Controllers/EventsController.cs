@@ -35,12 +35,12 @@ public class EventsController : OdkControllerBase
     [HttpPost("events/{id:guid}/comments")]
     public async Task<IActionResult> AddComment(Guid id, EventCommentFormViewModel viewModel)
     {
-        var result = await _eventService.AddComment(MemberServiceRequest, id, viewModel.Text ?? "", viewModel.Parent);
+        var result = await _eventService.AddComment(MemberServiceRequest, id, viewModel.Text ?? string.Empty, viewModel.Parent);
         if (!result.Success)
         {
             AddFeedback(result);
         }
-        
+
         return RedirectToReferrer();
     }
 
@@ -52,7 +52,7 @@ public class EventsController : OdkControllerBase
         if (!result.Success)
         {
             AddFeedback(result);
-        }        
+        }
 
         return RedirectToReferrer();
     }
@@ -61,7 +61,7 @@ public class EventsController : OdkControllerBase
     [HttpPost("events/{id:guid}/tickets/deposit")]
     public async Task<IActionResult> PayDeposit(Guid id, [FromForm] string? token)
     {
-        var result = await _eventService.PayDeposit(MemberId, id, token ?? "");
+        var result = await _eventService.PayDeposit(MemberId, id, token ?? string.Empty);
         AddFeedback(result, "Deposit paid");
         return RedirectToReferrer();
     }
@@ -70,7 +70,7 @@ public class EventsController : OdkControllerBase
     [HttpPost("events/{id:guid}/tickets/purchase")]
     public async Task<IActionResult> PurchaseTicket(Guid id, [FromForm] string? token)
     {
-        var result = await _eventService.PurchaseTicket(MemberId, id, token ?? "");
+        var result = await _eventService.PurchaseTicket(MemberId, id, token ?? string.Empty);
         AddFeedback(result, "Ticket purchased");
         return RedirectToReferrer();
     }
@@ -79,7 +79,7 @@ public class EventsController : OdkControllerBase
     [HttpPost("events/{id:guid}/tickets/complete")]
     public async Task<IActionResult> CompleteTicketPurchase(string chapterName, Guid id, [FromForm] string? token)
     {
-        var result = await _eventService.PayTicketRemainder(MemberId, id, token ?? "");
+        var result = await _eventService.PayTicketRemainder(MemberId, id, token ?? string.Empty);
         AddFeedback(result, "Ticket purchase complete");
         return RedirectToReferrer();
     }

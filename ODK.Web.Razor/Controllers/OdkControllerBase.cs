@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Text;
+using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Platforms;
 using ODK.Core.Utils;
 using ODK.Core.Web;
@@ -6,20 +8,18 @@ using ODK.Services;
 using ODK.Web.Common.Extensions;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Services;
-using System.Text;
-using System.Text.RegularExpressions;
 
 namespace ODK.Web.Razor.Controllers;
 
 public abstract class OdkControllerBase : Controller
 {
     private static readonly Regex VersionRegex = new(@"^""(?<version>-?\d+)""$");
-        
-    private readonly IRequestStore _requestStore;    
+
+    private readonly IRequestStore _requestStore;
 
     protected OdkControllerBase(IRequestStore requestStore)
     {
-        _requestStore = requestStore;        
+        _requestStore = requestStore;
     }
 
     protected IHttpRequestContext HttpRequestContext => _requestStore.HttpRequestContext;
@@ -58,7 +58,7 @@ public abstract class OdkControllerBase : Controller
 
     protected IActionResult DownloadCsv(IReadOnlyCollection<IReadOnlyCollection<string>> data, string fileName)
     {
-        var csv = StringUtils.ToCsv(data);        
+        var csv = StringUtils.ToCsv(data);
         return File(Encoding.UTF8.GetBytes(csv), "text/csv", fileName);
     }
 
@@ -93,7 +93,7 @@ public abstract class OdkControllerBase : Controller
         var url = Request.Headers["Referer"].ToString();
         if (string.IsNullOrEmpty(url))
         {
-            url = !string.IsNullOrEmpty(fallback) 
+            url = !string.IsNullOrEmpty(fallback)
                 ? fallback
                 : Request.Path;
         }

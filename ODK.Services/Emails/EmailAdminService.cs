@@ -11,7 +11,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
     private readonly IUnitOfWork _unitOfWork;
 
     public EmailAdminService(
-        IUnitOfWork unitOfWork, 
+        IUnitOfWork unitOfWork,
         IMemberEmailService memberEmailService)
         : base(unitOfWork)
     {
@@ -59,7 +59,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
             x => x.EmailRepository.GetAll());
 
         var chapterEmailDictionary = chapterEmails.ToDictionary(x => x.Type);
-        
+
         var emails = new List<ChapterEmail>();
 
         foreach (var siteEmail in siteEmails.OrderBy(x => x.Type))
@@ -121,7 +121,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         return await _memberEmailService.SendTestEmail(request, null, currentMember, type);
     }
 
-    public async Task<ServiceResult> UpdateChapterEmail(MemberChapterServiceRequest request, EmailType type, 
+    public async Task<ServiceResult> UpdateChapterEmail(MemberChapterServiceRequest request, EmailType type,
         UpdateEmail model)
     {
         var (chapterEmail, siteEmail) = await GetChapterAdminRestrictedContent(request,
@@ -134,10 +134,10 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         }
 
         chapterEmail ??= new ChapterEmail
-            {
-                ChapterId = request.ChapterId,                
-                Type = type
-            };
+        {
+            ChapterId = request.ChapterId,
+            Type = type
+        };
 
         chapterEmail.HtmlContent = model.HtmlContent;
         chapterEmail.Subject = model.Subject;
@@ -148,7 +148,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
             return validationResult;
         }
 
-        _unitOfWork.ChapterEmailRepository.Upsert(chapterEmail);        
+        _unitOfWork.ChapterEmailRepository.Upsert(chapterEmail);
         await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();
@@ -174,7 +174,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
 
         return ServiceResult.Successful();
     }
-    
+
     private static ServiceResult ValidateChapterEmail(ChapterEmail chapterEmail)
     {
         if (!Enum.IsDefined(typeof(EmailType), chapterEmail.Type) || chapterEmail.Type == EmailType.None)
@@ -190,7 +190,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
 
         return ServiceResult.Successful();
     }
-    
+
     private static ServiceResult ValidateEmail(Email email)
     {
         if (!Enum.IsDefined(typeof(EmailType), email.Type) || email.Type == EmailType.None)

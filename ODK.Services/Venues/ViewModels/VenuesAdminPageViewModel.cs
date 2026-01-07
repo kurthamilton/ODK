@@ -4,6 +4,7 @@ using ODK.Core.Platforms;
 using ODK.Core.Venues;
 
 namespace ODK.Services.Venues.ViewModels;
+
 public class VenuesAdminPageViewModel
 {
     public required Chapter Chapter { get; init; }

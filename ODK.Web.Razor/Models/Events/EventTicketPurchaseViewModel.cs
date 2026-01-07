@@ -4,10 +4,10 @@ using ODK.Core.Events;
 namespace ODK.Web.Razor.Models.Events;
 
 public class EventTicketPurchaseViewModel
-{    
+{
     public required Chapter Chapter { get; init; }
 
-    public required ChapterPaymentSettings ChapterPaymentSettings { get; init; }    
+    public required ChapterPaymentSettings ChapterPaymentSettings { get; init; }
 
     public required Guid CurrentMemberId { get; init; }
 

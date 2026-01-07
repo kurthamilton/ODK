@@ -26,10 +26,10 @@ public class HttpContextLoggingMiddleware
     public async Task Invoke(HttpContext httpContext)
     {
         var claimsUser = new OdkClaimsUser(httpContext.User.Claims);
-        
+
         // If properties are null they won't be added to the Context and subsequent LogActions
         using var memberIdProp = LogContext.PushProperty("MemberId", claimsUser.MemberId);
-        
+
         // For Serilog Request summary messages
         _diagnosticContext.Set("MemberId", claimsUser.MemberId);
 

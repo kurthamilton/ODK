@@ -2,11 +2,12 @@
 using ODK.Data.Core;
 
 namespace ODK.Services.Features;
+
 public class FeatureService : OdkAdminServiceBase, IFeatureService
 {
     private readonly IUnitOfWork _unitOfWork;
 
-    public FeatureService(IUnitOfWork unitOfWork) 
+    public FeatureService(IUnitOfWork unitOfWork)
         : base(unitOfWork)
     {
         _unitOfWork = unitOfWork;

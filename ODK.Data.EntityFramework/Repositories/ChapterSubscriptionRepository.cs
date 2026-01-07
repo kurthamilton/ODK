@@ -7,9 +7,10 @@ using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework.Repositories;
+
 public class ChapterSubscriptionRepository : ReadWriteRepositoryBase<ChapterSubscription>, IChapterSubscriptionRepository
 {
-    public ChapterSubscriptionRepository(OdkContext context) 
+    public ChapterSubscriptionRepository(OdkContext context)
         : base(context)
     {
     }
@@ -17,7 +18,7 @@ public class ChapterSubscriptionRepository : ReadWriteRepositoryBase<ChapterSubs
     public IDeferredQueryMultiple<ChapterSubscriptionAdminDto> GetAdminDtosByChapterId(
         Guid chapterId, bool includeDisabled)
     {
-        var query = 
+        var query =
             from chapterSubscription in Set(chapterId, includeDisabled)
             from sitePaymentSettings in Set<SitePaymentSettings>()
                 .Where(x => x.Id == chapterSubscription.SitePaymentSettingId)

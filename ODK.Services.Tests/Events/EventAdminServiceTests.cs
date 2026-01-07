@@ -36,15 +36,15 @@ public static class EventAdminServiceTests
     [TestCase("GMT Standard Time", "2024-07-16", "2024-07-15 11:00:00")]
     [TestCase("AUS Eastern Standard Time", "2024-01-16", "2024-01-15 01:00:00")]
     [TestCase("AUS Eastern Standard Time", "2024-07-16", "2024-07-15 02:00:00")]
-    public static async Task CreateEvent_ScheduledEmailDateConvertedToUtc(string timeZoneId, 
+    public static async Task CreateEvent_ScheduledEmailDateConvertedToUtc(string timeZoneId,
         string eventDateString, string expectedScheduledEmailDate)
     {
         // Arrange
         var chapter = CreateChapter();
         chapter.TimeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
-        
+
         var eventDate = DateTime.ParseExact(eventDateString, "yyyy-MM-dd", CultureInfo.InvariantCulture);
-        
+
         var chapterEventSettings = new ChapterEventSettings
         {
             ChapterId = chapter.Id,
@@ -55,7 +55,7 @@ public static class EventAdminServiceTests
         var chapterEventSettingsRepository = CreateMockChapterEventSettingsRepository(chapterEventSettings);
 
         var chapterRepository = CreateMockChapterRepository(chapter);
-        
+
         var eventEmailRepository = CreateMockEventEmailRepository();
         Mock.Get(eventEmailRepository)
             .Setup(x => x.Add(It.IsAny<EventEmail>()))
@@ -68,14 +68,14 @@ public static class EventAdminServiceTests
         var unitOfWork = CreateMockUnitOfWork(
             chapterRepository: chapterRepository,
             chapterEventSettingsRepository: chapterEventSettingsRepository,
-            eventEmailRepository: eventEmailRepository);                
+            eventEmailRepository: eventEmailRepository);
 
         var service = CreateService(
             unitOfWork: unitOfWork);
 
         var request = new MemberChapterServiceRequest(
-            ChapterId, 
-            CurrentMemberId, 
+            ChapterId,
+            CurrentMemberId,
             Mock.Of<IHttpRequestContext>(),
             PlatformType.Default);
 
@@ -83,7 +83,7 @@ public static class EventAdminServiceTests
         await service.CreateEvent(request, new CreateEvent
         {
             AttendeeLimit = null,
-            Date = eventDate,            
+            Date = eventDate,
             Description = null,
             EndTime = null,
             Hosts = new List<Guid>(),
@@ -94,7 +94,7 @@ public static class EventAdminServiceTests
             TicketCost = null,
             TicketDepositCost = null,
             Time = null,
-            VenueId = VenueId           
+            VenueId = VenueId
         }, false);
 
         // Assert        
@@ -175,7 +175,7 @@ public static class EventAdminServiceTests
 
     private static IEventHostRepository CreateMockEventHostRepository()
     {
-        var mock = new Mock<IEventHostRepository>();        
+        var mock = new Mock<IEventHostRepository>();
 
         return mock.Object;
     }
@@ -184,7 +184,7 @@ public static class EventAdminServiceTests
     {
         var mock = new Mock<IEventRepository>();
         return mock.Object;
-    }    
+    }
 
     private static IEventTopicRepository CreateMockEventTopicRepository()
     {
@@ -211,8 +211,8 @@ public static class EventAdminServiceTests
             .Returns(new MockDeferredQueryMultiple<Member>([]));
 
         mock.Setup(x => x.GetById(It.IsAny<Guid>()))
-            .Returns(new MockDeferredQuerySingle<Member>(new Member 
-            { 
+            .Returns(new MockDeferredQuerySingle<Member>(new Member
+            {
                 Chapters = new List<MemberChapter>
                 {
                     new MemberChapter { ChapterId = ChapterId }
@@ -262,7 +262,7 @@ public static class EventAdminServiceTests
 
         mock.Setup(x => x.EventRepository)
             .Returns(CreateMockEventRepository());
-        
+
         mock.Setup(x => x.MemberNotificationSettingsRepository)
             .Returns(CreateMockMemberNotificationSettingsRepository());
 

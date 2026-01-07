@@ -24,9 +24,9 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     private readonly IUnitOfWork _unitOfWork;
 
     public MemberAdminService(
-        IUnitOfWork unitOfWork, 
-        IMemberService memberService, 
-        ICacheService cacheService, 
+        IUnitOfWork unitOfWork,
+        IMemberService memberService,
+        ICacheService cacheService,
         IAuthorizationService authorizationService,
         IMemberImageService memberImageService,
         IMemberEmailService memberEmailService)
@@ -125,7 +125,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
         return member;
     }
-    
+
     public async Task<MemberApprovalsAdminPageViewModel> GetMemberApprovalsViewModel(MemberChapterServiceRequest request)
     {
         var platform = request.Platform;
@@ -158,7 +158,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     }
 
     public async Task<MemberConversationsAdminPageViewModel> GetMemberConversationsViewModel(
-        MemberChapterServiceRequest request, 
+        MemberChapterServiceRequest request,
         Guid memberId)
     {
         var platform = request.Platform;
@@ -213,10 +213,10 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                 member.Id.ToString(),
                 member.FirstName,
                 member.LastName,
-                member.MemberChapter(request.ChapterId)?.CreatedUtc.ToString("yyyy-MM-dd") ?? "",
-                member.Activated ? "Y" : "",
-                subscription?.ExpiresUtc?.ToString("yyyy-MM-dd") ?? "",
-                subscription?.Type.ToString() ?? ""
+                member.MemberChapter(request.ChapterId)?.CreatedUtc.ToString("yyyy-MM-dd") ?? string.Empty,
+                member.Activated ? "Y" : string.Empty,
+                subscription?.ExpiresUtc?.ToString("yyyy-MM-dd") ?? string.Empty,
+                subscription?.Type.ToString() ?? string.Empty
             ]);
         }
 
@@ -274,9 +274,9 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             venueDictionary.TryGetValue(@event.VenueId, out var venue);
 
             var responseViewModel = new EventResponseViewModel(
-                @event: @event, 
-                venue: venue, 
-                response: response?.Type ?? EventResponseType.None, 
+                @event: @event,
+                venue: venue,
+                response: response?.Type ?? EventResponseType.None,
                 invited: invite != null,
                 responseSummary: null);
             responseViewModels.Add(responseViewModel);
@@ -360,12 +360,12 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         var (chapterId, currentMemberId, platform) = (request.ChapterId, request.CurrentMemberId, request.Platform);
 
         var (
-            chapter, 
-            ownerSubscription, 
-            chapterAdminMembers, 
-            currentMember, 
-            chapterSubscriptions, 
-            chapterPaymentSettings, 
+            chapter,
+            ownerSubscription,
+            chapterAdminMembers,
+            currentMember,
+            chapterSubscriptions,
+            chapterPaymentSettings,
             sitePaymentSettings,
             membershipSettings
         ) = await _unitOfWork.RunAsync(
@@ -403,9 +403,9 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         var platform = request.Platform;
 
         var (
-            chapter, 
-            ownerSubscription, 
-            chapterPaymentSettings, 
+            chapter,
+            ownerSubscription,
+            chapterPaymentSettings,
             chapterPaymentAccount,
             subscription) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
@@ -420,9 +420,9 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             ? await _unitOfWork.SitePaymentSettingsRepository.GetById(subscription.SitePaymentSettingId.Value).Run()
             : null;
 
-        var paymentProvider = 
+        var paymentProvider =
             sitePaymentSettings?.Provider ??
-            chapterPaymentSettings.Provider ?? 
+            chapterPaymentSettings.Provider ??
             PaymentProviderType.None;
 
         return new SubscriptionAdminPageViewModel
@@ -462,7 +462,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     public async Task<MemberAdminPageViewModel> GetMemberViewModel(MemberChapterServiceRequest request, Guid memberId)
     {
         var platform = request.Platform;
-        
+
         var (chapter, member, subscription, notifications) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.MemberRepository.GetById(memberId),
@@ -487,8 +487,8 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     }
 
     public async Task<ServiceResult> RemoveMemberFromChapter(
-        MemberChapterServiceRequest request, 
-        Guid memberId, 
+        MemberChapterServiceRequest request,
+        Guid memberId,
         string? reason)
     {
         var (chapter, subscription) = await GetChapterAdminRestrictedContent(request,
@@ -518,7 +518,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
         await _memberService.RotateMemberImage(member.Id);
     }
-    
+
     public async Task SendActivationEmail(MemberChapterServiceRequest request, Guid memberId)
     {
         var (chapter, member, memberActivationToken) = await GetChapterAdminRestrictedContent(request,
@@ -528,7 +528,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
         AssertMemberIsInChapter(member, request);
         OdkAssertions.Exists(memberActivationToken);
-        
+
         await _memberEmailService.SendActivationEmail(request, chapter, member, memberActivationToken.ActivationToken);
     }
 
@@ -537,12 +537,12 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         var (chapterId, currentMemberId) = (request.ChapterId, request.CurrentMemberId);
 
         var (
-            chapter, 
-            members, 
-            memberEmailPreferences, 
-            memberSubscriptions, 
-            membershipSettings, 
-            subscription) 
+            chapter,
+            members,
+            memberEmailPreferences,
+            memberSubscriptions,
+            membershipSettings,
+            subscription)
         = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(chapterId),
             x => x.MemberRepository.GetByChapterId(chapterId),
@@ -590,11 +590,11 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             }
 
             var memberSubscriptionDictionary = memberSubscriptions
-                .ToDictionary(x => x.MemberChapter.MemberId);            
+                .ToDictionary(x => x.MemberChapter.MemberId);
             foreach (var member in members)
             {
                 var memberChapter = member.MemberChapter(chapter.Id);
-                if (memberChapter  == null)
+                if (memberChapter == null)
                 {
                     continue;
                 }
@@ -648,8 +648,8 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
                 await _memberEmailService.SendMemberChapterSubscriptionExpiringEmail(
                     request,
-                    chapter, 
-                    member, 
+                    chapter,
+                    member,
                     memberSubscription,
                     expires: expires,
                     disabledDate: disabledDate);
@@ -691,7 +691,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task<ServiceResult> UpdateMemberImage(MemberChapterServiceRequest request, Guid id, 
+    public async Task<ServiceResult> UpdateMemberImage(MemberChapterServiceRequest request, Guid id,
         UpdateMemberImage model)
     {
         var (member, image, avatar) = await GetChapterAdminRestrictedContent(request,
@@ -784,7 +784,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         => OdkAssertions.MeetsCondition(member, x => x.IsMemberOf(request.ChapterId));
 
     private IEnumerable<Member> FilterMembers(
-        IEnumerable<Member> members, 
+        IEnumerable<Member> members,
         IEnumerable<MemberSubscription> memberSubscriptions,
         ChapterMembershipSettings? membershipSettings,
         MemberFilter filter)
@@ -816,5 +816,5 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         }
 
         return ServiceResult.Successful();
-    }    
+    }
 }

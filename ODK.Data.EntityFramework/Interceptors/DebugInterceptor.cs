@@ -1,7 +1,7 @@
-﻿using System.Data.Common;
-using Microsoft.EntityFrameworkCore.Diagnostics;
+﻿using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace ODK.Data.EntityFramework.Interceptors;
+
 public class DebugInterceptor : DbCommandInterceptor
 {
 #if DEBUG

@@ -9,5 +9,5 @@ public class GroupProfilePageViewModel : GroupPageViewModel
 
     public required IReadOnlyCollection<ChapterPropertyOption> ChapterPropertyOptions { get; init; }
 
-    public required IReadOnlyCollection<MemberProperty> MemberProperties { get; init; }    
+    public required IReadOnlyCollection<MemberProperty> MemberProperties { get; init; }
 }

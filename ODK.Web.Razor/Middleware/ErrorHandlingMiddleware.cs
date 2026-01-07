@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Diagnostics;
+﻿using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Features;
 using ODK.Core.Exceptions;
@@ -8,7 +9,6 @@ using ODK.Services.Exceptions;
 using ODK.Services.Logging;
 using ODK.Web.Common.Config.Settings;
 using ODK.Web.Razor.Services;
-using System.Text.RegularExpressions;
 using HttpRequest = ODK.Services.Logging.HttpRequest;
 
 namespace ODK.Web.Razor.Middleware;
@@ -16,15 +16,15 @@ namespace ODK.Web.Razor.Middleware;
 public class ErrorHandlingMiddleware
 {
     private readonly RequestDelegate _next;
-    
+
     public ErrorHandlingMiddleware(RequestDelegate next)
     {
         _next = next;
     }
 
     public async Task InvokeAsync(
-        HttpContext context, 
-        IRequestCache requestCache, 
+        HttpContext context,
+        IRequestCache requestCache,
         ILoggingService loggingService,
         IUnitOfWork unitOfWork,
         AppSettings appSettings,
@@ -35,12 +35,12 @@ public class ErrorHandlingMiddleware
             await _next(context);
 
             if (context.Response.StatusCode == 404)
-            {                
+            {
                 throw new OdkNotFoundException($"Path not found: {context.Request.Path}");
             }
         }
         catch (Exception ex)
-        {            
+        {
             await LogError(context, ex, loggingService, appSettings);
 
             context.Response.StatusCode = ex switch
@@ -51,14 +51,14 @@ public class ErrorHandlingMiddleware
                 _ => 500
             };
 
-            await HandleAsync(context, requestCache, unitOfWork, requestStore);            
-        }                
+            await HandleAsync(context, requestCache, unitOfWork, requestStore);
+        }
     }
 
     private async Task HandleAsync(
-        HttpContext httpContext, 
-        IRequestCache requestCache, 
-        IUnitOfWork unitOfWork, 
+        HttpContext httpContext,
+        IRequestCache requestCache,
+        IUnitOfWork unitOfWork,
         IRequestStore requestStore)
     {
         var request = httpContext.Request;
@@ -98,7 +98,7 @@ public class ErrorHandlingMiddleware
             return defaultPath;
         }
 
-        if (string.Equals(originalPathParts[1], "groups", StringComparison.InvariantCultureIgnoreCase) && 
+        if (string.Equals(originalPathParts[1], "groups", StringComparison.InvariantCultureIgnoreCase) &&
             originalPathParts.Length > 2)
         {
             var slug = originalPathParts[2];
@@ -107,7 +107,7 @@ public class ErrorHandlingMiddleware
             if (chapter != null)
             {
                 return $"/groups/{slug}/error/{context.Response.StatusCode}";
-            }            
+            }
         }
         else
         {
@@ -123,8 +123,8 @@ public class ErrorHandlingMiddleware
             catch
             {
                 return defaultPath;
-            }            
-        }        
+            }
+        }
 
         return defaultPath;
     }

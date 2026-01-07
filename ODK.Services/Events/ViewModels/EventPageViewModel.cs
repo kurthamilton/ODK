@@ -31,7 +31,7 @@ public class EventPageViewModel : GroupPageViewModel
         get
         {
             var numberOfAttendees = MembersByResponse.TryGetValue(EventResponseType.Yes, out var attendees)
-                ? attendees.Count 
+                ? attendees.Count
                 : 0;
 
             return Event.NumberOfSpacesLeft(numberOfAttendees);

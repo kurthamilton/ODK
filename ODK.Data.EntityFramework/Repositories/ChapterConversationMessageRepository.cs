@@ -10,7 +10,7 @@ public class ChapterConversationMessageRepository : ReadWriteRepositoryBase<Chap
 {
     private readonly OdkContext _context;
 
-    public ChapterConversationMessageRepository(OdkContext context) 
+    public ChapterConversationMessageRepository(OdkContext context)
         : base(context)
     {
         _context = context;

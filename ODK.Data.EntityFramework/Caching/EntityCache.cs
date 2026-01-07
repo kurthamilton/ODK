@@ -10,16 +10,16 @@ public class EntityCache<TKey, T> where TKey : notnull
     private readonly Func<T, TKey> _keyFunc;
     private readonly IDictionary<Guid, HashSet<TKey>> _pendingRemoves = new Dictionary<Guid, HashSet<TKey>>();
     private readonly IDictionary<Guid, HashSet<T>> _pendingUpdates = new Dictionary<Guid, HashSet<T>>();
-    
+
     private bool _allRecords = false;
 
     public EntityCache(
-        Func<T, TKey> keyFunc, 
+        Func<T, TKey> keyFunc,
         Func<T, bool>? filterFunc = null)
     {
         _filter = filterFunc;
         _keyFunc = keyFunc;
-    }    
+    }
 
     public void Clear()
     {
@@ -32,7 +32,7 @@ public class EntityCache<TKey, T> where TKey : notnull
         if (_pendingUpdates.Remove(sessionKey, out var pendingChanges))
         {
             SetSome(pendingChanges);
-        }        
+        }
 
         if (_pendingRemoves.Remove(sessionKey, out var pendingRemoves))
         {
@@ -41,7 +41,7 @@ public class EntityCache<TKey, T> where TKey : notnull
                 Remove(key);
             }
         }
-    }    
+    }
 
     public void EndSession(Guid key) => _pendingUpdates.Remove(key);
 
@@ -59,8 +59,8 @@ public class EntityCache<TKey, T> where TKey : notnull
         ? Process(value)
         : default;
 
-    public IReadOnlyCollection<T>? GetAll() => _allRecords 
-        ? _cache.Values.Select(Process).ToArray() 
+    public IReadOnlyCollection<T>? GetAll() => _allRecords
+        ? _cache.Values.Select(Process).ToArray()
         : null;
 
     public IEnumerable<T> GetPending(Guid key) => _pendingUpdates.ContainsKey(key)
@@ -108,8 +108,8 @@ public class EntityCache<TKey, T> where TKey : notnull
         {
             Set(item);
         }
-    }   
-    
+    }
+
     private T Process(T value) => value is ICloneable<T> cloneable
         ? cloneable.Clone()
         : value;

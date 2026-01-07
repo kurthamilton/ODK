@@ -58,7 +58,7 @@ public class NotificationService : INotificationService
             settings,
             entityId: conversation.Id,
             chapterId: conversation.ChapterId);
-    }    
+    }
 
     public void AddNewEventNotifications(
         Chapter chapter,
@@ -199,7 +199,7 @@ public class NotificationService : INotificationService
     private void AddNotifications(
         NotificationType type,
         Func<Member, string> text,
-        IEnumerable<Member> members, 
+        IEnumerable<Member> members,
         IEnumerable<MemberNotificationSettings> settings,
         Guid? entityId,
         Guid? chapterId,

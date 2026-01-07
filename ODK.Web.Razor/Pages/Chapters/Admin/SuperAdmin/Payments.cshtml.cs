@@ -11,7 +11,7 @@ public class PaymentSettingsModel : ChapterSuperAdminPageModel
 {
     private readonly IChapterAdminService _chapterAdminService;
 
-    public PaymentSettingsModel(IRequestCache requestCache, IChapterAdminService chapterAdminService) 
+    public PaymentSettingsModel(IRequestCache requestCache, IChapterAdminService chapterAdminService)
         : base(requestCache)
     {
         _chapterAdminService = chapterAdminService;
@@ -21,7 +21,7 @@ public class PaymentSettingsModel : ChapterSuperAdminPageModel
     {
         var serviceRequest = await GetAdminServiceRequest();
         var existing = await _chapterAdminService.GetChapterPaymentSettings(serviceRequest);
-        var result = await _chapterAdminService.UpdateChapterPaymentSettings(serviceRequest, 
+        var result = await _chapterAdminService.UpdateChapterPaymentSettings(serviceRequest,
             new UpdateChapterPaymentSettings
             {
                 ApiPublicKey = viewModel.PublicKey,

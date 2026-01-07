@@ -2,6 +2,7 @@
 using ODK.Core.Countries;
 
 namespace ODK.Data.EntityFramework.Extensions;
+
 internal static class DataTypeExtensions
 {
     public static LatLong ToLatLong(this Point value) => new LatLong(value.Y, value.X);

@@ -27,8 +27,8 @@ public class GroupAdminController : OdkControllerBase
         [FromForm] ChapterAdminStartConversationFormViewModel viewModel)
     {
         var request = MemberChapterServiceRequest(id);
-        await _chapterAdminService.StartConversation(request, viewModel.MemberId, 
-            viewModel.Subject ?? "", viewModel.Message ?? "");
+        await _chapterAdminService.StartConversation(request, viewModel.MemberId,
+            viewModel.Subject ?? string.Empty, viewModel.Message ?? string.Empty);
         AddFeedback("Message sent", FeedbackType.Success);
         return RedirectToReferrer();
     }
@@ -38,7 +38,7 @@ public class GroupAdminController : OdkControllerBase
         [FromForm] ChapterConversationReplyFormViewModel viewModel)
     {
         var request = MemberChapterServiceRequest(id);
-        var result = await _chapterAdminService.ReplyToConversation(request, conversationId, viewModel.Message ?? "");
+        var result = await _chapterAdminService.ReplyToConversation(request, conversationId, viewModel.Message ?? string.Empty);
         AddFeedback(result, "Reply sent");
         return RedirectToReferrer();
     }

@@ -33,9 +33,9 @@ public class SuperAdminController : OdkControllerBase
     private readonly ITopicAdminService _topicAdminService;
 
     public SuperAdminController(
-        ILoggingService loggingService, 
+        ILoggingService loggingService,
         IInstagramService instagramService,
-        IRequestCache requestCache, 
+        IRequestCache requestCache,
         ISettingsService settingsService,
         ISiteSubscriptionAdminService siteSubscriptionAdminService,
         IFeatureService featureService,
@@ -97,7 +97,7 @@ public class SuperAdminController : OdkControllerBase
     public async Task<IActionResult> ReplyToMessage(Guid id,
         [FromForm] ChapterMessageReplyFormViewModel viewModel)
     {
-        var result = await _contactAdminService.ReplyToMessage(MemberServiceRequest, id, viewModel.Message ?? "");
+        var result = await _contactAdminService.ReplyToMessage(MemberServiceRequest, id, viewModel.Message ?? string.Empty);
         AddFeedback(result, "Reply sent");
         return RedirectToReferrer();
     }
@@ -107,9 +107,9 @@ public class SuperAdminController : OdkControllerBase
     {
         var result = await _settingsService.CreatePaymentSettings(MemberId,
             viewModel.Provider ?? PaymentProviderType.None,
-            viewModel.Name ?? "",
-            viewModel.PublicKey ?? "",
-            viewModel.SecretKey ?? "",
+            viewModel.Name ?? string.Empty,
+            viewModel.PublicKey ?? string.Empty,
+            viewModel.SecretKey ?? string.Empty,
             viewModel.Commission / 100,
             enabled: viewModel.Enabled);
 
@@ -119,14 +119,14 @@ public class SuperAdminController : OdkControllerBase
     }
 
     [HttpPost("superadmin/payments/{id:guid}")]
-    public async Task<IActionResult> UpdatePaymentSettings(Guid id, 
+    public async Task<IActionResult> UpdatePaymentSettings(Guid id,
         [FromForm] SitePaymentSettingsFormViewModel viewModel)
     {
         var result = await _settingsService.UpdatePaymentSettings(MemberId,
             id,
-            viewModel.Name ?? "",
-            viewModel.PublicKey ?? "",
-            viewModel.SecretKey ?? "",
+            viewModel.Name ?? string.Empty,
+            viewModel.PublicKey ?? string.Empty,
+            viewModel.SecretKey ?? string.Empty,
             viewModel.Commission / 100,
             enabled: viewModel.Enabled);
 
@@ -143,7 +143,7 @@ public class SuperAdminController : OdkControllerBase
         AddFeedback(result, "Active payment settings updated");
 
         return RedirectToReferrer();
-    }    
+    }
 
     [HttpPost("superadmin/subscriptions")]
     public async Task<IActionResult> CreateSubscription(SiteSubscriptionFormViewModel viewModel)
@@ -220,7 +220,7 @@ public class SuperAdminController : OdkControllerBase
     }
 
     [HttpPost("superadmin/subscriptions/{id:guid}/prices")]
-    public async Task<IActionResult> AddSiteSubscriptionPrice(Guid id, 
+    public async Task<IActionResult> AddSiteSubscriptionPrice(Guid id,
         SiteSubscriptionPriceFormViewModel viewModel)
     {
         var result = await _siteSubscriptionAdminService.AddSiteSubscriptionPrice(MemberServiceRequest, id, new SiteSubscriptionPriceCreateModel

@@ -10,6 +10,6 @@ public class EventTicketSettingsMap : IEntityTypeConfiguration<EventTicketSettin
     {
         builder.ToTable("EventTicketSettings");
 
-        builder.HasKey(x => x.EventId);        
+        builder.HasKey(x => x.EventId);
     }
 }

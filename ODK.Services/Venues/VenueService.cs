@@ -14,11 +14,11 @@ public class VenueService : IVenueService
     {
         _unitOfWork = unitOfWork;
     }
-    
+
     public async Task<Venue> GetVenueAsync(Member? currentMember, Event @event)
     {
         var venue = await _unitOfWork.VenueRepository.GetByIdOrDefault(@event.VenueId).Run();
-        return OdkAssertions.MeetsCondition(venue, 
+        return OdkAssertions.MeetsCondition(venue,
             _ => @event.IsAuthorized(currentMember));
     }
 }

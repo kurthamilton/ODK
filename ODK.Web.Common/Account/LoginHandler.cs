@@ -24,7 +24,7 @@ public class LoginHandler : ILoginHandler
     private readonly IUnitOfWork _unitOfWork;
 
     public LoginHandler(
-        IAuthenticationService authenticationService, 
+        IAuthenticationService authenticationService,
         LoginHandlerSettings settings,
         IHttpContextAccessor httpContextAccessor,
         IOAuthProviderFactory oauthProviderFactory,
@@ -51,7 +51,7 @@ public class LoginHandler : ILoginHandler
         return await Login(member);
     }
 
-    public async Task<AuthenticationResult> Login(string username, string password, 
+    public async Task<AuthenticationResult> Login(string username, string password,
         bool rememberMe)
     {
         var member = await _authenticationService.GetMemberAsync(username, password);

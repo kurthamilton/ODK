@@ -11,7 +11,7 @@ public class PropertyCreateModel : AdminPageModel
 {
     private readonly IChapterAdminService _chapterAdminService;
 
-    public PropertyCreateModel(IRequestCache requestCache, IChapterAdminService chapterAdminService) 
+    public PropertyCreateModel(IRequestCache requestCache, IChapterAdminService chapterAdminService)
         : base(requestCache)
     {
         _chapterAdminService = chapterAdminService;

@@ -13,7 +13,7 @@ public class LoginViewModel
     [DisplayName("Email address")]
     public string? Email { get; set; }
 
-    public string GoogleClientId { get; set; } = "";
+    public string GoogleClientId { get; set; } = string.Empty;
 
     [Required]
     [PasswordPropertyText]

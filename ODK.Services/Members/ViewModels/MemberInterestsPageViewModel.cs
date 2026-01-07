@@ -2,6 +2,7 @@
 using ODK.Core.Topics;
 
 namespace ODK.Services.Members.ViewModels;
+
 public class MemberInterestsPageViewModel
 {
     public required IReadOnlyCollection<MemberTopic> MemberTopics { get; init; }

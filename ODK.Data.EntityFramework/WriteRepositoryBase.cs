@@ -1,6 +1,7 @@
 ﻿using ODK.Data.Core.Repositories;
 
 namespace ODK.Data.EntityFramework;
+
 public abstract class WriteRepositoryBase<T> : RepositoryBase, IWriteRepository<T>
     where T : class
 {

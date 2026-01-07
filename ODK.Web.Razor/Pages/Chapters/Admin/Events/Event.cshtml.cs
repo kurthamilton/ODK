@@ -9,7 +9,7 @@ namespace ODK.Web.Razor.Pages.Chapters.Admin.Events;
 
 public class EventModel : EventAdminPageModel
 {
-    public EventModel(IRequestCache requestCache, IEventAdminService eventAdminService) 
+    public EventModel(IRequestCache requestCache, IEventAdminService eventAdminService)
         : base(requestCache, eventAdminService)
     {
     }

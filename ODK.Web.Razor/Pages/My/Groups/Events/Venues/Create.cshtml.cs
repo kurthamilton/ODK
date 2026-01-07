@@ -15,7 +15,7 @@ public class CreateModel : OdkGroupAdminPageModel
 
     public CreateModel(
         IVenueAdminService venueAdminService,
-        IChapterService chapterService) 
+        IChapterService chapterService)
     {
         _chapterService = chapterService;
         _venueAdminService = venueAdminService;

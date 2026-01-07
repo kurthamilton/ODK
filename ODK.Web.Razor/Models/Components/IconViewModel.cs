@@ -9,7 +9,7 @@ public class IconViewModel
         Type = type;
     }
 
-    public string? Class { get; init; }    
+    public string? Class { get; init; }
 
     public IconType Type { get; }
 }

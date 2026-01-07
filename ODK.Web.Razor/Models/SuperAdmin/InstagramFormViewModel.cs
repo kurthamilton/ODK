@@ -6,5 +6,5 @@ public class InstagramFormViewModel
 {
     [Required]
     [Display(Name = "Scraper user agent")]
-    public string ScraperUserAgent { get; set; } = "";
+    public string ScraperUserAgent { get; set; } = string.Empty;
 }

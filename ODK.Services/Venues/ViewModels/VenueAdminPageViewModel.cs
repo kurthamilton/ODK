@@ -3,6 +3,7 @@ using ODK.Core.Platforms;
 using ODK.Core.Venues;
 
 namespace ODK.Services.Venues.ViewModels;
+
 public class VenueAdminPageViewModel
 {
     public required Chapter Chapter { get; init; }
@@ -11,5 +12,5 @@ public class VenueAdminPageViewModel
 
     public required PlatformType Platform { get; init; }
 
-    public required Venue Venue { get; init; }    
+    public required Venue Venue { get; init; }
 }

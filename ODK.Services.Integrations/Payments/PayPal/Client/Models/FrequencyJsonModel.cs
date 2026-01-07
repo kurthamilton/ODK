@@ -9,7 +9,7 @@ public class FrequencyJsonModel
     public int IntervalCount { get; set; }
 
     [JsonPropertyName("interval_unit")]
-    public string IntervalUnit { get; set; } = "";
+    public string IntervalUnit { get; set; } = string.Empty;
 
     [JsonIgnore]
     public SiteSubscriptionFrequency OdkFrequency => IntervalUnit switch

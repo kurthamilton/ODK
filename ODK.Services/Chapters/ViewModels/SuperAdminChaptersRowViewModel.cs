@@ -4,7 +4,7 @@ public class SuperAdminChaptersRowViewModel
 {
     public required DateTime CreatedUtc { get; init; }
 
-    public required Guid Id { get; init; }        
+    public required Guid Id { get; init; }
 
     public required string Name { get; init; }
 

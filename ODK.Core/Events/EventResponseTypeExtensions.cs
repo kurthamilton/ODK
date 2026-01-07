@@ -13,7 +13,7 @@ public static class EventResponseTypeExtensions
             case EventResponseType.No:
                 return forAction ? "No" : "Not going";
             default:
-                return "";
+                return string.Empty;
         }
     }
 }

@@ -6,14 +6,14 @@ namespace ODK.Core.Web;
 // https://medium.com/@feldy7k/preventing-xss-attacks-in-net-8-api-with-html-sanitizer-method-0bb04413526b
 public class HtmlSanitizer : IHtmlSanitizer
 {
-    private static readonly Regex HttpLinkRegex = new Regex(@"(http|https):\/\/[^\s<>]+", 
+    private static readonly Regex HttpLinkRegex = new Regex(@"(http|https):\/\/[^\s<>]+",
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-    private static readonly Regex JavascriptLinkRegex = new Regex(@"href\s*=\s*['""]javascript:[^'""]*['""]", 
+    private static readonly Regex JavascriptLinkRegex = new Regex(@"href\s*=\s*['""]javascript:[^'""]*['""]",
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-    private static readonly IReadOnlyCollection<string> AttributeBlacklist = 
-    [ 
+    private static readonly IReadOnlyCollection<string> AttributeBlacklist =
+    [
         "onload", "onclick", "onerror", "src"
     ];
 
@@ -22,9 +22,9 @@ public class HtmlSanitizer : IHtmlSanitizer
         "a", "ul", "li", "b", "i"
     ];
 
-    private static readonly IReadOnlyCollection<string> TagBlacklist = 
-    [ 
-        "script", "iframe", "object", "embed", "form" 
+    private static readonly IReadOnlyCollection<string> TagBlacklist =
+    [
+        "script", "iframe", "object", "embed", "form"
     ];
 
     public string Sanitize(string html) => Sanitize(html, new HtmlSanitizerOptions

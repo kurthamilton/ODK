@@ -9,7 +9,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class ChapterConversationRepository : ReadWriteRepositoryBase<ChapterConversation>, IChapterConversationRepository
 {
-    public ChapterConversationRepository(OdkContext context) 
+    public ChapterConversationRepository(OdkContext context)
         : base(context)
     {
     }
@@ -22,24 +22,24 @@ public class ChapterConversationRepository : ReadWriteRepositoryBase<ChapterConv
         .Where(x => x.MemberId == memberId && x.ChapterId == chapterId)
         .DeferredMultiple();
 
-    public IDeferredQueryMultiple<ChapterConversationDto> GetDtosByChapterId(Guid chapterId) 
+    public IDeferredQueryMultiple<ChapterConversationDto> GetDtosByChapterId(Guid chapterId)
         => ChapterConversationDtoSet()
             .Where(x => x.Conversation.ChapterId == chapterId)
             .DeferredMultiple();
 
-    public IDeferredQueryMultiple<ChapterConversationDto> GetDtosByChapterId(Guid chapterId, bool readByChapter) 
+    public IDeferredQueryMultiple<ChapterConversationDto> GetDtosByChapterId(Guid chapterId, bool readByChapter)
         => ChapterConversationDtoSet()
-            .Where(x => x.Conversation.ChapterId == chapterId && 
+            .Where(x => x.Conversation.ChapterId == chapterId &&
                 x.LastMessage.ReadByChapter == readByChapter)
             .DeferredMultiple();
 
-    public IDeferredQueryMultiple<ChapterConversationDto> GetDtosByMemberId(Guid memberId) 
+    public IDeferredQueryMultiple<ChapterConversationDto> GetDtosByMemberId(Guid memberId)
         => ChapterConversationDtoSet()
             .Where(x => x.Conversation.MemberId == memberId)
             .DeferredMultiple();
-        
 
-    public IDeferredQueryMultiple<ChapterConversationDto> GetDtosByMemberId(Guid memberId, Guid chapterId) 
+
+    public IDeferredQueryMultiple<ChapterConversationDto> GetDtosByMemberId(Guid memberId, Guid chapterId)
         => ChapterConversationDtoSet()
             .Where(x => x.Conversation.ChapterId == chapterId && x.Conversation.MemberId == memberId)
             .DeferredMultiple();

@@ -11,5 +11,5 @@ public class ChapterPropertyAdminPageViewModel
 
     public required IReadOnlyCollection<ChapterPropertyOption> Options { get; init; }
 
-    public required ChapterProperty Property { get; init; }    
+    public required ChapterProperty Property { get; init; }
 }

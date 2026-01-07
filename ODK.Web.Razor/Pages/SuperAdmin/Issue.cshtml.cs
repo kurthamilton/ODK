@@ -4,7 +4,7 @@ namespace ODK.Web.Razor.Pages.SuperAdmin;
 
 public class IssueModel : SuperAdminPageModel
 {
-    public IssueModel(IRequestCache requestCache) 
+    public IssueModel(IRequestCache requestCache)
         : base(requestCache)
     {
     }

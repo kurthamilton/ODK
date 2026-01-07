@@ -11,7 +11,7 @@ public class MemberServiceRequest : ServiceRequest
         PlatformType platform)
         : base(httpRequestContext, platform)
     {
-        CurrentMemberId = currentMemberId;        
+        CurrentMemberId = currentMemberId;
     }
 
     public MemberServiceRequest(
@@ -21,5 +21,5 @@ public class MemberServiceRequest : ServiceRequest
     {
     }
 
-    public Guid CurrentMemberId { get; }    
+    public Guid CurrentMemberId { get; }
 }

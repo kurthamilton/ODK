@@ -9,7 +9,7 @@ public class OdkClaimsUser
     private readonly List<string> _roles = [];
 
     public OdkClaimsUser(
-        Member member, 
+        Member member,
         IEnumerable<ChapterAdminMember> adminMembers)
     {
         MemberId = member.Id;
@@ -36,7 +36,7 @@ public class OdkClaimsUser
         if (claimDictionary.TryGetValue(ClaimTypes.NameIdentifier, out var memberIdClaims) &&
             Guid.TryParse(memberIdClaims.First().Value, out var memberId))
         {
-            
+
             MemberId = memberId;
         }
 

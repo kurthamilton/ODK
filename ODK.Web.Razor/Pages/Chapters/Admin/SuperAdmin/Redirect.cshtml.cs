@@ -9,7 +9,7 @@ public class RedirectModel : ChapterSuperAdminPageModel
 {
     private readonly IChapterAdminService _chapterAdminService;
 
-    public RedirectModel(IRequestCache requestCache, IChapterAdminService chapterAdminService) 
+    public RedirectModel(IRequestCache requestCache, IChapterAdminService chapterAdminService)
         : base(requestCache)
     {
         _chapterAdminService = chapterAdminService;

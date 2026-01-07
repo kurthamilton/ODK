@@ -15,7 +15,7 @@ public class TopicAdminService : OdkAdminServiceBase, ITopicAdminService
 
     public TopicAdminService(
         IUnitOfWork unitOfWork,
-        IMemberEmailService memberEmailService) 
+        IMemberEmailService memberEmailService)
         : base(unitOfWork)
     {
         _memberEmailService = memberEmailService;
@@ -65,10 +65,10 @@ public class TopicAdminService : OdkAdminServiceBase, ITopicAdminService
             .Select(x => x.NewTopicId)
             .ToArray();
 
-        var approvedNewMemberTopicIds = approved.Members            
+        var approvedNewMemberTopicIds = approved.Members
             .Select(x => x.NewTopicId)
             .Where(x => rejectedNewMemberTopicIds.All(y => y != x))
-            .ToArray();        
+            .ToArray();
 
         var newMemberTopicIds = approvedNewMemberTopicIds
             .Concat(rejectedNewMemberTopicIds)
@@ -148,7 +148,7 @@ public class TopicAdminService : OdkAdminServiceBase, ITopicAdminService
                 _unitOfWork.TopicRepository.Add(topic);
 
                 topicDictionary[topicGroup.Name].Add(topic.Name, topic);
-            }            
+            }
 
             _unitOfWork.ChapterTopicRepository.Add(new ChapterTopic
             {
@@ -245,11 +245,11 @@ public class TopicAdminService : OdkAdminServiceBase, ITopicAdminService
 
         await _memberEmailService.SendTopicApprovedEmails(
             request,
-            approvedMemberTopics.Cast<INewTopic>().Concat(approvedChapterTopics).ToArray(), 
+            approvedMemberTopics.Cast<INewTopic>().Concat(approvedChapterTopics).ToArray(),
             members);
         await _memberEmailService.SendTopicRejectedEmails(
             request,
-            rejectedMemberTopics.Cast<INewTopic>().Concat(rejectedChapterTopics).ToArray(), 
+            rejectedMemberTopics.Cast<INewTopic>().Concat(rejectedChapterTopics).ToArray(),
             members);
     }
 

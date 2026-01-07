@@ -2,6 +2,7 @@
 using Z.EntityFramework.Plus;
 
 namespace ODK.Data.EntityFramework.Deferred;
+
 public class DeferredQuerySingleOrDefault<T> : IDeferredQuerySingleOrDefault<T> where T : class
 {
     private readonly T? _cached = null;

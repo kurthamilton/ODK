@@ -12,5 +12,5 @@ public class GoogleMapViewModel
 
     public string? QuerySource { get; init; }
 
-    public int? Zoom {  get; init; }
+    public int? Zoom { get; init; }
 }

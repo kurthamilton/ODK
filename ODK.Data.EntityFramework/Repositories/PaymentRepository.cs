@@ -65,10 +65,10 @@ public class PaymentRepository : ReadWriteRepositoryBase<Payment>, IPaymentRepos
             from dto in DtoQuery()
             from member in Set<Member>()
                 .Where(x => x.Id == dto.Payment.MemberId)
-            where 
+            where
                 dto.Payment.ChapterId == chapterId &&
                 dto.Payment.PaidUtc != null &&
-                dto.PaymentReconciliation == null && 
+                dto.PaymentReconciliation == null &&
                 !dto.Payment.ExemptFromReconciliation
             select new PaymentMemberDto
             {
@@ -77,7 +77,7 @@ public class PaymentRepository : ReadWriteRepositoryBase<Payment>, IPaymentRepos
                 Payment = dto.Payment,
                 PaymentReconciliation = null
             };
-        
+
         return query.DeferredMultiple();
     }
 

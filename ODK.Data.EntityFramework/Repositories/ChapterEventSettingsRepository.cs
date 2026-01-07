@@ -10,7 +10,7 @@ public class ChapterEventSettingsRepository : CachingWriteRepositoryBase<Chapter
 {
     private static readonly EntityCache<Guid, ChapterEventSettings> _cache = new EntityCache<Guid, ChapterEventSettings>(x => x.ChapterId);
 
-    public ChapterEventSettingsRepository(OdkContext context) 
+    public ChapterEventSettingsRepository(OdkContext context)
         : base(context, _cache)
     {
     }

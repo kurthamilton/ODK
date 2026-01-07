@@ -7,7 +7,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class EventCommentRepository : ReadWriteRepositoryBase<EventComment>, IEventCommentRepository
 {
-    public EventCommentRepository(OdkContext context) 
+    public EventCommentRepository(OdkContext context)
         : base(context)
     {
     }

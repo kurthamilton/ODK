@@ -21,6 +21,6 @@ public abstract class SuperAdminPageModel : OdkPageModel
         if (member?.SuperAdmin != true)
         {
             throw new OdkNotAuthorizedException();
-        }        
+        }
     }
 }

@@ -69,17 +69,17 @@ public class IssueAdminService : OdkAdminServiceBase, IIssueAdminService
         };
 
         _unitOfWork.IssueMessageRepository.Add(issueMessage);
-        await _unitOfWork.SaveChangesAsync();        
+        await _unitOfWork.SaveChangesAsync();
 
         var (member, siteEmailSettings) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(issue.MemberId),
             x => x.SiteEmailSettingsRepository.Get(platform));
 
         await _memberEmailService.SendIssueReply(
-            request, 
-            issue, 
-            issueMessage, 
-            member, 
+            request,
+            issue,
+            issueMessage,
+            member,
             siteEmailSettings);
 
         return ServiceResult.Successful();

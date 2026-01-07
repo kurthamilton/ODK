@@ -13,10 +13,10 @@ public interface ISettingsService
 
     Task<ServiceResult> CreatePaymentSettings(
         Guid currentMemberId,
-        PaymentProviderType provider, 
-        string name, 
-        string publicKey, 
-        string secretKey, 
+        PaymentProviderType provider,
+        string name,
+        string publicKey,
+        string secretKey,
         decimal commission,
         bool enabled);
 
@@ -38,19 +38,19 @@ public interface ISettingsService
 
     Task<ServiceResult> UpdateEmailSettings(
         MemberServiceRequest request,
-        string fromEmailAddress, 
-        string fromEmailName, 
+        string fromEmailAddress,
+        string fromEmailName,
         string emailTitle,
         string contactEmailAddress);
 
     Task<ServiceResult> UpdateInstagramSettings(Guid currentMemberId, string scraperUserAgent);
 
     Task<ServiceResult> UpdatePaymentSettings(
-        Guid currentMemberId, 
+        Guid currentMemberId,
         Guid id,
-        string name, 
-        string publicKey, 
-        string secretKey, 
+        string name,
+        string publicKey,
+        string secretKey,
         decimal commission,
         bool enabled);
 }

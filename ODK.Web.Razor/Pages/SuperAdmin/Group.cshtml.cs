@@ -3,7 +3,6 @@ using ODK.Services;
 using ODK.Services.Caching;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.ViewModels;
-using ODK.Services.Settings;
 using ODK.Web.Common.Feedback;
 
 namespace ODK.Web.Razor.Pages.SuperAdmin;
@@ -14,13 +13,13 @@ public class GroupModel : SuperAdminPageModel
 
     public GroupModel(
         IRequestCache requestCache,
-        IChapterAdminService chapterAdminService) 
+        IChapterAdminService chapterAdminService)
         : base(requestCache)
     {
         _chapterAdminService = chapterAdminService;
     }
 
-    public MemberChapterServiceRequest AdminServiceRequest 
+    public MemberChapterServiceRequest AdminServiceRequest
         => new MemberChapterServiceRequest(ChapterId, MemberServiceRequest);
 
     public Guid ChapterId { get; private set; }

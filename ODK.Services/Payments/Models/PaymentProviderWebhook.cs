@@ -16,7 +16,7 @@ public class PaymentProviderWebhook
 
     public required string? PaymentId { get; init; }
 
-    public required PaymentProviderType PaymentProviderType { get; init; }    
+    public required PaymentProviderType PaymentProviderType { get; init; }
 
     public required string? SubscriptionId { get; init; }
 

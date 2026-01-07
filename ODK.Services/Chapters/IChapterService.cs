@@ -1,5 +1,4 @@
 ﻿using ODK.Core.Chapters;
-using ODK.Core.Payments;
 using ODK.Core.Platforms;
 using ODK.Services.Chapters.ViewModels;
 using ODK.Services.Members.ViewModels;
@@ -7,7 +6,7 @@ using ODK.Services.Members.ViewModels;
 namespace ODK.Services.Chapters;
 
 public interface IChapterService
-{    
+{
     Task<Chapter> GetChapterBySlug(string slug);
 
     Task<Chapter> GetChapterById(Guid chapterId);

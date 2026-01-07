@@ -11,7 +11,7 @@ public class VenueCreateModel : AdminPageModel
 {
     private readonly IVenueAdminService _venueAdminService;
 
-    public VenueCreateModel(IRequestCache requestCache, IVenueAdminService venueAdminService) 
+    public VenueCreateModel(IRequestCache requestCache, IVenueAdminService venueAdminService)
         : base(requestCache)
     {
         _venueAdminService = venueAdminService;

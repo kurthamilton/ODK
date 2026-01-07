@@ -6,7 +6,7 @@ namespace ODK.Services.Chapters.ViewModels;
 
 public class GroupPageViewModel
 {
-    public required Chapter Chapter { get; init; }    
+    public required Chapter Chapter { get; init; }
 
     public required Member? CurrentMember { get; init; }
 
@@ -18,7 +18,7 @@ public class GroupPageViewModel
 
     public required bool IsMember { get; init; }
 
-    public required MemberSiteSubscription? OwnerSubscription { get; init; }    
+    public required MemberSiteSubscription? OwnerSubscription { get; init; }
 
     public required PlatformType Platform { get; init; }
 

@@ -5,10 +5,10 @@ using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework.Repositories;
 
-public class QueuedEmailRecipientRepository : ReadWriteRepositoryBase<QueuedEmailRecipient>, 
+public class QueuedEmailRecipientRepository : ReadWriteRepositoryBase<QueuedEmailRecipient>,
     IQueuedEmailRecipientRepository
 {
-    public QueuedEmailRecipientRepository(OdkContext context) 
+    public QueuedEmailRecipientRepository(OdkContext context)
         : base(context)
     {
     }

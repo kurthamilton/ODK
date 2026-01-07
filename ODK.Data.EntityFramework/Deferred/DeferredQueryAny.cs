@@ -2,6 +2,7 @@
 using Z.EntityFramework.Plus;
 
 namespace ODK.Data.EntityFramework.Deferred;
+
 public class DeferredQueryAny<T> : IDeferredQuerySingle<bool> where T : class
 {
     private readonly QueryFutureValue<bool> _query;

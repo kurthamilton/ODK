@@ -8,5 +8,5 @@ public class ReconciliationFormViewModel
 
     [Required]
     [Display(Name = "Payment reference")]
-    public required string PaymentReference { get; init; }    
+    public required string PaymentReference { get; init; }
 }

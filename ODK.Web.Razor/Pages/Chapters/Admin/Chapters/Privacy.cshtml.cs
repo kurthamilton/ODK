@@ -4,7 +4,7 @@ namespace ODK.Web.Razor.Pages.Chapters.Admin.Chapters;
 
 public class PrivacyModel : AdminPageModel
 {
-    public PrivacyModel(IRequestCache requestCache) 
+    public PrivacyModel(IRequestCache requestCache)
         : base(requestCache)
     {
     }

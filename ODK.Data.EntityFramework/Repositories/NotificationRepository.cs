@@ -29,7 +29,7 @@ public class NotificationRepository : ReadWriteRepositoryBase<Notification>, INo
 
     public IDeferredQueryMultiple<Notification> GetUnreadByChapterId(Guid chapterId, NotificationType type, Guid entityId)
     {
-        var query = 
+        var query =
             from notification in Set()
             from member in Set<Member>().InChapter(chapterId)
             where notification.MemberId == member.Id
@@ -41,8 +41,8 @@ public class NotificationRepository : ReadWriteRepositoryBase<Notification>, INo
     }
 
     public IDeferredQueryMultiple<Notification> GetUnreadByMemberId(Guid memberId) => Set()
-        .Where(x => 
-            x.MemberId == memberId && 
+        .Where(x =>
+            x.MemberId == memberId &&
             x.ReadUtc == null &&
             (x.ExpiresUtc == null || x.ExpiresUtc > DateTime.UtcNow))
         .DeferredMultiple();

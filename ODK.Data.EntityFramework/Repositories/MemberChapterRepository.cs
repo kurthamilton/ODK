@@ -5,7 +5,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class MemberChapterRepository : WriteRepositoryBase<MemberChapter>, IMemberChapterRepository
 {
-    public MemberChapterRepository(OdkContext context) 
+    public MemberChapterRepository(OdkContext context)
         : base(context)
     {
     }

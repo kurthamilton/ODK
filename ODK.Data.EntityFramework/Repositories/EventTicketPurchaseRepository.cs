@@ -8,7 +8,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class EventTicketPurchaseRepository : ReadWriteRepositoryBase<EventTicketPurchase>, IEventTicketPurchaseRepository
 {
-    public EventTicketPurchaseRepository(OdkContext context) 
+    public EventTicketPurchaseRepository(OdkContext context)
         : base(context)
     {
     }

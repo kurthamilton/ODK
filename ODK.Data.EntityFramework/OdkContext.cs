@@ -2,6 +2,7 @@
 using ODK.Data.EntityFramework.Interceptors;
 
 namespace ODK.Data.EntityFramework;
+
 public class OdkContext : DbContext
 {
     private readonly OdkContextSettings _settings;

@@ -18,7 +18,7 @@ public class StripePaymentProvider : IPaymentProvider
     private readonly ILoggingService _loggingService;
     private readonly IPaymentSettings _paymentSettings;
     private readonly StripePaymentProviderSettings _settings;
-    
+
     public StripePaymentProvider(
         IPaymentSettings paymentSettings,
         ILoggingService loggingService,
@@ -51,7 +51,7 @@ public class StripePaymentProvider : IPaymentProvider
 
         await service.UpdateAsync(externalId, new PriceUpdateOptions
         {
-            Active = true            
+            Active = true
         });
 
         return ServiceResult.Successful();
@@ -62,7 +62,7 @@ public class StripePaymentProvider : IPaymentProvider
         await _loggingService.Info($"Cancelling Stripe subscription '{externalId}'");
 
         var service = CreateSubscriptionService();
-        
+
         try
         {
             await service.CancelAsync(externalId);
@@ -81,7 +81,7 @@ public class StripePaymentProvider : IPaymentProvider
 
         await _loggingService.Info($"Creating connected stripe account for '{emailAddress}'");
 
-        var service = CreateAccountService();        
+        var service = CreateAccountService();
 
         try
         {
@@ -116,8 +116,8 @@ public class StripePaymentProvider : IPaymentProvider
                         Requested = true
                     }
                 }
-            });                        
-            
+            });
+
             return new RemoteAccount
             {
                 CardPaymentsEnabled = false,
@@ -173,7 +173,7 @@ public class StripePaymentProvider : IPaymentProvider
                 {
                     SiteSubscriptionFrequency.Monthly => "month",
                     SiteSubscriptionFrequency.Yearly => "year",
-                    _ => ""
+                    _ => string.Empty
                 },
                 IntervalCount = subscriptionPlan.Frequency switch
                 {
@@ -186,17 +186,17 @@ public class StripePaymentProvider : IPaymentProvider
         };
 
         var result = await service.CreateAsync(options);
-        
+
         return result.Id;
     }
 
     public async Task<ServiceResult> DeactivateSubscriptionPlan(string externalId)
     {
         var service = CreatePriceService();
-        
+
         await service.UpdateAsync(externalId, new PriceUpdateOptions
         {
-            Active = false            
+            Active = false
         });
 
         return ServiceResult.Successful();
@@ -248,7 +248,7 @@ public class StripePaymentProvider : IPaymentProvider
                 SessionId = session.Id,
                 SubscriptionId = session.SubscriptionId
             };
-        }     
+        }
         catch
         {
             return null;
@@ -265,7 +265,7 @@ public class StripePaymentProvider : IPaymentProvider
             GetAllPaymentIntents(new PaymentIntentListOptions
             {
                 Expand = ["data.latest_charge"]
-            }), 
+            }),
             GetAllSubscriptions());
 
         var paymentIntentDictionary = paymentIntents
@@ -297,7 +297,7 @@ public class StripePaymentProvider : IPaymentProvider
                     }
                 }
 
-                var subscriptionId = invoice.Parent.SubscriptionDetails?.SubscriptionId;                
+                var subscriptionId = invoice.Parent.SubscriptionDetails?.SubscriptionId;
 
                 if (!string.IsNullOrEmpty(subscriptionId))
                 {
@@ -314,7 +314,7 @@ public class StripePaymentProvider : IPaymentProvider
                     CustomerEmail = invoice.CustomerEmail,
                     PaymentId = paymentIntentId,
                     SubscriptionId = invoice.Parent.SubscriptionDetails?.SubscriptionId
-                };                
+                };
 
                 remotePayments.Add(remotePayment);
             }
@@ -354,21 +354,21 @@ public class StripePaymentProvider : IPaymentProvider
     public async Task<ExternalSubscription?> GetSubscription(string externalId)
     {
         var service = CreateSubscriptionService();
-        
+
         try
         {
             var subscription = await service.GetAsync(externalId);
-            
+
             return new ExternalSubscription
             {
                 CancelDate = subscription.CancelAt,
                 ExternalId = subscription.Id,
-                ExternalSubscriptionPlanId = "",
+                ExternalSubscriptionPlanId = string.Empty,
                 // TODO: get last/next payment date
                 LastPaymentDate = null,
                 NextBillingDate = null,
                 Status = subscription.Status == "active" && subscription.CancelAt == null
-                    ? ExternalSubscriptionStatus.Active 
+                    ? ExternalSubscriptionStatus.Active
                     : ExternalSubscriptionStatus.Cancelled
             };
         }
@@ -417,7 +417,7 @@ public class StripePaymentProvider : IPaymentProvider
         }
     }
 
-    public async Task<RemotePaymentResult> MakePayment(string currencyCode, decimal amount, 
+    public async Task<RemotePaymentResult> MakePayment(string currencyCode, decimal amount,
         string cardToken, string description, Guid memberId, string memberName)
     {
         var service = CreatePaymentIntentService();
@@ -444,31 +444,31 @@ public class StripePaymentProvider : IPaymentProvider
                     }
 
                 }
-            },            
+            },
             Metadata = new Dictionary<string, string>
             {
                 { "member_id", memberId.ToString() }
             },
             TransferData = !string.IsNullOrEmpty(_connectedAccountId)
-                ? new PaymentIntentTransferDataOptions { Destination = _connectedAccountId } 
+                ? new PaymentIntentTransferDataOptions { Destination = _connectedAccountId }
                 : null,
         });
 
         intent = await service.ConfirmAsync(intent.Id);
         return RemotePaymentResult.Successful(intent.Id);
-    }        
+    }
 
-    public Task<string?> SendPayment(string currencyCode, decimal amount, 
+    public Task<string?> SendPayment(string currencyCode, decimal amount,
         string emailAddress, string paymentId, string note)
     {
         throw new NotImplementedException();
     }
 
     public async Task<ExternalCheckoutSession> StartCheckout(
-        ServiceRequest request, 
+        ServiceRequest request,
         string emailAddress,
-        ExternalSubscriptionPlan subscriptionPlan, 
-        string returnPath, 
+        ExternalSubscriptionPlan subscriptionPlan,
+        string returnPath,
         PaymentMetadataModel metadata)
     {
         var returnUrl = UrlUtils.Url(
@@ -507,7 +507,7 @@ public class StripePaymentProvider : IPaymentProvider
             } : null,
             SubscriptionData = subscriptionPlan.Recurring ? new SessionSubscriptionDataOptions
             {
-                ApplicationFeePercent = !string.IsNullOrEmpty(_connectedAccountId) 
+                ApplicationFeePercent = !string.IsNullOrEmpty(_connectedAccountId)
                     ? _settings.ConnectedAccountCommissionPercentage
                     : null,
                 Metadata = metadataDictionary,
@@ -516,7 +516,7 @@ public class StripePaymentProvider : IPaymentProvider
                     : null
             } : null
         });
-        
+
         return new ExternalCheckoutSession
         {
             Amount = session.AmountTotal ?? 0,
@@ -579,7 +579,7 @@ public class StripePaymentProvider : IPaymentProvider
     private async Task<IReadOnlyCollection<PaymentIntent>> GetAllPaymentIntents(
         PaymentIntentListOptions? options = null)
     {
-        var service = CreatePaymentIntentService();        
+        var service = CreatePaymentIntentService();
         return await service.ListAutoPagingAsync(options).All();
     }
 

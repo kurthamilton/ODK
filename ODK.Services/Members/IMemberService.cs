@@ -1,6 +1,5 @@
 ﻿using ODK.Core.Countries;
 using ODK.Core.Members;
-using ODK.Core.Payments;
 using ODK.Services.Members.Models;
 using ODK.Services.Members.ViewModels;
 using ODK.Services.Topics.Models;
@@ -21,7 +20,7 @@ public interface IMemberService
 
     Task<ServiceResult<(Member Member, MemberChapter MemberChapter)>> DeleteMemberChapterData(Guid memberId, Guid chapterId);
 
-    Task<Member?> FindMemberByEmailAddress(string emailAddress);    
+    Task<Member?> FindMemberByEmailAddress(string emailAddress);
 
     Task<Member> GetMember(MemberServiceRequest request);
 
@@ -29,7 +28,7 @@ public interface IMemberService
 
     Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid memberId);
 
-    Task<MemberLocation?> GetMemberLocation(Guid memberId);    
+    Task<MemberLocation?> GetMemberLocation(Guid memberId);
 
     Task<MemberPreferences?> GetMemberPreferences(Guid memberId);
 
@@ -43,10 +42,10 @@ public interface IMemberService
 
     Task<ServiceResult> RequestMemberEmailAddressUpdate(MemberServiceRequest request, string newEmailAddress);
 
-    Task RotateMemberImage(Guid memberId);    
+    Task RotateMemberImage(Guid memberId);
 
     Task<ChapterSubscriptionCheckoutStartedViewModel> StartChapterSubscriptionCheckoutSession(
-        MemberChapterServiceRequest request, Guid chapterSubscriptionId, string returnPath);    
+        MemberChapterServiceRequest request, Guid chapterSubscriptionId, string returnPath);
 
     Task<ServiceResult> UpdateMemberEmailPreferences(Guid id, IEnumerable<MemberEmailPreferenceType> disabledTypes);
 
@@ -54,14 +53,14 @@ public interface IMemberService
 
     Task<ServiceResult> UpdateMemberCurrency(Guid id, Guid currencyId);
 
-    Task<ServiceResult> UpdateMemberImage(Guid id, byte[] imageData);    
+    Task<ServiceResult> UpdateMemberImage(Guid id, byte[] imageData);
 
-    Task<ServiceResult> UpdateMemberLocation(Guid id, LatLong? location, string? name, Guid? distanceUnitId);    
+    Task<ServiceResult> UpdateMemberLocation(Guid id, LatLong? location, string? name, Guid? distanceUnitId);
 
     Task<ServiceResult> UpdateMemberSiteProfile(MemberServiceRequest request, UpdateMemberSiteProfile model);
 
     Task<ServiceResult> UpdateMemberTopics(
-        MemberServiceRequest request, 
+        MemberServiceRequest request,
         IReadOnlyCollection<Guid> topicIds,
         IReadOnlyCollection<NewTopicModel> newTopics);
 }

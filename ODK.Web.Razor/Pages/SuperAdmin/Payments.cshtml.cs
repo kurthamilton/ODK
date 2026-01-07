@@ -4,7 +4,7 @@ namespace ODK.Web.Razor.Pages.SuperAdmin;
 
 public class PaymentsModel : SuperAdminPageModel
 {
-    public PaymentsModel(IRequestCache requestCache) 
+    public PaymentsModel(IRequestCache requestCache)
         : base(requestCache)
     {
     }

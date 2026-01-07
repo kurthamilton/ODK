@@ -8,11 +8,11 @@ public class SitemapModel : OdkPageModel
 {
     private readonly Lazy<string> _baseUrl;
     private readonly IChapterService _chapterService;
-    
+
     public SitemapModel(IChapterService chapterService)
     {
         _baseUrl = new(() => HttpRequestContext.BaseUrl);
-        _chapterService = chapterService;        
+        _chapterService = chapterService;
     }
 
     public string BaseUrl => _baseUrl.Value;

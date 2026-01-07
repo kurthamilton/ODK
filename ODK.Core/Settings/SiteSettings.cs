@@ -1,7 +1,7 @@
 ﻿namespace ODK.Core.Settings;
 
 public class SiteSettings : IVersioned, IDatabaseEntity
-{    
+{
     public int DefaultTrialPeriodMonths { get; set; }
 
     public string GoogleMapsApiKey { get; set; } = string.Empty;

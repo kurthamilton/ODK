@@ -28,7 +28,7 @@ public class StripeWebhookParser : IStripeWebhookParser
                 ? _settings.WebhookSecretV2
                 : _settings.WebhookSecretV1;
 
-            var stripeEvent = string.IsNullOrEmpty(secret) 
+            var stripeEvent = string.IsNullOrEmpty(secret)
                 ? EventUtility.ParseEvent(json)
                 : EventUtility.ConstructEvent(json, signature, secret);
 
@@ -38,7 +38,7 @@ public class StripeWebhookParser : IStripeWebhookParser
                 EventTypes.InvoicePaymentSucceeded => ToInvoicePaymentSucceeded(stripeEvent),
                 EventTypes.PaymentIntentSucceeded => ToPaymentIntentSucceeded(stripeEvent),
                 _ => null
-            };            
+            };
         }
         catch (Exception ex)
         {
@@ -50,11 +50,11 @@ public class StripeWebhookParser : IStripeWebhookParser
     private static PaymentProviderWebhook ToCheckoutSessionCompleted(Event stripeEvent)
     {
         var session = (Session)stripeEvent.Data.Object;
-        
+
         return new PaymentProviderWebhook
         {
-            Amount = session.AmountTotal > 0 
-                ? (decimal)(session.AmountTotal.Value / 100.0) 
+            Amount = session.AmountTotal > 0
+                ? (decimal)(session.AmountTotal.Value / 100.0)
                 : 0,
             Complete = session.PaymentStatus == "paid",
             Id = session.Id,

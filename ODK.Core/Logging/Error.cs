@@ -8,7 +8,7 @@ public class Error : IDatabaseEntity
 
     public string ExceptionType { get; set; } = string.Empty;
 
-    public Guid Id { get; set; } 
+    public Guid Id { get; set; }
 
     public static Error FromException(Exception exception)
     {

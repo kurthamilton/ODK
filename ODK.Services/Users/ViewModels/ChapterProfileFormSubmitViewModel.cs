@@ -3,7 +3,7 @@
 namespace ODK.Services.Users.ViewModels;
 
 public class ChapterProfileFormSubmitViewModel : ProfileFormSubmitViewModel
-{    
+{
     public List<ChapterProfileFormPropertyViewModel> Properties { get; set; } = new();
 
     [Required]

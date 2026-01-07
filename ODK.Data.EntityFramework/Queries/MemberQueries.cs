@@ -4,9 +4,9 @@ namespace ODK.Data.EntityFramework.Queries;
 
 internal static class MemberQueries
 {
-    internal static IQueryable<Member> Current(this IQueryable<Member> query, 
+    internal static IQueryable<Member> Current(this IQueryable<Member> query,
         Guid chapterId)
-    {        
+    {
         query =
             from member in query
             where member.Activated

@@ -4,9 +4,10 @@ using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework.Repositories;
+
 public class EventResponseRepository : WriteRepositoryBase<EventResponse>, IEventResponseRepository
 {
-    public EventResponseRepository(OdkContext context) 
+    public EventResponseRepository(OdkContext context)
         : base(context)
     {
     }

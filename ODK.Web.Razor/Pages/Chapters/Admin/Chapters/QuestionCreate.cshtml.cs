@@ -11,7 +11,7 @@ public class QuestionCreateModel : AdminPageModel
 {
     private readonly IChapterAdminService _chapterAdminService;
 
-    public QuestionCreateModel(IRequestCache requestCache, IChapterAdminService chapterAdminService) 
+    public QuestionCreateModel(IRequestCache requestCache, IChapterAdminService chapterAdminService)
         : base(requestCache)
     {
         _chapterAdminService = chapterAdminService;
@@ -24,7 +24,7 @@ public class QuestionCreateModel : AdminPageModel
     public async Task<IActionResult> OnPostAsync(ChapterQuestionFormViewModel viewModel)
     {
         var serviceRequest = await GetAdminServiceRequest();
-        var result = await _chapterAdminService.CreateChapterQuestion(serviceRequest, 
+        var result = await _chapterAdminService.CreateChapterQuestion(serviceRequest,
             new CreateChapterQuestion
             {
                 Answer = viewModel.Answer ?? "",

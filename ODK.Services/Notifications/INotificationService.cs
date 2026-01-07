@@ -10,7 +10,7 @@ namespace ODK.Services.Notifications;
 public interface INotificationService
 {
     void AddNewChapterContactMessageNotifications(
-        ChapterContactMessage message,        
+        ChapterContactMessage message,
         IReadOnlyCollection<ChapterAdminMember> adminMembers,
         IReadOnlyCollection<MemberNotificationSettings> settings);
 
@@ -22,7 +22,7 @@ public interface INotificationService
     void AddNewConversationOwnerMessageNotifications(
         ChapterConversation conversation,
         IReadOnlyCollection<ChapterAdminMember> adminMembers,
-        IReadOnlyCollection<MemberNotificationSettings> settings);    
+        IReadOnlyCollection<MemberNotificationSettings> settings);
 
     void AddNewEventNotifications(
         Chapter chapter,

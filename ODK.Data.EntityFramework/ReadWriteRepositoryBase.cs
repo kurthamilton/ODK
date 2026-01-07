@@ -4,9 +4,10 @@ using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework;
+
 public abstract class ReadWriteRepositoryBase<T> : WriteRepositoryBase<T>, IReadWriteRepository<T> where T : class, IDatabaseEntity
 {
-    protected ReadWriteRepositoryBase(OdkContext context) 
+    protected ReadWriteRepositoryBase(OdkContext context)
         : base(context)
     {
     }
@@ -14,7 +15,7 @@ public abstract class ReadWriteRepositoryBase<T> : WriteRepositoryBase<T>, IRead
     public override void Add(T entity)
     {
         SetId(entity);
-        
+
         base.Add(entity);
     }
 

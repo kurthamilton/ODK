@@ -82,7 +82,7 @@ public static class DependencyConfig
     }
 
     private static void ConfigureCore(IServiceCollection services)
-    {        
+    {
         services.AddSingleton<IHtmlSanitizer>(new HtmlSanitizer());
         services.AddScoped<IUrlProviderFactory, UrlProviderFactory>();
     }
@@ -227,7 +227,7 @@ public static class DependencyConfig
         {
             PasswordResetTokenLifetimeMinutes = auth.PasswordResetTokenLifetimeMinutes,
         });
-        
+
         services.AddSingleton(new MediaFileProviderSettings
         {
             RootMediaPath = paths.MediaRoot,

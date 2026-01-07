@@ -10,7 +10,7 @@ public class ChapterMembershipSettings : IChapterEntity
 
     public int MembershipDisabledAfterDaysExpired { get; set; }
 
-    public int MembershipExpiringWarningDays { get; set; }    
+    public int MembershipExpiringWarningDays { get; set; }
 
     public int TrialPeriodMonths { get; set; }
 }

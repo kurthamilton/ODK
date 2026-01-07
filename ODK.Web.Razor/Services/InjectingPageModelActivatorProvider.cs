@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.RazorPages;
-using System.Reflection;
+﻿using System.Reflection;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace ODK.Web.Razor.Services;
 
@@ -60,7 +60,7 @@ public class InjectingPageModelActivatorProvider<T> : IPageModelActivatorProvide
             if (_defaultProvider == null)
             {
                 throw new InvalidOperationException("Default IPageModelActivatorProvider not found.");
-            }                
+            }
         }
     }
 

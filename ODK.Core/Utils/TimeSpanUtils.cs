@@ -9,7 +9,7 @@ public class TimeSpanUtils
         var format = includeSeconds
             ? @"hh\:mm\:ss"
             : @"hh\:mm";
-        return value != null 
+        return value != null
             ? TimeSpan.ParseExact(value, format, CultureInfo.InvariantCulture)
             : null;
     }

@@ -12,7 +12,7 @@ public class PropertyEditModel : AdminPageModel
 {
     private readonly IChapterAdminService _chapterAdminService;
 
-    public PropertyEditModel(IRequestCache requestCache, IChapterAdminService chapterAdminService) 
+    public PropertyEditModel(IRequestCache requestCache, IChapterAdminService chapterAdminService)
         : base(requestCache)
     {
         _chapterAdminService = chapterAdminService;
@@ -22,7 +22,7 @@ public class PropertyEditModel : AdminPageModel
 
     public IActionResult OnGet(Guid id)
     {
-        PropertyId = id;    
+        PropertyId = id;
         return Page();
     }
 

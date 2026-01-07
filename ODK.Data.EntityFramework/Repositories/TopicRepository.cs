@@ -11,7 +11,7 @@ public class TopicRepository : CachingReadWriteRepositoryBase<Topic>, ITopicRepo
 {
     private static readonly EntityCache<Guid, Topic> _cache = new DatabaseEntityCache<Topic>();
 
-    public TopicRepository(OdkContext context) 
+    public TopicRepository(OdkContext context)
         : base(context, _cache)
     {
     }

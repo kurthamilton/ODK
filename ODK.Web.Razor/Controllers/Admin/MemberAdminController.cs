@@ -17,7 +17,7 @@ public class MemberAdminController : AdminControllerBase
     private readonly IMemberAdminService _memberAdminService;
 
     public MemberAdminController(
-        IMemberAdminService memberAdminService, 
+        IMemberAdminService memberAdminService,
         IChapterAdminService chapterAdminService,
         IRequestCache requestCache,
         IRequestStore requestStore)
@@ -55,7 +55,7 @@ public class MemberAdminController : AdminControllerBase
         }
 
         var result = await _memberAdminService.UpdateMemberImage(request, id, new UpdateMemberImage
-        { 
+        {
             ImageData = bytes
         });
         AddFeedback(result);
@@ -90,14 +90,14 @@ public class MemberAdminController : AdminControllerBase
     [HttpPost("{chapterName}/Admin/Members/{id:guid}/Visibility")]
     public async Task<IActionResult> SetMemberVisibility(string chapterName, Guid id, [FromForm] bool visible)
     {
-        var request = await GetAdminServiceRequest(chapterName); 
+        var request = await GetAdminServiceRequest(chapterName);
         await _memberAdminService.SetMemberVisibility(request, id, visible);
         AddFeedback("Member updated", FeedbackType.Success);
         return RedirectToReferrer();
     }
 
     [HttpPost("groups/{id:guid}/members/admins")]
-    public async Task<IActionResult> AddAdminMember(Guid id, 
+    public async Task<IActionResult> AddAdminMember(Guid id,
         [FromForm] AdminMemberAddFormViewModel viewModel)
     {
         var request = MemberChapterServiceRequest(id);
@@ -125,7 +125,7 @@ public class MemberAdminController : AdminControllerBase
     }
 
     [HttpPost("groups/{chapterId:guid}/members/email")]
-    public async Task<IActionResult> SendBulkEmail(Guid chapterId, 
+    public async Task<IActionResult> SendBulkEmail(Guid chapterId,
         [FromForm] SendMemberBulkEmailFormViewModel viewModel)
     {
         var request = MemberChapterServiceRequest(chapterId);

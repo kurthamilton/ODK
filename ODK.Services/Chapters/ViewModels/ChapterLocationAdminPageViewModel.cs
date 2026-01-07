@@ -12,5 +12,5 @@ public class ChapterLocationAdminPageViewModel
 
     public required ChapterLocation? Location { get; init; }
 
-    public required PlatformType Platform { get; init; }        
+    public required PlatformType Platform { get; init; }
 }

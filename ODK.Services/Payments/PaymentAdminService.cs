@@ -13,7 +13,7 @@ public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
 
     public PaymentAdminService(
         IUnitOfWork unitOfWork,
-        IPaymentProviderFactory paymentProviderFactory) 
+        IPaymentProviderFactory paymentProviderFactory)
         : base(unitOfWork)
     {
         _paymentProviderFactory = paymentProviderFactory;
@@ -71,7 +71,7 @@ public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
             x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.PaymentRepository.GetMemberDtosByChapterId(request.ChapterId),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId));
-        
+
         return new ChapterPaymentsViewModel
         {
             Chapter = chapter,
@@ -90,7 +90,7 @@ public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
             x => x.PaymentReconciliationRepository.GetByChapterId(request.ChapterId),
             x => x.PaymentRepository.GetMemberDtosPendingReconciliation(request.ChapterId),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId),
-            x => x.SitePaymentSettingsRepository.GetActive());        
+            x => x.SitePaymentSettingsRepository.GetActive());
 
         foreach (var pendingPayment in pendingReconciliations.Select(x => x.Payment))
         {
@@ -118,14 +118,14 @@ public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
             x => x.PaymentRepository.GetAll(),
             x => x.SitePaymentSettingsRepository.GetActive(),
             x => x.CurrencyRepository.GetAll());
-        
+
         var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(sitePaymentSettings);
 
         var theirPayments = await paymentProvider.GetAllPayments();
 
         var ourPaymentsDictionary = ourPayments
             .Where(x => !string.IsNullOrEmpty(x.ExternalId))
-            .ToDictionary(x => x.ExternalId ?? "");
+            .ToDictionary(x => x.ExternalId ?? string.Empty);
 
         var missingPayments = theirPayments
             .Where(x =>
@@ -143,7 +143,7 @@ public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
 
         var ourPaymentsDictionary2 = ourPayments2
             .Where(x => !string.IsNullOrEmpty(x.ExternalId))
-            .ToDictionary(x => x.ExternalId ?? "");
+            .ToDictionary(x => x.ExternalId ?? string.Empty);
 
         var missingPayments2 = theirPayments2
             .Where(x =>
@@ -170,7 +170,7 @@ public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
             .GetByExternalIds(externalIds)
             .Run();
         var memberSubscriptionRecordDictionary = memberSubscriptionRecords
-            .ToDictionary(x => x.ExternalId ?? "", StringComparer.OrdinalIgnoreCase);
+            .ToDictionary(x => x.ExternalId ?? string.Empty, StringComparer.OrdinalIgnoreCase);
 
         var currencyDictionary = currencies
             .ToDictionary(x => x.Code, StringComparer.OrdinalIgnoreCase);
@@ -181,12 +181,12 @@ public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
                 Amount = x.Amount,
                 Created = x.Created,
                 Currency = currencyDictionary[x.Currency],
-                Member = !string.IsNullOrEmpty(x.CustomerEmail) && memberDictionary.ContainsKey(x.CustomerEmail) 
-                    ? memberDictionary[x.CustomerEmail] 
+                Member = !string.IsNullOrEmpty(x.CustomerEmail) && memberDictionary.ContainsKey(x.CustomerEmail)
+                    ? memberDictionary[x.CustomerEmail]
                     : null,
                 MemberEmail = x.CustomerEmail,
                 MemberSubscriptionRecord = memberSubscriptionRecordDictionary.ContainsKey(x.PaymentId)
-                    ? memberSubscriptionRecordDictionary[x.PaymentId] 
+                    ? memberSubscriptionRecordDictionary[x.PaymentId]
                     : null,
                 PaymentId = x.PaymentId,
                 SubscriptionId = x.SubscriptionId

@@ -57,12 +57,12 @@ public class ScheduledTasksController : OdkControllerBase
 
         try
         {
-            await _eventAdminService.SendScheduledEmails(ServiceRequest);            
+            await _eventAdminService.SendScheduledEmails(ServiceRequest);
         }
         catch
         {
             // do nothing
-        }        
+        }
     }
 
     [HttpPost("instagram")]
@@ -99,7 +99,7 @@ public class ScheduledTasksController : OdkControllerBase
     {
         var header = Request.Headers.GetCommaSeparatedValues("X-API-KEY")
             .FirstOrDefault();
-        
+
         if (header == _settings.ApiKey)
         {
             return;

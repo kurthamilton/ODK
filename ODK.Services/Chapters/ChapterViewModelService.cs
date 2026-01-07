@@ -46,7 +46,7 @@ public class ChapterViewModelService : IChapterViewModelService
             .FirstOrDefault(x => string.Equals(x.Name, filter.TopicGroup, StringComparison.InvariantCultureIgnoreCase));
 
         var (chapters, distanceUnits, currentMember, preferences, adminMembers) = await _unitOfWork.RunAsync(
-            x => topicGroup != null 
+            x => topicGroup != null
                 ? x.ChapterRepository.GetByTopicGroupId(topicGroup.Id)
                 : x.ChapterRepository.GetAll(),
             x => x.DistanceUnitRepository.GetAll(),
@@ -62,7 +62,7 @@ public class ChapterViewModelService : IChapterViewModelService
 
         // TODO: search by location in the database
         var chapterLocations = await _unitOfWork.ChapterLocationRepository.GetByChapterIds(chapters.Select(x => x.Id));
-        
+
         distanceUnits = distanceUnits
             .OrderBy(x => x.Order)
             .ToArray();
@@ -77,11 +77,11 @@ public class ChapterViewModelService : IChapterViewModelService
             preferences ??= new MemberPreferences();
 
             preferences.DistanceUnitId = distanceUnit.Id;
-            
+
             if (preferences.MemberId == default)
             {
                 preferences.MemberId = currentMemberId.Value;
-                _unitOfWork.MemberPreferencesRepository.Add(preferences);                
+                _unitOfWork.MemberPreferencesRepository.Add(preferences);
             }
             else
             {
@@ -108,9 +108,9 @@ public class ChapterViewModelService : IChapterViewModelService
                 : null;
 
         var chaptersWithDistances = FilterChaptersByDistance(
-            chapters, 
-            chapterLocations, 
-            location?.LatLong, 
+            chapters,
+            chapterLocations,
+            location?.LatLong,
             new Distance { Unit = distanceUnit, Value = distance });
 
         var chapterIds = chapters
@@ -118,13 +118,13 @@ public class ChapterViewModelService : IChapterViewModelService
             .ToArray();
 
         var (texts, chapterTopics, chapterImageDtos) = await _unitOfWork.RunAsync(
-            x => chapterIds.Length > 0 
+            x => chapterIds.Length > 0
                 ? x.ChapterTextsRepository.GetByChapterIds(chapterIds)
                 : new DefaultDeferredQueryMultiple<ChapterTexts>(),
             x => chapterIds.Length > 0
                 ? x.ChapterTopicRepository.GetDtosByChapterIds(chapterIds)
                 : new DefaultDeferredQueryMultiple<ChapterTopicDto>(),
-            x => chapterIds.Length > 0 
+            x => chapterIds.Length > 0
                 ? x.ChapterImageRepository.GetDtosByChapterIds(chapterIds)
                 : new DefaultDeferredQueryMultiple<ChapterImageMetadata>());
 
@@ -307,7 +307,7 @@ public class ChapterViewModelService : IChapterViewModelService
         if (unread.Length > 0)
         {
             unread.ForEach(x => x.ReadByMember = true);
-            _unitOfWork.ChapterConversationMessageRepository.UpdateMany(unread);            
+            _unitOfWork.ChapterConversationMessageRepository.UpdateMany(unread);
         }
 
         if (notifications.Count > 0)
@@ -404,7 +404,7 @@ public class ChapterViewModelService : IChapterViewModelService
                 membershipSettings,
                 privacySettings),
             PastEventCount = pastEventCount,
-            Platform = platform          
+            Platform = platform
         };
     }
 
@@ -522,26 +522,26 @@ public class ChapterViewModelService : IChapterViewModelService
         OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
 
         var (
-            currentMember, 
-            memberSubscription, 
+            currentMember,
+            memberSubscription,
             ownerSubscription,
             membershipSettings,
             privacySettings,
-            adminMembers, 
-            memberCount, 
-            instagramPosts, 
-            links, 
-            upcomingEvents, 
-            recentEvents, 
+            adminMembers,
+            memberCount,
+            instagramPosts,
+            links,
+            upcomingEvents,
+            recentEvents,
             hasImage,
             hasProperties,
-            hasQuestions, 
+            hasQuestions,
             texts,
             chapterTopics
         ) = await _unitOfWork.RunAsync(
-            x => currentMemberId != null 
+            x => currentMemberId != null
                 ? x.MemberRepository.GetByIdOrDefault(currentMemberId.Value)
-                : new DefaultDeferredQuerySingleOrDefault<Member>(),            
+                : new DefaultDeferredQuerySingleOrDefault<Member>(),
             x => currentMemberId != null
                 ? x.MemberSubscriptionRepository.GetByMemberId(currentMemberId.Value, chapter.Id)
                 : new DefaultDeferredQuerySingleOrDefault<MemberSubscription>(),
@@ -623,7 +623,7 @@ public class ChapterViewModelService : IChapterViewModelService
             UpcomingEvents = upcomingEventViewModels
         };
     }
-    
+
     public async Task<GroupJoinPageViewModel> GetGroupJoinPage(ServiceRequest request, Guid? currentMemberId, string slug)
     {
         var platform = request.Platform;
@@ -632,14 +632,14 @@ public class ChapterViewModelService : IChapterViewModelService
         OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
 
         var (
-            currentMember, 
-            adminMembers, 
-            ownerSubscription, 
+            currentMember,
+            adminMembers,
+            ownerSubscription,
             hasProperties,
-            hasQuestions, 
-            properties, 
-            propertyOptions, 
-            texts, 
+            hasQuestions,
+            properties,
+            propertyOptions,
+            texts,
             membershipSettings) = await _unitOfWork.RunAsync(
             x => currentMemberId != null
                 ? x.MemberRepository.GetByIdOrDefault(currentMemberId.Value)
@@ -679,11 +679,11 @@ public class ChapterViewModelService : IChapterViewModelService
         OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
 
         var (
-            currentMember, 
-            adminMembers, 
+            currentMember,
+            adminMembers,
             ownerSubscription,
-            hasQuestions, 
-            chapterProperties, 
+            hasQuestions,
+            chapterProperties,
             chapterPropertyOptions,
             memberProperties
         ) = await _unitOfWork.RunAsync(
@@ -707,9 +707,9 @@ public class ChapterViewModelService : IChapterViewModelService
             IsMember = currentMember.IsMemberOf(chapter.Id) == true,
             MemberProperties = memberProperties,
             OwnerSubscription = ownerSubscription,
-            Platform = platform            
+            Platform = platform
         };
-    }    
+    }
 
     public async Task<GroupQuestionsPageViewModel> GetGroupQuestionsPage(
         ServiceRequest request, Guid? currentMemberId, string slug)
@@ -720,9 +720,9 @@ public class ChapterViewModelService : IChapterViewModelService
         OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
 
         var (
-            currentMember, 
-            adminMembers, 
-            ownerSubscription, 
+            currentMember,
+            adminMembers,
+            ownerSubscription,
             hasProperties,
             questions) = await _unitOfWork.RunAsync(
             x => currentMemberId != null
@@ -788,27 +788,27 @@ public class ChapterViewModelService : IChapterViewModelService
     }
 
     public async Task<ChapterHomePageViewModel> GetHomePage(ServiceRequest request, Guid? currentMemberId, string chapterName)
-    {        
+    {
         var platform = request.Platform;
 
         var chapter = await GetChapter(chapterName);
-        
+
         var today = chapter.TodayUtc();
 
         var (
-            currentMember, 
-            memberSubscription, 
+            currentMember,
+            memberSubscription,
             ownerSubscription,
-            membershipSettings, 
-            privacySettings, 
-            events, 
-            links, 
-            texts, 
-            instagramPosts, 
+            membershipSettings,
+            privacySettings,
+            events,
+            links,
+            texts,
+            instagramPosts,
             latestMembers,
             chapterTopics) = await _unitOfWork.RunAsync(
-            x => currentMemberId != null 
-                ? x.MemberRepository.GetByIdOrDefault(currentMemberId.Value) 
+            x => currentMemberId != null
+                ? x.MemberRepository.GetByIdOrDefault(currentMemberId.Value)
                 : new DefaultDeferredQuerySingleOrDefault<Member>(),
             x => currentMemberId != null
                 ? x.MemberSubscriptionRepository.GetByMemberId(currentMemberId.Value, chapter.Id)
@@ -828,11 +828,11 @@ public class ChapterViewModelService : IChapterViewModelService
         var eventIds = events.Select(x => x.Id).ToArray();
 
         var (venues, memberResponses, responseSummaries) = await _unitOfWork.RunAsync(
-            x => eventIds.Any() 
+            x => eventIds.Any()
                 ? x.VenueRepository.GetByEventIds(eventIds)
                 : new DefaultDeferredQueryMultiple<Venue>(),
-            x => eventIds.Any() && currentMemberId != null 
-                ? x.EventResponseRepository.GetByMemberId(currentMemberId.Value, eventIds) 
+            x => eventIds.Any() && currentMemberId != null
+                ? x.EventResponseRepository.GetByMemberId(currentMemberId.Value, eventIds)
                 : new DefaultDeferredQueryMultiple<EventResponse>(),
             x => eventIds.Any()
                 ? x.EventResponseRepository.GetResponseSummaries(eventIds)
@@ -890,7 +890,7 @@ public class ChapterViewModelService : IChapterViewModelService
             .ToArray();
 
         var (texts, images) = await _unitOfWork.RunAsync(
-            x => chapterIds.Length > 0 
+            x => chapterIds.Length > 0
                 ? x.ChapterTextsRepository.GetByChapterIds(chapterIds)
                 : new DefaultDeferredQueryMultiple<ChapterTexts>(),
             x => chapterIds.Length > 0
@@ -900,7 +900,7 @@ public class ChapterViewModelService : IChapterViewModelService
         var adminMemberDictionary = adminMembers.ToDictionary(x => x.ChapterId);
         var imageDictionary = images.ToDictionary(x => x.ChapterId);
         var textsDictionary = texts.ToDictionary(x => x.ChapterId);
-        
+
         var admin = new List<ChapterWithDistanceViewModel>();
         var member = new List<ChapterWithDistanceViewModel>();
         var owned = new List<ChapterWithDistanceViewModel>();
@@ -910,7 +910,7 @@ public class ChapterViewModelService : IChapterViewModelService
             adminMemberDictionary.TryGetValue(chapter.Id, out var adminMember);
             imageDictionary.TryGetValue(chapter.Id, out var image);
             textsDictionary.TryGetValue(chapter.Id, out var chapterTexts);
-            
+
             var viewModel = new ChapterWithDistanceViewModel
             {
                 Chapter = chapter,
@@ -957,7 +957,7 @@ public class ChapterViewModelService : IChapterViewModelService
     }
 
     private IReadOnlyCollection<GroupPageListEventViewModel> ToGroupPageListEvents(
-        IEnumerable<Event> events, 
+        IEnumerable<Event> events,
         IEnumerable<Venue> venues,
         IEnumerable<EventResponse> memberResponses,
         IEnumerable<EventResponseSummaryDto> responseSummaries,
@@ -992,8 +992,8 @@ public class ChapterViewModelService : IChapterViewModelService
                 ResponseSummary = responseSummary,
                 Venue = canViewVenue ? venue : null
             });
-        }     
-        
+        }
+
         return viewModels;
     }
 
@@ -1009,7 +1009,7 @@ public class ChapterViewModelService : IChapterViewModelService
         {
             return chapters
                 .ToDictionary(x => x.Id, x => new Distance { Unit = distance.Unit, Value = 0 });
-        }        
+        }
 
         var chapterLocationDictionary = chapterLocations
             .ToDictionary(x => x.ChapterId);
@@ -1033,7 +1033,7 @@ public class ChapterViewModelService : IChapterViewModelService
             }
 
             chaptersWithDistances.Add(
-                chapter.Id, 
+                chapter.Id,
                 new Distance { Unit = distance.Unit, Value = chapterDistance });
         }
 

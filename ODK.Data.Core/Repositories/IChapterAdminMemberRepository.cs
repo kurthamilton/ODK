@@ -2,6 +2,7 @@
 using ODK.Data.Core.Deferred;
 
 namespace ODK.Data.Core.Repositories;
+
 public interface IChapterAdminMemberRepository : IWriteRepository<ChapterAdminMember>
 {
     IDeferredQueryMultiple<ChapterAdminMember> GetByChapterId(Guid chapterId);

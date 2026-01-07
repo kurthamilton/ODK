@@ -17,7 +17,7 @@ public class MenuItem
     public IconType? Icon { get; init; }
 
     public string? Link { get; init; }
-    
+
     public string? Text { get; init; }
 
     public IEnumerable<MenuItem> Expand()

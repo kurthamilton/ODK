@@ -8,9 +8,9 @@ public class ChapterEmailSettingsFormViewModel
     [Required]
     [DisplayName("Address")]
     [EmailAddress]
-    public string FromAddress { get; set; } = "";
+    public string FromAddress { get; set; } = string.Empty;
 
     [Required]
     [DisplayName("Name")]
-    public string FromName { get; set; } = "";
+    public string FromName { get; set; } = string.Empty;
 }

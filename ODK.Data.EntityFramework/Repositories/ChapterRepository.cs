@@ -20,7 +20,7 @@ public class ChapterRepository : ReadWriteRepositoryBase<Chapter>, IChapterRepos
     }
 
     public IDeferredQueryMultiple<Chapter> GetAll() => Set()
-        .DeferredMultiple();    
+        .DeferredMultiple();
 
     public IDeferredQueryMultiple<Chapter> GetByMemberId(Guid memberId)
     {
@@ -40,7 +40,7 @@ public class ChapterRepository : ReadWriteRepositoryBase<Chapter>, IChapterRepos
             .DeferredSingleOrDefault();
     }
 
-    public IDeferredQueryMultiple<Chapter> GetByOwnerId(Guid ownerId) 
+    public IDeferredQueryMultiple<Chapter> GetByOwnerId(Guid ownerId)
         => Set()
             .Where(x => x.OwnerId == ownerId)
             .DeferredMultiple();
@@ -50,16 +50,16 @@ public class ChapterRepository : ReadWriteRepositoryBase<Chapter>, IChapterRepos
             .Where(x => x.Platform == platform)
             .DeferredMultiple();
 
-    public IDeferredQuerySingleOrDefault<Chapter> GetBySlug(string slug) 
+    public IDeferredQuerySingleOrDefault<Chapter> GetBySlug(string slug)
         => Set()
             .Where(x => x.Slug == slug)
             .DeferredSingleOrDefault();
 
     public IDeferredQueryMultiple<Chapter> GetByTopicGroupId(Guid topicGroupId)
     {
-        var query = 
+        var query =
             from chapter in Set()
-            where 
+            where
             (
                 from chapterTopic in Set<ChapterTopic>()
                 from topic in Set<Topic>()
@@ -86,5 +86,5 @@ public class ChapterRepository : ReadWriteRepositoryBase<Chapter>, IChapterRepos
 
     protected override IQueryable<Chapter> Set() => base.Set()
         .ConditionalWhere(x => x.Platform == _platform, _platform != PlatformType.Default)
-        .ToPlatformChapters(_platform);    
+        .ToPlatformChapters(_platform);
 }

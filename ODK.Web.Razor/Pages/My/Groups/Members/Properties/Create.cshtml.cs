@@ -37,7 +37,7 @@ public class CreateModel : OdkGroupAdminPageModel
         AddFeedback(result, "Property created");
 
         if (!result.Success)
-        {            
+        {
             return Page();
         }
 

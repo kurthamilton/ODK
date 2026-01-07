@@ -3,6 +3,7 @@ using ODK.Core.Members;
 using ODK.Core.Platforms;
 
 namespace ODK.Services.Members.ViewModels;
+
 public class MembersAdminPageViewModel
 {
     public required Chapter Chapter { get; init; }

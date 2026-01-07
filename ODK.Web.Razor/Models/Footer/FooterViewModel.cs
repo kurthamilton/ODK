@@ -4,7 +4,7 @@ namespace ODK.Web.Razor.Models.Footer;
 
 public class FooterViewModel : OdkComponentViewModel
 {
-    public FooterViewModel(OdkComponentContext context) 
+    public FooterViewModel(OdkComponentContext context)
         : base(context)
     {
     }

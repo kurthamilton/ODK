@@ -24,7 +24,7 @@ public class EmailBodyBuilder
         AddLink(parameterName);
         CloseParagraph();
         return this;
-    }    
+    }
 
     public EmailBodyBuilder AddParagraph(string text)
     {

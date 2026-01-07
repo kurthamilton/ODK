@@ -1,6 +1,6 @@
-﻿using Hangfire;
+﻿using System.Linq.Expressions;
+using Hangfire;
 using ODK.Services.Tasks;
-using System.Linq.Expressions;
 
 namespace ODK.Web.Razor.Services;
 
@@ -13,6 +13,6 @@ public class HangfireService : IBackgroundTaskService
         _backgroundJobClient = backgroundJobClient;
     }
 
-    public string Enqueue(Expression<Func<Task>> task) 
+    public string Enqueue(Expression<Func<Task>> task)
         => _backgroundJobClient.Enqueue(task);
 }

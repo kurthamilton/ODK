@@ -4,7 +4,7 @@ using ODK.Core.Platforms;
 namespace ODK.Web.Common.Routes;
 
 public class PaymentsRoutes : RoutesBase
-{        
+{
     public string PaymentAccount(PlatformType platform, Chapter chapter)
         => $"{Payments(platform, chapter)}/account";
 

@@ -17,7 +17,7 @@ public class AdminControllerBase : OdkControllerBase
         IRequestStore requestStore)
         : base(requestStore)
     {
-        _requestCache = requestCache; 
+        _requestCache = requestCache;
         _requestStore = requestStore;
     }
 

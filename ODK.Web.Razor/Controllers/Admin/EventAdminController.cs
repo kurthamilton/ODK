@@ -17,7 +17,7 @@ public class EventAdminController : AdminControllerBase
     private readonly IEventAdminService _eventAdminService;
 
     public EventAdminController(
-        IEventAdminService eventAdminService, 
+        IEventAdminService eventAdminService,
         IRequestCache requestCache,
         IRequestStore requestStore,
         IChapterAdminService chapterAdminService)
@@ -28,7 +28,7 @@ public class EventAdminController : AdminControllerBase
     }
 
     [HttpPost("groups/{chapterId:guid}/events/{id:guid}/attendees/{memberId:guid}")]
-    public async Task<IActionResult> UpdateMemberResponse(Guid chapterId, Guid id, Guid memberId, 
+    public async Task<IActionResult> UpdateMemberResponse(Guid chapterId, Guid id, Guid memberId,
         [FromForm] EventResponseType responseType)
     {
         var request = MemberChapterServiceRequest(chapterId);
@@ -64,8 +64,8 @@ public class EventAdminController : AdminControllerBase
     public async Task<IActionResult> SendUpdate(Guid chapterId, Guid id, EventUpdateViewModel model)
     {
         var request = MemberChapterServiceRequest(chapterId);
-        await _eventAdminService.SendEventInviteeEmail(request, id, 
-            model.ResponseTypes, model.Subject ?? "", model.Body ?? "");
+        await _eventAdminService.SendEventInviteeEmail(request, id,
+            model.ResponseTypes, model.Subject ?? string.Empty, model.Body ?? string.Empty);
         AddFeedback("Update sent", FeedbackType.Success);
 
         return RedirectToReferrer();
@@ -102,7 +102,7 @@ public class EventAdminController : AdminControllerBase
     }
 
     [HttpPost("groups/{id:guid}/events/settings")]
-    public async Task<IActionResult> UpdateEventSettings(Guid id, 
+    public async Task<IActionResult> UpdateEventSettings(Guid id,
         [FromForm] EventSettingsFormSubmitViewModel viewModel)
     {
         var request = MemberChapterServiceRequest(id);

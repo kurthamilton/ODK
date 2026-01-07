@@ -1,12 +1,11 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
-using ODK.Core.Web;
 
 namespace ODK.Services.Caching;
 
 public interface IRequestCache
-{    
+{
     Task<Chapter> GetChapterAsync(PlatformType platform, Guid chapterId);
 
     Task<Chapter> GetChapterAsync(PlatformType platform, string name);

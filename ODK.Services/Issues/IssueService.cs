@@ -56,10 +56,10 @@ public class IssueService : IIssueService
         await _unitOfWork.SaveChangesAsync();
 
         await _memberEmailService.SendNewIssueEmail(
-            request, 
-            member, 
-            issue, 
-            issueMessage, 
+            request,
+            member,
+            issue,
+            issueMessage,
             siteEmailSettings);
 
         return ServiceResult.Successful();
@@ -119,10 +119,10 @@ public class IssueService : IIssueService
         await _unitOfWork.SaveChangesAsync();
 
         await _memberEmailService.SendIssueReply(
-            request, 
-            issue, 
-            issueMessage, 
-            null, 
+            request,
+            issue,
+            issueMessage,
+            null,
             siteEmailSettings);
 
         return ServiceResult.Successful();

@@ -2,6 +2,7 @@
 using Z.EntityFramework.Plus;
 
 namespace ODK.Data.EntityFramework.Deferred;
+
 public class DeferredQueryMultiple<T> : IDeferredQueryMultiple<T> where T : class
 {
     private readonly IReadOnlyCollection<T>? _cached = null;
@@ -29,7 +30,7 @@ public class DeferredQueryMultiple<T> : IDeferredQueryMultiple<T> where T : clas
     }
 
     public async Task<IReadOnlyCollection<T>> Run()
-    {        
+    {
         if (_cached != null)
         {
             return _cached;
@@ -43,5 +44,5 @@ public class DeferredQueryMultiple<T> : IDeferredQueryMultiple<T> where T : clas
         var result = await _query.ToArrayAsync();
         _updateCache?.Invoke(result);
         return result;
-    }  
+    }
 }

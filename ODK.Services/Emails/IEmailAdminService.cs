@@ -11,7 +11,7 @@ public interface IEmailAdminService
     Task<IReadOnlyCollection<ChapterEmail>> GetChapterEmails(MemberChapterServiceRequest request);
 
     Task<Email> GetEmail(Guid currentMemberId, EmailType type);
-    
+
     Task<IReadOnlyCollection<Email>> GetEmails(Guid currentMemberId);
 
     Task<ServiceResult> SendTestEmail(MemberChapterServiceRequest request, EmailType type);

@@ -10,7 +10,7 @@ namespace ODK.Web.Razor.Controllers;
 public class WebhooksController : OdkControllerBase
 {
     private readonly IBackgroundTaskService _backgroundTaskService;
-    private readonly ILoggingService _loggingService;    
+    private readonly ILoggingService _loggingService;
     private readonly IPaymentService _paymentService;
     private readonly IStripeWebhookParser _stripeWebhookParser;
 

@@ -11,7 +11,7 @@ public class ProductJsonModel
     public string? Description { get; set; }
 
     [JsonPropertyName("name")]
-    public string Name { get; set; } = "";
+    public string Name { get; set; } = string.Empty;
 
     [JsonPropertyName("type")]
     public string Type { get; set; } = "SERVICE";

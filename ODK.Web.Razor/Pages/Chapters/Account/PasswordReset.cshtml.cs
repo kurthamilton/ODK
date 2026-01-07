@@ -11,7 +11,7 @@ public class PasswordResetModel : ChapterPageModel
 {
     private readonly IAuthenticationService _authenticationService;
 
-    public PasswordResetModel(IAuthenticationService authenticationService) 
+    public PasswordResetModel(IAuthenticationService authenticationService)
     {
         _authenticationService = authenticationService;
     }

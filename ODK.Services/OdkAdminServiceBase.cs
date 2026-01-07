@@ -40,7 +40,7 @@ public abstract class OdkAdminServiceBase
         }
     }
 
-    protected void AssertMemberIsChapterAdmin(Member member, Guid chapterId, 
+    protected void AssertMemberIsChapterAdmin(Member member, Guid chapterId,
         IReadOnlyCollection<ChapterAdminMember> chapterAdminMembers)
     {
         bool isChapterAdmin = MemberIsChapterAdmin(member, chapterId, chapterAdminMembers);
@@ -333,7 +333,7 @@ public abstract class OdkAdminServiceBase
         return (result1, result2, result3, result4);
     }
 
-    protected bool MemberIsChapterAdmin(Member member, Guid chapterId, 
+    protected bool MemberIsChapterAdmin(Member member, Guid chapterId,
         IReadOnlyCollection<ChapterAdminMember> chapterAdminMembers)
     {
         return member.SuperAdmin || chapterAdminMembers

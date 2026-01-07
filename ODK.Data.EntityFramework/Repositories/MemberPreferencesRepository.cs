@@ -8,7 +8,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class MemberPreferencesRepository : WriteRepositoryBase<MemberPreferences>, IMemberPreferencesRepository
 {
-    public MemberPreferencesRepository(OdkContext context) 
+    public MemberPreferencesRepository(OdkContext context)
         : base(context)
     {
     }

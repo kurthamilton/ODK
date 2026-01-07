@@ -6,7 +6,7 @@ using ODK.Web.Razor.Models.Admin.Chapters;
 namespace ODK.Web.Razor.Models.Chapters;
 
 public class CreateChapterSubmitViewModel : IChapterImageFormViewModel
-{    
+{
     [Required]
     [MaxLength(1024)]
     public string? Description { get; set; }

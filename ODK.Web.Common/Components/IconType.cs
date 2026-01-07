@@ -43,7 +43,7 @@ public enum IconType
     Times,
     TimesCircle,
     TimesCircleOutline,
-    TodoList,    
+    TodoList,
     Twitter,
     Undo,
     Unlock,

@@ -11,7 +11,7 @@ public class SubscriptionCreateModel : AdminPageModel
 {
     private readonly IChapterAdminService _chapterAdminService;
 
-    public SubscriptionCreateModel(IRequestCache requestCache, IChapterAdminService chapterAdminService) 
+    public SubscriptionCreateModel(IRequestCache requestCache, IChapterAdminService chapterAdminService)
         : base(requestCache)
     {
         _chapterAdminService = chapterAdminService;

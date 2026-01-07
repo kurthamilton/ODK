@@ -17,7 +17,7 @@ public class PaymentSettingsFormViewModel
     public string? Name { get; set; }
 
     public PaymentProviderType? Provider { get; set; }
-    
+
     [DisplayName("Public key")]
     public string? PublicKey { get; set; }
 

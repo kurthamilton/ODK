@@ -3,6 +3,7 @@ using ODK.Data.Core.Deferred;
 using Z.EntityFramework.Plus;
 
 namespace ODK.Data.EntityFramework.Deferred;
+
 public class DeferredQuerySingle<T> : IDeferredQuerySingle<T> where T : class
 {
     private readonly T? _cached = null;
@@ -20,7 +21,7 @@ public class DeferredQuerySingle<T> : IDeferredQuerySingle<T> where T : class
     }
 
     internal DeferredQuerySingle(
-        IQueryable<T> query, 
+        IQueryable<T> query,
         Func<T?> getFromCache,
         Action<T> updateCache,
         Action<IEnumerable<T>>? prefillCache = null)
@@ -49,7 +50,7 @@ public class DeferredQuerySingle<T> : IDeferredQuerySingle<T> where T : class
     }
 
     public async Task<T> Run()
-    {        
+    {
         if (_cached != null)
         {
             return _cached;
@@ -59,7 +60,7 @@ public class DeferredQuerySingle<T> : IDeferredQuerySingle<T> where T : class
         if (_query != null)
         {
             value = await _query.ValueAsync();
-        }        
+        }
         else if (_queryAll != null && _prefillCache != null && _getFromCache != null)
         {
             var values = await _queryAll.ToArrayAsync();

@@ -12,5 +12,5 @@ public class CreateVenue
 
     public required string? LocationName { get; set; }
 
-    public required string Name { get; set; } = "";
+    public required string Name { get; set; } = string.Empty;
 }

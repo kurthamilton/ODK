@@ -3,9 +3,10 @@ using ODK.Data.Core.Deferred;
 using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework.Repositories;
+
 public class InstagramPostRepository : ReadWriteRepositoryBase<InstagramPost>, IInstagramPostRepository
 {
-    public InstagramPostRepository(OdkContext context) 
+    public InstagramPostRepository(OdkContext context)
         : base(context)
     {
     }

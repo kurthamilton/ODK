@@ -2,12 +2,13 @@
 using ODK.Data.EntityFramework.Caching;
 
 namespace ODK.Data.EntityFramework;
+
 public abstract class CachingWriteRepositoryBase<T, TKey> : WriteRepositoryBase<T>, IWriteRepository<T>, IDisposable
     where T : class
     where TKey : notnull
 {
     private readonly EntityCache<TKey, T> _cache;
-    
+
     protected CachingWriteRepositoryBase(OdkContext context, EntityCache<TKey, T> cache)
         : base(context)
     {

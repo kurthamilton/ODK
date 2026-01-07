@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using ODK.Core.Events;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
@@ -30,7 +29,7 @@ public class EventRepository : ReadWriteRepositoryBase<Event>, IEventRepository
 
     public IDeferredQueryMultiple<Event> GetByVenueId(Guid venueId) => Set()
         .Where(x => x.VenueId == venueId)
-        .DeferredMultiple();    
+        .DeferredMultiple();
 
     public IDeferredQueryMultiple<Event> GetPublicEventsByChapterId(Guid chapterId, DateTime? after) => Set()
         .Where(x => x.ChapterId == chapterId && x.IsPublic)
@@ -41,9 +40,9 @@ public class EventRepository : ReadWriteRepositoryBase<Event>, IEventRepository
     public IDeferredQuery<int> GetPastEventCountByChapterId(Guid chapterId)
         => GetPastEventQuery(chapterId, null)
             .DeferredCount();
-            
 
-    public IDeferredQueryMultiple<Event> GetRecentEventsByChapterId(Guid chapterId, int pageSize) 
+
+    public IDeferredQueryMultiple<Event> GetRecentEventsByChapterId(Guid chapterId, int pageSize)
         => GetPastEventQuery(chapterId, pageSize)
             .OrderByDescending(x => x.Date)
             .DeferredMultiple();
@@ -55,7 +54,7 @@ public class EventRepository : ReadWriteRepositoryBase<Event>, IEventRepository
     {
         var query = Set()
             .Where(x => x.ChapterId == chapterId && x.Date < DateTime.UtcNow && x.PublishedUtc != null);
-            
+
         if (pageSize != null)
         {
             query = query

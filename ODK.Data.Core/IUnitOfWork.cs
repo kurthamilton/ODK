@@ -7,14 +7,14 @@ namespace ODK.Data.Core;
 
 public interface IUnitOfWork
 {
-    IChapterAdminMemberRepository ChapterAdminMemberRepository { get; }    
+    IChapterAdminMemberRepository ChapterAdminMemberRepository { get; }
     IChapterContactMessageReplyRepository ChapterContactMessageReplyRepository { get; }
     IChapterContactMessageRepository ChapterContactMessageRepository { get; }
     IChapterConversationMessageRepository ChapterConversationMessageRepository { get; }
     IChapterConversationRepository ChapterConversationRepository { get; }
     IChapterEmailProviderRepository ChapterEmailProviderRepository { get; }
     IChapterEmailRepository ChapterEmailRepository { get; }
-    IChapterEventSettingsRepository ChapterEventSettingsRepository { get; }    
+    IChapterEventSettingsRepository ChapterEventSettingsRepository { get; }
     IChapterImageRepository ChapterImageRepository { get; }
     IChapterLinksRepository ChapterLinksRepository { get; }
     IChapterLocationRepository ChapterLocationRepository { get; }
@@ -53,13 +53,13 @@ public interface IUnitOfWork
     IMemberActivationTokenRepository MemberActivationTokenRepository { get; }
     IMemberAvatarRepository MemberAvatarRepository { get; }
     IMemberChapterRepository MemberChapterRepository { get; }
-    IMemberEmailAddressUpdateTokenRepository MemberEmailAddressUpdateTokenRepository { get; }    
+    IMemberEmailAddressUpdateTokenRepository MemberEmailAddressUpdateTokenRepository { get; }
     IMemberEmailPreferenceRepository MemberEmailPreferenceRepository { get; }
     IMemberImageRepository MemberImageRepository { get; }
     IMemberLocationRepository MemberLocationRepository { get; }
     IMemberNotificationSettingsRepository MemberNotificationSettingsRepository { get; }
     IMemberPasswordRepository MemberPasswordRepository { get; }
-    IMemberPasswordResetRequestRepository MemberPasswordResetRequestRepository { get; }    
+    IMemberPasswordResetRequestRepository MemberPasswordResetRequestRepository { get; }
     IMemberPaymentSettingsRepository MemberPaymentSettingsRepository { get; }
     IMemberPreferencesRepository MemberPreferencesRepository { get; }
     IMemberPrivacySettingsRepository MemberPrivacySettingsRepository { get; }
@@ -92,7 +92,7 @@ public interface IUnitOfWork
     IVenueRepository VenueRepository { get; }
 
     Task<(T1, T2)> RunAsync<T1, T2>(
-        Func<IUnitOfWork, IDeferredQuery<T1>> query1, 
+        Func<IUnitOfWork, IDeferredQuery<T1>> query1,
         Func<IUnitOfWork, IDeferredQuery<T2>> query2);
 
     Task<(T1, T2, T3)> RunAsync<T1, T2, T3>(

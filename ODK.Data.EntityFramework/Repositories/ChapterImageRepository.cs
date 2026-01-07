@@ -9,7 +9,7 @@ public class ChapterImageRepository : WriteRepositoryBase<ChapterImage>, IChapte
 {
     private readonly ChapterEntityRepositoryHelper<ChapterImage> _chapterEntityRepository;
 
-    public ChapterImageRepository(OdkContext context) 
+    public ChapterImageRepository(OdkContext context)
         : base(context)
     {
         _chapterEntityRepository = new ChapterEntityRepositoryHelper<ChapterImage>(this);

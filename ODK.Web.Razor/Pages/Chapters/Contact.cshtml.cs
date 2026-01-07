@@ -8,7 +8,7 @@ public class ContactModel : ChapterPageModel
 {
     private readonly IContactService _contactService;
 
-    public ContactModel(IContactService contactService) 
+    public ContactModel(IContactService contactService)
     {
         _contactService = contactService;
     }

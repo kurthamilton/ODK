@@ -72,8 +72,8 @@ public class ContactAdminService : OdkAdminServiceBase, IContactAdminService
         AssertMemberIsSuperAdmin(currentMember);
 
         var sendResult = await _memberEmailService.SendSiteMessageReply(
-            request, 
-            originalMessage, 
+            request,
+            originalMessage,
             message);
         if (!sendResult.Success)
         {
@@ -88,9 +88,9 @@ public class ContactAdminService : OdkAdminServiceBase, IContactAdminService
         _unitOfWork.SiteContactMessageReplyRepository.Add(new SiteContactMessageReply
         {
             CreatedUtc = now,
-            Message = _htmlSanitizer.Sanitize(message, DefaultHtmlSantizerOptions) ?? "",
+            Message = _htmlSanitizer.Sanitize(message, DefaultHtmlSantizerOptions) ?? string.Empty,
             MemberId = request.CurrentMemberId,
-            SiteContactMessageId = originalMessage.Id            
+            SiteContactMessageId = originalMessage.Id
         });
 
         await _unitOfWork.SaveChangesAsync();
@@ -103,7 +103,7 @@ public class ContactAdminService : OdkAdminServiceBase, IContactAdminService
         var (currentMember, originalMessage) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.SiteContactMessageRepository.GetById(messageId));
-        
+
         originalMessage.RepliedUtc = DateTime.UtcNow;
 
         _unitOfWork.SiteContactMessageRepository.Update(originalMessage);

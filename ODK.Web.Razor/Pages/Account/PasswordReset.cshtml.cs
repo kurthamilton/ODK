@@ -28,7 +28,7 @@ public class PasswordResetModel : OdkPageModel
 
         if (!result.Success)
         {
-            return Page();            
+            return Page();
         }
 
         return Redirect(OdkRoutes.Account.Login(null));

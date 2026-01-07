@@ -23,7 +23,7 @@ public class Email
 
         string htmlContent = HtmlContent.Interpolate(parameters);
         string subject = Subject.Interpolate(parameters);
-        
+
         return new Email
         {
             HtmlContent = htmlContent,

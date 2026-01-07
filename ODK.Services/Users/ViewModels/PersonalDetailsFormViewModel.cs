@@ -10,18 +10,18 @@ public class PersonalDetailsFormViewModel
 
     [DisplayName("Email address")]
     [EmailAddress]
-    public string EmailAddress { get; set; } = "";
+    public string EmailAddress { get; set; } = string.Empty;
 
     [DisplayName("Receive event emails")]
     public bool EmailOptIn { get; set; } = true;
 
     [Required]
     [DisplayName("First name")]
-    public string FirstName { get; set; } = "";
+    public string FirstName { get; set; } = string.Empty;
 
     [Required]
     [DisplayName("Last name")]
-    public string LastName { get; set; } = "";
+    public string LastName { get; set; } = string.Empty;
 
     [Required]
     [DisplayName("Privacy policy")]

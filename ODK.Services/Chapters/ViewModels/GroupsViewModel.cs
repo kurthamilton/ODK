@@ -10,7 +10,7 @@ public class GroupsViewModel
 
     public required IReadOnlyCollection<DistanceUnit> DistanceUnits { get; init; }
 
-    public required ILocation? Location { get; init; }    
+    public required ILocation? Location { get; init; }
 
     public required IReadOnlyCollection<ChapterWithDistanceViewModel> Groups { get; init; }
 

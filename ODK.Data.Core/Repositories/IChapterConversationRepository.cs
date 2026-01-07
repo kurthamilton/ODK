@@ -5,7 +5,7 @@ namespace ODK.Data.Core.Repositories;
 
 public interface IChapterConversationRepository : IReadWriteRepository<ChapterConversation>
 {
-    IDeferredQueryMultiple<ChapterConversation> GetByChapterId(Guid chapterId);    
+    IDeferredQueryMultiple<ChapterConversation> GetByChapterId(Guid chapterId);
 
     IDeferredQueryMultiple<ChapterConversation> GetByMemberId(Guid memberId, Guid chapterId);
 

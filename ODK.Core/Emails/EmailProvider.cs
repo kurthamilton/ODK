@@ -18,8 +18,8 @@ public class EmailProvider : IDatabaseEntity
 
     public int SmtpPort { get; set; }
 
-    public string SmtpServer { get; set; } = string.Empty;   
-    
+    public string SmtpServer { get; set; } = string.Empty;
+
     public EmailProviderType Type { get; set; }
 
     public bool IsValid()

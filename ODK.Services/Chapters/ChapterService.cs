@@ -16,16 +16,16 @@ public class ChapterService : IChapterService
     private readonly ICacheService _cacheService;
     private readonly IPaymentProviderFactory _paymentProviderFactory;
     private readonly IUnitOfWork _unitOfWork;
-    
+
     public ChapterService(
-        IUnitOfWork unitOfWork, 
-        ICacheService cacheService, 
+        IUnitOfWork unitOfWork,
+        ICacheService cacheService,
         IPaymentProviderFactory paymentProviderFactory)
     {
         _cacheService = cacheService;
         _paymentProviderFactory = paymentProviderFactory;
         _unitOfWork = unitOfWork;
-    }            
+    }
 
     public async Task<Chapter> GetChapterById(Guid chapterId)
     {
@@ -59,17 +59,17 @@ public class ChapterService : IChapterService
     public async Task<ChapterLinks?> GetChapterLinks(Guid chapterId)
     {
         return await _unitOfWork.ChapterLinksRepository.GetByChapterId(chapterId).Run();
-    }    
-    
+    }
+
     public async Task<SubscriptionsPageViewModel> GetChapterMemberSubscriptionsViewModel(Guid currentMemberId, Chapter chapter)
     {
         var chapterId = chapter.Id;
 
         var (
-            currentMember, 
-            memberSubscription, 
-            chapterSubscriptions, 
-            chapterPaymentSettings, 
+            currentMember,
+            memberSubscription,
+            chapterSubscriptions,
+            chapterPaymentSettings,
             sitePaymentSettings,
             chapterPaymentAccount,
             memberSubscriptionRecord
@@ -96,11 +96,11 @@ public class ChapterService : IChapterService
             .ToArray();
 
         var externalSubscription = await GetExternalSubscription(
-            chapterPaymentSettings, 
+            chapterPaymentSettings,
             sitePaymentSettings,
             chapterPaymentAccount,
             memberSubscriptionRecord,
-            chapterSubscriptions.Select(x => x.ChapterSubscription).ToArray());        
+            chapterSubscriptions.Select(x => x.ChapterSubscription).ToArray());
 
         return new SubscriptionsPageViewModel
         {
@@ -119,7 +119,7 @@ public class ChapterService : IChapterService
         return questions
             .OrderBy(x => x.DisplayOrder)
             .ToArray();
-    }    
+    }
 
     public async Task<IReadOnlyCollection<Chapter>> GetChaptersByOwnerId(Guid ownerId)
     {
@@ -150,7 +150,7 @@ public class ChapterService : IChapterService
             Chapters = chapters,
             Countries = countries
         };
-    } 
+    }
 
     public async Task<ChapterTexts?> GetChapterTexts(Guid chapterId)
     {
@@ -170,7 +170,7 @@ public class ChapterService : IChapterService
         MemberSubscriptionRecord? memberSubscriptionRecord,
         IReadOnlyCollection<ChapterSubscription> chapterSubscriptions)
     {
-        if (memberSubscriptionRecord?.ExternalId == null || 
+        if (memberSubscriptionRecord?.ExternalId == null ||
             memberSubscriptionRecord.ChapterSubscriptionId == null)
         {
             return null;
@@ -185,7 +185,7 @@ public class ChapterService : IChapterService
         }
 
         var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
-            chapterPaymentSettings, 
+            chapterPaymentSettings,
             sitePaymentSettings,
             chapterPaymentAccount);
 

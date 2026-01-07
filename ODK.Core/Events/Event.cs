@@ -75,7 +75,7 @@ public class Event : IDatabaseEntity, IChapterEntity
     {
         if (utc.TimeOfDay.TotalSeconds == 0)
         {
-            return "";
+            return string.Empty;
         }
 
         var localTime = ToLocalTime(utc, timeZone);
@@ -85,7 +85,7 @@ public class Event : IDatabaseEntity, IChapterEntity
             : $"from {time}";
     }
 
-    public string GetDisplayName() => (!IsPublished ? "[DRAFT] " : "") + Name;    
+    public string GetDisplayName() => (!IsPublished ? "[DRAFT] " : string.Empty) + Name;
 
     public bool IsAuthorized(Member? member)
     {
@@ -94,7 +94,7 @@ public class Event : IDatabaseEntity, IChapterEntity
             return true;
         }
 
-        return member?.SuperAdmin == true || 
+        return member?.SuperAdmin == true ||
             (member?.IsCurrent() == true && member?.IsApprovedMemberOf(ChapterId) == true);
     }
 
