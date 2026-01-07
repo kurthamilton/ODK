@@ -1,22 +1,27 @@
-﻿@page "/my/groups/{id:guid}/payments"
+﻿@page "/my/groups/{id:guid}/location"
 @using ODK.Services.Chapters
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
-@model ODK.Web.Razor.Pages.My.Groups.Group.Payments.IndexModel
+@model LocationModel
 @inject IChapterAdminService ChapterAdminService
 @{
     Layout = "_GroupAdminLayout";
-    Model.Title = "Payments";
+    Model.Title = "Location";
 
-    var viewModel = await ChapterAdminService.GetChapterPaymentSettingsViewModel(Model.AdminServiceRequest);
+    var viewModel = await ChapterAdminService.GetChapterLocationViewModel(Model.AdminServiceRequest);
 }
 
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
 {
-    Title = "Payments",
-    BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_PaymentSettingsContent", viewModel)</div>,
+    Title = "Location",
+    BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_LocationContent", viewModel)</div>,
     MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu", new AdminSideMenuViewModel
     {
         Chapter = viewModel.Chapter
     })
 })
+
+@section scripts
+{
+    @await Html.PartialAsync("Components/Scripts/_GoogleLocation")
+}

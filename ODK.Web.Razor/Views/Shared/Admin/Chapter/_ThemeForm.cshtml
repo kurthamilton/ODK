@@ -3,12 +3,12 @@
 
 <div class="form-group mb-3">
     @Html.LabelFor(x => x.Background, new { @class = "form-label" })
-    @Html.TextBoxFor(x => x.Background, new { @class = "form-control", data_color_picker = "" })
+    @Html.TextBoxFor(x => x.Background, new { @class = "form-control", data_color_picker = "", placeholder = "Not set" })
     @Html.ValidationMessageFor(x => x.Background)
 </div>
 
 <div class="form-group mb-3">
     @Html.LabelFor(x => x.Color, new { @class = "form-label" })
-    @Html.TextBoxFor(x => x.Color, new { @class = "form-control", data_color_picker = "" })    
+    @Html.TextBoxFor(x => x.Color, new { @class = "form-control", data_color_picker = "", placeholder = "Not set" })
     @Html.ValidationMessageFor(x => x.Color)
 </div>

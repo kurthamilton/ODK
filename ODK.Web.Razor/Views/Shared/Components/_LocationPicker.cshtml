@@ -3,7 +3,7 @@
 @using ODK.Web.Razor.Models.Components
 @model LocationPickerViewModel
 
-<div class="input-group">
+<div class="input-group" data-location-container>
     <span class="input-group-text">
         <span data-bs-toggle="tooltip" data-bs-title="Location">
             @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.LocationPin))
@@ -20,7 +20,7 @@
 
         <ul class="dropdown-menu google-places-suggestions" data-location-options></ul>
     </div> 
-</div>
 
-@Html.HiddenFor(x => x.Lat, new { data_location_lat = "" })
-@Html.HiddenFor(x => x.Long, new { data_location_long = "" })
+    @Html.HiddenFor(x => x.Lat, new { data_location_lat = "" })
+    @Html.HiddenFor(x => x.Long, new { data_location_long = "" })
+</div>

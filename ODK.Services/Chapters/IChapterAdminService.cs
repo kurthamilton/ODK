@@ -63,7 +63,7 @@ public interface IChapterAdminService
 
     Task<ChapterLinksAdminPageViewModel> GetChapterLinksViewModel(MemberChapterServiceRequest request);
 
-    Task<ChapterLocation?> GetChapterLocation(MemberChapterServiceRequest request);
+    Task<ChapterLocationAdminPageViewModel> GetChapterLocationViewModel(MemberChapterServiceRequest request);
 
     Task<ChapterMessagesAdminPageViewModel> GetChapterMessagesViewModel(MemberChapterServiceRequest request, bool spam);
 
@@ -72,8 +72,6 @@ public interface IChapterAdminService
     Task<ChapterPaymentAccountAdminPageViewModel> GetChapterPaymentAccountViewModel(MemberChapterServiceRequest request);
 
     Task<ChapterPaymentSettings?> GetChapterPaymentSettings(MemberChapterServiceRequest request);
-
-    Task<ChapterPaymentSettingsAdminPageViewModel> GetChapterPaymentSettingsViewModel(MemberChapterServiceRequest request);
 
     Task<ChapterPrivacyAdminPageViewModel> GetChapterPrivacyViewModel(MemberChapterServiceRequest request);
 
@@ -183,9 +181,6 @@ public interface IChapterAdminService
         UpdateChapterTexts model);
 
     Task<ServiceResult> UpdateChapterTheme(MemberChapterServiceRequest request, UpdateChapterTheme model);
-
-    Task<ServiceResult> UpdateChapterTimeZone(MemberChapterServiceRequest request, 
-        string? timeZoneId);
 
     Task<ServiceResult> UpdateChapterTopics(MemberChapterServiceRequest request,
         IReadOnlyCollection<Guid> topicIds);

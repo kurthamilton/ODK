@@ -1,0 +1,8 @@
+﻿@using ODK.Web.Razor.Models.SuperAdmin
+@model ChapterLocationFormViewModel
+
+<div class="form-group mb-3">
+    @Html.LabelFor(x => x.LocationName, new { @class = "form-label" })
+    @await Html.PartialAsync("Components/_LocationPicker", Model)
+    @Html.ValidationMessageFor(x => x.LocationName)
+</div>

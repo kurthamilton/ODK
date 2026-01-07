@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using ODK.Core.Countries;
 using ODK.Core.Emails;
 using ODK.Core.Images;
 using ODK.Core.Subscriptions;
@@ -12,6 +13,7 @@ using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Admin.Chapters;
 using ODK.Web.Razor.Models.Admin.Members;
 using ODK.Web.Razor.Models.Chapters.SuperAdmin;
+using ODK.Web.Razor.Models.SuperAdmin;
 using ODK.Web.Razor.Services;
 
 namespace ODK.Web.Razor.Controllers.Admin;
@@ -85,6 +87,24 @@ public class ChapterAdminController : AdminControllerBase
         });
 
         AddFeedback("Social media links updated", FeedbackType.Success);
+
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("groups/{id:guid}/location")]
+    public async Task<IActionResult> UpdateLocation(Guid id, [FromForm] ChapterLocationFormViewModel viewModel)
+    {
+        var lat = viewModel.Lat;
+        var lng = viewModel.Long;
+
+        var location = lat != null && lng != null
+            ? new LatLong(lat.Value, lng.Value)
+            : default(LatLong?);
+
+        var request = MemberChapterServiceRequest(id);
+        await _chapterAdminService.UpdateChapterLocation(request, location, viewModel.LocationName);
+
+        AddFeedback("Location updated", FeedbackType.Success);
 
         return RedirectToReferrer();
     }

@@ -937,13 +937,24 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         };
     }
 
-    public async Task<ChapterLocation?> GetChapterLocation(MemberChapterServiceRequest request)
+    public async Task<ChapterLocationAdminPageViewModel> GetChapterLocationViewModel(
+        MemberChapterServiceRequest request)
     {
-        var chapter = await GetSuperAdminRestrictedContent(request,
-            x => x.ChapterRepository.GetById(request.ChapterId));
+        var (chapterId, platform) = (request.ChapterId, request.Platform);
 
-        var location = await _unitOfWork.ChapterLocationRepository.GetByChapterId(request.ChapterId);
-        return location;
+        var (chapter, country) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(chapterId),
+            x => x.CountryRepository.GetByChapterId(chapterId));
+
+        var location = await _unitOfWork.ChapterLocationRepository.GetByChapterId(chapterId);
+
+        return new ChapterLocationAdminPageViewModel
+        {
+            Chapter = chapter,
+            Country = country,
+            Location = location,
+            Platform = platform
+        };
     }
 
     public async Task<ChapterMessagesAdminPageViewModel> GetChapterMessagesViewModel(
@@ -1066,26 +1077,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         return await GetChapterAdminRestrictedContent(request,
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId));
-    }
-
-    public async Task<ChapterPaymentSettingsAdminPageViewModel> GetChapterPaymentSettingsViewModel(MemberChapterServiceRequest request)
-    {
-        var platform = request.Platform;
-
-        var (chapter, paymentSettings, currencies, ownerSubscription) = await _unitOfWork.RunAsync(
-            x => x.ChapterRepository.GetById(request.ChapterId),
-            x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId),
-            x => x.CurrencyRepository.GetAll(),
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId));
-
-        return new ChapterPaymentSettingsAdminPageViewModel
-        {
-            Chapter = chapter,
-            CurrencyOptions = currencies,
-            OwnerSubscription = ownerSubscription,
-            PaymentSettings = paymentSettings,
-            Platform = platform
-        };
     }
 
     public async Task<ChapterPrivacyAdminPageViewModel> GetChapterPrivacyViewModel(MemberChapterServiceRequest request)
@@ -1813,23 +1804,31 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         var chapterLocation = await _unitOfWork.ChapterLocationRepository.GetByChapterId(request.ChapterId);
 
-        if (location != null && !string.IsNullOrEmpty(name))
+        if (location == null || string.IsNullOrEmpty(name))
         {
-            chapterLocation ??= new ChapterLocation();            
+            return ServiceResult.Failure("Location not set");
+        }
 
-            chapterLocation.LatLong = location.Value;
-            chapterLocation.Name = name;
-        }        
-        else
+        chapterLocation ??= new ChapterLocation();
+
+        chapterLocation.LatLong = location.Value;
+        chapterLocation.Name = name;
+
+        var timeZone = await _geolocationService.GetTimeZoneFromLocation(location.Value);
+        if (timeZone != null)
         {
-            if (chapterLocation == null)
-            {
-                return ServiceResult.Successful();
-            }
+            chapter.TimeZone = timeZone;
+        }
 
-            _unitOfWork.ChapterLocationRepository.Delete(chapterLocation);
-            await _unitOfWork.SaveChangesAsync();
-            return ServiceResult.Successful();
+        var country = await _geolocationService.GetCountryFromLocation(location.Value);                
+        if (country != null)
+        {
+            chapter.CountryId = country.Id;            
+        }
+
+        if (timeZone != null || country != null)
+        {
+            _unitOfWork.ChapterRepository.Update(chapter);
         }
 
         if (chapterLocation.ChapterId == default)
@@ -1841,7 +1840,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         {
             _unitOfWork.ChapterLocationRepository.Update(chapterLocation);
         }
-        
+
         await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();
@@ -2256,25 +2255,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         chapter.ThemeBackground = model.Background;
         chapter.ThemeColor = model.Color;
-
-        _unitOfWork.ChapterRepository.Update(chapter);
-        await _unitOfWork.SaveChangesAsync();
-
-        return ServiceResult.Successful();
-    }
-
-    public async Task<ServiceResult> UpdateChapterTimeZone(MemberChapterServiceRequest request, string? timeZoneId)
-    {
-        var chapter = await GetSuperAdminRestrictedContent(request,
-            x => x.ChapterRepository.GetById(request.ChapterId));
-
-        TimeZoneInfo? timeZone = null;
-        if (!string.IsNullOrEmpty(timeZoneId) && !TimeZoneInfo.TryFindSystemTimeZoneById(timeZoneId, out timeZone))
-        {
-            return ServiceResult.Failure("Invalid time zone id");
-        }
-
-        chapter.TimeZone = timeZone;
 
         _unitOfWork.ChapterRepository.Update(chapter);
         await _unitOfWork.SaveChangesAsync();

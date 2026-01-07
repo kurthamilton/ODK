@@ -56,25 +56,7 @@ public class ChapterSuperAdminController : AdminControllerBase
         await _chapterAdminService.DeleteChapterEmailProvider(request, id);
         AddFeedback("Email provider deleted", FeedbackType.Success);
         return RedirectToReferrer();
-    }
-
-    [HttpPost("/{chapterName}/Admin/SuperAdmin/Location")]
-    public async Task<IActionResult> UpdateLocation(string chapterName, ChapterLocationFormViewModel viewModel)
-    {
-        var lat = viewModel.Lat;
-        var lng = viewModel.Long;
-
-        var location = lat != null && lng != null
-            ? new LatLong(lat.Value, lng.Value)
-            : default(LatLong?);
-
-        var request = await GetAdminServiceRequest(chapterName);
-        await _chapterAdminService.UpdateChapterLocation(request, location, viewModel.LocationName);
-
-        AddFeedback("Location updated", FeedbackType.Success);
-
-        return RedirectToReferrer();
-    }
+    }    
 
     [HttpPost("/{chapterName}/Admin/SuperAdmin/Payments/{id:guid}/Reconciliation-Status")]
     public async Task<IActionResult> AddReconciliationExemption(string chapterName, Guid id)
@@ -99,21 +81,6 @@ public class ChapterSuperAdminController : AdminControllerBase
 
         await _paymentAdminService.CreateReconciliation(request, model);
 
-        return RedirectToReferrer();
-    }
-
-    [HttpPost("/{chapterName}/Admin/SuperAdmin/TimeZone")]
-    public async Task<IActionResult> UpdateTimeZone(string chapterName, ChapterTimeZoneFormViewModel viewModel)
-    {
-        var serviceRequest = await GetAdminServiceRequest(chapterName);
-        var result = await _chapterAdminService.UpdateChapterTimeZone(serviceRequest, viewModel.TimeZone);
-        if (result.Success)
-        {
-            AddFeedback("Time zone updated", FeedbackType.Success);
-            return RedirectToReferrer();
-        }
-
-        AddFeedback(result);
         return RedirectToReferrer();
     }
 }

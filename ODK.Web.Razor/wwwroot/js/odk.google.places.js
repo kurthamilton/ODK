@@ -6,13 +6,13 @@
 
     $inputs.forEach($input => bindInput($input));
 
-    function bindInput($input) {
+    function bindInput($input) {        
         // Attempt to hide the native autocomplete - NB some browsers may ignore this
         const $form = $input.closest('form');
         $form.setAttribute('autocomplete', 'off');
         $input.setAttribute('autocomplete', 'off');
         $input.setAttribute('data-bs-toggle', 'dropdown');
-
+        
         const $dropdownContainer = $input.closest('.dropdown');
         const $options = $dropdownContainer.querySelector('[data-location-options]');
 
@@ -22,7 +22,7 @@
         const dropdown = bootstrap.Dropdown.getOrCreateInstance($input);
         let suggestions = [];
         let selectedIndex = -1;
-
+        
         // Fetch suggestions on focus and input
         ['focus', 'input'].forEach(e => $input.addEventListener(e, loadOptions));        
 
@@ -30,7 +30,7 @@
         $input.addEventListener('hidden.bs.dropdown', () => {
             if (document.activeElement === $input) dropdown.show();
         });
-
+        
         async function loadOptions() {
             const searchTerm = $input.value;
 

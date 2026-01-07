@@ -2,7 +2,7 @@
 
 namespace ODK.Core.Chapters;
 
-public class ChapterLocation : ILocation
+public class ChapterLocation : IChapterEntity, ILocation
 {
     public Guid ChapterId { get; set; }
 

@@ -73,26 +73,7 @@ public class MemberService : IMemberService
             throw new OdkNotFoundException();
         }
 
-        if (memberSubscriptionRecord.ChapterSubscriptionId == null || string.IsNullOrEmpty(memberSubscriptionRecord.ExternalId))
-        {
-            return ServiceResult.Failure("Error cancelling subscription");
-        }
-
-        var (chapterSubscription, chapterPaymentSettings, sitePaymentSettings, connectedAccount) = await _unitOfWork.RunAsync(
-            x => x.ChapterSubscriptionRepository.GetDtoById(memberSubscriptionRecord.ChapterSubscriptionId.Value),
-            x => x.ChapterPaymentSettingsRepository.GetByChapterId(memberSubscriptionRecord.ChapterId),
-            x => x.SitePaymentSettingsRepository.GetAll(),
-            x => x.ChapterPaymentAccountRepository.GetByChapterId(memberSubscriptionRecord.ChapterId));
-
-        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
-            chapterPaymentSettings,
-            sitePaymentSettings,
-            connectedAccount);
-
-        var result = await paymentProvider.CancelSubscription(memberSubscriptionRecord.ExternalId);
-        return result
-            ? ServiceResult.Successful("Subscription cancelled")
-            : ServiceResult.Failure("Error cancelling subscription");
+        return await CancelSubscription(memberSubscriptionRecord);
     }
 
     public async Task<ServiceResult> ConfirmEmailAddressUpdate(Guid memberId, string confirmationToken)
@@ -555,9 +536,10 @@ public class MemberService : IMemberService
     {
         var (currentMemberId, chapterId) = (request.CurrentMemberId, request.ChapterId);
 
-        var (chapter, adminMembers) = await _unitOfWork.RunAsync(
+        var (chapter, adminMembers, subscription) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(chapterId),
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId));        
+            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
+            x => x.MemberSubscriptionRecordRepository.GetLatest(currentMemberId, chapterId));        
 
         var result = await DeleteMemberChapterData(currentMemberId, chapterId);
         var (currentMember, memberChapter) = result.Value;
@@ -1174,6 +1156,31 @@ public class MemberService : IMemberService
         _unitOfWork.MemberPropertyRepository.AddMany(memberProperties);
 
         return memberChapter;
+    }
+
+    private async Task<ServiceResult> CancelSubscription(MemberSubscriptionRecord memberSubscriptionRecord)
+    {
+        if (memberSubscriptionRecord.ChapterSubscriptionId == null || 
+            string.IsNullOrEmpty(memberSubscriptionRecord.ExternalId))
+        {
+            return ServiceResult.Failure("Error cancelling subscription");
+        }
+
+        var (chapterSubscription, chapterPaymentSettings, sitePaymentSettings, connectedAccount) = await _unitOfWork.RunAsync(
+            x => x.ChapterSubscriptionRepository.GetDtoById(memberSubscriptionRecord.ChapterSubscriptionId.Value),
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(memberSubscriptionRecord.ChapterId),
+            x => x.SitePaymentSettingsRepository.GetAll(),
+            x => x.ChapterPaymentAccountRepository.GetByChapterId(memberSubscriptionRecord.ChapterId));
+        
+        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
+            chapterPaymentSettings,
+            sitePaymentSettings,
+            connectedAccount);
+
+        var result = await paymentProvider.CancelSubscription(memberSubscriptionRecord.ExternalId);
+        return result
+            ? ServiceResult.Successful("Subscription cancelled")
+            : ServiceResult.Failure("Error cancelling subscription");
     }
 
     private async Task<ServiceResult> RequestMemberEmailAddressUpdate(
