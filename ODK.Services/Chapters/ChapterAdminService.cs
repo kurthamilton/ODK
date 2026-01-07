@@ -381,6 +381,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             CreatedUtc = DateTime.UtcNow,
             ExternalId = result.Id,
             OnboardingUrl = onboardingUrl,
+            OwnerId = owner.Id,
             SitePaymentSettingId = sitePaymentSettings.Id
         };
         _unitOfWork.ChapterPaymentAccountRepository.Add(paymentAccount);

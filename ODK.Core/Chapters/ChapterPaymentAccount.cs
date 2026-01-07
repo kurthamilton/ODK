@@ -18,6 +18,8 @@ public class ChapterPaymentAccount : IDatabaseEntity, IChapterEntity
 
     public required string? OnboardingUrl { get; set; }
 
+    public Guid OwnerId { get; set; }
+
     public Guid SitePaymentSettingId { get; set; }
 
     public bool SetupComplete()
