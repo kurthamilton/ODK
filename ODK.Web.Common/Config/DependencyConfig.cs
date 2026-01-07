@@ -177,6 +177,12 @@ public static class DependencyConfig
         services.AddScoped<IMemberViewModelService, MemberViewModelService>();
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IOAuthProviderFactory, OAuthProviderFactory>();
+        services.AddScoped<IPasswordHasher, PasswordHasher>();
+        services.AddSingleton(new PasswordHasherSettings
+        {
+            Algorithm = appSettings.Auth.Passwords.Algorithm,
+            Iterations = appSettings.Auth.Passwords.Iterations
+        });
         services.AddScoped<IPaymentAdminService, PaymentAdminService>();
         services.AddScoped<IPaymentService, PaymentService>();
         services.AddScoped<IPlatformProvider, PlatformProvider>();

@@ -1,38 +1,57 @@
 ﻿using System.Security.Cryptography;
+using ODK.Core.Members;
 
 namespace ODK.Services.Authentication;
 
-public class PasswordHasher
+public class PasswordHasher : IPasswordHasher
 {
     private const int SaltByteSize = 24;
     private const int HashByteSize = 24;
-    private const int HasingIterationsCount = 10101;
 
-    public static (string hash, string salt) ComputeHash(string plainText)
+    private readonly PasswordHasherSettings _settings;
+
+    public PasswordHasher(PasswordHasherSettings settings)
     {
-        byte[] salt = GenerateSalt();
-        byte[] passwordHash = ComputeHash(plainText, salt);
-
-        string base64Salt = Convert.ToBase64String(salt);
-        string base64PasswordHash = Convert.ToBase64String(passwordHash);
-
-        return (base64PasswordHash, base64Salt);
+        _settings = settings;
     }
 
-    public static string ComputeHash(string plainText, string salt)
+    public bool Check(string plainText, IHashedPassword hashed)
     {
-        byte[] saltBytes = Convert.FromBase64String(salt);
-        byte[] passwordHash = ComputeHash(plainText, saltBytes);
-
-        return Convert.ToBase64String(passwordHash);
+        var hashBytes = ComputeHashBytes(plainText, hashed);
+        var hash = Convert.ToBase64String(hashBytes);
+        return string.Equals(hash, hashed.Hash, StringComparison.Ordinal);
     }
 
-    private static byte[] ComputeHash(string plainText, byte[] salt, int iterations = HasingIterationsCount, int hashByteSize = HashByteSize)
+    public (string hash, IHashedPasswordOptions options) ComputeHash(string plainText)
     {
-        using var hashGenerator = new Rfc2898DeriveBytes(plainText, salt, iterations, HashAlgorithmName.SHA1);
-        hashGenerator.IterationCount = iterations;
-        return hashGenerator.GetBytes(hashByteSize);
-    }
+        var salt = GenerateSaltBytes();
+        var base64Salt = Convert.ToBase64String(salt);
 
-    private static byte[] GenerateSalt(int saltByteSize = SaltByteSize) => RandomNumberGenerator.GetBytes(saltByteSize);
+        var options = GetRecommendedOptions(base64Salt);
+        var passwordHash = ComputeHashBytes(plainText, options);
+
+        var base64PasswordHash = Convert.ToBase64String(passwordHash);
+
+        return (base64PasswordHash, options);
+    }    
+
+    public bool ShouldUpdate(IHashedPassword hashed)
+        => hashed.Algorithm != _settings.Algorithm || hashed.Iterations != _settings.Iterations;
+
+    private byte[] ComputeHashBytes(string plainText, IHashedPasswordOptions options) 
+        => Rfc2898DeriveBytes.Pbkdf2(
+            plainText,
+            Convert.FromBase64String(options.Salt),
+            options.Iterations, 
+            new HashAlgorithmName(options.Algorithm),
+            HashByteSize);
+
+    private byte[] GenerateSaltBytes() => RandomNumberGenerator.GetBytes(SaltByteSize);
+
+    private IHashedPasswordOptions GetRecommendedOptions(string salt) => new PasswordHasherOptions
+    {
+        Algorithm = _settings.Algorithm,
+        Iterations = _settings.Iterations,
+        Salt = salt
+    };
 }

@@ -125,7 +125,6 @@ public class Program
         builder.Services.AddControllers();
         
         builder.Services.AddScoped<CustomCookieAuthenticationEvents>();
-        builder.Services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
         builder.Services.AddHttpContextAccessor();
         builder.Services
             .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

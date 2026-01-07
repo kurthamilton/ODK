@@ -17,6 +17,7 @@ public class AuthenticationService : IAuthenticationService
 {
     private readonly IMemberEmailService _memberEmailService;
     private readonly INotificationService _notificationService;
+    private readonly IPasswordHasher _passwordHasher;
     private readonly AuthenticationServiceSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
     
@@ -24,10 +25,12 @@ public class AuthenticationService : IAuthenticationService
         AuthenticationServiceSettings settings,
         IUnitOfWork unitOfWork,
         IMemberEmailService memberEmailService,
-        INotificationService notificationService)
+        INotificationService notificationService,
+        IPasswordHasher passwordHasher)
     {
         _memberEmailService = memberEmailService;
         _notificationService = notificationService;
+        _passwordHasher = passwordHasher;
         _settings = settings;
         _unitOfWork = unitOfWork;
     }    
@@ -163,8 +166,19 @@ public class AuthenticationService : IAuthenticationService
             .GetByMemberId(member.Id)
             .Run();
 
-        bool passwordMatches = CheckPassword(memberPassword, password);
-        return passwordMatches ? member : null;
+        if (!CheckPassword(memberPassword, password))
+        {
+            return null;
+        }
+
+        if (_passwordHasher.ShouldUpdate(memberPassword))
+        {
+            memberPassword = UpdateValidatedPassword(memberPassword, password);
+            _unitOfWork.MemberPasswordRepository.Update(memberPassword);
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        return member;
     }
 
     public async Task<IReadOnlyCollection<Claim>> GetClaimsAsync(Member member)
@@ -252,13 +266,9 @@ public class AuthenticationService : IAuthenticationService
 
     private bool CheckPassword([NotNullWhen(true)] MemberPassword? memberPassword, string password)
     {
-        if (memberPassword == null)
-        {
-            return false;
-        }
-
-        string passwordHash = PasswordHasher.ComputeHash(password, memberPassword.Salt);
-        return memberPassword.Hash == passwordHash;
+        return memberPassword != null
+            ? _passwordHasher.Check(password, memberPassword)
+            : false;
     }
 
     private async Task<ServiceResult> RequestPasswordResetAsync(
@@ -324,14 +334,20 @@ public class AuthenticationService : IAuthenticationService
 
     private MemberPassword UpdatePassword(MemberPassword? memberPassword, string password)
     {
-        ValidatePassword(password);
+        ValidatePassword(password);        
 
-        (string hash, string salt) = PasswordHasher.ComputeHash(password);
+        return UpdateValidatedPassword(memberPassword, password);
+    }
+
+    private MemberPassword UpdateValidatedPassword(MemberPassword? memberPassword, string password)
+    {
+        var (hash, options) = _passwordHasher.ComputeHash(password);
 
         memberPassword ??= new MemberPassword();
-
         memberPassword.Hash = hash;
-        memberPassword.Salt = salt;
+        memberPassword.Salt = options.Salt;
+        memberPassword.Algorithm = options.Algorithm;
+        memberPassword.Iterations = options.Iterations;
 
         return memberPassword;
     }
