@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Diagnostics;
+﻿using System.Data.Common;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace ODK.Data.EntityFramework.Interceptors;
 
