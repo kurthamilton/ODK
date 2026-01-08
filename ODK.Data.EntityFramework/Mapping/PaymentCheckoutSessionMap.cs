@@ -17,6 +17,9 @@ public class PaymentCheckoutSessionMap : IEntityTypeConfiguration<PaymentCheckou
         builder.Property(x => x.CompletedUtc)
             .HasConversion<NullableUtcDateTimeConverter>();
 
+        builder.Property(x => x.ExpiredUtc)
+            .HasConversion<NullableUtcDateTimeConverter>();
+
         builder.Property(x => x.Id)
             .HasColumnName("PaymentCheckoutSessionId");
 

@@ -4,6 +4,8 @@ public enum PaymentProviderWebhookType
 {
     None,
     CheckoutSessionCompleted,
+    CheckoutSessionExpired,
     InvoicePaymentSucceeded,
-    PaymentSucceeded
+    PaymentSucceeded,
+    SubscriptionCancelled
 }

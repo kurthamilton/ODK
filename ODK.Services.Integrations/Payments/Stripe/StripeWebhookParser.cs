@@ -35,8 +35,10 @@ public class StripeWebhookParser : IStripeWebhookParser
             return stripeEvent.Type switch
             {
                 EventTypes.CheckoutSessionCompleted => ToCheckoutSessionCompleted(stripeEvent),
+                EventTypes.CheckoutSessionExpired => ToCheckoutSessionExpired(stripeEvent),
                 EventTypes.InvoicePaymentSucceeded => ToInvoicePaymentSucceeded(stripeEvent),
                 EventTypes.PaymentIntentSucceeded => ToPaymentIntentSucceeded(stripeEvent),
+                EventTypes.CustomerSubscriptionDeleted => ToSubscriptionDeleted(stripeEvent),
                 _ => null
             };
         }
@@ -64,6 +66,24 @@ public class StripeWebhookParser : IStripeWebhookParser
             PaymentProviderType = PaymentProviderType.Stripe,
             SubscriptionId = null,
             Type = PaymentProviderWebhookType.CheckoutSessionCompleted
+        };
+    }
+
+    private static PaymentProviderWebhook ToCheckoutSessionExpired(Event stripeEvent)
+    {
+        var session = (Session)stripeEvent.Data.Object;
+
+        return new PaymentProviderWebhook
+        {
+            Amount = 0,
+            Complete = session.Status == "expired",
+            Id = session.Id,
+            Metadata = session.Metadata,
+            OriginatedUtc = stripeEvent.Created,
+            PaymentId = session.PaymentIntentId,
+            PaymentProviderType = PaymentProviderType.Stripe,
+            SubscriptionId = null,
+            Type = PaymentProviderWebhookType.CheckoutSessionExpired
         };
     }
 
@@ -100,6 +120,24 @@ public class StripeWebhookParser : IStripeWebhookParser
             PaymentProviderType = PaymentProviderType.Stripe,
             SubscriptionId = null,
             Type = PaymentProviderWebhookType.PaymentSucceeded
+        };
+    }
+
+    private static PaymentProviderWebhook ToSubscriptionDeleted(Event stripeEvent)
+    {
+        var subscription = (Subscription)stripeEvent.Data.Object;
+
+        return new PaymentProviderWebhook
+        {
+            Amount = 0,
+            Complete = subscription.Status == "canceled",
+            Id = subscription.Id,
+            Metadata = subscription.Metadata,
+            OriginatedUtc = stripeEvent.Created,
+            PaymentId = null,
+            PaymentProviderType = PaymentProviderType.Stripe,
+            SubscriptionId = subscription.Id,
+            Type = PaymentProviderWebhookType.SubscriptionCancelled
         };
     }
 }

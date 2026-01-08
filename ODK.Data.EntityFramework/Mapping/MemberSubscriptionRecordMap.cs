@@ -15,6 +15,9 @@ public class MemberSubscriptionRecordMap : IEntityTypeConfiguration<MemberSubscr
 
         builder.HasKey(x => x.Id);
 
+        builder.Property(x => x.CancelledUtc)
+            .HasConversion<NullableUtcDateTimeConverter>();
+
         builder.Property(x => x.PurchasedUtc)
             .HasColumnName("PurchaseDate")
             .HasConversion<UtcDateTimeConverter>();

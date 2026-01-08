@@ -106,21 +106,25 @@ public class PaymentService : IPaymentService
 
         PaymentWebhookProcessingResult result;
 
-        if (webhook.Type == PaymentProviderWebhookType.CheckoutSessionCompleted)
+        switch (webhook.Type)
         {
-            result = await ProcessWebhookPayment(webhook);
-        }
-        else if (webhook.Type == PaymentProviderWebhookType.InvoicePaymentSucceeded)
-        {
-            result = await ProcessWebhookSubscription(request, webhook);
-        }
-        else if (webhook.Type == PaymentProviderWebhookType.PaymentSucceeded)
-        {
-            result = await ProcessWebhookPayment(webhook);
-        }
-        else
-        {
-            result = PaymentWebhookProcessingResult.Failure();
+            case PaymentProviderWebhookType.CheckoutSessionCompleted:
+            case PaymentProviderWebhookType.PaymentSucceeded:
+                result = await ProcessWebhookPayment(webhook);
+                break;
+
+            case PaymentProviderWebhookType.CheckoutSessionExpired:
+                result = await ProcessWebhookCheckoutSessionExpired(webhook);
+                break;
+
+            case PaymentProviderWebhookType.InvoicePaymentSucceeded:
+            case PaymentProviderWebhookType.SubscriptionCancelled:
+                result = await ProcessWebhookSubscription(request, webhook);
+                break;
+
+            default:
+                result = PaymentWebhookProcessingResult.Failure();
+                break;
         }
 
         await _unitOfWork.SaveChangesAsync();
@@ -140,6 +144,63 @@ public class PaymentService : IPaymentService
 
             await _memberEmailService.SendPaymentNotification(request, member, payment, currency, siteEmailSettings);
         }
+    }
+
+    private async Task<PaymentWebhookProcessingResult> ProcessWebhookCheckoutSessionExpired(PaymentProviderWebhook webhook)
+    {
+        var utcNow = webhook.OriginatedUtc;
+
+        if (string.IsNullOrEmpty(webhook.PaymentId))
+        {
+            var message =
+                $"Received {webhook.PaymentProviderType} webhook '{webhook.Id}' for event without PaymentId; not processing";
+
+            await _loggingService.Error(message);
+            return PaymentWebhookProcessingResult.Failure();
+        }
+
+        if (!webhook.Complete)
+        {
+            var message =
+                $"Received {webhook.PaymentProviderType} webhook '{webhook.Id}' for incomplete event; not processing";
+
+            await _loggingService.Warn(message); ;
+            return PaymentWebhookProcessingResult.Failure();
+        }
+
+        // Validate basic metadata
+        var metadata = PaymentMetadataModel.FromDictionary(webhook.Metadata);
+
+        if (metadata.PaymentCheckoutSessionId == null)
+        {
+            var message =
+                $"Cannot process {webhook.PaymentProviderType} webhook '{webhook.Id}': " +
+                $"metadata missing property PaymentCheckoutSessionId";
+
+            await _loggingService.Warn(message);
+            return PaymentWebhookProcessingResult.Failure();
+        }
+
+        var paymentCheckoutSession = await _unitOfWork.PaymentCheckoutSessionRepository
+            .GetById(metadata.PaymentCheckoutSessionId.Value).Run();
+
+        // update payment checkout session
+        if (paymentCheckoutSession.ExpiredUtc != null)
+        {
+            var message =
+                $"Not updating PaymentCheckoutSession {paymentCheckoutSession.Id} in {webhook.PaymentProviderType} webhook processing: " +
+                $"already expired";
+            await _loggingService.Warn(message);
+
+            return PaymentWebhookProcessingResult.Failure();
+        }
+
+        paymentCheckoutSession.ExpiredUtc = utcNow;
+        _unitOfWork.PaymentCheckoutSessionRepository.Update(paymentCheckoutSession);
+
+        await _unitOfWork.SaveChangesAsync();
+
+        return PaymentWebhookProcessingResult.Successful(member: null, payment: null, currency: null);
     }
 
     private async Task<PaymentWebhookProcessingResult> ProcessWebhookPayment(PaymentProviderWebhook webhook)
@@ -243,6 +304,21 @@ public class PaymentService : IPaymentService
 
             await _loggingService.Error(message);
             return PaymentWebhookProcessingResult.Failure();
+        }
+
+        if (webhook.Type == PaymentProviderWebhookType.SubscriptionCancelled)
+        {
+            await _loggingService.Info(
+                $"Processing {webhook.PaymentProviderType} webhook '{webhook.Id}': " +
+                $"cancelling member subscription record with external id '{webhook.SubscriptionId}'");
+
+            var memberSubscriptionRecord = await _unitOfWork.MemberSubscriptionRecordRepository
+                .GetByExternalId(webhook.SubscriptionId).Run();
+
+            memberSubscriptionRecord.CancelledUtc = webhook.OriginatedUtc;
+            _unitOfWork.MemberSubscriptionRecordRepository.Update(memberSubscriptionRecord);
+            await _unitOfWork.SaveChangesAsync();
+            return PaymentWebhookProcessingResult.Successful(member: null, payment: null, currency: null);
         }
 
         if (metadata.MemberId == null ||

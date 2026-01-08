@@ -19,7 +19,7 @@ internal class PaymentWebhookProcessingResult
     internal bool Success { get; init; }
 
     internal static PaymentWebhookProcessingResult Successful(
-        Member member, Payment payment, Currency currency)
+        Member? member, Payment? payment, Currency? currency)
         => new PaymentWebhookProcessingResult
         {
             Currency = currency,
@@ -27,7 +27,6 @@ internal class PaymentWebhookProcessingResult
             Payment = payment,
             Success = true
         };
-
 
     internal static PaymentWebhookProcessingResult Failure()
         => new PaymentWebhookProcessingResult();

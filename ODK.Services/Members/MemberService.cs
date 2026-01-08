@@ -548,6 +548,11 @@ public class MemberService : IMemberService
             return result;
         }
 
+        if (subscription != null)
+        {
+            await CancelSubscription(subscription);
+        }        
+
         await _memberEmailService.SendMemberLeftChapterEmail(
             request,
             chapter,
@@ -1177,8 +1182,15 @@ public class MemberService : IMemberService
             sitePaymentSettings,
             connectedAccount);
 
-        var result = await paymentProvider.CancelSubscription(memberSubscriptionRecord.ExternalId);
-        return result
+        var success = await paymentProvider.CancelSubscription(memberSubscriptionRecord.ExternalId);
+        if (success)
+        {
+            memberSubscriptionRecord.CancelledUtc = DateTime.UtcNow;
+            _unitOfWork.MemberSubscriptionRecordRepository.Update(memberSubscriptionRecord);
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        return success
             ? ServiceResult.Successful("Subscription cancelled")
             : ServiceResult.Failure("Error cancelling subscription");
     }
