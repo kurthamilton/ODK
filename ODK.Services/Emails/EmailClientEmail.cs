@@ -8,6 +8,8 @@ public record EmailClientEmail
 
     public required EmailAddressee From { get; init; }
 
+    public required DateTime? ScheduledUtc { get; init; }
+
     public required string Subject { get; init; }
 
     public required IReadOnlyCollection<EmailAddressee> To { get; init; }

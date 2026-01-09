@@ -18,7 +18,6 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IChapterContactMessageRepository> _chapterContactMessageRepository;
     private readonly Lazy<IChapterConversationMessageRepository> _chapterConversationMessageRepository;
     private readonly Lazy<IChapterConversationRepository> _chapterConversationRepository;
-    private readonly Lazy<IChapterEmailProviderRepository> _chapterEmailProviderRepository;
     private readonly Lazy<IChapterEmailRepository> _chapterEmailRepository;
     private readonly Lazy<IChapterEventSettingsRepository> _chapterEventSettingsRepository;
     private readonly Lazy<IChapterImageRepository> _chapterImageRepository;
@@ -39,7 +38,6 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<ICountryRepository> _countryRepository;
     private readonly Lazy<ICurrencyRepository> _currencyRepository;
     private readonly Lazy<IDistanceUnitRepository> _distanceUnitRepository;
-    private readonly Lazy<IEmailProviderRepository> _emailProviderRepository;
     private readonly Lazy<IEmailRepository> _emailRepository;
     private readonly Lazy<IErrorPropertyRepository> _errorPropertyRepository;
     private readonly Lazy<IErrorRepository> _errorRepository;
@@ -108,7 +106,6 @@ public class UnitOfWork : IUnitOfWork
         _chapterContactMessageRepository = new(() => new ChapterContactMessageRepository(_context));
         _chapterConversationMessageRepository = new(() => new ChapterConversationMessageRepository(_context));
         _chapterConversationRepository = new(() => new ChapterConversationRepository(_context));
-        _chapterEmailProviderRepository = new(() => new ChapterEmailProviderRepository(_context));
         _chapterEmailRepository = new(() => new ChapterEmailRepository(_context));
         _chapterEventSettingsRepository = new(() => new ChapterEventSettingsRepository(_context));
         _chapterImageRepository = new(() => new ChapterImageRepository(_context));
@@ -129,7 +126,6 @@ public class UnitOfWork : IUnitOfWork
         _countryRepository = new(() => new CountryRepository(_context));
         _currencyRepository = new(() => new CurrencyRepository(_context));
         _distanceUnitRepository = new(() => new DistanceUnitRepository(_context));
-        _emailProviderRepository = new(() => new EmailProviderRepository(_context));
         _emailRepository = new(() => new EmailRepository(_context));
         _errorPropertyRepository = new(() => new ErrorPropertyRepository(_context));
         _errorRepository = new(() => new ErrorRepository(_context));
@@ -194,7 +190,6 @@ public class UnitOfWork : IUnitOfWork
     public IChapterContactMessageRepository ChapterContactMessageRepository => _chapterContactMessageRepository.Value;
     public IChapterConversationMessageRepository ChapterConversationMessageRepository => _chapterConversationMessageRepository.Value;
     public IChapterConversationRepository ChapterConversationRepository => _chapterConversationRepository.Value;
-    public IChapterEmailProviderRepository ChapterEmailProviderRepository => _chapterEmailProviderRepository.Value;
     public IChapterEmailRepository ChapterEmailRepository => _chapterEmailRepository.Value;
     public IChapterEventSettingsRepository ChapterEventSettingsRepository => _chapterEventSettingsRepository.Value;
     public IChapterImageRepository ChapterImageRepository => _chapterImageRepository.Value;
@@ -215,7 +210,6 @@ public class UnitOfWork : IUnitOfWork
     public ICountryRepository CountryRepository => _countryRepository.Value;
     public ICurrencyRepository CurrencyRepository => _currencyRepository.Value;
     public IDistanceUnitRepository DistanceUnitRepository => _distanceUnitRepository.Value;
-    public IEmailProviderRepository EmailProviderRepository => _emailProviderRepository.Value;
     public IEmailRepository EmailRepository => _emailRepository.Value;
     public IErrorPropertyRepository ErrorPropertyRepository => _errorPropertyRepository.Value;
     public IErrorRepository ErrorRepository => _errorRepository.Value;

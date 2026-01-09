@@ -9,8 +9,6 @@ public interface ISettingsService
 {
     Task<ServiceResult> ActivatePaymentSettings(Guid currentMemberId, Guid id);
 
-    Task<ServiceResult> AddEmailProvider(Guid currentMemberId, UpdateEmailProvider model);
-
     Task<ServiceResult> CreatePaymentSettings(
         Guid currentMemberId,
         PaymentProviderType provider,
@@ -20,12 +18,6 @@ public interface ISettingsService
         decimal commission,
         bool enabled);
 
-    Task<ServiceResult> DeleteEmailProvider(Guid currentMemberId, Guid emailProviderId);
-
-    Task<EmailProvider> GetEmailProvider(Guid currentMemberId, Guid emailProviderId);
-
-    Task<IReadOnlyCollection<EmailProvider>> GetEmailProviders(Guid currentMemberId);
-
     Task<SiteSettings> GetSiteSettings();
 
     Task<SiteEmailSettings> GetSiteEmailSettings(PlatformType platform);
@@ -33,8 +25,6 @@ public interface ISettingsService
     Task<IReadOnlyCollection<SitePaymentSettings>> GetSitePaymentSettings(Guid currentMemberId);
 
     Task<SitePaymentSettings> GetSitePaymentSettings(Guid currentMemberId, Guid id);
-
-    Task<ServiceResult> UpdateEmailProvider(Guid currentMemberId, Guid emailProviderId, UpdateEmailProvider model);
 
     Task<ServiceResult> UpdateEmailSettings(
         MemberServiceRequest request,

@@ -19,8 +19,7 @@ using ODK.Services.Features;
 using ODK.Services.Files;
 using ODK.Services.Geolocation;
 using ODK.Services.Imaging;
-using ODK.Services.Integrations.Emails;
-using ODK.Services.Integrations.Emails.Smtp;
+using ODK.Services.Integrations.Emails.Brevo;
 using ODK.Services.Integrations.Geolocation;
 using ODK.Services.Integrations.Imaging;
 using ODK.Services.Integrations.Instagram;
@@ -124,7 +123,7 @@ public static class DependencyConfig
     {
         services.AddScoped<IAccountViewModelService, AccountViewModelService>();
         services.AddScoped<IAuthenticationService, AuthenticationService>();
-        services.AddScoped<IAuthorizationService, AuthorizationService>();
+        services.AddScoped<IAuthorizationService, AuthorizationService>();        
         services.AddScoped<ICacheService, CacheService>();
         services.AddScoped<IChapterAdminService, ChapterAdminService>();
         services.AddSingleton(new ChapterAdminServiceSettings
@@ -139,7 +138,12 @@ public static class DependencyConfig
         services.AddScoped<ICsvService, CsvService>();
         services.AddScoped<ICurrencyService, CurrencyService>();
         services.AddScoped<IEmailAdminService, EmailAdminService>();
-        services.AddScoped<IEmailClientFactory, EmailClientFactory>();
+        services.AddScoped<IEmailClient, BrevoApiEmailClient>();
+        services.AddSingleton(new BrevoApiEmailClientSettings
+        {
+            ApiKey = appSettings.Brevo.ApiKey,
+            DebugEmailAddress = appSettings.Emails.DebugEmailAddress
+        });
         services.AddScoped<IEventAdminService, EventAdminService>();
         services.AddScoped<IEventService, EventService>();
         services.AddScoped<IEventViewModelService, EventViewModelService>();
@@ -148,11 +152,6 @@ public static class DependencyConfig
         services.AddScoped<IIssueAdminService, IssueAdminService>();
         services.AddScoped<IIssueService, IssueService>();
         services.AddScoped<ILoggingService, LoggingService>();
-        services.AddScoped<SmtpEmailClient>();
-        services.AddSingleton(new SmtpEmailClientSettings
-        {
-            DebugEmailAddress = appSettings.Emails.DebugEmailAddress
-        });
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IGeolocationService, GoogleGeolocationService>();
         services.AddSingleton(new GoogleGeolocationServiceSettings

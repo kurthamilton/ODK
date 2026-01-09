@@ -13,8 +13,6 @@ public interface IChapterAdminService
 {
     Task<ServiceResult> AddChapterAdminMember(MemberChapterServiceRequest request, Guid memberId);
 
-    Task<ServiceResult> AddChapterEmailProvider(MemberChapterServiceRequest request, UpdateEmailProvider model);
-
     Task<ServiceResult> ApproveChapter(MemberChapterServiceRequest request);
 
     Task<ServiceResult<Chapter?>> CreateChapter(
@@ -35,8 +33,6 @@ public interface IChapterAdminService
     Task<ServiceResult> DeleteChapterAdminMember(MemberChapterServiceRequest request, Guid memberId);
 
     Task<ServiceResult> DeleteChapterContactMessage(MemberChapterServiceRequest request, Guid id);
-
-    Task<ServiceResult> DeleteChapterEmailProvider(MemberChapterServiceRequest request, Guid id);
 
     Task DeleteChapterProperty(MemberChapterServiceRequest request, Guid id);
 
@@ -99,10 +95,6 @@ public interface IChapterAdminService
 
     Task<MembershipSettingsAdminPageViewModel> GetMembershipSettingsViewModel(MemberChapterServiceRequest request);
 
-    Task<ChapterEmailProvider> GetChapterEmailProvider(MemberChapterServiceRequest request, Guid emailProviderId);
-
-    Task<SuperAdminChapterEmailsViewModel> GetSuperAdminChapterEmailsViewModel(MemberChapterServiceRequest request);
-
     Task<SuperAdminChaptersViewModel> GetSuperAdminChaptersViewModel(MemberServiceRequest request);
 
     Task<SuperAdminChapterViewModel> GetSuperAdminChapterViewModel(MemberChapterServiceRequest request);
@@ -138,8 +130,6 @@ public interface IChapterAdminService
     Task<ServiceResult> UpdateChapterCurrency(MemberChapterServiceRequest request, Guid currencyId);
 
     Task<ServiceResult> UpdateChapterDescription(MemberChapterServiceRequest request, string description);
-
-    Task<ServiceResult> UpdateChapterEmailProvider(MemberChapterServiceRequest request, Guid emailProviderId, UpdateEmailProvider model);
 
     Task<ServiceResult> UpdateChapterImage(MemberChapterServiceRequest request, UpdateChapterImage model);
 

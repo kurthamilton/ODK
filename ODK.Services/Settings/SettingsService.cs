@@ -37,35 +37,6 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> AddEmailProvider(Guid currentMemberId, UpdateEmailProvider model)
-    {
-        var existing = await GetSuperAdminRestrictedContent(currentMemberId,
-            x => x.EmailProviderRepository.GetAll());
-
-        var provider = new EmailProvider
-        {
-            BatchSize = model.BatchSize,
-            DailyLimit = model.DailyLimit,
-            Name = model.Name,
-            Order = existing.Count + 1,
-            SmtpLogin = model.SmtpLogin,
-            SmtpPassword = model.SmtpPassword,
-            SmtpPort = model.SmtpPort,
-            SmtpServer = model.SmtpServer
-        };
-
-        var isValid = provider.IsValid();
-        if (!isValid)
-        {
-            return ServiceResult.Failure("Some required fields are missing");
-        }
-
-        _unitOfWork.EmailProviderRepository.Add(provider);
-        await _unitOfWork.SaveChangesAsync();
-
-        return ServiceResult.Successful();
-    }
-
     public async Task<ServiceResult> CreatePaymentSettings(
         Guid currentMemberId,
         PaymentProviderType provider,
@@ -88,29 +59,6 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
         await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();
-    }
-
-    public async Task<ServiceResult> DeleteEmailProvider(Guid currentMemberId, Guid emailProviderId)
-    {
-        var provider = await GetSuperAdminRestrictedContent(currentMemberId,
-            x => x.EmailProviderRepository.GetById(emailProviderId));
-
-        _unitOfWork.EmailProviderRepository.Delete(provider);
-        await _unitOfWork.SaveChangesAsync();
-
-        return ServiceResult.Successful();
-    }
-
-    public async Task<EmailProvider> GetEmailProvider(Guid currentMemberId, Guid emailProviderId)
-    {
-        return await GetSuperAdminRestrictedContent(currentMemberId,
-            x => x.EmailProviderRepository.GetById(emailProviderId));
-    }
-
-    public async Task<IReadOnlyCollection<EmailProvider>> GetEmailProviders(Guid currentMemberId)
-    {
-        return await GetSuperAdminRestrictedContent(currentMemberId,
-            x => x.EmailProviderRepository.GetAll());
     }
 
     public async Task<SiteSettings> GetSiteSettings()
@@ -151,30 +99,6 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
         settings.Title = emailTitle;
 
         _unitOfWork.SiteEmailSettingsRepository.Update(settings);
-        await _unitOfWork.SaveChangesAsync();
-
-        return ServiceResult.Successful();
-    }
-
-    public async Task<ServiceResult> UpdateEmailProvider(Guid currentMemberId, Guid emailProviderId, UpdateEmailProvider model)
-    {
-        var provider = await GetEmailProvider(currentMemberId, emailProviderId);
-
-        provider.BatchSize = model.BatchSize;
-        provider.DailyLimit = model.DailyLimit;
-        provider.Name = model.Name;
-        provider.SmtpLogin = model.SmtpLogin;
-        provider.SmtpPassword = model.SmtpPassword;
-        provider.SmtpPort = model.SmtpPort;
-        provider.SmtpServer = model.SmtpServer;
-
-        var isValid = provider.IsValid();
-        if (!isValid)
-        {
-            return ServiceResult.Failure("Some required fields are missing");
-        }
-
-        _unitOfWork.EmailProviderRepository.Update(provider);
         await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();

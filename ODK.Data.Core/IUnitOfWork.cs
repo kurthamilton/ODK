@@ -12,7 +12,6 @@ public interface IUnitOfWork
     IChapterContactMessageRepository ChapterContactMessageRepository { get; }
     IChapterConversationMessageRepository ChapterConversationMessageRepository { get; }
     IChapterConversationRepository ChapterConversationRepository { get; }
-    IChapterEmailProviderRepository ChapterEmailProviderRepository { get; }
     IChapterEmailRepository ChapterEmailRepository { get; }
     IChapterEventSettingsRepository ChapterEventSettingsRepository { get; }
     IChapterImageRepository ChapterImageRepository { get; }
@@ -33,7 +32,6 @@ public interface IUnitOfWork
     ICountryRepository CountryRepository { get; }
     ICurrencyRepository CurrencyRepository { get; }
     IDistanceUnitRepository DistanceUnitRepository { get; }
-    IEmailProviderRepository EmailProviderRepository { get; }
     IEmailRepository EmailRepository { get; }
     IErrorPropertyRepository ErrorPropertyRepository { get; }
     IErrorRepository ErrorRepository { get; }

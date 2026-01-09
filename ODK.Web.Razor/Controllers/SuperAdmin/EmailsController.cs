@@ -34,14 +34,6 @@ public class EmailsController : OdkControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("superadmin/emails/providers/{id:guid}/delete")]
-    public async Task<IActionResult> DeleteEmailProvider(Guid id)
-    {
-        await _settingsService.DeleteEmailProvider(MemberId, id);
-        AddFeedback("Email provider deleted", FeedbackType.Success);
-        return RedirectToReferrer();
-    }
-
     [HttpPost("superadmin/emails/settings")]
     public async Task<IActionResult> UpdateSettings(SiteEmailSettingsViewModel viewModel)
     {

@@ -47,15 +47,6 @@ public class ChapterSuperAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("/superadmin/groups/{groupId:guid}/emails/providers/{id:guid}/delete")]
-    public async Task<IActionResult> DeleteEmailProvider(Guid groupId, Guid id)
-    {
-        var request = MemberChapterServiceRequest(groupId);
-        await _chapterAdminService.DeleteChapterEmailProvider(request, id);
-        AddFeedback("Email provider deleted", FeedbackType.Success);
-        return RedirectToReferrer();
-    }
-
     [HttpPost("/{chapterName}/Admin/SuperAdmin/Payments/{id:guid}/Reconciliation-Status")]
     public async Task<IActionResult> AddReconciliationExemption(string chapterName, Guid id)
     {

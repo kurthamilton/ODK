@@ -6,6 +6,8 @@ public class AppSettings
 
     public required BetterStackSettings BetterStack { get; init; }
 
+    public required BrevoSettings Brevo { get; init; }
+
     public required ConnectionStringsSettings ConnectionStrings { get; init; }
 
     public required EmailsSettings Emails { get; init; }

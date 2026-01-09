@@ -116,36 +116,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> AddChapterEmailProvider(MemberChapterServiceRequest request, UpdateEmailProvider model)
-    {
-        var existing = await GetSuperAdminRestrictedContent(request,
-            x => x.ChapterEmailProviderRepository.GetByChapterId(request.ChapterId));
-
-        var provider = new ChapterEmailProvider
-        {
-            BatchSize = model.BatchSize,
-            ChapterId = request.ChapterId,
-            DailyLimit = model.DailyLimit,
-            Name = model.Name,
-            Order = existing.Count + 1,
-            SmtpLogin = model.SmtpLogin,
-            SmtpPassword = model.SmtpPassword,
-            SmtpPort = model.SmtpPort,
-            SmtpServer = model.SmtpServer
-        };
-
-        var isValid = provider.IsValid();
-        if (!isValid)
-        {
-            return ServiceResult.Failure("Some required fields are missing");
-        }
-
-        _unitOfWork.ChapterEmailProviderRepository.Add(provider);
-        await _unitOfWork.SaveChangesAsync();
-
-        return ServiceResult.Successful();
-    }
-
     public async Task<ServiceResult> ApproveChapter(MemberChapterServiceRequest request)
     {
         var (chapter, members) = await GetSuperAdminRestrictedContent(request,
@@ -630,17 +600,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         OdkAssertions.BelongsToChapter(contactMessage, request.ChapterId);
 
         _unitOfWork.ChapterContactMessageRepository.Delete(contactMessage);
-        await _unitOfWork.SaveChangesAsync();
-
-        return ServiceResult.Successful();
-    }
-
-    public async Task<ServiceResult> DeleteChapterEmailProvider(MemberChapterServiceRequest request, Guid id)
-    {
-        var provider = await GetSuperAdminRestrictedContent(request,
-            x => x.ChapterEmailProviderRepository.GetById(id));
-
-        _unitOfWork.ChapterEmailProviderRepository.Delete(provider);
         await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();
@@ -1281,29 +1240,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         };
     }
 
-    public async Task<ChapterEmailProvider> GetChapterEmailProvider(MemberChapterServiceRequest request, Guid emailProviderId)
-    {
-        var provider = await GetSuperAdminRestrictedContent(request,
-            x => x.ChapterEmailProviderRepository.GetById(emailProviderId));
-
-        OdkAssertions.BelongsToChapter(provider, request.ChapterId);
-
-        return provider;
-    }
-
-    public async Task<SuperAdminChapterEmailsViewModel> GetSuperAdminChapterEmailsViewModel(MemberChapterServiceRequest request)
-    {
-        var platform = request.Platform;
-
-        var emailProviders = await GetSuperAdminRestrictedContent(request,
-            x => x.ChapterEmailProviderRepository.GetByChapterId(request.ChapterId));
-
-        return new SuperAdminChapterEmailsViewModel
-        {
-            EmailProviders = emailProviders
-        };
-    }
-
     public async Task<SuperAdminChaptersViewModel> GetSuperAdminChaptersViewModel(MemberServiceRequest request)
     {
         var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
@@ -1629,33 +1565,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         existing.SendNewMemberEmails = model.SendNewMemberEmails;
 
         _unitOfWork.ChapterAdminMemberRepository.Update(existing);
-        await _unitOfWork.SaveChangesAsync();
-
-        return ServiceResult.Successful();
-    }
-
-    public async Task<ServiceResult> UpdateChapterEmailProvider(MemberChapterServiceRequest request, Guid emailProviderId, UpdateEmailProvider model)
-    {
-        var provider = await GetSuperAdminRestrictedContent(request,
-            x => x.ChapterEmailProviderRepository.GetById(emailProviderId));
-
-        OdkAssertions.BelongsToChapter(provider, request.ChapterId);
-
-        provider.BatchSize = model.BatchSize;
-        provider.DailyLimit = model.DailyLimit;
-        provider.Name = model.Name;
-        provider.SmtpLogin = model.SmtpLogin;
-        provider.SmtpPassword = model.SmtpPassword;
-        provider.SmtpPort = model.SmtpPort;
-        provider.SmtpServer = model.SmtpServer;
-
-        var isValid = provider.IsValid();
-        if (!isValid)
-        {
-            return ServiceResult.Failure("Some required fields are missing");
-        }
-
-        _unitOfWork.ChapterEmailProviderRepository.Update(provider);
         await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();
