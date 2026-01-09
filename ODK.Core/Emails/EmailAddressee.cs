@@ -11,4 +11,6 @@ public class EmailAddressee
     public string Address { get; }
 
     public string Name { get; }
+
+    public override string ToString() => Address + (!string.IsNullOrEmpty(Name) ? $" ({Name})" : string.Empty);
 }
