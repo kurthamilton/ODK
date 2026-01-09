@@ -1,19 +1,21 @@
 ﻿@page "/{chapterName}/About"
 @using ODK.Core
+@using ODK.Core.Utils
 @using ODK.Services.Chapters
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.About
 @model ODK.Web.Razor.Pages.Chapters.AboutModel
-@inject IChapterService ChapterService
+@inject IChapterViewModelService ChapterViewModelService
 @{
-    Layout = "_OdkChapterLayout";
-    Model.Title = "About";
+    Layout = "_OdkChapterLayout";    
     Model.Description = "More information about this Drunken Knitwits chapter, including some frequently asked questions";
 
-    var texts = await ChapterService.GetChapterTexts(Model.Chapter.Id);
+    var viewModel = await ChapterViewModelService.GetChapterAboutPage(Model.Chapter.Id);
+    var title = StringUtils.Coalesce(viewModel.ChapterPage?.Title, "About");
 
+    Model.Title = title;
     Model.Path = OdkRoutes.Groups.About(Model.Platform, Model.Chapter);
 }
 
@@ -30,7 +32,7 @@
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Title = "About",
+    Title = title,
     Breadcrumbs = new []
     {
         new MenuItem 
@@ -38,11 +40,11 @@
             Link = OdkRoutes.Groups.Group(Model.Platform, Model.Chapter), 
             Text = Model.Chapter.GetDisplayName(Model.Platform)
         },
-        new MenuItem { Text = "About" }
+        new MenuItem { Text = title }
     },
     Content = await Html.PartialAsync("Chapters/_AboutContent", new AboutContentViewModel
     {
         Chapter = Model.Chapter,
-        Texts = texts
+        Texts = viewModel.Texts
     })
 })

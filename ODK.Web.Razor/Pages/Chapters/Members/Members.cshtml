@@ -1,6 +1,7 @@
 ﻿@page "/{chapterName}/Members"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
+@using ODK.Core.Utils
 @using ODK.Services.Members
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
@@ -9,18 +10,21 @@
 @model MembersModel
 @{
     Layout = "_OdkChapterLayout";
-    Model.Title = "Knitwits";
 
     var viewModel = await MemberViewModelService.GetMembersPage(Model.MemberServiceRequest, Model.ChapterName);
     if (!viewModel.IsMember)
     {
         Response.Redirect(OdkRoutes.Groups.Join(viewModel.Platform, viewModel.Chapter));
     }
+
+    var title = StringUtils.Coalesce(viewModel.ChapterPage?.Title, "Knitwits");
+
+    Model.Title = title;
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-   Title = $"{viewModel.Chapter.ShortName} Knitwits",
+   Title = $"{viewModel.Chapter.ShortName} {title}",
    Breadcrumbs = new []
    {
        new MenuItem 
@@ -28,7 +32,7 @@
            Link = OdkRoutes.Groups.Group(Model.Platform, viewModel.Chapter),
            Text = viewModel.Chapter.GetDisplayName(Model.Platform)
        },
-       new MenuItem { Text = "Knitwits" }
+       new MenuItem { Text = title }
    },
    Content = await Html.PartialAsync("Members/_MembersContent", viewModel)
 })

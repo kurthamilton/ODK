@@ -17,13 +17,13 @@ public interface IChapterService
 
     Task<SubscriptionsPageViewModel> GetChapterMemberSubscriptionsViewModel(Guid currentMemberId, Chapter chapter);
 
+    Task<IReadOnlyCollection<ChapterPage>> GetChapterPages(Guid chapterId);
+
     Task<IReadOnlyCollection<ChapterQuestion>> GetChapterQuestions(Guid chapterId);
 
     Task<IReadOnlyCollection<Chapter>> GetChaptersByOwnerId(Guid ownerId);
 
     Task<ChaptersHomePageViewModel> GetChaptersDto(PlatformType platform);
-
-    Task<ChapterTexts?> GetChapterTexts(Guid chapterId);
 
     Task<bool> NameIsAvailable(string name);
 }

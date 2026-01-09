@@ -113,6 +113,9 @@ public class ChapterService : IChapterService
         };
     }
 
+    public Task<IReadOnlyCollection<ChapterPage>> GetChapterPages(Guid chapterId)
+        => _unitOfWork.ChapterPageRepository.GetByChapterId(chapterId).Run();
+
     public async Task<IReadOnlyCollection<ChapterQuestion>> GetChapterQuestions(Guid chapterId)
     {
         var questions = await _unitOfWork.ChapterQuestionRepository.GetByChapterId(chapterId).Run();
@@ -150,11 +153,6 @@ public class ChapterService : IChapterService
             Chapters = chapters,
             Countries = countries
         };
-    }
-
-    public async Task<ChapterTexts?> GetChapterTexts(Guid chapterId)
-    {
-        return await _unitOfWork.ChapterTextsRepository.GetByChapterId(chapterId).Run();
     }
 
     public async Task<bool> NameIsAvailable(string name)

@@ -1,9 +1,26 @@
 ﻿using System.Collections.Generic;
+using ODK.Core.Chapters;
 
 namespace ODK.Web.Common.Components;
 
 public class MenuItem
 {
+    public MenuItem()
+    {
+    }
+
+    public MenuItem(ChapterPage? chapterPage, string text)
+    {
+        if (chapterPage?.Hidden == true)
+        {
+            return;
+        }
+
+        Text = !string.IsNullOrEmpty(chapterPage?.Title)
+            ? chapterPage.Title
+            : text;
+    }
+
     public bool Active { get; init; }
 
     public bool ActiveIsExactMatch { get; init; }

@@ -7,6 +7,7 @@ using ODK.Core.Extensions;
 using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Notifications;
+using ODK.Core.Pages;
 using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
 using ODK.Core.Venues;
@@ -180,6 +181,19 @@ public class ChapterViewModelService : IChapterViewModelService
         };
     }
 
+    public async Task<ChapterAboutPageViewModel> GetChapterAboutPage(Guid chapterId)
+    {
+        var (chapterPage, texts) = await _unitOfWork.RunAsync(
+            x => x.ChapterPageRepository.GetByChapterId(chapterId, PageType.About),
+            x => x.ChapterTextsRepository.GetByChapterId(chapterId));
+
+        return new ChapterAboutPageViewModel
+        {
+            ChapterPage = chapterPage,
+            Texts = texts
+        };
+    }
+
     public async Task<ChapterCreateViewModel> GetChapterCreate(
         PlatformType platform, Guid currentMemberId)
     {
@@ -232,7 +246,8 @@ public class ChapterViewModelService : IChapterViewModelService
             conversations,
             membershipSettings,
             privacySettings,
-            memberSubscription
+            memberSubscription,
+            chapterPage
         ) = await _unitOfWork.RunAsync(
             x => currentMemberId != null
                 ? x.MemberRepository.GetByIdOrDefault(currentMemberId.Value)
@@ -248,7 +263,8 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
             x => currentMemberId != null
                 ? x.MemberSubscriptionRepository.GetByMemberId(currentMemberId.Value, chapter.Id)
-                : new DefaultDeferredQuerySingleOrDefault<MemberSubscription>());
+                : new DefaultDeferredQuerySingleOrDefault<MemberSubscription>(),
+            x => x.ChapterPageRepository.GetByChapterId(chapter.Id, PageType.Contact));
 
         var canStartConversation = currentMember != null
             ? _authorizationService.CanStartConversation(chapter.Id, currentMember, memberSubscription, membershipSettings, privacySettings)
@@ -258,6 +274,7 @@ public class ChapterViewModelService : IChapterViewModelService
         {
             CanStartConversation = canStartConversation,
             Chapter = chapter,
+            ChapterPage = chapterPage,
             Conversations = conversations,
             CurrentMember = currentMember,
             HasProfiles = hasProperties,

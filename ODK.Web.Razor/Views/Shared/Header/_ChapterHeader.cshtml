@@ -1,10 +1,13 @@
-﻿@using ODK.Core.Platforms
+﻿@using ODK.Core.Pages
+@using ODK.Core.Platforms
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Header
 @model ChapterHeaderViewModel
 @{
     var isMember = Model.Member?.IsMemberOf(Model.Chapter.Id) == true;
+    var pages = Model.Pages
+        .ToDictionary(x => x.PageType);
 
     var menuItems = new List<MenuItem>();
 
@@ -16,23 +19,39 @@
 
     if (isMember)
     {
-        menuItems.Add(new MenuItem 
-        { 
-            Text = "Knitwits", 
-            Link = OdkRoutes.Groups.Members(Model.Platform, Model.Chapter)
+        pages.TryGetValue(PageType.Members, out var membersPage);
+
+        if (membersPage?.Hidden != true)
+        {
+            menuItems.Add(new MenuItem
+            {
+                Text = !string.IsNullOrEmpty(membersPage?.Title) ? membersPage.Title : "Knitwits",
+                Link = OdkRoutes.Groups.Members(Model.Platform, Model.Chapter)
+            });
+        }        
+    }
+
+    pages.TryGetValue(PageType.Contact, out var contactPage);
+
+    if (contactPage?.Hidden != true)
+    {
+        menuItems.Add(new MenuItem
+        {
+            Text = !string.IsNullOrEmpty(contactPage?.Title) ? contactPage.Title : "Contact",
+            Link = OdkRoutes.Groups.Contact(Model.Platform, Model.Chapter)
         });
     }
 
-    menuItems.Add(new MenuItem 
-    { 
-        Text = "Contact", 
-        Link = OdkRoutes.Groups.Contact(Model.Platform, Model.Chapter) 
-    });
-    menuItems.Add(new MenuItem 
-    { 
-        Text = "About", 
-        Link = OdkRoutes.Groups.About(Model.Platform, Model.Chapter)
-    });
+    pages.TryGetValue(PageType.About, out var aboutPage);
+
+    if (aboutPage?.Hidden != true)
+    {
+        menuItems.Add(new MenuItem
+        {
+            Text = !string.IsNullOrEmpty(aboutPage?.Title) ? aboutPage.Title : "About",
+            Link = OdkRoutes.Groups.About(Model.Platform, Model.Chapter)
+        });
+    }    
 }
 
 @await Html.PartialAsync("Header/_Header", new HeaderViewModel(Model.Context)

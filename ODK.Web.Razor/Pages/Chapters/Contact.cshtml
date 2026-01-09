@@ -1,5 +1,6 @@
 ﻿@page "/{chapterName}/Contact"
 @using ODK.Core
+@using ODK.Core.Utils
 @using ODK.Services.Chapters
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
@@ -9,13 +10,15 @@
 @model ODK.Web.Razor.Pages.Chapters.ContactModel
 @inject IChapterViewModelService ChapterViewModelService
 @{
-    Layout = "_OdkChapterLayout";
-    Model.Title = "Contact";
+    Layout = "_OdkChapterLayout";    
     Model.Description = "Form for sending messages to the owners of this Drunken Knitwits chapter";    
 
     var viewModel = await ChapterViewModelService.GetGroupContactPage(
         Model.ServiceRequest, Model.CurrentMemberIdOrDefault, Model.Chapter.Slug);
 
+    var title = StringUtils.Coalesce(viewModel.ChapterPage?.Title, "Contact");
+    
+    Model.Title = title;
     Model.Path = OdkRoutes.Groups.Contact(Model.Platform, viewModel.Chapter);
 }
 
@@ -32,7 +35,7 @@
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Title = "Contact",
+    Title = title,
     Breadcrumbs = new []
     {
         new MenuItem 
@@ -40,7 +43,7 @@
             Link = OdkRoutes.Groups.Group(Model.Platform, viewModel.Chapter),
             Text = Model.Chapter.GetDisplayName(Model.Platform)
         },
-        new MenuItem { Text = "Contact" }
+        new MenuItem { Text = title }
     },
     Content = await Html.PartialAsync("Groups/_GroupContactContent", viewModel)
 })

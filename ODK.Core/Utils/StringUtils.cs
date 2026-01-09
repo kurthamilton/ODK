@@ -8,10 +8,9 @@ public static class StringUtils
     private static readonly Regex AlphaNumericRegex = new Regex("[^a-zA-Z0-9]", RegexOptions.Compiled);
     private static readonly Regex TokenRegex = new Regex(@"\{(.+?)\}", RegexOptions.Compiled);
 
-    public static string AlphaNumeric(this string text)
-    {
-        return AlphaNumericRegex.Replace(text, string.Empty);
-    }
+    public static string AlphaNumeric(this string text) => AlphaNumericRegex.Replace(text, string.Empty);
+
+    public static string? Coalesce(params string?[] values) => values.FirstOrDefault(x => !string.IsNullOrEmpty(x));
 
     public static string Interpolate(this string text, IReadOnlyDictionary<string, string> values,
         Func<string, string>? process = null)

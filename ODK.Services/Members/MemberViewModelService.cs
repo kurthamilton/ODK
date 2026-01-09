@@ -1,5 +1,6 @@
 ﻿using ODK.Core;
 using ODK.Core.Chapters;
+using ODK.Core.Pages;
 using ODK.Data.Core;
 using ODK.Services.Members.ViewModels;
 
@@ -103,7 +104,6 @@ public class MemberViewModelService : IMemberViewModelService
     {
         var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).Run();
         OdkAssertions.Exists(chapter, $"Chapter not found: '{chapterName}'");
-
         return await GetMembersPage(request, chapter);
     }
 
@@ -156,20 +156,23 @@ public class MemberViewModelService : IMemberViewModelService
             hasProperties,
             hasQuestions,
             adminMembers,
-            ownerSubscription) =
+            ownerSubscription,
+            chapterPage) =
             await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetByChapterId(chapter.Id),
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id));
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterPageRepository.GetByChapterId(chapter.Id, PageType.Members));
 
         var isMember = currentMember.IsMemberOf(chapter.Id);
 
         return new MembersPageViewModel
         {
             Chapter = chapter,
+            ChapterPage = chapterPage,
             CurrentMember = currentMember,
             HasProfiles = hasProperties,
             HasQuestions = hasQuestions,

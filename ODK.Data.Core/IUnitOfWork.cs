@@ -19,6 +19,7 @@ public interface IUnitOfWork
     IChapterLinksRepository ChapterLinksRepository { get; }
     IChapterLocationRepository ChapterLocationRepository { get; }
     IChapterMembershipSettingsRepository ChapterMembershipSettingsRepository { get; }
+    IChapterPageRepository ChapterPageRepository { get; }
     IChapterPaymentAccountRepository ChapterPaymentAccountRepository { get; }
     IChapterPaymentSettingsRepository ChapterPaymentSettingsRepository { get; }
     IChapterPrivacySettingsRepository ChapterPrivacySettingsRepository { get; }

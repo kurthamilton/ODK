@@ -5,15 +5,14 @@ namespace ODK.Web.Razor.Models.Header;
 
 public class ChapterHeaderViewModel : OdkComponentViewModel
 {
-    public ChapterHeaderViewModel(
-        Chapter chapter, Member? member, OdkComponentContext context)
+    public ChapterHeaderViewModel(OdkComponentContext context)
         : base(context)
     {
-        Chapter = chapter;
-        Member = member;
     }
 
-    public Chapter Chapter { get; }
+    public required Chapter Chapter { get; init; }
 
-    public Member? Member { get; }
+    public required Member? Member { get; init; }
+
+    public required IReadOnlyCollection<ChapterPage> Pages { get; init; }
 }

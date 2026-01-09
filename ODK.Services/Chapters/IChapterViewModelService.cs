@@ -8,6 +8,8 @@ public interface IChapterViewModelService
     Task<GroupsViewModel> FindGroups(
         PlatformType platform, Guid? currentMemberId, GroupFilter filter);
 
+    Task<ChapterAboutPageViewModel> GetChapterAboutPage(Guid chapterId);
+
     Task<ChapterCreateViewModel> GetChapterCreate(PlatformType platform, Guid currentMemberId);
 
     Task<GroupContactPageViewModel> GetGroupContactPage(

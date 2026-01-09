@@ -1,8 +1,10 @@
 ﻿@using ODK.Services.Caching
+@using ODK.Services.Chapters
 @using ODK.Web.Razor.Models.Footer
 @using ODK.Web.Razor.Models.Header
 @using ODK.Web.Razor.Pages.Chapters
 @using ODK.Web.Razor.Services
+@inject IChapterService ChapterService
 @inject IRequestCache RequestCache
 @inject IRequestStore RequestStore
 @{
@@ -17,6 +19,8 @@
 
     var member = await chapterContext.GetMemberAsync(RequestStore.CurrentMemberIdOrDefault);
     var componentContext = RequestStore.ComponentContext;
+
+    var pages = await ChapterService.GetChapterPages(chapter.Id);
 
     var customStyle = "";
     if (!string.IsNullOrEmpty(chapter.ThemeBackground))
@@ -37,8 +41,16 @@
 
 @section header
 {
-    @await Html.PartialAsync("Header/_ChapterHeader", 
-        new ChapterHeaderViewModel(chapter, member, componentContext))
+@{
+        var viewModel = new ChapterHeaderViewModel(componentContext)
+        {
+            Chapter = chapter,
+            Member = member,
+            Pages = pages
+        };
+    }
+
+    @await Html.PartialAsync("Header/_ChapterHeader", viewModel)
 }
 
 <div class="chapter" style="@customStyle">
