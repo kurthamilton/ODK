@@ -77,6 +77,7 @@ public interface IUnitOfWork
     IPaymentRepository PaymentRepository { get; }
     IQueuedEmailRecipientRepository QueuedEmailRecipientRepository { get; }
     IQueuedEmailRepository QueuedEmailRepository { get; }
+    ISentEmailEventRepository SentEmailEventRepository { get; }
     ISentEmailRepository SentEmailRepository { get; }
     ISiteContactMessageReplyRepository SiteContactMessageReplyRepository { get; }
     ISiteContactMessageRepository SiteContactMessageRepository { get; }

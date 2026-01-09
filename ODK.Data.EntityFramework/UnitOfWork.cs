@@ -83,6 +83,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IPaymentRepository> _paymentRepository;
     private readonly Lazy<IQueuedEmailRecipientRepository> _queuedEmailRecipientRepository;
     private readonly Lazy<IQueuedEmailRepository> _queuedEmailRepository;
+    private readonly Lazy<ISentEmailEventRepository> _sentEmailEventRepository;
     private readonly Lazy<ISentEmailRepository> _sentEmailRepository;
     private readonly Lazy<ISiteContactMessageReplyRepository> _siteContactMessageReplyRepository;
     private readonly Lazy<ISiteContactMessageRepository> _siteContactMessageRepository;
@@ -171,6 +172,7 @@ public class UnitOfWork : IUnitOfWork
         _paymentRepository = new(() => new PaymentRepository(_context));
         _queuedEmailRecipientRepository = new(() => new QueuedEmailRecipientRepository(_context));
         _queuedEmailRepository = new(() => new QueuedEmailRepository(_context));
+        _sentEmailEventRepository = new(() => new SentEmailEventRepository(context));
         _sentEmailRepository = new(() => new SentEmailRepository(_context));
         _siteContactMessageReplyRepository = new(() => new SiteContactMessageReplyRepository(_context));
         _siteContactMessageRepository = new(() => new SiteContactMessageRepository(_context));
@@ -255,6 +257,7 @@ public class UnitOfWork : IUnitOfWork
     public IPaymentRepository PaymentRepository => _paymentRepository.Value;
     public IQueuedEmailRecipientRepository QueuedEmailRecipientRepository => _queuedEmailRecipientRepository.Value;
     public IQueuedEmailRepository QueuedEmailRepository => _queuedEmailRepository.Value;
+    public ISentEmailEventRepository SentEmailEventRepository => _sentEmailEventRepository.Value;
     public ISentEmailRepository SentEmailRepository => _sentEmailRepository.Value;
     public ISiteContactMessageReplyRepository SiteContactMessageReplyRepository => _siteContactMessageReplyRepository.Value;
     public ISiteContactMessageRepository SiteContactMessageRepository => _siteContactMessageRepository.Value;

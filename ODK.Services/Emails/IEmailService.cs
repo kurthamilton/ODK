@@ -7,6 +7,8 @@ namespace ODK.Services.Emails;
 
 public interface IEmailService
 {
+    Task AddEvent(string externalId, string eventName);
+
     Task SendBulkEmail(
         ServiceRequest request,
         Chapter chapter,

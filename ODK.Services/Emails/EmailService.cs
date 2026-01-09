@@ -7,6 +7,7 @@ using ODK.Core.Utils;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
 using ODK.Services.Exceptions;
+using ODK.Services.Logging;
 using ODK.Services.Tasks;
 using ODK.Services.Web;
 
@@ -16,6 +17,7 @@ public class EmailService : IEmailService
 {
     private readonly IBackgroundTaskService _backgroundTaskService;
     private readonly IEmailClient _emailClient;
+    private readonly ILoggingService _loggingService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUrlProviderFactory _urlProviderFactory;
 
@@ -23,12 +25,33 @@ public class EmailService : IEmailService
         IUnitOfWork unitOfWork,
         IEmailClient emailClient,
         IUrlProviderFactory urlProviderFactory,
-        IBackgroundTaskService backgroundTaskService)
+        IBackgroundTaskService backgroundTaskService,
+        ILoggingService loggingService)
     {
         _backgroundTaskService = backgroundTaskService;
         _emailClient = emailClient;
+        _loggingService = loggingService;
         _unitOfWork = unitOfWork;
         _urlProviderFactory = urlProviderFactory;
+    }
+
+    public async Task AddEvent(string externalId, string eventName)
+    {
+        var sentEmail = await _unitOfWork.SentEmailRepository.GetByExternalId(externalId).Run();
+        if (sentEmail == null)
+        {
+            await _loggingService.Warn($"Sent email not found for externalId {externalId} when logging event");
+            return;
+        }
+
+        _unitOfWork.SentEmailEventRepository.Add(new SentEmailEvent
+        {
+            CreatedUtc = DateTime.UtcNow,
+            EventName = eventName,
+            SentEmailId = sentEmail.Id
+        });
+
+        await _unitOfWork.SaveChangesAsync();
     }
 
     public async Task SendBulkEmail(
