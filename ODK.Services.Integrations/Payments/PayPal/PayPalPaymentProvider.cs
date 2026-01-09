@@ -125,9 +125,11 @@ public class PayPalPaymentProvider : IPaymentProvider
         return subscription != null ? new ExternalSubscription
         {
             CancelDate = null,
+            ConnectedAccountId = null,
             ExternalId = subscription.Id,
             ExternalSubscriptionPlanId = subscription.PlanId,
             LastPaymentDate = subscription.BillingInfo?.LastPayment?.Date,
+            Metadata = new Dictionary<string, string>(),
             NextBillingDate = subscription.BillingInfo?.NextBillingDate,
             Status = subscription.Status == "ACTIVE" ? ExternalSubscriptionStatus.Active : ExternalSubscriptionStatus.Cancelled,
         } : null;
@@ -236,6 +238,12 @@ public class PayPalPaymentProvider : IPaymentProvider
     }
 
     public Task UpdatePaymentMetadata(string externalId, PaymentMetadataModel metadata)
+        => throw new NotImplementedException();
+
+    public Task UpdateSubscriptionConnectedAccount(string externalId, ExternalSubscriptionPlan subscriptionPlan)
+        => throw new NotImplementedException();
+
+    public Task UpdateSubscriptionMetadata(string externalId, PaymentMetadataModel metadata)
         => throw new NotImplementedException();
 
     private PayPalClient GetClient()

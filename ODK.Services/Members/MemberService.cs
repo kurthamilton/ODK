@@ -551,7 +551,7 @@ public class MemberService : IMemberService
         if (subscription != null)
         {
             await CancelSubscription(subscription);
-        }        
+        }
 
         await _memberEmailService.SendMemberLeftChapterEmail(
             request,

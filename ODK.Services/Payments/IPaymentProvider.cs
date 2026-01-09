@@ -41,11 +41,20 @@ public interface IPaymentProvider
 
     Task<ExternalSubscriptionPlan?> GetSubscriptionPlan(string externalId);
 
-    Task<RemotePaymentResult> MakePayment(string currencyCode, decimal amount, string cardToken,
-        string description, Guid memberId, string memberName);
+    Task<RemotePaymentResult> MakePayment(
+        string currencyCode,
+        decimal amount,
+        string cardToken,
+        string description,
+        Guid memberId,
+        string memberName);
 
-    Task<string?> SendPayment(string currencyCode, decimal amount, string emailAddress,
-        string paymentId, string note);
+    Task<string?> SendPayment(
+        string currencyCode,
+        decimal amount,
+        string emailAddress,
+        string paymentId,
+        string note);
 
     Task<ExternalCheckoutSession> StartCheckout(
         ServiceRequest request,
@@ -55,4 +64,8 @@ public interface IPaymentProvider
         PaymentMetadataModel metadata);
 
     Task UpdatePaymentMetadata(string externalId, PaymentMetadataModel metadata);
+
+    Task UpdateSubscriptionConnectedAccount(string externalId, ExternalSubscriptionPlan subscriptionPlan);
+
+    Task UpdateSubscriptionMetadata(string externalId, PaymentMetadataModel metadata);
 }

@@ -362,10 +362,12 @@ public class StripePaymentProvider : IPaymentProvider
             return new ExternalSubscription
             {
                 CancelDate = subscription.CancelAt,
+                ConnectedAccountId = subscription.TransferData?.DestinationId,
                 ExternalId = subscription.Id,
                 ExternalSubscriptionPlanId = string.Empty,
                 // TODO: get last/next payment date
                 LastPaymentDate = null,
+                Metadata = subscription.Metadata,
                 NextBillingDate = null,
                 Status = subscription.Status == "active" && subscription.CancelAt == null
                     ? ExternalSubscriptionStatus.Active
@@ -442,7 +444,6 @@ public class StripePaymentProvider : IPaymentProvider
                             }
                         }
                     }
-
                 }
             },
             Metadata = new Dictionary<string, string>
@@ -540,6 +541,50 @@ public class StripePaymentProvider : IPaymentProvider
         });
     }
 
+    public async Task UpdateSubscriptionConnectedAccount(string externalId, ExternalSubscriptionPlan subscriptionPlan)
+    {
+        if (string.IsNullOrEmpty(_connectedAccountId))
+        {
+            return;
+        }
+
+        var service = CreateSubscriptionService();
+
+        var subscription = await service.GetAsync(externalId);
+        if (subscription == null)
+        {
+            return;
+        }
+
+        if (subscription.TransferData != null)
+        {
+            return;
+        }
+
+        try
+        {
+            await service.UpdateAsync(externalId, new SubscriptionUpdateOptions
+            {
+                ApplicationFeePercent = _settings.ConnectedAccountCommissionPercentage,
+                TransferData = new SubscriptionTransferDataOptions { Destination = _connectedAccountId }
+            });
+        }
+        catch (Exception ex)
+        {
+            await _loggingService.Error($"Error updating transfer data on subscription {externalId}", ex);
+        }
+    }
+
+    public async Task UpdateSubscriptionMetadata(string externalId, PaymentMetadataModel metadata)
+    {
+        var service = CreateSubscriptionService();
+
+        await service.UpdateAsync(externalId, new SubscriptionUpdateOptions
+        {
+            Metadata = new Dictionary<string, string>(metadata.ToDictionary())
+        });
+    }
+
     private static decimal FromStripeAmount(long? stripeAmount) => (stripeAmount ?? 0) / 100;
 
     private static long ToStripeAmount(decimal amount) => (long)(amount * 100);
@@ -590,11 +635,18 @@ public class StripePaymentProvider : IPaymentProvider
     }
 
     private AccountLinkService CreateAccountLinkService() => new(_client);
+
     private AccountService CreateAccountService() => new(_client);
+
     private InvoiceService CreateInvoiceService() => new(_client);
+
     private PaymentIntentService CreatePaymentIntentService() => new(_client);
+
     private PriceService CreatePriceService() => new(_client);
+
     private ProductService CreateProductService() => new(_client);
+
     private SessionService CreateSessionService() => new(_client);
+
     private SubscriptionService CreateSubscriptionService() => new(_client);
 }

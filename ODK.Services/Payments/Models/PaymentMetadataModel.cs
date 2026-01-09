@@ -10,8 +10,8 @@ public class PaymentMetadataModel
     public PaymentMetadataModel(
         Member member,
         ChapterSubscription chapterSubscription,
-        Guid paymentCheckoutSessionId,
-        Guid paymentId)
+        Guid? paymentCheckoutSessionId = null,
+        Guid? paymentId = null)
     {
         ChapterId = chapterSubscription.ChapterId;
         ChapterSubscriptionId = chapterSubscription.Id;
