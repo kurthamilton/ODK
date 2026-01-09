@@ -33,7 +33,7 @@ public class JoinModel : ChapterPageModel2
             return Page();
         }
 
-        if (!ImageHelper.TryParseDataUrl(profileViewModel.ImageDataUrl, out var bytes))
+        if (!ImageHelper.TryParseDataUrl(profileViewModel.ImageDataUrl, out var imageData))
         {
             AddFeedback("Image could not be processed", FeedbackType.Error);
             return Page();
@@ -44,7 +44,7 @@ public class JoinModel : ChapterPageModel2
             EmailAddress = personalDetailsViewModel.EmailAddress,
             EmailOptIn = personalDetailsViewModel.EmailOptIn,
             FirstName = personalDetailsViewModel.FirstName,
-            ImageData = bytes,
+            ImageData = imageData,
             LastName = personalDetailsViewModel.LastName,
             Properties = profileViewModel.Properties.Select(x => new UpdateMemberProperty
             {

@@ -12,7 +12,7 @@
 @inject IAccountViewModelService AccountViewModelService
 @{
     Layout = "_OdkChapterLayout";
-    Model.Title = "Picture";
+    Model.Title = "Profile picture";
 
     var viewModel = await AccountViewModelService.GetChapterPicturePage(Model.CurrentMemberId, Model.ChapterName);
 }
@@ -22,7 +22,7 @@
     Title = "Account",
     Content = await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
     {
-        Title = "Picture",
+        Title = "Profile picture",
         MenuContentFunc = _ => Html.PartialAsync("Account/_AccountMenu", new AccountMenuViewModel
         {
             Chapter = viewModel.Chapter
