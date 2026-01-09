@@ -123,7 +123,7 @@ public static class DependencyConfig
     {
         services.AddScoped<IAccountViewModelService, AccountViewModelService>();
         services.AddScoped<IAuthenticationService, AuthenticationService>();
-        services.AddScoped<IAuthorizationService, AuthorizationService>();        
+        services.AddScoped<IAuthorizationService, AuthorizationService>();
         services.AddScoped<ICacheService, CacheService>();
         services.AddScoped<IChapterAdminService, ChapterAdminService>();
         services.AddSingleton(new ChapterAdminServiceSettings
@@ -203,6 +203,11 @@ public static class DependencyConfig
         services.AddScoped<ISettingsService, SettingsService>();
         services.AddScoped<ISiteSubscriptionAdminService, SiteSubscriptionAdminService>();
         services.AddScoped<ISiteSubscriptionService, SiteSubscriptionService>();
+        services.AddScoped<ISocialMediaService, SocialMediaService>();
+        services.AddSingleton(new SocialMediaServiceSettings
+        {
+            WhatsAppUrlFormat = appSettings.WhatsApp.UrlFormat
+        });
         services.AddScoped<ITopicAdminService, TopicAdminService>();
         services.AddScoped<ITopicService, TopicService>();
         services.AddScoped<IVenueAdminService, VenueAdminService>();

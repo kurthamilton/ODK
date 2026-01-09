@@ -6,6 +6,7 @@ public class ChapterLinks : IVersioned, IChapterEntity
 
     public string? FacebookName { get; set; }
 
+    // WhatsApp purposefully excluded as its not public
     public bool HasLinks =>
         !string.IsNullOrEmpty(FacebookName) ||
         !string.IsNullOrEmpty(InstagramName) ||
@@ -16,4 +17,6 @@ public class ChapterLinks : IVersioned, IChapterEntity
     public string? TwitterName { get; set; }
 
     public byte[] Version { get; set; } = [];
+
+    public string? WhatsApp { get; set; }
 }

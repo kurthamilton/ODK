@@ -9,4 +9,6 @@ public class UpdateChapterLinks
     public required bool InstagramFeed { get; init; }
 
     public required string? Twitter { get; init; }
+
+    public required string? WhatsApp { get; init; }
 }

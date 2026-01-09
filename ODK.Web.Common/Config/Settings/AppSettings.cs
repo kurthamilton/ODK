@@ -35,4 +35,6 @@ public class AppSettings
     public required RecaptchaSettings Recaptcha { get; init; }
 
     public required ScheduledTasksSettings ScheduledTasks { get; init; }
+
+    public required WhatsAppSettings WhatsApp { get; init; }
 }

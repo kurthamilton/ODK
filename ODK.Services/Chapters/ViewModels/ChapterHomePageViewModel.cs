@@ -22,4 +22,6 @@ public class ChapterHomePageViewModel : ChapterViewModelBase
     public required ChapterTexts? Texts { get; init; }
 
     public required IReadOnlyCollection<Topic> Topics { get; init; }
+
+    public required string? WhatsAppUrl { get; init; }
 }

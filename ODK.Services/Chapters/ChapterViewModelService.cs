@@ -16,19 +16,23 @@ using ODK.Data.Core.Deferred;
 using ODK.Services.Authorization;
 using ODK.Services.Chapters.ViewModels;
 using ODK.Services.Events.ViewModels;
+using ODK.Services.SocialMedia;
 
 namespace ODK.Services.Chapters;
 
 public class ChapterViewModelService : IChapterViewModelService
 {
     private readonly IAuthorizationService _authorizationService;
+    private readonly ISocialMediaService _socialMediaService;
     private readonly IUnitOfWork _unitOfWork;
 
     public ChapterViewModelService(
         IUnitOfWork unitOfWork,
-        IAuthorizationService authorizationService)
+        IAuthorizationService authorizationService,
+        ISocialMediaService socialMediaService)
     {
         _authorizationService = authorizationService;
+        _socialMediaService = socialMediaService;
         _unitOfWork = unitOfWork;
     }
 
@@ -890,7 +894,13 @@ public class ChapterViewModelService : IChapterViewModelService
             Links = links,
             Platform = platform,
             Texts = texts,
-            Topics = chapterTopics.Select(x => x.Topic).ToArray()
+            Topics = chapterTopics.Select(x => x.Topic).ToArray(),
+            WhatsAppUrl =
+                !string.IsNullOrEmpty(links?.WhatsApp) &&
+                memberSubscription?.Type == SubscriptionType.Full &&
+                !memberSubscription.IsExpired()
+                    ? _socialMediaService.GetWhatsAppLink(links.WhatsApp)
+                    : null
         };
     }
 

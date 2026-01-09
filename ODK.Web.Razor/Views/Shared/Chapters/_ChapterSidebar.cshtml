@@ -1,9 +1,11 @@
 ﻿@using ODK.Core.Chapters
 @using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Common.Components
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Events
 @model ChapterHomePageViewModel
 
-<div class="sidebar">
+<div class="sidebar" data-odk-component="_ChapterSidebar">
     @if (Model.Events.Count > 0)
     {
         <div class="card sidebar-card">
@@ -33,5 +35,20 @@
             }
         </div>
     }
-</div>
 
+    @if (!string.IsNullOrEmpty(Model.WhatsAppUrl))
+    {
+        <div class="card sidebar-card">
+            <div class="card-header">
+                <span>
+                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.WhatsApp))
+                </span>
+                <span>WhatsApp</span>
+            </div>
+
+            <div class="card-body card-body-sm">
+                <a href="@Model.WhatsAppUrl">Join group</a>
+            </div>
+        </div>
+    }
+</div>

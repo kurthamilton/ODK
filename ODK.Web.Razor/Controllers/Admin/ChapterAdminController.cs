@@ -83,7 +83,8 @@ public class ChapterAdminController : AdminControllerBase
             Facebook = viewModel.Facebook ?? string.Empty,
             Instagram = viewModel.Instagram ?? string.Empty,
             InstagramFeed = viewModel.ShowInstagramFeed,
-            Twitter = viewModel.Twitter ?? string.Empty
+            Twitter = viewModel.Twitter ?? string.Empty,
+            WhatsApp = viewModel.WhatsApp ?? string.Empty
         });
 
         AddFeedback("Social media links updated", FeedbackType.Success);

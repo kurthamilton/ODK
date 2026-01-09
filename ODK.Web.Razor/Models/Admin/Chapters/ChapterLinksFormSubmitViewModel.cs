@@ -12,4 +12,6 @@ public class ChapterLinksFormSubmitViewModel
 
     [DisplayName("Show Instagram feed")]
     public bool ShowInstagramFeed { get; set; }
+
+    public string? WhatsApp { get; set; }
 }

@@ -54,3 +54,14 @@
         @Html.TextBoxFor(x => x.Twitter, new { @class = "form-control" })
     </div>
 </div>
+
+<div class="form-group mb-3">
+    @Html.LabelFor(x => x.WhatsApp, new { @class = "form-label" })
+    <span class="ms-1 text-muted">The WhatsApp group id. Only displayed to paying members.</span>
+    <div class="input-group">
+        <span class="input-group-text">
+            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.WhatsApp))
+        </span>
+        @Html.TextBoxFor(x => x.WhatsApp, new { @class = "form-control" })
+    </div>
+</div>

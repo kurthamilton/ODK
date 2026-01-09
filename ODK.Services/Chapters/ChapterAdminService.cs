@@ -1615,6 +1615,11 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             links.TwitterName = !string.IsNullOrWhiteSpace(model.Twitter) ? model.Twitter : null;
         }
 
+        if (model.WhatsApp != null)
+        {
+            links.WhatsApp = !string.IsNullOrWhiteSpace(model.WhatsApp) ? model.WhatsApp : null;
+        }
+
         _unitOfWork.ChapterLinksRepository.Upsert(links, request.ChapterId);
 
         if (links.InstagramName != originalInstagramName)
@@ -1944,7 +1949,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
                 .Where(x => x.DisplayOrder > property.DisplayOrder)
                 .OrderBy(x => x.DisplayOrder)
                 .FirstOrDefault();
-
         }
         else
         {
@@ -2010,7 +2014,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
                 .Where(x => x.DisplayOrder > question.DisplayOrder)
                 .OrderBy(x => x.DisplayOrder)
                 .FirstOrDefault();
-
         }
         else
         {
