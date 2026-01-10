@@ -42,21 +42,35 @@ public class ChapterPageContext
 
     public async Task<Chapter?> GetChapterAsync(PlatformType platform)
     {
-        var chapterName = _httpContext.Request.RouteValues["chapterName"] as string;
-        if (string.IsNullOrWhiteSpace(chapterName))
+        var chapterName = GetChapterName(_httpContext);
+        if (!string.IsNullOrEmpty(chapterName))
         {
-            return null;
+            try
+            {
+                var httpRequestContext = new HttpRequestContext(_httpContext.Request);
+                return await _requestCache.GetChapterAsync(platform, chapterName);
+            }
+            catch
+            {
+                return null;
+            }
         }
 
-        try
+        var chapterSlug = GetChapterSlug(_httpContext);
+        if (!string.IsNullOrEmpty(chapterSlug))
         {
-            var httpRequestContext = new HttpRequestContext(_httpContext.Request);
-            return await _requestCache.GetChapterAsync(platform, chapterName);
+            try
+            {
+                var httpRequestContext = new HttpRequestContext(_httpContext.Request);
+                return await _requestCache.GetChapterBySlugAsync(platform, chapterSlug);
+            }
+            catch
+            {
+                return null;
+            }
         }
-        catch
-        {
-            return null;
-        }
+
+        return null;
     }
 
     public async Task<Member?> GetMemberAsync(Guid? memberId)

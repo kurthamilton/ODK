@@ -10,6 +10,8 @@ public interface IRequestCache
 
     Task<Chapter> GetChapterAsync(PlatformType platform, string name);
 
+    Task<Chapter> GetChapterBySlugAsync(PlatformType platform, string slug);
+
     Task<IReadOnlyCollection<Chapter>> GetChaptersAsync(PlatformType platform);
 
     Task<ChapterMembershipSettings?> GetChapterMembershipSettingsAsync(Guid chapterId);

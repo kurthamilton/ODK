@@ -6,6 +6,7 @@ using ODK.Core.Extensions;
 using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Notifications;
+using ODK.Core.Pages;
 using ODK.Core.Payments;
 using ODK.Core.Subscriptions;
 using ODK.Core.Utils;
@@ -18,6 +19,7 @@ using ODK.Services.Chapters.ViewModels;
 using ODK.Services.Exceptions;
 using ODK.Services.Geolocation;
 using ODK.Services.Imaging;
+using ODK.Services.Logging;
 using ODK.Services.Members;
 using ODK.Services.Notifications;
 using ODK.Services.Payments;
@@ -38,6 +40,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     private readonly IHtmlSanitizer _htmlSanitizer;
     private readonly IImageService _imageService;
     private readonly IInstagramService _instagramService;
+    private readonly ILoggingService _loggingService;
     private readonly IMemberEmailService _memberEmailService;
     private readonly INotificationService _notificationService;
     private readonly IPaymentProviderFactory _paymentProviderFactory;
@@ -62,7 +65,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         IUrlProviderFactory urlProviderFactory,
         IPaymentProviderFactory paymentProviderFactory,
         IPaymentService paymentService,
-        IGeolocationService geolocationService)
+        IGeolocationService geolocationService,
+        ILoggingService loggingService)
         : base(unitOfWork)
     {
         _cacheService = cacheService;
@@ -70,6 +74,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         _htmlSanitizer = htmlSanitizer;
         _imageService = imageService;
         _instagramService = instagramService;
+        _loggingService = loggingService;
         _memberEmailService = memberEmailService;
         _notificationService = notificationService;
         _paymentProviderFactory = paymentProviderFactory;
@@ -969,6 +974,41 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         };
     }
 
+    public async Task<ChapterPagesAdminPageViewModel> GetChapterPagesViewModel(MemberChapterServiceRequest request)
+    {
+        var (chapter, chapterPages) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.ChapterPageRepository.GetByChapterId(request.ChapterId));
+
+        var allPageTypes = Enum
+            .GetValues<PageType>()
+            .Where(x => x != PageType.None)
+            .ToArray();
+
+        var chapterPageDictionary = chapterPages
+            .ToDictionary(x => x.PageType);
+
+        var allPages = new List<ChapterPage>();
+
+        foreach (var pageType in allPageTypes)
+        {
+            chapterPageDictionary.TryGetValue(pageType, out var chapterPage);
+
+            allPages.Add(new ChapterPage
+            {
+                Hidden = chapterPage?.Hidden ?? false,
+                PageType = pageType,
+                Title = chapterPage?.Title
+            });
+        }
+
+        return new ChapterPagesAdminPageViewModel
+        {
+            Chapter = chapter,
+            ChapterPages = allPages
+        };
+    }
+
     public async Task<ChapterPaymentAccountAdminPageViewModel> GetChapterPaymentAccountViewModel(
         MemberChapterServiceRequest request)
     {
@@ -1807,6 +1847,55 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         await _unitOfWork.SaveChangesAsync();
 
         _cacheService.UpdateItem(settings, request.ChapterId);
+
+        return ServiceResult.Successful();
+    }
+
+    public async Task<ServiceResult> UpdateChapterPages(MemberChapterServiceRequest request, UpdateChapterPages model)
+    {
+        var chapterPages = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterPageRepository.GetByChapterId(request.ChapterId));
+
+        var chapterPageDictionary = chapterPages
+            .ToDictionary(x => x.PageType);
+
+        foreach (var pageUpdate in model.Pages)
+        {
+            if (!Enum.IsDefined(pageUpdate.Type) || pageUpdate.Type == PageType.None)
+            {
+                await _loggingService.Warn($"Invalid page type when updating: {pageUpdate.Type}");
+                continue;
+            }
+
+            chapterPageDictionary.TryGetValue(pageUpdate.Type, out var page);
+
+            var hasValues = pageUpdate.Hidden || !string.IsNullOrEmpty(pageUpdate.Title);
+
+            if (!hasValues && page == null)
+            {
+                // nothing to do
+                continue;
+            }
+
+            if (!hasValues && page != null)
+            {
+                _unitOfWork.ChapterPageRepository.Delete(page);
+                continue;
+            }
+
+            page ??= new ChapterPage
+            {
+                ChapterId = request.ChapterId,
+                PageType = pageUpdate.Type,
+            };
+
+            page.Hidden = pageUpdate.Hidden;
+            page.Title = pageUpdate.Title;
+
+            _unitOfWork.ChapterPageRepository.Upsert(page);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();
     }

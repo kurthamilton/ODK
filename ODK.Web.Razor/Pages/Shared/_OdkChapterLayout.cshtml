@@ -20,18 +20,7 @@
     var member = await chapterContext.GetMemberAsync(RequestStore.CurrentMemberIdOrDefault);
     var componentContext = RequestStore.ComponentContext;
 
-    var pages = await ChapterService.GetChapterPages(chapter.Id);
-
-    var customStyle = "";
-    if (!string.IsNullOrEmpty(chapter.ThemeBackground))
-    {
-        customStyle += $"--theme-bg: {chapter.ThemeBackground};";
-    }
-
-    if (!string.IsNullOrEmpty(chapter.ThemeColor))
-    {
-        customStyle += $"--theme-color: {chapter.ThemeColor};";
-    }
+    var pages = await ChapterService.GetChapterPages(chapter.Id);    
 }
 
 @section styles
@@ -53,7 +42,7 @@
     @await Html.PartialAsync("Header/_ChapterHeader", viewModel)
 }
 
-<div class="chapter" style="@customStyle">
+<div class="chapter">
     @RenderBody()
 </div>
 

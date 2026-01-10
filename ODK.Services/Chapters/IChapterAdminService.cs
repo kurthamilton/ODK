@@ -65,6 +65,8 @@ public interface IChapterAdminService
 
     Task<ChapterMessageAdminPageViewModel> GetChapterMessageViewModel(MemberChapterServiceRequest request, Guid id);
 
+    Task<ChapterPagesAdminPageViewModel> GetChapterPagesViewModel(MemberChapterServiceRequest request);
+
     Task<ChapterPaymentAccountAdminPageViewModel> GetChapterPaymentAccountViewModel(MemberChapterServiceRequest request);
 
     Task<ChapterPaymentSettings?> GetChapterPaymentSettings(MemberChapterServiceRequest request);
@@ -140,6 +142,8 @@ public interface IChapterAdminService
 
     Task<ServiceResult> UpdateChapterMembershipSettings(MemberChapterServiceRequest request,
         UpdateChapterMembershipSettings model);
+
+    Task<ServiceResult> UpdateChapterPages(MemberChapterServiceRequest request, UpdateChapterPages model);
 
     Task<ServiceResult> UpdateChapterPaymentSettings(MemberChapterServiceRequest request,
         UpdateChapterPaymentSettings model);

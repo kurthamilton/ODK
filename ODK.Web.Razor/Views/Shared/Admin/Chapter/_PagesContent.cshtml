@@ -1,0 +1,23 @@
+﻿@using ODK.Services
+@using ODK.Services.Chapters
+@using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Common.Extensions
+@using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Admin.Chapters
+@model ChapterPagesAdminPageViewModel
+
+<form action="/groups/@Model.Chapter.Id/pages" method="post">
+    @*@Html.AntiForgeryToken()*@
+    @await Html.PartialAsync("Admin/Chapter/_PagesForm", new ChapterPagesFormViewModel
+    {
+        Pages = Model.ChapterPages
+            .Select(x => new ChapterPagesFormPageViewModel
+            {
+                Hidden = x.Hidden,
+                Title = x.Title,
+                Type = x.PageType
+            })
+            .ToList()
+    })
+    <button class="btn btn-primary">Update</button>
+</form>

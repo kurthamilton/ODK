@@ -1,0 +1,35 @@
+﻿@using ODK.Core.Chapters
+@using ODK.Web.Common.Extensions
+@using ODK.Web.Razor.Models.Admin.Chapters
+@model ChapterPagesFormViewModel
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Type</th>
+                <th>Hidden</th>
+                <th>Title</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (var i = 0; i < Model.Pages.Count; i++)
+            {
+                <tr>
+                    <td>
+                        @Model.Pages[i].Type
+                        @Html.HiddenFor(x => x.Pages[i].Type)
+                    </td>
+                    <td>
+                        <div class="form-check form-switch mb-3">
+                            @Html.CheckBoxFor(x => x.Pages[i].Hidden, new { @class = "form-check-input", role = "switch" })
+                        </div>
+                    </td>
+                    <td>
+                        @Html.TextBoxFor(x => x.Pages[i].Title, new { @class = "form-control" })
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

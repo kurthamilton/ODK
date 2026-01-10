@@ -149,6 +149,23 @@ public class ChapterAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
+    [HttpPost("groups/{id:guid}/pages")]
+    public async Task<IActionResult> UpdatePages(Guid id, [FromForm] ChapterPagesFormViewModel viewModel)
+    {
+        var request = new MemberChapterServiceRequest(id, MemberServiceRequest);
+        var result = await _chapterAdminService.UpdateChapterPages(request, new UpdateChapterPages
+        {
+            Pages = viewModel.Pages.Select(x => new UpdateChapterPage
+            {
+                Hidden = x.Hidden,
+                Title = x.Title,
+                Type = x.Type
+            }).ToArray()
+        });
+        AddFeedback(result, "Pages updated");
+        return RedirectToReferrer();
+    }
+
     [HttpGet("groups/{groupId}/payments/sessions/{id}/status")]
     public async Task<IActionResult> GetPaymentSessionStatus(string id, Guid groupId)
     {

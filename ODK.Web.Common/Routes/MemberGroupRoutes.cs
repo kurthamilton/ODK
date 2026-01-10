@@ -84,8 +84,14 @@ public class MemberGroupRoutes
     public string GroupMessagesSpam(PlatformType platform, Chapter chapter)
         => $"{GroupMessages(platform, chapter)}/spam";
 
+    public string GroupPages(PlatformType platform, Chapter chapter) => platform switch
+    {
+        PlatformType.DrunkenKnitwits => $"{Group(platform, chapter)}/chapter/pages",
+        _ => $"{Group(platform, chapter)}/pages"
+    };
+
     public string GroupPayments(PlatformType platform, Chapter chapter)
-        => $"{Group(platform, chapter)}/payments";
+            => $"{Group(platform, chapter)}/payments";
 
     public string GroupPrivacy(PlatformType platform, Chapter chapter) => platform switch
     {

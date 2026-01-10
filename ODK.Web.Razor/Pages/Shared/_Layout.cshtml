@@ -56,6 +56,17 @@
     }    
 
     description = $"{keywordDescription} {description}".Trim();
+
+    var customStyle = "";
+    if (!string.IsNullOrEmpty(chapter?.ThemeBackground))
+    {
+        customStyle += $"--theme-bg: {chapter.ThemeBackground};";
+    }
+
+    if (!string.IsNullOrEmpty(chapter?.ThemeColor))
+    {
+        customStyle += $"--theme-color: {chapter.ThemeColor};";
+    }
 }
 
 <!DOCTYPE html>
@@ -117,7 +128,7 @@
 
     @await RenderSectionAsync("styles", required: false)
 </head>
-<body>   
+<body style="@customStyle">   
     @await Html.PartialAsync("Header/_SiteHeader", RequestStore.ComponentContext)
 
     @await RenderSectionAsync("header")

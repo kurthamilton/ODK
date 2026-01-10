@@ -1,4 +1,5 @@
-﻿using ODK.Core;
+﻿using System.Xml.Linq;
+using ODK.Core;
 using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
@@ -38,6 +39,14 @@ public class RequestCache : IRequestCache
         var chapter = chapters
             .FirstOrDefault(x => string.Equals(x.GetDisplayName(platform), name, StringComparison.OrdinalIgnoreCase));
         return OdkAssertions.Exists(chapter, $"Chapter not found: '{name}'");
+    }
+
+    public async Task<Chapter> GetChapterBySlugAsync(PlatformType platform, string slug)
+    {
+        var chapters = await GetChaptersAsync(platform);
+        var chapter = chapters
+            .FirstOrDefault(x => string.Equals(x.Slug, slug, StringComparison.OrdinalIgnoreCase));
+        return OdkAssertions.Exists(chapter, $"Chapter not found by slug: '{slug}'");
     }
 
     public async Task<IReadOnlyCollection<Chapter>> GetChaptersAsync(PlatformType platform)
