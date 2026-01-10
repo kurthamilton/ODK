@@ -22,15 +22,13 @@ public interface IMemberService
 
     Task<Member?> FindMemberByEmailAddress(string emailAddress);
 
-    Task<Member> GetMember(MemberServiceRequest request);
-
     Task<VersionedServiceResult<MemberAvatar>> GetMemberAvatar(long? currentVersion, Guid memberId);
 
     Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid memberId);
 
-    Task<MemberLocation?> GetMemberLocation(Guid memberId);
+    Task<MemberLocationViewModel> GetMemberLocationViewModel(MemberServiceRequest request);
 
-    Task<MemberPreferences?> GetMemberPreferences(Guid memberId);
+    Task<MemberSubscriptionAlertViewModel> GetMemberSubscriptionAlertViewModel(Guid memberId, Guid chapterId);
 
     Task<ServiceResult> JoinChapter(MemberChapterServiceRequest request, IEnumerable<UpdateMemberProperty> memberProperties);
 

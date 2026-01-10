@@ -1,22 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
-using ODK.Services.Caching;
 using ODK.Services.Exceptions;
 
 namespace ODK.Web.Razor.Pages.Chapters.Admin.SuperAdmin;
 
 public abstract class ChapterSuperAdminPageModel : AdminPageModel
 {
-    private readonly IRequestCache _requestCache;
-
-    protected ChapterSuperAdminPageModel(IRequestCache requestCache)
-        : base(requestCache)
-    {
-        _requestCache = requestCache;
-    }
-
     public override async Task OnPageHandlerExecutionAsync(PageHandlerExecutingContext context, PageHandlerExecutionDelegate next)
     {
-        var member = await _requestCache.GetMemberAsync(CurrentMemberId);
+        var member = await RequestStore.GetCurrentMember();
         if (member?.SuperAdmin != true)
         {
             throw new OdkNotAuthorizedException();

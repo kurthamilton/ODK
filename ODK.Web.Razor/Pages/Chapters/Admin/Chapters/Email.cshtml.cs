@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Emails;
-using ODK.Services.Caching;
 using ODK.Services.Emails;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Chapters;
@@ -11,8 +10,7 @@ public class EmailModel : AdminPageModel
 {
     private readonly IEmailAdminService _emailAdminService;
 
-    public EmailModel(IRequestCache requestCache, IEmailAdminService emailAdminService)
-        : base(requestCache)
+    public EmailModel(IEmailAdminService emailAdminService)
     {
         _emailAdminService = emailAdminService;
     }

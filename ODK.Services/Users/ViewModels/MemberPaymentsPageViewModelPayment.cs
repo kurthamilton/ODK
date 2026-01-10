@@ -1,6 +1,6 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Countries;
-using ODK.Core.Payments;
+using ODK.Data.Core.Payments;
 
 namespace ODK.Services.Users.ViewModels;
 

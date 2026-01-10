@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using ODK.Services.Caching;
 using ODK.Services.Logging;
 
 namespace ODK.Web.Razor.Pages.SuperAdmin;
@@ -8,8 +7,7 @@ public class ErrorModel : SuperAdminPageModel
 {
     private readonly ILoggingService _loggingService;
 
-    public ErrorModel(IRequestCache requestCache, ILoggingService loggingService)
-        : base(requestCache)
+    public ErrorModel(ILoggingService loggingService)
     {
         _loggingService = loggingService;
     }

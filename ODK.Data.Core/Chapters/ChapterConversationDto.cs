@@ -1,6 +1,7 @@
-﻿using ODK.Core.Members;
+﻿using ODK.Core.Chapters;
+using ODK.Core.Members;
 
-namespace ODK.Core.Chapters;
+namespace ODK.Data.Core.Chapters;
 
 public class ChapterConversationDto
 {

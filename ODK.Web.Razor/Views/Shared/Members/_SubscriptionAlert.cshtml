@@ -1,13 +1,13 @@
 ﻿@using ODK.Core.Extensions
 @using ODK.Core.Members
 @using ODK.Services.Authorization
-@using ODK.Services.Caching
+@using ODK.Services.Members
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Members
 @using ODK.Web.Razor.Pages.Chapters
 @using ODK.Web.Razor.Services
 @inject IAuthorizationService AuthorizationService
-@inject IRequestCache RequestCache
+@inject IMemberService MemberService
 @inject IRequestStore RequestStore
 @{
     var (platform, memberId) = (RequestStore.Platform, RequestStore.CurrentMemberIdOrDefault);
@@ -16,27 +16,23 @@
         return;
     }
 
-    var chapterContext = new ChapterPageContext(RequestCache, Context);
-    var chapter = await chapterContext.GetChapterAsync(RequestStore.Platform);
+    var chapter = await RequestStore.GetChapterOrDefault();
     if (chapter == null)
     {
         return;
     }
 
-    var member = await RequestCache.GetMemberAsync(memberId.Value);
+    var member = await RequestStore.GetCurrentMemberOrDefault();
     if (member == null)
     {
         return;
     }
-    
-    var membershipSettings = await RequestCache.GetChapterMembershipSettingsAsync(chapter.Id);
-    if (membershipSettings == null)
-    {
-        return;
-    }
 
-    var memberSubscription = await RequestCache.GetMemberSubscriptionAsync(memberId.Value, chapter.Id);
-    if (memberSubscription == null)
+    var viewModel = await MemberService.GetMemberSubscriptionAlertViewModel(member.Id, chapter.Id);
+
+    var (membershipSettings, memberSubscription) 
+        = (viewModel.ChapterMembershipSettings, viewModel.MemberSubscription);
+    if (memberSubscription == null || membershipSettings == null)
     {
         return;
     }

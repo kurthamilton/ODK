@@ -1,14 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
 using ODK.Core.Events;
-using ODK.Services.Caching;
 using ODK.Services.Events;
 
 namespace ODK.Web.Razor.Pages.Chapters.Admin.Events;
 
 public abstract class EventAdminPageModel : AdminPageModel
 {
-    protected EventAdminPageModel(IRequestCache requestCache, IEventAdminService eventAdminService)
-        : base(requestCache)
+    protected EventAdminPageModel(IEventAdminService eventAdminService)
     {
         EventAdminService = eventAdminService;
     }

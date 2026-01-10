@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Images;
-using ODK.Services.Caching;
+using ODK.Services;
 using ODK.Services.Chapters;
 using ODK.Services.Members;
 using ODK.Services.Members.Models;
@@ -19,9 +19,8 @@ public class MemberAdminController : AdminControllerBase
     public MemberAdminController(
         IMemberAdminService memberAdminService,
         IChapterAdminService chapterAdminService,
-        IRequestCache requestCache,
         IRequestStore requestStore)
-        : base(requestCache, requestStore)
+        : base(requestStore)
     {
         _chapterAdminService = chapterAdminService;
         _memberAdminService = memberAdminService;
@@ -87,10 +86,10 @@ public class MemberAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("{chapterName}/Admin/Members/{id:guid}/Visibility")]
-    public async Task<IActionResult> SetMemberVisibility(string chapterName, Guid id, [FromForm] bool visible)
+    [HttpPost("groups/{chapterId:guid}/members/{id:guid}/visibility")]
+    public async Task<IActionResult> SetMemberVisibility(Guid chapterId, Guid id, [FromForm] bool visible)
     {
-        var request = await GetAdminServiceRequest(chapterName);
+        var request = new MemberChapterServiceRequest(chapterId, MemberServiceRequest);
         await _memberAdminService.SetMemberVisibility(request, id, visible);
         AddFeedback("Member updated", FeedbackType.Success);
         return RedirectToReferrer();
@@ -115,10 +114,10 @@ public class MemberAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpGet("{chapterName}/Admin/Members/Download")]
-    public async Task<IActionResult> DownloadAdminMembers(string chapterName)
+    [HttpGet("groups/{chapterId:guid}/members/download")]
+    public async Task<IActionResult> DownloadAdminMembers(Guid chapterId)
     {
-        var request = await GetAdminServiceRequest(chapterName);
+        var request = new MemberChapterServiceRequest(chapterId, MemberServiceRequest);
         var data = await _memberAdminService.GetMemberCsv(request);
 
         return DownloadCsv(data, $"Members.{DateTime.UtcNow:yyyyMMdd}.csv");

@@ -1,20 +1,20 @@
 ﻿@page "/{chapterName}/Account/Emails"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
-@using ODK.Services.Caching
 @using ODK.Services.Users
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Services
 @model EmailsModel
 @inject IAccountViewModelService AccountViewModelService
-@inject IRequestCache RequestCache
+@inject IRequestStore RequestStore
 @{
     Layout = "_OdkChapterLayout";
     Model.Title = "Email preferences";
 
-    var chapter = await RequestCache.GetChapterAsync(Model.Platform, Model.ChapterName);
+    var chapter = await RequestStore.GetChapter();
     var viewModel = await AccountViewModelService.GetMemberEmailPreferencesPage(Model.MemberServiceRequest);
 }
 

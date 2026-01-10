@@ -155,6 +155,9 @@ public class ChapterService : IChapterService
         };
     }
 
+    public async Task<IReadOnlyCollection<Chapter>> GetMemberChapters(Guid memberId)
+        => await _unitOfWork.ChapterRepository.GetByMemberId(memberId).Run();
+
     public async Task<bool> NameIsAvailable(string name)
     {
         var existing = await _unitOfWork.ChapterRepository.GetByName(name).Run();

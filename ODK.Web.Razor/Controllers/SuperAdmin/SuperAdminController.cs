@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Payments;
 using ODK.Services.Authentication;
-using ODK.Services.Caching;
 using ODK.Services.Contact;
 using ODK.Services.Features;
 using ODK.Services.Logging;
@@ -26,7 +25,6 @@ public class SuperAdminController : OdkControllerBase
     private readonly IFeatureService _featureService;
     private readonly IInstagramService _instagramService;
     private readonly ILoggingService _loggingService;
-    private readonly IRequestCache _requestCache;
     private readonly IRequestStore _requestStore;
     private readonly ISettingsService _settingsService;
     private readonly ISiteSubscriptionAdminService _siteSubscriptionAdminService;
@@ -35,7 +33,6 @@ public class SuperAdminController : OdkControllerBase
     public SuperAdminController(
         ILoggingService loggingService,
         IInstagramService instagramService,
-        IRequestCache requestCache,
         ISettingsService settingsService,
         ISiteSubscriptionAdminService siteSubscriptionAdminService,
         IFeatureService featureService,
@@ -49,7 +46,6 @@ public class SuperAdminController : OdkControllerBase
         _featureService = featureService;
         _instagramService = instagramService;
         _loggingService = loggingService;
-        _requestCache = requestCache;
         _requestStore = requestStore;
         _settingsService = settingsService;
         _siteSubscriptionAdminService = siteSubscriptionAdminService;
@@ -318,17 +314,10 @@ public class SuperAdminController : OdkControllerBase
         return Redirect($"/{chapterName}/admin/superadmin/payments");
     }
 
-    [HttpPost("{chapterName}/Admin/SuperAdmin/Instagram/Scrape")]
-    public async Task<IActionResult> ScrapeInstagram(string chapterName)
+    [HttpPost("groups/{chapterId:guid}/superAdmin/instagram/scrape")]
+    public async Task<IActionResult> ScrapeInstagram(Guid chapterId)
     {
-        var chapter = await _requestCache.GetChapterAsync(_requestStore.Platform, chapterName);
-        if (chapter == null)
-        {
-            return RedirectToReferrer();
-        }
-
-        await _instagramService.ScrapeLatestInstagramPosts(chapter.Id);
-
+        await _instagramService.ScrapeLatestInstagramPosts(chapterId);
         return RedirectToReferrer();
     }
 }

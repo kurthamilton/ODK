@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Events;
 using ODK.Core.Utils;
-using ODK.Services.Caching;
 using ODK.Services.Chapters;
 using ODK.Services.Events;
 using ODK.Web.Common.Feedback;
@@ -18,10 +17,9 @@ public class EventAdminController : AdminControllerBase
 
     public EventAdminController(
         IEventAdminService eventAdminService,
-        IRequestCache requestCache,
         IRequestStore requestStore,
         IChapterAdminService chapterAdminService)
-        : base(requestCache, requestStore)
+        : base(requestStore)
     {
         _chapterAdminService = chapterAdminService;
         _eventAdminService = eventAdminService;

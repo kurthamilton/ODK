@@ -11,22 +11,18 @@ namespace ODK.Web.Razor.Controllers;
 [Route("")]
 public class RedirectController : OdkControllerBase
 {
-    private readonly IRequestCache _requestCache;
     private readonly IRequestStore _requestStore;
 
-    public RedirectController(
-        IRequestCache requestCache,
-        IRequestStore requestStore)
+    public RedirectController(IRequestStore requestStore)
         : base(requestStore)
     {
-        _requestCache = requestCache;
         _requestStore = requestStore;
     }
 
     [Route("{chapterName}/join")]
     public async Task<IActionResult> ChapterJoin(string chapterName)
     {
-        var chapter = await _requestCache.GetChapterAsync(_requestStore.Platform, chapterName);
+        var chapter = await _requestStore.GetChapter();
         var url = OdkRoutes.Account.Join(chapter);
         return RedirectPermanent(url);
     }
@@ -34,7 +30,7 @@ public class RedirectController : OdkControllerBase
     [Route("{chapterName}/login")]
     public async Task<IActionResult> ChapterLogin(string chapterName)
     {
-        var chapter = await _requestCache.GetChapterAsync(_requestStore.Platform, chapterName);
+        var chapter = await _requestStore.GetChapter();
         var url = OdkRoutes.Account.Login(chapter);
         return RedirectPermanent(url);
     }

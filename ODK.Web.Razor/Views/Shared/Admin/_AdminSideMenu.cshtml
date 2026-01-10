@@ -28,7 +28,9 @@
         platform == PlatformType.DrunkenKnitwits
             ? new MenuItem()
             : new MenuItem { Link = OdkRoutes.MemberGroups.GroupImage(platform, chapter), Text = "Picture" },
-        new MenuItem { Link = OdkRoutes.MemberGroups.GroupPages(platform, chapter), Text = "Pages" },
+        platform == PlatformType.DrunkenKnitwits
+            ? new MenuItem { Link = OdkRoutes.MemberGroups.GroupPages(platform, chapter), Text = "Pages" }
+            : new MenuItem(),
         new MenuItem { Link = OdkRoutes.MemberGroups.GroupPrivacy(platform, chapter), Text = "Privacy" },
         new MenuItem { Link = OdkRoutes.MemberGroups.GroupSocialMedia(platform, chapter), Text = "Social media" },
         platform == PlatformType.DrunkenKnitwits

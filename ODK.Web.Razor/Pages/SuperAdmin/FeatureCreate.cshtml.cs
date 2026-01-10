@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using ODK.Services.Caching;
 using ODK.Services.Features;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.SuperAdmin;
@@ -10,8 +9,7 @@ public class FeatureCreateModel : SuperAdminPageModel
 {
     private readonly IFeatureService _featureService;
 
-    public FeatureCreateModel(IRequestCache requestCache, IFeatureService featureService)
-        : base(requestCache)
+    public FeatureCreateModel(IFeatureService featureService)
     {
         _featureService = featureService;
     }

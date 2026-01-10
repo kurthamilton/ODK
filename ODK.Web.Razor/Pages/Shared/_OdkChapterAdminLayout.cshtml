@@ -4,18 +4,14 @@
 @using ODK.Web.Razor.Models.Header
 @using ODK.Core.Chapters
 @using ODK.Core.Members
-@using ODK.Services.Caching
 @using ODK.Web.Razor.Pages.Chapters
 @using ODK.Web.Razor.Services
-@inject IRequestCache RequestCache
 @inject IRequestStore RequestStore
 @{
     Layout = "_OdkChapterLayout";
 
-    var currentMemberId = RequestStore.CurrentMemberIdOrDefault;
-    var chapterContext = new ChapterPageContext(RequestCache, Context);
-    var chapter = await chapterContext.GetChapterAsync(RequestStore.Platform);
-    var member = await chapterContext.GetMemberAsync(currentMemberId);
+    var chapter = await RequestStore.GetChapter();
+    var member = await RequestStore.GetCurrentMemberOrDefault();
     if (chapter == null || member == null)
     {
         return;

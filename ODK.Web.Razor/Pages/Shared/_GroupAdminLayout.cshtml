@@ -1,16 +1,13 @@
-﻿@using ODK.Services.Caching
-@using ODK.Web.Razor.Models.Admin
+﻿@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Services
-@inject IRequestCache RequestCache
 @inject IRequestStore RequestStore
 @{
     Layout = "_HomeLayout";
 
     var platform = RequestStore.Platform;
-
-    Guid.TryParse(Context.GetRouteValue("id")?.ToString(), out var chapterId);
-    var chapter = await RequestCache.GetChapterAsync(platform, chapterId);
+        
+    var chapter = await RequestStore.GetChapter();
 
     var customTheme = "";
 

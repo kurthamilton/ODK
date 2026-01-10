@@ -1,5 +1,4 @@
 ﻿@using ODK.Core.Notifications
-@using ODK.Services.Caching
 @using ODK.Services.Notifications
 @using ODK.Services.Notifications.ViewModels
 @using ODK.Web.Common.Components
@@ -7,13 +6,13 @@
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Notifications;
 @using ODK.Web.Razor.Pages.Chapters
+@using ODK.Web.Razor.Services
 @model UnreadNotificationsViewModel
-@inject IRequestCache RequestCache
+@inject IRequestStore RequestStore
 @{
     var notifications = Model.Unread;
 
-    var chapterPageContext = new ChapterPageContext(RequestCache, Context);
-    var chapter = await chapterPageContext.GetChapterAsync(Model.Platform);
+    var chapter = await RequestStore.GetChapterOrDefault();
 
     var showIfEmptyClass = notifications.Count == 0 ? null : "d-none";
     var hideIfEmptyClass = notifications.Count == 0 ? "d-none" : null;

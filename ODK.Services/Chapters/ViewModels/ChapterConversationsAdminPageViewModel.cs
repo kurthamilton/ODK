@@ -1,5 +1,6 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Platforms;
+using ODK.Data.Core.Chapters;
 
 namespace ODK.Services.Chapters.ViewModels;
 

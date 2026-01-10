@@ -1,5 +1,6 @@
 ﻿using ODK.Core.Events;
 using ODK.Core.Venues;
+using ODK.Data.Core.Events;
 
 namespace ODK.Services.Chapters.ViewModels;
 

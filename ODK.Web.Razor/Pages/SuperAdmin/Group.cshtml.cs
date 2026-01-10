@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Services;
-using ODK.Services.Caching;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.ViewModels;
 using ODK.Web.Common.Feedback;
@@ -11,10 +10,7 @@ public class GroupModel : SuperAdminPageModel
 {
     private readonly IChapterAdminService _chapterAdminService;
 
-    public GroupModel(
-        IRequestCache requestCache,
-        IChapterAdminService chapterAdminService)
-        : base(requestCache)
+    public GroupModel(IChapterAdminService chapterAdminService)
     {
         _chapterAdminService = chapterAdminService;
     }

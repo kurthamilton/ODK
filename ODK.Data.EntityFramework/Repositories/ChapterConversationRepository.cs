@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ODK.Core.Chapters;
 using ODK.Core.Members;
+using ODK.Data.Core.Chapters;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;

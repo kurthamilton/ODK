@@ -1,11 +1,8 @@
-using ODK.Services.Caching;
-
 namespace ODK.Web.Razor.Pages.Chapters.Admin.Members;
 
 public class MemberConversationsModel : AdminPageModel
 {
-    public MemberConversationsModel(IRequestCache requestCache)
-        : base(requestCache)
+    public MemberConversationsModel()
     {
     }
 

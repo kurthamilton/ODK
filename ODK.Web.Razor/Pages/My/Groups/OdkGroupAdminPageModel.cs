@@ -1,12 +1,15 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Filters;
 using ODK.Core;
-using ODK.Core.Chapters;
 using ODK.Services;
+using ODK.Web.Common.Extensions;
 using ODK.Web.Razor.Pages.Chapters;
 
 namespace ODK.Web.Razor.Pages.My.Groups;
 
+/// <summary>
+/// Base class for all /my/groups/* pages
+/// </summary>
 [Authorize]
 public abstract class OdkGroupAdminPageModel : OdkPageModel
 {
@@ -25,13 +28,11 @@ public abstract class OdkGroupAdminPageModel : OdkPageModel
         PageHandlerExecutingContext context,
         PageHandlerExecutionDelegate next)
     {
-        var chapterId = ChapterPageContext.GetChapterId(HttpContext);
+        var chapterId = HttpContext.ChapterId();
         OdkAssertions.Exists(chapterId, "ChapterId missing");
 
         ChapterId = chapterId.Value;
 
         await base.OnPageHandlerExecutionAsync(context, next);
     }
-
-    public Task<Chapter> GetChapter() => RequestCache.GetChapterAsync(Platform, ChapterId);
 }

@@ -1,4 +1,4 @@
-﻿namespace ODK.Core.Events;
+﻿namespace ODK.Data.Core.Events;
 
 public class EventInviteSummaryDto
 {

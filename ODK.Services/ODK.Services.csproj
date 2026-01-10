@@ -16,4 +16,8 @@
     <ProjectReference Include="..\ODK.Data.Core\ODK.Data.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Countries\" />
+  </ItemGroup>
+
 </Project>

@@ -85,6 +85,5 @@ public class ChapterRepository : ReadWriteRepositoryBase<Chapter>, IChapterRepos
     }
 
     protected override IQueryable<Chapter> Set() => base.Set()
-        .ConditionalWhere(x => x.Platform == _platform, _platform != PlatformType.Default)
-        .ToPlatformChapters(_platform);
+        .ConditionalWhere(x => x.Platform == _platform, _platform != PlatformType.Default);
 }

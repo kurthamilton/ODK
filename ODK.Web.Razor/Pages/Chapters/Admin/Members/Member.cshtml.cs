@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Members;
-using ODK.Services.Caching;
 using ODK.Services.Members;
 using ODK.Services.Members.Models;
 using ODK.Web.Common.Feedback;
@@ -12,8 +11,7 @@ public class MemberModel : AdminPageModel
 {
     private readonly IMemberAdminService _memberAdminService;
 
-    public MemberModel(IRequestCache requestCache, IMemberAdminService memberAdminService)
-        : base(requestCache)
+    public MemberModel(IMemberAdminService memberAdminService)
     {
         _memberAdminService = memberAdminService;
     }

@@ -1,10 +1,8 @@
 ﻿@using ODK.Core.Platforms
-@using ODK.Services.Caching
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.Header
 @using ODK.Web.Razor.Pages.Chapters
 @using ODK.Web.Razor.Services
-@inject IRequestCache RequestCache
 @inject IRequestStore RequestStore
 @{
     Layout = "_Layout";
@@ -36,8 +34,7 @@
 
     @if (componentContext.Platform == PlatformType.DrunkenKnitwits)
     {
-        var chapterContext = new ChapterPageContext(RequestCache, Context);
-        var member = await chapterContext.GetMemberAsync(componentContext.CurrentMemberIdOrDefault);
+        var member = await RequestStore.GetCurrentMemberOrDefault();
 
         <div class="mb-1 d-none d-md-block">
             @await Html.PartialAsync("Header/_Navbar", new NavbarViewModel(componentContext)

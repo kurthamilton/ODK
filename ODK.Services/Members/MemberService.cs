@@ -411,13 +411,6 @@ public class MemberService : IMemberService
         return await _unitOfWork.MemberRepository.GetByEmailAddress(emailAddress).Run();
     }
 
-    public async Task<Member> GetMember(MemberServiceRequest request)
-    {
-        var member = await _unitOfWork.MemberRepository
-            .GetById(request.CurrentMemberId).Run();
-        return member;
-    }
-
     public async Task<VersionedServiceResult<MemberAvatar>> GetMemberAvatar(long? currentVersion, Guid memberId)
     {
         var result = await _cacheService.GetOrSetVersionedItem(
@@ -458,14 +451,34 @@ public class MemberService : IMemberService
             : new VersionedServiceResult<MemberImage>(0, null);
     }
 
-    public async Task<MemberLocation?> GetMemberLocation(Guid memberId)
+    public async Task<MemberLocationViewModel> GetMemberLocationViewModel(MemberServiceRequest request)
     {
-        return await _unitOfWork.MemberLocationRepository.GetByMemberId(memberId);
+        var (distanceUnits, memberPreferences) = await _unitOfWork.RunAsync(
+            x => x.DistanceUnitRepository.GetAll(),
+            x => x.MemberPreferencesRepository.GetByMemberId(request.CurrentMemberId));
+
+        var memberLocation = await _unitOfWork.MemberLocationRepository.GetByMemberId(request.CurrentMemberId);
+
+        return new MemberLocationViewModel
+        {
+            DistanceUnits = distanceUnits,
+            MemberLocation = memberLocation,
+            MemberPreferences = memberPreferences
+        };
     }
 
-    public async Task<MemberPreferences?> GetMemberPreferences(Guid memberId)
+    public async Task<MemberSubscriptionAlertViewModel> GetMemberSubscriptionAlertViewModel(
+        Guid memberId, Guid chapterId)
     {
-        return await _unitOfWork.MemberPreferencesRepository.GetByMemberId(memberId).Run();
+        var (memberSubscription, chapterMembershipSettings) = await _unitOfWork.RunAsync(
+            x => x.MemberSubscriptionRepository.GetByMemberId(memberId, chapterId),
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId));
+
+        return new MemberSubscriptionAlertViewModel
+        {
+            ChapterMembershipSettings = chapterMembershipSettings,
+            MemberSubscription = memberSubscription
+        };
     }
 
     public async Task<ServiceResult> JoinChapter(

@@ -9,6 +9,7 @@ using ODK.Core.Utils;
 using ODK.Core.Venues;
 using ODK.Core.Web;
 using ODK.Data.Core;
+using ODK.Data.Core.Events;
 using ODK.Services.Authorization;
 using ODK.Services.Events.ViewModels;
 using ODK.Services.Exceptions;

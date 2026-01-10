@@ -39,7 +39,7 @@
                         }
                         else
                         {
-                            <form action="/@Model.Value.ShortName/Admin/Chapter/Owner" method="post">
+                            <form action="/groups/@Model.Value.Id/owner" method="post">
                                 @Html.Hidden("memberId", adminMember.MemberId)
                                 <button class="btn btn-icon" data-bs-toggle="tooltip" data-bs-title="Set as owner">
                                     @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.StarOutline)
@@ -51,7 +51,7 @@
                         }
                     </td>
                     <td>
-                        <form action="/@Model.Value.ShortName/Admin/Members/@adminMember.MemberId/Visibility" method="post">
+                        <form action="/groups/@Model.Value.Id/members/@adminMember.MemberId/visibility" method="post">
                             @if (adminMember.Member.Visible(Model.Value.Id))
                             {
                                 @Html.Hidden("visible", false)

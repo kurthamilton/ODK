@@ -1,5 +1,5 @@
 ﻿using ODK.Core.Chapters;
-using ODK.Core.Payments;
+using ODK.Data.Core.Payments;
 
 namespace ODK.Services.Members.ViewModels;
 

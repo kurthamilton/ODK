@@ -1,6 +1,7 @@
-﻿using ODK.Core.Payments;
+﻿using ODK.Core.Chapters;
+using ODK.Core.Payments;
 
-namespace ODK.Core.Chapters.Dtos;
+namespace ODK.Data.Core.Chapters;
 
 public class ChapterSubscriptionAdminDto
 {

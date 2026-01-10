@@ -1,6 +1,9 @@
-﻿@model ODK.Web.Razor.Models.Account.ActivateFormViewModel
+﻿@using ODK.Web.Razor.Models.Account
+@model ActivateFormViewModel
 
-<form method="post">
+<form method="post" action="@(Model.ChapterId != null ? $"/groups/{Model.ChapterId}" : "")/account/activate">
+    @Html.HiddenFor(x => x.Token)
+
     @*@Html.AntiForgeryToken()*@
     <div class="form-group mb-3 required">
         @Html.LabelFor(x => x.Password, new { @class = "form-label" })

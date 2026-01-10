@@ -1,6 +1,6 @@
 ﻿using ODK.Core.Members;
 
-namespace ODK.Core.Payments;
+namespace ODK.Data.Core.Payments;
 
 public class PaymentMemberDto : PaymentDto
 {

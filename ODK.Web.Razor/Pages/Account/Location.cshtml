@@ -2,24 +2,18 @@
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Core.Members
-@using ODK.Services.Countries
 @using ODK.Services.Members
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Services
 @model ODK.Web.Razor.Pages.Account.LocationModel
-@inject ICountryService CountryService
 @inject IMemberService MemberService
 @{
     Layout = "_AccountLayout";
     Model.Title = "Location";
 
-    var memberId = Model.MemberServiceRequest.CurrentMemberId;
-
-    var distanceUnitOptions = await CountryService.GetDistanceUnits();
-    var member = await MemberService.GetMember(Model.MemberServiceRequest);
-    var memberPreferences = await MemberService.GetMemberPreferences(memberId);
-    var location = await MemberService.GetMemberLocation(memberId);
+    var viewModel = await MemberService.GetMemberLocationViewModel(Model.MemberServiceRequest);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -36,11 +30,11 @@
                         @*@Html.AntiForgeryToken()*@
                         @await Html.PartialAsync("Account/_LocationForm", new LocationFormViewModel
                         {
-                            DistanceUnit = memberPreferences?.DistanceUnit?.Id,
-                            DistanceUnitOptions = distanceUnitOptions,
-                            Lat = location?.LatLong.Lat,
-                            Long = location?.LatLong.Long,
-                            LocationName = location?.Name ?? string.Empty
+                            DistanceUnit = viewModel.MemberPreferences?.DistanceUnit?.Id,
+                            DistanceUnitOptions = viewModel.DistanceUnits,
+                            Lat = viewModel.MemberLocation?.LatLong.Lat,
+                            Long = viewModel.MemberLocation?.LatLong.Long,
+                            LocationName = viewModel.MemberLocation?.Name ?? string.Empty
                         })
                         <button class="btn btn-primary">Update</button>
                     </form>

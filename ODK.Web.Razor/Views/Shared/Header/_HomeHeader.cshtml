@@ -2,24 +2,26 @@
 @using ODK.Core.Members
 @using ODK.Core.Platforms
 @using ODK.Core.Utils
-@using ODK.Services.Caching
+@using ODK.Services.Chapters
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Header
+@using ODK.Web.Razor.Services
 @model OdkComponentContext
-@inject IRequestCache RequestCache
+@inject IChapterService ChapterService
+@inject IRequestStore RequestStore
 @{
     if (Model.Platform != PlatformType.DrunkenKnitwits)
     {
         return;
     }
 
-    var memberId = Model.CurrentMemberIdOrDefault;
-    var member = memberId.HasValue ? await RequestCache.GetMemberAsync(memberId.Value) : null;
+    var member = await RequestStore.GetCurrentMemberOrDefault();
 
-    var chapters = await RequestCache.GetChaptersAsync(Model.Platform);
-    var menuItems = chapters
+    var viewModel = await ChapterService.GetChaptersDto(Model.Platform);
+    var menuItems = viewModel
+        .Chapters
         .OrderBy(x => x.Name)
         .Select(c => new MenuItem
         {

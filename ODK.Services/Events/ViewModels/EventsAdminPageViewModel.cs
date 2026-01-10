@@ -2,6 +2,7 @@
 using ODK.Core.Events;
 using ODK.Core.Platforms;
 using ODK.Core.Venues;
+using ODK.Data.Core.Events;
 
 namespace ODK.Services.Events.ViewModels;
 

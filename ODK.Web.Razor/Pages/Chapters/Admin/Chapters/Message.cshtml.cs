@@ -1,11 +1,8 @@
-using ODK.Services.Caching;
-
 namespace ODK.Web.Razor.Pages.Chapters.Admin.Chapters;
 
 public class MessageModel : AdminPageModel
 {
-    public MessageModel(IRequestCache requestCache)
-        : base(requestCache)
+    public MessageModel()
     {
     }
 

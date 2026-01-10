@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using ODK.Services.Caching;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.Models;
 using ODK.Web.Common.Feedback;
@@ -11,8 +10,7 @@ public class SubscriptionCreateModel : AdminPageModel
 {
     private readonly IChapterAdminService _chapterAdminService;
 
-    public SubscriptionCreateModel(IRequestCache requestCache, IChapterAdminService chapterAdminService)
-        : base(requestCache)
+    public SubscriptionCreateModel(IChapterAdminService chapterAdminService)
     {
         _chapterAdminService = chapterAdminService;
     }

@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using ODK.Services.Caching;
 using ODK.Web.Common.Account;
 using ODK.Web.Razor.Models.SuperAdmin;
 
@@ -9,10 +8,7 @@ public class ImpersonateModel : SuperAdminPageModel
 {
     private readonly ILoginHandler _loginHandler;
 
-    public ImpersonateModel(
-        IRequestCache requestCache,
-        ILoginHandler loginHandler)
-        : base(requestCache)
+    public ImpersonateModel(ILoginHandler loginHandler)
     {
         _loginHandler = loginHandler;
     }

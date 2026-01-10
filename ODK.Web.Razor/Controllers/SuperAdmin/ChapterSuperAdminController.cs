@@ -1,11 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ODK.Services;
 using ODK.Services.Authentication;
-using ODK.Services.Caching;
 using ODK.Services.Chapters;
 using ODK.Services.Payments;
 using ODK.Services.Payments.Models;
-using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Controllers.Admin;
 using ODK.Web.Razor.Models.Chapters.SuperAdmin;
 using ODK.Web.Razor.Services;
@@ -20,10 +19,9 @@ public class ChapterSuperAdminController : AdminControllerBase
 
     public ChapterSuperAdminController(
         IChapterAdminService chapterAdminService,
-        IRequestCache requestCache,
         IPaymentAdminService paymentAdminService,
         IRequestStore requestStore)
-        : base(requestCache, requestStore)
+        : base(requestStore)
     {
         _chapterAdminService = chapterAdminService;
         _paymentAdminService = paymentAdminService;
@@ -47,20 +45,20 @@ public class ChapterSuperAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("/{chapterName}/Admin/SuperAdmin/Payments/{id:guid}/Reconciliation-Status")]
-    public async Task<IActionResult> AddReconciliationExemption(string chapterName, Guid id)
+    [HttpPost("/groups/{chapterId:guid}/SuperAdmin/Payments/{id:guid}/Reconciliation-Status")]
+    public async Task<IActionResult> AddReconciliationExemption(Guid chapterId, Guid id)
     {
-        var request = await GetAdminServiceRequest(chapterName);
+        var request = new MemberChapterServiceRequest(chapterId, MemberServiceRequest);
 
         await _paymentAdminService.SetPaymentReconciliationExemption(request, id, true);
 
         return RedirectToReferrer();
     }
 
-    [HttpPost("/{chapterName}/Admin/SuperAdmin/Payments/Reconciliations")]
-    public async Task<IActionResult> CreateReconciliation(string chapterName, ReconciliationFormViewModel viewModel)
+    [HttpPost("/groups/{chapterId:guid}/SuperAdmin/Payments/Reconciliations")]
+    public async Task<IActionResult> CreateReconciliation(Guid chapterId, ReconciliationFormViewModel viewModel)
     {
-        var request = await GetAdminServiceRequest(chapterName);
+        var request = new MemberChapterServiceRequest(chapterId, MemberServiceRequest);
 
         var model = new CreateReconciliationModel
         {

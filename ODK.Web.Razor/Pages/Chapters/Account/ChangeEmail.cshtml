@@ -1,6 +1,5 @@
 ﻿@page "/{chapterName}/Account/Email/Change"
 @attribute [Authorize]
-@using ODK.Services.Caching
 @using ODK.Services.Users
 @using ODK.Services.Users.ViewModels
 @using ODK.Web.Common.Routes
@@ -8,15 +7,14 @@
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.Account
 @using Microsoft.AspNetCore.Authorization
+@using ODK.Web.Razor.Services
 @model ODK.Web.Razor.Pages.Chapters.Account.ChangeEmailModel
 @inject IAccountViewModelService AccountViewModelService
-@inject IRequestCache RequestCache
 @{
     Layout = "_OdkChapterLayout";
     Model.Title = "Change email";
 
     var memberId = Model.CurrentMemberId;
-    var chapter = await RequestCache.GetChapterAsync(Model.Platform, Model.ChapterName);
     var viewModel = await AccountViewModelService.GetChapterAccountViewModel(memberId, Model.ChapterName);
 }
 
@@ -28,7 +26,7 @@
         Title = "Change email address",
         MenuContentFunc = _ => Html.PartialAsync("Account/_AccountMenu", new AccountMenuViewModel
         {
-            Chapter = chapter
+            Chapter = viewModel.Chapter
         }),
         BodyContentFunc = 
             @<div>

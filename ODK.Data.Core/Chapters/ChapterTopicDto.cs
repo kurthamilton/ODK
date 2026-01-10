@@ -1,6 +1,6 @@
 ﻿using ODK.Core.Topics;
 
-namespace ODK.Core.Chapters;
+namespace ODK.Data.Core.Chapters;
 
 public class ChapterTopicDto
 {

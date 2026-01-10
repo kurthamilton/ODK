@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Events;
+using ODK.Data.Core.Events;
 
 namespace ODK.Web.Razor.Models.Events;
 

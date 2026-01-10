@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Chapters;
-using ODK.Services.Caching;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.Models;
 using ODK.Web.Common.Feedback;
@@ -12,8 +11,7 @@ public class QuestionEditModel : AdminPageModel
 {
     private readonly IChapterAdminService _chapterAdminService;
 
-    public QuestionEditModel(IRequestCache requestCache, IChapterAdminService chapterAdminService)
-        : base(requestCache)
+    public QuestionEditModel(IChapterAdminService chapterAdminService)
     {
         _chapterAdminService = chapterAdminService;
     }

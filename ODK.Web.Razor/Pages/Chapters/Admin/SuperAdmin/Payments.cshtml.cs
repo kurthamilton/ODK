@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using ODK.Services.Caching;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.Models;
 using ODK.Web.Common.Feedback;
@@ -11,8 +10,7 @@ public class PaymentSettingsModel : ChapterSuperAdminPageModel
 {
     private readonly IChapterAdminService _chapterAdminService;
 
-    public PaymentSettingsModel(IRequestCache requestCache, IChapterAdminService chapterAdminService)
-        : base(requestCache)
+    public PaymentSettingsModel(IChapterAdminService chapterAdminService)
     {
         _chapterAdminService = chapterAdminService;
     }

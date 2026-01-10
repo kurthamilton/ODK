@@ -25,5 +25,7 @@ public interface IChapterService
 
     Task<ChaptersHomePageViewModel> GetChaptersDto(PlatformType platform);
 
+    Task<IReadOnlyCollection<Chapter>> GetMemberChapters(Guid memberId);
+
     Task<bool> NameIsAvailable(string name);
 }

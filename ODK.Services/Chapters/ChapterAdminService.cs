@@ -12,6 +12,7 @@ using ODK.Core.Subscriptions;
 using ODK.Core.Utils;
 using ODK.Core.Web;
 using ODK.Data.Core;
+using ODK.Data.Core.Chapters;
 using ODK.Data.Core.Deferred;
 using ODK.Services.Caching;
 using ODK.Services.Chapters.Models;

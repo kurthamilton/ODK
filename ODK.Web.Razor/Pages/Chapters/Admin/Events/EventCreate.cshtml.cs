@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Utils;
-using ODK.Services.Caching;
 using ODK.Services.Events;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Events;
@@ -11,8 +10,7 @@ public class EventCreateModel : AdminPageModel
 {
     private readonly IEventAdminService _eventAdminService;
 
-    public EventCreateModel(IRequestCache requestCache, IEventAdminService eventAdminService)
-        : base(requestCache)
+    public EventCreateModel(IEventAdminService eventAdminService)
     {
         _eventAdminService = eventAdminService;
     }

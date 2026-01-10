@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Countries;
-using ODK.Services.Caching;
 using ODK.Services.Venues;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Venues;
@@ -9,8 +8,8 @@ namespace ODK.Web.Razor.Pages.Chapters.Admin.Events;
 
 public class VenueModel : VenueAdminPageModel
 {
-    public VenueModel(IRequestCache requestCache, IVenueAdminService venueAdminService)
-        : base(requestCache, venueAdminService)
+    public VenueModel(IVenueAdminService venueAdminService)
+        : base(venueAdminService)
     {
     }
 

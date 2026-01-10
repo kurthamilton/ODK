@@ -3,7 +3,6 @@ using ODK.Core.Countries;
 using ODK.Core.Platforms;
 using ODK.Core.Web;
 using ODK.Services;
-using ODK.Services.Caching;
 using ODK.Web.Common.Extensions;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Attributes;
@@ -49,9 +48,6 @@ public abstract class OdkPageModel : PageModel
     }
 
     public PlatformType Platform => RequestStore.Platform;
-
-    [OdkInject]
-    public required IRequestCache RequestCache { get; set; }
 
     [OdkInject]
     public required IRequestStore RequestStore { get; set; }

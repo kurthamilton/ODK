@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Chapters;
+using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Core.Web;
 using ODK.Services;
@@ -8,8 +9,6 @@ namespace ODK.Web.Razor.Services;
 
 public interface IRequestStore
 {
-    Chapter? Chapter { get; }
-
     OdkComponentContext ComponentContext { get; }
 
     Guid CurrentMemberId { get; }
@@ -23,4 +22,12 @@ public interface IRequestStore
     PlatformType Platform { get; }
 
     ServiceRequest ServiceRequest { get; }
+
+    Task<Chapter> GetChapter();
+
+    Task<Chapter?> GetChapterOrDefault();
+
+    Task<Member> GetCurrentMember();
+
+    Task<Member?> GetCurrentMemberOrDefault();
 }

@@ -7,7 +7,6 @@ using ODK.Core.Platforms;
 using ODK.Services;
 using ODK.Services.Authentication;
 using ODK.Services.Authentication.OAuth;
-using ODK.Services.Caching;
 using ODK.Services.Features;
 using ODK.Services.Issues;
 using ODK.Services.Issues.Models;
@@ -38,14 +37,12 @@ public class AccountController : OdkControllerBase
     private readonly ILoginHandler _loginHandler;
     private readonly IMemberService _memberService;
     private readonly INotificationService _notificationService;
-    private readonly IRequestCache _requestCache;
     private readonly IRequestStore _requestStore;
     private readonly ISiteSubscriptionService _siteSubscriptionService;
 
     public AccountController(
         IMemberService memberService,
         ILoginHandler loginHandler,
-        IRequestCache requestCache,
         IAuthenticationService authenticationService,
         IFeatureService featureService,
         ISiteSubscriptionService siteSubscriptionService,
@@ -60,9 +57,48 @@ public class AccountController : OdkControllerBase
         _loginHandler = loginHandler;
         _memberService = memberService;
         _notificationService = notificationService;
-        _requestCache = requestCache;
         _requestStore = requestStore;
         _siteSubscriptionService = siteSubscriptionService;
+    }
+
+    [AllowAnonymous]
+    [HttpPost("account/activate")]
+    public async Task<IActionResult> ActivateAccount(
+        [FromForm] ActivateFormViewModel viewModel)
+    {
+        var result = await _authenticationService.ActivateSiteAccountAsync(
+            ServiceRequest,
+            viewModel.Token,
+            viewModel.Password);
+        if (!result.Success)
+        {
+            AddFeedback(result);
+            return RedirectToReferrer();
+        }
+
+        AddFeedback("Your account has been activated. You can now login.", FeedbackType.Success);
+        return Redirect("/account/login");
+    }
+
+    [AllowAnonymous]
+    [HttpPost("groups/{chapterId:guid}/account/activate")]
+    public async Task<IActionResult> ActivateChapterAccount(
+        Guid chapterId, [FromForm] ActivateFormViewModel viewModel)
+    {
+        var result = await _authenticationService.ActivateChapterAccountAsync(
+            ServiceRequest,
+            chapterId,
+            viewModel.Token,
+            viewModel.Password);
+        if (!result.Success)
+        {
+            AddFeedback(result);
+            return RedirectToReferrer();
+        }
+
+        var chapter = await _requestStore.GetChapter();
+        AddFeedback("Your account has been activated. You can now login.", FeedbackType.Success);
+        return Redirect($"/{chapter.ShortName}/Account/Login");
     }
 
     [AllowAnonymous]
@@ -160,13 +196,16 @@ public class AccountController : OdkControllerBase
     [HttpPost("{chapterName}/Account/Login")]
     public async Task<IActionResult> Login(string chapterName, [FromForm] LoginViewModel viewModel, string? returnUrl)
     {
-        var platform = _requestStore.Platform;
-        var chapter = await _requestCache.GetChapterAsync(platform, chapterName);
-        var result = await _loginHandler.Login(viewModel.Email ?? string.Empty,
-            viewModel.Password ?? string.Empty, true);
+        var result = await _loginHandler.Login(
+            viewModel.Email ?? string.Empty,
+            viewModel.Password ?? string.Empty,
+            rememberMe: true);
 
         if (result.Success && result.Member != null)
         {
+            var platform = _requestStore.Platform;
+            var chapter = await _requestStore.GetChapter();
+
             var redirectUrl = string.IsNullOrEmpty(returnUrl)
                 ? OdkRoutes.Groups.Group(platform, chapter)
                 : returnUrl;
@@ -183,12 +222,12 @@ public class AccountController : OdkControllerBase
     [HttpPost("{chapterName}/account/login/google")]
     public async Task<IActionResult> GoogleChapterLogin(string chapterName, [FromForm] string token, string? returnUrl)
     {
-        var chapter = await _requestCache.GetChapterAsync(Platform, chapterName);
         var result = await _loginHandler.OAuthLogin(OAuthProviderType.Google, token);
         if (result.Success && result.Member != null)
         {
             if (string.IsNullOrEmpty(returnUrl))
             {
+                var chapter = await _requestStore.GetChapter();
                 return Redirect(OdkRoutes.Groups.Group(Platform, chapter));
             }
 
@@ -199,6 +238,7 @@ public class AccountController : OdkControllerBase
 
         return RedirectToReferrer();
     }
+
     [HttpPost("account/delete")]
     public async Task<IActionResult> DeleteAccount()
     {
@@ -221,7 +261,7 @@ public class AccountController : OdkControllerBase
 
         if (Platform == PlatformType.DrunkenKnitwits)
         {
-            var member = await _memberService.GetMember(MemberServiceRequest);
+            var member = await _requestStore.GetCurrentMember();
             chapterId = member.Chapters.Count == 1
                 ? member.Chapters.First().ChapterId
                 : null;
@@ -378,12 +418,14 @@ public class AccountController : OdkControllerBase
     }
 
     [AllowAnonymous]
-    [HttpPost("/{ChapterName}/Account/Password/Forgotten")]
-    public async Task<IActionResult> ForgottenPassword(string chapterName, [FromForm] ForgottenPasswordFormViewModel viewModel)
+    [HttpPost("/{chapterId:guid}/Account/Password/Forgotten")]
+    public async Task<IActionResult> ForgottenPassword(Guid chapterId, [FromForm] ForgottenPasswordFormViewModel viewModel)
     {
-        var chapter = await _requestCache.GetChapterAsync(_requestStore.Platform, chapterName);
         var result = await _authenticationService.RequestPasswordResetAsync(
-            ServiceRequest, chapter.Id, viewModel.EmailAddress ?? string.Empty);
+            ServiceRequest,
+            chapterId,
+            viewModel.EmailAddress ?? string.Empty);
+
         var successMessage =
             "An email containing password reset instructions has been sent to that email address " +
             "if it is associated with an account";

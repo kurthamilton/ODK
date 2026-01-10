@@ -1,23 +1,25 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Images;
 using ODK.Services;
-using ODK.Services.Caching;
 using ODK.Services.Members;
 using ODK.Services.Members.Models;
 using ODK.Services.Users.ViewModels;
 using ODK.Web.Common.Feedback;
+using ODK.Web.Razor.Services;
 
 namespace ODK.Web.Razor.Pages.Chapters.Account;
 
 public class JoinModel : ChapterPageModel2
 {
     private readonly IMemberService _memberService;
-    private readonly IRequestCache _requestCache;
+    private readonly IRequestStore _requestStore;
 
-    public JoinModel(IMemberService memberService, IRequestCache requestCache)
+    public JoinModel(
+        IMemberService memberService,
+        IRequestStore requestStore)
     {
         _memberService = memberService;
-        _requestCache = requestCache;
+        _requestStore = requestStore;
     }
 
     public async Task<IActionResult> OnPost(
@@ -25,8 +27,6 @@ public class JoinModel : ChapterPageModel2
         [FromForm] ChapterProfileFormSubmitViewModel profileViewModel,
         [FromForm] PersonalDetailsFormViewModel personalDetailsViewModel)
     {
-        var chapter = await _requestCache.GetChapterAsync(Platform, chapterName);
-
         if (string.IsNullOrEmpty(profileViewModel.ImageDataUrl))
         {
             AddFeedback("No image provided", FeedbackType.Warning);
@@ -56,6 +56,7 @@ public class JoinModel : ChapterPageModel2
             })
         };
 
+        var chapter = await _requestStore.GetChapter();
         var result = await _memberService.CreateChapterAccount(ServiceRequest, chapter.Id, model);
         PostJoin(result);
         return result.Success

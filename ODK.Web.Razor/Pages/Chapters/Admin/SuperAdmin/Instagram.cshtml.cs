@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using ODK.Services.Caching;
 using ODK.Services.Settings;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.SuperAdmin;
@@ -10,8 +9,7 @@ public class InstagramModel : ChapterSuperAdminPageModel
 {
     private readonly ISettingsService _settingsService;
 
-    public InstagramModel(IRequestCache requestCache, ISettingsService settingsService)
-        : base(requestCache)
+    public InstagramModel(ISettingsService settingsService)
     {
         _settingsService = settingsService;
     }

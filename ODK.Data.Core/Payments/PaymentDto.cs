@@ -1,6 +1,7 @@
 ﻿using ODK.Core.Countries;
+using ODK.Core.Payments;
 
-namespace ODK.Core.Payments;
+namespace ODK.Data.Core.Payments;
 
 public class PaymentDto
 {

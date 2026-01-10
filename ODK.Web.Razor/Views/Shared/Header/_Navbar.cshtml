@@ -1,16 +1,16 @@
 ﻿@using ODK.Core.Chapters
-@using ODK.Services.Caching
+@using ODK.Services.Chapters
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Header
 @model ODK.Web.Razor.Models.Header.NavbarViewModel
-@inject IRequestCache RequestCache
+@inject IChapterService ChapterService
 @{
     IReadOnlyCollection<Chapter> memberChapters = [];
 
     if (Model.Member != null)
-    {
-        var chapters = await RequestCache.GetChaptersAsync(Model.Platform);
+    {        
+        var chapters = await ChapterService.GetMemberChapters(Model.Member.Id);
         memberChapters = chapters
             .Where(x => Model.Member.IsMemberOf(x.Id))
             .OrderBy(x => x.Name)

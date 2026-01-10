@@ -199,7 +199,7 @@ public class MemberGroupRoutes
     };
 
     public string MembersDownload(PlatformType platform, Chapter chapter)
-        => $"{Members(platform, chapter)}/download";
+        => $"/groups/{chapter.Id}/members/download";
 
     public string Members(PlatformType platform, Chapter chapter)
         => $"{Group(platform, chapter)}/members";

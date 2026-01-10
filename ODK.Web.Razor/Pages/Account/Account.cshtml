@@ -5,13 +5,14 @@
 @using ODK.Services.Users.ViewModels
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Services
 @model ODK.Web.Razor.Pages.Account.AccountModel
-@inject IMemberService MemberService
+@inject IRequestStore RequestStore
 @{
     Layout = "_HomeLayout";
     Model.Title = "Profile";
 
-    var member = await MemberService.GetMember(Model.MemberServiceRequest);
+    var member = await RequestStore.GetCurrentMember();
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

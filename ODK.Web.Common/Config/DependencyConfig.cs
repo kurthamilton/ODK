@@ -12,7 +12,6 @@ using ODK.Services.Authorization;
 using ODK.Services.Caching;
 using ODK.Services.Chapters;
 using ODK.Services.Contact;
-using ODK.Services.Countries;
 using ODK.Services.Emails;
 using ODK.Services.Events;
 using ODK.Services.Features;
@@ -134,7 +133,6 @@ public static class DependencyConfig
         services.AddScoped<IChapterViewModelService, ChapterViewModelService>();
         services.AddScoped<IContactAdminService, ContactAdminService>();
         services.AddScoped<IContactService, ContactService>();
-        services.AddScoped<ICountryService, CountryService>();
         services.AddScoped<ICsvService, CsvService>();
         services.AddScoped<ICurrencyService, CurrencyService>();
         services.AddScoped<IEmailAdminService, EmailAdminService>();
@@ -199,7 +197,6 @@ public static class DependencyConfig
                 .ToArray()
         });
         services.AddScoped<IRecaptchaService, RecaptchaService>();
-        services.AddScoped<IRequestCache, RequestCache>();
         services.AddScoped<ISettingsService, SettingsService>();
         services.AddScoped<ISiteSubscriptionAdminService, SiteSubscriptionAdminService>();
         services.AddScoped<ISiteSubscriptionService, SiteSubscriptionService>();

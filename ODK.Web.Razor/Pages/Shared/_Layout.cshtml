@@ -2,16 +2,13 @@
 @using ODK.Core.Countries
 @using ODK.Core.Platforms
 @using ODK.Core.Utils
-@using ODK.Services.Caching
 @using ODK.Web.Razor.Pages.Chapters
 @using ODK.Web.Razor.Services
-@inject IRequestCache RequestCache
 @inject IRequestStore RequestStore
 @{
     var platform = RequestStore.Platform;
 
-    var context = new ChapterPageContext(RequestCache, Context);
-    var chapter = await context.GetChapterAsync(platform);
+    var chapter = await RequestStore.GetChapterOrDefault();
 
     var title = platform switch
     {

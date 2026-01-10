@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using ODK.Services.Caching;
 using ODK.Services.Chapters;
 using ODK.Web.Common.Routes;
 
@@ -11,10 +10,7 @@ public class AccountModel : AdminPageModel
 
     private readonly IChapterAdminService _chapterAdminService;
 
-    public AccountModel(
-        IRequestCache requestCache,
-        IChapterAdminService chapterAdminService)
-        : base(requestCache)
+    public AccountModel(IChapterAdminService chapterAdminService)
     {
         _chapterAdminService = chapterAdminService;
     }

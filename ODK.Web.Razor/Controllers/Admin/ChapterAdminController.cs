@@ -2,9 +2,7 @@
 using ODK.Core.Countries;
 using ODK.Core.Emails;
 using ODK.Core.Images;
-using ODK.Core.Subscriptions;
 using ODK.Services;
-using ODK.Services.Caching;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.Models;
 using ODK.Services.Emails;
@@ -26,9 +24,8 @@ public class ChapterAdminController : AdminControllerBase
     public ChapterAdminController(
         IChapterAdminService chapterAdminService,
         IEmailAdminService emailAdminService,
-        IRequestCache requestCache,
         IRequestStore requestStore)
-        : base(requestCache, requestStore)
+        : base(requestStore)
     {
         _chapterAdminService = chapterAdminService;
         _emailAdminService = emailAdminService;
@@ -133,7 +130,7 @@ public class ChapterAdminController : AdminControllerBase
     [HttpPost("groups/{chapterId:guid}/messages/{id:guid}/replied")]
     public async Task<IActionResult> MarkMessageAsReplied(Guid chapterId, Guid id)
     {
-        var request = new MemberChapterServiceRequest(chapterId, MemberServiceRequest);
+        var request = MemberChapterServiceRequest(chapterId);
         var result = await _chapterAdminService.SetMessageAsReplied(request, id);
         AddFeedback(result, "Message updated");
         return RedirectToReferrer();
@@ -143,16 +140,16 @@ public class ChapterAdminController : AdminControllerBase
     public async Task<IActionResult> ReplyToMessage(Guid chapterId, Guid id,
         [FromForm] ChapterMessageReplyFormViewModel viewModel)
     {
-        var request = new MemberChapterServiceRequest(chapterId, MemberServiceRequest);
+        var request = MemberChapterServiceRequest(chapterId);
         var result = await _chapterAdminService.ReplyToMessage(request, id, viewModel.Message ?? string.Empty);
         AddFeedback(result, "Reply sent");
         return RedirectToReferrer();
     }
 
-    [HttpPost("groups/{id:guid}/pages")]
-    public async Task<IActionResult> UpdatePages(Guid id, [FromForm] ChapterPagesFormViewModel viewModel)
+    [HttpPost("groups/{chapterId:guid}/pages")]
+    public async Task<IActionResult> UpdatePages(Guid chapterId, [FromForm] ChapterPagesFormViewModel viewModel)
     {
-        var request = new MemberChapterServiceRequest(id, MemberServiceRequest);
+        var request = MemberChapterServiceRequest(chapterId);
         var result = await _chapterAdminService.UpdateChapterPages(request, new UpdateChapterPages
         {
             Pages = viewModel.Pages.Select(x => new UpdateChapterPage
@@ -198,7 +195,7 @@ public class ChapterAdminController : AdminControllerBase
     public async Task<IActionResult> CreateQuestion(Guid chapterId,
         [FromForm] string? name, [FromForm] string? answer)
     {
-        var request = new MemberChapterServiceRequest(chapterId, MemberServiceRequest);
+        var request = MemberChapterServiceRequest(chapterId);
         var model = new CreateChapterQuestion
         {
             Answer = answer ?? string.Empty,
@@ -212,7 +209,7 @@ public class ChapterAdminController : AdminControllerBase
     [HttpPost("groups/{chapterId:guid}/questions/{questionId:guid}/delete")]
     public async Task<IActionResult> DeleteQuestion(Guid chapterId, Guid questionId)
     {
-        var request = new MemberChapterServiceRequest(chapterId, MemberServiceRequest);
+        var request = MemberChapterServiceRequest(chapterId);
         await _chapterAdminService.DeleteChapterQuestion(request, questionId);
         AddFeedback("Question deleted", FeedbackType.Success);
         return RedirectToReferrer();
@@ -221,7 +218,7 @@ public class ChapterAdminController : AdminControllerBase
     [HttpPost("groups/{chapterId:guid}/questions/{questionId:guid}/move/down")]
     public async Task<IActionResult> MoveQuestionDown(Guid chapterId, Guid questionId)
     {
-        var request = new MemberChapterServiceRequest(chapterId, MemberServiceRequest);
+        var request = MemberChapterServiceRequest(chapterId);
         await _chapterAdminService.UpdateChapterQuestionDisplayOrder(request,
             questionId, 1);
         AddFeedback("Question order updated", FeedbackType.Success);
@@ -231,7 +228,7 @@ public class ChapterAdminController : AdminControllerBase
     [HttpPost("groups/{chapterId:guid}/questions/{questionId:guid}/move/up")]
     public async Task<IActionResult> MoveQuestionUp(Guid chapterId, Guid questionId)
     {
-        var request = new MemberChapterServiceRequest(chapterId, MemberServiceRequest);
+        var request = MemberChapterServiceRequest(chapterId);
         await _chapterAdminService.UpdateChapterQuestionDisplayOrder(request,
             questionId, -1);
         AddFeedback("Question order updated", FeedbackType.Success);
@@ -250,7 +247,7 @@ public class ChapterAdminController : AdminControllerBase
     [HttpPost("groups/{chapterId:guid}/messages/{id}/delete")]
     public async Task<IActionResult> DeleteContactRequest(Guid chapterId, Guid id)
     {
-        var serviceRequest = new MemberChapterServiceRequest(chapterId, MemberServiceRequest);
+        var serviceRequest = MemberChapterServiceRequest(chapterId);
         var result = await _chapterAdminService.DeleteChapterContactMessage(serviceRequest, id);
         AddFeedback(result, "Message deleted");
         return RedirectToReferrer();
@@ -259,7 +256,7 @@ public class ChapterAdminController : AdminControllerBase
     [HttpPost("groups/{chapterId:guid}/theme")]
     public async Task<IActionResult> UpdateTheme(Guid chapterId, ThemeFormViewModel viewModel)
     {
-        var serviceRequest = new MemberChapterServiceRequest(chapterId, MemberServiceRequest);
+        var serviceRequest = MemberChapterServiceRequest(chapterId);
         var result = await _chapterAdminService.UpdateChapterTheme(serviceRequest, new UpdateChapterTheme
         {
             Background = viewModel.Background,
@@ -269,37 +266,37 @@ public class ChapterAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("{chapterName}/Admin/Chapter/Currency")]
-    public async Task<IActionResult> UpdateCurrency(string chapterName, [FromForm] Guid currencyId)
+    [HttpPost("groups/{chapterId:guid}/currency")]
+    public async Task<IActionResult> UpdateCurrency(Guid chapterId, [FromForm] Guid currencyId)
     {
-        var serviceRequest = await GetAdminServiceRequest(chapterName);
+        var serviceRequest = MemberChapterServiceRequest(chapterId);
         var result = await _chapterAdminService.UpdateChapterCurrency(serviceRequest, currencyId);
         AddFeedback(result, "Currency updated");
         return RedirectToReferrer();
     }
 
-    [HttpPost("{chapterName}/Admin/Chapter/Emails/{type}/RestoreDefault")]
-    public async Task<IActionResult> RestoreDefaultEmail(string chapterName, EmailType type)
+    [HttpPost("groups/{chapterId:guid}/emails/{type}/restoreDefault")]
+    public async Task<IActionResult> RestoreDefaultEmail(Guid chapterId, EmailType type)
     {
-        var serviceRequest = await GetAdminServiceRequest(chapterName);
+        var serviceRequest = MemberChapterServiceRequest(chapterId);
         var result = await _emailAdminService.DeleteChapterEmail(serviceRequest, type);
         AddFeedback(result, "Default email restored");
         return RedirectToReferrer();
     }
 
-    [HttpPost("{chapterName}/Admin/Chapter/Emails/{type}/SendTest")]
-    public async Task<IActionResult> SendTestEmail(string chapterName, EmailType type)
+    [HttpPost("groups/{chapterId:guid}/emails/{type}/test")]
+    public async Task<IActionResult> SendTestEmail(Guid chapterId, EmailType type)
     {
-        var serviceRequest = await GetAdminServiceRequest(chapterName);
+        var serviceRequest = MemberChapterServiceRequest(chapterId);
         var result = await _emailAdminService.SendTestEmail(serviceRequest, type);
         AddFeedback(result, "Test email sent");
         return RedirectToReferrer();
     }
 
-    [HttpPost("{chapterName}/Admin/Chapter/Owner")]
-    public async Task<IActionResult> SetOwner(string chapterName, [FromForm] Guid memberId)
+    [HttpPost("groups/{chapterId:guid}/owner")]
+    public async Task<IActionResult> SetOwner(Guid chapterId, [FromForm] Guid memberId)
     {
-        var serviceRequest = await GetAdminServiceRequest(chapterName);
+        var serviceRequest = MemberChapterServiceRequest(chapterId);
         await _chapterAdminService.SetOwner(serviceRequest, memberId);
         return RedirectToReferrer();
     }
@@ -307,7 +304,7 @@ public class ChapterAdminController : AdminControllerBase
     [HttpPost("groups/{chapterId:guid}/properties/{id:guid}/delete")]
     public async Task<IActionResult> DeleteProperty(Guid chapterId, Guid id)
     {
-        var serviceRequest = new MemberChapterServiceRequest(chapterId, MemberServiceRequest);
+        var serviceRequest = MemberChapterServiceRequest(chapterId);
         await _chapterAdminService.DeleteChapterProperty(serviceRequest, id);
         AddFeedback("Property deleted", FeedbackType.Success);
         return RedirectToReferrer();
@@ -316,7 +313,7 @@ public class ChapterAdminController : AdminControllerBase
     [HttpPost("groups/{chapterId:guid}/properties/{id:guid}/move/down")]
     public async Task<IActionResult> MovePropertyDown(Guid chapterId, Guid id)
     {
-        var serviceRequest = new MemberChapterServiceRequest(chapterId, MemberServiceRequest);
+        var serviceRequest = MemberChapterServiceRequest(chapterId);
         await _chapterAdminService.UpdateChapterPropertyDisplayOrder(serviceRequest, id, 1);
         return RedirectToReferrer();
     }
@@ -324,18 +321,8 @@ public class ChapterAdminController : AdminControllerBase
     [HttpPost("groups/{chapterId:guid}/properties/{id:guid}/move/up")]
     public async Task<IActionResult> MovePropertyUp(Guid chapterId, Guid id)
     {
-        var serviceRequest = new MemberChapterServiceRequest(chapterId, MemberServiceRequest);
+        var serviceRequest = MemberChapterServiceRequest(chapterId);
         await _chapterAdminService.UpdateChapterPropertyDisplayOrder(serviceRequest, id, -1);
-        return RedirectToReferrer();
-    }
-
-    [HttpPost("{chapterName}/Admin/Chapter/Subscriptions/{id:guid}/Automatic")]
-    public async Task<IActionResult> SetUpAutomaticSubscription(string chapterName, Guid id,
-        [FromForm] SiteSubscriptionFrequency frequency)
-    {
-        var serviceRequest = await GetAdminServiceRequest(chapterName);
-        var result = await _chapterAdminService.UpdateChapterSiteSubscription(serviceRequest, id, frequency);
-        AddFeedback(result, "Automatic subscription set up");
         return RedirectToReferrer();
     }
 

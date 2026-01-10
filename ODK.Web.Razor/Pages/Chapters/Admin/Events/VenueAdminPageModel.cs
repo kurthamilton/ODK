@@ -1,14 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
 using ODK.Core.Venues;
-using ODK.Services.Caching;
 using ODK.Services.Venues;
 
 namespace ODK.Web.Razor.Pages.Chapters.Admin.Events;
 
 public abstract class VenueAdminPageModel : AdminPageModel
 {
-    protected VenueAdminPageModel(IRequestCache requestCache, IVenueAdminService venueAdminService)
-        : base(requestCache)
+    protected VenueAdminPageModel(IVenueAdminService venueAdminService)
     {
         VenueAdminService = venueAdminService;
     }

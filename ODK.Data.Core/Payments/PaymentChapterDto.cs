@@ -1,6 +1,6 @@
 ﻿using ODK.Core.Chapters;
 
-namespace ODK.Core.Payments;
+namespace ODK.Data.Core.Payments;
 
 public class PaymentChapterDto : PaymentDto
 {

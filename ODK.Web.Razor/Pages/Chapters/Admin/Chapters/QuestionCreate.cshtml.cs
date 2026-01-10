@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using ODK.Services.Caching;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.Models;
 using ODK.Web.Common.Feedback;
@@ -11,8 +10,7 @@ public class QuestionCreateModel : AdminPageModel
 {
     private readonly IChapterAdminService _chapterAdminService;
 
-    public QuestionCreateModel(IRequestCache requestCache, IChapterAdminService chapterAdminService)
-        : base(requestCache)
+    public QuestionCreateModel(IChapterAdminService chapterAdminService)
     {
         _chapterAdminService = chapterAdminService;
     }

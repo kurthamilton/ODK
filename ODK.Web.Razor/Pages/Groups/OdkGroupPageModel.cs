@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
 using ODK.Core;
+using ODK.Web.Common.Extensions;
 using ODK.Web.Razor.Pages.Chapters;
 
 namespace ODK.Web.Razor.Pages.Groups;
@@ -12,7 +13,7 @@ public abstract class OdkGroupPageModel : OdkPageModel
         PageHandlerExecutingContext context,
         PageHandlerExecutionDelegate next)
     {
-        var slug = ChapterPageContext.GetChapterSlug(HttpContext);
+        var slug = HttpContext.ChapterSlug();
         OdkAssertions.Exists(slug, "Chapter slug missing");
 
         Slug = slug;

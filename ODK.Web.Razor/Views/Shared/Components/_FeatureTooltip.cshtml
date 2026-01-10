@@ -1,12 +1,11 @@
 ﻿@using Microsoft.AspNetCore.Html
-@using ODK.Services.Caching
 @using ODK.Services.Features
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Pages.Chapters
 @using ODK.Web.Razor.Services
-@model ODK.Web.Razor.Models.Components.FeatureTooltipViewModel
+@model FeatureTooltipViewModel
 @inject IFeatureService FeatureService
 @inject IHttpContextAccessor HttpContextAccessor
-@inject IRequestCache RequestCache
 @inject IRequestStore RequestStore
 @{
     var (platform, memberId) = (RequestStore.Platform, RequestStore.CurrentMemberId);
@@ -16,8 +15,7 @@
         return;
     }    
 
-    var chapter = await new ChapterPageContext(RequestCache, HttpContextAccessor.HttpContext!)
-        .GetChapterAsync(platform);
+    var chapter = await RequestStore.GetChapterOrDefault();
     var description = feature.Description.Replace("{chapter.name}", chapter?.GetDisplayName(platform) ?? "");
 }
 
