@@ -162,7 +162,8 @@ public class EventViewModelService : IEventViewModelService
             hasQuestions,
             adminMembers,
             ownerSubscription,
-            notifications) = await _unitOfWork.RunAsync(
+            notifications,
+            chapterPages) = await _unitOfWork.RunAsync(
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.EventRepository.GetById(eventId),
             x => x.VenueRepository.GetByEventId(eventId),
@@ -184,7 +185,8 @@ public class EventViewModelService : IEventViewModelService
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
             x => currentMemberId != null
                 ? x.NotificationRepository.GetUnreadByMemberId(currentMemberId.Value, NotificationType.NewEvent, eventId)
-                : new DefaultDeferredQueryMultiple<Notification>());
+                : new DefaultDeferredQueryMultiple<Notification>(),
+            x => x.ChapterPageRepository.GetByChapterId(chapter.Id));
 
         OdkAssertions.BelongsToChapter(@event, chapter.Id);
 
@@ -263,6 +265,7 @@ public class EventViewModelService : IEventViewModelService
             CanRespond = canRespond,
             CanView = canViewEvent,
             Chapter = chapter,
+            ChapterPages = chapterPages,
             ChapterPaymentSettings = chapterPaymentSettings,
             Comments = new EventCommentsDto
             {

@@ -8,6 +8,8 @@ public class GroupPageViewModel
 {
     public required Chapter Chapter { get; init; }
 
+    public required IReadOnlyCollection<ChapterPage> ChapterPages { get; init; }
+
     public required Member? CurrentMember { get; init; }
 
     public required bool HasProfiles { get; init; }

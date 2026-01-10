@@ -1,4 +1,6 @@
-﻿@using ODK.Services.Chapters.ViewModels
+﻿@using ODK.Core.Pages
+@using ODK.Core.Utils
+@using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
@@ -7,19 +9,37 @@
 @model GroupPageViewModel
 @inject IHttpContextAccessor HttpContextAccessor
 @{
-    var menuItems = new List<MenuItem>
-    {
-        new MenuItem { Text = "About", Link = OdkRoutes.Groups.Group(Model.Platform, Model.Chapter), ActiveIsExactMatch = true },
-        new MenuItem { Text = "Events", Link = OdkRoutes.Groups.Events(Model.Platform, Model.Chapter) }
-    };
+    var chapterPageDictionary = Model.ChapterPages
+        .ToDictionary(x => x.PageType);
 
-    if (Model.IsMember)
+    var menuItems = new List<MenuItem>();
+
+    chapterPageDictionary.TryGetValue(PageType.About, out var aboutPage);
+
+    if (aboutPage?.Hidden != true)
     {
         menuItems.Add(new MenuItem 
         { 
-            Text = "Members", 
-            Link = OdkRoutes.Groups.Members(Model.Platform, Model.Chapter)
+            Text = StringUtils.Coalesce(aboutPage?.Title, "About"), 
+            Link = OdkRoutes.Groups.Group(Model.Platform, Model.Chapter), 
+            ActiveIsExactMatch = true 
         });
+    }    
+
+    menuItems.Add(new MenuItem { Text = "Events", Link = OdkRoutes.Groups.Events(Model.Platform, Model.Chapter) });
+
+    if (Model.IsMember)
+    {
+        chapterPageDictionary.TryGetValue(PageType.Members, out var membersPage);
+
+        if (membersPage?.Hidden != true)
+        {
+            menuItems.Add(new MenuItem
+            {
+                Text = StringUtils.Coalesce(membersPage?.Title, "Members"),
+                Link = OdkRoutes.Groups.Members(Model.Platform, Model.Chapter)
+            });
+        }        
     }
 
     if (Model.HasQuestions)
@@ -27,14 +47,19 @@
         menuItems.Add(new MenuItem { Text = "FAQ", Link = OdkRoutes.Groups.Questions(Model.Platform, Model.Chapter) });
     }
 
-    menuItems.Add(new MenuItem 
-    { 
-        Text = "Contact", 
-        Link = OdkRoutes.Groups.Contact(Model.Platform, Model.Chapter),
-        Active = 
-            Context.ForPath(OdkRoutes.Groups.Contact(Model.Platform, Model.Chapter)) || 
-            Context.ForPath(OdkRoutes.Groups.Conversations(Model.Platform, Model.Chapter))
-    });    
+    chapterPageDictionary.TryGetValue(PageType.Contact, out var contactPage);
+
+    if (contactPage?.Hidden != true)
+    {
+        menuItems.Add(new MenuItem
+        {
+            Text = StringUtils.Coalesce(contactPage?.Title, "Contact"),
+            Link = OdkRoutes.Groups.Contact(Model.Platform, Model.Chapter),
+            Active =
+               Context.ForPath(OdkRoutes.Groups.Contact(Model.Platform, Model.Chapter)) ||
+               Context.ForPath(OdkRoutes.Groups.Conversations(Model.Platform, Model.Chapter))
+        });
+    }      
 
     if (Model.IsMember)
     {

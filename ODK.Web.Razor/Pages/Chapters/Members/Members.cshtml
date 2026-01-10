@@ -1,6 +1,7 @@
 ﻿@page "/{chapterName}/Members"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
+@using ODK.Core.Pages
 @using ODK.Core.Utils
 @using ODK.Services.Members
 @using ODK.Web.Common.Routes
@@ -17,7 +18,8 @@
         Response.Redirect(OdkRoutes.Groups.Join(viewModel.Platform, viewModel.Chapter));
     }
 
-    var title = StringUtils.Coalesce(viewModel.ChapterPage?.Title, "Knitwits");
+    var chapterPage = viewModel.ChapterPages.FirstOrDefault(x => x.PageType == PageType.Members);
+    var title = StringUtils.Coalesce(chapterPage?.Title, "Knitwits");
 
     Model.Title = title;
 }

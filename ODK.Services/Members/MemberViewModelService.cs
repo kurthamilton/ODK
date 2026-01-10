@@ -118,20 +118,23 @@ public class MemberViewModelService : IMemberViewModelService
             memberProperties,
             hasQuestions,
             adminMembers,
-            ownerSubscription) = await _unitOfWork.RunAsync(
+            ownerSubscription,
+            chapterPages) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.MemberRepository.GetById(memberId),
             x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
             x => x.MemberPropertyRepository.GetByMemberId(memberId, chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id));
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterPageRepository.GetByChapterId(chapter.Id));
 
         OdkAssertions.MemberOf(member, chapter.Id);
 
         return new MemberPageViewModel
         {
             Chapter = chapter,
+            ChapterPages = chapterPages,
             ChapterProperties = chapterProperties,
             CurrentMember = currentMember,
             HasProfiles = chapterProperties.Any(),
@@ -157,7 +160,7 @@ public class MemberViewModelService : IMemberViewModelService
             hasQuestions,
             adminMembers,
             ownerSubscription,
-            chapterPage) =
+            chapterPages) =
             await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetByChapterId(chapter.Id),
             x => x.MemberRepository.GetById(currentMemberId),
@@ -165,14 +168,14 @@ public class MemberViewModelService : IMemberViewModelService
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterPageRepository.GetByChapterId(chapter.Id, PageType.Members));
+            x => x.ChapterPageRepository.GetByChapterId(chapter.Id));
 
         var isMember = currentMember.IsMemberOf(chapter.Id);
 
         return new MembersPageViewModel
         {
             Chapter = chapter,
-            ChapterPage = chapterPage,
+            ChapterPages = chapterPages,
             CurrentMember = currentMember,
             HasProfiles = hasProperties,
             HasQuestions = hasQuestions,

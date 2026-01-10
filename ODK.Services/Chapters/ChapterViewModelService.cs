@@ -253,7 +253,7 @@ public class ChapterViewModelService : IChapterViewModelService
             membershipSettings,
             privacySettings,
             memberSubscription,
-            chapterPage
+            chapterPages
         ) = await _unitOfWork.RunAsync(
             x => currentMemberId != null
                 ? x.MemberRepository.GetByIdOrDefault(currentMemberId.Value)
@@ -270,7 +270,7 @@ public class ChapterViewModelService : IChapterViewModelService
             x => currentMemberId != null
                 ? x.MemberSubscriptionRepository.GetByMemberId(currentMemberId.Value, chapter.Id)
                 : new DefaultDeferredQuerySingleOrDefault<MemberSubscription>(),
-            x => x.ChapterPageRepository.GetByChapterId(chapter.Id, PageType.Contact));
+            x => x.ChapterPageRepository.GetByChapterId(chapter.Id));
 
         var canStartConversation = currentMember != null
             ? _authorizationService.CanStartConversation(chapter.Id, currentMember, memberSubscription, membershipSettings, privacySettings)
@@ -280,7 +280,7 @@ public class ChapterViewModelService : IChapterViewModelService
         {
             CanStartConversation = canStartConversation,
             Chapter = chapter,
-            ChapterPage = chapterPage,
+            ChapterPages = chapterPages,
             Conversations = conversations,
             CurrentMember = currentMember,
             HasProfiles = hasProperties,
@@ -308,7 +308,8 @@ public class ChapterViewModelService : IChapterViewModelService
             hasQuestions,
             conversations,
             messages,
-            notifications
+            notifications,
+            chapterPages
         ) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetByIdOrDefault(currentMemberId),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
@@ -317,7 +318,8 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
             x => x.ChapterConversationRepository.GetDtosByMemberId(currentMemberId, chapter.Id),
             x => x.ChapterConversationMessageRepository.GetByConversationId(conversationId),
-            x => x.NotificationRepository.GetUnreadByMemberId(currentMemberId, NotificationType.ConversationAdminMessage, conversationId));
+            x => x.NotificationRepository.GetUnreadByMemberId(currentMemberId, NotificationType.ConversationAdminMessage, conversationId),
+            x => x.ChapterPageRepository.GetByChapterId(chapter.Id));
 
         var dto = conversations
             .FirstOrDefault(x => x.Conversation.Id == conversationId);
@@ -346,6 +348,7 @@ public class ChapterViewModelService : IChapterViewModelService
         return new GroupConversationPageViewModel
         {
             Chapter = chapter,
+            ChapterPages = chapterPages,
             Conversation = dto.Conversation,
             CurrentMember = currentMember,
             HasProfiles = hasProperties,
@@ -379,7 +382,8 @@ public class ChapterViewModelService : IChapterViewModelService
             upcomingEvents,
             hasProperties,
             hasQuestions,
-            pastEventCount
+            pastEventCount,
+            chapterPages
         ) = await _unitOfWork.RunAsync(
             x => currentMemberId != null
                 ? x.MemberRepository.GetByIdOrDefault(currentMemberId.Value)
@@ -394,7 +398,8 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.EventRepository.GetByChapterId(chapter.Id, after: DateTime.UtcNow),
             x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
-            x => x.EventRepository.GetPastEventCountByChapterId(chapter.Id));
+            x => x.EventRepository.GetPastEventCountByChapterId(chapter.Id),
+            x => x.ChapterPageRepository.GetByChapterId(chapter.Id));
 
         var eventIds = upcomingEvents
             .Select(x => x.Id)
@@ -412,6 +417,7 @@ public class ChapterViewModelService : IChapterViewModelService
         {
             Chapter = chapter,
             CurrentMember = currentMember,
+            ChapterPages = chapterPages,
             HasProfiles = hasProperties,
             HasQuestions = hasQuestions,
             IsAdmin = adminMembers.Any(x => x.MemberId == currentMemberId),
@@ -443,7 +449,8 @@ public class ChapterViewModelService : IChapterViewModelService
             ownerSubscription,
             adminMembers,
             hasProperties,
-            hasQuestions
+            hasQuestions,
+            chapterPages
         ) = await _unitOfWork.RunAsync(
             x => currentMemberId != null
                 ? x.MemberRepository.GetByIdOrDefault(currentMemberId.Value)
@@ -451,11 +458,13 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
-            x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id));
+            x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
+            x => x.ChapterPageRepository.GetByChapterId(chapter.Id));
 
         return new GroupPageViewModel
         {
             Chapter = chapter,
+            ChapterPages = chapterPages,
             CurrentMember = currentMember,
             HasProfiles = hasProperties,
             HasQuestions = hasQuestions,
@@ -483,7 +492,8 @@ public class ChapterViewModelService : IChapterViewModelService
             adminMembers,
             pastEvents,
             hasProperties,
-            hasQuestions
+            hasQuestions,
+            chapterPages
         ) = await _unitOfWork.RunAsync(
             x => currentMemberId != null
                 ? x.MemberRepository.GetByIdOrDefault(currentMemberId.Value)
@@ -499,7 +509,8 @@ public class ChapterViewModelService : IChapterViewModelService
                 : new DefaultDeferredQueryMultiple<ChapterAdminMember>(),
             x => x.EventRepository.GetRecentEventsByChapterId(chapter.Id, 1000),
             x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
-            x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id));
+            x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
+            x => x.ChapterPageRepository.GetByChapterId(chapter.Id));
 
         var eventIds = pastEvents
             .Select(x => x.Id)
@@ -516,6 +527,7 @@ public class ChapterViewModelService : IChapterViewModelService
         return new GroupEventsPageViewModel
         {
             Chapter = chapter,
+            ChapterPages = chapterPages,
             CurrentMember = currentMember,
             HasProfiles = hasProperties,
             HasQuestions = hasQuestions,
@@ -560,7 +572,8 @@ public class ChapterViewModelService : IChapterViewModelService
             hasProperties,
             hasQuestions,
             texts,
-            chapterTopics
+            chapterTopics,
+            chapterPages
         ) = await _unitOfWork.RunAsync(
             x => currentMemberId != null
                 ? x.MemberRepository.GetByIdOrDefault(currentMemberId.Value)
@@ -581,7 +594,8 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
             x => x.ChapterTextsRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterTopicRepository.GetByChapterId(chapter.Id));
+            x => x.ChapterTopicRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterPageRepository.GetByChapterId(chapter.Id));
 
         var location = await _unitOfWork.ChapterLocationRepository.GetByChapterId(chapter.Id);
 
@@ -625,6 +639,7 @@ public class ChapterViewModelService : IChapterViewModelService
         {
             Chapter = chapter,
             ChapterLocation = location,
+            ChapterPages = chapterPages,
             CurrentMember = currentMember,
             HasImage = hasImage,
             HasProfiles = hasProperties,
@@ -663,7 +678,8 @@ public class ChapterViewModelService : IChapterViewModelService
             properties,
             propertyOptions,
             texts,
-            membershipSettings) = await _unitOfWork.RunAsync(
+            membershipSettings,
+            chapterPages) = await _unitOfWork.RunAsync(
             x => currentMemberId != null
                 ? x.MemberRepository.GetByIdOrDefault(currentMemberId.Value)
                 : new DefaultDeferredQuerySingleOrDefault<Member>(),
@@ -674,12 +690,14 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPropertyOptionRepository.GetByChapterId(chapter.Id),
             x => x.ChapterTextsRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id));
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterPageRepository.GetByChapterId(chapter.Id));
 
         return new GroupJoinPageViewModel
         {
             Chapter = chapter,
             CurrentMember = currentMember,
+            ChapterPages = chapterPages,
             HasProfiles = hasProperties,
             HasQuestions = hasQuestions,
             IsAdmin = adminMembers.Any(x => x.MemberId == currentMemberId),
@@ -708,7 +726,8 @@ public class ChapterViewModelService : IChapterViewModelService
             hasQuestions,
             chapterProperties,
             chapterPropertyOptions,
-            memberProperties
+            memberProperties,
+            chapterPages
         ) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
@@ -716,11 +735,13 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
             x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPropertyOptionRepository.GetByChapterId(chapter.Id),
-            x => x.MemberPropertyRepository.GetByMemberId(currentMemberId, chapter.Id));
+            x => x.MemberPropertyRepository.GetByMemberId(currentMemberId, chapter.Id),
+            x => x.ChapterPageRepository.GetByChapterId(chapter.Id));
 
         return new GroupProfilePageViewModel
         {
             Chapter = chapter,
+            ChapterPages = chapterPages,
             ChapterProperties = chapterProperties,
             ChapterPropertyOptions = chapterPropertyOptions,
             CurrentMember = currentMember,
@@ -747,18 +768,21 @@ public class ChapterViewModelService : IChapterViewModelService
             adminMembers,
             ownerSubscription,
             hasProperties,
-            questions) = await _unitOfWork.RunAsync(
+            questions,
+            chapterPages) = await _unitOfWork.RunAsync(
             x => currentMemberId != null
                 ? x.MemberRepository.GetByIdOrDefault(currentMemberId.Value)
                 : new DefaultDeferredQuerySingleOrDefault<Member>(),
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
-            x => x.ChapterQuestionRepository.GetByChapterId(chapter.Id));
+            x => x.ChapterQuestionRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterPageRepository.GetByChapterId(chapter.Id));
 
         return new GroupQuestionsPageViewModel
         {
             Chapter = chapter,
+            ChapterPages = chapterPages,
             CurrentMember = currentMember,
             HasProfiles = hasProperties,
             HasQuestions = questions.Count > 0,
@@ -785,7 +809,8 @@ public class ChapterViewModelService : IChapterViewModelService
             hasProperties,
             hasQuestions,
             chapterPaymentSettings,
-            sitePaymentSettings
+            sitePaymentSettings,
+            chapterPages
         ) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
@@ -793,11 +818,13 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapter.Id),
-            x => x.SitePaymentSettingsRepository.GetActive());
+            x => x.SitePaymentSettingsRepository.GetActive(),
+            x => x.ChapterPageRepository.GetByChapterId(chapter.Id));
 
         return new GroupSubscriptionPageViewModel
         {
             Chapter = chapter,
+            ChapterPages = chapterPages,
             CurrentMember = currentMember,
             HasProfiles = hasProperties,
             HasQuestions = hasQuestions,

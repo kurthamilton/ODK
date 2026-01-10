@@ -1,5 +1,6 @@
 ﻿@page "/{chapterName}/Contact"
 @using ODK.Core
+@using ODK.Core.Pages
 @using ODK.Core.Utils
 @using ODK.Services.Chapters
 @using ODK.Web.Common.Routes
@@ -16,7 +17,8 @@
     var viewModel = await ChapterViewModelService.GetGroupContactPage(
         Model.ServiceRequest, Model.CurrentMemberIdOrDefault, Model.Chapter.Slug);
 
-    var title = StringUtils.Coalesce(viewModel.ChapterPage?.Title, "Contact");
+    var chapterPage = viewModel.ChapterPages.FirstOrDefault(x => x.PageType == PageType.Contact);
+    var title = StringUtils.Coalesce(chapterPage?.Title, "Contact");
     
     Model.Title = title;
     Model.Path = OdkRoutes.Groups.Contact(Model.Platform, viewModel.Chapter);
