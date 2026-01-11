@@ -17,6 +17,8 @@ public class ChapterWithDistanceViewModel
 
     public required bool IsMember { get; init; }
 
+    public required bool IsOwner { get; init; }
+
     public required ChapterLocation? Location { get; init; }
 
     public required PlatformType Platform { get; init; }

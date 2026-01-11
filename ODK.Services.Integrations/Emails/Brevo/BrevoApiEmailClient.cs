@@ -14,7 +14,7 @@ public class BrevoApiEmailClient : IEmailClient
     private readonly BrevoApiEmailClientSettings _settings;
 
     public BrevoApiEmailClient(
-        BrevoApiEmailClientSettings settings, 
+        BrevoApiEmailClientSettings settings,
         IHttpClientFactory httpClientFactory,
         ILoggingService loggingService)
     {
@@ -34,7 +34,7 @@ public class BrevoApiEmailClient : IEmailClient
             };
         }
 
-        await _loggingService.Info($"Sending email to {string.Join(", ", email.To)}");        
+        await _loggingService.Info($"Sending email to {string.Join(", ", email.To)}");
 
         var url = UrlBuilder
             .Base("https://api.brevo.com")
@@ -57,9 +57,15 @@ public class BrevoApiEmailClient : IEmailClient
         try
         {
             var responseMessage = await httpClient.SendAsync(requestMessage);
-            responseMessage.EnsureSuccessStatusCode();
-            
+
             var json = await responseMessage.Content.ReadAsStringAsync();
+
+            if (!responseMessage.IsSuccessStatusCode)
+            {
+                await _loggingService.Error($"Error sending email: {json}");
+                responseMessage.EnsureSuccessStatusCode();
+            }
+
             var response = JsonUtils.Deserialize<BrevoTransactionalEmailResponse>(json);
             return new SendEmailResult(true)
             {

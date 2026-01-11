@@ -7,6 +7,12 @@ public class MemberChaptersViewModel
 {
     public required IReadOnlyCollection<ChapterWithDistanceViewModel> Admin { get; init; }
 
+    public IReadOnlyCollection<ChapterWithDistanceViewModel> All => Admin
+        .Concat(Member)
+        .Concat(Owned)
+        .OrderBy(x => x.Chapter.FullName)
+        .ToArray();
+
     public required IReadOnlyCollection<ChapterWithDistanceViewModel> Member { get; init; }
 
     public required IReadOnlyCollection<ChapterWithDistanceViewModel> Owned { get; init; }

@@ -14,7 +14,7 @@ internal static class EmailClientEmailExtensions
         var sender = new BrevoEmailAddressee
         {
             Email = email.From.Address,
-            Name = email.From.Name
+            Name = !string.IsNullOrEmpty(email.From.Name) ? email.From.Name : null
         };
 
         var to = new List<BrevoEmailAddressee>();

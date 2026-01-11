@@ -166,6 +166,7 @@ public class ChapterViewModelService : IChapterViewModelService
                 HasImage = hasImage,
                 IsAdmin = adminMembers.Any(x => x.ChapterId == chapterId),
                 IsMember = currentMember?.IsMemberOf(chapterId) == true,
+                IsOwner = chapterDictionary[chapterId].OwnerId == currentMemberId,
                 Location = chapterLocation,
                 Platform = platform,
                 Texts = chapterTexts,
@@ -974,6 +975,7 @@ public class ChapterViewModelService : IChapterViewModelService
                 HasImage = image != null,
                 IsAdmin = adminMember != null,
                 IsMember = true,
+                IsOwner = chapter.OwnerId == request.CurrentMemberId,
                 // no need to show location for existing groups
                 Location = null,
                 Platform = platform,
