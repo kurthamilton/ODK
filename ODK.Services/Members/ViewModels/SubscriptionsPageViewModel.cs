@@ -11,7 +11,7 @@ public class SubscriptionsPageViewModel
 {
     public required Chapter Chapter { get; init; }
 
-    public required ChapterPaymentSettings ChapterPaymentSettings { get; init; }
+    public required ChapterPaymentSettings? ChapterPaymentSettings { get; init; }
 
     public required IReadOnlyCollection<ChapterSubscriptionDto> ChapterSubscriptions { get; init; }
 
@@ -20,6 +20,8 @@ public class SubscriptionsPageViewModel
     public required ChapterSubscription? CurrentSubscription { get; init; }
 
     public required ExternalSubscription? ExternalSubscription { get; init; }
+
+    public required ChapterMembershipSettings? MembershipSettings { get; init; }
 
     public required MemberSubscription? MemberSubscription { get; init; }
 

@@ -64,7 +64,8 @@ public class ChapterService : IChapterService
             chapterPaymentSettings,
             sitePaymentSettings,
             chapterPaymentAccount,
-            memberSubscriptionRecord
+            memberSubscriptionRecord,
+            membershipSettings
         ) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(chapterId),
             x => x.MemberRepository.GetById(currentMemberId),
@@ -73,7 +74,8 @@ public class ChapterService : IChapterService
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
             x => x.SitePaymentSettingsRepository.GetAll(),
             x => x.ChapterPaymentAccountRepository.GetByChapterId(chapterId),
-            x => x.MemberSubscriptionRecordRepository.GetLatest(currentMemberId, chapterId));
+            x => x.MemberSubscriptionRecordRepository.GetLatest(currentMemberId, chapterId),
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId));
 
         OdkAssertions.MemberOf(currentMember, chapterId);
 
@@ -103,6 +105,7 @@ public class ChapterService : IChapterService
             Currency = chapterPaymentSettings.Currency,
             CurrentSubscription = currentSubscription,
             ExternalSubscription = externalSubscription,
+            MembershipSettings = membershipSettings,
             MemberSubscription = memberSubscription,
             Platform = platform
         };

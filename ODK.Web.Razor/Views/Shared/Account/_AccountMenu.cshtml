@@ -31,10 +31,13 @@
         Model.Chapter != null
             ? new MenuItem { Link = OdkRoutes.Account.Profile(Model.Chapter), Text = "Profile" }
             : new MenuItem(),
+        new MenuItem { Link = OdkRoutes.Account.Conversations(Model.Chapter), Text = "My conversations" },
+        platform == PlatformType.DrunkenKnitwits
+            ? new MenuItem()
+            : new MenuItem { Link = OdkRoutes.Account.Groups(), Text = "My groups" },
         Model.Chapter == null
             ? new MenuItem { Link = OdkRoutes.Account.Interests(), Text = "My interests" }
             : new MenuItem(),
-        new MenuItem { Link = OdkRoutes.Account.Conversations(Model.Chapter), Text = "My conversations" },
         new MenuItem { Link = OdkRoutes.Account.Subscription(platform, Model.Chapter), Text = "My subscription" },
         new MenuItem { Link = OdkRoutes.Account.Payments(Model.Chapter), Text = "My payments" },
         new MenuItem { Link = OdkRoutes.Account.PasswordChange(Model.Chapter), Text = "Password" },

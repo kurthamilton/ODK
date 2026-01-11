@@ -27,39 +27,51 @@
     return;
 }
 
-<div class="form-group mb-3">
-    <label class="form-label">Membership</label>
-    <div class="form-control-plaintext">
-        @if (Model.CurrentSubscription != null)
-        {
-            <span>@Model.CurrentSubscription.Name</span>
-        }
-        else if (Model.MemberSubscription != null)
-        {
-            <span>@Model.MemberSubscription.Type</span>
-        }
-        else
-        {
-            <span>-</span>
-        }
+@if (Model.MembershipSettings?.Enabled == true || Model.CurrentSubscription != null || Model.MemberSubscription != null) 
+{
+    <div class="form-group mb-3">
+        <label class="form-label">Membership</label>
+        <div class="form-control-plaintext">
+            @if (Model.CurrentSubscription != null)
+            {
+                <span>@Model.CurrentSubscription.Name</span>
+            }
+            else if (Model.MemberSubscription != null)
+            {
+                <span>@Model.MemberSubscription.Type</span>
+            }
+            else
+            {
+                <span>-</span>
+            }
+        </div>
     </div>
-</div>
+}
+else
+{
+    <p>
+        This group does not have subscriptions
+    </p>
+}
 
-<div class="form-group mb-3">
-    <label class="form-label">End date</label>
-    <div class="form-control-plaintext">
-        @if (Model.MemberSubscription?.ExpiresUtc != null)
-        {
-            <span>
-                @Model.Chapter.ToLocalTime(Model.MemberSubscription.ExpiresUtc.Value).ToString("d MMMM yyyy")
-            </span>
-        }
-        else
-        {
-            <span>-</span>
-        }
+@if (Model.MemberSubscription != null)
+{
+    <div class="form-group mb-3">
+        <label class="form-label">End date</label>
+        <div class="form-control-plaintext">
+            @if (Model.MemberSubscription?.ExpiresUtc != null)
+            {
+                <span>
+                    @Model.Chapter.ToLocalTime(Model.MemberSubscription.ExpiresUtc.Value).ToString("d MMMM yyyy")
+                </span>
+            }
+            else
+            {
+                <span>-</span>
+            }
+        </div>
     </div>
-</div>
+}
 
 @if (Model.ExternalSubscription?.Status == ExternalSubscriptionStatus.Active)
 {
@@ -84,7 +96,7 @@
         </form>
     </div>
 }
-else
+else if (Model.ChapterSubscriptions.Count > 0)
 {
     <h3>@title</h3>
 
@@ -93,7 +105,7 @@ else
         var chapterSubscription = chapterSubscriptionDto.ChapterSubscription;
 
         var modalId = $"payment-modal-{chapterSubscription.Id}";
-        IPaymentSettings paymentSettings = chapterSubscriptionDto.SitePaymentSettings != null
+        IPaymentSettings? paymentSettings = chapterSubscriptionDto.SitePaymentSettings != null
             ? chapterSubscriptionDto.SitePaymentSettings
             : Model.ChapterPaymentSettings;
 

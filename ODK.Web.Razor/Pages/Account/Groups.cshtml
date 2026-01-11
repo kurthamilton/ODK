@@ -1,0 +1,120 @@
+﻿@page "/account/groups"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Services.Chapters
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Account
+@using ODK.Web.Razor.Models.Components
+@model GroupsModel
+@inject IChapterViewModelService ChapterViewModelService
+@{
+    Layout = "_AccountLayout";
+    Model.Title = "Groups";
+
+    var viewModel = await ChapterViewModelService.GetMemberChapters(Model.MemberServiceRequest);
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Title = "Account",
+    Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
+    {
+        Active = OdkRoutes.Account.Groups(),
+        Title = "My groups",
+        Content =
+            @<div>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th></th>
+                                <th class="tcol-narrow"></th>
+                            </tr>
+                        </thead>
+                        @if (viewModel.Owned.Count > 0)
+                        {
+                            <tbody>
+                                @foreach (var chapter in viewModel.Owned)
+                                {
+                                    <tr>
+                                        <td>
+                                            <a href="@OdkRoutes.Groups.Group(Model.Platform, chapter.Chapter)">
+                                                @chapter.Chapter.GetDisplayName(Model.Platform)
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a href="@OdkRoutes.MemberGroups.Group(Model.Platform, chapter.Chapter)">
+                                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Settings))
+                                                <span>Manage</span>
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <span data-bs-toggle="tooltip" data-bs-title="Owner">
+                                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Star)
+                                                {
+                                                    Class = "text-warning"
+                                                })
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        }
+                        @if (viewModel.Admin.Count > 0)
+                        {
+                            <tbody>
+                                @foreach (var chapter in viewModel.Admin)
+                                {
+                                    <tr>
+                                        <td>
+                                            <a href="@OdkRoutes.Groups.Group(Model.Platform, chapter.Chapter)">
+                                                @chapter.Chapter.GetDisplayName(Model.Platform)
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a href="@OdkRoutes.MemberGroups.Group(Model.Platform, chapter.Chapter)">
+                                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Settings))
+                                                <span>Manage</span>
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <form method="post" action="/groups/@chapter.Chapter.Id/leave">
+                                                <button class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to leave this group?');">
+                                                    Leave
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        }
+                        @if (viewModel.Member.Count > 0)
+                        {
+                            <tbody>
+                                @foreach (var chapter in viewModel.Member)
+                                {
+                                    <tr>
+                                        <td>
+                                            <a href="@OdkRoutes.Groups.Group(Model.Platform, chapter.Chapter)">
+                                                @chapter.Chapter.GetDisplayName(Model.Platform)
+                                            </a>
+                                        </td>
+                                        <td></td>
+                                        <td>
+                                            <form method="post" action="/groups/@chapter.Chapter.Id/leave">
+                                                <button class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to leave this group?');">
+                                                    Leave
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        }
+                    </table>
+                </div>
+            </div>
+    })
+})

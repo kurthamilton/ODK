@@ -1,4 +1,6 @@
 ﻿@using ODK.Core.Chapters
+@using ODK.Services
+@using ODK.Services.Chapters
 @using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Account
@@ -6,10 +8,11 @@
 @using ODK.Web.Razor.Models.Groups.Profile
 @using ODK.Web.Razor.Services
 @model GroupSubscriptionPageViewModel
+@inject IChapterService ChapterService
 @inject IRequestStore RequestStore
 @{
-    var context = RequestStore.ComponentContext;
-    var chapterSubscriptionViewModel = new OdkComponentViewModel<Chapter>(context, Model.Chapter);
+    var request = MemberChapterServiceRequest.Create(Model.Chapter.Id, RequestStore.MemberServiceRequest);
+    var chapterSubscriptionViewModel = await ChapterService.GetChapterMemberSubscriptionsViewModel(request);
 }
 
 <div>

@@ -582,7 +582,7 @@ public class MemberService : IMemberService
             currentMember,
             reason);
 
-        return ServiceResult.Successful();
+        return ServiceResult.Successful($"You have left the group '{chapter.GetDisplayName(request.Platform)}'");
     }
 
     public async Task<ServiceResult> PurchaseChapterSubscription(
