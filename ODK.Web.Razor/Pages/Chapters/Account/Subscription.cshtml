@@ -46,7 +46,7 @@
     {
         ApiPublicKey = viewModel.ChapterPaymentSettings?.ApiPublicKey ?? string.Empty,
         CurrencyCode = viewModel.Currency?.Code ?? string.Empty,
-        IsSubscription = true,
+        IsSubscription = false,
         Provider = viewModel.ChapterPaymentSettings?.Provider ?? PaymentProviderType.None
     })
 }

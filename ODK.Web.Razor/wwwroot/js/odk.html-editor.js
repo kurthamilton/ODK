@@ -1,7 +1,7 @@
 ﻿(function () {
-    const editors = document.querySelectorAll('[data-html-editor]');    
+    const editors = document.querySelectorAll('[data-html-editor]');
 
-    const standardPlugins = 'preview searchreplace autolink autosave save visualblocks visualchars link lists';
+    const standardPlugins = 'preview searchreplace autolink autosave save visualblocks visualchars link lists code paste';
 
     editors.forEach(el => {
         tinymce.init({
@@ -17,7 +17,14 @@
             // newlines
             newline_behavior: 'block',
             // appearance
-            skin: localStorage.getItem('odk.theme') === 'dark' ? 'oxide-dark' : 'oxide'
+            skin: localStorage.getItem('odk.theme') === 'dark' ? 'oxide-dark' : 'oxide',
+            // remove formatting on paste
+            paste_remove_spans: true,
+            paste_remove_styles: true,
+            // Safety: ensure styles are never allowed
+            valid_styles: {
+                '*': ''
+            }
         });
-    });    
+    });
 })();
