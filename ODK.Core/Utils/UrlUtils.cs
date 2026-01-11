@@ -4,6 +4,11 @@ public static class UrlUtils
 {
     public static string BaseUrl(string url)
     {
+        if (string.IsNullOrEmpty(url))
+        {
+            return string.Empty;
+        }
+
         var uri = new Uri(url);
         return uri.GetLeftPart(UriPartial.Authority);
     }

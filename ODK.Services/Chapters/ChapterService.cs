@@ -27,17 +27,6 @@ public class ChapterService : IChapterService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Chapter> GetChapterById(Guid chapterId)
-    {
-        return await _unitOfWork.ChapterRepository.GetById(chapterId).Run();
-    }
-
-    public async Task<Chapter> GetChapterBySlug(string slug)
-    {
-        var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
-        return OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
-    }
-
     public async Task<VersionedServiceResult<ChapterImage>> GetChapterImage(long? currentVersion, Guid chapterId)
     {
         var result = await _cacheService.GetOrSetVersionedItem(

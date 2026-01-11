@@ -25,7 +25,6 @@ public class SuperAdminController : OdkControllerBase
     private readonly IFeatureService _featureService;
     private readonly IInstagramService _instagramService;
     private readonly ILoggingService _loggingService;
-    private readonly IRequestStore _requestStore;
     private readonly ISettingsService _settingsService;
     private readonly ISiteSubscriptionAdminService _siteSubscriptionAdminService;
     private readonly ITopicAdminService _topicAdminService;
@@ -46,7 +45,6 @@ public class SuperAdminController : OdkControllerBase
         _featureService = featureService;
         _instagramService = instagramService;
         _loggingService = loggingService;
-        _requestStore = requestStore;
         _settingsService = settingsService;
         _siteSubscriptionAdminService = siteSubscriptionAdminService;
         _topicAdminService = topicAdminService;
@@ -259,7 +257,7 @@ public class SuperAdminController : OdkControllerBase
     {
         var approved = new ApproveTopicsModel
         {
-            Chapters = viewModel.Chapters
+            Chapters = viewModel.Chapters?
                 .Where(x => x.Approved && !x.Rejected)
                 .Select(x => new ApproveTopicsItemModel
                 {
@@ -267,8 +265,8 @@ public class SuperAdminController : OdkControllerBase
                     Topic = x.Topic,
                     TopicGroup = x.TopicGroup
                 })
-                .ToArray(),
-            Members = viewModel.Members
+                .ToArray() ?? [],
+            Members = viewModel.Members?
                 .Where(x => x.Approved && !x.Rejected)
                 .Select(x => new ApproveTopicsItemModel
                 {
@@ -276,12 +274,12 @@ public class SuperAdminController : OdkControllerBase
                     Topic = x.Topic,
                     TopicGroup = x.TopicGroup
                 })
-                .ToArray()
+                .ToArray() ?? []
         };
 
         var rejected = new ApproveTopicsModel
         {
-            Chapters = viewModel.Chapters
+            Chapters = viewModel.Chapters?
                 .Where(x => x.Rejected && !x.Approved)
                 .Select(x => new ApproveTopicsItemModel
                 {
@@ -289,8 +287,8 @@ public class SuperAdminController : OdkControllerBase
                     Topic = x.Topic,
                     TopicGroup = x.TopicGroup
                 })
-                .ToArray(),
-            Members = viewModel.Members
+                .ToArray() ?? [],
+            Members = viewModel.Members?
                 .Where(x => x.Rejected && !x.Approved)
                 .Select(x => new ApproveTopicsItemModel
                 {
@@ -298,7 +296,7 @@ public class SuperAdminController : OdkControllerBase
                     Topic = x.Topic,
                     TopicGroup = x.TopicGroup
                 })
-                .ToArray()
+                .ToArray() ?? []
         };
 
         await _topicAdminService.ApproveTopics(MemberServiceRequest, approved, rejected);

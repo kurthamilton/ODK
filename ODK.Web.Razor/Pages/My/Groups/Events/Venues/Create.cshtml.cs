@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Countries;
-using ODK.Services.Chapters;
 using ODK.Services.Venues;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
@@ -10,14 +9,10 @@ namespace ODK.Web.Razor.Pages.My.Groups.Events.Venues;
 
 public class CreateModel : OdkGroupAdminPageModel
 {
-    private readonly IChapterService _chapterService;
     private readonly IVenueAdminService _venueAdminService;
 
-    public CreateModel(
-        IVenueAdminService venueAdminService,
-        IChapterService chapterService)
+    public CreateModel(IVenueAdminService venueAdminService)
     {
-        _chapterService = chapterService;
         _venueAdminService = venueAdminService;
     }
 
@@ -41,7 +36,7 @@ public class CreateModel : OdkGroupAdminPageModel
             return Page();
         }
 
-        var chapter = await _chapterService.GetChapterById(ChapterId);
+        var chapter = await RequestStore.GetChapter();
         AddFeedback(new FeedbackViewModel("Venue created", FeedbackType.Success));
         var url = OdkRoutes.MemberGroups.Venues(Platform, chapter);
         return Redirect(url);

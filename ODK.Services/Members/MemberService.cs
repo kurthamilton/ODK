@@ -158,6 +158,15 @@ public class MemberService : IMemberService
                 LatLong = model.Location.Value,
                 Name = model.LocationName
             });
+
+            if (country?.CurrencyId != null)
+            {
+                _unitOfWork.MemberPaymentSettingsRepository.Add(new MemberPaymentSettings
+                {
+                    CurrencyId = country.CurrencyId,
+                    MemberId = member.Id
+                });
+            }
         }
 
         var distanceUnit = distanceUnits

@@ -8,6 +8,8 @@ public class SuperAdminChaptersRowViewModel
 
     public required string Name { get; init; }
 
+    public required DateTime? PublishedUtc { get; init; }
+
     public required DateTime? SiteSubscriptionExpiresUtc { get; init; }
 
     public required string? SiteSubscriptionName { get; init; }

@@ -7,10 +7,6 @@ namespace ODK.Services.Chapters;
 
 public interface IChapterService
 {
-    Task<Chapter> GetChapterBySlug(string slug);
-
-    Task<Chapter> GetChapterById(Guid chapterId);
-
     Task<VersionedServiceResult<ChapterImage>> GetChapterImage(long? currentVersion, Guid chapterId);
 
     Task<ChapterLinks?> GetChapterLinks(Guid chapterId);

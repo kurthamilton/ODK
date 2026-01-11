@@ -5,26 +5,20 @@
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Extensions
+@using ODK.Web.Razor.Models.Groups
 @model ODK.Web.Razor.Pages.Groups.ErrorModel
-@inject IChapterService ChapterService
+@inject IChapterViewModelService ChapterViewModelService
 @{
     Layout = "_HomeLayout";
     Model.Title = "Error";
 
-    var chapter = await ChapterService.GetChapterBySlug(Model.Slug);
+    var viewModel = await ChapterViewModelService.GetGroupPage(
+        Model.ServiceRequest, Model.CurrentMemberIdOrDefault, Model.Slug);
 }
 
-@await Html.PartialAsync("Components/_Body", new BodyViewModel
+@await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel
 {
-    Breadcrumbs = new []
-    {
-        new MenuItem 
-        { 
-            Link = OdkRoutes.Groups.Group(Model.Platform, chapter), 
-            Text = chapter.GetDisplayName(Model.Platform)
-        },
-        new MenuItem { Text = Model.ErrorStatusCode.ErrorPageTitle() }
-    },
+    Title = Model.ErrorStatusCode.ErrorPageTitle(),
     Content = await Html.PartialAsync("Errors/_ErrorPage", Model.ErrorStatusCode),
-    Title = Model.ErrorStatusCode.ErrorPageTitle()
+    Group = viewModel
 })

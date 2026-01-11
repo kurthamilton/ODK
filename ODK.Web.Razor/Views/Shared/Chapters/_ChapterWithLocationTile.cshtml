@@ -35,7 +35,9 @@
                     }                        
                     @if (!string.IsNullOrEmpty(Model.Texts?.Description))
                     {
-                        <div class="card-text">@Model.Texts?.Description</div>
+                        <div class="card-text">
+                            @Html.Raw(Model.Texts?.Description)
+                        </div>
                     }
 
                     @if (Model.Topics.Count > 0)

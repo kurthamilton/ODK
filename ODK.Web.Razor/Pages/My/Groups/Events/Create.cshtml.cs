@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Utils;
-using ODK.Services.Chapters;
 using ODK.Services.Events;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
@@ -10,14 +9,10 @@ namespace ODK.Web.Razor.Pages.My.Groups.Events;
 
 public class CreateModel : OdkGroupAdminPageModel
 {
-    private readonly IChapterService _chapterService;
     private readonly IEventAdminService _eventAdminService;
 
-    public CreateModel(
-        IEventAdminService eventAdminService,
-        IChapterService chapterService)
+    public CreateModel(IEventAdminService eventAdminService)
     {
-        _chapterService = chapterService;
         _eventAdminService = eventAdminService;
     }
 
@@ -53,7 +48,7 @@ public class CreateModel : OdkGroupAdminPageModel
             return Page();
         }
 
-        var chapter = await _chapterService.GetChapterById(ChapterId);
+        var chapter = await RequestStore.GetChapter();
         AddFeedback(new FeedbackViewModel("Event created", FeedbackType.Success));
         var url = OdkRoutes.MemberGroups.Events(Platform, chapter);
         return Redirect(url);

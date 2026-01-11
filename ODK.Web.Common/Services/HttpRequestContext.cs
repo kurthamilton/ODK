@@ -8,16 +8,13 @@ namespace ODK.Web.Common.Services;
 
 public class HttpRequestContext : IHttpRequestContext
 {
-    private readonly Lazy<string> _baseUrl;
-
     public HttpRequestContext(HttpRequest? request)
     {
         RequestUrl = request?.GetDisplayUrl() ?? string.Empty;
-
-        _baseUrl = new(() => UrlUtils.BaseUrl(RequestUrl));
+        BaseUrl = UrlUtils.BaseUrl(RequestUrl);
     }
 
-    public string BaseUrl => _baseUrl.Value;
+    public string BaseUrl { get; }
 
     public string RequestUrl { get; }
 }

@@ -27,6 +27,7 @@
                         <tr>
                             <th>Name</th>
                             <th>Created</th>
+                            <th>Published</th>
                             <th>Subscription</th>
                             <th>Expires</th>
                         </tr>
@@ -40,7 +41,8 @@
                                         @chapter.Name
                                     </a>                                    
                                 </td>
-                                <td>@chapter.CreatedUtc.ToString("yyyy-MM-dd HH:mm:ss")</td>                               
+                                <td>@chapter.CreatedUtc.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                                <td>@chapter.PublishedUtc?.ToString("yyyy-MM-dd HH:mm:ss")</td>
                                 <td>@chapter.SiteSubscriptionName</td>
                                 <td>@chapter.SiteSubscriptionExpiresUtc?.ToString("yyyy-MM-dd HH:mm:ss")</td>
                             </tr>

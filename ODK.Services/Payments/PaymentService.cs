@@ -683,6 +683,7 @@ public class PaymentService : IPaymentService
         memberSubscription.ExpiresUtc = expiresUtc;
         memberSubscription.ExternalId = externalId;
         memberSubscription.SiteSubscriptionPriceId = siteSubscriptionPrice.Id;
+        memberSubscription.SiteSubscription = siteSubscription;
         memberSubscription.SiteSubscriptionId = siteSubscriptionPrice.SiteSubscriptionId;
 
         if (memberSubscription.Id == default)

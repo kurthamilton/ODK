@@ -29,31 +29,29 @@
     Title = "Groups",
     ContentFunc =
         @<div>
-            <div class="d-block d-md-flex">
-                <div>
-                    <form method="get">
-                        @await Html.PartialAsync("Groups/_GroupSearchForm", viewModel)
-                    </form>
-                </div>
-                <div class="ps-md-5 pt-5 pt-md-0 flex-grow-1">
-                    @if (viewModel.Groups.Count > 0)
-                    {
-                        <div class="d-flex flex-column gap-3">
-                            @foreach (var group in viewModel.Groups)
-                            {
-                                @await Html.PartialAsync("Chapters/_ChapterWithLocationTile", group)
-                            }
-                        </div>
-                    }
-                    else
-                    {
-                        <p>
-                            No matching results. 
-                            <a href="@OdkRoutes.MemberGroups.GroupCreate(viewModel.Platform)">Create a group</a>
-                        </p>
-                    }
-                </div>
-            </div>                        
+            <div>
+                <form method="get">
+                    @await Html.PartialAsync("Groups/_GroupSearchForm", viewModel)
+                </form>
+            </div>
+            <div class="pt-5">
+                @if (viewModel.Groups.Count > 0)
+                {
+                    <div class="d-flex flex-column gap-3">
+                        @foreach (var group in viewModel.Groups)
+                        {
+                            @await Html.PartialAsync("Chapters/_ChapterWithLocationTile", group)
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p>
+                        No matching results. 
+                        <a href="@OdkRoutes.MemberGroups.GroupCreate(viewModel.Platform)">Create a group</a>
+                    </p>
+                }
+            </div>
         </div>
 })
 

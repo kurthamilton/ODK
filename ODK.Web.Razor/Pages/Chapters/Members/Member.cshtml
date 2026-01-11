@@ -1,5 +1,7 @@
 ﻿@page "/{chapterName}/Members/{id:guid}"
 @attribute [Authorize]
+@using ODK.Core.Exceptions
+@using ODK.Core.Pages
 @using ODK.Services.Members
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
@@ -14,6 +16,12 @@
     if (!viewModel.IsMember)
     {
         Response.Redirect(OdkRoutes.Groups.Join(viewModel.Platform, viewModel.Chapter));
+    }
+
+    var chapterPage = viewModel.ChapterPages.FirstOrDefault(x => x.PageType == PageType.Members);
+    if (chapterPage?.Hidden == true)
+    {
+        throw new OdkNotFoundException();
     }
 
     Model.Title = viewModel.Member.FullName;

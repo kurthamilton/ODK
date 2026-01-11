@@ -10,7 +10,8 @@ public static class StringUtils
 
     public static string AlphaNumeric(this string text) => AlphaNumericRegex.Replace(text, string.Empty);
 
-    public static string? Coalesce(params string?[] values) => values.FirstOrDefault(x => !string.IsNullOrEmpty(x));
+    public static string Coalesce(params string?[] values)
+        => values.FirstOrDefault(x => !string.IsNullOrEmpty(x)) ?? string.Empty;
 
     public static string Interpolate(this string text, IReadOnlyDictionary<string, string> values,
         Func<string, string>? process = null)

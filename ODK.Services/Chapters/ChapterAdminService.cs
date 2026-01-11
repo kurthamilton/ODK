@@ -1312,6 +1312,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
                 CreatedUtc = chapter.CreatedUtc,
                 Id = chapter.Id,
                 Name = chapter.GetDisplayName(platform),
+                PublishedUtc = chapter.PublishedUtc,
                 SiteSubscriptionExpiresUtc = chapterSubscription?.ExpiresUtc,
                 SiteSubscriptionName = chapterSubscription?.SiteSubscription.Name
             };

@@ -84,7 +84,7 @@ public class PaymentRepository : ReadWriteRepositoryBase<Payment>, IPaymentRepos
 
     public IDeferredQueryMultiple<PaymentDto> GetSitePaymentsByMemberId(Guid memberId)
         => DtoQuery()
-            .Where(x => x.Payment.ChapterId == null)
+            .Where(x => x.Payment.ChapterId == null && x.Payment.MemberId == memberId)
             .DeferredMultiple();
 
     private IQueryable<PaymentDto> DtoQuery()

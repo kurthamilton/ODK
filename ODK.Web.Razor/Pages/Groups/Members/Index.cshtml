@@ -1,6 +1,9 @@
 ﻿@page "/groups/{slug}/members"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
+@using ODK.Core.Exceptions
+@using ODK.Core.Pages
+@using ODK.Core.Utils
 @using ODK.Services.Members
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Groups
@@ -16,12 +19,19 @@
         Response.Redirect(OdkRoutes.Groups.Join(viewModel.Platform, viewModel.Chapter));
     }
 
-    Model.Title = $"Members | {viewModel.Chapter.GetDisplayName(Model.Platform)}";
+    var chapterPage = viewModel.ChapterPages.FirstOrDefault(x => x.PageType == PageType.Members);
+    if (chapterPage?.Hidden == true)
+    {
+        throw new OdkNotFoundException();
+    }
+
+    var title = StringUtils.Coalesce(chapterPage?.Title, "Members");
+    Model.Title = $"{title} | {viewModel.Chapter.GetDisplayName(Model.Platform)}";
 }
 
 @await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel
 {
-    Title = "Members",
+    Title = title,
     Content = await Html.PartialAsync("Members/_MembersContent", viewModel),
     Group = viewModel
 })

@@ -1,6 +1,7 @@
 ﻿@page "/{chapterName}/Members"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
+@using ODK.Core.Exceptions
 @using ODK.Core.Pages
 @using ODK.Core.Utils
 @using ODK.Services.Members
@@ -19,6 +20,11 @@
     }
 
     var chapterPage = viewModel.ChapterPages.FirstOrDefault(x => x.PageType == PageType.Members);
+    if (chapterPage?.Hidden == true)
+    {
+        throw new OdkNotFoundException();
+    }
+  
     var title = StringUtils.Coalesce(chapterPage?.Title, "Knitwits");
 
     Model.Title = title;

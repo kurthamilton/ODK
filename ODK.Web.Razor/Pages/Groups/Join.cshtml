@@ -17,7 +17,7 @@
 
 @await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel
 {
-    Title = "Join us",
+    Title = "",
     Content = await Html.PartialAsync("Groups/_GroupJoinContent", viewModel),
     Group = viewModel
 })

@@ -24,15 +24,19 @@
                 })
             }
             
-            @if (!Model.IsMember && !string.IsNullOrEmpty(Model.Texts?.WelcomeText))
+            @if (!Model.IsMember)
             {
                 <section class="panel">
                     <div class="panel-header">
                         <h3 class="panel-title">Join us</h3>
                     </div>
-                    <div class="mb-3">
-                        @Html.Raw(Model.Texts.WelcomeText)
-                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.Texts?.WelcomeText))
+                    {
+                        <div class="mb-3">
+                            @Html.Raw(Model.Texts.WelcomeText)
+                        </div>
+                    }                    
 
                     <a href="@OdkRoutes.Groups.Join(Model.Platform, Model.Chapter)" class="btn btn-success">
                         Join

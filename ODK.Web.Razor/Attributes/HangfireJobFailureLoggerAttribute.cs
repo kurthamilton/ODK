@@ -37,7 +37,7 @@ public class HangfireJobFailureLoggerAttribute : JobFilterAttribute, IApplyState
                 $"{context.BackgroundJob.Job?.Type?.Name}.{context.BackgroundJob.Job?.Method?.Name}";
 
             // Use Serilog directly as a workaround for being unable to
-            // inject the scoped IGASLogger into this class, which is created as a singleton
+            // inject the scoped logging service into this class, which is created as a singleton
             // when configuring Hangfire
             Log.Logger.Error(
                 $"Hangfire job {context.BackgroundJob.Id} failed after all retries calling {shortTypeAndMethod}",

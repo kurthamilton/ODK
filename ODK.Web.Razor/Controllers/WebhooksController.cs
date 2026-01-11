@@ -48,7 +48,7 @@ public class WebhooksController : OdkControllerBase
         if (header != _appSettings.Brevo.WebhookPassword)
         {
             throw new OdkNotAuthenticatedException();
-        }        
+        }
 
         var json = await ReadBodyText();
         var node = JsonNode.Parse(json);
@@ -86,7 +86,9 @@ public class WebhooksController : OdkControllerBase
             return;
         }
 
+        var serviceRequest = ServiceRequest;
+
         _backgroundTaskService.Enqueue(
-            () => _paymentService.ProcessWebhook(ServiceRequest, webhook));
+            () => _paymentService.ProcessWebhook(serviceRequest, webhook));
     }
 }

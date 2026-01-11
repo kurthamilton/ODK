@@ -5,18 +5,21 @@ using ODK.Services.Members;
 using ODK.Services.Members.Models;
 using ODK.Services.Users.ViewModels;
 using ODK.Web.Common.Routes;
+using ODK.Web.Razor.Services;
 
 namespace ODK.Web.Razor.Pages.Groups;
 
 public class JoinModel : OdkGroupPageModel
 {
-    private readonly IChapterService _chapterService;
+    private readonly IRequestStore _requestStore;
     private readonly IMemberService _memberService;
 
-    public JoinModel(IMemberService memberService, IChapterService chapterService)
+    public JoinModel(
+        IMemberService memberService,
+        IRequestStore requestStore)
     {
-        _chapterService = chapterService;
         _memberService = memberService;
+        _requestStore = requestStore;
     }
 
     public void OnGet()
@@ -25,7 +28,7 @@ public class JoinModel : OdkGroupPageModel
 
     public async Task<IActionResult> OnPost([FromForm] ChapterProfileFormViewModel viewModel)
     {
-        var chapter = await _chapterService.GetChapterBySlug(Slug);
+        var chapter = await _requestStore.GetChapter();
 
         var properties = viewModel.Properties.Select(x => new UpdateMemberProperty
         {
