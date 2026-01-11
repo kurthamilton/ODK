@@ -1,29 +1,18 @@
 ﻿@using ODK.Web.Razor.Models.Chapters
+@using ODK.Web.Razor.Models.Components
 @model ChapterQuestionsViewModel
 
-<div class="accordion" id="questions-accordion">
-    @for (int i = 0; i < Model.Questions.Count; i++)
+<div class="columns columns-1 columns-md-2">
+    @foreach (var question in Model.Questions)
     {
-        var question = Model.Questions.ElementAt(i);
-        var expanded = i == 0;
-        var id = $"question-{i}";
-        var nameInputId = $"{id}-name";
-        var answerInputId = $"{id}-answer";
-
-        <div class="accordion-item">
-            <h2 class="accordion-header">
-                <button class="accordion-button @(!expanded ? "collapsed" : null)" type="button" 
-                    data-bs-toggle="collapse" data-bs-target="#question-@i"
-                    aria-expanded="@expanded.ToString().ToLower()" aria-controls="@id">
-                    @question.Name
-                </button>
-            </h2>
-            <div id="@id" class="accordion-collapse collapse @(i == 0 ? "show" : null)" 
-                data-bs-parent="#questions-accordion">
-                <div class="accordion-body">
-                    @Html.Raw(question.Answer)
-                </div>
-            </div>            
+        <div class="column-item mb-3">
+            @await Html.PartialAsync("Components/_Card", new CardViewModel
+            {
+                HeaderContentFunc = 
+                    @<div>@question.Name</div>,
+                BodyContentFunc = 
+                    @<div>@Html.Raw(question.Answer)</div>
+            })
         </div>
     }
 </div>

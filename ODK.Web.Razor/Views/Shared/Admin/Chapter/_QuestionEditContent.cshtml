@@ -7,7 +7,7 @@
 @using ODK.Web.Razor.Models.Components
 @model ChapterQuestionAdminPageViewModel
 
-<form method="post">
+<form method="post" action="/admin/groups/@Model.Chapter.Id/questions/@Model.Question.Id">
     @*@Html.AntiForgeryToken()*@
     @await Html.PartialAsync("Admin/Chapter/_QuestionForm", new ChapterQuestionFormViewModel
     {

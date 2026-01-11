@@ -1,0 +1,41 @@
+﻿.columns {
+    .column-item {
+        break-inside: avoid;
+    }
+
+    @for $i from 0 through 12 {
+        &.columns-#{$i} {
+            column-count: #{$i};
+        }
+
+        @include media-breakpoint-up(xs) {
+            &.columns-xs-#{$i} {
+                column-count: #{$i};
+            }
+        }
+
+        @include media-breakpoint-up(sm) {
+            &.columns-sm-#{$i} {
+                column-count: #{$i};
+            }
+        }
+
+        @include media-breakpoint-up(md) {
+            &.columns-md-#{$i} {
+                column-count: #{$i};
+            }
+        }
+
+        @include media-breakpoint-up(lg) {
+            &.columns-lg-#{$i} {
+                column-count: #{$i};
+            }
+        }
+
+        @include media-breakpoint-up(xl) {
+            &.columns-xl-#{$i} {
+                column-count: #{$i};
+            }
+        }
+    }
+}

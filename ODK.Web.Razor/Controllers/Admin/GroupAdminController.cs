@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Chapters;
+using ODK.Services.Chapters.Models;
 using ODK.Web.Common.Feedback;
+using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Admin.Chapters;
 using ODK.Web.Razor.Models.Chapters;
 using ODK.Web.Razor.Models.Topics;
@@ -13,6 +15,7 @@ namespace ODK.Web.Razor.Controllers.Admin;
 public class GroupAdminController : OdkControllerBase
 {
     private readonly IChapterAdminService _chapterAdminService;
+    private readonly IRequestStore _requestStore;
 
     public GroupAdminController(
         IChapterAdminService chapterAdminService,
@@ -20,6 +23,7 @@ public class GroupAdminController : OdkControllerBase
         : base(requestStore)
     {
         _chapterAdminService = chapterAdminService;
+        _requestStore = requestStore;
     }
 
     [HttpPost("admin/groups/{id:guid}/conversations")]
@@ -49,6 +53,31 @@ public class GroupAdminController : OdkControllerBase
         var request = CreateMemberChapterServiceRequest(id);
         await _chapterAdminService.UpdateChapterDescription(request, description);
         return RedirectToReferrer();
+    }
+
+    [HttpPost("admin/groups/{chapterId:guid}/questions/{questionId:guid}")]
+    public async Task<IActionResult> UpdateQuestion(
+        Guid chapterId, Guid questionId, [FromForm] ChapterQuestionFormViewModel viewModel)
+    {
+        var request = CreateMemberChapterServiceRequest(chapterId);
+        var result = await _chapterAdminService.UpdateChapterQuestion(request, questionId,
+            new CreateChapterQuestion
+            {
+                Answer = viewModel.Answer ?? string.Empty,
+                Name = viewModel.Question ?? string.Empty
+            });
+
+        if (!result.Success)
+        {
+            AddFeedback(new FeedbackViewModel(result));
+            return RedirectToReferrer();
+        }
+
+        AddFeedback("Question updated", FeedbackType.Success);
+
+        var chapter = await _requestStore.GetChapter();
+        var redirectUrl = OdkRoutes.MemberGroups.GroupQuestions(Platform, chapter);
+        return Redirect(redirectUrl);
     }
 
     [HttpPost("admin/groups/{id:guid}/texts/register")]
