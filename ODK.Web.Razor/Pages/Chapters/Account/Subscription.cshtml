@@ -2,17 +2,22 @@
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Core.Chapters
+@using ODK.Core.Payments
+@using ODK.Services.Chapters
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Payments
 @model ODK.Web.Razor.Pages.Chapters.Account.SubscriptionModel
+@inject IChapterService ChapterService
 @{
     Layout = "_OdkChapterLayout";
     Model.Title = "Subscription";
 
-    var chapterSubscriptionContentViewModel = new OdkComponentViewModel<Chapter>(Model.ComponentContext, Model.Chapter);
+    var request = Model.CreateMemberChapterServiceRequest(Model.Chapter.Id);
+    var viewModel = await ChapterService.GetChapterMemberSubscriptionsViewModel(request);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -29,8 +34,19 @@
         BodyContentFunc = 
             @<div>
                 <section class="section">
-                    @await Html.PartialAsync("Account/_ChapterSubscriptionContent", chapterSubscriptionContentViewModel)
+                    @await Html.PartialAsync("Account/_ChapterSubscriptionContent", viewModel)
                 </section>
             </div>
     })
 })
+
+@section scripts
+{
+    @await Html.PartialAsync("Payments/_PaymentScripts", new PaymentScriptsViewModel
+    {
+        ApiPublicKey = viewModel.ChapterPaymentSettings?.ApiPublicKey ?? string.Empty,
+        CurrencyCode = viewModel.Currency?.Code ?? string.Empty,
+        IsSubscription = true,
+        Provider = viewModel.ChapterPaymentSettings?.Provider ?? PaymentProviderType.None
+    })
+}

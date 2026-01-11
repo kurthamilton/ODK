@@ -11,7 +11,7 @@ public interface IChapterService
 
     Task<ChapterLinks?> GetChapterLinks(Guid chapterId);
 
-    Task<SubscriptionsPageViewModel> GetChapterMemberSubscriptionsViewModel(Guid currentMemberId, Chapter chapter);
+    Task<SubscriptionsPageViewModel> GetChapterMemberSubscriptionsViewModel(MemberChapterServiceRequest request);
 
     Task<IReadOnlyCollection<ChapterPage>> GetChapterPages(Guid chapterId);
 

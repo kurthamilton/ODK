@@ -50,11 +50,14 @@ public class ChapterService : IChapterService
         return await _unitOfWork.ChapterLinksRepository.GetByChapterId(chapterId).Run();
     }
 
-    public async Task<SubscriptionsPageViewModel> GetChapterMemberSubscriptionsViewModel(Guid currentMemberId, Chapter chapter)
+    public async Task<SubscriptionsPageViewModel> GetChapterMemberSubscriptionsViewModel(
+        MemberChapterServiceRequest request)
     {
-        var chapterId = chapter.Id;
+        var (chapterId, platform, currentMemberId) =
+            (request.ChapterId, request.Platform, request.CurrentMemberId);
 
         var (
+            chapter,
             currentMember,
             memberSubscription,
             chapterSubscriptions,
@@ -63,6 +66,7 @@ public class ChapterService : IChapterService
             chapterPaymentAccount,
             memberSubscriptionRecord
         ) = await _unitOfWork.RunAsync(
+            x => x.ChapterRepository.GetById(chapterId),
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.MemberSubscriptionRepository.GetByMemberId(currentMemberId, chapterId),
             x => x.ChapterSubscriptionRepository.GetDtosByChapterId(chapterId, includeDisabled: true),
@@ -93,12 +97,14 @@ public class ChapterService : IChapterService
 
         return new SubscriptionsPageViewModel
         {
+            Chapter = chapter,
             ChapterPaymentSettings = chapterPaymentSettings,
             ChapterSubscriptions = chapterSubscriptions,
             Currency = chapterPaymentSettings.Currency,
             CurrentSubscription = currentSubscription,
             ExternalSubscription = externalSubscription,
-            MemberSubscription = memberSubscription
+            MemberSubscription = memberSubscription,
+            Platform = platform
         };
     }
 

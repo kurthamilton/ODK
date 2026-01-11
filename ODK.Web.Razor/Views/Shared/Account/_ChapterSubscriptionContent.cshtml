@@ -5,35 +5,21 @@
 @using ODK.Core.Payments
 @using ODK.Services.Chapters
 @using ODK.Services.Members
+@using ODK.Services.Members.ViewModels
 @using ODK.Services.Payments
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Payments
-@model OdkComponentViewModel<Chapter>
-@inject IChapterService ChapterService
+@model SubscriptionsPageViewModel
 @{
-    var (chapter, memberId, platform) = (Model.Value, Model.Context.CurrentMemberId, Model.Platform);
-    var dto = await ChapterService.GetChapterMemberSubscriptionsViewModel(memberId, chapter);
-
-    var (currentSubscription, 
-        memberSubscription, 
-        chapterSubscriptions, 
-        currency, 
-        externalSubscription) = 
-        (dto.CurrentSubscription, 
-        dto.MemberSubscription, 
-        dto.ChapterSubscriptions, 
-        dto.Currency, 
-        dto.ExternalSubscription);
-
-    var title = memberSubscription == null || memberSubscription.Type == SubscriptionType.Trial 
+    var title = Model.MemberSubscription == null || Model.MemberSubscription.Type == SubscriptionType.Trial 
         ? "Purchase membership" 
         : "Renew membership";
 }
 
-@if (currency == null)
+@if (Model.Currency == null)
 {
     <div class="alert alert-error">
         This group has not set its payment settings
@@ -44,13 +30,13 @@
 <div class="form-group mb-3">
     <label class="form-label">Membership</label>
     <div class="form-control-plaintext">
-        @if (currentSubscription != null)
+        @if (Model.CurrentSubscription != null)
         {
-            <span>@currentSubscription.Name</span>
+            <span>@Model.CurrentSubscription.Name</span>
         }
-        else if (memberSubscription != null)
+        else if (Model.MemberSubscription != null)
         {
-            <span>@memberSubscription.Type</span>
+            <span>@Model.MemberSubscription.Type</span>
         }
         else
         {
@@ -62,10 +48,10 @@
 <div class="form-group mb-3">
     <label class="form-label">End date</label>
     <div class="form-control-plaintext">
-        @if (memberSubscription?.ExpiresUtc != null)
+        @if (Model.MemberSubscription?.ExpiresUtc != null)
         {
             <span>
-                @chapter.ToLocalTime(memberSubscription.ExpiresUtc.Value).ToString("d MMMM yyyy")
+                @Model.Chapter.ToLocalTime(Model.MemberSubscription.ExpiresUtc.Value).ToString("d MMMM yyyy")
             </span>
         }
         else
@@ -75,23 +61,23 @@
     </div>
 </div>
 
-@if (externalSubscription?.Status == ExternalSubscriptionStatus.Active)
+@if (Model.ExternalSubscription?.Status == ExternalSubscriptionStatus.Active)
 {
-    @if (externalSubscription.NextBillingDate != null)
+    @if (Model.ExternalSubscription.NextBillingDate != null)
     {
         <div class="form-group mb-3">
             <label class="form-label">Next payment date</label>
             <div class="form-control-plaintext">
                 <span>
-                    @chapter.ToLocalTime(externalSubscription.NextBillingDate.Value).ToString("d MMMM yyyy")
+                    @Model.Chapter.ToLocalTime(Model.ExternalSubscription.NextBillingDate.Value).ToString("d MMMM yyyy")
                 </span>
             </div>
         </div>
     }    
 
     <div>
-        <form action="/Chapters/@chapter.Id/Account/Subscription/Cancel" method="post">
-            <input type="hidden" name="@nameof(CancelSubscriptionRequest.ExternalId)" value="@externalSubscription.ExternalId" />
+        <form action="/Chapters/@Model.Chapter.Id/Account/Subscription/Cancel" method="post">
+            <input type="hidden" name="@nameof(CancelSubscriptionRequest.ExternalId)" value="@Model.ExternalSubscription.ExternalId" />
             <button class="btn btn-danger" onclick="return confirm('Are you sure you want to cancel your subscription?');">
                 Cancel subscription
             </button>
@@ -102,14 +88,14 @@ else
 {
     <h3>@title</h3>
 
-    @foreach (var chapterSubscriptionDto in chapterSubscriptions)
+    @foreach (var chapterSubscriptionDto in Model.ChapterSubscriptions)
     {
         var chapterSubscription = chapterSubscriptionDto.ChapterSubscription;
 
         var modalId = $"payment-modal-{chapterSubscription.Id}";
         IPaymentSettings paymentSettings = chapterSubscriptionDto.SitePaymentSettings != null
             ? chapterSubscriptionDto.SitePaymentSettings
-            : dto.ChapterPaymentSettings;
+            : Model.ChapterPaymentSettings;
 
         <div class="mb-3">
             <div class="card">
@@ -133,7 +119,7 @@ else
                             @if (paymentSettings?.Provider == PaymentProviderType.Stripe)
                             {
                                 var checkoutUrl = OdkRoutes.Groups
-                                    .SubscriptionCheckout(platform, chapter, chapterSubscription);
+                                    .SubscriptionCheckout(Model.Platform, Model.Chapter, chapterSubscription);
 
                                 <a class="btn btn-primary" href="@checkoutUrl">
                                     Buy
@@ -147,11 +133,11 @@ else
                                 </button>
                             }
 
-                            <span>@currency.ToAmountString(chapterSubscription.Amount)</span>
+                            <span>@Model.Currency.ToAmountString(chapterSubscription.Amount)</span>
                         </div>
                         @await Html.PartialAsync("Payments/_PaymentModal", new PaymentModalViewModel
                        {
-                           Action = $"/Chapters/{chapter.Id}/Account/Subscription/Purchase",
+                           Action = $"/Chapters/{Model.Chapter.Id}/Account/Subscription/Purchase",
                            PaymentSettings = paymentSettings,
                            FormContentFunc =
                                 @<input type="hidden" name="subscriptionId" value="@chapterSubscription.Id" />,
@@ -159,7 +145,7 @@ else
                            PaymentForm = new PaymentFormViewModel
                            {
                                Amount = (decimal)chapterSubscription.Amount,
-                               Currency = currency,
+                               Currency = Model.Currency,
                                Description = chapterSubscription.Title,
                                Id = chapterSubscription.Id.ToString()
                            },
