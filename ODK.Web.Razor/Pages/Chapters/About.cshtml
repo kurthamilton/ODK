@@ -1,5 +1,7 @@
 ﻿@page "/{chapterName}/About"
 @using ODK.Core
+@using ODK.Core.Exceptions
+@using ODK.Core.Pages
 @using ODK.Core.Utils
 @using ODK.Services.Chapters
 @using ODK.Web.Common.Routes
@@ -12,7 +14,12 @@
     Layout = "_OdkChapterLayout";    
     Model.Description = "More information about this Drunken Knitwits chapter, including some frequently asked questions";
 
-    var viewModel = await ChapterViewModelService.GetChapterAboutPage(Model.Chapter.Id);
+    var viewModel = await ChapterViewModelService.GetChapterAboutPage(Model.Chapter.Id);    
+    if (viewModel.ChapterPage?.Hidden == true)
+    {
+        throw new OdkNotFoundException();
+    }
+
     var title = StringUtils.Coalesce(viewModel.ChapterPage?.Title, "About");
 
     Model.Title = title;

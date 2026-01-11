@@ -1,5 +1,6 @@
 ﻿@page "/{chapterName}/Contact"
 @using ODK.Core
+@using ODK.Core.Exceptions
 @using ODK.Core.Pages
 @using ODK.Core.Utils
 @using ODK.Services.Chapters
@@ -18,6 +19,11 @@
         Model.ServiceRequest, Model.CurrentMemberIdOrDefault, Model.Chapter.Slug);
 
     var chapterPage = viewModel.ChapterPages.FirstOrDefault(x => x.PageType == PageType.Contact);
+    if (chapterPage?.Hidden == true)
+    {
+        throw new OdkNotFoundException();
+    }
+
     var title = StringUtils.Coalesce(chapterPage?.Title, "Contact");
     
     Model.Title = title;

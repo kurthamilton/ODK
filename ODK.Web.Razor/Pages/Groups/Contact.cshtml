@@ -1,4 +1,6 @@
 ﻿@page "/groups/{slug}/contact"
+@using ODK.Core.Exceptions
+@using ODK.Core.Pages
 @using ODK.Services.Chapters
 @using ODK.Web.Razor.Models.Groups
 @model ODK.Web.Razor.Pages.Groups.ContactModel
@@ -8,6 +10,12 @@
 
     var viewModel = await ChapterViewModelService.GetGroupContactPage(
         Model.ServiceRequest, Model.CurrentMemberIdOrDefault, Model.Slug);
+
+    var chapterPage = viewModel.ChapterPages.FirstOrDefault(x => x.PageType == PageType.Contact);
+    if (chapterPage?.Hidden == true)
+    {
+        throw new OdkNotFoundException();
+    }
 
     Model.Title = $"Contact | {viewModel.Chapter.GetDisplayName(Model.Platform)}";
 }

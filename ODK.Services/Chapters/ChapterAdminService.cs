@@ -8,6 +8,7 @@ using ODK.Core.Members;
 using ODK.Core.Notifications;
 using ODK.Core.Pages;
 using ODK.Core.Payments;
+using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
 using ODK.Core.Utils;
 using ODK.Core.Web;
@@ -25,7 +26,6 @@ using ODK.Services.Members;
 using ODK.Services.Notifications;
 using ODK.Services.Payments;
 using ODK.Services.Payments.Models;
-using ODK.Services.Settings;
 using ODK.Services.SocialMedia;
 using ODK.Services.Subscriptions;
 using ODK.Services.Subscriptions.ViewModels;
@@ -36,6 +36,13 @@ namespace ODK.Services.Chapters;
 
 public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 {
+    private static readonly IReadOnlyDictionary<PlatformType, IReadOnlyCollection<PageType>> _platformPages =
+        new Dictionary<PlatformType, IReadOnlyCollection<PageType>>
+        {
+            { PlatformType.Default, new[] { PageType.Contact, PageType.Members } },
+            { PlatformType.DrunkenKnitwits, new[] { PageType.About, PageType.Contact, PageType.Members } }
+        };
+
     private readonly ICacheService _cacheService;
     private readonly IGeolocationService _geolocationService;
     private readonly IHtmlSanitizer _htmlSanitizer;
@@ -981,16 +988,12 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.ChapterPageRepository.GetByChapterId(request.ChapterId));
 
-        var allPageTypes = Enum
-            .GetValues<PageType>()
-            .Where(x => x != PageType.None)
-            .ToArray();
-
         var chapterPageDictionary = chapterPages
             .ToDictionary(x => x.PageType);
 
         var allPages = new List<ChapterPage>();
 
+        var allPageTypes = _platformPages[request.Platform];
         foreach (var pageType in allPageTypes)
         {
             chapterPageDictionary.TryGetValue(pageType, out var chapterPage);
@@ -1861,6 +1864,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         var chapterPageDictionary = chapterPages
             .ToDictionary(x => x.PageType);
 
+        var allPageTypes = _platformPages[request.Platform];
+
         foreach (var pageUpdate in model.Pages)
         {
             if (!Enum.IsDefined(pageUpdate.Type) || pageUpdate.Type == PageType.None)
@@ -1870,6 +1875,11 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             }
 
             chapterPageDictionary.TryGetValue(pageUpdate.Type, out var page);
+
+            if (!allPageTypes.Contains(pageUpdate.Type))
+            {
+                continue;
+            }
 
             var hasValues = pageUpdate.Hidden || !string.IsNullOrEmpty(pageUpdate.Title);
 
