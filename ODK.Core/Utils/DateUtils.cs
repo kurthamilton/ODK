@@ -98,7 +98,10 @@ public static class DateUtils
             format += ", yyyy";
         }
 
-        format += " HH:mm";
+        if (dateUtc.TimeOfDay.Ticks > 0)
+        {
+            format += " HH:mm";
+        }
 
         return localDate.ToString(format);
     }

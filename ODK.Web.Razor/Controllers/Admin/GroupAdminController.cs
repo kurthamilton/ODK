@@ -26,7 +26,7 @@ public class GroupAdminController : OdkControllerBase
     public async Task<IActionResult> StartConversation(Guid id,
         [FromForm] ChapterAdminStartConversationFormViewModel viewModel)
     {
-        var request = MemberChapterServiceRequest(id);
+        var request = CreateMemberChapterServiceRequest(id);
         await _chapterAdminService.StartConversation(request, viewModel.MemberId,
             viewModel.Subject ?? string.Empty, viewModel.Message ?? string.Empty);
         AddFeedback("Message sent", FeedbackType.Success);
@@ -37,7 +37,7 @@ public class GroupAdminController : OdkControllerBase
     public async Task<IActionResult> ReplyToConversation(Guid id, Guid conversationId,
         [FromForm] ChapterConversationReplyFormViewModel viewModel)
     {
-        var request = MemberChapterServiceRequest(id);
+        var request = CreateMemberChapterServiceRequest(id);
         var result = await _chapterAdminService.ReplyToConversation(request, conversationId, viewModel.Message ?? string.Empty);
         AddFeedback(result, "Reply sent");
         return RedirectToReferrer();
@@ -46,7 +46,7 @@ public class GroupAdminController : OdkControllerBase
     [HttpPost("admin/groups/{id:guid}/description")]
     public async Task<IActionResult> UpdateDescription(Guid id, [FromForm] string description)
     {
-        var request = MemberChapterServiceRequest(id);
+        var request = CreateMemberChapterServiceRequest(id);
         await _chapterAdminService.UpdateChapterDescription(request, description);
         return RedirectToReferrer();
     }
@@ -54,7 +54,7 @@ public class GroupAdminController : OdkControllerBase
     [HttpPost("admin/groups/{id:guid}/texts/register")]
     public async Task<IActionResult> UpdateRegisterText(Guid id, [FromForm] string text)
     {
-        var request = MemberChapterServiceRequest(id);
+        var request = CreateMemberChapterServiceRequest(id);
         await _chapterAdminService.UpdateChapterDescription(request, text);
         return RedirectToReferrer();
     }
@@ -62,7 +62,7 @@ public class GroupAdminController : OdkControllerBase
     [HttpPost("admin/groups/{id:guid}/topics")]
     public async Task<IActionResult> UpdateTopics(Guid id, [FromForm] TopicPickerViewModel viewModel)
     {
-        var request = MemberChapterServiceRequest(id);
+        var request = CreateMemberChapterServiceRequest(id);
         var result = await _chapterAdminService.UpdateChapterTopics(request, viewModel.TopicIds ?? []);
         AddFeedback(result, "Topics updated");
         return RedirectToReferrer();

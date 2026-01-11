@@ -9,7 +9,7 @@
     Layout = "_OdkChapterLayout";
     Model.Title = "My conversations";
 
-    var request = Model.MemberChapterServiceRequest();
+    var request = Model.CreateMemberChapterServiceRequest();
     var viewModel = await MemberViewModelService.GetMemberConversationsPage(request);
 }
 

@@ -39,7 +39,7 @@ public class JoinModel : OdkGroupPageModel
                     : x.Value ?? ""
         });
 
-        var result = await _memberService.JoinChapter(MemberChapterServiceRequest(chapter.Id), properties);
+        var result = await _memberService.JoinChapter(CreateMemberChapterServiceRequest(chapter.Id), properties);
         if (!result.Success)
         {
             AddFeedback(result);

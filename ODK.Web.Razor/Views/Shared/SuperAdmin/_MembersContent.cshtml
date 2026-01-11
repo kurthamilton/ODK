@@ -9,7 +9,7 @@
 @model OdkComponentViewModel<Chapter>
 @inject IChapterAdminService ChapterAdminService
 @{
-    var serviceRequest = Model.MemberChapterServiceRequest(Model.Value.Id);
+    var serviceRequest = Model.CreateMemberChapterServiceRequest(Model.Value.Id);
     var adminMembers = await ChapterAdminService.GetChapterAdminMembers(serviceRequest);
 }
 

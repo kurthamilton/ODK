@@ -5,21 +5,25 @@ namespace ODK.Services;
 
 public class MemberServiceRequest : ServiceRequest
 {
-    public MemberServiceRequest(
+    public MemberServiceRequest()
+    {
+    }
+
+    public required Guid CurrentMemberId { get; init; }
+
+    public static MemberServiceRequest Create(Guid currentMemberId, ServiceRequest request)
+        => Create(currentMemberId, request.HttpRequestContext, request.Platform);
+
+    public static MemberServiceRequest Create(
         Guid currentMemberId,
         IHttpRequestContext httpRequestContext,
         PlatformType platform)
-        : base(httpRequestContext, platform)
     {
-        CurrentMemberId = currentMemberId;
+        return new MemberServiceRequest
+        {
+            CurrentMemberId = currentMemberId,
+            HttpRequestContext = httpRequestContext,
+            Platform = platform
+        };
     }
-
-    public MemberServiceRequest(
-        Guid currentMemberId,
-        ServiceRequest request)
-        : this(currentMemberId, request.HttpRequestContext, request.Platform)
-    {
-    }
-
-    public Guid CurrentMemberId { get; }
 }

@@ -30,7 +30,7 @@ public class ChapterSuperAdminController : AdminControllerBase
     [HttpPost("/superadmin/groups/{id:guid}/approve")]
     public async Task<IActionResult> Approve(Guid id)
     {
-        var request = MemberChapterServiceRequest(id);
+        var request = CreateMemberChapterServiceRequest(id);
         var result = await _chapterAdminService.ApproveChapter(request);
         AddFeedback(result, "Group approved");
         return RedirectToReferrer();
@@ -39,7 +39,7 @@ public class ChapterSuperAdminController : AdminControllerBase
     [HttpPost("/superadmin/groups/{id:guid}/delete")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var request = MemberChapterServiceRequest(id);
+        var request = CreateMemberChapterServiceRequest(id);
         var result = await _chapterAdminService.DeleteChapter(request);
         AddFeedback(result, "Chapter deleted");
         return RedirectToReferrer();
@@ -48,7 +48,7 @@ public class ChapterSuperAdminController : AdminControllerBase
     [HttpPost("/groups/{chapterId:guid}/SuperAdmin/Payments/{id:guid}/Reconciliation-Status")]
     public async Task<IActionResult> AddReconciliationExemption(Guid chapterId, Guid id)
     {
-        var request = new MemberChapterServiceRequest(chapterId, MemberServiceRequest);
+        var request = MemberChapterServiceRequest.Create(chapterId, MemberServiceRequest);
 
         await _paymentAdminService.SetPaymentReconciliationExemption(request, id, true);
 
@@ -58,7 +58,7 @@ public class ChapterSuperAdminController : AdminControllerBase
     [HttpPost("/groups/{chapterId:guid}/SuperAdmin/Payments/Reconciliations")]
     public async Task<IActionResult> CreateReconciliation(Guid chapterId, ReconciliationFormViewModel viewModel)
     {
-        var request = new MemberChapterServiceRequest(chapterId, MemberServiceRequest);
+        var request = MemberChapterServiceRequest.Create(chapterId, MemberServiceRequest);
 
         var model = new CreateReconciliationModel
         {

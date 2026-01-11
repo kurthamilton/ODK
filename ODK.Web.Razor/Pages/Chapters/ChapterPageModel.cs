@@ -8,8 +8,8 @@ public abstract class ChapterPageModel : OdkPageModel
 {
     public Chapter Chapter { get; private set; } = null!;
 
-    public MemberChapterServiceRequest MemberChapterServiceRequest()
-        => new MemberChapterServiceRequest(Chapter.Id, MemberServiceRequest);
+    public MemberChapterServiceRequest CreateMemberChapterServiceRequest()
+        => MemberChapterServiceRequest.Create(Chapter.Id, MemberServiceRequest);
 
     public override async Task OnPageHandlerExecutionAsync(
         PageHandlerExecutingContext context, PageHandlerExecutionDelegate next)

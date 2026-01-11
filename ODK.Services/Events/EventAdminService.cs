@@ -13,15 +13,19 @@ using ODK.Data.Core.Events;
 using ODK.Services.Authorization;
 using ODK.Services.Events.ViewModels;
 using ODK.Services.Exceptions;
+using ODK.Services.Logging;
 using ODK.Services.Members;
 using ODK.Services.Notifications;
+using ODK.Services.Tasks;
 
 namespace ODK.Services.Events;
 
 public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 {
     private readonly IAuthorizationService _authorizationService;
+    private readonly IBackgroundTaskService _backgroundTaskService;
     private readonly IHtmlSanitizer _htmlSanitizer;
+    private readonly ILoggingService _loggingService;
     private readonly IMemberEmailService _memberEmailService;
     private readonly INotificationService _notificationService;
     private readonly IUnitOfWork _unitOfWork;
@@ -31,11 +35,15 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         IAuthorizationService authorizationService,
         INotificationService notificationService,
         IHtmlSanitizer htmlSanitizer,
-        IMemberEmailService memberEmailService)
+        IMemberEmailService memberEmailService,
+        IBackgroundTaskService backgroundTaskService,
+        ILoggingService loggingService)
         : base(unitOfWork)
     {
         _authorizationService = authorizationService;
+        _backgroundTaskService = backgroundTaskService;
         _htmlSanitizer = htmlSanitizer;
+        _loggingService = loggingService;
         _memberEmailService = memberEmailService;
         _notificationService = notificationService;
         _unitOfWork = unitOfWork;
@@ -108,7 +116,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         UpdateEventHosts(@event, model.Hosts, [], chapterAdminMembers);
 
-        ScheduleEventEmail(@event, chapter, settings);
+        var eventEmail = ScheduleEventEmail(@event, chapter, settings);
 
         if (@event.PublishedUtc != null)
         {
@@ -122,6 +130,15 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         }));
 
         await _unitOfWork.SaveChangesAsync();
+
+        if (eventEmail?.ScheduledUtc != null)
+        {
+            eventEmail.JobId = _backgroundTaskService.Schedule(
+                () => SendScheduledEmails(request, eventEmail.Id),
+                eventEmail.ScheduledUtc.Value);
+            _unitOfWork.EventEmailRepository.Update(eventEmail);
+            await _unitOfWork.SaveChangesAsync();
+        }
 
         return ServiceResult.Successful();
     }
@@ -467,8 +484,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             return ServiceResult.Failure("Invites have already been sent for this event");
         }
 
-        var chapterAdminMember = chapterAdminMembers.First(x => x.MemberId == request.CurrentMemberId);
-
         if (test)
         {
             await _memberEmailService.SendEventInvites(request, chapter, @event, venue, [currentMember]);
@@ -482,7 +497,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         return await SendEventInvites(
             request,
-            chapterAdminMember,
             chapter,
             @event,
             venue,
@@ -500,6 +514,10 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         var (chapters, emails) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetAll(),
             x => x.EventEmailRepository.GetScheduled());
+
+        emails = emails
+            .Where(x => string.IsNullOrEmpty(x.JobId))
+            .ToArray();
 
         if (emails.Count == 0)
         {
@@ -570,7 +588,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             {
                 await SendEventInvites(
                     request,
-                    chapterAdminMember: null,
                     chapter,
                     @event,
                     venue,
@@ -586,6 +603,89 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             {
                 // do nothing
             }
+        }
+    }
+
+    // Public for Hangfire
+    public async Task SendScheduledEmails(ServiceRequest request, Guid eventEmailId)
+    {
+        await _loggingService.Info($"Sending event email {eventEmailId}");
+
+        var email = await _unitOfWork.EventEmailRepository.GetByIdOrDefault(eventEmailId).Run();
+        if (email == null)
+        {
+            await _loggingService.Info($"Error sending event email {eventEmailId}: not found");
+            return;
+        }
+
+        var @event = await _unitOfWork.EventRepository.GetById(email.EventId).Run();
+        if (!@event.IsPublished)
+        {
+            await _loggingService.Info($"Error sending event email {eventEmailId}: event not published");
+            return;
+        }
+
+        var chapter = await _unitOfWork.ChapterRepository.GetById(@event.ChapterId).Run();
+
+        if (@event.Date < chapter.CurrentTime().StartOfDay())
+        {
+            await _loggingService.Info($"Not sending event email {eventEmailId}: event is in the past");
+
+            email.ScheduledUtc = null;
+            _unitOfWork.EventEmailRepository.Update(email);
+            await _unitOfWork.SaveChangesAsync();
+            return;
+        }
+
+        var (
+            ownerSubscription,
+            membershipSettings,
+            privacySettings,
+            venue,
+            responses,
+            invites,
+            members,
+            memberEmailPreferences,
+            memberSubscriptions
+        ) = await _unitOfWork.RunAsync(
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(@event.ChapterId),
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(@event.ChapterId),
+            x => x.ChapterPrivacySettingsRepository.GetByChapterId(@event.ChapterId),
+            x => x.VenueRepository.GetById(@event.VenueId),
+            x => x.EventResponseRepository.GetByEventId(@event.Id),
+            x => x.EventInviteRepository.GetByEventId(@event.Id),
+            x => x.MemberRepository.GetByChapterId(@event.ChapterId),
+            x => x.MemberEmailPreferenceRepository.GetByChapterId(@event.ChapterId, MemberEmailPreferenceType.Events),
+            x => x.MemberSubscriptionRepository.GetByChapterId(@event.ChapterId));
+
+        if (ownerSubscription?.HasFeature(SiteFeatureType.ScheduledEventEmails) != true)
+        {
+            await _loggingService.Info($"Not sending event email {eventEmailId}: chapter does not have feature enabled");
+            return;
+        }
+
+        try
+        {
+            await SendEventInvites(
+                request,
+                chapter,
+                @event,
+                venue,
+                membershipSettings,
+                privacySettings,
+                responses,
+                invites,
+                members,
+                memberEmailPreferences,
+                memberSubscriptions);
+
+            email.SentUtc = DateTime.UtcNow;
+            _unitOfWork.EventEmailRepository.Update(email);
+            await _unitOfWork.SaveChangesAsync();
+        }
+        catch
+        {
+            await _loggingService.Error("Error sending scheduled event emails");
         }
     }
 
@@ -735,7 +835,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task<ServiceResult> UpdateScheduledEmail(MemberChapterServiceRequest request, Guid eventId, DateTime? date)
+    public async Task<ServiceResult> UpdateScheduledEmail(
+        MemberChapterServiceRequest request, Guid eventId, DateTime? date)
     {
         var (chapter, chapterAdminMembers, currentMember, @event, eventEmail, ownerSubscription) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
@@ -757,18 +858,31 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             return ServiceResult.Failure("Email has already been sent");
         }
 
-        if (eventEmail == null)
-        {
-            eventEmail = new EventEmail();
-        }
-        else if (date == null)
+        // delete existing
+        if (eventEmail != null)
         {
             _unitOfWork.EventEmailRepository.Delete(eventEmail);
             await _unitOfWork.SaveChangesAsync();
+
+            if (!string.IsNullOrEmpty(eventEmail.JobId))
+            {
+                _backgroundTaskService.CancelJob(eventEmail.JobId);
+            }
+
+            eventEmail = null;
+        }
+
+        if (date == null)
+        {
             return ServiceResult.Successful();
         }
 
         var scheduledUtc = chapter.FromLocalTime(date);
+        if (scheduledUtc == null)
+        {
+            return ServiceResult.Failure("Scheduled date not set");
+        }
+
         if (scheduledUtc > @event.Date)
         {
             return ServiceResult.Failure("Scheduled date cannot be after event");
@@ -779,19 +893,28 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             return ServiceResult.Failure("Scheduled date cannot be in the past");
         }
 
-        eventEmail.ScheduledUtc = scheduledUtc;
-
-        if (eventEmail.EventId == default)
+        eventEmail = new EventEmail
         {
-            eventEmail.EventId = eventId;
-            _unitOfWork.EventEmailRepository.Add(eventEmail);
-        }
-        else
-        {
-            _unitOfWork.EventEmailRepository.Update(eventEmail);
-        }
+            EventId = eventId,
+            ScheduledUtc = scheduledUtc
+        };
 
+        _unitOfWork.EventEmailRepository.Add(eventEmail);
         await _unitOfWork.SaveChangesAsync();
+
+        var scheduledJobRequest = new ServiceRequest
+        {
+            HttpRequestContext = request.HttpRequestContext,
+            Platform = request.Platform
+        };
+
+        eventEmail.JobId = _backgroundTaskService.Schedule(
+            () => SendScheduledEmails(request, eventEmail.Id),
+            scheduledUtc.Value);
+
+        _unitOfWork.EventEmailRepository.Update(eventEmail);
+        await _unitOfWork.SaveChangesAsync();
+
         return ServiceResult.Successful();
     }
 
@@ -851,7 +974,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         }
 
         return nextEventDate + startTime;
-
     }
 
     private static ServiceResult ValidateEvent(
@@ -939,11 +1061,11 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         }).ToArray();
     }
 
-    private void ScheduleEventEmail(Event @event, Chapter chapter, ChapterEventSettings? settings)
+    private EventEmail? ScheduleEventEmail(Event @event, Chapter chapter, ChapterEventSettings? settings)
     {
         if (settings?.DefaultScheduledEmailDayOfWeek == null)
         {
-            return;
+            return null;
         }
 
         var localEventDate = chapter.ToChapterTime(@event.Date).Date;
@@ -951,7 +1073,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         var scheduledDateTimeLocal = settings.GetScheduledDateTime(scheduledDate);
         if (scheduledDateTimeLocal == null)
         {
-            return;
+            return null;
         }
 
         var scheduledDateTimeUtc = chapter.TimeZone != null
@@ -964,11 +1086,12 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             ScheduledUtc = scheduledDateTimeUtc
         };
         _unitOfWork.EventEmailRepository.Add(eventEmail);
+
+        return eventEmail;
     }
 
     private async Task<ServiceResult> SendEventInvites(
         ServiceRequest request,
-        ChapterAdminMember? chapterAdminMember,
         Chapter chapter,
         Event @event,
         Venue venue,

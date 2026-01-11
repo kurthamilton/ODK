@@ -278,7 +278,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         await _unitOfWork.SaveChangesAsync();
 
         await _topicService.AddNewChapterTopics(
-            new MemberChapterServiceRequest(chapter.Id, request),
+            MemberChapterServiceRequest.Create(chapter.Id, request),
             model.NewTopics);
 
         await _memberEmailService.SendNewGroupEmail(
@@ -1199,7 +1199,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             throw new OdkServiceException("Chapter owner not found");
         }
 
-        var chapterOwnerRequest = new MemberServiceRequest(chapter.OwnerId.Value, request);
+        var chapterOwnerRequest = MemberServiceRequest.Create(chapter.OwnerId.Value, request);
 
         return await _paymentService.GetMemberSitePaymentCheckoutSessionStatus(
             chapterOwnerRequest, externalSessionId);
@@ -1215,7 +1215,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         OdkAssertions.Exists(chapter.OwnerId);
 
-        var chapterOwnerRequest = new MemberServiceRequest(chapter.OwnerId.Value, request);
+        var chapterOwnerRequest = MemberServiceRequest.Create(chapter.OwnerId.Value, request);
         var siteSubscriptionsViewModel = await _siteSubscriptionService.GetSiteSubscriptionsViewModel(
             request, chapter.OwnerId);
 
@@ -1582,7 +1582,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         OdkAssertions.Exists(chapter.OwnerId);
 
-        var ownerRequest = new MemberServiceRequest(chapter.OwnerId.Value, request);
+        var ownerRequest = MemberServiceRequest.Create(chapter.OwnerId.Value, request);
 
         return await _siteSubscriptionService.StartSiteSubscriptionCheckout(ownerRequest, priceId, returnPath);
     }

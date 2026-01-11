@@ -16,7 +16,7 @@ public class GroupModel : SuperAdminPageModel
     }
 
     public MemberChapterServiceRequest AdminServiceRequest
-        => new MemberChapterServiceRequest(ChapterId, MemberServiceRequest);
+        => MemberChapterServiceRequest.Create(ChapterId, MemberServiceRequest);
 
     public Guid ChapterId { get; private set; }
 
@@ -34,7 +34,7 @@ public class GroupModel : SuperAdminPageModel
             return OnGet(id);
         }
 
-        var request = MemberChapterServiceRequest(id);
+        var request = CreateMemberChapterServiceRequest(id);
 
         var result = await _chapterAdminService.UpdateSuperAdminChapter(request, viewModel);
 

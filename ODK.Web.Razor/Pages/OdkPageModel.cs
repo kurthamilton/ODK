@@ -60,8 +60,8 @@ public abstract class OdkPageModel : PageModel
         set => ViewData["Title"] = value;
     }
 
-    public MemberChapterServiceRequest MemberChapterServiceRequest(Guid chapterId)
-        => new MemberChapterServiceRequest(chapterId, MemberServiceRequest);
+    public MemberChapterServiceRequest CreateMemberChapterServiceRequest(Guid chapterId)
+        => MemberChapterServiceRequest.Create(chapterId, MemberServiceRequest);
 
     protected void AddFeedback(FeedbackViewModel viewModel) => TempData!.AddFeedback(viewModel);
 

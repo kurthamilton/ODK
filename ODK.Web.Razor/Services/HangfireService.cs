@@ -13,6 +13,19 @@ public class HangfireService : IBackgroundTaskService
         _backgroundJobClient = backgroundJobClient;
     }
 
+    public void CancelJob(string jobId)
+        => _backgroundJobClient.Delete(jobId);
+
     public string Enqueue(Expression<Func<Task>> task)
         => _backgroundJobClient.Enqueue(task);
+
+    public string Schedule(Expression<Func<Task>> task, DateTime runAtUtc)
+    {
+        var delay = GetScheduledDelay(runAtUtc);
+        return _backgroundJobClient.Schedule(task, delay);
+    }
+
+    private TimeSpan GetScheduledDelay(DateTime runAtUtc) => runAtUtc > DateTime.UtcNow
+        ? runAtUtc - DateTime.UtcNow
+        : TimeSpan.FromSeconds(0);
 }

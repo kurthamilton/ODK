@@ -93,7 +93,7 @@ public class GroupsController : OdkControllerBase
     [HttpPost("groups/{id:guid}/leave")]
     public async Task<IActionResult> LeaveGroup(Guid id, [FromForm] string reason)
     {
-        var request = new MemberChapterServiceRequest(id, MemberServiceRequest);
+        var request = MemberChapterServiceRequest.Create(id, MemberServiceRequest);
         var result = await _memberService.LeaveChapter(request, reason);
         AddFeedback(result, "You have left the group");
 
@@ -122,7 +122,7 @@ public class GroupsController : OdkControllerBase
             })
         };
 
-        var request = MemberChapterServiceRequest(id);
+        var request = CreateMemberChapterServiceRequest(id);
 
         var result = await _memberService.UpdateMemberChapterProfile(request, model);
         AddFeedback(result, "Profile updated");

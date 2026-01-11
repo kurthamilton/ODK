@@ -78,8 +78,8 @@ public abstract class OdkControllerBase : Controller
         return map(result.Value);
     }
 
-    protected MemberChapterServiceRequest MemberChapterServiceRequest(Guid chapterId)
-        => new MemberChapterServiceRequest(chapterId, MemberServiceRequest);
+    protected MemberChapterServiceRequest CreateMemberChapterServiceRequest(Guid chapterId)
+        => MemberChapterServiceRequest.Create(chapterId, MemberServiceRequest);
 
     protected async Task<string> ReadBodyText()
     {

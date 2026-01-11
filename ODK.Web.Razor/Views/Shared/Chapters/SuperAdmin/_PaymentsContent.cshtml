@@ -9,7 +9,7 @@
 @inject IChapterAdminService ChapterAdminService
 @inject ICurrencyService CurrencyService
 @{
-    var serviceRequest = Model.MemberChapterServiceRequest(Model.Value.Id);
+    var serviceRequest = Model.CreateMemberChapterServiceRequest(Model.Value.Id);
     var paymentSettings = await ChapterAdminService.GetChapterPaymentSettings(serviceRequest);
     var currencies = await CurrencyService.GetCurrencies();
 }

@@ -17,7 +17,7 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Checkout | Subscription | Admin";
 
-    var request = Model.MemberChapterServiceRequest(Model.Chapter.Id);
+    var request = Model.CreateMemberChapterServiceRequest(Model.Chapter.Id);
     var returnPath = $"/{Model.ChapterName}/admin/chapter/subscription/{Model.PriceId}/confirm?sessionId={{sessionId}}";
     var viewModel = await ChapterAdminService.StartSiteSubscriptionCheckout(
         request, Model.PriceId, returnPath);

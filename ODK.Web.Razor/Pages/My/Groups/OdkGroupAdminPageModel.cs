@@ -17,7 +17,7 @@ public abstract class OdkGroupAdminPageModel : OdkPageModel
 
     protected OdkGroupAdminPageModel()
     {
-        _adminServiceRequest = new(() => new MemberChapterServiceRequest(ChapterId, MemberServiceRequest));
+        _adminServiceRequest = new(() => MemberChapterServiceRequest.Create(ChapterId, MemberServiceRequest));
     }
 
     public Guid ChapterId { get; private set; }

@@ -15,7 +15,7 @@
     Layout = "_OdkChapterLayout";
     Model.Title = "Subscription checkout";
 
-    var request = Model.MemberChapterServiceRequest(Model.Chapter.Id);
+    var request = Model.CreateMemberChapterServiceRequest(Model.Chapter.Id);
     var returnPath = $"/{Model.Chapter.ShortName}/account/subscription/{Model.SubscriptionId}/confirm?sessionId={{sessionId}}";
     var viewModel = await MemberService.StartChapterSubscriptionCheckoutSession(
         request, Model.SubscriptionId, returnPath);

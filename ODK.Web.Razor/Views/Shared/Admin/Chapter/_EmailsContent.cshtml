@@ -11,7 +11,7 @@
 @model OdkComponentViewModel<Chapter>
 @inject IEmailAdminService EmailAdminService
 @{
-    var request = Model.MemberChapterServiceRequest(Model.Value.Id);
+    var request = Model.CreateMemberChapterServiceRequest(Model.Value.Id);
     var emails = await EmailAdminService.GetChapterEmails(request);
 }
 

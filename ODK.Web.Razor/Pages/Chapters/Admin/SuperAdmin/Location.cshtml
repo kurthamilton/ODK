@@ -10,7 +10,7 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Location | SuperAdmin";
 
-    var request = Model.MemberChapterServiceRequest(Model.Chapter.Id);
+    var request = Model.CreateMemberChapterServiceRequest(Model.Chapter.Id);
     var viewModel = await ChapterAdminService.GetChapterLocationViewModel(request);
 }
 

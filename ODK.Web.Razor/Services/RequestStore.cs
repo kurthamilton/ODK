@@ -8,8 +8,8 @@ using ODK.Data.Core.Deferred;
 using ODK.Services;
 using ODK.Services.Exceptions;
 using ODK.Web.Common.Extensions;
-using ODK.Web.Common.Services;
 using ODK.Web.Razor.Models;
+using HttpRequestContextImpl = ODK.Web.Common.Services.HttpRequestContext;
 
 namespace ODK.Web.Razor.Services;
 
@@ -50,10 +50,14 @@ public class RequestStore : IRequestStore
         _currentMemberIdOrDefault = new(
             () => _httpContextAccessor.HttpContext?.User?.MemberIdOrDefault());
         _httpRequestContext = new(
-            () => new HttpRequestContext(_httpContextAccessor.HttpContext?.Request));
-        _memberServiceRequest = new(() => new MemberServiceRequest(CurrentMemberId, ServiceRequest));
+            () => HttpRequestContextImpl.Create(_httpContextAccessor.HttpContext?.Request));
+        _memberServiceRequest = new(() => MemberServiceRequest.Create(CurrentMemberId, ServiceRequest));
         _platform = new(() => _platformProvider.GetPlatform(HttpRequestContext.RequestUrl));
-        _serviceRequest = new(() => new ServiceRequest(HttpRequestContext, Platform));
+        _serviceRequest = new(() => new ServiceRequest
+        {
+            HttpRequestContext = HttpRequestContext,
+            Platform = Platform
+        });
     }
 
     public OdkComponentContext ComponentContext => _componentContext.Value;

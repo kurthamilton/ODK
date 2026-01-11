@@ -13,7 +13,8 @@ public abstract class AdminPageModel : ChapterPageModel2
 
     protected AdminPageModel()
     {
-        _adminServiceRequest = new(() => new MemberChapterServiceRequest(Chapter.Id, MemberServiceRequest));
+        _adminServiceRequest = new(
+            () => MemberChapterServiceRequest.Create(Chapter.Id, MemberServiceRequest));
     }
 
     public MemberChapterServiceRequest AdminServiceRequest => _adminServiceRequest.Value;

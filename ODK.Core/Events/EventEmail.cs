@@ -6,6 +6,8 @@ public class EventEmail : IDatabaseEntity
 
     public Guid Id { get; set; }
 
+    public string? JobId { get; set; }
+
     public DateTime? ScheduledUtc { get; set; }
 
     public DateTime? SentUtc { get; set; }

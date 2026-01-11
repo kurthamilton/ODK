@@ -13,5 +13,5 @@ public class HttpRequestContextProvider : IHttpRequestContextProvider
     }
 
     public IHttpRequestContext Get()
-        => new HttpRequestContext(_httpContextAccessor.HttpContext?.Request);
+        => HttpRequestContext.Create(_httpContextAccessor.HttpContext?.Request);
 }

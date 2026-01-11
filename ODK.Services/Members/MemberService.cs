@@ -207,7 +207,7 @@ public class MemberService : IMemberService
         await _unitOfWork.SaveChangesAsync();
 
         await _topicService.AddNewMemberTopics(
-            new MemberServiceRequest(member.Id, request),
+            MemberServiceRequest.Create(member.Id, request),
             model.NewTopics);
 
         if (!string.IsNullOrEmpty(activationToken))

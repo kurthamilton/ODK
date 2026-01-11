@@ -17,10 +17,14 @@ public abstract class OdkComponentViewModel
         Platform = context.Platform;
 
         _memberServiceRequest =
-            new(() => new MemberServiceRequest(
+            new(() => MemberServiceRequest.Create(
                 Context.CurrentMemberIdOrDefault ?? throw new OdkNotAuthorizedException(),
                 ServiceRequest));
-        _serviceRequest = new(() => new ServiceRequest(HttpRequestContext, Platform));
+        _serviceRequest = new(() => new ServiceRequest
+        {
+            HttpRequestContext = HttpRequestContext,
+            Platform = Platform
+        });
     }
 
     public OdkComponentContext Context { get; }
@@ -33,6 +37,6 @@ public abstract class OdkComponentViewModel
 
     public ServiceRequest ServiceRequest => _serviceRequest.Value;
 
-    public MemberChapterServiceRequest MemberChapterServiceRequest(Guid chapterId)
-        => new MemberChapterServiceRequest(chapterId, MemberServiceRequest);
+    public MemberChapterServiceRequest CreateMemberChapterServiceRequest(Guid chapterId)
+        => MemberChapterServiceRequest.Create(chapterId, MemberServiceRequest);
 }

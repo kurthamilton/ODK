@@ -5,15 +5,11 @@ namespace ODK.Services;
 
 public class ServiceRequest
 {
-    public ServiceRequest(
-        IHttpRequestContext httpRequestContext,
-        PlatformType platform)
+    public ServiceRequest()
     {
-        HttpRequestContext = httpRequestContext;
-        Platform = platform;
     }
 
-    public IHttpRequestContext HttpRequestContext { get; }
+    public required IHttpRequestContext HttpRequestContext { get; init; }
 
-    public PlatformType Platform { get; }
+    public required PlatformType Platform { get; init; }
 }

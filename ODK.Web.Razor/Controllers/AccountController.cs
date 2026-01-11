@@ -269,7 +269,7 @@ public class AccountController : OdkControllerBase
 
         var result = chapterId != null
             ? await _memberService.RequestMemberEmailAddressUpdate(
-                new MemberChapterServiceRequest(chapterId.Value, MemberServiceRequest), viewModel.Email ?? string.Empty)
+                MemberChapterServiceRequest.Create(chapterId.Value, MemberServiceRequest), viewModel.Email ?? string.Empty)
             : await _memberService.RequestMemberEmailAddressUpdate(MemberServiceRequest, viewModel.Email ?? string.Empty);
 
         var successMessage =
@@ -494,7 +494,7 @@ public class AccountController : OdkControllerBase
     [HttpPost("Chapters/{id:guid}/Account/Subscription/Purchase")]
     public async Task<IActionResult> PurchaseChapterSubscription(Guid id, [FromForm] PurchaseSubscriptionRequest form)
     {
-        var request = new MemberChapterServiceRequest(id, MemberServiceRequest);
+        var request = MemberChapterServiceRequest.Create(id, MemberServiceRequest);
         var result = await _memberService.PurchaseChapterSubscription(request, form.SubscriptionId, form.Token);
         AddFeedback(result, "Purchase complete. Thank you for subscribing.");
         return RedirectToReferrer();

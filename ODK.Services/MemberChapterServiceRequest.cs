@@ -5,22 +5,27 @@ namespace ODK.Services;
 
 public class MemberChapterServiceRequest : MemberServiceRequest
 {
-    public MemberChapterServiceRequest(
+    public MemberChapterServiceRequest()
+    {
+    }
+
+    public required Guid ChapterId { get; init; }
+
+    public static MemberChapterServiceRequest Create(Guid chapterId, MemberServiceRequest request)
+        => Create(chapterId, request.CurrentMemberId, request.HttpRequestContext, request.Platform);
+
+    public static MemberChapterServiceRequest Create(
         Guid chapterId,
         Guid currentMemberId,
         IHttpRequestContext httpRequestContext,
         PlatformType platform)
-        : base(currentMemberId, httpRequestContext, platform)
     {
-        ChapterId = chapterId;
+        return new MemberChapterServiceRequest
+        {
+            ChapterId = chapterId,
+            CurrentMemberId = currentMemberId,
+            HttpRequestContext = httpRequestContext,
+            Platform = platform
+        };
     }
-
-    public MemberChapterServiceRequest(
-        Guid chapterId,
-        MemberServiceRequest request)
-        : this(chapterId, request.CurrentMemberId, request.HttpRequestContext, request.Platform)
-    {
-    }
-
-    public Guid ChapterId { get; }
 }

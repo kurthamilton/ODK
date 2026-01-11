@@ -18,6 +18,7 @@ public class EmailService : IEmailService
     private readonly IBackgroundTaskService _backgroundTaskService;
     private readonly IEmailClient _emailClient;
     private readonly ILoggingService _loggingService;
+    private readonly EmailServiceSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUrlProviderFactory _urlProviderFactory;
 
@@ -26,12 +27,14 @@ public class EmailService : IEmailService
         IEmailClient emailClient,
         IUrlProviderFactory urlProviderFactory,
         IBackgroundTaskService backgroundTaskService,
-        ILoggingService loggingService)
+        ILoggingService loggingService,
+        EmailServiceSettings settings)
     {
         _backgroundTaskService = backgroundTaskService;
         _emailClient = emailClient;
         _loggingService = loggingService;
         _unitOfWork = unitOfWork;
+        _settings = settings;
         _urlProviderFactory = urlProviderFactory;
     }
 
@@ -232,13 +235,13 @@ public class EmailService : IEmailService
         }
 
         var sentUtc = DateTime.UtcNow;
-        
+
         var sentEmails = recipients
             .Select(x => new SentEmail
             {
                 Id = Guid.NewGuid(),
                 ExternalId = result.ExternalId,
-                SentUtc = sentUtc,                
+                SentUtc = sentUtc,
                 Subject = queuedEmail.Subject,
                 To = x.EmailAddress
             })
@@ -285,6 +288,11 @@ public class EmailService : IEmailService
             parameters["chapter.name"] = options.Chapter?.GetDisplayName(platform) ?? string.Empty;
         }
 
+        if (!parameters.ContainsKey("chapter.fullName"))
+        {
+            parameters["chapter.fullName"] = options.Chapter?.FullName ?? string.Empty;
+        }
+
         var urlProvider = _urlProviderFactory.Create(request);
 
         if (options.Chapter != null)
@@ -295,6 +303,18 @@ public class EmailService : IEmailService
         if (!parameters.ContainsKey("platform.baseurl"))
         {
             parameters["platform.baseurl"] = urlProvider.BaseUrl();
+        }
+
+        if (!parameters.ContainsKey("theme.header.background"))
+        {
+            parameters["theme.header.background"] = StringUtils.Coalesce(
+                options.Chapter?.ThemeBackground, _settings.DefaultHeaderBackground);
+        }
+
+        if (!parameters.ContainsKey("theme.header.color"))
+        {
+            parameters["theme.header.color"] = StringUtils.Coalesce(
+                options.Chapter?.ThemeColor, _settings.DefaultHeaderColor);
         }
 
         var title = siteSettings.Title.Interpolate(parameters.AsReadOnly(), HttpUtility.HtmlEncode);

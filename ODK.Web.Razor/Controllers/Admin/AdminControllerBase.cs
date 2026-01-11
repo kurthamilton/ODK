@@ -14,5 +14,5 @@ public class AdminControllerBase : OdkControllerBase
     }
 
     protected MemberChapterServiceRequest AdminServiceRequest(Guid chapterId)
-        => new MemberChapterServiceRequest(chapterId, MemberServiceRequest);
+        => MemberChapterServiceRequest.Create(chapterId, MemberServiceRequest);
 }

@@ -26,7 +26,7 @@ public class SubscriptionCheckoutConfirmModel : ChapterPageModel
         SessionId = sessionId;
         SubscriptionId = SubscriptionId;
 
-        var request = MemberChapterServiceRequest(Chapter.Id);
+        var request = CreateMemberChapterServiceRequest(Chapter.Id);
         var status = await _paymentService.GetMemberChapterPaymentCheckoutSessionStatus(request, sessionId);
 
         if (status == PaymentStatusType.Complete)

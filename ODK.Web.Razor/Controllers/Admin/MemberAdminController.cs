@@ -29,7 +29,7 @@ public class MemberAdminController : AdminControllerBase
     [HttpPost("groups/{chapterId:guid}/members/{id:guid}/approve")]
     public async Task<IActionResult> ApproveMember(Guid chapterId, Guid id)
     {
-        var request = MemberChapterServiceRequest(chapterId);
+        var request = CreateMemberChapterServiceRequest(chapterId);
         var result = await _memberAdminService.ApproveMember(request, id);
         AddFeedback(result, "Member approved");
         return RedirectToReferrer();
@@ -39,7 +39,7 @@ public class MemberAdminController : AdminControllerBase
     public async Task<IActionResult> UpdatePicture(Guid chapterId, Guid id,
         [FromForm] string imageDataUrl)
     {
-        var request = MemberChapterServiceRequest(chapterId);
+        var request = CreateMemberChapterServiceRequest(chapterId);
 
         if (string.IsNullOrEmpty(imageDataUrl))
         {
@@ -64,7 +64,7 @@ public class MemberAdminController : AdminControllerBase
     [HttpPost("groups/{chapterId:guid}/members/{id:guid}/delete")]
     public async Task<IActionResult> DeleteMember(Guid chapterId, Guid id, [FromForm] string? reason)
     {
-        var request = MemberChapterServiceRequest(chapterId);
+        var request = CreateMemberChapterServiceRequest(chapterId);
         var result = await _memberAdminService.RemoveMemberFromChapter(request, id, reason);
         AddFeedback(result, "Member deleted");
 
@@ -80,7 +80,7 @@ public class MemberAdminController : AdminControllerBase
     [HttpPost("groups/{chapterId:guid}members/{id:guid}/emails/activation/send")]
     public async Task<IActionResult> SendActivationEmail(Guid chapterId, Guid id)
     {
-        var request = MemberChapterServiceRequest(chapterId);
+        var request = CreateMemberChapterServiceRequest(chapterId);
         await _memberAdminService.SendActivationEmail(request, id);
         AddFeedback("Email sent", FeedbackType.Success);
         return RedirectToReferrer();
@@ -89,7 +89,7 @@ public class MemberAdminController : AdminControllerBase
     [HttpPost("groups/{chapterId:guid}/members/{id:guid}/visibility")]
     public async Task<IActionResult> SetMemberVisibility(Guid chapterId, Guid id, [FromForm] bool visible)
     {
-        var request = new MemberChapterServiceRequest(chapterId, MemberServiceRequest);
+        var request = MemberChapterServiceRequest.Create(chapterId, MemberServiceRequest);
         await _memberAdminService.SetMemberVisibility(request, id, visible);
         AddFeedback("Member updated", FeedbackType.Success);
         return RedirectToReferrer();
@@ -99,7 +99,7 @@ public class MemberAdminController : AdminControllerBase
     public async Task<IActionResult> AddAdminMember(Guid id,
         [FromForm] AdminMemberAddFormViewModel viewModel)
     {
-        var request = MemberChapterServiceRequest(id);
+        var request = CreateMemberChapterServiceRequest(id);
         var result = await _chapterAdminService.AddChapterAdminMember(request, viewModel.MemberId!.Value);
         AddFeedback(result, "Admin member added");
         return RedirectToReferrer();
@@ -108,7 +108,7 @@ public class MemberAdminController : AdminControllerBase
     [HttpPost("groups/{id:guid}/members/admins/{memberId:guid}/delete")]
     public async Task<IActionResult> AddAdminMember(Guid id, Guid memberId)
     {
-        var request = MemberChapterServiceRequest(id);
+        var request = CreateMemberChapterServiceRequest(id);
         var result = await _chapterAdminService.DeleteChapterAdminMember(request, memberId);
         AddFeedback(result, "Admin member removed");
         return RedirectToReferrer();
@@ -117,7 +117,7 @@ public class MemberAdminController : AdminControllerBase
     [HttpGet("groups/{chapterId:guid}/members/download")]
     public async Task<IActionResult> DownloadAdminMembers(Guid chapterId)
     {
-        var request = new MemberChapterServiceRequest(chapterId, MemberServiceRequest);
+        var request = MemberChapterServiceRequest.Create(chapterId, MemberServiceRequest);
         var data = await _memberAdminService.GetMemberCsv(request);
 
         return DownloadCsv(data, $"Members.{DateTime.UtcNow:yyyyMMdd}.csv");
@@ -127,7 +127,7 @@ public class MemberAdminController : AdminControllerBase
     public async Task<IActionResult> SendBulkEmail(Guid chapterId,
         [FromForm] SendMemberBulkEmailFormViewModel viewModel)
     {
-        var request = MemberChapterServiceRequest(chapterId);
+        var request = CreateMemberChapterServiceRequest(chapterId);
 
         var filter = new MemberFilter
         {
@@ -143,7 +143,7 @@ public class MemberAdminController : AdminControllerBase
     [HttpPost("groups/{chapterId:guid}/members/subscriptions/{id:guid}/delete")]
     public async Task<IActionResult> DeleteSubscription(Guid chapterId, Guid id)
     {
-        var request = MemberChapterServiceRequest(chapterId);
+        var request = CreateMemberChapterServiceRequest(chapterId);
         var result = await _chapterAdminService.DeleteChapterSubscription(request, id);
         AddFeedback(result, "Subscription deleted");
         return RedirectToReferrer();

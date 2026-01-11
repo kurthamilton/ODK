@@ -17,8 +17,10 @@ using ODK.Data.Core;
 using ODK.Data.Core.Repositories;
 using ODK.Services.Authorization;
 using ODK.Services.Events;
+using ODK.Services.Logging;
 using ODK.Services.Members;
 using ODK.Services.Notifications;
+using ODK.Services.Tasks;
 using ODK.Services.Tests.Helpers;
 
 namespace ODK.Services.Tests.Events;
@@ -73,7 +75,7 @@ public static class EventAdminServiceTests
         var service = CreateService(
             unitOfWork: unitOfWork);
 
-        var request = new MemberChapterServiceRequest(
+        var request = MemberChapterServiceRequest.Create(
             ChapterId,
             CurrentMemberId,
             Mock.Of<IHttpRequestContext>(),
@@ -97,7 +99,7 @@ public static class EventAdminServiceTests
             VenueId = VenueId
         }, false);
 
-        // Assert        
+        // Assert
         Mock.Get(eventEmailRepository)
             .Verify(x => x.Add(It.IsAny<EventEmail>()), Times.Once());
     }
@@ -303,6 +305,8 @@ public static class EventAdminServiceTests
             Mock.Of<IAuthorizationService>(),
             Mock.Of<INotificationService>(),
             Mock.Of<IHtmlSanitizer>(),
-            Mock.Of<IMemberEmailService>());
+            Mock.Of<IMemberEmailService>(),
+            Mock.Of<IBackgroundTaskService>(),
+            Mock.Of<ILoggingService>());
     }
 }

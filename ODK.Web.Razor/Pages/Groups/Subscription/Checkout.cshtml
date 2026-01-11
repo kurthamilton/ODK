@@ -13,7 +13,7 @@
     var group = await ChapterViewModelService.GetGroupPage(
         Model.ServiceRequest, Model.CurrentMemberIdOrDefault, Model.Slug);
 
-    var request = Model.MemberChapterServiceRequest(group.Chapter.Id);
+    var request = Model.CreateMemberChapterServiceRequest(group.Chapter.Id);
     var returnUrl = "";
 
     var viewModel = await MemberService.StartChapterSubscriptionCheckoutSession(
