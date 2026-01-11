@@ -1,7 +1,7 @@
 ﻿(function () {
     const editors = document.querySelectorAll('[data-html-editor]');
 
-    const standardPlugins = 'preview searchreplace autolink autosave save visualblocks visualchars link lists code paste';
+    const standardPlugins = 'preview searchreplace autolink autosave save visualblocks visualchars link lists code';
 
     editors.forEach(el => {
         tinymce.init({

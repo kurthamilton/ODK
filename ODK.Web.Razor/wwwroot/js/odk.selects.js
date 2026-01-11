@@ -7,7 +7,7 @@
         const $container = document.querySelector(`[data-expanded-select-for="${id}"]`);
         if (!$container) {
             return;
-        }        
+        }
 
         const $items = $container.querySelectorAll('[data-expanded-select-option-for]');
         const $groups = $container.querySelectorAll('[data-expanded-select-group]');
@@ -19,7 +19,7 @@
             }
 
             $search.addEventListener('input', () => {
-                const search = $search.value.toLowerCase();                
+                const search = $search.value.toLowerCase();
                 $groups.forEach($group => {
                     const group = $group.getAttribute('data-expanded-select-group');
                     const groupMatch = group && group.toLowerCase().includes(search);
@@ -61,7 +61,7 @@
             }
         };
 
-        const bindSelectedOptions = () => {            
+        const bindSelectedOptions = () => {
             const selectedValues = getSelectedValues();
 
             $items.forEach($item => {
@@ -86,28 +86,28 @@
                 .filter(x => x.selected)
                 .map(x => x.value);
         };
-        
+
         const setSelected = (value, selected) => {
             const selectedValues = getSelectedValues();
             if (selected) {
                 selectedValues.push(value);
-            } else {                
+            } else {
                 const index = selectedValues.findIndex(x => value === x);
                 if (index >= 0) {
                     selectedValues.splice(index, 1);
-                }                
+                }
             }
 
-            const option = getOption(value);            
+            const option = getOption(value);
             $select.dispatchEvent(new CustomEvent('odk:change', {
                 detail: {
                     values: selectedValues
                 }
-            }));            
+            }));
         };
 
         bindSelectedOptions();
-        bindSearch();        
+        bindSearch();
 
         $select.addEventListener('change', () => {
             const selectedValues = getSelectedValues();
@@ -124,7 +124,7 @@
                     $active.classList.add('d-none');
                     $inactive.classList.remove('d-none');
                 }
-            });            
+            });
         });
     }
 
@@ -141,7 +141,7 @@
         let allowDeselect = true;
 
         if (!multiple && clearable) {
-            const $placeholder = $select.querySelector('option[value=""]');            
+            const $placeholder = $select.querySelector('option[value=""]');
             if ($placeholder) {
                 $placeholder.setAttribute('data-placeholder', 'true');
             }
@@ -245,6 +245,6 @@
 
     function bindSlimSelects() {
         const $selects = document.querySelectorAll('select[multiple],select[data-searchable],select[data-select]');
-        $selects.forEach($select => bindSlimSelect($select)); 
-    }    
+        $selects.forEach($select => bindSlimSelect($select));
+    }
 })();
