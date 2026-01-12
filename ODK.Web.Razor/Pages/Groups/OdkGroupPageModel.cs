@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
 using ODK.Core;
 using ODK.Web.Common.Extensions;
-using ODK.Web.Razor.Pages.Chapters;
 
 namespace ODK.Web.Razor.Pages.Groups;
 

@@ -4,7 +4,6 @@ using ODK.Core.Payments;
 using ODK.Core.Subscriptions;
 using ODK.Services.Chapters.Models;
 using ODK.Services.Chapters.ViewModels;
-using ODK.Services.Settings;
 using ODK.Services.Subscriptions.ViewModels;
 
 namespace ODK.Services.Chapters;

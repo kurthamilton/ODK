@@ -1,6 +1,4 @@
-﻿using ODK.Core.Settings;
-using ODK.Core.SocialMedia;
-using ODK.Data.Core.Deferred;
+﻿using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
 
 namespace ODK.Data.Core;

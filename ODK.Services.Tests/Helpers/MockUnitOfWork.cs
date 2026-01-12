@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Moq;
-using ODK.Core.Settings;
-using ODK.Core.SocialMedia;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;

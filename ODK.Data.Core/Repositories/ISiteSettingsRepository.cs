@@ -1,7 +1,7 @@
-﻿using ODK.Data.Core.Deferred;
-using ODK.Data.Core.Repositories;
+﻿using ODK.Core.Settings;
+using ODK.Data.Core.Deferred;
 
-namespace ODK.Core.Settings;
+namespace ODK.Data.Core.Repositories;
 
 public interface ISiteSettingsRepository : IWriteRepository<SiteSettings>
 {

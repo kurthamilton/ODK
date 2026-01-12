@@ -5,7 +5,6 @@ using ODK.Core.Topics;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
-using ODK.Data.EntityFramework.Queries;
 
 namespace ODK.Data.EntityFramework.Repositories;
 

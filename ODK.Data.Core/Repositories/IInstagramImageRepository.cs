@@ -1,7 +1,7 @@
-﻿using ODK.Data.Core.Deferred;
-using ODK.Data.Core.Repositories;
+﻿using ODK.Core.SocialMedia;
+using ODK.Data.Core.Deferred;
 
-namespace ODK.Core.SocialMedia;
+namespace ODK.Data.Core.Repositories;
 
 public interface IInstagramImageRepository : IWriteRepository<InstagramImage>
 {

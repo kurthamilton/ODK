@@ -4,7 +4,7 @@ using ODK.Services.Chapters.Models;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Chapters;
 
-namespace ODK.Web.Razor.Pages.Chapters.Admin.Chapters;
+namespace ODK.Web.Razor.Pages.Chapters.Admin.Members;
 
 public class PropertyCreateModel : AdminPageModel
 {

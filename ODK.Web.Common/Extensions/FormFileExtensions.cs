@@ -8,11 +8,9 @@ public static class FormFileExtensions
 {
     public static async Task<byte[]> ToByteArrayAsync(this IFormFile file)
     {
-        using (MemoryStream stream = new MemoryStream())
-        {
-            await file.CopyToAsync(stream);
+        using MemoryStream stream = new MemoryStream();
+        await file.CopyToAsync(stream);
 
-            return stream.ToArray();
-        }
+        return stream.ToArray();
     }
 }

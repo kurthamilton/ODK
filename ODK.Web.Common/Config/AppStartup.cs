@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using ODK.Core.Web;
 using ODK.Web.Common.Config.Settings;
 using ODK.Web.Common.Services;
 
