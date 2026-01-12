@@ -1,0 +1,12 @@
+﻿@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Login
+@model LoginBodyViewModel
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Breadcrumbs = Model.Breadcrumbs,
+    Content = Model.Content,
+    ContentFunc = Model.ContentFunc,
+    Title = Model.Title,
+    WidthClass = "col-12 col-md-8 col-lg-6 col-xl-4",
+})

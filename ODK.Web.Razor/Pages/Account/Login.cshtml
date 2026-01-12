@@ -11,10 +11,9 @@
     var viewModel = await AccountViewModelService.GetSiteLoginPage();
 }
 
-@await Html.PartialAsync("Components/_Body", new BodyViewModel
+@await Html.PartialAsync("Account/_LoginBody", new LoginBodyViewModel
 {
     Title = "Login",
-    WidthClass = "col-12 col-md-8 col-lg-6 col-xl-4",
     Content = await Html.PartialAsync("Account/_SiteLoginContent", new LoginViewModel
     {
         GoogleClientId = viewModel.GoogleClientId,
