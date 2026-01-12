@@ -1,4 +1,5 @@
-﻿using ODK.Core.Countries;
+﻿using ODK.Core.Chapters;
+using ODK.Core.Countries;
 using ODK.Core.Members;
 using ODK.Core.Payments;
 
@@ -10,6 +11,8 @@ internal class PaymentWebhookProcessingResult
     {
     }
 
+    internal Chapter? Chapter { get; init; }
+
     internal Currency? Currency { get; init; }
 
     internal Member? Member { get; init; }
@@ -19,9 +22,10 @@ internal class PaymentWebhookProcessingResult
     internal bool Success { get; init; }
 
     internal static PaymentWebhookProcessingResult Successful(
-        Member? member, Payment? payment, Currency? currency)
+        Member? member, Chapter? chapter, Payment? payment, Currency? currency)
         => new PaymentWebhookProcessingResult
         {
+            Chapter = chapter,
             Currency = currency,
             Member = member,
             Payment = payment,

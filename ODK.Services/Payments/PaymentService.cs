@@ -140,9 +140,9 @@ public class PaymentService : IPaymentService
         {
             var siteEmailSettings = await _unitOfWork.SiteEmailSettingsRepository
                 .Get(request.Platform).Run();
-            var (member, currency, payment) = (result.Member, result.Currency, result.Payment);
+            var (member, chapter, currency, payment) = (result.Member, result.Chapter, result.Currency, result.Payment);
 
-            await _memberEmailService.SendPaymentNotification(request, member, payment, currency, siteEmailSettings);
+            await _memberEmailService.SendPaymentNotification(request, member, chapter, payment, currency, siteEmailSettings);
         }
     }
 
@@ -200,7 +200,7 @@ public class PaymentService : IPaymentService
 
         await _unitOfWork.SaveChangesAsync();
 
-        return PaymentWebhookProcessingResult.Successful(member: null, payment: null, currency: null);
+        return PaymentWebhookProcessingResult.Successful(member: null, chapter: null, payment: null, currency: null);
     }
 
     private async Task<PaymentWebhookProcessingResult> ProcessWebhookPayment(PaymentProviderWebhook webhook)
@@ -318,7 +318,7 @@ public class PaymentService : IPaymentService
             memberSubscriptionRecord.CancelledUtc = webhook.OriginatedUtc;
             _unitOfWork.MemberSubscriptionRecordRepository.Update(memberSubscriptionRecord);
             await _unitOfWork.SaveChangesAsync();
-            return PaymentWebhookProcessingResult.Successful(member: null, payment: null, currency: null);
+            return PaymentWebhookProcessingResult.Successful(member: null, chapter: null, payment: null, currency: null);
         }
 
         if (metadata.MemberId == null ||
@@ -653,7 +653,7 @@ public class PaymentService : IPaymentService
         await _unitOfWork.SaveChangesAsync();
 
         return PaymentWebhookProcessingResult.Successful(
-            member, payment, chapterPaymentSettings.Currency);
+            member, chapter, payment, chapterPaymentSettings.Currency);
     }
 
     private async Task<PaymentWebhookProcessingResult> UpdateMemberSiteSubscription(
@@ -700,6 +700,6 @@ public class PaymentService : IPaymentService
         await _unitOfWork.SaveChangesAsync();
 
         return PaymentWebhookProcessingResult.Successful(
-            member, payment, siteSubscriptionPrice.Currency);
+            member, chapter: null, payment, siteSubscriptionPrice.Currency);
     }
 }

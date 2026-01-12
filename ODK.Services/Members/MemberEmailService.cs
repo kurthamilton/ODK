@@ -747,6 +747,7 @@ public class MemberEmailService : IMemberEmailService
     public async Task SendPaymentNotification(
         ServiceRequest request,
         Member member,
+        Chapter? chapter,
         Payment payment,
         Currency currency,
         SiteEmailSettings settings)
@@ -759,7 +760,7 @@ public class MemberEmailService : IMemberEmailService
 
         await _emailService.SendEmail(
             request,
-            null,
+            chapter,
             [to],
             subject,
             body);

@@ -161,6 +161,7 @@ public interface IMemberEmailService
     Task SendPaymentNotification(
         ServiceRequest request,
         Member member,
+        Chapter? chapter,
         Payment payment,
         Currency currency,
         SiteEmailSettings settings);
