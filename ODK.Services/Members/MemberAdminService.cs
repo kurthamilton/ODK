@@ -317,16 +317,14 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     {
         var platform = request.Platform;
 
-        var (chapter, member, chapterPaymentSettings, payments) = await GetChapterAdminRestrictedContent(request,
+        var (chapter, member, payments) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.MemberRepository.GetById(memberId),
-            x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId),
             x => x.PaymentRepository.GetMemberChapterPayments(memberId, request.ChapterId));
 
         return new MemberPaymentsAdminPageViewModel
         {
             Chapter = chapter,
-            ChapterPaymentSettings = chapterPaymentSettings,
             Member = member,
             Payments = payments,
             Platform = platform,

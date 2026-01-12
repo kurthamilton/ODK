@@ -14,7 +14,5 @@ public interface IPaymentRepository : IReadWriteRepository<Payment>
 
     IDeferredQueryMultiple<PaymentMemberDto> GetMemberDtosByChapterId(Guid chapterId);
 
-    IDeferredQueryMultiple<PaymentMemberDto> GetMemberDtosPendingReconciliation(Guid chapterId);
-
     IDeferredQueryMultiple<PaymentDto> GetSitePaymentsByMemberId(Guid memberId);
 }

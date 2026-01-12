@@ -14,8 +14,6 @@ public class Payment : IDatabaseEntity
 
     public Guid CurrencyId { get; set; }
 
-    public bool ExemptFromReconciliation { get; set; }
-
     public string? ExternalId { get; set; }
 
     public Guid Id { get; set; }
@@ -23,10 +21,6 @@ public class Payment : IDatabaseEntity
     public Guid MemberId { get; set; }
 
     public DateTime? PaidUtc { get; set; }
-
-    public decimal? PaymentReconciliationAmount { get; set; }
-
-    public Guid? PaymentReconciliationId { get; set; }
 
     public string Reference { get; set; } = string.Empty;
 

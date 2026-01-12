@@ -83,7 +83,6 @@ internal class MockUnitOfWork : IUnitOfWork
     public INewMemberTopicRepository NewMemberTopicRepository => Mock.Object.NewMemberTopicRepository;
     public INotificationRepository NotificationRepository => Mock.Object.NotificationRepository;
     public IPaymentCheckoutSessionRepository PaymentCheckoutSessionRepository => Mock.Object.PaymentCheckoutSessionRepository;
-    public IPaymentReconciliationRepository PaymentReconciliationRepository => Mock.Object.PaymentReconciliationRepository;
     public IPaymentRepository PaymentRepository => Mock.Object.PaymentRepository;
     public IQueuedEmailRecipientRepository QueuedEmailRecipientRepository => Mock.Object.QueuedEmailRecipientRepository;
     public IQueuedEmailRepository QueuedEmailRepository => Mock.Object.QueuedEmailRepository;

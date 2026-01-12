@@ -30,8 +30,7 @@ public class PaymentRepository : ReadWriteRepositoryBase<Payment>, IPaymentRepos
             {
                 Chapter = chapter,
                 Currency = dto.Currency,
-                Payment = dto.Payment,
-                PaymentReconciliation = dto.PaymentReconciliation
+                Payment = dto.Payment
             };
 
         return query.DeferredMultiple();
@@ -53,30 +52,7 @@ public class PaymentRepository : ReadWriteRepositoryBase<Payment>, IPaymentRepos
             {
                 Currency = dto.Currency,
                 Member = member,
-                Payment = dto.Payment,
-                PaymentReconciliation = dto.PaymentReconciliation
-            };
-
-        return query.DeferredMultiple();
-    }
-
-    public IDeferredQueryMultiple<PaymentMemberDto> GetMemberDtosPendingReconciliation(Guid chapterId)
-    {
-        var query =
-            from dto in DtoQuery()
-            from member in Set<Member>()
-                .Where(x => x.Id == dto.Payment.MemberId)
-            where
-                dto.Payment.ChapterId == chapterId &&
-                dto.Payment.PaidUtc != null &&
-                dto.PaymentReconciliation == null &&
-                !dto.Payment.ExemptFromReconciliation
-            select new PaymentMemberDto
-            {
-                Currency = dto.Currency,
-                Member = member,
-                Payment = dto.Payment,
-                PaymentReconciliation = null
+                Payment = dto.Payment
             };
 
         return query.DeferredMultiple();
@@ -93,14 +69,10 @@ public class PaymentRepository : ReadWriteRepositoryBase<Payment>, IPaymentRepos
             from payment in Set()
             from currency in Set<Currency>()
                 .Where(x => x.Id == payment.CurrencyId)
-            from paymentReconciliation in Set<PaymentReconciliation>()
-                .Where(x => x.Id == payment.PaymentReconciliationId)
-                .DefaultIfEmpty()
             select new PaymentDto
             {
                 Currency = currency,
-                Payment = payment,
-                PaymentReconciliation = paymentReconciliation
+                Payment = payment
             };
 
         return query;

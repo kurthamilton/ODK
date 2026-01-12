@@ -12,17 +12,12 @@
                     <th data-sortable-sort>Member</th>
                     <th>Reference</th>
                     <th>Amount</th>
-
-                    @if (Model.PaymentSettings.UseSitePaymentProvider)
-                    {
-                        <th>Reconciliation</th>
-                    }
                 </tr>
             </thead>
             <tbody>
                 @foreach (var dto in Model.Payments)
                 {
-                    var (currency, member, payment, reconciliation) = (dto.Currency, dto.Member, dto.Payment, dto.PaymentReconciliation);
+                    var (currency, member, payment) = (dto.Currency, dto.Member, dto.Payment);
 
                     if (payment.PaidUtc == null)
                     {
@@ -42,25 +37,7 @@
                         <td>@payment.Reference</td>
                         <td>
                             @currency.ToAmountString(payment.Amount)
-                        </td>
-                        @if (Model.PaymentSettings.UseSitePaymentProvider)
-                        {
-                            <td>
-                                @if (reconciliation != null)
-                                {
-                                    <span>@currency.ToAmountString(payment.PaymentReconciliationAmount ?? 0)</span>
-                                    <span>(@reconciliation.PaymentReference)</span>
-                                }
-                                else if (payment.ExemptFromReconciliation)
-                                {
-                                    <span class="text-muted">Exempt</span>
-                                }
-                                else
-                                {
-                                    <span class="text-danger">PENDING</span>
-                                }
-                            </td>
-                        }
+                        </td>                        
                     </tr>
                 }
             </tbody>

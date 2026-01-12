@@ -14,17 +14,12 @@
                 <th>Date</th>
                 <th>Amount</th>
                 <th>Reference</th>
-
-                @if (Model.ChapterPaymentSettings.UseSitePaymentProvider)
-                {
-                    <th>Reconciliation</th>
-                }
             </tr>
         </thead>
         <tbody>
             @foreach (var dto in payments)
             {
-                var (payment, currency, reconciliation) = (dto.Payment, dto.Currency, dto.PaymentReconciliation);
+                var (payment, currency) = (dto.Payment, dto.Currency);
 
                 if (payment.PaidUtc == null)
                 {
@@ -41,21 +36,6 @@
                     <td>
                         @payment.Reference
                     </td>
-
-                    @if (Model.ChapterPaymentSettings.UseSitePaymentProvider)
-                    {
-                        <td>
-                            @if (reconciliation != null)
-                            {
-                                <span>@currency.ToAmountString(payment.PaymentReconciliationAmount ?? 0)</span>
-                                <span>(@reconciliation.PaymentReference)</span>
-                            }
-                            else
-                            {
-                                @:-
-                            }
-                        </td>
-                    }
                 </tr>
             }
         </tbody>
