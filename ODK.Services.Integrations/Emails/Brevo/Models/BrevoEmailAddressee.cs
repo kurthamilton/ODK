@@ -1,8 +1,23 @@
-﻿namespace ODK.Services.Integrations.Emails.Brevo.Models;
+﻿using ODK.Core.Emails;
+
+namespace ODK.Services.Integrations.Emails.Brevo.Models;
 
 public class BrevoEmailAddressee
 {
-    public required string Email { get; init; }
+    public BrevoEmailAddressee(string email)
+    {
+        Email = email;
+    }
 
-    public string? Name { get; init; }
+    public BrevoEmailAddressee(EmailAddressee addressee)
+        : this(addressee.Address)
+    {
+        Name = !string.IsNullOrEmpty(addressee.Name)
+            ? addressee.Name
+            : null;
+    }
+
+    public string Email { get; }
+
+    public string? Name { get; }
 }

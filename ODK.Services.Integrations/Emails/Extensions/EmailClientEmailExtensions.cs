@@ -1,5 +1,6 @@
 ﻿using MimeKit;
 using MimeKit.Text;
+using ODK.Core.Emails;
 using ODK.Services.Emails;
 using ODK.Services.Integrations.Emails.Brevo.Models;
 
@@ -11,39 +12,24 @@ internal static class EmailClientEmailExtensions
         this EmailClientEmail email,
         string? debugEmailAddress)
     {
-        var sender = new BrevoEmailAddressee
-        {
-            Email = email.From.Address,
-            Name = !string.IsNullOrEmpty(email.From.Name) ? email.From.Name : null
-        };
+        var sender = new BrevoEmailAddressee(email.From);
 
         var to = new List<BrevoEmailAddressee>();
         var bcc = new List<BrevoEmailAddressee>();
 
         if (!string.IsNullOrEmpty(debugEmailAddress))
         {
-            to.Add(new BrevoEmailAddressee
-            {
-                Email = debugEmailAddress
-            });
+            to.Add(new BrevoEmailAddressee(debugEmailAddress));
         }
         else if (email.To.Count == 1)
         {
-            to.Add(new BrevoEmailAddressee
-            {
-                Email = email.To.First().Address,
-                Name = email.To.First().Name
-            });
+            var toAddressee = email.To.First();
+            to.Add(new BrevoEmailAddressee(toAddressee));
         }
         else
         {
             to.Add(sender);
-
-            bcc.AddRange(email.To.Select(x => new BrevoEmailAddressee
-            {
-                Email = x.Address,
-                Name = x.Name
-            }));
+            bcc.AddRange(email.To.Select(x => new BrevoEmailAddressee(x)));
         }
 
         return new BrevoTransactionalEmailRequest
