@@ -3,6 +3,7 @@ using ODK.Core.Payments;
 using ODK.Core.Platforms;
 using ODK.Core.Settings;
 using ODK.Data.Core;
+using ODK.Services.Settings.Models;
 
 namespace ODK.Services.Settings;
 
@@ -83,20 +84,16 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
             x => x.SitePaymentSettingsRepository.GetById(id));
     }
 
-    public async Task<ServiceResult> UpdateEmailSettings(
-        MemberServiceRequest request,
-        string fromEmailAddress,
-        string fromEmailName,
-        string emailTitle,
-        string contactEmailAddress)
+    public async Task<ServiceResult> UpdateEmailSettings(MemberServiceRequest request, UpdateEmailSettings model)
     {
         var settings = await GetSuperAdminRestrictedContent(request.CurrentMemberId,
             x => x.SiteEmailSettingsRepository.Get(request.Platform));
 
-        settings.ContactEmailAddress = contactEmailAddress;
-        settings.FromEmailAddress = fromEmailAddress;
-        settings.FromName = fromEmailName;
-        settings.Title = emailTitle;
+        settings.ContactEmailAddress = model.ContactEmailAddress;
+        settings.FromEmailAddress = model.FromEmailAddress;
+        settings.FromName = model.FromEmailName;
+        settings.PlatformTitle = model.PlatformTitle;
+        settings.Title = model.Title;
 
         _unitOfWork.SiteEmailSettingsRepository.Update(settings);
         await _unitOfWork.SaveChangesAsync();

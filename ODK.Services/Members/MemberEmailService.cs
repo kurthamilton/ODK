@@ -286,7 +286,7 @@ public class MemberEmailService : IMemberEmailService
         var subject = "{title} - Your group has been approved 🚀";
 
         var body = new EmailBodyBuilder()
-            .AddParagraph("Your group <strong>{chapter.name}</strong> has been approved and you are ready to go!")
+            .AddParagraph("Your group <strong>{chapter.fullName}</strong> has been approved and you are ready to go!")
             .AddParagraphLink("url")
             .ToString();
 
@@ -319,9 +319,9 @@ public class MemberEmailService : IMemberEmailService
             { "url", url }
         };
 
-        var subject = "{title} - You have been approved by {chapter.name}";
+        var subject = "{title} - You have been approved by {chapter.fullName}";
         var body = new EmailBodyBuilder()
-            .AddParagraph("Your application to join {chapter.name} has been approved")
+            .AddParagraph("Your application to join {chapter.fullName} has been approved")
             .AddParagraphLink("url")
             .ToString();
 
@@ -454,7 +454,7 @@ public class MemberEmailService : IMemberEmailService
         var subject = "{title} - you have been removed from a group";
 
         var bodyBuilder = new EmailBodyBuilder()
-            .AddParagraph("You have been removed from the {chapter.name} group");
+            .AddParagraph("You have been removed from the {chapter.fullName} group");
 
         if (!string.IsNullOrEmpty(reason))
         {
@@ -496,10 +496,10 @@ public class MemberEmailService : IMemberEmailService
             return;
         }
 
-        var subject = "{title} - {member.name} has left {chapter.name}";
+        var subject = "{title} - {member.name} has left {chapter.fullName}";
 
         var bodyBuilder = new EmailBodyBuilder()
-            .AddParagraph("{member.name} has left {chapter.name}")
+            .AddParagraph("{member.name} has left {chapter.fullName}")
             .AddParagraph("They had been a member since {joined}");
 
         if (!string.IsNullOrEmpty(reason))
@@ -546,7 +546,6 @@ public class MemberEmailService : IMemberEmailService
         var parameters = new Dictionary<string, string>
         {
             { "chapter.description", texts.Description ?? string.Empty },
-            { "chapter.name", chapter.GetDisplayName(request.Platform) },
             { "url", url }
         };
 
@@ -556,7 +555,7 @@ public class MemberEmailService : IMemberEmailService
 
         var body = new EmailBodyBuilder()
             .AddParagraph("A group has just been created")
-            .AddParagraph("Name: {chapter.name}")
+            .AddParagraph("Name: {chapter.fullName}")
             .AddParagraph("{chapter.description}")
             .AddParagraphLink("url")
             .ToString();

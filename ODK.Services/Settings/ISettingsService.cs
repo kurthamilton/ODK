@@ -2,6 +2,7 @@
 using ODK.Core.Payments;
 using ODK.Core.Platforms;
 using ODK.Core.Settings;
+using ODK.Services.Settings.Models;
 
 namespace ODK.Services.Settings;
 
@@ -26,12 +27,7 @@ public interface ISettingsService
 
     Task<SitePaymentSettings> GetSitePaymentSettings(Guid currentMemberId, Guid id);
 
-    Task<ServiceResult> UpdateEmailSettings(
-        MemberServiceRequest request,
-        string fromEmailAddress,
-        string fromEmailName,
-        string emailTitle,
-        string contactEmailAddress);
+    Task<ServiceResult> UpdateEmailSettings(MemberServiceRequest request, UpdateEmailSettings model);
 
     Task<ServiceResult> UpdateInstagramSettings(Guid currentMemberId, string scraperUserAgent);
 

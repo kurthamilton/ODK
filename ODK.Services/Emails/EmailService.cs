@@ -285,12 +285,14 @@ public class EmailService : IEmailService
         var parameters = options.Parameters ?? new Dictionary<string, string>();
         if (!parameters.ContainsKey("chapter.name"))
         {
-            parameters["chapter.name"] = options.Chapter?.GetDisplayName(platform) ?? siteSettings.Title;
+            parameters["chapter.name"] = StringUtils.Coalesce(
+                options.Chapter?.GetDisplayName(platform), siteSettings.PlatformTitle);
         }
 
         if (!parameters.ContainsKey("chapter.fullName"))
         {
-            parameters["chapter.fullName"] = options.Chapter?.FullName ?? siteSettings.Title;
+            parameters["chapter.fullName"] = StringUtils.Coalesce(
+                options.Chapter?.FullName, siteSettings.PlatformTitle);
         }
 
         var urlProvider = _urlProviderFactory.Create(request);

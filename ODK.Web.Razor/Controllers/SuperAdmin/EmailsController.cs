@@ -4,6 +4,7 @@ using ODK.Core.Emails;
 using ODK.Services.Authentication;
 using ODK.Services.Emails;
 using ODK.Services.Settings;
+using ODK.Services.Settings.Models;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.SuperAdmin;
 using ODK.Web.Razor.Services;
@@ -37,12 +38,16 @@ public class EmailsController : OdkControllerBase
     [HttpPost("superadmin/emails/settings")]
     public async Task<IActionResult> UpdateSettings(SiteEmailSettingsViewModel viewModel)
     {
-        await _settingsService.UpdateEmailSettings(
-            MemberServiceRequest,
-            viewModel.FromEmailAddress,
-            viewModel.FromEmailName,
-            viewModel.Title,
-            viewModel.ContactEmailAddress);
+        var model = new UpdateEmailSettings
+        {
+            ContactEmailAddress = viewModel.ContactEmailAddress,
+            FromEmailAddress = viewModel.FromEmailAddress,
+            FromEmailName = viewModel.FromEmailName,
+            PlatformTitle = viewModel.PlatformTitle,
+            Title = viewModel.Title
+        };
+
+        await _settingsService.UpdateEmailSettings(MemberServiceRequest, model);
         AddFeedback("Email settings updated", FeedbackType.Success);
         return RedirectToReferrer();
     }
