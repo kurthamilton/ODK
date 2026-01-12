@@ -285,12 +285,12 @@ public class EmailService : IEmailService
         var parameters = options.Parameters ?? new Dictionary<string, string>();
         if (!parameters.ContainsKey("chapter.name"))
         {
-            parameters["chapter.name"] = options.Chapter?.GetDisplayName(platform) ?? string.Empty;
+            parameters["chapter.name"] = options.Chapter?.GetDisplayName(platform) ?? siteSettings.Title;
         }
 
         if (!parameters.ContainsKey("chapter.fullName"))
         {
-            parameters["chapter.fullName"] = options.Chapter?.FullName ?? string.Empty;
+            parameters["chapter.fullName"] = options.Chapter?.FullName ?? siteSettings.Title;
         }
 
         var urlProvider = _urlProviderFactory.Create(request);
@@ -303,6 +303,16 @@ public class EmailService : IEmailService
         if (!parameters.ContainsKey("platform.baseurl"))
         {
             parameters["platform.baseurl"] = urlProvider.BaseUrl();
+        }
+
+        if (!parameters.ContainsKey("theme.body.background"))
+        {
+            parameters["theme.body.background"] = _settings.DefaultBodyBackground;
+        }
+
+        if (!parameters.ContainsKey("theme.body.color"))
+        {
+            parameters["theme.body.color"] = _settings.DefaultBodyColor;
         }
 
         if (!parameters.ContainsKey("theme.header.background"))

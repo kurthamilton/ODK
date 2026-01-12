@@ -153,8 +153,10 @@ public static class DependencyConfig
         services.AddScoped<IEmailService, EmailService>();
         services.AddSingleton(new EmailServiceSettings
         {
-            DefaultHeaderBackground = appSettings.Theme.Header.Background,
-            DefaultHeaderColor = appSettings.Theme.Header.Color
+            DefaultBodyBackground = appSettings.Emails.Theme.Body.Background,
+            DefaultBodyColor = appSettings.Emails.Theme.Body.Color,
+            DefaultHeaderBackground = appSettings.Emails.Theme.Header.Background,
+            DefaultHeaderColor = appSettings.Emails.Theme.Header.Color
         });
         services.AddScoped<IGeolocationService, GoogleGeolocationService>();
         services.AddSingleton(new GoogleGeolocationServiceSettings

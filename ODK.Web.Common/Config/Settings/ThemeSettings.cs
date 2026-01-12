@@ -2,5 +2,7 @@
 
 public class ThemeSettings
 {
-    public required ThemeHeaderSettings Header { get; init; }
+    public required string Background { get; init; }
+
+    public required string Color { get; init; }
 }
