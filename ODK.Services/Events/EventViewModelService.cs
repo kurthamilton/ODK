@@ -120,6 +120,11 @@ public class EventViewModelService : IEventViewModelService
         var paymentCheckoutSessionId = Guid.NewGuid();
         var paymentId = Guid.NewGuid();
 
+        eventTicketPurchase ??= new EventTicketPurchase
+        {
+            Id = Guid.NewGuid()
+        }
+
         var metadata = new PaymentMetadataModel(
             reason,
             currentMember,

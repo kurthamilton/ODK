@@ -40,11 +40,11 @@ public class PaymentMetadataModel
     public PaymentMetadataModel(
         PaymentReasonType reason,
         Member member,
-        Event @event,
+        EventTicketPurchase eventTicketPurchase,
         Guid paymentCheckoutSessionId,
         Guid paymentId)
     {
-        EventId = @event.Id;
+        EventTicketPurchaseId = eventTicketPurchase.Id;
         MemberId = member.Id;
         PaymentCheckoutSessionId = paymentCheckoutSessionId;
         PaymentId = paymentId;
@@ -59,7 +59,7 @@ public class PaymentMetadataModel
 
     public Guid? ChapterSubscriptionId { get; private set; }
 
-    public Guid? EventId { get; private set; }
+    public Guid? EventTicketPurchaseId { get; private set; }
 
     public Guid? MemberId { get; private set; }
 
@@ -75,7 +75,7 @@ public class PaymentMetadataModel
     {
         dictionary.TryGetGuidValue("ChapterId", out var chapterId);
         dictionary.TryGetGuidValue("ChapterSubscriptionId", out var chapterSubscriptionId);
-        dictionary.TryGetGuidValue("EventId", out var eventId);
+        dictionary.TryGetGuidValue("EventTicketPurchaseId", out var eventTicketPurchaseId);
         dictionary.TryGetGuidValue("MemberId", out var memberId);
         dictionary.TryGetGuidValue("PaymentCheckoutSessionId", out var paymentCheckoutSessionId);
         dictionary.TryGetGuidValue("PaymentId", out var paymentId);
@@ -86,7 +86,7 @@ public class PaymentMetadataModel
         {
             ChapterId = chapterId,
             ChapterSubscriptionId = chapterSubscriptionId,
-            EventId = eventId,
+            EventTicketPurchaseId = eventTicketPurchaseId,
             MemberId = memberId,
             PaymentCheckoutSessionId = paymentCheckoutSessionId,
             PaymentId = paymentId,
@@ -109,9 +109,9 @@ public class PaymentMetadataModel
             dictionary.Add("ChapterSubscriptionId", ChapterSubscriptionId.Value.ToString());
         }
 
-        if (EventId != null)
+        if (EventTicketPurchaseId != null)
         {
-            dictionary.Add("EventId", EventId.Value.ToString());
+            dictionary.Add("EventTicketPurchaseId", EventTicketPurchaseId.Value.ToString());
         }
 
         if (MemberId != null)
