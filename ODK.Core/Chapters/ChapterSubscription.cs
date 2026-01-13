@@ -32,7 +32,7 @@ public class ChapterSubscription : IDatabaseEntity, IChapterEntity
     public SubscriptionType Type { get; set; }
 
     public bool IsVisibleToMembers(
-        ChapterPaymentSettings chapterPaymentSettings, IEnumerable<SitePaymentSettings> sitePaymentSettings)
+        ChapterPaymentSettings? chapterPaymentSettings, IEnumerable<SitePaymentSettings> sitePaymentSettings)
     {
         if (Disabled)
         {
@@ -43,14 +43,14 @@ public class ChapterSubscription : IDatabaseEntity, IChapterEntity
     }
 
     public bool IsVisibleToAdmins(
-        ChapterPaymentSettings chapterPaymentSettings, IEnumerable<SitePaymentSettings> sitePaymentSettings)
+        ChapterPaymentSettings? chapterPaymentSettings, IEnumerable<SitePaymentSettings> sitePaymentSettings)
     {
         if (SitePaymentSettingId != null)
         {
             return sitePaymentSettings.First(x => x.Id == SitePaymentSettingId.Value).Enabled;
         }
 
-        if (chapterPaymentSettings.UseSitePaymentProvider)
+        if (chapterPaymentSettings == null || chapterPaymentSettings.UseSitePaymentProvider)
         {
             // SitePaymentSettingId not set, cannot be used
             return false;
@@ -58,8 +58,6 @@ public class ChapterSubscription : IDatabaseEntity, IChapterEntity
 
         return true;
     }
-
-
 
     public string ToReference() => $"Subscription: {Name}";
 }

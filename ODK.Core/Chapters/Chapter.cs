@@ -14,7 +14,7 @@ public class Chapter : IDatabaseEntity, ITimeZoneEntity, ICloneable<Chapter>
 
     public string? BannerImageUrl { get; set; }
 
-    public Guid? CountryId { get; set; }
+    public Guid CountryId { get; set; }
 
     public DateTime CreatedUtc { get; set; }
 

@@ -8,4 +8,8 @@ public interface ICurrencyRepository : IReadWriteRepository<Currency>
     IDeferredQueryMultiple<Currency> GetAll();
 
     IDeferredQuerySingleOrDefault<Currency> GetByCode(string code);
+
+    IDeferredQuerySingle<Currency> GetByChapterId(Guid chapterId);
+
+    IDeferredQuerySingle<Currency> GetByCountryId(Guid countryId);
 }
