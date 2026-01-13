@@ -1,14 +1,12 @@
 ﻿@page "/{chapterName}/Account/Activate"
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
-@using ODK.Web.Razor.Services
 @model ActivateModel
-@inject IRequestStore RequestStore
 @{
     Layout = "_OdkChapterLayout";
     Model.Title = "Activate account";
 
-    var chapter = await RequestStore.GetChapter();
+    var chapter = await Model.GetChapter();
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

@@ -20,6 +20,7 @@ using ODK.Services.Events;
 using ODK.Services.Logging;
 using ODK.Services.Members;
 using ODK.Services.Notifications;
+using ODK.Services.Payments;
 using ODK.Services.Tasks;
 using ODK.Services.Tests.Helpers;
 
@@ -144,7 +145,7 @@ public static class EventAdminServiceTests
         var mock = new Mock<IChapterPaymentSettingsRepository>();
 
         mock.Setup(x => x.GetByChapterId(It.IsAny<Guid>()))
-            .Returns(new MockDeferredQuerySingle<ChapterPaymentSettings>(new()));
+            .Returns(new MockDeferredQuerySingleOrDefault<ChapterPaymentSettings>(new()));
 
         return mock.Object;
     }
@@ -308,6 +309,7 @@ public static class EventAdminServiceTests
             Mock.Of<IHtmlSanitizer>(),
             Mock.Of<IMemberEmailService>(),
             Mock.Of<IBackgroundTaskService>(),
-            Mock.Of<ILoggingService>());
+            Mock.Of<ILoggingService>(),
+            Mock.Of<IPaymentService>());
     }
 }

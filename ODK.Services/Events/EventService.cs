@@ -1,5 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 using ODK.Core.Chapters;
+using ODK.Core.Countries;
 using ODK.Core.Events;
 using ODK.Core.Features;
 using ODK.Core.Members;
@@ -451,11 +452,16 @@ public class EventService : IEventService
         Member member,
         decimal amount,
         string cardToken,
-        ChapterPaymentSettings chapterPaymentSettings,
+        ChapterPaymentSettings? chapterPaymentSettings,
         IReadOnlyCollection<SitePaymentSettings> sitePaymentSettings,
         ChapterPaymentAccount? chapterPaymentAccount)
     {
-        var (chapterId, currency) = (@event.ChapterId, chapterPaymentSettings.Currency);
+        if (@event.TicketSettings == null)
+        {
+            return ServiceResult<Payment>.Failure("Event is not ticketed");
+        }
+
+        var (chapterId, currency) = (@event.ChapterId, @event.TicketSettings.Currency);
 
         var payment = new Payment
         {

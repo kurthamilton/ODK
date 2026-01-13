@@ -15,6 +15,8 @@
     {
         return;
     }
+
+    var currency = Model.Event.TicketSettings.Currency;
 }
 
 <div class="table-responsive">
@@ -53,18 +55,18 @@
                         <td>
                             @if (ticketPurchase.DepositPaid != null)
                             {
-                                @Model.PaymentSettings.Currency.ToAmountString(ticketPurchase.DepositPaid.Value)
+                                @currency.ToAmountString(ticketPurchase.DepositPaid.Value)
                             }                            
                         </td>
                     }
                     <td>
-                        @Model.PaymentSettings.Currency.ToAmountString(ticketPurchase.TotalPaid)                                                
+                        @currency.ToAmountString(ticketPurchase.TotalPaid)
                     </td>
                     <td>
                         @if (ticketPurchase.PurchasedUtc == null)
                         {
                             var remaining = Model.Event.TicketSettings.Cost - ticketPurchase.TotalPaid;
-                            @Model.PaymentSettings.Currency.ToAmountString(remaining)
+                            @currency.ToAmountString(remaining)
                         }
                     </td>
                 </tr>

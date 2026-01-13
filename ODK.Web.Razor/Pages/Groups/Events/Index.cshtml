@@ -7,7 +7,7 @@
     Layout = "_HomeLayout";
 
     var viewModel = await ChapterViewModelService.GetGroupEventsPage(
-        Model.ServiceRequest, Model.CurrentMemberIdOrDefault, Model.Slug);
+        Model.ServiceRequest, Model.CurrentMemberIdOrDefault, Model.Chapter);
 
     Model.Title = $"Events | {viewModel.Chapter.GetDisplayName(Model.Platform)}";
 }

@@ -3,13 +3,13 @@
 @using ODK.Core.Pages
 @using ODK.Services.Chapters
 @using ODK.Web.Razor.Models.Groups
-@model ODK.Web.Razor.Pages.Groups.ContactModel
+@model ContactModel
 @inject IChapterViewModelService ChapterViewModelService
 @{
     Layout = "_HomeLayout";
 
     var viewModel = await ChapterViewModelService.GetGroupContactPage(
-        Model.ServiceRequest, Model.CurrentMemberIdOrDefault, Model.Slug);
+        Model.ServiceRequest, Model.CurrentMemberIdOrDefault, Model.Chapter);
 
     var chapterPage = viewModel.ChapterPages.FirstOrDefault(x => x.PageType == PageType.Contact);
     if (chapterPage?.Hidden == true)

@@ -164,9 +164,6 @@ public interface IChapterAdminService
 
     Task UpdateChapterRedirectUrl(MemberChapterServiceRequest request, string? redirectUrl);
 
-    Task<ServiceResult> UpdateChapterSiteSubscription(MemberChapterServiceRequest request,
-        Guid siteSubscriptionId, SiteSubscriptionFrequency frequency);
-
     Task<ServiceResult> UpdateChapterSubscription(MemberChapterServiceRequest request,
         Guid subscriptionId, CreateChapterSubscription model);
 

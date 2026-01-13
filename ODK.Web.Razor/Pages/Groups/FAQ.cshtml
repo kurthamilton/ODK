@@ -1,13 +1,13 @@
 ﻿@page "/groups/{slug}/faq"
 @using ODK.Services.Chapters
 @using ODK.Web.Razor.Models.Groups
-@model ODK.Web.Razor.Pages.Groups.FAQModel
+@model FAQModel
 @inject IChapterViewModelService ChapterViewModelService
 @{
     Layout = "_HomeLayout";
 
     var viewModel = await ChapterViewModelService.GetGroupQuestionsPage(
-        Model.ServiceRequest, Model.CurrentMemberIdOrDefault, Model.Slug);
+        Model.ServiceRequest, Model.CurrentMemberIdOrDefault, Model.Chapter);
 
     Model.Title = $"FAQ | {viewModel.Chapter.GetDisplayName(Model.Platform)}";
 }

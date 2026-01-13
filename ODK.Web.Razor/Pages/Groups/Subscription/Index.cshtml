@@ -8,7 +8,8 @@
 @{
     Layout = "_HomeLayout";
 
-    var viewModel = await ChapterViewModelService.GetGroupSubscriptionPage(Model.MemberServiceRequest, Model.Slug);
+    var viewModel = await ChapterViewModelService.GetGroupSubscriptionPage(
+        Model.MemberServiceRequest, Model.Chapter);
 
     Model.Title = $"Subscription | Profile | {viewModel.Chapter.GetDisplayName(Model.Platform)}";
 }

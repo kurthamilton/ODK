@@ -7,7 +7,7 @@
     Layout = "_HomeLayout";
 
     var viewModel = await ChapterViewModelService.GetGroupPastEventsPage(
-        Model.ServiceRequest, Model.CurrentMemberIdOrDefault, Model.Slug);
+        Model.ServiceRequest, Model.CurrentMemberIdOrDefault, Model.Chapter);
 }
 
 @await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel

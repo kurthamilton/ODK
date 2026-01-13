@@ -6,15 +6,13 @@
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
-@using ODK.Web.Razor.Services
 @model EmailsModel
 @inject IAccountViewModelService AccountViewModelService
-@inject IRequestStore RequestStore
 @{
     Layout = "_OdkChapterLayout";
     Model.Title = "Email preferences";
 
-    var chapter = await RequestStore.GetChapter();
+    var chapter = await Model.GetChapter();
     var viewModel = await AccountViewModelService.GetMemberEmailPreferencesPage(Model.MemberServiceRequest);
 }
 

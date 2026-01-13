@@ -188,8 +188,10 @@ public class ChapterViewModelService : IChapterViewModelService
         };
     }
 
-    public async Task<ChapterAboutPageViewModel> GetChapterAboutPage(Guid chapterId)
+    public async Task<ChapterAboutPageViewModel> GetChapterAboutPage(Chapter chapter)
     {
+        var chapterId = chapter.Id;
+
         var (chapterPage, texts) = await _unitOfWork.RunAsync(
             x => x.ChapterPageRepository.GetByChapterId(chapterId, PageType.About),
             x => x.ChapterTextsRepository.GetByChapterId(chapterId));
@@ -237,12 +239,9 @@ public class ChapterViewModelService : IChapterViewModelService
     }
 
     public async Task<GroupContactPageViewModel> GetGroupContactPage(
-        ServiceRequest request, Guid? currentMemberId, string slug)
+        ServiceRequest request, Guid? currentMemberId, Chapter chapter)
     {
         var platform = request.Platform;
-
-        var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
-        OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
 
         var (
             currentMember,
@@ -294,12 +293,9 @@ public class ChapterViewModelService : IChapterViewModelService
     }
 
     public async Task<GroupConversationPageViewModel> GetGroupConversationPage(
-        MemberServiceRequest request, string slug, Guid conversationId)
+        MemberServiceRequest request, Chapter chapter, Guid conversationId)
     {
         var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
-
-        var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
-        OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
 
         var (
             currentMember,
@@ -366,12 +362,9 @@ public class ChapterViewModelService : IChapterViewModelService
     }
 
     public async Task<GroupEventsPageViewModel> GetGroupEventsPage(
-        ServiceRequest request, Guid? currentMemberId, string slug)
+        ServiceRequest request, Guid? currentMemberId, Chapter chapter)
     {
         var platform = request.Platform;
-
-        var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
-        OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
 
         var (
             currentMember,
@@ -438,12 +431,9 @@ public class ChapterViewModelService : IChapterViewModelService
         };
     }
 
-    public async Task<GroupPageViewModel> GetGroupPage(ServiceRequest request, Guid? currentMemberId, string slug)
+    public async Task<GroupPageViewModel> GetGroupPage(ServiceRequest request, Guid? currentMemberId, Chapter chapter)
     {
         var platform = request.Platform;
-
-        var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
-        OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
 
         var (
             currentMember,
@@ -477,12 +467,9 @@ public class ChapterViewModelService : IChapterViewModelService
     }
 
     public async Task<GroupEventsPageViewModel> GetGroupPastEventsPage(
-        ServiceRequest request, Guid? currentMemberId, string slug)
+        ServiceRequest request, Guid? currentMemberId, Chapter chapter)
     {
         var platform = request.Platform;
-
-        var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
-        OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
 
         var (
             currentMember,
@@ -550,12 +537,9 @@ public class ChapterViewModelService : IChapterViewModelService
     }
 
     public async Task<GroupHomePageViewModel> GetGroupHomePage(
-        ServiceRequest request, Guid? currentMemberId, string slug)
+        ServiceRequest request, Guid? currentMemberId, Chapter chapter)
     {
         var platform = request.Platform;
-
-        var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
-        OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
 
         var (
             currentMember,
@@ -663,12 +647,9 @@ public class ChapterViewModelService : IChapterViewModelService
         };
     }
 
-    public async Task<GroupJoinPageViewModel> GetGroupJoinPage(ServiceRequest request, Guid? currentMemberId, string slug)
+    public async Task<GroupJoinPageViewModel> GetGroupJoinPage(ServiceRequest request, Guid? currentMemberId, Chapter chapter)
     {
         var platform = request.Platform;
-
-        var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
-        OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
 
         var (
             currentMember,
@@ -713,12 +694,9 @@ public class ChapterViewModelService : IChapterViewModelService
         };
     }
 
-    public async Task<GroupProfilePageViewModel> GetGroupProfilePage(MemberServiceRequest request, string slug)
+    public async Task<GroupProfilePageViewModel> GetGroupProfilePage(MemberServiceRequest request, Chapter chapter)
     {
         var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
-
-        var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
-        OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
 
         var (
             currentMember,
@@ -757,12 +735,9 @@ public class ChapterViewModelService : IChapterViewModelService
     }
 
     public async Task<GroupQuestionsPageViewModel> GetGroupQuestionsPage(
-        ServiceRequest request, Guid? currentMemberId, string slug)
+        ServiceRequest request, Guid? currentMemberId, Chapter chapter)
     {
         var platform = request.Platform;
-
-        var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
-        OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
 
         var (
             currentMember,
@@ -796,12 +771,9 @@ public class ChapterViewModelService : IChapterViewModelService
     }
 
     public async Task<GroupSubscriptionPageViewModel> GetGroupSubscriptionPage(
-        MemberServiceRequest request, string slug)
+        MemberServiceRequest request, Chapter chapter)
     {
         var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
-
-        var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
-        OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
 
         var (
             currentMember,
@@ -809,7 +781,7 @@ public class ChapterViewModelService : IChapterViewModelService
             ownerSubscription,
             hasProperties,
             hasQuestions,
-            chapterPaymentSettings,
+            currency,
             sitePaymentSettings,
             chapterPages
         ) = await _unitOfWork.RunAsync(
@@ -818,7 +790,7 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
-            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapter.Id),
+            x => x.CurrencyRepository.GetByChapterId(chapter.Id),
             x => x.SitePaymentSettingsRepository.GetActive(),
             x => x.ChapterPageRepository.GetByChapterId(chapter.Id));
 
@@ -832,17 +804,15 @@ public class ChapterViewModelService : IChapterViewModelService
             IsAdmin = adminMembers.Any(x => x.MemberId == currentMemberId),
             IsMember = currentMember.IsMemberOf(chapter.Id) == true,
             OwnerSubscription = ownerSubscription,
-            Currency = chapterPaymentSettings.Currency,
+            Currency = currency,
             Platform = platform,
             SitePaymentSettings = sitePaymentSettings
         };
     }
 
-    public async Task<ChapterHomePageViewModel> GetHomePage(ServiceRequest request, Guid? currentMemberId, string chapterName)
+    public async Task<ChapterHomePageViewModel> GetHomePage(ServiceRequest request, Guid? currentMemberId, Chapter chapter)
     {
         var platform = request.Platform;
-
-        var chapter = await GetChapter(chapterName);
 
         var today = chapter.TodayUtc();
 
@@ -1006,12 +976,6 @@ public class ChapterViewModelService : IChapterViewModelService
             Platform = platform,
             Texts = texts
         };
-    }
-
-    private async Task<Chapter> GetChapter(string name)
-    {
-        var chapter = await _unitOfWork.ChapterRepository.GetByName(name).Run();
-        return OdkAssertions.Exists(chapter, $"Chapter not found: '{name}'");
     }
 
     private IReadOnlyCollection<GroupPageListEventViewModel> ToGroupPageListEvents(

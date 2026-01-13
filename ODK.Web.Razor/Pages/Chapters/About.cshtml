@@ -14,7 +14,7 @@
     Layout = "_OdkChapterLayout";    
     Model.Description = "More information about this Drunken Knitwits chapter, including some frequently asked questions";
 
-    var viewModel = await ChapterViewModelService.GetChapterAboutPage(Model.Chapter.Id);    
+    var viewModel = await ChapterViewModelService.GetChapterAboutPage(Model.Chapter);
     if (viewModel.ChapterPage?.Hidden == true)
     {
         throw new OdkNotFoundException();

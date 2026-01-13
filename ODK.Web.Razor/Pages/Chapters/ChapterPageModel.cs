@@ -14,7 +14,7 @@ public abstract class ChapterPageModel : OdkPageModel
     public override async Task OnPageHandlerExecutionAsync(
         PageHandlerExecutingContext context, PageHandlerExecutionDelegate next)
     {
-        Chapter = await RequestStore.GetChapter();
+        Chapter = await GetChapter();
 
         await base.OnPageHandlerExecutionAsync(context, next);
     }

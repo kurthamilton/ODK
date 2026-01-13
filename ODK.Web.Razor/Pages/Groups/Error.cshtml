@@ -13,7 +13,7 @@
     Model.Title = "Error";
 
     var viewModel = await ChapterViewModelService.GetGroupPage(
-        Model.ServiceRequest, Model.CurrentMemberIdOrDefault, Model.Slug);
+        Model.ServiceRequest, Model.CurrentMemberIdOrDefault, Model.Chapter);
 }
 
 @await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel

@@ -10,7 +10,7 @@
 @{
     Layout = "_OdkChapterLayout";
 
-    var chapter = await Model.RequestStore.GetChapter();
+    var chapter = await Model.GetChapter();
     var viewModel = await EventViewModelService.GetEventCheckoutPageViewModel(
         Model.ServiceRequest,
         Model.CurrentMemberId,

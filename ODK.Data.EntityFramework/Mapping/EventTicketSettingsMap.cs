@@ -11,5 +11,9 @@ public class EventTicketSettingsMap : IEntityTypeConfiguration<EventTicketSettin
         builder.ToTable("EventTicketSettings");
 
         builder.HasKey(x => x.EventId);
+
+        builder.HasOne(x => x.Currency)
+            .WithMany()
+            .HasForeignKey(x => x.CurrencyId);
     }
 }
