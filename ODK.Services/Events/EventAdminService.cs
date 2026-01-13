@@ -16,6 +16,7 @@ using ODK.Services.Exceptions;
 using ODK.Services.Logging;
 using ODK.Services.Members;
 using ODK.Services.Notifications;
+using ODK.Services.Payments;
 using ODK.Services.Tasks;
 
 namespace ODK.Services.Events;
@@ -28,6 +29,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     private readonly ILoggingService _loggingService;
     private readonly IMemberEmailService _memberEmailService;
     private readonly INotificationService _notificationService;
+    private readonly IPaymentService _paymentService;
     private readonly IUnitOfWork _unitOfWork;
 
     public EventAdminService(
@@ -37,7 +39,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         IHtmlSanitizer htmlSanitizer,
         IMemberEmailService memberEmailService,
         IBackgroundTaskService backgroundTaskService,
-        ILoggingService loggingService)
+        ILoggingService loggingService,
+        IPaymentService paymentService)
         : base(unitOfWork)
     {
         _authorizationService = authorizationService;
@@ -46,10 +49,12 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         _loggingService = loggingService;
         _memberEmailService = memberEmailService;
         _notificationService = notificationService;
+        _paymentService = paymentService;
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ServiceResult> CreateEvent(MemberChapterServiceRequest request, CreateEvent model, bool draft)
+    public async Task<ServiceResult> CreateEvent(
+        MemberChapterServiceRequest request, CreateEvent model, bool draft)
     {
         var (currentMemberId, chapterId) = (request.CurrentMemberId, request.ChapterId);
 
@@ -93,6 +98,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             Name = model.Name,
             PublishedUtc = !draft ? DateTime.UtcNow : null,
             RsvpDeadlineUtc = model.RsvpDeadline != null ? chapter.FromLocalTime(model.RsvpDeadline.Value) : null,
+            RsvpDisabled = model.RsvpDisabled,
             Time = model.Time,
             VenueId = model.VenueId
         };
@@ -138,6 +144,11 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
                 eventEmail.ScheduledUtc.Value);
             _unitOfWork.EventEmailRepository.Update(eventEmail);
             await _unitOfWork.SaveChangesAsync();
+        }
+
+        if (@event.TicketSettings != null)
+        {
+            _backgroundTaskService.Enqueue(() => _paymentService.EnsureProductExists(chapterId));
         }
 
         return ServiceResult.Successful();
@@ -689,7 +700,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         }
     }
 
-    public async Task<ServiceResult> UpdateEvent(MemberChapterServiceRequest request, Guid id, CreateEvent model)
+    public async Task<ServiceResult> UpdateEvent(
+        MemberChapterServiceRequest request, Guid id, CreateEvent model)
     {
         var (chapter, ownerSubscription, chapterAdminMembers, currentMember, @event, hosts, venue) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
@@ -722,6 +734,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         @event.IsPublic = model.IsPublic;
         @event.Name = model.Name;
         @event.RsvpDeadlineUtc = model.RsvpDeadline != null ? chapter.FromLocalTime(model.RsvpDeadline.Value) : null;
+        @event.RsvpDisabled = model.RsvpDisabled;
         @event.Time = model.Time;
         @event.VenueId = model.VenueId;
 

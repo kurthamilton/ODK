@@ -1,0 +1,10 @@
+﻿@using ODK.Services.Events.ViewModels
+@model EventCheckoutPageViewModel
+
+<section class="section">
+    <div id="checkout"
+         data-stripe="@Model.PaymentSettings.ApiPublicKey"
+         data-stripe-checkout="@Model.ClientSecret">
+        <!-- Checkout will insert the payment form here -->
+    </div>
+</section>

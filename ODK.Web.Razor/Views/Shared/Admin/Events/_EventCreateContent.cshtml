@@ -27,15 +27,15 @@
         @await Html.PartialAsync("Admin/Events/Event/_EventForm", new EventFormViewModel
         {
             Chapter = Model.Chapter,
-        Date = Model.Date,
-        Description = Model.EventSettings?.DefaultDescription,
-        EndTime = TimeSpanUtils.ToString(Model.EventSettings?.DefaultEndTime),
-        HostOptions = hostOptions,
-        OwnerSubscription = Model.OwnerSubscription,
-        PaymentSettings = Model.PaymentSettings,
-        Platform = Model.Platform,
-        Venue = Model.VenueId ?? default,
-        Venues = Model.Venues
+            Date = Model.Date,
+            Description = Model.EventSettings?.DefaultDescription,
+            EndTime = TimeSpanUtils.ToString(Model.EventSettings?.DefaultEndTime),
+            HostOptions = hostOptions,
+            OwnerSubscription = Model.OwnerSubscription,
+            PaymentSettings = Model.PaymentSettings,
+            Platform = Model.Platform,
+            Venue = Model.VenueId ?? default,
+            Venues = Model.Venues
         })
 
     <div class="button-container">

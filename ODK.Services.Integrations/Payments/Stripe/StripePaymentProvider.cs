@@ -419,8 +419,13 @@ public class StripePaymentProvider : IPaymentProvider
         }
     }
 
-    public async Task<RemotePaymentResult> MakePayment(string currencyCode, decimal amount,
-        string cardToken, string description, Guid memberId, string memberName)
+    public async Task<RemotePaymentResult> MakePayment(
+        string currencyCode, 
+        decimal amount,
+        string cardToken, 
+        string description, 
+        Guid memberId, 
+        string memberName)
     {
         var service = CreatePaymentIntentService();
 
@@ -482,6 +487,8 @@ public class StripePaymentProvider : IPaymentProvider
 
         var stripeAmount = ToStripeAmount(subscriptionPlan.Amount);
 
+        var isPrice = !string.IsNullOrEmpty(subscriptionPlan.ExternalId);
+
         var session = await service.CreateAsync(new SessionCreateOptions
         {
             UiMode = "embedded",
@@ -489,7 +496,13 @@ public class StripePaymentProvider : IPaymentProvider
             {
                 new SessionLineItemOptions
                 {
-                    Price = subscriptionPlan.ExternalId,
+                    Price = isPrice ? subscriptionPlan.ExternalId : null,
+                    PriceData = !isPrice ? new SessionLineItemPriceDataOptions
+                    {
+                        Currency = subscriptionPlan.CurrencyCode,
+                        Product = subscriptionPlan.ExternalProductId,
+                        UnitAmount = stripeAmount                        
+                    } : null,
                     Quantity = 1
                 }
             },

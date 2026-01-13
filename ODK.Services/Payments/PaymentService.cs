@@ -1,4 +1,5 @@
 ﻿using ODK.Core;
+using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Core.Payments;
 using ODK.Core.Subscriptions;
@@ -27,6 +28,32 @@ public class PaymentService : IPaymentService
         _memberEmailService = memberEmailService;
         _paymentProviderFactory = paymentProviderFactory;
         _unitOfWork = unitOfWork;
+    }
+
+    public async Task EnsureProductExists(Guid chapterId)
+    {
+        var (chapter, chapterPaymentSettings, sitePaymentSettings) = await _unitOfWork.RunAsync(
+            x => x.ChapterRepository.GetById(chapterId),
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
+            x => x.SitePaymentSettingsRepository.GetActive());
+
+        if (!string.IsNullOrEmpty(chapterPaymentSettings.ExternalProductId))
+        {
+            return;
+        }
+
+        var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(sitePaymentSettings);
+
+        var productId = await paymentProvider.CreateProduct(chapter.FullName);
+        if (string.IsNullOrEmpty(productId))
+        {
+            await _loggingService.Error($"Could not create payment product for chapter {chapter.FullName}");
+            return;
+        }
+
+        chapterPaymentSettings.ExternalProductId = productId;
+        _unitOfWork.ChapterPaymentSettingsRepository.Update(chapterPaymentSettings);
+        await _unitOfWork.SaveChangesAsync();
     }
 
     public async Task<PaymentStatusType> GetMemberChapterPaymentCheckoutSessionStatus(
@@ -83,7 +110,7 @@ public class PaymentService : IPaymentService
         return externalSession == null
             ? PaymentStatusType.Expired
             : PaymentStatusType.Pending;
-    }
+    }    
 
     public async Task ProcessWebhook(
         ServiceRequest request, PaymentProviderWebhook webhook)

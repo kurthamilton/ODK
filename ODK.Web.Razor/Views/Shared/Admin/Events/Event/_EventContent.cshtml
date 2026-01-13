@@ -49,7 +49,10 @@
         PaymentSettings = Model.PaymentSettings,
         Platform = Model.Platform,
         Public = Model.Event.IsPublic,
-        RsvpDeadline = Model.Event.RsvpDeadlineUtc != null ? Model.Chapter.ToChapterTime(Model.Event.RsvpDeadlineUtc.Value) : null,
+        RsvpDeadline = Model.Event.RsvpDeadlineUtc != null 
+            ? Model.Chapter.ToChapterTime(Model.Event.RsvpDeadlineUtc.Value) 
+            : null,
+        RsvpDisabled = Model.Event.RsvpDisabled ?? false,
         TicketCost = Model.Event.TicketSettings?.Cost,
         TicketDepositCost = Model.Event.TicketSettings?.Deposit,
         Time = Model.Event.Time,

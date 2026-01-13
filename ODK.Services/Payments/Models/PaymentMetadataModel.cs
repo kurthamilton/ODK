@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Chapters;
+using ODK.Core.Events;
 using ODK.Core.Extensions;
 using ODK.Core.Members;
 using ODK.Core.Subscriptions;
@@ -32,6 +33,13 @@ public class PaymentMetadataModel
         SiteSubscriptionPriceId = siteSubscriptionPrice.Id;
     }
 
+    public PaymentMetadataModel(
+        Member member,
+        Event @event)
+    {
+        MemberId = member.Id;        
+    }
+
     private PaymentMetadataModel()
     {
     }
@@ -39,6 +47,8 @@ public class PaymentMetadataModel
     public Guid? ChapterId { get; private set; }
 
     public Guid? ChapterSubscriptionId { get; private set; }
+
+    public Guid? EventId { get; private set; }
 
     public Guid? MemberId { get; private set; }
 
@@ -52,6 +62,7 @@ public class PaymentMetadataModel
     {
         dictionary.TryGetGuidValue("ChapterId", out var chapterId);
         dictionary.TryGetGuidValue("ChapterSubscriptionId", out var chapterSubscriptionId);
+        dictionary.TryGetGuidValue("EventId", out var eventId);
         dictionary.TryGetGuidValue("MemberId", out var memberId);
         dictionary.TryGetGuidValue("PaymentCheckoutSessionId", out var paymentCheckoutSessionId);
         dictionary.TryGetGuidValue("PaymentId", out var paymentId);
@@ -61,6 +72,7 @@ public class PaymentMetadataModel
         {
             ChapterId = chapterId,
             ChapterSubscriptionId = chapterSubscriptionId,
+            EventId = eventId,
             MemberId = memberId,
             PaymentCheckoutSessionId = paymentCheckoutSessionId,
             PaymentId = paymentId,
@@ -80,6 +92,11 @@ public class PaymentMetadataModel
         if (ChapterSubscriptionId != null)
         {
             dictionary.Add("ChapterSubscriptionId", ChapterSubscriptionId.Value.ToString());
+        }
+
+        if (EventId != null)
+        {
+            dictionary.Add("EventId", EventId.Value.ToString());
         }
 
         if (MemberId != null)

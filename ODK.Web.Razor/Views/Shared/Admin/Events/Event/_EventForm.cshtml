@@ -69,6 +69,11 @@
     @Html.ValidationMessageFor(x => x.RsvpDeadline)
 </div>
 
+<div class="form-check form-switch mb-3">
+    @Html.CheckBoxFor(x => x.RsvpDisabled, new { @class = "form-check-input", role = "switch" })
+    @Html.LabelFor(x => x.RsvpDisabled, new { @class = "form-check-label" })
+</div>
+
 @*<div class="form-group mb-3">
     @Html.LabelFor(x => x.Time, new { @class = "form-label" })
     @Html.TextBoxFor(x => x.Time, new { @class = "form-control" })

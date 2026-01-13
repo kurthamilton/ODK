@@ -20,6 +20,8 @@ public class CreateEvent
 
     public required DateTime? RsvpDeadline { get; init; }
 
+    public required bool? RsvpDisabled { get; init; }
+
     public required decimal? TicketCost { get; init; }
 
     public required decimal? TicketDepositCost { get; init; }

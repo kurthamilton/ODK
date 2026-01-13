@@ -93,6 +93,7 @@ public static class EventAdminServiceTests
             IsPublic = false,
             Name = "Name",
             RsvpDeadline = null,
+            RsvpDisabled = null,
             TicketCost = null,
             TicketDepositCost = null,
             Time = null,

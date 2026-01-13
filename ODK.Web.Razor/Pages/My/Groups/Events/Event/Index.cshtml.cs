@@ -34,6 +34,7 @@ public class IndexModel : OdkGroupAdminPageModel
             IsPublic = viewModel.Public,
             Name = viewModel.Name,
             RsvpDeadline = viewModel.RsvpDeadline,
+            RsvpDisabled = viewModel.RsvpDisabled,
             TicketCost = viewModel.TicketCost,
             TicketDepositCost = viewModel.TicketDepositCost,
             Time = viewModel.Time,
