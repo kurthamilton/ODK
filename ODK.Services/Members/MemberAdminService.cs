@@ -335,20 +335,21 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     {
         var platform = request.Platform;
 
-        var (chapter, ownerSubscription, chapterPaymentSettings, chapterPaymentAccount) = await GetChapterAdminRestrictedContent(request,
+        var (chapter, ownerSubscription, chapterPaymentSettings, chapterPaymentAccount, currency) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId),
-            x => x.ChapterPaymentAccountRepository.GetByChapterId(request.ChapterId));
+            x => x.ChapterPaymentAccountRepository.GetByChapterId(request.ChapterId),
+            x => x.CurrencyRepository.GetByChapterId(request.ChapterId));
 
         return new SubscriptionCreateAdminPageViewModel
         {
             Chapter = chapter,
+            Currency = currency,
             HasPaymentAccount = chapterPaymentAccount != null,
             OwnerSubscription = ownerSubscription,
-            PaymentSettings = chapterPaymentSettings,
             Platform = platform,
-            SupportsRecurringPayments = chapterPaymentSettings.UseSitePaymentProvider
+            SupportsRecurringPayments = chapterPaymentSettings == null || chapterPaymentSettings?.UseSitePaymentProvider == true
         };
     }
 
@@ -386,7 +387,6 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         {
             Chapter = chapter,
             ChapterSubscriptions = chapterSubscriptions,
-            Currency = chapterPaymentSettings.Currency,
             ExternalSubscription = null,
             MembershipSettings = membershipSettings ?? new(),
             MemberSubscription = null,
@@ -420,15 +420,15 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
         var paymentProvider =
             sitePaymentSettings?.Provider ??
-            chapterPaymentSettings.Provider ??
+            chapterPaymentSettings?.Provider ??
             PaymentProviderType.None;
 
         return new SubscriptionAdminPageViewModel
         {
             Chapter = chapter,
+            Currency = subscription.Currency,
             HasPaymentAccount = chapterPaymentAccount != null,
             OwnerSubscription = ownerSubscription,
-            PaymentSettings = chapterPaymentSettings,
             Platform = platform,
             Subscription = subscription,
             SupportsRecurringPayments = paymentProvider.SupportsRecurringPayments()

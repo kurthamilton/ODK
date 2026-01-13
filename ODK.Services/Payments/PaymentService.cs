@@ -37,22 +37,44 @@ public class PaymentService : IPaymentService
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
             x => x.SitePaymentSettingsRepository.GetActive());
 
-        if (!string.IsNullOrEmpty(chapterPaymentSettings.ExternalProductId))
+        if (!string.IsNullOrEmpty(chapterPaymentSettings?.ExternalProductId))
         {
             return;
         }
 
         var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(sitePaymentSettings);
 
-        var productId = await paymentProvider.CreateProduct(chapter.FullName);
+        var productName = chapter.FullName;
+
+        var productId = await paymentProvider.GetProductId(productName);
+        if (string.IsNullOrEmpty(productId))
+        {
+            productId = await paymentProvider.CreateProduct(productName);
+        }
+
         if (string.IsNullOrEmpty(productId))
         {
             await _loggingService.Error($"Could not create payment product for chapter {chapter.FullName}");
             return;
         }
 
+        chapterPaymentSettings ??= new ChapterPaymentSettings
+        {
+            UseSitePaymentProvider = true
+        };
+
         chapterPaymentSettings.ExternalProductId = productId;
-        _unitOfWork.ChapterPaymentSettingsRepository.Update(chapterPaymentSettings);
+
+        if (chapterPaymentSettings.ChapterId == default)
+        {
+            chapterPaymentSettings.ChapterId = chapter.Id;
+            _unitOfWork.ChapterPaymentSettingsRepository.Add(chapterPaymentSettings);
+        }
+        else
+        {
+            _unitOfWork.ChapterPaymentSettingsRepository.Update(chapterPaymentSettings);
+        }
+
         await _unitOfWork.SaveChangesAsync();
     }
 
@@ -110,7 +132,7 @@ public class PaymentService : IPaymentService
         return externalSession == null
             ? PaymentStatusType.Expired
             : PaymentStatusType.Pending;
-    }    
+    }
 
     public async Task ProcessWebhook(
         ServiceRequest request, PaymentProviderWebhook webhook)
@@ -309,6 +331,11 @@ public class PaymentService : IPaymentService
             _unitOfWork.PaymentCheckoutSessionRepository.Update(paymentCheckoutSession);
         }
 
+        if (metadata.EventId != null)
+        {
+            return await UpdateMemberEventTicketPayment();
+        }
+
         return await UpdateMemberChapterSubscription(
             metadata,
             member,
@@ -368,10 +395,9 @@ public class PaymentService : IPaymentService
         }
 
         // Load basic metadata objects
-        var (member, chapter, chapterPaymentSettings, chapterSubscription, payment, paymentCheckoutSession) = await _unitOfWork.RunAsync(
+        var (member, chapter, chapterSubscription, payment, paymentCheckoutSession) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(metadata.MemberId.Value),
             x => x.ChapterSubscriptionRepository.GetByIdOrDefault(metadata.ChapterSubscriptionId.Value),
-            x => x.ChapterPaymentSettingsRepository.GetByChapterId(metadata.ChapterId.Value),
             x => x.ChapterSubscriptionRepository.GetById(metadata.ChapterSubscriptionId.Value),
             x => metadata.PaymentId != null
                 ? x.PaymentRepository.GetByIdOrDefault(metadata.PaymentId.Value)
@@ -389,7 +415,7 @@ public class PaymentService : IPaymentService
                 Amount = webhook.Amount,
                 ChapterId = chapter.Id,
                 CreatedUtc = utcNow,
-                CurrencyId = chapterPaymentSettings.CurrencyId,
+                CurrencyId = chapterSubscription.CurrencyId,
                 Id = Guid.NewGuid(),
                 MemberId = member.Id,
                 Reference = chapterSubscription.ToReference(),
@@ -606,10 +632,9 @@ public class PaymentService : IPaymentService
             return PaymentWebhookProcessingResult.Failure();
         }
 
-        var (chapter, chapterSubscription, chapterPaymentSettings) = await _unitOfWork.RunAsync(
+        var (chapter, chapterSubscription) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(metadata.ChapterId.Value),
-            x => x.ChapterSubscriptionRepository.GetById(metadata.ChapterSubscriptionId.Value),
-            x => x.ChapterPaymentSettingsRepository.GetByChapterId(metadata.ChapterId.Value));
+            x => x.ChapterSubscriptionRepository.GetById(metadata.ChapterSubscriptionId.Value));
 
         if (chapter.Id != chapterSubscription.ChapterId)
         {
@@ -680,7 +705,7 @@ public class PaymentService : IPaymentService
         await _unitOfWork.SaveChangesAsync();
 
         return PaymentWebhookProcessingResult.Successful(
-            member, chapter, payment, chapterPaymentSettings.Currency);
+            member, chapter, payment, chapterSubscription.Currency);
     }
 
     private async Task<PaymentWebhookProcessingResult> UpdateMemberSiteSubscription(

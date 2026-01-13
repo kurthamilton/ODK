@@ -389,14 +389,15 @@ public class MemberEmailService : IMemberEmailService
     public async Task SendMemberChapterSubscriptionConfirmationEmail(
         ServiceRequest request,
         Chapter chapter,
-        ChapterPaymentSettings chapterPaymentSettings,
         ChapterSubscription chapterSubscription,
         Member member,
         DateTime expiresUtc)
     {
+        var currency = chapterSubscription.Currency;
+
         var parameters = new Dictionary<string, string>
         {
-            { "subscription.amount", chapterPaymentSettings.Currency.ToAmountString(chapterSubscription.Amount) },
+            { "subscription.amount", currency.ToAmountString(chapterSubscription.Amount) },
             { "subscription.end", chapter.ToChapterTime(expiresUtc).ToString("d MMMM yyyy") }
         };
 

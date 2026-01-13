@@ -92,7 +92,6 @@ public interface IMemberEmailService
     Task SendMemberChapterSubscriptionConfirmationEmail(
         ServiceRequest request,
         Chapter chapter,
-        ChapterPaymentSettings chapterPaymentSettings,
         ChapterSubscription chapterSubscription,
         Member member,
         DateTime expiresUtc);

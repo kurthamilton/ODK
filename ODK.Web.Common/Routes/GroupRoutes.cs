@@ -22,6 +22,9 @@ public class GroupRoutes
     public string EventCheckout(PlatformType platform, Chapter chapter, Guid eventId)
         => $"{Event(platform, chapter, eventId)}/checkout";
 
+    public string EventCheckoutConfirm(PlatformType platform, Chapter chapter, Guid eventId)
+        => $"{EventCheckout(platform, chapter, eventId)}/confirm";
+
     public string Events(PlatformType platform, Chapter chapter) => GroupPath(platform, chapter, "/events");
 
     public string Group(PlatformType platform, Chapter chapter) => platform switch

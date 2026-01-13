@@ -624,7 +624,7 @@ public class MemberService : IMemberService
             paymentAccount);
 
         var paymentResult = await paymentProvider.MakePayment(
-            chapterPaymentSettings.Currency.Code,
+            chapterSubscription.Currency.Code,
             (decimal)chapterSubscription.Amount,
             cardToken,
             chapterSubscription.Title,
@@ -668,7 +668,6 @@ public class MemberService : IMemberService
         await _memberEmailService.SendMemberChapterSubscriptionConfirmationEmail(
             request,
             chapter,
-            chapterPaymentSettings,
             chapterSubscription,
             member,
             expiresUtc);
@@ -784,6 +783,7 @@ public class MemberService : IMemberService
         var paymentId = Guid.NewGuid();
 
         var metadata = new PaymentMetadataModel(
+            PaymentReasonType.ChapterSubscription,
             member,
             chapterSubscription,
             paymentCheckoutSessionId: paymentCheckoutSessionId,
@@ -810,7 +810,7 @@ public class MemberService : IMemberService
             Amount = (decimal)chapterSubscription.Amount,
             ChapterId = chapterSubscription.ChapterId,
             CreatedUtc = utcNow,
-            CurrencyId = chapterPaymentSettings.CurrencyId,
+            CurrencyId = chapterSubscription.Currency.Id,
             ExternalId = externalCheckoutSession.PaymentId,
             Id = paymentId,
             MemberId = memberId,

@@ -504,6 +504,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         {
             Amount = model.Amount,
             ChapterId = chapterId,
+            CurrencyId = currency.Id,
             Description = _htmlSanitizer.Sanitize(model.Description, DefaultHtmlSantizerOptions),
             Disabled = model.Disabled,
             Months = model.Months,

@@ -1,4 +1,5 @@
-﻿using ODK.Core.Members;
+﻿using ODK.Core.Countries;
+using ODK.Core.Members;
 using ODK.Core.Payments;
 
 namespace ODK.Core.Chapters;
@@ -8,6 +9,10 @@ public class ChapterSubscription : IDatabaseEntity, IChapterEntity
     public double Amount { get; set; }
 
     public Guid ChapterId { get; set; }
+
+    public Currency Currency { get; set; } = null!;
+
+    public Guid CurrencyId { get; set; }
 
     public string Description { get; set; } = string.Empty;
 

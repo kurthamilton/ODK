@@ -1,0 +1,75 @@
+﻿@page "/{chapterName}/events/{id:guid}/checkout/confirm"
+@using ODK.Core.Payments
+@using ODK.Services.Events
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Components
+@model EventCheckoutConfirmModel
+@inject IEventViewModelService EventViewModelService
+@{
+    Layout = "_OdkChapterLayout";
+    Model.Title = "Ticket purchase pending confirmation";
+
+    var eventUrl = Model.RedirectUrl;
+
+    var chapter = await Model.GetChapter();
+    var viewModel = await EventViewModelService.GetEventPageViewModel(
+        Model.ServiceRequest, Model.CurrentMemberIdOrDefault, chapter, Model.EventId);
+}
+
+@await Html.PartialAsync("Components/_BodyWithSidebar", new BodyWithSidebarViewModel
+{
+    Title = "Checkout",
+    Breadcrumbs = new[]
+    {
+        new MenuItem
+        {
+            Link = OdkRoutes.Groups.Group(Model.Platform, viewModel.Chapter),
+            Text = viewModel.Chapter.GetDisplayName(Model.Platform)
+        },
+        new MenuItem
+        {
+            Link = OdkRoutes.Groups.Events(Model.Platform, viewModel.Chapter),
+            Text = "Events"
+        },
+        new MenuItem
+        {
+            Link = OdkRoutes.Groups.Event(Model.Platform, viewModel.Chapter, viewModel.Event.Id),
+            Text = viewModel.Event.GetDisplayName()
+        },
+        new MenuItem { Text = "Checkout" }
+    },
+    ContentFunc = 
+        @<div>
+            <section class="section">
+                <div data-odk-checkout
+                     data-odk-polling-url="/payments/sessions/@Model.SessionId/status?groupId=@viewModel.Chapter.Id">
+
+                    <div data-odk-checkout-status="@PaymentStatusType.Complete"
+                         data-odk-checkout-action="reload">
+                    </div>
+
+                    <div data-odk-checkout-status="@PaymentStatusType.Pending">
+                        <div class="alert alert-warning">
+                            We are just waiting for confirmation of your payment...
+                        </div>
+                        <div>
+                            <a href="@eventUrl">
+                                Go back to event
+                            </a>
+                        </div>
+                    </div>
+
+                    <div data-odk-checkout-status="@PaymentStatusType.Expired"
+                         data-odk-checkout-action="reload">
+                    </div>
+                </div>
+            </section>
+        </div>
+})
+
+@section scripts
+{
+    <script src="~/js/odk.polling.js" asp-append-version="true"></script>
+    <script src="~/js/odk.checkout.js" asp-append-version="true"></script>
+}

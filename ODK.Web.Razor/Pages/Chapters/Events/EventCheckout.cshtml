@@ -11,13 +11,18 @@
     Layout = "_OdkChapterLayout";
 
     var chapter = await Model.GetChapter();
+
+    var returnRoute = OdkRoutes.Groups.EventCheckoutConfirm(Model.Platform, chapter, Model.EventId);
+    var returnPath = $"{returnRoute}?sessionId={{sessionId}}";
+    
     var viewModel = await EventViewModelService.GetEventCheckoutPageViewModel(
         Model.ServiceRequest,
         Model.CurrentMemberId,
         chapter,
-        Model.EventId);
+        Model.EventId,
+        returnPath);
 
-    Model.Title = viewModel.Event.GetDisplayName();
+    Model.Title = $"Checkout | {viewModel.Event.GetDisplayName()}";
 }
 
 @await Html.PartialAsync("Components/_BodyWithSidebar", new BodyWithSidebarViewModel

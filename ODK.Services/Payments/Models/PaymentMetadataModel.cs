@@ -9,19 +9,22 @@ namespace ODK.Services.Payments.Models;
 public class PaymentMetadataModel
 {
     public PaymentMetadataModel(
+        PaymentReasonType reason,
         Member member,
         ChapterSubscription chapterSubscription,
-        Guid? paymentCheckoutSessionId = null,
-        Guid? paymentId = null)
+        Guid paymentCheckoutSessionId,
+        Guid paymentId)
     {
         ChapterId = chapterSubscription.ChapterId;
         ChapterSubscriptionId = chapterSubscription.Id;
         MemberId = member.Id;
         PaymentCheckoutSessionId = paymentCheckoutSessionId;
         PaymentId = paymentId;
+        Reason = reason;
     }
 
     public PaymentMetadataModel(
+        PaymentReasonType reason,
         Member member,
         SiteSubscriptionPrice siteSubscriptionPrice,
         Guid paymentCheckoutSessionId,
@@ -30,14 +33,22 @@ public class PaymentMetadataModel
         MemberId = member.Id;
         PaymentCheckoutSessionId = paymentCheckoutSessionId;
         PaymentId = paymentId;
+        Reason = reason;
         SiteSubscriptionPriceId = siteSubscriptionPrice.Id;
     }
 
     public PaymentMetadataModel(
+        PaymentReasonType reason,
         Member member,
-        Event @event)
+        Event @event,
+        Guid paymentCheckoutSessionId,
+        Guid paymentId)
     {
-        MemberId = member.Id;        
+        EventId = @event.Id;
+        MemberId = member.Id;
+        PaymentCheckoutSessionId = paymentCheckoutSessionId;
+        PaymentId = paymentId;
+        Reason = reason;
     }
 
     private PaymentMetadataModel()
@@ -56,6 +67,8 @@ public class PaymentMetadataModel
 
     public Guid? PaymentId { get; private set; }
 
+    public PaymentReasonType? Reason { get; private set; }
+
     public Guid? SiteSubscriptionPriceId { get; private set; }
 
     public static PaymentMetadataModel FromDictionary(IDictionary<string, string> dictionary)
@@ -66,6 +79,7 @@ public class PaymentMetadataModel
         dictionary.TryGetGuidValue("MemberId", out var memberId);
         dictionary.TryGetGuidValue("PaymentCheckoutSessionId", out var paymentCheckoutSessionId);
         dictionary.TryGetGuidValue("PaymentId", out var paymentId);
+        dictionary.TryGetEnumValue<PaymentReasonType>("Reason", out var reason);
         dictionary.TryGetGuidValue("SiteSubscriptionPriceId", out var siteSubscriptionPriceId);
 
         return new PaymentMetadataModel
@@ -76,6 +90,7 @@ public class PaymentMetadataModel
             MemberId = memberId,
             PaymentCheckoutSessionId = paymentCheckoutSessionId,
             PaymentId = paymentId,
+            Reason = reason,
             SiteSubscriptionPriceId = siteSubscriptionPriceId
         };
     }
@@ -112,6 +127,11 @@ public class PaymentMetadataModel
         if (PaymentId != null)
         {
             dictionary.Add("PaymentId", PaymentId.Value.ToString());
+        }
+
+        if (Reason != null)
+        {
+            dictionary.Add("Reason", Reason.Value.ToString());
         }
 
         if (SiteSubscriptionPriceId != null)
