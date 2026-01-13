@@ -4,17 +4,17 @@
 @using ODK.Web.Razor.Models.Payments
 @model EventTicketPurchaseViewModel
 @{
+    if (Model.Event.TicketSettings == null)
+    {
+        return;
+    }
+
     var ticketPurchase = Model.TicketPurchases
         .FirstOrDefault(x => x.MemberId == Model.CurrentMemberId);
     var ticketsLeft = Model.TicketsLeft;
     var deadlinePassed = Model.Event.RsvpDeadlinePassed;
+    var currency = Model.Event.TicketSettings.Currency;
 }
-
-@if (Model.Event.TicketSettings == null)
-{
-    return;
-}
-
 
 <div class="card sidebar-card">
     <div class="card-header">Tickets</div>
@@ -45,10 +45,10 @@
                 <div>
                     <h5>Complete purchase</h5>
                     <div>
-                        Deposit paid: @Model.ChapterPaymentSettings.Currency.ToAmountString(ticketPurchase.DepositPaid.Value)
+                        Deposit paid: @currency.ToAmountString(ticketPurchase.DepositPaid.Value)
                     </div>
                     <div>
-                        Amount remaining: @Model.ChapterPaymentSettings.Currency.ToAmountString(remaining)
+                        Amount remaining: @currency.ToAmountString(remaining)
                     </div>                    
                 </div>
 
@@ -65,7 +65,7 @@
                     PaymentForm = new PaymentFormViewModel
                     {
                         Amount = remaining,
-                        Currency = Model.ChapterPaymentSettings.Currency,
+                        Currency = currency,
                         Description = "",
                         Id = "complete-purchase"
                     },
@@ -95,11 +95,11 @@
                         }
             
                         <div>
-                            Ticket cost: @Model.ChapterPaymentSettings.Currency.ToAmountString(Model.Event.TicketSettings.Cost)
+                            Ticket cost: @currency.ToAmountString(Model.Event.TicketSettings.Cost)
                         </div>
 
                         <div>
-                            Deposit: @Model.ChapterPaymentSettings.Currency.ToAmountString(Model.Event.TicketSettings.Deposit.Value)
+                            Deposit: @currency.ToAmountString(Model.Event.TicketSettings.Deposit.Value)
                         </div>
                     </div>
 
@@ -126,7 +126,7 @@
                         PaymentForm = new PaymentFormViewModel
                         {
                             Amount = Model.Event.TicketSettings.Deposit.Value,
-                            Currency = Model.ChapterPaymentSettings.Currency,
+                            Currency = currency,
                             Description = $"{Model.Event.Name} deposit",
                             Id = "deposit-purchase"
                         },
@@ -150,7 +150,7 @@
                         }
 
                         <div>
-                            Cost: @Model.ChapterPaymentSettings.Currency.ToAmountString(Model.Event.TicketSettings.Cost)
+                            Cost: @currency.ToAmountString(Model.Event.TicketSettings.Cost)
                         </div>
                     </div>
 
@@ -167,7 +167,7 @@
                         PaymentForm = new PaymentFormViewModel
                         {
                             Amount = Model.Event.TicketSettings.Cost,
-                            Currency = Model.ChapterPaymentSettings.Currency,
+                            Currency = currency,
                             Description = "",
                             Id = "ticket-purchase"
                         },

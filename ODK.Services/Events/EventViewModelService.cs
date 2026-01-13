@@ -44,16 +44,17 @@ public class EventViewModelService : IEventViewModelService
 
         var (
             chapterPages,
-            @event, 
+            @event,
             currentMember,
-            chapterPaymentSettings, 
+            chapterPaymentSettings,
             chapterPaymentAccount,
             sitePaymentSettings,
             hasProfiles,
             hasQuestions,
             adminMembers,
             ownerSubscription,
-            eventTicketPurchase) = await _unitOfWork.RunAsync(
+            eventTicketPurchase,
+            currency) = await _unitOfWork.RunAsync(
             x => x.ChapterPageRepository.GetByChapterId(chapter.Id),
             x => x.EventRepository.GetById(eventId),
             x => x.MemberRepository.GetByIdOrDefault(currentMemberId),
@@ -64,10 +65,11 @@ public class EventViewModelService : IEventViewModelService
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
-            x => x.EventTicketPurchaseRepository.GetByMemberId(currentMemberId, eventId));
+            x => x.EventTicketPurchaseRepository.GetByMemberId(currentMemberId, eventId),
+            x => x.CurrencyRepository.GetByChapterId(chapter.Id));
 
         OdkAssertions.BelongsToChapter(@event, chapter.Id);
-        
+
         if (@event.TicketSettings == null)
         {
             throw new OdkServiceException("Event is not ticketed");
@@ -112,7 +114,7 @@ public class EventViewModelService : IEventViewModelService
             new ExternalSubscriptionPlan
             {
                 Amount = amountRemaining,
-                CurrencyCode = chapterPaymentSettings.Currency.Code,
+                CurrencyCode = currency.Code,
                 ExternalId = string.Empty,
                 ExternalProductId = externalProductId,
                 Frequency = SiteSubscriptionFrequency.None,
@@ -137,7 +139,7 @@ public class EventViewModelService : IEventViewModelService
             IsMember = currentMember.IsMemberOf(chapter.Id),
             OwnerSubscription = ownerSubscription,
             PaymentSettings = paymentProvider.PaymentSettings,
-            Platform = platform            
+            Platform = platform
         };
     }
 
