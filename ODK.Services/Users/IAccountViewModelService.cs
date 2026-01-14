@@ -1,4 +1,5 @@
-﻿using ODK.Services.Users.ViewModels;
+﻿using ODK.Core.Chapters;
+using ODK.Services.Users.ViewModels;
 
 namespace ODK.Services.Users;
 
@@ -6,18 +7,16 @@ public interface IAccountViewModelService
 {
     Task<AccountCreatePageViewModel> GetAccountCreatePage();
 
-    Task<ChapterAccountViewModel> GetChapterAccountViewModel(Guid currentMemberId, string chapterName);
-
-    Task<ChapterJoinPageViewModel> GetChapterJoinPage(ServiceRequest request, string chapterName);
+    Task<ChapterJoinPageViewModel> GetChapterJoinPage(ServiceRequest request, Chapter chapter);
 
     Task<ChapterLoginPageViewModel> GetChapterLoginPage();
 
-    Task<ChapterPicturePageViewModel> GetChapterPicturePage(Guid currentMemberId, string chapterName);
+    Task<ChapterPicturePageViewModel> GetChapterPicturePage(Guid currentMemberId, Chapter chapter);
 
-    Task<ChapterProfilePageViewModel> GetChapterProfilePage(MemberServiceRequest request, string chapterName);
+    Task<ChapterProfilePageViewModel> GetChapterProfilePage(MemberServiceRequest request, Chapter chapter);
 
     Task<MemberChapterPaymentsPageViewModel> GetMemberChapterPaymentsPage(
-        MemberServiceRequest request, string chapterName);
+        MemberServiceRequest request, Chapter chapter);
 
     Task<MemberEmailPreferencesPageViewModel> GetMemberEmailPreferencesPage(MemberServiceRequest request);
 

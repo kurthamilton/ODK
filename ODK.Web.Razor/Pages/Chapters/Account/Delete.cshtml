@@ -5,10 +5,12 @@
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
-@model ODK.Web.Razor.Pages.Chapters.Account.DeleteModel
+@model DeleteModel
 @{
     Layout = "_OdkChapterLayout";
     Model.Title = "Delete account";
+
+    var chapter = await Model.GetChapter();
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -19,7 +21,7 @@
         Title = "Delete account",
         MenuContentFunc = _ => Html.PartialAsync("Account/_AccountMenu", new AccountMenuViewModel
         {
-            Chapter = Model.Chapter
+            Chapter = chapter
         }),
         BodyContentFunc = 
             @<div>

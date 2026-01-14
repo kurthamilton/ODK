@@ -9,7 +9,8 @@
     Layout = "_OdkChapterLayout";
     Model.Title = "My conversations";
 
-    var request = Model.CreateMemberChapterServiceRequest();
+    var chapter = await Model.GetChapter();
+    var request = await Model.CreateMemberChapterServiceRequest();
     var viewModel = await MemberViewModelService.GetMemberConversationsPage(request);
 }
 
@@ -21,7 +22,7 @@
         Title = "My conversations",
         MenuContentFunc = _ => Html.PartialAsync("Account/_AccountMenu", new AccountMenuViewModel
         {
-            Chapter = Model.Chapter
+            Chapter = chapter
         }),
         BodyContentFunc = 
             @<div>

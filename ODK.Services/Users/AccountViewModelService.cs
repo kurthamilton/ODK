@@ -34,29 +34,10 @@ public class AccountViewModelService : IAccountViewModelService
         };
     }
 
-    public async Task<ChapterAccountViewModel> GetChapterAccountViewModel(Guid currentMemberId, string chapterName)
-    {
-        var (member, chapter) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(currentMemberId),
-            x => x.ChapterRepository.GetByName(chapterName));
-
-        OdkAssertions.Exists(chapter, $"Chapter not found: '{chapterName}'");
-        OdkAssertions.MemberOf(member, chapter.Id);
-
-        return new ChapterAccountViewModel
-        {
-            Chapter = chapter,
-            CurrentMember = member
-        };
-    }
-
     public async Task<ChapterJoinPageViewModel> GetChapterJoinPage(
-        ServiceRequest request, string chapterName)
+        ServiceRequest request, Chapter chapter)
     {
         var platform = request.Platform;
-
-        var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).Run();
-        OdkAssertions.Exists(chapter, $"Chapter not found: '{chapterName}'");
 
         var (
                 chapterProperties,
@@ -89,11 +70,9 @@ public class AccountViewModelService : IAccountViewModelService
         });
     }
 
-    public async Task<ChapterPicturePageViewModel> GetChapterPicturePage(Guid currentMemberId, string chapterName)
+    public async Task<ChapterPicturePageViewModel> GetChapterPicturePage(
+        Guid currentMemberId, Chapter chapter)
     {
-        var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).Run();
-        OdkAssertions.Exists(chapter, $"Chapter not found: '{chapterName}'");
-
         var (
                 member,
                 avatar,
@@ -114,12 +93,10 @@ public class AccountViewModelService : IAccountViewModelService
         };
     }
 
-    public async Task<ChapterProfilePageViewModel> GetChapterProfilePage(MemberServiceRequest request, string chapterName)
+    public async Task<ChapterProfilePageViewModel> GetChapterProfilePage(
+        MemberServiceRequest request, Chapter chapter)
     {
         var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
-
-        var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).Run();
-        OdkAssertions.Exists(chapter, $"Chapter not found: '{chapterName}'");
 
         var member = await _unitOfWork.MemberRepository.GetById(currentMemberId).Run();
 
@@ -154,12 +131,9 @@ public class AccountViewModelService : IAccountViewModelService
     }
 
     public async Task<MemberChapterPaymentsPageViewModel> GetMemberChapterPaymentsPage(
-        MemberServiceRequest request, string chapterName)
+        MemberServiceRequest request, Chapter chapter)
     {
         var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
-
-        var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).Run();
-        OdkAssertions.Exists(chapter, $"Chapter not found: '{chapterName}'");
 
         var (member, payments) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(currentMemberId),

@@ -1,4 +1,5 @@
-﻿using ODK.Services.Members.ViewModels;
+﻿using ODK.Core.Chapters;
+using ODK.Services.Members.ViewModels;
 
 namespace ODK.Services.Members;
 
@@ -14,7 +15,7 @@ public interface IMemberViewModelService
 
     Task<MemberInterestsPageViewModel> GetMemberInterestsPage(Guid currentMemberId);
 
-    Task<MemberPageViewModel> GetMemberPage(MemberServiceRequest request, string chapterName, Guid memberId);
+    Task<MemberPageViewModel> GetMemberPage(MemberServiceRequest request, Chapter chapter, Guid memberId);
 
-    Task<MembersPageViewModel> GetMembersPage(MemberServiceRequest request, string chapterName);
+    Task<MembersPageViewModel> GetMembersPage(MemberServiceRequest request, Chapter chapter);
 }

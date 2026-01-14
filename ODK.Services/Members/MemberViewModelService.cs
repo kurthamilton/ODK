@@ -91,22 +91,7 @@ public class MemberViewModelService : IMemberViewModelService
         };
     }
 
-    public async Task<MemberPageViewModel> GetMemberPage(MemberServiceRequest request, string chapterName, Guid memberId)
-    {
-        var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).Run();
-        OdkAssertions.Exists(chapter, $"Chapter not found: '{chapterName}'");
-
-        return await GetMemberPage(request, chapter, memberId);
-    }
-
-    public async Task<MembersPageViewModel> GetMembersPage(MemberServiceRequest request, string chapterName)
-    {
-        var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).Run();
-        OdkAssertions.Exists(chapter, $"Chapter not found: '{chapterName}'");
-        return await GetMembersPage(request, chapter);
-    }
-
-    private async Task<MemberPageViewModel> GetMemberPage(MemberServiceRequest request, Chapter chapter, Guid memberId)
+    public async Task<MemberPageViewModel> GetMemberPage(MemberServiceRequest request, Chapter chapter, Guid memberId)
     {
         var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
 
@@ -147,7 +132,7 @@ public class MemberViewModelService : IMemberViewModelService
         };
     }
 
-    private async Task<MembersPageViewModel> GetMembersPage(MemberServiceRequest request, Chapter chapter)
+    public async Task<MembersPageViewModel> GetMembersPage(MemberServiceRequest request, Chapter chapter)
     {
         var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
 

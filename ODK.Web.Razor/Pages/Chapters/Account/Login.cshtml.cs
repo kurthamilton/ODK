@@ -1,6 +1,6 @@
 namespace ODK.Web.Razor.Pages.Chapters.Account;
 
-public class LoginModel : ChapterPageModel
+public class LoginModel : OdkPageModel
 {
     public string? ReturnUrl { get; private set; }
 

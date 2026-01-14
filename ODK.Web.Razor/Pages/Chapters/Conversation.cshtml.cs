@@ -1,6 +1,6 @@
 namespace ODK.Web.Razor.Pages.Chapters;
 
-public class ConversationModel : ChapterPageModel
+public class ConversationModel : OdkPageModel
 {
     public Guid ConversationId { get; private set; }
 

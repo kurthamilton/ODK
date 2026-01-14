@@ -65,6 +65,12 @@ public abstract class OdkPageModel : PageModel
     public MemberChapterServiceRequest CreateMemberChapterServiceRequest(Guid chapterId)
         => MemberChapterServiceRequest.Create(chapterId, MemberServiceRequest);
 
+    public async Task<MemberChapterServiceRequest> CreateMemberChapterServiceRequest()
+    {
+        var chapter = await GetChapter();
+        return CreateMemberChapterServiceRequest(chapter.Id);
+    }
+
     public Task<Chapter> GetChapter() => RequestStore.GetChapter();
 
     public Task<Member> GetCurrentMember() => RequestStore.GetCurrentMember();

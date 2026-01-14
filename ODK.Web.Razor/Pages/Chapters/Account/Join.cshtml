@@ -4,13 +4,14 @@
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.Account
-@model ODK.Web.Razor.Pages.Chapters.Account.JoinModel
+@model JoinModel
 @inject IAccountViewModelService AccountViewModelService
 @{
     Layout = "_OdkChapterLayout";
     Model.Title = "Join";
 
-    var viewModel = await AccountViewModelService.GetChapterJoinPage(Model.ServiceRequest, Model.ChapterName);    
+    var chapter = await Model.GetChapter();
+    var viewModel = await AccountViewModelService.GetChapterJoinPage(Model.ServiceRequest, chapter);
 }
 
 @if (!viewModel.Chapter.IsOpenForRegistration())

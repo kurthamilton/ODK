@@ -4,7 +4,7 @@ using ODK.Web.Razor.Models.Contact;
 
 namespace ODK.Web.Razor.Pages.Chapters;
 
-public class ContactModel : ChapterPageModel
+public class ContactModel : OdkPageModel
 {
     private readonly IContactService _contactService;
 
@@ -27,13 +27,14 @@ public class ContactModel : ChapterPageModel
             return Page();
         }
 
+        var chapter = await GetChapter();
         await _contactService.SendChapterContactMessage(
             ServiceRequest,
-            Chapter,
+            chapter,
             viewModel.EmailAddress ?? "",
             viewModel.Message ?? "",
             viewModel.Recaptcha ?? "");
 
-        return Redirect($"/{Chapter.ShortName}/Contact?Sent=True");
+        return Redirect($"/{chapter.ShortName}/Contact?Sent=True");
     }
 }

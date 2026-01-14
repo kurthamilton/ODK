@@ -1,6 +1,6 @@
 namespace ODK.Web.Razor.Pages.Chapters.Account;
 
-public class PictureModel : ChapterPageModel2
+public class PictureModel : OdkPageModel
 {
     public void OnGet()
     {

@@ -4,7 +4,7 @@ using ODK.Web.Common.Routes;
 
 namespace ODK.Web.Razor.Pages.Chapters.Account;
 
-public class LogoutModel : ChapterPageModel
+public class LogoutModel : OdkPageModel
 {
     private ILoginHandler _loginHandler;
 
@@ -17,7 +17,8 @@ public class LogoutModel : ChapterPageModel
     {
         await _loginHandler.Logout();
 
-        var redirectUrl = OdkRoutes.Groups.Group(Platform, Chapter);
+        var chapter = await GetChapter();
+        var redirectUrl = OdkRoutes.Groups.Group(Platform, chapter);
         return Redirect(redirectUrl);
     }
 }

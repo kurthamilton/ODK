@@ -1,10 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Events;
 using ODK.Services.Events;
+using ODK.Web.Common.Routes;
 
 namespace ODK.Web.Razor.Pages.Chapters.Events;
 
-public class EventModel : ChapterPageModel2
+public class EventModel : OdkPageModel
 {
     private readonly IEventService _eventService;
 
@@ -31,7 +32,9 @@ public class EventModel : ChapterPageModel2
                 // do nothing
             }
 
-            return Redirect($"/{ChapterName}/Events/{id}");
+            var chapter = await RequestStore.GetChapter();
+            var redirectPath = OdkRoutes.Groups.Event(Platform, chapter, id);
+            return Redirect(redirectPath);
         }
 
         return Page();

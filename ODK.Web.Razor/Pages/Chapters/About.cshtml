@@ -14,7 +14,8 @@
     Layout = "_OdkChapterLayout";    
     Model.Description = "More information about this Drunken Knitwits chapter, including some frequently asked questions";
 
-    var viewModel = await ChapterViewModelService.GetChapterAboutPage(Model.Chapter);
+    var chapter = await Model.GetChapter();
+    var viewModel = await ChapterViewModelService.GetChapterAboutPage(chapter);
     if (viewModel.ChapterPage?.Hidden == true)
     {
         throw new OdkNotFoundException();
@@ -23,15 +24,15 @@
     var title = StringUtils.Coalesce(viewModel.ChapterPage?.Title, "About");
 
     Model.Title = title;
-    Model.Path = OdkRoutes.Groups.About(Model.Platform, Model.Chapter);
+    Model.Path = OdkRoutes.Groups.About(Model.Platform, chapter);
 }
 
-@if (!Model.Chapter.IsOpenForRegistration())
+@if (!chapter.IsOpenForRegistration())
 {
     @await Html.PartialAsync("Components/_Body", new BodyViewModel
     {
-        Title = Model.Chapter.FullName,
-        Content = await Html.PartialAsync("Groups/_GroupRegistrationClosed", Model.Chapter)
+        Title = chapter.FullName,
+        Content = await Html.PartialAsync("Groups/_GroupRegistrationClosed", chapter)
     })
 
     return;
@@ -44,14 +45,14 @@
     {
         new MenuItem 
         { 
-            Link = OdkRoutes.Groups.Group(Model.Platform, Model.Chapter), 
-            Text = Model.Chapter.GetDisplayName(Model.Platform)
+            Link = OdkRoutes.Groups.Group(Model.Platform, chapter), 
+            Text = chapter.GetDisplayName(Model.Platform)
         },
         new MenuItem { Text = title }
     },
     Content = await Html.PartialAsync("Chapters/_AboutContent", new AboutContentViewModel
     {
-        Chapter = Model.Chapter,
+        Chapter = chapter,
         Texts = viewModel.Texts
     })
 })

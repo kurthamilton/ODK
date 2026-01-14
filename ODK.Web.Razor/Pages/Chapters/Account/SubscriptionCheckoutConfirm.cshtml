@@ -14,6 +14,7 @@
     Model.Title = "Subscription pending confirmation";
 
     var subscriptionUrl = Model.RedirectUrl;
+    var chapter = await Model.GetChapter();
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -25,7 +26,7 @@
         Title = "Checkout",
         MenuContentFunc = _ => Html.PartialAsync("Account/_AccountMenu", new AccountMenuViewModel
         {
-            Chapter = Model.Chapter
+            Chapter = chapter
         }),
         BodyContentFunc = 
             @<div>
@@ -40,7 +41,7 @@
                 <h2>Checkout</h2>
                 <section class="section">
                     <div data-odk-checkout
-                         data-odk-polling-url="/payments/sessions/@Model.SessionId/status?groupId=@Model.Chapter.Id">
+                         data-odk-polling-url="/payments/sessions/@Model.SessionId/status?groupId=@chapter.Id">
 
                         <div data-odk-checkout-status="@PaymentStatusType.Complete"
                              data-odk-checkout-action="reload">

@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
 using ODK.Core.Venues;
+using ODK.Services.Events;
 using ODK.Services.Venues;
+using ODK.Web.Common.Feedback;
+using ODK.Web.Common.Routes;
 
 namespace ODK.Web.Razor.Pages.Chapters.Admin.Events;
 
@@ -13,20 +16,37 @@ public abstract class VenueAdminPageModel : AdminPageModel
 
     public Venue Venue { get; private set; } = null!;
 
-    public Guid VenueId => Guid.TryParse(Request.RouteValues["id"]?.ToString(), out Guid id) ? id : Guid.Empty;
-
     protected IVenueAdminService VenueAdminService { get; }
 
-    public override async Task OnPageHandlerExecutionAsync(PageHandlerExecutingContext context, PageHandlerExecutionDelegate next)
+    public override async Task OnPageHandlerExecutionAsync(
+        PageHandlerExecutingContext context,
+        PageHandlerExecutionDelegate next)
     {
-        await base.OnPageHandlerExecutionAsync(context, next);
-
-        var request = await GetAdminServiceRequest();
-        Venue = await VenueAdminService.GetVenue(request, VenueId);
-        if (Venue == null)
+        if (!Guid.TryParse(Request.RouteValues["id"]?.ToString(), out Guid id))
         {
-            Response.Redirect($"{Request.RouteValues["chapterName"]}/Admin/Events/Venues");
+            await Redirect(context);
             return;
         }
+
+        var request = await GetAdminServiceRequest();
+
+        try
+        {
+            Venue = await VenueAdminService.GetVenue(request, id);
+            await next();
+        }
+        catch
+        {
+            AddFeedback("Venue not found", FeedbackType.Error);
+
+            await Redirect(context);
+        }
+    }
+
+    private async Task Redirect(PageHandlerExecutingContext context)
+    {
+        var chapter = await RequestStore.GetChapter();
+        var redirectPath = OdkRoutes.MemberGroups.Venues(Platform, chapter);
+        context.Result = Redirect(redirectPath);
     }
 }

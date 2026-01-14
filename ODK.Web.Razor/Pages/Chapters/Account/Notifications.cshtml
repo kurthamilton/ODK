@@ -11,6 +11,7 @@
     Layout = "_OdkChapterLayout";
     Model.Title = "Notifications";
 
+    var chapter = await Model.GetChapter();
     var viewModel = await NotificationService.GetNotificationsPageViewModel(Model.CurrentMemberId);
 }
 
@@ -22,7 +23,7 @@
         Title = "Notification preferences",
         MenuContentFunc = _ => Html.PartialAsync("Account/_AccountMenu", new AccountMenuViewModel
         {
-            Chapter = Model.Chapter
+            Chapter = chapter
         }),
         BodyContentFunc = 
             @<div>

@@ -14,7 +14,8 @@
     Layout = "_OdkChapterLayout";
     Model.Title = "Profile picture";
 
-    var viewModel = await AccountViewModelService.GetChapterPicturePage(Model.CurrentMemberId, Model.ChapterName);
+    var chapter = await Model.GetChapter();
+    var viewModel = await AccountViewModelService.GetChapterPicturePage(Model.CurrentMemberId, chapter);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

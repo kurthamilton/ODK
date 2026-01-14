@@ -7,7 +7,7 @@ using ODK.Services;
 namespace ODK.Web.Razor.Pages.Chapters.Admin;
 
 [Authorize(Roles = "Admin")]
-public abstract class AdminPageModel : ChapterPageModel2
+public abstract class AdminPageModel : OdkPageModel
 {
     private readonly Lazy<MemberChapterServiceRequest> _adminServiceRequest;
 
@@ -30,13 +30,14 @@ public abstract class AdminPageModel : ChapterPageModel2
         return AdminServiceRequest;
     }
 
-    public override async Task OnPageHandlerExecutionAsync(PageHandlerExecutingContext context,
+    public override async Task OnPageHandlerExecutionAsync(
+        PageHandlerExecutingContext context,
         PageHandlerExecutionDelegate next)
     {
-        await base.OnPageHandlerExecutionAsync(context, next);
-
         await LoadChapter();
         CurrentMember = await GetCurrentMember();
+
+        await next();
     }
 
     protected async Task<Chapter> LoadChapter()

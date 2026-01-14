@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ODK.Web.Razor.Pages.Chapters.Members;
 
-public class MemberModel : ChapterPageModel2
+public class MemberModel : OdkPageModel
 {
     public Guid MemberId { get; private set; }
 

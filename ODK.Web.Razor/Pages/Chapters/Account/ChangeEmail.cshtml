@@ -1,21 +1,22 @@
 ﻿@page "/{chapterName}/Account/Email/Change"
 @attribute [Authorize]
-@using ODK.Services.Users
-@using ODK.Services.Users.ViewModels
-@using ODK.Web.Common.Routes
-@using ODK.Web.Razor.Models.Components
-@using ODK.Web.Common.Components
-@using ODK.Web.Razor.Models.Account
 @using Microsoft.AspNetCore.Authorization
+@using ODK.Services.Users.ViewModels
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Account
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Services
-@model ODK.Web.Razor.Pages.Chapters.Account.ChangeEmailModel
-@inject IAccountViewModelService AccountViewModelService
+@model ChangeEmailModel
 @{
     Layout = "_OdkChapterLayout";
     Model.Title = "Change email";
 
-    var memberId = Model.CurrentMemberId;
-    var viewModel = await AccountViewModelService.GetChapterAccountViewModel(memberId, Model.ChapterName);
+    var viewModel = new ChapterAccountViewModel
+    {
+        Chapter = await Model.GetChapter(),
+        CurrentMember = await Model.GetCurrentMember()
+    };
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

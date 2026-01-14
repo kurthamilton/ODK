@@ -6,7 +6,7 @@ using ODK.Web.Common.Routes;
 
 namespace ODK.Web.Razor.Pages.Chapters.Account;
 
-public class SubscriptionCheckoutConfirmModel : ChapterPageModel
+public class SubscriptionCheckoutConfirmModel : OdkPageModel
 {
     private readonly IPaymentService _paymentService;
 
@@ -15,7 +15,7 @@ public class SubscriptionCheckoutConfirmModel : ChapterPageModel
         _paymentService = paymentService;
     }
 
-    public string RedirectUrl => OdkRoutes.Account.Subscription(Platform, Chapter);
+    public string RedirectUrl { get; private set; } = string.Empty;
 
     public string? SessionId { get; set; }
 
@@ -23,10 +23,13 @@ public class SubscriptionCheckoutConfirmModel : ChapterPageModel
 
     public async Task<IActionResult> OnGet(Guid id, string sessionId)
     {
+        var chapter = await GetChapter();
+
+        RedirectUrl = OdkRoutes.Account.Subscription(Platform, chapter);
         SessionId = sessionId;
         SubscriptionId = SubscriptionId;
 
-        var request = CreateMemberChapterServiceRequest(Chapter.Id);
+        var request = await CreateMemberChapterServiceRequest();
         var status = await _paymentService.GetMemberChapterPaymentCheckoutSessionStatus(request, sessionId);
 
         if (status == PaymentStatusType.Complete)

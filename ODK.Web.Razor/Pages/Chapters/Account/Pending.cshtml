@@ -2,21 +2,23 @@
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
-@model ODK.Web.Razor.Pages.Chapters.Account.PendingModel
+@model PendingModel
 @{
     Layout = "_OdkChapterLayout";
     Model.Title = "Join";
+
+    var chapter = await Model.GetChapter();
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Title = $"Join the {Model.Chapter.FullName}",
+    Title = $"Join the {chapter.FullName}",
     Breadcrumbs = new []
     {
         new MenuItem 
         { 
-            Link = OdkRoutes.Groups.Group(Model.Platform, Model.Chapter),
-            Text = Model.Chapter.GetDisplayName(Model.Platform)
+            Link = OdkRoutes.Groups.Group(Model.Platform, chapter),
+            Text = chapter.GetDisplayName(Model.Platform)
         },
         new MenuItem { Text = "Join" }
     },

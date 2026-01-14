@@ -32,6 +32,6 @@ public abstract class OdkGroupAdminPageModel : OdkPageModel
 
         ChapterId = chapterId.Value;
 
-        await base.OnPageHandlerExecutionAsync(context, next);
+        await next();
     }
 }

@@ -5,7 +5,9 @@ namespace ODK.Web.Razor.Pages.Chapters.Admin.SuperAdmin;
 
 public abstract class ChapterSuperAdminPageModel : AdminPageModel
 {
-    public override async Task OnPageHandlerExecutionAsync(PageHandlerExecutingContext context, PageHandlerExecutionDelegate next)
+    public override async Task OnPageHandlerExecutionAsync(
+        PageHandlerExecutingContext context,
+        PageHandlerExecutionDelegate next)
     {
         var member = await RequestStore.GetCurrentMember();
         if (member?.SuperAdmin != true)
@@ -13,6 +15,6 @@ public abstract class ChapterSuperAdminPageModel : AdminPageModel
             throw new OdkNotAuthorizedException();
         }
 
-        await base.OnPageHandlerExecutionAsync(context, next);
+        await next();
     }
 }

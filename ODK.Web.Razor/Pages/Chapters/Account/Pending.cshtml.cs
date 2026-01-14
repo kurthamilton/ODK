@@ -1,6 +1,6 @@
 namespace ODK.Web.Razor.Pages.Chapters.Account;
 
-public class PendingModel : ChapterPageModel
+public class PendingModel : OdkPageModel
 {
     public void OnGet()
     {

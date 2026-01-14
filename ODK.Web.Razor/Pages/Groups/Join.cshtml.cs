@@ -22,8 +22,6 @@ public class JoinModel : OdkGroupPageModel
 
     public async Task<IActionResult> OnPost([FromForm] ChapterProfileFormViewModel viewModel)
     {
-        var chapter = await GetChapter();
-
         var properties = viewModel.Properties.Select(x => new UpdateMemberProperty
         {
             ChapterPropertyId = x.ChapterPropertyId,
@@ -33,13 +31,15 @@ public class JoinModel : OdkGroupPageModel
                     : x.Value ?? ""
         });
 
-        var result = await _memberService.JoinChapter(CreateMemberChapterServiceRequest(chapter.Id), properties);
+        var request = await CreateMemberChapterServiceRequest();
+        var result = await _memberService.JoinChapter(request, properties);
         if (!result.Success)
         {
             AddFeedback(result);
             return Page();
         }
 
+        var chapter = await GetChapter();
         return Redirect(OdkRoutes.Groups.Group(PlatformType.Default, chapter));
     }
 }

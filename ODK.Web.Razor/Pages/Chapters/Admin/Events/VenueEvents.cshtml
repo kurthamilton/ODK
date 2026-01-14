@@ -11,7 +11,7 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Venue events | Admin";
 
-    var viewModel = await VenueAdminService.GetVenueEventsViewModel(Model.AdminServiceRequest, Model.VenueId);
+    var viewModel = await VenueAdminService.GetVenueEventsViewModel(Model.AdminServiceRequest, Model.Venue.Id);
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel

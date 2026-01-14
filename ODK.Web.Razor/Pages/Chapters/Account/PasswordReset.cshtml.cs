@@ -7,7 +7,7 @@ using ODK.Web.Razor.Models.Account;
 
 namespace ODK.Web.Razor.Pages.Chapters.Account;
 
-public class PasswordResetModel : ChapterPageModel
+public class PasswordResetModel : OdkPageModel
 {
     private readonly IAuthenticationService _authenticationService;
 
@@ -30,7 +30,8 @@ public class PasswordResetModel : ChapterPageModel
         {
             AddFeedback(new FeedbackViewModel("Your password has been updated.", FeedbackType.Success));
 
-            var redirectUrl = OdkRoutes.Account.Login(Chapter);
+            var chapter = await GetChapter();
+            var redirectUrl = OdkRoutes.Account.Login(chapter);
             return Redirect(redirectUrl);
         }
 

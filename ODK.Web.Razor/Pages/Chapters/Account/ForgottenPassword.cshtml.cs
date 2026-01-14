@@ -1,6 +1,6 @@
 namespace ODK.Web.Razor.Pages.Chapters.Account;
 
-public class ForgottenPasswordModel : ChapterPageModel
+public class ForgottenPasswordModel : OdkPageModel
 {
     public void OnGet()
     {

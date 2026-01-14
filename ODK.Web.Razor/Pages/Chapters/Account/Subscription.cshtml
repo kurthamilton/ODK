@@ -10,13 +10,14 @@
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Payments
-@model ODK.Web.Razor.Pages.Chapters.Account.SubscriptionModel
+@model SubscriptionModel
 @inject IChapterService ChapterService
 @{
     Layout = "_OdkChapterLayout";
     Model.Title = "Subscription";
 
-    var request = Model.CreateMemberChapterServiceRequest(Model.Chapter.Id);
+    var chapter = await Model.GetChapter();
+    var request = await Model.CreateMemberChapterServiceRequest();
     var viewModel = await ChapterService.GetChapterMemberSubscriptionsViewModel(request);
 }
 
@@ -29,7 +30,7 @@
         Title = "My subscription",
         MenuContentFunc = _ => Html.PartialAsync("Account/_AccountMenu", new AccountMenuViewModel
         {
-            Chapter = Model.Chapter
+            Chapter = chapter
         }),
         BodyContentFunc = 
             @<div>

@@ -1,6 +1,6 @@
 namespace ODK.Web.Razor.Pages.Chapters.Events;
 
-public class EventCheckoutModel : ChapterPageModel2
+public class EventCheckoutModel : OdkPageModel
 {
     public Guid EventId { get; private set; }
 

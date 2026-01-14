@@ -3,10 +3,12 @@
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Extensions
-@model ODK.Web.Razor.Pages.Chapters.Errors.ErrorModel
+@model ErrorModel
 @{
     Layout = "_OdkChapterLayout";
     Model.Title = "Error";
+
+    var chapter = await Model.GetChapter();
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -15,8 +17,8 @@
     {
         new MenuItem 
         { 
-            Link = OdkRoutes.Groups.Group(Model.Platform, Model.Chapter), 
-            Text = Model.Chapter.GetDisplayName(Model.Platform)
+            Link = OdkRoutes.Groups.Group(Model.Platform, chapter), 
+            Text = chapter.GetDisplayName(Model.Platform)
         },
         new MenuItem { Text = Model.ErrorStatusCode.ErrorPageTitle() }
     },

@@ -29,7 +29,7 @@ public class ChapterSubscriptionCheckoutConfirmModel : AdminPageModel
 
         await LoadChapter();
 
-        var request = CreateMemberChapterServiceRequest(Chapter.Id);
+        var request = await CreateMemberChapterServiceRequest();
         var status = await _chapterAdminService.GetChapterPaymentCheckoutSessionStatus(
             request, sessionId);
 

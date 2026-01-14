@@ -8,7 +8,7 @@ using ODK.Web.Common.Feedback;
 
 namespace ODK.Web.Razor.Pages.Chapters.Account;
 
-public class JoinModel : ChapterPageModel2
+public class JoinModel : OdkPageModel
 {
     private readonly IMemberService _memberService;
 

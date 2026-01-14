@@ -14,7 +14,7 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Subscription | Admin";
 
-    var request = Model.CreateMemberChapterServiceRequest(Model.Chapter.Id);
+    var request = await Model.CreateMemberChapterServiceRequest();
     var viewModel = await ChapterAdminService.GetChapterSubscriptionViewModel(request);
 }
 

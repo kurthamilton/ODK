@@ -1,5 +1,5 @@
 namespace ODK.Web.Razor.Pages.Chapters.Account;
 
-public class ChangeEmailModel : ChapterPageModel2
+public class ChangeEmailModel : OdkPageModel
 {
 }

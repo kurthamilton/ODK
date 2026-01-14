@@ -1,6 +1,6 @@
 namespace ODK.Web.Razor.Pages.Chapters;
 
-public class AboutModel : ChapterPageModel
+public class AboutModel : OdkPageModel
 {
     public void OnGet()
     {

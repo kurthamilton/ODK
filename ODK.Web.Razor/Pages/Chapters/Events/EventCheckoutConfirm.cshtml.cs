@@ -7,7 +7,7 @@ using ODK.Web.Common.Routes;
 
 namespace ODK.Web.Razor.Pages.Chapters.Events;
 
-public class EventCheckoutConfirmModel : ChapterPageModel2
+public class EventCheckoutConfirmModel : OdkPageModel
 {
     private readonly IPaymentService _paymentService;
 
@@ -28,7 +28,7 @@ public class EventCheckoutConfirmModel : ChapterPageModel2
         SessionId = sessionId;
 
         var chapter = await GetChapter();
-        var request = CreateMemberChapterServiceRequest(chapter.Id);
+        var request = await CreateMemberChapterServiceRequest();
         var status = await _paymentService.GetMemberChapterPaymentCheckoutSessionStatus(request, sessionId);
 
         RedirectUrl = OdkRoutes.Groups.Event(Platform, chapter, EventId);

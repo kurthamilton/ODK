@@ -7,13 +7,14 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Payment account | Admin";
 
-    var request = Model.CreateMemberChapterServiceRequest(Model.Chapter.Id);
+    var chapter = await Model.GetChapter();
+    var request = await Model.CreateMemberChapterServiceRequest();
     var viewModel = await ChapterAdminService.GetChapterPaymentAccountViewModel(request);
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
     Title = "Payment account",
-    Chapter = Model.Chapter,
+    Chapter = chapter,
     ContentFunc = @<div>@await Html.PartialAsync("Admin/Payments/_AccountContent", viewModel)</div>
 })

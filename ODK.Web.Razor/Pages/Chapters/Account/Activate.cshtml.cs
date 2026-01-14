@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ODK.Web.Razor.Pages.Chapters.Account;
 
-public class ActivateModel : ChapterPageModel2
+public class ActivateModel : OdkPageModel
 {
     public ActivateModel()
     {

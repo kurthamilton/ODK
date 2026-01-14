@@ -21,6 +21,6 @@ public abstract class OdkGroupPageModel : OdkPageModel
         Slug = slug;
         Chapter = await GetChapter();
 
-        await base.OnPageHandlerExecutionAsync(context, next);
+        await next();
     }
 }
