@@ -1936,31 +1936,26 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> UpdateChapterPaymentSettings(MemberChapterServiceRequest request,
+    public async Task<ServiceResult> UpdateChapterPaymentSettings(
+        MemberChapterServiceRequest request,
         UpdateChapterPaymentSettings model)
     {
         var chapterId = request.ChapterId;
 
-        if (model.CurrencyId == null)
-        {
-            return ServiceResult.Failure("Currency required");
-        }
-
-        var (settings, currency) = await GetChapterAdminRestrictedContent(request,
-            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
-            x => x.CurrencyRepository.GetById(model.CurrencyId.Value));
+        var settings = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId));
 
         settings ??= new ChapterPaymentSettings();
 
         settings.ApiPublicKey = model.ApiPublicKey;
         settings.ApiSecretKey = model.ApiSecretKey;
-        settings.Currency = currency;
-        settings.CurrencyId = model.CurrencyId.Value;
+        settings.CurrencyId = model.CurrencyId;
+        settings.Provider = model.Provider;
         settings.UseSitePaymentProvider = model.UseSitePaymentProvider;
 
-        if (model.Provider != null)
+        if (settings.Provider == null && !settings.UseSitePaymentProvider)
         {
-            settings.Provider = model.Provider;
+            return ServiceResult.Failure("Provider must be set if not using site payment provider");
         }
 
         if (settings.ChapterId == default)

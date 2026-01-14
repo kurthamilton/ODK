@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using ODK.Core.Countries;
 using ODK.Core.Payments;
 
@@ -9,12 +8,8 @@ public class PaymentSettingsFormViewModel
 {
     public IReadOnlyCollection<Currency> CurrencyOptions { get; set; } = [];
 
-    [Required]
     [DisplayName("Currency")]
     public Guid? CurrencyId { get; set; }
-
-    [Required]
-    public string? Name { get; set; }
 
     public PaymentProviderType? Provider { get; set; }
 

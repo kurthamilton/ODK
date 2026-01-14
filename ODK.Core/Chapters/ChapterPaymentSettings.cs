@@ -1,5 +1,4 @@
-﻿using ODK.Core.Countries;
-using ODK.Core.Payments;
+﻿using ODK.Core.Payments;
 
 namespace ODK.Core.Chapters;
 
@@ -11,9 +10,7 @@ public class ChapterPaymentSettings : IChapterEntity, IPaymentSettings
 
     public Guid ChapterId { get; set; }
 
-    public Currency Currency { get; set; } = null!;
-
-    public Guid CurrencyId { get; set; }
+    public Guid? CurrencyId { get; set; }
 
     public string? ExternalProductId { get; set; }
 

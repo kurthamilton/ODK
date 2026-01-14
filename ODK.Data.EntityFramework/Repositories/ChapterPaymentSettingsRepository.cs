@@ -17,8 +17,4 @@ public class ChapterPaymentSettingsRepository : WriteRepositoryBase<ChapterPayme
         => Set()
             .Where(x => x.ChapterId == chapterId)
             .DeferredSingleOrDefault();
-
-    protected override IQueryable<ChapterPaymentSettings> Set()
-        => base.Set()
-            .Include(x => x.Currency);
 }

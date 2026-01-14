@@ -21,15 +21,15 @@
         .ToArray();
 }
 
-<div class="form-group mb-3 required">
+<div class="form-group mb-3">
     @Html.LabelFor(x => x.CurrencyId, new { @class = "form-label" })
-    @Html.DropDownListFor(x => x.CurrencyId, currencyOptions, "", new { @class = "form-select" })
+    @Html.DropDownListFor(x => x.CurrencyId, currencyOptions, "", new { @class = "form-select", data_select = "", data_clearable = "" })
     @Html.ValidationMessageFor(x => x.CurrencyId)
 </div>
 
-<div class="form-group mb-3 required">
+<div class="form-group mb-3">
     @Html.LabelFor(x => x.Provider, new { @class = "form-label" })
-    @Html.DropDownListFor(x => x.Provider, providerOptions, new { @class = "form-select" })
+    @Html.DropDownListFor(x => x.Provider, providerOptions, "", new { @class = "form-select", data_select = "", data_clearable = "" })
 </div>
 
 <div class="form-check form-switch mb-3">
