@@ -51,7 +51,7 @@ public class EventViewModelService : IEventViewModelService
             hasQuestions,
             adminMembers,
             ownerSubscription,
-            eventTicketPurchase) = await _unitOfWork.RunAsync(
+            eventTicketPayments) = await _unitOfWork.RunAsync(
             x => x.ChapterPageRepository.GetByChapterId(chapter.Id),
             x => x.EventRepository.GetById(eventId),
             x => x.MemberRepository.GetByIdOrDefault(currentMemberId),
@@ -62,7 +62,7 @@ public class EventViewModelService : IEventViewModelService
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
-            x => x.EventTicketPurchaseRepository.GetByMemberId(currentMemberId, eventId));
+            x => x.EventTicketPaymentRepository.GetConfirmedPayments(currentMemberId, eventId));
 
         OdkAssertions.BelongsToChapter(@event, chapter.Id);
 
@@ -91,12 +91,7 @@ public class EventViewModelService : IEventViewModelService
             await _unitOfWork.SaveChangesAsync();
         }
 
-        if (eventTicketPurchase?.PurchasedUtc != null)
-        {
-            throw new OdkServiceException("Event already paid for");
-        }
-
-        var paidSoFar = eventTicketPurchase?.TotalPaid ?? 0;
+        var paidSoFar = eventTicketPayments.Sum(x => x.Payment.Amount);
         var amountDue = paidSoFar == 0
             ? @event.TicketSettings.Deposit ?? @event.TicketSettings.Cost
             : @event.TicketSettings.Cost - paidSoFar;
@@ -120,17 +115,18 @@ public class EventViewModelService : IEventViewModelService
         var paymentCheckoutSessionId = Guid.NewGuid();
         var paymentId = Guid.NewGuid();
 
-        eventTicketPurchase ??= new EventTicketPurchase
+        var eventTicketPayment = new EventTicketPayment
         {
-            Id = Guid.NewGuid()
-        }
+            Id = Guid.NewGuid(),
+            EventId = eventId,
+            PaymentId = paymentId
+        };
 
         var metadata = new PaymentMetadataModel(
             reason,
             currentMember,
-            @event,
-            paymentCheckoutSessionId,
-            paymentId);
+            eventTicketPayment,
+            paymentCheckoutSessionId);
 
         var externalCheckoutSession = await paymentProvider.StartCheckout(
             request,
@@ -171,6 +167,8 @@ public class EventViewModelService : IEventViewModelService
             SitePaymentSettingId = null
         });
 
+        _unitOfWork.EventTicketPaymentRepository.Add(eventTicketPayment);
+
         await _unitOfWork.SaveChangesAsync();
 
         return new EventCheckoutPageViewModel
@@ -205,7 +203,6 @@ public class EventViewModelService : IEventViewModelService
             hosts,
             comments,
             responses,
-            ticketPurchases,
             chapterPaymentSettings,
             privacySettings,
             hasProperties,
@@ -213,7 +210,8 @@ public class EventViewModelService : IEventViewModelService
             adminMembers,
             ownerSubscription,
             notifications,
-            chapterPages) = await _unitOfWork.RunAsync(
+            chapterPages,
+            payments) = await _unitOfWork.RunAsync(
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.EventRepository.GetById(eventId),
             x => x.VenueRepository.GetByEventId(eventId),
@@ -226,7 +224,6 @@ public class EventViewModelService : IEventViewModelService
             x => x.EventHostRepository.GetByEventId(eventId),
             x => x.EventCommentRepository.GetByEventId(eventId),
             x => x.EventResponseRepository.GetByEventId(eventId),
-            x => x.EventTicketPurchaseRepository.GetByEventId(eventId),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
@@ -236,7 +233,10 @@ public class EventViewModelService : IEventViewModelService
             x => currentMemberId != null
                 ? x.NotificationRepository.GetUnreadByMemberId(currentMemberId.Value, NotificationType.NewEvent, eventId)
                 : new DefaultDeferredQueryMultiple<Notification>(),
-            x => x.ChapterPageRepository.GetByChapterId(chapter.Id));
+            x => x.ChapterPageRepository.GetByChapterId(chapter.Id),
+            x => currentMemberId != null
+                ? x.EventTicketPaymentRepository.GetConfirmedPayments(currentMemberId.Value, eventId)
+                : new DefaultDeferredQueryMultiple<EventTicketPayment>());
 
         OdkAssertions.BelongsToChapter(@event, chapter.Id);
 
@@ -310,8 +310,14 @@ public class EventViewModelService : IEventViewModelService
             await _unitOfWork.SaveChangesAsync();
         }
 
+        var amountPaid = payments.Sum(x => x.Payment.Amount);
+
         return new EventPageViewModel
         {
+            AmountPaid = amountPaid,
+            AmountRemaining = @event.TicketSettings != null
+                ? @event.TicketSettings.Cost - amountPaid
+                : 0,
             CanRespond = canRespond,
             CanView = canViewEvent,
             Chapter = chapter,
@@ -335,7 +341,6 @@ public class EventViewModelService : IEventViewModelService
                 : null,
             OwnerSubscription = ownerSubscription,
             Platform = platform,
-            TicketPurchases = ticketPurchases,
             Venue = canViewVenue ? venue : null,
             VenueLocation = venueLocation
         };

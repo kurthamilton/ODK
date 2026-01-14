@@ -13,6 +13,4 @@ public class EventTicketSettings
     public decimal? Deposit { get; set; }
 
     public Guid EventId { get; set; }
-
-    public decimal TotalCost => Cost + (Deposit ?? 0);
 }

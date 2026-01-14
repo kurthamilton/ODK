@@ -39,7 +39,7 @@ public interface IUnitOfWork
     IEventInviteRepository EventInviteRepository { get; }
     IEventRepository EventRepository { get; }
     IEventResponseRepository EventResponseRepository { get; }
-    IEventTicketPurchaseRepository EventTicketPurchaseRepository { get; }
+    IEventTicketPaymentRepository EventTicketPaymentRepository { get; }
     IEventTicketSettingsRepository EventTicketSettingsRepository { get; }
     IEventTopicRepository EventTopicRepository { get; }
     IFeatureRepository FeatureRepository { get; }

@@ -6,6 +6,7 @@ using ODK.Core.Members;
 using ODK.Core.Payments;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
+using ODK.Services.Logging;
 using ODK.Services.Members;
 using ODK.Services.Payments;
 
@@ -17,6 +18,7 @@ public class EventService : IEventService
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     private readonly IAuthorizationService _authorizationService;
+    private readonly ILoggingService _loggingService;
     private readonly IMemberEmailService _memberEmailService;
     private readonly IPaymentProviderFactory _paymentProviderFactory;
     private readonly IUnitOfWork _unitOfWork;
@@ -24,9 +26,11 @@ public class EventService : IEventService
     public EventService(IUnitOfWork unitOfWork,
         IAuthorizationService authorizationService,
         IMemberEmailService memberEmailService,
-        IPaymentProviderFactory paymentProviderFactory)
+        IPaymentProviderFactory paymentProviderFactory,
+        ILoggingService loggingService)
     {
         _authorizationService = authorizationService;
+        _loggingService = loggingService;
         _memberEmailService = memberEmailService;
         _paymentProviderFactory = paymentProviderFactory;
         _unitOfWork = unitOfWork;
@@ -94,6 +98,54 @@ public class EventService : IEventService
         return ServiceResult.Successful();
     }
 
+    public async Task CompleteEventTicketPurchase(Guid eventId, Guid memberId)
+    {
+        var (@event, response, payments) = await _unitOfWork.RunAsync(
+            x => x.EventRepository.GetById(eventId),
+            x => x.EventResponseRepository.GetByMemberId(memberId, eventId),
+            x => x.EventTicketPaymentRepository.GetConfirmedPayments(memberId, eventId));
+
+        if (@event.TicketSettings == null)
+        {
+            await _loggingService.Warn(
+                $"Cannot complete event ticket purchase for event {eventId} " +
+                $"for member {memberId}: event is not ticketed");
+            return;
+        }
+
+        var amountPaid = payments.Sum(x => x.Payment.Amount);
+        if (amountPaid < @event.TicketSettings.Cost)
+        {
+            await _loggingService.Info($"Not completing event ticket purchase for event {eventId} " +
+                $"for member {memberId}: {amountPaid} has been paid of the full amount {@event.TicketSettings.Cost}");
+            return;
+        }
+
+        if (response?.Type == EventResponseType.Yes)
+        {
+            return;
+        }
+
+        response ??= new EventResponse
+        {
+            MemberId = memberId
+        };
+
+        response.Type = EventResponseType.Yes;
+
+        if (response.EventId == default)
+        {
+            response.EventId = eventId;
+            _unitOfWork.EventResponseRepository.Add(response);
+        }
+        else
+        {
+            _unitOfWork.EventResponseRepository.Update(response);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+    }
+
     public async Task<(Chapter, Event)> GetEvent(Guid eventId)
     {
         var @event = await _unitOfWork.EventRepository.GetById(eventId).Run();
@@ -103,26 +155,27 @@ public class EventService : IEventService
 
     public async Task<ServiceResult> PayDeposit(Guid currentMemberId, Guid eventId, string cardToken)
     {
-        var (member, memberResponse, @event, numberOfAttendees, ticketPurchase) = await _unitOfWork.RunAsync(
+        var (member, memberResponse, @event, numberOfAttendees, payments) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.EventResponseRepository.GetByMemberId(currentMemberId, eventId),
             x => x.EventRepository.GetById(eventId),
             x => x.EventResponseRepository.GetNumberOfAttendees(eventId),
-            x => x.EventTicketPurchaseRepository.GetByMemberId(currentMemberId, eventId));
+            x => x.EventTicketPaymentRepository.GetConfirmedPayments(currentMemberId, eventId));
 
         if (@event.TicketSettings == null)
         {
             return ServiceResult.Failure("This event is not ticketed");
         }
 
-        if (ticketPurchase?.DepositPurchasedUtc != null)
-        {
-            return ServiceResult.Failure("You have already paid a deposit for this event");
-        }
-
         if (@event.TicketSettings.Deposit == null)
         {
-            return ServiceResult.Failure("This event does not have deposits");
+            return ServiceResult.Failure("This event does not require a deposit");
+        }
+
+        var paidSoFar = payments.Sum(x => x.Payment.Amount);
+        if (paidSoFar > @event.TicketSettings.Deposit.Value)
+        {
+            return ServiceResult.Failure("You have already paid a deposit for this event");
         }
 
         var chapterId = @event.ChapterId;
@@ -175,7 +228,7 @@ public class EventService : IEventService
             sitePaymentSettings,
             chapterPaymentAccount);
 
-        if (!paymentResult.Success)
+        if (paymentResult.Value == null)
         {
             return paymentResult;
         }
@@ -187,13 +240,10 @@ public class EventService : IEventService
             Type = EventResponseType.Yes
         });
 
-        _unitOfWork.EventTicketPurchaseRepository.Add(new EventTicketPurchase
+        _unitOfWork.EventTicketPaymentRepository.Add(new EventTicketPayment
         {
-            DepositPaid = @event.TicketSettings.Deposit,
-            DepositPurchasedUtc = DateTime.UtcNow,
             EventId = eventId,
-            MemberId = member.Id,
-            TotalPaid = @event.TicketSettings.Deposit.Value
+            PaymentId = paymentResult.Value.Id
         });
 
         await _unitOfWork.SaveChangesAsync();
@@ -203,19 +253,21 @@ public class EventService : IEventService
 
     public async Task<ServiceResult> PayTicketRemainder(Guid currentMemberId, Guid eventId, string cardToken)
     {
-        var (member, @event, ticketPurchase) = await _unitOfWork.RunAsync(
+        var (member, @event, payments) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.EventRepository.GetById(eventId),
-            x => x.EventTicketPurchaseRepository.GetByMemberId(currentMemberId, eventId));
+            x => x.EventTicketPaymentRepository.GetConfirmedPayments(currentMemberId, eventId));
 
         if (@event.TicketSettings == null)
         {
             return ServiceResult.Failure("This event is not ticketed");
         }
 
-        if (ticketPurchase == null || ticketPurchase.DepositPaid == null)
+        var paidSoFar = payments.Sum(x => x.Payment.Amount);
+
+        if (paidSoFar >= @event.TicketSettings.Cost)
         {
-            return ServiceResult.Failure("You have not paid a deposit for this event");
+            return ServiceResult.Failure("You have already bought a ticket");
         }
 
         var (sitePaymentSettings, chapterPaymentSettings, chapterPaymentAccount) = await _unitOfWork.RunAsync(
@@ -223,7 +275,7 @@ public class EventService : IEventService
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(@event.ChapterId),
             x => x.ChapterPaymentAccountRepository.GetByChapterId(@event.ChapterId));
 
-        var amount = @event.TicketSettings.Cost - ticketPurchase.DepositPaid.Value;
+        var amount = @event.TicketSettings.Cost - paidSoFar;
         var paymentResult = await MakeEventPayment(
             @event,
             member,
@@ -232,15 +284,16 @@ public class EventService : IEventService
             chapterPaymentSettings,
             sitePaymentSettings,
             chapterPaymentAccount);
-        if (!paymentResult.Success)
+        if (paymentResult.Value == null)
         {
             return ServiceResult.Failure($"Payment not made: {paymentResult.Message}");
         }
 
-        ticketPurchase.PurchasedUtc = DateTime.UtcNow;
-        ticketPurchase.TotalPaid += amount;
-
-        _unitOfWork.EventTicketPurchaseRepository.Update(ticketPurchase);
+        _unitOfWork.EventTicketPaymentRepository.Add(new EventTicketPayment
+        {
+            EventId = eventId,
+            PaymentId = paymentResult.Value.Id
+        });
         await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();
@@ -248,11 +301,11 @@ public class EventService : IEventService
 
     public async Task<ServiceResult> PurchaseTicket(Guid currentMemberId, Guid eventId, string cardToken)
     {
-        var (member, memberResponse, @event, ticketPurchase, numberOfAttendees) = await _unitOfWork.RunAsync(
+        var (member, memberResponse, @event, payments, numberOfAttendees) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.EventResponseRepository.GetByMemberId(currentMemberId, eventId),
             x => x.EventRepository.GetById(eventId),
-            x => x.EventTicketPurchaseRepository.GetByMemberId(currentMemberId, eventId),
+            x => x.EventTicketPaymentRepository.GetConfirmedPayments(currentMemberId, eventId),
             x => x.EventResponseRepository.GetNumberOfAttendees(eventId));
 
         if (@event.TicketSettings == null)
@@ -260,7 +313,9 @@ public class EventService : IEventService
             return ServiceResult.Failure("This event is not ticketed");
         }
 
-        if (ticketPurchase?.PurchasedUtc != null)
+        var paidSoFar = payments.Sum(x => x.Payment.Amount);
+
+        if (paidSoFar >= @event.TicketSettings.Cost)
         {
             return ServiceResult.Failure("You have already purchased a ticket for this event");
         }
@@ -312,7 +367,7 @@ public class EventService : IEventService
             chapterPaymentSettings,
             sitePaymentSettings,
             chapterPaymentAccount);
-        if (!paymentResult.Success)
+        if (paymentResult.Value == null)
         {
             return ServiceResult.Failure($"Payment not made: {paymentResult.Message}");
         }
@@ -324,12 +379,10 @@ public class EventService : IEventService
             Type = EventResponseType.Yes
         });
 
-        _unitOfWork.EventTicketPurchaseRepository.Add(new EventTicketPurchase
+        _unitOfWork.EventTicketPaymentRepository.Add(new EventTicketPayment
         {
             EventId = eventId,
-            MemberId = member.Id,
-            PurchasedUtc = DateTime.UtcNow,
-            TotalPaid = @event.TicketSettings.Cost
+            PaymentId = paymentResult.Value.Id
         });
 
         await _unitOfWork.SaveChangesAsync();

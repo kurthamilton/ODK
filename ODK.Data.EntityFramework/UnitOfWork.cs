@@ -45,7 +45,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IEventInviteRepository> _eventInviteRepository;
     private readonly Lazy<IEventRepository> _eventRepository;
     private readonly Lazy<IEventResponseRepository> _eventResponseRepository;
-    private readonly Lazy<IEventTicketPurchaseRepository> _eventTicketPurchaseRepository;
+    private readonly Lazy<IEventTicketPaymentRepository> _eventTicketPaymentRepository;
     private readonly Lazy<IEventTicketSettingsRepository> _eventTicketSettingsRepository;
     private readonly Lazy<IEventTopicRepository> _eventTopicRepository;
     private readonly Lazy<IFeatureRepository> _featureRepository;
@@ -133,7 +133,7 @@ public class UnitOfWork : IUnitOfWork
         _eventInviteRepository = new(() => new EventInviteRepository(_context));
         _eventRepository = new(() => new EventRepository(_context));
         _eventResponseRepository = new(() => new EventResponseRepository(_context));
-        _eventTicketPurchaseRepository = new(() => new EventTicketPurchaseRepository(_context));
+        _eventTicketPaymentRepository = new(() => new EventTicketPaymentRepository(_context));
         _eventTicketSettingsRepository = new(() => new EventTicketSettingsRepository(_context));
         _eventTopicRepository = new(() => new EventTopicRepository(_context));
         _featureRepository = new(() => new FeatureRepository(_context));
@@ -217,7 +217,7 @@ public class UnitOfWork : IUnitOfWork
     public IEventInviteRepository EventInviteRepository => _eventInviteRepository.Value;
     public IEventRepository EventRepository => _eventRepository.Value;
     public IEventResponseRepository EventResponseRepository => _eventResponseRepository.Value;
-    public IEventTicketPurchaseRepository EventTicketPurchaseRepository => _eventTicketPurchaseRepository.Value;
+    public IEventTicketPaymentRepository EventTicketPaymentRepository => _eventTicketPaymentRepository.Value;
     public IEventTicketSettingsRepository EventTicketSettingsRepository => _eventTicketSettingsRepository.Value;
     public IEventTopicRepository EventTopicRepository => _eventTopicRepository.Value;
     public IFeatureRepository FeatureRepository => _featureRepository.Value;

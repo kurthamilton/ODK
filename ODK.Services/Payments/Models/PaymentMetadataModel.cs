@@ -40,14 +40,14 @@ public class PaymentMetadataModel
     public PaymentMetadataModel(
         PaymentReasonType reason,
         Member member,
-        EventTicketPurchase eventTicketPurchase,
-        Guid paymentCheckoutSessionId,
-        Guid paymentId)
+        EventTicketPayment eventTicketPayment,
+        Guid paymentCheckoutSessionId)
     {
-        EventTicketPurchaseId = eventTicketPurchase.Id;
+        EventId = eventTicketPayment.EventId;
+        EventTicketPaymentId = eventTicketPayment.Id;
         MemberId = member.Id;
         PaymentCheckoutSessionId = paymentCheckoutSessionId;
-        PaymentId = paymentId;
+        PaymentId = eventTicketPayment.PaymentId;
         Reason = reason;
     }
 
@@ -59,7 +59,9 @@ public class PaymentMetadataModel
 
     public Guid? ChapterSubscriptionId { get; private set; }
 
-    public Guid? EventTicketPurchaseId { get; private set; }
+    public Guid? EventId { get; private set; }
+
+    public Guid? EventTicketPaymentId { get; private set; }
 
     public Guid? MemberId { get; private set; }
 
@@ -75,7 +77,8 @@ public class PaymentMetadataModel
     {
         dictionary.TryGetGuidValue("ChapterId", out var chapterId);
         dictionary.TryGetGuidValue("ChapterSubscriptionId", out var chapterSubscriptionId);
-        dictionary.TryGetGuidValue("EventTicketPurchaseId", out var eventTicketPurchaseId);
+        dictionary.TryGetGuidValue("EventTicketPaymentId", out var eventTicketPaymentId);
+        dictionary.TryGetGuidValue("EventId", out var eventId);
         dictionary.TryGetGuidValue("MemberId", out var memberId);
         dictionary.TryGetGuidValue("PaymentCheckoutSessionId", out var paymentCheckoutSessionId);
         dictionary.TryGetGuidValue("PaymentId", out var paymentId);
@@ -86,7 +89,8 @@ public class PaymentMetadataModel
         {
             ChapterId = chapterId,
             ChapterSubscriptionId = chapterSubscriptionId,
-            EventTicketPurchaseId = eventTicketPurchaseId,
+            EventId = eventId,
+            EventTicketPaymentId = eventTicketPaymentId,
             MemberId = memberId,
             PaymentCheckoutSessionId = paymentCheckoutSessionId,
             PaymentId = paymentId,
@@ -109,9 +113,14 @@ public class PaymentMetadataModel
             dictionary.Add("ChapterSubscriptionId", ChapterSubscriptionId.Value.ToString());
         }
 
-        if (EventTicketPurchaseId != null)
+        if (EventId != null)
         {
-            dictionary.Add("EventTicketPurchaseId", EventTicketPurchaseId.Value.ToString());
+            dictionary.Add("EventId", EventId.Value.ToString());
+        }
+
+        if (EventTicketPaymentId != null)
+        {
+            dictionary.Add("EventTicketPaymentId", EventTicketPaymentId.Value.ToString());
         }
 
         if (MemberId != null)

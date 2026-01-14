@@ -11,4 +11,6 @@ public class MemberAvatarViewModel
     public int MaxWidth { get; init; }
 
     public required Member Member { get; init; }
+
+    public int? Width { get; init; }
 }

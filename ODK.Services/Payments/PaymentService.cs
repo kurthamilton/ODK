@@ -5,14 +5,18 @@ using ODK.Core.Payments;
 using ODK.Core.Subscriptions;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
+using ODK.Services.Events;
 using ODK.Services.Logging;
 using ODK.Services.Members;
 using ODK.Services.Payments.Models;
+using ODK.Services.Tasks;
 
 namespace ODK.Services.Payments;
 
 public class PaymentService : IPaymentService
 {
+    private readonly IBackgroundTaskService _backgroundTaskService;
+    private readonly IEventService _eventService;
     private readonly ILoggingService _loggingService;
     private readonly IMemberEmailService _memberEmailService;
     private readonly IPaymentProviderFactory _paymentProviderFactory;
@@ -22,8 +26,12 @@ public class PaymentService : IPaymentService
         IUnitOfWork unitOfWork,
         ILoggingService loggingService,
         IMemberEmailService memberEmailService,
-        IPaymentProviderFactory paymentProviderFactory)
+        IPaymentProviderFactory paymentProviderFactory,
+        IEventService eventService,
+        IBackgroundTaskService backgroundTaskService)
     {
+        _backgroundTaskService = backgroundTaskService;
+        _eventService = eventService;
         _loggingService = loggingService;
         _memberEmailService = memberEmailService;
         _paymentProviderFactory = paymentProviderFactory;
@@ -321,8 +329,9 @@ public class PaymentService : IPaymentService
         if (paymentCheckoutSession.CompletedUtc != null)
         {
             var message =
-                $"Not updating PaymentCheckoutSession {paymentCheckoutSession.Id} in {webhook.PaymentProviderType} webhook processing: " +
-                $"already completed";
+                $"Not updating PaymentCheckoutSession {paymentCheckoutSession.Id} " +
+                $"in {webhook.PaymentProviderType} webhook processing: " +
+                "already completed";
             await _loggingService.Warn(message);
         }
         else
@@ -331,9 +340,18 @@ public class PaymentService : IPaymentService
             _unitOfWork.PaymentCheckoutSessionRepository.Update(paymentCheckoutSession);
         }
 
-        if (metadata.EventId != null)
+        if (metadata.EventTicketPaymentId != null)
         {
-            return await UpdateMemberEventTicketPayment();
+            var eventTicketPayment = await _unitOfWork.EventTicketPaymentRepository
+                .GetById(metadata.EventTicketPaymentId.Value).Run();
+            var @event = await _unitOfWork.EventRepository.GetById(eventTicketPayment.EventId).Run();
+
+            _backgroundTaskService.Enqueue(() => _eventService.CompleteEventTicketPurchase(@event.Id, member.Id));
+
+            var chapter = await _unitOfWork.ChapterRepository.GetById(@event.ChapterId).Run();
+            var currency = await _unitOfWork.CurrencyRepository.GetById(payment.CurrencyId).Run();
+            return PaymentWebhookProcessingResult.Successful(
+                member, chapter, payment, currency);
         }
 
         return await UpdateMemberChapterSubscription(

@@ -10,8 +10,6 @@ public abstract class EventAdminPageViewModelBase
 {
     public required Chapter Chapter { get; init; }
 
-    public required Member CurrentMember { get; init; }
-
     public required Event Event { get; init; }
 
     public required MemberSiteSubscription? OwnerSubscription { get; init; }

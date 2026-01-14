@@ -8,5 +8,5 @@ public class MoneyJsonModel
     public string CurrencyCode { get; set; } = string.Empty;
 
     [JsonPropertyName("value")]
-    public decimal Value { get; set; }
+    public string Value { get; set; } = string.Empty;
 }

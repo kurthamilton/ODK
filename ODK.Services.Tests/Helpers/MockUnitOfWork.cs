@@ -50,7 +50,7 @@ internal class MockUnitOfWork : IUnitOfWork
     public IEventInviteRepository EventInviteRepository => Mock.Object.EventInviteRepository;
     public IEventRepository EventRepository => Mock.Object.EventRepository;
     public IEventResponseRepository EventResponseRepository => Mock.Object.EventResponseRepository;
-    public IEventTicketPurchaseRepository EventTicketPurchaseRepository => Mock.Object.EventTicketPurchaseRepository;
+    public IEventTicketPaymentRepository EventTicketPaymentRepository => Mock.Object.EventTicketPaymentRepository;
     public IEventTicketSettingsRepository EventTicketSettingsRepository => Mock.Object.EventTicketSettingsRepository;
     public IEventTopicRepository EventTopicRepository => Mock.Object.EventTopicRepository;
     public IFeatureRepository FeatureRepository => Mock.Object.FeatureRepository;
