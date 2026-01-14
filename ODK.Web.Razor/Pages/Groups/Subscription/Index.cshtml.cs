@@ -1,6 +1,6 @@
 namespace ODK.Web.Razor.Pages.Groups.Subscription;
 
-public class IndexModel : OdkGroupPageModel
+public class IndexModel : OdkPageModel
 {
     public void OnGet()
     {

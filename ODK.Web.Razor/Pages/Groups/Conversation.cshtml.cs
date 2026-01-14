@@ -1,6 +1,6 @@
 namespace ODK.Web.Razor.Pages.Groups;
 
-public class ConversationModel : OdkGroupPageModel
+public class ConversationModel : OdkPageModel
 {
     public Guid ConversationId { get; private set; }
 

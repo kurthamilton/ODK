@@ -4,10 +4,11 @@
 @{
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Redirect | SuperAdmin";
+
+    var chapter = await Model.GetChapter();
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
-    Chapter = Model.Chapter,
-    ContentFunc = @<div>@await Html.PartialAsync("Chapters/SuperAdmin/_RedirectContent", Model.Chapter)</div>
+    ContentFunc = @<div>@await Html.PartialAsync("Chapters/SuperAdmin/_RedirectContent", chapter)</div>
 })

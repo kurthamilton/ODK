@@ -13,15 +13,14 @@
 @{
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Subscription | Admin";
-
+   
     var request = await Model.CreateMemberChapterServiceRequest();
     var viewModel = await ChapterAdminService.GetChapterSubscriptionViewModel(request);
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
-    Title = "Subscription",
-    Chapter = Model.Chapter,
+    Title = "Subscription",    
     ContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_ChapterSubscriptionContent", viewModel)</div>
 })
 

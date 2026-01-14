@@ -21,7 +21,7 @@ public class PropertyCreateModel : AdminPageModel
 
     public async Task<IActionResult> OnPostAsync(ChapterPropertyFormViewModel viewModel)
     {
-        var serviceRequest = await GetAdminServiceRequest();
+        var serviceRequest = await CreateMemberChapterServiceRequest();
         var result = await _chapterAdminService.CreateChapterProperty(serviceRequest, new CreateChapterProperty
         {
             ApplicationOnly = viewModel.ApplicationOnly,
@@ -41,7 +41,8 @@ public class PropertyCreateModel : AdminPageModel
             return Page();
         }
 
+        var chapter = await GetChapter();
         AddFeedback(new FeedbackViewModel("Property created", FeedbackType.Success));
-        return Redirect($"/{Chapter.ShortName}/Admin/Chapter/Properties");
+        return Redirect($"/{chapter.ShortName}/Admin/Chapter/Properties");
     }
 }

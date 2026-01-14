@@ -4,13 +4,14 @@
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
-@model ODK.Web.Razor.Pages.Chapters.Admin.Chapters.QuestionEditModel
+@model QuestionEditModel
 @inject IChapterAdminService ChapterAdminService
 @{
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Edit question | Admin";
 
-    var viewModel = await ChapterAdminService.GetChapterQuestionViewModel(Model.AdminServiceRequest, Model.Question.Id);
+    var request = await Model.CreateMemberChapterServiceRequest();
+    var viewModel = await ChapterAdminService.GetChapterQuestionViewModel(request, Model.Question.Id);
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
@@ -20,11 +21,10 @@
     {
         new MenuItem
         {
-            Link = OdkRoutes.MemberGroups.GroupQuestions(Model.Platform, Model.Chapter),
+            Link = OdkRoutes.MemberGroups.GroupQuestions(Model.Platform, viewModel.Chapter),
             Text = "Back to FAQ",
             Icon = IconType.ArrowLeft
         }
     },
-    Chapter = Model.Chapter,
     ContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_QuestionEditContent", viewModel)</div>
 })

@@ -9,7 +9,8 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Member events | Admin";
 
-    var viewModel = await MemberAdminService.GetMemberEventsViewModel(Model.AdminServiceRequest, Model.MemberId);
+    var request = await Model.CreateMemberChapterServiceRequest();
+    var viewModel = await MemberAdminService.GetMemberEventsViewModel(request, Model.MemberId);
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
@@ -19,11 +20,10 @@
     {
         new MenuItem
         {
-            Link = OdkRoutes.MemberGroups.Members(Model.Platform, Model.Chapter),
+            Link = OdkRoutes.MemberGroups.Members(Model.Platform, viewModel.Chapter),
             Text = "Members"
         },
-        new MenuItem { Text = viewModel.Member.GetDisplayName(Model.Chapter.Id) }
+        new MenuItem { Text = viewModel.Member.GetDisplayName(viewModel.Chapter.Id) }
     },
-    Chapter = Model.Chapter,
     ContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_MemberEventsContent", viewModel)</div>
 })

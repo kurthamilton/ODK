@@ -21,11 +21,10 @@ public class SubscriptionCreateModel : AdminPageModel
 
     public async Task<IActionResult> OnPostAsync(SubscriptionFormSubmitViewModel viewModel)
     {
-        var serviceRequest = await GetAdminServiceRequest();
+        var serviceRequest = await CreateMemberChapterServiceRequest();
         var result = await _chapterAdminService.CreateChapterSubscription(serviceRequest, new CreateChapterSubscription
         {
             Amount = viewModel.Amount ?? 0,
-            ChapterId = Chapter.Id,
             Description = viewModel.Description,
             Disabled = !viewModel.Enabled,
             Months = viewModel.DurationMonths ?? 0,
@@ -36,8 +35,9 @@ public class SubscriptionCreateModel : AdminPageModel
 
         if (result.Success)
         {
+            var chapter = await GetChapter();
             AddFeedback(new FeedbackViewModel("Subscription created", FeedbackType.Success));
-            return Redirect($"/{Chapter.ShortName}/Admin/Members/Subscriptions");
+            return Redirect($"/{chapter.ShortName}/Admin/Members/Subscriptions");
         }
 
         AddFeedback(new FeedbackViewModel(result));

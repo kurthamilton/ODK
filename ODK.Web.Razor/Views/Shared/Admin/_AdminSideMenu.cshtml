@@ -7,10 +7,9 @@
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Services
 @using ODK.Web.Razor.Views
-@model AdminSideMenuViewModel
 @inject IRequestStore RequestStore
 @{
-    var chapter = Model.Chapter;
+    var chapter = await RequestStore.GetChapter();
     var currentMemberId = RequestStore.CurrentMemberId;
     var platform = RequestStore.Platform;
 

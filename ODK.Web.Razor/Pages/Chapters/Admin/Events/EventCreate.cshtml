@@ -4,13 +4,14 @@
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
-@model ODK.Web.Razor.Pages.Chapters.Admin.Events.EventCreateModel
+@model EventCreateModel
 @inject IEventAdminService EventAdminService
 @{
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Create event | Admin";
 
-    var viewModel = await EventAdminService.GetEventCreateViewModel(Model.AdminServiceRequest);
+    var request = await Model.CreateMemberChapterServiceRequest();
+    var viewModel = await EventAdminService.GetEventCreateViewModel(request);
     viewModel.VenueId = Model.VenueId;
 }
 
@@ -21,11 +22,10 @@
     {
         new MenuItem
         {
-            Link = OdkRoutes.MemberGroups.Events(Model.Platform, Model.Chapter),
+            Link = OdkRoutes.MemberGroups.Events(Model.Platform, viewModel.Chapter),
             Text = "Back to events",
             Icon = IconType.ArrowLeft
         }
     },
-    Chapter = Model.Chapter,
     ContentFunc = @<div>@await Html.PartialAsync("Admin/Events/_EventCreateContent", viewModel)</div>
 })

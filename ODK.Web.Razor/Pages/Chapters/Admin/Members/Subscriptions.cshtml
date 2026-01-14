@@ -3,18 +3,18 @@
 @using ODK.Services.Members
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
-@model ODK.Web.Razor.Pages.Chapters.Admin.Members.SubscriptionsModel
+@model SubscriptionsModel
 @inject IMemberAdminService MemberAdminService
 @{
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Subscriptions | Admin";
 
-    var viewModel = await MemberAdminService.GetMemberSubscriptionsViewModel(Model.AdminServiceRequest);
+    var request = await Model.CreateMemberChapterServiceRequest();
+    var viewModel = await MemberAdminService.GetMemberSubscriptionsViewModel(request);
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
     Title = "Subscriptions",
-    Chapter = Model.Chapter,
     ContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_SubscriptionsContent", viewModel)</div>
 })

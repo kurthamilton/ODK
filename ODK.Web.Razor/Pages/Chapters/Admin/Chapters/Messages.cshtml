@@ -7,12 +7,12 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Messages | Admin";
 
-    var viewModel = await ChapterAdminService.GetChapterMessagesViewModel(Model.AdminServiceRequest, false);
+    var request = await Model.CreateMemberChapterServiceRequest();
+    var viewModel = await ChapterAdminService.GetChapterMessagesViewModel(request, false);
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
     Title = "Messages",
-    Chapter = Model.Chapter,
     ContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_MessagesContent", viewModel)</div>
 })

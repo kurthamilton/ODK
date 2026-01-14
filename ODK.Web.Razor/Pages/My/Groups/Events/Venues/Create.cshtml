@@ -33,10 +33,7 @@
         }
     },
     BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Venues/_VenueCreateContent", viewModel)</div>,
-    MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu", new AdminSideMenuViewModel
-    {
-        Chapter = chapter
-    })
+    MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu")
 })
 
 @section scripts

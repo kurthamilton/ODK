@@ -25,7 +25,7 @@ public class MemberModel : AdminPageModel
 
     public async Task<IActionResult> OnPostAsync(Guid id, MemberFormViewModel viewModel)
     {
-        var request = await GetAdminServiceRequest();
+        var request = await CreateMemberChapterServiceRequest();
         var result = await _memberAdminService.UpdateMemberSubscription(request, id, new UpdateMemberSubscription
         {
             ExpiryDate = viewModel.SubscriptionExpiryDate,
@@ -38,7 +38,8 @@ public class MemberModel : AdminPageModel
             return Page();
         }
 
+        var chapter = await GetChapter();
         AddFeedback(new FeedbackViewModel("Member subscription updated", FeedbackType.Success));
-        return Redirect($"/{Chapter.ShortName}/Admin/Members/{id}");
+        return Redirect($"/{chapter.ShortName}/Admin/Members/{id}");
     }
 }

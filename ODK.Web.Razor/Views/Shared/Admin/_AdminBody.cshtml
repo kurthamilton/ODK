@@ -17,8 +17,5 @@
                 @Model.ContentFunc.Invoke(null)
             </section>
         </div>,
-    MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu", new AdminSideMenuViewModel
-    {
-        Chapter = Model.Chapter
-    })
+    MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu")
 })

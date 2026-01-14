@@ -8,11 +8,11 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Payments | SuperAdmin";
 
-    var viewModel = new OdkComponentViewModel<Chapter>(Model.ComponentContext, Model.Chapter);
+    var chapter = await Model.GetChapter();
+    var viewModel = new OdkComponentViewModel<Chapter>(Model.ComponentContext, chapter);
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
-    Chapter = Model.Chapter,
     ContentFunc = @<div>@await Html.PartialAsync("Chapters/SuperAdmin/_PaymentsContent", viewModel)</div>
 })

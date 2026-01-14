@@ -26,11 +26,10 @@ public class SubscriptionEditModel : AdminPageModel
 
     public async Task<IActionResult> OnPostAsync(Guid id, SubscriptionFormSubmitViewModel viewModel)
     {
-        var serviceRequest = await GetAdminServiceRequest();
+        var serviceRequest = await CreateMemberChapterServiceRequest();
         var result = await _chapterAdminService.UpdateChapterSubscription(serviceRequest, id, new CreateChapterSubscription
         {
             Amount = viewModel.Amount ?? 0,
-            ChapterId = Chapter.Id,
             Description = viewModel.Description,
             Disabled = !viewModel.Enabled,
             Name = viewModel.Name,
@@ -41,8 +40,9 @@ public class SubscriptionEditModel : AdminPageModel
 
         if (result.Success)
         {
+            var chapter = await GetChapter();
             AddFeedback(new FeedbackViewModel("Subscription updated", FeedbackType.Success));
-            return Redirect($"/{Chapter.ShortName}/Admin/Members/Subscriptions");
+            return Redirect($"/{chapter.ShortName}/Admin/Members/Subscriptions");
         }
 
         AddFeedback(new FeedbackViewModel(result));

@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using ODK.Core.Chapters;
 using ODK.Core.Payments;
 using ODK.Services.Chapters;
 using ODK.Web.Common.Feedback;
@@ -16,7 +15,7 @@ public class ChapterSubscriptionCheckoutConfirmModel : AdminPageModel
         _chapterAdminService = chapterAdminService;
     }
 
-    public string RedirectUrl => OdkRoutes.MemberGroups.GroupSubscription(Platform, Chapter);
+    public string RedirectUrl { get; private set; } = string.Empty;
 
     public string? SessionId { get; set; }
 
@@ -27,7 +26,8 @@ public class ChapterSubscriptionCheckoutConfirmModel : AdminPageModel
         SessionId = sessionId;
         SubscriptionId = id;
 
-        await LoadChapter();
+        var chapter = await GetChapter();
+        RedirectUrl = OdkRoutes.MemberGroups.GroupSubscription(Platform, chapter);
 
         var request = await CreateMemberChapterServiceRequest();
         var status = await _chapterAdminService.GetChapterPaymentCheckoutSessionStatus(

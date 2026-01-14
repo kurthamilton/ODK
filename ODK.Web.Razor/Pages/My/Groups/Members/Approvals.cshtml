@@ -15,8 +15,5 @@
 {
     Title = "Members waiting for approval",
     BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_ApprovalsContent", viewModel)</div>,
-    MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu", new AdminSideMenuViewModel
-    {
-        Chapter = viewModel.Chapter
-    })
+    MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu")
 })

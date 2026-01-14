@@ -7,7 +7,7 @@ using ODK.Web.Common.Routes;
 
 namespace ODK.Web.Razor.Pages.Groups;
 
-public class JoinModel : OdkGroupPageModel
+public class JoinModel : OdkPageModel
 {
     private readonly IMemberService _memberService;
 

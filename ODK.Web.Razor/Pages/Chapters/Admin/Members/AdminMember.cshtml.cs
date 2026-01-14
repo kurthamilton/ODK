@@ -25,7 +25,7 @@ public class AdminMemberModel : AdminPageModel
 
     public async Task<IActionResult> OnPostAsync(Guid id, AdminMemberFormViewModel viewModel)
     {
-        var serviceRequest = await GetAdminServiceRequest();
+        var serviceRequest = await CreateMemberChapterServiceRequest();
         var result = await _chapterAdminService.UpdateChapterAdminMember(serviceRequest, id, new UpdateChapterAdminMember
         {
             AdminEmailAddress = viewModel.AdminEmailAddress,
@@ -37,8 +37,9 @@ public class AdminMemberModel : AdminPageModel
 
         if (result.Success)
         {
+            var chapter = await GetChapter();
             AddFeedback(new FeedbackViewModel("Chapter admin member updated", FeedbackType.Success));
-            return Redirect($"/{Chapter.ShortName}/Admin/Members/Admins");
+            return Redirect($"/{chapter.ShortName}/Admin/Members/Admins");
         }
 
         AddFeedback(new FeedbackViewModel(result));

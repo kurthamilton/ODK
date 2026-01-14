@@ -15,8 +15,5 @@
 {
     Title = "Messages",
     BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_MessagesContent", viewModel)</div>,
-    MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu", new AdminSideMenuViewModel
-    {
-        Chapter = viewModel.Chapter
-    })
+    MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu")
 })

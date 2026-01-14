@@ -5,13 +5,14 @@
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
-@model ODK.Web.Razor.Pages.Chapters.Admin.Members.SubscriptionCreateModel
+@model SubscriptionCreateModel
 @inject IMemberAdminService MemberAdminService
 @{
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Create subscription | Admin";
 
-    var viewModel = await MemberAdminService.GetMemberSubscriptionCreateViewModel(Model.AdminServiceRequest);
+    var request = await Model.CreateMemberChapterServiceRequest();
+    var viewModel = await MemberAdminService.GetMemberSubscriptionCreateViewModel(request);
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
@@ -21,11 +22,10 @@
     {
         new MenuItem
         {
-            Link = OdkRoutes.MemberGroups.MembersSubscriptions(Model.Platform, Model.Chapter),
+            Link = OdkRoutes.MemberGroups.MembersSubscriptions(Model.Platform, viewModel.Chapter),
             Text = "Back to subscriptions",
             Icon = IconType.ArrowLeft
         }
     },
-    Chapter = Model.Chapter,
     ContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_SubscriptionCreateContent", viewModel)</div>
 })

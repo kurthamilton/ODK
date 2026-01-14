@@ -1,6 +1,6 @@
 namespace ODK.Web.Razor.Pages.Groups.Subscription;
 
-public class CheckoutModel : OdkGroupPageModel
+public class CheckoutModel : OdkPageModel
 {
     public Guid ChapterSubscriptionId { get; private set; }
 

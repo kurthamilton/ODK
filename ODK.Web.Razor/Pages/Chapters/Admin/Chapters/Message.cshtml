@@ -4,13 +4,14 @@
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
-@model ODK.Web.Razor.Pages.Chapters.Admin.Chapters.MessageModel
+@model MessageModel
 @inject IChapterAdminService ChapterAdminService
 @{
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Message | Admin";
 
-    var viewModel = await ChapterAdminService.GetChapterMessageViewModel(Model.AdminServiceRequest, Model.MessageId);
+    var request = await Model.CreateMemberChapterServiceRequest();
+    var viewModel = await ChapterAdminService.GetChapterMessageViewModel(request, Model.MessageId);
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
@@ -20,11 +21,10 @@
     {
         new MenuItem
         {
-            Link = OdkRoutes.MemberGroups.GroupMessages(Model.Platform, Model.Chapter),
+            Link = OdkRoutes.MemberGroups.GroupMessages(Model.Platform, viewModel.Chapter),
             Text = "Back to messages",
             Icon = IconType.ArrowLeft
         }
     },
-    Chapter = Model.Chapter,
     ContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_MessageContent", viewModel)</div>
 })

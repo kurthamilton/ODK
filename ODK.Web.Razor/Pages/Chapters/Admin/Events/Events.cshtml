@@ -3,18 +3,18 @@
 @using ODK.Services.Events
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
-@model ODK.Web.Razor.Pages.Chapters.Admin.Events.EventsModel
+@model EventsModel
 @inject IEventAdminService EventAdminService
 @{
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Events | Admin";
 
-    var viewModel = await EventAdminService.GetEventsDto(Model.AdminServiceRequest, 1, 1000);
+    var request = await Model.CreateMemberChapterServiceRequest();
+    var viewModel = await EventAdminService.GetEventsDto(request, 1, 1000);
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
     Title = "Events",
-    Chapter = Model.Chapter,
     ContentFunc = @<div>@await Html.PartialAsync("Admin/Events/_EventsContent", viewModel)</div>
 })

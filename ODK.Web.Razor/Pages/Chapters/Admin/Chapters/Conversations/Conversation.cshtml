@@ -9,7 +9,8 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Conversation";
 
-    var viewModel = await ChapterAdminService.GetChapterConversationViewModel(Model.AdminServiceRequest, Model.ConversationId);
+    var request = await Model.CreateMemberChapterServiceRequest();
+    var viewModel = await ChapterAdminService.GetChapterConversationViewModel(request, Model.ConversationId);
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
@@ -19,11 +20,10 @@
     {
         new MenuItem
         {
-            Link = OdkRoutes.MemberGroups.GroupConversations(Model.Platform, Model.Chapter),
+            Link = OdkRoutes.MemberGroups.GroupConversations(Model.Platform, viewModel.Chapter),
             Text = "Back to conversations",
             Icon = IconType.ArrowLeft
         }
     },
-    Chapter = Model.Chapter,
     ContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/Conversations/_ConversationContent", viewModel)</div>
 })

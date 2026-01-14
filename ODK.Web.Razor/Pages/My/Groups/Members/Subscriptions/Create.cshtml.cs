@@ -25,7 +25,6 @@ public class CreateModel : OdkGroupAdminPageModel
         var result = await _chapterAdminService.CreateChapterSubscription(AdminServiceRequest, new CreateChapterSubscription
         {
             Amount = viewModel.Amount ?? 0,
-            ChapterId = ChapterId,
             Description = viewModel.Description,
             Disabled = !viewModel.Enabled,
             Months = viewModel.DurationMonths ?? 0,

@@ -5,13 +5,14 @@
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Admin.Events
 @using ODK.Web.Razor.Models.Components
-@model ODK.Web.Razor.Pages.Chapters.Admin.Events.EventTicketsModel
+@model EventTicketsModel
 @inject IEventAdminService EventAdminService
 @{
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Event tickets | Admin";
 
-    var viewModel = await EventAdminService.GetEventTicketsViewModel(Model.AdminServiceRequest, Model.Event.Id);
+    var request = await Model.CreateMemberChapterServiceRequest();
+    var viewModel = await EventAdminService.GetEventTicketsViewModel(request, Model.Event.Id);
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
@@ -21,11 +22,10 @@
     {
         new MenuItem
         {
-            Link = OdkRoutes.MemberGroups.Events(Model.Platform, Model.Chapter),
+            Link = OdkRoutes.MemberGroups.Events(Model.Platform, viewModel.Chapter),
             Text = "Back to events",
             Icon = IconType.ArrowLeft
         }
     },
-    Chapter = Model.Chapter,
     ContentFunc = @<div>@await Html.PartialAsync("Admin/Events/Event/_EventTicketsContent", viewModel)</div>
 })

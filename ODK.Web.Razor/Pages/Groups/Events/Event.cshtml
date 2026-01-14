@@ -9,8 +9,9 @@
 @{
     Layout = "_HomeLayout";
 
+    var chapter = await Model.GetChapter();
     var viewModel = await EventViewModelService.GetEventPageViewModel(
-        Model.ServiceRequest, Model.CurrentMemberIdOrDefault, Model.Chapter, Model.EventId);
+        Model.ServiceRequest, Model.CurrentMemberIdOrDefault, chapter, Model.EventId);
 
     Model.Title = $"{viewModel.Event.GetDisplayName()} | {viewModel.Chapter.GetDisplayName(Model.Platform)}";
 }

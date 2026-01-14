@@ -27,7 +27,6 @@ public class EditModel : OdkGroupAdminPageModel
         var result = await _chapterAdminService.UpdateChapterSubscription(AdminServiceRequest, subscriptionId, new CreateChapterSubscription
         {
             Amount = viewModel.Amount ?? 0,
-            ChapterId = ChapterId,
             Description = viewModel.Description,
             Disabled = !viewModel.Enabled,
             Name = viewModel.Name,

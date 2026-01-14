@@ -3,13 +3,14 @@
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Groups
 @using ODK.Web.Razor.Models.Payments
-@model ODK.Web.Razor.Pages.Groups.Subscription.IndexModel
+@model IndexModel
 @inject IChapterViewModelService ChapterViewModelService
 @{
     Layout = "_HomeLayout";
 
+    var chapter = await Model.GetChapter();
     var viewModel = await ChapterViewModelService.GetGroupSubscriptionPage(
-        Model.MemberServiceRequest, Model.Chapter);
+        Model.MemberServiceRequest, chapter);
 
     Model.Title = $"Subscription | Profile | {viewModel.Chapter.GetDisplayName(Model.Platform)}";
 }

@@ -4,8 +4,6 @@ public class CreateChapterSubscription
 {
     public required double Amount { get; init; }
 
-    public required Guid ChapterId { get; init; }
-
     public required string Description { get; init; }
 
     public required bool Disabled { get; init; }

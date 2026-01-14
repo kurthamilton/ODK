@@ -26,7 +26,7 @@ public class PropertyEditModel : AdminPageModel
 
     public async Task<IActionResult> OnPostAsync(Guid id, ChapterPropertyFormViewModel viewModel)
     {
-        var serviceRequest = await GetAdminServiceRequest();
+        var serviceRequest = await CreateMemberChapterServiceRequest();
         var result = await _chapterAdminService.UpdateChapterProperty(serviceRequest, id, new UpdateChapterProperty
         {
             ApplicationOnly = viewModel.ApplicationOnly,
@@ -45,7 +45,8 @@ public class PropertyEditModel : AdminPageModel
             return Page();
         }
 
+        var chapter = await GetChapter();
         AddFeedback(new FeedbackViewModel("Property updated", FeedbackType.Success));
-        return Redirect($"/{Chapter.ShortName}/Admin/Chapter/Properties");
+        return Redirect($"/{chapter.ShortName}/Admin/Chapter/Properties");
     }
 }

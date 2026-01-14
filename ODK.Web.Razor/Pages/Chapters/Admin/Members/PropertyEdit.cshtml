@@ -10,18 +10,18 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Edit profile question | Admin";
 
-    var viewModel = await ChapterAdminService.GetChapterPropertyViewModel(Model.AdminServiceRequest, Model.PropertyId);
+    var request = await Model.CreateMemberChapterServiceRequest();
+    var viewModel = await ChapterAdminService.GetChapterPropertyViewModel(request, Model.PropertyId);
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
     Title = "Edit profile question",
-    Chapter = Model.Chapter,
     Breadcrumbs = new[]
     {
         new MenuItem
         {
-            Link = OdkRoutes.MemberGroups.MemberProperties(Model.Platform, Model.Chapter),
+            Link = OdkRoutes.MemberGroups.MemberProperties(Model.Platform, viewModel.Chapter),
             Text = "Back to profile questions",
             Icon = IconType.ArrowLeft
         }

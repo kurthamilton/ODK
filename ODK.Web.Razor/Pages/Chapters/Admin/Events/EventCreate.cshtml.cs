@@ -24,7 +24,7 @@ public class EventCreateModel : AdminPageModel
 
     public async Task<IActionResult> OnPostAsync([FromForm] EventFormSubmitViewModel viewModel)
     {
-        var request = await GetAdminServiceRequest();
+        var request = await CreateMemberChapterServiceRequest();
         var result = await _eventAdminService.CreateEvent(request, new CreateEvent
         {
             AttendeeLimit = viewModel.AttendeeLimit,
@@ -49,7 +49,8 @@ public class EventCreateModel : AdminPageModel
             return Page();
         }
 
+        var chapter = await GetChapter();
         AddFeedback(new FeedbackViewModel("Event created", FeedbackType.Success));
-        return Redirect($"/{Chapter.ShortName}/Admin/Events");
+        return Redirect($"/{chapter.ShortName}/Admin/Events");
     }
 }

@@ -2,5 +2,8 @@
 @model IndexModel
 @{
     Layout = "_OdkChapterAdminLayout";
-    Response.Redirect($"/{Model.Chapter.ShortName}/admin/superadmin/members");
+
+    var chapter = await Model.GetChapter();
+    Response.Redirect($"/{chapter.ShortName}/admin/superadmin/members");
 }
+

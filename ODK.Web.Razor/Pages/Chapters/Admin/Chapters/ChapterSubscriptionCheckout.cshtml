@@ -17,16 +17,16 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Checkout | Subscription | Admin";
 
+    var chapter = await Model.GetChapter();
     var request = await Model.CreateMemberChapterServiceRequest();
-    var returnPath = $"/{Model.Chapter.ShortName}/admin/chapter/subscription/{Model.PriceId}/confirm?sessionId={{sessionId}}";
+    var returnPath = $"/{chapter.ShortName}/admin/chapter/subscription/{Model.PriceId}/confirm?sessionId={{sessionId}}";
     var viewModel = await ChapterAdminService.StartSiteSubscriptionCheckout(
         request, Model.PriceId, returnPath);
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
-    Title = "Checkout",
-    Chapter = Model.Chapter,
+    Title = "Checkout",    
     ContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_ChapterSubscriptionCheckoutContent", viewModel)</div>
 })
 

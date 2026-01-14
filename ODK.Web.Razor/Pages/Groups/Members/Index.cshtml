@@ -12,7 +12,8 @@
 @{
     Layout = "_HomeLayout";
 
-    var viewModel = await MemberViewModelService.GetGroupMembersPage(Model.MemberServiceRequest, Model.Slug);
+    var chapter = await Model.GetChapter();
+    var viewModel = await MemberViewModelService.GetMembersPage(Model.MemberServiceRequest, chapter);
 
     if (!viewModel.IsMember)
     {

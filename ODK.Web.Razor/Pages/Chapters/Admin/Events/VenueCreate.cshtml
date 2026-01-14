@@ -10,7 +10,8 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Create venue | Admin";
 
-    var viewModel = new OdkComponentViewModel<Chapter>(Model.ComponentContext, Model.Chapter);
+    var chapter = await Model.GetChapter();
+    var viewModel = new OdkComponentViewModel<Chapter>(Model.ComponentContext, chapter);
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
@@ -20,12 +21,11 @@
     {
         new MenuItem
         {
-            Link = OdkRoutes.MemberGroups.Venues(Model.Platform, Model.Chapter),
+            Link = OdkRoutes.MemberGroups.Venues(Model.Platform, chapter),
             Text = "Back to venues",
             Icon = IconType.ArrowLeft
         }
     },
-    Chapter = Model.Chapter,
     ContentFunc = @<div>@await Html.PartialAsync("Admin/Venues/_VenueCreateContent", viewModel)</div>
 })
 

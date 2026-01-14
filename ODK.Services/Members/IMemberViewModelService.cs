@@ -5,10 +5,6 @@ namespace ODK.Services.Members;
 
 public interface IMemberViewModelService
 {
-    Task<MemberPageViewModel> GetGroupMemberPage(MemberServiceRequest request, string slug, Guid memberId);
-
-    Task<MembersPageViewModel> GetGroupMembersPage(MemberServiceRequest request, string slug);
-
     Task<MemberConversationsPageViewModel> GetMemberConversationsPage(MemberServiceRequest request);
 
     Task<MemberConversationsPageViewModel> GetMemberConversationsPage(MemberChapterServiceRequest request);

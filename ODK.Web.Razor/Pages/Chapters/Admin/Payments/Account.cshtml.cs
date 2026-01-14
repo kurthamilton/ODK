@@ -19,11 +19,9 @@ public class AccountModel : AdminPageModel
     {
         if (action == RefreshAction)
         {
-            await LoadChapter();
+            var chapter = await GetChapter();
+            var request = await CreateMemberChapterServiceRequest();
 
-            var request = AdminServiceRequest;
-
-            var chapter = await _chapterAdminService.GetChapter(request);
             var returnPath = OdkRoutes.Payments.PaymentAccount(Platform, chapter);
             var refreshPath = $"{returnPath}?action={RefreshAction}";
 
@@ -43,11 +41,10 @@ public class AccountModel : AdminPageModel
 
     public async Task<IActionResult> OnPostAsync()
     {
-        await LoadChapter();
+        var chapter = await GetChapter();
+        var request = await CreateMemberChapterServiceRequest();
 
-        var request = AdminServiceRequest;
-
-        var returnPath = OdkRoutes.Payments.PaymentAccount(Platform, Chapter);
+        var returnPath = OdkRoutes.Payments.PaymentAccount(Platform, chapter);
         var refreshPath = $"{returnPath}?action={RefreshAction}";
 
         var result = await _chapterAdminService.CreateChapterPaymentAccount(

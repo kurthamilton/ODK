@@ -6,13 +6,14 @@
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.Admin.Events
 @using ODK.Web.Razor.Models.Admin.Venues
-@model ODK.Web.Razor.Pages.Chapters.Admin.Events.VenueModel
+@model VenueModel
 @inject IVenueAdminService VenueAdminService
 @{
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Edit Venue | Admin";
 
-    var viewModel = await VenueAdminService.GetVenueViewModel(Model.AdminServiceRequest, Model.Venue.Id);
+    var request = await Model.CreateMemberChapterServiceRequest();
+    var viewModel = await VenueAdminService.GetVenueViewModel(request, Model.Venue.Id);
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
@@ -22,12 +23,11 @@
     {
         new MenuItem
         {
-            Link = OdkRoutes.MemberGroups.Venues(Model.Platform, Model.Chapter),
+            Link = OdkRoutes.MemberGroups.Venues(Model.Platform, viewModel.Chapter),
             Text = "Back to venues",
             Icon = IconType.ArrowLeft
         }
     },
-    Chapter = Model.Chapter,
     ContentFunc = @<div>@await Html.PartialAsync("Admin/Venues/_VenueContent", viewModel)</div>
 })
 

@@ -5,13 +5,14 @@
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.Admin.Members
-@model ODK.Web.Razor.Pages.Chapters.Admin.Members.MemberModel
+@model MemberModel
 @inject IMemberAdminService MemberAdminService
 @{
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Edit member | Admin";
 
-    var viewModel = await MemberAdminService.GetMemberViewModel(Model.AdminServiceRequest, Model.MemberId);
+    var request = await Model.CreateMemberChapterServiceRequest();
+    var viewModel = await MemberAdminService.GetMemberViewModel(request, Model.MemberId);
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
@@ -21,11 +22,10 @@
     {
         new MenuItem
         {
-            Link = OdkRoutes.MemberGroups.Members(Model.Platform, Model.Chapter),
+            Link = OdkRoutes.MemberGroups.Members(Model.Platform, viewModel.Chapter),
             Text = "Members"
         },
-        new MenuItem { Text = viewModel.Member.GetDisplayName(Model.Chapter.Id) }
+        new MenuItem { Text = viewModel.Member.GetDisplayName(viewModel.Chapter.Id) }
     },
-    Chapter = Model.Chapter,
     ContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_MemberContent", viewModel)</div>
 })

@@ -14,22 +14,6 @@ public class MemberViewModelService : IMemberViewModelService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<MemberPageViewModel> GetGroupMemberPage(MemberServiceRequest request, string slug, Guid memberId)
-    {
-        var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
-        OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
-
-        return await GetMemberPage(request, chapter, memberId);
-    }
-
-    public async Task<MembersPageViewModel> GetGroupMembersPage(MemberServiceRequest request, string slug)
-    {
-        var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
-        OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
-
-        return await GetMembersPage(request, chapter);
-    }
-
     public async Task<MemberConversationsPageViewModel> GetMemberConversationsPage(MemberServiceRequest request)
     {
         var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);

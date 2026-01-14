@@ -17,7 +17,7 @@ public class QuestionEditModel : AdminPageModel
 
     public async Task<IActionResult> OnGet(Guid id)
     {
-        var serviceRequest = await GetAdminServiceRequest();
+        var serviceRequest = await CreateMemberChapterServiceRequest();
         Question = await _chapterAdminService.GetChapterQuestion(serviceRequest, id);
         return Page();
     }

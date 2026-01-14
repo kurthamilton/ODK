@@ -19,14 +19,14 @@ public class EmailModel : AdminPageModel
 
     public async Task<IActionResult> OnGetAsync(EmailType type)
     {
-        var request = await GetAdminServiceRequest();
+        var request = await CreateMemberChapterServiceRequest();
         Email = await _emailAdminService.GetChapterEmail(request, type);
         return Page();
     }
 
     public async Task<IActionResult> OnPostAsync(EmailType type, ChapterEmailFormViewModel viewModel)
     {
-        var request = await GetAdminServiceRequest();
+        var request = await CreateMemberChapterServiceRequest();
         var result = await _emailAdminService.UpdateChapterEmail(request, type, new UpdateEmail
         {
             HtmlContent = viewModel.Content,
@@ -40,7 +40,8 @@ public class EmailModel : AdminPageModel
             return Page();
         }
 
+        var chapter = await GetChapter();
         AddFeedback(new FeedbackViewModel("Email updated", FeedbackType.Success));
-        return Redirect($"/{Chapter.ShortName}/Admin/Chapter/Emails");
+        return Redirect($"/{chapter.ShortName}/Admin/Chapter/Emails");
     }
 }

@@ -6,14 +6,15 @@
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Groups
-@model ODK.Web.Razor.Pages.Groups.ErrorModel
+@model ErrorModel
 @inject IChapterViewModelService ChapterViewModelService
 @{
     Layout = "_HomeLayout";
     Model.Title = "Error";
 
+    var chapter = await Model.GetChapter();
     var viewModel = await ChapterViewModelService.GetGroupPage(
-        Model.ServiceRequest, Model.CurrentMemberIdOrDefault, Model.Chapter);
+        Model.ServiceRequest, Model.CurrentMemberIdOrDefault, chapter);
 }
 
 @await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel

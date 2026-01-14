@@ -2,18 +2,18 @@
 @using ODK.Services
 @using ODK.Services.Payments
 @using ODK.Web.Razor.Models.Admin
-@model ODK.Web.Razor.Pages.Chapters.Admin.Payments.PaymentsModel
+@model PaymentsModel
 @inject IPaymentAdminService PaymentAdminService
 @{
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Payments | Admin";
-
-    var viewModel = await PaymentAdminService.GetPayments(Model.AdminServiceRequest);
+    
+    var request = await Model.CreateMemberChapterServiceRequest();
+    var viewModel = await PaymentAdminService.GetPayments(request);
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
     Title = "Payments",
-    Chapter = Model.Chapter,
     ContentFunc = @<div>@await Html.PartialAsync("Admin/Payments/_PaymentsContent", viewModel)</div>
 })

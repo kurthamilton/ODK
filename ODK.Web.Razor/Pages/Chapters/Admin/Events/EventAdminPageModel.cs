@@ -27,7 +27,7 @@ public abstract class EventAdminPageModel : AdminPageModel
             return;
         }
 
-        var request = await GetAdminServiceRequest();
+        var request = await CreateMemberChapterServiceRequest();
 
         try
         {

@@ -13,12 +13,12 @@
     Model.Title = "Subscription pending confirmation";
 
     var subscriptionUrl = Model.RedirectUrl;
+    var chapter = await Model.GetChapter();
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
     Title = "Checkout",
-    Chapter = Model.Chapter,
     Breadcrumbs = new[]
     {
         new MenuItem { Text = "Subscription", Link = subscriptionUrl },
@@ -28,7 +28,7 @@
         @<div>
             <section class="section">
                 <div data-odk-checkout
-                     data-odk-polling-url="/groups/@Model.Chapter.Id/payments/sessions/@Model.SessionId/status">
+                     data-odk-polling-url="/groups/@chapter.Id/payments/sessions/@Model.SessionId/status">
 
                     <div data-odk-checkout-status="@PaymentStatusType.Complete"
                          data-odk-checkout-action="reload">

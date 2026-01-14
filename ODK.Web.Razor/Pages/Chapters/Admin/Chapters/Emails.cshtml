@@ -3,17 +3,17 @@
 @using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
-@model ODK.Web.Razor.Pages.Chapters.Admin.Chapters.EmailsModel
+@model EmailsModel
 @{
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Email templates | Admin";
 
-    var viewModel = new OdkComponentViewModel<Chapter>(Model.ComponentContext, Model.Chapter);
+    var chapter = await Model.GetChapter();
+    var viewModel = new OdkComponentViewModel<Chapter>(Model.ComponentContext, chapter);
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
     Title = "Email templates",
-    Chapter = Model.Chapter,
     ContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_EmailsContent", viewModel)</div>
 })

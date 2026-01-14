@@ -19,7 +19,7 @@ public class EventModel : EventAdminPageModel
 
     public async Task<IActionResult> OnPostAsync(Guid id, [FromForm] EventFormSubmitViewModel viewModel)
     {
-        var request = await GetAdminServiceRequest();
+        var request = await CreateMemberChapterServiceRequest();
         var result = await EventAdminService.UpdateEvent(request, id, new CreateEvent
         {
             AttendeeLimit = viewModel.AttendeeLimit,
@@ -44,7 +44,8 @@ public class EventModel : EventAdminPageModel
             return Page();
         }
 
+        var chapter = await GetChapter();
         AddFeedback(new FeedbackViewModel("Event updated", FeedbackType.Success));
-        return Redirect($"/{Chapter.ShortName}/Admin/Events");
+        return Redirect($"/{chapter.ShortName}/Admin/Events");
     }
 }

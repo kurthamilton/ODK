@@ -28,7 +28,7 @@ public abstract class VenueAdminPageModel : AdminPageModel
             return;
         }
 
-        var request = await GetAdminServiceRequest();
+        var request = await CreateMemberChapterServiceRequest();
 
         try
         {
