@@ -3,6 +3,14 @@
 @using ODK.Web.Razor.Models.Events
 @model EventStatusViewModel
 
+@if (Model.Event.RsvpDisabled)
+{
+    <div class="badge text-bg-warning w-100">
+        RSVP disabled
+    </div>
+    return;
+}
+
 @if (Model.Event.RsvpDeadlinePassed)
 {
     <div class="badge text-bg-danger w-100">

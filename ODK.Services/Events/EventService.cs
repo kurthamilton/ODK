@@ -401,6 +401,11 @@ public class EventService : IEventService
             x => x.EventResponseRepository.GetByMemberId(memberId, eventId),
             x => x.EventResponseRepository.GetNumberOfAttendees(eventId));
 
+        if (@event.RsvpDisabled)
+        {
+            return ServiceResult.Failure("RSVP is currently disabled");
+        }
+
         if (memberResponse?.Type == responseType)
         {
             return ServiceResult.Successful();
