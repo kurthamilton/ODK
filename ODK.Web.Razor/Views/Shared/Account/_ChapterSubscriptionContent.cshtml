@@ -19,14 +19,6 @@
         : "Renew membership";
 }
 
-@if (Model.Currency == null)
-{
-    <div class="alert alert-error">
-        This group has not set its payment settings
-    </div>
-    return;
-}
-
 @if (Model.MembershipSettings?.Enabled == true || Model.CurrentSubscription != null || Model.MemberSubscription != null) 
 {
     <div class="form-group mb-3">
@@ -145,7 +137,7 @@ else if (Model.ChapterSubscriptions.Count > 0)
                                 </button>
                             }
 
-                            <span>@Model.Currency.ToAmountString(chapterSubscription.Amount)</span>
+                            <span>@chapterSubscription.Currency.ToAmountString(chapterSubscription.Amount)</span>
                         </div>
                         @await Html.PartialAsync("Payments/_PaymentModal", new PaymentModalViewModel
                        {
@@ -157,7 +149,7 @@ else if (Model.ChapterSubscriptions.Count > 0)
                            PaymentForm = new PaymentFormViewModel
                            {
                                Amount = (decimal)chapterSubscription.Amount,
-                               Currency = Model.Currency,
+                               Currency = chapterSubscription.Currency,
                                Description = chapterSubscription.Title,
                                Id = chapterSubscription.Id.ToString()
                            },

@@ -9,8 +9,8 @@
 @{
     Layout = "_HomeLayout";
 
-    var viewModel = await EventViewModelService.GetGroupEventPageViewModel(
-        Model.ServiceRequest, Model.CurrentMemberIdOrDefault, Model.Slug, Model.EventId);
+    var viewModel = await EventViewModelService.GetEventPageViewModel(
+        Model.ServiceRequest, Model.CurrentMemberIdOrDefault, Model.Chapter, Model.EventId);
 
     Model.Title = $"{viewModel.Event.GetDisplayName()} | {viewModel.Chapter.GetDisplayName(Model.Platform)}";
 }
@@ -36,10 +36,10 @@
     {
         @await Html.PartialAsync("Payments/_PaymentScripts", new PaymentScriptsViewModel
         {
-            ApiPublicKey = viewModel.ChapterPaymentSettings.ApiPublicKey ?? "",
-            CurrencyCode = viewModel.ChapterPaymentSettings.Currency.Code,
+            ApiPublicKey = viewModel.ChapterPaymentSettings?.ApiPublicKey ?? "",
+            CurrencyCode = viewModel.Event.TicketSettings.Currency.Code,
             IsSubscription = false,
-            Provider = viewModel.ChapterPaymentSettings.Provider ?? default
+            Provider = viewModel.ChapterPaymentSettings?.Provider ?? default
         })
     }
 }

@@ -36,6 +36,9 @@ public class EventFormSubmitViewModel
     [DisplayName("RSVP deadline")]
     public DateTime? RsvpDeadline { get; set; }
 
+    [DisplayName("RSVP disabled")]
+    public bool RsvpDisabled { get; set; }
+
     [DisplayName("Cost")]
     [Range(0, double.MaxValue, ErrorMessage = "{0} cannot be less than 0")]
     public decimal? TicketCost { get; set; }

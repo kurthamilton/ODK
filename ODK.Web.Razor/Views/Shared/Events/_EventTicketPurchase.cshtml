@@ -1,19 +1,18 @@
 ﻿@using ODK.Core.Utils
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Events
 @using ODK.Web.Razor.Models.Payments
 @model EventTicketPurchaseViewModel
 @{
-    var ticketPurchase = Model.TicketPurchases
-        .FirstOrDefault(x => x.MemberId == Model.CurrentMemberId);
+    if (Model.Event.TicketSettings == null)
+    {
+        return;
+    }
+
     var ticketsLeft = Model.TicketsLeft;
     var deadlinePassed = Model.Event.RsvpDeadlinePassed;
+    var currency = Model.Event.TicketSettings.Currency;
 }
-
-@if (Model.Event.TicketSettings == null)
-{
-    return;
-}
-
 
 <div class="card sidebar-card">
     <div class="card-header">Tickets</div>
@@ -32,29 +31,38 @@
                 </div>
             }
 
-            @if (ticketPurchase?.PurchasedUtc != null)
+            @if (Model.AmountRemaining <= 0)
             {
                 <p>You have bought a ticket for this event</p>
             }
-            else if (ticketPurchase?.DepositPaid != null)
+            else if (Model.AmountPaid > 0 && Model.AmountRemaining > 0)
             {
                 var modalId = "complete-purchase-modal";
-                var remaining = Model.Event.TicketSettings.Cost - ticketPurchase.DepositPaid.Value;
-
+                
                 <div>
                     <h5>Complete purchase</h5>
                     <div>
-                        Deposit paid: @Model.ChapterPaymentSettings.Currency.ToAmountString(ticketPurchase.DepositPaid.Value)
+                        Deposit paid: @currency.ToAmountString(Model.AmountPaid)
                     </div>
                     <div>
-                        Amount remaining: @Model.ChapterPaymentSettings.Currency.ToAmountString(remaining)
+                        Amount remaining: @currency.ToAmountString(Model.AmountRemaining)
                     </div>                    
                 </div>
 
-                <button class="btn btn-primary mr-1"
-                        data-bs-toggle="modal" data-bs-target="#@modalId">
-                    Buy
-                </button>
+                @if (Model.ChapterPaymentSettings?.UseSitePaymentProvider == true)
+                {
+                    <a class="btn btn-primary"
+                       href="@OdkRoutes.Groups.EventCheckout(Model.Platform, Model.Chapter, Model.Event.Id)">
+                        Complete purchase
+                    </a>
+                }
+                else
+                {
+                    <button class="btn btn-primary"
+                            data-bs-toggle="modal" data-bs-target="#@modalId">
+                        Complete purchase
+                    </button>
+                }
 
                 @await Html.PartialAsync("Payments/_PaymentModal", new PaymentModalViewModel
                 {
@@ -63,8 +71,8 @@
                     Id = modalId,
                     PaymentForm = new PaymentFormViewModel
                     {
-                        Amount = remaining,
-                        Currency = Model.ChapterPaymentSettings.Currency,
+                        Amount = Model.AmountRemaining,
+                        Currency = currency,
                         Description = "",
                         Id = "complete-purchase"
                     },
@@ -94,18 +102,28 @@
                         }
             
                         <div>
-                            Ticket cost: @Model.ChapterPaymentSettings.Currency.ToAmountString(Model.Event.TicketSettings.Cost)
+                            Ticket cost: @currency.ToAmountString(Model.Event.TicketSettings.Cost)
                         </div>
 
                         <div>
-                            Deposit: @Model.ChapterPaymentSettings.Currency.ToAmountString(Model.Event.TicketSettings.Deposit.Value)
+                            Deposit: @currency.ToAmountString(Model.Event.TicketSettings.Deposit.Value)
                         </div>
                     </div>
 
-                    <button class="btn btn-primary mr-1"
-                            data-bs-toggle="modal" data-bs-target="#@modalId">
-                        Pay deposit
-                    </button>
+                    @if (Model.ChapterPaymentSettings?.UseSitePaymentProvider == true)
+                    {
+                        <a class="btn btn-primary"
+                           href="@OdkRoutes.Groups.EventCheckout(Model.Platform, Model.Chapter, Model.Event.Id)">
+                            Pay deposit
+                        </a>
+                    }            
+                    else
+                    {
+                        <button class="btn btn-primary"
+                                data-bs-toggle="modal" data-bs-target="#@modalId">
+                            Pay deposit
+                        </button>
+                    }
 
                     @await Html.PartialAsync("Payments/_PaymentModal", new PaymentModalViewModel
                     {
@@ -115,7 +133,7 @@
                         PaymentForm = new PaymentFormViewModel
                         {
                             Amount = Model.Event.TicketSettings.Deposit.Value,
-                            Currency = Model.ChapterPaymentSettings.Currency,
+                            Currency = currency,
                             Description = $"{Model.Event.Name} deposit",
                             Id = "deposit-purchase"
                         },
@@ -139,14 +157,24 @@
                         }
 
                         <div>
-                            Cost: @Model.ChapterPaymentSettings.Currency.ToAmountString(Model.Event.TicketSettings.Cost)
+                            Cost: @currency.ToAmountString(Model.Event.TicketSettings.Cost)
                         </div>
                     </div>
 
-                    <button class="btn btn-primary mr-1"
-                            data-bs-toggle="modal" data-bs-target="#@modalId">
-                        Buy
-                    </button>
+                    @if (Model.ChapterPaymentSettings?.UseSitePaymentProvider == true)
+                    {
+                        <a class="btn btn-primary"
+                           href="@OdkRoutes.Groups.EventCheckout(Model.Platform, Model.Chapter, Model.Event.Id)">
+                            Buy ticket
+                        </a>
+                    }
+                    else
+                    {
+                        <button class="btn btn-primary"
+                                data-bs-toggle="modal" data-bs-target="#@modalId">
+                            Buy ticket
+                        </button>
+                    }
 
                     @await Html.PartialAsync("Payments/_PaymentModal", new PaymentModalViewModel
                     {
@@ -156,7 +184,7 @@
                         PaymentForm = new PaymentFormViewModel
                         {
                             Amount = Model.Event.TicketSettings.Cost,
-                            Currency = Model.ChapterPaymentSettings.Currency,
+                            Currency = currency,
                             Description = "",
                             Id = "ticket-purchase"
                         },

@@ -13,10 +13,10 @@ public class ChapterPaymentSettingsRepository : WriteRepositoryBase<ChapterPayme
     {
     }
 
-    public IDeferredQuerySingle<ChapterPaymentSettings> GetByChapterId(Guid chapterId)
+    public IDeferredQuerySingleOrDefault<ChapterPaymentSettings> GetByChapterId(Guid chapterId)
         => Set()
             .Where(x => x.ChapterId == chapterId)
-            .DeferredSingle();
+            .DeferredSingleOrDefault();
 
     protected override IQueryable<ChapterPaymentSettings> Set()
         => base.Set()

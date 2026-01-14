@@ -181,8 +181,10 @@ public class PayPalPaymentProvider : IPaymentProvider
 
         var purchase = order.PurchaseUnits[0];
 
+        decimal.TryParse(purchase.Amount?.Value, out var purchaseAmount);
+
         var approved = string.Equals(purchase.Amount?.CurrencyCode, currencyCode, StringComparison.InvariantCultureIgnoreCase) &&
-            purchase.Amount?.Value == amount &&
+            purchaseAmount == amount &&
             string.Equals("APPROVED", order.Status, StringComparison.InvariantCultureIgnoreCase);
         if (!approved)
         {

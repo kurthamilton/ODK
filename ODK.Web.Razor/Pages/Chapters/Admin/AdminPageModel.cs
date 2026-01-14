@@ -36,12 +36,12 @@ public abstract class AdminPageModel : ChapterPageModel2
         await base.OnPageHandlerExecutionAsync(context, next);
 
         await LoadChapter();
-        CurrentMember = await RequestStore.GetCurrentMember();
+        CurrentMember = await GetCurrentMember();
     }
 
     protected async Task<Chapter> LoadChapter()
     {
-        Chapter = await RequestStore.GetChapter();
+        Chapter = await GetChapter();
         return Chapter;
     }
 }

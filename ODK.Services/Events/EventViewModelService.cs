@@ -4,6 +4,8 @@ using ODK.Core.Events;
 using ODK.Core.Extensions;
 using ODK.Core.Members;
 using ODK.Core.Notifications;
+using ODK.Core.Payments;
+using ODK.Core.Subscriptions;
 using ODK.Core.Utils;
 using ODK.Core.Venues;
 using ODK.Data.Core;
@@ -11,38 +13,343 @@ using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Events;
 using ODK.Services.Authorization;
 using ODK.Services.Events.ViewModels;
+using ODK.Services.Exceptions;
+using ODK.Services.Payments;
+using ODK.Services.Payments.Models;
 
 namespace ODK.Services.Events;
 
 public class EventViewModelService : IEventViewModelService
 {
     private readonly IAuthorizationService _authorizationService;
+    private readonly IPaymentProviderFactory _paymentProviderFactory;
     private readonly IUnitOfWork _unitOfWork;
 
     public EventViewModelService(
         IUnitOfWork unitOfWork,
-        IAuthorizationService authorizationService)
+        IAuthorizationService authorizationService,
+        IPaymentProviderFactory paymentProviderFactory)
     {
         _authorizationService = authorizationService;
+        _paymentProviderFactory = paymentProviderFactory;
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<EventPageViewModel> GetEventPageViewModel(
-        ServiceRequest request, Guid? currentMemberId, string chapterName, Guid eventId)
-    {
-        var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).Run();
-        OdkAssertions.Exists(chapter, $"Chapter not found: '{chapterName}'");
-
-        return await GetEventPageViewModel(request, currentMemberId, chapter, eventId);
-    }
-
-    public async Task<EventsPageViewModel> GetEventsPage(
-        ServiceRequest request, Guid? currentMemberId, string chapterName)
+    public async Task<EventCheckoutPageViewModel> GetEventCheckoutPageViewModel
+        (ServiceRequest request, Guid currentMemberId, Chapter chapter, Guid eventId, string returnPath)
     {
         var platform = request.Platform;
 
-        var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).Run();
-        OdkAssertions.Exists(chapter, $"Chapter not found: '{chapterName}'");
+        var (
+            chapterPages,
+            @event,
+            currentMember,
+            chapterPaymentSettings,
+            chapterPaymentAccount,
+            sitePaymentSettings,
+            hasProfiles,
+            hasQuestions,
+            adminMembers,
+            ownerSubscription,
+            eventTicketPayments) = await _unitOfWork.RunAsync(
+            x => x.ChapterPageRepository.GetByChapterId(chapter.Id),
+            x => x.EventRepository.GetById(eventId),
+            x => x.MemberRepository.GetByIdOrDefault(currentMemberId),
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterPaymentAccountRepository.GetByChapterId(chapter.Id),
+            x => x.SitePaymentSettingsRepository.GetAll(),
+            x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
+            x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
+            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
+            x => x.EventTicketPaymentRepository.GetConfirmedPayments(currentMemberId, eventId));
+
+        OdkAssertions.BelongsToChapter(@event, chapter.Id);
+
+        if (@event.TicketSettings == null)
+        {
+            throw new OdkServiceException("Event is not ticketed");
+        }
+
+        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
+            chapterPaymentSettings,
+            sitePaymentSettings,
+            chapterPaymentAccount);
+
+        var externalProductId = chapterPaymentSettings.ExternalProductId;
+        if (string.IsNullOrEmpty(externalProductId))
+        {
+            externalProductId = await paymentProvider.CreateProduct(chapter.FullName);
+
+            if (string.IsNullOrEmpty(externalProductId))
+            {
+                throw new OdkServiceException("Error starting event checkout");
+            }
+
+            chapterPaymentSettings.ExternalProductId = externalProductId;
+            _unitOfWork.ChapterPaymentSettingsRepository.Update(chapterPaymentSettings);
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        var paidSoFar = eventTicketPayments.Sum(x => x.Payment.Amount);
+        var amountDue = paidSoFar == 0
+            ? @event.TicketSettings.Deposit ?? @event.TicketSettings.Cost
+            : @event.TicketSettings.Cost - paidSoFar;
+
+        PaymentReasonType reason;
+
+        if (@event.TicketSettings.Deposit == null)
+        {
+            reason = paidSoFar == 0
+                ? PaymentReasonType.EventTicket
+                : PaymentReasonType.EventTicketRemainder;
+        }
+        else
+        {
+            reason = paidSoFar == 0
+                ? PaymentReasonType.EventTicketDeposit
+                : PaymentReasonType.EventTicketRemainder;
+        }
+
+        var utcNow = DateTime.UtcNow;
+        var paymentCheckoutSessionId = Guid.NewGuid();
+        var paymentId = Guid.NewGuid();
+
+        var eventTicketPayment = new EventTicketPayment
+        {
+            Id = Guid.NewGuid(),
+            EventId = eventId,
+            PaymentId = paymentId
+        };
+
+        var metadata = new PaymentMetadataModel(
+            reason,
+            currentMember,
+            eventTicketPayment,
+            paymentCheckoutSessionId);
+
+        var externalCheckoutSession = await paymentProvider.StartCheckout(
+            request,
+            currentMember.EmailAddress,
+            new ExternalSubscriptionPlan
+            {
+                Amount = amountDue,
+                CurrencyCode = @event.TicketSettings.Currency.Code,
+                ExternalId = string.Empty,
+                ExternalProductId = externalProductId,
+                Frequency = SiteSubscriptionFrequency.None,
+                Name = @event.GetDisplayName(),
+                NumberOfMonths = 0,
+                Recurring = false
+            },
+            returnPath,
+            metadata);
+
+        _unitOfWork.PaymentCheckoutSessionRepository.Add(new PaymentCheckoutSession
+        {
+            Id = paymentCheckoutSessionId,
+            MemberId = currentMember.Id,
+            PaymentId = paymentId,
+            SessionId = externalCheckoutSession.SessionId,
+            StartedUtc = utcNow
+        });
+
+        _unitOfWork.PaymentRepository.Add(new Payment
+        {
+            Amount = amountDue,
+            ChapterId = chapter.Id,
+            CreatedUtc = utcNow,
+            CurrencyId = @event.TicketSettings.CurrencyId,
+            ExternalId = externalCheckoutSession.PaymentId,
+            Id = paymentId,
+            MemberId = currentMember.Id,
+            Reference = @event.GetDisplayName(),
+            SitePaymentSettingId = null
+        });
+
+        _unitOfWork.EventTicketPaymentRepository.Add(eventTicketPayment);
+
+        await _unitOfWork.SaveChangesAsync();
+
+        return new EventCheckoutPageViewModel
+        {
+            Chapter = chapter,
+            ChapterPages = chapterPages,
+            ClientSecret = externalCheckoutSession.ClientSecret,
+            CurrencyCode = externalCheckoutSession.Currency,
+            CurrentMember = currentMember,
+            Event = @event,
+            HasProfiles = hasProfiles,
+            HasQuestions = hasQuestions,
+            IsAdmin = adminMembers.Any(x => x.MemberId == currentMemberId),
+            IsMember = currentMember.IsMemberOf(chapter.Id),
+            OwnerSubscription = ownerSubscription,
+            PaymentSettings = paymentProvider.PaymentSettings,
+            Platform = platform
+        };
+    }
+
+    public async Task<EventPageViewModel> GetEventPageViewModel(
+        ServiceRequest request, Guid? currentMemberId, Chapter chapter, Guid eventId)
+    {
+        var platform = request.Platform;
+
+        var (
+            membershipSettings,
+            @event,
+            venue,
+            member,
+            memberSubscription,
+            hosts,
+            comments,
+            responses,
+            chapterPaymentSettings,
+            privacySettings,
+            hasProperties,
+            hasQuestions,
+            adminMembers,
+            ownerSubscription,
+            notifications,
+            chapterPages,
+            payments) = await _unitOfWork.RunAsync(
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
+            x => x.EventRepository.GetById(eventId),
+            x => x.VenueRepository.GetByEventId(eventId),
+            x => currentMemberId != null
+                ? x.MemberRepository.GetByIdOrDefault(currentMemberId.Value)
+                : new DefaultDeferredQuerySingleOrDefault<Member>(),
+            x => currentMemberId != null
+                ? x.MemberSubscriptionRepository.GetByMemberId(currentMemberId.Value, chapter.Id)
+                : new DefaultDeferredQuerySingleOrDefault<MemberSubscription>(),
+            x => x.EventHostRepository.GetByEventId(eventId),
+            x => x.EventCommentRepository.GetByEventId(eventId),
+            x => x.EventResponseRepository.GetByEventId(eventId),
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
+            x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
+            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
+            x => currentMemberId != null
+                ? x.NotificationRepository.GetUnreadByMemberId(currentMemberId.Value, NotificationType.NewEvent, eventId)
+                : new DefaultDeferredQueryMultiple<Notification>(),
+            x => x.ChapterPageRepository.GetByChapterId(chapter.Id),
+            x => currentMemberId != null
+                ? x.EventTicketPaymentRepository.GetConfirmedPayments(currentMemberId.Value, eventId)
+                : new DefaultDeferredQueryMultiple<EventTicketPayment>());
+
+        OdkAssertions.BelongsToChapter(@event, chapter.Id);
+
+        var canViewEvent = _authorizationService.CanViewEvent(@event, member, memberSubscription, membershipSettings, privacySettings);
+        var canViewVenue = _authorizationService.CanViewVenue(venue, member, memberSubscription, membershipSettings, privacySettings);
+        var canRespond = _authorizationService.CanRespondToEvent(@event, member, memberSubscription, membershipSettings, privacySettings);
+
+        IReadOnlyCollection<Member> commentMembers = [];
+        IReadOnlyCollection<Member> responseMembers = [];
+
+        if (!canViewEvent)
+        {
+            comments = [];
+            responses = [];
+        }
+        else
+        {
+            var commentMemberIds = comments
+                .Select(x => x.MemberId)
+                .Distinct()
+                .ToArray();
+
+            var responseMemberIds = responses
+                .Select(x => x.MemberId)
+                .Distinct()
+                .ToArray();
+
+            var memberIds = commentMemberIds
+                .Concat(responseMemberIds)
+                .Distinct()
+                .ToArray();
+
+            if (memberIds.Length > 0)
+            {
+                var members = await _unitOfWork.MemberRepository
+                    .GetByChapterId(chapter.Id, memberIds)
+                    .Run();
+
+                var memberDictionary = members.ToDictionary(x => x.Id);
+
+                commentMembers = commentMemberIds
+                    .Where(memberDictionary.ContainsKey)
+                    .Select(x => memberDictionary[x])
+                    .ToArray();
+
+                responseMembers = responseMemberIds
+                    .Where(memberDictionary.ContainsKey)
+                    .Select(x => memberDictionary[x])
+                    .ToArray();
+            }
+        }
+
+        var responseMemberDictionary = responseMembers.ToDictionary(x => x.Id);
+
+        var responseDictionary = responses
+            .Where(x => responseMemberDictionary.ContainsKey(x.MemberId))
+            .GroupBy(x => x.Type)
+            .ToDictionary(
+                x => x.Key,
+                x => (IReadOnlyCollection<Member>)x
+                    .Select(response => responseMemberDictionary[response.MemberId])
+                    .ToArray());
+
+        var venueLocation = canViewVenue
+            ? await _unitOfWork.VenueLocationRepository.GetByVenueId(venue.Id)
+            : null;
+
+        if (notifications.Count > 0)
+        {
+            _unitOfWork.NotificationRepository.MarkAsRead(notifications);
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        var amountPaid = payments.Sum(x => x.Payment.Amount);
+
+        return new EventPageViewModel
+        {
+            AmountPaid = amountPaid,
+            AmountRemaining = @event.TicketSettings != null
+                ? @event.TicketSettings.Cost - amountPaid
+                : 0,
+            CanRespond = canRespond,
+            CanView = canViewEvent,
+            Chapter = chapter,
+            ChapterPages = chapterPages,
+            ChapterPaymentSettings = chapterPaymentSettings,
+            Comments = new EventCommentsDto
+            {
+                Comments = comments,
+                Members = commentMembers
+            },
+            CurrentMember = member,
+            Event = @event,
+            HasProfiles = hasProperties,
+            HasQuestions = hasQuestions,
+            Hosts = hosts.Select(x => x.Member).ToArray(),
+            IsAdmin = adminMembers.Any(x => x.MemberId == currentMemberId),
+            IsMember = member?.IsMemberOf(chapter.Id) == true,
+            MembersByResponse = responseDictionary,
+            MemberResponse = currentMemberId != null
+                ? responses.FirstOrDefault(x => x.MemberId == currentMemberId.Value)?.Type
+                : null,
+            OwnerSubscription = ownerSubscription,
+            Platform = platform,
+            Venue = canViewVenue ? venue : null,
+            VenueLocation = venueLocation
+        };
+    }
+
+    public async Task<EventsPageViewModel> GetEventsPage(
+        ServiceRequest request, Guid? currentMemberId, Chapter chapter)
+    {
+        var platform = request.Platform;
 
         var currentTime = chapter.CurrentTime();
         var afterUtc = currentTime.StartOfDay();
@@ -129,165 +436,6 @@ public class EventViewModelService : IEventViewModelService
             CurrentMember = member,
             Events = viewModels.OrderBy(x => x.Date).ToArray(),
             Platform = platform
-        };
-    }
-
-    public async Task<EventPageViewModel> GetGroupEventPageViewModel(
-        ServiceRequest request, Guid? currentMemberId, string slug, Guid eventId)
-    {
-        var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
-        OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
-
-        return await GetEventPageViewModel(request, currentMemberId, chapter, eventId);
-    }
-
-    private async Task<EventPageViewModel> GetEventPageViewModel(
-        ServiceRequest request, Guid? currentMemberId, Chapter chapter, Guid eventId)
-    {
-        var platform = request.Platform;
-
-        var (
-            membershipSettings,
-            @event,
-            venue,
-            member,
-            memberSubscription,
-            hosts,
-            comments,
-            responses,
-            ticketPurchases,
-            chapterPaymentSettings,
-            privacySettings,
-            hasProperties,
-            hasQuestions,
-            adminMembers,
-            ownerSubscription,
-            notifications,
-            chapterPages) = await _unitOfWork.RunAsync(
-            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
-            x => x.EventRepository.GetById(eventId),
-            x => x.VenueRepository.GetByEventId(eventId),
-            x => currentMemberId != null
-                ? x.MemberRepository.GetByIdOrDefault(currentMemberId.Value)
-                : new DefaultDeferredQuerySingleOrDefault<Member>(),
-            x => currentMemberId != null
-                ? x.MemberSubscriptionRepository.GetByMemberId(currentMemberId.Value, chapter.Id)
-                : new DefaultDeferredQuerySingleOrDefault<MemberSubscription>(),
-            x => x.EventHostRepository.GetByEventId(eventId),
-            x => x.EventCommentRepository.GetByEventId(eventId),
-            x => x.EventResponseRepository.GetByEventId(eventId),
-            x => x.EventTicketPurchaseRepository.GetByEventId(eventId),
-            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
-            x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
-            x => currentMemberId != null
-                ? x.NotificationRepository.GetUnreadByMemberId(currentMemberId.Value, NotificationType.NewEvent, eventId)
-                : new DefaultDeferredQueryMultiple<Notification>(),
-            x => x.ChapterPageRepository.GetByChapterId(chapter.Id));
-
-        OdkAssertions.BelongsToChapter(@event, chapter.Id);
-
-        var canViewEvent = _authorizationService.CanViewEvent(@event, member, memberSubscription, membershipSettings, privacySettings);
-        var canViewVenue = _authorizationService.CanViewVenue(venue, member, memberSubscription, membershipSettings, privacySettings);
-        var canRespond = _authorizationService.CanRespondToEvent(@event, member, memberSubscription, membershipSettings, privacySettings);
-
-        IReadOnlyCollection<Member> commentMembers = [];
-        IReadOnlyCollection<Member> responseMembers = [];
-
-        if (!canViewEvent)
-        {
-            comments = [];
-            responses = [];
-        }
-        else
-        {
-            var commentMemberIds = comments
-                .Select(x => x.MemberId)
-                .Distinct()
-                .ToArray();
-
-            var responseMemberIds = responses
-                .Select(x => x.MemberId)
-                .Distinct()
-                .ToArray();
-
-            var memberIds = commentMemberIds
-                .Concat(responseMemberIds)
-                .Distinct()
-                .ToArray();
-
-            if (memberIds.Length > 0)
-            {
-                var members = await _unitOfWork.MemberRepository
-                    .GetByChapterId(chapter.Id, memberIds)
-                    .Run();
-
-                var memberDictionary = members.ToDictionary(x => x.Id);
-
-                commentMembers = commentMemberIds
-                    .Where(memberDictionary.ContainsKey)
-                    .Select(x => memberDictionary[x])
-                    .ToArray();
-
-                responseMembers = responseMemberIds
-                    .Where(memberDictionary.ContainsKey)
-                    .Select(x => memberDictionary[x])
-                    .ToArray();
-            }
-        }
-
-        var responseMemberDictionary = responseMembers.ToDictionary(x => x.Id);
-
-        var responseDictionary = responses
-            .Where(x => responseMemberDictionary.ContainsKey(x.MemberId))
-            .GroupBy(x => x.Type)
-            .ToDictionary(
-                x => x.Key,
-                x => (IReadOnlyCollection<Member>)x
-                    .Select(response => responseMemberDictionary[response.MemberId])
-                    .ToArray());
-
-        var venueLocation = canViewVenue
-            ? await _unitOfWork.VenueLocationRepository.GetByVenueId(venue.Id)
-            : null;
-
-        if (notifications.Count > 0)
-        {
-            _unitOfWork.NotificationRepository.MarkAsRead(notifications);
-            await _unitOfWork.SaveChangesAsync();
-        }
-
-        return new EventPageViewModel
-        {
-            CanRespond = canRespond,
-            CanView = canViewEvent,
-            Chapter = chapter,
-            ChapterPages = chapterPages,
-            ChapterPaymentSettings = chapterPaymentSettings,
-            Comments = new EventCommentsDto
-            {
-                Comments = comments,
-                Members = commentMembers
-            },
-            CurrentMember = member,
-            Event = @event,
-            HasProfiles = hasProperties,
-            HasQuestions = hasQuestions,
-            Hosts = hosts.Select(x => x.Member).ToArray(),
-            IsAdmin = adminMembers.Any(x => x.MemberId == currentMemberId),
-            IsMember = member?.IsMemberOf(chapter.Id) == true,
-            MembersByResponse = responseDictionary,
-            MemberResponse = currentMemberId != null
-                ? responses.FirstOrDefault(x => x.MemberId == currentMemberId.Value)?.Type
-                : null,
-            OwnerSubscription = ownerSubscription,
-            Platform = platform,
-            TicketPurchases = ticketPurchases,
-            Venue = canViewVenue ? venue : null,
-            VenueLocation = venueLocation
         };
     }
 }

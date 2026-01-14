@@ -38,6 +38,7 @@
     {
         AttendeeLimit = Model.Event.AttendeeLimit,
         Chapter = Model.Chapter,
+        Currency = Model.Currency,
         Date = Model.Event.ToLocalTime(Model.Chapter.TimeZone),
         Description = Model.Event.Description,
         EndTime = TimeSpanUtils.ToString(Model.Event.EndTime),
@@ -46,10 +47,12 @@
         ImageUrl = Model.Event.ImageUrl,
         Name = Model.Event.Name,
         OwnerSubscription = Model.OwnerSubscription,
-        PaymentSettings = Model.PaymentSettings,
         Platform = Model.Platform,
         Public = Model.Event.IsPublic,
-        RsvpDeadline = Model.Event.RsvpDeadlineUtc != null ? Model.Chapter.ToChapterTime(Model.Event.RsvpDeadlineUtc.Value) : null,
+        RsvpDeadline = Model.Event.RsvpDeadlineUtc != null 
+            ? Model.Chapter.ToChapterTime(Model.Event.RsvpDeadlineUtc.Value) 
+            : null,
+        RsvpDisabled = Model.Event.RsvpDisabled,
         TicketCost = Model.Event.TicketSettings?.Cost,
         TicketDepositCost = Model.Event.TicketSettings?.Deposit,
         Time = Model.Event.Time,

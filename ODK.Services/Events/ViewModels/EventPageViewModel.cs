@@ -8,11 +8,15 @@ namespace ODK.Services.Events.ViewModels;
 
 public class EventPageViewModel : GroupPageViewModel
 {
+    public required decimal AmountPaid { get; init; }
+
+    public required decimal AmountRemaining { get; init; }
+
     public required bool CanRespond { get; init; }
 
     public required bool CanView { get; init; }
 
-    public required ChapterPaymentSettings ChapterPaymentSettings { get; init; }
+    public required ChapterPaymentSettings? ChapterPaymentSettings { get; init; }
 
     public required EventCommentsDto Comments { get; init; }
 
@@ -37,8 +41,6 @@ public class EventPageViewModel : GroupPageViewModel
             return Event.NumberOfSpacesLeft(numberOfAttendees);
         }
     }
-
-    public required IReadOnlyCollection<EventTicketPurchase> TicketPurchases { get; init; }
 
     public required Venue? Venue { get; init; }
 

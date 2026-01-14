@@ -9,7 +9,7 @@
         : "Photo of member";
 }
 
-<img style="@(maxWidth > 0 ? $"max-width: {maxWidth}px" : null)"
+<img style="@(maxWidth > 0 ? $"max-width: {maxWidth}px;" : null) @(Model.Width > 0 ? $"width: {Model.Width}px;" : null)"
      class="@(Model.IsTop ? "card-img-top" : "card-img")"
      src="@imageUrl"
      alt="@alt"

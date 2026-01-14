@@ -46,18 +46,20 @@
         {
             @await Html.PartialAsync("Events/_EventTicketPurchase", new EventTicketPurchaseViewModel
             {
+                AmountPaid = Model.AmountPaid,
+                AmountRemaining = Model.AmountRemaining,
                 Chapter = Model.Chapter,
                 ChapterPaymentSettings = Model.ChapterPaymentSettings,
                 CurrentMemberId = Model.CurrentMember.Id,
                 Event = Model.Event,
-                TicketPurchases = Model.TicketPurchases,
+                Platform = Model.Platform,
                 TicketsLeft = Model.SpacesLeft
             })            
         }
         else
         {
             @await Html.PartialAsync("Events/_EventRSVP")
-        }    
+        }
     }   
     
     @foreach (var responseType in Model.ResponseTypes)

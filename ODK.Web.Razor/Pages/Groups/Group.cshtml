@@ -1,13 +1,13 @@
 ﻿@page "/groups/{slug}"
 @using ODK.Services.Chapters
 @using ODK.Web.Razor.Models.Groups
-@model ODK.Web.Razor.Pages.Groups.GroupModel
+@model GroupModel
 @inject IChapterViewModelService ChapterViewModelService
 @{
     Layout = "_HomeLayout";
 
     var viewModel = await ChapterViewModelService.GetGroupHomePage(
-        Model.ServiceRequest, Model.CurrentMemberIdOrDefault, Model.Slug);
+        Model.ServiceRequest, Model.CurrentMemberIdOrDefault, Model.Chapter);
 
     Model.Title = viewModel.Chapter.GetDisplayName(Model.Platform);
 

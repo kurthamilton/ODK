@@ -15,7 +15,7 @@ public class ChapterPaymentSettings : IChapterEntity, IPaymentSettings
 
     public Guid CurrencyId { get; set; }
 
-    public string? EmailAddress { get; set; }
+    public string? ExternalProductId { get; set; }
 
     public bool HasApiKey =>
         !string.IsNullOrEmpty(ApiPublicKey) &&

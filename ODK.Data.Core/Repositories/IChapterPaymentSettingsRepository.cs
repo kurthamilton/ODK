@@ -5,5 +5,5 @@ namespace ODK.Data.Core.Repositories;
 
 public interface IChapterPaymentSettingsRepository : IWriteRepository<ChapterPaymentSettings>
 {
-    IDeferredQuerySingle<ChapterPaymentSettings> GetByChapterId(Guid chapterId);
+    IDeferredQuerySingleOrDefault<ChapterPaymentSettings> GetByChapterId(Guid chapterId);
 }

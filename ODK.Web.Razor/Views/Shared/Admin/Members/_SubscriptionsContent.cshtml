@@ -12,8 +12,8 @@
 @using ODK.Web.Razor.Models.Components
 @model SubscriptionsAdminPageViewModel
 @{        
-    var (subscriptions, currency, membershipSettings) = 
-        (Model.ChapterSubscriptions, Model.Currency, Model.MembershipSettings);
+    var (subscriptions, membershipSettings) = 
+        (Model.ChapterSubscriptions, Model.MembershipSettings);
 }
 
 <section class="section">
@@ -74,7 +74,7 @@
                                     <a href="@OdkRoutes.MemberGroups.MembersSubscription(Model.Platform, Model.Chapter, subscription)">@subscription.Name</a>
                                 </td>                                
                                 <td>
-                                    @currency?.ToAmountString(subscription.Amount)
+                                    @subscription.Currency.ToAmountString(subscription.Amount)
                                 </td>
                                 <td>@subscription.Months</td>
                                 <td>

@@ -1,5 +1,4 @@
 ﻿using ODK.Core.Chapters;
-using ODK.Core.Countries;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Data.Core.Chapters;
@@ -14,8 +13,6 @@ public class SubscriptionsPageViewModel
     public required ChapterPaymentSettings? ChapterPaymentSettings { get; init; }
 
     public required IReadOnlyCollection<ChapterSubscriptionDto> ChapterSubscriptions { get; init; }
-
-    public required Currency? Currency { get; init; }
 
     public required ChapterSubscription? CurrentSubscription { get; init; }
 

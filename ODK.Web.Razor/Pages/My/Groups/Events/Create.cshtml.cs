@@ -36,6 +36,7 @@ public class CreateModel : OdkGroupAdminPageModel
             IsPublic = false,
             Name = viewModel.Name,
             RsvpDeadline = viewModel.RsvpDeadline,
+            RsvpDisabled = viewModel.RsvpDisabled,
             TicketCost = viewModel.TicketCost,
             TicketDepositCost = viewModel.TicketDepositCost,
             Time = viewModel.Time,
@@ -48,7 +49,7 @@ public class CreateModel : OdkGroupAdminPageModel
             return Page();
         }
 
-        var chapter = await RequestStore.GetChapter();
+        var chapter = await GetChapter();
         AddFeedback(new FeedbackViewModel("Event created", FeedbackType.Success));
         var url = OdkRoutes.MemberGroups.Events(Platform, chapter);
         return Redirect(url);

@@ -5,21 +5,16 @@ using ODK.Services.Members;
 using ODK.Services.Members.Models;
 using ODK.Services.Users.ViewModels;
 using ODK.Web.Common.Feedback;
-using ODK.Web.Razor.Services;
 
 namespace ODK.Web.Razor.Pages.Chapters.Account;
 
 public class JoinModel : ChapterPageModel2
 {
     private readonly IMemberService _memberService;
-    private readonly IRequestStore _requestStore;
 
-    public JoinModel(
-        IMemberService memberService,
-        IRequestStore requestStore)
+    public JoinModel(IMemberService memberService)
     {
         _memberService = memberService;
-        _requestStore = requestStore;
     }
 
     public async Task<IActionResult> OnPost(
@@ -56,7 +51,7 @@ public class JoinModel : ChapterPageModel2
             })
         };
 
-        var chapter = await _requestStore.GetChapter();
+        var chapter = await GetChapter();
         var result = await _memberService.CreateChapterAccount(ServiceRequest, chapter.Id, model);
         PostJoin(result);
         return result.Success

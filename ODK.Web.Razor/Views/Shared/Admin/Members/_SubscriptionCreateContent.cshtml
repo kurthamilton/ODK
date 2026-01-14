@@ -28,8 +28,8 @@
                         @*@Html.AntiForgeryToken()*@
                         @await Html.PartialAsync("Admin/Members/_SubscriptionForm", new SubscriptionFormViewModel
                         {
+                            Currency = Model.Currency,
                             OwnerSubscription = Model.OwnerSubscription,
-                            PaymentSettings = Model.PaymentSettings,
                             SupportsRecurringPayments = Model.SupportsRecurringPayments
                         })
                         <button class="btn btn-primary">Create</button>

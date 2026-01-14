@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Chapters;
+using ODK.Core.Countries;
 using ODK.Core.Events;
 using ODK.Core.Venues;
 
@@ -8,9 +9,9 @@ public class EventEditAdminPageViewModel : EventAdminPageViewModelBase
 {
     public required IReadOnlyCollection<ChapterAdminMember> ChapterAdminMembers { get; init; }
 
-    public required IReadOnlyCollection<EventHost> Hosts { get; init; }
+    public required Currency Currency { get; init; }
 
-    public required ChapterPaymentSettings PaymentSettings { get; init; }
+    public required IReadOnlyCollection<EventHost> Hosts { get; init; }
 
     public required IReadOnlyCollection<Venue> Venues { get; init; }
 }

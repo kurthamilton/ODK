@@ -11,7 +11,7 @@
     Layout = "_OdkChapterLayout";
 
     var viewModel = await ChapterViewModelService.GetGroupConversationPage(
-        Model.MemberServiceRequest, Model.Chapter.Slug, Model.ConversationId);
+        Model.MemberServiceRequest, Model.Chapter, Model.ConversationId);
 
     Model.Title = $"{viewModel.Conversation.Subject} | Conversations | {viewModel.Chapter.GetDisplayName(Model.Platform)}";
 }

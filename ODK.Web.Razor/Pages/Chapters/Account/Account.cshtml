@@ -1,23 +1,19 @@
 ﻿@page "/{chapterName}/Account"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
-@using ODK.Services.Chapters
-@using ODK.Services.Users
 @using ODK.Services.Users.ViewModels
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
-@using ODK.Web.Razor.Services
 @model AccountModel
-@inject IRequestStore RequestStore
 @{
     Layout = "_OdkChapterLayout";
     Model.Title = "Account";
 
-    var chapter = await RequestStore.GetChapter();
-    var member = await RequestStore.GetCurrentMember();
+    var chapter = await Model.GetChapter();
+    var member = await Model.GetCurrentMember();
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

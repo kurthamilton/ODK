@@ -1,14 +1,15 @@
-﻿using ODK.Services.Events.ViewModels;
+﻿using ODK.Core.Chapters;
+using ODK.Services.Events.ViewModels;
 
 namespace ODK.Services.Events;
 
 public interface IEventViewModelService
 {
+    Task<EventCheckoutPageViewModel> GetEventCheckoutPageViewModel
+        (ServiceRequest request, Guid currentMemberId, Chapter chapter, Guid eventId, string returnPath);
+
     Task<EventPageViewModel> GetEventPageViewModel(
-        ServiceRequest request, Guid? currentMemberId, string chapterName, Guid eventId);
+        ServiceRequest request, Guid? currentMemberId, Chapter chapter, Guid eventId);
 
-    Task<EventsPageViewModel> GetEventsPage(ServiceRequest request, Guid? currentMemberId, string chapterName);
-
-    Task<EventPageViewModel> GetGroupEventPageViewModel(
-        ServiceRequest request, Guid? currentMemberId, string slug, Guid eventId);
+    Task<EventsPageViewModel> GetEventsPage(ServiceRequest request, Guid? currentMemberId, Chapter chapter);
 }

@@ -15,18 +15,16 @@
     {
         return;
     }
+
+    var currency = Model.Event.TicketSettings.Currency;
 }
 
 <div class="table-responsive">
     <table class="table table-striped">
         <thead>
             <tr>
-                <th></th>
-                <th>Member</th>
-                @if (Model.Event.TicketSettings.Deposit > 0)
-                {
-                    <th>Deposit Paid</th>
-                }                
+                <th class="tcol-narrow"></th>
+                <th>Member</th>              
                 <th>Total Paid</th>
                 <th>
                     Remaining
@@ -34,37 +32,29 @@
             </tr>
         </thead>
         <tbody> 
-            @foreach (var ticketPurchase in Model.Purchases.OrderBy(x => x.Member.FullName))
+            @foreach (var payment in Model.Payments)
             {
                 
                 <tr>
-                    <td width="30px" class="px-0">
-                        @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel
-                        {
-                            Member = ticketPurchase.Member,
-                            MaxWidth = 30
-                        })
-                    </td>
                     <td>
-                        <a href="/@Model.Chapter.ShortName/Admin/Members/@ticketPurchase.MemberId">@ticketPurchase.Member.FullName</a>
-                    </td>
-                    @if (Model.Event.TicketSettings.Deposit > 0)
-                    {
-                        <td>
-                            @if (ticketPurchase.DepositPaid != null)
+                        <div>
+                            @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel
                             {
-                                @Model.PaymentSettings.Currency.ToAmountString(ticketPurchase.DepositPaid.Value)
-                            }                            
-                        </td>
-                    }
-                    <td>
-                        @Model.PaymentSettings.Currency.ToAmountString(ticketPurchase.TotalPaid)                                                
+                                Member = payment.Member,
+                                Width = 30
+                            })
+                        </div>
                     </td>
                     <td>
-                        @if (ticketPurchase.PurchasedUtc == null)
+                        <a href="/@Model.Chapter.ShortName/Admin/Members/@payment.Member.Id">@payment.Member.FullName</a>
+                    </td>                    
+                    <td>
+                        @currency.ToAmountString(payment.AmountPaid)
+                    </td>
+                    <td>
+                        @if (payment.AmountRemaining > 0)
                         {
-                            var remaining = Model.Event.TicketSettings.Cost - ticketPurchase.TotalPaid;
-                            @Model.PaymentSettings.Currency.ToAmountString(remaining)
+                            @currency.ToAmountString(payment.AmountRemaining)
                         }
                     </td>
                 </tr>

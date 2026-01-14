@@ -41,14 +41,14 @@ public class EventRepository : ReadWriteRepositoryBase<Event>, IEventRepository
         => GetPastEventQuery(chapterId, null)
             .DeferredCount();
 
-
     public IDeferredQueryMultiple<Event> GetRecentEventsByChapterId(Guid chapterId, int pageSize)
         => GetPastEventQuery(chapterId, pageSize)
             .OrderByDescending(x => x.Date)
             .DeferredMultiple();
 
     protected override IQueryable<Event> Set() => base.Set()
-        .Include(x => x.TicketSettings);
+        .Include(x => x.TicketSettings)
+        .ThenInclude(x => x!.Currency);
 
     private IQueryable<Event> GetPastEventQuery(Guid chapterId, int? pageSize)
     {

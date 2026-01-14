@@ -1,0 +1,63 @@
+﻿@page "/{chapterName}/events/{id:guid}/checkout"
+@using ODK.Core.Payments
+@using ODK.Services.Events
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Payments
+@model EventCheckoutModel
+@inject IEventViewModelService EventViewModelService
+@{
+    Layout = "_OdkChapterLayout";
+
+    var chapter = await Model.GetChapter();
+
+    var returnRoute = OdkRoutes.Groups.EventCheckoutConfirm(Model.Platform, chapter, Model.EventId);
+    var returnPath = $"{returnRoute}?sessionId={{sessionId}}";
+    
+    var viewModel = await EventViewModelService.GetEventCheckoutPageViewModel(
+        Model.ServiceRequest,
+        Model.CurrentMemberId,
+        chapter,
+        Model.EventId,
+        returnPath);
+
+    Model.Title = $"Checkout | {viewModel.Event.GetDisplayName()}";
+}
+
+@await Html.PartialAsync("Components/_BodyWithSidebar", new BodyWithSidebarViewModel
+{
+    Title = "Checkout",
+    Breadcrumbs = new[]
+    {
+        new MenuItem
+        {
+            Link = OdkRoutes.Groups.Group(Model.Platform, viewModel.Chapter),
+            Text = viewModel.Chapter.GetDisplayName(Model.Platform)
+        },
+        new MenuItem
+        {
+            Link = OdkRoutes.Groups.Events(Model.Platform, viewModel.Chapter),
+            Text = "Events"
+        },
+        new MenuItem 
+        { 
+            Link = OdkRoutes.Groups.Event(Model.Platform, viewModel.Chapter, viewModel.Event.Id),
+            Text = viewModel.Event.GetDisplayName() 
+        },
+        new MenuItem { Text = "Checkout" }
+    },
+    Content = await Html.PartialAsync("Events/_EventCheckoutContent", viewModel),
+})
+
+@section scripts
+{
+    @await Html.PartialAsync("Payments/_PaymentScripts", new PaymentScriptsViewModel
+    {
+        ApiPublicKey = viewModel.PaymentSettings.ApiPublicKey ?? string.Empty,
+        CurrencyCode = viewModel.CurrencyCode,
+        IsSubscription = false,
+        // let's face it, we're using Stripe here
+        Provider = PaymentProviderType.Stripe
+    })
+}

@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.RazorPages;
+using ODK.Core.Chapters;
 using ODK.Core.Countries;
+using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Core.Web;
 using ODK.Services;
@@ -62,6 +64,10 @@ public abstract class OdkPageModel : PageModel
 
     public MemberChapterServiceRequest CreateMemberChapterServiceRequest(Guid chapterId)
         => MemberChapterServiceRequest.Create(chapterId, MemberServiceRequest);
+
+    public Task<Chapter> GetChapter() => RequestStore.GetChapter();
+
+    public Task<Member> GetCurrentMember() => RequestStore.GetCurrentMember();
 
     protected void AddFeedback(FeedbackViewModel viewModel) => TempData!.AddFeedback(viewModel);
 

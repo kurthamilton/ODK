@@ -1,4 +1,5 @@
-﻿using ODK.Core.Chapters;
+﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Core.Payments;
 using ODK.Data.Core.Chapters;
@@ -74,6 +75,10 @@ public class ChapterSubscriptionRepository : ReadWriteRepositoryBase<ChapterSubs
         => Set<MemberSubscriptionRecord>()
             .Where(x => x.ChapterSubscriptionId == chapterSubscriptionId)
             .DeferredAny();
+
+    protected override IQueryable<ChapterSubscription> Set()
+        => base.Set()
+            .Include(x => x.Currency);
 
     private IQueryable<ChapterSubscription> Set(Guid chapterId, bool includeDisabled)
     {

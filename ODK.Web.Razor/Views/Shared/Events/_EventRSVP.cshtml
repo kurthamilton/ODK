@@ -7,8 +7,13 @@
     Model.MembersByResponse.TryGetValue(EventResponseType.Yes, out var attendees);
     
     var spacesLeft = Model.SpacesLeft;
-    var canRsvp = Model.MemberResponse == EventResponseType.Yes
-        || ((spacesLeft == null || spacesLeft > 0) && !Model.Event.RsvpDeadlinePassed);
+    var canRsvp = 
+        Model.MemberResponse == EventResponseType.Yes || 
+        (
+            (spacesLeft == null || spacesLeft > 0) && 
+            !Model.Event.RsvpDeadlinePassed &&
+            !Model.Event.RsvpDisabled
+        );
 }
 
 <div class="card sidebar-card">

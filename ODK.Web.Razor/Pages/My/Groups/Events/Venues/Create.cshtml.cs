@@ -36,7 +36,7 @@ public class CreateModel : OdkGroupAdminPageModel
             return Page();
         }
 
-        var chapter = await RequestStore.GetChapter();
+        var chapter = await GetChapter();
         AddFeedback(new FeedbackViewModel("Venue created", FeedbackType.Success));
         var url = OdkRoutes.MemberGroups.Venues(Platform, chapter);
         return Redirect(url);

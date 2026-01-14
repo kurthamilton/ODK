@@ -69,6 +69,11 @@
     @Html.ValidationMessageFor(x => x.RsvpDeadline)
 </div>
 
+<div class="form-check form-switch mb-3">
+    @Html.CheckBoxFor(x => x.RsvpDisabled, new { @class = "form-check-input", role = "switch" })
+    @Html.LabelFor(x => x.RsvpDisabled, new { @class = "form-check-label" })
+</div>
+
 @*<div class="form-group mb-3">
     @Html.LabelFor(x => x.Time, new { @class = "form-label" })
     @Html.TextBoxFor(x => x.Time, new { @class = "form-control" })
@@ -117,7 +122,7 @@
         <span class="ms-1 text-muted">The total ticket cost for this event. Set the max number of attendees above to set the number of tickets.</span>
         <div class="input-group">
             <span class="input-group-text">
-                @Model.PaymentSettings.Currency.Symbol
+                @Model.Currency.Symbol
             </span>
             @Html.TextBoxFor(x => x.TicketCost, format: "{0:0.00}", new { @class = "form-control", Type = "number" })
         </div>
@@ -129,7 +134,7 @@
         <span class="ms-1 text-muted">The deposit cost for this event. Members who pay a deposit will then only need to pay the remainder of the total cost.</span>
         <div class="input-group">
             <span class="input-group-text">
-                @Model.PaymentSettings.Currency.Symbol
+                @Model.Currency.Symbol
             </span>
             @Html.TextBoxFor(x => x.TicketDepositCost, format: "{0:0.00}", new { @class = "form-control", type = "number", step = 0.5 })
         </div>

@@ -1,4 +1,5 @@
-﻿using ODK.Core.Members;
+﻿using ODK.Core.Countries;
+using ODK.Core.Members;
 using ODK.Core.Payments;
 
 namespace ODK.Core.Chapters;
@@ -8,6 +9,10 @@ public class ChapterSubscription : IDatabaseEntity, IChapterEntity
     public double Amount { get; set; }
 
     public Guid ChapterId { get; set; }
+
+    public Currency Currency { get; set; } = null!;
+
+    public Guid CurrencyId { get; set; }
 
     public string Description { get; set; } = string.Empty;
 
@@ -32,7 +37,7 @@ public class ChapterSubscription : IDatabaseEntity, IChapterEntity
     public SubscriptionType Type { get; set; }
 
     public bool IsVisibleToMembers(
-        ChapterPaymentSettings chapterPaymentSettings, IEnumerable<SitePaymentSettings> sitePaymentSettings)
+        ChapterPaymentSettings? chapterPaymentSettings, IEnumerable<SitePaymentSettings> sitePaymentSettings)
     {
         if (Disabled)
         {
@@ -43,14 +48,14 @@ public class ChapterSubscription : IDatabaseEntity, IChapterEntity
     }
 
     public bool IsVisibleToAdmins(
-        ChapterPaymentSettings chapterPaymentSettings, IEnumerable<SitePaymentSettings> sitePaymentSettings)
+        ChapterPaymentSettings? chapterPaymentSettings, IEnumerable<SitePaymentSettings> sitePaymentSettings)
     {
         if (SitePaymentSettingId != null)
         {
             return sitePaymentSettings.First(x => x.Id == SitePaymentSettingId.Value).Enabled;
         }
 
-        if (chapterPaymentSettings.UseSitePaymentProvider)
+        if (chapterPaymentSettings == null || chapterPaymentSettings.UseSitePaymentProvider)
         {
             // SitePaymentSettingId not set, cannot be used
             return false;
@@ -58,8 +63,6 @@ public class ChapterSubscription : IDatabaseEntity, IChapterEntity
 
         return true;
     }
-
-
 
     public string ToReference() => $"Subscription: {Name}";
 }

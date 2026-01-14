@@ -20,6 +20,10 @@ public class ChapterSubscriptionMap : IEntityTypeConfiguration<ChapterSubscripti
             .HasColumnName("SubscriptionTypeId")
             .HasConversion<int>();
 
+        builder.HasOne(x => x.Currency)
+            .WithMany()
+            .HasForeignKey(x => x.CurrencyId);
+
         builder.HasOne<SitePaymentSettings>()
             .WithMany()
             .HasForeignKey(x => x.SitePaymentSettingId);

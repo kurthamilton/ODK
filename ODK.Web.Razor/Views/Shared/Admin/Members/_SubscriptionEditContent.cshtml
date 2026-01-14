@@ -10,13 +10,13 @@
     @await Html.PartialAsync("Admin/Members/_SubscriptionForm", new SubscriptionFormViewModel
     {
         Amount = Model.Subscription.Amount,
+        Currency = Model.Subscription.Currency,
         Description = Model.Subscription.Description,
         DurationMonths = Model.Subscription.Months,
         Enabled = !Model.Subscription.Disabled,
         Id = Model.Subscription.Id,
         Name = Model.Subscription.Name,
         OwnerSubscription = Model.OwnerSubscription,
-        PaymentSettings = Model.PaymentSettings,
         Recurring = Model.Subscription.Recurring,
         SupportsRecurringPayments = Model.SupportsRecurringPayments,
         Title = Model.Subscription.Title
