@@ -1,5 +1,5 @@
 namespace ODK.Web.Razor.Pages.Account;
 
-public class ForgottenPasswordModel : OdkPageModel
+public class ForgottenPasswordModel : OdkSiteAccountPageModel
 {
 }

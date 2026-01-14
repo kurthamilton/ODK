@@ -1,6 +1,6 @@
 namespace ODK.Web.Razor.Pages.Account;
 
-public class SubscriptionCheckoutModel : OdkPageModel
+public class SubscriptionCheckoutModel : OdkSiteAccountPageModel
 {
     public Guid SubscriptionId { get; private set; }
 

@@ -1,6 +1,6 @@
 namespace ODK.Web.Razor.Pages.Account;
 
-public class NotificationsModel : OdkPageModel
+public class NotificationsModel : OdkSiteAccountPageModel
 {
     public void OnGet()
     {

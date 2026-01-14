@@ -3,7 +3,7 @@ using ODK.Web.Common.Account;
 
 namespace ODK.Web.Razor.Pages.Account;
 
-public class LogoutModel : OdkPageModel
+public class LogoutModel : OdkSiteAccountPageModel
 {
     private ILoginHandler _loginHandler;
 

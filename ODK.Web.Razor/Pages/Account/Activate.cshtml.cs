@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ODK.Web.Razor.Pages.Account;
 
-public class ActivateModel : OdkPageModel
+public class ActivateModel : OdkSiteAccountPageModel
 {
     public ActivateModel()
     {

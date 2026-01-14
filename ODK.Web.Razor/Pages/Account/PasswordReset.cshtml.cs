@@ -5,7 +5,7 @@ using ODK.Web.Razor.Models.Account;
 
 namespace ODK.Web.Razor.Pages.Account;
 
-public class PasswordResetModel : OdkPageModel
+public class PasswordResetModel : OdkSiteAccountPageModel
 {
     private readonly IAuthenticationService _authenticationService;
 

@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Chapters;
+using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Services.Chapters.ViewModels;
 using ODK.Services.Members.ViewModels;
@@ -20,6 +21,8 @@ public interface IChapterService
     Task<IReadOnlyCollection<Chapter>> GetChaptersByOwnerId(Guid ownerId);
 
     Task<ChaptersHomePageViewModel> GetChaptersDto(PlatformType platform);
+
+    Task<Chapter?> GetDefaultChapter(Member member);
 
     Task<IReadOnlyCollection<Chapter>> GetMemberChapters(Guid memberId);
 

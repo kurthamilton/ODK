@@ -1,6 +1,6 @@
 namespace ODK.Web.Razor.Pages.Account;
 
-public class IssueModel : OdkPageModel
+public class IssueModel : OdkSiteAccountPageModel
 {
     public Guid IssueId { get; private set; }
 

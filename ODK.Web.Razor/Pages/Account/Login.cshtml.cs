@@ -1,6 +1,6 @@
 ﻿namespace ODK.Web.Razor.Pages.Account;
 
-public class LoginModel : OdkPageModel
+public class LoginModel : OdkSiteAccountPageModel
 {
     public string? ReturnUrl { get; private set; }
 

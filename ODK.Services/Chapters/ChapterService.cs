@@ -145,6 +145,22 @@ public class ChapterService : IChapterService
         };
     }
 
+    public async Task<Chapter?> GetDefaultChapter(Member member)
+    {
+        var chapters = await _unitOfWork.ChapterRepository
+            .GetByMemberId(member.Id)
+            .Run();
+
+        var chapterDates = member
+            .Chapters
+            .ToDictionary(x => x.ChapterId, x => x.CreatedUtc);
+
+        return chapters
+            .Where(x => chapterDates.ContainsKey(x.Id))
+            .OrderBy(x => chapterDates[x.Id])
+            .FirstOrDefault();
+    }
+
     public async Task<IReadOnlyCollection<Chapter>> GetMemberChapters(Guid memberId)
         => await _unitOfWork.ChapterRepository.GetByMemberId(memberId).Run();
 

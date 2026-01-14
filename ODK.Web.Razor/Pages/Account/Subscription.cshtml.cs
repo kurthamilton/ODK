@@ -1,6 +1,6 @@
 namespace ODK.Web.Razor.Pages.Account;
 
-public class SubscriptionModel : OdkPageModel
+public class SubscriptionModel : OdkSiteAccountPageModel
 {
     public void OnGet()
     {

@@ -1,5 +1,5 @@
 namespace ODK.Web.Razor.Pages.Account;
 
-public class LocationModel : OdkPageModel
+public class LocationModel : OdkSiteAccountPageModel
 {
 }

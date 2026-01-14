@@ -1,5 +1,5 @@
 namespace ODK.Web.Razor.Pages.Account;
 
-public class ChangePasswordModel : OdkPageModel
+public class ChangePasswordModel : OdkSiteAccountPageModel
 {
 }

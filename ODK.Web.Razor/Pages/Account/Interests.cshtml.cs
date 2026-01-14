@@ -1,6 +1,6 @@
 namespace ODK.Web.Razor.Pages.Account;
 
-public class InterestsModel : OdkPageModel
+public class InterestsModel : OdkSiteAccountPageModel
 {
     public void OnGet()
     {

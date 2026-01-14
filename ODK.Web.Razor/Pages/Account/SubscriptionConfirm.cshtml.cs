@@ -6,7 +6,7 @@ using ODK.Web.Common.Routes;
 
 namespace ODK.Web.Razor.Pages.Account;
 
-public class SubscriptionConfirmModel : OdkPageModel
+public class SubscriptionConfirmModel : OdkSiteAccountPageModel
 {
     private readonly IPaymentService _paymentService;
 
