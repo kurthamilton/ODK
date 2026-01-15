@@ -6,6 +6,7 @@ using ODK.Services.Logging;
 using ODK.Services.Payments;
 using ODK.Services.Tasks;
 using ODK.Web.Common.Config.Settings;
+using ODK.Web.Common.Extensions;
 using ODK.Web.Razor.Services;
 
 namespace ODK.Web.Razor.Controllers;
@@ -42,15 +43,20 @@ public class WebhooksController : OdkControllerBase
     [HttpPost("webhooks/brevo")]
     public async Task Brevo()
     {
-        var header = Request.Headers.GetCommaSeparatedValues(_appSettings.Brevo.WebhookPasswordHeader)
-            .FirstOrDefault();
+        var env = Request.GetHeader(_appSettings.Brevo.WebhookEnvHeader);
+        if (env != _appSettings.Brevo.WebhookEnv)
+        {
+            return;
+        }
 
-        if (header != _appSettings.Brevo.WebhookPassword)
+        var password = Request.GetHeader(_appSettings.Brevo.WebhookPasswordHeader);
+        if (password != _appSettings.Brevo.WebhookPassword)
         {
             throw new OdkNotAuthenticatedException();
         }
 
         var json = await ReadBodyText();
+
         var node = JsonNode.Parse(json);
         if (node == null)
         {
