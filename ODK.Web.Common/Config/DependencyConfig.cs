@@ -163,6 +163,10 @@ public static class DependencyConfig
             ApiKey = appSettings.Google.Geolocation.ApiKey
         });
         services.AddScoped<IInstagramClient, InstagramClient>();
+        services.AddSingleton(new InstagramClientSettings
+        {
+            UserAgent = appSettings.Instagram.FetchUserAgent
+        });
         services.AddScoped<IMediaAdminService, MediaAdminService>();
         services.AddScoped<IMediaFileProvider, MediaFileProvider>();
         services.AddScoped<IMediaService, MediaService>();
@@ -209,6 +213,7 @@ public static class DependencyConfig
         services.AddScoped<ISocialMediaService, SocialMediaService>();
         services.AddSingleton(new SocialMediaServiceSettings
         {
+            InstagramFetchWaitSeconds = appSettings.Instagram.FetchWaitSeconds,
             WhatsAppUrlFormat = appSettings.WhatsApp.UrlFormat
         });
         services.AddScoped<ITopicAdminService, TopicAdminService>();
@@ -244,6 +249,8 @@ public static class DependencyConfig
         services.AddSingleton(new RecaptchaServiceSettings
         {
             ScoreThreshold = recaptcha.ScoreThreshold,
+            SecretKey = recaptcha.SecretKey,
+            SiteKey = recaptcha.SiteKey,
             VerifyUrl = recaptcha.VerifyUrl
         });
     }

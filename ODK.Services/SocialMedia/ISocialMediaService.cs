@@ -10,5 +10,5 @@ public interface ISocialMediaService
 
     Task ScrapeLatestInstagramPosts();
 
-    Task ScrapeLatestInstagramPosts(Guid chapterId);
+    Task<ServiceResult> ScrapeLatestInstagramPosts(Guid chapterId);
 }

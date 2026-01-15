@@ -27,4 +27,6 @@ public static class EnumerableExtensions
 
     public static int IndexOf<T>(this IEnumerable<T> collection, T item)
         => collection.FindIndexOf(x => x?.Equals(item) == true);
+
+    public static Queue<T> ToQueue<T>(this IEnumerable<T> source) => new Queue<T>(source);
 }

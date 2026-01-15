@@ -231,7 +231,6 @@ public class MemberService : IMemberService
             chapterProperties,
             membershipSettings,
             existing,
-            siteSettings,
             siteSubscription,
             ownerSubscription
         ) = await _unitOfWork.RunAsync(
@@ -239,7 +238,6 @@ public class MemberService : IMemberService
             x => x.ChapterPropertyRepository.GetByChapterId(chapterId),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId),
             x => x.MemberRepository.GetByEmailAddress(model.EmailAddress),
-            x => x.SiteSettingsRepository.Get(),
             x => x.SiteSubscriptionRepository.GetDefault(platform),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapterId));
 

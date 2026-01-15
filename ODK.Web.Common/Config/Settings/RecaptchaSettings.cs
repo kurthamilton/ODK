@@ -2,7 +2,11 @@
 
 public class RecaptchaSettings
 {
-    public double ScoreThreshold { get; set; }
+    public required double ScoreThreshold { get; init; }
 
-    public string VerifyUrl { get; set; } = string.Empty;
+    public required string SecretKey { get; init; }
+
+    public required string SiteKey { get; init; }
+
+    public required string VerifyUrl { get; init; }
 }

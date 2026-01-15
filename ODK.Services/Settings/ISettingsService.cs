@@ -1,7 +1,6 @@
 ﻿using ODK.Core.Emails;
 using ODK.Core.Payments;
 using ODK.Core.Platforms;
-using ODK.Core.Settings;
 using ODK.Services.Settings.Models;
 
 namespace ODK.Services.Settings;
@@ -19,8 +18,6 @@ public interface ISettingsService
         decimal commission,
         bool enabled);
 
-    Task<SiteSettings> GetSiteSettings();
-
     Task<SiteEmailSettings> GetSiteEmailSettings(PlatformType platform);
 
     Task<IReadOnlyCollection<SitePaymentSettings>> GetSitePaymentSettings(Guid currentMemberId);
@@ -28,8 +25,6 @@ public interface ISettingsService
     Task<SitePaymentSettings> GetSitePaymentSettings(Guid currentMemberId, Guid id);
 
     Task<ServiceResult> UpdateEmailSettings(MemberServiceRequest request, UpdateEmailSettings model);
-
-    Task<ServiceResult> UpdateInstagramSettings(Guid currentMemberId, string scraperUserAgent);
 
     Task<ServiceResult> UpdatePaymentSettings(
         Guid currentMemberId,

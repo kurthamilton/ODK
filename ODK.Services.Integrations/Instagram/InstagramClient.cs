@@ -1,10 +1,6 @@
-﻿using System.Net.Http;
-using System.Text.Json.Nodes;
-using ODK.Core.Chapters;
-using ODK.Core.SocialMedia;
+﻿using System.Text.Json.Nodes;
 using ODK.Core.Utils;
 using ODK.Core.Web;
-using ODK.Data.Core;
 using ODK.Services.Integrations.Instagram.Models;
 using ODK.Services.Logging;
 using ODK.Services.SocialMedia;
@@ -14,19 +10,18 @@ namespace ODK.Services.Integrations.Instagram;
 
 public class InstagramClient : IInstagramClient
 {
-    private HttpClient? _httpClient;
-    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly HttpClient _httpClient;
     private readonly ILoggingService _loggingService;
-    private readonly IUnitOfWork _unitOfWork;
 
     public InstagramClient(
-        IUnitOfWork unitOfWork,
         IHttpClientFactory httpClientFactory,
-        ILoggingService loggingService)
+        ILoggingService loggingService,
+        InstagramClientSettings settings)
     {
-        _httpClientFactory = httpClientFactory;
+        _httpClient = httpClientFactory.CreateClient();
+        _httpClient.DefaultRequestHeaders.Add("User-Agent", settings.UserAgent);
+
         _loggingService = loggingService;
-        _unitOfWork = unitOfWork;
     }
 
     public async Task<IReadOnlyCollection<InstagramClientPost>> FetchPosts(string username, DateTime? afterUtc)
@@ -117,9 +112,7 @@ public class InstagramClient : IInstagramClient
             .Query("username", username)
             .Build();
 
-        var httpClient = await GetHttpClient();
-
-        var response = await httpClient.GetAsync(url);
+        var response = await _httpClient.GetAsync(url);
         var json = await response.Content.ReadAsStringAsync();
         if (!response.IsSuccessStatusCode)
         {
@@ -128,20 +121,6 @@ public class InstagramClient : IInstagramClient
         }
 
         return json;
-    }
-
-    private async Task<HttpClient> GetHttpClient()
-    {
-        if (_httpClient != null)
-        {
-            return _httpClient;
-        }
-
-        var settings = await _unitOfWork.SiteSettingsRepository.Get().Run();
-
-        _httpClient = _httpClientFactory.CreateClient();
-        _httpClient.DefaultRequestHeaders.Add("User-Agent", settings.InstagramScraperUserAgent);
-        return _httpClient;
     }
 
     private JsonArray? ParseFeedEdges(string feedJson)
@@ -168,8 +147,7 @@ public class InstagramClient : IInstagramClient
                 return null;
             }
 
-            var httpClient = await GetHttpClient();
-            var response = await httpClient.GetAsync(thumbnailUrl);
+            var response = await _httpClient.GetAsync(thumbnailUrl);
             if (!response.IsSuccessStatusCode)
             {
                 return null;

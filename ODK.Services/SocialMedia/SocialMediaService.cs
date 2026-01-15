@@ -1,16 +1,20 @@
-﻿using ODK.Core.Features;
+﻿using ODK.Core.Extensions;
+using ODK.Core.Features;
 using ODK.Core.SocialMedia;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
 using ODK.Services.Imaging;
 using ODK.Services.Logging;
+using ODK.Services.SocialMedia.Models;
+using ODK.Services.Tasks;
 
 namespace ODK.Services.SocialMedia;
 
 public class SocialMediaService : ISocialMediaService
 {
     private readonly IAuthorizationService _authorizationService;
+    private readonly IBackgroundTaskService _backgroundTaskService;
     private readonly ICacheService _cacheService;
     private readonly IImageService _imageService;
     private readonly IInstagramClient _instagramClient;
@@ -25,9 +29,11 @@ public class SocialMediaService : ISocialMediaService
         ICacheService cacheService,
         IImageService imageService,
         IAuthorizationService authorizationService,
-        IInstagramClient instagramClient)
+        IInstagramClient instagramClient,
+        IBackgroundTaskService backgroundTaskService)
     {
         _authorizationService = authorizationService;
+        _backgroundTaskService = backgroundTaskService;
         _cacheService = cacheService;
         _imageService = imageService;
         _instagramClient = instagramClient;
@@ -61,43 +67,78 @@ public class SocialMediaService : ISocialMediaService
         await _loggingService.Info("Scraping latest Instagram posts for all groups");
 
         var chapters = await _unitOfWork.ChapterRepository.GetAll().Run();
-        foreach (var chapter in chapters)
-        {
-            var authorized = await _authorizationService.ChapterHasAccess(chapter, SiteFeatureType.InstagramFeed);
-            if (!authorized)
-            {
-                continue;
-            }
+        var chapterIds = chapters
+            .Select(x => x.Id)
+            .ToQueue();
 
-            try
-            {
-                await ScrapeLatestInstagramPosts(chapter.Id);
-            }
-            catch
-            {
-                // do nothing
-            }
-        }
+        ScheduleNextScrape(chapterIds, delay: false);
     }
 
-    public async Task ScrapeLatestInstagramPosts(Guid chapterId)
+    public Task<ServiceResult> ScrapeLatestInstagramPosts(Guid chapterId)
     {
-        var (links, lastPost) = await _unitOfWork.RunAsync(
+        ScheduleNextScrape(new Queue<Guid>([chapterId]), delay: false);
+        return Task.FromResult(ServiceResult.Successful("Scrape enqueued"));
+    }
+
+    // Public for Hangfire
+    public async Task ScrapeLatestInstagramPosts(Queue<Guid> chapterIds)
+    {
+        /*This function scrapes the latest Instagram posts for each chapter, one at a time.
+         *If no call was made to Instagram the next chapter is immediately enqueued,
+         *otherwise the next chapter is scheduled with a delay to avoid rate limiting.*/
+
+        if (chapterIds.Count == 0)
+        {
+            return;
+        }
+
+        var chapterId = chapterIds.Dequeue();
+
+        var delayNext = false;
+
+        var (ownerSubscription, links, lastPost) = await _unitOfWork.RunAsync(
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapterId),
             x => x.ChapterLinksRepository.GetByChapterId(chapterId),
             x => x.InstagramPostRepository.GetLastPost(chapterId));
 
         if (string.IsNullOrEmpty(links?.InstagramName))
         {
+            ScheduleNextScrape(chapterIds, delay: delayNext);
             return;
         }
 
-        await _loggingService.Info($"Scraping Instagram posts for group '{chapterId}' account '{links.InstagramName}'");
+        var authorized = _authorizationService.ChapterHasAccess(ownerSubscription, SiteFeatureType.InstagramFeed);
+        if (!authorized)
+        {
+            ScheduleNextScrape(chapterIds, delay: delayNext);
+            return;
+        }
+
+        await _loggingService.Info($"Fetching Instagram posts for group '{chapterId}' account '{links.InstagramName}'");
 
         var afterUtc = lastPost?.Date;
 
-        var posts = await _instagramClient.FetchPosts(links.InstagramName, afterUtc);
+        IReadOnlyCollection<InstagramClientPost> posts;
+
+        delayNext = true;
+
+        try
+        {
+            posts = await _instagramClient.FetchPosts(links.InstagramName, afterUtc);
+        }
+        catch (Exception ex)
+        {
+            await _loggingService.Error(
+                $"Error fetching Instagram posts for group '{chapterId}' account '{links.InstagramName}'", ex);
+            ScheduleNextScrape(chapterIds, delay: delayNext);
+            return;
+        }
+
         if (posts.Count == 0)
         {
+            await _loggingService.Info(
+                $"Found no new Instagram posts for group '{chapterId}' account '{links.InstagramName}'");
+            ScheduleNextScrape(chapterIds, delay: delayNext);
             return;
         }
 
@@ -134,6 +175,27 @@ public class SocialMediaService : ISocialMediaService
         {
             await _loggingService.Error(
                 $"Error saving {posts.Count} new Instagram posts for group '{chapterId}' account '{links.InstagramName}'", ex);
+        }
+
+        ScheduleNextScrape(chapterIds, delay: delayNext);
+    }
+
+    private void ScheduleNextScrape(Queue<Guid> chapterIds, bool delay)
+    {
+        if (chapterIds.Count == 0)
+        {
+            return;
+        }
+
+        if (delay)
+        {
+            _backgroundTaskService.Schedule(
+                () => ScrapeLatestInstagramPosts(chapterIds),
+                DateTime.UtcNow.AddSeconds(_settings.InstagramFetchWaitSeconds));
+        }
+        else
+        {
+            _backgroundTaskService.Enqueue(() => ScrapeLatestInstagramPosts(chapterIds));
         }
     }
 }

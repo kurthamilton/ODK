@@ -1,8 +1,7 @@
-﻿@using ODK.Services.Settings
-@inject ISettingsService SettingsService
+﻿@using ODK.Web.Common.Config.Settings
+@inject AppSettings AppSettings
 @{
-    var settings = await SettingsService.GetSiteSettings();
-    var apiKey = settings.GoogleMapsApiKey;
+    var apiKey = AppSettings.Google.Maps.ApiKey;
 }
 
 <script src="https://maps.googleapis.com/maps/api/js?key=@apiKey&libraries=places&v=beta"></script>

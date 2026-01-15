@@ -86,7 +86,6 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<ISiteContactMessageRepository> _siteContactMessageRepository;
     private readonly Lazy<ISiteEmailSettingsRepository> _siteEmailSettingsRepository;
     private readonly Lazy<ISitePaymentSettingsRepository> _sitePaymentSettingsRepository;
-    private readonly Lazy<ISiteSettingsRepository> _siteSettingsRepository;
     private readonly Lazy<ISiteSubscriptionPriceRepository> _siteSubscriptionPriceRepository;
     private readonly Lazy<ISiteSubscriptionRepository> _siteSubscriptionRepository;
     private readonly Lazy<ITopicGroupRepository> _topicGroupRepository;
@@ -174,7 +173,6 @@ public class UnitOfWork : IUnitOfWork
         _siteContactMessageRepository = new(() => new SiteContactMessageRepository(_context));
         _siteEmailSettingsRepository = new(() => new SiteEmailSettingsRepository(_context));
         _sitePaymentSettingsRepository = new(() => new SitePaymentSettingsRepository(_context));
-        _siteSettingsRepository = new(() => new SiteSettingsRepository(_context));
         _siteSubscriptionPriceRepository = new(() => new SiteSubscriptionPriceRepository(_context));
         _siteSubscriptionRepository = new(() => new SiteSubscriptionRepository(_context));
         _topicGroupRepository = new(() => new TopicGroupRepository(_context));
@@ -258,7 +256,6 @@ public class UnitOfWork : IUnitOfWork
     public ISiteContactMessageRepository SiteContactMessageRepository => _siteContactMessageRepository.Value;
     public ISiteEmailSettingsRepository SiteEmailSettingsRepository => _siteEmailSettingsRepository.Value;
     public ISitePaymentSettingsRepository SitePaymentSettingsRepository => _sitePaymentSettingsRepository.Value;
-    public ISiteSettingsRepository SiteSettingsRepository => _siteSettingsRepository.Value;
     public ISiteSubscriptionPriceRepository SiteSubscriptionPriceRepository => _siteSubscriptionPriceRepository.Value;
     public ISiteSubscriptionRepository SiteSubscriptionRepository => _siteSubscriptionRepository.Value;
     public ITopicGroupRepository TopicGroupRepository => _topicGroupRepository.Value;

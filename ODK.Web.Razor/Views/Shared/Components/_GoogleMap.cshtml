@@ -1,8 +1,8 @@
-﻿@using ODK.Core.Settings
-@using ODK.Services.Settings
-@using System.Web
-@model ODK.Web.Razor.Models.Components.GoogleMapViewModel
-@inject ISettingsService SettingsService
+﻿@using System.Web
+@using ODK.Web.Common.Config.Settings
+@using ODK.Web.Razor.Models.Components
+@model GoogleMapViewModel
+@inject AppSettings AppSettings
 @{
     if (string.IsNullOrEmpty(Model.Query) && 
         string.IsNullOrEmpty(Model.QuerySource) && 
@@ -11,8 +11,8 @@
         return;
     }
 
-    var settings = await SettingsService.GetSiteSettings();
-    var baseUrl = $"https://www.google.com/maps/embed/v1/place?key={settings.GoogleMapsApiKey}&q={{query}}";
+    var apiKey = AppSettings.Google.Maps.ApiKey;
+    var baseUrl = $"https://www.google.com/maps/embed/v1/place?key={apiKey}&q={{query}}";
     if (Model.Zoom >= 0)
     {
         baseUrl += $"&zoom={Model.Zoom}";

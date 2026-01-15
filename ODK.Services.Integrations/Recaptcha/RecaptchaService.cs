@@ -1,5 +1,4 @@
 ﻿using ODK.Core.Utils;
-using ODK.Data.Core;
 using ODK.Services.Integrations.Recaptcha.Models;
 using ODK.Services.Recaptcha;
 
@@ -9,28 +8,25 @@ public class RecaptchaService : IRecaptchaService
 {
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly RecaptchaServiceSettings _settings;
-    private readonly IUnitOfWork _unitOfWork;
 
     public RecaptchaService(
         RecaptchaServiceSettings settings,
-        IUnitOfWork unitOfWork,
         IHttpClientFactory httpClientFactory)
     {
         _httpClientFactory = httpClientFactory;
         _settings = settings;
-        _unitOfWork = unitOfWork;
     }
+
+    public string GetSiteKey() => _settings.SiteKey;
 
     public bool Success(RecaptchaResult response)
         => response.Success && response.Score >= _settings.ScoreThreshold;
 
     public async Task<RecaptchaResult> Verify(string token)
     {
-        var settings = await _unitOfWork.SiteSettingsRepository.Get().Run();
-
         var postContent = new FormUrlEncodedContent(new Dictionary<string, string>
         {
-            { "secret", settings.RecaptchaSecretKey },
+            { "secret", _settings.SecretKey },
             { "response", token }
         });
 

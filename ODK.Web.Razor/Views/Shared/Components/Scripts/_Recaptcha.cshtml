@@ -1,8 +1,7 @@
-﻿@using ODK.Services.Settings
-@inject ISettingsService SettingsService
+﻿@using ODK.Services.Recaptcha
+@inject IRecaptchaService RecaptchaService;
 @{
-    var settings = await SettingsService.GetSiteSettings();
-    var key = settings.RecaptchaSiteKey;
+    var key = RecaptchaService.GetSiteKey();
 }
 
 <div data-recaptcha-sitekey="@key"></div>

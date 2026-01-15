@@ -1,7 +1,6 @@
 ﻿using ODK.Core.Emails;
 using ODK.Core.Payments;
 using ODK.Core.Platforms;
-using ODK.Core.Settings;
 using ODK.Data.Core;
 using ODK.Services.Settings.Models;
 
@@ -62,11 +61,6 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
         return ServiceResult.Successful();
     }
 
-    public async Task<SiteSettings> GetSiteSettings()
-    {
-        return await _unitOfWork.SiteSettingsRepository.Get().Run();
-    }
-
     public async Task<SiteEmailSettings> GetSiteEmailSettings(PlatformType platform)
     {
         return await _unitOfWork.SiteEmailSettingsRepository.Get(platform).Run();
@@ -96,19 +90,6 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
         settings.Title = model.Title;
 
         _unitOfWork.SiteEmailSettingsRepository.Update(settings);
-        await _unitOfWork.SaveChangesAsync();
-
-        return ServiceResult.Successful();
-    }
-
-    public async Task<ServiceResult> UpdateInstagramSettings(Guid currentMemberId, string scraperUserAgent)
-    {
-        var settings = await GetSuperAdminRestrictedContent(currentMemberId,
-            x => x.SiteSettingsRepository.Get());
-
-        settings.InstagramScraperUserAgent = scraperUserAgent;
-
-        _unitOfWork.SiteSettingsRepository.Update(settings);
         await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();

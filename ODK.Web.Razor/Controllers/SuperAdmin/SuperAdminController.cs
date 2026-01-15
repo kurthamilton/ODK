@@ -315,7 +315,8 @@ public class SuperAdminController : OdkControllerBase
     [HttpPost("groups/{chapterId:guid}/superAdmin/instagram/scrape")]
     public async Task<IActionResult> ScrapeInstagram(Guid chapterId)
     {
-        await _socialMediaService.ScrapeLatestInstagramPosts(chapterId);
+        var result = await _socialMediaService.ScrapeLatestInstagramPosts(chapterId);
+        AddFeedback(result);
         return RedirectToReferrer();
     }
 }
