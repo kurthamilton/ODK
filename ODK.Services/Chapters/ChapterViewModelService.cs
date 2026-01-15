@@ -192,13 +192,17 @@ public class ChapterViewModelService : IChapterViewModelService
     {
         var chapterId = chapter.Id;
 
-        var (chapterPage, texts) = await _unitOfWork.RunAsync(
+        var (chapterPage, questions, texts) = await _unitOfWork.RunAsync(
             x => x.ChapterPageRepository.GetByChapterId(chapterId, PageType.About),
+            x => x.ChapterQuestionRepository.GetByChapterId(chapterId),
             x => x.ChapterTextsRepository.GetByChapterId(chapterId));
 
         return new ChapterAboutPageViewModel
         {
             ChapterPage = chapterPage,
+            Questions = questions
+                .OrderBy(x => x.DisplayOrder)
+                .ToArray(),
             Texts = texts
         };
     }

@@ -5,9 +5,9 @@
 @model OdkComponentContext
 @inject IChapterService ChapterService
 @{
-    var dto = await ChapterService.GetChaptersDto(Model.Platform);
+    var viewModel = await ChapterService.GetChaptersHomePageViewModel(Model.Platform);
 
-    var (countries, chapters) = (dto.Countries, dto.Chapters);
+    var (countries, chapters) = (viewModel.Countries, viewModel.Chapters);
     var continents = countries
         .Select(x => x.Continent)
         .Distinct()

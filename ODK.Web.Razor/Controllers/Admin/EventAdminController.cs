@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Events;
 using ODK.Core.Utils;
-using ODK.Services.Chapters;
 using ODK.Services.Events;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
@@ -12,16 +11,13 @@ namespace ODK.Web.Razor.Controllers.Admin;
 
 public class EventAdminController : AdminControllerBase
 {
-    private readonly IChapterAdminService _chapterAdminService;
     private readonly IEventAdminService _eventAdminService;
 
     public EventAdminController(
         IEventAdminService eventAdminService,
-        IRequestStore requestStore,
-        IChapterAdminService chapterAdminService)
+        IRequestStore requestStore)
         : base(requestStore)
     {
-        _chapterAdminService = chapterAdminService;
         _eventAdminService = eventAdminService;
     }
 
@@ -41,7 +37,7 @@ public class EventAdminController : AdminControllerBase
         await _eventAdminService.DeleteEvent(request, id);
         AddFeedback("Event deleted", FeedbackType.Success);
 
-        var chapter = await _chapterAdminService.GetChapter(request);
+        var chapter = await GetChapter();
         return Redirect(OdkRoutes.MemberGroups.Events(Platform, chapter));
     }
 

@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
+using ODK.Core.Chapters;
 using ODK.Core.Platforms;
 using ODK.Core.Utils;
 using ODK.Core.Web;
@@ -61,6 +62,8 @@ public abstract class OdkControllerBase : Controller
         var csv = StringUtils.ToCsv(data);
         return File(Encoding.UTF8.GetBytes(csv), "text/csv", fileName);
     }
+
+    protected Task<Chapter> GetChapter() => _requestStore.GetChapter();
 
     protected async Task<IActionResult> HandleVersionedRequest<T>(Func<long?, Task<VersionedServiceResult<T>>> getter, Func<T?, IActionResult> map) where T : class
     {

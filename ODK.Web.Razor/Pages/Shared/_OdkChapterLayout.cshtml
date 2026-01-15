@@ -17,7 +17,7 @@
     var member = await RequestStore.GetCurrentMemberOrDefault();
     var componentContext = RequestStore.ComponentContext;
 
-    var pages = await ChapterService.GetChapterPages(chapter.Id);    
+    var viewModel = await ChapterService.GetChapterLayoutViewModel(chapter.Id);
 }
 
 @section styles
@@ -27,16 +27,12 @@
 
 @section header
 {
-@{
-        var viewModel = new ChapterHeaderViewModel(componentContext)
-        {
-            Chapter = chapter,
-            Member = member,
-            Pages = pages
-        };
-    }
-
-    @await Html.PartialAsync("Header/_ChapterHeader", viewModel)
+    @await Html.PartialAsync("Header/_ChapterHeader", new ChapterHeaderViewModel(componentContext)
+    {
+        Chapter = chapter,
+        Member = member,
+        Pages = viewModel.Pages
+    })
 }
 
 <div class="chapter">
@@ -47,7 +43,8 @@
 {
     @await Html.PartialAsync("Footer/_ChapterFooter", new FooterViewModel(componentContext)
     {
-        Chapter = chapter
+        Chapter = chapter,
+        Links = viewModel.Links
     })
 }
 

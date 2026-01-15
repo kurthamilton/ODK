@@ -45,9 +45,17 @@ public class ChapterService : IChapterService
             : new VersionedServiceResult<ChapterImage>(0, null);
     }
 
-    public async Task<ChapterLinks?> GetChapterLinks(Guid chapterId)
+    public async Task<ChapterLayoutViewModel> GetChapterLayoutViewModel(Guid chapterId)
     {
-        return await _unitOfWork.ChapterLinksRepository.GetByChapterId(chapterId).Run();
+        var (links, pages) = await _unitOfWork.RunAsync(
+            x => x.ChapterLinksRepository.GetByChapterId(chapterId),
+            x => x.ChapterPageRepository.GetByChapterId(chapterId));
+
+        return new ChapterLayoutViewModel
+        {
+            Links = links,
+            Pages = pages
+        };
     }
 
     public async Task<SubscriptionsPageViewModel> GetChapterMemberSubscriptionsViewModel(
@@ -103,23 +111,12 @@ public class ChapterService : IChapterService
         };
     }
 
-    public Task<IReadOnlyCollection<ChapterPage>> GetChapterPages(Guid chapterId)
-        => _unitOfWork.ChapterPageRepository.GetByChapterId(chapterId).Run();
-
-    public async Task<IReadOnlyCollection<ChapterQuestion>> GetChapterQuestions(Guid chapterId)
-    {
-        var questions = await _unitOfWork.ChapterQuestionRepository.GetByChapterId(chapterId).Run();
-        return questions
-            .OrderBy(x => x.DisplayOrder)
-            .ToArray();
-    }
-
     public async Task<IReadOnlyCollection<Chapter>> GetChaptersByOwnerId(Guid ownerId)
     {
         return await _unitOfWork.ChapterRepository.GetByOwnerId(ownerId).Run();
     }
 
-    public async Task<ChaptersHomePageViewModel> GetChaptersDto(PlatformType platform)
+    public async Task<ChaptersHomePageViewModel> GetChaptersHomePageViewModel(PlatformType platform)
     {
         var (chapters, countries) = await _unitOfWork.RunAsync(
             x => platform == PlatformType.Default

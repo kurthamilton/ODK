@@ -26,7 +26,7 @@
     @Html.LabelFor(x => x.Venue, new { @class = "form-label" })
     @await Html.PartialAsync("Components/_Tooltip", "Select an existing venue or create a new venue first on the venues page")
     <a href="@OdkRoutes.MemberGroups.VenueCreate(Model.Platform, Model.Chapter)">Create venue</a>
-    @Html.DropDownListFor(x => x.Venue, venueOptions, "", new { @class = "form-select", data_searchable = "" })
+    @Html.DropDownListFor(x => x.Venue, venueOptions, "", new { @class = "form-select", data_select = "", data_searchable = "", data_clearable = "" })
     @Html.ValidationMessageFor(x => x.Venue)
 </div>
 

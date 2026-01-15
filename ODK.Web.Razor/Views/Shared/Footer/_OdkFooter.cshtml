@@ -1,10 +1,6 @@
-﻿@using ODK.Services.Chapters
-@using ODK.Web.Razor.Models.Components
-@model ODK.Web.Razor.Models.Footer.FooterViewModel
-@inject IChapterService ChapterService
-@{
-    var links = Model.Chapter != null ? await ChapterService.GetChapterLinks(Model.Chapter.Id) : null;
-}
+﻿@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Footer
+@model FooterViewModel
 
 <footer>
     <section class="section--footer">
@@ -18,15 +14,18 @@
                         <a href="/Privacy">Privacy</a>
                     </div>
                 </div>
-                <div class="col">
-                    @await Html.PartialAsync("Components/_SocialMediaLinks", new SocialMediaLinksViewModel
-                    {
-                        Facebook = links?.FacebookName,
-                        Instagram = links?.InstagramName,
-                        ShowNames = true,
-                        Twitter = links?.TwitterName
-                    })
-                </div>
+                @if (Model.Links != null)
+                {
+                    <div class="col">
+                        @await Html.PartialAsync("Components/_SocialMediaLinks", new SocialMediaLinksViewModel
+                        {
+                            Facebook = Model.Links.FacebookName,
+                            Instagram = Model.Links.InstagramName,
+                            ShowNames = true,
+                            Twitter = Model.Links.TwitterName
+                        })
+                    </div>
+                }                
             </div>
         </div>
     </section>

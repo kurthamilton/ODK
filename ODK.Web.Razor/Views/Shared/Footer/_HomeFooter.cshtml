@@ -5,15 +5,9 @@
 
 @if (Model.Platform == PlatformType.DrunkenKnitwits)
 {
-    @await Html.PartialAsync("Footer/_OdkFooter", new FooterViewModel(Model)
-    {
-        Chapter = null
-    })
+    @await Html.PartialAsync("Footer/_OdkFooter", new FooterViewModel(Model))
 }
 else
 {
-    @await Html.PartialAsync("Footer/_SiteFooter", new FooterViewModel(Model)
-    {
-        Chapter = null
-    })
+    @await Html.PartialAsync("Footer/_SiteFooter", new FooterViewModel(Model))
 }

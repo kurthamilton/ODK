@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Countries;
-using ODK.Services.Chapters;
 using ODK.Services.Venues;
 using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Admin.Venues;
@@ -9,13 +8,10 @@ namespace ODK.Web.Razor.Pages.My.Groups.Events.Venues.Venue;
 
 public class VenueModel : OdkGroupAdminPageModel
 {
-    private readonly IChapterAdminService _chapterAdminService;
     private readonly IVenueAdminService _venueAdminService;
 
-    public VenueModel(IVenueAdminService venueAdminService,
-        IChapterAdminService chapterAdminService)
+    public VenueModel(IVenueAdminService venueAdminService)
     {
-        _chapterAdminService = chapterAdminService;
         _venueAdminService = venueAdminService;
     }
 
@@ -43,7 +39,7 @@ public class VenueModel : OdkGroupAdminPageModel
             return Page();
         }
 
-        var chapter = await _chapterAdminService.GetChapter(AdminServiceRequest);
+        var chapter = await GetChapter();
         return Redirect(OdkRoutes.MemberGroups.Venues(Platform, chapter));
     }
 }

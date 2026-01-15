@@ -1,18 +1,16 @@
 ﻿@page "/my/groups/{chapterId:guid}/questions/new"
 @using ODK.Core.Chapters
-@using ODK.Services.Chapters
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model CreateModel
-@inject IChapterAdminService ChapterAdminService
 @{
     Layout = "_GroupAdminLayout";
     Model.Title = "Create question";
 
-    var chapter = await ChapterAdminService.GetChapter(Model.AdminServiceRequest);
+    var chapter = await Model.GetChapter();
 
     var viewModel = new OdkComponentViewModel<Chapter>(Model.ComponentContext, chapter);
 }

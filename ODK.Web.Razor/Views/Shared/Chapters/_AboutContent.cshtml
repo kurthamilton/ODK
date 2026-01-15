@@ -1,10 +1,6 @@
-﻿@using ODK.Services.Chapters
+﻿@using ODK.Web.Razor.Models.About
 @using ODK.Web.Razor.Models.Chapters
-@model ODK.Web.Razor.Models.About.AboutContentViewModel
-@inject IChapterService ChapterService
-@{
-    var questions = await ChapterService.GetChapterQuestions(Model.Chapter.Id);
-}
+@model AboutContentViewModel
 
 @if (!string.IsNullOrEmpty(Model.Texts?.Description))
 {        
@@ -18,7 +14,7 @@
 @await Html.PartialAsync("Chapters/_Questions", new ChapterQuestionsViewModel
 {
     Chapter = Model.Chapter,
-    Questions = questions,
+    Questions = Model.Questions,
     IsAdmin = false    
 })
 

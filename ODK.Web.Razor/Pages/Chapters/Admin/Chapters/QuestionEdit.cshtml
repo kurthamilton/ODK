@@ -11,7 +11,7 @@
     Model.Title = "Edit question | Admin";
 
     var request = await Model.CreateMemberChapterServiceRequest();
-    var viewModel = await ChapterAdminService.GetChapterQuestionViewModel(request, Model.Question.Id);
+    var viewModel = await ChapterAdminService.GetChapterQuestionViewModel(request, Model.QuestionId);
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel

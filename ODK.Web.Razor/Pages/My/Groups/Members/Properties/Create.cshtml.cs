@@ -41,7 +41,7 @@ public class CreateModel : OdkGroupAdminPageModel
             return Page();
         }
 
-        var chapter = await _chapterAdminService.GetChapter(AdminServiceRequest);
+        var chapter = await GetChapter();
 
         return Redirect(OdkRoutes.MemberGroups.MemberProperties(Platform, chapter));
     }

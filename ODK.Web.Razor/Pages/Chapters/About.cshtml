@@ -8,7 +8,7 @@
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.About
-@model ODK.Web.Razor.Pages.Chapters.AboutModel
+@model AboutModel
 @inject IChapterViewModelService ChapterViewModelService
 @{
     Layout = "_OdkChapterLayout";    
@@ -53,6 +53,7 @@
     Content = await Html.PartialAsync("Chapters/_AboutContent", new AboutContentViewModel
     {
         Chapter = chapter,
+        Questions = viewModel.Questions,
         Texts = viewModel.Texts
     })
 })

@@ -6,5 +6,7 @@ public class AboutContentViewModel
 {
     public required Chapter Chapter { get; init; }
 
+    public required IReadOnlyCollection<ChapterQuestion> Questions { get; init; }
+
     public required ChapterTexts? Texts { get; init; }
 }

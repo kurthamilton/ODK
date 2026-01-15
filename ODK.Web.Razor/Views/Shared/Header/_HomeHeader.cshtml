@@ -19,7 +19,7 @@
 
     var member = await RequestStore.GetCurrentMemberOrDefault();
 
-    var viewModel = await ChapterService.GetChaptersDto(Model.Platform);
+    var viewModel = await ChapterService.GetChaptersHomePageViewModel(Model.Platform);
     var menuItems = viewModel
         .Chapters
         .OrderBy(x => x.Name)

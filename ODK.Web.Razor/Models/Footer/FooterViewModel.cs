@@ -9,5 +9,7 @@ public class FooterViewModel : OdkComponentViewModel
     {
     }
 
-    public Chapter? Chapter { get; set; }
+    public Chapter? Chapter { get; init; }
+
+    public ChapterLinks? Links { get; init; }
 }

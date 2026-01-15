@@ -1,7 +1,6 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Payments;
-using ODK.Core.Subscriptions;
 using ODK.Services.Chapters.Models;
 using ODK.Services.Chapters.ViewModels;
 using ODK.Services.Subscriptions.ViewModels;
@@ -42,8 +41,6 @@ public interface IChapterAdminService
     Task<ServiceResult<string>> GenerateChapterPaymentAccountSetupUrl(
         MemberChapterServiceRequest request, string refreshPath, string returnPath);
 
-    Task<Chapter> GetChapter(MemberChapterServiceRequest request);
-
     Task<IReadOnlyCollection<ChapterAdminMember>> GetChapterAdminMembers(MemberChapterServiceRequest request);
 
     Task<ChapterAdminPageViewModel> GetChapterAdminPageViewModel(MemberChapterServiceRequest request);
@@ -68,19 +65,13 @@ public interface IChapterAdminService
 
     Task<ChapterPaymentAccountAdminPageViewModel> GetChapterPaymentAccountViewModel(MemberChapterServiceRequest request);
 
-    Task<ChapterPaymentSettings?> GetChapterPaymentSettings(MemberChapterServiceRequest request);
+    Task<ChapterPaymentSettingsAdminPageViewModel> GetChapterPaymentSettingsViewModel(MemberChapterServiceRequest request);
 
     Task<ChapterPrivacyAdminPageViewModel> GetChapterPrivacyViewModel(MemberChapterServiceRequest request);
-
-    Task<IReadOnlyCollection<ChapterProperty>> GetChapterProperties(MemberChapterServiceRequest request);
 
     Task<ChapterPropertiesAdminPageViewModel> GetChapterPropertiesViewModel(MemberChapterServiceRequest request);
 
     Task<ChapterPropertyAdminPageViewModel> GetChapterPropertyViewModel(MemberChapterServiceRequest request, Guid propertyId);
-
-    Task<ChapterQuestion> GetChapterQuestion(MemberChapterServiceRequest request, Guid questionId);
-
-    Task<IReadOnlyCollection<ChapterQuestion>> GetChapterQuestions(MemberChapterServiceRequest request);
 
     Task<ChapterQuestionsAdminPageViewModel> GetChapterQuestionsViewModel(MemberChapterServiceRequest request);
 

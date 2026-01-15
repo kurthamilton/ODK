@@ -743,12 +743,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return ServiceResult<string>.Successful(url);
     }
 
-    public async Task<Chapter> GetChapter(MemberChapterServiceRequest request)
-    {
-        return await GetChapterAdminRestrictedContent(request,
-            x => x.ChapterRepository.GetById(request.ChapterId));
-    }
-
     public async Task<IReadOnlyCollection<ChapterAdminMember>> GetChapterAdminMembers(MemberChapterServiceRequest request)
     {
         var (chapterId, currentMemberId) = (request.ChapterId, request.CurrentMemberId);
@@ -1092,10 +1086,18 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         };
     }
 
-    public async Task<ChapterPaymentSettings?> GetChapterPaymentSettings(MemberChapterServiceRequest request)
+    public async Task<ChapterPaymentSettingsAdminPageViewModel> GetChapterPaymentSettingsViewModel(
+        MemberChapterServiceRequest request)
     {
-        return await GetSuperAdminRestrictedContent(request,
-            x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId));
+        var (paymentSettings, currencies) = await GetSuperAdminRestrictedContent(request,
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId),
+            x => x.CurrencyRepository.GetAll());
+
+        return new ChapterPaymentSettingsAdminPageViewModel
+        {
+            Currencies = currencies,
+            PaymentSettings = paymentSettings
+        };
     }
 
     public async Task<ChapterPrivacyAdminPageViewModel> GetChapterPrivacyViewModel(MemberChapterServiceRequest request)
@@ -1112,12 +1114,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             Platform = platform,
             PrivacySettings = privacySettings
         };
-    }
-
-    public async Task<IReadOnlyCollection<ChapterProperty>> GetChapterProperties(MemberChapterServiceRequest request)
-    {
-        return await GetChapterAdminRestrictedContent(request,
-            x => x.ChapterPropertyRepository.GetByChapterId(request.ChapterId));
     }
 
     public async Task<ChapterPropertiesAdminPageViewModel> GetChapterPropertiesViewModel(MemberChapterServiceRequest request)
@@ -1158,14 +1154,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         };
     }
 
-    public async Task<ChapterQuestion> GetChapterQuestion(MemberChapterServiceRequest request, Guid questionId)
-    {
-        var question = await GetChapterAdminRestrictedContent(request,
-            x => x.ChapterQuestionRepository.GetById(questionId));
-        OdkAssertions.BelongsToChapter(question, request.ChapterId);
-        return question;
-    }
-
     public async Task<ChapterQuestionsAdminPageViewModel> GetChapterQuestionsViewModel(MemberChapterServiceRequest request)
     {
         var platform = request.Platform;
@@ -1199,12 +1187,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             Platform = platform,
             Question = question
         };
-    }
-
-    public async Task<IReadOnlyCollection<ChapterQuestion>> GetChapterQuestions(MemberChapterServiceRequest request)
-    {
-        return await GetChapterAdminRestrictedContent(request,
-            x => x.ChapterQuestionRepository.GetByChapterId(request.ChapterId));
     }
 
     public async Task<PaymentStatusType> GetChapterPaymentCheckoutSessionStatus(
@@ -2058,7 +2040,9 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     public async Task<IReadOnlyCollection<ChapterProperty>> UpdateChapterPropertyDisplayOrder(
         MemberChapterServiceRequest request, Guid propertyId, int moveBy)
     {
-        var properties = await GetChapterProperties(request);
+        var properties = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterPropertyRepository.GetByChapterId(request.ChapterId));
+
         var property = properties.FirstOrDefault(x => x.Id == propertyId);
         OdkAssertions.Exists(property);
 
@@ -2103,7 +2087,9 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<ServiceResult> UpdateChapterQuestion(MemberChapterServiceRequest request, Guid questionId, CreateChapterQuestion model)
     {
-        var question = await GetChapterQuestion(request, questionId);
+        var question = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterQuestionRepository.GetById(questionId));
+        OdkAssertions.BelongsToChapter(question, request.ChapterId);
 
         question.Answer = _htmlSanitizer.Sanitize(model.Answer, DefaultHtmlSantizerOptions);
         question.Name = model.Name;
@@ -2123,7 +2109,9 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     public async Task<IReadOnlyCollection<ChapterQuestion>> UpdateChapterQuestionDisplayOrder(
         MemberChapterServiceRequest request, Guid questionId, int moveBy)
     {
-        var questions = await GetChapterQuestions(request);
+        var questions = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterQuestionRepository.GetByChapterId(request.ChapterId));
+
         var question = questions.FirstOrDefault(x => x.Id == questionId);
         OdkAssertions.Exists(question);
 

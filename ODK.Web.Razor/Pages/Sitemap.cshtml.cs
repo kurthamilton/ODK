@@ -27,8 +27,8 @@ public class SitemapModel : OdkPageModel
             }
         };
 
-        var chaptersDto = await _chapterService.GetChaptersDto(Platform);
-        var chapters = chaptersDto
+        var viewModel = await _chapterService.GetChaptersHomePageViewModel(Platform);
+        var chapters = viewModel
             .Chapters
             .Where(x => x.Approved())
             .OrderBy(x => x.GetDisplayName(Platform));

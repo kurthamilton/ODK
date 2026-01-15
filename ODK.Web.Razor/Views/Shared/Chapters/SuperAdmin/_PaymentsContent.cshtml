@@ -1,17 +1,13 @@
 ﻿@using ODK.Core.Chapters
-@using ODK.Services
 @using ODK.Services.Chapters
-@using ODK.Services.Payments
 @using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Chapters.SuperAdmin
 @model OdkComponentViewModel<Chapter>
 @inject IChapterAdminService ChapterAdminService
-@inject ICurrencyService CurrencyService
 @{
     var serviceRequest = Model.CreateMemberChapterServiceRequest(Model.Value.Id);
-    var paymentSettings = await ChapterAdminService.GetChapterPaymentSettings(serviceRequest);
-    var currencies = await CurrencyService.GetCurrencies();
+    var viewModel = await ChapterAdminService.GetChapterPaymentSettingsViewModel(serviceRequest);
 }
 
 <h2 class="d-none d-md-block">Payment settings</h2>
@@ -20,12 +16,12 @@
     @*@Html.AntiForgeryToken()*@
     @await Html.PartialAsync("Chapters/SuperAdmin/_PaymentSettingsForm", new PaymentSettingsFormViewModel
     {
-        CurrencyOptions = currencies,
-        CurrencyId = paymentSettings?.CurrencyId,
-        Provider = paymentSettings?.Provider,
-        PublicKey = paymentSettings?.ApiPublicKey,
-        SecretKey = paymentSettings?.ApiSecretKey,
-        UseSitePaymentProvider = paymentSettings?.UseSitePaymentProvider ?? false
+        CurrencyOptions = viewModel.Currencies,
+        CurrencyId = viewModel.PaymentSettings?.CurrencyId,
+        Provider = viewModel.PaymentSettings?.Provider,
+        PublicKey = viewModel.PaymentSettings?.ApiPublicKey,
+        SecretKey = viewModel.PaymentSettings?.ApiSecretKey,
+        UseSitePaymentProvider = viewModel.PaymentSettings?.UseSitePaymentProvider ?? false
     })
     <button class="btn btn-primary">Update</button>
 </form>

@@ -73,7 +73,7 @@ public class MemberAdminController : AdminControllerBase
             return RedirectToReferrer();
         }
 
-        var chapter = await _chapterAdminService.GetChapter(request);
+        var chapter = await GetChapter();
         return Redirect(OdkRoutes.MemberGroups.Members(Platform, chapter));
     }
 

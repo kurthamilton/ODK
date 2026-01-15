@@ -42,7 +42,7 @@ public class EditModel : OdkGroupAdminPageModel
             return Page();
         }
 
-        var chapter = await _chapterAdminService.GetChapter(AdminServiceRequest);
+        var chapter = await GetChapter();
 
         return Redirect(OdkRoutes.MemberGroups.MembersSubscriptions(Platform, chapter));
     }

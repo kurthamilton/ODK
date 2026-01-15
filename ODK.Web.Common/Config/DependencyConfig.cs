@@ -134,7 +134,6 @@ public static class DependencyConfig
         services.AddScoped<IContactAdminService, ContactAdminService>();
         services.AddScoped<IContactService, ContactService>();
         services.AddScoped<ICsvService, CsvService>();
-        services.AddScoped<ICurrencyService, CurrencyService>();
         services.AddScoped<IEmailAdminService, EmailAdminService>();
         services.AddScoped<IEmailClient, BrevoApiEmailClient>();
         services.AddSingleton(new BrevoApiEmailClientSettings

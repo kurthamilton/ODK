@@ -10,17 +10,13 @@ public interface IChapterService
 {
     Task<VersionedServiceResult<ChapterImage>> GetChapterImage(long? currentVersion, Guid chapterId);
 
-    Task<ChapterLinks?> GetChapterLinks(Guid chapterId);
+    Task<ChapterLayoutViewModel> GetChapterLayoutViewModel(Guid chapterId);
 
     Task<SubscriptionsPageViewModel> GetChapterMemberSubscriptionsViewModel(MemberChapterServiceRequest request);
 
-    Task<IReadOnlyCollection<ChapterPage>> GetChapterPages(Guid chapterId);
-
-    Task<IReadOnlyCollection<ChapterQuestion>> GetChapterQuestions(Guid chapterId);
-
     Task<IReadOnlyCollection<Chapter>> GetChaptersByOwnerId(Guid ownerId);
 
-    Task<ChaptersHomePageViewModel> GetChaptersDto(PlatformType platform);
+    Task<ChaptersHomePageViewModel> GetChaptersHomePageViewModel(PlatformType platform);
 
     Task<Chapter?> GetDefaultChapter(Member member);
 
