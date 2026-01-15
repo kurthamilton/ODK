@@ -47,7 +47,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     private readonly IGeolocationService _geolocationService;
     private readonly IHtmlSanitizer _htmlSanitizer;
     private readonly IImageService _imageService;
-    private readonly IInstagramService _instagramService;
     private readonly ILoggingService _loggingService;
     private readonly IMemberEmailService _memberEmailService;
     private readonly INotificationService _notificationService;
@@ -55,6 +54,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     private readonly IPaymentService _paymentService;
     private readonly ChapterAdminServiceSettings _settings;
     private readonly ISiteSubscriptionService _siteSubscriptionService;
+    private readonly ISocialMediaService _socialMediaService;
     private readonly ITopicService _topicService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUrlProviderFactory _urlProviderFactory;
@@ -63,7 +63,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         IUnitOfWork unitOfWork,
         ICacheService cacheService,
         IHtmlSanitizer htmlSanitizer,
-        IInstagramService instagramService,
+        ISocialMediaService socialMediaService,
         INotificationService notificationService,
         IImageService imageService,
         IMemberEmailService memberEmailService,
@@ -81,7 +81,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         _geolocationService = geolocationService;
         _htmlSanitizer = htmlSanitizer;
         _imageService = imageService;
-        _instagramService = instagramService;
         _loggingService = loggingService;
         _memberEmailService = memberEmailService;
         _notificationService = notificationService;
@@ -89,6 +88,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         _paymentService = paymentService;
         _settings = settings;
         _siteSubscriptionService = siteSubscriptionService;
+        _socialMediaService = socialMediaService;
         _topicService = topicService;
         _unitOfWork = unitOfWork;
         _urlProviderFactory = urlProviderFactory;
@@ -1687,7 +1687,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         {
             try
             {
-                await _instagramService.ScrapeLatestInstagramPosts(request.ChapterId);
+                await _socialMediaService.ScrapeLatestInstagramPosts(request.ChapterId);
             }
             catch
             {

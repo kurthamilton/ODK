@@ -162,7 +162,7 @@ public static class DependencyConfig
         {
             ApiKey = appSettings.Google.Geolocation.ApiKey
         });
-        services.AddScoped<IInstagramService, InstagramService>();
+        services.AddScoped<IInstagramClient, InstagramClient>();
         services.AddScoped<IMediaAdminService, MediaAdminService>();
         services.AddScoped<IMediaFileProvider, MediaFileProvider>();
         services.AddScoped<IMediaService, MediaService>();

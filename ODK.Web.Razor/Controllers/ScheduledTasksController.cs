@@ -14,14 +14,14 @@ namespace ODK.Web.Razor.Controllers;
 public class ScheduledTasksController : OdkControllerBase
 {
     private readonly IEventAdminService _eventAdminService;
-    private readonly IInstagramService _instagramService;
     private readonly IMemberAdminService _memberAdminService;
     private readonly ScheduledTasksSettings _settings;
     private readonly ISiteSubscriptionService _siteSubscriptionService;
+    private readonly ISocialMediaService _socialMediaService;
 
     public ScheduledTasksController(
         IEventAdminService eventAdminService,
-        IInstagramService instagramService,
+        ISocialMediaService socialMediaService,
         AppSettings settings,
         ISiteSubscriptionService siteSubscriptionService,
         IMemberAdminService memberAdminService,
@@ -29,10 +29,10 @@ public class ScheduledTasksController : OdkControllerBase
         : base(requestStore)
     {
         _eventAdminService = eventAdminService;
-        _instagramService = instagramService;
         _memberAdminService = memberAdminService;
         _settings = settings.ScheduledTasks;
         _siteSubscriptionService = siteSubscriptionService;
+        _socialMediaService = socialMediaService;
     }
 
     [HttpPost("chapters/subscriptions/reminders")]
@@ -72,7 +72,7 @@ public class ScheduledTasksController : OdkControllerBase
 
         try
         {
-            await _instagramService.ScrapeLatestInstagramPosts();
+            await _socialMediaService.ScrapeLatestInstagramPosts();
         }
         catch
         {

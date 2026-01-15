@@ -11,16 +11,16 @@ namespace ODK.Web.Razor.Controllers;
 public class InstagramController : OdkControllerBase
 {
     private readonly IImageService _imageService;
-    private readonly IInstagramService _instagramService;
+    private readonly ISocialMediaService _socialMediaService;
 
     public InstagramController(
-        IInstagramService instagramService,
+        ISocialMediaService socialMediaService,
         IImageService imageService,
         IRequestStore requestStore)
         : base(requestStore)
     {
         _imageService = imageService;
-        _instagramService = instagramService;
+        _socialMediaService = socialMediaService;
     }
 
     [AllowAnonymous]
@@ -28,7 +28,7 @@ public class InstagramController : OdkControllerBase
     public async Task<IActionResult> GetInstagramImage(string chapterName, Guid id)
     {
         return await HandleVersionedRequest(
-            version => _instagramService.GetInstagramImage(version, id),
+            version => _socialMediaService.GetInstagramImage(version, id),
             InstagramImageResult);
     }
 

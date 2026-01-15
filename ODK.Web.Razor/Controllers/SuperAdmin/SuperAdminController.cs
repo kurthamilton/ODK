@@ -23,15 +23,15 @@ public class SuperAdminController : OdkControllerBase
 {
     private readonly IContactAdminService _contactAdminService;
     private readonly IFeatureService _featureService;
-    private readonly IInstagramService _instagramService;
     private readonly ILoggingService _loggingService;
     private readonly ISettingsService _settingsService;
     private readonly ISiteSubscriptionAdminService _siteSubscriptionAdminService;
+    private readonly ISocialMediaService _socialMediaService;
     private readonly ITopicAdminService _topicAdminService;
 
     public SuperAdminController(
         ILoggingService loggingService,
-        IInstagramService instagramService,
+        ISocialMediaService socialMediaService,
         ISettingsService settingsService,
         ISiteSubscriptionAdminService siteSubscriptionAdminService,
         IFeatureService featureService,
@@ -43,10 +43,10 @@ public class SuperAdminController : OdkControllerBase
     {
         _contactAdminService = contactAdminService;
         _featureService = featureService;
-        _instagramService = instagramService;
         _loggingService = loggingService;
         _settingsService = settingsService;
         _siteSubscriptionAdminService = siteSubscriptionAdminService;
+        _socialMediaService = socialMediaService;
         _topicAdminService = topicAdminService;
     }
 
@@ -315,7 +315,7 @@ public class SuperAdminController : OdkControllerBase
     [HttpPost("groups/{chapterId:guid}/superAdmin/instagram/scrape")]
     public async Task<IActionResult> ScrapeInstagram(Guid chapterId)
     {
-        await _instagramService.ScrapeLatestInstagramPosts(chapterId);
+        await _socialMediaService.ScrapeLatestInstagramPosts(chapterId);
         return RedirectToReferrer();
     }
 }
