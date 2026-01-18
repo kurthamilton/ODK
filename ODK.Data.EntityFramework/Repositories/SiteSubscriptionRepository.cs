@@ -1,4 +1,5 @@
-﻿using ODK.Core.Platforms;
+﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
@@ -36,4 +37,8 @@ public class SiteSubscriptionRepository : ReadWriteRepositoryBase<SiteSubscripti
     public IDeferredQuerySingle<SiteSubscription> GetDefault(PlatformType platform) => Set()
         .Where(x => x.Platform == platform && x.Enabled && x.Default)
         .DeferredSingle();
+
+    protected override IQueryable<SiteSubscription> Set()
+        => base.Set()
+            .Include(x => x.Features);
 }

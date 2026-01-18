@@ -49,6 +49,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
 
         var subscription = new SiteSubscription
         {
+            Id = Guid.NewGuid(),
             Platform = platform,
             SitePaymentSettingId = paymentSettings.Id
         };
@@ -180,15 +181,13 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
             {
                 Default = x.Default,
                 Enabled = x.Enabled,
+                Features = x.Features.Select(x => x.Feature).ToArray(),
                 GroupLimit = x.GroupLimit,
                 Id = x.Id,
                 MemberLimit = x.MemberLimit,
-                MemberSubscriptions = x.MemberSubscriptions,
                 Name = x.Name,
                 PaymentSettingsName = sitePaymentSettingsDictionary[x.SitePaymentSettingId].Name,
-                Premium = x.Premium,
                 PriceCount = priceCounts.TryGetValue(x.Id, out var priceCount) ? priceCount : 0,
-                SendMemberEmails = x.SendMemberEmails
             })
             .OrderBy(x => x.PaymentSettingsName)
             .ThenBy(x => x.Name)
@@ -293,9 +292,38 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         subscription.FallbackSiteSubscriptionId = model.FallbackSiteSubscriptionId;
         subscription.GroupLimit = model.GroupLimit;
         subscription.MemberLimit = model.MemberLimit;
-        subscription.MemberSubscriptions = model.MemberSubscriptions;
         subscription.Name = model.Name;
-        subscription.Premium = model.Premium;
-        subscription.SendMemberEmails = model.SendMemberEmails;
+
+        if (subscription.Features == null)
+        {
+            subscription.Features = new List<SiteSubscriptionFeature>();
+        }
+
+        var existingFeatures = subscription.Features.Select(x => x.Feature).ToHashSet();
+        var modelFeatures = model.Features.ToHashSet();
+
+        // add new features
+        foreach (var feature in modelFeatures)
+        {
+            if (!existingFeatures.Contains(feature))
+            {
+                _unitOfWork.SiteSubscriptionFeatureRepository.Add(new SiteSubscriptionFeature
+                {
+                    Feature = feature,
+                    Id = Guid.NewGuid(),
+                    SiteSubscriptionId = subscription.Id
+                });
+            }
+        }
+
+        // remove old features
+        foreach (var feature in existingFeatures)
+        {
+            if (!modelFeatures.Contains(feature))
+            {
+                var siteSubscriptionFeature = subscription.Features.First(x => x.Feature == feature);
+                _unitOfWork.SiteSubscriptionFeatureRepository.Delete(siteSubscriptionFeature);
+            }
+        }
     }
 }

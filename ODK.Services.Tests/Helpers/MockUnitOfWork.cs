@@ -90,6 +90,7 @@ internal class MockUnitOfWork : IUnitOfWork
     public ISiteContactMessageRepository SiteContactMessageRepository => Mock.Object.SiteContactMessageRepository;
     public ISiteEmailSettingsRepository SiteEmailSettingsRepository => Mock.Object.SiteEmailSettingsRepository;
     public ISitePaymentSettingsRepository SitePaymentSettingsRepository => Mock.Object.SitePaymentSettingsRepository;
+    public ISiteSubscriptionFeatureRepository SiteSubscriptionFeatureRepository => Mock.Object.SiteSubscriptionFeatureRepository;
     public ISiteSubscriptionPriceRepository SiteSubscriptionPriceRepository => Mock.Object.SiteSubscriptionPriceRepository;
     public ISiteSubscriptionRepository SiteSubscriptionRepository => Mock.Object.SiteSubscriptionRepository;
     public IPaymentProviderWebhookEventRepository PaymentProviderWebhookEventRepository => Mock.Object.PaymentProviderWebhookEventRepository;

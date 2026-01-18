@@ -148,11 +148,9 @@ public class SuperAdminController : OdkControllerBase
             Name = viewModel.Name,
             Enabled = viewModel.Enabled,
             FallbackSiteSubscriptionId = viewModel.FallbackSiteSubscriptionId,
+            Features = viewModel.Features,
             GroupLimit = viewModel.GroupLimit,
             MemberLimit = viewModel.MemberLimit,
-            MemberSubscriptions = viewModel.MemberSubscriptions,
-            Premium = viewModel.Premium,
-            SendMemberEmails = viewModel.SendMemberEmails,
             SitePaymentSettingId = viewModel.SitePaymentSettingId ?? Guid.Empty
         });
 
@@ -170,11 +168,9 @@ public class SuperAdminController : OdkControllerBase
             Name = viewModel.Name,
             Enabled = viewModel.Enabled,
             FallbackSiteSubscriptionId = viewModel.FallbackSiteSubscriptionId,
+            Features = viewModel.Features,
             GroupLimit = viewModel.GroupLimit,
             MemberLimit = viewModel.MemberLimit,
-            MemberSubscriptions = viewModel.MemberSubscriptions,
-            Premium = viewModel.Premium,
-            SendMemberEmails = viewModel.SendMemberEmails,
             SitePaymentSettingId = viewModel.SitePaymentSettingId ?? Guid.Empty
         });
 

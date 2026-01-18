@@ -21,11 +21,8 @@ public class MemberSiteSubscription : IDatabaseEntity, IMemberEntity
 
     public Guid? SiteSubscriptionPriceId { get; set; }
 
-    public IEnumerable<SiteFeatureType> Features() => !IsExpired()
-        ? SiteSubscription.Features()
-        : [];
-
-    public bool HasFeature(SiteFeatureType feature) => !IsExpired() && SiteSubscription.HasFeature(feature);
+    public bool HasFeature(SiteFeatureType feature)
+        => !IsExpired() && SiteSubscription.HasFeature(feature);
 
     public bool IsExpired()
     {

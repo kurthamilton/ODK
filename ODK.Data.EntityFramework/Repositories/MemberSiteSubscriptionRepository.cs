@@ -51,5 +51,6 @@ public class MemberSiteSubscriptionRepository : ReadWriteRepositoryBase<MemberSi
 
     protected override IQueryable<MemberSiteSubscription> Set() => base.Set()
         .Include(x => x.SiteSubscription)
+        .ThenInclude(x => x.Features)
         .Include(x => x.SiteSubscriptionPrice);
 }

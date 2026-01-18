@@ -4,7 +4,7 @@ namespace ODK.Web.Razor.Models.SuperAdmin;
 
 public class IssueFormSubmitViewModel
 {
-    public IssueStatusType Status { get; set; }
+    public IssueStatusType? Status { get; set; }
 
-    public IssueType Type { get; set; }
+    public IssueType? Type { get; set; }
 }

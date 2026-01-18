@@ -5,19 +5,27 @@ namespace ODK.Core.Features;
 public enum SiteFeatureType
 {
     None,
+
     [Display(Name = "Make other members admins")]
-    AdminMembers,
+    AdminMembers = 1,
+
     [Display(Name = "Member approval")]
-    ApproveMembers,
+    ApproveMembers = 2,
+
     [Display(Name = "Ticketed events")]
-    EventTickets,
+    EventTickets = 3,
+
     [Display(Name = "Instagram feed")]
-    InstagramFeed,
+    InstagramFeed = 4,
+
     [Display(Name = "Paid subscriptions")]
-    MemberSubscriptions,
-    Payments,
+    MemberSubscriptions = 5,
+
+    Payments = 6,
+
     [Display(Name = "Scheduled event emails")]
-    ScheduledEventEmails,
+    ScheduledEventEmails = 7,
+
     [Display(Name = "Send emails to members")]
-    SendMemberEmails
+    SendMemberEmails = 8
 }

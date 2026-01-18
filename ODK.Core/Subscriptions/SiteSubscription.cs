@@ -20,54 +20,23 @@ public class SiteSubscription : IDatabaseEntity
 
     public Guid? FallbackSiteSubscriptionId { get; set; }
 
+    public virtual ICollection<SiteSubscriptionFeature> Features { get; set; } = null!;
+
     public int? GroupLimit { get; set; }
 
     public Guid Id { get; set; }
 
     public int? MemberLimit { get; set; }
 
-    public bool MemberSubscriptions { get; set; }
-
     public string Name { get; set; } = string.Empty;
 
     public PlatformType Platform { get; set; }
-
-    public bool Premium { get; set; }
-
-    public bool SendMemberEmails { get; set; }
 
     public Guid SitePaymentSettingId { get; set; }
 
     public bool HasCapacity(int memberCount) => MemberLimit == null || memberCount < MemberLimit;
 
-    public IEnumerable<SiteFeatureType> Features()
-    {
-        if (Premium)
-        {
-            yield return SiteFeatureType.AdminMembers;
-            yield return SiteFeatureType.ApproveMembers;
-            yield return SiteFeatureType.EventTickets;
-            yield return SiteFeatureType.InstagramFeed;
-            yield return SiteFeatureType.MemberSubscriptions;
-            yield return SiteFeatureType.Payments;
-            yield return SiteFeatureType.ScheduledEventEmails;
-            yield return SiteFeatureType.SendMemberEmails;
-            yield break;
-        }
-
-        if (MemberSubscriptions && !Premium)
-        {
-            yield return SiteFeatureType.MemberSubscriptions;
-            yield return SiteFeatureType.Payments;
-        }
-
-        if (SendMemberEmails)
-        {
-            yield return SiteFeatureType.SendMemberEmails;
-        }
-    }
-
-    public bool HasFeature(SiteFeatureType feature) => Features().Contains(feature);
+    public bool HasFeature(SiteFeatureType feature) => Features.Any(x => x.Feature == feature);
 
     public bool IsEnabled(SitePaymentSettings sitePaymentSettings) => Enabled && sitePaymentSettings.Enabled;
 

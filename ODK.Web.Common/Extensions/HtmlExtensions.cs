@@ -19,54 +19,46 @@ public static class HtmlExtensions
         return htmlHelper.CheckBoxFor(expression, htmlAttributeDictionary);
     }
 
-    public static IHtmlContent OdkEnumDropDownFor<TModel, TEnum>(this IHtmlHelper<TModel> htmlHelper,
-        Expression<Func<TModel, TEnum>> expression, object htmlAttributes)
+    public static IHtmlContent OdkEnumDropDownFor<TModel, TEnum>(
+        this IHtmlHelper<TModel> htmlHelper,
+        Expression<Func<TModel, TEnum?>> expression,
+        object htmlAttributes)
         where TEnum : struct, Enum
-    {
-        return htmlHelper.EnumDropDownFor(expression, null, htmlAttributes);
-    }
+        => htmlHelper.OdkEnumDropDownFor(expression, htmlAttributes, excludeOptions: null);
 
-    public static IHtmlContent OdkEnumDropDownFor<TModel, TEnum>(this IHtmlHelper<TModel> htmlHelper,
-        Expression<Func<TModel, TEnum?>> expression, object htmlAttributes, IEnumerable<TEnum>? excludeOptions = null)
+    public static IHtmlContent OdkEnumDropDownFor<TModel, TEnum>(
+        this IHtmlHelper<TModel> htmlHelper,
+        Expression<Func<TModel, TEnum?>> expression,
+        object htmlAttributes,
+        IEnumerable<TEnum>? excludeOptions)
         where TEnum : struct, Enum
-    {
-        return htmlHelper.EnumDropDownFor(expression, null, htmlAttributes, excludeOptions);
-    }
+        => htmlHelper.EnumDropDownFor(expression, optionLabel: null, htmlAttributes, excludeOptions);
 
-    public static IHtmlContent OdkEnumDropDownFor<TModel, TEnum>(this IHtmlHelper<TModel> htmlHelper,
-        Expression<Func<TModel, TEnum?>> expression, string optionLabel, object htmlAttributes, IEnumerable<TEnum>? excludeOptions = null)
+    public static IHtmlContent OdkEnumDropDownFor<TModel, TEnum>(
+        this IHtmlHelper<TModel> htmlHelper,
+        Expression<Func<TModel, TEnum?>> expression,
+        string optionLabel,
+        object htmlAttributes,
+        IEnumerable<TEnum>? excludeOptions = null)
         where TEnum : struct, Enum
-    {
-        return htmlHelper.EnumDropDownFor(expression, optionLabel, htmlAttributes, excludeOptions);
-    }
+        => htmlHelper.EnumDropDownFor(expression, optionLabel, htmlAttributes, excludeOptions);
 
-    public static IHtmlContent OdkTimeZoneDropDownFor<TModel>(this IHtmlHelper<TModel> htmlHelper,
-        Expression<Func<TModel, string?>> expression, object htmlAttributes)
-    {
-        return htmlHelper.TimeZoneDropDownFor(expression, null, htmlAttributes);
-    }
+    public static IHtmlContent OdkEnumListBoxFor<TModel, TEnum>(
+        this IHtmlHelper<TModel> htmlHelper,
+        Expression<Func<TModel, List<TEnum>>> expression,
+        object htmlAttributes)
+        where TEnum : struct, Enum
+        => htmlHelper.EnumListBoxFor(expression, htmlAttributes, excludeOptions: null);
 
     public static IHtmlContent OdkTimeZoneDropDownFor<TModel>(this IHtmlHelper<TModel> htmlHelper,
         Expression<Func<TModel, string?>> expression, string optionLabel, object htmlAttributes)
-    {
-        return htmlHelper.TimeZoneDropDownFor(expression, optionLabel, htmlAttributes);
-    }
+        => htmlHelper.TimeZoneDropDownFor(expression, optionLabel, htmlAttributes);
 
-    private static IHtmlContent EnumDropDownFor<TModel, TEnum>(this IHtmlHelper<TModel> htmlHelper,
-        Expression<Func<TModel, TEnum>> expression, string? optionLabel, object htmlAttributes)
-        where TEnum : struct, Enum
-    {
-        var options = Enum
-            .GetValues<TEnum>()
-            .Select(x => new SelectListItem { Value = ((int)(object)x).ToString(), Text = EnumUtils.GetDisplayValue(x) })
-            .Where(x => x.Value != "0");
-        return optionLabel != null
-            ? htmlHelper.DropDownListFor(expression, options, optionLabel, htmlAttributes)
-            : htmlHelper.DropDownListFor(expression, options, htmlAttributes);
-    }
-
-    private static IHtmlContent EnumDropDownFor<TModel, TEnum>(this IHtmlHelper<TModel> htmlHelper,
-        Expression<Func<TModel, TEnum?>> expression, string? optionLabel, object htmlAttributes,
+    private static IHtmlContent EnumDropDownFor<TModel, TEnum>(
+        this IHtmlHelper<TModel> htmlHelper,
+        Expression<Func<TModel, TEnum?>> expression,
+        string? optionLabel,
+        object htmlAttributes,
         IEnumerable<TEnum>? excludeOptions = null)
         where TEnum : struct, Enum
     {
@@ -81,6 +73,25 @@ public static class HtmlExtensions
         return optionLabel != null
             ? htmlHelper.DropDownListFor(expression, options, optionLabel, htmlAttributes)
             : htmlHelper.DropDownListFor(expression, options, htmlAttributes);
+    }
+
+    private static IHtmlContent EnumListBoxFor<TModel, TEnum>(
+        this IHtmlHelper<TModel> htmlHelper,
+        Expression<Func<TModel, List<TEnum>>> expression,
+        object htmlAttributes,
+        IEnumerable<TEnum>? excludeOptions = null)
+        where TEnum : struct, Enum
+    {
+        var excludeOptionValues = excludeOptions
+            ?.Select(x => ((int)(object)x).ToString())
+            .ToArray() ?? [];
+
+        var options = Enum
+            .GetValues<TEnum>()
+            .Select(x => new SelectListItem { Value = ((int)(object)x).ToString(), Text = EnumUtils.GetDisplayValue(x) })
+            .Where(x => x.Value != "0" && !excludeOptionValues.Contains(x.Value))
+            .OrderBy(x => x.Text);
+        return htmlHelper.ListBoxFor(expression, options, htmlAttributes);
     }
 
     private static IHtmlContent TimeZoneDropDownFor<TModel>(this IHtmlHelper<TModel> htmlHelper,

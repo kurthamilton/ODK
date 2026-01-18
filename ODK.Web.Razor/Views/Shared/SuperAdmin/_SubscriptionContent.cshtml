@@ -17,12 +17,10 @@
             Description = Model.Subscription.Description,
             Enabled = Model.Subscription.Enabled,
             FallbackSiteSubscriptionId = Model.Subscription.FallbackSiteSubscriptionId,
+            Features = Model.Subscription.Features.Select(x => x.Feature).ToList(),
             GroupLimit = Model.Subscription.GroupLimit,
             MemberLimit = Model.Subscription.MemberLimit,
-            MemberSubscriptions = Model.Subscription.MemberSubscriptions,
             Name = Model.Subscription.Name,
-            Premium = Model.Subscription.Premium,
-            SendMemberEmails = Model.Subscription.SendMemberEmails,
             SitePaymentSettingId = Model.Subscription.SitePaymentSettingId,
             SitePaymentSettings = Model.SitePaymentSettings,
             SiteSubscriptionId = Model.Subscription.Id

@@ -1,4 +1,5 @@
-﻿@using ODK.Services.Subscriptions
+﻿@using ODK.Core.Features
+@using ODK.Services.Subscriptions
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Services
@@ -83,22 +84,13 @@
                             <td>@subscription.GroupLimit</td>
                             <td>@subscription.MemberLimit</td>
                             <td>
-                                @if (subscription.Premium)
-                                {
-                                    <span data-bs-toggle="tooltip" data-bs-title="Premium">
-                                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Star)
-                                        {
-                                            Class = "text-warning"
-                                        })
-                                    </span>
-                                }
-                                @if (subscription.SendMemberEmails)
+                                @if (subscription.HasFeature(SiteFeatureType.SendMemberEmails))
                                 {
                                     <span data-bs-toggle="tooltip" data-bs-title="Send member emails">
                                         @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Envelope))
                                     </span>
                                 }
-                                @if (subscription.MemberSubscriptions)
+                                @if (subscription.HasFeature(SiteFeatureType.MemberSubscriptions))
                                 {
                                     <span data-bs-toggle="tooltip" data-bs-title="Member subscriptions">
                                         @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Dollar))
