@@ -8,4 +8,11 @@ public static class SiteSubscriptionFrequencyExtensions
         SiteSubscriptionFrequency.Yearly => "year",
         _ => throw new NotSupportedException()
     };
+
+    public static string PeriodUnitShort(this SiteSubscriptionFrequency frequency) => frequency switch
+    {
+        SiteSubscriptionFrequency.Monthly => "mo",
+        SiteSubscriptionFrequency.Yearly => "yr",
+        _ => throw new NotSupportedException()
+    };
 }

@@ -1,5 +1,6 @@
 ﻿@using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @model SuperAdminChaptersViewModel
 @{
@@ -30,21 +31,29 @@
                             <th>Published</th>
                             <th>Subscription</th>
                             <th>Expires</th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var chapter in Model.Approved)
+                        @foreach (var row in Model.Approved)
                         {
+                            var chapter = row.Chapter;
+
                             <tr>
                                 <td>
                                     <a href="/superadmin/groups/@chapter.Id">
-                                        @chapter.Name
+                                        @chapter.GetDisplayName(Model.Platform)
                                     </a>                                    
                                 </td>
                                 <td>@chapter.CreatedUtc.ToString("yyyy-MM-dd HH:mm:ss")</td>
                                 <td>@chapter.PublishedUtc?.ToString("yyyy-MM-dd HH:mm:ss")</td>
-                                <td>@chapter.SiteSubscriptionName</td>
-                                <td>@chapter.SiteSubscriptionExpiresUtc?.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                                <td>@row.SiteSubscriptionName</td>
+                                <td>@row.SiteSubscriptionExpiresUtc?.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                                <td>
+                                    <a href="@OdkRoutes.MemberGroups.Group(Model.Platform, chapter)">
+                                        Admin
+                                    </a>
+                                </td>
                             </tr>
                         }
                     </tbody>
@@ -63,14 +72,22 @@
                             <th>Name</th>
                             <th>Created</th>
                             <th></th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var chapter in Model.Pending)
+                        @foreach (var row in Model.Pending)
                         {
+                            var chapter = row.Chapter;
+
                             <tr>
-                                <td>@chapter.Name</td>
+                                <td>@chapter.GetDisplayName(Model.Platform)</td>
                                 <td>@chapter.CreatedUtc.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                                <td>
+                                    <a href="@OdkRoutes.MemberGroups.Group(Model.Platform, chapter)">
+                                        Admin
+                                    </a>
+                                </td>
                                 <td>
                                     <div class="button-container">
                                         <form action="/superadmin/groups/@chapter.Id/approve" method="post">

@@ -15,6 +15,11 @@ public class MemberSiteSubscriptionRepository : ReadWriteRepositoryBase<MemberSi
     {
     }
 
+    public IDeferredQueryMultiple<MemberSiteSubscription> GetAllActive()
+        => Set()
+            .Where(x => x.ExpiresUtc > DateTime.UtcNow)
+            .DeferredMultiple();
+
     public IDeferredQueryMultiple<MemberSiteSubscription> GetAllChapterOwnerSubscriptions(PlatformType platform)
     {
         var query =

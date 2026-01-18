@@ -31,6 +31,7 @@
                         <th>Group limit</th>
                         <th>Member limit</th>
                         <th>Features</th>
+                        <th>Active</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -78,7 +79,7 @@
                                     @foreach (var price in subscription.Prices)
                                     {
                                         <div class="text-nowrap">
-                                            @price.Currency.ToAmountString(price.Amount)/@price.Frequency.PeriodUnit()
+                                            @price.Currency.ToAmountString(price.Amount)/@price.Frequency.PeriodUnitShort()
                                         </div>
                                     }
                                 }
@@ -101,6 +102,12 @@
                                     <span data-bs-toggle="tooltip" data-bs-title="Member subscriptions">
                                         @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Dollar))
                                     </span>
+                                }
+                            </td>
+                            <td>
+                                @if (subscription.ActiveCount > 0)
+                                {
+                                    <span>@subscription.ActiveCount</span>
                                 }
                             </td>
                             <td>

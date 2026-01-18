@@ -164,10 +164,11 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
     {
         var platform = request.Platform;
 
-        var (sitePaymentSettings, siteSubscriptions, prices) = await GetSuperAdminRestrictedContent(request.CurrentMemberId,
+        var (sitePaymentSettings, siteSubscriptions, prices, memberSiteSubscriptions) = await GetSuperAdminRestrictedContent(request.CurrentMemberId,
             x => x.SitePaymentSettingsRepository.GetAll(),
             x => x.SiteSubscriptionRepository.GetAll(platform),
-            x => x.SiteSubscriptionPriceRepository.GetAll(platform));
+            x => x.SiteSubscriptionPriceRepository.GetAll(platform),
+            x => x.MemberSiteSubscriptionRepository.GetAllActive());
 
         var priceDictionary = prices
             .GroupBy(x => x.SiteSubscriptionId)
@@ -176,9 +177,16 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         var sitePaymentSettingsDictionary = sitePaymentSettings
             .ToDictionary(x => x.Id);
 
+        var memberSiteSubscriptionDictionary = memberSiteSubscriptions
+            .GroupBy(x => x.SiteSubscriptionId)
+            .ToDictionary(x => x.Key, x => x.Count());
+
         return siteSubscriptions
             .Select(x => new SiteSubscriptionSuperAdminListItemViewModel
             {
+                ActiveCount = memberSiteSubscriptionDictionary.TryGetValue(x.Id, out var activeCount)
+                    ? activeCount
+                    : 0,
                 Default = x.Default,
                 Enabled = x.Enabled,
                 Features = x.Features.Select(x => x.Feature).ToArray(),
@@ -195,6 +203,8 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
                             Currency = x.Currency,
                             Frequency = x.Frequency
                         })
+                        .OrderBy(x => x.Currency.Code)
+                        .ThenBy(x => x.Amount)
                         .ToArray()
                     : []
             })

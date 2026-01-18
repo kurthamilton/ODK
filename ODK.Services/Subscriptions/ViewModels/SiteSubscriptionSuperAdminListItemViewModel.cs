@@ -4,6 +4,8 @@ namespace ODK.Services.Subscriptions.ViewModels;
 
 public class SiteSubscriptionSuperAdminListItemViewModel
 {
+    public required int ActiveCount { get; init; }
+
     public required bool Default { get; init; }
 
     public required bool Enabled { get; init; }

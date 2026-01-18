@@ -6,6 +6,8 @@ namespace ODK.Data.Core.Repositories;
 
 public interface IMemberSiteSubscriptionRepository : IReadWriteRepository<MemberSiteSubscription>
 {
+    IDeferredQueryMultiple<MemberSiteSubscription> GetAllActive();
+
     IDeferredQueryMultiple<MemberSiteSubscription> GetAllChapterOwnerSubscriptions(PlatformType platform);
 
     IDeferredQuerySingleOrDefault<MemberSiteSubscription> GetByChapterId(Guid chapterId);

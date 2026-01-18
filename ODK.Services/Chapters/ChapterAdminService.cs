@@ -1310,10 +1310,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
             var rowViewModel = new SuperAdminChaptersRowViewModel
             {
-                CreatedUtc = chapter.CreatedUtc,
-                Id = chapter.Id,
-                Name = chapter.GetDisplayName(platform),
-                PublishedUtc = chapter.PublishedUtc,
+                Chapter = chapter,
                 SiteSubscriptionExpiresUtc = chapterSubscription?.ExpiresUtc,
                 SiteSubscriptionName = chapterSubscription?.SiteSubscription.Name
             };
@@ -1331,11 +1328,12 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return new SuperAdminChaptersViewModel
         {
             Approved = approved
-                .OrderBy(x => x.Name)
+                .OrderBy(x => x.Chapter.Name)
                 .ToArray(),
             Pending = pending
-                .OrderBy(x => x.CreatedUtc)
-                .ToArray()
+                .OrderBy(x => x.Chapter.CreatedUtc)
+                .ToArray(),
+            Platform = request.Platform
         };
     }
 
