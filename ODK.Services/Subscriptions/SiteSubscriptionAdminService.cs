@@ -169,9 +169,9 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
             x => x.SiteSubscriptionRepository.GetAll(platform),
             x => x.SiteSubscriptionPriceRepository.GetAll(platform));
 
-        var priceCounts = prices
+        var priceDictionary = prices
             .GroupBy(x => x.SiteSubscriptionId)
-            .ToDictionary(x => x.Key, x => x.Count());
+            .ToDictionary(x => x.Key, x => x.ToArray());
 
         var sitePaymentSettingsDictionary = sitePaymentSettings
             .ToDictionary(x => x.Id);
@@ -187,7 +187,16 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
                 MemberLimit = x.MemberLimit,
                 Name = x.Name,
                 PaymentSettingsName = sitePaymentSettingsDictionary[x.SitePaymentSettingId].Name,
-                PriceCount = priceCounts.TryGetValue(x.Id, out var priceCount) ? priceCount : 0,
+                Prices = priceDictionary.TryGetValue(x.Id, out var prices)
+                    ? prices
+                        .Select(x => new SiteSubscriptionSuperAdminListItemPriceViewModel
+                        {
+                            Amount = x.Amount,
+                            Currency = x.Currency,
+                            Frequency = x.Frequency
+                        })
+                        .ToArray()
+                    : []
             })
             .OrderBy(x => x.PaymentSettingsName)
             .ThenBy(x => x.Name)

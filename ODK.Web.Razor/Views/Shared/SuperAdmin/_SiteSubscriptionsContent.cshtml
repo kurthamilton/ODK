@@ -1,4 +1,5 @@
 ﻿@using ODK.Core.Features
+@using ODK.Core.Subscriptions
 @using ODK.Services.Subscriptions
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.Components
@@ -10,7 +11,7 @@
         RequestStore.MemberServiceRequest);
 }
 
-<div data-odk-component="SuperAdmin/_SubscriptionsContent">
+<div data-odk-component="SuperAdmin/_SiteSubscriptionsContent">
     <h2>Subscriptions</h2>
 
     <section class="section">
@@ -72,9 +73,14 @@
                                 }
                             </td>
                             <td>
-                                @if (subscription.PriceCount > 0)
+                                @if (subscription.Prices.Count > 0)
                                 {
-                                    <span>@subscription.PriceCount</span>
+                                    @foreach (var price in subscription.Prices)
+                                    {
+                                        <div class="text-nowrap">
+                                            @price.Currency.ToAmountString(price.Amount)/@price.Frequency.PeriodUnit()
+                                        </div>
+                                    }
                                 }
                                 else
                                 {

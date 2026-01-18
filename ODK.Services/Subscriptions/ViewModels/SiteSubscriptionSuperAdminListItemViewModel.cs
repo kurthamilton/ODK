@@ -20,7 +20,7 @@ public class SiteSubscriptionSuperAdminListItemViewModel
 
     public required string PaymentSettingsName { get; init; }
 
-    public required int PriceCount { get; init; }
+    public required IReadOnlyCollection<SiteSubscriptionSuperAdminListItemPriceViewModel> Prices { get; init; }
 
     public bool HasFeature(SiteFeatureType feature) => Features.Contains(feature);
 }
