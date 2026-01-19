@@ -19,7 +19,11 @@ public class InstagramClient : IInstagramClient
         InstagramClientSettings settings)
     {
         _httpClient = httpClientFactory.CreateClient();
-        _httpClient.DefaultRequestHeaders.Add("User-Agent", settings.UserAgent);
+
+        if (!string.IsNullOrEmpty(settings.UserAgent))
+        {
+            _httpClient.DefaultRequestHeaders.Add("User-Agent", settings.UserAgent);
+        }        
 
         _loggingService = loggingService;
     }
