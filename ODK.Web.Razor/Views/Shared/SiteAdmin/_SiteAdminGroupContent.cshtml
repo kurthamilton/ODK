@@ -10,8 +10,11 @@
 {
     Breadcrumbs = new[]
     {
-        new MenuItem { Link = "/siteadmin/groups", Text = "Groups" },
-        new MenuItem { Text = chapterName }
+        new MenuItem 
+        { 
+            Icon = IconType.ArrowLeft,
+            Link = "/siteadmin/groups", 
+            Text = "Back to groups" },
     }
 })
 
@@ -20,8 +23,9 @@
 <form method="post">
     @*@Html.AntiForgeryToken()*@
 
-    @await Html.PartialAsync("SiteAdmin/_ChapterContentForm", new SiteAdminChapterFormViewModel
+    @await Html.PartialAsync("SiteAdmin/_SiteAdminGroupContentForm", new SiteAdminChapterFormViewModel
     {
+        SitePaymentSettings = Model.SitePaymentSettings,
         SiteSubscriptionId = Model.Subscription?.SiteSubscriptionId,
         SiteSubscriptions = Model.SiteSubscriptions,
         SubscriptionExpiresUtc = Model.Subscription?.ExpiresUtc

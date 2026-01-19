@@ -3,7 +3,11 @@
 @{
     var siteSubscriptionOptions = Model
         .SiteSubscriptions
-        .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Name })
+        .Select(x => new SelectListItem 
+        { 
+            Value = x.Id.ToString(), 
+            Text = $"{x.Name} [{Model.SitePaymentSettings[x.SitePaymentSettingId].Name}]" 
+        })
         .OrderBy(x => x.Text)
         .ToArray();
 }

@@ -1341,16 +1341,20 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         var (currentMemberId, chapterId, platform) = (request.CurrentMemberId, request.ChapterId, request.Platform);
 
-        var (chapter, subscription, siteSubscriptions) = await GetSiteAdminRestrictedContent(currentMemberId,
+        var (chapter, subscription, siteSubscriptions, sitePaymentSettings) = await GetSiteAdminRestrictedContent(currentMemberId,
             x => x.ChapterRepository.GetById(chapterId),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapterId),
-            x => x.SiteSubscriptionRepository.GetAllEnabled(platform));
+            x => x.SiteSubscriptionRepository.GetAll(platform),
+            x => x.SitePaymentSettingsRepository.GetAll());
 
         return new SiteAdminChapterViewModel
         {
             Chapter = chapter,
             Platform = platform,
-            SiteSubscriptions = siteSubscriptions,
+            SitePaymentSettings = sitePaymentSettings.ToDictionary(x => x.Id),
+            SiteSubscriptions = siteSubscriptions
+                .Where(x => x.Enabled || subscription?.SiteSubscriptionId == x.Id)
+                .ToArray(),
             Subscription = subscription
         };
     }
