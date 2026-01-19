@@ -18,6 +18,17 @@ public class ChapterRepository : ReadWriteRepositoryBase<Chapter>, IChapterRepos
         _platform = platformProvider.GetPlatform();
     }
 
+    public IDeferredQueryMultiple<Chapter> GetByAdminMemberId(Guid memberId)
+    {
+        var query =
+            from chapter in Set()
+            from chapterAdminMember in Set<ChapterAdminMember>()
+                .Where(x => x.ChapterId == chapter.Id)
+            where chapterAdminMember.MemberId == memberId
+            select chapter;
+        return query.DeferredMultiple();
+    }
+
     public IDeferredQueryMultiple<Chapter> GetAll() => Set()
         .DeferredMultiple();
 
@@ -26,8 +37,8 @@ public class ChapterRepository : ReadWriteRepositoryBase<Chapter>, IChapterRepos
         var query =
             from chapter in Set()
             from memberChapter in Set<MemberChapter>()
+                .Where(x => x.ChapterId == chapter.Id)
             where memberChapter.MemberId == memberId
-                && memberChapter.ChapterId == chapter.Id
             select chapter;
         return query.DeferredMultiple();
     }

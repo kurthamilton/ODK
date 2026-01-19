@@ -99,7 +99,7 @@ public class UnitOfWork : IUnitOfWork
         _context = context;
         _platformProvider = platformProvider;
 
-        _chapterAdminMemberRepository = new(() => new ChapterAdminMemberRepository(_context));
+        _chapterAdminMemberRepository = new(() => new ChapterAdminMemberRepository(_context, _platformProvider));
         _chapterContactMessageReplyRepository = new(() => new ChapterContactMessageReplyRepository(_context));
         _chapterContactMessageRepository = new(() => new ChapterContactMessageRepository(_context));
         _chapterConversationMessageRepository = new(() => new ChapterConversationMessageRepository(_context));

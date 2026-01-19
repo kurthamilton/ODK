@@ -9,6 +9,8 @@ public interface IChapterViewModelService
     Task<GroupsViewModel> FindGroups(
         PlatformType platform, Guid? currentMemberId, GroupFilter filter);
 
+    Task<AccountMenuChaptersViewModel> GetAccountMenuChaptersViewModel(MemberServiceRequest request);
+
     Task<ChapterAboutPageViewModel> GetChapterAboutPage(Chapter chapter);
 
     Task<ChapterCreateViewModel> GetChapterCreate(PlatformType platform, Guid currentMemberId);

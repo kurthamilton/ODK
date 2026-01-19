@@ -129,6 +129,7 @@ public class Program
             .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
             .AddCookie(options =>
             {
+                options.AccessDeniedPath = "/error/403";
                 options.EventsType = typeof(CustomCookieAuthenticationEvents);
             });
 

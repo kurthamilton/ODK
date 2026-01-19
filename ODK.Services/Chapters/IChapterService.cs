@@ -20,7 +20,5 @@ public interface IChapterService
 
     Task<Chapter?> GetDefaultChapter(Member member);
 
-    Task<IReadOnlyCollection<Chapter>> GetMemberChapters(Guid memberId);
-
     Task<bool> NameIsAvailable(string name);
 }

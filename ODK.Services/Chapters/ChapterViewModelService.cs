@@ -188,6 +188,20 @@ public class ChapterViewModelService : IChapterViewModelService
         };
     }
 
+    public async Task<AccountMenuChaptersViewModel> GetAccountMenuChaptersViewModel(
+        MemberServiceRequest request)
+    {
+        var (adminChapters, memberChapters) = await _unitOfWork.RunAsync(
+            x => x.ChapterRepository.GetByAdminMemberId(request.CurrentMemberId),
+            x => x.ChapterRepository.GetByMemberId(request.CurrentMemberId));
+
+        return new AccountMenuChaptersViewModel
+        {
+            AdminChapters = adminChapters,
+            MemberChapters = memberChapters
+        };
+    }
+
     public async Task<ChapterAboutPageViewModel> GetChapterAboutPage(Chapter chapter)
     {
         var chapterId = chapter.Id;

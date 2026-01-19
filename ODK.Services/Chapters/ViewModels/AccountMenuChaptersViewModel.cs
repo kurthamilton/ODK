@@ -1,15 +1,10 @@
 ﻿using ODK.Core.Chapters;
-using ODK.Core.Members;
 
-namespace ODK.Web.Razor.Models.Header;
+namespace ODK.Services.Chapters.ViewModels;
 
-public class AccountMenuViewModel
+public class AccountMenuChaptersViewModel
 {
     public required IReadOnlyCollection<Chapter> AdminChapters { get; init; }
-
-    public Chapter? CurrentChapter { get; init; }
-
-    public Member? Member { get; init; }
 
     public required IReadOnlyCollection<Chapter> MemberChapters { get; init; }
 }

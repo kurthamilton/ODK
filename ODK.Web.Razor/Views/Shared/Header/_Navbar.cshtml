@@ -1,27 +1,34 @@
 ﻿@using ODK.Core.Chapters
 @using ODK.Services.Chapters
+@using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Header
 @model NavbarViewModel
-@inject IChapterService ChapterService
+@inject IChapterViewModelService ChapterViewModelService
 @{
-    IReadOnlyCollection<Chapter> memberChapters = [];
+    AccountMenuChaptersViewModel chaptersViewModel;
 
     if (Model.Member != null)
-    {        
-        var chapters = await ChapterService.GetMemberChapters(Model.Member.Id);
-        memberChapters = chapters
-            .Where(x => Model.Member.IsMemberOf(x.Id))
-            .OrderBy(x => x.Name)
-            .ToArray();
+    {
+        var request = Model.MemberServiceRequest;
+        chaptersViewModel = await ChapterViewModelService.GetAccountMenuChaptersViewModel(request);
+    }
+    else
+    {
+        chaptersViewModel = new AccountMenuChaptersViewModel
+        {
+            AdminChapters = [],
+            MemberChapters = []
+        };
     }
 
     var accountMenu = new AccountMenuViewModel
     {
+        AdminChapters = chaptersViewModel.AdminChapters,
         CurrentChapter = Model.Chapter,
         Member = Model.Member,
-        MemberChapters = memberChapters
+        MemberChapters = chaptersViewModel.MemberChapters
     };
 
     var id = Model.Id ?? "navbar-main";

@@ -10,19 +10,24 @@ public class OdkClaimsUser
 
     public OdkClaimsUser(
         Member member,
-        IEnumerable<ChapterAdminMember> adminMembers)
+        IReadOnlyCollection<ChapterAdminMember> adminMembers)
     {
         MemberId = member.Id;
 
         _roles.Add(OdkRoles.Member);
 
-        if (adminMembers.Any())
+        if (adminMembers.Count > 0)
         {
             _roles.Add(OdkRoles.Admin);
         }
 
         if (member.SiteAdmin)
         {
+            if (adminMembers.Count == 0)
+            {
+                _roles.Add(OdkRoles.Admin);
+            }
+
             _roles.Add(OdkRoles.SiteAdmin);
         }
     }

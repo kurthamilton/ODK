@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Features;
 using ODK.Core.Exceptions;
-using ODK.Data.Core;
 using ODK.Services.Exceptions;
 using ODK.Services.Logging;
 using ODK.Web.Common.Config.Settings;
@@ -24,7 +23,6 @@ public class ErrorHandlingMiddleware
     public async Task InvokeAsync(
         HttpContext context,
         ILoggingService loggingService,
-        IUnitOfWork unitOfWork,
         AppSettings appSettings,
         IRequestStore requestStore)
     {
@@ -49,13 +47,12 @@ public class ErrorHandlingMiddleware
                 _ => 500
             };
 
-            await HandleAsync(context, unitOfWork, requestStore);
+            await HandleAsync(context, requestStore);
         }
     }
 
     private async Task HandleAsync(
         HttpContext httpContext,
-        IUnitOfWork unitOfWork,
         IRequestStore requestStore)
     {
         var request = httpContext.Request;
@@ -64,7 +61,7 @@ public class ErrorHandlingMiddleware
         var originalMethod = request.Method;
         var originalPath = request.Path;
 
-        var path = await GetErrorPath(httpContext, unitOfWork, requestStore);
+        var path = await GetErrorPath(httpContext, requestStore);
 
         ResetHttpContext(httpContext);
 
@@ -84,7 +81,7 @@ public class ErrorHandlingMiddleware
     }
 
     private async Task<string?> GetErrorPath(
-        HttpContext context, IUnitOfWork unitOfWork, IRequestStore requestStore)
+        HttpContext context, IRequestStore requestStore)
     {
         var statusCode = context.Response.StatusCode;
         var defaultPath = $"/error/{statusCode}";
