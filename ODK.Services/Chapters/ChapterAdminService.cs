@@ -605,7 +605,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             return ServiceResult.Failure("Admin member not found");
         }
 
-        if (member.SuperAdmin)
+        if (member.SuperAdmin && !currentMember.SuperAdmin)
         {
             return ServiceResult.Failure("Cannot delete a super admin");
         }
