@@ -2,6 +2,7 @@
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @model CreateModel
 @{
@@ -13,7 +14,7 @@
 {
     Breadcrumbs = new[]
     {
-        new MenuItem { Link = "/siteadmin/subscriptions", Text = "Subscriptions" },
+        new MenuItem { Link = OdkRoutes.SiteAdmin.Subscriptions, Text = "Subscriptions" },
         new MenuItem { Text = "New" }
     }
 })

@@ -2,6 +2,7 @@
 @using ODK.Services.Logging
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Extensions
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @inject ILoggingService LoggingService
 @{
@@ -29,7 +30,7 @@
                         <td>@error.CreatedUtc.ToString("yyyy-MM-dd HH:mm:ss")</td>
                         <td>@error.ExceptionType</td>
                         <td>
-                            <a href="/siteadmin/errors/@error.Id">@error.ExceptionMessage</a>
+                            <a href="@OdkRoutes.SiteAdmin.Error(error.Id)">@error.ExceptionMessage</a>
                         </td>
                         <td>
                             <form method="post" action="/siteadmin/Errors/@error.Id/Delete">

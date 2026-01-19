@@ -2,6 +2,7 @@
 @using ODK.Core.Subscriptions
 @using ODK.Services.Subscriptions
 @using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Services
 @inject IRequestStore RequestStore
@@ -16,7 +17,7 @@
 
     <section class="section">
         <p>
-            <a class="btn btn-primary" href="/siteadmin/subscriptions/new">
+            <a class="btn btn-primary" href="@OdkRoutes.SiteAdmin.SubscriptionCreate">
                 Create
             </a>
         </p>
@@ -40,7 +41,7 @@
                     {
                         <tr>
                             <td>
-                                <a href="/siteadmin/subscriptions/@subscription.Id">@subscription.Name</a>
+                                <a href="@OdkRoutes.SiteAdmin.Subscription(subscription.Id)">@subscription.Name</a>
                             </td>
                             <td>
                                 <span>

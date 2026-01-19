@@ -40,5 +40,7 @@ public interface IUrlProvider
 
     string PasswordReset(Chapter? chapter, string token);
 
+    string SiteAdminGroups();
+
     string TopicApprovalUrl();
 }

@@ -4,6 +4,7 @@
 @using ODK.Services.Features
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Extensions
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @inject IFeatureService FeatureService
 @{
@@ -15,7 +16,7 @@
 
 <section class="section">
     <p>
-        <a class="btn btn-primary" href="/siteadmin/features/create">
+        <a class="btn btn-primary" href="@OdkRoutes.SiteAdmin.FeatureCreate">
             Create
         </a>
     </p>
@@ -34,7 +35,7 @@
             {
                 <tr>
                     <td>
-                        <a href="/siteadmin/features/@feature.Id">@feature.Name</a>
+                        <a href="@OdkRoutes.SiteAdmin.Feature(feature.Id)">@feature.Name</a>
                     </td>
                     <td>@feature.CreatedUtc.ToString("yyyy-MM-dd")</td>
                     <td>

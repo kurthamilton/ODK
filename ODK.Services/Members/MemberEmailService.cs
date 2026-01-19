@@ -541,8 +541,7 @@ public class MemberEmailService : IMemberEmailService
         SiteEmailSettings settings)
     {
         var urlProvider = _urlProviderFactory.Create(request);
-        var baseUrl = urlProvider.BaseUrl();
-        var url = $"{baseUrl}/siteadmin/groups";
+        var url = urlProvider.SiteAdminGroups();
 
         var parameters = new Dictionary<string, string>
         {

@@ -1,5 +1,6 @@
 ﻿@using ODK.Services.Emails
 @using ODK.Web.Common.Extensions
+@using ODK.Web.Common.Routes
 @inject IEmailAdminService EmailAdminService
 @{
     var memberId = User.MemberId();
@@ -18,7 +19,7 @@
             {
                 <tr>
                     <td>
-                        <a href="/siteadmin/emails/@email.Type">
+                        <a href="@OdkRoutes.SiteAdmin.Email(email.Type)">
                             @email.Type
                         </a>
                     </td>

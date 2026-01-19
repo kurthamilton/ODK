@@ -1,4 +1,5 @@
 ﻿@using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Services
 @inject IRequestStore RequestStore
@@ -7,15 +8,15 @@
 
     var menuItems = new[]
     {
-        new MenuItem { Link = "/siteadmin/emails", Text = "Emails" },
-        new MenuItem { Link = "/siteadmin/errors", Text = "Error log" },
-        new MenuItem { Link = "/siteadmin/features", Text = "Features" },
-        new MenuItem { Link = "/siteadmin/groups", Text = "Groups" },
-        new MenuItem { Link = "/siteadmin/issues", Text = "Issues" },
-        new MenuItem { Link = "/siteadmin/messages", Text = "Messages" },
-        new MenuItem { Link = "/siteadmin/payments", Text = "Payments" },
-        new MenuItem { Link = "/siteadmin/subscriptions", Text = "Subscriptions" },
-        new MenuItem { Link = "/siteadmin/topics", Text = "Topics" }
+        new MenuItem { Link = OdkRoutes.SiteAdmin.Emails, Text = "Emails" },
+        new MenuItem { Link = OdkRoutes.SiteAdmin.Errors, Text = "Error log" },
+        new MenuItem { Link = OdkRoutes.SiteAdmin.Features, Text = "Features" },
+        new MenuItem { Link = OdkRoutes.SiteAdmin.Groups, Text = "Groups" },
+        new MenuItem { Link = OdkRoutes.SiteAdmin.Issues, Text = "Issues" },
+        new MenuItem { Link = OdkRoutes.SiteAdmin.Messages, Text = "Messages" },
+        new MenuItem { Link = OdkRoutes.SiteAdmin.Payments, Text = "Payments" },
+        new MenuItem { Link = OdkRoutes.SiteAdmin.Subscriptions, Text = "Subscriptions" },
+        new MenuItem { Link = OdkRoutes.SiteAdmin.Topics, Text = "Topics" }
     };
 }
 

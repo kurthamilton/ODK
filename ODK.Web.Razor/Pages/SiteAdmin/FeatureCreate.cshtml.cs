@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Features;
 using ODK.Web.Common.Feedback;
+using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.SiteAdmin;
 
 namespace ODK.Web.Razor.Pages.SiteAdmin;
@@ -38,6 +39,6 @@ public class FeatureCreateModel : SiteAdminPageModel
         }
 
         AddFeedback(new FeedbackViewModel("Feature created", FeedbackType.Success));
-        return Redirect("/siteadmin/features");
+        return Redirect(OdkRoutes.SiteAdmin.Features);
     }
 }

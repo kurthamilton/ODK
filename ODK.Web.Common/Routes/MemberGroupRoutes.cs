@@ -32,7 +32,7 @@ public class MemberGroupRoutes
 
     public string Group(PlatformType platform, Chapter chapter) => platform switch
     {
-        PlatformType.DrunkenKnitwits => $"/{chapter.GetDisplayName(platform).ToLowerInvariant()}/admin",
+        PlatformType.DrunkenKnitwits => $"/{chapter.ShortName.ToLowerInvariant()}/admin",
         _ => $"{Index(platform)}/{chapter.Id}"
     };
 
@@ -152,6 +152,7 @@ public class MemberGroupRoutes
 
     public string Index(PlatformType platform) => platform switch
     {
+        // Member groups not implemented in DrunkenKnitwits platform
         PlatformType.DrunkenKnitwits => "/",
         _ => "/my/groups"
     };

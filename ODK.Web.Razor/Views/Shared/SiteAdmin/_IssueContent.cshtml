@@ -1,6 +1,7 @@
 ﻿@using ODK.Core.Utils
 @using ODK.Services.Issues.Models
 @using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.SiteAdmin
@@ -10,7 +11,7 @@
 {
     Breadcrumbs = new[]
     {
-        new MenuItem { Link = "/siteadmin/issues", Text = "Issue" },
+        new MenuItem { Link = OdkRoutes.SiteAdmin.Issues, Text = "Issue" },
         new MenuItem { Text = "Update" }
     }
 })

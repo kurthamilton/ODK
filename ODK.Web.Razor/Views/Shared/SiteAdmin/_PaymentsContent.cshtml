@@ -4,6 +4,7 @@
 @using ODK.Services.Chapters
 @using ODK.Services.Payments
 @using ODK.Web.Common.Extensions
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.SiteAdmin
 @model IReadOnlyCollection<SitePaymentSettings>
 
@@ -12,7 +13,7 @@
 
     <section class="section">
         <p>
-            <a class="btn btn-primary" href="/siteadmin/payments/new">
+            <a class="btn btn-primary" href="@OdkRoutes.SiteAdmin.PaymentCreate">
                 Create
             </a>
         </p>
@@ -31,7 +32,7 @@
                     {
                         <tr>
                             <td>
-                                <a href="/siteadmin/payments/@paymentSetting.Id">@paymentSetting.Name</a>
+                                <a href="@OdkRoutes.SiteAdmin.Payment(paymentSetting.Id)">@paymentSetting.Name</a>
                             </td>
                             <td>@paymentSetting.Provider</td>
                             <td>

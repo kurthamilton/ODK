@@ -1,5 +1,6 @@
 ﻿@using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @model SiteAdminChapterViewModel
 @{
@@ -13,7 +14,7 @@
         new MenuItem 
         { 
             Icon = IconType.ArrowLeft,
-            Link = "/siteadmin/groups", 
+            Link = OdkRoutes.SiteAdmin.Groups, 
             Text = "Back to groups" },
     }
 })

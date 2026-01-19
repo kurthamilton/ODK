@@ -1,6 +1,7 @@
 ﻿@page "/siteadmin/emails/{type}"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.SiteAdmin
@@ -14,7 +15,7 @@
 {
     Breadcrumbs = new[]
     {
-        new MenuItem { Link = "/siteadmin/emails", Text = "Emails" },
+        new MenuItem { Link = OdkRoutes.SiteAdmin.Emails, Text = "Emails" },
         new MenuItem { Text = Model.Email.Type.ToString() }
     }
 })

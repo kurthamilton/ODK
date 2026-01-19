@@ -3,6 +3,7 @@ using ODK.Services;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.ViewModels;
 using ODK.Web.Common.Feedback;
+using ODK.Web.Common.Routes;
 
 namespace ODK.Web.Razor.Pages.SiteAdmin;
 
@@ -44,7 +45,7 @@ public class GroupModel : SiteAdminPageModel
             return OnGet(id);
         }
 
-        AddFeedback(new FeedbackViewModel("Chapter updated", FeedbackType.Success));
-        return Redirect("/siteadmin/groups");
+        AddFeedback(new FeedbackViewModel("Group updated", FeedbackType.Success));
+        return Redirect(OdkRoutes.SiteAdmin.Groups);
     }
 }
