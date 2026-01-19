@@ -1,0 +1,33 @@
+﻿@using ODK.Services.Chapters.ViewModels
+@model SiteAdminChapterFormViewModel
+@{
+    var siteSubscriptionOptions = Model
+        .SiteSubscriptions
+        .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Name })
+        .OrderBy(x => x.Text)
+        .ToArray();
+}
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.SiteSubscriptionId, new { @class = "form-label" })
+    @Html.DropDownListFor(x => x.SiteSubscriptionId, siteSubscriptionOptions, new
+    {
+        @class = "form-select"
+    })
+    @Html.ValidationMessageFor(x => x.SiteSubscriptionId)
+</div>
+
+<div class="form-group mb-3">
+    @Html.LabelFor(x => x.SubscriptionExpiresUtc, new { @class = "form-label" })
+    <div class="clearable" data-clearable-container>
+        @Html.TextBoxFor(x => x.SubscriptionExpiresUtc, new
+        {
+            @class = "form-control clearable",
+            data_datepicker = "",     
+            data_datepicker_time = "",
+            data_clearable = ""
+        })
+        <i class="icon" data-clearable-button></i>
+    </div>
+    @Html.ValidationMessageFor(x => x.SubscriptionExpiresUtc)
+</div>

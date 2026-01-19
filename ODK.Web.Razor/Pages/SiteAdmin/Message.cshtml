@@ -1,0 +1,14 @@
+﻿@page "/siteadmin/messages/{id:guid}"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Services.Contact
+@model MessageModel
+@inject IContactAdminService ContactAdminService
+@{
+    Layout = "_SiteAdminLayout";
+    Model.Title = "Messages";
+
+    var viewModel = await ContactAdminService.GetMessageViewModel(Model.CurrentMemberId, Model.MessageId);
+}
+
+@await Html.PartialAsync("SiteAdmin/_MessageContent", viewModel)

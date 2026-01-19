@@ -96,7 +96,7 @@ public class Event : IDatabaseEntity, IChapterEntity
             return true;
         }
 
-        return member?.SuperAdmin == true ||
+        return member?.SiteAdmin == true ||
             (member?.IsCurrent() == true && member?.IsApprovedMemberOf(ChapterId) == true);
     }
 

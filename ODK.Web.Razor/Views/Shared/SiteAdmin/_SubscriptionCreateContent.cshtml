@@ -1,0 +1,21 @@
+﻿@using ODK.Services.Settings
+@using ODK.Web.Common.Extensions
+@using ODK.Web.Razor.Models.SiteAdmin
+@inject ISettingsService SettingsService
+@{
+    var memberId = User.MemberId();
+    var sitePaymentSettings = await SettingsService.GetSitePaymentSettings(memberId);
+}
+
+<h2>Create subscription</h2>
+
+<section class="section">
+    <form action="/siteadmin/subscriptions" method="post">
+        @*@Html.AntiForgeryToken()*@
+        @await Html.PartialAsync("SiteAdmin/_SubscriptionForm", new SiteSubscriptionFormViewModel
+        {
+            SitePaymentSettings = sitePaymentSettings
+        })
+        <button class="btn btn-primary">Create</button>
+    </form>
+</section>

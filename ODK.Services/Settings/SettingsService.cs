@@ -18,7 +18,7 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
 
     public async Task<ServiceResult> ActivatePaymentSettings(Guid currentMemberId, Guid id)
     {
-        var paymentSettings = await GetSuperAdminRestrictedContent(currentMemberId,
+        var paymentSettings = await GetSiteAdminRestrictedContent(currentMemberId,
             x => x.SitePaymentSettingsRepository.GetAll());
 
         foreach (var paymentSetting in paymentSettings)
@@ -68,19 +68,19 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
 
     public async Task<IReadOnlyCollection<SitePaymentSettings>> GetSitePaymentSettings(Guid currentMemberId)
     {
-        return await GetSuperAdminRestrictedContent(currentMemberId,
+        return await GetSiteAdminRestrictedContent(currentMemberId,
             x => x.SitePaymentSettingsRepository.GetAll());
     }
 
     public async Task<SitePaymentSettings> GetSitePaymentSettings(Guid currentMemberId, Guid id)
     {
-        return await GetSuperAdminRestrictedContent(currentMemberId,
+        return await GetSiteAdminRestrictedContent(currentMemberId,
             x => x.SitePaymentSettingsRepository.GetById(id));
     }
 
     public async Task<ServiceResult> UpdateEmailSettings(MemberServiceRequest request, UpdateEmailSettings model)
     {
-        var settings = await GetSuperAdminRestrictedContent(request.CurrentMemberId,
+        var settings = await GetSiteAdminRestrictedContent(request.CurrentMemberId,
             x => x.SiteEmailSettingsRepository.Get(request.Platform));
 
         settings.ContactEmailAddress = model.ContactEmailAddress;
@@ -104,7 +104,7 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
         decimal commission,
         bool enabled)
     {
-        var settings = await GetSuperAdminRestrictedContent(currentMemberId,
+        var settings = await GetSiteAdminRestrictedContent(currentMemberId,
             x => x.SitePaymentSettingsRepository.GetById(id));
 
         settings.Commission = commission;

@@ -663,7 +663,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     {
         var chapterId = request.ChapterId;
 
-        var member = await GetSuperAdminRestrictedContent(request.CurrentMemberId,
+        var member = await GetSiteAdminRestrictedContent(request.CurrentMemberId,
             x => x.MemberRepository.GetById(memberId));
 
         AssertMemberIsInChapter(member, request);

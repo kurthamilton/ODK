@@ -273,7 +273,7 @@ public class MemberService : IMemberService
             EmailAddress = model.EmailAddress,
             FirstName = model.FirstName,
             LastName = model.LastName,
-            SuperAdmin = false,
+            SiteAdmin = false,
             TimeZone = chapter.TimeZone
         };
 

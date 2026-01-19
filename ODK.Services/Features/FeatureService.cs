@@ -15,7 +15,7 @@ public class FeatureService : OdkAdminServiceBase, IFeatureService
 
     public async Task<ServiceResult> AddFeature(Guid currentMemberId, UpdateFeature model)
     {
-        await AssertMemberIsSuperAdmin(currentMemberId);
+        await AssertMemberIsSiteAdmin(currentMemberId);
 
         _unitOfWork.FeatureRepository.Add(new Feature
         {
@@ -32,7 +32,7 @@ public class FeatureService : OdkAdminServiceBase, IFeatureService
 
     public async Task DeleteFeature(Guid currentMemberId, Guid featureId)
     {
-        var feature = await GetSuperAdminRestrictedContent(currentMemberId,
+        var feature = await GetSiteAdminRestrictedContent(currentMemberId,
             x => x.FeatureRepository.GetById(featureId));
 
         _unitOfWork.FeatureRepository.Delete(feature);
@@ -45,7 +45,7 @@ public class FeatureService : OdkAdminServiceBase, IFeatureService
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.FeatureRepository.GetById(featureId));
 
-        AssertMemberIsSuperAdmin(currentMember);
+        AssertMemberIsSiteAdmin(currentMember);
 
         return feature;
     }
@@ -56,7 +56,7 @@ public class FeatureService : OdkAdminServiceBase, IFeatureService
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.FeatureRepository.GetAll());
 
-        AssertMemberIsSuperAdmin(currentMember);
+        AssertMemberIsSiteAdmin(currentMember);
 
         return features;
     }
@@ -83,7 +83,7 @@ public class FeatureService : OdkAdminServiceBase, IFeatureService
             x => x.MemberRepository.GetById(memberId),
             x => x.FeatureRepository.GetById(featureId));
 
-        AssertMemberIsSuperAdmin(currentMember);
+        AssertMemberIsSiteAdmin(currentMember);
 
         feature.Description = model.Description;
         feature.Name = model.Name;

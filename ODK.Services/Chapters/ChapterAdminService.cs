@@ -131,7 +131,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<ServiceResult> ApproveChapter(MemberChapterServiceRequest request)
     {
-        var (chapter, members) = await GetSuperAdminRestrictedContent(request,
+        var (chapter, members) = await GetSiteAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.MemberRepository.GetAllByChapterId(request.ChapterId));
 
@@ -577,7 +577,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<ServiceResult> DeleteChapter(MemberChapterServiceRequest request)
     {
-        var chapter = await GetSuperAdminRestrictedContent(request,
+        var chapter = await GetSiteAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId));
 
         _unitOfWork.ChapterRepository.Delete(chapter);
@@ -605,9 +605,9 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             return ServiceResult.Failure("Admin member not found");
         }
 
-        if (member.SuperAdmin && !currentMember.SuperAdmin)
+        if (member.SiteAdmin && !currentMember.SiteAdmin)
         {
-            return ServiceResult.Failure("Cannot delete a super admin");
+            return ServiceResult.Failure("Cannot delete a site admin");
         }
 
         if (chapter.OwnerId == memberId)
@@ -1089,7 +1089,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     public async Task<ChapterPaymentSettingsAdminPageViewModel> GetChapterPaymentSettingsViewModel(
         MemberChapterServiceRequest request)
     {
-        var (paymentSettings, currencies) = await GetSuperAdminRestrictedContent(request,
+        var (paymentSettings, currencies) = await GetSiteAdminRestrictedContent(request,
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId),
             x => x.CurrencyRepository.GetAll());
 
@@ -1282,11 +1282,11 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         };
     }
 
-    public async Task<SuperAdminChaptersViewModel> GetSuperAdminChaptersViewModel(MemberServiceRequest request)
+    public async Task<SiteAdminChaptersViewModel> GetSiteAdminChaptersViewModel(MemberServiceRequest request)
     {
         var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
 
-        var (chapters, subscriptions) = await GetSuperAdminRestrictedContent(currentMemberId,
+        var (chapters, subscriptions) = await GetSiteAdminRestrictedContent(currentMemberId,
             x => x.ChapterRepository.GetAll(),
             x => x.MemberSiteSubscriptionRepository.GetAllChapterOwnerSubscriptions(platform));
 
@@ -1294,8 +1294,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             .GroupBy(x => x.MemberId)
             .ToDictionary(x => x.Key, x => x.ToArray());
 
-        var approved = new List<SuperAdminChaptersRowViewModel>();
-        var pending = new List<SuperAdminChaptersRowViewModel>();
+        var approved = new List<SiteAdminChaptersRowViewModel>();
+        var pending = new List<SiteAdminChaptersRowViewModel>();
 
         foreach (var chapter in chapters)
         {
@@ -1308,7 +1308,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
                     .FirstOrDefault();
             }
 
-            var rowViewModel = new SuperAdminChaptersRowViewModel
+            var rowViewModel = new SiteAdminChaptersRowViewModel
             {
                 Chapter = chapter,
                 SiteSubscriptionExpiresUtc = chapterSubscription?.ExpiresUtc,
@@ -1325,7 +1325,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             }
         }
 
-        return new SuperAdminChaptersViewModel
+        return new SiteAdminChaptersViewModel
         {
             Approved = approved
                 .OrderBy(x => x.Chapter.Name)
@@ -1337,16 +1337,16 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         };
     }
 
-    public async Task<SuperAdminChapterViewModel> GetSuperAdminChapterViewModel(MemberChapterServiceRequest request)
+    public async Task<SiteAdminChapterViewModel> GetSiteAdminChapterViewModel(MemberChapterServiceRequest request)
     {
         var (currentMemberId, chapterId, platform) = (request.CurrentMemberId, request.ChapterId, request.Platform);
 
-        var (chapter, subscription, siteSubscriptions) = await GetSuperAdminRestrictedContent(currentMemberId,
+        var (chapter, subscription, siteSubscriptions) = await GetSiteAdminRestrictedContent(currentMemberId,
             x => x.ChapterRepository.GetById(chapterId),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapterId),
             x => x.SiteSubscriptionRepository.GetAllEnabled(platform));
 
-        return new SuperAdminChapterViewModel
+        return new SiteAdminChapterViewModel
         {
             Chapter = chapter,
             Platform = platform,
@@ -1506,7 +1506,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.ChapterRepository.GetById(chapterId));
 
-        AssertMemberIsSuperAdmin(currentMember);
+        AssertMemberIsSiteAdmin(currentMember);
 
         chapter.OwnerId = memberId;
         _unitOfWork.ChapterRepository.Update(chapter);
@@ -1766,7 +1766,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         var chapterId = request.ChapterId;
 
-        var chapter = await GetSuperAdminRestrictedContent(request,
+        var chapter = await GetSiteAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId));
 
         var chapterLocation = await _unitOfWork.ChapterLocationRepository.GetByChapterId(request.ChapterId);
@@ -2154,7 +2154,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task UpdateChapterRedirectUrl(MemberChapterServiceRequest request, string? redirectUrl)
     {
-        var chapter = await GetSuperAdminRestrictedContent(request,
+        var chapter = await GetSiteAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId));
 
         chapter.RedirectUrl = redirectUrl;
@@ -2278,10 +2278,10 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> UpdateSuperAdminChapter(
-        MemberChapterServiceRequest request, SuperAdminChapterUpdateViewModel viewModel)
+    public async Task<ServiceResult> UpdateSiteAdminChapter(
+        MemberChapterServiceRequest request, SiteAdminChapterUpdateViewModel viewModel)
     {
-        var (chapter, subscription) = await GetSuperAdminRestrictedContent(request,
+        var (chapter, subscription) = await GetSiteAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId));
 

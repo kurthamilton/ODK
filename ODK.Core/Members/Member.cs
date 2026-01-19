@@ -25,7 +25,7 @@ public class Member : IVersioned, IDatabaseEntity, ITimeZoneEntity
 
     public ICollection<MemberChapterPrivacySettings> PrivacySettings { get; set; } = new HashSet<MemberChapterPrivacySettings>();
 
-    public bool SuperAdmin { get; set; }
+    public bool SiteAdmin { get; set; }
 
     public TimeZoneInfo? TimeZone { get; set; }
 

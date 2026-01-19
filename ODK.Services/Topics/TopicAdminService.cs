@@ -24,7 +24,7 @@ public class TopicAdminService : OdkAdminServiceBase, ITopicAdminService
 
     public async Task<ServiceResult> AddTopic(Guid currentMemberId, Guid topicGroupId, string name)
     {
-        var (topicGroup, existing) = await GetSuperAdminRestrictedContent(currentMemberId,
+        var (topicGroup, existing) = await GetSiteAdminRestrictedContent(currentMemberId,
             x => x.TopicGroupRepository.GetById(topicGroupId),
             x => x.TopicRepository.GetByName(name));
 
@@ -76,7 +76,7 @@ public class TopicAdminService : OdkAdminServiceBase, ITopicAdminService
 
         var currentMemberId = request.CurrentMemberId;
 
-        var (topicGroups, topics, newMemberTopics, newChapterTopics) = await GetSuperAdminRestrictedContent(currentMemberId,
+        var (topicGroups, topics, newMemberTopics, newChapterTopics) = await GetSiteAdminRestrictedContent(currentMemberId,
             x => x.TopicGroupRepository.GetAll(),
             x => x.TopicRepository.GetAll(),
             x => x.NewMemberTopicRepository.GetByIds(newMemberTopicIds),
@@ -255,7 +255,7 @@ public class TopicAdminService : OdkAdminServiceBase, ITopicAdminService
 
     public async Task<TopicsAdminPageViewModel> GetTopicsAdminPageViewModel(Guid currentMemberId)
     {
-        var (topicGroups, topics, newMemberTopics, newChapterTopics) = await GetSuperAdminRestrictedContent(currentMemberId,
+        var (topicGroups, topics, newMemberTopics, newChapterTopics) = await GetSiteAdminRestrictedContent(currentMemberId,
             x => x.TopicGroupRepository.GetAll(),
             x => x.TopicRepository.GetAll(),
             x => x.NewMemberTopicRepository.GetAll(),

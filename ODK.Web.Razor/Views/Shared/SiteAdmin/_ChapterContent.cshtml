@@ -1,0 +1,30 @@
+﻿@using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Common.Components
+@using ODK.Web.Razor.Models.Components
+@model SiteAdminChapterViewModel
+@{
+    var chapterName = Model.Chapter.GetDisplayName(Model.Platform);
+}
+
+@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+{
+    Breadcrumbs = new[]
+    {
+        new MenuItem { Link = "/siteadmin/groups", Text = "Groups" },
+        new MenuItem { Text = chapterName }
+    }
+})
+
+<h2>@chapterName</h2>
+
+<form method="post">
+    @*@Html.AntiForgeryToken()*@
+
+    @await Html.PartialAsync("SiteAdmin/_ChapterContentForm", new SiteAdminChapterFormViewModel
+    {
+        SiteSubscriptionId = Model.Subscription?.SiteSubscriptionId,
+        SiteSubscriptions = Model.SiteSubscriptions,
+        SubscriptionExpiresUtc = Model.Subscription?.ExpiresUtc
+    })
+    <button class="btn btn-primary">Update</button>    
+</form>

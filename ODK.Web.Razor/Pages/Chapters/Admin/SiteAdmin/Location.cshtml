@@ -1,0 +1,26 @@
+﻿@page "/{chapterName}/admin/siteadmin/location"
+@using ODK.Core.Chapters
+@using ODK.Services.Chapters
+@using ODK.Web.Razor.Models
+@using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Components
+@model LocationModel
+@inject IChapterAdminService ChapterAdminService
+@{
+    Layout = "_OdkChapterAdminLayout";
+    Model.Title = "Location | SiteAdmin";
+
+    var request = await Model.CreateMemberChapterServiceRequest();
+    var viewModel = await ChapterAdminService.GetChapterLocationViewModel(request);
+}
+
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    Title = "Location",
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_LocationContent", viewModel)</div>
+})
+
+@section scripts
+{
+    @await Html.PartialAsync("Components/Scripts/_GoogleLocation")
+}

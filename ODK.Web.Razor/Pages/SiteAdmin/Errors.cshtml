@@ -1,0 +1,11 @@
+﻿@page "/siteadmin/errors"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Web.Razor.Models.Components
+@model ErrorsModel
+@{
+    Layout = "_SiteAdminLayout";
+    Model.Title = "Error log | SiteAdmin";
+}
+
+@await Html.PartialAsync("SiteAdmin/_ErrorsContent")

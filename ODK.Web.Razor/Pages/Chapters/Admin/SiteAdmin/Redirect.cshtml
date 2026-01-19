@@ -1,0 +1,14 @@
+﻿@page "/{chapterName}/admin/siteadmin/redirect"
+@using ODK.Web.Razor.Models.Admin
+@model RedirectModel
+@{
+    Layout = "_OdkChapterAdminLayout";
+    Model.Title = "Redirect | SiteAdmin";
+
+    var chapter = await Model.GetChapter();
+}
+
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    ContentFunc = @<div>@await Html.PartialAsync("Chapters/SiteAdmin/_RedirectContent", chapter)</div>
+})

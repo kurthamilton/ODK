@@ -53,11 +53,11 @@
                     <span>Light mode</span>
                 </a>
 
-                @if (User.IsInRole(OdkRoles.SuperAdmin))
+                @if (User.IsInRole(OdkRoles.SiteAdmin))
                 {
                     <div class="dropdown-divider"></div>
 
-                    <a class="dropdown-item dropdown-item--icon" href="/superadmin">
+                    <a class="dropdown-item dropdown-item--icon" href="/siteadmin">
                         <span class="icon">
                             @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Wrench))
                         </span>

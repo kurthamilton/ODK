@@ -1,0 +1,24 @@
+﻿@page "/siteadmin/emails/{type}"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Common.Components
+@using ODK.Web.Razor.Models.SiteAdmin
+@model EmailModel
+@{
+    Layout = "_SiteAdminLayout";
+    Model.Title = "Edit email | SiteAdmin";
+}
+
+@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+{
+    Breadcrumbs = new[]
+    {
+        new MenuItem { Link = "/siteadmin/emails", Text = "Emails" },
+        new MenuItem { Text = Model.Email.Type.ToString() }
+    }
+})
+
+<section class="section">
+    @await Html.PartialAsync("SiteAdmin/_EmailContent", new EmailContentViewModel(Model.Email))
+</section>

@@ -1,7 +1,0 @@
-﻿@using ODK.Web.Common.Extensions
-@model ODK.Web.Razor.Models.SuperAdmin.ChapterTimeZoneFormViewModel
-
-<div class="form-group mb-3">
-    @Html.LabelFor(x => x.TimeZone, new { @class = "form-label" })
-    @Html.OdkTimeZoneDropDownFor(x => x.TimeZone, "", new { @class = "form-select", data_searchable = "" })
-</div>

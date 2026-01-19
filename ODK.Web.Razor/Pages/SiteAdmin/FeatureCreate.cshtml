@@ -1,0 +1,21 @@
+﻿@page "/siteadmin/features/create"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Common.Components
+@model FeatureCreateModel
+@{
+    Layout = "_SiteAdminLayout";
+    Model.Title = "Create feature | SiteAdmin";
+}
+
+@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+{
+    Breadcrumbs = new []
+    {
+        new MenuItem { Link = "/siteadmin/features", Text = "Features" },
+        new MenuItem { Text = "New" }
+    }
+})
+
+@await Html.PartialAsync("SiteAdmin/_FeatureCreateContent")

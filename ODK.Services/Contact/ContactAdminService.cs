@@ -30,7 +30,7 @@ public class ContactAdminService : OdkAdminServiceBase, IContactAdminService
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.SiteContactMessageRepository.GetAll());
 
-        AssertMemberIsSuperAdmin(currentMember);
+        AssertMemberIsSiteAdmin(currentMember);
 
         return new MessagesAdminPageViewModel
         {
@@ -47,7 +47,7 @@ public class ContactAdminService : OdkAdminServiceBase, IContactAdminService
             x => x.SiteContactMessageReplyRepository.GetBySiteContactMessageId(messageId),
             x => x.NotificationRepository.GetUnreadByMemberId(currentMemberId, NotificationType.ChapterContactMessage, messageId));
 
-        AssertMemberIsSuperAdmin(currentMember);
+        AssertMemberIsSiteAdmin(currentMember);
 
         if (notifications.Count > 0)
         {
@@ -69,7 +69,7 @@ public class ContactAdminService : OdkAdminServiceBase, IContactAdminService
             x => x.MemberRepository.GetById(request.CurrentMemberId),
             x => x.SiteContactMessageRepository.GetById(messageId));
 
-        AssertMemberIsSuperAdmin(currentMember);
+        AssertMemberIsSiteAdmin(currentMember);
 
         var sendResult = await _memberEmailService.SendSiteMessageReply(
             request,

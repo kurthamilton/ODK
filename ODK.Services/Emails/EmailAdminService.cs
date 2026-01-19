@@ -90,13 +90,13 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
 
     public async Task<Email> GetEmail(Guid currentMemberId, EmailType type)
     {
-        return await GetSuperAdminRestrictedContent(currentMemberId,
+        return await GetSiteAdminRestrictedContent(currentMemberId,
             x => x.EmailRepository.GetByType(type));
     }
 
     public async Task<IReadOnlyCollection<Email>> GetEmails(Guid currentMemberId)
     {
-        return await GetSuperAdminRestrictedContent(currentMemberId,
+        return await GetSiteAdminRestrictedContent(currentMemberId,
             x => x.EmailRepository.GetAll());
     }
 
@@ -115,7 +115,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
     {
         var currentMemberId = request.CurrentMemberId;
 
-        var currentMember = await GetSuperAdminRestrictedContent(currentMemberId,
+        var currentMember = await GetSiteAdminRestrictedContent(currentMemberId,
             x => x.MemberRepository.GetById(currentMemberId));
 
         return await _memberEmailService.SendTestEmail(request, null, currentMember, type);
@@ -156,7 +156,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
 
     public async Task<ServiceResult> UpdateEmail(Guid currentMemberId, EmailType type, UpdateEmail model)
     {
-        var existing = await GetSuperAdminRestrictedContent(currentMemberId,
+        var existing = await GetSiteAdminRestrictedContent(currentMemberId,
             x => x.EmailRepository.GetByType(type));
 
         existing.HtmlContent = model.HtmlContent;

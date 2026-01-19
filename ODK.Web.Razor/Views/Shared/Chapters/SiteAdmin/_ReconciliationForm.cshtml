@@ -1,0 +1,13 @@
+﻿@using ODK.Web.Razor.Models.Chapters.SiteAdmin
+@model ReconciliationFormViewModel
+
+@for(var i = 0; i < Model.PaymentIds.Count; i++)
+{
+    @Html.HiddenFor(x => x.PaymentIds[i])
+}
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.PaymentReference, new { @class = "form-label" })
+    @Html.TextBoxFor(x => x.PaymentReference, new { @class = "form-control" })
+    @Html.ValidationMessageFor(x => x.PaymentReference)
+</div>

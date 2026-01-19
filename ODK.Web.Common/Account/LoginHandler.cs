@@ -45,7 +45,7 @@ public class LoginHandler : ILoginHandler
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.MemberRepository.GetById(memberId));
 
-        OdkAssertions.MeetsCondition(currentMember, x => x.SuperAdmin);
+        OdkAssertions.MeetsCondition(currentMember, x => x.SiteAdmin);
 
         await Logout();
         return await Login(member);

@@ -542,7 +542,7 @@ public class MemberEmailService : IMemberEmailService
     {
         var urlProvider = _urlProviderFactory.Create(request);
         var baseUrl = urlProvider.BaseUrl();
-        var url = $"{baseUrl}/superadmin/groups";
+        var url = $"{baseUrl}/siteadmin/groups";
 
         var parameters = new Dictionary<string, string>
         {

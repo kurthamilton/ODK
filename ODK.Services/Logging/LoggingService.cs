@@ -20,7 +20,7 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
 
     public async Task DeleteError(Guid currentMemberId, Guid id)
     {
-        var error = await GetSuperAdminRestrictedContent(currentMemberId,
+        var error = await GetSiteAdminRestrictedContent(currentMemberId,
             x => x.ErrorRepository.GetById(id));
 
         _unitOfWork.ErrorRepository.Delete(error);
@@ -29,7 +29,7 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
 
     public async Task DeleteAllErrors(Guid currentMemberId, Guid id)
     {
-        var error = await GetSuperAdminRestrictedContent(currentMemberId,
+        var error = await GetSiteAdminRestrictedContent(currentMemberId,
             x => x.ErrorRepository.GetById(id));
 
         throw new NotImplementedException();
@@ -160,7 +160,7 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
 
     public async Task<ErrorDto> GetErrorDto(Guid currentMemberId, Guid errorId)
     {
-        var (error, properties) = await GetSuperAdminRestrictedContent(currentMemberId,
+        var (error, properties) = await GetSiteAdminRestrictedContent(currentMemberId,
             x => x.ErrorRepository.GetById(errorId),
             x => x.ErrorPropertyRepository.GetByErrorId(errorId));
 
@@ -173,7 +173,7 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
 
     public async Task<IReadOnlyCollection<Error>> GetErrors(Guid currentMemberId, int page, int pageSize)
     {
-        return await GetSuperAdminRestrictedContent(currentMemberId,
+        return await GetSiteAdminRestrictedContent(currentMemberId,
             x => x.ErrorRepository.GetErrors(page, pageSize));
     }
 

@@ -21,7 +21,7 @@ public class IssueAdminService : OdkAdminServiceBase, IIssueAdminService
 
     public async Task<IssueAdminPageViewModel> GetIssueAdminPageViewModel(Guid currentMemberId, Guid issueId)
     {
-        var (currentMember, issue, messages) = await GetSuperAdminRestrictedContent(currentMemberId,
+        var (currentMember, issue, messages) = await GetSiteAdminRestrictedContent(currentMemberId,
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.IssueRepository.GetById(issueId),
             x => x.IssueMessageRepository.GetByIssueId(issueId));
@@ -39,7 +39,7 @@ public class IssueAdminService : OdkAdminServiceBase, IIssueAdminService
 
     public async Task<IssuesAdminPageViewModel> GetIssuesAdminPageViewModel(Guid currentMemberId)
     {
-        var issues = await GetSuperAdminRestrictedContent(currentMemberId,
+        var issues = await GetSiteAdminRestrictedContent(currentMemberId,
             x => x.IssueRepository.GetAll());
 
         return new IssuesAdminPageViewModel
@@ -52,7 +52,7 @@ public class IssueAdminService : OdkAdminServiceBase, IIssueAdminService
     {
         var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
 
-        var issue = await GetSuperAdminRestrictedContent(currentMemberId,
+        var issue = await GetSiteAdminRestrictedContent(currentMemberId,
             x => x.IssueRepository.GetById(issueId));
 
         if (string.IsNullOrWhiteSpace(message))

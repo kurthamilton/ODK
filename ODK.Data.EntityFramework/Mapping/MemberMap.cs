@@ -20,6 +20,9 @@ public class MemberMap : IEntityTypeConfiguration<Member>
         builder.Property(x => x.Id)
             .HasColumnName("MemberId");
 
+        builder.Property(x => x.SiteAdmin)
+            .HasColumnName("SuperAdmin");
+
         builder.Property(x => x.TimeZone)
             .HasConversion<TimeZoneConverter>();
 

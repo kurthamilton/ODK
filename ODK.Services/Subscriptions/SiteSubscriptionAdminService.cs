@@ -29,7 +29,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
     {
         var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
 
-        var (paymentSettings, existing) = await GetSuperAdminRestrictedContent(currentMemberId,
+        var (paymentSettings, existing) = await GetSiteAdminRestrictedContent(currentMemberId,
             x => x.SitePaymentSettingsRepository.GetById(model.SitePaymentSettingId),
             x => x.SiteSubscriptionRepository.GetAll(platform));
 
@@ -74,7 +74,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
     {
         var currentMemberId = request.CurrentMemberId;
 
-        var (sitePaymentSettings, siteSubscription, existing, currency) = await GetSuperAdminRestrictedContent(currentMemberId,
+        var (sitePaymentSettings, siteSubscription, existing, currency) = await GetSiteAdminRestrictedContent(currentMemberId,
             x => x.SitePaymentSettingsRepository.GetAll(),
             x => x.SiteSubscriptionRepository.GetById(siteSubscriptionId),
             x => x.SiteSubscriptionPriceRepository.GetBySiteSubscriptionId(siteSubscriptionId),
@@ -131,7 +131,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
 
     public async Task DeleteSiteSubscriptionPrice(Guid currentMemberId, Guid siteSubscriptionId, Guid siteSubscriptionPriceId)
     {
-        var (sitePaymentSettings, siteSubscription, price) = await GetSuperAdminRestrictedContent(currentMemberId,
+        var (sitePaymentSettings, siteSubscription, price) = await GetSiteAdminRestrictedContent(currentMemberId,
             x => x.SitePaymentSettingsRepository.GetAll(),
             x => x.SiteSubscriptionRepository.GetById(siteSubscriptionId),
             x => x.SiteSubscriptionPriceRepository.GetById(siteSubscriptionPriceId));
@@ -155,16 +155,16 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
     {
         var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
 
-        return await GetSuperAdminRestrictedContent(currentMemberId,
+        return await GetSiteAdminRestrictedContent(currentMemberId,
             x => x.SiteSubscriptionRepository.GetAll(platform));
     }
 
-    public async Task<IReadOnlyCollection<SiteSubscriptionSuperAdminListItemViewModel>> GetSiteSubscriptionSuperAdminListItems(
+    public async Task<IReadOnlyCollection<SiteSubscriptionSiteAdminListItemViewModel>> GetSiteSubscriptionSiteAdminListItems(
         MemberServiceRequest request)
     {
         var platform = request.Platform;
 
-        var (sitePaymentSettings, siteSubscriptions, prices, memberSiteSubscriptions) = await GetSuperAdminRestrictedContent(request.CurrentMemberId,
+        var (sitePaymentSettings, siteSubscriptions, prices, memberSiteSubscriptions) = await GetSiteAdminRestrictedContent(request.CurrentMemberId,
             x => x.SitePaymentSettingsRepository.GetAll(),
             x => x.SiteSubscriptionRepository.GetAll(platform),
             x => x.SiteSubscriptionPriceRepository.GetAll(platform),
@@ -182,7 +182,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
             .ToDictionary(x => x.Key, x => x.Count());
 
         return siteSubscriptions
-            .Select(x => new SiteSubscriptionSuperAdminListItemViewModel
+            .Select(x => new SiteSubscriptionSiteAdminListItemViewModel
             {
                 ActiveCount = memberSiteSubscriptionDictionary.TryGetValue(x.Id, out var activeCount)
                     ? activeCount
@@ -197,7 +197,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
                 PaymentSettingsName = sitePaymentSettingsDictionary[x.SitePaymentSettingId].Name,
                 Prices = priceDictionary.TryGetValue(x.Id, out var prices)
                     ? prices
-                        .Select(x => new SiteSubscriptionSuperAdminListItemPriceViewModel
+                        .Select(x => new SiteSubscriptionSiteAdminListItemPriceViewModel
                         {
                             Amount = x.Amount,
                             Currency = x.Currency,
@@ -215,7 +215,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
 
     public async Task<SiteSubscriptionViewModel> GetSubscriptionViewModel(Guid currentMemberId, Guid siteSubscriptionId)
     {
-        var (subscription, prices, currencies, sitePaymentSettings) = await GetSuperAdminRestrictedContent(currentMemberId,
+        var (subscription, prices, currencies, sitePaymentSettings) = await GetSiteAdminRestrictedContent(currentMemberId,
             x => x.SiteSubscriptionRepository.GetById(siteSubscriptionId),
             x => x.SiteSubscriptionPriceRepository.GetBySiteSubscriptionId(siteSubscriptionId),
             x => x.CurrencyRepository.GetAll(),
@@ -234,7 +234,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
     {
         var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
 
-        var subscriptions = await GetSuperAdminRestrictedContent(currentMemberId,
+        var subscriptions = await GetSiteAdminRestrictedContent(currentMemberId,
             x => x.SiteSubscriptionRepository.GetAll(platform));
 
         var subscription = subscriptions.FirstOrDefault(x => x.Id == siteSubscriptionId);
@@ -261,7 +261,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
     {
         var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
 
-        var existing = await GetSuperAdminRestrictedContent(currentMemberId,
+        var existing = await GetSiteAdminRestrictedContent(currentMemberId,
             x => x.SiteSubscriptionRepository.GetAll(platform));
 
         var subscription = existing.FirstOrDefault(x => x.Id == siteSubscriptionId);
@@ -293,7 +293,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
     public async Task<ServiceResult> UpdateSiteSubscriptionEnabled(Guid currentMemberId, Guid siteSubscriptionId,
         bool enabled)
     {
-        var subscription = await GetSuperAdminRestrictedContent(currentMemberId,
+        var subscription = await GetSiteAdminRestrictedContent(currentMemberId,
             x => x.SiteSubscriptionRepository.GetById(siteSubscriptionId));
 
         subscription.Enabled = enabled;

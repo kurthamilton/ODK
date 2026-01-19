@@ -1,0 +1,15 @@
+﻿@page "/siteadmin/payments"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Services.Settings
+@using ODK.Web.Razor.Models.Components
+@model PaymentsModel
+@inject ISettingsService SettingsService
+@{
+    Layout = "_SiteAdminLayout";
+    Model.Title = "Payments | SiteAdmin";
+
+    var settings = await SettingsService.GetSitePaymentSettings(Model.CurrentMemberId);
+}
+
+@await Html.PartialAsync("SiteAdmin/_PaymentsContent", settings)

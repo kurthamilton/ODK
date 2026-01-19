@@ -6,7 +6,6 @@
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Services
-@using ODK.Web.Razor.Views
 @inject IRequestStore RequestStore
 @{
     var chapter = await RequestStore.GetChapter();
@@ -63,15 +62,15 @@
             : new MenuItem { Link = OdkRoutes.MemberGroups.MemberApprovals(platform, chapter), Text = "Approvals" }
     };
 
-    var superadminLinks = platform == PlatformType.DrunkenKnitwits && User.IsInRole(OdkRoles.SuperAdmin)
+    var siteAdminLinks = platform == PlatformType.DrunkenKnitwits && User.IsInRole(OdkRoles.SiteAdmin)
         ? new[]
         {
-            new MenuItem { Link = $"/{chapter.ShortName}/Admin/SuperAdmin/Members", Text = "Members" },
-            new MenuItem { Link = $"/{chapter.ShortName}/Admin/SuperAdmin/Payments", Text = "Payments" },
-            new MenuItem { Link = $"/{chapter.ShortName}/Admin/SuperAdmin/Location", Text = "Location" },
-            new MenuItem { Link = $"/{chapter.ShortName}/Admin/SuperAdmin/Instagram", Text = "Instagram" },
-            new MenuItem { Link = $"/{chapter.ShortName}/Admin/SuperAdmin/Redirect", Text = "Redirect" },
-            new MenuItem { Link = $"/{chapter.ShortName}/Admin/SuperAdmin/Theme", Text = "Theme" }
+            new MenuItem { Link = $"/{chapter.ShortName}/admin/siteadmin/members", Text = "Members" },
+            new MenuItem { Link = $"/{chapter.ShortName}/admin/siteadmin/payments", Text = "Payments" },
+            new MenuItem { Link = $"/{chapter.ShortName}/admin/siteadmin/location", Text = "Location" },
+            new MenuItem { Link = $"/{chapter.ShortName}/admin/siteadmin/instagram", Text = "Instagram" },
+            new MenuItem { Link = $"/{chapter.ShortName}/admin/siteadmin/redirect", Text = "Redirect" },
+            new MenuItem { Link = $"/{chapter.ShortName}/admin/siteadmin/theme", Text = "Theme" }
         } 
         : [];
 
@@ -113,12 +112,12 @@
                 new MenuItem { Text = "Account", Link = OdkRoutes.Payments.PaymentAccount(platform, chapter) }
             }
         },
-        superadminLinks.Length > 0
+        siteAdminLinks.Length > 0
             ? new MenuItem
             {
-                Link = $"/{chapter.ShortName}/Admin/SuperAdmin",
-                Text = "SuperAdmin",
-                Children = superadminLinks
+                Link = $"/{chapter.ShortName}/admin/siteadmin",
+                Text = "SiteAdmin",
+                Children = siteAdminLinks
             } : new MenuItem()
     }.Where(x => !string.IsNullOrEmpty(x.Text))
     .ToArray();

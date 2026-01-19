@@ -1,0 +1,15 @@
+﻿@page "/{chapterName}/admin/siteadmin/instagram"
+@using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Components
+@model InstagramModel
+@{
+    Layout = "_OdkChapterAdminLayout";
+    Model.Title = "Instagram | SiteAdmin";
+
+    var chapter = await Model.GetChapter();
+}
+
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    ContentFunc = @<div>@await Html.PartialAsync("SiteAdmin/_InstagramContent", chapter)</div>
+})

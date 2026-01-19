@@ -1,0 +1,17 @@
+﻿@page "/siteadmin/impersonate"
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Services.Authentication
+@using ODK.Web.Razor.Models.SiteAdmin
+@attribute [Authorize(Roles = OdkRoles.SiteAdmin)]
+@model ImpersonateModel
+@{
+    Layout = "_SiteAdminLayout";   
+}
+
+<h2>Impersonate</h2>
+
+<form method="post">
+    @await Html.PartialAsync("SiteAdmin/_ImpersonateForm", new ImpersonateFormViewModel())
+
+    <button class="btn btn-primary">Log in</button>
+</form>

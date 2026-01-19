@@ -1,0 +1,15 @@
+﻿@page "/{chapterName}/admin/siteadmin/theme"
+@using ODK.Web.Razor.Models.Admin
+@model ThemeModel
+@{
+    Layout = "_OdkChapterAdminLayout";
+    Model.Title = "Theme | SiteAdmin";
+
+    var chapter = await Model.GetChapter();
+}
+
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    Title = "Theme",
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_ThemeContent", chapter)</div>
+})

@@ -1,0 +1,22 @@
+﻿@page "/siteadmin/features/{id:guid}"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Web.Common.Components
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.SiteAdmin
+@model FeatureModel
+@{
+    Layout = "_SiteAdminLayout";
+    Model.Title = "Feature | SiteAdmin";
+}
+
+@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+{
+    Breadcrumbs = new[]
+    {
+        new MenuItem { Link = "/siteadmin/features", Text = "Features" },
+        new MenuItem { Text = Model.Feature.Name }
+    }
+})
+
+@await Html.PartialAsync("SiteAdmin/_FeatureContent", new FeatureContentViewModel(Model.Feature))

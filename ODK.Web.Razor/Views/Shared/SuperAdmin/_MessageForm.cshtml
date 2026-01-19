@@ -1,8 +1,0 @@
-﻿@using ODK.Web.Razor.Models.SuperAdmin
-@model MessageReplyFormViewModel
-
-<div class="form-group mb-3 required">
-    @Html.LabelFor(x => x.Message, new { @class = "form-label" })
-    @Html.TextAreaFor(x => x.Message, new { @class = "form-control", data_html_editor = "" })
-    @Html.ValidationMessageFor(x => x.Message)
-</div>

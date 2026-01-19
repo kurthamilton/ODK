@@ -21,9 +21,9 @@ public class OdkClaimsUser
             _roles.Add(OdkRoles.Admin);
         }
 
-        if (member.SuperAdmin)
+        if (member.SiteAdmin)
         {
-            _roles.Add(OdkRoles.SuperAdmin);
+            _roles.Add(OdkRoles.SiteAdmin);
         }
     }
 
@@ -36,7 +36,6 @@ public class OdkClaimsUser
         if (claimDictionary.TryGetValue(ClaimTypes.NameIdentifier, out var memberIdClaims) &&
             Guid.TryParse(memberIdClaims.First().Value, out var memberId))
         {
-
             MemberId = memberId;
         }
 

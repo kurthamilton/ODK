@@ -52,7 +52,7 @@ public class UrlProvider : IUrlProvider
         => GetUrl(OdkRoutes.Groups.Index(_platform));
 
     public string IssueAdminUrl(Guid issueId)
-        => GetUrl($"/superadmin/issues/{issueId}");
+        => GetUrl($"/siteadmin/issues/{issueId}");
 
     public string IssueUrl(Guid issueId)
         => GetUrl(OdkRoutes.Account.Issue(issueId));
@@ -64,7 +64,7 @@ public class UrlProvider : IUrlProvider
         => GetUrl(OdkRoutes.Account.Subscription(_platform, null));
 
     public string MessageAdminUrl(Guid messageId)
-        => GetUrl($"/superadmin/messages/{messageId}");
+        => GetUrl($"/siteadmin/messages/{messageId}");
 
     public string MessageAdminUrl(Chapter chapter, Guid messageId)
         => GetUrl(OdkRoutes.MemberGroups.GroupMessage(_platform, chapter, messageId));
@@ -73,7 +73,7 @@ public class UrlProvider : IUrlProvider
         => GetUrl(OdkRoutes.Account.PasswordReset(chapter, token));
 
     public string TopicApprovalUrl()
-        => GetUrl("/superadmin/topics");
+        => GetUrl("/siteadmin/topics");
 
     private string GetUrl(string path)
         => $"{_httpRequestContext.BaseUrl}{path}";

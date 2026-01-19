@@ -1,0 +1,27 @@
+﻿@using ODK.Core.Subscriptions
+@using ODK.Web.Common.Extensions;
+@model ODK.Web.Razor.Models.SiteAdmin.SiteSubscriptionPriceFormViewModel
+@{
+    var currencyOptions = Model.CurrencyOptions        
+        .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Code })
+        .OrderBy(x => x.Text)
+        .ToArray();
+}
+
+<div class="form-group mb-3 required">    
+    @Html.LabelFor(x => x.CurrencyId, new { @class = "form-label" })
+    @Html.DropDownListFor(x => x.CurrencyId, currencyOptions, "", new { @class = "form-select" })
+    @Html.ValidationMessageFor(x => x.CurrencyId)
+</div>
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.Frequency, new { @class = "form-label" })
+    @Html.OdkEnumDropDownFor(x => x.Frequency, "", new { @class = "form-select" })
+    @Html.ValidationMessageFor(x => x.Frequency)
+</div>
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.Amount, new { @class = "form-label" })
+    @Html.TextBoxFor(x => x.Amount, new { @class = "form-control", type = "number" })
+    @Html.ValidationMessageFor(x => x.Amount)
+</div>

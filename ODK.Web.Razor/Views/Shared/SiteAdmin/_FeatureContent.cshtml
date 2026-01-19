@@ -1,0 +1,14 @@
+﻿@using ODK.Core.Logging
+@using ODK.Services.Logging
+@using ODK.Web.Razor.Models.SiteAdmin
+@model ODK.Web.Razor.Models.SiteAdmin.FeatureContentViewModel
+
+<form method="post">
+    @*@Html.AntiForgeryToken()*@
+    @await Html.PartialAsync("SiteAdmin/_FeatureForm", new FeatureFormViewModel
+    {
+        Description = Model.Feature.Description,
+        Name = Model.Feature.Name
+    })
+    <button class="btn btn-primary">Update</button>
+</form>

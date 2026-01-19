@@ -1,0 +1,34 @@
+﻿@using ODK.Web.Razor.Models.SiteAdmin
+@model SiteEmailSettingsViewModel
+
+<div class="form-group mb-3">
+    @Html.LabelFor(x => x.ContactEmailAddress)
+    @Html.TextBoxFor(x => x.ContactEmailAddress, new { @class = "form-control", type = "email" })
+    @Html.ValidationMessageFor(x => x.ContactEmailAddress)
+</div>
+
+<div class="row mb-3">
+    <div class="form-group col-md-6 required">
+        @Html.LabelFor(x => x.FromEmailAddress)
+        @Html.TextBoxFor(x => x.FromEmailAddress, new { @class = "form-control", type = "email" })
+        @Html.ValidationMessageFor(x => x.FromEmailAddress)
+    </div>
+
+    <div class="form-group col-md-6 required">
+        @Html.LabelFor(x => x.FromEmailName)
+        @Html.TextBoxFor(x => x.FromEmailName, new { @class = "form-control" })
+        @Html.ValidationMessageFor(x => x.FromEmailName)
+    </div>
+</div>
+
+<div class="form-group mb-3">
+    @Html.LabelFor(x => x.Title)
+    @Html.TextBoxFor(x => x.Title, new { @class = "form-control" })
+    @Html.ValidationMessageFor(x => x.Title)
+</div>
+
+<div class="form-group mb-3">
+    @Html.LabelFor(x => x.PlatformTitle)
+    @Html.TextBoxFor(x => x.PlatformTitle, new { @class = "form-control" })
+    @Html.ValidationMessageFor(x => x.PlatformTitle)
+</div>

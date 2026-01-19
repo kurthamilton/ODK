@@ -1,0 +1,15 @@
+﻿@page "/siteadmin/groups/{id}"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Services.Chapters
+@using ODK.Web.Razor.Models.Components
+@model GroupModel
+@inject IChapterAdminService ChapterAdminService
+@{
+    Layout = "_SiteAdminLayout";
+    Model.Title = "Group | SiteAdmin";
+
+    var viewModel = await ChapterAdminService.GetSiteAdminChapterViewModel(Model.AdminServiceRequest);
+}
+
+@await Html.PartialAsync("SiteAdmin/_ChapterContent", viewModel)

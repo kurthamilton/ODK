@@ -1,0 +1,22 @@
+﻿@page "/siteadmin/errors/{id:guid}"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Common.Components
+@using ODK.Web.Razor.Models.SiteAdmin
+@model ErrorModel
+@{
+    Layout = "_SiteAdminLayout";
+    Model.Title = "Error | SiteAdmin";
+}
+
+@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+{
+    Breadcrumbs = new []
+    {
+        new MenuItem { Link = "/siteadmin/errors", Text = "Error log" },
+        new MenuItem { Text = "Error" }
+    }
+})
+
+@await Html.PartialAsync("SiteAdmin/_ErrorContent", new ErrorContentViewModel(Model.Error))

@@ -1,0 +1,132 @@
+﻿@using ODK.Core.Features
+@using ODK.Core.Subscriptions
+@using ODK.Services.Subscriptions
+@using ODK.Web.Common.Components
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Services
+@inject IRequestStore RequestStore
+@inject ISiteSubscriptionAdminService SiteSubscriptionAdminService
+@{
+    var subscriptions = await SiteSubscriptionAdminService.GetSiteSubscriptionSiteAdminListItems(
+        RequestStore.MemberServiceRequest);
+}
+
+<div data-odk-component="SiteAdmin/_SiteSubscriptionsContent">
+    <h2>Subscriptions</h2>
+
+    <section class="section">
+        <p>
+            <a class="btn btn-primary" href="/siteadmin/subscriptions/new">
+                Create
+            </a>
+        </p>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Payment settings</th>
+                        <th>Enabled</th>
+                        <th>Prices</th>
+                        <th>Group limit</th>
+                        <th>Member limit</th>
+                        <th>Features</th>
+                        <th>Active</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var subscription in subscriptions)
+                    {
+                        <tr>
+                            <td>
+                                <a href="/siteadmin/subscriptions/@subscription.Id">@subscription.Name</a>
+                            </td>
+                            <td>
+                                <span>
+                                    @subscription.PaymentSettingsName
+                                </span>                                
+                            </td>
+                            <td>
+                                @if (subscription.Enabled)
+                                {
+                                    <form action="/siteadmin/subscriptions/@subscription.Id/disable" method="post">
+                                        <button class="btn btn-icon" 
+                                                data-bs-toggle="tooltip" data-bs-title="Disable">
+                                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.CheckCircle)
+                                            {
+                                                Class = "text-success"
+                                            })
+                                        </button>                                    
+                                    </form>                                
+                                }
+                                else
+                                {
+                                    <form action="/siteadmin/subscriptions/@subscription.Id/enable" method="post">
+                                        <button class="btn btn-icon"
+                                                data-bs-toggle="tooltip" data-bs-title="Enable">
+                                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.TimesCircleOutline)
+                                            {
+                                                Class = "text-danger"
+                                            })
+                                        </button>
+                                    </form>                                
+                                }
+                            </td>
+                            <td>
+                                @if (subscription.Prices.Count > 0)
+                                {
+                                    @foreach (var price in subscription.Prices)
+                                    {
+                                        <div class="text-nowrap">
+                                            @price.Currency.ToAmountString(price.Amount)/@price.Frequency.PeriodUnitShort()
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">None</span>
+                                }
+                            </td>
+                            <td>@subscription.GroupLimit</td>
+                            <td>@subscription.MemberLimit</td>
+                            <td>
+                                @if (subscription.HasFeature(SiteFeatureType.SendMemberEmails))
+                                {
+                                    <span data-bs-toggle="tooltip" data-bs-title="Send member emails">
+                                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Envelope))
+                                    </span>
+                                }
+                                @if (subscription.HasFeature(SiteFeatureType.MemberSubscriptions))
+                                {
+                                    <span data-bs-toggle="tooltip" data-bs-title="Member subscriptions">
+                                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Dollar))
+                                    </span>
+                                }
+                            </td>
+                            <td>
+                                @if (subscription.ActiveCount > 0)
+                                {
+                                    <span>@subscription.ActiveCount</span>
+                                }
+                            </td>
+                            <td>
+                                @if (subscription.Default)
+                                {
+                                    @:Default
+                                }
+                                else
+                                {
+                                    <form action="/siteadmin/subscriptions/@subscription.Id/default" method="post">
+                                        @*@Html.AntiForgeryToken()*@
+                                        <button class="btn btn-primary btn-sm">Set default</button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>

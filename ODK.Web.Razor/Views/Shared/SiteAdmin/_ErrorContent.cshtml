@@ -1,0 +1,68 @@
+﻿@using ODK.Core.Logging
+@using ODK.Services.Logging
+@model ODK.Web.Razor.Models.SiteAdmin.ErrorContentViewModel
+@inject ILoggingService LoggingService
+@{
+    var (error, properties) = (Model.Error.Error, Model.Error.Properties);
+}
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <tbody>
+            <tr>
+                <td>Time</td>
+                <td>@error.CreatedUtc.ToString("dd/MM/yyyy HH:mm:ss")</td>
+            </tr>
+            <tr>
+                <td>Message</td>
+                <td>@error.ExceptionMessage</td>
+            </tr>
+
+            @foreach (var property in properties)
+            {
+                <tr>
+                    <td>@property.Name</td>
+                    <td>
+                        @if (property.Name.Equals("EXCEPTION.STACKTRACE"))
+                        {
+                            <span>
+                                @Html.Raw(property.Value.Replace(Environment.NewLine, "<br/>"))
+                            </span>
+                        }                    
+                        else
+                        {
+                            @property.Value
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@* 
+@if (similar.Count > 0)
+{
+    <h4>Similar errors (@similar.Count)</h4>
+    <form class="mb-3" method="post" action="/siteadmin/Errors/@Model.Error.Id/DeleteAll">
+        @Html.AntiForgeryToken()
+        <button class="btn btn-danger">Delete all</button>
+    </form>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+            <tr><th>Date</th></tr>
+            </thead>
+            <tbody>
+            @foreach (LogMessage error in similar.OrderByDescending(x => x.TimeStamp))
+            {
+                <tr>
+                    <td>
+                        @error.TimeStamp.ToString("dd/MM/yyyy HH:mm:ss")
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+} *@

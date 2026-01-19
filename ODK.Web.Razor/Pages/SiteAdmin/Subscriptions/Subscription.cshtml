@@ -1,0 +1,25 @@
+﻿@page "/siteadmin/subscriptions/{id:guid}"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Services.Subscriptions
+@using ODK.Web.Common.Components
+@using ODK.Web.Razor.Models.Components
+@model SubscriptionModel
+@inject ISiteSubscriptionAdminService SiteSubscriptionAdminService
+@{
+    Layout = "_SiteAdminLayout";
+    Model.Title = "Subscription | SiteAdmin";
+
+    var viewModel = await SiteSubscriptionAdminService.GetSubscriptionViewModel(Model.CurrentMemberId, Model.SubscriptionId);
+}
+
+@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+{
+    Breadcrumbs = new[]
+    {
+        new MenuItem { Link = "/siteadmin/subscriptions", Text = "Subscriptions" },
+        new MenuItem { Text = viewModel.Subscription.Name }
+    }
+})
+
+@await Html.PartialAsync("SiteAdmin/_SubscriptionContent", viewModel)

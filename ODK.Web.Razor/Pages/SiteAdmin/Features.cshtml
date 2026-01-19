@@ -1,0 +1,11 @@
+﻿@page "/siteadmin/features"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Web.Razor.Models.Components
+@model FeaturesModel
+@{
+    Layout = "_SiteAdminLayout";
+    Model.Title = "Features | SiteAdmin";
+}
+
+@await Html.PartialAsync("SiteAdmin/_FeaturesContent")

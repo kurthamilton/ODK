@@ -10,8 +10,8 @@ using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Admin.Chapters;
 using ODK.Web.Razor.Models.Admin.Members;
-using ODK.Web.Razor.Models.Chapters.SuperAdmin;
-using ODK.Web.Razor.Models.SuperAdmin;
+using ODK.Web.Razor.Models.Chapters.SiteAdmin;
+using ODK.Web.Razor.Models.SiteAdmin;
 using ODK.Web.Razor.Services;
 
 namespace ODK.Web.Razor.Controllers.Admin;
