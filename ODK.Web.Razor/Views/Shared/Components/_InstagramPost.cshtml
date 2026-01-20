@@ -4,12 +4,13 @@
 @model InstagramPostViewModel
 @{
     var defaultImage = Model.Images.First();
+    var modalId = $"instagram-post-{Model.ExternalId}";
 }
 
 <div class="social-media-image-tile">
-    <a href="@Model.Url" target="_blank" data-bs-toggle="tooltip" data-bs-title="@Model.Caption">        
+    <a data-bs-toggle="modal" data-bs-target="#@modalId">
         <div class="social-media-image-container">
-            <img src="/Instagram/Images/@defaultImage.Id/thumbnail?size=250" alt="@defaultImage.Alt" />
+            <img src="/instagram/images/@defaultImage.Id/thumbnail?size=250" alt="@defaultImage.Alt" />
             @if (Model.Images.Count > 1)
             {
                 @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Images)
@@ -20,3 +21,45 @@
         </div>
     </a>    
 </div>
+
+@await Html.PartialAsync("Components/_Modal", new ModalViewModel
+{    
+    Id = modalId,
+    Title = "",
+    Class = "carousel-modal",
+    Size = ModalSize.Large,
+    Body = 
+        @<div>
+            @await Html.PartialAsync("Components/_Carousel", new CarouselViewModel
+            {
+                Id = $"instagram-post-carousel-{Model.ExternalId}",
+                Items = Model.Images
+                    .Select(x => new CarouselItemViewModel
+                    {
+                        ImageAlt = x.Alt,
+                        ImageUrl = $"/instagram/images/{x.Id}"
+                    })
+                    .ToArray()
+            })          
+        </div>,    
+    Footer = 
+        @<div>
+            @if (!string.IsNullOrEmpty(Model.Caption))
+            {
+                <p class="small">
+                    @Model.Caption
+                </p>
+            }
+
+            <div class="text-end">
+                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Instagram)
+                {
+                    Class = "mr-1"
+                })
+
+                <a href="@Model.Url" target="_blank">
+                    @Model.Username
+                </a>
+            </div>
+        </div>
+})

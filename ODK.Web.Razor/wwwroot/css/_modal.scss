@@ -1,17 +1,28 @@
 .modal-full-width {
     .modal-dialog {
-      max-width: 100%;
-      margin-right: $modal-dialog-margin;
-      margin-left: $modal-dialog-margin;
+        max-width: 100%;
+        margin-right: $modal-dialog-margin;
+        margin-left: $modal-dialog-margin;
     }
-  }
-  
-  @include media-breakpoint-up(sm) {
+}
+
+@include media-breakpoint-up(sm) {
     .modal-full-width {
-      .modal-dialog {
-        margin-right: $modal-dialog-margin-y-sm-up;
-        margin-left: $modal-dialog-margin-y-sm-up;
-      }
+        .modal-dialog {
+            margin-right: $modal-dialog-margin-y-sm-up;
+            margin-left: $modal-dialog-margin-y-sm-up;
+        }
     }
-  }
-  
+}
+
+.carousel-modal {
+    /* Limit modal height */
+    .modal-dialog {
+        max-height: 100dvh;
+    }
+    /* Make carousel fill modal body */
+    .modal-body {
+        height: calc(100dvh - 2rem);
+        display: flex;
+    }
+}

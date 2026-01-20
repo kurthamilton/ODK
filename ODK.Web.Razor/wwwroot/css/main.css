@@ -12067,6 +12067,20 @@ html[data-platform=odk] {
   padding-right: 0.5rem;
 }
 
+.carousel,
+.carousel-inner,
+.carousel-item {
+  height: 100%;
+}
+
+/* Constrain images */
+.carousel-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  margin: auto;
+}
+
 .columns .column-item {
   break-inside: avoid;
 }
@@ -12762,6 +12776,18 @@ html[data-platform=odk] {
     margin-left: 1.75rem;
   }
 }
+.carousel-modal {
+  /* Limit modal height */
+  /* Make carousel fill modal body */
+}
+.carousel-modal .modal-dialog {
+  max-height: 100dvh;
+}
+.carousel-modal .modal-body {
+  height: calc(100dvh - 2rem);
+  display: flex;
+}
+
 .navbar-dark {
   --odk-navbar-separator: rgba(255, 255, 255, 0.5);
 }

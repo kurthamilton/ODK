@@ -24,6 +24,15 @@ public class InstagramController : OdkControllerBase
     }
 
     [AllowAnonymous]
+    [HttpGet("instagram/images/{id:guid}")]
+    public async Task<IActionResult> GetInstagramImage(Guid id)
+    {
+        return await HandleVersionedRequest(
+            version => _socialMediaService.GetInstagramImage(version, id),
+            image => InstagramImageResult(image, null));
+    }
+
+    [AllowAnonymous]
     [HttpGet("instagram/images/{id:guid}/thumbnail")]
     public async Task<IActionResult> GetInstagramImageThumbnail(Guid id, int? size = null)
     {
@@ -43,8 +52,8 @@ public class InstagramController : OdkControllerBase
 
         if (size > 0)
         {
+            data = _imageService.CropSquare(data);
             data = _imageService.Reduce(data, size.Value, size.Value);
-            data = _imageService.Crop(data, size.Value, size.Value);
         }
 
         return File(data, image.MimeType);

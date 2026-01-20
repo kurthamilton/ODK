@@ -4,9 +4,9 @@ namespace ODK.Services.Imaging;
 
 public interface IImageService
 {
-    byte[] Crop(byte[] data, int width, int height);
-
     byte[] Crop(byte[] data, int width, int height, int x, int y);
+
+    byte[] CropSquare(byte[] data);
 
     bool IsImage(byte[] data);
 

@@ -1,8 +1,18 @@
-﻿@using ODK.Web.Razor.Models.Components
+﻿@using ODK.Web.Common.Components
+@using ODK.Web.Razor.Models.Components
 @model ModalViewModel
+@{
+    var size = Model.Size switch
+    {
+        ModalSize.Small => "modal-sm",
+        ModalSize.Large => "modal-lg",
+        ModalSize.ExtraLarge => "modal-xl",
+        _ => null
+    };
+}
 
-<div class="modal" tabindex="-1" id="@Model.Id">
-    <div class="modal-dialog @Model.Size">
+<div class="modal @Model.Class" tabindex="-1" id="@Model.Id">
+    <div class="modal-dialog modal-dialog-scrollable @size">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">@Model.Title</h5>
@@ -11,6 +21,12 @@
             <div class="modal-body">
                 @Model.Body.Invoke(null)
             </div>
+            @if (Model.Footer != null)
+            {
+                <div class="modal-footer">
+                    @Model.Footer.Invoke(null)
+                </div>
+            }
         </div>
     </div>
 </div>

@@ -653,7 +653,7 @@ public class ChapterViewModelService : IChapterViewModelService
             {
                 Posts = showInstagramFeed
                     ? instagramPosts
-                        .Select(MapToInstagramPostViewModel)
+                        .Select(x => MapToInstagramPostViewModel(links?.InstagramName ?? string.Empty, x))
                         .ToArray()
                     : []
             },
@@ -920,7 +920,7 @@ public class ChapterViewModelService : IChapterViewModelService
             {
                 Posts = showInstagramFeed
                     ? instagramPosts
-                        .Select(MapToInstagramPostViewModel)
+                        .Select(x => MapToInstagramPostViewModel(links?.InstagramName ?? string.Empty, x))
                         .ToArray()
                     : []
             },
@@ -1096,10 +1096,11 @@ public class ChapterViewModelService : IChapterViewModelService
         return chaptersWithDistances;
     }
 
-    private InstagramPostViewModel MapToInstagramPostViewModel(InstagramPostDto dto)
+    private InstagramPostViewModel MapToInstagramPostViewModel(string username, InstagramPostDto dto)
         => new InstagramPostViewModel
         {
             Caption = dto.Post.Caption,
+            ExternalId = dto.Post.ExternalId,
             Images = dto.Images
                 .Select(x => new InstagramImageMetadataViewModel
                 {
@@ -1107,6 +1108,7 @@ public class ChapterViewModelService : IChapterViewModelService
                     Id = x.Id
                 })
                 .ToArray(),
-            Url = _socialMediaService.GetInstagramPostUrl(dto.Post.ExternalId)
+            Url = _socialMediaService.GetInstagramPostUrl(dto.Post.ExternalId),
+            Username = username
         };
 }

@@ -8,16 +8,6 @@ namespace ODK.Services.Integrations.Imaging;
 
 public class ImageService : IImageService
 {
-    public byte[] Convert(byte[] data, string mimeType)
-    {
-        return ProcessImage(data, image =>
-        {
-            return ConvertImage(image, mimeType) ?? data;
-        });
-    }
-
-    public byte[] Crop(byte[] data, int width, int height) => Crop(data, width, height, 0, 0);
-
     public byte[] Crop(byte[] data, int width, int height, int x, int y)
     {
         return ProcessImage(data, image =>
@@ -42,6 +32,31 @@ public class ImageService : IImageService
                 }
             });
         });
+    }
+
+    public byte[] CropSquare(byte[] data)
+    {
+        var size = Size(data);
+        if (size.Height == size.Width)
+        {
+            return data;
+        }
+
+        var (x, y) = (0, 0);
+        int length;
+
+        if (size.Height > size.Width)
+        {
+            y = (int)Math.Round((size.Height / 2.0) - (size.Width / 2.0), 0);
+            length = size.Width;
+        }
+        else
+        {
+            x = (int)Math.Round((size.Width / 2.0) - (size.Height / 2.0), 0);
+            length = size.Height;
+        }
+
+        return Crop(data, length, length, x, y);
     }
 
     public bool IsImage(byte[] data)
@@ -161,12 +176,15 @@ public class ImageService : IImageService
             case "image/jpeg":
                 image.SaveAsJpeg(ms);
                 break;
+
             case "image/png":
                 image.SaveAsPng(ms);
                 break;
+
             case "image/webp":
                 image.SaveAsWebp(ms);
                 break;
+
             default:
                 return null;
         }
