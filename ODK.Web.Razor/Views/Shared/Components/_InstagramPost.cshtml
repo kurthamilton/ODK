@@ -1,10 +1,12 @@
-﻿@model ODK.Web.Razor.Models.SocialMedia.InstagramPostViewModel
+﻿@using ODK.Services.SocialMedia.ViewModels
+@model InstagramPostViewModel
 @{
-    string url = $"https://www.instagram.com/p/{Model.ExternalId}/?img_index=1";
+    var imageId = Model.InstagramImageIds.First();
 }
 
 <div class="social-media-image-tile">
-    <a href="@url" target="_blank" data-bs-toggle="tooltip" data-bs-title="@Model.Caption">
-        <img src="/@Model.Chapter.ShortName/Instagram/Images/@Model.InstagramPostId" alt="@Model.Caption" />
+    <a href="@Model.Url" target="_blank" data-bs-toggle="tooltip" data-bs-title="@Model.Caption">
+        
+        <img src="/Instagram/Images/@imageId" alt="@Model.Caption" />
     </a>    
 </div>

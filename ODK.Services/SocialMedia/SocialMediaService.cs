@@ -42,11 +42,11 @@ public class SocialMediaService : ISocialMediaService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<VersionedServiceResult<InstagramImage>> GetInstagramImage(long? currentVersion, Guid instagramPostId)
+    public async Task<VersionedServiceResult<InstagramImage>> GetInstagramImage(long? currentVersion, Guid id)
     {
         var result = await _cacheService.GetOrSetVersionedItem(
-            async () => await _unitOfWork.InstagramImageRepository.GetByPostId(instagramPostId).Run(),
-            instagramPostId,
+            async () => await _unitOfWork.InstagramImageRepository.GetById(id).Run(),
+            id,
             currentVersion);
 
         if (currentVersion == result.Version)
@@ -60,6 +60,8 @@ public class SocialMediaService : ISocialMediaService
             : new VersionedServiceResult<InstagramImage>(0, null);
     }
 
+    public string GetInstagramPostUrl(string externalId) 
+        => _settings.InstagramPostUrlFormat.Replace("{id}", externalId);
     public string GetWhatsAppLink(string groupId) => _settings.WhatsAppUrlFormat.Replace("{groupid}", groupId);
 
     public async Task ScrapeLatestInstagramPosts()
@@ -96,17 +98,17 @@ public class SocialMediaService : ISocialMediaService
 
         var delayNext = false;
 
-        var (ownerSubscription, links, lastPost) = await _unitOfWork.RunAsync(
+        var (ownerSubscription, links, existingPostIds) = await _unitOfWork.RunAsync(
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapterId),
             x => x.ChapterLinksRepository.GetByChapterId(chapterId),
-            x => x.InstagramPostRepository.GetLastPost(chapterId));
+            x => x.InstagramPostRepository.GetExternalIdsByChapterId(chapterId));
 
         if (string.IsNullOrEmpty(links?.InstagramName))
         {
             ScheduleNextScrape(chapterIds, delay: delayNext);
             return;
         }
-
+        
         var authorized = _authorizationService.ChapterHasAccess(ownerSubscription, SiteFeatureType.InstagramFeed);
         if (!authorized)
         {
@@ -114,9 +116,8 @@ public class SocialMediaService : ISocialMediaService
             return;
         }
 
-        await _loggingService.Info($"Fetching Instagram posts for group '{chapterId}' account '{links.InstagramName}'");
-
-        var afterUtc = lastPost?.Date;
+        await _loggingService.Info(
+            $"Fetching Instagram posts for group '{chapterId}' account '{links.InstagramName}'");
 
         IReadOnlyCollection<InstagramClientPost> posts;
 
@@ -124,7 +125,7 @@ public class SocialMediaService : ISocialMediaService
 
         try
         {
-            posts = await _instagramClient.FetchPosts(links.InstagramName, afterUtc);
+            posts = await _instagramClient.FetchPosts(links.InstagramName, existingPostIds);
         }
         catch (Exception ex)
         {
@@ -146,22 +147,35 @@ public class SocialMediaService : ISocialMediaService
         {
             var id = Guid.NewGuid();
 
+            var fetchImageTasks = post.Images
+                .Select(_instagramClient.FetchImage)
+                .ToArray();
+
+            await Task.WhenAll(fetchImageTasks);
+
             _unitOfWork.InstagramPostRepository.Add(new InstagramPost
             {
                 Caption = post.Caption,
                 ChapterId = chapterId,
                 Date = post.Date,
                 ExternalId = post.ExternalId,
-                Id = id,
-                Url = post.Url
+                Id = id
             });
 
-            _unitOfWork.InstagramImageRepository.Add(new InstagramImage
+            for (var i = 0; i < post.Images.Count; i++)
             {
-                ImageData = _imageService.Reduce(post.ImageData, 250, 250),
-                InstagramPostId = id,
-                MimeType = post.MimeType ?? string.Empty
-            });
+                var metadata = post.Images.ElementAt(i);
+                var image = fetchImageTasks.ElementAt(i).Result;
+
+                _unitOfWork.InstagramImageRepository.Add(new InstagramImage
+                {
+                    DisplayOrder = i + 1,
+                    ExternalId = metadata.Id,
+                    ImageData = _imageService.Reduce(image.ImageData, 250, 250),
+                    InstagramPostId = id,
+                    MimeType = image.MimeType ?? string.Empty
+                });
+            }            
         }
 
         try

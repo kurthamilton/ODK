@@ -24,8 +24,8 @@ public class InstagramController : OdkControllerBase
     }
 
     [AllowAnonymous]
-    [HttpGet("{chapterName}/Instagram/Images/{id:guid}")]
-    public async Task<IActionResult> GetInstagramImage(string chapterName, Guid id)
+    [HttpGet("Instagram/Images/{id:guid}")]
+    public async Task<IActionResult> GetInstagramImage(Guid id)
     {
         return await HandleVersionedRequest(
             version => _socialMediaService.GetInstagramImage(version, id),
@@ -39,7 +39,7 @@ public class InstagramController : OdkControllerBase
             return NoContent();
         }
 
-        var data = _imageService.Reduce(image.ImageData, 150, 150);
-        return File(data, image.MimeType);
+        // var data = _imageService.Reduce(image.ImageData, 150, 150);
+        return File(image.ImageData, image.MimeType);
     }
 }

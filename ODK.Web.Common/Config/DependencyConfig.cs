@@ -165,6 +165,7 @@ public static class DependencyConfig
         services.AddScoped<IInstagramClient, InstagramClient>();
         services.AddSingleton(new InstagramClientSettings
         {
+            FeedUrl = appSettings.Instagram.FeedUrl,
             UserAgent = appSettings.Instagram.FetchUserAgent
         });
         services.AddScoped<IMediaAdminService, MediaAdminService>();
@@ -214,6 +215,7 @@ public static class DependencyConfig
         services.AddSingleton(new SocialMediaServiceSettings
         {
             InstagramFetchWaitSeconds = appSettings.Instagram.FetchWaitSeconds,
+            InstagramPostUrlFormat = appSettings.Instagram.PostUrl,
             WhatsAppUrlFormat = appSettings.WhatsApp.UrlFormat
         });
         services.AddScoped<ITopicAdminService, TopicAdminService>();

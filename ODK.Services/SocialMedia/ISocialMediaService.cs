@@ -4,7 +4,9 @@ namespace ODK.Services.SocialMedia;
 
 public interface ISocialMediaService
 {
-    Task<VersionedServiceResult<InstagramImage>> GetInstagramImage(long? currentVersion, Guid instagramPostId);
+    Task<VersionedServiceResult<InstagramImage>> GetInstagramImage(long? currentVersion, Guid id);
+
+    string GetInstagramPostUrl(string externalId);
 
     string GetWhatsAppLink(string groupId);
 

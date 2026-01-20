@@ -1,6 +1,5 @@
 ﻿@using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Razor.Models.Members
-@using ODK.Web.Razor.Models.SocialMedia
 @model ChapterHomePageViewModel
 
 @if (Model.CurrentMember?.IsMemberOf(Model.Chapter.Id) != true)
@@ -31,22 +30,15 @@ else
     })
 }
                 
-@if (Model.InstagramPosts.Count > 0)
+@if (Model.InstagramPosts.Posts.Count > 0)
 {
     <div class="mt-3">
         <h3>Latest from Instagram</h3>
         <div class="row row-cols-2 row-cols-lg-4 g-0">
-            @foreach (var post in Model.InstagramPosts)
+            @foreach (var post in Model.InstagramPosts.Posts)
             {
                 <div class="col">
-                    @await Html.PartialAsync("Components/_InstagramPost", 
-                        new InstagramPostViewModel
-                        {
-                            Caption = post.Caption, 
-                            Chapter = Model.Chapter, 
-                            ExternalId = post.ExternalId,
-                            InstagramPostId = post.Id
-                        })
+                    @await Html.PartialAsync("Components/_InstagramPost", post)
                 </div>
             }
         </div>

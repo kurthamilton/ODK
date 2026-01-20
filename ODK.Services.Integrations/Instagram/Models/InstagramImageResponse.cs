@@ -2,7 +2,13 @@
 
 public class InstagramImageResponse
 {
-    public required byte[] ImageData { get; init; }
+    public required int? Height { get; init; }
 
-    public required string? MimeType { get; init; }
+    public required bool IsVideo { get; init; }
+
+    public required string Shortcode { get; init; }
+
+    public required string Url { get; init; }
+
+    public required int? Width { get; init; }
 }

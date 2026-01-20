@@ -5,7 +5,6 @@
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Members
-@using ODK.Web.Razor.Models.SocialMedia
 @model GroupHomePageViewModel
 
 <div class="sidebar sidebar--cards">
@@ -38,18 +37,14 @@
             </div>
     })    
 
-    @if (Model.InstagramPosts.Count > 0)
+    @if (Model.InstagramPosts.Posts.Count > 0)
     {
         @await Html.PartialAsync("Components/_Panel", new PanelViewModel
         {
             TitleContentFunc = @<h5>Latest from Instagram</h5>,
             BodyContentFunc = 
                 @<div>
-                    @await Html.PartialAsync("Components/_InstagramPosts", new InstagramPostsViewModel
-                    {
-                        Chapter = Model.Chapter,
-                        Posts = Model.InstagramPosts
-                    })
+                    @await Html.PartialAsync("Components/_InstagramPosts", Model.InstagramPosts)
 
                     @if (!string.IsNullOrEmpty(Model.Links?.InstagramName))
                     {
