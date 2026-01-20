@@ -214,8 +214,10 @@ public static class DependencyConfig
         services.AddScoped<ISocialMediaService, SocialMediaService>();
         services.AddSingleton(new SocialMediaServiceSettings
         {
+            InstagramChannelUrlFormat = appSettings.Instagram.PostUrl,
             InstagramFetchWaitSeconds = appSettings.Instagram.FetchWaitSeconds,
             InstagramPostUrlFormat = appSettings.Instagram.PostUrl,
+            InstagramTagUrlFormat = appSettings.Instagram.TagUrl,
             WhatsAppUrlFormat = appSettings.WhatsApp.UrlFormat
         });
         services.AddScoped<ITopicAdminService, TopicAdminService>();

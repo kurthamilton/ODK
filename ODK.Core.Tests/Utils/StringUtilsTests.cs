@@ -67,4 +67,29 @@ public static class StringUtilsTests
 
         tokens.Should().BeEquivalentTo("a", "b", "c");
     }
+
+    [TestCase("#a", ExpectedResult = true)]
+    [TestCase("#a1", ExpectedResult = true)]
+    [TestCase("#a1-no-special-chars", ExpectedResult = false)]
+    [TestCase("#a1 no spaces", ExpectedResult = false)]
+    [TestCase("#a1<script>alert('HACKED!');</script>", ExpectedResult = false)]
+    public static bool IsHashtag(string text) => StringUtils.IsHashtag(text);
+
+    [Test]
+    public static void IsolateHashtags()
+    {
+        // Arrange
+        const string text = "This is paragraph 1. Hello, World! #abc #xyz This is paragraph 2.";
+
+        // Act
+        var result = StringUtils.IsolateHashtags(text);
+
+        // Assert
+        result.Should().Equal([
+            "This is paragraph 1. Hello, World! ",
+            "#abc",
+            " ",
+            "#xyz",
+            " This is paragraph 2."]);
+    }
 }

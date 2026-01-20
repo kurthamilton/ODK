@@ -1,13 +1,15 @@
-﻿@using ODK.Web.Common.Components
+﻿@using ODK.Services.SocialMedia
+@using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.Components
 @model SocialMediaLinksViewModel
+@inject ISocialMediaService SocialMediaService
 @{
     var sizeClass = Model.Large ? "fa-2x" : null;
 }
 
 @if (!string.IsNullOrEmpty(Model.Instagram))
 {
-    var url = $"https://www.instagram.com/{Model.Instagram}";
+    var url = SocialMediaService.GetInstagramChannelUrl(Model.Instagram);
 
     <div>        
         <a class="social-media-link" href="@url" target="_blank">

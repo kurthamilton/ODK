@@ -12067,6 +12067,18 @@ html[data-platform=odk] {
   padding-right: 0.5rem;
 }
 
+.carousel-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+.carousel-fill {
+  flex: 1 1 auto;
+  min-height: 0; /* CRITICAL for flex overflow */
+}
+
 .carousel,
 .carousel-inner,
 .carousel-item {
@@ -12079,6 +12091,10 @@ html[data-platform=odk] {
   max-height: 100%;
   object-fit: contain;
   margin: auto;
+}
+
+.carousel-footer {
+  margin-top: 1rem;
 }
 
 .columns .column-item {
@@ -12784,8 +12800,13 @@ html[data-platform=odk] {
   max-height: 100dvh;
 }
 .carousel-modal .modal-body {
-  height: calc(100dvh - 2rem);
+  height: 100dvh;
   display: flex;
+}
+
+.modal-header.no-title {
+  padding-bottom: 0;
+  border-bottom: none;
 }
 
 .navbar-dark {
@@ -13183,6 +13204,12 @@ html[data-platform=odk] {
 }
 .social-media-link i:hover {
   opacity: 0.6;
+}
+
+.social-media-post-caption-container {
+  width: 100%;
+  max-height: 25dvh;
+  overflow-y: scroll;
 }
 
 .tab-content {

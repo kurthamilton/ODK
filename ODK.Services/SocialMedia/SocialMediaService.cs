@@ -1,6 +1,7 @@
 ﻿using ODK.Core.Extensions;
 using ODK.Core.Features;
 using ODK.Core.SocialMedia;
+using ODK.Core.Utils;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
@@ -54,6 +55,15 @@ public class SocialMediaService : ISocialMediaService
         return image != null
             ? new VersionedServiceResult<InstagramImage>(BitConverter.ToInt64(image.Version), image)
             : new VersionedServiceResult<InstagramImage>(0, null);
+    }
+
+    public string GetInstagramChannelUrl(string username)
+        => _settings.InstagramChannelUrlFormat.Replace("{username}", username);
+
+    public string GetInstagramHashtagUrl(string hashtag)
+    {
+        var tag = StringUtils.RemoveLeading(hashtag, "#");
+        return _settings.InstagramTagUrlFormat.Replace("{tag}", tag);
     }
 
     public string GetInstagramPostUrl(string externalId)

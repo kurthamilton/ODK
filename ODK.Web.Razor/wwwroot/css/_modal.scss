@@ -22,7 +22,12 @@
     }
     /* Make carousel fill modal body */
     .modal-body {
-        height: calc(100dvh - 2rem);
+        height: 100dvh;
         display: flex;
     }
+}
+
+.modal-header.no-title {
+    padding-bottom: 0;
+    border-bottom: none;
 }

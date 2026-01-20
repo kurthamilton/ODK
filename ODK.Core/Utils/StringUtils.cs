@@ -5,8 +5,9 @@ namespace ODK.Core.Utils;
 
 public static class StringUtils
 {
-    private static readonly Regex AlphaNumericRegex = new Regex("[^a-zA-Z0-9]", RegexOptions.Compiled);
-    private static readonly Regex TokenRegex = new Regex(@"\{(.+?)\}", RegexOptions.Compiled);
+    private static readonly Regex AlphaNumericRegex = new("[^a-zA-Z0-9]", RegexOptions.Compiled);
+    private static readonly string HashtagRegexPattern = "#[a-zA-Z0-9]+";
+    private static readonly Regex TokenRegex = new(@"\{(.+?)\}", RegexOptions.Compiled);
 
     public static string AlphaNumeric(this string text) => AlphaNumericRegex.Replace(text, string.Empty);
 
@@ -34,11 +35,29 @@ public static class StringUtils
         return sb.ToString();
     }
 
+    public static bool IsHashtag(string text)
+        => Regex.IsMatch(text, $"^{HashtagRegexPattern}$");
+
+    public static IReadOnlyCollection<string> IsolateHashtags(string text)
+        => Regex.Split(text, $"({HashtagRegexPattern})");
+
     public static string Pluralise(int count, string single, string? plural = null)
     {
         return count == 1
             ? single
             : (!string.IsNullOrEmpty(plural) ? plural : $"{single}s");
+    }
+
+    public static string RemoveLeading(string text, string leadingText)
+    {
+        if (string.IsNullOrEmpty(text) ||
+            string.IsNullOrEmpty(leadingText) ||
+            !text.StartsWith(leadingText, StringComparison.OrdinalIgnoreCase))
+        {
+            return text;
+        }
+
+        return text.Substring(leadingText.Length);
     }
 
     public static string ToCsv(IReadOnlyCollection<IReadOnlyCollection<string>> data)

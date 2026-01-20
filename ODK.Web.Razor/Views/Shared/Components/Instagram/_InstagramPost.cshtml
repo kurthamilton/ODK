@@ -1,7 +1,10 @@
-﻿@using ODK.Services.SocialMedia.ViewModels
+﻿@using ODK.Core.Utils
+@using ODK.Services.SocialMedia
+@using ODK.Services.SocialMedia.ViewModels
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.Components
 @model InstagramPostViewModel
+@inject ISocialMediaService SocialMediaService
 @{
     var defaultImage = Model.Images.First();
     var modalId = $"instagram-post-{Model.ExternalId}";
@@ -32,6 +35,7 @@
         @<div class="w-100">
             @await Html.PartialAsync("Components/_Carousel", new CarouselViewModel
             {
+                Footer = await Html.PartialAsync("Components/Instagram/_InstagramPostLink", Model),
                 Id = $"instagram-post-carousel-{Model.ExternalId}",
                 Items = Model.Images
                     .Select(x => new CarouselItemViewModel
@@ -40,26 +44,30 @@
                         ImageUrl = $"/instagram/images/{x.Id}"
                     })
                     .ToArray()
-            })          
-        </div>,    
+            })
+        </div>,
     Footer = 
-        @<div class="w-100">
-            @if (!string.IsNullOrEmpty(Model.Caption))
-            {
-                <p class="small text-center">
-                    @Model.Caption
-                </p>
-            }
+        @<div class="social-media-post-caption-container">
+            <p class="small text-center">
+                @{
+                    var parts = StringUtils.IsolateHashtags(Model.Caption ?? string.Empty);                    
 
-            <div class="text-end">
-                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Instagram)
-                {
-                    Class = "mr-1"
-                })
+                    foreach (var part in parts)
+                    {
+                        var isHashtag = StringUtils.IsHashtag(part);
 
-                <a href="@Model.Url" target="_blank">
-                    @Model.Username
-                </a>
-            </div>
-        </div>
+                        if (isHashtag)
+                        {
+                            var link = SocialMediaService.GetInstagramHashtagUrl(part);
+                            <a href="@link" target="_blank">@part</a>
+                        }
+                        else
+                        {
+                            @part
+                        }
+                    }
+                }
+            </p>
+        </div>,
+    HideFooter = string.IsNullOrEmpty(Model.Caption)
 })

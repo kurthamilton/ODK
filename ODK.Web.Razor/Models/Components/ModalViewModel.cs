@@ -13,6 +13,8 @@ public class ModalViewModel
 
     public required string Id { get; init; }
 
+    public bool HideFooter { get; init; }
+
     public ModalSize? Size { get; init; }
 
     public required string Title { get; init; }

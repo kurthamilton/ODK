@@ -1,0 +1,13 @@
+﻿@using ODK.Services.SocialMedia.ViewModels
+@using ODK.Web.Common.Components
+@using ODK.Web.Razor.Models.Components
+@model InstagramPostViewModel
+
+<div class="text-end">
+    @await Html.PartialAsync("Components/_IconLink", new IconLinkViewModel
+    {
+        Icon = IconType.Instagram,
+        Text = Model.Username,
+        Url = Model.Url
+    })
+</div>

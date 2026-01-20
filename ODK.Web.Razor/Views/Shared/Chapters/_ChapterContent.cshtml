@@ -1,6 +1,10 @@
 ﻿@using ODK.Services.Chapters.ViewModels
+@using ODK.Services.SocialMedia
+@using ODK.Web.Common.Components
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Members
 @model ChapterHomePageViewModel
+@inject ISocialMediaService SocialMediaService
 
 @if (Model.CurrentMember?.IsMemberOf(Model.Chapter.Id) != true)
 {    
@@ -29,7 +33,7 @@ else
         Platform = Model.Platform
     })
 }
-                
+
 @if (Model.InstagramPosts.Posts.Count > 0)
 {
     <div class="mt-3">
@@ -38,7 +42,7 @@ else
             @foreach (var post in Model.InstagramPosts.Posts)
             {
                 <div class="col">
-                    @await Html.PartialAsync("Components/_InstagramPost", post)
+                    @await Html.PartialAsync("Components/Instagram/_InstagramPost", post)
                 </div>
             }
         </div>
@@ -47,7 +51,12 @@ else
         {
             <div class="d-flex align-content-center">
                 <div>
-                    @await Html.PartialAsync("Components/_InstagramLink", Model.Links.InstagramName)
+                    @await Html.PartialAsync("Components/_IconLink", new IconLinkViewModel
+                    {
+                        Icon = IconType.Instagram,
+                        Text = Model.Links.InstagramName,
+                        Url = SocialMediaService.GetInstagramChannelUrl(Model.Links.InstagramName)
+                    })
                 </div>
             </div>
         }        

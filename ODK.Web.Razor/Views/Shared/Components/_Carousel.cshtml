@@ -1,51 +1,60 @@
 ﻿@using ODK.Web.Razor.Models.Components
 @model CarouselViewModel
 
-<div id="@Model.Id" class="carousel fa-hill-rockslide w-100" data-bs-theme="light">
-    @if (Model.Items.Count > 1)
-    {
-        <div class="carousel-indicators">
-            @for (var i = 0; i < Model.Items.Count; i++)
-            {
-                var item = Model.Items.ElementAt(i);
-                var active = i == 0;
-
-                <button type="button"
-                        class="@(active ? "active" : null)"
-                        data-bs-target="#@Model.Id" data-bs-slide-to="@i"
-                        aria-current="@(active ? "true" : "false")" aria-label="Slide @(i + 1)">
-                </button>
-            }
-        </div>
-    }    
-
-    <div class="carousel-inner">
-        @for (var i = 0; i < Model.Items.Count; i++)
+<div class="carousel-container">
+    <div id="@Model.Id" class="carousel carousel-fill" data-bs-theme="light">
+        @if (Model.Items.Count > 1)
         {
-            var item = Model.Items.ElementAt(i);
-
-            <div class="carousel-item @(i == 0 ? "active" : null)">
-                <img src="@item.ImageUrl" class="d-block w-100 carousel-image" alt="@item.ImageAlt">
-
-                @if (!string.IsNullOrEmpty(item.Caption))
+            <div class="carousel-indicators">
+                @for (var i = 0; i < Model.Items.Count; i++)
                 {
-                    <div class="carousel-caption d-none d-md-block">
-                        <p>@item.Caption</p>
-                    </div>
+                    var item = Model.Items.ElementAt(i);
+                    var active = i == 0;
+
+                    <button type="button"
+                            class="@(active ? "active" : null)"
+                            data-bs-target="#@Model.Id" data-bs-slide-to="@i"
+                            aria-current="@(active ? "true" : "false")" aria-label="Slide @(i + 1)">
+                    </button>
                 }
             </div>
         }
+
+        <div class="carousel-inner">
+            @for (var i = 0; i < Model.Items.Count; i++)
+            {
+                var item = Model.Items.ElementAt(i);
+
+                <div class="carousel-item @(i == 0 ? "active" : null)">
+                    <img src="@item.ImageUrl" class="d-block w-100 carousel-image" alt="@item.ImageAlt">
+
+                    @if (!string.IsNullOrEmpty(item.Caption))
+                    {
+                        <div class="carousel-caption d-none d-md-block">
+                            <p>@item.Caption</p>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        @if (Model.Items.Count > 1)
+        {
+            <button class="carousel-control-prev" type="button" data-bs-target="#@Model.Id" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#@Model.Id" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+        }
     </div>
 
-    @if (Model.Items.Count > 1)
+    @if (Model.Footer != null)
     {
-        <button class="carousel-control-prev" type="button" data-bs-target="#@Model.Id" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Previous</span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#@Model.Id" data-bs-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Next</span>
-        </button>
-    }    
+        <div class="carousel-footer">
+            @Model.Footer
+        </div>
+    }
 </div>

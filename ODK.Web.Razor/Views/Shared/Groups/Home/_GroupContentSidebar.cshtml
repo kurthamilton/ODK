@@ -1,11 +1,13 @@
 ﻿@using ODK.Core.Features
 @using ODK.Core.Utils
 @using ODK.Services.Chapters.ViewModels
+@using ODK.Services.SocialMedia
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Members
 @model GroupHomePageViewModel
+@inject ISocialMediaService SocialMediaService
 
 <div class="sidebar sidebar--cards">
     @await Html.PartialAsync("Groups/Home/_GroupInfo", Model)
@@ -44,13 +46,18 @@
             TitleContentFunc = @<h5>Latest from Instagram</h5>,
             BodyContentFunc = 
                 @<div>
-                    @await Html.PartialAsync("Components/_InstagramPosts", Model.InstagramPosts)
+                    @await Html.PartialAsync("Components/Instagram/_InstagramPosts", Model.InstagramPosts)
 
                     @if (!string.IsNullOrEmpty(Model.Links?.InstagramName))
                     {
                         <div class="d-flex align-content-center justify-content-end">
                             <div>
-                                @await Html.PartialAsync("Components/_InstagramLink", Model.Links.InstagramName)
+                                @await Html.PartialAsync("Components/_IconLink", new IconLinkViewModel
+                                {
+                                    Icon = IconType.Instagram,
+                                    Text = Model.Links.InstagramName,
+                                    Url = SocialMediaService.GetInstagramChannelUrl(Model.Links.InstagramName)
+                                })
                             </div>
                         </div>
                     }

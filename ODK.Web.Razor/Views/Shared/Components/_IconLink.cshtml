@@ -1,0 +1,12 @@
+﻿@using ODK.Web.Common.Components
+@using ODK.Web.Razor.Models.Components
+@model IconLinkViewModel
+
+@await Html.PartialAsync("Components/_Icon", new IconViewModel(Model.Icon)
+{
+    Class = "mr-1"
+})
+
+<a href="@Model.Url" target="@(Model.Url.StartsWith('/') ? null : "_blank")">
+    @Model.Text
+</a>
