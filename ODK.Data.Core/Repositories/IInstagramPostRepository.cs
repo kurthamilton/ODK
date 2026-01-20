@@ -1,5 +1,6 @@
 ﻿using ODK.Core.SocialMedia;
 using ODK.Data.Core.Deferred;
+using ODK.Data.Core.SocialMedia;
 
 namespace ODK.Data.Core.Repositories;
 
@@ -7,7 +8,7 @@ public interface IInstagramPostRepository : IReadWriteRepository<InstagramPost>
 {
     IDeferredQueryMultiple<InstagramPost> GetByChapterId(Guid chapterId);
 
-    IDeferredQueryMultiple<InstagramPost> GetByChapterId(Guid chapterId, int pageSize);
+    IDeferredQueryMultiple<InstagramPostDto> GetDtosByChapterId(Guid chapterId, int pageSize);
 
-    IDeferredQuerySingleOrDefault<InstagramPost> GetLastPost(Guid chapterId);
+    IDeferredQueryMultiple<InstagramPostDto> GetDtosByExternalIds(IReadOnlyCollection<string> externalIds);
 }

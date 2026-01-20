@@ -6,7 +6,5 @@ public class InstagramPostResponse
 
     public required DateTime DateUtc { get; init; }
 
-    public required string ExternalId { get; init; }
-
-    public required string Url { get; init; }
+    public required string Shortcode { get; init; }
 }

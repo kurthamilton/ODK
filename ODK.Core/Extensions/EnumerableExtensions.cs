@@ -2,6 +2,14 @@
 
 public static class EnumerableExtensions
 {
+    public static bool EquivalentTo<T>(
+        this IEnumerable<T> source, IEnumerable<T> other, IEqualityComparer<T>? comparer)
+    {
+        return
+            !source.Except(other, comparer).Any() &&
+            !other.Except(source, comparer).Any();
+    }
+
     public static int FindIndexOf<T>(this IEnumerable<T> source, Func<T, bool> predicate)
     {
         var count = source.Count();

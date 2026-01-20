@@ -4,7 +4,6 @@ using ODK.Core.SocialMedia;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
-using ODK.Services.Imaging;
 using ODK.Services.Logging;
 using ODK.Services.SocialMedia.Models;
 using ODK.Services.Tasks;
@@ -16,7 +15,6 @@ public class SocialMediaService : ISocialMediaService
     private readonly IAuthorizationService _authorizationService;
     private readonly IBackgroundTaskService _backgroundTaskService;
     private readonly ICacheService _cacheService;
-    private readonly IImageService _imageService;
     private readonly IInstagramClient _instagramClient;
     private readonly ILoggingService _loggingService;
     private readonly SocialMediaServiceSettings _settings;
@@ -27,7 +25,6 @@ public class SocialMediaService : ISocialMediaService
         IUnitOfWork unitOfWork,
         ILoggingService loggingService,
         ICacheService cacheService,
-        IImageService imageService,
         IAuthorizationService authorizationService,
         IInstagramClient instagramClient,
         IBackgroundTaskService backgroundTaskService)
@@ -35,18 +32,17 @@ public class SocialMediaService : ISocialMediaService
         _authorizationService = authorizationService;
         _backgroundTaskService = backgroundTaskService;
         _cacheService = cacheService;
-        _imageService = imageService;
         _instagramClient = instagramClient;
         _loggingService = loggingService;
         _settings = settings;
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<VersionedServiceResult<InstagramImage>> GetInstagramImage(long? currentVersion, Guid instagramPostId)
+    public async Task<VersionedServiceResult<InstagramImage>> GetInstagramImage(long? currentVersion, Guid id)
     {
         var result = await _cacheService.GetOrSetVersionedItem(
-            async () => await _unitOfWork.InstagramImageRepository.GetByPostId(instagramPostId).Run(),
-            instagramPostId,
+            async () => await _unitOfWork.InstagramImageRepository.GetById(id).Run(),
+            id,
             currentVersion);
 
         if (currentVersion == result.Version)
@@ -59,6 +55,9 @@ public class SocialMediaService : ISocialMediaService
             ? new VersionedServiceResult<InstagramImage>(BitConverter.ToInt64(image.Version), image)
             : new VersionedServiceResult<InstagramImage>(0, null);
     }
+
+    public string GetInstagramPostUrl(string externalId)
+        => _settings.InstagramPostUrlFormat.Replace("{id}", externalId);
 
     public string GetWhatsAppLink(string groupId) => _settings.WhatsAppUrlFormat.Replace("{groupid}", groupId);
 
@@ -96,10 +95,9 @@ public class SocialMediaService : ISocialMediaService
 
         var delayNext = false;
 
-        var (ownerSubscription, links, lastPost) = await _unitOfWork.RunAsync(
+        var (ownerSubscription, links) = await _unitOfWork.RunAsync(
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapterId),
-            x => x.ChapterLinksRepository.GetByChapterId(chapterId),
-            x => x.InstagramPostRepository.GetLastPost(chapterId));
+            x => x.ChapterLinksRepository.GetByChapterId(chapterId));
 
         if (string.IsNullOrEmpty(links?.InstagramName))
         {
@@ -114,9 +112,8 @@ public class SocialMediaService : ISocialMediaService
             return;
         }
 
-        await _loggingService.Info($"Fetching Instagram posts for group '{chapterId}' account '{links.InstagramName}'");
-
-        var afterUtc = lastPost?.Date;
+        await _loggingService.Info(
+            $"Fetching Instagram posts for group '{chapterId}' account '{links.InstagramName}'");
 
         IReadOnlyCollection<InstagramClientPost> posts;
 
@@ -124,7 +121,7 @@ public class SocialMediaService : ISocialMediaService
 
         try
         {
-            posts = await _instagramClient.FetchPosts(links.InstagramName, afterUtc);
+            posts = await _instagramClient.FetchLatestPosts(links.InstagramName);
         }
         catch (Exception ex)
         {
@@ -142,8 +139,41 @@ public class SocialMediaService : ISocialMediaService
             return;
         }
 
+        var externalIds = posts
+            .Select(x => x.ExternalId)
+            .ToArray();
+
+        var existingPosts = await _unitOfWork.InstagramPostRepository.GetDtosByExternalIds(externalIds).Run();
+        var existingPostDictionary = existingPosts
+            .ToDictionary(x => x.Post.ExternalId, StringComparer.OrdinalIgnoreCase);
+
         foreach (var post in posts)
         {
+            if (existingPostDictionary.TryGetValue(post.ExternalId, out var existingPost))
+            {
+                var existingImageIds = existingPost.Images
+                    .Select(x => x.ExternalId)
+                    .ToArray();
+
+                var imageIds = post.Images
+                    .Select(x => x.ExternalId)
+                    .ToArray();
+
+                if (existingImageIds.EquivalentTo(imageIds, StringComparer.OrdinalIgnoreCase))
+                {
+                    // no need to re-download if the post we already have has the same image ids
+                    continue;
+                }
+
+                _unitOfWork.InstagramPostRepository.Delete(existingPost.Post);
+            }
+
+            var fetchImageTasks = post.Images
+                .Select(_instagramClient.FetchImage)
+                .ToArray();
+
+            await Task.WhenAll(fetchImageTasks);
+
             var id = Guid.NewGuid();
 
             _unitOfWork.InstagramPostRepository.Add(new InstagramPost
@@ -152,16 +182,27 @@ public class SocialMediaService : ISocialMediaService
                 ChapterId = chapterId,
                 Date = post.Date,
                 ExternalId = post.ExternalId,
-                Id = id,
-                Url = post.Url
+                Id = id
             });
 
-            _unitOfWork.InstagramImageRepository.Add(new InstagramImage
+            for (var i = 0; i < post.Images.Count; i++)
             {
-                ImageData = _imageService.Reduce(post.ImageData, 250, 250),
-                InstagramPostId = id,
-                MimeType = post.MimeType ?? string.Empty
-            });
+                var metadata = post.Images.ElementAt(i);
+                var image = fetchImageTasks.ElementAt(i).Result;
+
+                _unitOfWork.InstagramImageRepository.Add(new InstagramImage
+                {
+                    Alt = metadata.Alt,
+                    DisplayOrder = i + 1,
+                    ExternalId = metadata.ExternalId,
+                    Height = metadata.Height,
+                    ImageData = image.ImageData,
+                    InstagramPostId = id,
+                    IsVideo = metadata.IsVideo,
+                    MimeType = image.MimeType ?? string.Empty,
+                    Width = metadata.Width
+                });
+            }
         }
 
         try

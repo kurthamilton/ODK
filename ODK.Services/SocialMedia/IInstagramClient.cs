@@ -4,5 +4,7 @@ namespace ODK.Services.SocialMedia;
 
 public interface IInstagramClient
 {
-    Task<IReadOnlyCollection<InstagramClientPost>> FetchPosts(string username, DateTime? afterUtc);
+    Task<InstagramClientImage> FetchImage(InstagramClientImageMetadata metadata);
+
+    Task<IReadOnlyCollection<InstagramClientPost>> FetchLatestPosts(string username);
 }

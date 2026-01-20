@@ -1,6 +1,5 @@
 ﻿using System.Text.Json.Nodes;
 using ODK.Core.Utils;
-using ODK.Core.Web;
 using ODK.Services.Integrations.Instagram.Models;
 using ODK.Services.Logging;
 using ODK.Services.SocialMedia;
@@ -10,25 +9,49 @@ namespace ODK.Services.Integrations.Instagram;
 
 public class InstagramClient : IInstagramClient
 {
-    private readonly HttpClient _httpClient;
+    private readonly Lazy<HttpClient> _httpClient;
+    private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILoggingService _loggingService;
+    private readonly InstagramClientSettings _settings;
 
     public InstagramClient(
         IHttpClientFactory httpClientFactory,
         ILoggingService loggingService,
         InstagramClientSettings settings)
     {
-        _httpClient = httpClientFactory.CreateClient();
-
-        if (!string.IsNullOrEmpty(settings.UserAgent))
-        {
-            _httpClient.DefaultRequestHeaders.Add("User-Agent", settings.UserAgent);
-        }        
-
+        _httpClientFactory = httpClientFactory;
         _loggingService = loggingService;
+        _settings = settings;
+
+        _httpClient = new(() =>
+        {
+            var httpClient = _httpClientFactory.CreateClient();
+
+            if (!string.IsNullOrEmpty(settings.UserAgent))
+            {
+                httpClient.DefaultRequestHeaders.Add("User-Agent", settings.UserAgent);
+            }
+
+            return httpClient;
+        });
     }
 
-    public async Task<IReadOnlyCollection<InstagramClientPost>> FetchPosts(string username, DateTime? afterUtc)
+    public async Task<InstagramClientImage> FetchImage(InstagramClientImageMetadata metadata)
+    {
+        var response = await _httpClient.Value.GetAsync(metadata.Url);
+        response.EnsureSuccessStatusCode();
+
+        var imageData = await response.Content.ReadAsByteArrayAsync();
+        var mimeType = response.Content.Headers.ContentType?.MediaType;
+
+        return new InstagramClientImage
+        {
+            ImageData = imageData,
+            MimeType = mimeType
+        };
+    }
+
+    public async Task<IReadOnlyCollection<InstagramClientPost>> FetchLatestPosts(string username)
     {
         var feedJson = await FetchFeedJson(username);
         if (string.IsNullOrEmpty(feedJson))
@@ -52,14 +75,14 @@ public class InstagramClient : IInstagramClient
                 continue;
             }
 
-            var post = ParsePost(node);
-            if (post == null || post.DateUtc <= afterUtc)
+            var post = await ParsePost(node);
+            if (post == null)
             {
                 continue;
             }
 
-            var image = await ParseImage(node);
-            if (image == null)
+            var images = await ParseImages(node);
+            if (images.Count == 0)
             {
                 continue;
             }
@@ -68,59 +91,33 @@ public class InstagramClient : IInstagramClient
             {
                 Caption = post.Caption,
                 Date = post.DateUtc,
-                ExternalId = post.ExternalId,
-                ImageData = image.ImageData,
-                MimeType = image.MimeType,
-                Url = post.Url
+                ExternalId = post.Shortcode,
+                Images = images
+                    .Select(x => new InstagramClientImageMetadata
+                    {
+                        Alt = x.Alt,
+                        Height = x.Height,
+                        ExternalId = x.Shortcode,
+                        IsVideo = x.IsVideo,
+                        Url = x.Url,
+                        Width = x.Width
+                    })
+                    .ToArray()
             });
         }
 
         return posts;
     }
 
-    private static InstagramPostResponse? ParsePost(JsonNode node)
-    {
-        try
-        {
-            var unixTimestamp = node["taken_at_timestamp"]?.GetValue<int>() ?? 0;
-
-            var date = DateUtils.FromUnixEpochTimestamp(unixTimestamp);
-            var shortcode = node["shortcode"]?.ToString() ?? string.Empty;
-            var caption = (node["edge_media_to_caption"]?["edges"] as JsonArray)?.FirstOrDefault()?["node"]?["text"]?.ToString() ?? string.Empty;
-
-            var url = UrlBuilder
-                .Base("https://www.instagram.com")
-                .Path($"/p/{shortcode}")
-                .Query("img_index", "1")
-                .Build();
-
-            return new InstagramPostResponse
-            {
-                Caption = caption,
-                DateUtc = date,
-                ExternalId = shortcode,
-                Url = url
-            };
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
     private async Task<string?> FetchFeedJson(string username)
     {
-        var url = UrlBuilder
-            .Base("https://www.instagram.com")
-            .Path("/api/v1/users/web_profile_info")
-            .Query("username", username)
-            .Build();
+        var url = _settings.FeedUrl.Replace("{username}", username);
 
-        var response = await _httpClient.GetAsync(url);
+        var response = await _httpClient.Value.GetAsync(url);
         var json = await response.Content.ReadAsStringAsync();
         if (!response.IsSuccessStatusCode)
         {
-            await _loggingService.Error(new Exception($"Error fetching from Instagram: {json}"), new Dictionary<string, string>());
+            await _loggingService.Error($"Error fetching from Instagram feed: {json}");
             return null;
         }
 
@@ -141,33 +138,99 @@ public class InstagramClient : IInstagramClient
         }
     }
 
-    private async Task<InstagramImageResponse?> ParseImage(JsonNode node)
+    private async Task<InstagramImageResponse> ParseImage(JsonNode node)
+    {
+        var shortcode = node["shortcode"]?.GetValue<string>();
+        if (string.IsNullOrEmpty(shortcode))
+        {
+            throw new Exception("shortcode not found");
+        }
+
+        var url = node["display_url"]?.GetValue<string>();
+        if (string.IsNullOrEmpty(url))
+        {
+            throw new Exception("display_url not found");
+        }
+
+        var height = node["dimensions"]?["height"]?.GetValue<int>();
+        var width = node["dimensions"]?["width"]?.GetValue<int>();
+
+        var isVideo = node["is_video"]?.GetValue<bool>() ?? false;
+
+        var alt = node["accessibility_caption"]?.GetValue<string>();
+
+        return new InstagramImageResponse
+        {
+            Alt = alt,
+            Height = height,
+            IsVideo = isVideo,
+            Shortcode = shortcode,
+            Url = url,
+            Width = width
+        };
+    }
+
+    private async Task<IReadOnlyCollection<InstagramImageResponse>> ParseImages(JsonNode node)
     {
         try
         {
-            string? thumbnailUrl = node["thumbnail_src"]?.ToString();
-            if (string.IsNullOrEmpty(thumbnailUrl))
+            var images = new List<InstagramImageResponse>();
+
+            var children = node["edge_sidecar_to_children"]?["edges"] as JsonArray;
+            if (children == null)
             {
-                return null;
+                // the post only contains 1 image
+                var image = await ParseImage(node);
+                images.Add(image);
+                return images;
             }
 
-            var response = await _httpClient.GetAsync(thumbnailUrl);
-            if (!response.IsSuccessStatusCode)
+            foreach (var child in children)
             {
-                return null;
+                var childNode = child?["node"];
+                if (childNode == null)
+                {
+                    throw new Exception("node not found");
+                }
+
+                var image = await ParseImage(childNode);
+
+                images.Add(image);
             }
 
-            var imageData = await response.Content.ReadAsByteArrayAsync();
-            var mimeType = response.Content.Headers.ContentType?.MediaType;
+            return images;
+        }
+        catch (Exception ex)
+        {
+            await _loggingService.Error($"Error parsing Instagram image: {node}", ex);
+            return [];
+        }
+    }
 
-            return new InstagramImageResponse
+    private async Task<InstagramPostResponse?> ParsePost(JsonNode node)
+    {
+        try
+        {
+            var shortcode = node["shortcode"]?.ToString() ?? string.Empty;
+            if (string.IsNullOrEmpty(shortcode))
             {
-                ImageData = imageData,
-                MimeType = mimeType
+                throw new Exception("shortcode not found");
+            }
+
+            var unixTimestamp = node["taken_at_timestamp"]?.GetValue<int>() ?? 0;
+            var date = DateUtils.FromUnixEpochTimestamp(unixTimestamp);
+            var caption = (node["edge_media_to_caption"]?["edges"] as JsonArray)?.FirstOrDefault()?["node"]?["text"]?.ToString() ?? string.Empty;
+
+            return new InstagramPostResponse
+            {
+                Caption = caption,
+                DateUtc = date,
+                Shortcode = shortcode
             };
         }
-        catch
+        catch (Exception ex)
         {
+            await _loggingService.Error($"Error parsing Instagram post: {node}", ex);
             return null;
         }
     }

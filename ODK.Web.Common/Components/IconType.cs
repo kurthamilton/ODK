@@ -25,6 +25,7 @@ public enum IconType
     Google,
     Groups,
     Home,
+    Images,
     Instagram,
     LocationPin,
     Logout,

@@ -1,7 +1,7 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Members;
-using ODK.Core.SocialMedia;
 using ODK.Core.Topics;
+using ODK.Services.SocialMedia.ViewModels;
 
 namespace ODK.Services.Chapters.ViewModels;
 
@@ -11,7 +11,7 @@ public class GroupHomePageViewModel : GroupPageViewModel
 
     public required bool HasImage { get; init; }
 
-    public required IReadOnlyCollection<InstagramPost> InstagramPosts { get; init; }
+    public required InstagramPostsViewModel InstagramPosts { get; init; }
 
     public required ChapterLinks? Links { get; init; }
 

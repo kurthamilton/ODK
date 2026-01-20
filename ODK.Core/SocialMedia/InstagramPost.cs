@@ -11,6 +11,4 @@ public class InstagramPost : IDatabaseEntity
     public string ExternalId { get; set; } = string.Empty;
 
     public Guid Id { get; set; }
-
-    public string Url { get; set; } = string.Empty;
 }

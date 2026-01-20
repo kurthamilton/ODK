@@ -1,8 +1,8 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Members;
-using ODK.Core.SocialMedia;
 using ODK.Core.Topics;
 using ODK.Services.Events.ViewModels;
+using ODK.Services.SocialMedia.ViewModels;
 using ODK.Services.ViewModels;
 
 namespace ODK.Services.Chapters.ViewModels;
@@ -13,7 +13,7 @@ public class ChapterHomePageViewModel : ChapterViewModelBase
 
     public required IReadOnlyCollection<EventResponseViewModel> Events { get; init; }
 
-    public required IReadOnlyCollection<InstagramPost> InstagramPosts { get; init; }
+    public required InstagramPostsViewModel InstagramPosts { get; init; }
 
     public required IReadOnlyCollection<Member> LatestMembers { get; init; }
 

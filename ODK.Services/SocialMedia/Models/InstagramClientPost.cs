@@ -8,9 +8,5 @@ public class InstagramClientPost
 
     public required string ExternalId { get; init; }
 
-    public required byte[] ImageData { get; init; }
-
-    public required string? MimeType { get; set; }
-
-    public required string Url { get; init; }
+    public required IReadOnlyCollection<InstagramClientImageMetadata> Images { get; init; }
 }

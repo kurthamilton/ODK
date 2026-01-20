@@ -15,10 +15,12 @@ using ODK.Data.Core;
 using ODK.Data.Core.Chapters;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Events;
+using ODK.Data.Core.SocialMedia;
 using ODK.Services.Authorization;
 using ODK.Services.Chapters.ViewModels;
 using ODK.Services.Events.ViewModels;
 using ODK.Services.SocialMedia;
+using ODK.Services.SocialMedia.ViewModels;
 
 namespace ODK.Services.Chapters;
 
@@ -589,7 +591,7 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
             x => x.MemberRepository.GetCountByChapterId(chapter.Id),
-            x => x.InstagramPostRepository.GetByChapterId(chapter.Id, 8),
+            x => x.InstagramPostRepository.GetDtosByChapterId(chapter.Id, 8),
             x => x.ChapterLinksRepository.GetByChapterId(chapter.Id),
             x => x.EventRepository.GetByChapterId(chapter.Id, after: DateTime.UtcNow),
             x => x.EventRepository.GetRecentEventsByChapterId(chapter.Id, 3),
@@ -647,7 +649,14 @@ public class ChapterViewModelService : IChapterViewModelService
             HasImage = hasImage,
             HasProfiles = hasProperties,
             HasQuestions = hasQuestions,
-            InstagramPosts = showInstagramFeed ? instagramPosts : [],
+            InstagramPosts = new InstagramPostsViewModel
+            {
+                Posts = showInstagramFeed
+                    ? instagramPosts
+                        .Select(MapToInstagramPostViewModel)
+                        .ToArray()
+                    : []
+            },
             IsAdmin = adminMembers.Any(x => x.MemberId == currentMemberId),
             IsMember = currentMember?.IsMemberOf(chapter.Id) == true,
             Links = links,
@@ -858,7 +867,7 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.EventRepository.GetByChapterId(chapter.Id, today),
             x => x.ChapterLinksRepository.GetByChapterId(chapter.Id),
             x => x.ChapterTextsRepository.GetByChapterId(chapter.Id),
-            x => x.InstagramPostRepository.GetByChapterId(chapter.Id, 8),
+            x => x.InstagramPostRepository.GetDtosByChapterId(chapter.Id, 8),
             x => x.MemberRepository.GetLatestByChapterId(chapter.Id, 8),
             x => x.ChapterTopicRepository.GetByChapterId(chapter.Id));
 
@@ -907,7 +916,14 @@ public class ChapterViewModelService : IChapterViewModelService
             ChapterLocation = chapterLocation,
             CurrentMember = currentMember,
             Events = eventResponseViewModels,
-            InstagramPosts = showInstagramFeed ? instagramPosts : [],
+            InstagramPosts = new InstagramPostsViewModel
+            {
+                Posts = showInstagramFeed
+                    ? instagramPosts
+                        .Select(MapToInstagramPostViewModel)
+                        .ToArray()
+                    : []
+            },
             LatestMembers = latestMembers,
             Links = links,
             Platform = platform,
@@ -1079,4 +1095,18 @@ public class ChapterViewModelService : IChapterViewModelService
 
         return chaptersWithDistances;
     }
+
+    private InstagramPostViewModel MapToInstagramPostViewModel(InstagramPostDto dto)
+        => new InstagramPostViewModel
+        {
+            Caption = dto.Post.Caption,
+            Images = dto.Images
+                .Select(x => new InstagramImageMetadataViewModel
+                {
+                    Alt = x.Alt,
+                    Id = x.Id
+                })
+                .ToArray(),
+            Url = _socialMediaService.GetInstagramPostUrl(dto.Post.ExternalId)
+        };
 }

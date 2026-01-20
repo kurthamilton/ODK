@@ -10,7 +10,10 @@ public class InstagramImageMap : IEntityTypeConfiguration<InstagramImage>
     {
         builder.ToTable("InstagramImages");
 
-        builder.HasKey(x => x.InstagramPostId);
+        builder.HasKey(x => x.Id);
+
+        builder.Property(x => x.Id)
+            .HasColumnName("InstagramImageId");
 
         builder.Property(x => x.Version)
             .IsRowVersion();
