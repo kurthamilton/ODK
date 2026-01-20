@@ -6,6 +6,5 @@ public interface IInstagramClient
 {
     Task<InstagramClientImage> FetchImage(InstagramClientImageMetadata metadata);
 
-    Task<IReadOnlyCollection<InstagramClientPost>> FetchPosts(
-        string username, IReadOnlyCollection<string> excludeIds);
+    Task<IReadOnlyCollection<InstagramClientPost>> FetchLatestPosts(string username);
 }

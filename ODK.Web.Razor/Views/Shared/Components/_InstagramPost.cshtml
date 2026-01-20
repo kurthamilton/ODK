@@ -1,12 +1,22 @@
 ﻿@using ODK.Services.SocialMedia.ViewModels
+@using ODK.Web.Common.Components
+@using ODK.Web.Razor.Models.Components
 @model InstagramPostViewModel
 @{
-    var imageId = Model.InstagramImageIds.First();
+    var defaultImage = Model.Images.First();
 }
 
 <div class="social-media-image-tile">
-    <a href="@Model.Url" target="_blank" data-bs-toggle="tooltip" data-bs-title="@Model.Caption">
-        
-        <img src="/Instagram/Images/@imageId" alt="@Model.Caption" />
+    <a href="@Model.Url" target="_blank" data-bs-toggle="tooltip" data-bs-title="@Model.Caption">        
+        <div class="social-media-image-container">
+            <img src="/Instagram/Images/@defaultImage.Id/thumbnail?size=250" alt="@defaultImage.Alt" />
+            @if (Model.Images.Count > 1)
+            {
+                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Images)
+                {
+                    Class = "social-media-image-overlay-icon"
+                })
+            }
+        </div>
     </a>    
 </div>

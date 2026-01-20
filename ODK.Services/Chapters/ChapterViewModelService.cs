@@ -1100,7 +1100,13 @@ public class ChapterViewModelService : IChapterViewModelService
         => new InstagramPostViewModel
         {
             Caption = dto.Post.Caption,
-            InstagramImageIds = dto.ImageIds,
+            Images = dto.Images
+                .Select(x => new InstagramImageMetadataViewModel
+                {
+                    Alt = x.Alt,
+                    Id = x.Id
+                })
+                .ToArray(),
             Url = _socialMediaService.GetInstagramPostUrl(dto.Post.ExternalId)
         };
 }

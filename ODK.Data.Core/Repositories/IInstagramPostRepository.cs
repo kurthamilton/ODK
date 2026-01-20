@@ -10,7 +10,5 @@ public interface IInstagramPostRepository : IReadWriteRepository<InstagramPost>
 
     IDeferredQueryMultiple<InstagramPostDto> GetDtosByChapterId(Guid chapterId, int pageSize);
 
-    IDeferredQueryMultiple<string> GetExternalIdsByChapterId(Guid chapterId);
-
-    IDeferredQuerySingleOrDefault<InstagramPost> GetLastPost(Guid chapterId);
+    IDeferredQueryMultiple<InstagramPostDto> GetDtosByExternalIds(IReadOnlyCollection<string> externalIds);
 }

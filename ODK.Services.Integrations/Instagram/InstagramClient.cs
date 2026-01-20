@@ -19,7 +19,7 @@ public class InstagramClient : IInstagramClient
         ILoggingService loggingService,
         InstagramClientSettings settings)
     {
-        _httpClientFactory = httpClientFactory;        
+        _httpClientFactory = httpClientFactory;
         _loggingService = loggingService;
         _settings = settings;
 
@@ -51,8 +51,7 @@ public class InstagramClient : IInstagramClient
         };
     }
 
-    public async Task<IReadOnlyCollection<InstagramClientPost>> FetchPosts(
-        string username, IReadOnlyCollection<string> excludeIds)
+    public async Task<IReadOnlyCollection<InstagramClientPost>> FetchLatestPosts(string username)
     {
         var feedJson = await FetchFeedJson(username);
         if (string.IsNullOrEmpty(feedJson))
@@ -77,7 +76,7 @@ public class InstagramClient : IInstagramClient
             }
 
             var post = await ParsePost(node);
-            if (post == null || excludeIds.Contains(post.Shortcode))
+            if (post == null)
             {
                 continue;
             }
@@ -96,8 +95,9 @@ public class InstagramClient : IInstagramClient
                 Images = images
                     .Select(x => new InstagramClientImageMetadata
                     {
+                        Alt = x.Alt,
                         Height = x.Height,
-                        Id = x.Shortcode,                        
+                        ExternalId = x.Shortcode,
                         IsVideo = x.IsVideo,
                         Url = x.Url,
                         Width = x.Width
@@ -107,7 +107,7 @@ public class InstagramClient : IInstagramClient
         }
 
         return posts;
-    }    
+    }
 
     private async Task<string?> FetchFeedJson(string username)
     {
@@ -138,54 +138,65 @@ public class InstagramClient : IInstagramClient
         }
     }
 
+    private async Task<InstagramImageResponse> ParseImage(JsonNode node)
+    {
+        var shortcode = node["shortcode"]?.GetValue<string>();
+        if (string.IsNullOrEmpty(shortcode))
+        {
+            throw new Exception("shortcode not found");
+        }
+
+        var url = node["display_url"]?.GetValue<string>();
+        if (string.IsNullOrEmpty(url))
+        {
+            throw new Exception("display_url not found");
+        }
+
+        var height = node["dimensions"]?["height"]?.GetValue<int>();
+        var width = node["dimensions"]?["width"]?.GetValue<int>();
+
+        var isVideo = node["is_video"]?.GetValue<bool>() ?? false;
+
+        var alt = node["accessibility_caption"]?.GetValue<string>();
+
+        return new InstagramImageResponse
+        {
+            Alt = alt,
+            Height = height,
+            IsVideo = isVideo,
+            Shortcode = shortcode,
+            Url = url,
+            Width = width
+        };
+    }
+
     private async Task<IReadOnlyCollection<InstagramImageResponse>> ParseImages(JsonNode node)
     {
         try
         {
             var images = new List<InstagramImageResponse>();
 
-            var edges = node["edge_sidecar_to_children"]?["edges"] as JsonArray;
-            if (edges == null)
+            var children = node["edge_sidecar_to_children"]?["edges"] as JsonArray;
+            if (children == null)
             {
+                // the post only contains 1 image
+                var image = await ParseImage(node);
+                images.Add(image);
                 return images;
             }
 
-            foreach (var edge in edges)
+            foreach (var child in children)
             {
-                var edgeNode = edge?["node"];
-                if (edgeNode == null)
+                var childNode = child?["node"];
+                if (childNode == null)
                 {
                     throw new Exception("node not found");
                 }
 
-                var shortcode = node["shortcode"]?.GetValue<string>();
-                if (string.IsNullOrEmpty(shortcode))
-                {
-                    throw new Exception("shortcode not found");
-                }
-
-                var url = edgeNode["display_url"]?.GetValue<string>();
-                if (string.IsNullOrEmpty(url))
-                {
-                    throw new Exception("display_url not found");
-                }                
-
-                var height = edgeNode["dimensions"]?["height"]?.GetValue<int>();
-                var width = edgeNode["dimensions"]?["width"]?.GetValue<int>();
-
-                var isVideo = edgeNode["is_video"]?.GetValue<bool>() ?? false;
-
-                var image = new InstagramImageResponse
-                {
-                    Height = height,
-                    IsVideo = isVideo,
-                    Shortcode = shortcode,
-                    Url = url,
-                    Width = width
-                };
+                var image = await ParseImage(childNode);
 
                 images.Add(image);
-            }            
+            }
 
             return images;
         }

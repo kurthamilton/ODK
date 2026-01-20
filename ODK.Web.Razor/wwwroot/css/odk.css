@@ -13132,6 +13132,18 @@ html[data-platform=odk] {
   opacity: 0.5;
 }
 
+.social-media-image-container {
+  position: relative;
+}
+
+.social-media-image-overlay-icon {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  color: var(--bs-body-color);
+  font-size: 0.75rem;
+}
+
 .social-media-icon--facebook {
   color: var(--odk-social-media-facebook) !important;
 }

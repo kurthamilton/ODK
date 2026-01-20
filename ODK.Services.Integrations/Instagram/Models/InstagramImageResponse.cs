@@ -2,6 +2,8 @@
 
 public class InstagramImageResponse
 {
+    public required string? Alt { get; init; }
+
     public required int? Height { get; init; }
 
     public required bool IsVideo { get; init; }
