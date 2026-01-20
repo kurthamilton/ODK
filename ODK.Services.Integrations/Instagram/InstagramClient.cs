@@ -171,11 +171,14 @@ public class InstagramClient : IInstagramClient
                 }                
 
                 var height = edgeNode["dimensions"]?["height"]?.GetValue<int>();
-                var width = edgeNode["dimensions"]?["width"]?.GetValue<int>();                
+                var width = edgeNode["dimensions"]?["width"]?.GetValue<int>();
+
+                var isVideo = edgeNode["is_video"]?.GetValue<bool>() ?? false;
 
                 var image = new InstagramImageResponse
                 {
                     Height = height,
+                    IsVideo = isVideo,
                     Shortcode = shortcode,
                     Url = url,
                     Width = width
