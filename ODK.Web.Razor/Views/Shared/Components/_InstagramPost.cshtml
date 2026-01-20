@@ -29,7 +29,7 @@
     Class = "carousel-modal",
     Size = ModalSize.Large,
     Body = 
-        @<div>
+        @<div class="w-100">
             @await Html.PartialAsync("Components/_Carousel", new CarouselViewModel
             {
                 Id = $"instagram-post-carousel-{Model.ExternalId}",
