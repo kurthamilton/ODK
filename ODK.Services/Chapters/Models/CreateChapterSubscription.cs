@@ -14,5 +14,8 @@ public class CreateChapterSubscription
 
     public required bool Recurring { get; init; }
 
+    [Obsolete("Remove once PayPal has been removed")]
+    public required Guid? SitePaymentSettingId { get; init; }
+
     public required string Title { get; init; }
 }

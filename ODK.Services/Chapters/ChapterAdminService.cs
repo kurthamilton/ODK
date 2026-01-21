@@ -473,32 +473,54 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         var (
             chapter,
+            currentMember,
+            chapterAdminMembers,
             ownerSubscription,
             existing,
             chapterPaymentSettings,
             sitePaymentSettings,
             chapterPaymentAccount,
             currency
-        ) = await GetChapterAdminRestrictedContent(request,
+        ) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(chapterId),
+            x => x.MemberRepository.GetById(request.CurrentMemberId),
+            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapterId),
             x => x.ChapterSubscriptionRepository.GetByChapterId(chapterId, includeDisabled: true),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
-            x => x.SitePaymentSettingsRepository.GetActive(),
+            x => x.SitePaymentSettingsRepository.GetAll(),
             x => x.ChapterPaymentAccountRepository.GetByChapterId(chapterId),
             x => x.CurrencyRepository.GetByChapterId(chapterId));
+
+        AssertMemberIsChapterAdmin(currentMember, chapterId, chapterAdminMembers);
 
         if (ownerSubscription?.HasFeature(SiteFeatureType.MemberSubscriptions) != true)
         {
             return ServiceResult.Failure("Not permitted");
         }
 
-        if (chapterPaymentAccount == null)
+        if (!currentMember.SiteAdmin)
         {
-            return ServiceResult.Failure("Payment account not set up");
+            if (chapterPaymentAccount == null)
+            {
+                return ServiceResult.Failure("Payment account not set up");
+            }
+
+            if (!chapterPaymentAccount.SetupComplete())
+            {
+                return ServiceResult.Failure("Payment account set up not finished");
+            }
         }
 
-        var useSitePaymentProvider = chapterPaymentSettings == null || chapterPaymentSettings.UseSitePaymentProvider;
+        var sitePaymentSetting = (chapterPaymentSettings == null || chapterPaymentSettings.UseSitePaymentProvider)
+            ? sitePaymentSettings.FirstOrDefault(x => x.Active)
+            : null;
+
+        if (currentMember.SiteAdmin && model.SitePaymentSettingId != null)
+        {
+            sitePaymentSetting = sitePaymentSettings
+                .FirstOrDefault(x => x.Id == model.SitePaymentSettingId);
+        }
 
         var subscription = new ChapterSubscription
         {
@@ -512,9 +534,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             Recurring = model.Recurring,
             Title = model.Title,
             Type = SubscriptionType.Full,
-            SitePaymentSettingId = useSitePaymentProvider
-                ? sitePaymentSettings.Id
-                : null
+            SitePaymentSettingId = sitePaymentSetting.Id
         };
 
         var validationResult = ValidateChapterSubscription(subscription, existing);
@@ -523,9 +543,9 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             return validationResult;
         }
 
-        if (useSitePaymentProvider)
+        if (sitePaymentSetting != null)
         {
-            var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(sitePaymentSettings);
+            var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(sitePaymentSetting);
 
             var platform = request.Platform;
             var productName = chapter.FullName;

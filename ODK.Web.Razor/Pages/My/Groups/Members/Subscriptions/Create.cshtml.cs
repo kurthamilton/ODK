@@ -30,6 +30,7 @@ public class CreateModel : OdkGroupAdminPageModel
             Months = viewModel.DurationMonths ?? 0,
             Name = viewModel.Name,
             Recurring = viewModel.Recurring,
+            SitePaymentSettingId = viewModel.SitePaymentSettingId,
             Title = viewModel.Title
         });
 

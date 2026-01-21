@@ -6,14 +6,14 @@
 @using ODK.Web.Razor.Models.Components
 @model SubscriptionCreateAdminPageViewModel
 
-<section class="section">
+<section class="section" data-odk-component="_ChapterSubscriptionCreateContent">
     @await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.OwnerSubscription)
     {
         Chapter = Model.Chapter,
         Feature = SiteFeatureType.MemberSubscriptions,
         ContentFunc = 
             @<div>
-                @if (!Model.HasPaymentAccount)
+                @if (!Model.HasPaymentAccount && !Model.CurrentMember.SiteAdmin)
                 {
                     var paymentAccountUrl = OdkRoutes.Payments.PaymentAccount(Model.Platform, Model.Chapter);
                     <div class="alert alert-danger">
@@ -30,6 +30,7 @@
                         {
                             Currency = Model.Currency,
                             OwnerSubscription = Model.OwnerSubscription,
+                            SitePaymentSettings = Model.SitePaymentSettings,
                             SupportsRecurringPayments = Model.SupportsRecurringPayments
                         })
                         <button class="btn btn-primary">Create</button>

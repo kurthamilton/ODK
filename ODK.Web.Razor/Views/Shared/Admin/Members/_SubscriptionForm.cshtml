@@ -3,6 +3,24 @@
 @using ODK.Web.Razor.Models.Payments
 @model SubscriptionFormViewModel
 
+@if (Model.SitePaymentSettings?.Count > 0)
+{
+    var sitePaymentSettingOptions = Model.SitePaymentSettings
+        .Select(x => new SelectListItem
+        {
+            Value = x.Id.ToString(),
+            Text = $"{x.Name} [{x.Provider}]"
+        })
+        .ToArray();
+
+    <div class="form-group mb-3">
+        @Html.LabelFor(x => x.SitePaymentSettingId, new { @class = "form-label" })
+        <span class="ms-1 text-muted">Only visible to site admins</span>
+        @Html.DropDownListFor(x => x.SitePaymentSettingId, sitePaymentSettingOptions, "", new { @class = "form-control", data_select = "", data_clearable = "" })
+        @Html.ValidationMessageFor(x => x.SitePaymentSettingId)
+    </div>
+}
+
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.Name, new { @class = "form-label" })
     <span class="ms-1 text-muted">How to refer to this subscription in the system</span>

@@ -32,6 +32,7 @@ public class EditModel : OdkGroupAdminPageModel
             Name = viewModel.Name,
             Months = viewModel.DurationMonths ?? 0,
             Recurring = viewModel.Recurring,
+            SitePaymentSettingId = null,
             Title = viewModel.Title
         });
 
