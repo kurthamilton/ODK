@@ -37,30 +37,10 @@
 
 <section class="section">
     <h4>Change subscription</h4>
-    @if (Model.SiteSubscriptions.Currency != null)
+    @await Html.PartialAsync("Pricing/_PricingContent", new PricingContentViewModel
     {
-        @await Html.PartialAsync("Pricing/_PricingContent", new PricingContentViewModel
-        {
-            CheckoutUrl = OdkRoutes.MemberGroups.GroupSubscriptionCheckout(Model.Platform, Model.Chapter, "{price.id}"),
-            CheckoutUrlPriceIdPlaceholder = "{price.id}",
-            SiteSubscriptions = Model.SiteSubscriptions
-        })
-    }
-    else
-    {
-        var currencyOptions = Model.SiteSubscriptions.Currencies
-            .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Code })
-            .OrderBy(x => x.Text)
-            .ToArray();
-    
-        <form action="/groups/@Model.Chapter.Id/currency" method="post">
-            @*@Html.AntiForgeryToken()*@
-            <div class="form-group mb-3">
-                @Html.Label("currencyId", "Choose currency", new { @class = "form-label" })
-                @Html.DropDownList("currencyId", currencyOptions, "", new { @class = "form-select" })
-            </div>
-        
-            <button class="btn btn-primary">Update</button>
-        </form>
-    }
+        CheckoutUrl = OdkRoutes.MemberGroups.GroupSubscriptionCheckout(Model.Platform, Model.Chapter, "{price.id}"),
+        CheckoutUrlPriceIdPlaceholder = "{price.id}",
+        SiteSubscriptions = Model.SiteSubscriptions
+    })
 </section>

@@ -1,6 +1,4 @@
-﻿using ODK.Core.Payments;
-
-namespace ODK.Core.Chapters;
+﻿namespace ODK.Core.Chapters;
 
 public class ChapterPaymentSettings : IChapterEntity
 {

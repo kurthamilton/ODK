@@ -1,5 +1,6 @@
 ﻿using ODK.Core;
 using ODK.Core.Chapters;
+using ODK.Core.Countries;
 using ODK.Core.Members;
 using ODK.Core.Payments;
 using ODK.Data.Core;
@@ -116,7 +117,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
     }
 
     public async Task<SiteSubscriptionsViewModel> GetSiteSubscriptionsViewModel(
-        ServiceRequest request, Guid? memberId)
+        ServiceRequest request, Guid? memberId, Guid? chapterId)
     {
         var platform = request.Platform;
 
@@ -124,8 +125,9 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             subscriptions,
             prices,
             currentMember,
-            memberPaymentSettings,
-            memberSubscription) = await _unitOfWork.RunAsync(
+            memberSubscription,
+            memberCurrency,
+            chapterCurrency) = await _unitOfWork.RunAsync(
             x => x.SitePaymentSettingsRepository.GetAll(),
             x => x.SiteSubscriptionRepository.GetAllEnabled(platform),
             x => x.SiteSubscriptionPriceRepository.GetAllEnabled(platform),
@@ -133,13 +135,16 @@ public class SiteSubscriptionService : ISiteSubscriptionService
                 ? x.MemberRepository.GetByIdOrDefault(memberId.Value)
                 : new DefaultDeferredQuerySingleOrDefault<Member>(),
             x => memberId != null
-                ? x.MemberPaymentSettingsRepository.GetByMemberId(memberId.Value)
-                : new DefaultDeferredQuerySingleOrDefault<MemberPaymentSettings>(),
-            x => memberId != null
                 ? x.MemberSiteSubscriptionRepository.GetByMemberId(memberId.Value, platform)
-                : new DefaultDeferredQuerySingleOrDefault<MemberSiteSubscription>());
+                : new DefaultDeferredQuerySingleOrDefault<MemberSiteSubscription>(),
+            x => memberId != null
+                ? x.CurrencyRepository.GetByMemberIdOrDefault(memberId.Value)
+                : new DefaultDeferredQuerySingleOrDefault<Currency>(),
+            x => chapterId != null
+                ? x.CurrencyRepository.GetByChapterIdOrDefault(chapterId.Value)
+                : new DefaultDeferredQuerySingleOrDefault<Currency>());
 
-        var currency = memberPaymentSettings?.Currency;
+        var currency = memberCurrency ?? chapterCurrency;
 
         var currencies = prices
             .Where(x => currency == null || x.CurrencyId == currency.Id)

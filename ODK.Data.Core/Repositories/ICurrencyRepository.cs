@@ -11,5 +11,9 @@ public interface ICurrencyRepository : IReadWriteRepository<Currency>
 
     IDeferredQuerySingle<Currency> GetByChapterId(Guid chapterId);
 
+    IDeferredQuerySingleOrDefault<Currency> GetByChapterIdOrDefault(Guid chapterId);
+
     IDeferredQuerySingle<Currency> GetByCountryId(Guid countryId);
+
+    IDeferredQuerySingleOrDefault<Currency> GetByMemberIdOrDefault(Guid memberId);
 }

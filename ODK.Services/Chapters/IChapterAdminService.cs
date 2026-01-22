@@ -119,8 +119,6 @@ public interface IChapterAdminService
     Task<ServiceResult> UpdateChapterAdminMember(MemberChapterServiceRequest request, Guid memberId,
         UpdateChapterAdminMember model);
 
-    Task<ServiceResult> UpdateChapterCurrency(MemberChapterServiceRequest request, Guid currencyId);
-
     Task<ServiceResult> UpdateChapterDescription(MemberChapterServiceRequest request, string description);
 
     Task<ServiceResult> UpdateChapterImage(MemberChapterServiceRequest request, UpdateChapterImage model);

@@ -1,5 +1,4 @@
 ﻿using ODK.Core.Countries;
-using ODK.Core.Payments;
 
 namespace ODK.Core.Members;
 
@@ -10,6 +9,4 @@ public class MemberPaymentSettings
     public Guid CurrencyId { get; set; }
 
     public Guid MemberId { get; set; }
-
-    public PaymentProviderType? Provider { get; set; }
 }

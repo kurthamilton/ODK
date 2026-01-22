@@ -14,7 +14,6 @@ using ODK.Core.Utils;
 using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Data.Core.Chapters;
-using ODK.Data.Core.Deferred;
 using ODK.Services.Caching;
 using ODK.Services.Chapters.Models;
 using ODK.Services.Chapters.ViewModels;
@@ -281,8 +280,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         {
             _unitOfWork.ChapterPaymentSettingsRepository.Add(new ChapterPaymentSettings
             {
-                ChapterId = chapter.Id,
-                CurrencyId = country.CurrencyId
+                ChapterId = chapter.Id
             });
         }
 
@@ -1224,7 +1222,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         var chapterOwnerRequest = MemberServiceRequest.Create(chapter.OwnerId.Value, request);
         var siteSubscriptionsViewModel = await _siteSubscriptionService.GetSiteSubscriptionsViewModel(
-            request, chapter.OwnerId);
+            request, chapter.OwnerId, chapter.Id);
 
         return new ChapterSubscriptionAdminPageViewModel
         {
@@ -1705,46 +1703,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         }
     }
 
-    public async Task<ServiceResult> UpdateChapterCurrency(MemberChapterServiceRequest request, Guid currencyId)
-    {
-        var chapterId = request.ChapterId;
-
-        var chapter = await _unitOfWork.ChapterRepository.GetById(chapterId).Run();
-
-        var (chapterPaymentSettings, ownerPaymentSettings) = await GetChapterAdminRestrictedContent(request,
-            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
-            x => chapter.OwnerId != null
-                ? x.MemberPaymentSettingsRepository.GetByMemberId(chapter.OwnerId.Value)
-                : new DefaultDeferredQuerySingleOrDefault<MemberPaymentSettings>());
-
-        chapterPaymentSettings ??= new ChapterPaymentSettings();
-
-        chapterPaymentSettings.CurrencyId = currencyId;
-
-        if (chapterPaymentSettings.ChapterId == default)
-        {
-            chapterPaymentSettings.ChapterId = chapter.Id;
-            _unitOfWork.ChapterPaymentSettingsRepository.Add(chapterPaymentSettings);
-        }
-        else
-        {
-            _unitOfWork.ChapterPaymentSettingsRepository.Update(chapterPaymentSettings);
-        }
-
-        if (ownerPaymentSettings == null && chapter.OwnerId != null)
-        {
-            _unitOfWork.MemberPaymentSettingsRepository.Add(new MemberPaymentSettings
-            {
-                CurrencyId = currencyId,
-                MemberId = chapter.OwnerId.Value
-            });
-        }
-
-        await _unitOfWork.SaveChangesAsync();
-
-        return ServiceResult.Successful();
-    }
-
     public async Task<ServiceResult> UpdateChapterDescription(MemberChapterServiceRequest request, string description)
     {
         var texts = await GetChapterAdminRestrictedContent(request,
@@ -1930,21 +1888,38 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         var chapterId = request.ChapterId;
 
-        var settings = await GetChapterAdminRestrictedContent(request,
-            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId));
+        var (chapter, chapterPaymentSettings, memberPaymentSettings) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(chapterId),
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
+            x => x.MemberPaymentSettingsRepository.GetByChapterId(chapterId));
 
-        settings ??= new ChapterPaymentSettings();
+        chapterPaymentSettings ??= new ChapterPaymentSettings();
+        chapterPaymentSettings.CurrencyId = model.CurrencyId;
 
-        settings.CurrencyId = model.CurrencyId;
-
-        if (settings.ChapterId == default)
+        if (chapterPaymentSettings.ChapterId == default)
         {
-            settings.ChapterId = chapterId;
-            _unitOfWork.ChapterPaymentSettingsRepository.Add(settings);
+            chapterPaymentSettings.ChapterId = chapterId;
+            _unitOfWork.ChapterPaymentSettingsRepository.Add(chapterPaymentSettings);
         }
         else
         {
-            _unitOfWork.ChapterPaymentSettingsRepository.Update(settings);
+            _unitOfWork.ChapterPaymentSettingsRepository.Update(chapterPaymentSettings);
+        }
+
+        if (model.CurrencyId != null && chapter.OwnerId != null)
+        {
+            memberPaymentSettings ??= new MemberPaymentSettings();
+            memberPaymentSettings.CurrencyId = model.CurrencyId.Value;
+
+            if (memberPaymentSettings.MemberId == default)
+            {
+                memberPaymentSettings.MemberId = chapter.OwnerId.Value;
+                _unitOfWork.MemberPaymentSettingsRepository.Add(memberPaymentSettings);
+            }
+            else
+            {
+                _unitOfWork.MemberPaymentSettingsRepository.Update(memberPaymentSettings);
+            }
         }
 
         await _unitOfWork.SaveChangesAsync();

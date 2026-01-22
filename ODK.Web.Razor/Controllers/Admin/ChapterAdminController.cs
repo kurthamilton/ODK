@@ -266,15 +266,6 @@ public class ChapterAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("groups/{chapterId:guid}/currency")]
-    public async Task<IActionResult> UpdateCurrency(Guid chapterId, [FromForm] Guid currencyId)
-    {
-        var serviceRequest = CreateMemberChapterServiceRequest(chapterId);
-        var result = await _chapterAdminService.UpdateChapterCurrency(serviceRequest, currencyId);
-        AddFeedback(result, "Currency updated");
-        return RedirectToReferrer();
-    }
-
     [HttpPost("groups/{chapterId:guid}/emails/{type}/restoreDefault")]
     public async Task<IActionResult> RestoreDefaultEmail(Guid chapterId, EmailType type)
     {

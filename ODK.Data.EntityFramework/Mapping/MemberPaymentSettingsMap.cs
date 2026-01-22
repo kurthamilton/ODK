@@ -1,8 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ODK.Core.Members;
-using ODK.Core.Payments;
-using ODK.Data.EntityFramework.Converters;
 
 namespace ODK.Data.EntityFramework.Mapping;
 
@@ -13,9 +11,6 @@ public class MemberPaymentSettingsMap : IEntityTypeConfiguration<MemberPaymentSe
         builder.ToTable("MemberPaymentSettings");
 
         builder.HasKey(x => x.MemberId);
-
-        builder.Property(x => x.Provider)
-            .HasConversion<NullableEnumStringConverter<PaymentProviderType>>();
 
         builder.HasOne(x => x.Currency)
             .WithMany()

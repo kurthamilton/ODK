@@ -20,7 +20,7 @@
     }
 
     var viewModel = await SiteSubscriptionService.GetSiteSubscriptionsViewModel(
-        Model.ServiceRequest, Model.CurrentMemberIdOrDefault);
+        Model.ServiceRequest, Model.CurrentMemberIdOrDefault, chapterId: null);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
