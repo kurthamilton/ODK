@@ -485,32 +485,9 @@ public class StripePaymentProvider : IPaymentProvider
             : null;
     }
 
-    private async Task<IReadOnlyCollection<Invoice>> GetAllInvoices(
-        InvoiceListOptions? options = null)
-    {
-        var service = CreateInvoiceService();
-
-        return await service.ListAutoPagingAsync(options).All();
-    }
-
-    private async Task<IReadOnlyCollection<PaymentIntent>> GetAllPaymentIntents(
-        PaymentIntentListOptions? options = null)
-    {
-        var service = CreatePaymentIntentService();
-        return await service.ListAutoPagingAsync(options).All();
-    }
-
-    private async Task<IReadOnlyCollection<Subscription>> GetAllSubscriptions()
-    {
-        var service = CreateSubscriptionService();
-        return await service.ListAutoPagingAsync().All();
-    }
-
     private AccountLinkService CreateAccountLinkService() => new(_client);
 
     private AccountService CreateAccountService() => new(_client);
-
-    private InvoiceService CreateInvoiceService() => new(_client);
 
     private PaymentIntentService CreatePaymentIntentService() => new(_client);
 
