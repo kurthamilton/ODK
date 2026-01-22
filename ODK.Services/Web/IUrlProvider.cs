@@ -30,6 +30,8 @@ public interface IUrlProvider
 
     string IssueUrl(Guid issueId);
 
+    string LoginUrl(Chapter? chapter);
+
     string MemberAdminUrl(Chapter chapter, Guid memberId);
 
     string MemberSiteSubscriptionUrl();

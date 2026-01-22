@@ -206,12 +206,19 @@ public class MemberEmailService : IMemberEmailService
         Chapter? chapter,
         Member member)
     {
+        var urlProvider = _urlProviderFactory.Create(request);
+
+        var url = urlProvider.LoginUrl(chapter);
+
         await _emailService.SendEmail(
             request,
             chapter,
             member.ToEmailAddressee(),
             EmailType.DuplicateEmail,
-            new Dictionary<string, string>());
+            new Dictionary<string, string>
+            {
+                { "loginUrl", url  }
+            });
     }
 
     public async Task SendEventCommentEmail(
