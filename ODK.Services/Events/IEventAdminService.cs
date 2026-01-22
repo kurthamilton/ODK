@@ -34,8 +34,6 @@ public interface IEventAdminService
 
     Task<ServiceResult> SendEventInvites(MemberChapterServiceRequest request, Guid eventId, bool test = false);
 
-    Task SendScheduledEmails(ServiceRequest request);
-
     Task UpdateEventSettings(MemberChapterServiceRequest request, UpdateEventSettings model);
 
     Task<ServiceResult> UpdateEvent(MemberChapterServiceRequest request, Guid id, CreateEvent @event);

@@ -8,6 +8,4 @@ public interface IEventEmailRepository : IReadWriteRepository<EventEmail>
     IDeferredQuerySingleOrDefault<EventEmail> GetByEventId(Guid eventId);
 
     IDeferredQueryMultiple<EventEmail> GetByEventIds(IEnumerable<Guid> eventIds);
-
-    IDeferredQueryMultiple<EventEmail> GetScheduled();
 }

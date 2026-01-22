@@ -50,21 +50,6 @@ public class ScheduledTasksController : OdkControllerBase
         }
     }
 
-    [HttpPost("emails")]
-    public async Task SendScheduledEmails()
-    {
-        AssertAuthorised();
-
-        try
-        {
-            await _eventAdminService.SendScheduledEmails(ServiceRequest);
-        }
-        catch
-        {
-            // do nothing
-        }
-    }
-
     [HttpPost("instagram")]
     public async Task ScrapeInstagramImages()
     {
