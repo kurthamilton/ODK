@@ -45,6 +45,8 @@ public class SiteAdminRoutes
 
     public string Subscriptions => Path("/subscriptions");
 
+    public string Topic(Guid id) => $"{Topics}/{id}";
+
     public string Topics => Path("/topics");
 
     private string Path(string subPath) => Index + subPath;

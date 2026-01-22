@@ -7,3 +7,13 @@
         font-size: 0.6em;
     }
 }
+
+a.badge {
+    &.text-bg-secondary {
+        border: 1px solid var(--bs-secondary);
+
+        &:hover {
+            background-color: transparent !important;
+        }
+    }
+}

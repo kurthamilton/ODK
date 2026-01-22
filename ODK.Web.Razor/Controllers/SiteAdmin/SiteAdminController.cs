@@ -239,6 +239,14 @@ public class SiteAdminController : OdkControllerBase
         return RedirectToReferrer();
     }
 
+    [HttpPost("siteadmin/topic-groups")]
+    public async Task<IActionResult> AddTopicGroup([FromForm] string name)
+    {
+        var result = await _topicAdminService.AddTopicGroup(MemberId, name);
+        AddFeedback(result, "Topic group added");
+        return RedirectToReferrer();
+    }
+
     [HttpPost("siteadmin/topics")]
     public async Task<IActionResult> AddTopic([FromForm] Guid topicGroupId, [FromForm] string name)
     {
@@ -299,6 +307,19 @@ public class SiteAdminController : OdkControllerBase
         AddFeedback("Topics processed", FeedbackType.Success);
 
         return RedirectToReferrer();
+    }
+
+    [HttpPost("siteadmin/topics/{id:guid}")]
+    public async Task<IActionResult> UpdateTopic(Guid id, [FromForm] TopicFormSubmitViewModel viewModel)
+    {
+        var result = await _topicAdminService.UpdateTopic(MemberServiceRequest, id, new UpdateTopicModel
+        {
+            TopicGroupId = viewModel.TopicGroupId
+        });
+
+        AddFeedback(result, "Topic updated");
+
+        return Redirect(OdkRoutes.SiteAdmin.Topics);
     }
 
     [HttpGet("{chapterName}/Admin/siteadmin")]

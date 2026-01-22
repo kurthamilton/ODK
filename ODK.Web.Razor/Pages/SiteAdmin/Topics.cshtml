@@ -1,10 +1,12 @@
 ﻿@page "/siteadmin/topics"
-@attribute [Authorize]
-@using Microsoft.AspNetCore.Authorization
+@using ODK.Services.Topics
 @model TopicsModel
+@inject ITopicAdminService TopicAdminService
 @{
     Layout = "_SiteAdminLayout";
     Model.Title = "Topics | SiteAdmin";
+
+    var viewModel = await TopicAdminService.GetTopicsAdminPageViewModel(Model.CurrentMemberId);
 }
 
-@await Html.PartialAsync("SiteAdmin/_TopicsContent")
+@await Html.PartialAsync("SiteAdmin/_SiteAdminTopicsContent", viewModel)

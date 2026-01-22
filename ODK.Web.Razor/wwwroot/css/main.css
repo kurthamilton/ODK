@@ -12003,6 +12003,13 @@ html[data-platform=odk] .badge {
   font-size: 0.6em;
 }
 
+a.badge.text-bg-secondary {
+  border: 1px solid var(--bs-secondary);
+}
+a.badge.text-bg-secondary:hover {
+  background-color: transparent !important;
+}
+
 html[data-platform=odk] {
   --odk-breadcrumbs-padding-top: 0.75rem;
 }

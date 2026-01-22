@@ -1,17 +1,17 @@
 ﻿@using ODK.Services.Topics
-@using ODK.Web.Common.Extensions
+@using ODK.Services.Topics.ViewModels
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.SiteAdmin
+@model TopicsAdminPageViewModel
 @inject ITopicAdminService TopicAdminService
 @{
-    var memberId = User.MemberId();
-    var viewModel = await TopicAdminService.GetTopicsAdminPageViewModel(memberId);
-    var topicDictionary = viewModel.Topics
+    var topicDictionary = Model.Topics
         .GroupBy(x => x.TopicGroupId)
         .ToDictionary(x => x.Key, x => x.ToArray());
 }
 
-@if (viewModel.NewMemberTopics.Count > 0 || viewModel.NewChapterTopics.Count > 0)
+@if (Model.NewMemberTopics.Count > 0 || Model.NewChapterTopics.Count > 0)
 {
     <h2>New topics</h2>
     <section class="section section--admin">
@@ -19,7 +19,7 @@
             @*@Html.AntiForgeryToken()*@
             @await Html.PartialAsync("SiteAdmin/_NewTopicsForm", new NewTopicsFormViewModel
             {
-                Chapters = viewModel.NewChapterTopics
+                Chapters = Model.NewChapterTopics
                     .OrderBy(x => x.Topic)
                     .Select(x => new NewTopicsFormItemViewModel
                     {
@@ -28,7 +28,7 @@
                         TopicGroup = x.TopicGroup
                     })
                     .ToList(),
-                Members = viewModel.NewMemberTopics
+                Members = Model.NewMemberTopics
                     .OrderBy(x => x.Topic)
                     .Select(x => new NewTopicsFormItemViewModel
                     {
@@ -47,7 +47,7 @@
 
 <section class="section">
     <div class="d-flex flex-column gap-4">
-        @foreach (var topicGroup in viewModel.TopicGroups.OrderBy(x => x.Name))
+        @foreach (var topicGroup in Model.TopicGroups.OrderBy(x => x.Name))
         {
             topicDictionary.TryGetValue(topicGroup.Id, out var topics);
 
@@ -60,7 +60,9 @@
                         {
                             @foreach (var topic in topics.OrderBy(x => x.Name))
                             {
-                                <div class="badge text-bg-secondary">@topic.Name</div>
+                                <a class="badge text-bg-secondary" href="@OdkRoutes.SiteAdmin.Topic(topic.Id)">
+                                    @topic.Name
+                                </a>
                             }
                         }
 
@@ -77,4 +79,16 @@
             })
         }
     </div>
+</section>
+<section class="mt-3">
+    <h3>Add topic group</h3>
+    <form action="/siteadmin/topic-groups" method="post">
+        @*@Html.AntiForgeryToken()*@
+        
+        <div class="form-group mb-3">
+            <input type="text" class="form-control" name="Name" />            
+        </div>
+
+        <button class="btn btn-primary">Add</button>
+    </form>
 </section>

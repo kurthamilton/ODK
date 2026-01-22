@@ -1,0 +1,37 @@
+﻿@using ODK.Services.Topics.ViewModels
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.SiteAdmin
+@model TopicAdminPageViewModel
+
+@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+{
+    Breadcrumbs = new []
+    {
+        new MenuItem 
+        {  
+            Icon = IconType.ArrowLeft,
+            Link = OdkRoutes.SiteAdmin.Topics,
+            Text = "Back to topics"
+        }
+    }
+})
+
+<h2>@Model.Topic.Name</h2>
+
+<section class="section">
+    <form action="/siteadmin/topics/@Model.Topic.Id" method="post">
+        @*@Html.AntiForgeryToken()*@
+        
+        @await Html.PartialAsync("SiteAdmin/_SiteAdminTopicForm", new TopicFormViewModel
+        {
+            TopicGroups = Model.TopicGroups,
+            TopicGroupId = Model.Topic.TopicGroupId
+        })
+
+        <button class="btn btn-primary">
+            Update
+        </button>
+    </form>
+</section>

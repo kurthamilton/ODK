@@ -1,0 +1,12 @@
+﻿@page "/siteadmin/topics/{id}"
+@using ODK.Services.Topics
+@model TopicModel
+@inject ITopicAdminService TopicAdminService
+@{
+    Layout = "_SiteAdminLayout";
+    Model.Title = "Topic | SiteAdmin";
+
+    var viewModel = await TopicAdminService.GetTopicAdminPageViewModel(Model.CurrentMemberId, Model.TopicId);
+}
+
+@await Html.PartialAsync("SiteAdmin/_SiteAdminTopicContent", viewModel)

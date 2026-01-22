@@ -45,6 +45,19 @@ public class TopicAdminService : OdkAdminServiceBase, ITopicAdminService
         return ServiceResult.Successful();
     }
 
+    public async Task<ServiceResult> AddTopicGroup(Guid currentMemberId, string name)
+    {
+        await AssertMemberIsSiteAdmin(currentMemberId);
+
+        _unitOfWork.TopicGroupRepository.Add(new TopicGroup
+        {
+            Name = name
+        });
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
+    }
+
     public async Task ApproveTopics(
         MemberServiceRequest request, ApproveTopicsModel approved, ApproveTopicsModel rejected)
     {
@@ -253,6 +266,19 @@ public class TopicAdminService : OdkAdminServiceBase, ITopicAdminService
             members);
     }
 
+    public async Task<TopicAdminPageViewModel> GetTopicAdminPageViewModel(Guid currentMemberId, Guid topicId)
+    {
+        var (topic, topicGroups) = await GetSiteAdminRestrictedContent(currentMemberId,
+            x => x.TopicRepository.GetById(topicId),
+            x => x.TopicGroupRepository.GetAll());
+
+        return new TopicAdminPageViewModel
+        {
+            Topic = topic,
+            TopicGroups = topicGroups
+        };
+    }
+
     public async Task<TopicsAdminPageViewModel> GetTopicsAdminPageViewModel(Guid currentMemberId)
     {
         var (topicGroups, topics, newMemberTopics, newChapterTopics) = await GetSiteAdminRestrictedContent(currentMemberId,
@@ -268,5 +294,18 @@ public class TopicAdminService : OdkAdminServiceBase, ITopicAdminService
             TopicGroups = topicGroups,
             Topics = topics
         };
+    }
+
+    public async Task<ServiceResult> UpdateTopic(MemberServiceRequest request, Guid topicId, UpdateTopicModel model)
+    {
+        var topic = await GetSiteAdminRestrictedContent(request.CurrentMemberId,
+            x => x.TopicRepository.GetById(topicId));
+
+        topic.TopicGroupId = model.TopicGroupId;
+
+        _unitOfWork.TopicRepository.Update(topic);
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
     }
 }
