@@ -6,8 +6,7 @@ namespace ODK.Services.Payments;
 public interface IPaymentProviderFactory
 {
     IPaymentProvider GetPaymentProvider(
-        ChapterPaymentSettings? chapterPaymentSettings,
-        IReadOnlyCollection<SitePaymentSettings> sitePaymentSettings,
+        SitePaymentSettings sitePaymentSettings,
         ChapterPaymentAccount? paymentAccount);
 
     IPaymentProvider GetSitePaymentProvider(SitePaymentSettings sitePaymentSettings);

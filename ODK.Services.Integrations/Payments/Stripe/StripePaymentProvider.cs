@@ -1,5 +1,4 @@
-﻿using ODK.Core.Chapters;
-using ODK.Core.Extensions;
+﻿using ODK.Core.Extensions;
 using ODK.Core.Payments;
 using ODK.Core.Subscriptions;
 using ODK.Core.Utils;
@@ -16,11 +15,10 @@ public class StripePaymentProvider : IPaymentProvider
     private readonly IStripeClient _client;
     private readonly string? _connectedAccountId;
     private readonly ILoggingService _loggingService;
-    private readonly IPaymentSettings _paymentSettings;
     private readonly StripePaymentProviderSettings _settings;
 
     public StripePaymentProvider(
-        IPaymentSettings paymentSettings,
+        SitePaymentSettings paymentSettings,
         ILoggingService loggingService,
         string? connectedAccountId,
         StripePaymentProviderSettings settings)
@@ -31,19 +29,8 @@ public class StripePaymentProvider : IPaymentProvider
         });
         _connectedAccountId = connectedAccountId;
         _loggingService = loggingService;
-        _paymentSettings = paymentSettings;
         _settings = settings;
     }
-
-    public bool HasCustomers => true;
-
-    public bool HasExternalGateway => true;
-
-    public IPaymentSettings PaymentSettings => _paymentSettings;
-
-    public bool SupportsConnectedAccounts => true;
-
-    public bool SupportsRecurringPayments => PaymentProviderType.Stripe.SupportsRecurringPayments();
 
     public async Task<ServiceResult> ActivateSubscriptionPlan(string externalId)
     {
@@ -255,74 +242,6 @@ public class StripePaymentProvider : IPaymentProvider
         }
     }
 
-    public async Task<IReadOnlyCollection<RemotePaymentModel>> GetAllPayments()
-    {
-        var (invoices, paymentIntents, subscriptions) = await TaskUtils.WhenAll(
-            GetAllInvoices(new InvoiceListOptions
-            {
-                Expand = ["data.payments"]
-            }),
-            GetAllPaymentIntents(new PaymentIntentListOptions
-            {
-                Expand = ["data.latest_charge"]
-            }),
-            GetAllSubscriptions());
-
-        var paymentIntentDictionary = paymentIntents
-            .ToDictionary(x => x.Id, StringComparer.OrdinalIgnoreCase);
-
-        var subscriptionDictionary = subscriptions
-            .ToDictionary(x => x.Id, StringComparer.OrdinalIgnoreCase);
-
-        var remotePayments = new List<RemotePaymentModel>();
-
-        foreach (var invoice in invoices)
-        {
-            var customer = invoice.Customer;
-
-            foreach (var payment in invoice.Payments)
-            {
-                if (payment.AmountPaid == null)
-                {
-                    continue;
-                }
-
-                var paymentIntentId = payment.Payment.PaymentIntentId;
-
-                if (paymentIntentDictionary.TryGetValue(paymentIntentId, out var paymentIntent))
-                {
-                    if (paymentIntent.LatestCharge.Refunded)
-                    {
-                        continue;
-                    }
-                }
-
-                var subscriptionId = invoice.Parent.SubscriptionDetails?.SubscriptionId;
-
-                if (!string.IsNullOrEmpty(subscriptionId))
-                {
-                    subscriptionDictionary.TryGetValue(subscriptionId, out var subscription);
-                }
-
-                var created = paymentIntent?.LatestCharge.Created ?? invoice.Created;
-
-                var remotePayment = new RemotePaymentModel
-                {
-                    Amount = FromStripeAmount(payment.AmountPaid),
-                    Created = TimeZoneInfo.ConvertTimeFromUtc(created, Chapter.DefaultTimeZone),
-                    Currency = invoice.Currency,
-                    CustomerEmail = invoice.CustomerEmail,
-                    PaymentId = paymentIntentId,
-                    SubscriptionId = invoice.Parent.SubscriptionDetails?.SubscriptionId
-                };
-
-                remotePayments.Add(remotePayment);
-            }
-        }
-
-        return remotePayments;
-    }
-
     public async Task<RemoteAccount?> GetConnectedAccount(string externalId)
     {
         var service = CreateAccountService();
@@ -420,11 +339,11 @@ public class StripePaymentProvider : IPaymentProvider
     }
 
     public async Task<RemotePaymentResult> MakePayment(
-        string currencyCode, 
+        string currencyCode,
         decimal amount,
-        string cardToken, 
-        string description, 
-        Guid memberId, 
+        string cardToken,
+        string description,
+        Guid memberId,
         string memberName)
     {
         var service = CreatePaymentIntentService();
@@ -464,12 +383,6 @@ public class StripePaymentProvider : IPaymentProvider
         return RemotePaymentResult.Successful(intent.Id);
     }
 
-    public Task<string?> SendPayment(string currencyCode, decimal amount,
-        string emailAddress, string paymentId, string note)
-    {
-        throw new NotImplementedException();
-    }
-
     public async Task<ExternalCheckoutSession> StartCheckout(
         ServiceRequest request,
         string emailAddress,
@@ -501,7 +414,7 @@ public class StripePaymentProvider : IPaymentProvider
                     {
                         Currency = subscriptionPlan.CurrencyCode,
                         Product = subscriptionPlan.ExternalProductId,
-                        UnitAmount = stripeAmount                        
+                        UnitAmount = stripeAmount
                     } : null,
                     Quantity = 1
                 }
@@ -544,60 +457,6 @@ public class StripePaymentProvider : IPaymentProvider
         };
     }
 
-    public async Task UpdatePaymentMetadata(string externalId, PaymentMetadataModel metadata)
-    {
-        var service = CreatePaymentIntentService();
-
-        await service.UpdateAsync(externalId, new PaymentIntentUpdateOptions
-        {
-            Metadata = new Dictionary<string, string>(metadata.ToDictionary())
-        });
-    }
-
-    public async Task UpdateSubscriptionConnectedAccount(string externalId, ExternalSubscriptionPlan subscriptionPlan)
-    {
-        if (string.IsNullOrEmpty(_connectedAccountId))
-        {
-            return;
-        }
-
-        var service = CreateSubscriptionService();
-
-        var subscription = await service.GetAsync(externalId);
-        if (subscription == null)
-        {
-            return;
-        }
-
-        if (subscription.TransferData != null)
-        {
-            return;
-        }
-
-        try
-        {
-            await service.UpdateAsync(externalId, new SubscriptionUpdateOptions
-            {
-                ApplicationFeePercent = _settings.ConnectedAccountCommissionPercentage,
-                TransferData = new SubscriptionTransferDataOptions { Destination = _connectedAccountId }
-            });
-        }
-        catch (Exception ex)
-        {
-            await _loggingService.Error($"Error updating transfer data on subscription {externalId}", ex);
-        }
-    }
-
-    public async Task UpdateSubscriptionMetadata(string externalId, PaymentMetadataModel metadata)
-    {
-        var service = CreateSubscriptionService();
-
-        await service.UpdateAsync(externalId, new SubscriptionUpdateOptions
-        {
-            Metadata = new Dictionary<string, string>(metadata.ToDictionary())
-        });
-    }
-
     private static decimal FromStripeAmount(long? stripeAmount) => (stripeAmount ?? 0) / 100;
 
     private static long ToStripeAmount(decimal amount) => (long)(amount * 100);
@@ -626,32 +485,9 @@ public class StripePaymentProvider : IPaymentProvider
             : null;
     }
 
-    private async Task<IReadOnlyCollection<Invoice>> GetAllInvoices(
-        InvoiceListOptions? options = null)
-    {
-        var service = CreateInvoiceService();
-
-        return await service.ListAutoPagingAsync(options).All();
-    }
-
-    private async Task<IReadOnlyCollection<PaymentIntent>> GetAllPaymentIntents(
-        PaymentIntentListOptions? options = null)
-    {
-        var service = CreatePaymentIntentService();
-        return await service.ListAutoPagingAsync(options).All();
-    }
-
-    private async Task<IReadOnlyCollection<Subscription>> GetAllSubscriptions()
-    {
-        var service = CreateSubscriptionService();
-        return await service.ListAutoPagingAsync().All();
-    }
-
     private AccountLinkService CreateAccountLinkService() => new(_client);
 
     private AccountService CreateAccountService() => new(_client);
-
-    private InvoiceService CreateInvoiceService() => new(_client);
 
     private PaymentIntentService CreatePaymentIntentService() => new(_client);
 

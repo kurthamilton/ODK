@@ -24,9 +24,6 @@ public class SubscriptionFormSubmitViewModel
 
     public bool Recurring { get; set; }
 
-    [DisplayName("Site payment settings")]
-    public Guid? SitePaymentSettingId { get; set; }
-
     [Required]
     public string Title { get; set; } = string.Empty;
 }

@@ -2,7 +2,6 @@
 using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Core.Payments;
-using ODK.Core.Subscriptions;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
 using ODK.Services.Logging;
@@ -188,24 +187,27 @@ public class SiteSubscriptionService : ISiteSubscriptionService
     }
 
     public async Task<SiteSubscriptionCheckoutViewModel> StartSiteSubscriptionCheckout(
-        MemberServiceRequest request, Guid priceId, string returnPath)
+        MemberServiceRequest request, Guid priceId, string returnPath, Guid? chapterId)
     {
         var (memberId, platform) = (request.CurrentMemberId, request.Platform);
 
-        var (sitePaymentSettings, member, siteSubscription, price) = await _unitOfWork.RunAsync(
-            x => x.SitePaymentSettingsRepository.GetAll(),
+        var (member, siteSubscription, price, chapter) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(memberId),
             x => x.SiteSubscriptionRepository.GetByPriceId(priceId),
-            x => x.SiteSubscriptionPriceRepository.GetById(priceId));
+            x => x.SiteSubscriptionPriceRepository.GetById(priceId),
+            x => chapterId != null
+                ? x.ChapterRepository.GetByIdOrDefault(chapterId.Value)
+                : new DefaultDeferredQuerySingleOrDefault<Chapter>());
 
         if (string.IsNullOrEmpty(price.ExternalId))
         {
             throw new Exception("Error starting checkout session: siteSubscriptionPrice.ExternalId missing");
         }
 
-        var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(
-            sitePaymentSettings,
-            siteSubscription.SitePaymentSettingId);
+        var sitePaymentSettings = await _unitOfWork.SitePaymentSettingsRepository
+            .GetById(siteSubscription.SitePaymentSettingId).Run();
+
+        var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(sitePaymentSettings);
 
         var externalSubscriptionPlan = await paymentProvider.GetSubscriptionPlan(price.ExternalId);
         if (externalSubscriptionPlan == null)
@@ -256,9 +258,9 @@ public class SiteSubscriptionService : ISiteSubscriptionService
 
         return new SiteSubscriptionCheckoutViewModel
         {
+            Chapter = chapter,
             ClientSecret = externalCheckoutSession.ClientSecret,
-            CurrencyCode = externalSubscriptionPlan.CurrencyCode,
-            PaymentSettings = paymentProvider.PaymentSettings,
+            PaymentSettings = sitePaymentSettings,
             Platform = platform
         };
     }
@@ -304,53 +306,6 @@ public class SiteSubscriptionService : ISiteSubscriptionService
 
             await _unitOfWork.SaveChangesAsync();
         }
-    }
-
-    public async Task<ServiceResult> UpdateMemberSiteSubscription(
-        MemberServiceRequest request,
-        Guid siteSubscriptionId,
-        SiteSubscriptionFrequency frequency)
-    {
-        var (memberId, platform) = (request.CurrentMemberId, request.Platform);
-
-        var (memberPaymentSettings, siteSubscription, memberSubscription) = await _unitOfWork.RunAsync(
-            x => x.MemberPaymentSettingsRepository.GetByMemberId(memberId),
-            x => x.SiteSubscriptionPriceRepository.GetBySiteSubscriptionId(siteSubscriptionId),
-            x => x.MemberSiteSubscriptionRepository.GetByMemberId(memberId, platform));
-
-        IPaymentSettings? paymentSettings = memberPaymentSettings;
-
-        if (memberPaymentSettings == null || !paymentSettings.HasApiKey)
-        {
-            paymentSettings = await GetChapterPaymentSettingsByOwnerId(memberId);
-        }
-
-        if (paymentSettings == null || !paymentSettings.HasApiKey)
-        {
-            return ServiceResult.Failure("Automated subscriptions cannot be set up - missing payment settings");
-        }
-
-        return ServiceResult.Failure("Not set up");
-    }
-
-    private async Task<ChapterPaymentSettings?> GetChapterPaymentSettingsByOwnerId(Guid ownerId)
-    {
-        var chapters = await _unitOfWork.ChapterRepository.GetByOwnerId(ownerId).Run();
-        if (chapters.Count == 0)
-        {
-            return null;
-        }
-
-        foreach (var chapter in chapters)
-        {
-            var chapterPaymentSettings = await _unitOfWork.ChapterPaymentSettingsRepository
-                .GetByChapterId(chapter.Id)
-                .Run();
-
-            return chapterPaymentSettings;
-        }
-
-        return null;
     }
 
     private async Task<ExternalSubscription?> GetExternalSubscription(

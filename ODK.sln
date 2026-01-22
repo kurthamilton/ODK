@@ -25,6 +25,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ODK.Services.Integrations",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ODK.Services.Integrations.Tests", "ODK.Services.Integrations.Tests\ODK.Services.Integrations.Tests.csproj", "{06A2AFB0-633C-4EDC-821C-ECD2A4F52BCD}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0C91C40C-E42B-4636-B36B-021F7B7EE13A}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

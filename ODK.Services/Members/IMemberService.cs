@@ -34,8 +34,6 @@ public interface IMemberService
 
     Task<ServiceResult> LeaveChapter(MemberChapterServiceRequest request, string reason);
 
-    Task<ServiceResult> PurchaseChapterSubscription(MemberChapterServiceRequest request, Guid chapterSubscriptionId, string cardToken);
-
     Task<ServiceResult> RequestMemberEmailAddressUpdate(MemberChapterServiceRequest request, string newEmailAddress);
 
     Task<ServiceResult> RequestMemberEmailAddressUpdate(MemberServiceRequest request, string newEmailAddress);

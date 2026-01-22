@@ -4,6 +4,7 @@
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Events
 @model EventCheckoutConfirmModel
 @inject IEventViewModelService EventViewModelService
 @{
@@ -24,23 +25,19 @@
     {
         new MenuItem
         {
-            Link = OdkRoutes.Groups.Group(Model.Platform, viewModel.Chapter),
-            Text = viewModel.Chapter.GetDisplayName(Model.Platform)
-        },
-        new MenuItem
-        {
-            Link = OdkRoutes.Groups.Events(Model.Platform, viewModel.Chapter),
-            Text = "Events"
-        },
-        new MenuItem
-        {
+            Icon = IconType.ArrowLeft,
             Link = OdkRoutes.Groups.Event(Model.Platform, viewModel.Chapter, viewModel.Event.Id),
-            Text = viewModel.Event.GetDisplayName()
-        },
-        new MenuItem { Text = "Checkout" }
+            Text = "Back to event"
+        }
     },
     ContentFunc = 
         @<div>
+            @await Html.PartialAsync("Events/_EventHeader", new EventHeaderViewModel
+            {
+                Chapter = viewModel.Chapter,
+                Event = viewModel.Event,
+                Venue = viewModel.Venue
+            })
             <section class="section">
                 <div data-odk-checkout
                      data-odk-polling-url="/payments/sessions/@Model.SessionId/status?groupId=@viewModel.Chapter.Id">

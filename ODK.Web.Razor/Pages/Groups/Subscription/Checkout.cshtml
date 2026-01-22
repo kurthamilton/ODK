@@ -4,7 +4,7 @@
 @using ODK.Services.Members
 @using ODK.Web.Razor.Models.Groups
 @using ODK.Web.Razor.Models.Payments
-@model ODK.Web.Razor.Pages.Groups.Subscription.CheckoutModel
+@model CheckoutModel
 @inject IChapterViewModelService ChapterViewModelService
 @inject IMemberService MemberService
 @{
@@ -32,9 +32,6 @@
 {
     @await Html.PartialAsync("Payments/_PaymentScripts", new PaymentScriptsViewModel
     {
-        ApiPublicKey = viewModel.PaymentSettings.ApiPublicKey ?? "",
-        CurrencyCode = viewModel.CurrencyCode,
-        IsSubscription = true,
-        Provider = viewModel.PaymentSettings.Provider ?? PaymentProviderType.None
+        Providers = [viewModel.PaymentSettings.Provider]
     })
 }

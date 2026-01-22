@@ -1,6 +1,6 @@
 ﻿namespace ODK.Core.Payments;
 
-public class SitePaymentSettings : IDatabaseEntity, IPaymentSettings
+public class SitePaymentSettings : IDatabaseEntity
 {
     public bool Active { get; set; }
 
@@ -20,5 +20,5 @@ public class SitePaymentSettings : IDatabaseEntity, IPaymentSettings
 
     public PaymentProviderType Provider { get; set; }
 
-    PaymentProviderType? IPaymentSettings.Provider => Provider;
+    public bool SupportsRecurringPayments => Provider.SupportsRecurringPayments();
 }

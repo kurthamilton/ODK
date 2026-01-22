@@ -66,10 +66,7 @@ public class PaymentService : IPaymentService
             return;
         }
 
-        chapterPaymentSettings ??= new ChapterPaymentSettings
-        {
-            UseSitePaymentProvider = true
-        };
+        chapterPaymentSettings ??= new ChapterPaymentSettings();
 
         chapterPaymentSettings.ExternalProductId = productId;
 
@@ -89,9 +86,8 @@ public class PaymentService : IPaymentService
     public async Task<PaymentStatusType> GetMemberChapterPaymentCheckoutSessionStatus(
         MemberChapterServiceRequest request, string externalSessionId)
     {
-        var (chapterPaymentSettings, sitePaymentSettings, paymentAccount, checkoutSession) = await _unitOfWork.RunAsync(
-            x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId),
-            x => x.SitePaymentSettingsRepository.GetAll(),
+        var (sitePaymentSettings, paymentAccount, checkoutSession) = await _unitOfWork.RunAsync(
+            x => x.SitePaymentSettingsRepository.GetActive(),
             x => x.ChapterPaymentAccountRepository.GetByChapterId(request.ChapterId),
             x => x.PaymentCheckoutSessionRepository.GetByMemberId(request.CurrentMemberId, externalSessionId));
 
@@ -105,7 +101,6 @@ public class PaymentService : IPaymentService
         var payment = await _unitOfWork.PaymentRepository.GetById(checkoutSession.PaymentId).Run();
 
         var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
-            chapterPaymentSettings,
             sitePaymentSettings,
             paymentAccount);
 

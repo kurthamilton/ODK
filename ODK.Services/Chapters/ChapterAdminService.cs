@@ -282,8 +282,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             _unitOfWork.ChapterPaymentSettingsRepository.Add(new ChapterPaymentSettings
             {
                 ChapterId = chapter.Id,
-                CurrencyId = country.CurrencyId,
-                UseSitePaymentProvider = true
+                CurrencyId = country.CurrencyId
             });
         }
 
@@ -488,7 +487,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapterId),
             x => x.ChapterSubscriptionRepository.GetByChapterId(chapterId, includeDisabled: true),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
-            x => x.SitePaymentSettingsRepository.GetAll(),
+            x => x.SitePaymentSettingsRepository.GetActive(),
             x => x.ChapterPaymentAccountRepository.GetByChapterId(chapterId),
             x => x.CurrencyRepository.GetByChapterId(chapterId));
 
@@ -512,16 +511,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             }
         }
 
-        var sitePaymentSetting = (chapterPaymentSettings == null || chapterPaymentSettings.UseSitePaymentProvider)
-            ? sitePaymentSettings.FirstOrDefault(x => x.Active)
-            : null;
-
-        if (currentMember.SiteAdmin && model.SitePaymentSettingId != null)
-        {
-            sitePaymentSetting = sitePaymentSettings
-                .FirstOrDefault(x => x.Id == model.SitePaymentSettingId);
-        }
-
         var subscription = new ChapterSubscription
         {
             Amount = model.Amount,
@@ -534,7 +523,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             Recurring = model.Recurring,
             Title = model.Title,
             Type = SubscriptionType.Full,
-            SitePaymentSettingId = sitePaymentSetting.Id
+            SitePaymentSettingId = sitePaymentSettings.Id
         };
 
         var validationResult = ValidateChapterSubscription(subscription, existing);
@@ -543,49 +532,46 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             return validationResult;
         }
 
-        if (sitePaymentSetting != null)
+        var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(sitePaymentSettings);
+
+        var platform = request.Platform;
+        var productName = chapter.FullName;
+
+        var productId = await paymentProvider.GetProductId(productName);
+        if (string.IsNullOrEmpty(productId))
         {
-            var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(sitePaymentSetting);
+            productId = await paymentProvider.CreateProduct(productName);
+        }
 
-            var platform = request.Platform;
-            var productName = chapter.FullName;
+        if (productId == null)
+        {
+            throw new Exception("Error creating product");
+        }
 
-            var productId = await paymentProvider.GetProductId(productName);
-            if (string.IsNullOrEmpty(productId))
-            {
-                productId = await paymentProvider.CreateProduct(productName);
-            }
+        subscription.ExternalProductId = productId;
 
-            if (productId == null)
-            {
-                throw new Exception("Error creating product");
-            }
+        var externalId = await paymentProvider.CreateSubscriptionPlan(new ExternalSubscriptionPlan
+        {
+            Amount = (decimal)subscription.Amount,
+            CurrencyCode = currency.Code,
+            ExternalId = string.Empty,
+            ExternalProductId = productId,
+            Frequency = SiteSubscriptionFrequency.Monthly,
+            Name = subscription.Name,
+            NumberOfMonths = subscription.Months,
+            Recurring = model.Recurring
+        });
 
-            subscription.ExternalProductId = productId;
+        if (externalId == null)
+        {
+            throw new Exception("Error creating subscription");
+        }
 
-            var externalId = await paymentProvider.CreateSubscriptionPlan(new ExternalSubscriptionPlan
-            {
-                Amount = (decimal)subscription.Amount,
-                CurrencyCode = currency.Code,
-                ExternalId = string.Empty,
-                ExternalProductId = productId,
-                Frequency = SiteSubscriptionFrequency.Monthly,
-                Name = subscription.Name,
-                NumberOfMonths = subscription.Months,
-                Recurring = model.Recurring
-            });
+        subscription.ExternalId = externalId;
 
-            if (externalId == null)
-            {
-                throw new Exception("Error creating subscription");
-            }
-
-            subscription.ExternalId = externalId;
-
-            if (!model.Disabled)
-            {
-                await paymentProvider.ActivateSubscriptionPlan(externalId);
-            }
+        if (!model.Disabled)
+        {
+            await paymentProvider.ActivateSubscriptionPlan(externalId);
         }
 
         _unitOfWork.ChapterSubscriptionRepository.Add(subscription);
@@ -1607,7 +1593,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         var ownerRequest = MemberServiceRequest.Create(chapter.OwnerId.Value, request);
 
-        return await _siteSubscriptionService.StartSiteSubscriptionCheckout(ownerRequest, priceId, returnPath);
+        return await _siteSubscriptionService.StartSiteSubscriptionCheckout(
+            ownerRequest, priceId, returnPath, chapter.Id);
     }
 
     public async Task<ServiceResult> UpdateChapterAdminMember(MemberChapterServiceRequest request, Guid memberId,
@@ -1730,10 +1717,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
                 ? x.MemberPaymentSettingsRepository.GetByMemberId(chapter.OwnerId.Value)
                 : new DefaultDeferredQuerySingleOrDefault<MemberPaymentSettings>());
 
-        chapterPaymentSettings ??= new ChapterPaymentSettings
-        {
-            UseSitePaymentProvider = true
-        };
+        chapterPaymentSettings ??= new ChapterPaymentSettings();
 
         chapterPaymentSettings.CurrencyId = currencyId;
 
@@ -1951,16 +1935,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         settings ??= new ChapterPaymentSettings();
 
-        settings.ApiPublicKey = model.ApiPublicKey;
-        settings.ApiSecretKey = model.ApiSecretKey;
         settings.CurrencyId = model.CurrencyId;
-        settings.Provider = model.Provider;
-        settings.UseSitePaymentProvider = model.UseSitePaymentProvider;
-
-        if (settings.Provider == null && !settings.UseSitePaymentProvider)
-        {
-            return ServiceResult.Failure("Provider must be set if not using site payment provider");
-        }
 
         if (settings.ChapterId == default)
         {

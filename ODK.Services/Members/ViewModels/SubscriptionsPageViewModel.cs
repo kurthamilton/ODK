@@ -1,7 +1,6 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
-using ODK.Data.Core.Chapters;
 using ODK.Services.Payments;
 
 namespace ODK.Services.Members.ViewModels;
@@ -10,9 +9,7 @@ public class SubscriptionsPageViewModel
 {
     public required Chapter Chapter { get; init; }
 
-    public required ChapterPaymentSettings? ChapterPaymentSettings { get; init; }
-
-    public required IReadOnlyCollection<ChapterSubscriptionDto> ChapterSubscriptions { get; init; }
+    public required IReadOnlyCollection<ChapterSubscription> ChapterSubscriptions { get; init; }
 
     public required ChapterSubscription? CurrentSubscription { get; init; }
 

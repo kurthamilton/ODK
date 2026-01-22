@@ -12,7 +12,6 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Subscription pending confirmation";
 
-    var subscriptionUrl = Model.RedirectUrl;
     var chapter = await Model.GetChapter();
 }
 
@@ -21,8 +20,12 @@
     Title = "Checkout",
     Breadcrumbs = new[]
     {
-        new MenuItem { Text = "Subscription", Link = subscriptionUrl },
-        new MenuItem { Text = "Checkout" }
+        new MenuItem
+        {
+            Icon = IconType.ArrowLeft,
+            Text = "Back to subscription",
+            Link = Model.RedirectUrl
+        }
     },
     ContentFunc = 
         @<div>
@@ -37,11 +40,6 @@
                     <div data-odk-checkout-status="@PaymentStatusType.Pending">
                         <div class="alert alert-warning">
                             We are just waiting for confirmation of your payment...
-                        </div>
-                        <div>
-                            <a href="@subscriptionUrl">
-                                Go back to chapter subscription
-                            </a>
                         </div>
                     </div>
 

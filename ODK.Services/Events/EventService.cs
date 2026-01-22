@@ -1,7 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 using ODK.Core.Chapters;
 using ODK.Core.Events;
-using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Payments;
 using ODK.Data.Core;
@@ -153,243 +152,6 @@ public class EventService : IEventService
         return (chapter, @event);
     }
 
-    public async Task<ServiceResult> PayDeposit(Guid currentMemberId, Guid eventId, string cardToken)
-    {
-        var (member, memberResponse, @event, numberOfAttendees, payments) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(currentMemberId),
-            x => x.EventResponseRepository.GetByMemberId(currentMemberId, eventId),
-            x => x.EventRepository.GetById(eventId),
-            x => x.EventResponseRepository.GetNumberOfAttendees(eventId),
-            x => x.EventTicketPaymentRepository.GetConfirmedPayments(currentMemberId, eventId));
-
-        if (@event.TicketSettings == null)
-        {
-            return ServiceResult.Failure("This event is not ticketed");
-        }
-
-        if (@event.TicketSettings.Deposit == null)
-        {
-            return ServiceResult.Failure("This event does not require a deposit");
-        }
-
-        var paidSoFar = payments.Sum(x => x.Payment.Amount);
-        if (paidSoFar > @event.TicketSettings.Deposit.Value)
-        {
-            return ServiceResult.Failure("You have already paid a deposit for this event");
-        }
-
-        var chapterId = @event.ChapterId;
-
-        var (
-            sitePaymentSettings,
-            chapterPaymentSettings,
-            chapterPaymentAccount,
-            ownerSubscription,
-            membershipSettings,
-            privacySettings,
-            memberSubscription) = await _unitOfWork.RunAsync(
-            x => x.SitePaymentSettingsRepository.GetAll(),
-            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
-            x => x.ChapterPaymentAccountRepository.GetByChapterId(chapterId),
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapterId),
-            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId),
-            x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapterId),
-            x => x.MemberSubscriptionRepository.GetByMemberId(currentMemberId, chapterId));
-
-        if (ownerSubscription?.HasFeature(SiteFeatureType.EventTickets) != true)
-        {
-            return ServiceResult.Failure("Payment not made: this group can no longer receive payments");
-        }
-
-        var validationResult = MemberCanAttendEvent(
-            @event,
-            member,
-            memberResponse,
-            memberSubscription,
-            membershipSettings,
-            privacySettings);
-        if (!validationResult.Success)
-        {
-            return validationResult;
-        }
-
-        var spacesLeft = EventHasSpaces(@event, numberOfAttendees);
-        if (!spacesLeft.Success)
-        {
-            return spacesLeft;
-        }
-
-        var paymentResult = await MakeEventPayment(
-            @event,
-            member,
-            @event.TicketSettings.Deposit.Value,
-            cardToken,
-            chapterPaymentSettings,
-            sitePaymentSettings,
-            chapterPaymentAccount);
-
-        if (paymentResult.Value == null)
-        {
-            return paymentResult;
-        }
-
-        _unitOfWork.EventResponseRepository.Add(new EventResponse
-        {
-            EventId = eventId,
-            MemberId = member.Id,
-            Type = EventResponseType.Yes
-        });
-
-        _unitOfWork.EventTicketPaymentRepository.Add(new EventTicketPayment
-        {
-            EventId = eventId,
-            PaymentId = paymentResult.Value.Id
-        });
-
-        await _unitOfWork.SaveChangesAsync();
-
-        return ServiceResult.Successful();
-    }
-
-    public async Task<ServiceResult> PayTicketRemainder(Guid currentMemberId, Guid eventId, string cardToken)
-    {
-        var (member, @event, payments) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(currentMemberId),
-            x => x.EventRepository.GetById(eventId),
-            x => x.EventTicketPaymentRepository.GetConfirmedPayments(currentMemberId, eventId));
-
-        if (@event.TicketSettings == null)
-        {
-            return ServiceResult.Failure("This event is not ticketed");
-        }
-
-        var paidSoFar = payments.Sum(x => x.Payment.Amount);
-
-        if (paidSoFar >= @event.TicketSettings.Cost)
-        {
-            return ServiceResult.Failure("You have already bought a ticket");
-        }
-
-        var (sitePaymentSettings, chapterPaymentSettings, chapterPaymentAccount) = await _unitOfWork.RunAsync(
-            x => x.SitePaymentSettingsRepository.GetAll(),
-            x => x.ChapterPaymentSettingsRepository.GetByChapterId(@event.ChapterId),
-            x => x.ChapterPaymentAccountRepository.GetByChapterId(@event.ChapterId));
-
-        var amount = @event.TicketSettings.Cost - paidSoFar;
-        var paymentResult = await MakeEventPayment(
-            @event,
-            member,
-            amount,
-            cardToken,
-            chapterPaymentSettings,
-            sitePaymentSettings,
-            chapterPaymentAccount);
-        if (paymentResult.Value == null)
-        {
-            return ServiceResult.Failure($"Payment not made: {paymentResult.Message}");
-        }
-
-        _unitOfWork.EventTicketPaymentRepository.Add(new EventTicketPayment
-        {
-            EventId = eventId,
-            PaymentId = paymentResult.Value.Id
-        });
-        await _unitOfWork.SaveChangesAsync();
-
-        return ServiceResult.Successful();
-    }
-
-    public async Task<ServiceResult> PurchaseTicket(Guid currentMemberId, Guid eventId, string cardToken)
-    {
-        var (member, memberResponse, @event, payments, numberOfAttendees) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(currentMemberId),
-            x => x.EventResponseRepository.GetByMemberId(currentMemberId, eventId),
-            x => x.EventRepository.GetById(eventId),
-            x => x.EventTicketPaymentRepository.GetConfirmedPayments(currentMemberId, eventId),
-            x => x.EventResponseRepository.GetNumberOfAttendees(eventId));
-
-        if (@event.TicketSettings == null)
-        {
-            return ServiceResult.Failure("This event is not ticketed");
-        }
-
-        var paidSoFar = payments.Sum(x => x.Payment.Amount);
-
-        if (paidSoFar >= @event.TicketSettings.Cost)
-        {
-            return ServiceResult.Failure("You have already purchased a ticket for this event");
-        }
-
-        var (
-            sitePaymentSettings,
-            chapterPaymentSettings,
-            chapterPaymentAccount,
-            ownerSubscription,
-            membershipSettings,
-            privacySettings,
-            memberSubscription) = await _unitOfWork.RunAsync(
-            x => x.SitePaymentSettingsRepository.GetAll(),
-            x => x.ChapterPaymentSettingsRepository.GetByChapterId(@event.ChapterId),
-            x => x.ChapterPaymentAccountRepository.GetByChapterId(@event.ChapterId),
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(@event.ChapterId),
-            x => x.ChapterMembershipSettingsRepository.GetByChapterId(@event.ChapterId),
-            x => x.ChapterPrivacySettingsRepository.GetByChapterId(@event.ChapterId),
-            x => x.MemberSubscriptionRepository.GetByMemberId(currentMemberId, @event.ChapterId));
-
-        if (ownerSubscription?.HasFeature(SiteFeatureType.EventTickets) != true)
-        {
-            return ServiceResult.Failure("Payment not made: this group can no longer receive payments");
-        }
-
-        var validationResult = MemberCanAttendEvent(
-            @event,
-            member,
-            memberResponse,
-            memberSubscription,
-            membershipSettings,
-            privacySettings);
-        if (!validationResult.Success)
-        {
-            return validationResult;
-        }
-
-        var spacesLeft = EventHasSpaces(@event, numberOfAttendees);
-        if (!spacesLeft.Success)
-        {
-            return spacesLeft;
-        }
-
-        var paymentResult = await MakeEventPayment(
-            @event,
-            member,
-            amount: @event.TicketSettings.Cost,
-            cardToken,
-            chapterPaymentSettings,
-            sitePaymentSettings,
-            chapterPaymentAccount);
-        if (paymentResult.Value == null)
-        {
-            return ServiceResult.Failure($"Payment not made: {paymentResult.Message}");
-        }
-
-        _unitOfWork.EventResponseRepository.Add(new EventResponse
-        {
-            EventId = eventId,
-            MemberId = member.Id,
-            Type = EventResponseType.Yes
-        });
-
-        _unitOfWork.EventTicketPaymentRepository.Add(new EventTicketPayment
-        {
-            EventId = eventId,
-            PaymentId = paymentResult.Value.Id
-        });
-
-        await _unitOfWork.SaveChangesAsync();
-
-        return ServiceResult.Successful();
-    }
-
     public async Task<ServiceResult> UpdateMemberResponse(Guid memberId, Guid eventId,
         EventResponseType responseType)
     {
@@ -509,8 +271,7 @@ public class EventService : IEventService
         Member member,
         decimal amount,
         string cardToken,
-        ChapterPaymentSettings? chapterPaymentSettings,
-        IReadOnlyCollection<SitePaymentSettings> sitePaymentSettings,
+        SitePaymentSettings sitePaymentSettings,
         ChapterPaymentAccount? chapterPaymentAccount)
     {
         if (@event.TicketSettings == null)
@@ -534,7 +295,6 @@ public class EventService : IEventService
         await _unitOfWork.SaveChangesAsync();
 
         var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
-            chapterPaymentSettings,
             sitePaymentSettings,
             chapterPaymentAccount);
 

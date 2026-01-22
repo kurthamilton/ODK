@@ -1,20 +1,9 @@
-﻿using ODK.Core.Payments;
-using ODK.Services.Payments.Models;
+﻿using ODK.Services.Payments.Models;
 
 namespace ODK.Services.Payments;
 
 public interface IPaymentProvider
 {
-    bool HasCustomers { get; }
-
-    bool HasExternalGateway { get; }
-
-    IPaymentSettings PaymentSettings { get; }
-
-    bool SupportsConnectedAccounts { get; }
-
-    bool SupportsRecurringPayments { get; }
-
     Task<ServiceResult> ActivateSubscriptionPlan(string externalId);
 
     Task<bool> CancelSubscription(string externalId);
@@ -28,8 +17,6 @@ public interface IPaymentProvider
     Task<ServiceResult> DeactivateSubscriptionPlan(string externalId);
 
     Task<string?> GenerateConnectedAccountSetupUrl(GenerateRemoteAccountSetupUrlOptions options);
-
-    Task<IReadOnlyCollection<RemotePaymentModel>> GetAllPayments();
 
     Task<ExternalCheckoutSession?> GetCheckoutSession(string externalId);
 
@@ -49,23 +36,10 @@ public interface IPaymentProvider
         Guid memberId,
         string memberName);
 
-    Task<string?> SendPayment(
-        string currencyCode,
-        decimal amount,
-        string emailAddress,
-        string paymentId,
-        string note);
-
     Task<ExternalCheckoutSession> StartCheckout(
         ServiceRequest request,
         string emailAddress,
         ExternalSubscriptionPlan subscriptionPlan,
         string returnPath,
         PaymentMetadataModel metadata);
-
-    Task UpdatePaymentMetadata(string externalId, PaymentMetadataModel metadata);
-
-    Task UpdateSubscriptionConnectedAccount(string externalId, ExternalSubscriptionPlan subscriptionPlan);
-
-    Task UpdateSubscriptionMetadata(string externalId, PaymentMetadataModel metadata);
 }

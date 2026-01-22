@@ -273,7 +273,8 @@ public class ChapterViewModelService : IChapterViewModelService
             membershipSettings,
             privacySettings,
             memberSubscription,
-            chapterPages
+            chapterPages,
+            sitePaymentSettings
         ) = await _unitOfWork.RunAsync(
             x => currentMemberId != null
                 ? x.MemberRepository.GetByIdOrDefault(currentMemberId.Value)
@@ -290,7 +291,8 @@ public class ChapterViewModelService : IChapterViewModelService
             x => currentMemberId != null
                 ? x.MemberSubscriptionRepository.GetByMemberId(currentMemberId.Value, chapter.Id)
                 : new DefaultDeferredQuerySingleOrDefault<MemberSubscription>(),
-            x => x.ChapterPageRepository.GetByChapterId(chapter.Id));
+            x => x.ChapterPageRepository.GetByChapterId(chapter.Id),
+            x => x.SitePaymentSettingsRepository.GetActive());
 
         var canStartConversation = currentMember != null
             ? _authorizationService.CanStartConversation(chapter.Id, currentMember, memberSubscription, membershipSettings, privacySettings)

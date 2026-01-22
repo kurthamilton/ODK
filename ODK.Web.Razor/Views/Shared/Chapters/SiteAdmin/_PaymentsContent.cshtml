@@ -17,11 +17,7 @@
     @await Html.PartialAsync("Chapters/siteadmin/_PaymentSettingsForm", new PaymentSettingsFormViewModel
     {
         CurrencyOptions = viewModel.Currencies,
-        CurrencyId = viewModel.PaymentSettings?.CurrencyId,
-        Provider = viewModel.PaymentSettings?.Provider,
-        PublicKey = viewModel.PaymentSettings?.ApiPublicKey,
-        SecretKey = viewModel.PaymentSettings?.ApiSecretKey,
-        UseSitePaymentProvider = viewModel.PaymentSettings?.UseSitePaymentProvider ?? false
+        CurrencyId = viewModel.PaymentSettings?.CurrencyId
     })
     <button class="btn btn-primary">Update</button>
 </form>

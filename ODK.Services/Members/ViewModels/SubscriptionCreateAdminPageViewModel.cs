@@ -20,7 +20,5 @@ public class SubscriptionCreateAdminPageViewModel
 
     public required PlatformType Platform { get; init; }
 
-    public required IReadOnlyCollection<SitePaymentSettings> SitePaymentSettings { get; init; }
-
     public required bool SupportsRecurringPayments { get; init; }
 }

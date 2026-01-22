@@ -1,13 +1,9 @@
-﻿@using ODK.Core.Extensions
-@using ODK.Core.Members
+﻿@using ODK.Core.Members
 @using ODK.Core.Utils
 @using ODK.Services.Events.ViewModels
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Events
 @model EventPageViewModel
-@{
-    var localTime = Model.Event.ToLocalTime(Model.Chapter.TimeZone);
-}
 
 @if (!Model.CanView)
 {
@@ -15,37 +11,12 @@
     return;
 }
 
-@if (Model.Venue != null)
+@await Html.PartialAsync("Events/_EventHeader", new EventHeaderViewModel
 {
-    <h5>@Model.Venue.Name</h5>
-}
-
-<h6>
-    @localTime.ToFriendlyDateString(Model.Chapter.TimeZone)
-    
-    @if (localTime.TimeOfDay.TotalSeconds > 0)
-    {
-        <span>
-            @if (Model.Event.EndTime == null)
-            {
-                <span>from</span>
-            }
-
-            <span>@localTime.ToString("HH:mm")</span>
-
-            @if (Model.Event.EndTime != null)
-            {
-                <span>-</span>
-                <span>@TimeSpanUtils.ToString(Model.Event.EndTime)</span>
-            }
-        </span>
-    }
-    else if (!string.IsNullOrEmpty(Model.Event.Time))
-    {
-        <span>@Model.Event.Time</span>
-    }
-</h6>
-
+    Chapter = Model.Chapter,
+    Event = Model.Event,
+    Venue = Model.Venue
+})
 
 @if (!string.IsNullOrEmpty(Model.Event.Description))
 {

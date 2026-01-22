@@ -29,23 +29,13 @@
 {
     Title = "Checkout",
     Breadcrumbs = new[]
-    {
-        new MenuItem
-        {
-            Link = OdkRoutes.Groups.Group(Model.Platform, viewModel.Chapter),
-            Text = viewModel.Chapter.GetDisplayName(Model.Platform)
-        },
-        new MenuItem
-        {
-            Link = OdkRoutes.Groups.Events(Model.Platform, viewModel.Chapter),
-            Text = "Events"
-        },
+    {        
         new MenuItem 
         { 
+            Icon = IconType.ArrowLeft,
             Link = OdkRoutes.Groups.Event(Model.Platform, viewModel.Chapter, viewModel.Event.Id),
-            Text = viewModel.Event.GetDisplayName() 
-        },
-        new MenuItem { Text = "Checkout" }
+            Text = "Back to event"
+        }
     },
     Content = await Html.PartialAsync("Events/_EventCheckoutContent", viewModel),
 })
@@ -54,10 +44,6 @@
 {
     @await Html.PartialAsync("Payments/_PaymentScripts", new PaymentScriptsViewModel
     {
-        ApiPublicKey = viewModel.PaymentSettings.ApiPublicKey ?? string.Empty,
-        CurrencyCode = viewModel.CurrencyCode,
-        IsSubscription = false,
-        // let's face it, we're using Stripe here
-        Provider = PaymentProviderType.Stripe
+        Providers = [viewModel.PaymentSettings.Provider]
     })
 }
