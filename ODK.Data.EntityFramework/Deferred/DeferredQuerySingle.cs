@@ -8,13 +8,16 @@ public class DeferredQuerySingle<T> : IDeferredQuerySingle<T> where T : class
 {
     private readonly T? _cached = null;
     private readonly Func<T?>? _getFromCache = null;
+    private readonly Guid? _id = null;
     private readonly Action<IEnumerable<T>>? _prefillCache = null;
     private readonly QueryFutureValue<T>? _query = null;
     private readonly QueryFutureEnumerable<T>? _queryAll = null;
     private Action<T>? _updateCache = null;
 
-    internal DeferredQuerySingle(IQueryable<T> query)
+    internal DeferredQuerySingle(IQueryable<T> query, Guid? id = null)
     {
+        _id = id;
+
         _query = query
             .DeferredFirstOrDefault()
             .FutureValue();
@@ -72,7 +75,13 @@ public class DeferredQuerySingle<T> : IDeferredQuerySingle<T> where T : class
             throw new Exception("Query not set");
         }
 
-        OdkAssertions.Exists(value);
+        var errorMessage = $"Database entity {typeof(T).Name} not found";
+        if (_id != null)
+        {
+            errorMessage += $" for id '{_id}'";
+        }
+
+        OdkAssertions.Exists(value, errorMessage);
 
         _updateCache?.Invoke(value);
 

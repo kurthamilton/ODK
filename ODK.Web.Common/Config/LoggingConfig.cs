@@ -45,7 +45,6 @@ public static class LoggingConfig
             .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
             .MinimumLevel.Override("System.Net.Http.HttpClient", LogEventLevel.Warning)
             .Enrich.WithClientIp()
-            .Enrich.WithRequestHeader("User-Agent", "UserAgent")
             .Enrich.WithProperty("ContentRootPath", builder.Environment.ContentRootPath)
             .Enrich.FromLogContext()
             .WriteTo.Logger(config => config

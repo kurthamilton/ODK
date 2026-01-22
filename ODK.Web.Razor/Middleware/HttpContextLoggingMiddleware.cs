@@ -1,4 +1,5 @@
-﻿using ODK.Services.Authentication;
+﻿using Microsoft.AspNetCore.Http.Extensions;
+using ODK.Services.Authentication;
 using Serilog;
 using Serilog.Context;
 
@@ -25,6 +26,11 @@ public class HttpContextLoggingMiddleware
 
     public async Task Invoke(HttpContext httpContext)
     {
+        var request = httpContext.Request;
+        using var requestUrlProp = LogContext.PushProperty("RequestUrl", request.GetDisplayUrl());
+        using var requestMethodProp = LogContext.PushProperty("RequestMethod", request.Method);
+        using var userAgentProp = LogContext.PushProperty("UserAgent", request.Headers.UserAgent.ToString());
+
         var claimsUser = new OdkClaimsUser(httpContext.User.Claims);
 
         // If properties are null they won't be added to the Context and subsequent LogActions

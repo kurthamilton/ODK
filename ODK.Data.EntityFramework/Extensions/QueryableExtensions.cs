@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using ODK.Core;
 using ODK.Data.Core.Deferred;
 using ODK.Data.EntityFramework.Deferred;
 
@@ -15,13 +16,16 @@ internal static class QueryableExtensions
             : query;
     }
 
-    internal static IDeferredQuery<bool> DeferredAny<T>(this IQueryable<T> query) where T : class
+    internal static IDeferredQuery<bool> DeferredAny<T>(this IQueryable<T> query)
+        where T : class
         => new DeferredQueryAny<T>(query);
 
-    internal static IDeferredQuery<int> DeferredCount<T>(this IQueryable<T> query) where T : class
+    internal static IDeferredQuery<int> DeferredCount<T>(this IQueryable<T> query)
+        where T : class
         => new DeferredQueryCount<T>(query);
 
-    internal static IDeferredQueryMultiple<T> DeferredMultiple<T>(this IQueryable<T> query) where T : class
+    internal static IDeferredQueryMultiple<T> DeferredMultiple<T>(this IQueryable<T> query)
+        where T : class
         => new DeferredQueryMultiple<T>(query);
 
     internal static IDeferredQueryMultiple<T> DeferredMultiple<T>(
@@ -31,8 +35,13 @@ internal static class QueryableExtensions
         where T : class
         => new DeferredQueryMultiple<T>(query, getFromCache, updateCache);
 
-    internal static IDeferredQuerySingle<T> DeferredSingle<T>(this IQueryable<T> query) where T : class
+    internal static IDeferredQuerySingle<T> DeferredSingle<T>(this IQueryable<T> query)
+        where T : class
         => new DeferredQuerySingle<T>(query);
+
+    internal static IDeferredQuerySingle<T> DeferredSingle<T>(this IQueryable<T> query, Guid id)
+        where T : class, IDatabaseEntity
+        => new DeferredQuerySingle<T>(query.Where(x => x.Id == id), id);
 
     internal static IDeferredQuerySingle<T> DeferredSingle<T>(
         this IQueryable<T> query,
@@ -42,7 +51,8 @@ internal static class QueryableExtensions
         where T : class
         => new DeferredQuerySingle<T>(query, getFromCache, updateCache, prefillCache);
 
-    internal static IDeferredQuerySingleOrDefault<T> DeferredSingleOrDefault<T>(this IQueryable<T> query) where T : class
+    internal static IDeferredQuerySingleOrDefault<T> DeferredSingleOrDefault<T>(this IQueryable<T> query)
+        where T : class
         => new DeferredQuerySingleOrDefault<T>(query);
 
     internal static IDeferredQuerySingleOrDefault<T> DeferredSingleOrDefault<T>(

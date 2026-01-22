@@ -30,8 +30,7 @@ public abstract class ReadWriteRepositoryBase<T> : WriteRepositoryBase<T>, IRead
     }
 
     public virtual IDeferredQuerySingle<T> GetById(Guid id) => Set()
-        .Where(x => x.Id == id)
-        .DeferredSingle();
+        .DeferredSingle(id);
 
     public virtual IDeferredQuerySingleOrDefault<T> GetByIdOrDefault(Guid id) => Set()
         .Where(x => x.Id == id)

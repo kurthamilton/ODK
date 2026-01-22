@@ -25,6 +25,7 @@ public class Program
 
         // Configure the HTTP request pipeline.
         app
+            .UseMiddleware<HttpContextLoggingMiddleware>()
             .UseMiddleware<RateLimitingMiddleware>()
             .UseSerilogRequestLogging()
             .UseMiddleware<ErrorHandlingMiddleware>();
@@ -65,8 +66,6 @@ public class Program
             SupportedCultures = supportedCultures,
             SupportedUICultures = supportedCultures
         });
-
-        app.UseMiddleware<HttpContextLoggingMiddleware>();
 
         app.Run();
     }
