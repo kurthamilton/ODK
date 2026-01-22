@@ -483,8 +483,8 @@ public class AccountController : OdkControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("Chapters/{id:guid}/Account/Subscription/Cancel")]
-    public async Task<IActionResult> CancelChapterSubscription(Guid id, [FromForm] CancelSubscriptionRequest form)
+    [HttpPost("Chapters/{chapterId:guid}/Account/Subscription/Cancel")]
+    public async Task<IActionResult> CancelChapterSubscription(Guid chapterId, [FromForm] CancelSubscriptionRequest form)
     {
         var result = await _memberService.CancelChapterSubscription(MemberId, form.ExternalId);
         AddFeedback(result, "Purchase complete. Thank you for subscribing.");

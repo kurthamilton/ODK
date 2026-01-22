@@ -31,10 +31,10 @@ public class ChapterAdminController : AdminControllerBase
         _emailAdminService = emailAdminService;
     }
 
-    [HttpPost("groups/{id:guid}/delete")]
-    public async Task<IActionResult> Delete(Guid id)
+    [HttpPost("groups/{chapterId:guid}/delete")]
+    public async Task<IActionResult> Delete(Guid chapterId)
     {
-        var request = MemberChapterServiceRequest.Create(id, MemberServiceRequest);
+        var request = MemberChapterServiceRequest.Create(chapterId, MemberServiceRequest);
         var result = await _chapterAdminService.DeleteChapter(request);
         AddFeedback(result, "Group deleted");
 
@@ -46,8 +46,8 @@ public class ChapterAdminController : AdminControllerBase
         return Redirect(OdkRoutes.MemberGroups.Index(Platform));
     }
 
-    [HttpPost("groups/{id:guid}/image")]
-    public async Task<IActionResult> UpdateImage(Guid id, [FromForm] ChapterImageFormViewModel viewModel)
+    [HttpPost("groups/{chapterId:guid}/image")]
+    public async Task<IActionResult> UpdateImage(Guid chapterId, [FromForm] ChapterImageFormViewModel viewModel)
     {
         if (string.IsNullOrEmpty(viewModel.ImageDataUrl))
         {
@@ -61,7 +61,7 @@ public class ChapterAdminController : AdminControllerBase
             return RedirectToReferrer();
         }
 
-        var request = MemberChapterServiceRequest.Create(id, MemberServiceRequest);
+        var request = MemberChapterServiceRequest.Create(chapterId, MemberServiceRequest);
         var result = await _chapterAdminService.UpdateChapterImage(request, new UpdateChapterImage
         {
             ImageData = bytes
@@ -71,10 +71,10 @@ public class ChapterAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("groups/{id:guid}/links")]
-    public async Task<IActionResult> UpdatePrivacySettings(Guid id, [FromForm] ChapterLinksFormSubmitViewModel viewModel)
+    [HttpPost("groups/{chapterId:guid}/links")]
+    public async Task<IActionResult> UpdatePrivacySettings(Guid chapterId, [FromForm] ChapterLinksFormSubmitViewModel viewModel)
     {
-        var request = MemberChapterServiceRequest.Create(id, MemberServiceRequest);
+        var request = MemberChapterServiceRequest.Create(chapterId, MemberServiceRequest);
         await _chapterAdminService.UpdateChapterLinks(request, new UpdateChapterLinks
         {
             Facebook = viewModel.Facebook ?? string.Empty,
@@ -89,8 +89,8 @@ public class ChapterAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("groups/{id:guid}/location")]
-    public async Task<IActionResult> UpdateLocation(Guid id, [FromForm] ChapterLocationFormViewModel viewModel)
+    [HttpPost("groups/{chapterId:guid}/location")]
+    public async Task<IActionResult> UpdateLocation(Guid chapterId, [FromForm] ChapterLocationFormViewModel viewModel)
     {
         var lat = viewModel.Lat;
         var lng = viewModel.Long;
@@ -99,7 +99,7 @@ public class ChapterAdminController : AdminControllerBase
             ? new LatLong(lat.Value, lng.Value)
             : default(LatLong?);
 
-        var request = CreateMemberChapterServiceRequest(id);
+        var request = CreateMemberChapterServiceRequest(chapterId);
         await _chapterAdminService.UpdateChapterLocation(request, location, viewModel.LocationName);
 
         AddFeedback("Location updated", FeedbackType.Success);
@@ -107,11 +107,11 @@ public class ChapterAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("groups/{id:guid}/membership")]
-    public async Task<IActionResult> UpdateMembershipSettings(Guid id,
+    [HttpPost("groups/{chapterId:guid}/membership")]
+    public async Task<IActionResult> UpdateMembershipSettings(Guid chapterId,
         [FromForm] MembershipSettingsFormViewModel viewModel)
     {
-        var request = MemberChapterServiceRequest.Create(id, MemberServiceRequest);
+        var request = MemberChapterServiceRequest.Create(chapterId, MemberServiceRequest);
         var result = await _chapterAdminService.UpdateChapterMembershipSettings(request,
             new UpdateChapterMembershipSettings
             {
@@ -163,10 +163,10 @@ public class ChapterAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpGet("groups/{groupId}/payments/sessions/{id}/status")]
-    public async Task<IActionResult> GetPaymentSessionStatus(string id, Guid groupId)
+    [HttpGet("groups/{chapterId:guid}/payments/sessions/{id}/status")]
+    public async Task<IActionResult> GetPaymentSessionStatus(string id, Guid chapterId)
     {
-        var request = CreateMemberChapterServiceRequest(groupId);
+        var request = CreateMemberChapterServiceRequest(chapterId);
         var status = await _chapterAdminService.GetChapterPaymentCheckoutSessionStatus(request, id);
 
         return Ok(new
@@ -175,10 +175,11 @@ public class ChapterAdminController : AdminControllerBase
         });
     }
 
-    [HttpPost("groups/{id:guid}/privacy")]
-    public async Task<IActionResult> UpdatePrivacySettings(Guid id, [FromForm] ChapterPrivacySettingsFormViewModel viewModel)
+    [HttpPost("groups/{chapterId:guid}/privacy")]
+    public async Task<IActionResult> UpdatePrivacySettings(
+        Guid chapterId, [FromForm] ChapterPrivacySettingsFormViewModel viewModel)
     {
-        var request = MemberChapterServiceRequest.Create(id, MemberServiceRequest);
+        var request = MemberChapterServiceRequest.Create(chapterId, MemberServiceRequest);
         var result = await _chapterAdminService.UpdateChapterPrivacySettings(request, new UpdateChapterPrivacySettings
         {
             Conversations = viewModel.Conversations,
@@ -235,10 +236,10 @@ public class ChapterAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("groups/{id:guid}/publish")]
-    public async Task<IActionResult> Publish(Guid id)
+    [HttpPost("groups/{chapterId:guid}/publish")]
+    public async Task<IActionResult> Publish(Guid chapterId)
     {
-        var request = MemberChapterServiceRequest.Create(id, MemberServiceRequest);
+        var request = MemberChapterServiceRequest.Create(chapterId, MemberServiceRequest);
         var result = await _chapterAdminService.PublishChapter(request);
         AddFeedback(result, "Group published");
         return RedirectToReferrer();
@@ -317,11 +318,11 @@ public class ChapterAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("groups/{id:guid}/texts")]
-    public async Task<IActionResult> UpdateChapterTexts(Guid id,
+    [HttpPost("groups/{chapterId:guid}/texts")]
+    public async Task<IActionResult> UpdateChapterTexts(Guid chapterId,
         [FromForm] ChapterTextsFormViewModel viewModel)
     {
-        var serviceRequest = MemberChapterServiceRequest.Create(id, MemberServiceRequest);
+        var serviceRequest = MemberChapterServiceRequest.Create(chapterId, MemberServiceRequest);
         var result = await _chapterAdminService.UpdateChapterTexts(serviceRequest, new UpdateChapterTexts
         {
             Description = viewModel.Description,

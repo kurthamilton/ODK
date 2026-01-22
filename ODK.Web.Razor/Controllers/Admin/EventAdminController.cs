@@ -96,11 +96,11 @@ public class EventAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("groups/{id:guid}/events/settings")]
-    public async Task<IActionResult> UpdateEventSettings(Guid id,
+    [HttpPost("groups/{chapterId:guid}/events/settings")]
+    public async Task<IActionResult> UpdateEventSettings(Guid chapterId,
         [FromForm] EventSettingsFormSubmitViewModel viewModel)
     {
-        var request = CreateMemberChapterServiceRequest(id);
+        var request = CreateMemberChapterServiceRequest(chapterId);
 
         await _eventAdminService.UpdateEventSettings(request, new UpdateEventSettings
         {

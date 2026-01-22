@@ -33,12 +33,12 @@ public class GroupsController : OdkControllerBase
         _memberService = memberService;
     }
 
-    [HttpPost("groups/{id:guid}/contact")]
-    public async Task<IActionResult> Contact(Guid id, [FromForm] ContactFormViewModel viewModel)
+    [HttpPost("groups/{chapterId:guid}/contact")]
+    public async Task<IActionResult> Contact(Guid chapterId, [FromForm] ContactFormViewModel viewModel)
     {
         await _contactService.SendChapterContactMessage(
             ServiceRequest,
-            id,
+            chapterId,
             viewModel.EmailAddress ?? string.Empty,
             viewModel.Message ?? string.Empty,
             viewModel.Recaptcha ?? string.Empty);
@@ -85,15 +85,15 @@ public class GroupsController : OdkControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpGet("groups/{id:guid}/image")]
-    public Task<IActionResult> Image(Guid id)
-        => HandleVersionedRequest(version => _chapterService.GetChapterImage(version, id), ChapterImageResult);
+    [HttpGet("groups/{chapterId:guid}/image")]
+    public Task<IActionResult> Image(Guid chapterId)
+        => HandleVersionedRequest(version => _chapterService.GetChapterImage(version, chapterId), ChapterImageResult);
 
     [Authorize]
-    [HttpPost("groups/{id:guid}/leave")]
-    public async Task<IActionResult> LeaveGroup(Guid id, [FromForm] string reason)
+    [HttpPost("groups/{chapterId:guid}/leave")]
+    public async Task<IActionResult> LeaveGroup(Guid chapterId, [FromForm] string reason)
     {
-        var request = MemberChapterServiceRequest.Create(id, MemberServiceRequest);
+        var request = MemberChapterServiceRequest.Create(chapterId, MemberServiceRequest);
         var result = await _memberService.LeaveChapter(request, reason);
         AddFeedback(result, "You have left the group");
 
@@ -106,8 +106,8 @@ public class GroupsController : OdkControllerBase
     }
 
     [Authorize]
-    [HttpPost("groups/{id:guid}/profile")]
-    public async Task<IActionResult> UpdateChapterProfile(Guid id,
+    [HttpPost("groups/{chapterId:guid}/profile")]
+    public async Task<IActionResult> UpdateChapterProfile(Guid chapterId,
         [FromForm] ChapterProfileFormSubmitViewModel profileViewModel)
     {
         var model = new UpdateMemberChapterProfile
@@ -122,7 +122,7 @@ public class GroupsController : OdkControllerBase
             })
         };
 
-        var request = CreateMemberChapterServiceRequest(id);
+        var request = CreateMemberChapterServiceRequest(chapterId);
 
         var result = await _memberService.UpdateMemberChapterProfile(request, model);
         AddFeedback(result, "Profile updated");

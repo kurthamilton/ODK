@@ -95,20 +95,20 @@ public class MemberAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("groups/{id:guid}/members/admins")]
-    public async Task<IActionResult> AddAdminMember(Guid id,
+    [HttpPost("groups/{chapterId:guid}/members/admins")]
+    public async Task<IActionResult> AddAdminMember(Guid chapterId,
         [FromForm] AdminMemberAddFormViewModel viewModel)
     {
-        var request = CreateMemberChapterServiceRequest(id);
+        var request = CreateMemberChapterServiceRequest(chapterId);
         var result = await _chapterAdminService.AddChapterAdminMember(request, viewModel.MemberId!.Value);
         AddFeedback(result, "Admin member added");
         return RedirectToReferrer();
     }
 
-    [HttpPost("groups/{id:guid}/members/admins/{memberId:guid}/delete")]
-    public async Task<IActionResult> AddAdminMember(Guid id, Guid memberId)
+    [HttpPost("groups/{chapterId:guid}/members/admins/{memberId:guid}/delete")]
+    public async Task<IActionResult> AddAdminMember(Guid chapterId, Guid memberId)
     {
-        var request = CreateMemberChapterServiceRequest(id);
+        var request = CreateMemberChapterServiceRequest(chapterId);
         var result = await _chapterAdminService.DeleteChapterAdminMember(request, memberId);
         AddFeedback(result, "Admin member removed");
         return RedirectToReferrer();
