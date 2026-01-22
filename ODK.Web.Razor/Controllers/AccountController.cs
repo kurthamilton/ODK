@@ -491,15 +491,6 @@ public class AccountController : OdkControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("Chapters/{id:guid}/Account/Subscription/Purchase")]
-    public async Task<IActionResult> PurchaseChapterSubscription(Guid id, [FromForm] PurchaseSubscriptionRequest form)
-    {
-        var request = MemberChapterServiceRequest.Create(id, MemberServiceRequest);
-        var result = await _memberService.PurchaseChapterSubscription(request, form.SubscriptionId, form.Token);
-        AddFeedback(result, "Purchase complete. Thank you for subscribing.");
-        return RedirectToReferrer();
-    }
-
     [HttpPost("account/topics")]
     public async Task<IActionResult> UpdateTopics([FromForm] TopicPickerFormSubmitViewModel viewModel)
     {

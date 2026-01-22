@@ -21,11 +21,7 @@ public class PaymentSettingsModel : ChapterSiteAdminPageModel
         var result = await _chapterAdminService.UpdateChapterPaymentSettings(serviceRequest,
             new UpdateChapterPaymentSettings
             {
-                ApiPublicKey = viewModel.PublicKey,
-                ApiSecretKey = viewModel.SecretKey,
-                CurrencyId = viewModel.CurrencyId,
-                Provider = viewModel.Provider,
-                UseSitePaymentProvider = viewModel.UseSitePaymentProvider
+                CurrencyId = viewModel.CurrencyId
             });
 
         if (!result.Success)

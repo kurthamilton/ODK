@@ -21,14 +21,3 @@
     Content = await Html.PartialAsync("Groups/Subscription/_GroupSubscriptionContent", viewModel),
     Group = viewModel
 })
-
-@section scripts
-{
-    @await Html.PartialAsync("Payments/_PaymentScripts", new PaymentScriptsViewModel
-    {
-        ApiPublicKey = viewModel.SitePaymentSettings.ApiPublicKey,
-        CurrencyCode = viewModel.Currency.Code,
-        IsSubscription = false,
-        Provider = viewModel.SitePaymentSettings.Provider        
-    })
-}

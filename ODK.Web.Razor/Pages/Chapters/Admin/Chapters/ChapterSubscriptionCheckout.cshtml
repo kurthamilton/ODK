@@ -27,6 +27,15 @@
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
     Title = "Checkout",    
+    Breadcrumbs = new[]
+    {
+        new MenuItem
+        {
+            Icon = IconType.ArrowLeft,
+            Text = "Back to subscription",
+            Link = OdkRoutes.MemberGroups.GroupSubscription(Model.Platform, chapter)
+        }
+    },
     ContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_ChapterSubscriptionCheckoutContent", viewModel)</div>
 })
 
@@ -34,9 +43,6 @@
 {
     @await Html.PartialAsync("Payments/_PaymentScripts", new PaymentScriptsViewModel
     {
-        ApiPublicKey = viewModel.PaymentSettings.ApiPublicKey ?? "",
-        CurrencyCode = viewModel.CurrencyCode,
-        IsSubscription = true,
-        Provider = viewModel.PaymentSettings.Provider ?? PaymentProviderType.None
+        Providers = [viewModel.PaymentSettings.Provider]
     })
 }

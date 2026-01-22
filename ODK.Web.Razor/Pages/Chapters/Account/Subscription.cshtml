@@ -40,14 +40,3 @@
             </div>
     })
 })
-
-@section scripts
-{
-    @await Html.PartialAsync("Payments/_PaymentScripts", new PaymentScriptsViewModel
-    {
-        ApiPublicKey = viewModel.ChapterPaymentSettings?.ApiPublicKey ?? string.Empty,
-        CurrencyCode = viewModel.ChapterSubscriptions.FirstOrDefault()?.ChapterSubscription.Currency.Code ?? string.Empty,
-        IsSubscription = false,
-        Provider = viewModel.ChapterPaymentSettings?.Provider ?? PaymentProviderType.None
-    })
-}

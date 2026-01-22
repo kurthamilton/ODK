@@ -36,33 +36,12 @@ public class ChapterSubscription : IDatabaseEntity, IChapterEntity
 
     public SubscriptionType Type { get; set; }
 
-    public bool IsVisibleToMembers(
-        ChapterPaymentSettings? chapterPaymentSettings, IEnumerable<SitePaymentSettings> sitePaymentSettings)
-    {
-        if (Disabled)
-        {
-            return false;
-        }
+    public bool IsVisibleToMembers(IEnumerable<SitePaymentSettings> sitePaymentSettings)
+        => !Disabled && IsVisibleToAdmins(sitePaymentSettings);
 
-        return IsVisibleToAdmins(chapterPaymentSettings, sitePaymentSettings);
-    }
-
-    public bool IsVisibleToAdmins(
-        ChapterPaymentSettings? chapterPaymentSettings, IEnumerable<SitePaymentSettings> sitePaymentSettings)
-    {
-        if (SitePaymentSettingId != null)
-        {
-            return sitePaymentSettings.First(x => x.Id == SitePaymentSettingId.Value).Enabled;
-        }
-
-        if (chapterPaymentSettings == null || chapterPaymentSettings.UseSitePaymentProvider)
-        {
-            // SitePaymentSettingId not set, cannot be used
-            return false;
-        }
-
-        return true;
-    }
+    public bool IsVisibleToAdmins(IEnumerable<SitePaymentSettings> sitePaymentSettings)
+        => sitePaymentSettings
+            .FirstOrDefault(x => x.Id == SitePaymentSettingId)?.Enabled == true;
 
     public string ToReference() => $"Subscription: {Name}";
 }

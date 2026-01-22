@@ -69,7 +69,6 @@ public class ChapterService : IChapterService
             currentMember,
             memberSubscription,
             chapterSubscriptions,
-            chapterPaymentSettings,
             sitePaymentSettings,
             memberSubscriptionRecord,
             membershipSettings
@@ -77,8 +76,7 @@ public class ChapterService : IChapterService
             x => x.ChapterRepository.GetById(chapterId),
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.MemberSubscriptionRepository.GetByMemberId(currentMemberId, chapterId),
-            x => x.ChapterSubscriptionRepository.GetDtosByChapterId(chapterId, includeDisabled: true),
-            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
+            x => x.ChapterSubscriptionRepository.GetByChapterId(chapterId, includeDisabled: true),
             x => x.SitePaymentSettingsRepository.GetAll(),
             x => x.MemberSubscriptionRecordRepository.GetLatest(currentMemberId, chapterId),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId));
@@ -86,22 +84,20 @@ public class ChapterService : IChapterService
         OdkAssertions.MemberOf(currentMember, chapterId);
 
         var currentSubscription = chapterSubscriptions
-            .FirstOrDefault(x => x.ChapterSubscription.Id == memberSubscriptionRecord?.ChapterSubscriptionId)
-            ?.ChapterSubscription;
+            .FirstOrDefault(x => x.Id == memberSubscriptionRecord?.ChapterSubscriptionId);
 
         chapterSubscriptions = chapterSubscriptions
-            .Where(x => x.ChapterSubscription.IsVisibleToMembers(chapterPaymentSettings, sitePaymentSettings))
+            .Where(x => x.IsVisibleToMembers(sitePaymentSettings))
             .ToArray();
 
         var externalSubscription = await GetExternalSubscription(
             sitePaymentSettings,
             memberSubscriptionRecord,
-            chapterSubscriptions.Select(x => x.ChapterSubscription).ToArray());
+            chapterSubscriptions);
 
         return new SubscriptionsPageViewModel
         {
             Chapter = chapter,
-            ChapterPaymentSettings = chapterPaymentSettings,
             ChapterSubscriptions = chapterSubscriptions,
             CurrentSubscription = currentSubscription,
             ExternalSubscription = externalSubscription,

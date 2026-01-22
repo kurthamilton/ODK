@@ -36,9 +36,7 @@
                 <p>You have bought a ticket for this event</p>
             }
             else if (Model.AmountPaid > 0 && Model.AmountRemaining > 0)
-            {
-                var modalId = "complete-purchase-modal";
-                
+            {                
                 <div>
                     <h5>Complete purchase</h5>
                     <div>
@@ -49,35 +47,10 @@
                     </div>                    
                 </div>
 
-                @if (Model.ChapterPaymentSettings?.UseSitePaymentProvider == true)
-                {
-                    <a class="btn btn-primary"
-                       href="@OdkRoutes.Groups.EventCheckout(Model.Platform, Model.Chapter, Model.Event.Id)">
-                        Complete purchase
-                    </a>
-                }
-                else
-                {
-                    <button class="btn btn-primary"
-                            data-bs-toggle="modal" data-bs-target="#@modalId">
-                        Complete purchase
-                    </button>
-                }
-
-                @await Html.PartialAsync("Payments/_PaymentModal", new PaymentModalViewModel
-                {
-                    Action = $"/events/{Model.Event.Id}/tickets/complete",
-                    PaymentSettings = Model.ChapterPaymentSettings,
-                    Id = modalId,
-                    PaymentForm = new PaymentFormViewModel
-                    {
-                        Amount = Model.AmountRemaining,
-                        Currency = currency,
-                        Description = "",
-                        Id = "complete-purchase"
-                    },
-                    Title = $"{Model.Event.Name} - Complete ticket purchase"
-                })
+                <a class="btn btn-primary"
+                   href="@OdkRoutes.Groups.EventCheckout(Model.Platform, Model.Chapter, Model.Event.Id)">
+                    Complete purchase
+                </a>
             }
             else if (ticketsLeft <= 0)
             {
@@ -89,9 +62,7 @@
             else if (Model.Event.TicketSettings.Deposit != null)
             {
                 if (!deadlinePassed)
-                {
-                    var modalId = "deposit-purchase-modal";
-
+                {                    
                     <div>
                         <h5>Pay deposit</h5>
                         @if (ticketsLeft != null)
@@ -110,43 +81,16 @@
                         </div>
                     </div>
 
-                    @if (Model.ChapterPaymentSettings?.UseSitePaymentProvider == true)
-                    {
-                        <a class="btn btn-primary"
-                           href="@OdkRoutes.Groups.EventCheckout(Model.Platform, Model.Chapter, Model.Event.Id)">
-                            Pay deposit
-                        </a>
-                    }            
-                    else
-                    {
-                        <button class="btn btn-primary"
-                                data-bs-toggle="modal" data-bs-target="#@modalId">
-                            Pay deposit
-                        </button>
-                    }
-
-                    @await Html.PartialAsync("Payments/_PaymentModal", new PaymentModalViewModel
-                    {
-                        Action = $"/events/{Model.Event.Id}/tickets/deposit",
-                        PaymentSettings = Model.ChapterPaymentSettings,
-                        Id = modalId,
-                        PaymentForm = new PaymentFormViewModel
-                        {
-                            Amount = Model.Event.TicketSettings.Deposit.Value,
-                            Currency = currency,
-                            Description = $"{Model.Event.Name} deposit",
-                            Id = "deposit-purchase"
-                        },
-                        Title = "Pay deposit"
-                    })
+                    <a class="btn btn-primary"
+                       href="@OdkRoutes.Groups.EventCheckout(Model.Platform, Model.Chapter, Model.Event.Id)">
+                        Pay deposit
+                    </a>
                 }                
             }
             else
             {
                 if (!deadlinePassed)
                 {
-                    var modalId = "ticket-purchase-modal";
-
                     <div>
                         <h5>Purchase ticket</h5>
                         @if (ticketsLeft != null)
@@ -161,35 +105,10 @@
                         </div>
                     </div>
 
-                    @if (Model.ChapterPaymentSettings?.UseSitePaymentProvider == true)
-                    {
-                        <a class="btn btn-primary"
-                           href="@OdkRoutes.Groups.EventCheckout(Model.Platform, Model.Chapter, Model.Event.Id)">
-                            Buy ticket
-                        </a>
-                    }
-                    else
-                    {
-                        <button class="btn btn-primary"
-                                data-bs-toggle="modal" data-bs-target="#@modalId">
-                            Buy ticket
-                        </button>
-                    }
-
-                    @await Html.PartialAsync("Payments/_PaymentModal", new PaymentModalViewModel
-                    {
-                        Action = $"/events/{Model.Event.Id}/tickets/purchase",
-                        PaymentSettings = Model.ChapterPaymentSettings,
-                        Id = modalId,
-                        PaymentForm = new PaymentFormViewModel
-                        {
-                            Amount = Model.Event.TicketSettings.Cost,
-                            Currency = currency,
-                            Description = "",
-                            Id = "ticket-purchase"
-                        },
-                        Title = $"{Model.Event.Name} - Buy ticket"
-                    })                    
+                    <a class="btn btn-primary"
+                       href="@OdkRoutes.Groups.EventCheckout(Model.Platform, Model.Chapter, Model.Event.Id)">
+                        Buy ticket
+                    </a>                  
                 }
             }
         </div>        

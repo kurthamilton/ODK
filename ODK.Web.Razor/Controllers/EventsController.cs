@@ -56,31 +56,4 @@ public class EventsController : OdkControllerBase
 
         return RedirectToReferrer();
     }
-
-    [Authorize]
-    [HttpPost("events/{id:guid}/tickets/deposit")]
-    public async Task<IActionResult> PayDeposit(Guid id, [FromForm] string? token)
-    {
-        var result = await _eventService.PayDeposit(MemberId, id, token ?? string.Empty);
-        AddFeedback(result, "Deposit paid");
-        return RedirectToReferrer();
-    }
-
-    [Authorize]
-    [HttpPost("events/{id:guid}/tickets/purchase")]
-    public async Task<IActionResult> PurchaseTicket(Guid id, [FromForm] string? token)
-    {
-        var result = await _eventService.PurchaseTicket(MemberId, id, token ?? string.Empty);
-        AddFeedback(result, "Ticket purchased");
-        return RedirectToReferrer();
-    }
-
-    [Authorize]
-    [HttpPost("events/{id:guid}/tickets/complete")]
-    public async Task<IActionResult> CompleteTicketPurchase(string chapterName, Guid id, [FromForm] string? token)
-    {
-        var result = await _eventService.PayTicketRemainder(MemberId, id, token ?? string.Empty);
-        AddFeedback(result, "Ticket purchase complete");
-        return RedirectToReferrer();
-    }
 }

@@ -12,9 +12,7 @@ public class ChapterSubscriptionCheckoutStartedViewModel
 
     public required string ClientSecret { get; init; }
 
-    public required string CurrencyCode { get; init; }
-
-    public required IPaymentSettings PaymentSettings { get; init; }
+    public required SitePaymentSettings PaymentSettings { get; init; }
 
     public required PlatformType Platform { get; init; }
 }

@@ -1,5 +1,13 @@
 ﻿@using ODK.Services.Events.ViewModels
+@using ODK.Web.Razor.Models.Events
 @model EventCheckoutPageViewModel
+
+@await Html.PartialAsync("Events/_EventHeader", new EventHeaderViewModel
+{
+    Chapter = Model.Chapter,
+    Event = Model.Event,
+    Venue = Model.Venue
+})
 
 <section class="section">
     <div id="checkout"

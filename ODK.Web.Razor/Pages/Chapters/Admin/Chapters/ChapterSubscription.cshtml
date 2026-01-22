@@ -23,30 +23,3 @@
     Title = "Subscription",    
     ContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_ChapterSubscriptionContent", viewModel)</div>
 })
-
-@section scripts
-{
-    @{
-        var added = new List<Guid>();
-    }
-
-    @foreach (var dto in viewModel.SiteSubscriptions.Subscriptions)
-    {
-        var paymentSettings = viewModel.SiteSubscriptions.SitePaymentSettings
-        .First(x => x.Id == dto.Subscription.SitePaymentSettingId);
-        if (added.Contains(paymentSettings.Id))
-        {
-            continue;
-        }
-
-        added.Add(paymentSettings.Id);
-
-        @await Html.PartialAsync("Payments/_PaymentScripts", new PaymentScriptsViewModel
-        {
-            ApiPublicKey = paymentSettings.ApiPublicKey ?? "",
-            CurrencyCode = "",
-            IsSubscription = true,
-            Provider = paymentSettings.Provider
-       })
-    }
-}

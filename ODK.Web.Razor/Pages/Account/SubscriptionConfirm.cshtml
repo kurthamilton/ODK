@@ -1,7 +1,9 @@
 ﻿@page "/account/subscription/{id:guid}/confirm"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
+@using ODK.Core.Exceptions
 @using ODK.Core.Payments
+@using ODK.Core.Platforms
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
@@ -10,6 +12,11 @@
 @{
     Layout = "_AccountLayout";
     Model.Title = "Subscription confirm";
+
+    if (Model.Platform == PlatformType.DrunkenKnitwits)
+    {
+        throw new OdkNotFoundException();
+    }
 
     var subscriptionUrl = Model.RedirectUrl;
 }

@@ -1,5 +1,4 @@
-﻿using ODK.Core.Subscriptions;
-using ODK.Services.Subscriptions.ViewModels;
+﻿using ODK.Services.Subscriptions.ViewModels;
 
 namespace ODK.Services.Subscriptions;
 
@@ -15,12 +14,7 @@ public interface ISiteSubscriptionService
         ServiceRequest request, Guid? memberId);
 
     Task<SiteSubscriptionCheckoutViewModel> StartSiteSubscriptionCheckout(
-        MemberServiceRequest request, Guid priceId, string returnPath);
+        MemberServiceRequest request, Guid priceId, string returnPath, Guid? chapterId);
 
     Task SyncExpiredSubscriptions(ServiceRequest request);
-
-    Task<ServiceResult> UpdateMemberSiteSubscription(
-        MemberServiceRequest request,
-        Guid siteSubscriptionId,
-        SiteSubscriptionFrequency frequency);
 }

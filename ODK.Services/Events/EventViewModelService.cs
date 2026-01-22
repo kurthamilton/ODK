@@ -1,4 +1,5 @@
-﻿using ODK.Core;
+﻿using System;
+using ODK.Core;
 using ODK.Core.Chapters;
 using ODK.Core.Events;
 using ODK.Core.Extensions;
@@ -43,7 +44,9 @@ public class EventViewModelService : IEventViewModelService
         var (
             chapterPages,
             @event,
+            venue,
             currentMember,
+            memberSubscription,
             chapterPaymentSettings,
             chapterPaymentAccount,
             sitePaymentSettings,
@@ -51,18 +54,24 @@ public class EventViewModelService : IEventViewModelService
             hasQuestions,
             adminMembers,
             ownerSubscription,
-            eventTicketPayments) = await _unitOfWork.RunAsync(
+            eventTicketPayments,
+            membershipSettings,
+            privacySettings) = await _unitOfWork.RunAsync(
             x => x.ChapterPageRepository.GetByChapterId(chapter.Id),
             x => x.EventRepository.GetById(eventId),
+            x => x.VenueRepository.GetByEventId(eventId),
             x => x.MemberRepository.GetByIdOrDefault(currentMemberId),
+            x => x.MemberSubscriptionRepository.GetByMemberId(currentMemberId, chapter.Id),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPaymentAccountRepository.GetByChapterId(chapter.Id),
-            x => x.SitePaymentSettingsRepository.GetAll(),
+            x => x.SitePaymentSettingsRepository.GetActive(),
             x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
-            x => x.EventTicketPaymentRepository.GetConfirmedPayments(currentMemberId, eventId));
+            x => x.EventTicketPaymentRepository.GetConfirmedPayments(currentMemberId, eventId),
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id));
 
         OdkAssertions.BelongsToChapter(@event, chapter.Id);
 
@@ -72,9 +81,7 @@ public class EventViewModelService : IEventViewModelService
         }
 
         var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
-            chapterPaymentSettings,
-            sitePaymentSettings,
-            chapterPaymentAccount);
+            sitePaymentSettings, chapterPaymentAccount);
 
         var externalProductId = chapterPaymentSettings.ExternalProductId;
         if (string.IsNullOrEmpty(externalProductId))
@@ -171,12 +178,14 @@ public class EventViewModelService : IEventViewModelService
 
         await _unitOfWork.SaveChangesAsync();
 
+        var canViewVenue = _authorizationService.CanViewVenue(
+            venue, currentMember, memberSubscription, membershipSettings, privacySettings);
+
         return new EventCheckoutPageViewModel
         {
             Chapter = chapter,
             ChapterPages = chapterPages,
             ClientSecret = externalCheckoutSession.ClientSecret,
-            CurrencyCode = externalCheckoutSession.Currency,
             CurrentMember = currentMember,
             Event = @event,
             HasProfiles = hasProfiles,
@@ -184,8 +193,9 @@ public class EventViewModelService : IEventViewModelService
             IsAdmin = adminMembers.Any(x => x.MemberId == currentMemberId),
             IsMember = currentMember.IsMemberOf(chapter.Id),
             OwnerSubscription = ownerSubscription,
-            PaymentSettings = paymentProvider.PaymentSettings,
-            Platform = platform
+            PaymentSettings = sitePaymentSettings,
+            Platform = platform,
+            Venue = canViewVenue ? venue : null,
         };
     }
 
@@ -203,7 +213,6 @@ public class EventViewModelService : IEventViewModelService
             hosts,
             comments,
             responses,
-            chapterPaymentSettings,
             privacySettings,
             hasProperties,
             hasQuestions,
@@ -224,7 +233,6 @@ public class EventViewModelService : IEventViewModelService
             x => x.EventHostRepository.GetByEventId(eventId),
             x => x.EventCommentRepository.GetByEventId(eventId),
             x => x.EventResponseRepository.GetByEventId(eventId),
-            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
@@ -322,7 +330,6 @@ public class EventViewModelService : IEventViewModelService
             CanView = canViewEvent,
             Chapter = chapter,
             ChapterPages = chapterPages,
-            ChapterPaymentSettings = chapterPaymentSettings,
             Comments = new EventCommentsDto
             {
                 Comments = comments,

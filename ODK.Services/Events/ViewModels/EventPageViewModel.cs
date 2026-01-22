@@ -1,5 +1,4 @@
-﻿using ODK.Core.Chapters;
-using ODK.Core.Events;
+﻿using ODK.Core.Events;
 using ODK.Core.Members;
 using ODK.Core.Venues;
 using ODK.Services.Chapters.ViewModels;
@@ -15,8 +14,6 @@ public class EventPageViewModel : GroupPageViewModel
     public required bool CanRespond { get; init; }
 
     public required bool CanView { get; init; }
-
-    public required ChapterPaymentSettings? ChapterPaymentSettings { get; init; }
 
     public required EventCommentsDto Comments { get; init; }
 

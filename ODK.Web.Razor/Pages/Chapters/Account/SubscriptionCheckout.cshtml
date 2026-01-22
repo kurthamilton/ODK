@@ -29,20 +29,24 @@
     Content = await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
     {
         Title = "Checkout",
+        Breadcrumbs = new BreadcrumbsViewModel
+        {
+            Breadcrumbs = new[]
+            {
+                new MenuItem
+                {
+                    Icon = IconType.ArrowLeft,
+                    Text = "My subscription",
+                    Link = OdkRoutes.Account.Subscription(Model.Platform, chapter)
+                }
+            }
+        },
         MenuContentFunc = _ => Html.PartialAsync("Account/_AccountMenu", new AccountMenuViewModel
         {
             Chapter = chapter
         }),
         BodyContentFunc = 
             @<div>
-                @await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
-                {
-                    Breadcrumbs = new[]
-                    {
-                        new MenuItem { Text = "My subscription", Link = OdkRoutes.Account.Subscription(Model.Platform, chapter) },
-                        new MenuItem { Text = "Checkout" }
-                    }
-                })
                 <section class="section">
                     <div id="checkout"
                          data-stripe="@viewModel.PaymentSettings.ApiPublicKey"
@@ -58,9 +62,6 @@
 {
     @await Html.PartialAsync("Payments/_PaymentScripts", new PaymentScriptsViewModel
     {
-        ApiPublicKey = viewModel.PaymentSettings.ApiPublicKey ?? string.Empty,
-        CurrencyCode = viewModel.ChapterSubscription.Currency.Code,
-        IsSubscription = true,
-        Provider = viewModel.PaymentSettings.Provider ?? PaymentProviderType.None
+        Providers = [viewModel.PaymentSettings.Provider]
     })
 }

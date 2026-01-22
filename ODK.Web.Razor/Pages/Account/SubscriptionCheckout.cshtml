@@ -1,7 +1,9 @@
 ﻿@page "/account/subscription/{id:guid}/checkout"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
+@using ODK.Core.Exceptions
 @using ODK.Core.Payments
+@using ODK.Core.Platforms
 @using ODK.Services.Subscriptions
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
@@ -14,9 +16,14 @@
     Layout = "_AccountLayout";
     Model.Title = "Subscription checkout";
 
+    if (Model.Platform == PlatformType.DrunkenKnitwits)
+    {
+        throw new OdkNotFoundException();
+    }
+
     var returnPath = $"/account/subscription/{Model.SubscriptionId}/confirm?sessionId={{sessionId}}";
     var viewModel = await SiteSubscriptionService.StartSiteSubscriptionCheckout(
-        Model.MemberServiceRequest, Model.SubscriptionId, returnPath);
+        Model.MemberServiceRequest, Model.SubscriptionId, returnPath, chapterId: null);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -52,9 +59,6 @@
 {
     @await Html.PartialAsync("Payments/_PaymentScripts", new PaymentScriptsViewModel
     {
-        ApiPublicKey = viewModel.PaymentSettings.ApiPublicKey ?? "",
-        CurrencyCode = viewModel.CurrencyCode,
-        IsSubscription = true,
-        Provider = viewModel.PaymentSettings.Provider ?? PaymentProviderType.None
+        Providers = [viewModel.PaymentSettings.Provider]
     })
 }
