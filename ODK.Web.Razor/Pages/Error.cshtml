@@ -1,9 +1,8 @@
-﻿@page "/Error"
+﻿@page "/error/{statusCode:int}"
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Extensions
-@using System.Net
-@model ODK.Web.Razor.Pages.ErrorModel
+@model ErrorModel
 @{
     Layout = "Shared/_HomeLayout";
     Model.Title = "Error";
@@ -13,9 +12,13 @@
 {
     Breadcrumbs = new[]
     {
-        new MenuItem { Link = "/", Text = "Home" },
-        new MenuItem { Text = "An error has occurred" }
+        new MenuItem 
+        { 
+            Icon = IconType.ArrowLeft,
+            Link = "/", 
+            Text = "Home" 
+        },
     },
-    Content = await Html.PartialAsync("Errors/_ErrorPage", HttpStatusCode.InternalServerError),
-    Title = "An error has occurred"
+    Content = await Html.PartialAsync("Errors/_ErrorPage", Model.ErrorStatusCode),
+    Title = "Error"
 })

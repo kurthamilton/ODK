@@ -1,4 +1,4 @@
-using System.Diagnostics;
+using System.Net;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ODK.Web.Razor.Pages;
@@ -7,12 +7,10 @@ namespace ODK.Web.Razor.Pages;
 [IgnoreAntiforgeryToken]
 public class ErrorModel : OdkPageModel
 {
-    public string? RequestId { get; set; }
+    public HttpStatusCode ErrorStatusCode { get; private set; }
 
-    public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
-
-    public void OnGet()
+    public void OnGet(int statusCode)
     {
-        RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier;
+        ErrorStatusCode = (HttpStatusCode)statusCode;
     }
 }
