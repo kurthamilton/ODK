@@ -9,5 +9,9 @@ public class EventStatusViewModel
 
     public required Event Event { get; init; }
 
+    public required bool IsOnWaitingList { get; init; }
+
     public required int? SpacesLeft { get; init; }
+
+    public required int WaitingListLength { get; init; }
 }

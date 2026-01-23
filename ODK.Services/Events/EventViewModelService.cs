@@ -220,7 +220,7 @@ public class EventViewModelService : IEventViewModelService
             notifications,
             chapterPages,
             payments,
-            isOnWaitingList) = await _unitOfWork.RunAsync(
+            waitingList) = await _unitOfWork.RunAsync(
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.EventRepository.GetById(eventId),
             x => x.VenueRepository.GetByEventId(eventId),
@@ -245,9 +245,7 @@ public class EventViewModelService : IEventViewModelService
             x => currentMemberId != null
                 ? x.EventTicketPaymentRepository.GetConfirmedPayments(currentMemberId.Value, eventId)
                 : new DefaultDeferredQueryMultiple<EventTicketPayment>(),
-            x => currentMemberId != null
-                ? x.EventWaitingListMemberRepository.IsOnWaitingList(eventId, currentMemberId.Value)
-                : new DefaultDeferredQueryAny(false));
+            x => x.EventWaitingListMemberRepository.GetByEventId(eventId));
 
         OdkAssertions.BelongsToChapter(@event, chapter.Id);
 
@@ -344,16 +342,20 @@ public class EventViewModelService : IEventViewModelService
             HasQuestions = hasQuestions,
             Hosts = hosts.Select(x => x.Member).ToArray(),
             IsAdmin = adminMembers.Any(x => x.MemberId == currentMemberId),
-            IsOnWaitingList = isOnWaitingList,
+            IsOnWaitingList = waitingList.Any(x => x.MemberId == currentMemberId),
             IsMember = member?.IsMemberOf(chapter.Id) == true,
             MembersByResponse = responseDictionary,
             MemberResponse = currentMemberId != null
                 ? responses.FirstOrDefault(x => x.MemberId == currentMemberId.Value)?.Type
                 : null,
             OwnerSubscription = ownerSubscription,
+            SpacesLeft = responseDictionary.TryGetValue(EventResponseType.Yes, out var attendees)
+                ? @event.NumberOfSpacesLeft(attendees.Count)
+                : @event.NumberOfSpacesLeft(0),
             Platform = platform,
             Venue = canViewVenue ? venue : null,
-            VenueLocation = venueLocation
+            VenueLocation = venueLocation,
+            WaitingListLength = waitingList.Count
         };
     }
 

@@ -9,4 +9,6 @@ public class EventWaitingListMember : IDatabaseEntity
     public Guid Id { get; set; }
 
     public Guid MemberId { get; set; }
+
+    public DateTime? NotifiedUtc { get; set; }
 }

@@ -1,5 +1,4 @@
-﻿using ODK.Core.Extensions;
-using ODK.Core.Payments;
+﻿using ODK.Core.Payments;
 using ODK.Core.Subscriptions;
 using ODK.Core.Utils;
 using ODK.Services.Logging;
@@ -336,51 +335,6 @@ public class StripePaymentProvider : IPaymentProvider
         {
             return null;
         }
-    }
-
-    public async Task<RemotePaymentResult> MakePayment(
-        string currencyCode,
-        decimal amount,
-        string cardToken,
-        string description,
-        Guid memberId,
-        string memberName)
-    {
-        var service = CreatePaymentIntentService();
-
-        var stripeAmount = ToStripeAmount(amount);
-        var intent = await service.CreateAsync(new PaymentIntentCreateOptions
-        {
-            Amount = stripeAmount,
-            ApplicationFeeAmount = CalculateCommission(stripeAmount),
-            Currency = currencyCode.ToLowerInvariant(),
-            Description = $"{memberName}: {description}",
-            ExtraParams = new Dictionary<string, object>
-            {
-                {
-                    "payment_method_data", new Dictionary<string, object>
-                    {
-                        { "type", "card" },
-                        {
-                            "card", new Dictionary<string, object>
-                            {
-                                { "token", cardToken }
-                            }
-                        }
-                    }
-                }
-            },
-            Metadata = new Dictionary<string, string>
-            {
-                { "member_id", memberId.ToString() }
-            },
-            TransferData = !string.IsNullOrEmpty(_connectedAccountId)
-                ? new PaymentIntentTransferDataOptions { Destination = _connectedAccountId }
-                : null,
-        });
-
-        intent = await service.ConfirmAsync(intent.Id);
-        return RemotePaymentResult.Successful(intent.Id);
     }
 
     public async Task<ExternalCheckoutSession> StartCheckout(

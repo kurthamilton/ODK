@@ -5,9 +5,9 @@ namespace ODK.Web.Razor.Models.Events;
 
 public class EventResponseIconViewModel
 {
-    public bool Active { get; set; }
+    public bool Active { get; init; }
 
-    public required EventResponseType CurrentResponse { get; set; }
+    public required EventResponseType CurrentResponse { get; init; }
 
     public IconType? Icon => CurrentResponse switch
     {
@@ -17,9 +17,9 @@ public class EventResponseIconViewModel
         _ => null
     };
 
-    public bool ReadOnly { get; set; }
+    public bool ReadOnly { get; init; }
 
-    public EventResponseType? ResponseType { get; set; }
+    public EventResponseType? ResponseType { get; init; }
 
     public string Tooltip => CurrentResponse switch
     {

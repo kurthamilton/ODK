@@ -25,7 +25,7 @@ public class EventModel : OdkPageModel
             try
             {
                 var response = Enum.Parse<EventResponseType>(rsvp, true);
-                await _eventService.UpdateMemberResponse(CurrentMemberId, id, response);
+                await _eventService.UpdateMemberResponse(MemberServiceRequest, id, response);
             }
             catch
             {

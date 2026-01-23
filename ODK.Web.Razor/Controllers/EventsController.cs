@@ -59,7 +59,7 @@ public class EventsController : OdkControllerBase
     [HttpPost("events/{id:guid}/rsvp")]
     public async Task<IActionResult> UpdateResponse(Guid id, [FromForm] EventResponseType responseType)
     {
-        var result = await _eventService.UpdateMemberResponse(MemberId, id, responseType);
+        var result = await _eventService.UpdateMemberResponse(MemberServiceRequest, id, responseType);
         if (!result.Success)
         {
             AddFeedback(result);
@@ -69,7 +69,7 @@ public class EventsController : OdkControllerBase
     }
 
     [Authorize]
-    [HttpGet("events/{id:guid}/waiting-list")]
+    [HttpPost("events/{id:guid}/waiting-list")]
     public async Task<IActionResult> JoinWaitinglist(Guid id)
     {
         var result = await _eventService.JoinWaitingList(id, MemberId);
@@ -77,9 +77,18 @@ public class EventsController : OdkControllerBase
         return RedirectToReferrer();
     }
 
+    [Authorize]
+    [HttpPost("events/{id:guid}/waiting-list/leave")]
+    public async Task<IActionResult> LeaveWaitinglist(Guid id)
+    {
+        var result = await _eventService.LeaveWaitingList(id, MemberId);
+        AddFeedback(result, "You have left the waiting list");
+        return RedirectToReferrer();
+    }
+
     private async Task<IActionResult> AttendEvent(Guid id)
     {
-        var result = await _eventService.UpdateMemberResponse(MemberId, id, EventResponseType.Yes);
+        var result = await _eventService.UpdateMemberResponse(MemberServiceRequest, id, EventResponseType.Yes);
         AddFeedback(result, "Attendance updated");
 
         var chapter = await GetChapter();

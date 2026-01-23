@@ -25,6 +25,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 {
     private readonly IAuthorizationService _authorizationService;
     private readonly IBackgroundTaskService _backgroundTaskService;
+    private readonly IEventService _eventService;
     private readonly IHtmlSanitizer _htmlSanitizer;
     private readonly ILoggingService _loggingService;
     private readonly IMemberEmailService _memberEmailService;
@@ -40,11 +41,13 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         IMemberEmailService memberEmailService,
         IBackgroundTaskService backgroundTaskService,
         ILoggingService loggingService,
-        IPaymentService paymentService)
+        IPaymentService paymentService,
+        IEventService eventService)
         : base(unitOfWork)
     {
         _authorizationService = authorizationService;
         _backgroundTaskService = backgroundTaskService;
+        _eventService = eventService;
         _htmlSanitizer = htmlSanitizer;
         _loggingService = loggingService;
         _memberEmailService = memberEmailService;
@@ -794,6 +797,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         }
 
         await _unitOfWork.SaveChangesAsync();
+
+        _backgroundTaskService.Enqueue(() => _eventService.NotifyWaitingList(request, eventId));
     }
 
     public async Task<ServiceResult> UpdateScheduledEmail(

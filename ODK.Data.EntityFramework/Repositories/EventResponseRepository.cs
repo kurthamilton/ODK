@@ -13,24 +13,34 @@ public class EventResponseRepository : WriteRepositoryBase<EventResponse>, IEven
     {
     }
 
-    public IDeferredQueryMultiple<EventResponse> GetAllByMemberId(Guid memberId, Guid chapterId) => Query(chapterId)
-        .Where(x => x.MemberId == memberId)
-        .DeferredMultiple();
+    public IDeferredQueryMultiple<EventResponse> GetAllByMemberId(Guid memberId, Guid chapterId)
+        => Query(chapterId)
+            .Where(x => x.MemberId == memberId)
+            .DeferredMultiple();
 
-    public IDeferredQueryMultiple<EventResponse> GetByChapterId(Guid chapterId) => Query(chapterId)
-        .DeferredMultiple();
+    public IDeferredQueryMultiple<EventResponse> GetByChapterId(Guid chapterId)
+        => Query(chapterId)
+            .DeferredMultiple();
 
-    public IDeferredQueryMultiple<EventResponse> GetByChapterId(Guid chapterId, IEnumerable<Guid> eventIds) => Query(chapterId)
-        .Where(x => eventIds.Contains(x.EventId))
-        .DeferredMultiple();
+    public IDeferredQueryMultiple<EventResponse> GetByChapterId(Guid chapterId, IEnumerable<Guid> eventIds)
+        => Query(chapterId)
+            .Where(x => eventIds.Contains(x.EventId))
+            .DeferredMultiple();
 
-    public IDeferredQueryMultiple<EventResponse> GetByEventId(Guid eventId) => Set()
-        .Where(x => x.EventId == eventId)
-        .DeferredMultiple();
+    public IDeferredQueryMultiple<EventResponse> GetByEventId(Guid eventId)
+        => Set()
+            .Where(x => x.EventId == eventId)
+            .DeferredMultiple();
 
-    public IDeferredQueryMultiple<EventResponse> GetByEventIds(IEnumerable<Guid> eventIds) => Set()
-        .Where(x => eventIds.Contains(x.EventId))
-        .DeferredMultiple();
+    public IDeferredQueryMultiple<EventResponse> GetByEventId(Guid eventId, EventResponseType type)
+        => Set()
+            .Where(x => x.EventId == eventId && x.Type == type)
+            .DeferredMultiple();
+
+    public IDeferredQueryMultiple<EventResponse> GetByEventIds(IEnumerable<Guid> eventIds)
+        => Set()
+            .Where(x => eventIds.Contains(x.EventId))
+            .DeferredMultiple();
 
     public IDeferredQueryMultiple<EventResponse> GetByMemberId(Guid memberId, DateTime? afterUtc)
     {
@@ -44,29 +54,33 @@ public class EventResponseRepository : WriteRepositoryBase<EventResponse>, IEven
         return query.DeferredMultiple();
     }
 
-    public IDeferredQuerySingleOrDefault<EventResponse> GetByMemberId(Guid memberId, Guid eventId) => Set()
-        .Where(x => x.MemberId == memberId && x.EventId == eventId)
-        .DeferredSingleOrDefault();
+    public IDeferredQuerySingleOrDefault<EventResponse> GetByMemberId(Guid memberId, Guid eventId)
+        => Set()
+            .Where(x => x.MemberId == memberId && x.EventId == eventId)
+            .DeferredSingleOrDefault();
 
-    public IDeferredQueryMultiple<EventResponse> GetByMemberId(Guid memberId, IEnumerable<Guid> eventIds) => Set()
-        .Where(x => x.MemberId == memberId && eventIds.Contains(x.EventId))
-        .DeferredMultiple();
+    public IDeferredQueryMultiple<EventResponse> GetByMemberId(Guid memberId, IEnumerable<Guid> eventIds)
+        => Set()
+            .Where(x => x.MemberId == memberId && eventIds.Contains(x.EventId))
+            .DeferredMultiple();
 
-    public IDeferredQuery<int> GetNumberOfAttendees(Guid eventId) => Set()
-        .Where(x => x.EventId == eventId && x.Type == EventResponseType.Yes)
-        .DeferredCount();
+    public IDeferredQuery<int> GetNumberOfAttendees(Guid eventId)
+        => Set()
+            .Where(x => x.EventId == eventId && x.Type == EventResponseType.Yes)
+            .DeferredCount();
 
-    public IDeferredQueryMultiple<EventResponseSummaryDto> GetResponseSummaries(IEnumerable<Guid> eventIds) => Set()
-        .Where(x => eventIds.Contains(x.EventId))
-        .GroupBy(x => x.EventId)
-        .Select(x => new EventResponseSummaryDto
-        {
-            EventId = x.Key,
-            Yes = x.Count(x => x.Type == EventResponseType.Yes),
-            Maybe = x.Count(x => x.Type == EventResponseType.Maybe),
-            No = x.Count(x => x.Type == EventResponseType.No)
-        })
-        .DeferredMultiple();
+    public IDeferredQueryMultiple<EventResponseSummaryDto> GetResponseSummaries(IEnumerable<Guid> eventIds)
+        => Set()
+            .Where(x => eventIds.Contains(x.EventId))
+            .GroupBy(x => x.EventId)
+            .Select(x => new EventResponseSummaryDto
+            {
+                EventId = x.Key,
+                Yes = x.Count(x => x.Type == EventResponseType.Yes),
+                Maybe = x.Count(x => x.Type == EventResponseType.Maybe),
+                No = x.Count(x => x.Type == EventResponseType.No)
+            })
+            .DeferredMultiple();
 
     private IQueryable<EventResponse> Query(Guid chapterId)
     {

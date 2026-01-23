@@ -37,6 +37,23 @@ public class Program
             // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
             app.UseHsts();
         }
+        else
+        {
+            // show all registered endpoints
+            app.MapGet("/_endpoints", (IEnumerable<EndpointDataSource> sources) =>
+            {
+                return sources
+                    .SelectMany(s => s.Endpoints)
+                    .OfType<RouteEndpoint>()
+                    .Select(e => new
+                    {
+                        e.RoutePattern.RawText,
+                        Methods = e.Metadata
+                            .OfType<HttpMethodMetadata>()
+                            .FirstOrDefault()?.HttpMethods
+                    });
+            });
+        }
 
         app.UseWebOptimizer();
         app.UseHttpsRedirection();

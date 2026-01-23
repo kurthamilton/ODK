@@ -17,6 +17,11 @@ public class EventWaitingListMemberRepository : ReadWriteRepositoryBase<EventWai
             .Where(x => x.EventId == eventId)
             .DeferredMultiple();
 
+    public IDeferredQuerySingleOrDefault<EventWaitingListMember> GetByMemberId(Guid memberId, Guid eventId)
+        => Set()
+            .Where(x => x.EventId == eventId && x.MemberId == memberId)
+            .DeferredSingleOrDefault();
+
     public IDeferredQuery<bool> IsOnWaitingList(Guid memberId, Guid eventId)
         => Set()
             .Where(x => x.EventId == eventId && x.MemberId == memberId)

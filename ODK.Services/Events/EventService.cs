@@ -7,6 +7,7 @@ using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Logging;
 using ODK.Services.Members;
+using ODK.Services.Tasks;
 
 namespace ODK.Services.Events;
 
@@ -16,6 +17,7 @@ public class EventService : IEventService
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     private readonly IAuthorizationService _authorizationService;
+    private readonly IBackgroundTaskService _backgroundTaskService;
     private readonly ILoggingService _loggingService;
     private readonly IMemberEmailService _memberEmailService;
     private readonly IUnitOfWork _unitOfWork;
@@ -23,9 +25,11 @@ public class EventService : IEventService
     public EventService(IUnitOfWork unitOfWork,
         IAuthorizationService authorizationService,
         IMemberEmailService memberEmailService,
-        ILoggingService loggingService)
+        ILoggingService loggingService,
+        IBackgroundTaskService backgroundTaskService)
     {
         _authorizationService = authorizationService;
+        _backgroundTaskService = backgroundTaskService;
         _loggingService = loggingService;
         _memberEmailService = memberEmailService;
         _unitOfWork = unitOfWork;
@@ -170,18 +174,62 @@ public class EventService : IEventService
         return ServiceResult.Successful();
     }
 
+    public async Task<ServiceResult> LeaveWaitingList(Guid eventId, Guid memberId)
+    {
+        var (@event, member, waitingListMember) = await _unitOfWork.RunAsync(
+            x => x.EventRepository.GetById(eventId),
+            x => x.MemberRepository.GetById(memberId),
+            x => x.EventWaitingListMemberRepository.GetByMemberId(memberId, eventId));
+
+        if (waitingListMember == null)
+        {
+            return ServiceResult.Successful("You have left the waiting list");
+        }
+
+        _unitOfWork.EventWaitingListMemberRepository.Delete(waitingListMember);
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful("You have left the waiting list");
+    }
+
+    public async Task NotifyWaitingList(ServiceRequest request, Guid eventId)
+    {
+        var (@event, waitingList, attendees) = await _unitOfWork.RunAsync(
+            x => x.EventRepository.GetById(@eventId),
+            x => x.EventWaitingListMemberRepository.GetByEventId(eventId),
+            x => x.EventResponseRepository.GetByEventId(eventId, EventResponseType.Yes));
+
+        if (@event.RsvpDeadlinePassed)
+        {
+            return;
+        }
+
+        if (waitingList.Count == 0)
+        {
+            return;
+        }
+
+        var membersToConfirm = new List<Guid>();
+
+        if (@event.AttendeeLimit == null)
+        {
+        }
+    }
+
     public async Task<ServiceResult> UpdateMemberResponse(
-        Guid memberId,
+        MemberServiceRequest request,
         Guid eventId,
         EventResponseType responseType)
     {
+        var memberId = request.CurrentMemberId;
         responseType = NormalizeResponseType(responseType);
 
-        var (member, @event, memberResponse, numberOfAttendees) = await _unitOfWork.RunAsync(
+        var (member, @event, memberResponse, numberOfAttendees, waitingList) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(memberId),
             x => x.EventRepository.GetById(eventId),
             x => x.EventResponseRepository.GetByMemberId(memberId, eventId),
-            x => x.EventResponseRepository.GetNumberOfAttendees(eventId));
+            x => x.EventResponseRepository.GetNumberOfAttendees(eventId),
+            x => x.EventWaitingListMemberRepository.GetByEventId(eventId));
 
         if (memberResponse?.Type == responseType)
         {
@@ -221,6 +269,19 @@ public class EventService : IEventService
             var spacesLeft = EventHasSpaces(@event, numberOfAttendees);
             if (!spacesLeft.Success)
             {
+                if (!@event.WaitingListDisabled && !waitingList.Any(x => x.MemberId == memberId))
+                {
+                    _unitOfWork.EventWaitingListMemberRepository.Add(new EventWaitingListMember
+                    {
+                        CreatedUtc = DateTime.UtcNow,
+                        EventId = eventId,
+                        MemberId = memberId
+                    });
+                    await _unitOfWork.SaveChangesAsync();
+
+                    return ServiceResult.Failure("No more spaces left. You have been added to the waiting list");
+                }
+
                 return spacesLeft;
             }
         }
@@ -256,6 +317,8 @@ public class EventService : IEventService
         }
 
         await _unitOfWork.SaveChangesAsync();
+
+        _backgroundTaskService.Enqueue(() => NotifyWaitingList(request, eventId));
 
         return ServiceResult.Successful();
     }

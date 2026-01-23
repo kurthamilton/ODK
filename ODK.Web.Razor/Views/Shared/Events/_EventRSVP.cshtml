@@ -3,18 +3,6 @@
 @using ODK.Services.Events.ViewModels
 @using ODK.Web.Razor.Models.Events
 @model EventPageViewModel
-@{
-    Model.MembersByResponse.TryGetValue(EventResponseType.Yes, out var attendees);
-    
-    var spacesLeft = Model.SpacesLeft;
-    var canRsvp = 
-        Model.MemberResponse == EventResponseType.Yes || 
-        (
-            (spacesLeft == null || spacesLeft > 0) && 
-            !Model.Event.RsvpDeadlinePassed &&
-            !Model.Event.RsvpDisabled
-        );
-}
 
 <div class="card sidebar-card">
     <div class="card-header">RSVP</div>
@@ -24,10 +12,12 @@
             {
                 Chapter = Model.Chapter,
                 Event = Model.Event,
-                SpacesLeft = Model.SpacesLeft
+                IsOnWaitingList = Model.IsOnWaitingList,
+                SpacesLeft = Model.SpacesLeft,
+                WaitingListLength = Model.WaitingListLength
             })
 
-            @if (canRsvp)
+            @if (Model.CanRsvp)
             {
                 if (Model.Event.RsvpDeadlinePassed)
                 {                    
@@ -57,7 +47,26 @@
                         }
                     </div>
                 }            
-            }  
+            }
+            else if (Model.CanShowWaitingList)
+            {                
+                if (!Model.IsOnWaitingList)
+                {
+                    <form action="/events/@Model.Event.Id/waiting-list" method="post">
+                        <button class="btn btn-primary btn-sm">
+                            Join waiting list
+                        </button>
+                    </form>
+                }
+                else
+                {
+                    <form action="/events/@Model.Event.Id/waiting-list/leave" method="post">
+                        <button class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to leave the waiting list?');">
+                            Leave waiting list
+                        </button>
+                    </form>
+                }
+            }
         </div>              
     </div>
 </div>

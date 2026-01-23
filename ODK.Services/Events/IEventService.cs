@@ -12,5 +12,9 @@ public interface IEventService
 
     Task<ServiceResult> JoinWaitingList(Guid eventId, Guid memberId);
 
-    Task<ServiceResult> UpdateMemberResponse(Guid currentMemberId, Guid eventId, EventResponseType responseType);
+    Task<ServiceResult> LeaveWaitingList(Guid eventId, Guid memberId);
+
+    Task NotifyWaitingList(ServiceRequest request, Guid eventId);
+
+    Task<ServiceResult> UpdateMemberResponse(MemberServiceRequest request, Guid eventId, EventResponseType responseType);
 }
