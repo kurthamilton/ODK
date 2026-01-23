@@ -20,9 +20,6 @@ public class EventWaitingListMemberMap : IEntityTypeConfiguration<EventWaitingLi
         builder.Property(x => x.Id)
             .HasColumnName("EventWaitingListMemberId");
 
-        builder.Property(x => x.NotifiedUtc)
-            .HasConversion<NullableUtcDateTimeConverter>();
-
         builder.HasOne<Event>()
             .WithMany()
             .HasForeignKey(x => x.EventId);
