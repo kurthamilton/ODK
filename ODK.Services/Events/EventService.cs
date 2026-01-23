@@ -1,13 +1,12 @@
 ﻿using System.Text.RegularExpressions;
+using ODK.Core;
 using ODK.Core.Chapters;
 using ODK.Core.Events;
 using ODK.Core.Members;
-using ODK.Core.Payments;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Logging;
 using ODK.Services.Members;
-using ODK.Services.Payments;
 
 namespace ODK.Services.Events;
 
@@ -19,33 +18,30 @@ public class EventService : IEventService
     private readonly IAuthorizationService _authorizationService;
     private readonly ILoggingService _loggingService;
     private readonly IMemberEmailService _memberEmailService;
-    private readonly IPaymentProviderFactory _paymentProviderFactory;
     private readonly IUnitOfWork _unitOfWork;
 
     public EventService(IUnitOfWork unitOfWork,
         IAuthorizationService authorizationService,
         IMemberEmailService memberEmailService,
-        IPaymentProviderFactory paymentProviderFactory,
         ILoggingService loggingService)
     {
         _authorizationService = authorizationService;
         _loggingService = loggingService;
         _memberEmailService = memberEmailService;
-        _paymentProviderFactory = paymentProviderFactory;
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ServiceResult> AddComment(MemberServiceRequest request, Guid eventId, string comment, Guid? parentEventCommentId)
+    public async Task<ServiceResult> AddComment(
+        MemberServiceRequest request, Guid eventId, Chapter chapter, string comment, Guid? parentEventCommentId)
     {
         var currentMemberId = request.CurrentMemberId;
 
-        var (member, @event) = await _unitOfWork.RunAsync(
+        var (member, @event, settings) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(currentMemberId),
-            x => x.EventRepository.GetById(eventId));
+            x => x.EventRepository.GetById(eventId),
+            x => x.ChapterEventSettingsRepository.GetByChapterId(chapter.Id));
 
-        var (chapter, settings) = await _unitOfWork.RunAsync(
-            x => x.ChapterRepository.GetById(@event.ChapterId),
-            x => x.ChapterEventSettingsRepository.GetByChapterId(@event.ChapterId));
+        OdkAssertions.BelongsToChapter(@event, chapter.Id);
 
         if (settings?.DisableComments == true || !@event.CanComment || !@event.IsAuthorized(member))
         {
@@ -145,14 +141,38 @@ public class EventService : IEventService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task<(Chapter, Event)> GetEvent(Guid eventId)
+    public async Task<ServiceResult> JoinWaitingList(Guid eventId, Guid memberId)
     {
-        var @event = await _unitOfWork.EventRepository.GetById(eventId).Run();
-        var chapter = await _unitOfWork.ChapterRepository.GetById(@event.ChapterId).Run();
-        return (chapter, @event);
+        var (@event, member, isOnWaitingList) = await _unitOfWork.RunAsync(
+            x => x.EventRepository.GetById(eventId),
+            x => x.MemberRepository.GetById(memberId),
+            x => x.EventWaitingListMemberRepository.IsOnWaitingList(memberId, eventId));
+
+        if (isOnWaitingList)
+        {
+            return ServiceResult.Successful();
+        }
+
+        var authorisationResult = GetMemberEventAuthorisation(@event, member);
+        if (!authorisationResult.Success)
+        {
+            return authorisationResult;
+        }
+
+        _unitOfWork.EventWaitingListMemberRepository.Add(new EventWaitingListMember
+        {
+            CreatedUtc = DateTime.UtcNow,
+            EventId = eventId,
+            MemberId = memberId
+        });
+
+        await _unitOfWork.SaveChangesAsync();
+        return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> UpdateMemberResponse(Guid memberId, Guid eventId,
+    public async Task<ServiceResult> UpdateMemberResponse(
+        Guid memberId,
+        Guid eventId,
         EventResponseType responseType)
     {
         responseType = NormalizeResponseType(responseType);
@@ -163,14 +183,15 @@ public class EventService : IEventService
             x => x.EventResponseRepository.GetByMemberId(memberId, eventId),
             x => x.EventResponseRepository.GetNumberOfAttendees(eventId));
 
-        if (@event.RsvpDisabled)
-        {
-            return ServiceResult.Failure("RSVP is currently disabled");
-        }
-
         if (memberResponse?.Type == responseType)
         {
             return ServiceResult.Successful();
+        }
+
+        var authorisationResult = GetMemberEventAuthorisation(@event, member);
+        if (!authorisationResult.Success)
+        {
+            return authorisationResult;
         }
 
         if (@event.TicketSettings != null)
@@ -266,56 +287,19 @@ public class EventService : IEventService
         return ServiceResult.Successful();
     }
 
-    private async Task<ServiceResult<Payment>> MakeEventPayment(
-        Event @event,
-        Member member,
-        decimal amount,
-        string cardToken,
-        SitePaymentSettings sitePaymentSettings,
-        ChapterPaymentAccount? chapterPaymentAccount)
+    private static ServiceResult GetMemberEventAuthorisation(Event @event, Member member)
     {
-        if (@event.TicketSettings == null)
+        if (@event.RsvpDisabled)
         {
-            return ServiceResult<Payment>.Failure("Event is not ticketed");
+            return ServiceResult.Failure("RSVP is currently disabled");
         }
 
-        var (chapterId, currency) = (@event.ChapterId, @event.TicketSettings.Currency);
-
-        var payment = new Payment
+        if (!@event.IsAuthorized(member))
         {
-            Amount = amount,
-            ChapterId = @event.ChapterId,
-            CurrencyId = currency.Id,
-            ExternalId = string.Empty,
-            MemberId = member.Id,
-            Reference = @event.Name
-        };
-
-        _unitOfWork.PaymentRepository.Add(payment);
-        await _unitOfWork.SaveChangesAsync();
-
-        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
-            sitePaymentSettings,
-            chapterPaymentAccount);
-
-        var paymentResult = await paymentProvider.MakePayment(
-            currency.Code,
-            amount,
-            cardToken,
-            @event.Name,
-            member.Id,
-            member.FullName);
-        if (!paymentResult.Success)
-        {
-            return ServiceResult<Payment>.Failure($"Payment not made: {paymentResult.Message}");
+            return ServiceResult.Failure("You are not permitted to attend");
         }
 
-        payment.ExternalId = paymentResult.Id;
-        payment.PaidUtc = DateTime.UtcNow;
-        _unitOfWork.PaymentRepository.Update(payment);
-        await _unitOfWork.SaveChangesAsync();
-
-        return ServiceResult<Payment>.Successful(payment);
+        return ServiceResult.Successful();
     }
 
     private ServiceResult MemberCanAttendEvent(

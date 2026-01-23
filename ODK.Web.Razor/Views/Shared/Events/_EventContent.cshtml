@@ -65,7 +65,7 @@
                 @comment.Text
             </div>
             <div class="collapse" id="comment-reply-@comment.Id">
-                <form action="/events/@Model.Event.Id/comments" method="post">
+                <form action="/groups/@Model.Chapter.Id/events/@Model.Event.Id/comments" method="post">
                     @await Html.PartialAsync("Events/_EventCommentForm", new EventCommentFormViewModel
                     {
                         Parent  = comment.Id,
@@ -78,7 +78,7 @@
     }
 
     <div>
-        <form action="/events/@Model.Event.Id/comments" method="post">
+        <form action="/groups/@Model.Chapter.Id/events/@Model.Event.Id/comments" method="post">
             @await Html.PartialAsync("Events/_EventCommentForm", new EventCommentFormViewModel
             {
                 Text = ""

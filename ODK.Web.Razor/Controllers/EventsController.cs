@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Events;
+using ODK.Services.Chapters;
 using ODK.Services.Events;
 using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Events;
@@ -10,32 +11,42 @@ namespace ODK.Web.Razor.Controllers;
 
 public class EventsController : OdkControllerBase
 {
+    private readonly IChapterService _chapterService;
     private readonly IEventService _eventService;
 
     public EventsController(
         IEventService eventService,
-        IRequestStore requestStore)
+        IRequestStore requestStore,
+        IChapterService chapterService)
         : base(requestStore)
     {
+        _chapterService = chapterService;
         _eventService = eventService;
     }
 
+    // Backwards compatibility for old emails
     [Authorize]
     [HttpGet("events/{id:guid}/attend")]
-    public async Task<IActionResult> AttendEvent(Guid id)
+    public async Task<IActionResult> EmailRsvpLegacy(Guid id)
     {
-        var result = await _eventService.UpdateMemberResponse(MemberId, id, EventResponseType.Yes);
-        AddFeedback(result, "Attendance updated");
-
-        var (chapter, @event) = await _eventService.GetEvent(id);
-        return Redirect(OdkRoutes.Groups.Event(Platform, chapter, id));
+        var chapter = await _chapterService.GetByEventId(id);
+        var url = OdkRoutes.Groups.EventAttend(Platform, chapter, id);
+        return RedirectPermanent(url);
     }
 
     [Authorize]
-    [HttpPost("events/{id:guid}/comments")]
-    public async Task<IActionResult> AddComment(Guid id, EventCommentFormViewModel viewModel)
+    [HttpGet("{chapterName}/events/{id:guid}/rsvp")]
+    [HttpGet("groups/{slug}/events/{id:guid}/rsvp")]
+    public Task<IActionResult> EmailRsvp(Guid id) => AttendEvent(id);
+
+    [Authorize]
+    [HttpPost("groups/{chapterId:guid}/events/{id:guid}/comments")]
+    public async Task<IActionResult> AddComment(
+        Guid chapterId, Guid id, [FromForm] EventCommentFormViewModel viewModel)
     {
-        var result = await _eventService.AddComment(MemberServiceRequest, id, viewModel.Text ?? string.Empty, viewModel.Parent);
+        var chapter = await GetChapter();
+        var result = await _eventService.AddComment(
+            MemberServiceRequest, id, chapter, viewModel.Text ?? string.Empty, viewModel.Parent);
         if (!result.Success)
         {
             AddFeedback(result);
@@ -55,5 +66,23 @@ public class EventsController : OdkControllerBase
         }
 
         return RedirectToReferrer();
+    }
+
+    [Authorize]
+    [HttpGet("events/{id:guid}/waiting-list")]
+    public async Task<IActionResult> JoinWaitinglist(Guid id)
+    {
+        var result = await _eventService.JoinWaitingList(id, MemberId);
+        AddFeedback(result, "You have joined the waiting list");
+        return RedirectToReferrer();
+    }
+
+    private async Task<IActionResult> AttendEvent(Guid id)
+    {
+        var result = await _eventService.UpdateMemberResponse(MemberId, id, EventResponseType.Yes);
+        AddFeedback(result, "Attendance updated");
+
+        var chapter = await GetChapter();
+        return Redirect(OdkRoutes.Groups.Event(Platform, chapter, id));
     }
 }

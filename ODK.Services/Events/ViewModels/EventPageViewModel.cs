@@ -21,6 +21,8 @@ public class EventPageViewModel : GroupPageViewModel
 
     public required IReadOnlyCollection<Member> Hosts { get; init; }
 
+    public required bool IsOnWaitingList { get; init; }
+
     public required EventResponseType? MemberResponse { get; init; }
 
     public required IReadOnlyDictionary<EventResponseType, IReadOnlyCollection<Member>> MembersByResponse { get; init; }

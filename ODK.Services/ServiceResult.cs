@@ -12,8 +12,14 @@ public class ServiceResult<T> : ServiceResult
 
     public T? Value { get; }
 
-    public static new ServiceResult<T> Failure(string message)
+    public new static ServiceResult<T> Failure(string message)
         => new ServiceResult<T>(false, message);
+
+    public static ServiceResult<T> Failure(string message, T? value)
+        => new ServiceResult<T>(false, message, value);
+
+    public static ServiceResult<T> FromResult(ServiceResult result, T? value)
+        => new ServiceResult<T>(result.Success, result.Message, value);
 
     public static ServiceResult<T> Successful(T value, string? message = null)
         => new ServiceResult<T>(true, message, value);

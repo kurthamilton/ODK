@@ -223,7 +223,6 @@ public static class DependencyConfig
         services.AddScoped<ITopicAdminService, TopicAdminService>();
         services.AddScoped<ITopicService, TopicService>();
         services.AddScoped<IVenueAdminService, VenueAdminService>();
-        services.AddScoped<IVenueService, VenueService>();
     }
 
     private static void ConfigureServiceSettings(IServiceCollection services, AppSettings appSettings)

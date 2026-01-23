@@ -22,6 +22,9 @@ public class GroupRoutes
     public string Event(PlatformType platform, Chapter chapter, Guid eventId)
         => $"{Events(platform, chapter)}/{eventId}";
 
+    public string EventAttend(PlatformType platform, Chapter chapter, Guid eventId)
+        => $"{Event(platform, chapter, eventId)}/rsvp";
+
     public string EventCheckout(PlatformType platform, Chapter chapter, Guid eventId)
         => $"{Event(platform, chapter, eventId)}/checkout";
 

@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Chapters;
+using ODK.Core.Events;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Core.Topics;
@@ -29,8 +30,21 @@ public class ChapterRepository : ReadWriteRepositoryBase<Chapter>, IChapterRepos
         return query.DeferredMultiple();
     }
 
-    public IDeferredQueryMultiple<Chapter> GetAll() => Set()
-        .DeferredMultiple();
+    public IDeferredQueryMultiple<Chapter> GetAll()
+        => Set()
+            .DeferredMultiple();
+
+    public IDeferredQuerySingle<Chapter> GetByEventId(Guid eventId)
+    {
+        var query =
+            from chapter in Set()
+            from @event in Set<Event>()
+                .Where(x => x.ChapterId == chapter.Id)
+            where @event.Id == eventId
+            select chapter;
+
+        return query.DeferredSingle();
+    }
 
     public IDeferredQueryMultiple<Chapter> GetByMemberId(Guid memberId)
     {

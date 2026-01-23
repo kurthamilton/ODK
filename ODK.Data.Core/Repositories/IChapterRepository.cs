@@ -10,6 +10,8 @@ public interface IChapterRepository : IReadWriteRepository<Chapter>
 
     IDeferredQueryMultiple<Chapter> GetAll();
 
+    IDeferredQuerySingle<Chapter> GetByEventId(Guid eventId);
+
     IDeferredQueryMultiple<Chapter> GetByMemberId(Guid memberId);
 
     IDeferredQuerySingleOrDefault<Chapter> GetByName(string name);

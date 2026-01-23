@@ -1,5 +1,4 @@
-﻿using System;
-using ODK.Core;
+﻿using ODK.Core;
 using ODK.Core.Chapters;
 using ODK.Core.Events;
 using ODK.Core.Extensions;
@@ -221,7 +220,7 @@ public class EventViewModelService : IEventViewModelService
             notifications,
             chapterPages,
             payments,
-            waitingList) = await _unitOfWork.RunAsync(
+            isOnWaitingList) = await _unitOfWork.RunAsync(
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.EventRepository.GetById(eventId),
             x => x.VenueRepository.GetByEventId(eventId),
@@ -246,7 +245,9 @@ public class EventViewModelService : IEventViewModelService
             x => currentMemberId != null
                 ? x.EventTicketPaymentRepository.GetConfirmedPayments(currentMemberId.Value, eventId)
                 : new DefaultDeferredQueryMultiple<EventTicketPayment>(),
-            x => x.EventWaitingListMemberRepository.GetByEventId(eventId));
+            x => currentMemberId != null
+                ? x.EventWaitingListMemberRepository.IsOnWaitingList(eventId, currentMemberId.Value)
+                : new DefaultDeferredQueryAny(false));
 
         OdkAssertions.BelongsToChapter(@event, chapter.Id);
 
@@ -343,6 +344,7 @@ public class EventViewModelService : IEventViewModelService
             HasQuestions = hasQuestions,
             Hosts = hosts.Select(x => x.Member).ToArray(),
             IsAdmin = adminMembers.Any(x => x.MemberId == currentMemberId),
+            IsOnWaitingList = isOnWaitingList,
             IsMember = member?.IsMemberOf(chapter.Id) == true,
             MembersByResponse = responseDictionary,
             MemberResponse = currentMemberId != null
