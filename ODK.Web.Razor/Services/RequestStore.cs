@@ -1,5 +1,7 @@
-﻿using ODK.Core;
+﻿using Microsoft.AspNetCore.Http.Extensions;
+using ODK.Core;
 using ODK.Core.Chapters;
+using ODK.Core.Exceptions;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Core.Web;
@@ -7,6 +9,7 @@ using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
 using ODK.Services;
 using ODK.Services.Exceptions;
+using ODK.Services.Logging;
 using ODK.Web.Common.Extensions;
 using ODK.Web.Razor.Models;
 using HttpRequestContextImpl = ODK.Web.Common.Services.HttpRequestContext;
@@ -18,6 +21,7 @@ public class RequestStore : IRequestStore
     private Chapter? _chapter;
     private Member? _currentMember;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly ILoggingService _loggingService;
     private bool _loaded;
     private readonly IPlatformProvider _platformProvider;
     private readonly IUnitOfWork _unitOfWork;
@@ -33,9 +37,11 @@ public class RequestStore : IRequestStore
     public RequestStore(
         IHttpContextAccessor httpContextAccessor,
         IPlatformProvider platformProvider,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        ILoggingService loggingService)
     {
         _httpContextAccessor = httpContextAccessor;
+        _loggingService = loggingService;
         _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
 
@@ -76,53 +82,103 @@ public class RequestStore : IRequestStore
 
     public async Task<Chapter> GetChapter()
     {
-        var chapter = await GetChapterOrDefault();
-        OdkAssertions.Exists(chapter);
+        var chapter = await GetChapterOrDefault(verbose: false);
+        if (chapter == null)
+        {
+            // re-run chapter load with verbose logging for debugging
+            _loaded = false;
+            await _loggingService.Error("Chapter not found when one was expected");
+            chapter = await GetChapterOrDefault(verbose: true);
+            throw new OdkNotFoundException("Chapter not found when one was expected");
+        }
+
         return chapter;
     }
 
-    public async Task<Chapter?> GetChapterOrDefault()
-    {
-        await Load();
-        return _chapter;
-    }
+    public Task<Chapter?> GetChapterOrDefault() => GetChapterOrDefault(verbose: false);
 
     public async Task<Member> GetCurrentMember()
-        => await GetCurrentMemberOrDefault() ?? throw new OdkNotAuthenticatedException();
+        => await GetCurrentMemberOrDefault(verbose: false) ?? throw new OdkNotAuthenticatedException();
 
-    public async Task<Member?> GetCurrentMemberOrDefault()
-    {
-        await Load();
-        return _currentMember;
-    }
+    public Task<Member?> GetCurrentMemberOrDefault() => GetCurrentMemberOrDefault(verbose: false);
 
-    private IDeferredQuerySingleOrDefault<Chapter> GetChapterQuery(IUnitOfWork unitOfWork)
+    private IDeferredQuerySingleOrDefault<Chapter> GetChapterQuery(IUnitOfWork unitOfWork, bool verbose)
     {
         var httpContext = _httpContextAccessor.HttpContext;
-        OdkAssertions.Exists(httpContext);
+        if (httpContext == null && verbose)
+        {
+            _loggingService.Error("_httpContextAccessor.HttpContext not found");
+        }
+
+        OdkAssertions.Exists(httpContext, "_httpContextAccessor.HttpContext not found");
 
         var chapterName = httpContext.ChapterName();
         if (!string.IsNullOrEmpty(chapterName))
         {
+            if (verbose)
+            {
+                _loggingService.Info($"RequestStore: getting chapter by name: '{chapterName}'");
+            }
+
             return unitOfWork.ChapterRepository.GetByName(chapterName);
         }
 
         var slug = httpContext.ChapterSlug();
         if (!string.IsNullOrEmpty(slug))
         {
+            if (verbose)
+            {
+                _loggingService.Info($"RequestStore: getting chapter by slug: '{slug}'");
+            }
+
             return unitOfWork.ChapterRepository.GetBySlug(slug);
         }
 
         var chapterId = httpContext.ChapterId();
         if (chapterId != null)
         {
+            if (verbose)
+            {
+                _loggingService.Info($"RequestStore: getting chapter by id: '{chapterId}'");
+            }
+
             return _unitOfWork.ChapterRepository.GetByIdOrDefault(chapterId.Value);
+        }
+
+        if (verbose)
+        {
+            var message =
+                "RequestStore: could not use the request URL to determine chapter";
+
+            var properties = new Dictionary<string, string?>
+            {
+                { "Url", httpContext.Request.GetDisplayUrl() }
+            };
+
+            foreach (var routeValue in httpContext.Request.RouteValues)
+            {
+                properties.Add(routeValue.Key, routeValue.Value?.ToString());
+            }
+
+            _loggingService.Warn(message, properties);
         }
 
         return new DefaultDeferredQuerySingleOrDefault<Chapter>();
     }
 
-    private async Task Load()
+    private async Task<Chapter?> GetChapterOrDefault(bool verbose)
+    {
+        await Load(verbose);
+        return _chapter;
+    }
+
+    private async Task<Member?> GetCurrentMemberOrDefault(bool verbose)
+    {
+        await Load(verbose);
+        return _currentMember;
+    }
+
+    private async Task Load(bool verbose)
     {
         if (_loaded)
         {
@@ -130,7 +186,7 @@ public class RequestStore : IRequestStore
         }
 
         var (chapter, currentMember) = await _unitOfWork.RunAsync(
-            x => GetChapterQuery(x),
+            x => GetChapterQuery(x, verbose),
             x => CurrentMemberIdOrDefault != null
                 ? x.MemberRepository.GetByIdOrDefault(CurrentMemberIdOrDefault.Value)
                 : new DefaultDeferredQuerySingleOrDefault<Member>());

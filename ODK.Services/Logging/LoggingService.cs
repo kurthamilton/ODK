@@ -1,6 +1,7 @@
 ﻿using ODK.Core.Logging;
 using ODK.Data.Core;
 using Serilog;
+using Serilog.Context;
 
 namespace ODK.Services.Logging;
 
@@ -183,9 +184,24 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
         return Task.CompletedTask;
     }
 
-    public Task Warn(string message)
+    public Task Warn(string message) => Warn(message, new Dictionary<string, string?>());
+
+    public Task Warn(string message, IDictionary<string, string?> properties)
     {
+        var disposables = new List<IDisposable>();
+
+        foreach (var key in properties.Keys)
+        {
+            disposables.Add(LogContext.PushProperty(key, properties[key]));
+        }
+
         _logger.Warning(message);
+
+        foreach (var disposable in disposables)
+        {
+            disposable.Dispose();
+        }
+
         return Task.CompletedTask;
     }
 }
