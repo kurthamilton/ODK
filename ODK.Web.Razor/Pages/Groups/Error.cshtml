@@ -1,4 +1,4 @@
-﻿@page "/groups/{slug}/error/{statusCode}"
+﻿@page "/groups/{slug}/error/{statusCode:int}"
 @using ODK.Core.Platforms
 @using ODK.Services.Chapters
 @using ODK.Web.Common.Routes
@@ -19,7 +19,7 @@
 
 @await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel
 {
-    Title = Model.ErrorStatusCode.ErrorPageTitle(),
+    Title = "Error",
     Content = await Html.PartialAsync("Errors/_ErrorPage", Model.ErrorStatusCode),
     Group = viewModel
 })

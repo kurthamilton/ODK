@@ -1,4 +1,4 @@
-﻿@page "/{chapterName}/Error/{statusCode}"
+﻿@page "/{chapterName}/Error/{statusCode:int}"
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
@@ -16,12 +16,12 @@
     Breadcrumbs = new []
     {
         new MenuItem 
-        { 
+        {
+            Icon = IconType.ArrowLeft,
             Link = OdkRoutes.Groups.Group(Model.Platform, chapter), 
             Text = chapter.GetDisplayName(Model.Platform)
-        },
-        new MenuItem { Text = Model.ErrorStatusCode.ErrorPageTitle() }
+        }
     },
     Content = await Html.PartialAsync("Errors/_ErrorPage", Model.ErrorStatusCode),
-    Title = Model.ErrorStatusCode.ErrorPageTitle()
+    Title = "Error"
 })

@@ -3,9 +3,20 @@
 
 @switch (Model)
 {
+    case HttpStatusCode.Unauthorized:
     case HttpStatusCode.Forbidden:
         <p>
             You are not permitted to view that page
+        </p>
+        break;
+    case HttpStatusCode.NotFound:
+        <p>
+            Not found
+        </p>
+        break;
+    default:
+        <p>
+            An error has occurred.
         </p>
         break;
 }

@@ -6,8 +6,8 @@ public class ErrorModel : OdkPageModel
 {
     public HttpStatusCode ErrorStatusCode { get; private set; }
 
-    public void OnGet(HttpStatusCode statusCode)
+    public void OnGet(int statusCode)
     {
-        ErrorStatusCode = statusCode;
+        ErrorStatusCode = (HttpStatusCode)statusCode;
     }
 }
