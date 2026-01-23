@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Http.Extensions;
 using ODK.Core;
 using ODK.Core.Chapters;
 using ODK.Core.Exceptions;
@@ -12,7 +12,6 @@ using ODK.Services.Exceptions;
 using ODK.Services.Logging;
 using ODK.Web.Common.Extensions;
 using ODK.Web.Razor.Models;
-using Stripe;
 using HttpRequestContextImpl = ODK.Web.Common.Services.HttpRequestContext;
 
 namespace ODK.Web.Razor.Services;
@@ -115,14 +114,37 @@ public class RequestStore : IRequestStore
         var slug = httpContext.ChapterSlug();
         if (!string.IsNullOrEmpty(slug))
         {
-            _loggingService.Info($"RequestStore: getting chapter by slug: '{slug}'");
+            if (verbose)
+            {
+                _loggingService.Info($"RequestStore: getting chapter by slug: '{slug}'");
+            }
+            
             return unitOfWork.ChapterRepository.GetBySlug(slug);
         }
 
         var chapterId = httpContext.ChapterId();
         if (chapterId != null)
         {
+            if (verbose)
+            {
+                _loggingService.Info($"RequestStore: getting chapter by id: '{chapterId}'");
+            }
+
             return _unitOfWork.ChapterRepository.GetByIdOrDefault(chapterId.Value);
+        }
+
+        if (verbose)
+        {
+            var message =
+                "RequestStore: could not use the request URL to determine chapter";
+            var properties = new Dictionary<string, string?>();
+            properties.Add("Url", httpContext.Request.GetDisplayUrl());
+            foreach (var routeValue in httpContext.Request.RouteValues)
+            {
+                properties.Add(routeValue.Key, routeValue.Value?.ToString());
+            }
+
+            _loggingService.Warn(message, properties);
         }
 
         return new DefaultDeferredQuerySingleOrDefault<Chapter>();
