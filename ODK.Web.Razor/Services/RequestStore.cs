@@ -81,14 +81,14 @@ public class RequestStore : IRequestStore
     public ServiceRequest ServiceRequest => _serviceRequest.Value;
 
     public async Task<Chapter> GetChapter() =>
-        await GetChapterOrDefault(verbose: true) ?? throw new OdkNotFoundException("Chapter not found");
+        await GetChapterOrDefault(verbose: false) ?? throw new OdkNotFoundException("Chapter not found");
 
-    public Task<Chapter?> GetChapterOrDefault() => GetChapterOrDefault(verbose: true);
+    public Task<Chapter?> GetChapterOrDefault() => GetChapterOrDefault(verbose: false);
 
     public async Task<Member> GetCurrentMember()
-        => await GetCurrentMemberOrDefault(verbose: true) ?? throw new OdkNotAuthenticatedException();
+        => await GetCurrentMemberOrDefault(verbose: false) ?? throw new OdkNotAuthenticatedException();
 
-    public Task<Member?> GetCurrentMemberOrDefault() => GetCurrentMemberOrDefault(verbose: true);
+    public Task<Member?> GetCurrentMemberOrDefault() => GetCurrentMemberOrDefault(verbose: false);
 
     private IDeferredQuerySingleOrDefault<Chapter> GetChapterQuery(IUnitOfWork unitOfWork, bool verbose)
     {
@@ -118,7 +118,7 @@ public class RequestStore : IRequestStore
             {
                 _loggingService.Info($"RequestStore: getting chapter by slug: '{slug}'");
             }
-            
+
             return unitOfWork.ChapterRepository.GetBySlug(slug);
         }
 
@@ -137,8 +137,12 @@ public class RequestStore : IRequestStore
         {
             var message =
                 "RequestStore: could not use the request URL to determine chapter";
-            var properties = new Dictionary<string, string?>();
-            properties.Add("Url", httpContext.Request.GetDisplayUrl());
+
+            var properties = new Dictionary<string, string?>
+            {
+                { "Url", httpContext.Request.GetDisplayUrl() }
+            };
+
             foreach (var routeValue in httpContext.Request.RouteValues)
             {
                 properties.Add(routeValue.Key, routeValue.Value?.ToString());
