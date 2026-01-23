@@ -220,7 +220,8 @@ public class EventViewModelService : IEventViewModelService
             ownerSubscription,
             notifications,
             chapterPages,
-            payments) = await _unitOfWork.RunAsync(
+            payments,
+            waitingList) = await _unitOfWork.RunAsync(
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.EventRepository.GetById(eventId),
             x => x.VenueRepository.GetByEventId(eventId),
@@ -244,7 +245,8 @@ public class EventViewModelService : IEventViewModelService
             x => x.ChapterPageRepository.GetByChapterId(chapter.Id),
             x => currentMemberId != null
                 ? x.EventTicketPaymentRepository.GetConfirmedPayments(currentMemberId.Value, eventId)
-                : new DefaultDeferredQueryMultiple<EventTicketPayment>());
+                : new DefaultDeferredQueryMultiple<EventTicketPayment>(),
+            x => x.EventWaitingListMemberRepository.GetByEventId(eventId));
 
         OdkAssertions.BelongsToChapter(@event, chapter.Id);
 

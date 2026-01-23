@@ -1,0 +1,31 @@
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using ODK.Core.Events;
+using ODK.Core.Members;
+using ODK.Data.EntityFramework.Converters;
+
+namespace ODK.Data.EntityFramework.Mapping;
+
+public class EventWaitingListMemberMap : IEntityTypeConfiguration<EventWaitingListMember>
+{
+    public void Configure(EntityTypeBuilder<EventWaitingListMember> builder)
+    {
+        builder.ToTable("EventWaitingListMembers");
+
+        builder.HasKey(x => x.Id);
+
+        builder.Property(x => x.CreatedUtc)
+            .HasConversion<UtcDateTimeConverter>();
+
+        builder.Property(x => x.Id)
+            .HasColumnName("EventWaitingListMemberId");
+
+        builder.HasOne<Event>()
+            .WithMany()
+            .HasForeignKey(x => x.EventId);
+
+        builder.HasOne<Member>()
+            .WithMany()
+            .HasForeignKey(x => x.MemberId);
+    }
+}
