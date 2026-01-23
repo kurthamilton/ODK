@@ -16,6 +16,9 @@ public class GroupRoutes
     public string Conversations(PlatformType platform, Chapter chapter)
         => $"{Group(platform, chapter)}/conversations";
 
+    public string Error(PlatformType platform, Chapter chapter, int statusCode)
+        => $"{Group(platform, chapter)}/error/{statusCode}";
+
     public string Event(PlatformType platform, Chapter chapter, Guid eventId)
         => $"{Events(platform, chapter)}/{eventId}";
 
@@ -29,7 +32,7 @@ public class GroupRoutes
 
     public string Group(PlatformType platform, Chapter chapter) => platform switch
     {
-        PlatformType.DrunkenKnitwits => $"{Index(platform)}/{chapter.GetDisplayName(platform)}".ToLowerInvariant(),
+        PlatformType.DrunkenKnitwits => $"/{chapter.ShortName}".ToLowerInvariant(),
         _ => $"{Index(platform)}/{chapter.Slug}".ToLowerInvariant()
     };
 

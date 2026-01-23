@@ -6,6 +6,7 @@ using ODK.Core.Exceptions;
 using ODK.Services.Exceptions;
 using ODK.Services.Logging;
 using ODK.Web.Common.Config.Settings;
+using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Services;
 using HttpRequest = ODK.Services.Logging.HttpRequest;
 
@@ -84,34 +85,10 @@ public class ErrorHandlingMiddleware
         HttpContext context, IRequestStore requestStore)
     {
         var statusCode = context.Response.StatusCode;
-        var defaultPath = $"/error/{statusCode}";
+        var chapter = await requestStore.GetChapterOrDefault();
+        var platform = requestStore.Platform;
 
-        var originalPathParts = context.Request.Path.Value?.Split('/') ?? [];
-        if (originalPathParts.Length <= 1)
-        {
-            return defaultPath;
-        }
-
-        if (string.Equals(originalPathParts[1], "groups", StringComparison.InvariantCultureIgnoreCase) &&
-            originalPathParts.Length > 2)
-        {
-            var slug = originalPathParts[2];
-            var chapter = await requestStore.GetChapter();
-            return $"/groups/{slug}/error/{context.Response.StatusCode}";
-        }
-        else
-        {
-            var chapterName = originalPathParts[1];
-            try
-            {
-                var chapter = await requestStore.GetChapter();
-                return $"/{chapter.ShortName}/error/{statusCode}";
-            }
-            catch
-            {
-                return defaultPath;
-            }
-        }
+        return OdkRoutes.Error(requestStore.Platform, chapter, statusCode);
     }
 
     private async Task LogError(HttpContext httpContext, Exception ex, ILoggingService loggingService, AppSettings appSettings)
