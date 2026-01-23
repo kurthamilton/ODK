@@ -80,8 +80,20 @@ public class RequestStore : IRequestStore
 
     public ServiceRequest ServiceRequest => _serviceRequest.Value;
 
-    public async Task<Chapter> GetChapter() =>
-        await GetChapterOrDefault(verbose: false) ?? throw new OdkNotFoundException("Chapter not found");
+    public async Task<Chapter> GetChapter()
+    {
+        var chapter = await GetChapterOrDefault(verbose: false);
+        if (chapter == null)
+        {
+            // re-run chapter load with verbose logging for debugging
+            _loaded = false;
+            await _loggingService.Error("Chapter not found when one was expected");
+            chapter = await GetChapterOrDefault(verbose: true);
+            throw new OdkNotFoundException("Chapter not found when one was expected");
+        }
+
+        return chapter;
+    }
 
     public Task<Chapter?> GetChapterOrDefault() => GetChapterOrDefault(verbose: false);
 
