@@ -23,4 +23,6 @@ public interface ILoggingService
     Task Info(string message);
 
     Task Warn(string message);
+
+    Task Warn(string message, IDictionary<string, string?> properties);
 }
