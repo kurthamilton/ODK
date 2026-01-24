@@ -209,9 +209,32 @@ public class EventService : IEventService
             return;
         }
 
-        var membersToConfirm = new List<Guid>();
+        var membersToConfirm = new List<EventWaitingListMember>();
+
+        var spacesLeft = @event.NumberOfSpacesLeft(attendees.Count);
+        if (spacesLeft == null)
+        {
+            spacesLeft = waitingList.Count;
+        }
+
+        if (spacesLeft <= 0)
+        {
+            return;
+        }
+
+        var attendeeDictionary = attendees.ToDictionary(x => x.MemberId);
+
+        var waitingListToPromote = waitingList
+            .OrderBy(x => x.CreatedUtc)
+            .Take(spacesLeft.Value)
+            .ToArray();
+
+        membersToConfirm.AddRange(waitingList);
 
         if (@event.AttendeeLimit == null)
+        {
+        }
+        else
         {
         }
     }
