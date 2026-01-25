@@ -17,5 +17,5 @@ public class InstagramPostsResult : ServiceResult
 
     public IReadOnlyCollection<InstagramClientPost>? Posts { get; }
 
-    public bool IsRateLimited { get; init; }
+    public required string? Response { get; init; }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Nodes;
+using System.Threading.Tasks;
 using ODK.Core.Utils;
 using ODK.Services.Integrations.Instagram.Models;
 using ODK.Services.Logging;
@@ -43,17 +44,38 @@ public class InstagramClient : IInstagramClient
 
     public async Task<InstagramPostsResult> FetchLatestPosts(string username)
     {
-        var feedResult = await FetchFeed(username);
-        if (feedResult.Value == null)
+        var feedJsonResult = await FetchFeedJson(username);
+
+        var json = feedJsonResult.Value;
+        if (string.IsNullOrEmpty(json))
         {
-            return new InstagramPostsResult(false);
+            var message = "InstagramClient: feed result missing";
+            await _loggingService.Error(message);
+            return new InstagramPostsResult(false)
+            {
+                Response = json
+            };
+        }
+
+        var feedResult = await ParseFeed(json);
+
+        var feedNode = feedResult.Value;
+        if (feedNode == null)
+        {
+            return new InstagramPostsResult(false)
+            {
+                Response = json
+            };
         }
 
         if (JsonUtils.Find(
-            feedResult.Value,
+            feedNode,
             x => x.Node is JsonArray && x.PropertyName == "edges") is not JsonArray edges)
         {
-            return new InstagramPostsResult(false);
+            return new InstagramPostsResult(false)
+            {
+                Response = json
+            };
         }
 
         var posts = new List<InstagramClientPost>();
@@ -97,11 +119,14 @@ public class InstagramClient : IInstagramClient
             });
         }
 
-        return new InstagramPostsResult(posts);
+        return new InstagramPostsResult(posts)
+        {
+            Response = json
+        };
     }
 
-    private async Task<ServiceResult<JsonNode>> FetchFeed(string username)
-    {        
+    private async Task<ServiceResult<string>> FetchFeedJson(string username)
+    {
         var client = _httpClient.Value;
 
         var request = CreateRequest(HttpMethod.Post, _settings.GraphQLUrl, username);
@@ -138,18 +163,10 @@ public class InstagramClient : IInstagramClient
         {
             var message = $"InstagramClient: Error getting feed: {json}";
             await _loggingService.Error(message);
-            return ServiceResult<JsonNode>.Failure(message);
+            return ServiceResult<string>.Failure(message, json);
         }
 
-        var node = JsonNode.Parse(json);
-        if (node == null)
-        {
-            var message = $"InstagramClient: Error parsing feed JSON: {json}";
-            await _loggingService.Error(message);
-            return ServiceResult<JsonNode>.Failure(message);
-        }
-        
-        return ServiceResult<JsonNode>.Successful(node);
+        return ServiceResult<string>.Successful(json);
     }
 
     private HttpRequestMessage CreateRequest(HttpMethod method, string url, string username)
@@ -171,6 +188,26 @@ public class InstagramClient : IInstagramClient
         request.Headers.TryAddWithoutValidation("Referer", channelUrl);
 
         return request;
+    }
+
+    private async Task<ServiceResult<JsonNode>> ParseFeed(string json)
+    {
+        try
+        {
+            var node = JsonNode.Parse(json);
+            if (node == null)
+            {
+                throw new Exception("JsonNode.Parse is null");
+            }
+
+            return ServiceResult<JsonNode>.Successful(node);
+        }
+        catch (Exception ex)
+        {
+            var message = $"InstagramClient: error parsing feed {json}";
+            await _loggingService.Error(message, ex);
+            return ServiceResult<JsonNode>.Failure(message);
+        }
     }
 
     private async Task<InstagramImageResponse> ParseImage(JsonNode node)
@@ -208,7 +245,7 @@ public class InstagramClient : IInstagramClient
         {
             Alt = node["accessibility_caption"]?.GetValue<string>(),
             Height = candidate.Height,
-            IsVideo = mediaType == 8,
+            IsVideo = mediaType == (int)InstagramMediaType.Video,
             Shortcode = id,
             Url = candidate.Url,
             Width = candidate.Width
@@ -231,7 +268,7 @@ public class InstagramClient : IInstagramClient
             }
 
             foreach (var child in children)
-            {                
+            {
                 if (child == null)
                 {
                     continue;
@@ -267,7 +304,7 @@ public class InstagramClient : IInstagramClient
             }
 
             var date = DateUtils.FromUnixEpochTimestamp(unixTimestamp.Value);
-            
+
             var caption = node["caption"]?["text"]?.GetValue<string>();
 
             return new InstagramPostResponse
