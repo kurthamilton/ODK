@@ -247,6 +247,9 @@ public class EventService : IEventService
         _unitOfWork.EventResponseRepository.AddMany(responses);
 
         await _unitOfWork.SaveChangesAsync();
+
+        // TODO: add notifications
+        // TODO: send confirmation email
     }
 
     public async Task<ServiceResult> UpdateMemberResponse(
