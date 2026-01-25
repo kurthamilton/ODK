@@ -24,6 +24,7 @@ public class RequestStore : IRequestStore
     private readonly ILoggingService _loggingService;
     private bool _loaded;
     private readonly IPlatformProvider _platformProvider;
+    private readonly RequestStoreSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
 
     private readonly Lazy<OdkComponentContext> _componentContext;
@@ -38,11 +39,13 @@ public class RequestStore : IRequestStore
         IHttpContextAccessor httpContextAccessor,
         IPlatformProvider platformProvider,
         IUnitOfWork unitOfWork,
-        ILoggingService loggingService)
+        ILoggingService loggingService,
+        RequestStoreSettings settings)
     {
         _httpContextAccessor = httpContextAccessor;
         _loggingService = loggingService;
         _platformProvider = platformProvider;
+        _settings = settings;
         _unitOfWork = unitOfWork;
 
         _componentContext = new(() => new OdkComponentContext
@@ -87,9 +90,21 @@ public class RequestStore : IRequestStore
         {
             // re-run chapter load with verbose logging for debugging
             _loaded = false;
-            await _loggingService.Error("Chapter not found when one was expected");
+            var message = "Chapter not found when one was expected";
+
+            var userAgent = _httpContextAccessor.HttpContext?.Request.Headers.UserAgent.ToString();
+            if (userAgent != null &&
+                _settings.WarningNotFoundUserAgents.Any(x => userAgent.Contains(x, StringComparison.OrdinalIgnoreCase)))
+            {
+                await _loggingService.Warn(message);
+            }
+            else
+            {
+                await _loggingService.Error(message);
+            }
+
             chapter = await GetChapterOrDefault(verbose: true);
-            throw new OdkNotFoundException("Chapter not found when one was expected");
+            throw new OdkNotFoundException(message);
         }
 
         return chapter;
