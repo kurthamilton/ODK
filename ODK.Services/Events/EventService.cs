@@ -7,6 +7,7 @@ using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Logging;
 using ODK.Services.Members;
+using ODK.Services.Notifications;
 using ODK.Services.Tasks;
 
 namespace ODK.Services.Events;
@@ -20,18 +21,21 @@ public class EventService : IEventService
     private readonly IBackgroundTaskService _backgroundTaskService;
     private readonly ILoggingService _loggingService;
     private readonly IMemberEmailService _memberEmailService;
+    private readonly INotificationService _notificationService;
     private readonly IUnitOfWork _unitOfWork;
 
     public EventService(IUnitOfWork unitOfWork,
         IAuthorizationService authorizationService,
         IMemberEmailService memberEmailService,
         ILoggingService loggingService,
-        IBackgroundTaskService backgroundTaskService)
+        IBackgroundTaskService backgroundTaskService,
+        INotificationService notificationService)
     {
         _authorizationService = authorizationService;
         _backgroundTaskService = backgroundTaskService;
         _loggingService = loggingService;
         _memberEmailService = memberEmailService;
+        _notificationService = notificationService;
         _unitOfWork = unitOfWork;
     }
 
@@ -229,14 +233,20 @@ public class EventService : IEventService
             .Take(spacesLeft.Value)
             .ToArray();
 
-        membersToConfirm.AddRange(waitingList);
+        membersToConfirm.AddRange(waitingListToPromote);
 
-        if (@event.AttendeeLimit == null)
-        {
-        }
-        else
-        {
-        }
+        _unitOfWork.EventWaitingListMemberRepository.DeleteMany(waitingListToPromote);
+
+        var responses = waitingListToPromote
+            .Select(x => new EventResponse
+            {
+                EventId = eventId,
+                MemberId = x.MemberId,
+                Type = EventResponseType.Yes
+            });
+        _unitOfWork.EventResponseRepository.AddMany(responses);
+
+        await _unitOfWork.SaveChangesAsync();
     }
 
     public async Task<ServiceResult> UpdateMemberResponse(

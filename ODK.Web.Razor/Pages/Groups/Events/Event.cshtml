@@ -25,8 +25,17 @@
     Breadcrumbs = new[]
     {
         viewModel.Event.HasPassed 
-            ? new MenuItem { Link = OdkRoutes.Groups.PastEvents(viewModel.Platform, viewModel.Chapter), Text = "Past events" }
-            : new MenuItem { Link = OdkRoutes.Groups.Events(viewModel.Platform, viewModel.Chapter), Text = "Events" },
-        new MenuItem { Text = viewModel.Event.GetDisplayName() }
+            ? new MenuItem 
+            {
+                Icon = IconType.ArrowLeft,
+                Link = OdkRoutes.Groups.PastEvents(viewModel.Platform, viewModel.Chapter), 
+                Text = "back to past events" 
+            }
+            : new MenuItem 
+            { 
+                Icon = IconType.ArrowLeft,
+                Link = OdkRoutes.Groups.Events(viewModel.Platform, viewModel.Chapter), 
+                Text = "Back to events" 
+            }
     }
 })

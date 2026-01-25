@@ -32,15 +32,10 @@
     {
         new MenuItem 
         { 
-            Link = OdkRoutes.Groups.Group(Model.Platform, viewModel.Chapter), 
-            Text = viewModel.Chapter.GetDisplayName(Model.Platform)
-        },
-        new MenuItem 
-        { 
+            Icon = IconType.ArrowLeft,
             Link = OdkRoutes.Groups.Events(Model.Platform, viewModel.Chapter),
-            Text = "Events" 
-        },
-        new MenuItem { Text = viewModel.Event.GetDisplayName() }
+            Text = "Back to events"
+        }
     },
     Content = await Html.PartialAsync("Events/_EventContent", viewModel),
     SidebarContent = await Html.PartialAsync("Events/_EventSidebar", viewModel)
