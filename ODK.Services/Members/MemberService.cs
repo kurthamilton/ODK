@@ -15,6 +15,7 @@ using ODK.Services.Authentication.OAuth;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
 using ODK.Services.Geolocation;
+using ODK.Services.Logging;
 using ODK.Services.Members.Models;
 using ODK.Services.Members.ViewModels;
 using ODK.Services.Notifications;
@@ -30,6 +31,7 @@ public class MemberService : IMemberService
     private readonly IAuthorizationService _authorizationService;
     private readonly ICacheService _cacheService;
     private readonly IGeolocationService _geolocationService;
+    private readonly ILoggingService _loggingService;
     private readonly IMemberEmailService _memberEmailService;
     private readonly IMemberImageService _memberImageService;
     private readonly INotificationService _notificationService;
@@ -48,11 +50,13 @@ public class MemberService : IMemberService
         IOAuthProviderFactory oauthProviderFactory,
         ITopicService topicService,
         IPaymentProviderFactory paymentProviderFactory,
-        IGeolocationService geolocationService)
+        IGeolocationService geolocationService,
+        ILoggingService loggingService)
     {
         _authorizationService = authorizationService;
         _cacheService = cacheService;
         _geolocationService = geolocationService;
+        _loggingService = loggingService;
         _memberEmailService = memberEmailService;
         _memberImageService = memberImageService;
         _notificationService = notificationService;
@@ -224,6 +228,8 @@ public class MemberService : IMemberService
 
     public async Task<ServiceResult> CreateChapterAccount(ServiceRequest request, Guid chapterId, CreateMemberProfile model)
     {
+        await _loggingService.Info($"Creating chapter account for {model.EmailAddress}");
+
         var platform = request.Platform;
 
         var (
@@ -240,8 +246,6 @@ public class MemberService : IMemberService
             x => x.MemberRepository.GetByEmailAddress(model.EmailAddress),
             x => x.SiteSubscriptionRepository.GetDefault(platform),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapterId));
-
-        var chapterLocation = await _unitOfWork.ChapterLocationRepository.GetByChapterId(chapterId);
 
         var validationResult = ValidateMemberProfile(chapterProperties, model, forApplication: true);
         if (!validationResult.Success)
@@ -296,6 +300,7 @@ public class MemberService : IMemberService
 
         AddMemberToChapter(now, member, chapter, memberProperties, membershipSettings, ownerSubscription);
 
+        var chapterLocation = await _unitOfWork.ChapterLocationRepository.GetByChapterId(chapterId);
         if (chapterLocation != null)
         {
             _unitOfWork.MemberLocationRepository.Add(new MemberLocation
@@ -327,7 +332,25 @@ public class MemberService : IMemberService
             MemberId = member.Id
         });
 
-        await _unitOfWork.SaveChangesAsync();
+        try
+        {
+            await _unitOfWork.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            // double check the existence of the user in the DB to see if this was a double submission
+            existing = await _unitOfWork.MemberRepository.GetByEmailAddress(model.EmailAddress).Run();
+
+            if (existing != null)
+            {
+                await _loggingService.Info(
+                    $"Chapter account create: double submission detected for '{model.EmailAddress}', returning OK");
+                return ServiceResult.Successful();
+            }
+
+            await _loggingService.Error($"Error creating chapter account for '{model.EmailAddress}'", ex);
+            return ServiceResult.Failure("An error occurred when creating your account. Please try again.");
+        }
 
         try
         {

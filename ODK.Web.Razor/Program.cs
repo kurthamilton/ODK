@@ -149,11 +149,16 @@ public class Program
                 options.EventsType = typeof(CustomCookieAuthenticationEvents);
             });
 
+        var appSettings = AppStartup.ConfigureServices(builder.Configuration, builder.Services);
+
         builder.Services
             .AddScoped<IBackgroundTaskService, HangfireService>()
-            .AddScoped<IRequestStore, RequestStore>();
+            .AddScoped<IRequestStore, RequestStore>()
+            .AddSingleton(new RequestStoreSettings
+            {
+                WarningNotFoundUserAgents = appSettings.Logging.NotFound.WarningUserAgents
+            });
 
-        var appSettings = AppStartup.ConfigureServices(builder.Configuration, builder.Services);
         LoggingConfig.Configure(builder, appSettings);
 
         // register the [OdkInject] attribute for dependency injection in PageModel classes
