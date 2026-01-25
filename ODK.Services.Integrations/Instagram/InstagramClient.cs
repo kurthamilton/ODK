@@ -106,6 +106,13 @@ public class InstagramClient : IInstagramClient
 
         var request = CreateRequest(HttpMethod.Post, _settings.GraphQLUrl, username);
 
+        // If requests start failing at an auth level, reload Instagram in a browser and update the cookie
+        // values in config.
+        // If requests start failing at a request level, reload Instagram in a browser and find the /graphql/query
+        // request containing the payload that looks like a request for posts and contains an array of ~12 elements.
+        // Make sure the structure of the "variables" property below matches exactly, and make sure the "doc_id" property
+        // matches.
+        // Otherwise, check the response parsing needs updating
         request.Content = new FormUrlEncodedContent(new Dictionary<string, string>
         {
             ["doc_id"] = _settings.PostsGraphQlDocId,
