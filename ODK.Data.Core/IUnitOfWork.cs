@@ -43,6 +43,7 @@ public interface IUnitOfWork
     IEventTicketSettingsRepository EventTicketSettingsRepository { get; }
     IEventTopicRepository EventTopicRepository { get; }
     IFeatureRepository FeatureRepository { get; }
+    IInstagramFetchLogEntryRepository InstagramFetchLogEntryRepository { get; }
     IInstagramImageRepository InstagramImageRepository { get; }
     IInstagramPostRepository InstagramPostRepository { get; }
     IIssueMessageRepository IssueMessageRepository { get; }

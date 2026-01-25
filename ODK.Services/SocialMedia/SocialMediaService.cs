@@ -80,17 +80,17 @@ public class SocialMediaService : ISocialMediaService
             .Select(x => x.Id)
             .ToQueue();
 
-        ScheduleNextScrape(chapterIds, delay: false);
+        await ScheduleNextScrape(chapterIds, runNow: true);
     }
 
-    public Task<ServiceResult> ScrapeLatestInstagramPosts(Guid chapterId)
+    public async Task<ServiceResult> ScrapeLatestInstagramPosts(Guid chapterId)
     {
-        ScheduleNextScrape(new Queue<Guid>([chapterId]), delay: false);
-        return Task.FromResult(ServiceResult.Successful("Scrape enqueued"));
+        await ScheduleNextScrape(new Queue<Guid>([chapterId]), runNow: true);
+        return ServiceResult.Successful("Scrape enqueued");
     }
 
     // Public for Hangfire
-    public async Task ScrapeLatestInstagramPosts(Queue<Guid> chapterIds)
+    public async Task ScrapeLatestInstagramPosts(Queue<Guid> chapterIds, int delaySeconds)
     {
         /*This function scrapes the latest Instagram posts for each chapter, one at a time.
          *If no call was made to Instagram the next chapter is immediately enqueued,
@@ -103,49 +103,43 @@ public class SocialMediaService : ISocialMediaService
 
         var chapterId = chapterIds.Dequeue();
 
-        var delayNext = false;
-
         var (ownerSubscription, links) = await _unitOfWork.RunAsync(
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapterId),
             x => x.ChapterLinksRepository.GetByChapterId(chapterId));
 
         if (string.IsNullOrEmpty(links?.InstagramName))
         {
-            ScheduleNextScrape(chapterIds, delay: delayNext);
+            await ScheduleNextScrape(chapterIds, runNow: true);
             return;
         }
 
         var authorized = _authorizationService.ChapterHasAccess(ownerSubscription, SiteFeatureType.InstagramFeed);
         if (!authorized)
         {
-            ScheduleNextScrape(chapterIds, delay: delayNext);
+            await ScheduleNextScrape(chapterIds, runNow: true);
             return;
         }
 
         await _loggingService.Info(
             $"Fetching Instagram posts for group '{chapterId}' account '{links.InstagramName}'");
 
-        IReadOnlyCollection<InstagramClientPost> posts;
+        var result = await _instagramClient.FetchLatestPosts(links.InstagramName);
 
-        delayNext = true;
-
-        try
+        _unitOfWork.InstagramFetchLogEntryRepository.Add(new InstagramFetchLogEntry
         {
-            posts = await _instagramClient.FetchLatestPosts(links.InstagramName);
-        }
-        catch (Exception ex)
-        {
-            await _loggingService.Error(
-                $"Error fetching Instagram posts for group '{chapterId}' account '{links.InstagramName}'", ex);
-            ScheduleNextScrape(chapterIds, delay: delayNext);
-            return;
-        }
+            CreatedUtc = DateTime.UtcNow,
+            DelaySeconds = delaySeconds,
+            Success = result.Success,
+            Username = links.InstagramName
+        });
+        await _unitOfWork.SaveChangesAsync();
 
-        if (posts.Count == 0)
+        var posts = result.Posts;
+        if (posts == null || posts.Count == 0)
         {
             await _loggingService.Info(
-                $"Found no new Instagram posts for group '{chapterId}' account '{links.InstagramName}'");
-            ScheduleNextScrape(chapterIds, delay: delayNext);
+                $"Error fetching Instagram posts for group '{chapterId}' account '{links.InstagramName}'");
+            await ScheduleNextScrape(chapterIds, runNow: false);
             return;
         }
 
@@ -184,7 +178,7 @@ public class SocialMediaService : ISocialMediaService
 
             await Task.WhenAll(fetchImageTasks);
 
-            var id = Guid.NewGuid();
+            var postId = Guid.NewGuid();
 
             _unitOfWork.InstagramPostRepository.Add(new InstagramPost
             {
@@ -192,7 +186,7 @@ public class SocialMediaService : ISocialMediaService
                 ChapterId = chapterId,
                 Date = post.Date,
                 ExternalId = post.ExternalId,
-                Id = id
+                Id = postId
             });
 
             for (var i = 0; i < post.Images.Count; i++)
@@ -207,7 +201,7 @@ public class SocialMediaService : ISocialMediaService
                     ExternalId = metadata.ExternalId,
                     Height = metadata.Height,
                     ImageData = image.ImageData,
-                    InstagramPostId = id,
+                    InstagramPostId = postId,
                     IsVideo = metadata.IsVideo,
                     MimeType = image.MimeType ?? string.Empty,
                     Width = metadata.Width
@@ -228,25 +222,66 @@ public class SocialMediaService : ISocialMediaService
                 $"Error saving {posts.Count} new Instagram posts for group '{chapterId}' account '{links.InstagramName}'", ex);
         }
 
-        ScheduleNextScrape(chapterIds, delay: delayNext);
+        await ScheduleNextScrape(chapterIds, runNow: false);
     }
 
-    private void ScheduleNextScrape(Queue<Guid> chapterIds, bool delay)
+    private int GetNextFetchWaitSeconds(
+        InstagramFetchLogEntry? last, IReadOnlyCollection<InstagramFetchLogEntry> recentSuccessful)
+    {
+        var delaySeconds = _settings.InstagramFetchWaitSeconds;
+
+        if (last == null)
+        {
+            // No recent log entries - start off with default
+            return delaySeconds;
+        }
+
+        if (!last.Success)
+        {
+            // The most recent fetch failed - increase the delay it used
+            return last.DelaySeconds + delaySeconds;
+        }
+
+        // The most recent fetch succeeded - use the average of recent successful fetches
+        // In theory this number will converge around the sweet spot over time.
+        var average = recentSuccessful
+            .Select(x => 1.0 * x.DelaySeconds)
+            .Average();
+
+        return (int)Math.Ceiling(average);
+    }
+
+    private async Task ScheduleNextScrape(Queue<Guid> chapterIds, bool runNow)
     {
         if (chapterIds.Count == 0)
         {
             return;
         }
 
-        if (delay)
+        var (recentSuccessful, last) = await _unitOfWork.RunAsync(
+            x => x.InstagramFetchLogEntryRepository.GetRecentSuccessful(10),
+            x => x.InstagramFetchLogEntryRepository.GetLast());
+
+        var delaySeconds = GetNextFetchWaitSeconds(last, recentSuccessful);
+
+        var utcNow = DateTime.UtcNow;
+        var nextEarliestRunUtc = last == null || (utcNow - last.CreatedUtc).TotalSeconds > delaySeconds
+            ? utcNow
+            : last.CreatedUtc.AddSeconds(delaySeconds);
+
+        if (runNow)
         {
             _backgroundTaskService.Schedule(
-                () => ScrapeLatestInstagramPosts(chapterIds),
-                DateTime.UtcNow.AddSeconds(_settings.InstagramFetchWaitSeconds));
+                () => ScrapeLatestInstagramPosts(chapterIds, delaySeconds),
+                nextEarliestRunUtc);
         }
         else
         {
-            _backgroundTaskService.Enqueue(() => ScrapeLatestInstagramPosts(chapterIds));
+            var randomDelaySeconds = new Random().Next(_settings.InstagramFetchWaitSeconds);
+
+            _backgroundTaskService.Schedule(
+                () => ScrapeLatestInstagramPosts(chapterIds, delaySeconds),
+                nextEarliestRunUtc.AddSeconds(randomDelaySeconds));
         }
     }
 }
