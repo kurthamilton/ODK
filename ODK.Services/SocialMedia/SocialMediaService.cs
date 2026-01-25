@@ -129,6 +129,7 @@ public class SocialMediaService : ISocialMediaService
         {
             CreatedUtc = DateTime.UtcNow,
             DelaySeconds = delaySeconds,
+            Response = result.Response,
             Success = result.Success,
             Username = links.InstagramName
         });
