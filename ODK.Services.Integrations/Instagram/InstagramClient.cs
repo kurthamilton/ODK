@@ -1,14 +1,9 @@
-﻿using System;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Nodes;
+﻿using System.Text.Json.Nodes;
 using ODK.Core.Utils;
 using ODK.Services.Integrations.Instagram.Models;
 using ODK.Services.Logging;
 using ODK.Services.SocialMedia;
 using ODK.Services.SocialMedia.Models;
-using PuppeteerSharp;
 
 namespace ODK.Services.Integrations.Instagram;
 
@@ -28,7 +23,7 @@ public class InstagramClient : IInstagramClient
         _loggingService = loggingService;
         _settings = settings;
 
-        _httpClient = new(() => _httpClientFactory.CreateClient("InstagramClient"));
+        _httpClient = new(() => _httpClientFactory.CreateClient());
     }
 
     public async Task<InstagramClientImage> FetchImage(InstagramClientImageMetadata metadata)
@@ -48,14 +43,15 @@ public class InstagramClient : IInstagramClient
 
     public async Task<InstagramPostsResult> FetchLatestPosts(string username)
     {
-        var feedResult = await FetchFeed2(username);
-        if (string.IsNullOrEmpty(feedResult.Value))
+        var feedResult = await FetchFeed(username);
+        if (feedResult.Value == null)
         {
             return new InstagramPostsResult(false);
         }
 
-        var edges = ParseFeedEdges(feedResult.Value);
-        if (edges == null)
+        if (JsonUtils.Find(
+            feedResult.Value,
+            x => x.Node is JsonArray && x.PropertyName == "edges") is not JsonArray edges)
         {
             return new InstagramPostsResult(false);
         }
@@ -104,146 +100,30 @@ public class InstagramClient : IInstagramClient
         return new InstagramPostsResult(posts);
     }
 
-    private async Task<ServiceResult<string>> FetchFeed1(string username)
-    {
-        throw new NotImplementedException();
-    }
+    private async Task<ServiceResult<JsonNode>> FetchFeed(string username)
+    {        
+        var client = _httpClient.Value;
 
-    private async Task<ServiceResult<string>> FetchFeed2(string username)
-    {
-        var channelUrl = _settings.ChannelUrl.Replace("{username}", username);
-        var baseUrl = UrlUtils.BaseUrl(channelUrl);
+        var request = CreateRequest(HttpMethod.Post, _settings.GraphQLUrl, username);
 
-        var browser = await Puppeteer.LaunchAsync(new LaunchOptions
+        request.Content = new FormUrlEncodedContent(new Dictionary<string, string>
         {
-            Headless = true,
-            ExecutablePath = _settings.ChromePath
+            ["doc_id"] = _settings.PostsGraphQlDocId,
+            ["variables"] = JsonUtils.Serialize(new
+            {
+                data = new
+                {
+                    count = 12,
+                    include_reel_media_seen_timestamp = true,
+                    include_relationship_info = true,
+                    latest_besties_reel_media = true,
+                    latest_reel_media = true
+                },
+                username = username
+            })
         });
 
-        var page = await browser.NewPageAsync();
-
-        // --- 4️⃣ Set Instagram cookies ---
-        var initialCookies = _settings.Cookies
-            .Select(x => new CookieParam
-            {
-                Name = x.Key,
-                Value = x.Value,
-                Domain = ".instagram.com",
-                Path = "/",
-                HttpOnly = true,
-                Secure = true
-            });
-
-        await page.SetCookieAsync(initialCookies.ToArray());
-
-        // --- 5️⃣ Capture numeric user ID from first GraphQL request ---
-        string? userId = null;
-
-        page.RequestFinished += async (sender, e) =>
-        {
-            if (userId != null) return; // already captured
-
-            var req = e.Request;
-            if (req.Url.Contains("/graphql/query") && req.Method.Method == HttpMethod.Post.Method)
-            {
-                var postData = req.PostData;
-                if (!string.IsNullOrEmpty(postData))
-                {
-                    try
-                    {
-                        using var doc = JsonDocument.Parse(postData);
-                        if (doc.RootElement.TryGetProperty("variables", out var variables))
-                        {
-                            if (variables.TryGetProperty("id", out var idProp))
-                            {
-                                userId = idProp.GetString();
-                                Console.WriteLine("Captured numeric user ID: " + userId);
-                            }
-                        }
-                    }
-                    catch
-                    {
-                        // ignore parse errors
-                    }
-                }
-            }
-        };
-
-        // --- 5️⃣ Navigate to profile page to bootstrap session ---
-        await page.GoToAsync(channelUrl, WaitUntilNavigation.Networkidle0);
-
-        // wait until userId is captured or timeout
-        int attempts = 0;
-        while (userId == null && attempts < 20)
-        {
-            await Task.Delay(250);
-            attempts++;
-        }
-
-        if (userId == null)
-        {
-            var message = "InstagramClient: Failed to capture numeric user ID.";
-            await _loggingService.Error(message);
-            await browser.CloseAsync();
-            return ServiceResult<string>.Failure(message);
-        }
-
-        // --- 6️⃣ Extract csrftoken from cookies ---
-        var cookies = await page.GetCookiesAsync(baseUrl);
-        var csrftokenCookie = Array.Find(cookies, c => c.Name == "csrftoken")?.Value;
-        if (csrftokenCookie == null)
-        {
-            var message = "InstagramClient: Could not find csrftoken cookie.";
-            await _loggingService.Error(message);
-            await browser.CloseAsync();
-            return ServiceResult<string>.Failure(message);
-        }
-
-        // --- 7️⃣ Extract numeric user ID dynamically ---
-        var userIdJson = await page.EvaluateExpressionAsync<string>(
-            "window.__additionalData?.entry_data?.ProfilePage?.[0]?.graphql?.user?.id || null"
-        );
-
-        if (userIdJson == null)
-        {
-            var message = "InstagramClient: Could not extract user ID.";
-            await _loggingService.Error(message);
-            await browser.CloseAsync();
-            return ServiceResult<string>.Failure(message);
-        }
-
-        var targetUserId = userIdJson;
-
-        await browser.CloseAsync();
-
-        // --- 8️⃣ POST GraphQL request ---
-        var graphqlUrl = "https://www.instagram.com/graphql/query/";
-
-        // Variables for timeline query
-        var variables = new
-        {
-            id = targetUserId,
-            first = 12
-        };
-
-        // Convert variables to JSON string
-        var variablesJson = JsonUtils.Serialize(variables);
-
-        // Payload
-        var payload = new MultipartFormDataContent
-        {
-            { new StringContent(variablesJson, Encoding.UTF8, "application/json"), "variables" },
-            // Optional: Include query_id or doc_id if needed, depends on endpoint
-        };
-
-        // Add session cookies
-        var request = CreateRequest(HttpMethod.Post, graphqlUrl, username);
-        request.Content = payload;
-
-        // CSRF header
-        request.Headers.Add("X-CSRFToken", csrftokenCookie);
-
-        var response = await _httpClient.Value.SendAsync(request);
+        var response = await client.SendAsync(request);
 
         var json = await response.Content.ReadAsStringAsync();
 
@@ -251,85 +131,80 @@ public class InstagramClient : IInstagramClient
         {
             var message = $"InstagramClient: Error getting feed: {json}";
             await _loggingService.Error(message);
-            return ServiceResult<string>.Failure(message);
+            return ServiceResult<JsonNode>.Failure(message);
         }
 
-        return ServiceResult<string>.Successful(json);
+        var node = JsonNode.Parse(json);
+        if (node == null)
+        {
+            var message = $"InstagramClient: Error parsing feed JSON: {json}";
+            await _loggingService.Error(message);
+            return ServiceResult<JsonNode>.Failure(message);
+        }
+        
+        return ServiceResult<JsonNode>.Successful(node);
     }
 
     private HttpRequestMessage CreateRequest(HttpMethod method, string url, string username)
     {
         var request = new HttpRequestMessage(method, url);
+
+        var cookies = string.Join("; ", _settings.Cookies.Select(x => $"{x.Key}={x.Value}"));
+        request.Headers.TryAddWithoutValidation("Cookie", cookies);
+
         foreach (var header in _settings.Headers)
         {
             request.Headers.TryAddWithoutValidation(header.Key, header.Value);
         }
 
-        request.Headers.Referrer = new Uri(_settings.ChannelUrl.Replace("{username}", username));
+        var channelUrl = _settings.ChannelUrl.Replace("{username}", username);
+        var baseUrl = UrlUtils.BaseUrl(channelUrl);
+
+        request.Headers.TryAddWithoutValidation("Origin", baseUrl);
+        request.Headers.TryAddWithoutValidation("Referer", channelUrl);
 
         return request;
     }
 
-    private async Task<ServiceResult<string>> FetchFeedMetadata(string username)
-    {
-        var url = _settings.FeedUrl.Replace("{username}", username);
-
-        var request = CreateRequest(HttpMethod.Get, url, username);
-
-        var response = await _httpClient.Value.SendAsync(request);
-        var json = await response.Content.ReadAsStringAsync();
-        if (!response.IsSuccessStatusCode)
-        {
-            await _loggingService.Error($"Error fetching from Instagram feed: {json}");
-            return ServiceResult<string>.Failure(json);
-        }
-
-        return ServiceResult<string>.Successful(json);
-    }
-
-    private JsonArray? ParseFeedEdges(string feedJson)
-    {
-        try
-        {
-            var data = JsonNode.Parse(feedJson);
-            var edges = data?["data"]?["user"]?["edge_owner_to_timeline_media"]?["edges"] as JsonArray;
-            return edges;
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
     private async Task<InstagramImageResponse> ParseImage(JsonNode node)
     {
-        var shortcode = node["shortcode"]?.GetValue<string>();
-        if (string.IsNullOrEmpty(shortcode))
+        var id = node["pk"]?.GetValue<string>();
+        if (string.IsNullOrEmpty(id))
         {
-            throw new Exception("shortcode not found");
+            throw new Exception("Error parsing Instagram image: pk not found");
         }
 
-        var url = node["display_url"]?.GetValue<string>();
-        if (string.IsNullOrEmpty(url))
+        var candidates = ((node["image_versions2"]?["candidates"]) as JsonArray)
+            ?.Select(x => new
+            {
+                Height = x?["height"]?.GetValue<int>(),
+                Url = x?["url"]?.GetValue<string>(),
+                Width = x?["width"]?.GetValue<int>()
+            });
+
+        var candidate = candidates
+            ?.OrderByDescending(x => x.Height)
+            .FirstOrDefault();
+
+        if (string.IsNullOrEmpty(candidate?.Url))
         {
-            throw new Exception("display_url not found");
+            throw new Exception("Error parsing Instagram image: image_versions2:candidates not found");
         }
 
-        var height = node["dimensions"]?["height"]?.GetValue<int>();
-        var width = node["dimensions"]?["width"]?.GetValue<int>();
-
-        var isVideo = node["is_video"]?.GetValue<bool>() ?? false;
-
-        var alt = node["accessibility_caption"]?.GetValue<string>();
+        var mediaType = node["media_type"]?.GetValue<int>();
+        if (mediaType == null)
+        {
+            await _loggingService.Warn("Instagram image parsing: media_type not found");
+        }
 
         return new InstagramImageResponse
         {
-            Alt = alt,
-            Height = height,
-            IsVideo = isVideo,
-            Shortcode = shortcode,
-            Url = url,
-            Width = width
+            Alt = node["accessibility_caption"]?.GetValue<string>(),
+            Height = candidate.Height,
+            IsVideo = mediaType == 8,
+            Shortcode = id,
+            Url = candidate.Url,
+            Width = candidate.Width
         };
     }
 
@@ -339,7 +214,7 @@ public class InstagramClient : IInstagramClient
         {
             var images = new List<InstagramImageResponse>();
 
-            var children = node["edge_sidecar_to_children"]?["edges"] as JsonArray;
+            var children = node["carousel_media"] as JsonArray;
             if (children == null)
             {
                 // the post only contains 1 image
@@ -349,15 +224,13 @@ public class InstagramClient : IInstagramClient
             }
 
             foreach (var child in children)
-            {
-                var childNode = child?["node"];
-                if (childNode == null)
+            {                
+                if (child == null)
                 {
-                    throw new Exception("node not found");
+                    continue;
                 }
 
-                var image = await ParseImage(childNode);
-
+                var image = await ParseImage(child);
                 images.Add(image);
             }
 
@@ -374,15 +247,21 @@ public class InstagramClient : IInstagramClient
     {
         try
         {
-            var shortcode = node["shortcode"]?.ToString() ?? string.Empty;
+            var shortcode = node["code"]?.ToString() ?? string.Empty;
             if (string.IsNullOrEmpty(shortcode))
             {
-                throw new Exception("shortcode not found");
+                throw new Exception("Error parsing Instagram post: code not found");
             }
 
-            var unixTimestamp = node["taken_at_timestamp"]?.GetValue<int>() ?? 0;
-            var date = DateUtils.FromUnixEpochTimestamp(unixTimestamp);
-            var caption = (node["edge_media_to_caption"]?["edges"] as JsonArray)?.FirstOrDefault()?["node"]?["text"]?.ToString() ?? string.Empty;
+            var unixTimestamp = node["taken_at"]?.GetValue<int>();
+            if (unixTimestamp == null)
+            {
+                throw new Exception("Error parsing Instagram post: taken_at not found");
+            }
+
+            var date = DateUtils.FromUnixEpochTimestamp(unixTimestamp.Value);
+            
+            var caption = node["caption"]?["text"]?.GetValue<string>();
 
             return new InstagramPostResponse
             {
