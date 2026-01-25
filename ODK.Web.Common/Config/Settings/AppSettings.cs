@@ -8,6 +8,8 @@ public class AppSettings
 
     public required BrevoSettings Brevo { get; init; }
 
+    public required string ChromePath { get; init; }
+
     public required ConnectionStringsSettings ConnectionStrings { get; init; }
 
     public required EmailsSettings Emails { get; init; }

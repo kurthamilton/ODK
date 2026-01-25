@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using ODK.Services.Events;
 using ODK.Services.Exceptions;
 using ODK.Services.Members;
 using ODK.Services.SocialMedia;
@@ -13,14 +12,12 @@ namespace ODK.Web.Razor.Controllers;
 [ApiController]
 public class ScheduledTasksController : OdkControllerBase
 {
-    private readonly IEventAdminService _eventAdminService;
     private readonly IMemberAdminService _memberAdminService;
     private readonly ScheduledTasksSettings _settings;
     private readonly ISiteSubscriptionService _siteSubscriptionService;
     private readonly ISocialMediaService _socialMediaService;
 
     public ScheduledTasksController(
-        IEventAdminService eventAdminService,
         ISocialMediaService socialMediaService,
         AppSettings settings,
         ISiteSubscriptionService siteSubscriptionService,
@@ -28,7 +25,6 @@ public class ScheduledTasksController : OdkControllerBase
         IRequestStore requestStore)
         : base(requestStore)
     {
-        _eventAdminService = eventAdminService;
         _memberAdminService = memberAdminService;
         _settings = settings.ScheduledTasks;
         _siteSubscriptionService = siteSubscriptionService;

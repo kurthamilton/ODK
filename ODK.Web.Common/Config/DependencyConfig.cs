@@ -1,8 +1,12 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using ODK.Core.Platforms;
+using ODK.Core.Utils;
 using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Data.EntityFramework;
@@ -55,6 +59,7 @@ public static class DependencyConfig
         ConfigureApi(services);
         ConfigureAuthentication(services, appSettings);
         ConfigureCore(services);
+        ConfigureHttpClients(services, appSettings);
         ConfigurePayments(services, appSettings);
         ConfigureServiceSettings(services, appSettings);
         ConfigureServices(services, appSettings);
@@ -92,6 +97,30 @@ public static class DependencyConfig
         services.AddSingleton(new OdkContextSettings(connectionString));
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IUnitOfWorkFactory, UnitOfWorkFactory>();
+    }
+
+    private static void ConfigureHttpClients(IServiceCollection services, AppSettings appSettings)
+    {
+        services.AddHttpClient("InstagramClient")
+            .ConfigurePrimaryHttpMessageHandler(() =>
+            {
+                var baseUrl = UrlUtils.BaseUrl(appSettings.Instagram.BaseUrl);
+
+                var cookies = new CookieContainer();
+
+                var cookieUri = new Uri(baseUrl);
+                foreach (var cookie in appSettings.Instagram.FetcherCookies)
+                {
+                    cookies.Add(cookieUri, new Cookie(cookie.Key, cookie.Value));
+                }
+
+                return new HttpClientHandler
+                {
+                    AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+                    CookieContainer = cookies,
+                    UseCookies = true
+                };
+            });
     }
 
     private static void ConfigurePayments(this IServiceCollection services, AppSettings appSettings)
@@ -165,8 +194,11 @@ public static class DependencyConfig
         services.AddScoped<IInstagramClient, InstagramClient>();
         services.AddSingleton(new InstagramClientSettings
         {
-            FeedUrl = appSettings.Instagram.FeedUrl,
-            UserAgent = appSettings.Instagram.FetchUserAgent
+            ChannelUrl = appSettings.Instagram.BaseUrl + appSettings.Instagram.ChannelPath,
+            ChromePath = appSettings.ChromePath,
+            Cookies = appSettings.Instagram.FetcherCookies,
+            FeedUrl = appSettings.Instagram.BaseUrl + appSettings.Instagram.FeedPath,
+            Headers = appSettings.Instagram.FetcherHeaders
         });
         services.AddScoped<IMediaAdminService, MediaAdminService>();
         services.AddScoped<IMediaFileProvider, MediaFileProvider>();
@@ -214,10 +246,10 @@ public static class DependencyConfig
         services.AddScoped<ISocialMediaService, SocialMediaService>();
         services.AddSingleton(new SocialMediaServiceSettings
         {
-            InstagramChannelUrlFormat = appSettings.Instagram.PostUrl,
+            InstagramChannelUrlFormat = appSettings.Instagram.BaseUrl + appSettings.Instagram.ChannelPath,
             InstagramFetchWaitSeconds = appSettings.Instagram.FetchWaitSeconds,
-            InstagramPostUrlFormat = appSettings.Instagram.PostUrl,
-            InstagramTagUrlFormat = appSettings.Instagram.TagUrl,
+            InstagramPostUrlFormat = appSettings.Instagram.BaseUrl + appSettings.Instagram.PostPath,
+            InstagramTagUrlFormat = appSettings.Instagram.BaseUrl + appSettings.Instagram.TagPath,
             WhatsAppUrlFormat = appSettings.WhatsApp.UrlFormat
         });
         services.AddScoped<ITopicAdminService, TopicAdminService>();
