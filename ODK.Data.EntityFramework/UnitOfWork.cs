@@ -50,6 +50,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IEventTopicRepository> _eventTopicRepository;
     private readonly Lazy<IEventWaitingListMemberRepository> _eventWaitingListMemberRepository;
     private readonly Lazy<IFeatureRepository> _featureRepository;
+    private readonly Lazy<IInstagramFetchLogEntryRepository> _instagramFetchLogEntryRepository;
     private readonly Lazy<IInstagramImageRepository> _instagramImageRepository;
     private readonly Lazy<IInstagramPostRepository> _instagramPostRepository;
     private readonly Lazy<IIssueMessageRepository> _issueMessageRepository;
@@ -139,6 +140,7 @@ public class UnitOfWork : IUnitOfWork
         _eventTopicRepository = new(() => new EventTopicRepository(_context));
         _eventWaitingListMemberRepository = new(() => new EventWaitingListMemberRepository(_context));
         _featureRepository = new(() => new FeatureRepository(_context));
+        _instagramFetchLogEntryRepository = new(() => new InstagramFetchLogEntryRepository(_context));
         _instagramImageRepository = new(() => new InstagramImageRepository(_context));
         _instagramPostRepository = new(() => new InstagramPostRepository(_context));
         _issueMessageRepository = new(() => new IssueMessageRepository(_context));
@@ -224,6 +226,7 @@ public class UnitOfWork : IUnitOfWork
     public IEventTopicRepository EventTopicRepository => _eventTopicRepository.Value;
     public IEventWaitingListMemberRepository EventWaitingListMemberRepository => _eventWaitingListMemberRepository.Value;
     public IFeatureRepository FeatureRepository => _featureRepository.Value;
+    public IInstagramFetchLogEntryRepository InstagramFetchLogEntryRepository => _instagramFetchLogEntryRepository.Value;
     public IInstagramImageRepository InstagramImageRepository => _instagramImageRepository.Value;
     public IInstagramPostRepository InstagramPostRepository => _instagramPostRepository.Value;
     public IIssueMessageRepository IssueMessageRepository => _issueMessageRepository.Value;

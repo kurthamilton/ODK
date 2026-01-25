@@ -165,8 +165,11 @@ public static class DependencyConfig
         services.AddScoped<IInstagramClient, InstagramClient>();
         services.AddSingleton(new InstagramClientSettings
         {
-            FeedUrl = appSettings.Instagram.FeedUrl,
-            UserAgent = appSettings.Instagram.FetchUserAgent
+            ChannelUrl = appSettings.Instagram.BaseUrl + appSettings.Instagram.Paths.Channel,
+            Cookies = appSettings.Instagram.Client.Cookies,
+            GraphQLUrl = appSettings.Instagram.BaseUrl + appSettings.Instagram.Paths.GraphQL,
+            Headers = appSettings.Instagram.Client.Headers,
+            PostsGraphQlDocId = appSettings.Instagram.Client.GraphQL.PostsDocId
         });
         services.AddScoped<IMediaAdminService, MediaAdminService>();
         services.AddScoped<IMediaFileProvider, MediaFileProvider>();
@@ -214,10 +217,10 @@ public static class DependencyConfig
         services.AddScoped<ISocialMediaService, SocialMediaService>();
         services.AddSingleton(new SocialMediaServiceSettings
         {
-            InstagramChannelUrlFormat = appSettings.Instagram.PostUrl,
+            InstagramChannelUrlFormat = appSettings.Instagram.BaseUrl + appSettings.Instagram.Paths.Channel,
             InstagramFetchWaitSeconds = appSettings.Instagram.FetchWaitSeconds,
-            InstagramPostUrlFormat = appSettings.Instagram.PostUrl,
-            InstagramTagUrlFormat = appSettings.Instagram.TagUrl,
+            InstagramPostUrlFormat = appSettings.Instagram.BaseUrl + appSettings.Instagram.Paths.Post,
+            InstagramTagUrlFormat = appSettings.Instagram.BaseUrl + appSettings.Instagram.Paths.Tag,
             WhatsAppUrlFormat = appSettings.WhatsApp.UrlFormat
         });
         services.AddScoped<ITopicAdminService, TopicAdminService>();
