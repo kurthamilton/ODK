@@ -63,8 +63,6 @@ public class WebhooksController : OdkControllerBase
             return;
         }
 
-        await _loggingService.Info($"Brevo webhook received: {json}");
-
         var eventName = node?["event"]?.GetValue<string>();
         var externalId = node?["message-id"]?.GetValue<string>();
 

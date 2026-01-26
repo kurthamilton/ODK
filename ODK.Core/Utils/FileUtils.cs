@@ -5,17 +5,16 @@ namespace ODK.Core.Utils;
 
 public static class FileUtils
 {
-    private static readonly Regex AlphaNumericImageFileNameRegex = new Regex(GetAlphaNumericFileNamePattern(ImageValidator.ValidFileExtensions),
+    private static readonly Regex AlphaNumericImageFileNameRegex = new(
+        GetAlphaNumericFileNamePattern(ImageValidator.ValidFileExtensions),
         RegexOptions.Compiled);
 
     public static string AlphaNumericImageFileName(this string fileName)
-    {
-        return AlphaNumericImageFileNameRegex.Replace(fileName, string.Empty);
-    }
+        => AlphaNumericImageFileNameRegex.Replace(fileName, string.Empty);
 
     private static string GetAlphaNumericFileNamePattern(IEnumerable<string> extensions)
     {
-        string extensionsPattern = string.Join("|", extensions.Select(x => x.Replace(".", "\\.")));
+        string extensionsPattern = string.Join('|', extensions.Select(x => x.Replace(".", "\\.")));
         return $"(?!({extensionsPattern})$)[^a-zA-Z0-9]";
     }
 }

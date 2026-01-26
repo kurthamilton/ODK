@@ -1,4 +1,6 @@
-﻿namespace ODK.Core.Utils;
+﻿using ODK.Core.Web;
+
+namespace ODK.Core.Utils;
 
 public static class UrlUtils
 {
@@ -13,18 +15,17 @@ public static class UrlUtils
         return uri.GetLeftPart(UriPartial.Authority);
     }
 
-    public static string Url(string baseUrl, string path)
+    public static string NormalisePath(string path)
     {
-        if (string.IsNullOrEmpty(path))
-        {
-            return baseUrl;
-        }
+        path = path.EnsureLeading("/");
 
-        if (!path.StartsWith('/'))
-        {
-            path = $"/{path}";
-        }
+        var parts = path.Split('/');
 
-        return baseUrl + path;
+        return Path.HasExtension(parts.Last())
+            ? path
+            : path.EnsureTrailing("/");
     }
+
+    public static string Url(string baseUrl, string path)
+        => UrlBuilder.Base(baseUrl).Path(path).Build();
 }
