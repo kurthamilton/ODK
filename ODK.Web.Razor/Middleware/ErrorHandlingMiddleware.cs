@@ -2,7 +2,11 @@
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Features;
+using ODK.Core.Chapters;
 using ODK.Core.Exceptions;
+using ODK.Core.Platforms;
+using ODK.Core.Utils;
+using ODK.Data.Core;
 using ODK.Services.Exceptions;
 using ODK.Services.Logging;
 using ODK.Web.Common.Config.Settings;
@@ -25,7 +29,8 @@ public class ErrorHandlingMiddleware
         HttpContext context,
         ILoggingService loggingService,
         AppSettings appSettings,
-        IRequestStore requestStore)
+        IRequestStore requestStore,
+        IUnitOfWork unitOfWork)
     {
         try
         {
@@ -48,13 +53,58 @@ public class ErrorHandlingMiddleware
                 _ => 500
             };
 
-            await HandleAsync(context, requestStore);
+            await HandleAsync(context, ex, requestStore, unitOfWork);
         }
+    }
+
+    private async Task<Chapter?> FindChapter(
+        HttpContext httpContext, IRequestStore requestStore, IUnitOfWork unitOfWork)
+    {
+        // We can't always get the chapter from the request store for 404s, as it matches by route params.
+        // If we have a 404 as a result of not matching a route, we won't have any route params.
+
+        var chapter = await requestStore.GetChapterOrDefault();
+        if (chapter != null)
+        {
+            return chapter;
+        }
+
+        // We might end up on a valid chapter route as a result of being redirected to a chapter error page,
+        // so reset the request store just in case any downstream calls want to use the request store to get
+        // the chapter based on the new route.
+        requestStore.Reset();
+
+        var request = httpContext.Request;
+        var path = request.Path.Value;
+        if (string.IsNullOrEmpty(path))
+        {
+            return null;
+        }
+
+        var pathParts = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        if (pathParts.Length == 0)
+        {
+            return null;
+        }
+
+        // Default routes are like /{chapter.Slug}/...
+        // DrunkenKnitwits chapter routes are like /{chapter.ShortName}/...
+        var platform = requestStore.Platform;
+        if (platform == PlatformType.DrunkenKnitwits)
+        {
+            var fullName = Chapter.GetFullName(platform, pathParts[0]);
+            return await unitOfWork.ChapterRepository.GetByName(fullName).Run();
+        }
+
+        var slug = pathParts[0];
+        return await unitOfWork.ChapterRepository.GetBySlug(slug).Run();
     }
 
     private async Task HandleAsync(
         HttpContext httpContext,
-        IRequestStore requestStore)
+        Exception ex,
+        IRequestStore requestStore,
+        IUnitOfWork unitOfWork)
     {
         var request = httpContext.Request;
         var response = httpContext.Response;
@@ -62,7 +112,7 @@ public class ErrorHandlingMiddleware
         var originalMethod = request.Method;
         var originalPath = request.Path;
 
-        var path = await GetErrorPath(httpContext, requestStore);
+        var path = await GetErrorPath(httpContext, ex, requestStore, unitOfWork);
 
         ResetHttpContext(httpContext);
 
@@ -82,21 +132,31 @@ public class ErrorHandlingMiddleware
     }
 
     private async Task<string?> GetErrorPath(
-        HttpContext context, IRequestStore requestStore)
+        HttpContext httpContext, Exception ex, IRequestStore requestStore, IUnitOfWork unitOfWork)
     {
-        var statusCode = context.Response.StatusCode;
-        var chapter = await requestStore.GetChapterOrDefault();
+        var statusCode = httpContext.Response.StatusCode;
         var platform = requestStore.Platform;
 
-        return OdkRoutes.Error(requestStore.Platform, chapter, statusCode);
+        var chapter = await FindChapter(httpContext, requestStore, unitOfWork);
+        return OdkRoutes.Error(platform, chapter, statusCode);
     }
 
-    private async Task LogError(HttpContext httpContext, Exception ex, ILoggingService loggingService, AppSettings appSettings)
+    private async Task LogError(
+        HttpContext httpContext,
+        Exception ex,
+        ILoggingService loggingService,
+        AppSettings appSettings)
     {
-        if (ex is OdkNotFoundException &&
-            appSettings.Logging.NotFound.IgnorePatterns.Any(x => Regex.IsMatch(httpContext.Request.Path, x)))
+        if (ex is OdkNotFoundException)
         {
-            return;
+            var path = StringUtils.EnsureTrailing(httpContext.Request.Path.Value ?? "/", "/");
+            var config = appSettings.Logging.NotFound;
+
+            if (config.IgnorePatterns.Any(x => Regex.IsMatch(path, x)) ||
+                config.IgnorePaths.Any(x => path.StartsWith(x, StringComparison.OrdinalIgnoreCase)))
+            {
+                return;
+            }
         }
 
         var headers = httpContext.Request.Headers

@@ -30,4 +30,6 @@ public interface IRequestStore
     Task<Member> GetCurrentMember();
 
     Task<Member?> GetCurrentMemberOrDefault();
+
+    void Reset();
 }

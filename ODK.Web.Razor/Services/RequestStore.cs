@@ -117,6 +117,13 @@ public class RequestStore : IRequestStore
 
     public Task<Member?> GetCurrentMemberOrDefault() => GetCurrentMemberOrDefault(verbose: false);
 
+    public void Reset()
+    {
+        _chapter = null;
+        _currentMember = null;
+        _loaded = false;
+    }
+
     private IDeferredQuerySingleOrDefault<Chapter> GetChapterQuery(IUnitOfWork unitOfWork, bool verbose)
     {
         var httpContext = _httpContextAccessor.HttpContext;
