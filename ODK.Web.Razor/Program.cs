@@ -156,6 +156,8 @@ public class Program
             .AddScoped<IRequestStore, RequestStore>()
             .AddSingleton(new RequestStoreSettings
             {
+                IgnoreNotFoundPaths = appSettings.Logging.NotFound.IgnorePaths,
+                IgnoreNotFoundPathPatterns = appSettings.RateLimiting.BlockPatterns,
                 WarningNotFoundUserAgents = appSettings.Logging.NotFound.WarningUserAgents
             });
 

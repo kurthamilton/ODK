@@ -149,11 +149,10 @@ public class ErrorHandlingMiddleware
     {
         if (ex is OdkNotFoundException)
         {
-            var path = StringUtils.EnsureTrailing(httpContext.Request.Path.Value ?? "/", "/");
-            var config = appSettings.Logging.NotFound;
+            var path = httpContext.Request.Path.Value.EnsureTrailing("/");
 
-            if (config.IgnorePatterns.Any(x => Regex.IsMatch(path, x)) ||
-                config.IgnorePaths.Any(x => path.StartsWith(x, StringComparison.OrdinalIgnoreCase)))
+            if (appSettings.Logging.NotFound.IgnorePaths.Any(x => path.StartsWith(x, StringComparison.OrdinalIgnoreCase)) ||
+                appSettings.RateLimiting.BlockPatterns.Any(x => Regex.IsMatch(path, x)))
             {
                 return;
             }
