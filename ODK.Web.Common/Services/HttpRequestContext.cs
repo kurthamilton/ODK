@@ -17,13 +17,19 @@ public class HttpRequestContext : IHttpRequestContext
 
     public string BaseUrl => _baseUrl.Value;
 
+    public required string RequestPath { get; init; }
+
     public required string RequestUrl { get; init; }
+
+    public required string UserAgent { get; init; }
 
     public static HttpRequestContext Create(HttpRequest? request)
     {
         return new HttpRequestContext
         {
-            RequestUrl = request?.GetDisplayUrl() ?? string.Empty
+            RequestPath = request?.Path.Value ?? string.Empty,
+            RequestUrl = request?.GetDisplayUrl() ?? string.Empty,
+            UserAgent = request?.Headers.UserAgent.ToString() ?? string.Empty
         };
     }
 }

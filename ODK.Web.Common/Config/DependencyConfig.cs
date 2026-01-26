@@ -149,6 +149,14 @@ public static class DependencyConfig
         services.AddScoped<IIssueAdminService, IssueAdminService>();
         services.AddScoped<IIssueService, IssueService>();
         services.AddScoped<ILoggingService, LoggingService>();
+        services.AddSingleton(new LoggingServiceSettings
+        {
+            IgnoreUnknownPathPatterns = appSettings.Logging.IgnorePatterns
+                .Concat(appSettings.RateLimiting.BlockPatterns)
+                .ToArray(),
+            IgnoreUnknownPaths = appSettings.Logging.IgnorePaths,
+            IgnoreUnknownPathUserAgents = appSettings.Logging.IgnoreUserAgents
+        });
         services.AddScoped<IEmailService, EmailService>();
         services.AddSingleton(new EmailServiceSettings
         {

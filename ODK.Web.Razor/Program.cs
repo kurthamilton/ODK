@@ -136,13 +136,7 @@ public class Program
 
         builder.Services
             .AddScoped<IBackgroundTaskService, HangfireService>()
-            .AddScoped<IRequestStore, RequestStore>()
-            .AddSingleton(new RequestStoreSettings
-            {
-                IgnoreNotFoundPaths = appSettings.Logging.NotFound.IgnorePaths,
-                IgnoreNotFoundPathPatterns = appSettings.RateLimiting.BlockPatterns,
-                WarningNotFoundUserAgents = appSettings.Logging.NotFound.WarningUserAgents
-            });
+            .AddScoped<IRequestStore, RequestStore>();
 
         LoggingConfig.Configure(builder, appSettings);
 

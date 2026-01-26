@@ -74,7 +74,7 @@ public class BrevoApiEmailClient : IEmailClient
         }
         catch (Exception ex)
         {
-            await _loggingService.Error(ex, new Dictionary<string, string>
+            await _loggingService.Error(ex, new Dictionary<string, string?>
             {
                 { "MAIL.TO", string.Join(", ", email.To) },
                 { "MAIL.HTMLBODY", email.Body },

@@ -1,20 +1,30 @@
-﻿using ODK.Core.Logging;
+﻿using System.Text.RegularExpressions;
+using ODK.Core.Logging;
+using ODK.Core.Utils;
+using ODK.Core.Web;
 using ODK.Data.Core;
 using Serilog;
 using Serilog.Context;
+using Serilog.Events;
 
 namespace ODK.Services.Logging;
 
 public class LoggingService : OdkAdminServiceBase, ILoggingService
 {
     private readonly ILogger _logger;
+    private readonly LoggingServiceSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUnitOfWorkFactory _unitOfWorkFactory;
 
-    public LoggingService(ILogger logger, IUnitOfWorkFactory unitOfWorkFactory, IUnitOfWork unitOfWork)
+    public LoggingService(
+        ILogger logger,
+        IUnitOfWorkFactory unitOfWorkFactory,
+        IUnitOfWork unitOfWork,
+        LoggingServiceSettings settings)
         : base(unitOfWork)
     {
         _logger = logger;
+        _settings = settings;
         _unitOfWork = unitOfWork;
         _unitOfWorkFactory = unitOfWorkFactory;
     }
@@ -37,107 +47,47 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
     }
 
     public Task Error(string message)
-    {
-        _logger.Error(message);
-
-        return Task.CompletedTask;
-    }
+        => Log(LogEventLevel.Error, message);
 
     public Task Error(string message, Exception exception)
-    {
-        _logger.Error(exception, message);
-
-        return Task.CompletedTask;
-    }
+        => Log(LogEventLevel.Error, message, exception: exception);
 
     public async Task Error(Exception exception, HttpRequest request)
     {
-        _logger.Error(exception, exception.Message);
-
-        // Create new unit of work to avoid re-instigating any previous context errors
-        var unitOfWork = _unitOfWorkFactory.Create();
-
-        var error = Core.Logging.Error.FromException(exception);
-        unitOfWork.ErrorRepository.Add(error);
-
-        var properties = new List<ErrorProperty>
+        var properties = new Dictionary<string, string?>
         {
-            new ErrorProperty
-            {
-                ErrorId = error.Id,
-                Name = "REQUEST.URL",
-                Value = request.Url
-            },
-            new ErrorProperty
-            {
-                ErrorId = error.Id,
-                Name = "REQUEST.METHOD",
-                Value = request.Method
-            },
-            new ErrorProperty
-            {
-                ErrorId = error.Id,
-                Name = "REQUEST.USERNAME",
-                Value = request.Username ?? string.Empty
-            }
+            { "REQUEST.URL", request.Url },
+            { "REQUEST.METHOD", request.Method },
+            { "REQUEST.USERNAME", request.Username },
+            { "EXCEPTION.STACKTRACE", exception.StackTrace?.Replace(Environment.NewLine, "<br>") }
         };
 
         foreach (string key in request.Headers.Keys)
         {
-            properties.Add(new ErrorProperty
-            {
-                ErrorId = error.Id,
-                Name = $"REQUEST.HEADER.{key.ToUpperInvariant()}",
-                Value = request.Headers[key]
-            });
+            properties[$"REQUEST.HEADER.{key.ToUpperInvariant()}"] = request.Headers[key];
         }
 
         foreach (string key in request.Form.Keys)
         {
-            properties.Add(new ErrorProperty
-            {
-                ErrorId = error.Id,
-                Name = $"REQUEST.FORM.{key.ToUpperInvariant()}",
-                Value = request.Form[key]
-            });
+            properties[$"REQUEST.FORM.{key.ToUpperInvariant()}"] = request.Form[key];
         }
-
-        properties.Add(new ErrorProperty
-        {
-            ErrorId = error.Id,
-            Name = "EXCEPTION.STACKTRACE",
-            Value = exception.StackTrace?.Replace(Environment.NewLine, "<br>") ?? string.Empty
-        });
 
         var innerException = exception.InnerException;
         var innerExceptionCount = 0;
         while (innerException != null)
         {
-            properties.Add(new ErrorProperty
-            {
-                ErrorId = error.Id,
-                Name = $"EXCEPTION.INNEREXCEPTION[{innerExceptionCount}].TYPE",
-                Value = innerException.GetType().Name
-            });
-            properties.Add(new ErrorProperty
-            {
-                ErrorId = error.Id,
-                Name = $"EXCEPTION.INNEREXCEPTION[{innerExceptionCount}].MESSAGE",
-                Value = innerException.Message
-            });
+            properties[$"EXCEPTION.INNEREXCEPTION[{innerExceptionCount}].TYPE"] = innerException.GetType().Name;
+            properties[$"EXCEPTION.INNEREXCEPTION[{innerExceptionCount}].MESSAGE"] = innerException.Message;
 
             innerException = innerException.InnerException;
             innerExceptionCount++;
         }
 
-        unitOfWork.ErrorPropertyRepository.AddMany(properties);
-
-        await unitOfWork.SaveChangesAsync();
-    }
-
-    public async Task Error(Exception exception, IDictionary<string, string> data)
-    {
-        _logger.Error(exception, exception.Message);
+        await Log(
+            LogEventLevel.Error,
+            exception.Message,
+            properties,
+            exception);
 
         // Create new unit of work to avoid re-instigating any previous context errors
         var unitOfWork = _unitOfWorkFactory.Create();
@@ -145,16 +95,39 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
         var error = Core.Logging.Error.FromException(exception);
         unitOfWork.ErrorRepository.Add(error);
 
-        var properties = data
+        var errorProperties = properties
             .Select(x => new ErrorProperty
             {
                 ErrorId = error.Id,
                 Name = x.Key,
-                Value = x.Value
+                Value = x.Value ?? string.Empty
+            })
+            .ToArray();
+        unitOfWork.ErrorPropertyRepository.AddMany(errorProperties);
+
+        await unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task Error(Exception exception, IDictionary<string, string?> properties)
+    {
+        await Log(LogEventLevel.Error, exception.Message, properties, exception);
+
+        // Create new unit of work to avoid re-instigating any previous context errors
+        var unitOfWork = _unitOfWorkFactory.Create();
+
+        var error = Core.Logging.Error.FromException(exception);
+        unitOfWork.ErrorRepository.Add(error);
+
+        var errorProperties = properties
+            .Select(x => new ErrorProperty
+            {
+                ErrorId = error.Id,
+                Name = x.Key,
+                Value = x.Value ?? string.Empty
             })
             .ToArray();
 
-        unitOfWork.ErrorPropertyRepository.AddMany(properties);
+        unitOfWork.ErrorPropertyRepository.AddMany(errorProperties);
 
         await unitOfWork.SaveChangesAsync();
     }
@@ -178,24 +151,56 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
             x => x.ErrorRepository.GetErrors(page, pageSize));
     }
 
-    public Task Info(string message)
+    public bool IgnoreUnknownRequestPath(IHttpRequestContext httpRequestContext)
     {
-        _logger.Information(message);
-        return Task.CompletedTask;
+        var path = httpRequestContext.RequestPath.EnsureTrailing("/");
+        var userAgent = httpRequestContext.UserAgent;
+
+        return
+            _settings.IgnoreUnknownPaths.Any(x => MatchesConfigRule(x, path)) ||
+            _settings.IgnoreUnknownPathPatterns.Any(x => Regex.IsMatch(path, x)) ||
+            _settings.IgnoreUnknownPathUserAgents.Any(x => MatchesConfigRule(x, userAgent));
     }
 
-    public Task Warn(string message) => Warn(message, new Dictionary<string, string?>());
+    public Task Info(string message)
+        => Log(LogEventLevel.Information, message);
+
+    public Task Warn(string message)
+        => Log(LogEventLevel.Warning, message);
 
     public Task Warn(string message, IDictionary<string, string?> properties)
+        => Log(LogEventLevel.Warning, message, properties);
+
+    private Task Log(
+        LogEventLevel level,
+        string message,
+        IDictionary<string, string?>? properties = null,
+        Exception? exception = null)
     {
         var disposables = new List<IDisposable>();
 
-        foreach (var key in properties.Keys)
+        if (properties != null)
         {
-            disposables.Add(LogContext.PushProperty(key, properties[key]));
+            foreach (var key in properties.Keys)
+            {
+                disposables.Add(LogContext.PushProperty(key, properties[key]));
+            }
         }
 
-        _logger.Warning(message);
+        switch (level)
+        {
+            case LogEventLevel.Information:
+                _logger.Information(exception, message);
+                break;
+
+            case LogEventLevel.Warning:
+                _logger.Warning(exception, message);
+                break;
+
+            case LogEventLevel.Error:
+                _logger.Error(exception, message);
+                break;
+        }
 
         foreach (var disposable in disposables)
         {
@@ -203,5 +208,27 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
         }
 
         return Task.CompletedTask;
+    }
+
+    private bool MatchesConfigRule(string rule, string value)
+    {
+        var (wildStart, wildEnd) = (rule.StartsWith('*'), rule.EndsWith('*'));
+
+        if (wildStart && wildEnd)
+        {
+            return value.Contains(rule[1..^1], StringComparison.OrdinalIgnoreCase);
+        }
+
+        if (wildStart)
+        {
+            return value.EndsWith(rule[1..], StringComparison.OrdinalIgnoreCase);
+        }
+
+        if (wildEnd)
+        {
+            return value.StartsWith(rule[..^1], StringComparison.OrdinalIgnoreCase);
+        }
+
+        return value.Equals(rule, StringComparison.OrdinalIgnoreCase);
     }
 }

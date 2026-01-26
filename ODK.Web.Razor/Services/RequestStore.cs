@@ -1,11 +1,9 @@
-﻿using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Http.Extensions;
+﻿using Microsoft.AspNetCore.Http.Extensions;
 using ODK.Core;
 using ODK.Core.Chapters;
 using ODK.Core.Exceptions;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
-using ODK.Core.Utils;
 using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
@@ -26,7 +24,6 @@ public class RequestStore : IRequestStore
     private readonly ILoggingService _loggingService;
     private bool _loaded;
     private readonly IPlatformProvider _platformProvider;
-    private readonly RequestStoreSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
 
     private readonly Lazy<OdkComponentContext> _componentContext;
@@ -41,13 +38,11 @@ public class RequestStore : IRequestStore
         IHttpContextAccessor httpContextAccessor,
         IPlatformProvider platformProvider,
         IUnitOfWork unitOfWork,
-        ILoggingService loggingService,
-        RequestStoreSettings settings)
+        ILoggingService loggingService)
     {
         _httpContextAccessor = httpContextAccessor;
         _loggingService = loggingService;
         _platformProvider = platformProvider;
-        _settings = settings;
         _unitOfWork = unitOfWork;
 
         _componentContext = new(() => new OdkComponentContext
@@ -90,33 +85,15 @@ public class RequestStore : IRequestStore
         var chapter = await GetChapterOrDefault(verbose: false);
         if (chapter == null)
         {
-            var request = _httpContextAccessor.HttpContext?.Request;
-            var path = request?.Path.Value.EnsureTrailing("/") ?? "/";
-
-            var reload = true;
-
-            if (_settings.IgnoreNotFoundPaths.Any(path.StartsWith) ||
-                _settings.IgnoreNotFoundPathPatterns.Any(x => Regex.IsMatch(path, x)))
-            {
-                // don't reload with verbose logging if we don't want to log for the current path
-                reload = false;
-            }
-
-            // re-run chapter load with verbose logging
             var message = "Chapter not found when one was expected";
+
+            // Re-run chapter load with verbose logging if we're not ignoring logging on the current request
+            var reload = !_loggingService.IgnoreUnknownRequestPath(_httpRequestContext.Value);
             if (reload)
             {
                 Reset();
 
-                var userAgent = request?.Headers.UserAgent.ToString() ?? "";
-                if (_settings.WarningNotFoundUserAgents.Any(x => userAgent.Contains(x, StringComparison.OrdinalIgnoreCase)))
-                {
-                    await _loggingService.Warn(message);
-                }
-                else
-                {
-                    await _loggingService.Error(message);
-                }
+                await _loggingService.Error(message);
 
                 chapter = await GetChapterOrDefault(verbose: true);
             }

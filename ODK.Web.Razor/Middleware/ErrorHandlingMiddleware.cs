@@ -1,18 +1,17 @@
-﻿using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Diagnostics;
+﻿using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Features;
 using ODK.Core.Chapters;
 using ODK.Core.Exceptions;
 using ODK.Core.Platforms;
-using ODK.Core.Utils;
 using ODK.Data.Core;
 using ODK.Services.Exceptions;
 using ODK.Services.Logging;
 using ODK.Web.Common.Config.Settings;
 using ODK.Web.Common.Routes;
+using ODK.Web.Common.Services;
 using ODK.Web.Razor.Services;
-using HttpRequest = ODK.Services.Logging.HttpRequest;
+using OdkHttpRequest = ODK.Services.Logging.HttpRequest;
 
 namespace ODK.Web.Razor.Middleware;
 
@@ -149,10 +148,7 @@ public class ErrorHandlingMiddleware
     {
         if (ex is OdkNotFoundException)
         {
-            var path = httpContext.Request.Path.Value.EnsureTrailing("/");
-
-            if (appSettings.Logging.NotFound.IgnorePaths.Any(x => path.StartsWith(x, StringComparison.OrdinalIgnoreCase)) ||
-                appSettings.RateLimiting.BlockPatterns.Any(x => Regex.IsMatch(path, x)))
+            if (loggingService.IgnoreUnknownRequestPath(HttpRequestContext.Create(httpContext.Request)))
             {
                 return;
             }
@@ -172,14 +168,6 @@ public class ErrorHandlingMiddleware
             // do nothing
         }
 
-        var request = new HttpRequest(
-            url: httpContext.Request.GetDisplayUrl(),
-            method: httpContext.Request.Method,
-            username: httpContext.User.Identity?.Name,
-            headers: headers,
-            form: form
-        );
-
         try
         {
             if (ex is OdkNotFoundException)
@@ -188,6 +176,14 @@ public class ErrorHandlingMiddleware
             }
             else
             {
+                var request = new OdkHttpRequest(
+                    url: httpContext.Request.GetDisplayUrl(),
+                    method: httpContext.Request.Method,
+                    username: httpContext.User.Identity?.Name,
+                    headers: headers,
+                    form: form
+                );
+
                 await loggingService.Error(ex, request);
             }
         }

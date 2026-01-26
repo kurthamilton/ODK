@@ -2,7 +2,11 @@
 
 public class LoggingSettings
 {
-    public required LoggingStatusCodeSettings NotFound { get; init; }
+    public required string[] IgnorePaths { get; init; }
+
+    public required string[] IgnorePatterns { get; init; }
+
+    public required string[] IgnoreUserAgents { get; init; }
 
     public required string Path { get; init; }
 }

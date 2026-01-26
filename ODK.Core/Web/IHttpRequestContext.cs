@@ -4,5 +4,9 @@ public interface IHttpRequestContext
 {
     string BaseUrl { get; }
 
+    string RequestPath { get; }
+
     string RequestUrl { get; }
+
+    string UserAgent { get; }
 }
