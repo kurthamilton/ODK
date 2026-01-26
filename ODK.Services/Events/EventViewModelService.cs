@@ -220,7 +220,7 @@ public class EventViewModelService : IEventViewModelService
             notifications,
             chapterPages,
             payments,
-            waitingList) = await _unitOfWork.RunAsync(
+            waitlist) = await _unitOfWork.RunAsync(
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.EventRepository.GetById(eventId),
             x => x.VenueRepository.GetByEventId(eventId),
@@ -245,7 +245,7 @@ public class EventViewModelService : IEventViewModelService
             x => currentMemberId != null
                 ? x.EventTicketPaymentRepository.GetConfirmedPayments(currentMemberId.Value, eventId)
                 : new DefaultDeferredQueryMultiple<EventTicketPayment>(),
-            x => x.EventWaitingListMemberRepository.GetByEventId(eventId));
+            x => x.EventWaitlistMemberRepository.GetByEventId(eventId));
 
         OdkAssertions.BelongsToChapter(@event, chapter.Id);
 
@@ -342,7 +342,7 @@ public class EventViewModelService : IEventViewModelService
             HasQuestions = hasQuestions,
             Hosts = hosts.Select(x => x.Member).ToArray(),
             IsAdmin = adminMembers.Any(x => x.MemberId == currentMemberId),
-            IsOnWaitingList = waitingList.Any(x => x.MemberId == currentMemberId),
+            IsOnWaitlist = waitlist.Any(x => x.MemberId == currentMemberId),
             IsMember = member?.IsMemberOf(chapter.Id) == true,
             MembersByResponse = responseDictionary,
             MemberResponse = currentMemberId != null
@@ -355,7 +355,7 @@ public class EventViewModelService : IEventViewModelService
             Platform = platform,
             Venue = canViewVenue ? venue : null,
             VenueLocation = venueLocation,
-            WaitingListLength = waitingList.Count
+            WaitlistLength = waitlist.Count
         };
     }
 

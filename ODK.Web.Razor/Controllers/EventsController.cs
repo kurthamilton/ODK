@@ -69,19 +69,19 @@ public class EventsController : OdkControllerBase
     }
 
     [Authorize]
-    [HttpPost("events/{id:guid}/waiting-list")]
-    public async Task<IActionResult> JoinWaitinglist(Guid id)
+    [HttpPost("events/{id:guid}/wait-list")]
+    public async Task<IActionResult> JoinWaitlist(Guid id)
     {
-        var result = await _eventService.JoinWaitingList(id, MemberId);
+        var result = await _eventService.JoinWaitlist(id, MemberId);
         AddFeedback(result, "You have joined the waiting list");
         return RedirectToReferrer();
     }
 
     [Authorize]
-    [HttpPost("events/{id:guid}/waiting-list/leave")]
-    public async Task<IActionResult> LeaveWaitinglist(Guid id)
+    [HttpPost("events/{id:guid}/wait-list/leave")]
+    public async Task<IActionResult> LeaveWaitlist(Guid id)
     {
-        var result = await _eventService.LeaveWaitingList(id, MemberId);
+        var result = await _eventService.LeaveWaitlist(id, MemberId);
         AddFeedback(result, "You have left the waiting list");
         return RedirectToReferrer();
     }

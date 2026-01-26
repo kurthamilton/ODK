@@ -10,11 +10,11 @@ public interface IEventService
 
     Task CompleteEventTicketPurchase(Guid eventId, Guid memberId);
 
-    Task<ServiceResult> JoinWaitingList(Guid eventId, Guid memberId);
+    Task<ServiceResult> JoinWaitlist(Guid eventId, Guid memberId);
 
-    Task<ServiceResult> LeaveWaitingList(Guid eventId, Guid memberId);
+    Task<ServiceResult> LeaveWaitlist(Guid eventId, Guid memberId);
 
-    Task NotifyWaitingList(ServiceRequest request, Guid eventId);
+    Task NotifyWaitlist(ServiceRequest request, Guid eventId);
 
     Task<ServiceResult> UpdateMemberResponse(MemberServiceRequest request, Guid eventId, EventResponseType responseType);
 }

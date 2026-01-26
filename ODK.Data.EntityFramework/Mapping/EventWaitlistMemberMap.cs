@@ -6,11 +6,11 @@ using ODK.Data.EntityFramework.Converters;
 
 namespace ODK.Data.EntityFramework.Mapping;
 
-public class EventWaitingListMemberMap : IEntityTypeConfiguration<EventWaitingListMember>
+public class EventWaitlistMemberMap : IEntityTypeConfiguration<EventWaitlistMember>
 {
-    public void Configure(EntityTypeBuilder<EventWaitingListMember> builder)
+    public void Configure(EntityTypeBuilder<EventWaitlistMember> builder)
     {
-        builder.ToTable("EventWaitingListMembers");
+        builder.ToTable("EventWaitlistMembers");
 
         builder.HasKey(x => x.Id);
 
@@ -18,7 +18,7 @@ public class EventWaitingListMemberMap : IEntityTypeConfiguration<EventWaitingLi
             .HasConversion<UtcDateTimeConverter>();
 
         builder.Property(x => x.Id)
-            .HasColumnName("EventWaitingListMemberId");
+            .HasColumnName("EventWaitlistMemberId");
 
         builder.HasOne<Event>()
             .WithMany()

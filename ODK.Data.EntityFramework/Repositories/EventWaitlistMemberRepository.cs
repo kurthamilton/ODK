@@ -5,24 +5,24 @@ using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework.Repositories;
 
-public class EventWaitingListMemberRepository : ReadWriteRepositoryBase<EventWaitingListMember>, IEventWaitingListMemberRepository
+public class EventWaitlistMemberRepository : ReadWriteRepositoryBase<EventWaitlistMember>, IEventWaitlistMemberRepository
 {
-    public EventWaitingListMemberRepository(OdkContext context)
+    public EventWaitlistMemberRepository(OdkContext context)
         : base(context)
     {
     }
 
-    public IDeferredQueryMultiple<EventWaitingListMember> GetByEventId(Guid eventId)
+    public IDeferredQueryMultiple<EventWaitlistMember> GetByEventId(Guid eventId)
         => Set()
             .Where(x => x.EventId == eventId)
             .DeferredMultiple();
 
-    public IDeferredQuerySingleOrDefault<EventWaitingListMember> GetByMemberId(Guid memberId, Guid eventId)
+    public IDeferredQuerySingleOrDefault<EventWaitlistMember> GetByMemberId(Guid memberId, Guid eventId)
         => Set()
             .Where(x => x.EventId == eventId && x.MemberId == memberId)
             .DeferredSingleOrDefault();
 
-    public IDeferredQuery<bool> IsOnWaitingList(Guid memberId, Guid eventId)
+    public IDeferredQuery<bool> IsOnWaitlist(Guid memberId, Guid eventId)
         => Set()
             .Where(x => x.EventId == eventId && x.MemberId == memberId)
             .DeferredAny();

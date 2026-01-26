@@ -1,6 +1,6 @@
 ﻿namespace ODK.Core.Events;
 
-public class EventWaitingListMember : IDatabaseEntity
+public class EventWaitlistMember : IDatabaseEntity
 {
     public DateTime CreatedUtc { get; set; }
 

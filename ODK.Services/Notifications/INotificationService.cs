@@ -9,6 +9,11 @@ namespace ODK.Services.Notifications;
 
 public interface INotificationService
 {
+    void AddEventWaitlistPromotionNotifications(
+        Event @event,
+        IEnumerable<Member> members,
+        IEnumerable<MemberNotificationSettings> settings);
+
     void AddNewChapterContactMessageNotifications(
         ChapterContactMessage message,
         IReadOnlyCollection<ChapterAdminMember> adminMembers,

@@ -42,7 +42,7 @@ public interface IUnitOfWork
     IEventTicketPaymentRepository EventTicketPaymentRepository { get; }
     IEventTicketSettingsRepository EventTicketSettingsRepository { get; }
     IEventTopicRepository EventTopicRepository { get; }
-    IEventWaitingListMemberRepository EventWaitingListMemberRepository { get; }
+    IEventWaitlistMemberRepository EventWaitlistMemberRepository { get; }
     IFeatureRepository FeatureRepository { get; }
     IInstagramFetchLogEntryRepository InstagramFetchLogEntryRepository { get; }
     IInstagramImageRepository InstagramImageRepository { get; }

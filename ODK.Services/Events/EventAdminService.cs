@@ -666,6 +666,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             date = date.SpecifyKind(DateTimeKind.Utc);
         }
 
+        // TODO: move members from waitlist if attendee limit increases
+        // Do not allow attendee limit to be set below number of attendees
         @event.AttendeeLimit = model.AttendeeLimit;
         @event.Date = date;
         @event.Description = model.Description != null
@@ -798,7 +800,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         await _unitOfWork.SaveChangesAsync();
 
-        _backgroundTaskService.Enqueue(() => _eventService.NotifyWaitingList(request, eventId));
+        _backgroundTaskService.Enqueue(() => _eventService.NotifyWaitlist(request, eventId));
     }
 
     public async Task<ServiceResult> UpdateScheduledEmail(

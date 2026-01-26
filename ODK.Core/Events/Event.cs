@@ -49,7 +49,7 @@ public class Event : IDatabaseEntity, IChapterEntity
 
     public Guid VenueId { get; set; }
 
-    public bool WaitingListDisabled { get; set; }
+    public bool WaitlistDisabled { get; set; }
 
     public static DateTime FromLocalTime(DateTime local, TimeZoneInfo? timeZone)
     {

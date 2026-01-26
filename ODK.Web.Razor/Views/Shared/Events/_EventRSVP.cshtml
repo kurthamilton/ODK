@@ -12,9 +12,9 @@
             {
                 Chapter = Model.Chapter,
                 Event = Model.Event,
-                IsOnWaitingList = Model.IsOnWaitingList,
+                IsOnWaitlist = Model.IsOnWaitlist,
                 SpacesLeft = Model.SpacesLeft,
-                WaitingListLength = Model.WaitingListLength
+                WaitlistLength = Model.WaitlistLength
             })
 
             @if (Model.CanRsvp)
@@ -48,11 +48,11 @@
                     </div>
                 }            
             }
-            else if (Model.CanShowWaitingList)
+            else if (Model.CanShowWaitlist)
             {                
-                if (!Model.IsOnWaitingList)
+                if (!Model.IsOnWaitlist)
                 {
-                    <form action="/events/@Model.Event.Id/waiting-list" method="post">
+                    <form action="/events/@Model.Event.Id/wait-list" method="post">
                         <button class="btn btn-primary btn-sm">
                             Join waiting list
                         </button>
@@ -60,7 +60,7 @@
                 }
                 else
                 {
-                    <form action="/events/@Model.Event.Id/waiting-list/leave" method="post">
+                    <form action="/events/@Model.Event.Id/wait-list/leave" method="post">
                         <button class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to leave the waiting list?');">
                             Leave waiting list
                         </button>

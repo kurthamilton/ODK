@@ -21,10 +21,10 @@ public class EventPageViewModel : GroupPageViewModel
             !Event.RsvpDisabled
         );
 
-    public bool CanShowWaitingList =>
+    public bool CanShowWaitlist =>
         !CanRsvp &&
         !Event.RsvpDeadlinePassed &&
-        !Event.WaitingListDisabled;
+        !Event.WaitlistDisabled;
 
     public required bool CanView { get; init; }
 
@@ -34,7 +34,7 @@ public class EventPageViewModel : GroupPageViewModel
 
     public required IReadOnlyCollection<Member> Hosts { get; init; }
 
-    public required bool IsOnWaitingList { get; init; }
+    public required bool IsOnWaitlist { get; init; }
 
     public required EventResponseType? MemberResponse { get; init; }
 
@@ -48,5 +48,5 @@ public class EventPageViewModel : GroupPageViewModel
 
     public required VenueLocation? VenueLocation { get; init; }
 
-    public required int WaitingListLength { get; init; }
+    public required int WaitlistLength { get; init; }
 }
