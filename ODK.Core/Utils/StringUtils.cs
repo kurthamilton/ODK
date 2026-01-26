@@ -14,11 +14,11 @@ public static class StringUtils
     public static string Coalesce(params string?[] values)
         => values.FirstOrDefault(x => !string.IsNullOrEmpty(x)) ?? string.Empty;
 
-    public static string EnsureTrailing(string text, string trailingText)
+    public static string EnsureTrailing(this string? text, string trailingText)
         => EnsureTrailing(text, trailingText, StringComparison.OrdinalIgnoreCase);
 
-    public static string EnsureTrailing(string text, string trailingText, StringComparison comparisonType)
-        => text.EndsWith(trailingText, comparisonType)
+    public static string EnsureTrailing(this string? text, string trailingText, StringComparison comparisonType)
+        => text?.EndsWith(trailingText, comparisonType) == true
             ? text
             : text + trailingText;
 

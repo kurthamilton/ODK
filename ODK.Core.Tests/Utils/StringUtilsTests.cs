@@ -19,6 +19,12 @@ public static class StringUtilsTests
         text.Should().Be("a2c");
     }
 
+    [TestCase("abc", "/", ExpectedResult = "abc/")]
+    [TestCase("abc/", "/", ExpectedResult = "abc/")]
+    [TestCase(null, "/", ExpectedResult = "/")]
+    [TestCase("", "/", ExpectedResult = "/")]
+    public static string EnsureTrailing(string? text, string trailingText) => text.EnsureTrailing(trailingText);
+
     [Test]
     public static void Interpolate_ReplacesTokens()
     {

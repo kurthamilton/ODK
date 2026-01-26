@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Http.Extensions;
+﻿using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Http.Extensions;
 using ODK.Core;
 using ODK.Core.Chapters;
 using ODK.Core.Exceptions;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
+using ODK.Core.Utils;
 using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
@@ -88,22 +90,37 @@ public class RequestStore : IRequestStore
         var chapter = await GetChapterOrDefault(verbose: false);
         if (chapter == null)
         {
-            // re-run chapter load with verbose logging for debugging
-            _loaded = false;
+            var request = _httpContextAccessor.HttpContext?.Request;
+            var path = request?.Path.Value.EnsureTrailing("/") ?? "/";
+
+            var reload = true;
+
+            if (_settings.IgnoreNotFoundPaths.Any(path.StartsWith) ||
+                _settings.IgnoreNotFoundPathPatterns.Any(x => Regex.IsMatch(path, x)))
+            {
+                // don't reload with verbose logging if we don't want to log for the current path
+                reload = false;
+            }
+
+            // re-run chapter load with verbose logging
             var message = "Chapter not found when one was expected";
-
-            var userAgent = _httpContextAccessor.HttpContext?.Request.Headers.UserAgent.ToString();
-            if (userAgent != null &&
-                _settings.WarningNotFoundUserAgents.Any(x => userAgent.Contains(x, StringComparison.OrdinalIgnoreCase)))
+            if (reload)
             {
-                await _loggingService.Warn(message);
-            }
-            else
-            {
-                await _loggingService.Error(message);
+                Reset();
+
+                var userAgent = request?.Headers.UserAgent.ToString() ?? "";
+                if (_settings.WarningNotFoundUserAgents.Any(x => userAgent.Contains(x, StringComparison.OrdinalIgnoreCase)))
+                {
+                    await _loggingService.Warn(message);
+                }
+                else
+                {
+                    await _loggingService.Error(message);
+                }
+
+                chapter = await GetChapterOrDefault(verbose: true);
             }
 
-            chapter = await GetChapterOrDefault(verbose: true);
             throw new OdkNotFoundException(message);
         }
 
