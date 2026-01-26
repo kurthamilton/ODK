@@ -17,6 +17,8 @@ public static class LoggingServiceTests
     [TestCase("/abc*", "/abcd", ExpectedResult = true)]
     [TestCase("/abc/", "/x/abc", ExpectedResult = false)]
     [TestCase("*/abc/", "/x/abc", ExpectedResult = true)]
+    [TestCase("*/index.html", "/index.html", ExpectedResult = true)]
+    [TestCase("*/index.html", "/home/index.html", ExpectedResult = true)]
     public static bool IgnoreUnknownRequestPath_IgnorePaths_Wildcards(string config, string path)
     {
         // Arrange

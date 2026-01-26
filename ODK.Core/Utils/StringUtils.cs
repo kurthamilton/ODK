@@ -14,6 +14,14 @@ public static class StringUtils
     public static string Coalesce(params string?[] values)
         => values.FirstOrDefault(x => !string.IsNullOrEmpty(x)) ?? string.Empty;
 
+    public static string EnsureLeading(this string? text, string leadingText)
+        => EnsureLeading(text, leadingText, StringComparison.OrdinalIgnoreCase);
+
+    public static string EnsureLeading(this string? text, string leadingText, StringComparison comparisonType)
+        => text?.StartsWith(leadingText, comparisonType) == true
+            ? text
+            : leadingText + text;
+
     public static string EnsureTrailing(this string? text, string trailingText)
         => EnsureTrailing(text, trailingText, StringComparison.OrdinalIgnoreCase);
 

@@ -153,7 +153,7 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
 
     public bool IgnoreUnknownRequestPath(IHttpRequestContext httpRequestContext)
     {
-        var path = httpRequestContext.RequestPath.EnsureTrailing("/");
+        var path = UrlUtils.NormalisePath(httpRequestContext.RequestPath);
         var userAgent = httpRequestContext.UserAgent;
 
         return
