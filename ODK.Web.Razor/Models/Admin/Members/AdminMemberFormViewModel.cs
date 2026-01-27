@@ -19,7 +19,4 @@ public class AdminMemberFormViewModel
 
     [DisplayName("Receive new member emails")]
     public bool ReceiveNewMemberEmails { get; set; }
-
-    [DisplayName("Send new member emails")]
-    public bool SendNewMemberEmails { get; set; }
 }

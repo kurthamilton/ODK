@@ -63,7 +63,6 @@
                             <th>Admin email address</th>
                             <th>Receive contact emails</th>
                             <th>Receive new member emails</th>
-                            <th>Send new member emails</th>
                             <th>Receive event comment emails</th>
                             <th></th>
                         </tr>
@@ -88,12 +87,6 @@
                                 </td>
                                 <td>
                                     @if (adminMember.ReceiveNewMemberEmails)
-                                    {
-                                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Check))
-                                    }
-                                </td>
-                                <td>
-                                    @if (adminMember.SendNewMemberEmails)
                                     {
                                         @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Check))
                                     }

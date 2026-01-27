@@ -10,6 +10,7 @@ using ODK.Services.Caching;
 using ODK.Services.Events.ViewModels;
 using ODK.Services.Members.Models;
 using ODK.Services.Members.ViewModels;
+using ODK.Services.Security;
 
 namespace ODK.Services.Members;
 
@@ -72,7 +73,11 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         var adminMember = adminMembers.FirstOrDefault(x => x.MemberId == memberId);
         OdkAssertions.Exists(adminMember);
 
-        AssertMemberIsChapterAdmin(adminMember.Member, request.ChapterId, adminMembers);
+        AssertMemberIsChapterAdmin(
+            ChapterAdminSecurable.AdminMembers,
+            adminMember.Member,
+            request.ChapterId,
+            adminMembers);
 
         return new AdminMemberAdminPageViewModel
         {
@@ -353,7 +358,11 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             x => x.CurrencyRepository.GetByChapterId(request.ChapterId),
             x => x.SitePaymentSettingsRepository.GetActive());
 
-        AssertMemberIsChapterAdmin(currentMember, request.ChapterId, chapterAdminMembers);
+        AssertMemberIsChapterAdmin(
+            ChapterAdminSecurable.Subscriptions,
+            currentMember,
+            request.ChapterId,
+            chapterAdminMembers);
 
         return new SubscriptionCreateAdminPageViewModel
         {
@@ -389,7 +398,11 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             x => x.SitePaymentSettingsRepository.GetAll(),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId));
 
-        AssertMemberIsChapterAdmin(currentMember, chapterId, chapterAdminMembers);
+        AssertMemberIsChapterAdmin(
+            ChapterAdminSecurable.Subscriptions,
+            currentMember,
+            chapterId,
+            chapterAdminMembers);
 
         chapterSubscriptions = chapterSubscriptions
             .Where(x => x.ChapterSubscription.IsVisibleToAdmins(sitePaymentSettings))
@@ -428,7 +441,11 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             x => x.ChapterSubscriptionRepository.GetById(subscriptionId),
             x => x.SitePaymentSettingsRepository.GetActive());
 
-        AssertMemberIsChapterAdmin(currentMember, request.ChapterId, chapterAdminMembers);
+        AssertMemberIsChapterAdmin(
+            ChapterAdminSecurable.Subscriptions,
+            currentMember,
+            request.ChapterId,
+            chapterAdminMembers);
 
         OdkAssertions.BelongsToChapter(subscription, request.ChapterId);
 

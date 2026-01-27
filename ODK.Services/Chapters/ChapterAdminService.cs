@@ -25,6 +25,7 @@ using ODK.Services.Members;
 using ODK.Services.Notifications;
 using ODK.Services.Payments;
 using ODK.Services.Payments.Models;
+using ODK.Services.Security;
 using ODK.Services.SocialMedia;
 using ODK.Services.Subscriptions;
 using ODK.Services.Subscriptions.ViewModels;
@@ -103,7 +104,11 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             x => x.MemberRepository.GetById(memberId),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapterId));
 
-        AssertMemberIsChapterAdmin(currentMember, chapterId, chapterAdminMembers);
+        AssertMemberIsChapterAdmin(
+            ChapterAdminSecurable.AdminMembers,
+            currentMember,
+            chapterId,
+            chapterAdminMembers);
 
         if (ownerSubscription?.HasFeature(SiteFeatureType.AdminMembers) != true)
         {
@@ -130,7 +135,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<ServiceResult> ApproveChapter(MemberChapterServiceRequest request)
     {
-        var (chapter, members) = await GetSiteAdminRestrictedContent(request,
+        var (chapter, members) = await GetSiteAdminRestrictedContent(request.CurrentMemberId,
             x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.MemberRepository.GetAllByChapterId(request.ChapterId));
 
@@ -258,8 +263,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             MemberId = currentMemberId,
             ReceiveContactEmails = true,
             ReceiveEventCommentEmails = true,
-            ReceiveNewMemberEmails = true,
-            SendNewMemberEmails = true
+            ReceiveNewMemberEmails = true
         });
 
         _unitOfWork.MemberChapterRepository.Add(new MemberChapter
@@ -386,7 +390,9 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         var chapterId = request.ChapterId;
 
-        var properties = await GetChapterAdminRestrictedContent(request,
+        var properties = await GetChapterAdminRestrictedContent(
+            ChapterAdminSecurable.Properties,
+            request,
             x => x.ChapterPropertyRepository.GetByChapterId(chapterId));
 
         var displayOrder = properties.Count > 0 ? properties.Max(x => x.DisplayOrder) + 1 : 1;
@@ -437,7 +443,9 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         var chapterId = request.ChapterId;
 
-        var existing = await GetChapterAdminRestrictedContent(request,
+        var existing = await GetChapterAdminRestrictedContent(
+            ChapterAdminSecurable.Questions,
+            request,
             x => x.ChapterQuestionRepository.GetByChapterId(chapterId));
 
         var displayOrder = existing.Count > 0 ? existing.Max(x => x.DisplayOrder) + 1 : 1;
@@ -489,7 +497,11 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             x => x.ChapterPaymentAccountRepository.GetByChapterId(chapterId),
             x => x.CurrencyRepository.GetByChapterId(chapterId));
 
-        AssertMemberIsChapterAdmin(currentMember, chapterId, chapterAdminMembers);
+        AssertMemberIsChapterAdmin(
+            ChapterAdminSecurable.Subscriptions,
+            currentMember,
+            chapterId,
+            chapterAdminMembers);
 
         if (ownerSubscription?.HasFeature(SiteFeatureType.MemberSubscriptions) != true)
         {
@@ -581,7 +593,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<ServiceResult> DeleteChapter(MemberChapterServiceRequest request)
     {
-        var chapter = await GetSiteAdminRestrictedContent(request,
+        var chapter = await GetSiteAdminRestrictedContent(request.CurrentMemberId,
             x => x.ChapterRepository.GetById(request.ChapterId));
 
         _unitOfWork.ChapterRepository.Delete(chapter);
@@ -601,7 +613,11 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.MemberRepository.GetById(memberId));
 
-        AssertMemberIsChapterAdmin(currentMember, chapterId, chapterAdminMembers);
+        AssertMemberIsChapterAdmin(
+            ChapterAdminSecurable.AdminMembers,
+            currentMember,
+            chapterId,
+            chapterAdminMembers);
 
         var adminMember = chapterAdminMembers.FirstOrDefault(x => x.MemberId == memberId);
         if (adminMember == null)
@@ -627,7 +643,9 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<ServiceResult> DeleteChapterContactMessage(MemberChapterServiceRequest request, Guid id)
     {
-        var contactMessage = await GetChapterAdminRestrictedContent(request,
+        var contactMessage = await GetChapterAdminRestrictedContent(
+            ChapterAdminSecurable.ContactMessages,
+            request,
             x => x.ChapterContactMessageRepository.GetById(id));
 
         OdkAssertions.BelongsToChapter(contactMessage, request.ChapterId);
@@ -640,7 +658,9 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task DeleteChapterProperty(MemberChapterServiceRequest request, Guid id)
     {
-        var properties = await GetChapterAdminRestrictedContent(request,
+        var properties = await GetChapterAdminRestrictedContent(
+            ChapterAdminSecurable.Properties,
+            request,
             x => x.ChapterPropertyRepository.GetByChapterId(request.ChapterId));
 
         var property = properties.FirstOrDefault(x => x.Id == id);
@@ -666,7 +686,9 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task DeleteChapterQuestion(MemberChapterServiceRequest request, Guid id)
     {
-        var questions = await GetChapterAdminRestrictedContent(request,
+        var questions = await GetChapterAdminRestrictedContent(
+            ChapterAdminSecurable.Questions,
+            request,
             x => x.ChapterQuestionRepository.GetByChapterId(request.ChapterId));
 
         var question = questions.FirstOrDefault(x => x.Id == id);
@@ -711,7 +733,9 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     public async Task<ServiceResult<string>> GenerateChapterPaymentAccountSetupUrl(
         MemberChapterServiceRequest request, string refreshPath, string returnPath)
     {
-        var existing = await GetChapterAdminRestrictedContent(request,
+        var existing = await GetChapterAdminRestrictedContent(
+            ChapterAdminSecurable.PaymentAccount,
+            request,
             x => x.ChapterPaymentAccountRepository.GetByChapterId(request.ChapterId));
 
         if (existing == null)
@@ -755,7 +779,11 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
             x => x.MemberRepository.GetById(currentMemberId));
 
-        AssertMemberIsChapterAdmin(currentMember, chapterId, chapterAdminMembers);
+        AssertMemberIsChapterAdmin(
+            ChapterAdminSecurable.AdminMembers,
+            currentMember,
+            chapterId,
+            chapterAdminMembers);
 
         return chapterAdminMembers;
     }
@@ -764,7 +792,9 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         var platform = request.Platform;
 
-        var chapter = await GetChapterAdminRestrictedContent(request,
+        var chapter = await GetChapterAdminRestrictedContent(
+            ChapterAdminSecurable.Any,
+            request,
             x => x.ChapterRepository.GetById(request.ChapterId));
 
         return new ChapterAdminPageViewModel
@@ -1093,7 +1123,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     public async Task<ChapterPaymentSettingsAdminPageViewModel> GetChapterPaymentSettingsViewModel(
         MemberChapterServiceRequest request)
     {
-        var (paymentSettings, currencies) = await GetSiteAdminRestrictedContent(request,
+        var (paymentSettings, currencies) = await GetSiteAdminRestrictedContent(request.CurrentMemberId,
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId),
             x => x.CurrencyRepository.GetAll());
 
@@ -1401,7 +1431,11 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         OdkAssertions.BelongsToChapter(conversation, chapter.Id);
 
-        AssertMemberIsChapterAdmin(currentMember, request.ChapterId, adminMembers);
+        AssertMemberIsChapterAdmin(
+            ChapterAdminSecurable.Conversations,
+            currentMember,
+            request.ChapterId,
+            adminMembers);
 
         var lastMessage = messages
             .OrderByDescending(x => x.CreatedUtc)
@@ -1603,7 +1637,12 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         var (chapterAdminMembers, currentMember) = await _unitOfWork.RunAsync(
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
             x => x.MemberRepository.GetById(currentMemberId));
-        AssertMemberIsChapterAdmin(currentMember, chapterId, chapterAdminMembers);
+
+        AssertMemberIsChapterAdmin(
+            ChapterAdminSecurable.AdminMembers,
+            currentMember,
+            chapterId,
+            chapterAdminMembers);
 
         var existing = chapterAdminMembers.FirstOrDefault(x => x.MemberId == memberId);
         OdkAssertions.Exists(existing);
@@ -1612,7 +1651,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         existing.ReceiveContactEmails = model.ReceiveContactEmails;
         existing.ReceiveEventCommentEmails = model.ReceiveEventCommentEmails;
         existing.ReceiveNewMemberEmails = model.ReceiveNewMemberEmails;
-        existing.SendNewMemberEmails = model.SendNewMemberEmails;
 
         _unitOfWork.ChapterAdminMemberRepository.Update(existing);
         await _unitOfWork.SaveChangesAsync();
@@ -1732,7 +1770,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         var chapterId = request.ChapterId;
 
-        var chapter = await GetSiteAdminRestrictedContent(request,
+        var chapter = await GetSiteAdminRestrictedContent(request.CurrentMemberId,
             x => x.ChapterRepository.GetById(request.ChapterId));
 
         var chapterLocation = await _unitOfWork.ChapterLocationRepository.GetByChapterId(request.ChapterId);
@@ -2128,7 +2166,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task UpdateChapterRedirectUrl(MemberChapterServiceRequest request, string? redirectUrl)
     {
-        var chapter = await GetSiteAdminRestrictedContent(request,
+        var chapter = await GetSiteAdminRestrictedContent(request.CurrentMemberId,
             x => x.ChapterRepository.GetById(request.ChapterId));
 
         chapter.RedirectUrl = redirectUrl;
@@ -2255,7 +2293,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     public async Task<ServiceResult> UpdateSiteAdminChapter(
         MemberChapterServiceRequest request, SiteAdminChapterUpdateViewModel viewModel)
     {
-        var (chapter, subscription) = await GetSiteAdminRestrictedContent(request,
+        var (chapter, subscription) = await GetSiteAdminRestrictedContent(request.CurrentMemberId,
             x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId));
 

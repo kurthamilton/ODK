@@ -29,7 +29,6 @@ using ODK.Services.Integrations.Payments.Stripe;
 using ODK.Services.Integrations.Recaptcha;
 using ODK.Services.Issues;
 using ODK.Services.Logging;
-using ODK.Services.Media;
 using ODK.Services.Members;
 using ODK.Services.Notifications;
 using ODK.Services.Payments;
@@ -183,9 +182,6 @@ public static class DependencyConfig
             Headers = appSettings.Instagram.Client.Headers,
             PostsGraphQlDocId = appSettings.Instagram.Client.GraphQL.PostsDocId
         });
-        services.AddScoped<IMediaAdminService, MediaAdminService>();
-        services.AddScoped<IMediaFileProvider, MediaFileProvider>();
-        services.AddScoped<IMediaService, MediaService>();
         services.AddScoped<IMemberAdminService, MemberAdminService>();
         services.AddSingleton(new MemberAdminServiceSettings
         {
@@ -245,7 +241,6 @@ public static class DependencyConfig
         AuthSettings auth = appSettings.Auth;
         MembersSettings members = appSettings.Members;
         OAuthSettings oauth = appSettings.OAuth;
-        PathSettings paths = appSettings.Paths;
         RecaptchaSettings recaptcha = appSettings.Recaptcha;
 
         services.AddSingleton(new AccountViewModelServiceSettings
@@ -256,12 +251,6 @@ public static class DependencyConfig
         services.AddSingleton(new AuthenticationServiceSettings
         {
             PasswordResetTokenLifetimeMinutes = auth.PasswordResetTokenLifetimeMinutes,
-        });
-
-        services.AddSingleton(new MediaFileProviderSettings
-        {
-            RootMediaPath = paths.MediaRoot,
-            RootMediaUrlPath = "NOT IMPLEMENTED"
         });
 
         services.AddSingleton(new RecaptchaServiceSettings

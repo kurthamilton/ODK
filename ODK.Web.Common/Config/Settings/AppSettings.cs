@@ -26,8 +26,6 @@ public class AppSettings
 
     public required OAuthSettings OAuth { get; init; }
 
-    public required PathSettings Paths { get; init; }
-
     public required PaymentsSettings Payments { get; init; }
 
     public required PlatformSettings[] Platforms { get; init; }

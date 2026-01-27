@@ -21,7 +21,24 @@ public class ChapterAdminMember : IDatabaseEntity
 
     public bool ReceiveNewMemberEmails { get; set; }
 
-    public bool SendNewMemberEmails { get; set; }
+    public ChapterAdminRole Role { get; set; }
+
+    public bool HasAccessTo(ChapterAdminRole target)
+    {
+        return target switch
+        {
+            ChapterAdminRole.Owner =>
+                Role == ChapterAdminRole.Owner,
+            ChapterAdminRole.Admin =>
+                Role == ChapterAdminRole.Owner ||
+                Role == ChapterAdminRole.Admin,
+            ChapterAdminRole.Organiser =>
+                Role == ChapterAdminRole.Owner ||
+                Role == ChapterAdminRole.Admin ||
+                Role == ChapterAdminRole.Organiser,
+            _ => false
+        };
+    }
 
     public EmailAddressee ToEmailAddressee()
     {

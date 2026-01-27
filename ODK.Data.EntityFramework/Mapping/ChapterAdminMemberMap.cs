@@ -15,6 +15,10 @@ public class ChapterAdminMemberMap : IEntityTypeConfiguration<ChapterAdminMember
         builder.Property(x => x.Id)
             .HasColumnName("ChapterAdminMemberId");
 
+        builder.Property(x => x.Role)
+            .HasColumnName("AdminRoleId")
+            .HasConversion<int>();
+
         builder.HasOne(x => x.Member)
             .WithMany()
             .HasForeignKey(x => x.MemberId)

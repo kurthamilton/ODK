@@ -17,6 +17,7 @@ using ODK.Services.Logging;
 using ODK.Services.Members;
 using ODK.Services.Notifications;
 using ODK.Services.Payments;
+using ODK.Services.Security;
 using ODK.Services.Tasks;
 
 namespace ODK.Services.Events;
@@ -87,7 +88,11 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.ChapterTopicRepository.GetByChapterId(chapterId),
             x => x.CurrencyRepository.GetByChapterId(chapterId));
 
-        AssertMemberIsChapterAdmin(currentMember, chapterId, chapterAdminMembers);
+        AssertMemberIsChapterAdmin(
+            ChapterAdminSecurable.Events,
+            currentMember,
+            chapterId,
+            chapterAdminMembers);
 
         var date = Event.FromLocalTime(model.Date, chapter.TimeZone);
         var @event = new Event
@@ -558,7 +563,11 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.EventInviteRepository.GetByEventId(eventId));
 
         OdkAssertions.BelongsToChapter(@event, request.ChapterId);
-        AssertMemberIsChapterAdmin(currentMember, request.ChapterId, chapterAdminMembers);
+        AssertMemberIsChapterAdmin(
+            ChapterAdminSecurable.Events,
+            currentMember,
+            request.ChapterId,
+            chapterAdminMembers);
 
         var validationResult = ValidateEventEmailCanBeSent(@event);
         if (!validationResult.Success)

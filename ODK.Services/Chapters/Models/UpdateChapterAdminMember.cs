@@ -9,6 +9,4 @@ public class UpdateChapterAdminMember
     public bool ReceiveEventCommentEmails { get; set; }
 
     public bool ReceiveNewMemberEmails { get; set; }
-
-    public bool SendNewMemberEmails { get; set; }
 }
