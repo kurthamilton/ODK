@@ -49,6 +49,8 @@ public class Event : IDatabaseEntity, IChapterEntity
 
     public Guid VenueId { get; set; }
 
+    public bool WaitlistDisabled { get; set; }
+
     public static DateTime FromLocalTime(DateTime local, TimeZoneInfo? timeZone)
     {
         if (local.TimeOfDay.TotalSeconds == 0)
@@ -91,13 +93,27 @@ public class Event : IDatabaseEntity, IChapterEntity
 
     public bool IsAuthorized(Member? member)
     {
+        if (!IsPublished)
+        {
+            return false;
+        }
+
         if (IsPublic)
         {
             return true;
         }
 
-        return member?.SiteAdmin == true ||
-            (member?.IsCurrent() == true && member?.IsApprovedMemberOf(ChapterId) == true);
+        if (member == null)
+        {
+            return false;
+        }
+
+        if (member.SiteAdmin)
+        {
+            return true;
+        }
+
+        return member.IsCurrent() && member.IsApprovedMemberOf(ChapterId);
     }
 
     public int? NumberOfSpacesLeft(int numberOfAttendees)

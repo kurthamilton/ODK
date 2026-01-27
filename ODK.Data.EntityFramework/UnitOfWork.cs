@@ -48,6 +48,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IEventTicketPaymentRepository> _eventTicketPaymentRepository;
     private readonly Lazy<IEventTicketSettingsRepository> _eventTicketSettingsRepository;
     private readonly Lazy<IEventTopicRepository> _eventTopicRepository;
+    private readonly Lazy<IEventWaitlistMemberRepository> _eventWaitlistMemberRepository;
     private readonly Lazy<IFeatureRepository> _featureRepository;
     private readonly Lazy<IInstagramFetchLogEntryRepository> _instagramFetchLogEntryRepository;
     private readonly Lazy<IInstagramImageRepository> _instagramImageRepository;
@@ -137,6 +138,7 @@ public class UnitOfWork : IUnitOfWork
         _eventTicketPaymentRepository = new(() => new EventTicketPaymentRepository(_context));
         _eventTicketSettingsRepository = new(() => new EventTicketSettingsRepository(_context));
         _eventTopicRepository = new(() => new EventTopicRepository(_context));
+        _eventWaitlistMemberRepository = new(() => new EventWaitlistMemberRepository(_context));
         _featureRepository = new(() => new FeatureRepository(_context));
         _instagramFetchLogEntryRepository = new(() => new InstagramFetchLogEntryRepository(_context));
         _instagramImageRepository = new(() => new InstagramImageRepository(_context));
@@ -222,6 +224,7 @@ public class UnitOfWork : IUnitOfWork
     public IEventTicketPaymentRepository EventTicketPaymentRepository => _eventTicketPaymentRepository.Value;
     public IEventTicketSettingsRepository EventTicketSettingsRepository => _eventTicketSettingsRepository.Value;
     public IEventTopicRepository EventTopicRepository => _eventTopicRepository.Value;
+    public IEventWaitlistMemberRepository EventWaitlistMemberRepository => _eventWaitlistMemberRepository.Value;
     public IFeatureRepository FeatureRepository => _featureRepository.Value;
     public IInstagramFetchLogEntryRepository InstagramFetchLogEntryRepository => _instagramFetchLogEntryRepository.Value;
     public IInstagramImageRepository InstagramImageRepository => _instagramImageRepository.Value;

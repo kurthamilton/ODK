@@ -1,13 +1,16 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Text.RegularExpressions;
+using ODK.Core;
 using ODK.Core.Chapters;
 using ODK.Core.Events;
 using ODK.Core.Members;
-using ODK.Core.Payments;
+using ODK.Core.Notifications;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Logging;
 using ODK.Services.Members;
-using ODK.Services.Payments;
+using ODK.Services.Notifications;
+using ODK.Services.Tasks;
 
 namespace ODK.Services.Events;
 
@@ -17,35 +20,38 @@ public class EventService : IEventService
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     private readonly IAuthorizationService _authorizationService;
+    private readonly IBackgroundTaskService _backgroundTaskService;
     private readonly ILoggingService _loggingService;
     private readonly IMemberEmailService _memberEmailService;
-    private readonly IPaymentProviderFactory _paymentProviderFactory;
+    private readonly INotificationService _notificationService;
     private readonly IUnitOfWork _unitOfWork;
 
     public EventService(IUnitOfWork unitOfWork,
         IAuthorizationService authorizationService,
         IMemberEmailService memberEmailService,
-        IPaymentProviderFactory paymentProviderFactory,
-        ILoggingService loggingService)
+        ILoggingService loggingService,
+        IBackgroundTaskService backgroundTaskService,
+        INotificationService notificationService)
     {
         _authorizationService = authorizationService;
+        _backgroundTaskService = backgroundTaskService;
         _loggingService = loggingService;
         _memberEmailService = memberEmailService;
-        _paymentProviderFactory = paymentProviderFactory;
+        _notificationService = notificationService;
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ServiceResult> AddComment(MemberServiceRequest request, Guid eventId, string comment, Guid? parentEventCommentId)
+    public async Task<ServiceResult> AddComment(
+        MemberServiceRequest request, Guid eventId, Chapter chapter, string comment, Guid? parentEventCommentId)
     {
         var currentMemberId = request.CurrentMemberId;
 
-        var (member, @event) = await _unitOfWork.RunAsync(
+        var (member, @event, settings) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(currentMemberId),
-            x => x.EventRepository.GetById(eventId));
+            x => x.EventRepository.GetById(eventId),
+            x => x.ChapterEventSettingsRepository.GetByChapterId(chapter.Id));
 
-        var (chapter, settings) = await _unitOfWork.RunAsync(
-            x => x.ChapterRepository.GetById(@event.ChapterId),
-            x => x.ChapterEventSettingsRepository.GetByChapterId(@event.ChapterId));
+        OdkAssertions.BelongsToChapter(@event, chapter.Id);
 
         if (settings?.DisableComments == true || !@event.CanComment || !@event.IsAuthorized(member))
         {
@@ -145,32 +151,163 @@ public class EventService : IEventService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task<(Chapter, Event)> GetEvent(Guid eventId)
+    public async Task<ServiceResult> JoinWaitlist(Guid eventId, Guid memberId)
     {
-        var @event = await _unitOfWork.EventRepository.GetById(eventId).Run();
-        var chapter = await _unitOfWork.ChapterRepository.GetById(@event.ChapterId).Run();
-        return (chapter, @event);
+        var (@event, member, isOnWaitlist) = await _unitOfWork.RunAsync(
+            x => x.EventRepository.GetById(eventId),
+            x => x.MemberRepository.GetById(memberId),
+            x => x.EventWaitlistMemberRepository.IsOnWaitlist(memberId, eventId));
+
+        if (isOnWaitlist)
+        {
+            return ServiceResult.Successful();
+        }
+
+        var authorisationResult = GetMemberEventAuthorisation(@event, member, isForAdmin: false);
+        if (!authorisationResult.Success)
+        {
+            return authorisationResult;
+        }
+
+        _unitOfWork.EventWaitlistMemberRepository.Add(new EventWaitlistMember
+        {
+            CreatedUtc = DateTime.UtcNow,
+            EventId = eventId,
+            MemberId = memberId
+        });
+
+        await _unitOfWork.SaveChangesAsync();
+        return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> UpdateMemberResponse(Guid memberId, Guid eventId,
-        EventResponseType responseType)
+    public async Task<ServiceResult> LeaveWaitlist(Guid eventId, Guid memberId)
     {
+        var (@event, member, waitlistMember) = await _unitOfWork.RunAsync(
+            x => x.EventRepository.GetById(eventId),
+            x => x.MemberRepository.GetById(memberId),
+            x => x.EventWaitlistMemberRepository.GetByMemberId(memberId, eventId));
+
+        if (waitlistMember == null)
+        {
+            return ServiceResult.Successful("You have left the waiting list");
+        }
+
+        _unitOfWork.EventWaitlistMemberRepository.Delete(waitlistMember);
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful("You have left the waiting list");
+    }
+
+    public async Task NotifyWaitlist(ServiceRequest request, Guid eventId)
+    {
+        var (chapter, @event, waitlist, responses) = await _unitOfWork.RunAsync(
+            x => x.ChapterRepository.GetByEventId(eventId),
+            x => x.EventRepository.GetById(@eventId),
+            x => x.EventWaitlistMemberRepository.GetByEventId(eventId),
+            x => x.EventResponseRepository.GetByEventId(eventId));
+
+        if (@event.Ticketed)
+        {
+            // do not auto-promote waitlist for ticketed events
+            return;
+        }
+
+        if (@event.RsvpDeadlinePassed)
+        {
+            return;
+        }
+
+        if (waitlist.Count == 0)
+        {
+            return;
+        }
+
+        var membersToConfirm = new List<EventWaitlistMember>();
+
+        var numberOfAttendees = responses.Count(x => x.Type == EventResponseType.Yes);
+
+        var spacesLeft = @event.NumberOfSpacesLeft(numberOfAttendees);
+        if (spacesLeft == null)
+        {
+            spacesLeft = waitlist.Count;
+        }
+
+        if (spacesLeft <= 0)
+        {
+            return;
+        }
+
+        var responseDictionary = responses.ToDictionary(x => x.MemberId);
+
+        var waitlistToPromote = waitlist
+            .OrderBy(x => x.CreatedUtc)
+            .Take(spacesLeft.Value)
+            .ToArray();
+
+        membersToConfirm.AddRange(waitlistToPromote);
+
+        _unitOfWork.EventWaitlistMemberRepository.DeleteMany(waitlistToPromote);
+
+        foreach (var waitlistMember in waitlistToPromote)
+        {
+            if (responseDictionary.TryGetValue(waitlistMember.MemberId, out var response))
+            {
+                response.Type = EventResponseType.Yes;
+                _unitOfWork.EventResponseRepository.Update(response);
+            }
+            else
+            {
+                _unitOfWork.EventResponseRepository.Add(new EventResponse
+                {
+                    EventId = eventId,
+                    MemberId = waitlistMember.MemberId,
+                    Type = EventResponseType.Yes
+                });
+            }
+        }
+
+        var memberIds = membersToConfirm
+            .Select(x => x.MemberId)
+            .ToArray();
+
+        var (members, notificationSettings) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetByIds(memberIds),
+            x => x.MemberNotificationSettingsRepository.GetByMemberIds(memberIds, NotificationType.EventWaitlistPromotion));
+
+        _notificationService.AddEventWaitlistPromotionNotifications(@event, members, notificationSettings);
+
+        await _unitOfWork.SaveChangesAsync();
+
+        await _memberEmailService.SendEventWaitlistPromotionNotification(
+            request, chapter, @event, members);
+    }
+
+    public async Task<ServiceResult> UpdateMemberResponse(
+        MemberServiceRequest request,
+        Guid eventId,
+        EventResponseType responseType,
+        Guid? adminMemberId)
+    {
+        var memberId = request.CurrentMemberId;
         responseType = NormalizeResponseType(responseType);
 
-        var (member, @event, memberResponse, numberOfAttendees) = await _unitOfWork.RunAsync(
+        var (member, @event, memberResponse, numberOfAttendees, waitlist) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(memberId),
             x => x.EventRepository.GetById(eventId),
             x => x.EventResponseRepository.GetByMemberId(memberId, eventId),
-            x => x.EventResponseRepository.GetNumberOfAttendees(eventId));
-
-        if (@event.RsvpDisabled)
-        {
-            return ServiceResult.Failure("RSVP is currently disabled");
-        }
+            x => x.EventResponseRepository.GetNumberOfAttendees(eventId),
+            x => x.EventWaitlistMemberRepository.GetByEventId(eventId));
 
         if (memberResponse?.Type == responseType)
         {
             return ServiceResult.Successful();
+        }
+
+        var authorisationResult = GetMemberEventAuthorisation(
+            @event, member, isForAdmin: adminMemberId != null);
+        if (!authorisationResult.Success)
+        {
+            return authorisationResult;
         }
 
         if (@event.TicketSettings != null)
@@ -189,7 +326,8 @@ public class EventService : IEventService
             memberResponse,
             memberSubscription,
             membershipSettings,
-            privacySettings);
+            privacySettings,
+            isForAdmin: adminMemberId != null);
         if (!validationResult.Success)
         {
             return validationResult;
@@ -200,6 +338,22 @@ public class EventService : IEventService
             var spacesLeft = EventHasSpaces(@event, numberOfAttendees);
             if (!spacesLeft.Success)
             {
+                if (!@event.WaitlistDisabled && !waitlist.Any(x => x.MemberId == memberId))
+                {
+                    _unitOfWork.EventWaitlistMemberRepository.Add(new EventWaitlistMember
+                    {
+                        CreatedUtc = DateTime.UtcNow,
+                        EventId = eventId,
+                        MemberId = memberId
+                    });
+                    await _unitOfWork.SaveChangesAsync();
+
+                    var message = adminMemberId != null
+                        ? "No more spaces left. Member has been added to the waiting list"
+                        : "No more spaces left. You have been added to the waiting list";
+                    return ServiceResult.Failure(message);
+                }
+
                 return spacesLeft;
             }
         }
@@ -236,6 +390,8 @@ public class EventService : IEventService
 
         await _unitOfWork.SaveChangesAsync();
 
+        _backgroundTaskService.Enqueue(() => NotifyWaitlist(request, eventId));
+
         return ServiceResult.Successful();
     }
 
@@ -266,56 +422,22 @@ public class EventService : IEventService
         return ServiceResult.Successful();
     }
 
-    private async Task<ServiceResult<Payment>> MakeEventPayment(
-        Event @event,
-        Member member,
-        decimal amount,
-        string cardToken,
-        SitePaymentSettings sitePaymentSettings,
-        ChapterPaymentAccount? chapterPaymentAccount)
+    private static ServiceResult GetMemberEventAuthorisation(Event @event, Member member, bool isForAdmin)
     {
-        if (@event.TicketSettings == null)
+        if (@event.RsvpDisabled)
         {
-            return ServiceResult<Payment>.Failure("Event is not ticketed");
+            return ServiceResult.Failure("RSVP is currently disabled");
         }
 
-        var (chapterId, currency) = (@event.ChapterId, @event.TicketSettings.Currency);
-
-        var payment = new Payment
+        if (!@event.IsAuthorized(member))
         {
-            Amount = amount,
-            ChapterId = @event.ChapterId,
-            CurrencyId = currency.Id,
-            ExternalId = string.Empty,
-            MemberId = member.Id,
-            Reference = @event.Name
-        };
-
-        _unitOfWork.PaymentRepository.Add(payment);
-        await _unitOfWork.SaveChangesAsync();
-
-        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
-            sitePaymentSettings,
-            chapterPaymentAccount);
-
-        var paymentResult = await paymentProvider.MakePayment(
-            currency.Code,
-            amount,
-            cardToken,
-            @event.Name,
-            member.Id,
-            member.FullName);
-        if (!paymentResult.Success)
-        {
-            return ServiceResult<Payment>.Failure($"Payment not made: {paymentResult.Message}");
+            var message = isForAdmin
+                ? "Member is not permitted to attend"
+                : "You are not permitted to attend";
+            return ServiceResult.Failure(message);
         }
 
-        payment.ExternalId = paymentResult.Id;
-        payment.PaidUtc = DateTime.UtcNow;
-        _unitOfWork.PaymentRepository.Update(payment);
-        await _unitOfWork.SaveChangesAsync();
-
-        return ServiceResult<Payment>.Successful(payment);
+        return ServiceResult.Successful();
     }
 
     private ServiceResult MemberCanAttendEvent(
@@ -324,15 +446,23 @@ public class EventService : IEventService
         EventResponse? memberResponse,
         MemberSubscription? subscription,
         ChapterMembershipSettings? membershipSettings,
-        ChapterPrivacySettings? privacySettings)
+        ChapterPrivacySettings? privacySettings,
+        bool isForAdmin)
     {
         if (@event.Date < DateTime.Today)
         {
             return ServiceResult.Failure("Past events cannot be responded to");
         }
 
-        return _authorizationService.CanRespondToEvent(@event, member, subscription, membershipSettings, privacySettings)
-            ? ServiceResult.Successful()
+        var canRespond = _authorizationService.CanRespondToEvent(
+            @event, member, subscription, membershipSettings, privacySettings);
+        if (canRespond)
+        {
+            return ServiceResult.Successful();
+        }
+
+        return isForAdmin
+            ? ServiceResult.Failure("Member is not permitted to attend this event")
             : ServiceResult.Failure("You are not permitted to attend this event");
     }
 }

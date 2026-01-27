@@ -28,14 +28,6 @@ public interface IPaymentProvider
 
     Task<ExternalSubscriptionPlan?> GetSubscriptionPlan(string externalId);
 
-    Task<RemotePaymentResult> MakePayment(
-        string currencyCode,
-        decimal amount,
-        string cardToken,
-        string description,
-        Guid memberId,
-        string memberName);
-
     Task<ExternalCheckoutSession> StartCheckout(
         ServiceRequest request,
         string emailAddress,

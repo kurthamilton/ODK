@@ -27,6 +27,8 @@ public class ChapterService : IChapterService
         _unitOfWork = unitOfWork;
     }
 
+    public Task<Chapter> GetByEventId(Guid eventId) => _unitOfWork.ChapterRepository.GetByEventId(eventId).Run();
+
     public async Task<VersionedServiceResult<ChapterImage>> GetChapterImage(long? currentVersion, Guid chapterId)
     {
         var result = await _cacheService.GetOrSetVersionedItem(

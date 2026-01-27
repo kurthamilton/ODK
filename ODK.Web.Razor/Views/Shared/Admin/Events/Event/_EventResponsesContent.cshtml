@@ -13,6 +13,10 @@
     var responseDictionary = Model.Responses
         .ToDictionary(x => x.MemberId, x => x.Type);
 
+    var waitlist = Model.Waitlist
+        .Select(x => x.MemberId)
+        .ToHashSet();
+
     var responseTypeDictionary = Model.Responses
         .GroupBy(x => x.Type)
         .ToDictionary(x => x.Key, x => x.ToArray());
@@ -20,14 +24,16 @@
     var responseTypes = new[]
     {
         EventResponseType.Yes,
+        EventResponseType.Waitlist,
         EventResponseType.Maybe,
         EventResponseType.No,
-        EventResponseType.None
+        EventResponseType.None        
     };
 
     var responseTitles = new Dictionary<EventResponseType, string>
     {
         { EventResponseType.Yes, "Going" },
+        { EventResponseType.Waitlist, "Waiting list" },
         { EventResponseType.Maybe, "Maybe" },
         { EventResponseType.No, "Declined" },
         { EventResponseType.None, "No response" }
@@ -40,7 +46,8 @@
 <div class="d-flex flex-column gap-3">
     @foreach(var responseType in responseTypes)
     {
-        if (!responseTypeDictionary.TryGetValue(responseType, out var responses) && responseType != EventResponseType.None)
+        if (!responseTypeDictionary.TryGetValue(responseType, out var responses) && responseType != EventResponseType.None &&
+            responseType != EventResponseType.Waitlist)
         {
             continue;
         }
@@ -50,6 +57,14 @@
         if (responses != null)
         {
             members = responses
+                .Where(x => memberDictionary.ContainsKey(x.MemberId) && !waitlist.Contains(x.MemberId))
+                .Select(x => memberDictionary[x.MemberId])
+                .OrderBy(x => x.GetDisplayName(Model.Chapter.Id))
+                .ToArray();
+        }
+        else if (responseType == EventResponseType.Waitlist)
+        {
+            members = Model.Waitlist
                 .Where(x => memberDictionary.ContainsKey(x.MemberId))
                 .Select(x => memberDictionary[x.MemberId])
                 .OrderBy(x => x.GetDisplayName(Model.Chapter.Id))
@@ -58,7 +73,7 @@
         else
         {
             members = Model.Members
-                .Where(x => !responseDictionary.ContainsKey(x.Id))
+                .Where(x => !responseDictionary.ContainsKey(x.Id) && !waitlist.Contains(x.Id))
                 .OrderBy(x => x.GetDisplayName(Model.Chapter.Id))
                 .ToArray();
         }
@@ -91,32 +106,36 @@
                                         @member.GetDisplayName(Model.Chapter.Id)
                                     </div>
                                 </a>
-                                <div class="d-flex justify-content-center gap-1">
-                                    @{
-                                        var responseTypes = new[]
-                                        {
-                                            EventResponseType.Yes,
-                                            EventResponseType.Maybe,
-                                            EventResponseType.No
-                                        };
-                                    }
 
-                                    @foreach (var responseType in responseTypes)
-                                    {
-                                        var active = response == responseType;
-
-                                        <form method="post" action="/groups/@Model.Chapter.Id/events/@Model.Event.Id/attendees/@member.Id">
-                                            @*@Html.AntiForgeryToken()*@
-                                            @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
+                                @if (responseType != EventResponseType.Waitlist)
+                                {
+                                    <div class="d-flex justify-content-center gap-1">
+                                        @{
+                                            var responseTypes = new[]
                                             {
-                                                Active = active,
-                                                CurrentResponse = responseType,
-                                                ResponseType = active ? EventResponseType.None : responseType,
-                                                ReadOnly = false
-                                            })
-                                        </form>
-                                    }                                    
-                                </div>
+                                                EventResponseType.Yes,
+                                                EventResponseType.Maybe,
+                                                EventResponseType.No
+                                            };
+                                        }
+
+                                        @foreach (var responseType in responseTypes)
+                                        {
+                                            var active = response == responseType;
+
+                                            <form method="post" action="/groups/@Model.Chapter.Id/events/@Model.Event.Id/attendees/@member.Id">
+                                                @*@Html.AntiForgeryToken()*@
+                                                @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
+                                                {
+                                                    Active = active,
+                                                    CurrentResponse = responseType,
+                                                    ResponseType = active ? EventResponseType.None : responseType,
+                                                    ReadOnly = false
+                                                })
+                                            </form>
+                                        }                                    
+                                    </div>
+                                }
                             </div>
                         }                    
                     </div>

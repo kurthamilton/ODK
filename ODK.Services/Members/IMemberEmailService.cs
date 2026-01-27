@@ -72,6 +72,12 @@ public interface IMemberEmailService
         Venue venue,
         IEnumerable<Member> members);
 
+    Task SendEventWaitlistPromotionNotification(
+        ServiceRequest request,
+        Chapter chapter,
+        Event @event,
+        IEnumerable<Member> members);
+
     Task SendGroupApprovedEmail(
         ServiceRequest request,
         Chapter chapter,

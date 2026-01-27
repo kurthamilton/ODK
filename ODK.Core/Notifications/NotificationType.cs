@@ -7,5 +7,6 @@ public enum NotificationType
     NewEvent = 2,
     ChapterContactMessage = 3,
     ConversationOwnerMessage = 4,
-    ConversationAdminMessage = 5
+    ConversationAdminMessage = 5,
+    EventWaitlistPromotion = 6
 }

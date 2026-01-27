@@ -26,7 +26,8 @@ public class EventAdminController : AdminControllerBase
         [FromForm] EventResponseType responseType)
     {
         var request = CreateMemberChapterServiceRequest(chapterId);
-        await _eventAdminService.UpdateMemberResponse(request, id, memberId, responseType);
+        var result = await _eventAdminService.UpdateMemberResponse(request, id, memberId, responseType);
+        AddFeedback(result, "Response updated");
         return RedirectToReferrer();
     }
 

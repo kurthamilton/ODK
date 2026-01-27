@@ -28,9 +28,17 @@ public class MemberNotificationSettingsRepository : WriteRepositoryBase<MemberNo
         return query.DeferredMultiple();
     }
 
-    public IDeferredQueryMultiple<MemberNotificationSettings> GetByMemberId(Guid memberId) => Set()
-        .Where(x => x.MemberId == memberId)
-        .DeferredMultiple();
+    public IDeferredQueryMultiple<MemberNotificationSettings> GetByMemberId(Guid memberId)
+        => Set()
+            .Where(x => x.MemberId == memberId)
+            .DeferredMultiple();
+
+    public IDeferredQueryMultiple<MemberNotificationSettings> GetByMemberIds(
+        IReadOnlyCollection<Guid> memberIds,
+        NotificationType notificationType)
+        => Set()
+            .Where(x => memberIds.Contains(x.MemberId) && x.NotificationType == notificationType)
+            .DeferredMultiple();
 
     public IDeferredQuerySingleOrDefault<MemberNotificationSettings> GetByMemberId(
         Guid memberId,

@@ -267,7 +267,7 @@ public class MemberEmailService : IMemberEmailService
             { "event.date", @event.Date.ToString("dddd dd MMMM, yyyy") },
             { "event.id", @event.Id.ToString() },
             { "event.location", venue.Name },
-            { "event.name", @event.Name },
+            { "event.name", @event.GetDisplayName() },
             { "event.time", time },
             { "event.rsvpurl", rsvpUrl },
             { "event.url", eventUrl },
@@ -279,6 +279,43 @@ public class MemberEmailService : IMemberEmailService
             chapter,
             members,
             EmailType.EventInvite,
+            parameters);
+    }
+
+    public async Task SendEventWaitlistPromotionNotification(
+        ServiceRequest request,
+        Chapter chapter,
+        Event @event,
+        IEnumerable<Member> members)
+    {
+        var urlProvider = _urlProviderFactory.Create(request);
+        var url = urlProvider.EventUrl(chapter, @event.Id);
+
+        var subject = "{title} - You're in! A spot opened up for {event.name}";
+
+        var body = new EmailBodyBuilder()
+            .AddParagraph("A spot has opened up for {event.name} on {event.date}.")
+            .AddParagraph("Please update your RSVP if you no longer wish to attend.")
+            .AddParagraphLink("url")
+            .ToString();
+
+        var parameters = new Dictionary<string, string>
+        {
+            { "url", url },
+            { "event.date", @event.Date.ToString("dddd dd MMMM, yyyy") },
+            { "event.name", @event.GetDisplayName() }
+        };
+
+        var to = members
+            .Select(x => x.ToEmailAddressee())
+            .ToArray();
+
+        await _emailService.SendEmail(
+            request,
+            chapter,
+            to,
+            subject,
+            body,
             parameters);
     }
 

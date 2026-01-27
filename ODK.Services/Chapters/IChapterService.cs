@@ -8,6 +8,8 @@ namespace ODK.Services.Chapters;
 
 public interface IChapterService
 {
+    Task<Chapter> GetByEventId(Guid eventId);
+
     Task<VersionedServiceResult<ChapterImage>> GetChapterImage(long? currentVersion, Guid chapterId);
 
     Task<ChapterLayoutViewModel> GetChapterLayoutViewModel(Guid chapterId);

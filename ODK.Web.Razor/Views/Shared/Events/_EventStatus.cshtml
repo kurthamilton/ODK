@@ -16,15 +16,17 @@
     <div class="badge text-bg-danger w-100">
         RSVP deadline passed
     </div>
+    return;
 }
-else if (Model.Event.RsvpDeadlineUtc != null)
+
+@if (Model.Event.RsvpDeadlineUtc != null)
 {
     <div class="badge text-bg-secondary w-100">
         RSVP deadline: @Model.Event.RsvpDeadlineUtc.Value.ToFriendlyDateTimeString(Model.Chapter.TimeZone)
     </div>
 }
 
-@if (!Model.Event.RsvpDeadlinePassed && Model.SpacesLeft != null)
+@if (Model.SpacesLeft != null && Model.WaitlistLength == 0)
 {
     <div>
         Spaces left: @Model.SpacesLeft / @Model.Event.AttendeeLimit

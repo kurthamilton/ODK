@@ -25,6 +25,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 {
     private readonly IAuthorizationService _authorizationService;
     private readonly IBackgroundTaskService _backgroundTaskService;
+    private readonly IEventService _eventService;
     private readonly IHtmlSanitizer _htmlSanitizer;
     private readonly ILoggingService _loggingService;
     private readonly IMemberEmailService _memberEmailService;
@@ -40,11 +41,13 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         IMemberEmailService memberEmailService,
         IBackgroundTaskService backgroundTaskService,
         ILoggingService loggingService,
-        IPaymentService paymentService)
+        IPaymentService paymentService,
+        IEventService eventService)
         : base(unitOfWork)
     {
         _authorizationService = authorizationService;
         _backgroundTaskService = backgroundTaskService;
+        _eventService = eventService;
         _htmlSanitizer = htmlSanitizer;
         _loggingService = loggingService;
         _memberEmailService = memberEmailService;
@@ -113,6 +116,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
                 CurrencyId = currency.Id,
                 Deposit = model.TicketDepositCost != null ? Math.Round(model.TicketDepositCost.Value, 2) : null,
             } : null;
+
+            @event.WaitlistDisabled = @event.Ticketed;
         }
 
         var validationResult = ValidateEvent(@event, venue);
@@ -149,7 +154,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             await _unitOfWork.SaveChangesAsync();
         }
 
-        if (@event.TicketSettings != null)
+        if (@event.Ticketed)
         {
             _backgroundTaskService.Enqueue(() => _paymentService.EnsureProductExists(chapterId));
         }
@@ -183,25 +188,59 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     {
         var platform = request.Platform;
 
-        var (chapter, ownerSubscription, @event, responses, venue, members) = await GetChapterAdminRestrictedContent(request,
+        var (chapter,
+            ownerSubscription,
+            @event,
+            responses,
+            venue,
+            members,
+            memberSubscriptions,
+            chapterMembershipSettings,
+            chapterPrivacySettings,
+            waitlist) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId),
             x => x.EventRepository.GetById(eventId),
             x => x.EventResponseRepository.GetByEventId(eventId),
             x => x.VenueRepository.GetByEventId(eventId),
-            x => x.MemberRepository.GetByChapterId(request.ChapterId));
+            x => x.MemberRepository.GetByChapterId(request.ChapterId),
+            x => x.MemberSubscriptionRepository.GetByChapterId(request.ChapterId),
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(request.ChapterId),
+            x => x.ChapterPrivacySettingsRepository.GetByChapterId(request.ChapterId),
+            x => x.EventWaitlistMemberRepository.GetByEventId(eventId));
 
         OdkAssertions.BelongsToChapter(@event, request.ChapterId);
+
+        var responseDictionary = responses
+            .ToDictionary(x => x.MemberId);
+
+        var waitlistMemberIds = waitlist
+            .Select(x => x.MemberId)
+            .ToHashSet();
+
+        var memberSubscriptionDictionary = memberSubscriptions
+            .ToDictionary(x => x.MemberChapter.MemberId);
 
         return new EventAttendeesAdminPageViewModel
         {
             Chapter = chapter,
             Event = @event,
-            Members = members,
+            Members = members
+                .Where(x =>
+                    responseDictionary.ContainsKey(x.Id) ||
+                    waitlistMemberIds.Contains(x.Id) ||
+                    _authorizationService.CanRespondToEvent(
+                        @event,
+                        x,
+                        memberSubscriptionDictionary.ContainsKey(x.Id) ? memberSubscriptionDictionary[x.Id] : null,
+                        chapterMembershipSettings,
+                        chapterPrivacySettings))
+                .ToArray(),
             OwnerSubscription = ownerSubscription,
             Platform = platform,
             Responses = responses,
-            Venue = venue
+            Venue = venue,
+            Waitlist = waitlist
         };
     }
 
@@ -640,7 +679,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             @event,
             hosts,
             venue,
-            currency
+            currency,
+            attendees
         ) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId),
@@ -649,9 +689,17 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.EventRepository.GetById(id),
             x => x.EventHostRepository.GetByEventId(id),
             x => x.VenueRepository.GetById(model.VenueId),
-            x => x.CurrencyRepository.GetByChapterId(request.ChapterId));
+            x => x.CurrencyRepository.GetByChapterId(request.ChapterId),
+            x => x.EventResponseRepository.GetByEventId(id, EventResponseType.Yes));
 
         OdkAssertions.BelongsToChapter(@event, request.ChapterId);
+
+        if (model.AttendeeLimit < attendees.Count)
+        {
+            return ServiceResult.Failure(
+                $"There are currently {attendees.Count} attendees - " +
+                "you will need to reduce the number of attendees before reducing the limit");
+        }
 
         var date = model.Date;
         if (date.TimeOfDay.TotalSeconds > 0)
@@ -662,6 +710,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         {
             date = date.SpecifyKind(DateTimeKind.Utc);
         }
+
+        var previousAttendeeLimit = @event.AttendeeLimit;
 
         @event.AttendeeLimit = model.AttendeeLimit;
         @event.Date = date;
@@ -686,6 +736,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
             @event.TicketSettings.Cost = Math.Round(model.TicketCost.Value, 2);
             @event.TicketSettings.Deposit = model.TicketDepositCost != null ? Math.Round(model.TicketDepositCost.Value, 2) : null;
+
+            @event.WaitlistDisabled = @event.Ticketed;
         }
         else if (@event.TicketSettings != null)
         {
@@ -715,9 +767,14 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         await _unitOfWork.SaveChangesAsync();
 
-        if (model.TicketCost != null)
+        if (@event.Ticketed)
         {
             _backgroundTaskService.Enqueue(() => _paymentService.EnsureProductExists(chapter.Id));
+        }
+
+        if (@event.AttendeeLimit > previousAttendeeLimit)
+        {
+            _backgroundTaskService.Enqueue(() => _eventService.NotifyWaitlist(request, id));
         }
 
         return ServiceResult.Successful();
@@ -761,39 +818,28 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task UpdateMemberResponse(MemberChapterServiceRequest request, Guid eventId, Guid memberId,
+    public async Task<ServiceResult> UpdateMemberResponse(
+        MemberChapterServiceRequest request,
+        Guid eventId,
+        Guid memberId,
         EventResponseType responseType)
     {
-        var (@event, response) = await GetChapterAdminRestrictedContent(request,
+        await _loggingService.Info(
+            $"Admin '{request.CurrentMemberId}' updating member '{memberId}' " +
+            $"response to '{responseType}' for event '{eventId}'");
+
+        var (@event, member) = await GetChapterAdminRestrictedContent(request,
             x => x.EventRepository.GetById(eventId),
-            x => x.EventResponseRepository.GetByMemberId(memberId, eventId));
+            x => x.MemberRepository.GetById(memberId));
 
         OdkAssertions.BelongsToChapter(@event, request.ChapterId);
 
-        if (responseType == EventResponseType.None)
-        {
-            if (response != null)
-            {
-                _unitOfWork.EventResponseRepository.Delete(response);
-            }
-        }
-        else if (response == null)
-        {
-            response = new EventResponse
-            {
-                EventId = eventId,
-                MemberId = memberId,
-                Type = responseType
-            };
-            _unitOfWork.EventResponseRepository.Add(response);
-        }
-        else
-        {
-            response.Type = responseType;
-            _unitOfWork.EventResponseRepository.Update(response);
-        }
-
-        await _unitOfWork.SaveChangesAsync();
+        var memberServiceRequest = MemberServiceRequest.Create(memberId, request);
+        return await _eventService.UpdateMemberResponse(
+            memberServiceRequest,
+            eventId,
+            responseType,
+            adminMemberId: request.CurrentMemberId);
     }
 
     public async Task<ServiceResult> UpdateScheduledEmail(

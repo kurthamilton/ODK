@@ -18,6 +18,20 @@ public class NotificationService : INotificationService
         _unitOfWork = unitOfWork;
     }
 
+    public void AddEventWaitlistPromotionNotifications(
+        Event @event,
+        IEnumerable<Member> members,
+        IEnumerable<MemberNotificationSettings> settings)
+    {
+        AddNotifications(
+            NotificationType.EventWaitlistPromotion,
+            _ => $"Good news - a spot opened up and you're now attending {@event.GetDisplayName()}.",
+            members,
+            settings: settings,
+            entityId: @event.Id,
+            chapterId: @event.ChapterId);
+    }
+
     public void AddNewChapterContactMessageNotifications(
         ChapterContactMessage message,
         IReadOnlyCollection<ChapterAdminMember> adminMembers,
