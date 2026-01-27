@@ -116,6 +116,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
                 CurrencyId = currency.Id,
                 Deposit = model.TicketDepositCost != null ? Math.Round(model.TicketDepositCost.Value, 2) : null,
             } : null;
+
+            @event.WaitlistDisabled = @event.Ticketed;
         }
 
         var validationResult = ValidateEvent(@event, venue);
@@ -152,7 +154,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             await _unitOfWork.SaveChangesAsync();
         }
 
-        if (@event.TicketSettings != null)
+        if (@event.Ticketed)
         {
             _backgroundTaskService.Enqueue(() => _paymentService.EnsureProductExists(chapterId));
         }
@@ -677,7 +679,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             @event,
             hosts,
             venue,
-            currency
+            currency,
+            attendees
         ) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId),
@@ -686,9 +689,17 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.EventRepository.GetById(id),
             x => x.EventHostRepository.GetByEventId(id),
             x => x.VenueRepository.GetById(model.VenueId),
-            x => x.CurrencyRepository.GetByChapterId(request.ChapterId));
+            x => x.CurrencyRepository.GetByChapterId(request.ChapterId),
+            x => x.EventResponseRepository.GetByEventId(id, EventResponseType.Yes));
 
         OdkAssertions.BelongsToChapter(@event, request.ChapterId);
+
+        if (model.AttendeeLimit < attendees.Count)
+        {
+            return ServiceResult.Failure(
+                $"There are currently {attendees.Count} attendees - " +
+                "you will need to reduce the number of attendees before reducing the limit");
+        }
 
         var date = model.Date;
         if (date.TimeOfDay.TotalSeconds > 0)
@@ -700,8 +711,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             date = date.SpecifyKind(DateTimeKind.Utc);
         }
 
-        // TODO: move members from waitlist if attendee limit increases
-        // Do not allow attendee limit to be set below number of attendees
+        var previousAttendeeLimit = @event.AttendeeLimit;
+
         @event.AttendeeLimit = model.AttendeeLimit;
         @event.Date = date;
         @event.Description = model.Description != null
@@ -725,6 +736,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
             @event.TicketSettings.Cost = Math.Round(model.TicketCost.Value, 2);
             @event.TicketSettings.Deposit = model.TicketDepositCost != null ? Math.Round(model.TicketDepositCost.Value, 2) : null;
+
+            @event.WaitlistDisabled = @event.Ticketed;
         }
         else if (@event.TicketSettings != null)
         {
@@ -754,9 +767,14 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         await _unitOfWork.SaveChangesAsync();
 
-        if (model.TicketCost != null)
+        if (@event.Ticketed)
         {
             _backgroundTaskService.Enqueue(() => _paymentService.EnsureProductExists(chapter.Id));
+        }
+
+        if (@event.AttendeeLimit > previousAttendeeLimit)
+        {
+            _backgroundTaskService.Enqueue(() => _eventService.NotifyWaitlist(request, id));
         }
 
         return ServiceResult.Successful();
