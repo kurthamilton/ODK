@@ -6,5 +6,6 @@ public enum EventResponseType
     None = 0,
     Yes = 1,
     Maybe = 2,
-    No = 3
+    No = 3,
+    Waitlist = 100
 }

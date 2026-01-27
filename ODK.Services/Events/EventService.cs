@@ -205,6 +205,12 @@ public class EventService : IEventService
             x => x.EventWaitlistMemberRepository.GetByEventId(eventId),
             x => x.EventResponseRepository.GetByEventId(eventId, EventResponseType.Yes));
 
+        if (@event.Ticketed)
+        {
+            // do not auto-promote waitlist for ticketed events
+            return;
+        }
+
         if (@event.RsvpDeadlinePassed)
         {
             return;

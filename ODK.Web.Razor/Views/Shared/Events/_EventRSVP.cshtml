@@ -60,9 +60,10 @@
                 }
                 else
                 {
+                    <div>You're on the waiting list</div>
                     <form action="/events/@Model.Event.Id/wait-list/leave" method="post">
                         <button class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to leave the waiting list?');">
-                            Leave waiting list
+                            Leave
                         </button>
                     </form>
                 }
