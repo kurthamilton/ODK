@@ -10,7 +10,7 @@
     Model.Title = "Events | Admin";
 
     var request = await Model.CreateMemberChapterServiceRequest();
-    var viewModel = await EventAdminService.GetEventsDto(request, 1, 1000);
+    var viewModel = await EventAdminService.GetEventsAdminPageViewModel(request, 1, 1000);
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel

@@ -1,5 +1,6 @@
 ﻿using ODK.Data.Core;
 using ODK.Services.Payments.ViewModels;
+using ODK.Services.Security;
 
 namespace ODK.Services.Payments;
 
@@ -16,7 +17,9 @@ public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
     {
         var platform = request.Platform;
 
-        var (chapter, payments) = await GetChapterAdminRestrictedContent(request,
+        var (chapter, payments) = await GetChapterAdminRestrictedContent(
+            ChapterAdminSecurable.Payments,
+            request,
             x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.PaymentRepository.GetMemberDtosByChapterId(request.ChapterId));
 

@@ -19,7 +19,7 @@ public interface IEventAdminService
 
     Task<EventInvitesAdminPageViewModel> GetEventInvitesViewModel(MemberChapterServiceRequest request, Guid eventId);
 
-    Task<EventsAdminPageViewModel> GetEventsDto(MemberChapterServiceRequest request, int page, int pageSize);
+    Task<EventsAdminPageViewModel> GetEventsAdminPageViewModel(MemberChapterServiceRequest request, int page, int pageSize);
 
     Task<EventSettingsAdminPageViewModel> GetEventSettingsViewModel(MemberChapterServiceRequest request);
 
