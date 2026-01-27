@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Text.RegularExpressions;
 using ODK.Core;
 using ODK.Core.Chapters;
 using ODK.Core.Events;
@@ -199,11 +200,11 @@ public class EventService : IEventService
 
     public async Task NotifyWaitlist(ServiceRequest request, Guid eventId)
     {
-        var (chapter, @event, waitlist, attendees) = await _unitOfWork.RunAsync(
+        var (chapter, @event, waitlist, responses) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetByEventId(eventId),
             x => x.EventRepository.GetById(@eventId),
             x => x.EventWaitlistMemberRepository.GetByEventId(eventId),
-            x => x.EventResponseRepository.GetByEventId(eventId, EventResponseType.Yes));
+            x => x.EventResponseRepository.GetByEventId(eventId));
 
         if (@event.Ticketed)
         {
@@ -223,7 +224,9 @@ public class EventService : IEventService
 
         var membersToConfirm = new List<EventWaitlistMember>();
 
-        var spacesLeft = @event.NumberOfSpacesLeft(attendees.Count);
+        var numberOfAttendees = responses.Count(x => x.Type == EventResponseType.Yes);
+
+        var spacesLeft = @event.NumberOfSpacesLeft(numberOfAttendees);
         if (spacesLeft == null)
         {
             spacesLeft = waitlist.Count;
@@ -234,7 +237,7 @@ public class EventService : IEventService
             return;
         }
 
-        var attendeeDictionary = attendees.ToDictionary(x => x.MemberId);
+        var responseDictionary = responses.ToDictionary(x => x.MemberId);
 
         var waitlistToPromote = waitlist
             .OrderBy(x => x.CreatedUtc)
@@ -245,14 +248,23 @@ public class EventService : IEventService
 
         _unitOfWork.EventWaitlistMemberRepository.DeleteMany(waitlistToPromote);
 
-        var responses = waitlistToPromote
-            .Select(x => new EventResponse
+        foreach (var waitlistMember in waitlistToPromote)
+        {
+            if (responseDictionary.TryGetValue(waitlistMember.MemberId, out var response))
             {
-                EventId = eventId,
-                MemberId = x.MemberId,
-                Type = EventResponseType.Yes
-            });
-        _unitOfWork.EventResponseRepository.AddMany(responses);
+                response.Type = EventResponseType.Yes;
+                _unitOfWork.EventResponseRepository.Update(response);
+            }
+            else
+            {
+                _unitOfWork.EventResponseRepository.Add(new EventResponse
+                {
+                    EventId = eventId,
+                    MemberId = waitlistMember.MemberId,
+                    Type = EventResponseType.Yes
+                });
+            }
+        }
 
         var memberIds = membersToConfirm
             .Select(x => x.MemberId)
