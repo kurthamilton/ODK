@@ -768,41 +768,24 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task UpdateMemberResponse(MemberChapterServiceRequest request, Guid eventId, Guid memberId,
+    public async Task<ServiceResult> UpdateMemberResponse(
+        MemberChapterServiceRequest request,
+        Guid eventId,
+        Guid memberId,
         EventResponseType responseType)
     {
-        var (@event, response) = await GetChapterAdminRestrictedContent(request,
+        await _loggingService.Info(
+            $"Admin '{request.CurrentMemberId}' updating member '{memberId}' " +
+            $"response to '{responseType}' for event '{eventId}'");
+
+        var (@event, member) = await GetChapterAdminRestrictedContent(request,
             x => x.EventRepository.GetById(eventId),
-            x => x.EventResponseRepository.GetByMemberId(memberId, eventId));
+            x => x.MemberRepository.GetById(memberId));
 
         OdkAssertions.BelongsToChapter(@event, request.ChapterId);
 
-        if (responseType == EventResponseType.None)
-        {
-            if (response != null)
-            {
-                _unitOfWork.EventResponseRepository.Delete(response);
-            }
-        }
-        else if (response == null)
-        {
-            response = new EventResponse
-            {
-                EventId = eventId,
-                MemberId = memberId,
-                Type = responseType
-            };
-            _unitOfWork.EventResponseRepository.Add(response);
-        }
-        else
-        {
-            response.Type = responseType;
-            _unitOfWork.EventResponseRepository.Update(response);
-        }
-
-        await _unitOfWork.SaveChangesAsync();
-
-        _backgroundTaskService.Enqueue(() => _eventService.NotifyWaitlist(request, eventId));
+        var memberServiceRequest = MemberServiceRequest.Create(memberId, request);
+        return await _eventService.UpdateMemberResponse(memberServiceRequest, eventId, responseType);
     }
 
     public async Task<ServiceResult> UpdateScheduledEmail(
