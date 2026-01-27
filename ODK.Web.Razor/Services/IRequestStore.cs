@@ -27,6 +27,8 @@ public interface IRequestStore
 
     Task<Chapter?> GetChapterOrDefault();
 
+    Task<ChapterAdminMember> GetCurrentChapterAdminMember();
+
     Task<Member> GetCurrentMember();
 
     Task<Member?> GetCurrentMemberOrDefault();

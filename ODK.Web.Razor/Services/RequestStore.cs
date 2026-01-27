@@ -19,6 +19,7 @@ namespace ODK.Web.Razor.Services;
 public class RequestStore : IRequestStore
 {
     private Chapter? _chapter;
+    private ChapterAdminMember? _currentChapterAdminMember;
     private Member? _currentMember;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ILoggingService _loggingService;
@@ -105,6 +106,20 @@ public class RequestStore : IRequestStore
     }
 
     public Task<Chapter?> GetChapterOrDefault() => GetChapterOrDefault(verbose: false);
+
+    public async Task<ChapterAdminMember> GetCurrentChapterAdminMember()
+    {
+        if (_currentChapterAdminMember != null)
+        {
+            return _currentChapterAdminMember;
+        }
+
+        var chapter = await GetChapter();
+        _currentChapterAdminMember = await _unitOfWork.ChapterAdminMemberRepository
+            .GetByMemberId(CurrentMemberId, chapter.Id).Run();
+
+        return _currentChapterAdminMember;
+    }
 
     public async Task<Member> GetCurrentMember()
         => await GetCurrentMemberOrDefault(verbose: false) ?? throw new OdkNotAuthenticatedException();
