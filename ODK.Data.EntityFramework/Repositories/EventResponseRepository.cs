@@ -1,4 +1,5 @@
-﻿using ODK.Core.Events;
+﻿using Azure;
+using ODK.Core.Events;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Events;
 using ODK.Data.Core.Repositories;
@@ -42,6 +43,18 @@ public class EventResponseRepository : WriteRepositoryBase<EventResponse>, IEven
             .Where(x => eventIds.Contains(x.EventId))
             .DeferredMultiple();
 
+    public IDeferredQueryMultiple<EventResponse> GetByEventShortcode(string shortcode)
+    {
+        var query =
+            from response in Set()
+            from @event in Set<Event>()
+                .Where(x => x.Id == response.EventId)
+            where @event.Shortcode == shortcode
+            select response;
+
+        return query.DeferredMultiple();
+    }
+
     public IDeferredQueryMultiple<EventResponse> GetByMemberId(Guid memberId, DateTime? afterUtc)
     {
         var query =
@@ -64,10 +77,38 @@ public class EventResponseRepository : WriteRepositoryBase<EventResponse>, IEven
             .Where(x => x.MemberId == memberId && eventIds.Contains(x.EventId))
             .DeferredMultiple();
 
+    public IDeferredQuerySingleOrDefault<EventResponse> GetByMemberId(Guid memberId, string shortcode)
+    {
+        var query =
+            from response in Set()
+            from @event in Set<Event>()
+                .Where(x => x.Id == response.EventId)
+            where @event.Shortcode == shortcode
+            select response;
+
+        return query
+            .Where(x => x.MemberId == memberId)
+            .DeferredSingleOrDefault();
+    }
+
     public IDeferredQuery<int> GetNumberOfAttendees(Guid eventId)
         => Set()
             .Where(x => x.EventId == eventId && x.Type == EventResponseType.Yes)
             .DeferredCount();
+
+    public IDeferredQuery<int> GetNumberOfAttendees(string eventShortcode)
+    {
+        var query =
+            from response in Set()
+            from @event in Set<Event>()
+                .Where(x => x.Id == response.EventId)
+            where @event.Shortcode == eventShortcode
+            select response;
+
+        return query
+            .Where(x => x.Type == EventResponseType.Yes)
+            .DeferredCount();
+    }
 
     public IDeferredQueryMultiple<EventResponseSummaryDto> GetResponseSummaries(IEnumerable<Guid> eventIds)
         => Set()

@@ -1,4 +1,4 @@
-﻿@page "/{chapterName}/events/{id:guid}/checkout/confirm"
+﻿@page "/{chapterName}/events/{shortcode}/checkout/confirm"
 @using ODK.Core.Payments
 @using ODK.Services.Events
 @using ODK.Web.Common.Components
@@ -15,7 +15,7 @@
 
     var chapter = await Model.GetChapter();
     var viewModel = await EventViewModelService.GetEventPageViewModel(
-        Model.ServiceRequest, Model.CurrentMemberIdOrDefault, chapter, Model.EventId);
+        Model.ServiceRequest, Model.CurrentMemberIdOrDefault, chapter, Model.Shortcode);
 }
 
 @await Html.PartialAsync("Components/_BodyWithSidebar", new BodyWithSidebarViewModel
@@ -26,7 +26,7 @@
         new MenuItem
         {
             Icon = IconType.ArrowLeft,
-            Link = OdkRoutes.Groups.Event(Model.Platform, viewModel.Chapter, viewModel.Event.Id),
+            Link = OdkRoutes.Groups.Event(Model.Platform, viewModel.Chapter, viewModel.Event.Shortcode),
             Text = "Back to event"
         }
     },

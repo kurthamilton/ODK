@@ -1,4 +1,4 @@
-﻿@page "/{chapterName}/Events/{id:guid}"
+﻿@page "/{chapterName}/Events/{shortcode}"
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Core.Venues
 @using ODK.Services.Events
@@ -18,10 +18,10 @@
         Model.ServiceRequest,
         Model.CurrentMemberIdOrDefault,
         chapter,
-        Model.EventId);
+        Model.Shortcode);
 
     Model.Title = viewModel.Event.GetDisplayName();
-    Model.Path = OdkRoutes.Groups.Event(Model.Platform, viewModel.Chapter, viewModel.Event.Id);
+    Model.Path = OdkRoutes.Groups.Event(Model.Platform, viewModel.Chapter, viewModel.Event.Shortcode);
     Model.Location = viewModel.VenueLocation;
 }
 

@@ -12,7 +12,7 @@
         <span class="d-none d-md-block">|</span>
         <span>@Model.Venue.Name</span>
     </h5>
-    <a href="@OdkRoutes.Groups.Event(Model.Platform, Model.Chapter, Model.Event.Id)">
+    <a href="@OdkRoutes.Groups.Event(Model.Platform, Model.Chapter, Model.Event.Shortcode)">
         @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Home)) View in site
     </a>
 </div>

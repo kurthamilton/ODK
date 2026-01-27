@@ -24,20 +24,41 @@ public class EventsController : OdkControllerBase
         _eventService = eventService;
     }
 
-    // Backwards compatibility for old emails
+    // Backwards compatibility for URLs using the EventId
+    [HttpGet("{chapterName}/events/{id:guid}")]
+    public async Task<IActionResult> EventLegacy(string chapterName, Guid id)
+    {
+        var chapter = await GetChapter();
+        var @event = await _eventService.GetById(id);
+        var url = OdkRoutes.Groups.EventAttend(Platform, chapter, @event.Shortcode);
+        return RedirectPermanent(url);
+    }
+
     [Authorize]
     [HttpGet("events/{id:guid}/attend")]
-    public async Task<IActionResult> EmailRsvpLegacy(Guid id)
+    public async Task<IActionResult> EmailRsvpLegacyLegacy(Guid id)
     {
         var chapter = await _chapterService.GetByEventId(id);
-        var url = OdkRoutes.Groups.EventAttend(Platform, chapter, id);
+        var @event = await _eventService.GetById(id);
+        var url = OdkRoutes.Groups.EventAttend(Platform, chapter, @event.Shortcode);
         return RedirectPermanent(url);
     }
 
     [Authorize]
     [HttpGet("{chapterName}/events/{id:guid}/rsvp")]
     [HttpGet("groups/{slug}/events/{id:guid}/rsvp")]
-    public Task<IActionResult> EmailRsvp(Guid id) => AttendEvent(id);
+    public async Task<IActionResult> EmailRsvpLegacy(Guid id)
+    {
+        var chapter = await GetChapter();
+        var @event = await _eventService.GetById(id);
+        var url = OdkRoutes.Groups.EventAttend(Platform, chapter, @event.Shortcode);
+        return RedirectPermanent(url);
+    }
+
+    [Authorize]
+    [HttpGet("{chapterName}/events/{shortcode}/rsvp")]
+    [HttpGet("groups/{slug}/events/{shortcode}/rsvp")]
+    public Task<IActionResult> EmailRsvp(string shortcode) => AttendEvent(shortcode);
 
     [Authorize]
     [HttpPost("groups/{chapterId:guid}/events/{id:guid}/comments")]
@@ -87,13 +108,13 @@ public class EventsController : OdkControllerBase
         return RedirectToReferrer();
     }
 
-    private async Task<IActionResult> AttendEvent(Guid id)
+    private async Task<IActionResult> AttendEvent(string shortcode)
     {
         var result = await _eventService.UpdateMemberResponse(
-            MemberServiceRequest, id, EventResponseType.Yes, adminMemberId: null);
+            MemberServiceRequest, shortcode, EventResponseType.Yes, adminMemberId: null);
         AddFeedback(result, "Attendance updated");
 
         var chapter = await GetChapter();
-        return Redirect(OdkRoutes.Groups.Event(Platform, chapter, id));
+        return Redirect(OdkRoutes.Groups.Event(Platform, chapter, shortcode));
     }
 }

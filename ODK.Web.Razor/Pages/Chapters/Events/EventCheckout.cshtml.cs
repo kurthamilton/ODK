@@ -2,10 +2,10 @@ namespace ODK.Web.Razor.Pages.Chapters.Events;
 
 public class EventCheckoutModel : OdkPageModel
 {
-    public Guid EventId { get; private set; }
+    public string Shortcode { get; private set; } = string.Empty;
 
-    public void OnGet(Guid id)
+    public void OnGet(string shortcode)
     {
-        EventId = id;
+        Shortcode = shortcode;
     }
 }

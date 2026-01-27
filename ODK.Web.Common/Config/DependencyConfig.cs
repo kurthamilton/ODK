@@ -142,6 +142,10 @@ public static class DependencyConfig
             DebugEmailAddress = appSettings.Emails.DebugEmailAddress
         });
         services.AddScoped<IEventAdminService, EventAdminService>();
+        services.AddSingleton(new EventAdminServiceSettings
+        {
+            ShortcodeLength = appSettings.Events.ShortcodeLength
+        });
         services.AddScoped<IEventService, EventService>();
         services.AddScoped<IEventViewModelService, EventViewModelService>();
         services.AddScoped<IFeatureService, FeatureService>();

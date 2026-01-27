@@ -36,7 +36,7 @@ public class EventViewModelService : IEventViewModelService
     }
 
     public async Task<EventCheckoutPageViewModel> GetEventCheckoutPageViewModel
-        (ServiceRequest request, Guid currentMemberId, Chapter chapter, Guid eventId, string returnPath)
+        (ServiceRequest request, Guid currentMemberId, Chapter chapter, string shortcode, string returnPath)
     {
         var platform = request.Platform;
 
@@ -57,8 +57,8 @@ public class EventViewModelService : IEventViewModelService
             membershipSettings,
             privacySettings) = await _unitOfWork.RunAsync(
             x => x.ChapterPageRepository.GetByChapterId(chapter.Id),
-            x => x.EventRepository.GetById(eventId),
-            x => x.VenueRepository.GetByEventId(eventId),
+            x => x.EventRepository.GetByShortcode(shortcode),
+            x => x.VenueRepository.GetByEventShortcode(shortcode),
             x => x.MemberRepository.GetByIdOrDefault(currentMemberId),
             x => x.MemberSubscriptionRepository.GetByMemberId(currentMemberId, chapter.Id),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapter.Id),
@@ -68,7 +68,7 @@ public class EventViewModelService : IEventViewModelService
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
-            x => x.EventTicketPaymentRepository.GetConfirmedPayments(currentMemberId, eventId),
+            x => x.EventTicketPaymentRepository.GetConfirmedPayments(currentMemberId, shortcode),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id));
 
@@ -124,7 +124,7 @@ public class EventViewModelService : IEventViewModelService
         var eventTicketPayment = new EventTicketPayment
         {
             Id = Guid.NewGuid(),
-            EventId = eventId,
+            EventId = @event.Id,
             PaymentId = paymentId
         };
 
@@ -199,7 +199,7 @@ public class EventViewModelService : IEventViewModelService
     }
 
     public async Task<EventPageViewModel> GetEventPageViewModel(
-        ServiceRequest request, Guid? currentMemberId, Chapter chapter, Guid eventId)
+        ServiceRequest request, Guid? currentMemberId, Chapter chapter, string shortcode)
     {
         var platform = request.Platform;
 
@@ -217,37 +217,41 @@ public class EventViewModelService : IEventViewModelService
             hasQuestions,
             adminMembers,
             ownerSubscription,
-            notifications,
             chapterPages,
             payments,
             waitlist) = await _unitOfWork.RunAsync(
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
-            x => x.EventRepository.GetById(eventId),
-            x => x.VenueRepository.GetByEventId(eventId),
+            x => x.EventRepository.GetByShortcode(shortcode),
+            x => x.VenueRepository.GetByEventShortcode(shortcode),
             x => currentMemberId != null
                 ? x.MemberRepository.GetByIdOrDefault(currentMemberId.Value)
                 : new DefaultDeferredQuerySingleOrDefault<Member>(),
             x => currentMemberId != null
                 ? x.MemberSubscriptionRepository.GetByMemberId(currentMemberId.Value, chapter.Id)
                 : new DefaultDeferredQuerySingleOrDefault<MemberSubscription>(),
-            x => x.EventHostRepository.GetByEventId(eventId),
-            x => x.EventCommentRepository.GetByEventId(eventId),
-            x => x.EventResponseRepository.GetByEventId(eventId),
+            x => x.EventHostRepository.GetByEventShortcode(shortcode),
+            x => x.EventCommentRepository.GetByEventShortcode(shortcode),
+            x => x.EventResponseRepository.GetByEventShortcode(shortcode),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
-            x => currentMemberId != null
-                ? x.NotificationRepository.GetUnreadByMemberId(currentMemberId.Value, NotificationType.NewEvent, eventId)
-                : new DefaultDeferredQueryMultiple<Notification>(),
             x => x.ChapterPageRepository.GetByChapterId(chapter.Id),
             x => currentMemberId != null
-                ? x.EventTicketPaymentRepository.GetConfirmedPayments(currentMemberId.Value, eventId)
+                ? x.EventTicketPaymentRepository.GetConfirmedPayments(currentMemberId.Value, shortcode)
                 : new DefaultDeferredQueryMultiple<EventTicketPayment>(),
-            x => x.EventWaitlistMemberRepository.GetByEventId(eventId));
+            x => x.EventWaitlistMemberRepository.GetByEventShortcode(shortcode));
 
         OdkAssertions.BelongsToChapter(@event, chapter.Id);
+
+        IReadOnlyCollection<Notification> notifications = [];
+        if (currentMemberId != null)
+        {
+            notifications = await _unitOfWork.NotificationRepository
+                .GetUnreadByMemberId(currentMemberId.Value, NotificationType.NewEvent, @event.Id)
+                .Run();
+        }
 
         var canViewEvent = _authorizationService.CanViewEvent(@event, member, memberSubscription, membershipSettings, privacySettings);
         var canViewVenue = _authorizationService.CanViewVenue(venue, member, memberSubscription, membershipSettings, privacySettings);

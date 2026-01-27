@@ -2,9 +2,9 @@
 
 namespace ODK.Core.Cryptography;
 
-public static class RandomStringGenerator
+public static class TokenGenerator
 {
-    public static string Generate(int length)
+    public static string GenerateBase64Token(int length)
     {
         byte[] randomNumber = new byte[length];
         using RandomNumberGenerator rng = RandomNumberGenerator.Create();

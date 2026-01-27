@@ -17,6 +17,7 @@ public class EventResponseViewModel
         EndTime = @event.EndTime;
         EventId = @event.Id;
         EventName = @event.GetDisplayName();
+        EventShortcode = @event.Shortcode;
         Invited = invited;
         Response = response;
         ResponseSummary = responseSummary;
@@ -33,6 +34,8 @@ public class EventResponseViewModel
     public Guid EventId { get; }
 
     public string EventName { get; }
+
+    public string EventShortcode { get; }
 
     public bool Invited { get; }
 

@@ -191,7 +191,7 @@ public class MemberService : IMemberService
         string? activationToken = null;
         if (!member.Activated)
         {
-            activationToken = RandomStringGenerator.Generate(64);
+            activationToken = TokenGenerator.GenerateBase64Token(64);
             _unitOfWork.MemberActivationTokenRepository.Add(new MemberActivationToken
             {
                 ActivationToken = activationToken,
@@ -324,7 +324,7 @@ public class MemberService : IMemberService
         avatar.MemberId = member.Id;
         _unitOfWork.MemberAvatarRepository.Add(avatar);
 
-        var activationToken = RandomStringGenerator.Generate(64);
+        var activationToken = TokenGenerator.GenerateBase64Token(64);
         _unitOfWork.MemberActivationTokenRepository.Add(new MemberActivationToken
         {
             ActivationToken = activationToken,
@@ -1164,7 +1164,7 @@ public class MemberService : IMemberService
             _unitOfWork.MemberEmailAddressUpdateTokenRepository.Delete(existingToken);
         }
 
-        var activationToken = RandomStringGenerator.Generate(64);
+        var activationToken = TokenGenerator.GenerateBase64Token(64);
 
         _unitOfWork.MemberEmailAddressUpdateTokenRepository.Add(new MemberEmailAddressUpdateToken
         {

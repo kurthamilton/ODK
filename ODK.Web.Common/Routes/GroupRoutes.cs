@@ -19,17 +19,23 @@ public class GroupRoutes
     public string Error(PlatformType platform, Chapter chapter, int statusCode)
         => $"{Group(platform, chapter)}/error/{statusCode}";
 
-    public string Event(PlatformType platform, Chapter chapter, Guid eventId)
+    public string Event(PlatformType platform, Chapter chapter, string shortcode)
+        => $"{Events(platform, chapter)}/{shortcode}";
+
+    public string EventLegacy(PlatformType platform, Chapter chapter, Guid eventId)
         => $"{Events(platform, chapter)}/{eventId}";
 
-    public string EventAttend(PlatformType platform, Chapter chapter, Guid eventId)
-        => $"{Event(platform, chapter, eventId)}/rsvp";
+    public string EventAttend(PlatformType platform, Chapter chapter, string shortcode)
+        => $"{Event(platform, chapter, shortcode)}/rsvp";
 
-    public string EventCheckout(PlatformType platform, Chapter chapter, Guid eventId)
-        => $"{Event(platform, chapter, eventId)}/checkout";
+    public string EventAttendLegacy(PlatformType platform, Chapter chapter, Guid eventId)
+        => $"{EventLegacy(platform, chapter, eventId)}/rsvp";
 
-    public string EventCheckoutConfirm(PlatformType platform, Chapter chapter, Guid eventId)
-        => $"{EventCheckout(platform, chapter, eventId)}/confirm";
+    public string EventCheckout(PlatformType platform, Chapter chapter, string shortcode)
+        => $"{Event(platform, chapter, shortcode)}/checkout";
+
+    public string EventCheckoutConfirm(PlatformType platform, Chapter chapter, string shortcode)
+        => $"{EventCheckout(platform, chapter, shortcode)}/confirm";
 
     public string Events(PlatformType platform, Chapter chapter) => GroupPath(platform, chapter, "/events");
 

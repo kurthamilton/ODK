@@ -16,11 +16,11 @@ public interface IUrlProvider
 
     string EmailPreferences(Chapter? chapter);
 
-    string EventRsvpUrl(Chapter chapter, Guid eventId);
+    string EventRsvpUrl(Chapter chapter, string shortcode);
 
     string EventsUrl(Chapter chapter);
 
-    string EventUrl(Chapter chapter, Guid eventId);
+    string EventUrl(Chapter chapter, string shortcode);
 
     string GroupUrl(Chapter chapter);
 

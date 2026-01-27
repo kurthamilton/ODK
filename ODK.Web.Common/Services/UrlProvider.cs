@@ -36,14 +36,14 @@ public class UrlProvider : IUrlProvider
     public string EmailPreferences(Chapter? chapter)
         => GetUrl(OdkRoutes.Account.EmailPreferences(chapter));
 
-    public string EventRsvpUrl(Chapter chapter, Guid eventId)
-        => GetUrl(OdkRoutes.Groups.EventAttend(_platform, chapter, eventId));
+    public string EventRsvpUrl(Chapter chapter, string shortcode)
+        => GetUrl(OdkRoutes.Groups.EventAttend(_platform, chapter, shortcode));
 
     public string EventsUrl(Chapter chapter)
         => GetUrl(OdkRoutes.Groups.Events(_platform, chapter));
 
-    public string EventUrl(Chapter chapter, Guid eventId)
-        => GetUrl(OdkRoutes.Groups.Event(_platform, chapter, eventId));
+    public string EventUrl(Chapter chapter, string shortcode)
+        => GetUrl(OdkRoutes.Groups.Event(_platform, chapter, shortcode));
 
     public string GroupUrl(Chapter chapter)
         => GetUrl(OdkRoutes.Groups.Group(_platform, chapter));

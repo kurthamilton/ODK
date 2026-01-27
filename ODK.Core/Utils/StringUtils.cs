@@ -5,6 +5,10 @@ namespace ODK.Core.Utils;
 
 public static class StringUtils
 {
+    public const string AlphaCharset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    public const string AlphaNumericCharset = AlphaCharset + NumericCharset;
+    public const string NumericCharset = "0123456789";
+
     private static readonly Regex AlphaNumericRegex = new("[^a-zA-Z0-9]", RegexOptions.Compiled);
     private static readonly string HashtagRegexPattern = "#[a-zA-Z0-9]+";
     private static readonly Regex TokenRegex = new(@"\{(.+?)\}", RegexOptions.Compiled);
@@ -62,6 +66,29 @@ public static class StringUtils
         return count == 1
             ? single
             : (!string.IsNullOrEmpty(plural) ? plural : $"{single}s");
+    }
+
+    /// <summary>
+    /// Generate a non-cryptographically secure string of a given length
+    /// </summary>
+    public static string RandomString(int length, string charset = AlphaNumericCharset)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(length);
+
+        if (string.IsNullOrEmpty(charset))
+        {
+            throw new ArgumentException("Charset must not be null or empty.", nameof(charset));
+        }
+
+        var random = Random.Shared;
+        var buffer = new char[length];
+
+        for (var i = 0; i < length; i++)
+        {
+            buffer[i] = charset[random.Next(charset.Length)];
+        }
+
+        return new string(buffer);
     }
 
     public static string RemoveLeading(string text, string leadingText)

@@ -49,6 +49,19 @@ public class VenueRepository : ReadWriteRepositoryBase<Venue>, IVenueRepository
         return query.DeferredMultiple();
     }
 
+    public IDeferredQuerySingle<Venue> GetByEventShortcode(string shortcode)
+    {
+        var venueIdQuery =
+            from @event in Set<Event>().Where(x => x.Shortcode == shortcode)
+            select @event.VenueId;
+
+        var query =
+            from venue in Set()
+            where venueIdQuery.Contains(venue.Id)
+            select venue;
+
+        return query.DeferredSingle();
+    }
 
     public IDeferredQuerySingleOrDefault<Venue> GetByName(Guid chapterId, string name) => Set()
         .Where(x => x.ChapterId == chapterId && x.Name == name)

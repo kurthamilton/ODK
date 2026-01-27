@@ -31,6 +31,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     private readonly IMemberEmailService _memberEmailService;
     private readonly INotificationService _notificationService;
     private readonly IPaymentService _paymentService;
+    private readonly EventAdminServiceSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
 
     public EventAdminService(
@@ -42,7 +43,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         IBackgroundTaskService backgroundTaskService,
         ILoggingService loggingService,
         IPaymentService paymentService,
-        IEventService eventService)
+        IEventService eventService,
+        EventAdminServiceSettings settings)
         : base(unitOfWork)
     {
         _authorizationService = authorizationService;
@@ -53,6 +55,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         _memberEmailService = memberEmailService;
         _notificationService = notificationService;
         _paymentService = paymentService;
+        _settings = settings;
         _unitOfWork = unitOfWork;
     }
 
@@ -142,6 +145,14 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             EventId = @event.Id,
             TopicId = x.TopicId
         }));
+
+        var shortcode = GenerateShortcode();
+        while (await _unitOfWork.EventRepository.ShortcodeExists(shortcode).Run())
+        {
+            shortcode = GenerateShortcode();
+        }
+
+        @event.Shortcode = shortcode;
 
         await _unitOfWork.SaveChangesAsync();
 
@@ -780,6 +791,30 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         return ServiceResult.Successful();
     }
 
+    public async Task<ServiceResult> SetMissingEventShortcodes(MemberServiceRequest request)
+    {
+        var chapters = await _unitOfWork.ChapterRepository.GetAll().Run();
+
+        foreach (var chapter in chapters)
+        {
+            var events = await _unitOfWork.EventRepository.GetByChapterId(chapter.Id).Run();
+            foreach (var @event in @events)
+            {
+                if (!string.IsNullOrEmpty(@event.Shortcode))
+                {
+                    continue;
+                }
+
+                @event.Shortcode = GenerateShortcode();
+                _unitOfWork.EventRepository.Update(@event);
+            }
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
+    }
+
     public async Task UpdateEventSettings(MemberChapterServiceRequest request, UpdateEventSettings model)
     {
         var (ownerSubscription, settings) = await GetChapterAdminRestrictedContent(request,
@@ -1050,6 +1085,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             throw new OdkServiceException("Events with responses cannot be deleted");
         }
     }
+
+    private string GenerateShortcode() => StringUtils.RandomString(_settings.ShortcodeLength);
 
     private IReadOnlyCollection<EventInvitesDto> GetEventInvitesDtos(IEnumerable<Guid> eventIds,
         IEnumerable<EventInviteSummaryDto> invites, IEnumerable<EventEmail> emails)

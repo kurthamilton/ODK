@@ -310,6 +310,11 @@ public static class EventAdminServiceTests
             Mock.Of<IMemberEmailService>(),
             Mock.Of<IBackgroundTaskService>(),
             Mock.Of<ILoggingService>(),
-            Mock.Of<IPaymentService>());
+            Mock.Of<IPaymentService>(),
+            Mock.Of<IEventService>(),
+            new EventAdminServiceSettings
+            {
+                ShortcodeLength = 8
+            });
     }
 }

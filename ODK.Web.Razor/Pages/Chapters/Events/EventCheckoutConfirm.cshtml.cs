@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using ODK.Core.Chapters;
 using ODK.Core.Payments;
 using ODK.Services.Payments;
 using ODK.Web.Common.Feedback;
@@ -16,22 +15,22 @@ public class EventCheckoutConfirmModel : OdkPageModel
         _paymentService = paymentService;
     }
 
-    public Guid EventId { get; private set; }
-
     public string RedirectUrl { get; private set; } = string.Empty;
 
     public string? SessionId { get; private set; }
 
-    public async Task<IActionResult> OnGet(Guid id, string sessionId)
+    public string Shortcode { get; private set; } = string.Empty;
+
+    public async Task<IActionResult> OnGet(string shortcode, string sessionId)
     {
-        EventId = id;
         SessionId = sessionId;
+        Shortcode = shortcode;
 
         var chapter = await GetChapter();
         var request = await CreateMemberChapterServiceRequest();
         var status = await _paymentService.GetMemberChapterPaymentCheckoutSessionStatus(request, sessionId);
 
-        RedirectUrl = OdkRoutes.Groups.Event(Platform, chapter, EventId);
+        RedirectUrl = OdkRoutes.Groups.Event(Platform, chapter, Shortcode);
 
         if (status == PaymentStatusType.Complete)
         {

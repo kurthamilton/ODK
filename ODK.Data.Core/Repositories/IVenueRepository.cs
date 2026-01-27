@@ -13,5 +13,7 @@ public interface IVenueRepository : IReadWriteRepository<Venue>
 
     IDeferredQueryMultiple<Venue> GetByEventIds(IEnumerable<Guid> eventIds);
 
+    IDeferredQuerySingle<Venue> GetByEventShortcode(string shortcode);
+
     IDeferredQuerySingleOrDefault<Venue> GetByName(Guid chapterId, string name);
 }

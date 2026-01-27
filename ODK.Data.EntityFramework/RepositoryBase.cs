@@ -18,7 +18,11 @@ public abstract class RepositoryBase
 
     public void DeleteSingle<T>(T entity) where T : class => _context.Set<T>().Remove(entity);
 
-    public void UpdateSingle<T>(T entity) where T : class => _context.Set<T>().Update(entity);
+    public void UpdateSingle<T>(T entity) where T : class
+    {
+        _context.Set<T>().Attach(entity);
+        _context.Entry(entity).State = EntityState.Modified;
+    }
 
     protected virtual void OnCommit()
     {

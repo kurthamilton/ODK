@@ -10,6 +10,8 @@ public interface IEventService
 
     Task CompleteEventTicketPurchase(Guid eventId, Guid memberId);
 
+    Task<Event> GetById(Guid eventId);
+
     Task<ServiceResult> JoinWaitlist(Guid eventId, Guid memberId);
 
     Task<ServiceResult> LeaveWaitlist(Guid eventId, Guid memberId);
@@ -18,4 +20,7 @@ public interface IEventService
 
     Task<ServiceResult> UpdateMemberResponse(
         MemberServiceRequest request, Guid eventId, EventResponseType responseType, Guid? adminMemberId);
+
+    Task<ServiceResult> UpdateMemberResponse(
+        MemberServiceRequest request, string shortcode, EventResponseType responseType, Guid? adminMemberId);
 }

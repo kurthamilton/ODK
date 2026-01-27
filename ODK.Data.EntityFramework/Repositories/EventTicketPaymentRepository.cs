@@ -26,6 +26,20 @@ public class EventTicketPaymentRepository : ReadWriteRepositoryBase<EventTicketP
                 x.Payment.PaidUtc != null)
             .DeferredMultiple();
 
+    public IDeferredQueryMultiple<EventTicketPayment> GetConfirmedPayments(Guid memberId, string eventShortcode)
+    {
+        var query =
+            from payment in Set()
+            from @event in Set<Event>()
+                .Where(x => x.Id == payment.EventId)
+            where @event.Shortcode == eventShortcode &&
+                payment.Payment.MemberId == memberId &&
+                payment.Payment.PaidUtc != null
+            select payment;
+
+        return query.DeferredMultiple();
+    }
+
     protected override IQueryable<EventTicketPayment> Set()
         => base.Set()
             .Include(x => x.Payment);

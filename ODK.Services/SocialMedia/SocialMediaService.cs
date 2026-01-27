@@ -278,7 +278,7 @@ public class SocialMediaService : ISocialMediaService
         }
         else
         {
-            var randomDelaySeconds = new Random().Next(_settings.InstagramFetchWaitSeconds);
+            var randomDelaySeconds = Random.Shared.Next(_settings.InstagramFetchWaitSeconds);
 
             _backgroundTaskService.Schedule(
                 () => ScrapeLatestInstagramPosts(chapterIds, delaySeconds),

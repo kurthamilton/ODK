@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Payments;
 using ODK.Services.Authentication;
 using ODK.Services.Contact;
+using ODK.Services.Events;
 using ODK.Services.Features;
 using ODK.Services.Logging;
 using ODK.Services.Payments;
@@ -23,6 +24,7 @@ namespace ODK.Web.Razor.Controllers.SiteAdmin;
 public class SiteAdminController : OdkControllerBase
 {
     private readonly IContactAdminService _contactAdminService;
+    private readonly IEventAdminService _eventAdminService;
     private readonly IFeatureService _featureService;
     private readonly ILoggingService _loggingService;
     private readonly ISettingsService _settingsService;
@@ -39,10 +41,12 @@ public class SiteAdminController : OdkControllerBase
         IContactAdminService contactAdminService,
         ITopicAdminService topicAdminService,
         IPaymentAdminService paymentAdminService,
-        IRequestStore requestStore)
+        IRequestStore requestStore,
+        IEventAdminService eventAdminService)
         : base(requestStore)
     {
         _contactAdminService = contactAdminService;
+        _eventAdminService = eventAdminService;
         _featureService = featureService;
         _loggingService = loggingService;
         _settingsService = settingsService;
@@ -71,6 +75,13 @@ public class SiteAdminController : OdkControllerBase
         await _loggingService.DeleteAllErrors(MemberId, id);
 
         return Redirect(OdkRoutes.SiteAdmin.Errors);
+    }
+
+    [HttpPost("siteadmin/events/shortcodes")]
+    public async Task<IActionResult> SetMissingEventShortcodes()
+    {
+        await _eventAdminService.SetMissingEventShortcodes(MemberServiceRequest);
+        return RedirectToReferrer();
     }
 
     [HttpPost("siteadmin/features/{id:guid}/delete")]

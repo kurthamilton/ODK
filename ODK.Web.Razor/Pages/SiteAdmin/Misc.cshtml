@@ -1,0 +1,12 @@
+﻿@page "/siteadmin/misc"
+@model MiscModel
+@{
+    Layout = "_SiteAdminLayout";
+    Model.Title = "Misc | SiteAdmin";
+}
+
+<h3>Events</h3>
+
+<form action="/siteadmin/events/shortcodes" method="post">
+    <button>Set missing shortcodes</button>
+</form>

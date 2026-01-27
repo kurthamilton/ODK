@@ -7,6 +7,8 @@ public interface IEventWaitlistMemberRepository : IReadWriteRepository<EventWait
 {
     IDeferredQueryMultiple<EventWaitlistMember> GetByEventId(Guid eventId);
 
+    IDeferredQueryMultiple<EventWaitlistMember> GetByEventShortcode(string shortcode);
+
     IDeferredQuerySingleOrDefault<EventWaitlistMember> GetByMemberId(Guid memberId, Guid eventId);
 
     IDeferredQuery<bool> IsOnWaitlist(Guid memberId, Guid eventId);

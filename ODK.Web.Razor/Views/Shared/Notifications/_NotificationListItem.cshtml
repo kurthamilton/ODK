@@ -31,7 +31,7 @@
             ? OdkRoutes.MemberGroups.GroupConversation(platform, notification.Chapter, notification.EntityId.Value)
             : null,
         NotificationType.NewEvent => notification.Chapter != null && notification.EntityId != null
-            ? OdkRoutes.Groups.Event(platform, notification.Chapter, notification.EntityId.Value)
+            ? OdkRoutes.Groups.EventLegacy(platform, notification.Chapter, notification.EntityId.Value)
             : null,
         NotificationType.NewMember => notification.Chapter != null && notification.EntityId != null
             ? OdkRoutes.MemberGroups.Member(platform, notification.Chapter, notification.EntityId.Value)

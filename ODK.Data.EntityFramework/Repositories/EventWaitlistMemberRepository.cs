@@ -17,6 +17,18 @@ public class EventWaitlistMemberRepository : ReadWriteRepositoryBase<EventWaitli
             .Where(x => x.EventId == eventId)
             .DeferredMultiple();
 
+    public IDeferredQueryMultiple<EventWaitlistMember> GetByEventShortcode(string shortcode)
+    {
+        var query =
+            from waitlistMember in Set()
+            from @event in Set<Event>()
+                .Where(x => x.Id == waitlistMember.EventId)
+            where @event.Shortcode == shortcode
+            select waitlistMember;
+
+        return query.DeferredMultiple();
+    }
+
     public IDeferredQuerySingleOrDefault<EventWaitlistMember> GetByMemberId(Guid memberId, Guid eventId)
         => Set()
             .Where(x => x.EventId == eventId && x.MemberId == memberId)

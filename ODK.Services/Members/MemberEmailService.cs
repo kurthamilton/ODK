@@ -229,7 +229,7 @@ public class MemberEmailService : IMemberEmailService
         Member? parentCommentMember)
     {
         var urlProvider = _urlProviderFactory.Create(request);
-        var url = urlProvider.EventUrl(chapter, @event.Id);
+        var url = urlProvider.EventUrl(chapter, @event.Shortcode);
 
         var parameters = new Dictionary<string, string>
         {
@@ -256,10 +256,10 @@ public class MemberEmailService : IMemberEmailService
         var time = @event.ToLocalTimeString(chapter.TimeZone);
 
         var urlProvider = _urlProviderFactory.Create(request);
-        var eventUrl = urlProvider.EventUrl(chapter, @event.Id);
+        var eventUrl = urlProvider.EventUrl(chapter, @event.Shortcode);
         var rsvpUrl = @event.Ticketed
-            ? urlProvider.EventUrl(chapter, @event.Id)
-            : urlProvider.EventRsvpUrl(chapter, @event.Id);
+            ? urlProvider.EventUrl(chapter, @event.Shortcode)
+            : urlProvider.EventRsvpUrl(chapter, @event.Shortcode);
         var unsubscribeUrl = urlProvider.EmailPreferences(chapter);
 
         var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -289,7 +289,7 @@ public class MemberEmailService : IMemberEmailService
         IEnumerable<Member> members)
     {
         var urlProvider = _urlProviderFactory.Create(request);
-        var url = urlProvider.EventUrl(chapter, @event.Id);
+        var url = urlProvider.EventUrl(chapter, @event.Shortcode);
 
         var subject = "{title} - You're in! A spot opened up for {event.name}";
 

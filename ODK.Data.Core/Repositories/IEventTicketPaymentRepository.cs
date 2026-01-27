@@ -8,4 +8,6 @@ public interface IEventTicketPaymentRepository : IReadWriteRepository<EventTicke
     IDeferredQueryMultiple<EventTicketPayment> GetConfirmedPayments(Guid eventId);
 
     IDeferredQueryMultiple<EventTicketPayment> GetConfirmedPayments(Guid memberId, Guid eventId);
+
+    IDeferredQueryMultiple<EventTicketPayment> GetConfirmedPayments(Guid memberId, string eventShortcode);
 }

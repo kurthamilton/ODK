@@ -13,7 +13,8 @@ public class EventRepository : ReadWriteRepositoryBase<Event>, IEventRepository
     {
     }
 
-    public IDeferredQueryMultiple<Event> GetByChapterId(Guid chapterId) => GetByChapterId(chapterId, null);
+    public IDeferredQueryMultiple<Event> GetByChapterId(Guid chapterId)
+        => GetByChapterId(chapterId, null);
 
     public IDeferredQueryMultiple<Event> GetByChapterId(Guid chapterId, DateTime? after) => Set()
         .Where(x => x.ChapterId == chapterId)
@@ -21,21 +22,29 @@ public class EventRepository : ReadWriteRepositoryBase<Event>, IEventRepository
         .OrderByDescending(x => x.Date)
         .DeferredMultiple();
 
-    public IDeferredQueryMultiple<Event> GetByChapterId(Guid chapterId, int page, int pageSize) => Set()
-        .Where(x => x.ChapterId == chapterId)
-        .OrderByDescending(x => x.Date)
-        .Page(page, pageSize)
-        .DeferredMultiple();
+    public IDeferredQueryMultiple<Event> GetByChapterId(Guid chapterId, int page, int pageSize)
+        => Set()
+            .Where(x => x.ChapterId == chapterId)
+            .OrderByDescending(x => x.Date)
+            .Page(page, pageSize)
+            .DeferredMultiple();
 
-    public IDeferredQueryMultiple<Event> GetByVenueId(Guid venueId) => Set()
-        .Where(x => x.VenueId == venueId)
-        .DeferredMultiple();
+    public IDeferredQuerySingle<Event> GetByShortcode(string shortcode)
+        => Set()
+            .Where(x => x.Shortcode == shortcode)
+            .DeferredSingle();
 
-    public IDeferredQueryMultiple<Event> GetPublicEventsByChapterId(Guid chapterId, DateTime? after) => Set()
-        .Where(x => x.ChapterId == chapterId && x.IsPublic)
-        .ConditionalWhere(x => x.Date >= after, after != null)
-        .OrderByDescending(x => x.Date)
-        .DeferredMultiple();
+    public IDeferredQueryMultiple<Event> GetByVenueId(Guid venueId)
+        => Set()
+            .Where(x => x.VenueId == venueId)
+            .DeferredMultiple();
+
+    public IDeferredQueryMultiple<Event> GetPublicEventsByChapterId(Guid chapterId, DateTime? after)
+        => Set()
+            .Where(x => x.ChapterId == chapterId && x.IsPublic)
+            .ConditionalWhere(x => x.Date >= after, after != null)
+            .OrderByDescending(x => x.Date)
+            .DeferredMultiple();
 
     public IDeferredQuery<int> GetPastEventCountByChapterId(Guid chapterId)
         => GetPastEventQuery(chapterId, null)
@@ -46,9 +55,23 @@ public class EventRepository : ReadWriteRepositoryBase<Event>, IEventRepository
             .OrderByDescending(x => x.Date)
             .DeferredMultiple();
 
+    public IDeferredQuery<bool> ShortcodeExists(string shortcode)
+        => Set()
+            .Where(x => x.Shortcode == shortcode)
+            .DeferredAny();
+
     protected override IQueryable<Event> Set() => base.Set()
         .Include(x => x.TicketSettings)
         .ThenInclude(x => x!.Currency);
+
+    public override void Update(Event entity)
+    {
+        // do not include Currency in the update
+        var clone = entity.Clone();
+        clone.TicketSettings?.Currency = null!;
+
+        base.Update(entity);
+    }
 
     private IQueryable<Event> GetPastEventQuery(Guid chapterId, int? pageSize)
     {

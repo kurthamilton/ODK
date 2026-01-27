@@ -18,13 +18,19 @@ public interface IEventResponseRepository : IWriteRepository<EventResponse>
 
     IDeferredQueryMultiple<EventResponse> GetByEventIds(IEnumerable<Guid> eventIds);
 
+    IDeferredQueryMultiple<EventResponse> GetByEventShortcode(string shortcode);
+
     IDeferredQueryMultiple<EventResponse> GetByMemberId(Guid memberId, DateTime? afterUtc);
 
     IDeferredQuerySingleOrDefault<EventResponse> GetByMemberId(Guid memberId, Guid eventId);
 
     IDeferredQueryMultiple<EventResponse> GetByMemberId(Guid memberId, IEnumerable<Guid> eventIds);
 
+    IDeferredQuerySingleOrDefault<EventResponse> GetByMemberId(Guid memberId, string shortcode);
+
     IDeferredQuery<int> GetNumberOfAttendees(Guid eventId);
+
+    IDeferredQuery<int> GetNumberOfAttendees(string eventShortcode);
 
     IDeferredQueryMultiple<EventResponseSummaryDto> GetResponseSummaries(IEnumerable<Guid> eventIds);
 }

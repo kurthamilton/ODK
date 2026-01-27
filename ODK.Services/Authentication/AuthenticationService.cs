@@ -297,7 +297,7 @@ public class AuthenticationService : IAuthenticationService
             {
                 activationToken = new MemberActivationToken
                 {
-                    ActivationToken = RandomStringGenerator.Generate(64),
+                    ActivationToken = TokenGenerator.GenerateBase64Token(64),
                     ChapterId = chapter?.Id,
                     MemberId = member.Id
                 };
@@ -315,7 +315,7 @@ public class AuthenticationService : IAuthenticationService
 
         var created = DateTime.UtcNow;
         var expires = created.AddMinutes(_settings.PasswordResetTokenLifetimeMinutes);
-        var token = RandomStringGenerator.Generate(64);
+        var token = TokenGenerator.GenerateBase64Token(64);
 
         _unitOfWork.MemberPasswordResetRequestRepository.Add(new MemberPasswordResetRequest
         {

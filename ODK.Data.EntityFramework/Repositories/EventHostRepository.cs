@@ -13,9 +13,22 @@ public class EventHostRepository : ReadWriteRepositoryBase<EventHost>, IEventHos
     {
     }
 
-    public IDeferredQueryMultiple<EventHost> GetByEventId(Guid eventId) => Set()
-        .Where(x => x.EventId == eventId)
-        .DeferredMultiple();
+    public IDeferredQueryMultiple<EventHost> GetByEventId(Guid eventId)
+        => Set()
+            .Where(x => x.EventId == eventId)
+            .DeferredMultiple();
+
+    public IDeferredQueryMultiple<EventHost> GetByEventShortcode(string shortcode)
+    {
+        var query =
+            from eventHost in Set()
+            from @event in Set<Event>()
+                .Where(x => x.Id == eventHost.EventId)
+            where @event.Shortcode == shortcode
+            select eventHost;
+
+        return query.DeferredMultiple();
+    }
 
     protected override IQueryable<EventHost> Set() => base.Set()
         .Include(x => x.Member);

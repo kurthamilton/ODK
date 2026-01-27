@@ -1,4 +1,4 @@
-﻿@page "/groups/{slug}/events/{id:guid}"
+﻿@page "/groups/{slug}/events/{shortcode}"
 @using ODK.Services.Events
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
@@ -11,7 +11,7 @@
 
     var chapter = await Model.GetChapter();
     var viewModel = await EventViewModelService.GetEventPageViewModel(
-        Model.ServiceRequest, Model.CurrentMemberIdOrDefault, chapter, Model.EventId);
+        Model.ServiceRequest, Model.CurrentMemberIdOrDefault, chapter, Model.Shortcode);
 
     Model.Title = $"{viewModel.Event.GetDisplayName()} | {viewModel.Chapter.GetDisplayName(Model.Platform)}";
 }

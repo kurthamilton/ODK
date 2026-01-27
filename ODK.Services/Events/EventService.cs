@@ -151,6 +151,8 @@ public class EventService : IEventService
         await _unitOfWork.SaveChangesAsync();
     }
 
+    public Task<Event> GetById(Guid eventId) => _unitOfWork.EventRepository.GetById(eventId).Run();
+
     public async Task<ServiceResult> JoinWaitlist(Guid eventId, Guid memberId)
     {
         var (@event, member, isOnWaitlist) = await _unitOfWork.RunAsync(
@@ -289,15 +291,127 @@ public class EventService : IEventService
         Guid? adminMemberId)
     {
         var memberId = request.CurrentMemberId;
-        responseType = NormalizeResponseType(responseType);
 
-        var (member, @event, memberResponse, numberOfAttendees, waitlist) = await _unitOfWork.RunAsync(
+        var (member, @event, memberResponse, waitlist) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(memberId),
             x => x.EventRepository.GetById(eventId),
             x => x.EventResponseRepository.GetByMemberId(memberId, eventId),
-            x => x.EventResponseRepository.GetNumberOfAttendees(eventId),
             x => x.EventWaitlistMemberRepository.GetByEventId(eventId));
 
+        return await UpdateMemberResponse(
+            request,
+            @event,
+            member,
+            responseType,
+            memberResponse,
+            waitlist,
+            adminMemberId);
+    }
+
+    public async Task<ServiceResult> UpdateMemberResponse(
+        MemberServiceRequest request, string shortcode, EventResponseType responseType, Guid? adminMemberId)
+    {
+        var memberId = request.CurrentMemberId;
+
+        var (member, @event, memberResponse, waitlist) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(memberId),
+            x => x.EventRepository.GetByShortcode(shortcode),
+            x => x.EventResponseRepository.GetByMemberId(memberId, shortcode),
+            x => x.EventWaitlistMemberRepository.GetByEventShortcode(shortcode));
+
+        return await UpdateMemberResponse(
+            request,
+            @event,
+            member,
+            responseType,
+            memberResponse,
+            waitlist,
+            adminMemberId);
+    }
+
+    private static EventResponseType NormalizeResponseType(EventResponseType responseType)
+    {
+        var validResponseTypes = new[]
+        {
+            EventResponseType.Yes,
+            EventResponseType.No,
+            EventResponseType.Maybe,
+            EventResponseType.None
+        };
+
+        return validResponseTypes.Contains(responseType)
+            ? responseType
+            : EventResponseType.None;
+    }
+
+    private static ServiceResult EventHasSpaces(
+        Event @event,
+        int numberOfAttendees)
+    {
+        if (@event.NumberOfSpacesLeft(numberOfAttendees) <= 0)
+        {
+            return ServiceResult.Failure("No more spaces left");
+        }
+
+        return ServiceResult.Successful();
+    }
+
+    private static ServiceResult GetMemberEventAuthorisation(Event @event, Member member, bool isForAdmin)
+    {
+        if (@event.RsvpDisabled)
+        {
+            return ServiceResult.Failure("RSVP is currently disabled");
+        }
+
+        if (!@event.IsAuthorized(member))
+        {
+            var message = isForAdmin
+                ? "Member is not permitted to attend"
+                : "You are not permitted to attend";
+            return ServiceResult.Failure(message);
+        }
+
+        return ServiceResult.Successful();
+    }
+
+    private ServiceResult MemberCanAttendEvent(
+        Event @event,
+        Member? member,
+        EventResponse? memberResponse,
+        MemberSubscription? subscription,
+        ChapterMembershipSettings? membershipSettings,
+        ChapterPrivacySettings? privacySettings,
+        bool isForAdmin)
+    {
+        if (@event.Date < DateTime.Today)
+        {
+            return ServiceResult.Failure("Past events cannot be responded to");
+        }
+
+        var canRespond = _authorizationService.CanRespondToEvent(
+            @event, member, subscription, membershipSettings, privacySettings);
+        if (canRespond)
+        {
+            return ServiceResult.Successful();
+        }
+
+        return isForAdmin
+            ? ServiceResult.Failure("Member is not permitted to attend this event")
+            : ServiceResult.Failure("You are not permitted to attend this event");
+    }
+
+    private async Task<ServiceResult> UpdateMemberResponse(
+        ServiceRequest request,
+        Event @event,
+        Member member,
+        EventResponseType responseType,
+        EventResponse? memberResponse,
+        IReadOnlyCollection<EventWaitlistMember> waitlist,
+        Guid? adminMemberId)
+    {
+        var (eventId, memberId) = (@event.Id, member.Id);
+
+        responseType = NormalizeResponseType(responseType);
         if (memberResponse?.Type == responseType)
         {
             return ServiceResult.Successful();
@@ -315,10 +429,11 @@ public class EventService : IEventService
             return ServiceResult.Failure("Ticketed events cannot be responded to");
         }
 
-        var (membershipSettings, privacySettings, memberSubscription) = await _unitOfWork.RunAsync(
+        var (membershipSettings, privacySettings, memberSubscription, numberOfAttendees) = await _unitOfWork.RunAsync(
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(@event.ChapterId),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(@event.ChapterId),
-            x => x.MemberSubscriptionRepository.GetByMemberId(memberId, @event.ChapterId));
+            x => x.MemberSubscriptionRepository.GetByMemberId(memberId, @event.ChapterId),
+            x => x.EventResponseRepository.GetNumberOfAttendees(eventId));
 
         var validationResult = MemberCanAttendEvent(
             @event,
@@ -393,76 +508,5 @@ public class EventService : IEventService
         _backgroundTaskService.Enqueue(() => NotifyWaitlist(request, eventId));
 
         return ServiceResult.Successful();
-    }
-
-    private static EventResponseType NormalizeResponseType(EventResponseType responseType)
-    {
-        var validResponseTypes = new[]
-        {
-            EventResponseType.Yes,
-            EventResponseType.No,
-            EventResponseType.Maybe,
-            EventResponseType.None
-        };
-
-        return validResponseTypes.Contains(responseType)
-            ? responseType
-            : EventResponseType.None;
-    }
-
-    private static ServiceResult EventHasSpaces(
-        Event @event,
-        int numberOfAttendees)
-    {
-        if (@event.NumberOfSpacesLeft(numberOfAttendees) <= 0)
-        {
-            return ServiceResult.Failure("No more spaces left");
-        }
-
-        return ServiceResult.Successful();
-    }
-
-    private static ServiceResult GetMemberEventAuthorisation(Event @event, Member member, bool isForAdmin)
-    {
-        if (@event.RsvpDisabled)
-        {
-            return ServiceResult.Failure("RSVP is currently disabled");
-        }
-
-        if (!@event.IsAuthorized(member))
-        {
-            var message = isForAdmin
-                ? "Member is not permitted to attend"
-                : "You are not permitted to attend";
-            return ServiceResult.Failure(message);
-        }
-
-        return ServiceResult.Successful();
-    }
-
-    private ServiceResult MemberCanAttendEvent(
-        Event @event,
-        Member? member,
-        EventResponse? memberResponse,
-        MemberSubscription? subscription,
-        ChapterMembershipSettings? membershipSettings,
-        ChapterPrivacySettings? privacySettings,
-        bool isForAdmin)
-    {
-        if (@event.Date < DateTime.Today)
-        {
-            return ServiceResult.Failure("Past events cannot be responded to");
-        }
-
-        var canRespond = _authorizationService.CanRespondToEvent(
-            @event, member, subscription, membershipSettings, privacySettings);
-        if (canRespond)
-        {
-            return ServiceResult.Successful();
-        }
-
-        return isForAdmin
-            ? ServiceResult.Failure("Member is not permitted to attend this event")
-            : ServiceResult.Failure("You are not permitted to attend this event");
     }
 }

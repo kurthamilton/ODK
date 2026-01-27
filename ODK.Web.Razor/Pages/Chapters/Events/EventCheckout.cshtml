@@ -1,4 +1,4 @@
-﻿@page "/{chapterName}/events/{id:guid}/checkout"
+﻿@page "/{chapterName}/events/{shortcode}/checkout"
 @using ODK.Core.Payments
 @using ODK.Services.Events
 @using ODK.Web.Common.Components
@@ -12,14 +12,14 @@
 
     var chapter = await Model.GetChapter();
 
-    var returnRoute = OdkRoutes.Groups.EventCheckoutConfirm(Model.Platform, chapter, Model.EventId);
+    var returnRoute = OdkRoutes.Groups.EventCheckoutConfirm(Model.Platform, chapter, Model.Shortcode);
     var returnPath = $"{returnRoute}?sessionId={{sessionId}}";
     
     var viewModel = await EventViewModelService.GetEventCheckoutPageViewModel(
         Model.ServiceRequest,
         Model.CurrentMemberId,
         chapter,
-        Model.EventId,
+        Model.Shortcode,
         returnPath);
 
     Model.Title = $"Checkout | {viewModel.Event.GetDisplayName()}";
@@ -33,7 +33,7 @@
         new MenuItem 
         { 
             Icon = IconType.ArrowLeft,
-            Link = OdkRoutes.Groups.Event(Model.Platform, viewModel.Chapter, viewModel.Event.Id),
+            Link = OdkRoutes.Groups.Event(Model.Platform, viewModel.Chapter, viewModel.Event.Shortcode),
             Text = "Back to event"
         }
     },

@@ -6,10 +6,20 @@ namespace ODK.Data.Core.Repositories;
 public interface IEventRepository : IReadWriteRepository<Event>
 {
     IDeferredQueryMultiple<Event> GetByChapterId(Guid chapterId);
+
     IDeferredQueryMultiple<Event> GetByChapterId(Guid chapterId, DateTime? after);
+
     IDeferredQueryMultiple<Event> GetByChapterId(Guid chapterId, int page, int pageSize);
+
+    IDeferredQuerySingle<Event> GetByShortcode(string shortcode);
+
     IDeferredQueryMultiple<Event> GetByVenueId(Guid venueId);
+
     IDeferredQuery<int> GetPastEventCountByChapterId(Guid chapterId);
+
     IDeferredQueryMultiple<Event> GetPublicEventsByChapterId(Guid chapterId, DateTime? after);
+
     IDeferredQueryMultiple<Event> GetRecentEventsByChapterId(Guid chapterId, int pageSize);
+
+    IDeferredQuery<bool> ShortcodeExists(string shortcode);
 }
