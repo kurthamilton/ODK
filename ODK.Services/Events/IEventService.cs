@@ -16,5 +16,6 @@ public interface IEventService
 
     Task NotifyWaitlist(ServiceRequest request, Guid eventId);
 
-    Task<ServiceResult> UpdateMemberResponse(MemberServiceRequest request, Guid eventId, EventResponseType responseType);
+    Task<ServiceResult> UpdateMemberResponse(
+        MemberServiceRequest request, Guid eventId, EventResponseType responseType, Guid? adminMemberId);
 }

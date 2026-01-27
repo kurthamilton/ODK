@@ -186,22 +186,54 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     {
         var platform = request.Platform;
 
-        var (chapter, ownerSubscription, @event, responses, venue, members, waitlist) = await GetChapterAdminRestrictedContent(request,
+        var (chapter,
+            ownerSubscription,
+            @event,
+            responses,
+            venue,
+            members,
+            memberSubscriptions,
+            chapterMembershipSettings,
+            chapterPrivacySettings,
+            waitlist) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId),
             x => x.EventRepository.GetById(eventId),
             x => x.EventResponseRepository.GetByEventId(eventId),
             x => x.VenueRepository.GetByEventId(eventId),
             x => x.MemberRepository.GetByChapterId(request.ChapterId),
+            x => x.MemberSubscriptionRepository.GetByChapterId(request.ChapterId),
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(request.ChapterId),
+            x => x.ChapterPrivacySettingsRepository.GetByChapterId(request.ChapterId),
             x => x.EventWaitlistMemberRepository.GetByEventId(eventId));
 
         OdkAssertions.BelongsToChapter(@event, request.ChapterId);
+
+        var responseDictionary = responses
+            .ToDictionary(x => x.MemberId);
+
+        var waitlistMemberIds = waitlist
+            .Select(x => x.MemberId)
+            .ToHashSet();
+
+        var memberSubscriptionDictionary = memberSubscriptions
+            .ToDictionary(x => x.MemberChapter.MemberId);
 
         return new EventAttendeesAdminPageViewModel
         {
             Chapter = chapter,
             Event = @event,
-            Members = members,
+            Members = members
+                .Where(x =>
+                    responseDictionary.ContainsKey(x.Id) ||
+                    waitlistMemberIds.Contains(x.Id) ||
+                    _authorizationService.CanRespondToEvent(
+                        @event,
+                        x,
+                        memberSubscriptionDictionary.ContainsKey(x.Id) ? memberSubscriptionDictionary[x.Id] : null,
+                        chapterMembershipSettings,
+                        chapterPrivacySettings))
+                .ToArray(),
             OwnerSubscription = ownerSubscription,
             Platform = platform,
             Responses = responses,
@@ -785,7 +817,11 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         OdkAssertions.BelongsToChapter(@event, request.ChapterId);
 
         var memberServiceRequest = MemberServiceRequest.Create(memberId, request);
-        return await _eventService.UpdateMemberResponse(memberServiceRequest, eventId, responseType);
+        return await _eventService.UpdateMemberResponse(
+            memberServiceRequest,
+            eventId,
+            responseType,
+            adminMemberId: request.CurrentMemberId);
     }
 
     public async Task<ServiceResult> UpdateScheduledEmail(

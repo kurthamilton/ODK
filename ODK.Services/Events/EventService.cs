@@ -162,7 +162,7 @@ public class EventService : IEventService
             return ServiceResult.Successful();
         }
 
-        var authorisationResult = GetMemberEventAuthorisation(@event, member);
+        var authorisationResult = GetMemberEventAuthorisation(@event, member, isForAdmin: false);
         if (!authorisationResult.Success)
         {
             return authorisationResult;
@@ -273,7 +273,8 @@ public class EventService : IEventService
     public async Task<ServiceResult> UpdateMemberResponse(
         MemberServiceRequest request,
         Guid eventId,
-        EventResponseType responseType)
+        EventResponseType responseType,
+        Guid? adminMemberId)
     {
         var memberId = request.CurrentMemberId;
         responseType = NormalizeResponseType(responseType);
@@ -290,7 +291,8 @@ public class EventService : IEventService
             return ServiceResult.Successful();
         }
 
-        var authorisationResult = GetMemberEventAuthorisation(@event, member);
+        var authorisationResult = GetMemberEventAuthorisation(
+            @event, member, isForAdmin: adminMemberId != null);
         if (!authorisationResult.Success)
         {
             return authorisationResult;
@@ -312,7 +314,8 @@ public class EventService : IEventService
             memberResponse,
             memberSubscription,
             membershipSettings,
-            privacySettings);
+            privacySettings,
+            isForAdmin: adminMemberId != null);
         if (!validationResult.Success)
         {
             return validationResult;
@@ -333,7 +336,10 @@ public class EventService : IEventService
                     });
                     await _unitOfWork.SaveChangesAsync();
 
-                    return ServiceResult.Failure("No more spaces left. You have been added to the waiting list");
+                    var message = adminMemberId != null
+                        ? "No more spaces left. Member has been added to the waiting list"
+                        : "No more spaces left. You have been added to the waiting list";
+                    return ServiceResult.Failure(message);
                 }
 
                 return spacesLeft;
@@ -404,7 +410,7 @@ public class EventService : IEventService
         return ServiceResult.Successful();
     }
 
-    private static ServiceResult GetMemberEventAuthorisation(Event @event, Member member)
+    private static ServiceResult GetMemberEventAuthorisation(Event @event, Member member, bool isForAdmin)
     {
         if (@event.RsvpDisabled)
         {
@@ -413,7 +419,10 @@ public class EventService : IEventService
 
         if (!@event.IsAuthorized(member))
         {
-            return ServiceResult.Failure("You are not permitted to attend");
+            var message = isForAdmin
+                ? "Member is not permitted to attend"
+                : "You are not permitted to attend";
+            return ServiceResult.Failure(message);
         }
 
         return ServiceResult.Successful();
@@ -425,15 +434,23 @@ public class EventService : IEventService
         EventResponse? memberResponse,
         MemberSubscription? subscription,
         ChapterMembershipSettings? membershipSettings,
-        ChapterPrivacySettings? privacySettings)
+        ChapterPrivacySettings? privacySettings,
+        bool isForAdmin)
     {
         if (@event.Date < DateTime.Today)
         {
             return ServiceResult.Failure("Past events cannot be responded to");
         }
 
-        return _authorizationService.CanRespondToEvent(@event, member, subscription, membershipSettings, privacySettings)
-            ? ServiceResult.Successful()
+        var canRespond = _authorizationService.CanRespondToEvent(
+            @event, member, subscription, membershipSettings, privacySettings);
+        if (canRespond)
+        {
+            return ServiceResult.Successful();
+        }
+
+        return isForAdmin
+            ? ServiceResult.Failure("Member is not permitted to attend this event")
             : ServiceResult.Failure("You are not permitted to attend this event");
     }
 }

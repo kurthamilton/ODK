@@ -13,6 +13,10 @@
     var responseDictionary = Model.Responses
         .ToDictionary(x => x.MemberId, x => x.Type);
 
+    var waitlist = Model.Waitlist
+        .Select(x => x.MemberId)
+        .ToHashSet();
+
     var responseTypeDictionary = Model.Responses
         .GroupBy(x => x.Type)
         .ToDictionary(x => x.Key, x => x.ToArray());
@@ -53,7 +57,7 @@
         if (responses != null)
         {
             members = responses
-                .Where(x => memberDictionary.ContainsKey(x.MemberId))
+                .Where(x => memberDictionary.ContainsKey(x.MemberId) && !waitlist.Contains(x.MemberId))
                 .Select(x => memberDictionary[x.MemberId])
                 .OrderBy(x => x.GetDisplayName(Model.Chapter.Id))
                 .ToArray();
@@ -69,7 +73,7 @@
         else
         {
             members = Model.Members
-                .Where(x => !responseDictionary.ContainsKey(x.Id))
+                .Where(x => !responseDictionary.ContainsKey(x.Id) && !waitlist.Contains(x.Id))
                 .OrderBy(x => x.GetDisplayName(Model.Chapter.Id))
                 .ToArray();
         }

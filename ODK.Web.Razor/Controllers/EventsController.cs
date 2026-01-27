@@ -59,7 +59,8 @@ public class EventsController : OdkControllerBase
     [HttpPost("events/{id:guid}/rsvp")]
     public async Task<IActionResult> UpdateResponse(Guid id, [FromForm] EventResponseType responseType)
     {
-        var result = await _eventService.UpdateMemberResponse(MemberServiceRequest, id, responseType);
+        var result = await _eventService.UpdateMemberResponse(
+            MemberServiceRequest, id, responseType, adminMemberId: null);
         if (!result.Success)
         {
             AddFeedback(result);
@@ -88,7 +89,8 @@ public class EventsController : OdkControllerBase
 
     private async Task<IActionResult> AttendEvent(Guid id)
     {
-        var result = await _eventService.UpdateMemberResponse(MemberServiceRequest, id, EventResponseType.Yes);
+        var result = await _eventService.UpdateMemberResponse(
+            MemberServiceRequest, id, EventResponseType.Yes, adminMemberId: null);
         AddFeedback(result, "Attendance updated");
 
         var chapter = await GetChapter();
