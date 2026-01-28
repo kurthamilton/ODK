@@ -16,7 +16,7 @@ public class ChapterAdminMemberMap : IEntityTypeConfiguration<ChapterAdminMember
             .HasColumnName("ChapterAdminMemberId");
 
         builder.Property(x => x.Role)
-            .HasColumnName("AdminRoleId")
+            .HasColumnName("ChapterAdminRoleId")
             .HasConversion<int>();
 
         builder.HasOne(x => x.Member)

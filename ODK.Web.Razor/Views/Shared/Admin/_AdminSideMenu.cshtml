@@ -55,6 +55,12 @@
             new MenuItem { Link = OdkRoutes.MemberGroups.GroupDelete(platform, chapter), Text = "Delete" },
             PlatformType.Default);
 
+    var eventsLinks = new ChapterAdminMenuItemGroup(chapterAdminMember, platform)
+        .Add(ChapterAdminSecurable.Venues,
+            new MenuItem { Link = OdkRoutes.MemberGroups.Venues(platform, chapter), Text = "Venues" })
+        .Add(ChapterAdminSecurable.EventSettings,
+            new MenuItem { Link = OdkRoutes.MemberGroups.EventSettings(platform, chapter), Text = "Settings" });
+
     var membersLinks = new ChapterAdminMenuItemGroup(chapterAdminMember, platform)
         .Add(ChapterAdminSecurable.AdminMembers,
             new MenuItem { Link = OdkRoutes.MemberGroups.MemberAdmins(platform, chapter), Text = "Admins" })
@@ -69,6 +75,12 @@
         .Add(ChapterAdminSecurable.MemberApprovals,
             new MenuItem { Link = OdkRoutes.MemberGroups.MemberApprovals(platform, chapter), Text = "Approvals" },
             PlatformType.Default);
+
+    var paymentsLinks = chapterAdminMember.HasAccessTo(ChapterAdminSecurable.Payments)
+        ? new ChapterAdminMenuItemGroup(chapterAdminMember, platform)
+            .Add(ChapterAdminSecurable.PaymentAccount,
+                new MenuItem { Text = "Account", Link = OdkRoutes.Payments.PaymentAccount(platform, chapter) })
+        : new List<MenuItem>();
 
     var siteAdminLinks = platform == PlatformType.DrunkenKnitwits && currentMember.SiteAdmin
         ? new[]
@@ -85,37 +97,38 @@
     var menuItems = new[]
     {
         new MenuItem { Link = OdkRoutes.Groups.Group(platform, chapter), Text = "Home" },
-        new MenuItem
-        {
-            Link = OdkRoutes.MemberGroups.Group(platform, chapter),
-            Text = "Group",
-            Children = groupLinks
-        },
-        new MenuItem
-        {
-            Link = OdkRoutes.MemberGroups.Events(platform, chapter),
-            Text = "Events",
-            Children = new ChapterAdminMenuItemGroup(chapterAdminMember, platform)
-                .Add(ChapterAdminSecurable.Venues,
-                    new MenuItem { Link = OdkRoutes.MemberGroups.Venues(platform, chapter), Text = "Venues" })
-                .Add(ChapterAdminSecurable.EventSettings,
-                    new MenuItem { Link = OdkRoutes.MemberGroups.EventSettings(platform, chapter), Text = "Settings" }),
-        },
-        new MenuItem
-        {
-            Link = OdkRoutes.MemberGroups.Members(platform, chapter),
-            Text = "Members",
-            Children = membersLinks.Where(x => !string.IsNullOrEmpty(x.Text)).ToArray()
-        },
-        new MenuItem
-        {
-            Link = OdkRoutes.Payments.Payments(platform, chapter),
-            Text = "Payments",
-            Children = new[]
+        groupLinks.Count > 0
+            ? new MenuItem
             {
-                new MenuItem { Text = "Account", Link = OdkRoutes.Payments.PaymentAccount(platform, chapter) }
+                Link = OdkRoutes.MemberGroups.Group(platform, chapter),
+                Text = "Group",
+                Children = groupLinks
             }
-        },
+            : new MenuItem(),
+        eventsLinks.Count > 0
+            ? new MenuItem
+            {
+                Link = OdkRoutes.MemberGroups.Events(platform, chapter),
+                Text = "Events",
+                Children = eventsLinks,
+            }
+            : new MenuItem(),
+        membersLinks.Count > 0
+            ? new MenuItem
+            {
+                Link = OdkRoutes.MemberGroups.Members(platform, chapter),
+                Text = "Members",
+                Children = membersLinks
+            }
+            : new MenuItem(),
+        chapterAdminMember.HasAccessTo(ChapterAdminSecurable.Payments)
+            ? new MenuItem
+            {
+                Link = OdkRoutes.Payments.Payments(platform, chapter),
+                Text = "Payments",
+                Children = paymentsLinks
+            }
+            : new MenuItem(),
         siteAdminLinks.Length > 0
             ? new MenuItem
             {

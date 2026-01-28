@@ -25,6 +25,13 @@ public class RateLimitingMiddleware
     {
         var ipAddress = context.Connection.RemoteIpAddress?.ToString() ?? string.Empty;
 
+        // Check black list
+        if (appSettings.RateLimiting.BlockIpAddresses.Contains(ipAddress, StringComparer.OrdinalIgnoreCase))
+        {
+            // Use 403 for black-listed IP addresses
+            context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+        }
+
         // Get previous rate limit
         var blockedUntilUtc = GreyList.TryGetValue(ipAddress, out var value)
             ? value

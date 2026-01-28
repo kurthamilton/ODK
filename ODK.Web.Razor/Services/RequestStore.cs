@@ -115,10 +115,29 @@ public class RequestStore : IRequestStore
         }
 
         var chapter = await GetChapter();
-        _currentChapterAdminMember = await _unitOfWork.ChapterAdminMemberRepository
-            .GetByMemberId(CurrentMemberId, chapter.Id).Run();
 
-        return _currentChapterAdminMember;
+        try
+        {
+            _currentChapterAdminMember = await _unitOfWork.ChapterAdminMemberRepository
+                .GetByMemberId(CurrentMemberId, chapter.Id).Run();
+            return _currentChapterAdminMember;
+        }
+        catch
+        {
+            var currentMember = await GetCurrentMember();
+            if (currentMember.SiteAdmin)
+            {
+                _currentChapterAdminMember = new ChapterAdminMember
+                {
+                    ChapterId = chapter.Id,
+                    MemberId = currentMember.Id,
+                    Role = ChapterAdminRole.Owner
+                };
+                return _currentChapterAdminMember;
+            }
+
+            throw;
+        }
     }
 
     public async Task<Member> GetCurrentMember()
