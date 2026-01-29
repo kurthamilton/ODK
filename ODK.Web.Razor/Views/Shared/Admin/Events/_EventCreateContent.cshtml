@@ -9,6 +9,7 @@
 @using ODK.Web.Razor.Models.Admin.Events
 @using ODK.Web.Razor.Models.Components
 @model EventCreateAdminPageViewModel
+@inject IOdkRoutes OdkRoutes
 @{
     var hostOptions = Model.AdminMembers
         .Select(x => new SelectListItem
@@ -46,7 +47,7 @@
             }
 else
 {
-    var venueCreateUrl = OdkRoutes.MemberGroups.VenueCreate(Model.Platform, Model.Chapter);
+    var venueCreateUrl = OdkRoutes.GroupAdmin.VenueCreate(Model.Chapter);
 
     <p>
         You have not yet created any venues.

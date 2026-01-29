@@ -7,8 +7,6 @@
 @{
     Layout = "_OdkChapterLayout";
     Model.Title = "Error";
-
-    var chapter = await Model.GetChapter();
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -18,8 +16,8 @@
         new MenuItem 
         {
             Icon = IconType.ArrowLeft,
-            Link = OdkRoutes.Groups.Group(Model.Platform, chapter), 
-            Text = chapter.GetDisplayName(Model.Platform)
+            Link = Model.OdkRoutes.Groups.Group(Model.Chapter), 
+            Text = Model.Chapter.GetDisplayName(Model.Platform)
         }
     },
     Content = await Html.PartialAsync("Errors/_ErrorPage", Model.ErrorStatusCode),

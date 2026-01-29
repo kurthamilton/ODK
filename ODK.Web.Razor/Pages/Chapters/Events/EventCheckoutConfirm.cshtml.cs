@@ -25,12 +25,11 @@ public class EventCheckoutConfirmModel : OdkPageModel
     {
         SessionId = sessionId;
         Shortcode = shortcode;
-
-        var chapter = await GetChapter();
-        var request = await CreateMemberChapterServiceRequest();
+        
+        var request = MemberChapterServiceRequest;
         var status = await _paymentService.GetMemberChapterPaymentCheckoutSessionStatus(request, sessionId);
 
-        RedirectUrl = OdkRoutes.Groups.Event(Platform, chapter, Shortcode);
+        RedirectUrl = OdkRoutes.Groups.Event(Chapter, Shortcode);
 
         if (status == PaymentStatusType.Complete)
         {

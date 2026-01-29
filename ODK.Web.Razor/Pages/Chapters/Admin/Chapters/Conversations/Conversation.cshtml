@@ -9,7 +9,7 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Conversation";
 
-    var request = await Model.CreateMemberChapterServiceRequest();
+    var request = Model.MemberChapterServiceRequest;
     var viewModel = await ChapterAdminService.GetChapterConversationViewModel(request, Model.ConversationId);
 }
 
@@ -20,7 +20,7 @@
     {
         new MenuItem
         {
-            Link = OdkRoutes.MemberGroups.GroupConversations(Model.Platform, viewModel.Chapter),
+            Link = Model.OdkRoutes.GroupAdmin.GroupConversations(Model.Chapter),
             Text = "Back to conversations",
             Icon = IconType.ArrowLeft
         }

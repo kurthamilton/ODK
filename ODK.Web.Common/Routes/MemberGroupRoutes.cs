@@ -6,235 +6,228 @@ namespace ODK.Web.Common.Routes;
 
 public class MemberGroupRoutes
 {
-    public string Event(PlatformType platform, Chapter chapter, Guid eventId)
-        => $"{Events(platform, chapter)}/{eventId}";
-
-    public string EventCreate(PlatformType platform, Chapter chapter) => platform switch
+    public MemberGroupRoutes(PlatformType platform)
     {
-        PlatformType.DrunkenKnitwits => $"{Events(platform, chapter)}/create",
-        _ => $"{Events(platform, chapter)}/new"
+        Platform = platform;
+    }
+
+    protected PlatformType Platform { get; }
+
+    public string Event(Chapter chapter, Guid eventId)
+        => $"{Events(chapter)}/{eventId}";
+
+    public string EventCreate(Chapter chapter) => Platform switch
+    {
+        PlatformType.DrunkenKnitwits => $"{Events(chapter)}/create",
+        _ => $"{Events(chapter)}/new"
     };
 
-    public string EventInvites(PlatformType platform, Chapter chapter, Guid eventId)
-        => $"{Events(platform, chapter)}/{@eventId}/invites";
+    public string EventInvites(Chapter chapter, Guid eventId)
+        => $"{Event(chapter, eventId)}/invites";
 
-    public string EventResponses(PlatformType platform, Chapter chapter, Guid eventId)
-        => $"{Events(platform, chapter)}/{@eventId}/responses";
+    public string EventResponses(Chapter chapter, Guid eventId)
+        => $"{Event(chapter, eventId)}/responses";
 
-    public string Events(PlatformType platform, Chapter chapter) =>
-        $"{Group(platform, chapter)}/events";
+    public string Events(Chapter chapter) => $"{Group(chapter)}/events";
 
-    public string EventSettings(PlatformType platform, Chapter chapter)
-        => $"{Events(platform, chapter)}/settings";
+    public string EventSettings(Chapter chapter) => $"{Events(chapter)}/settings";
 
-    public string EventTickets(PlatformType platform, Chapter chapter, Guid eventId)
-        => $"{Events(platform, chapter)}/{@eventId}/tickets";
+    public string EventTickets(Chapter chapter, Guid eventId)
+        => $"{Event(chapter, eventId)}/tickets";
 
-    public string Group(PlatformType platform, Chapter chapter) => platform switch
+    public string Group(Chapter chapter) => Platform switch
     {
         PlatformType.DrunkenKnitwits => $"/{chapter.ShortName.ToLowerInvariant()}/admin",
-        _ => $"{Index(platform)}/{chapter.Id}"
+        _ => $"{Index()}/{chapter.Id}"
     };
 
-    public string GroupConversation(PlatformType platform, Chapter chapter, Guid conversationId)
-        => $"{GroupConversations(platform, chapter)}/{conversationId}";
+    public string GroupConversation(Chapter chapter, Guid conversationId)
+        => $"{GroupConversations(chapter)}/{conversationId}";
 
-    public string GroupConversations(PlatformType platform, Chapter chapter) => platform switch
+    public string GroupConversations(Chapter chapter) => Platform switch
     {
-        PlatformType.DrunkenKnitwits => $"{Group(platform, chapter)}/chapter/conversations",
-        _ => $"{Group(platform, chapter)}/conversations"
+        PlatformType.DrunkenKnitwits => $"{Group(chapter)}/chapter/conversations",
+        _ => $"{Group(chapter)}/conversations"
     };
 
-    public string GroupConversationsRead(PlatformType platform, Chapter chapter)
-        => $"{GroupConversations(platform, chapter)}/read";
+    public string GroupConversationsRead(Chapter chapter) => $"{GroupConversations(chapter)}/read";
 
-    public string GroupCreate(PlatformType platform) => platform switch
-    {
-        PlatformType.DrunkenKnitwits => "/",
-        _ => $"{Index(platform)}/new"
-    };
-
-    public string GroupDelete(PlatformType platform, Chapter chapter) => platform switch
+    public string GroupCreate() => Platform switch
     {
         PlatformType.DrunkenKnitwits => "/",
-        _ => $"{Group(platform, chapter)}/delete"
+        _ => $"{Index()}/new"
     };
 
-    public string GroupImage(PlatformType platform, Chapter chapter) => platform switch
+    public string GroupDelete(Chapter chapter) => Platform switch
     {
         PlatformType.DrunkenKnitwits => "/",
-        _ => $"{Group(platform, chapter)}/image"
+        _ => $"{Group(chapter)}/delete"
     };
 
-    public string GroupLocation(PlatformType platform, Chapter chapter) => platform switch
+    public string GroupImage(Chapter chapter) => Platform switch
     {
         PlatformType.DrunkenKnitwits => "/",
-        _ => $"{Group(platform, chapter)}/location"
+        _ => $"{Group(chapter)}/image"
     };
 
-    public string GroupMessage(PlatformType platform, Chapter chapter, Guid messageId)
-        => $"{GroupMessages(platform, chapter)}/{messageId}";
-
-    public string GroupMessages(PlatformType platform, Chapter chapter) => platform switch
-    {
-        PlatformType.DrunkenKnitwits => $"{Group(platform, chapter)}/chapter/messages",
-        _ => $"{Group(platform, chapter)}/messages"
-    };
-
-    public string GroupMessagesSpam(PlatformType platform, Chapter chapter)
-        => $"{GroupMessages(platform, chapter)}/spam";
-
-    public string GroupPages(PlatformType platform, Chapter chapter) => platform switch
-    {
-        PlatformType.DrunkenKnitwits => $"{Group(platform, chapter)}/chapter/pages",
-        _ => $"{Group(platform, chapter)}/pages"
-    };
-
-    public string GroupPayments(PlatformType platform, Chapter chapter)
-            => $"{Group(platform, chapter)}/payments";
-
-    public string GroupPrivacy(PlatformType platform, Chapter chapter) => platform switch
-    {
-        PlatformType.DrunkenKnitwits => $"{Group(platform, chapter)}/chapter/privacy",
-        _ => $"{Group(platform, chapter)}/privacy"
-    };
-
-    public string GroupQuestion(PlatformType platform, Chapter chapter, Guid questionId)
-        => $"{GroupQuestions(platform, chapter)}/{questionId}";
-
-    public string GroupQuestionCreate(PlatformType platform, Chapter chapter) => platform switch
-    {
-        PlatformType.DrunkenKnitwits => $"{GroupQuestions(platform, chapter)}/create",
-        _ => $"{GroupQuestions(platform, chapter)}/new"
-    };
-
-    public string GroupQuestions(PlatformType platform, Chapter chapter) => platform switch
-    {
-        PlatformType.DrunkenKnitwits => $"{Group(platform, chapter)}/chapter/questions",
-        _ => $"{Group(platform, chapter)}/questions"
-    };
-
-    public string GroupSocialMedia(PlatformType platform, Chapter chapter) => platform switch
-    {
-        PlatformType.DrunkenKnitwits => $"{Group(platform, chapter)}/chapter/social-media",
-        _ => $"{Group(platform, chapter)}/social-media"
-    };
-
-    public string GroupSubscription(PlatformType platform, Chapter chapter) => platform switch
-    {
-        PlatformType.DrunkenKnitwits => $"{Group(platform, chapter)}/chapter/subscription",
-        _ => $"{Group(platform, chapter)}/subscription"
-    };
-
-    public string GroupSubscriptionCheckout(PlatformType platform, Chapter chapter, string priceIdPlaceholder) => platform switch
-    {
-        PlatformType.DrunkenKnitwits => $"{Group(platform, chapter)}/chapter/subscription/{priceIdPlaceholder}/checkout",
-        _ => $"{Group(platform, chapter)}/subscription/{priceIdPlaceholder}/checkout"
-    };
-
-    public string GroupTexts(PlatformType platform, Chapter chapter) => platform switch
-    {
-        PlatformType.DrunkenKnitwits => $"{Group(platform, chapter)}/chapter/text",
-        _ => $"{Group(platform, chapter)}/texts"
-    };
-
-    public string GroupTheme(PlatformType platform, Chapter chapter) => platform switch
+    public string GroupLocation(Chapter chapter) => Platform switch
     {
         PlatformType.DrunkenKnitwits => "/",
-        _ => $"{Group(platform, chapter)}/theme"
+        _ => $"{Group(chapter)}/location"
     };
 
-    public string GroupTopics(PlatformType platform, Chapter chapter) => platform switch
+    public string GroupMessage(Chapter chapter, Guid messageId)
+        => $"{GroupMessages(chapter)}/{messageId}";
+
+    public string GroupMessages(Chapter chapter) => Platform switch
     {
-        PlatformType.DrunkenKnitwits => Group(platform, chapter),
-        _ => $"{Group(platform, chapter)}/topics"
+        PlatformType.DrunkenKnitwits => $"{Group(chapter)}/chapter/messages",
+        _ => $"{Group(chapter)}/messages"
     };
 
-    public string Index(PlatformType platform) => platform switch
+    public string GroupMessagesSpam(Chapter chapter) => $"{GroupMessages(chapter)}/spam";
+
+    public string GroupPages(Chapter chapter) => Platform switch
+    {
+        PlatformType.DrunkenKnitwits => $"{Group(chapter)}/chapter/pages",
+        _ => $"{Group(chapter)}/pages"
+    };
+
+    public string GroupPayments(Chapter chapter)
+            => $"{Group(chapter)}/payments";
+
+    public string GroupPrivacy(Chapter chapter) => Platform switch
+    {
+        PlatformType.DrunkenKnitwits => $"{Group(chapter)}/chapter/privacy",
+        _ => $"{Group(chapter)}/privacy"
+    };
+
+    public string GroupQuestion(Chapter chapter, Guid questionId)
+        => $"{GroupQuestions(chapter)}/{questionId}";
+
+    public string GroupQuestionCreate(Chapter chapter) => Platform switch
+    {
+        PlatformType.DrunkenKnitwits => $"{GroupQuestions(chapter)}/create",
+        _ => $"{GroupQuestions(chapter)}/new"
+    };
+
+    public string GroupQuestions(Chapter chapter) => Platform switch
+    {
+        PlatformType.DrunkenKnitwits => $"{Group(chapter)}/chapter/questions",
+        _ => $"{Group(chapter)}/questions"
+    };
+
+    public string GroupSocialMedia(Chapter chapter) => Platform switch
+    {
+        PlatformType.DrunkenKnitwits => $"{Group(chapter)}/chapter/social-media",
+        _ => $"{Group(chapter)}/social-media"
+    };
+
+    public string GroupSubscription(Chapter chapter) => Platform switch
+    {
+        PlatformType.DrunkenKnitwits => $"{Group(chapter)}/chapter/subscription",
+        _ => $"{Group(chapter)}/subscription"
+    };
+
+    public string GroupSubscriptionCheckout(Chapter chapter, string priceIdPlaceholder) => Platform switch
+    {
+        PlatformType.DrunkenKnitwits => $"{Group(chapter)}/chapter/subscription/{priceIdPlaceholder}/checkout",
+        _ => $"{Group(chapter)}/subscription/{priceIdPlaceholder}/checkout"
+    };
+
+    public string GroupTexts(Chapter chapter) => Platform switch
+    {
+        PlatformType.DrunkenKnitwits => $"{Group(chapter)}/chapter/text",
+        _ => $"{Group(chapter)}/texts"
+    };
+
+    public string GroupTheme(Chapter chapter) => Platform switch
+    {
+        PlatformType.DrunkenKnitwits => "/",
+        _ => $"{Group(chapter)}/theme"
+    };
+
+    public string GroupTopics(Chapter chapter) => Platform switch
+    {
+        PlatformType.DrunkenKnitwits => Group(chapter),
+        _ => $"{Group(chapter)}/topics"
+    };
+
+    public string Index() => Platform switch
     {
         // Member groups not implemented in DrunkenKnitwits platform
         PlatformType.DrunkenKnitwits => "/",
         _ => "/my/groups"
     };
 
-    public string Member(PlatformType platform, Chapter chapter, Guid memberId)
-        => $"{Members(platform, chapter)}/{memberId}";
+    public string Member(Chapter chapter, Guid memberId) => $"{Members(chapter)}/{memberId}";
 
-    public string MemberAdmin(PlatformType platform, Chapter chapter, ChapterAdminMember adminMember)
-        => $"{MemberAdmins(platform, chapter)}/{adminMember.MemberId}";
+    public string MemberAdmin(Chapter chapter, ChapterAdminMember adminMember)
+        => $"{MemberAdmins(chapter)}/{adminMember.MemberId}";
 
-    public string MemberAdmins(PlatformType platform, Chapter chapter)
-        => $"{Members(platform, chapter)}/admins";
+    public string MemberAdmins(Chapter chapter)
+        => $"{Members(chapter)}/admins";
 
-    public string MemberApprovals(PlatformType platform, Chapter chapter)
-        => $"{Members(platform, chapter)}/approvals";
+    public string MemberApprovals(Chapter chapter)
+        => $"{Members(chapter)}/approvals";
 
-    public string MemberConversations(PlatformType platform, Chapter chapter, Guid memberId)
-        => $"{Member(platform, chapter, memberId)}/conversations";
+    public string MemberConversations(Chapter chapter, Guid memberId)
+        => $"{Member(chapter, memberId)}/conversations";
 
-    public string MemberDelete(PlatformType platform, Chapter chapter, Guid memberId)
-        => $"{Member(platform, chapter, memberId)}/delete";
+    public string MemberDelete(Chapter chapter, Guid memberId)
+        => $"{Member(chapter, memberId)}/delete";
 
-    public string MemberEvents(PlatformType platform, Chapter chapter, Guid memberId)
-        => $"{Member(platform, chapter, memberId)}/events";
+    public string MemberEvents(Chapter chapter, Guid memberId)
+        => $"{Member(chapter, memberId)}/events";
 
-    public string MemberImage(PlatformType platform, Chapter chapter, Guid memberId)
-        => $"{Member(platform, chapter, memberId)}/image";
+    public string MemberImage(Chapter chapter, Guid memberId)
+        => $"{Member(chapter, memberId)}/image";
 
-    public string MemberPayments(PlatformType platform, Chapter chapter, Guid memberId)
-        => $"{Member(platform, chapter, memberId)}/payments";
+    public string MemberPayments(Chapter chapter, Guid memberId)
+        => $"{Member(chapter, memberId)}/payments";
 
-    public string MemberProperties(PlatformType platform, Chapter chapter) => platform switch
+    public string MemberProperties(Chapter chapter) => $"{Members(chapter)}/properties";
+
+    public string MemberProperty(Chapter chapter, Guid propertyId)
+        => $"{MemberProperties(chapter)}/{propertyId}";
+
+    public string MemberPropertyCreate(Chapter chapter) => Platform switch
     {
-        PlatformType.DrunkenKnitwits => $"{Members(platform, chapter)}/properties",
-        _ => $"{Members(platform, chapter)}/properties"
+        PlatformType.DrunkenKnitwits => $"{MemberProperties(chapter)}/create",
+        _ => $"{MemberProperties(chapter)}/new"
     };
 
-    public string MemberProperty(PlatformType platform, Chapter chapter, Guid propertyId)
-        => $"{MemberProperties(platform, chapter)}/{propertyId}";
-
-    public string MemberPropertyCreate(PlatformType platform, Chapter chapter) => platform switch
-    {
-        PlatformType.DrunkenKnitwits => $"{MemberProperties(platform, chapter)}/create",
-        _ => $"{MemberProperties(platform, chapter)}/new"
-    };
-
-    public string MembersDownload(PlatformType platform, Chapter chapter)
+    public string MembersDownload(Chapter chapter)
         => $"/groups/{chapter.Id}/members/download";
 
-    public string Members(PlatformType platform, Chapter chapter)
-        => $"{Group(platform, chapter)}/members";
+    public string Members(Chapter chapter) => $"{Group(chapter)}/members";
 
-    public string MembersEmail(PlatformType platform, Chapter chapter)
-        => $"{Members(platform, chapter)}/email";
+    public string MembersEmail(Chapter chapter) => $"{Members(chapter)}/email";
 
-    public string MembershipSettings(PlatformType platform, Chapter chapter)
-        => $"{Members(platform, chapter)}/membership";
+    public string MembershipSettings(Chapter chapter) => $"{Members(chapter)}/membership";
 
-    public string MembersSubscription(PlatformType platform, Chapter chapter, ChapterSubscription subscription)
-        => $"{MembersSubscriptions(platform, chapter)}/{subscription.Id}";
+    public string MembersSubscription(Chapter chapter, ChapterSubscription subscription)
+        => $"{MembersSubscriptions(chapter)}/{subscription.Id}";
 
-    public string MembersSubscriptionCreate(PlatformType platform, Chapter chapter) => platform switch
+    public string MembersSubscriptionCreate(Chapter chapter) => Platform switch
     {
-        PlatformType.DrunkenKnitwits => $"{MembersSubscriptions(platform, chapter)}/create",
-        _ => $"{MembersSubscriptions(platform, chapter)}/new"
+        PlatformType.DrunkenKnitwits => $"{MembersSubscriptions(chapter)}/create",
+        _ => $"{MembersSubscriptions(chapter)}/new"
     };
 
-    public string MembersSubscriptions(PlatformType platform, Chapter chapter)
-        => $"{Members(platform, chapter)}/subscriptions";
+    public string MembersSubscriptions(Chapter chapter) => $"{Members(chapter)}/subscriptions";
 
-    public string Venue(PlatformType platform, Chapter chapter, Guid venueId)
-        => $"{Venues(platform, chapter)}/{venueId}";
+    public string Venue(Chapter chapter, Guid venueId) => $"{Venues(chapter)}/{venueId}";
 
-    public string VenueCreate(PlatformType platform, Chapter chapter) => platform switch
+    public string VenueCreate(Chapter chapter) => Platform switch
     {
-        PlatformType.DrunkenKnitwits => $"{Venues(platform, chapter)}/create",
-        _ => $"{Venues(platform, chapter)}/new"
+        PlatformType.DrunkenKnitwits => $"{Venues(chapter)}/create",
+        _ => $"{Venues(chapter)}/new"
     };
 
-    public string VenueEvents(PlatformType platform, Chapter chapter, Guid venueId)
-        => $"{Venue(platform, chapter, venueId)}/events";
+    public string VenueEvents(Chapter chapter, Guid venueId)
+        => $"{Venue(chapter, venueId)}/events";
 
-    public string Venues(PlatformType platform, Chapter chapter)
-        => $"{Events(platform, chapter)}/venues";
+    public string Venues(Chapter chapter)
+        => $"{Events(chapter)}/venues";
 }

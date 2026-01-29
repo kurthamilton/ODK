@@ -8,7 +8,7 @@
     Layout = "_GroupAdminLayout";
     Model.Title = "Membership settings";
 
-    var viewModel = await ChapterAdminService.GetMembershipSettingsViewModel(Model.AdminServiceRequest);
+    var viewModel = await ChapterAdminService.GetMembershipSettingsViewModel(Model.MemberChapterServiceRequest);
 }
 
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel

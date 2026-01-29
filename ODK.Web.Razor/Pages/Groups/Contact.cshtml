@@ -8,9 +8,9 @@
 @{
     Layout = "_HomeLayout";
 
-    var chapter = await Model.GetChapter();
+    var chapter = Model.Chapter;
     var viewModel = await ChapterViewModelService.GetGroupContactPage(
-        Model.ServiceRequest, Model.CurrentMemberIdOrDefault, chapter);
+        Model.ServiceRequest, Model.CurrentMemberOrDefault, chapter);
 
     var chapterPage = viewModel.ChapterPages.FirstOrDefault(x => x.PageType == PageType.Contact);
     if (chapterPage?.Hidden == true)

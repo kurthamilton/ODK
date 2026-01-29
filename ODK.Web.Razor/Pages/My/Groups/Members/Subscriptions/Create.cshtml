@@ -10,7 +10,7 @@
     Layout = "_GroupAdminLayout";
     Model.Title = "Create subscription";
 
-    var viewModel = await MemberAdminService.GetMemberSubscriptionCreateViewModel(Model.AdminServiceRequest);
+    var viewModel = await MemberAdminService.GetMemberSubscriptionCreateViewModel(Model.MemberChapterServiceRequest);
 }
 
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
@@ -22,7 +22,7 @@
         {
             new MenuItem
             {
-                Link = OdkRoutes.MemberGroups.MembersSubscriptions(Model.Platform, viewModel.Chapter),
+                Link = Model.OdkRoutes.GroupAdmin.MembersSubscriptions(Model.Chapter),
                 Text = "Back to subscriptions",
                 Icon = IconType.ArrowLeft
             }

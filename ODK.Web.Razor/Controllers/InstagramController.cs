@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using ODK.Core.SocialMedia;
 using ODK.Services.Imaging;
 using ODK.Services.SocialMedia;
-using ODK.Web.Razor.Services;
+using ODK.Web.Common.Routes;
+using ODK.Web.Common.Services;
+using ODK.Web.Razor.Attributes;
 
 namespace ODK.Web.Razor.Controllers;
 
@@ -16,13 +18,15 @@ public class InstagramController : OdkControllerBase
     public InstagramController(
         ISocialMediaService socialMediaService,
         IImageService imageService,
-        IRequestStore requestStore)
-        : base(requestStore)
+        IRequestStore requestStore,
+        IOdkRoutes odkRoutes)
+        : base(requestStore, odkRoutes)
     {
         _imageService = imageService;
         _socialMediaService = socialMediaService;
     }
 
+    [SkipRequestStoreMiddleware]
     [AllowAnonymous]
     [HttpGet("instagram/images/{id:guid}")]
     public async Task<IActionResult> GetInstagramImage(Guid id)
@@ -32,6 +36,7 @@ public class InstagramController : OdkControllerBase
             image => InstagramImageResult(image, null));
     }
 
+    [SkipRequestStoreMiddleware]
     [AllowAnonymous]
     [HttpGet("instagram/images/{id:guid}/thumbnail")]
     public async Task<IActionResult> GetInstagramImageThumbnail(Guid id, int? size = null)

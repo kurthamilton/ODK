@@ -22,7 +22,7 @@ public class CreateModel : OdkGroupAdminPageModel
 
     public async Task<IActionResult> OnPostAsync(VenueFormViewModel viewModel)
     {
-        var result = await _venueAdminService.CreateVenue(AdminServiceRequest, new CreateVenue
+        var result = await _venueAdminService.CreateVenue(MemberChapterServiceRequest, new CreateVenue
         {
             Address = viewModel.Address,
             Location = LatLong.FromCoords(viewModel.Lat, viewModel.Long),
@@ -36,9 +36,8 @@ public class CreateModel : OdkGroupAdminPageModel
             return Page();
         }
 
-        var chapter = await GetChapter();
         AddFeedback(new FeedbackViewModel("Venue created", FeedbackType.Success));
-        var url = OdkRoutes.MemberGroups.Venues(Platform, chapter);
+        var url = OdkRoutes.GroupAdmin.Venues(Chapter);
         return Redirect(url);
     }
 }

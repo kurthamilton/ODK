@@ -19,7 +19,7 @@ public class RedirectModel : ChapterSiteAdminPageModel
 
     public async Task<IActionResult> OnPostAsync(string? redirectUrl)
     {
-        var serviceRequest = await CreateMemberChapterServiceRequest();
+        var serviceRequest = MemberChapterServiceRequest;
         await _chapterAdminService.UpdateChapterRedirectUrl(serviceRequest, redirectUrl);
         AddFeedback("Redirect updated", FeedbackType.Success);
         return RedirectToPage();

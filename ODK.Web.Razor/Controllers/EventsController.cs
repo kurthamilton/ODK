@@ -4,8 +4,8 @@ using ODK.Core.Events;
 using ODK.Services.Chapters;
 using ODK.Services.Events;
 using ODK.Web.Common.Routes;
+using ODK.Web.Common.Services;
 using ODK.Web.Razor.Models.Events;
-using ODK.Web.Razor.Services;
 
 namespace ODK.Web.Razor.Controllers;
 
@@ -17,8 +17,9 @@ public class EventsController : OdkControllerBase
     public EventsController(
         IEventService eventService,
         IRequestStore requestStore,
-        IChapterService chapterService)
-        : base(requestStore)
+        IChapterService chapterService,
+        IOdkRoutes odkRoutes)
+        : base(requestStore, odkRoutes)
     {
         _chapterService = chapterService;
         _eventService = eventService;
@@ -28,9 +29,8 @@ public class EventsController : OdkControllerBase
     [HttpGet("{chapterName}/events/{id:guid}")]
     public async Task<IActionResult> EventLegacy(string chapterName, Guid id)
     {
-        var chapter = await GetChapter();
         var @event = await _eventService.GetById(id);
-        var url = OdkRoutes.Groups.EventAttend(Platform, chapter, @event.Shortcode);
+        var url = OdkRoutes.Groups.EventAttend(Chapter, @event.Shortcode);
         return RedirectPermanent(url);
     }
 
@@ -40,7 +40,7 @@ public class EventsController : OdkControllerBase
     {
         var chapter = await _chapterService.GetByEventId(id);
         var @event = await _eventService.GetById(id);
-        var url = OdkRoutes.Groups.EventAttend(Platform, chapter, @event.Shortcode);
+        var url = OdkRoutes.Groups.EventAttend(chapter, @event.Shortcode);
         return RedirectPermanent(url);
     }
 
@@ -49,23 +49,29 @@ public class EventsController : OdkControllerBase
     [HttpGet("groups/{slug}/events/{id:guid}/rsvp")]
     public async Task<IActionResult> EmailRsvpLegacy(Guid id)
     {
-        var chapter = await GetChapter();
         var @event = await _eventService.GetById(id);
-        var url = OdkRoutes.Groups.EventAttend(Platform, chapter, @event.Shortcode);
+        var url = OdkRoutes.Groups.EventAttend(Chapter, @event.Shortcode);
         return RedirectPermanent(url);
     }
 
     [Authorize]
     [HttpGet("{chapterName}/events/{shortcode}/rsvp")]
     [HttpGet("groups/{slug}/events/{shortcode}/rsvp")]
-    public Task<IActionResult> EmailRsvp(string shortcode) => AttendEvent(shortcode);
+    public async Task<IActionResult> EmailRsvp(string shortcode)
+    {
+        var result = await _eventService.UpdateMemberResponse(
+            MemberServiceRequest, shortcode, EventResponseType.Yes, adminMemberId: null);
+        AddFeedback(result, "Attendance updated");
+
+        return Redirect(OdkRoutes.Groups.Event(Chapter, shortcode));
+    }
 
     [Authorize]
     [HttpPost("groups/{chapterId:guid}/events/{id:guid}/comments")]
     public async Task<IActionResult> AddComment(
         Guid chapterId, Guid id, [FromForm] EventCommentFormViewModel viewModel)
     {
-        var chapter = await GetChapter();
+        var chapter = Chapter;
         var result = await _eventService.AddComment(
             MemberServiceRequest, id, chapter, viewModel.Text ?? string.Empty, viewModel.Parent);
         if (!result.Success)
@@ -106,15 +112,5 @@ public class EventsController : OdkControllerBase
         var result = await _eventService.LeaveWaitlist(id, MemberId);
         AddFeedback(result, "You have left the waiting list");
         return RedirectToReferrer();
-    }
-
-    private async Task<IActionResult> AttendEvent(string shortcode)
-    {
-        var result = await _eventService.UpdateMemberResponse(
-            MemberServiceRequest, shortcode, EventResponseType.Yes, adminMemberId: null);
-        AddFeedback(result, "Attendance updated");
-
-        var chapter = await GetChapter();
-        return Redirect(OdkRoutes.Groups.Event(Platform, chapter, shortcode));
     }
 }

@@ -2,7 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Payments;
 using ODK.Services.Payments;
-using ODK.Web.Razor.Services;
+using ODK.Web.Common.Routes;
+using ODK.Web.Common.Services;
 
 namespace ODK.Web.Razor.Controllers;
 
@@ -14,8 +15,9 @@ public class PaymentsController : OdkControllerBase
 
     public PaymentsController(
         IRequestStore requestStore,
-        IPaymentService paymentService)
-        : base(requestStore)
+        IPaymentService paymentService,
+        IOdkRoutes odkRoutes)
+        : base(requestStore, odkRoutes)
     {
         _paymentService = paymentService;
     }

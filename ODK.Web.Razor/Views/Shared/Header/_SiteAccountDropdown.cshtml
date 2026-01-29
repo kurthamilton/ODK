@@ -1,12 +1,18 @@
 ﻿@using ODK.Services.Authentication
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
+@using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Components
-@model OdkComponentContext
+@using ODK.Web.Razor.Services
+@inject IOdkRoutes OdkRoutes
+@inject IRequestStore RequestStore
+@{
+    var currentMemberId = RequestStore.CurrentMemberIdOrDefault;
+}
 
 <div data-odk-component="_SiteAccountDropdown">
-    @if (Model.CurrentMemberIdOrDefault != null)
+    @if (currentMemberId != null)
     {
         <div class="dropdown" role="button">
             <div class="text-light account-links__user dropdown-toggle" data-bs-toggle="dropdown">
@@ -24,14 +30,14 @@
 
                 <div class="dropdown-header dropdown-item--header">Groups</div>
 
-                <a class="dropdown-item dropdown-item--icon" href="@OdkRoutes.MemberGroups.Index(Model.Platform)">
+                <a class="dropdown-item dropdown-item--icon" href="@OdkRoutes.GroupAdmin.Index()">
                     <span class="icon">
                         @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Groups))
                     </span>
                     <span>My groups</span>
                 </a>
 
-                <a class="dropdown-item dropdown-item--icon" href="@OdkRoutes.MemberGroups.GroupCreate(Model.Platform)">
+                <a class="dropdown-item dropdown-item--icon" href="@OdkRoutes.GroupAdmin.GroupCreate()">
                     <span class="icon">
                         @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Plus))
                     </span>

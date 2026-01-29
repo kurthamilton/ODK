@@ -51,7 +51,7 @@ public class JoinModel : OdkPageModel
             })
         };
 
-        var chapter = await GetChapter();
+        var chapter = Chapter;
         var result = await _memberService.CreateChapterAccount(ServiceRequest, chapter.Id, model);
         PostJoin(result);
         return result.Success

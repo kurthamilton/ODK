@@ -3,6 +3,7 @@
 @using ODK.Web.Razor.Models.Events
 @using ODK.Web.Razor.Models.Payments
 @model EventTicketPurchaseViewModel
+@inject IOdkRoutes OdkRoutes
 @{
     if (Model.Event.TicketSettings == null)
     {
@@ -48,7 +49,7 @@
                 </div>
 
                 <a class="btn btn-primary"
-                   href="@OdkRoutes.Groups.EventCheckout(Model.Platform, Model.Chapter, Model.Event.Shortcode)">
+                   href="@OdkRoutes.Groups.EventCheckout(Model.Chapter, Model.Event.Shortcode)">
                     Complete purchase
                 </a>
             }
@@ -82,7 +83,7 @@
                     </div>
 
                     <a class="btn btn-primary"
-                       href="@OdkRoutes.Groups.EventCheckout(Model.Platform, Model.Chapter, Model.Event.Shortcode)">
+                       href="@OdkRoutes.Groups.EventCheckout(Model.Chapter, Model.Event.Shortcode)">
                         Pay deposit
                     </a>
                 }                
@@ -106,7 +107,7 @@
                     </div>
 
                     <a class="btn btn-primary"
-                       href="@OdkRoutes.Groups.EventCheckout(Model.Platform, Model.Chapter, Model.Event.Shortcode)">
+                       href="@OdkRoutes.Groups.EventCheckout(Model.Chapter, Model.Event.Shortcode)">
                         Buy ticket
                     </a>                  
                 }

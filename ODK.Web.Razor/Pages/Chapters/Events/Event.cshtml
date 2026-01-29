@@ -13,7 +13,7 @@
 @{
     Layout = "_OdkChapterLayout";
 
-    var chapter = await Model.GetChapter();
+    var chapter = Model.Chapter;
     var viewModel = await EventViewModelService.GetEventPageViewModel(
         Model.ServiceRequest,
         Model.CurrentMemberIdOrDefault,
@@ -21,7 +21,7 @@
         Model.Shortcode);
 
     Model.Title = viewModel.Event.GetDisplayName();
-    Model.Path = OdkRoutes.Groups.Event(Model.Platform, viewModel.Chapter, viewModel.Event.Shortcode);
+    Model.Path = Model.OdkRoutes.Groups.Event(Model.Chapter, viewModel.Event.Shortcode);
     Model.Location = viewModel.VenueLocation;
 }
 
@@ -33,7 +33,7 @@
         new MenuItem 
         { 
             Icon = IconType.ArrowLeft,
-            Link = OdkRoutes.Groups.Events(Model.Platform, viewModel.Chapter),
+            Link = Model.OdkRoutes.Groups.Events(Model.Chapter),
             Text = "Back to events"
         }
     },

@@ -1,11 +1,14 @@
 ﻿@using ODK.Services.Chapters
+@using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Home
-@model OdkComponentContext
+@using ODK.Web.Razor.Services
 @inject IChapterService ChapterService
+@inject IRequestStore RequestStore
 @{
-    var viewModel = await ChapterService.GetChaptersHomePageViewModel(Model.Platform);
+    var platform = RequestStore.Platform;
+    var viewModel = await ChapterService.GetChaptersHomePageViewModel(platform);
 
     var (countries, chapters) = (viewModel.Countries, viewModel.Chapters);
     var continents = countries

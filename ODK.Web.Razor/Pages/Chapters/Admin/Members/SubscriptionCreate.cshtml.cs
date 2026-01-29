@@ -21,7 +21,7 @@ public class SubscriptionCreateModel : AdminPageModel
 
     public async Task<IActionResult> OnPostAsync(SubscriptionFormSubmitViewModel viewModel)
     {
-        var serviceRequest = await CreateMemberChapterServiceRequest();
+        var serviceRequest = MemberChapterServiceRequest;
         var result = await _chapterAdminService.CreateChapterSubscription(serviceRequest, new CreateChapterSubscription
         {
             Amount = viewModel.Amount ?? 0,
@@ -35,9 +35,8 @@ public class SubscriptionCreateModel : AdminPageModel
 
         if (result.Success)
         {
-            var chapter = await GetChapter();
             AddFeedback(new FeedbackViewModel("Subscription created", FeedbackType.Success));
-            return Redirect($"/{chapter.ShortName}/Admin/Members/Subscriptions");
+            return Redirect(OdkRoutes.GroupAdmin.MembersSubscriptions(Chapter));
         }
 
         AddFeedback(new FeedbackViewModel(result));

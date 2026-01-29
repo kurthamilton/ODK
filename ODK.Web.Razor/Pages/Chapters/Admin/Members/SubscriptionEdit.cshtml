@@ -12,7 +12,7 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Edit subscription | Admin";
 
-    var request = await Model.CreateMemberChapterServiceRequest();
+    var request = Model.MemberChapterServiceRequest;
     var viewModel = await MemberAdminService.GetMemberSubscriptionViewModel(request, Model.SubscriptionId);
 }
 
@@ -23,7 +23,7 @@
     {
         new MenuItem
         {
-            Link = OdkRoutes.MemberGroups.MembersSubscriptions(Model.Platform, viewModel.Chapter),
+            Link = Model.OdkRoutes.GroupAdmin.MembersSubscriptions(Model.Chapter),
             Text = "Back to subscriptions",
             Icon = IconType.ArrowLeft
         }

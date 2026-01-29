@@ -10,7 +10,7 @@
     Layout = "_GroupAdminLayout";
     Model.Title = "Conversation";
 
-    var viewModel = await ChapterAdminService.GetChapterConversationViewModel(Model.AdminServiceRequest, Model.ConversationId);
+    var viewModel = await ChapterAdminService.GetChapterConversationViewModel(Model.MemberChapterServiceRequest, Model.ConversationId);
 }
 
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
@@ -22,7 +22,7 @@
         {
             new MenuItem
             {
-                Link = OdkRoutes.MemberGroups.GroupConversations(Model.Platform, viewModel.Chapter),
+                Link = Model.OdkRoutes.GroupAdmin.GroupConversations(Model.Chapter),
                 Text = "Back to conversations",
                 Icon = IconType.ArrowLeft
             }

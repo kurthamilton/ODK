@@ -7,13 +7,13 @@
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
-@model ODK.Web.Razor.Pages.Chapters.Account.ProfileModel
+@model ProfileModel
 @inject IAccountViewModelService AccountViewModelService
 @{
     Layout = "_OdkChapterLayout";
     Model.Title = "Profile";
 
-    var chapter = await Model.GetChapter();
+    var chapter = Model.Chapter;
     var viewModel = await AccountViewModelService.GetChapterProfilePage(Model.MemberServiceRequest, chapter);
     var memberChapter = viewModel.CurrentMember.MemberChapter(viewModel.Chapter.Id);
     if (memberChapter == null)

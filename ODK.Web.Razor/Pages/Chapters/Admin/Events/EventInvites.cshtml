@@ -11,7 +11,7 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Event invites | Admin";
 
-    var request = await Model.CreateMemberChapterServiceRequest();
+    var request = Model.MemberChapterServiceRequest;
     var viewModel = await EventAdminService.GetEventInvitesViewModel(request, Model.Event.Id);
 }
 
@@ -22,7 +22,7 @@
     {
         new MenuItem
         {
-            Link = OdkRoutes.MemberGroups.Events(Model.Platform, viewModel.Chapter),
+            Link = Model.OdkRoutes.GroupAdmin.Events(Model.Chapter),
             Text = "Back to events",
             Icon = IconType.ArrowLeft
         }

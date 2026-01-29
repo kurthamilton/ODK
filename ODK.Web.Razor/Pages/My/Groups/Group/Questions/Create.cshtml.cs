@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.Models;
-using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Admin.Chapters;
 
 namespace ODK.Web.Razor.Pages.My.Groups.Group.Questions;
@@ -21,7 +20,7 @@ public class CreateModel : OdkGroupAdminPageModel
 
     public async Task<IActionResult> OnPostAsync(ChapterQuestionFormViewModel model)
     {
-        var serviceRequest = await CreateMemberChapterServiceRequest();
+        var serviceRequest = MemberChapterServiceRequest;
 
         var result = await _chapterAdminService.CreateChapterQuestion(serviceRequest, new CreateChapterQuestion
         {
@@ -36,7 +35,6 @@ public class CreateModel : OdkGroupAdminPageModel
             return Page();
         }
 
-        var chapter = await GetChapter();
-        return Redirect(OdkRoutes.MemberGroups.GroupQuestions(Platform, chapter));
+        return Redirect(OdkRoutes.GroupAdmin.GroupQuestions(Chapter));
     }
 }

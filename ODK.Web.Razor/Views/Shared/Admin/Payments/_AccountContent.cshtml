@@ -2,6 +2,7 @@
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
 @model ChapterPaymentAccountAdminPageViewModel
+@inject IOdkRoutes OdkRoutes
 
 <div data-odk-component="Admin/Payments/_AccountContent">
     <p>
@@ -11,14 +12,14 @@
     @if (!Model.HasPermission)
     {
         <div class="alert alert-danger">
-            Upgrade your <a href="@OdkRoutes.Account.Subscription(Model.Platform, null)">subscription</a> to start accepting payments
+            Upgrade your <a href="@OdkRoutes.Account.Subscription(Model.Chapter)">subscription</a> to start accepting payments
         </div>
         return;
     }
 
     @if (Model.Enabled)
     {
-        var subscriptionsUrl = OdkRoutes.MemberGroups.MembersSubscriptions(Model.Platform, Model.Chapter);
+        var subscriptionsUrl = OdkRoutes.GroupAdmin.MembersSubscriptions(Model.Chapter);
         <div class="alert alert-success">
             You have set up a payment account.
             Set up your <a href="@subscriptionsUrl">memberships</a>.

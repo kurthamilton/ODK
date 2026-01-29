@@ -4,11 +4,12 @@
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Groups.Profile
 @model GroupPageViewModel
+@inject IOdkRoutes OdkRoutes
 @{    
     var menuItems = new MenuItem[]
     {
-        new MenuItem { Link = OdkRoutes.Groups.Events(Model.Platform, Model.Chapter), Text = "Upcoming" },
-        new MenuItem { Link = OdkRoutes.Groups.PastEvents(Model.Platform, Model.Chapter), Text = "Past" }
+        new MenuItem { Link = OdkRoutes.Groups.Events(Model.Chapter), Text = "Upcoming" },
+        new MenuItem { Link = OdkRoutes.Groups.PastEvents(Model.Chapter), Text = "Past" }
     };
 }
 

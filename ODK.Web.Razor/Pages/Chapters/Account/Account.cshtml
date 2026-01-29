@@ -11,8 +11,8 @@
     Layout = "_OdkChapterLayout";
     Model.Title = "Account";
 
-    var chapter = await Model.GetChapter();
-    var member = await Model.GetCurrentMember();
+    var chapter = Model.Chapter;
+    var member = Model.CurrentMember;
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

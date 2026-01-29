@@ -6,6 +6,7 @@
 @using ODK.Web.Razor.Models.Events;
 @using ODK.Services.Events.ViewModels
 @model MemberEventsAdminPageViewModel
+@inject IOdkRoutes OdkRoutes
 @{
     var responses = Model.Responses
         .OrderByDescending(x => x.Date);
@@ -31,14 +32,14 @@
         {
             <tr>
                 <td>
-                    <a href="@OdkRoutes.MemberGroups.Event(Model.Platform, Model.Chapter, response.EventId)">
+                    <a href="@OdkRoutes.GroupAdmin.Event(Model.Chapter, response.EventId)">
                         @response.Date.ToString("yyyy-MM-dd")
                     </a>
                 </td>
                 <td>
                     @if (response.VenueId != null && !string.IsNullOrEmpty(response.VenueName))
                     {
-                        <a href="@OdkRoutes.MemberGroups.Venue(Model.Platform, Model.Chapter, response.VenueId.Value)">
+                            <a href="@OdkRoutes.GroupAdmin.Venue(Model.Chapter, response.VenueId.Value)">
                             @response.VenueName
                         </a>
                     }                 

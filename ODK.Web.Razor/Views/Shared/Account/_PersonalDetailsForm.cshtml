@@ -1,12 +1,15 @@
 ﻿@using ODK.Core.Platforms
 @using ODK.Services.Users.ViewModels
 @using ODK.Web.Common.Routes
+@using ODK.Web.Common.Services
 @using ODK.Web.Razor.Services
 @model PersonalDetailsFormViewModel
+@inject IOdkRoutes OdkRoutes
 @inject IRequestStore RequestStore
 @{
     var memberId = RequestStore.CurrentMemberIdOrDefault;
     var platform = RequestStore.Platform;
+    var chapter = RequestStore.ChapterOrDefault;
 }
 
 <div class="form-group mb-3 @(memberId == null ? "required" : null)">
@@ -17,7 +20,7 @@
         @Html.HiddenFor(x => x.EmailAddress)
         <div class="form-control-plaintext">
             @Model.EmailAddress
-            <a href="@OdkRoutes.Account.EmailAddressChange(platform, Model.Chapter)">Change</a>
+            <a href="@OdkRoutes.Account.EmailAddressChange(chapter)">Change</a>
         </div>
     }
     else

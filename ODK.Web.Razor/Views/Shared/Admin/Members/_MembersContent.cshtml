@@ -8,6 +8,7 @@
 @using ODK.Web.Razor.Models.Members
 @model MembersAdminPageViewModel
 @inject IAuthorizationService AuthorizationService
+@inject IOdkRoutes OdkRoutes
 @{
     var (members, subscriptions) = (Model.Members, Model.Subscriptions);
 
@@ -77,7 +78,7 @@
             </select>
         </div>
         <div class="col ms-auto align-self-end">
-            <a href="@OdkRoutes.MemberGroups.MembersDownload(Model.Platform, Model.Chapter)">
+            <a href="@OdkRoutes.GroupAdmin.MembersDownload(Model.Chapter)">
                 @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Excel))
                 Download CSV
             </a>
@@ -115,7 +116,7 @@
                         })
                 </td>
                 <td>
-                    <a href="@OdkRoutes.MemberGroups.Member(Model.Platform, Model.Chapter, member.Id)" data-sort-value="@member.FullName">
+                    <a href="@OdkRoutes.GroupAdmin.Member(Model.Chapter, member.Id)" data-sort-value="@member.FullName">
                         @member.GetDisplayName(Model.Chapter.Id)
                     </a>
                 </td>

@@ -8,6 +8,7 @@
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Events
 @model GroupHomePageViewModel
+@inject IOdkRoutes OdkRoutes
 
 <div class="row">
     <div class="col-lg-7">
@@ -38,7 +39,7 @@
                         </div>
                     }                    
 
-                    <a href="@OdkRoutes.Groups.Join(Model.Platform, Model.Chapter)" class="btn btn-success">
+                    <a href="@OdkRoutes.Groups.Join(Model.Chapter)" class="btn btn-success">
                         Join
                     </a>
                 </section>
@@ -49,7 +50,7 @@
                 @await Html.PartialAsync("Components/_Panel", new PanelViewModel
                 {
                     TitleContentFunc = @<h3>Upcoming events</h3>,
-                    TitleEndContentFunc = @<a href="@OdkRoutes.Groups.Events(Model.Platform, Model.Chapter)">See all</a>,
+                        TitleEndContentFunc = @<a href="@OdkRoutes.Groups.Events(Model.Chapter)">See all</a>,
                     BodyContentFunc = 
                         @<div>
                             @await Html.PartialAsync("Events/_EventList", new EventListViewModel
@@ -75,7 +76,7 @@
                 @await Html.PartialAsync("Components/_Panel", new PanelViewModel
                 {
                     TitleContentFunc = @<h3>Recent events</h3>,
-                    TitleEndContentFunc = @<a href="@OdkRoutes.Groups.PastEvents(Model.Platform, Model.Chapter)">See all</a>,
+                    TitleEndContentFunc = @<a href="@OdkRoutes.Groups.PastEvents(Model.Chapter)">See all</a>,
                     BodyContentFunc = 
                         @<div>
                             @await Html.PartialAsync("Events/_EventList", new EventListViewModel

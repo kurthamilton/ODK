@@ -1,8 +1,11 @@
 ﻿@using ODK.Core.Platforms
+@using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Footer
+@using ODK.Web.Razor.Services
 @model FooterViewModel
+@inject IRequestStore RequestStore
 @{
-    if (Model.Platform != PlatformType.Default)
+    if (RequestStore.Platform != PlatformType.Default)
     {
         return;
     }

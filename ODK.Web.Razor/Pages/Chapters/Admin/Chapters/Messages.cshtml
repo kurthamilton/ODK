@@ -7,7 +7,7 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Messages | Admin";
 
-    var request = await Model.CreateMemberChapterServiceRequest();
+    var request = Model.MemberChapterServiceRequest;
     var viewModel = await ChapterAdminService.GetChapterMessagesViewModel(request, false);
 }
 

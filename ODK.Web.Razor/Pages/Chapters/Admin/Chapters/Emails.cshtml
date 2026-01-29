@@ -7,13 +7,10 @@
 @{
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Email templates | Admin";
-
-    var chapter = await Model.GetChapter();
-    var viewModel = new OdkComponentViewModel<Chapter>(Model.ComponentContext, chapter);
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
     Title = "Email templates",
-    ContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_EmailsContent", viewModel)</div>
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_EmailsContent")</div>
 })

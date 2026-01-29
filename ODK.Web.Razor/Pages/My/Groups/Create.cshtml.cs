@@ -78,7 +78,7 @@ public class CreateModel : OdkPageModel
         AddFeedback("Group created. Once approved you will be able to publish and start accepting group members.", FeedbackType.Success);
 
         return result.Value != null
-            ? Redirect(OdkRoutes.MemberGroups.Group(Platform, result.Value))
-            : Redirect(OdkRoutes.MemberGroups.Index(Platform));
+            ? Redirect(OdkRoutes.GroupAdmin.Group(result.Value))
+            : Redirect(OdkRoutes.GroupAdmin.Index());
     }
 }

@@ -10,7 +10,7 @@
     Layout = "_GroupAdminLayout";
     Model.Title = "Create event";
 
-    var viewModel = await EventAdminService.GetEventCreateViewModel(Model.AdminServiceRequest);
+    var viewModel = await EventAdminService.GetEventCreateViewModel(Model.MemberChapterServiceRequest);
     viewModel.VenueId = Model.VenueId;
 }
 
@@ -23,7 +23,7 @@
         {
             new MenuItem
             {
-                Link = OdkRoutes.MemberGroups.Events(Model.Platform, viewModel.Chapter),
+                Link = Model.OdkRoutes.GroupAdmin.Events(Model.Chapter),
                 Text = "Back to events",
                 Icon = IconType.ArrowLeft
             }

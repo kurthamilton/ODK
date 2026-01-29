@@ -7,7 +7,7 @@
 @{
     Layout = "_GroupAdminLayout";
 
-    var viewModel = await ChapterAdminService.GetChapterAdminPageViewModel(Model.AdminServiceRequest);
+    var viewModel = await ChapterAdminService.GetChapterAdminPageViewModel(Model.MemberChapterServiceRequest);
 
     Model.Title = viewModel.Chapter.GetDisplayName(Model.Platform);
 }

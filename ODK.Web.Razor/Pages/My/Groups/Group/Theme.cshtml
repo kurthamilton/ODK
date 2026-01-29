@@ -1,14 +1,12 @@
 ﻿@page "/my/groups/{chapterId:guid}/theme"
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
-@using ODK.Web.Razor.Services
 @model ThemeModel
-@inject IRequestStore RequestStore
 @{
     Layout = "_GroupAdminLayout";
     Model.Title = "Theme";
 
-    var chapter = await RequestStore.GetChapter();
+    var chapter = Model.Chapter;
 }
 
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel

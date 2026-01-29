@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Web.Common.Account;
-using ODK.Web.Common.Routes;
 
 namespace ODK.Web.Razor.Pages.Chapters.Account;
 
@@ -17,8 +16,7 @@ public class LogoutModel : OdkPageModel
     {
         await _loginHandler.Logout();
 
-        var chapter = await GetChapter();
-        var redirectUrl = OdkRoutes.Groups.Group(Platform, chapter);
+        var redirectUrl = OdkRoutes.Groups.Group(Chapter);
         return Redirect(redirectUrl);
     }
 }

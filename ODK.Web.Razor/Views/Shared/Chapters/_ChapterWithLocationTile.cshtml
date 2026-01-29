@@ -2,11 +2,12 @@
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Chapters
 @model ChapterWithDistanceViewModel
+@inject IOdkRoutes OdkRoutes
 
 <div data-odk-component="_ChapterWithLocationTile">
     <div class="card">
         <div class="card-body d-flex flex-column gap-3">
-            <a href="@OdkRoutes.Groups.Group(Model.Platform, Model.Chapter)"
+            <a href="@OdkRoutes.Groups.Group(Model.Chapter)"
                class="text-body link-hover link-hover--opacity">
         
                 @if (Model.HasImage)

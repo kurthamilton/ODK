@@ -10,7 +10,7 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Message | Admin";
 
-    var request = await Model.CreateMemberChapterServiceRequest();
+    var request = Model.MemberChapterServiceRequest;
     var viewModel = await ChapterAdminService.GetChapterMessageViewModel(request, Model.MessageId);
 }
 
@@ -21,7 +21,7 @@
     {
         new MenuItem
         {
-            Link = OdkRoutes.MemberGroups.GroupMessages(Model.Platform, viewModel.Chapter),
+            Link = Model.OdkRoutes.GroupAdmin.GroupMessages(Model.Chapter),
             Text = "Back to messages",
             Icon = IconType.ArrowLeft
         }

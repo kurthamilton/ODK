@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using ODK.Core.Chapters;
 using ODK.Core.Members;
 
 namespace ODK.Services.Authentication;
@@ -7,7 +8,7 @@ public interface IAuthenticationService
 {
     Task<ServiceResult> ActivateChapterAccountAsync(
         ServiceRequest request,
-        Guid chapterId,
+        Chapter chapter,
         string activationToken,
         string password);
 

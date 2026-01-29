@@ -14,8 +14,8 @@
 
     var viewModel = new ChapterAccountViewModel
     {
-        Chapter = await Model.GetChapter(),
-        CurrentMember = await Model.GetCurrentMember()
+        Chapter = Model.Chapter,
+        CurrentMember = Model.CurrentMember
     };
 }
 

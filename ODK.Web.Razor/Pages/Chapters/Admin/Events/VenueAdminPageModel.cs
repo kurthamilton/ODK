@@ -28,7 +28,7 @@ public abstract class VenueAdminPageModel : AdminPageModel
             return;
         }
 
-        var request = await CreateMemberChapterServiceRequest();
+        var request = RequestStore.MemberChapterServiceRequest;
 
         try
         {
@@ -45,8 +45,7 @@ public abstract class VenueAdminPageModel : AdminPageModel
 
     private async Task Redirect(PageHandlerExecutingContext context)
     {
-        var chapter = await RequestStore.GetChapter();
-        var redirectPath = OdkRoutes.MemberGroups.Venues(Platform, chapter);
+        var redirectPath = OdkRoutes.GroupAdmin.Venues(Chapter);
         context.Result = Redirect(redirectPath);
     }
 }

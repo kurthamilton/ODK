@@ -346,7 +346,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         var baseUrl = request.HttpRequestContext.BaseUrl;
 
-        var urlProvider = _urlProviderFactory.Create(request);
+        var urlProvider = await _urlProviderFactory.Create(request);
 
         var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(sitePaymentSettings);
 

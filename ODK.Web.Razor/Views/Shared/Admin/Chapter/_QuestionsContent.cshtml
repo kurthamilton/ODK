@@ -9,6 +9,7 @@
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model ChapterQuestionsAdminPageViewModel
+@inject IOdkRoutes OdkRoutes
 
 @if (Model.Platform == PlatformType.DrunkenKnitwits)
 {
@@ -24,7 +25,7 @@ else
 }
 
 <p>
-    <a href="@OdkRoutes.MemberGroups.GroupQuestionCreate(Model.Platform, Model.Chapter)"
+    <a href="@OdkRoutes.GroupAdmin.GroupQuestionCreate(Model.Chapter)"
        class="btn btn-primary">
         Create question
     </a>
@@ -46,7 +47,7 @@ else
                 {
                     <tr>
                         <td>
-                            <a href="@OdkRoutes.MemberGroups.GroupQuestion(Model.Platform, Model.Chapter, question.Id)">@question.Name</a>
+                            <a href="@OdkRoutes.GroupAdmin.GroupQuestion(Model.Chapter, question.Id)">@question.Name</a>
                         </td>
                         <td>
                             <div class="d-flex">

@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using ODK.Core.Chapters;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.Models;
 using ODK.Web.Common.Feedback;
@@ -26,7 +25,7 @@ public class SubscriptionEditModel : AdminPageModel
 
     public async Task<IActionResult> OnPostAsync(Guid id, SubscriptionFormSubmitViewModel viewModel)
     {
-        var serviceRequest = await CreateMemberChapterServiceRequest();
+        var serviceRequest = MemberChapterServiceRequest;
         var result = await _chapterAdminService.UpdateChapterSubscription(serviceRequest, id, new CreateChapterSubscription
         {
             Amount = viewModel.Amount ?? 0,
@@ -40,9 +39,8 @@ public class SubscriptionEditModel : AdminPageModel
 
         if (result.Success)
         {
-            var chapter = await GetChapter();
             AddFeedback(new FeedbackViewModel("Subscription updated", FeedbackType.Success));
-            return Redirect($"/{chapter.ShortName}/Admin/Members/Subscriptions");
+            return Redirect(OdkRoutes.GroupAdmin.MembersSubscriptions(Chapter));
         }
 
         AddFeedback(new FeedbackViewModel(result));

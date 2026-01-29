@@ -1,9 +1,11 @@
 ﻿@using ODK.Core.Features
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin.Events
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Payments
-@model ODK.Web.Razor.Models.Admin.Events.EventFormViewModel
+@model EventFormViewModel
+@inject IOdkRoutes OdkRoutes
 @{
     var venueOptions = Model.Venues
         .OrderBy(x => x.Name)
@@ -25,7 +27,7 @@
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.Venue, new { @class = "form-label" })
     @await Html.PartialAsync("Components/_Tooltip", "Select an existing venue or create a new venue first on the venues page")
-    <a href="@OdkRoutes.MemberGroups.VenueCreate(Model.Platform, Model.Chapter)">Create venue</a>
+    <a href="@OdkRoutes.GroupAdmin.VenueCreate(Model.Chapter)">Create venue</a>
     @Html.DropDownListFor(x => x.Venue, venueOptions, "", new { @class = "form-select", data_select = "", data_searchable = "", data_clearable = "" })
     @Html.ValidationMessageFor(x => x.Venue)
 </div>
@@ -35,7 +37,7 @@
     <span class="ms-1 text-muted">Event date. Start time defaults to value set in event settings</span>
     @if (Model.Date.Date == Model.Date)
     {
-        <a href="@OdkRoutes.MemberGroups.EventSettings(Model.Platform, Model.Chapter)">Set default start time</a>
+        <a href="@OdkRoutes.GroupAdmin.EventSettings(Model.Chapter)">Set default start time</a>
     }    
     @Html.TextBoxFor(x => x.Date, format: "{0:dd/MM/yyyy HH:mm}", new 
     { 

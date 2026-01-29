@@ -8,10 +8,12 @@
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Admin.Chapters
 @using ODK.Web.Razor.Models.Components
-@model OdkComponentViewModel<Chapter>
+@using ODK.Web.Razor.Services
 @inject IEmailAdminService EmailAdminService
+@inject IRequestStore RequestStore
 @{
-    var request = Model.CreateMemberChapterServiceRequest(Model.Value.Id);
+    var chapter = RequestStore.Chapter;
+    var request = RequestStore.MemberChapterServiceRequest;
     var emails = await EmailAdminService.GetChapterEmails(request);
 }
 
@@ -35,7 +37,7 @@
             {
                 <tr>
                     <td>
-                        <a href="/@Model.Value.ShortName/Admin/Chapter/Emails/@email.Type">@email.Type</a>
+                        <a href="/@chapter.ShortName/Admin/Chapter/Emails/@email.Type">@email.Type</a>
                     </td>
                     <td>
                         @if (email.IsDefault())
@@ -48,9 +50,9 @@
                                 @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.CheckCircle)
                                 {
                                     Class = "text-success"
-                                                })
-                    </span>
-                                        }
+                                })
+                            </span>
+                        }
                     </td>
                 </tr>
             }

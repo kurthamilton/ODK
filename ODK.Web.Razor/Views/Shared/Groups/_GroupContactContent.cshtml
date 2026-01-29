@@ -5,12 +5,13 @@
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Contact
 @model GroupContactPageViewModel
+@inject IOdkRoutes OdkRoutes
 
 @if (!Model.CanStartConversation || Model.CurrentMember == null)
 {
     <h2>Send us a message</h2>
     <p>
-        If the <a href="@OdkRoutes.Groups.About(Model.Platform, Model.Chapter)">FAQ</a> page hasn't answered your questions,
+        If the <a href="@OdkRoutes.Groups.About(Model.Chapter)">FAQ</a> page hasn't answered your questions,
         please don't hesitate to get in touch. We'll get back to you as soon as possible.
     </p>
 
@@ -41,7 +42,7 @@
                     {
                         <tr>
                             <td>
-                                <a href="@OdkRoutes.Groups.Conversation(Model.Platform, Model.Chapter, dto.Conversation.Id)">
+                                <a href="@OdkRoutes.Groups.Conversation(Model.Chapter, dto.Conversation.Id)">
                                     @dto.Conversation.Subject
                                 </a>
                             </td>

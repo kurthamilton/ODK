@@ -2,13 +2,13 @@
 @using ODK.Core.Countries
 @using ODK.Core.Platforms
 @using ODK.Core.Utils
+@using ODK.Web.Common.Services
 @using ODK.Web.Razor.Pages.Chapters
 @using ODK.Web.Razor.Services
 @inject IRequestStore RequestStore
 @{
     var platform = RequestStore.Platform;
-
-    var chapter = await RequestStore.GetChapterOrDefault();
+    var chapter = RequestStore.ChapterOrDefault;
 
     var title = platform switch
     {
@@ -126,7 +126,7 @@
     @await RenderSectionAsync("styles", required: false)
 </head>
 <body style="@customStyle">   
-    @await Html.PartialAsync("Header/_SiteHeader", RequestStore.ComponentContext)
+    @await Html.PartialAsync("Header/_SiteHeader")
 
     @await RenderSectionAsync("header")
 

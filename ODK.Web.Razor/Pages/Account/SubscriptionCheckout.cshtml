@@ -32,7 +32,7 @@
     HideSubscriptionAlert = true,
     Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
     {
-        Active = OdkRoutes.Account.Subscription(viewModel.Platform, null),
+        Active = Model.OdkRoutes.Account.Subscription(null),
         Title = "",
         Content =
             @<div>
@@ -40,7 +40,7 @@
                 {
                     Breadcrumbs = new[]
                     {
-                        new MenuItem { Text = "My subscription", Link = OdkRoutes.Account.Subscription(viewModel.Platform, null) },
+                        new MenuItem { Text = "My subscription", Link = Model.OdkRoutes.Account.Subscription(null) },
                         new MenuItem { Text = "Checkout" }
                     }
                 })

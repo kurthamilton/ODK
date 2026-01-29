@@ -6,10 +6,11 @@
 @using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.SiteAdmin
-@model OdkComponentViewModel<Chapter>
+@using ODK.Web.Razor.Services
 @inject IChapterAdminService ChapterAdminService
+@inject IRequestStore RequestStore
 @{
-    var serviceRequest = Model.CreateMemberChapterServiceRequest(Model.Value.Id);
+    var serviceRequest = RequestStore.MemberChapterServiceRequest;
     var adminMembers = await ChapterAdminService.GetChapterAdminMembers(serviceRequest);
 }
 

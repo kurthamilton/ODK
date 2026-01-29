@@ -8,7 +8,7 @@
     Layout = "_GroupAdminLayout";
     Model.Title = "Picture";
 
-    var viewModel = await ChapterAdminService.GetChapterImageViewModel(Model.AdminServiceRequest);
+    var viewModel = await ChapterAdminService.GetChapterImageViewModel(Model.MemberChapterServiceRequest);
 }
 
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel

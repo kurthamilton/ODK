@@ -5,6 +5,7 @@
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Notifications
 @model NotificationListItemViewModel
+@inject IOdkRoutes OdkRoutes
 @{
     var (notification, platform) = (Model.Notification, Model.Platform);
 
@@ -22,19 +23,19 @@
     var url = notification.Type switch
     {
         NotificationType.ChapterContactMessage => notification.Chapter != null && notification.EntityId != null
-            ? OdkRoutes.MemberGroups.GroupMessage(platform, notification.Chapter, notification.EntityId.Value)
+            ? OdkRoutes.GroupAdmin.GroupMessage(notification.Chapter, notification.EntityId.Value)
             : null,
         NotificationType.ConversationAdminMessage => notification.Chapter != null && notification.EntityId != null
-            ? OdkRoutes.Groups.Conversation(platform, notification.Chapter, notification.EntityId.Value)
+            ? OdkRoutes.Groups.Conversation(notification.Chapter, notification.EntityId.Value)
             : null,
         NotificationType.ConversationOwnerMessage => notification.Chapter != null && notification.EntityId != null
-            ? OdkRoutes.MemberGroups.GroupConversation(platform, notification.Chapter, notification.EntityId.Value)
+            ? OdkRoutes.GroupAdmin.GroupConversation(notification.Chapter, notification.EntityId.Value)
             : null,
         NotificationType.NewEvent => notification.Chapter != null && notification.EntityId != null
-            ? OdkRoutes.Groups.EventLegacy(platform, notification.Chapter, notification.EntityId.Value)
+            ? OdkRoutes.Groups.EventLegacy(notification.Chapter, notification.EntityId.Value)
             : null,
         NotificationType.NewMember => notification.Chapter != null && notification.EntityId != null
-            ? OdkRoutes.MemberGroups.Member(platform, notification.Chapter, notification.EntityId.Value)
+            ? OdkRoutes.GroupAdmin.Member(notification.Chapter, notification.EntityId.Value)
             : null,
         _ => null
     };

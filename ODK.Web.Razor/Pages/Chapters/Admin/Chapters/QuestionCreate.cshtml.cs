@@ -21,7 +21,7 @@ public class QuestionCreateModel : AdminPageModel
 
     public async Task<IActionResult> OnPostAsync(ChapterQuestionFormViewModel viewModel)
     {
-        var serviceRequest = await CreateMemberChapterServiceRequest();
+        var serviceRequest = MemberChapterServiceRequest;
         var result = await _chapterAdminService.CreateChapterQuestion(serviceRequest,
             new CreateChapterQuestion
             {
@@ -35,7 +35,7 @@ public class QuestionCreateModel : AdminPageModel
             return Page();
         }
 
-        var chapter = await GetChapter();
+        var chapter = Chapter;
         AddFeedback(new FeedbackViewModel("Question created", FeedbackType.Success));
         return Redirect($"/{chapter.ShortName}/Admin/Chapter/Questions");
     }

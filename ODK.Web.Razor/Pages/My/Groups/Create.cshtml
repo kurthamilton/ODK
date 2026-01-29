@@ -14,7 +14,8 @@
     Layout = "_HomeLayout";
     Model.Title = "Create group";
 
-    var viewModel = await ChapterViewModelService.GetChapterCreate(Model.Platform, Model.CurrentMemberId);
+    var viewModel = await ChapterViewModelService.GetChapterCreate(
+        Model.Platform, Model.CurrentMember);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -23,7 +24,7 @@
     WidthClass = "col-12 col-lg-8",
     Breadcrumbs = new[]
     {
-        new MenuItem { Link = OdkRoutes.MemberGroups.Index(viewModel.Platform), Text = "My groups" },
+        new MenuItem { Link = Model.OdkRoutes.GroupAdmin.Index(), Text = "My groups" },
         new MenuItem { Text = "Create" }
     },
     ContentFunc = 

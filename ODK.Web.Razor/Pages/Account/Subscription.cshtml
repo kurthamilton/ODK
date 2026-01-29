@@ -28,7 +28,7 @@
     Title = "Account",
     Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
     {
-        Active = OdkRoutes.Account.Subscription(Model.Platform, null),
+        Active = Model.OdkRoutes.Account.Subscription(null),
         Title = "My subscription",
         Content =
             @<div>

@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.Models;
-using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Admin.Members;
 
 namespace ODK.Web.Razor.Pages.My.Groups.Members.Subscriptions;
@@ -24,7 +23,7 @@ public class EditModel : OdkGroupAdminPageModel
 
     public async Task<IActionResult> OnPostAsync(Guid subscriptionId, SubscriptionFormSubmitViewModel viewModel)
     {
-        var result = await _chapterAdminService.UpdateChapterSubscription(AdminServiceRequest, subscriptionId, new CreateChapterSubscription
+        var result = await _chapterAdminService.UpdateChapterSubscription(MemberChapterServiceRequest, subscriptionId, new CreateChapterSubscription
         {
             Amount = viewModel.Amount ?? 0,
             Description = viewModel.Description,
@@ -42,8 +41,6 @@ public class EditModel : OdkGroupAdminPageModel
             return Page();
         }
 
-        var chapter = await GetChapter();
-
-        return Redirect(OdkRoutes.MemberGroups.MembersSubscriptions(Platform, chapter));
+        return Redirect(OdkRoutes.GroupAdmin.MembersSubscriptions(Chapter));
     }
 }

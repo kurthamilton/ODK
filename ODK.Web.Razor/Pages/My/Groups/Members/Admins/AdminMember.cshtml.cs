@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.Models;
-using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Admin.Members;
 
 namespace ODK.Web.Razor.Pages.My.Groups.Members.Admins;
@@ -24,7 +23,7 @@ public class AdminMemberModel : OdkGroupAdminPageModel
 
     public async Task<IActionResult> OnPostAsync(Guid memberId, AdminMemberFormViewModel viewModel)
     {
-        var result = await _chapterAdminService.UpdateChapterAdminMember(AdminServiceRequest, memberId, new UpdateChapterAdminMember
+        var result = await _chapterAdminService.UpdateChapterAdminMember(MemberChapterServiceRequest, memberId, new UpdateChapterAdminMember
         {
             AdminEmailAddress = viewModel.AdminEmailAddress,
             ReceiveContactEmails = viewModel.ReceiveContactEmails,
@@ -39,7 +38,6 @@ public class AdminMemberModel : OdkGroupAdminPageModel
             return Page();
         }
 
-        var chapter = await GetChapter();
-        return Redirect(OdkRoutes.MemberGroups.MemberAdmins(Platform, chapter));
+        return Redirect(OdkRoutes.GroupAdmin.MemberAdmins(Chapter));
     }
 }

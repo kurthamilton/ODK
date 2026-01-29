@@ -13,11 +13,11 @@
 @{
     Layout = "_OdkChapterLayout";
 
-    var chapter = await Model.GetChapter();
+    var chapter = Model.Chapter;
     var viewModel = await MemberViewModelService.GetMembersPage(Model.MemberServiceRequest, chapter);
     if (!viewModel.IsMember)
     {
-        Response.Redirect(OdkRoutes.Groups.Join(viewModel.Platform, viewModel.Chapter));
+        Response.Redirect(Model.OdkRoutes.Groups.Join(Model.Chapter));
     }
 
     var chapterPage = viewModel.ChapterPages.FirstOrDefault(x => x.PageType == PageType.Members);
@@ -38,7 +38,7 @@
    {
        new MenuItem 
        { 
-           Link = OdkRoutes.Groups.Group(Model.Platform, viewModel.Chapter),
+           Link = Model.OdkRoutes.Groups.Group(Model.Chapter),
            Text = viewModel.Chapter.GetDisplayName(Model.Platform)
        },
        new MenuItem { Text = title }

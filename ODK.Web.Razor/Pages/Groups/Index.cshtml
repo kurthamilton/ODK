@@ -21,7 +21,7 @@
     };
 
     var viewModel = await ChapterViewModelService.FindGroups(
-        Model.Platform, Model.CurrentMemberIdOrDefault, filter);
+        Model.Platform, Model.CurrentMemberOrDefault, filter);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -48,7 +48,7 @@
                 {
                     <p>
                         No matching results. 
-                        <a href="@OdkRoutes.MemberGroups.GroupCreate(viewModel.Platform)">Create a group</a>
+                        <a href="@Model.OdkRoutes.GroupAdmin.GroupCreate()">Create a group</a>
                     </p>
                 }
             </div>

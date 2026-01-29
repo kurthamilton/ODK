@@ -1,11 +1,13 @@
 ﻿@using ODK.Core.Platforms
 @using ODK.Services.Authorization
+@using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Services
 @model RestrictedFeatureViewModel
 @inject IAuthorizationService AuthorizationService
 @inject IRequestStore RequestStore
 @{
+    var platform = RequestStore.Platform;
     var authorized = Model.Permitted != null 
         ? Model.Permitted.Value 
         : Model.OwnerSubscription != null 
@@ -32,7 +34,7 @@ else
     @await Html.PartialAsync("Components/_UpgradeButton", new UpgradeButtonViewModel
     {
         Chapter = Model.Chapter,
-        Platform = RequestStore.Platform
+        Platform = platform
     })
     @Model.DisabledContentFunc?.Invoke(null)
 }

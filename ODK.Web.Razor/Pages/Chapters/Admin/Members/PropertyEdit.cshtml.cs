@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using ODK.Core.Chapters;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.Models;
 using ODK.Web.Common.Feedback;
@@ -26,7 +25,7 @@ public class PropertyEditModel : AdminPageModel
 
     public async Task<IActionResult> OnPostAsync(Guid id, ChapterPropertyFormViewModel viewModel)
     {
-        var serviceRequest = await CreateMemberChapterServiceRequest();
+        var serviceRequest = MemberChapterServiceRequest;
         var result = await _chapterAdminService.UpdateChapterProperty(serviceRequest, id, new UpdateChapterProperty
         {
             ApplicationOnly = viewModel.ApplicationOnly,
@@ -45,8 +44,7 @@ public class PropertyEditModel : AdminPageModel
             return Page();
         }
 
-        var chapter = await GetChapter();
         AddFeedback(new FeedbackViewModel("Property updated", FeedbackType.Success));
-        return Redirect($"/{chapter.ShortName}/Admin/Chapter/Properties");
+        return Redirect(OdkRoutes.GroupAdmin.MemberProperties(Chapter));
     }
 }

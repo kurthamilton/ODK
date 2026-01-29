@@ -7,11 +7,12 @@
 @using ODK.Web.Razor.Models.Chapters
 @using ODK.Web.Razor.Models.Components
 @model ChapterConversationAdminPageViewModel
+@inject IOdkRoutes OdkRoutes
 
 <h5>@Model.Conversation.Subject</h5>
 
 <p>
-    <a href="@OdkRoutes.MemberGroups.MemberConversations(Model.Platform, Model.Chapter, Model.Member.Id)">
+    <a href="@OdkRoutes.GroupAdmin.MemberConversations(Model.Chapter, Model.Member.Id)">
         @Model.Member.GetDisplayName(Model.Chapter.Id)
     </a>
 </p>
@@ -72,7 +73,7 @@
                     {
                         <div class="list-group-item">
                             <div>
-                                <a href="@OdkRoutes.MemberGroups.GroupConversation(Model.Platform, Model.Chapter, dto.Conversation.Id)">
+                            <a href="@OdkRoutes.GroupAdmin.GroupConversation(Model.Chapter, dto.Conversation.Id)">
                                     @dto.Conversation.Subject
                                 </a>
                             </div>

@@ -8,7 +8,7 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Email | Admin";
 
-    var chapter = await Model.GetChapter();
+    var chapter = Model.Chapter;
     var viewModel = new ChapterEmailContentViewModel(chapter, Model.Email);
 }
 

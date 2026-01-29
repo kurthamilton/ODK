@@ -2,6 +2,7 @@
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @model MemberChaptersViewModel
+@inject IOdkRoutes OdkRoutes
 
 <div data-odk-component="_MemberGroupsContent">
     <section class="section--admin">
@@ -12,7 +13,7 @@
                 @<div>
                     @if (Model.Owned.Count > 0)
                     {
-                        <a href="@OdkRoutes.MemberGroups.GroupCreate(Model.Platform)">
+                        <a href="@OdkRoutes.GroupAdmin.GroupCreate()">
                            Create group
                         </a>
                     }
@@ -27,7 +28,7 @@
                     {
                         <p>
                             You haven't created any groups.
-                            <a href="@OdkRoutes.MemberGroups.GroupCreate(Model.Platform)">Create a group</a>
+                            <a href="@OdkRoutes.GroupAdmin.GroupCreate()">Create a group</a>
                         </p>
                     }
                 </div>           
@@ -63,7 +64,7 @@
                     {
                         <p>
                             You aren't a member of any groups.
-                            <a href="@OdkRoutes.Groups.Index(Model.Platform)">Find a group</a>
+                            <a href="@OdkRoutes.Groups.Index()">Find a group</a>
                         </p>
                     }
                 </div>

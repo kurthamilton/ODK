@@ -3,6 +3,7 @@
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @model SiteAdminChaptersViewModel
+@inject IOdkRoutes OdkRoutes
 @{
     var tabs = new TabsViewModel
     {
@@ -50,7 +51,7 @@
                                 <td>@row.SiteSubscriptionName</td>
                                 <td>@row.SiteSubscriptionExpiresUtc?.ToString("yyyy-MM-dd HH:mm:ss")</td>
                                 <td>
-                                    <a href="@OdkRoutes.MemberGroups.Group(Model.Platform, chapter)">
+                                    <a href="@OdkRoutes.GroupAdmin.Group(chapter)">
                                         Admin
                                     </a>
                                 </td>
@@ -84,7 +85,7 @@
                                 <td>@chapter.GetDisplayName(Model.Platform)</td>
                                 <td>@chapter.CreatedUtc.ToString("yyyy-MM-dd HH:mm:ss")</td>
                                 <td>
-                                    <a href="@OdkRoutes.MemberGroups.Group(Model.Platform, chapter)">
+                                    <a href="@OdkRoutes.GroupAdmin.Group(chapter)">
                                         Admin
                                     </a>
                                 </td>

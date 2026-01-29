@@ -23,7 +23,7 @@ public class IndexModel : OdkGroupAdminPageModel
 
     public async Task<IActionResult> OnPostAsync(Guid eventId, [FromForm] EventFormSubmitViewModel viewModel)
     {
-        var result = await _eventAdminService.UpdateEvent(AdminServiceRequest, eventId, new CreateEvent
+        var result = await _eventAdminService.UpdateEvent(MemberChapterServiceRequest, eventId, new CreateEvent
         {
             AttendeeLimit = viewModel.AttendeeLimit,
             Date = viewModel.Date,

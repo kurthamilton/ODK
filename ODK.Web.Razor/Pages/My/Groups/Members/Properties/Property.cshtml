@@ -10,7 +10,7 @@
     Layout = "_GroupAdminLayout";
     Model.Title = "Edit profile question";
 
-    var viewModel = await ChapterAdminService.GetChapterPropertyViewModel(Model.AdminServiceRequest, Model.PropertyId);
+    var viewModel = await ChapterAdminService.GetChapterPropertyViewModel(Model.MemberChapterServiceRequest, Model.PropertyId);
 }
 
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
@@ -22,7 +22,7 @@
         {
             new MenuItem
             {
-                Link = OdkRoutes.MemberGroups.MemberProperties(Model.Platform, viewModel.Chapter),
+                Link = Model.OdkRoutes.GroupAdmin.MemberProperties(Model.Chapter),
                 Text = "Back to profile questions",
                 Icon = IconType.ArrowLeft
             }

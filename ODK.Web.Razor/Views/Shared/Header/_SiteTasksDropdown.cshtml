@@ -1,12 +1,16 @@
 ﻿@using ODK.Services.Chapters
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
+@using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Components
-@model OdkComponentContext
+@using ODK.Web.Razor.Services
 @inject IChapterService ChapterService
+@inject IOdkRoutes OdkRoutes
+@inject IRequestStore RequestStore
 @{
-    var memberId = Model.CurrentMemberIdOrDefault;
+    var platform = RequestStore.Platform;
+    var memberId = RequestStore.CurrentMemberIdOrDefault;
 
     var ownedChapters = memberId != null
         ? await ChapterService.GetChaptersByOwnerId(memberId.Value)
@@ -41,8 +45,8 @@
             {
                 @foreach (var chapter in chaptersPendingPublication)
                 {
-                    <a class="dropdown-item border-top p-3" href="@OdkRoutes.MemberGroups.Group(Model.Platform, chapter)">
-                        <strong>@chapter.GetDisplayName(Model.Platform)</strong> is waiting to be published
+                    <a class="dropdown-item border-top p-3" href="@OdkRoutes.GroupAdmin.Group(chapter)">
+                        <strong>@chapter.GetDisplayName(platform)</strong> is waiting to be published
                     </a>
                 }                
             }

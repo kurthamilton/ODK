@@ -2,7 +2,6 @@
 using ODK.Core.Events;
 using ODK.Services.Events;
 using ODK.Web.Common.Feedback;
-using ODK.Web.Common.Routes;
 
 namespace ODK.Web.Razor.Pages.Chapters.Admin.Events;
 
@@ -27,7 +26,7 @@ public abstract class EventAdminPageModel : AdminPageModel
             return;
         }
 
-        var request = await CreateMemberChapterServiceRequest();
+        var request = RequestStore.MemberChapterServiceRequest;
 
         try
         {
@@ -44,8 +43,7 @@ public abstract class EventAdminPageModel : AdminPageModel
 
     private async Task Redirect(PageHandlerExecutingContext context)
     {
-        var chapter = await RequestStore.GetChapter();
-        var redirectPath = OdkRoutes.MemberGroups.Events(Platform, chapter);
+        var redirectPath = OdkRoutes.GroupAdmin.Events(Chapter);
         context.Result = Redirect(redirectPath);
     }
 }

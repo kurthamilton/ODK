@@ -10,7 +10,7 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Edit admin member | Admin";
 
-    var request = await Model.CreateMemberChapterServiceRequest();
+    var request = Model.MemberChapterServiceRequest;
     var viewModel = await MemberAdminService.GetAdminMemberViewModel(request, Model.MemberId);
 }
 
@@ -19,7 +19,7 @@
     Title = "Edit admin member",
     Breadcrumbs = new[]
     {
-        new MenuItem { Link = OdkRoutes.MemberGroups.MemberAdmins(Model.Platform, viewModel.Chapter), Text = "Admins" },
+        new MenuItem { Link = Model.OdkRoutes.GroupAdmin.MemberAdmins(Model.Chapter), Text = "Admins" },
         new MenuItem { Text = viewModel.AdminMember.Member.FullName }
     },
     ContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_AdminMemberContent", viewModel)</div>

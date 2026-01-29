@@ -15,7 +15,7 @@ public class SubscriptionConfirmModel : OdkSiteAccountPageModel
         _paymentService = paymentService;
     }
 
-    public string RedirectUrl => OdkRoutes.Account.Subscription(Platform, null);
+    public string RedirectUrl => OdkRoutes.Account.Subscription(null);
 
     public string? SessionId { get; set; }
 

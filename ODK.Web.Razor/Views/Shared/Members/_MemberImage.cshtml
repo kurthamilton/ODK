@@ -1,6 +1,8 @@
 ﻿@using ODK.Core.Images
 @using ODK.Web.Common.Routes
-@model ODK.Web.Razor.Models.Members.MemberImageViewModel
+@using ODK.Web.Razor.Models.Members
+@model MemberImageViewModel
+@inject IOdkRoutes OdkRoutes
 @{
     var imageUrl = Model.HasImage != null 
         ? Model.Image != null ? ImageHelper.ToDataUrl(Model.Image.ImageData, Model.Image.MimeType) : ""

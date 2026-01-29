@@ -9,10 +9,6 @@
 @{
     Layout = "_GroupAdminLayout";
     Model.Title = "Create question";
-
-    var chapter = await Model.GetChapter();
-
-    var viewModel = new OdkComponentViewModel<Chapter>(Model.ComponentContext, chapter);
 }
 
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
@@ -24,12 +20,12 @@
         {
             new MenuItem
             {
-                Link = OdkRoutes.MemberGroups.GroupQuestions(Model.Platform, chapter),
+                Link = Model.OdkRoutes.GroupAdmin.GroupQuestions(Model.Chapter),
                 Text = "Back to FAQ",
                 Icon = IconType.ArrowLeft
             }
         }
     },
-    BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_QuestionCreateContent", viewModel)</div>,
+    BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_QuestionCreateContent")</div>,
     MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu")
 })

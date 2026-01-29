@@ -4,6 +4,5 @@
 @{
     Layout = "_OdkChapterAdminLayout";
 
-    var chapter = await Model.GetChapter();
-    Response.Redirect(OdkRoutes.MemberGroups.Events(Model.Platform, chapter));
+    Response.Redirect(Model.OdkRoutes.GroupAdmin.Events(Model.Chapter));
 }

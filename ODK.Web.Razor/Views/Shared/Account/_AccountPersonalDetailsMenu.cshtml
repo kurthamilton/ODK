@@ -1,12 +1,13 @@
 ﻿@using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
+@inject IOdkRoutes OdkRoutes
 @{
     var menuItems = new[]
     {
-        new MenuItem { Link = OdkRoutes.Account.PersonalDetails(chapter: null), Text = "Personal details", },
-        new MenuItem { Link = OdkRoutes.Account.Picture(chapter: null), Text = "Picture" },
-        new MenuItem { Link = OdkRoutes.Account.EmailPreferences(chapter: null), Text = "Emails" }
+        new MenuItem { Link = OdkRoutes.Account.PersonalDetails(), Text = "Personal details", },
+        new MenuItem { Link = OdkRoutes.Account.Picture(null), Text = "Picture" },
+        new MenuItem { Link = OdkRoutes.Account.EmailPreferences(null), Text = "Emails" }
     };
 }
 

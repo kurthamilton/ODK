@@ -11,6 +11,7 @@
 @using ODK.Web.Razor.Models.Admin.Members
 @using ODK.Web.Razor.Models.Components
 @model AdminMembersAdminPageViewModel
+@inject IOdkRoutes OdkRoutes
 @{    
     var adminMemberDictionary = Model.AdminMembers
         .ToDictionary(x => x.MemberId);
@@ -74,7 +75,7 @@
 
                             <tr>
                                 <td>
-                                    <a href="@OdkRoutes.MemberGroups.MemberAdmin(Model.Platform, Model.Chapter, adminMember)">@member.FullName</a>
+                                    <a href="@OdkRoutes.GroupAdmin.MemberAdmin(Model.Chapter, adminMember)">@member.FullName</a>
                                 </td>
                                 <td class="text-break">
                                     @adminMember.AdminEmailAddress

@@ -15,8 +15,8 @@
     Layout = "_OdkChapterLayout";
     Model.Title = "Subscription checkout";
 
-    var chapter = await Model.GetChapter();
-    var request = await Model.CreateMemberChapterServiceRequest();
+    var chapter = Model.Chapter;
+    var request = Model.MemberChapterServiceRequest;
     var returnPath = $"/{chapter.ShortName}/account/subscription/{Model.SubscriptionId}/confirm?sessionId={{sessionId}}";
     var viewModel = await MemberService.StartChapterSubscriptionCheckoutSession(
         request, Model.SubscriptionId, returnPath);
@@ -37,7 +37,7 @@
                 {
                     Icon = IconType.ArrowLeft,
                     Text = "My subscription",
-                    Link = OdkRoutes.Account.Subscription(Model.Platform, chapter)
+                    Link = Model.OdkRoutes.Account.Subscription(Model.Chapter)
                 }
             }
         },

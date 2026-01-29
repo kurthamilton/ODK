@@ -14,9 +14,9 @@
     Layout = "_OdkChapterLayout";    
     Model.Description = "Form for sending messages to the owners of this Drunken Knitwits chapter";    
 
-    var chapter = await Model.GetChapter();
+    var chapter = Model.Chapter;
     var viewModel = await ChapterViewModelService.GetGroupContactPage(
-        Model.ServiceRequest, Model.CurrentMemberIdOrDefault, chapter);
+        Model.ServiceRequest, Model.CurrentMemberOrDefault, chapter);
 
     var chapterPage = viewModel.ChapterPages.FirstOrDefault(x => x.PageType == PageType.Contact);
     if (chapterPage?.Hidden == true)
@@ -27,7 +27,7 @@
     var title = StringUtils.Coalesce(chapterPage?.Title, "Contact");
     
     Model.Title = title;
-    Model.Path = OdkRoutes.Groups.Contact(Model.Platform, viewModel.Chapter);
+    Model.Path = Model.OdkRoutes.Groups.Contact(Model.Chapter);
 }
 
 @if (!viewModel.Chapter.IsOpenForRegistration())
@@ -48,7 +48,7 @@
     {
         new MenuItem 
         { 
-            Link = OdkRoutes.Groups.Group(Model.Platform, chapter),
+            Link = Model.OdkRoutes.Groups.Group(Model.Chapter),
             Text = chapter.GetDisplayName(Model.Platform)
         },
         new MenuItem { Text = title }

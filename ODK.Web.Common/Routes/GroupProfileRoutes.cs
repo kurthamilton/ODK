@@ -4,10 +4,17 @@ namespace ODK.Web.Common.Routes;
 
 public class GroupProfileRoutes
 {
-    public string Index(Chapter chapter) => $"/groups/{chapter.Slug}/profile";
+    public GroupProfileRoutes(Chapter chapter)
+    {
+        Chapter = chapter;
+    }
 
-    public string Subscription(Chapter chapter) => $"{Index(chapter)}/subscription";
+    protected Chapter Chapter { get; }
 
-    public string SubscriptionCheckout(Chapter chapter, ChapterSubscription subscription)
-        => $"{Index(chapter)}/subscription/{subscription.Id}/checkout";
+    public string Index() => $"/groups/{Chapter.Slug}/profile";
+
+    public string Subscription() => $"{Index()}/subscription";
+
+    public string SubscriptionCheckout(ChapterSubscription subscription)
+        => $"{Index()}/subscription/{subscription.Id}/checkout";
 }

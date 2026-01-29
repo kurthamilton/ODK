@@ -10,7 +10,7 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Location | SiteAdmin";
 
-    var request = await Model.CreateMemberChapterServiceRequest();
+    var request = Model.MemberChapterServiceRequest;
     var viewModel = await ChapterAdminService.GetChapterLocationViewModel(request);
 }
 

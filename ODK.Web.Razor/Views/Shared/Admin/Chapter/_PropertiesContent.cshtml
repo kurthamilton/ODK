@@ -8,13 +8,14 @@
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model ChapterPropertiesAdminPageViewModel
+@inject IOdkRoutes OdkRoutes
 
 <p>
     Answers to profile questions form a member's profile for this group.
     Answers are visible to other members.
 </p>
 <p>
-    <a href="@OdkRoutes.MemberGroups.MemberPropertyCreate(Model.Platform, Model.Chapter)" class="btn btn-primary">
+    <a href="@OdkRoutes.GroupAdmin.MemberPropertyCreate(Model.Chapter)" class="btn btn-primary">
         Create question
     </a>
 </p>
@@ -34,7 +35,7 @@
             {
                 <tr>
                     <td>
-                        <a href="@OdkRoutes.MemberGroups.MemberProperty(Model.Platform, Model.Chapter, property.Id)">@property.Label</a>
+                        <a href="@OdkRoutes.GroupAdmin.MemberProperty(Model.Chapter, property.Id)">@property.Label</a>
                     </td>
                     <td>@property.Name</td>
                     <td>

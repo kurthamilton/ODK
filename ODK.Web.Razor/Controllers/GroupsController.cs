@@ -9,9 +9,10 @@ using ODK.Services.Members.Models;
 using ODK.Services.Users.ViewModels;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
+using ODK.Web.Common.Services;
+using ODK.Web.Razor.Attributes;
 using ODK.Web.Razor.Models.Chapters;
 using ODK.Web.Razor.Models.Contact;
-using ODK.Web.Razor.Services;
 
 namespace ODK.Web.Razor.Controllers;
 
@@ -25,8 +26,9 @@ public class GroupsController : OdkControllerBase
         IMemberService memberService,
         IRequestStore requestStore,
         IContactService contactService,
-        IChapterService chapterService)
-        : base(requestStore)
+        IChapterService chapterService,
+        IOdkRoutes odkRoutes)
+        : base(requestStore, odkRoutes)
     {
         _chapterService = chapterService;
         _contactService = contactService;
@@ -85,6 +87,7 @@ public class GroupsController : OdkControllerBase
         return RedirectToReferrer();
     }
 
+    [SkipRequestStoreMiddleware]
     [HttpGet("groups/{chapterId:guid}/image")]
     public Task<IActionResult> Image(Guid chapterId)
         => HandleVersionedRequest(version => _chapterService.GetChapterImage(version, chapterId), ChapterImageResult);
@@ -102,7 +105,7 @@ public class GroupsController : OdkControllerBase
             return RedirectToReferrer();
         }
 
-        return Redirect(OdkRoutes.MemberGroups.Index(Platform));
+        return Redirect(OdkRoutes.GroupAdmin.Index());
     }
 
     [Authorize]
@@ -122,7 +125,7 @@ public class GroupsController : OdkControllerBase
             })
         };
 
-        var request = CreateMemberChapterServiceRequest(chapterId);
+        var request = MemberChapterServiceRequest;
 
         var result = await _memberService.UpdateMemberChapterProfile(request, model);
         AddFeedback(result, "Profile updated");

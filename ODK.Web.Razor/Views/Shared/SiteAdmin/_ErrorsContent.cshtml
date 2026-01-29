@@ -3,10 +3,13 @@
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
+@using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Components
 @inject ILoggingService LoggingService
+@inject IOdkRoutes OdkRoutes
+@inject IRequestStore RequestStore
 @{
-    var memberId = User.MemberId();
+    var memberId = RequestStore.CurrentMemberId;
     var errors = await LoggingService.GetErrors(memberId, 1, 1000);
 }
 

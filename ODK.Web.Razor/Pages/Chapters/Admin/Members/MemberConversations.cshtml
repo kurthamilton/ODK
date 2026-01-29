@@ -8,7 +8,7 @@
 @{
     Layout = "_OdkChapterAdminLayout";
 
-    var request = await Model.CreateMemberChapterServiceRequest();
+    var request = Model.MemberChapterServiceRequest;
     var viewModel = await MemberAdminService.GetMemberConversationsViewModel(request, Model.MemberId);
 
     Model.Title = viewModel.Member.GetDisplayName(viewModel.Chapter.Id);
@@ -21,7 +21,7 @@
     {
         new MenuItem
         {
-            Link = OdkRoutes.MemberGroups.Members(Model.Platform, viewModel.Chapter),
+            Link = Model.OdkRoutes.GroupAdmin.Members(Model.Chapter),
             Text = "Members"
         },
         new MenuItem { Text = viewModel.Member.GetDisplayName(viewModel.Chapter.Id) }

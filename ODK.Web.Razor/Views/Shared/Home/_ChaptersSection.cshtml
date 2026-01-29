@@ -1,7 +1,9 @@
 ﻿@using ODK.Web.Common.Routes
+@using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Home
 @using ODK.Web.Razor.Services
+@inject IOdkRoutes OdkRoutes
 @inject IRequestStore RequestStore
 @model ChaptersSectionViewModel
 @{
@@ -48,7 +50,7 @@
                             {
                                 var external = !string.IsNullOrEmpty(chapter.RedirectUrl);
                                 var url = string.IsNullOrEmpty(chapter.RedirectUrl) 
-                                    ? OdkRoutes.Groups.Group(platform, chapter) 
+                                    ? OdkRoutes.Groups.Group(chapter) 
                                     : chapter.RedirectUrl;
                                 <li class="nav-item">
                                     <a class="nav-link" target="@(external ? "_blank" : "")" href="@url">
@@ -74,7 +76,7 @@
                             {
                                 var external = !string.IsNullOrEmpty(chapter.RedirectUrl);
                                 var url = string.IsNullOrEmpty(chapter.RedirectUrl) 
-                                    ? OdkRoutes.Groups.Group(platform, chapter)
+                                    ? OdkRoutes.Groups.Group(chapter)
                                     : chapter.RedirectUrl;
                                 <li class="nav-item">
                                     <a class="nav-link" target="@(external ? "_blank" : "")" href="@url">

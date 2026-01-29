@@ -27,7 +27,7 @@ public class ContactModel : OdkPageModel
             return Page();
         }
 
-        var chapter = await GetChapter();
+        var chapter = Chapter;
         await _contactService.SendChapterContactMessage(
             ServiceRequest,
             chapter,
@@ -35,6 +35,6 @@ public class ContactModel : OdkPageModel
             viewModel.Message ?? "",
             viewModel.Recaptcha ?? "");
 
-        return Redirect($"/{chapter.ShortName}/Contact?Sent=True");
+        return Redirect($"{OdkRoutes.Groups.Contact(Chapter)}?Sent=True");
     }
 }

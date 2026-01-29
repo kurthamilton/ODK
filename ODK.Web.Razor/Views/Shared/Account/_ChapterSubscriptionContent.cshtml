@@ -13,6 +13,7 @@
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Payments
 @model SubscriptionsPageViewModel
+@inject IOdkRoutes OdkRoutes
 @{
     var title = Model.MemberSubscription == null || Model.MemberSubscription.Type == SubscriptionType.Trial 
         ? "Purchase membership" 
@@ -114,8 +115,7 @@ else if (Model.ChapterSubscriptions.Count > 0)
                     <div>
                         <div class="button-container mt-3">
                             @{
-                                var checkoutUrl = OdkRoutes.Groups
-                                    .SubscriptionCheckout(Model.Platform, Model.Chapter, chapterSubscription);
+                                var checkoutUrl = OdkRoutes.Groups.SubscriptionCheckout(Model.Chapter, chapterSubscription);
                             }                            
 
                             <a class="btn btn-primary" href="@checkoutUrl">

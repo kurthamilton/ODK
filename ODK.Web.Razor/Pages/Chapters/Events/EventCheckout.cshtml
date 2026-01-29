@@ -10,9 +10,9 @@
 @{
     Layout = "_OdkChapterLayout";
 
-    var chapter = await Model.GetChapter();
+    var chapter = Model.Chapter;
 
-    var returnRoute = OdkRoutes.Groups.EventCheckoutConfirm(Model.Platform, chapter, Model.Shortcode);
+    var returnRoute = Model.OdkRoutes.Groups.EventCheckoutConfirm(Model.Chapter, Model.Shortcode);
     var returnPath = $"{returnRoute}?sessionId={{sessionId}}";
     
     var viewModel = await EventViewModelService.GetEventCheckoutPageViewModel(
@@ -33,7 +33,7 @@
         new MenuItem 
         { 
             Icon = IconType.ArrowLeft,
-            Link = OdkRoutes.Groups.Event(Model.Platform, viewModel.Chapter, viewModel.Event.Shortcode),
+            Link = Model.OdkRoutes.Groups.Event(Model.Chapter, viewModel.Event.Shortcode),
             Text = "Back to event"
         }
     },

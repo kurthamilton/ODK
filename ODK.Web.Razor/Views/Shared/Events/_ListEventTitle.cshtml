@@ -4,6 +4,7 @@
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Events
 @model ListEventViewModel
+@inject IOdkRoutes OdkRoutes
 
 <div class="d-flex">
     <div class="me-auto">
@@ -13,7 +14,7 @@
             CurrentResponse = Model.Event.Response
         })
 
-        <a href="@OdkRoutes.Groups.Event(Model.Platform, Model.Chapter, Model.Event.EventShortcode)" 
+        <a href="@OdkRoutes.Groups.Event(Model.Chapter, Model.Event.EventShortcode)"
            class="@(Model.Event.Response != EventResponseType.None ? "ms-1" : null)">
             @Model.Event.EventName
         </a>

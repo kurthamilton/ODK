@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
 using ODK.Core.Platforms;
 using ODK.Services.Chapters;
-using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Attributes;
 
 namespace ODK.Web.Razor.Pages.Account;
@@ -22,12 +21,12 @@ public abstract class OdkSiteAccountPageModel : OdkPageModel
             return;
         }
 
-        var member = await GetCurrentMember();
+        var member = CurrentMember;
         var chapter = await ChapterService.GetDefaultChapter(member);
 
         var redirectPath = chapter == null
             ? "/"
-            : OdkRoutes.Account.Index(chapter);
+            : OdkRoutes.Account.Index(null);
 
         context.Result = Redirect(redirectPath);
     }

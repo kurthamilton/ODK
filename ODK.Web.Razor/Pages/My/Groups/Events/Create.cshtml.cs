@@ -25,7 +25,7 @@ public class CreateModel : OdkGroupAdminPageModel
 
     public async Task<IActionResult> OnPostAsync([FromForm] EventFormSubmitViewModel viewModel)
     {
-        var result = await _eventAdminService.CreateEvent(AdminServiceRequest, new CreateEvent
+        var result = await _eventAdminService.CreateEvent(MemberChapterServiceRequest, new CreateEvent
         {
             AttendeeLimit = viewModel.AttendeeLimit,
             Date = viewModel.Date,
@@ -49,9 +49,8 @@ public class CreateModel : OdkGroupAdminPageModel
             return Page();
         }
 
-        var chapter = await GetChapter();
         AddFeedback(new FeedbackViewModel("Event created", FeedbackType.Success));
-        var url = OdkRoutes.MemberGroups.Events(Platform, chapter);
+        var url = OdkRoutes.GroupAdmin.Events(Chapter);
         return Redirect(url);
     }
 }

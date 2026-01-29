@@ -12,7 +12,7 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Edit Venue | Admin";
 
-    var request = await Model.CreateMemberChapterServiceRequest();
+    var request = Model.MemberChapterServiceRequest;
     var viewModel = await VenueAdminService.GetVenueViewModel(request, Model.Venue.Id);
 }
 
@@ -23,7 +23,7 @@
     {
         new MenuItem
         {
-            Link = OdkRoutes.MemberGroups.Venues(Model.Platform, viewModel.Chapter),
+            Link = Model.OdkRoutes.GroupAdmin.Venues(Model.Chapter),
             Text = "Back to venues",
             Icon = IconType.ArrowLeft
         }

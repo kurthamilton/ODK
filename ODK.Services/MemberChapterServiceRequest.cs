@@ -24,6 +24,7 @@ public class MemberChapterServiceRequest : MemberServiceRequest
         {
             ChapterId = chapterId,
             CurrentMemberId = currentMemberId,
+            CurrentMemberIdOrDefault = currentMemberId,
             HttpRequestContext = httpRequestContext,
             Platform = platform
         };

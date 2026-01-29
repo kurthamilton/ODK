@@ -6,7 +6,7 @@
     Layout = "_OdkChapterLayout";
     Model.Title = "Activate account";
 
-    var chapter = await Model.GetChapter();
+    var chapter = Model.Chapter;
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

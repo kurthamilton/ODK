@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Authentication;
-using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Account;
 
 namespace ODK.Web.Razor.Pages.Account;

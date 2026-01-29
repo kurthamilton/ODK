@@ -35,7 +35,7 @@ public class GroupModel : SiteAdminPageModel
             return OnGet(id);
         }
 
-        var request = CreateMemberChapterServiceRequest(id);
+        var request = MemberChapterServiceRequest;
 
         var result = await _chapterAdminService.UpdateSiteAdminChapter(request, viewModel);
 

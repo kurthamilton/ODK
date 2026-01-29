@@ -295,7 +295,7 @@ public class EmailService : IEmailService
                 options.Chapter?.FullName, siteSettings.PlatformTitle);
         }
 
-        var urlProvider = _urlProviderFactory.Create(request);
+        var urlProvider = await _urlProviderFactory.Create(request);
 
         if (options.Chapter != null)
         {

@@ -19,7 +19,7 @@ public class VenueModel : VenueAdminPageModel
 
     public async Task<IActionResult> OnPostAsync(VenueFormViewModel viewModel)
     {
-        var request = await CreateMemberChapterServiceRequest();
+        var request = MemberChapterServiceRequest;
         var result = await VenueAdminService.UpdateVenue(request, Venue.Id, new CreateVenue
         {
             Address = viewModel.Address,
@@ -34,8 +34,7 @@ public class VenueModel : VenueAdminPageModel
             return Page();
         }
 
-        var chapter = await GetChapter();
         AddFeedback(new FeedbackViewModel("Venue updated", FeedbackType.Success));
-        return Redirect($"/{chapter.ShortName}/Admin/Events/Venues");
+        return Redirect(OdkRoutes.GroupAdmin.Venues(Chapter));
     }
 }

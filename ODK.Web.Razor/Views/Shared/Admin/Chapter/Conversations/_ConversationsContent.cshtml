@@ -4,11 +4,12 @@
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
 @model ChapterConversationsAdminPageViewModel
+@inject IOdkRoutes OdkRoutes
 
 <p>Contact messages sent by logged in users</p>
 
 <p>
-    Your <a href="@OdkRoutes.MemberGroups.GroupPrivacy(Model.Platform, Model.Chapter)">privacy settings</a> currently allow
+    Your <a href="@OdkRoutes.GroupAdmin.GroupPrivacy(Model.Chapter)">privacy settings</a> currently allow
     @switch (Model.PrivacySettings?.Conversations)
     {
         case null:
@@ -49,7 +50,7 @@
                         <td>
                             @if (dto.Member.IsMemberOf(Model.Chapter.Id))
                             {
-                                <a href="@OdkRoutes.MemberGroups.Member(Model.Platform, Model.Chapter, dto.Member.Id)">
+                                <a href="@OdkRoutes.GroupAdmin.Member(Model.Chapter, dto.Member.Id)">
                                     @dto.Member.FullName
                                 </a>
                             }
@@ -59,7 +60,7 @@
                             }
                         </td>
                         <td>
-                            <a href="@OdkRoutes.MemberGroups.GroupConversation(Model.Platform, Model.Chapter, conversation.Id)">
+                            <a href="@OdkRoutes.GroupAdmin.GroupConversation(Model.Chapter, conversation.Id)">
                                 @dto.Conversation.Subject
                             </a>
                         </td>

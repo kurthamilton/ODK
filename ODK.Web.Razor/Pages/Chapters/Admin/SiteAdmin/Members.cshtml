@@ -7,12 +7,9 @@
 @{
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Members | SiteAdmin";
-
-    var chapter = await Model.GetChapter();
-    var viewModel = new OdkComponentViewModel<Chapter>(Model.ComponentContext, chapter);
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
-    ContentFunc = @<div>@await Html.PartialAsync("SiteAdmin/_MembersContent", viewModel)</div>
+    ContentFunc = @<div>@await Html.PartialAsync("SiteAdmin/_MembersContent")</div>
 })

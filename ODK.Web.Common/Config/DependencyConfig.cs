@@ -43,6 +43,7 @@ using ODK.Services.Web;
 using ODK.Web.Common.Account;
 using ODK.Web.Common.Config.Settings;
 using ODK.Web.Common.Platforms;
+using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
 
 namespace ODK.Web.Common.Config;
@@ -119,121 +120,126 @@ public static class DependencyConfig
 
     private static void ConfigureServices(this IServiceCollection services, AppSettings appSettings)
     {
-        services.AddScoped<IAccountViewModelService, AccountViewModelService>();
-        services.AddScoped<IAuthenticationService, AuthenticationService>();
-        services.AddScoped<IAuthorizationService, AuthorizationService>();
-        services.AddScoped<ICacheService, CacheService>();
-        services.AddScoped<IChapterAdminService, ChapterAdminService>();
-        services.AddSingleton(new ChapterAdminServiceSettings
-        {
-            ContactMessageRecaptchaScoreThreshold = appSettings.Recaptcha.ScoreThreshold
-        });
-        services.AddScoped<IChapterService, ChapterService>();
-        services.AddScoped<IChapterViewModelService, ChapterViewModelService>();
-        services.AddScoped<IContactAdminService, ContactAdminService>();
-        services.AddScoped<IContactService, ContactService>();
-        services.AddScoped<ICsvService, CsvService>();
-        services.AddScoped<IEmailAdminService, EmailAdminService>();
-        services.AddScoped<IEmailClient, BrevoApiEmailClient>();
-        services.AddSingleton(new BrevoApiEmailClientSettings
-        {
-            ApiKey = appSettings.Brevo.ApiKey,
-            DebugEmailAddress = appSettings.Emails.DebugEmailAddress
-        });
-        services.AddScoped<IEventAdminService, EventAdminService>();
-        services.AddSingleton(new EventAdminServiceSettings
-        {
-            ShortcodeLength = appSettings.Events.ShortcodeLength
-        });
-        services.AddScoped<IEventService, EventService>();
-        services.AddScoped<IEventViewModelService, EventViewModelService>();
-        services.AddScoped<IFeatureService, FeatureService>();
-        services.AddScoped<IImageService, ImageService>();
-        services.AddScoped<IIssueAdminService, IssueAdminService>();
-        services.AddScoped<IIssueService, IssueService>();
-        services.AddScoped<ILoggingService, LoggingService>();
-        services.AddSingleton(new LoggingServiceSettings
-        {
-            IgnoreUnknownPathPatterns = appSettings.Logging.IgnorePatterns
-                .Concat(appSettings.RateLimiting.BlockPatterns)
-                .ToArray(),
-            IgnoreUnknownPaths = appSettings.Logging.IgnorePaths,
-            IgnoreUnknownPathUserAgents = appSettings.Logging.IgnoreUserAgents
-        });
-        services.AddScoped<IEmailService, EmailService>();
-        services.AddSingleton(new EmailServiceSettings
-        {
-            DefaultBodyBackground = appSettings.Emails.Theme.Body.Background,
-            DefaultBodyColor = appSettings.Emails.Theme.Body.Color,
-            DefaultHeaderBackground = appSettings.Emails.Theme.Header.Background,
-            DefaultHeaderColor = appSettings.Emails.Theme.Header.Color
-        });
-        services.AddScoped<IGeolocationService, GoogleGeolocationService>();
-        services.AddSingleton(new GoogleGeolocationServiceSettings
-        {
-            ApiKey = appSettings.Google.Geolocation.ApiKey
-        });
-        services.AddScoped<IInstagramClient, InstagramClient>();
-        services.AddSingleton(new InstagramClientSettings
-        {
-            ChannelUrl = appSettings.Instagram.BaseUrl + appSettings.Instagram.Paths.Channel,
-            Cookies = appSettings.Instagram.Client.Cookies,
-            GraphQLUrl = appSettings.Instagram.BaseUrl + appSettings.Instagram.Paths.GraphQL,
-            Headers = appSettings.Instagram.Client.Headers,
-            PostsGraphQlDocId = appSettings.Instagram.Client.GraphQL.PostsDocId
-        });
-        services.AddScoped<IMemberAdminService, MemberAdminService>();
-        services.AddSingleton(new MemberAdminServiceSettings
-        {
-            MemberAvatarSize = appSettings.Members.AvatarSize
-        });
-        services.AddScoped<IMemberEmailService, MemberEmailService>();
-        services.AddScoped<IMemberImageService, MemberImageService>();
-        services.AddSingleton(new MemberImageServiceSettings
-        {
-            MaxImageSize = appSettings.Members.MaxImageSize,
-            MemberAvatarSize = appSettings.Members.AvatarSize
-        });
-        services.AddScoped<IMemberService, MemberService>();
-        services.AddScoped<IMemberViewModelService, MemberViewModelService>();
-        services.AddScoped<INotificationService, NotificationService>();
-        services.AddScoped<IOAuthProviderFactory, OAuthProviderFactory>();
-        services.AddScoped<IPasswordHasher, PasswordHasher>();
-        services.AddSingleton(new PasswordHasherSettings
-        {
-            Algorithm = appSettings.Auth.Passwords.Algorithm,
-            Iterations = appSettings.Auth.Passwords.Iterations
-        });
-        services.AddScoped<IPaymentAdminService, PaymentAdminService>();
-        services.AddScoped<IPaymentService, PaymentService>();
-        services.AddScoped<IPlatformProvider, PlatformProvider>();
-        services.AddSingleton(new PlatformProviderSettings
-        {
-            DefaultBaseUrls = appSettings.Platforms
-                .Where(x => x.Type == PlatformType.Default.ToString())
-                .Select(x => x.BaseUrl)
-                .ToArray(),
-            DrunkenKnitwitsBaseUrls = appSettings.Platforms
-                .Where(x => x.Type == PlatformType.DrunkenKnitwits.ToString())
-                .Select(x => x.BaseUrl)
-                .ToArray()
-        });
-        services.AddScoped<IRecaptchaService, RecaptchaService>();
-        services.AddScoped<ISettingsService, SettingsService>();
-        services.AddScoped<ISiteSubscriptionAdminService, SiteSubscriptionAdminService>();
-        services.AddScoped<ISiteSubscriptionService, SiteSubscriptionService>();
-        services.AddScoped<ISocialMediaService, SocialMediaService>();
-        services.AddSingleton(new SocialMediaServiceSettings
-        {
-            InstagramChannelUrlFormat = appSettings.Instagram.BaseUrl + appSettings.Instagram.Paths.Channel,
-            InstagramFetchWaitSeconds = appSettings.Instagram.FetchWaitSeconds,
-            InstagramPostUrlFormat = appSettings.Instagram.BaseUrl + appSettings.Instagram.Paths.Post,
-            InstagramTagUrlFormat = appSettings.Instagram.BaseUrl + appSettings.Instagram.Paths.Tag,
-            WhatsAppUrlFormat = appSettings.WhatsApp.UrlFormat
-        });
-        services.AddScoped<ITopicAdminService, TopicAdminService>();
-        services.AddScoped<ITopicService, TopicService>();
-        services.AddScoped<IVenueAdminService, VenueAdminService>();
+        services
+            .AddScoped<IAccountViewModelService, AccountViewModelService>() 
+            .AddScoped<IAuthenticationService, AuthenticationService>() 
+            .AddScoped<IAuthorizationService, AuthorizationService>()
+            .AddScoped<ICacheService, CacheService>()
+            .AddScoped<IChapterAdminService, ChapterAdminService>()
+            .AddSingleton(new ChapterAdminServiceSettings
+            {
+                ContactMessageRecaptchaScoreThreshold = appSettings.Recaptcha.ScoreThreshold
+            })
+            .AddScoped<IChapterService, ChapterService>()   
+            .AddScoped<IChapterViewModelService, ChapterViewModelService>()
+            .AddScoped<IContactAdminService, ContactAdminService>()
+            .AddScoped<IContactService, ContactService>()
+            .AddScoped<ICsvService, CsvService>()
+            .AddScoped<IEmailAdminService, EmailAdminService>()
+            .AddScoped<IEmailClient, BrevoApiEmailClient>()
+            .AddSingleton(new BrevoApiEmailClientSettings
+            {
+                ApiKey = appSettings.Brevo.ApiKey,
+                DebugEmailAddress = appSettings.Emails.DebugEmailAddress
+            })
+            .AddScoped<IEventAdminService, EventAdminService>()
+            .AddSingleton(new EventAdminServiceSettings
+            {
+                ShortcodeLength = appSettings.Events.ShortcodeLength
+            })
+            .AddScoped<IEventService, EventService>()
+            .AddScoped<IEventViewModelService, EventViewModelService>()
+            .AddScoped<IFeatureService, FeatureService>()
+            .AddScoped<IImageService, ImageService>()
+            .AddScoped<IIssueAdminService, IssueAdminService>()
+            .AddScoped<IIssueService, IssueService>()
+            .AddScoped<ILoggingService, LoggingService>()
+            .AddSingleton(new LoggingServiceSettings
+            {
+                IgnoreUnknownPathPatterns = appSettings.Logging.IgnorePatterns
+                    .Concat(appSettings.RateLimiting.BlockPatterns)
+                    .ToArray(),
+                IgnoreUnknownPaths = appSettings.Logging.IgnorePaths,
+                IgnoreUnknownPathUserAgents = appSettings.Logging.IgnoreUserAgents
+            })
+            .AddScoped<IEmailService, EmailService>()
+            .AddSingleton(new EmailServiceSettings
+            {
+                DefaultBodyBackground = appSettings.Emails.Theme.Body.Background,
+                DefaultBodyColor = appSettings.Emails.Theme.Body.Color,
+                DefaultHeaderBackground = appSettings.Emails.Theme.Header.Background,
+                DefaultHeaderColor = appSettings.Emails.Theme.Header.Color
+            })
+            .AddScoped<IGeolocationService, GoogleGeolocationService>()
+            .AddSingleton(new GoogleGeolocationServiceSettings
+            {
+                ApiKey = appSettings.Google.Geolocation.ApiKey
+            })
+            .AddScoped<IInstagramClient, InstagramClient>()
+            .AddSingleton(new InstagramClientSettings
+            {
+                ChannelUrl = appSettings.Instagram.BaseUrl + appSettings.Instagram.Paths.Channel,
+                Cookies = appSettings.Instagram.Client.Cookies,
+                GraphQLUrl = appSettings.Instagram.BaseUrl + appSettings.Instagram.Paths.GraphQL,
+                Headers = appSettings.Instagram.Client.Headers,
+                PostsGraphQlDocId = appSettings.Instagram.Client.GraphQL.PostsDocId
+            })
+            .AddScoped<IMemberAdminService, MemberAdminService>()
+            .AddSingleton(new MemberAdminServiceSettings
+            {
+                MemberAvatarSize = appSettings.Members.AvatarSize
+            })
+            .AddScoped<IMemberEmailService, MemberEmailService>()
+            .AddScoped<IMemberImageService, MemberImageService>()
+            .AddSingleton(new MemberImageServiceSettings
+            {
+                MaxImageSize = appSettings.Members.MaxImageSize,
+                MemberAvatarSize = appSettings.Members.AvatarSize
+            })
+            .AddScoped<IMemberService, MemberService>()
+            .AddScoped<IMemberViewModelService, MemberViewModelService>()
+            .AddScoped<INotificationService, NotificationService>()
+            .AddScoped<IOAuthProviderFactory, OAuthProviderFactory>()
+            .AddScoped<IOdkRoutes, OdkRoutes>()
+            .AddScoped<IOdkRoutesFactory, OdkRoutesFactory>()
+            .AddScoped<IPasswordHasher, PasswordHasher>()
+            .AddSingleton(new PasswordHasherSettings
+            {
+                Algorithm = appSettings.Auth.Passwords.Algorithm,
+                Iterations = appSettings.Auth.Passwords.Iterations
+            })
+            .AddScoped<IPaymentAdminService, PaymentAdminService>()
+            .AddScoped<IPaymentService, PaymentService>()
+            .AddScoped<IPlatformProvider, PlatformProvider>()
+            .AddSingleton(new PlatformProviderSettings
+            {
+                DefaultBaseUrls = appSettings.Platforms
+                    .Where(x => x.Type == PlatformType.Default.ToString())
+                    .Select(x => x.BaseUrl)
+                    .ToArray(),
+                DrunkenKnitwitsBaseUrls = appSettings.Platforms
+                    .Where(x => x.Type == PlatformType.DrunkenKnitwits.ToString())
+                    .Select(x => x.BaseUrl)
+                    .ToArray()
+            })
+            .AddScoped<IRecaptchaService, RecaptchaService>()
+            .AddScoped<IRequestStore, RequestStore>()
+            .AddScoped<IRequestStoreFactory, RequestStoreFactory>()
+            .AddScoped<ISettingsService, SettingsService>()
+            .AddScoped<ISiteSubscriptionAdminService, SiteSubscriptionAdminService>()
+            .AddScoped<ISiteSubscriptionService, SiteSubscriptionService>()
+            .AddScoped<ISocialMediaService, SocialMediaService>()
+            .AddSingleton(new SocialMediaServiceSettings
+            {
+                InstagramChannelUrlFormat = appSettings.Instagram.BaseUrl + appSettings.Instagram.Paths.Channel,
+                InstagramFetchWaitSeconds = appSettings.Instagram.FetchWaitSeconds,
+                InstagramPostUrlFormat = appSettings.Instagram.BaseUrl + appSettings.Instagram.Paths.Post,
+                InstagramTagUrlFormat = appSettings.Instagram.BaseUrl + appSettings.Instagram.Paths.Tag,
+                WhatsAppUrlFormat = appSettings.WhatsApp.UrlFormat
+            })
+            .AddScoped<ITopicAdminService, TopicAdminService>()
+            .AddScoped<ITopicService, TopicService>()
+            .AddScoped<IVenueAdminService, VenueAdminService>();
     }
 
     private static void ConfigureServiceSettings(IServiceCollection services, AppSettings appSettings)

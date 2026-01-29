@@ -4,13 +4,8 @@ using ODK.Web.Common.Components;
 
 namespace ODK.Web.Razor.Models.Header;
 
-public class NavbarViewModel : OdkComponentViewModel
-{
-    public NavbarViewModel(OdkComponentContext context)
-        : base(context)
-    {
-    }
-
+public class NavbarViewModel
+{    
     public string? Breakpoint { get; set; }
 
     public Chapter? Chapter { get; set; }

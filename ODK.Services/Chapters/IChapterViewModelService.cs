@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Chapters;
+using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Services.Chapters.ViewModels;
 
@@ -7,38 +8,46 @@ namespace ODK.Services.Chapters;
 public interface IChapterViewModelService
 {
     Task<GroupsViewModel> FindGroups(
-        PlatformType platform, Guid? currentMemberId, GroupFilter filter);
+        PlatformType platform, Member? currentMember, GroupFilter filter);
 
     Task<AccountMenuChaptersViewModel> GetAccountMenuChaptersViewModel(MemberServiceRequest request);
 
     Task<ChapterAboutPageViewModel> GetChapterAboutPage(Chapter chapter);
 
-    Task<ChapterCreateViewModel> GetChapterCreate(PlatformType platform, Guid currentMemberId);
+    Task<ChapterCreateViewModel> GetChapterCreate(PlatformType platform, Member currentMember);
 
     Task<GroupContactPageViewModel> GetGroupContactPage(
-        ServiceRequest request, Guid? currentMemberId, Chapter chapter);
+        ServiceRequest request, Member? currentMember, Chapter chapter);
 
     Task<GroupConversationPageViewModel> GetGroupConversationPage(
-        MemberServiceRequest request, Chapter chapter, Guid conversationId);
+        ServiceRequest request, Member currentMember, Chapter chapter, Guid conversationId);
 
-    Task<GroupEventsPageViewModel> GetGroupEventsPage(ServiceRequest request, Guid? currentMemberId, Chapter chapter);
+    Task<GroupEventsPageViewModel> GetGroupEventsPage(
+        ServiceRequest request, Member? currentMember, Chapter chapter);
 
-    Task<GroupPageViewModel> GetGroupPage(ServiceRequest request, Guid? currentMemberId, Chapter chapter);
+    Task<GroupPageViewModel> GetGroupPage(
+        ServiceRequest request, Member? currentMember, Chapter chapter);
 
-    Task<GroupEventsPageViewModel> GetGroupPastEventsPage(ServiceRequest request, Guid? currentMemberId, Chapter chapter);
+    Task<GroupEventsPageViewModel> GetGroupPastEventsPage(
+        ServiceRequest request, Member? currentMember, Chapter chapter);
 
-    Task<GroupHomePageViewModel> GetGroupHomePage(ServiceRequest request, Guid? currentMemberId, Chapter chapter);
+    Task<GroupHomePageViewModel> GetGroupHomePage(
+        ServiceRequest request, Member? currentMember, Chapter chapter);
 
-    Task<GroupJoinPageViewModel> GetGroupJoinPage(ServiceRequest request, Guid? currentMemberId, Chapter chapter);
+    Task<GroupJoinPageViewModel> GetGroupJoinPage(
+        ServiceRequest request, Member? currentMember, Chapter chapter);
 
-    Task<GroupProfilePageViewModel> GetGroupProfilePage(MemberServiceRequest request, Chapter chapter);
+    Task<GroupProfilePageViewModel> GetGroupProfilePage(
+        ServiceRequest request, Member currentMember, Chapter chapter);
 
-    Task<GroupQuestionsPageViewModel> GetGroupQuestionsPage(ServiceRequest request, Guid? currentMemberId, Chapter chapter);
+    Task<GroupQuestionsPageViewModel> GetGroupQuestionsPage(
+        ServiceRequest request, Member? currentMember, Chapter chapter);
 
     Task<GroupSubscriptionPageViewModel> GetGroupSubscriptionPage(
-        MemberServiceRequest request, Chapter chapter);
+        ServiceRequest request, Member member, Chapter chapter);
 
-    Task<ChapterHomePageViewModel> GetHomePage(ServiceRequest request, Guid? currentMemberId, Chapter chapter);
+    Task<ChapterHomePageViewModel> GetHomePage(
+        ServiceRequest request, Member? currentMember, Chapter chapter);
 
     Task<MemberChaptersViewModel> GetMemberChapters(MemberServiceRequest request);
 }

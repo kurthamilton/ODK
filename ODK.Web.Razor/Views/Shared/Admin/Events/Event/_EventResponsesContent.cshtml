@@ -6,6 +6,7 @@
 @using ODK.Web.Razor.Models.Events
 @using ODK.Web.Razor.Models.Members
 @model EventAttendeesAdminPageViewModel
+@inject IOdkRoutes OdkRoutes
 @{
     var memberDictionary = Model.Members
         .ToDictionary(x => x.Id);
@@ -94,7 +95,7 @@
                             responseDictionary.TryGetValue(member.Id, out var response);
 
                             <div class="col mb-3">
-                                <a href="@OdkRoutes.MemberGroups.Member(Model.Platform, Model.Chapter, member.Id)"
+                                <a href="@OdkRoutes.GroupAdmin.Member(Model.Chapter, member.Id)"
                                     class="text-center">
                                     <div>
                                         @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel

@@ -1,4 +1,5 @@
 ﻿@using ODK.Services.Chapters
+@using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Footer
 @using ODK.Web.Razor.Models.Header
 @using ODK.Web.Razor.Pages.Chapters
@@ -8,14 +9,13 @@
 @{
     Layout = "_Layout";
 
-    var chapter = await RequestStore.GetChapterOrDefault();
+    var chapter = RequestStore.ChapterOrDefault;
     if (chapter == null)
     {
         return;
     }
 
-    var member = await RequestStore.GetCurrentMemberOrDefault();
-    var componentContext = RequestStore.ComponentContext;
+    var member = RequestStore.CurrentMemberOrDefault;
 
     var viewModel = await ChapterService.GetChapterLayoutViewModel(chapter.Id);
 }
@@ -27,7 +27,7 @@
 
 @section header
 {
-    @await Html.PartialAsync("Header/_ChapterHeader", new ChapterHeaderViewModel(componentContext)
+    @await Html.PartialAsync("Header/_ChapterHeader", new ChapterHeaderViewModel
     {
         Chapter = chapter,
         Member = member,
@@ -41,7 +41,7 @@
 
 @section footer
 {
-    @await Html.PartialAsync("Footer/_ChapterFooter", new FooterViewModel(componentContext)
+    @await Html.PartialAsync("Footer/_ChapterFooter", new FooterViewModel
     {
         Chapter = chapter,
         Links = viewModel.Links

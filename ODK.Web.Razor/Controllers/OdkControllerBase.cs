@@ -2,13 +2,15 @@
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Chapters;
+using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Core.Utils;
-using ODK.Core.Web;
 using ODK.Services;
 using ODK.Web.Common.Extensions;
 using ODK.Web.Common.Feedback;
-using ODK.Web.Razor.Services;
+using ODK.Web.Common.Routes;
+using ODK.Web.Common.Services;
+using MemberChapterServiceRequestImpl = ODK.Services.MemberChapterServiceRequest;
 
 namespace ODK.Web.Razor.Controllers;
 
@@ -18,16 +20,25 @@ public abstract class OdkControllerBase : Controller
 
     private readonly IRequestStore _requestStore;
 
-    protected OdkControllerBase(IRequestStore requestStore)
+    protected OdkControllerBase(
+        IRequestStore requestStore,
+        IOdkRoutes odkRoutes)
     {
         _requestStore = requestStore;
+        OdkRoutes = odkRoutes;
     }
 
-    protected IHttpRequestContext HttpRequestContext => _requestStore.HttpRequestContext;
+    protected Chapter Chapter => _requestStore.Chapter;
+
+    protected Member CurrentMember => _requestStore.CurrentMember;
+
+    protected MemberChapterServiceRequest MemberChapterServiceRequest => _requestStore.MemberChapterServiceRequest;
 
     protected Guid MemberId => _requestStore.CurrentMemberId;
 
     protected MemberServiceRequest MemberServiceRequest => _requestStore.MemberServiceRequest;
+
+    protected IOdkRoutes OdkRoutes { get; }
 
     protected PlatformType Platform => _requestStore.Platform;
 
@@ -57,13 +68,14 @@ public abstract class OdkControllerBase : Controller
         TempData!.AddFeedback(viewModel);
     }
 
+    protected MemberChapterServiceRequest CreateMemberChapterServiceRequest(Guid chapterId)
+        => MemberChapterServiceRequestImpl.Create(chapterId, MemberChapterServiceRequest);
+
     protected IActionResult DownloadCsv(IReadOnlyCollection<IReadOnlyCollection<string>> data, string fileName)
     {
         var csv = StringUtils.ToCsv(data);
         return File(Encoding.UTF8.GetBytes(csv), "text/csv", fileName);
-    }
-
-    protected Task<Chapter> GetChapter() => _requestStore.GetChapter();
+    }    
 
     protected async Task<IActionResult> HandleVersionedRequest<T>(Func<long?, Task<VersionedServiceResult<T>>> getter, Func<T?, IActionResult> map) where T : class
     {
@@ -80,9 +92,6 @@ public abstract class OdkControllerBase : Controller
 
         return map(result.Value);
     }
-
-    protected MemberChapterServiceRequest CreateMemberChapterServiceRequest(Guid chapterId)
-        => MemberChapterServiceRequest.Create(chapterId, MemberServiceRequest);
 
     protected async Task<string> ReadBodyText()
     {

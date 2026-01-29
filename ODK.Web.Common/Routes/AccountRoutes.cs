@@ -7,6 +7,11 @@ namespace ODK.Web.Common.Routes;
 
 public class AccountRoutes : RoutesBase
 {
+    public AccountRoutes(PlatformType platform)
+        : base(platform)
+    {
+    }
+
     public string Activate(Chapter? chapter, string token)
         => AccountPath(chapter, $"/activate?token={HttpUtility.UrlEncode(token)}");
 
@@ -14,8 +19,8 @@ public class AccountRoutes : RoutesBase
 
     public string Delete(Chapter? chapter) => AccountPath(chapter, "/delete");
 
-    public string EmailAddressChange(PlatformType platform, Chapter? chapter) =>
-        platform == PlatformType.DrunkenKnitwits
+    public string EmailAddressChange(Chapter? chapter) =>
+        Platform == PlatformType.DrunkenKnitwits
             ? AccountPath(chapter, "/email/change")
             : EmailPreferences(chapter);
 
@@ -40,6 +45,8 @@ public class AccountRoutes : RoutesBase
 
     public string Login(Chapter? chapter) => AccountPath(chapter, "/login");
 
+    public string Logout(Chapter? chapter) => AccountPath(chapter, "/logout");
+
     public string Notifications(Chapter? chapter) => AccountPath(chapter, "/notifications");
 
     public string PasswordChange(Chapter? chapter) => AccountPath(chapter, "/password/change");
@@ -49,7 +56,7 @@ public class AccountRoutes : RoutesBase
 
     public string Payments(Chapter? chapter) => AccountPath(chapter, "/payments");
 
-    public string PersonalDetails(Chapter? chapter) => AccountPath(chapter, string.Empty);
+    public string PersonalDetails() => AccountPath(null, string.Empty);
 
     public string Picture(Chapter? chapter) => AccountPath(chapter, "/picture");
 
@@ -59,7 +66,8 @@ public class AccountRoutes : RoutesBase
 
     public string Profile(Chapter? chapter) => AccountPath(chapter, "/profile");
 
-    public string Subscription(PlatformType platform, Chapter? chapter) => AccountPath(chapter, "/subscription");
+    public string Subscription(Chapter? chapter) => AccountPath(chapter, "/subscription");
 
-    private string AccountPath(Chapter? chapter, string path) => GetRoute(chapter, "/account" + path);
+    private string AccountPath(Chapter? chapter, string path) 
+        => GetRoute(chapter, "/account" + path);
 }

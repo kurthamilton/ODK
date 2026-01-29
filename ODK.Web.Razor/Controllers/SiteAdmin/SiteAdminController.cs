@@ -14,9 +14,9 @@ using ODK.Services.Topics;
 using ODK.Services.Topics.Models;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
+using ODK.Web.Common.Services;
 using ODK.Web.Razor.Models.Admin.Chapters;
 using ODK.Web.Razor.Models.SiteAdmin;
-using ODK.Web.Razor.Services;
 
 namespace ODK.Web.Razor.Controllers.SiteAdmin;
 
@@ -42,8 +42,9 @@ public class SiteAdminController : OdkControllerBase
         ITopicAdminService topicAdminService,
         IPaymentAdminService paymentAdminService,
         IRequestStore requestStore,
-        IEventAdminService eventAdminService)
-        : base(requestStore)
+        IEventAdminService eventAdminService,
+        IOdkRoutes odkRoutes)
+        : base(requestStore, odkRoutes)
     {
         _contactAdminService = contactAdminService;
         _eventAdminService = eventAdminService;

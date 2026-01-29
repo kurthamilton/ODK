@@ -4,19 +4,20 @@
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @model MemberAdminPageViewModelBase
+@inject IOdkRoutes OdkRoutes
 @{
     var menuItems = new List<MenuItem>
     {
-        new MenuItem { Link = OdkRoutes.MemberGroups.Member(Model.Platform, Model.Chapter, Model.Member.Id), Text = "Subscription" },
-        new MenuItem { Link = OdkRoutes.MemberGroups.MemberEvents(Model.Platform, Model.Chapter, Model.Member.Id), Text = "Events" },
-        new MenuItem { Link = OdkRoutes.MemberGroups.MemberPayments(Model.Platform, Model.Chapter, Model.Member.Id), Text = "Payments" },
-        new MenuItem { Link = OdkRoutes.MemberGroups.MemberConversations(Model.Platform, Model.Chapter, Model.Member.Id), Text = "Conversations" },
-        new MenuItem { Link = OdkRoutes.MemberGroups.MemberDelete(Model.Platform, Model.Chapter, Model.Member.Id), Text = "Delete" }
+        new MenuItem { Link = OdkRoutes.GroupAdmin.Member(Model.Chapter, Model.Member.Id), Text = "Subscription" },
+        new MenuItem { Link = OdkRoutes.GroupAdmin.MemberEvents(Model.Chapter, Model.Member.Id), Text = "Events" },
+        new MenuItem { Link = OdkRoutes.GroupAdmin.MemberPayments(Model.Chapter, Model.Member.Id), Text = "Payments" },
+        new MenuItem { Link = OdkRoutes.GroupAdmin.MemberConversations(Model.Chapter, Model.Member.Id), Text = "Conversations" },
+        new MenuItem { Link = OdkRoutes.GroupAdmin.MemberDelete(Model.Chapter, Model.Member.Id), Text = "Delete" }
     };
 
     if (Model.Platform == PlatformType.DrunkenKnitwits)
     {
-        menuItems.Add(new MenuItem { Link = OdkRoutes.MemberGroups.MemberImage(Model.Platform, Model.Chapter, Model.Member.Id), Text = "Image" });
+        menuItems.Add(new MenuItem { Link = OdkRoutes.GroupAdmin.MemberImage(Model.Chapter, Model.Member.Id), Text = "Image" });
     }
 }
 

@@ -986,11 +986,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         _unitOfWork.EventEmailRepository.Add(eventEmail);
         await _unitOfWork.SaveChangesAsync();
 
-        var scheduledJobRequest = new ServiceRequest
-        {
-            HttpRequestContext = request.HttpRequestContext,
-            Platform = request.Platform
-        };
+        var scheduledJobRequest = ServiceRequest.Create(request);
 
         eventEmail.JobId = _backgroundTaskService.Schedule(
             () => SendScheduledEmails(request, eventEmail.Id),

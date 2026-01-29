@@ -9,7 +9,7 @@
 @{
     Layout = "_GroupAdminLayout";
 
-    var viewModel = await EventAdminService.GetEventEditViewModel(Model.AdminServiceRequest, Model.EventId);
+    var viewModel = await EventAdminService.GetEventEditViewModel(Model.MemberChapterServiceRequest, Model.EventId);
 
     Model.Title = viewModel.Event.GetDisplayName();
 }
@@ -23,7 +23,7 @@
         {
             new MenuItem
             {
-                Link = OdkRoutes.MemberGroups.Events(Model.Platform, viewModel.Chapter),
+                Link = Model.OdkRoutes.GroupAdmin.Events(Model.Chapter),
                 Text = "Back to events",
                 Icon = IconType.ArrowLeft
             }

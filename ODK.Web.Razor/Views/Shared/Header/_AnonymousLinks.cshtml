@@ -1,10 +1,16 @@
 ﻿@using ODK.Web.Common.Routes
-@model ODK.Web.Razor.Models.Header.AccountMenuViewModel
+@using ODK.Web.Common.Services
+@using ODK.Web.Razor.Models.Account
+@inject IOdkRoutes OdkRoutes
+@inject IRequestStore RequestStore
+@{
+    var chapter = RequestStore.ChapterOrDefault;
+}
 
 <div class="anonymous-links">
-    <a class="btn btn-primary anonymous-link" href="@OdkRoutes.Account.Login(Model.CurrentChapter)">Sign in</a>
-    @if (Model.CurrentChapter != null)
+    <a class="btn btn-primary anonymous-link" href="@OdkRoutes.Account.Login(chapter)">Sign in</a>
+    @if (RequestStore.ChapterOrDefault != null)
     {
-        <a class="btn btn-success anonymous-link" href="@OdkRoutes.Account.Join(Model.CurrentChapter)">Join</a>
+        <a class="btn btn-success anonymous-link" href="@OdkRoutes.Account.Join(chapter)">Join</a>
     }
 </div>

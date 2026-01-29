@@ -1,12 +1,8 @@
 ﻿@page "/{chapterName}/admin/chapter/subscription/{id:guid}/checkout"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
-@using ODK.Core.Payments
-@using ODK.Services
 @using ODK.Services.Chapters
-@using ODK.Services.Subscriptions
 @using ODK.Web.Common.Components
-@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
@@ -17,8 +13,9 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Checkout | Subscription | Admin";
 
-    var chapter = await Model.GetChapter();
-    var request = await Model.CreateMemberChapterServiceRequest();
+    var chapter = Model.Chapter;
+    var request = Model.MemberChapterServiceRequest;
+
     var returnPath = $"/{chapter.ShortName}/admin/chapter/subscription/{Model.PriceId}/confirm?sessionId={{sessionId}}";
     var viewModel = await ChapterAdminService.StartSiteSubscriptionCheckout(
         request, Model.PriceId, returnPath);
@@ -33,7 +30,7 @@
         {
             Icon = IconType.ArrowLeft,
             Text = "Back to subscription",
-            Link = OdkRoutes.MemberGroups.GroupSubscription(Model.Platform, chapter)
+            Link = Model.OdkRoutes.GroupAdmin.GroupSubscription(Model.Chapter)
         }
     },
     ContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_ChapterSubscriptionCheckoutContent", viewModel)</div>

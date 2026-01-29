@@ -7,7 +7,8 @@ using ODK.Services.Payments;
 using ODK.Services.Tasks;
 using ODK.Web.Common.Config.Settings;
 using ODK.Web.Common.Extensions;
-using ODK.Web.Razor.Services;
+using ODK.Web.Common.Routes;
+using ODK.Web.Common.Services;
 
 namespace ODK.Web.Razor.Controllers;
 
@@ -29,8 +30,9 @@ public class WebhooksController : OdkControllerBase
         IStripeWebhookParser stripeWebhookParser,
         IRequestStore requestStore,
         IEmailService emailService,
-        AppSettings appSettings)
-        : base(requestStore)
+        AppSettings appSettings,
+        IOdkRoutes odkRoutes)
+        : base(requestStore, odkRoutes)
     {
         _appSettings = appSettings;
         _backgroundTaskService = backgroundTaskService;

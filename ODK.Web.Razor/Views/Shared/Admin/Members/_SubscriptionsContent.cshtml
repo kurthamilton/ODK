@@ -11,6 +11,7 @@
 @using ODK.Web.Razor.Models.Admin.Members
 @using ODK.Web.Razor.Models.Components
 @model SubscriptionsAdminPageViewModel
+@inject IOdkRoutes OdkRoutes
 @{        
     var (subscriptions, membershipSettings) = 
         (Model.ChapterSubscriptions, Model.MembershipSettings);
@@ -34,12 +35,12 @@
                 {
                     <div class="alert alert-warning">
                         Membership is currently disabled. 
-                        <a href="@OdkRoutes.MemberGroups.MembershipSettings(Model.Platform, Model.Chapter)">Update membership settings</a>
+                        <a href="@OdkRoutes.GroupAdmin.MembershipSettings(Model.Chapter)">Update membership settings</a>
                     </div>
                 }
 
                 <p>
-                    <a href="@OdkRoutes.MemberGroups.MembersSubscriptionCreate(Model.Platform, Model.Chapter)" class="btn btn-primary">
+                    <a href="@OdkRoutes.GroupAdmin.MembersSubscriptionCreate(Model.Chapter)" class="btn btn-primary">
                         Create subscription
                     </a>
                 </p>
@@ -71,7 +72,7 @@
                                     }
                                 </td>    
                                 <td>
-                                    <a href="@OdkRoutes.MemberGroups.MembersSubscription(Model.Platform, Model.Chapter, subscription)">@subscription.Name</a>
+                                    <a href="@OdkRoutes.GroupAdmin.MembersSubscription(Model.Chapter, subscription)">@subscription.Name</a>
                                 </td>                                
                                 <td>
                                     @subscription.Currency.ToAmountString(subscription.Amount)

@@ -6,8 +6,8 @@ using ODK.Services.Members;
 using ODK.Services.Members.Models;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
+using ODK.Web.Common.Services;
 using ODK.Web.Razor.Models.Admin.Members;
-using ODK.Web.Razor.Services;
 
 namespace ODK.Web.Razor.Controllers.Admin;
 
@@ -19,8 +19,9 @@ public class MemberAdminController : AdminControllerBase
     public MemberAdminController(
         IMemberAdminService memberAdminService,
         IChapterAdminService chapterAdminService,
-        IRequestStore requestStore)
-        : base(requestStore)
+        IRequestStore requestStore,
+        IOdkRoutes odkRoutes)
+        : base(requestStore, odkRoutes)
     {
         _chapterAdminService = chapterAdminService;
         _memberAdminService = memberAdminService;
@@ -29,7 +30,7 @@ public class MemberAdminController : AdminControllerBase
     [HttpPost("groups/{chapterId:guid}/members/{id:guid}/approve")]
     public async Task<IActionResult> ApproveMember(Guid chapterId, Guid id)
     {
-        var request = CreateMemberChapterServiceRequest(chapterId);
+        var request = MemberChapterServiceRequest;
         var result = await _memberAdminService.ApproveMember(request, id);
         AddFeedback(result, "Member approved");
         return RedirectToReferrer();
@@ -39,7 +40,7 @@ public class MemberAdminController : AdminControllerBase
     public async Task<IActionResult> UpdatePicture(Guid chapterId, Guid id,
         [FromForm] string imageDataUrl)
     {
-        var request = CreateMemberChapterServiceRequest(chapterId);
+        var request = MemberChapterServiceRequest;
 
         if (string.IsNullOrEmpty(imageDataUrl))
         {
@@ -64,7 +65,7 @@ public class MemberAdminController : AdminControllerBase
     [HttpPost("groups/{chapterId:guid}/members/{id:guid}/delete")]
     public async Task<IActionResult> DeleteMember(Guid chapterId, Guid id, [FromForm] string? reason)
     {
-        var request = CreateMemberChapterServiceRequest(chapterId);
+        var request = MemberChapterServiceRequest;
         var result = await _memberAdminService.RemoveMemberFromChapter(request, id, reason);
         AddFeedback(result, "Member deleted");
 
@@ -73,14 +74,14 @@ public class MemberAdminController : AdminControllerBase
             return RedirectToReferrer();
         }
 
-        var chapter = await GetChapter();
-        return Redirect(OdkRoutes.MemberGroups.Members(Platform, chapter));
+        var chapter = Chapter;
+        return Redirect(OdkRoutes.GroupAdmin.Members(Chapter));
     }
 
     [HttpPost("groups/{chapterId:guid}members/{id:guid}/emails/activation/send")]
     public async Task<IActionResult> SendActivationEmail(Guid chapterId, Guid id)
     {
-        var request = CreateMemberChapterServiceRequest(chapterId);
+        var request = MemberChapterServiceRequest;
         await _memberAdminService.SendActivationEmail(request, id);
         AddFeedback("Email sent", FeedbackType.Success);
         return RedirectToReferrer();
@@ -99,7 +100,7 @@ public class MemberAdminController : AdminControllerBase
     public async Task<IActionResult> AddAdminMember(Guid chapterId,
         [FromForm] AdminMemberAddFormViewModel viewModel)
     {
-        var request = CreateMemberChapterServiceRequest(chapterId);
+        var request = MemberChapterServiceRequest;
         var result = await _chapterAdminService.AddChapterAdminMember(request, viewModel.MemberId!.Value);
         AddFeedback(result, "Admin member added");
         return RedirectToReferrer();
@@ -108,7 +109,7 @@ public class MemberAdminController : AdminControllerBase
     [HttpPost("groups/{chapterId:guid}/members/admins/{memberId:guid}/delete")]
     public async Task<IActionResult> AddAdminMember(Guid chapterId, Guid memberId)
     {
-        var request = CreateMemberChapterServiceRequest(chapterId);
+        var request = MemberChapterServiceRequest;
         var result = await _chapterAdminService.DeleteChapterAdminMember(request, memberId);
         AddFeedback(result, "Admin member removed");
         return RedirectToReferrer();
@@ -127,7 +128,7 @@ public class MemberAdminController : AdminControllerBase
     public async Task<IActionResult> SendBulkEmail(Guid chapterId,
         [FromForm] SendMemberBulkEmailFormViewModel viewModel)
     {
-        var request = CreateMemberChapterServiceRequest(chapterId);
+        var request = MemberChapterServiceRequest;
 
         var filter = new MemberFilter
         {
@@ -143,7 +144,7 @@ public class MemberAdminController : AdminControllerBase
     [HttpPost("groups/{chapterId:guid}/members/subscriptions/{id:guid}/delete")]
     public async Task<IActionResult> DeleteSubscription(Guid chapterId, Guid id)
     {
-        var request = CreateMemberChapterServiceRequest(chapterId);
+        var request = MemberChapterServiceRequest;
         var result = await _chapterAdminService.DeleteChapterSubscription(request, id);
         AddFeedback(result, "Subscription deleted");
         return RedirectToReferrer();

@@ -24,7 +24,7 @@ public class VenueModel : OdkGroupAdminPageModel
 
     public async Task<IActionResult> OnPostAsync(Guid venueId, VenueFormViewModel viewModel)
     {
-        var result = await _venueAdminService.UpdateVenue(AdminServiceRequest, venueId, new CreateVenue
+        var result = await _venueAdminService.UpdateVenue(MemberChapterServiceRequest, venueId, new CreateVenue
         {
             Address = viewModel.Address,
             Location = LatLong.FromCoords(viewModel.Lat, viewModel.Long),
@@ -39,7 +39,6 @@ public class VenueModel : OdkGroupAdminPageModel
             return Page();
         }
 
-        var chapter = await GetChapter();
-        return Redirect(OdkRoutes.MemberGroups.Venues(Platform, chapter));
+        return Redirect(OdkRoutes.GroupAdmin.Venues(Chapter));
     }
 }

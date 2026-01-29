@@ -11,6 +11,7 @@
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model EventsAdminPageViewModel
+@inject IOdkRoutes OdkRoutes
 @{
     var (events, venues, allInvites, allResponses) = 
         (Model.Events, Model.Venues, Model.Invites, Model.Responses);
@@ -25,7 +26,7 @@
 }
 
 <p>
-    <a class="btn btn-primary" href="@OdkRoutes.MemberGroups.EventCreate(Model.Platform, Model.Chapter)">Create</a>
+    <a class="btn btn-primary" href="@OdkRoutes.GroupAdmin.EventCreate(Model.Chapter)">Create</a>
 </p>
 
 <div class="table-responsive">
@@ -72,13 +73,13 @@
                             @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Ticket))
                         }
                     </td>
-                    <td><a href="@OdkRoutes.MemberGroups.Event(Model.Platform, Model.Chapter, @event.Id)">@(@event.GetDisplayName())</a></td>
+                    <td><a href="@OdkRoutes.GroupAdmin.Event(Model.Chapter, @event.Id)">@(@event.GetDisplayName())</a></td>
                     <td>@(@event.Date.EventDate())</td>
-                    <td><a href="@OdkRoutes.MemberGroups.Venue(Model.Platform, Model.Chapter, venue.Id)">@venue.Name</a></td>
+                    <td><a href="@OdkRoutes.GroupAdmin.Venue(Model.Chapter, venue.Id)">@venue.Name</a></td>
                     <td>
                         @if (eventInvites?.SentUtc == null)
                         {
-                            <a href="@OdkRoutes.MemberGroups.EventInvites(Model.Platform, Model.Chapter, @event.Id)">
+                            <a href="@OdkRoutes.GroupAdmin.EventInvites(Model.Chapter, @event.Id)">
                                 @(eventInvites?.ScheduledUtc != null ? "Scheduled" : "Send")
                             </a>
                         }

@@ -10,6 +10,7 @@
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model ChapterMessagesAdminPageViewModel
+@inject IOdkRoutes OdkRoutes
 
 <p>Contact messages sent by unknown users</p>
 
@@ -44,7 +45,7 @@
                                         }
                     </td>
                     <td>
-                        <a href="@OdkRoutes.MemberGroups.GroupMessage(Model.Platform, Model.Chapter, message.Id)">View</a>
+                        <a href="@OdkRoutes.GroupAdmin.GroupMessage(Model.Chapter, message.Id)">View</a>
                     </td>
                     <td>
                         <form method="post" action="/groups/@Model.Chapter.Id/messages/@message.Id/delete">

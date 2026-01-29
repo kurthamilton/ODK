@@ -5,7 +5,7 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Redirect | SiteAdmin";
 
-    var chapter = await Model.GetChapter();
+    var chapter = Model.Chapter;
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel

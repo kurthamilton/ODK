@@ -1,27 +1,30 @@
 ﻿@using ODK.Core.Platforms
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
+@using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Services
 @model AccountMenuViewModel
+@inject IOdkRoutes OdkRoutes
 @inject IRequestStore RequestStore
 @{
     var platform = RequestStore.Platform;
+    var chapter = RequestStore.ChapterOrDefault;
 
     var menuItems = new MenuItem[]
     {
         new MenuItem 
         { 
-            Link = OdkRoutes.Account.PersonalDetails(Model.Chapter), 
+            Link = OdkRoutes.Account.PersonalDetails(), 
             Text = "Personal details", 
             Children = new[]
             {
                 platform == PlatformType.DrunkenKnitwits
-                    ? new MenuItem { Link = OdkRoutes.Account.EmailAddressChange(platform, Model.Chapter), Text = "Email address" }
+                    ? new MenuItem { Link = OdkRoutes.Account.EmailAddressChange(chapter), Text = "Email address" }
                     : new MenuItem(),
                 platform == PlatformType.DrunkenKnitwits
-                    ? new MenuItem { Link = OdkRoutes.Account.Picture(Model.Chapter), Text = "Profile picture" }
+                    ? new MenuItem { Link = OdkRoutes.Account.Picture(chapter), Text = "Profile picture" }
                     : new MenuItem()
             }
         },
@@ -29,26 +32,26 @@
             ? new MenuItem { Link = OdkRoutes.Account.Location(), Text = "Location" }
             : new MenuItem(),
         Model.Chapter != null
-            ? new MenuItem { Link = OdkRoutes.Account.Profile(Model.Chapter), Text = "Profile" }
+            ? new MenuItem { Link = OdkRoutes.Account.Profile(chapter), Text = "Profile" }
             : new MenuItem(),
-        new MenuItem { Link = OdkRoutes.Account.Conversations(Model.Chapter), Text = "My conversations" },
+        new MenuItem { Link = OdkRoutes.Account.Conversations(chapter), Text = "My conversations" },
         platform == PlatformType.DrunkenKnitwits
             ? new MenuItem()
             : new MenuItem { Link = OdkRoutes.Account.Groups(), Text = "My groups" },
         Model.Chapter == null
             ? new MenuItem { Link = OdkRoutes.Account.Interests(), Text = "My interests" }
             : new MenuItem(),
-        new MenuItem { Link = OdkRoutes.Account.Subscription(platform, Model.Chapter), Text = "My subscription" },
-        new MenuItem { Link = OdkRoutes.Account.Payments(Model.Chapter), Text = "My payments" },
-        new MenuItem { Link = OdkRoutes.Account.PasswordChange(Model.Chapter), Text = "Password" },
+        new MenuItem { Link = OdkRoutes.Account.Subscription(chapter), Text = "My subscription" },
+        new MenuItem { Link = OdkRoutes.Account.Payments(chapter), Text = "My payments" },
+        new MenuItem { Link = OdkRoutes.Account.PasswordChange(chapter), Text = "Password" },
         platform == PlatformType.DrunkenKnitwits
-            ? new MenuItem { Link = OdkRoutes.Account.EmailPreferences(Model.Chapter), Text = "Email preferences" }
+            ? new MenuItem { Link = OdkRoutes.Account.EmailPreferences(chapter), Text = "Email preferences" }
             : new MenuItem(),
-        new MenuItem { Link = OdkRoutes.Account.Notifications(Model.Chapter), Text = "Notifications" },
+        new MenuItem { Link = OdkRoutes.Account.Notifications(chapter), Text = "Notifications" },
         platform == PlatformType.DrunkenKnitwits
             ? new MenuItem()
             : new MenuItem { Link = OdkRoutes.Account.Issues(), Text = "Issues" },
-        new MenuItem { Link = OdkRoutes.Account.Delete(Model.Chapter), Text = "Delete account" }
+        new MenuItem { Link = OdkRoutes.Account.Delete(chapter), Text = "Delete account" }
     }.Where(x => !string.IsNullOrEmpty(x.Link)).ToArray();
 
     var activeMenuItem = menuItems

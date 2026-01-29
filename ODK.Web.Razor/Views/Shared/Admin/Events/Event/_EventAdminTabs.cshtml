@@ -4,17 +4,19 @@
 @using ODK.Web.Common.Routes
 @model EventAdminPageViewModelBase
 @inject IHttpContextAccessor HttpContextAccessor
+@inject IOdkRoutes OdkRoutes
+
 @{
     var menuItems = new List<MenuItem>
     {
-        new MenuItem { Link = OdkRoutes.MemberGroups.Event(Model.Platform, Model.Chapter, Model.Event.Id), Text = "Edit" },
-        new MenuItem { Link = OdkRoutes.MemberGroups.EventInvites(Model.Platform, Model.Chapter, Model.Event.Id), Text = "Invites" },
-        new MenuItem { Link = OdkRoutes.MemberGroups.EventResponses(Model.Platform, Model.Chapter, Model.Event.Id), Text = "Responses" }
+        new MenuItem { Link = OdkRoutes.GroupAdmin.Event(Model.Chapter, Model.Event.Id), Text = "Edit" },
+        new MenuItem { Link = OdkRoutes.GroupAdmin.EventInvites(Model.Chapter, Model.Event.Id), Text = "Invites" },
+        new MenuItem { Link = OdkRoutes.GroupAdmin.EventResponses(Model.Chapter, Model.Event.Id), Text = "Responses" }
     };
 
     if (Model.Event.Ticketed)
     {
-        menuItems.Add(new MenuItem { Link = OdkRoutes.MemberGroups.EventTickets(Model.Platform, Model.Chapter, Model.Event.Id), Text = "Tickets" });
+        menuItems.Add(new MenuItem { Link = OdkRoutes.GroupAdmin.EventTickets(Model.Chapter, Model.Event.Id), Text = "Tickets" });
     }
 }
 <ul class="nav nav-underline my-3">

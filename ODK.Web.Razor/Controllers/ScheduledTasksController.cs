@@ -4,7 +4,8 @@ using ODK.Services.Members;
 using ODK.Services.SocialMedia;
 using ODK.Services.Subscriptions;
 using ODK.Web.Common.Config.Settings;
-using ODK.Web.Razor.Services;
+using ODK.Web.Common.Routes;
+using ODK.Web.Common.Services;
 
 namespace ODK.Web.Razor.Controllers;
 
@@ -22,8 +23,9 @@ public class ScheduledTasksController : OdkControllerBase
         AppSettings settings,
         ISiteSubscriptionService siteSubscriptionService,
         IMemberAdminService memberAdminService,
-        IRequestStore requestStore)
-        : base(requestStore)
+        IRequestStore requestStore,
+        IOdkRoutes odkRoutes)
+        : base(requestStore, odkRoutes)
     {
         _memberAdminService = memberAdminService;
         _settings = settings.ScheduledTasks;

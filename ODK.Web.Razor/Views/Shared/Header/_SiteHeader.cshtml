@@ -1,10 +1,13 @@
 ﻿@using ODK.Core.Platforms
 @using ODK.Services.Members
 @using ODK.Web.Common.Routes
+@using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models
-@model OdkComponentContext
+@using ODK.Web.Razor.Services
+@inject IOdkRoutes OdkRoutes
+@inject IRequestStore RequestStore
 @{
-    if (Model.Platform != PlatformType.Default)
+    if (RequestStore.Platform != PlatformType.Default)
     {
         return;
     }
@@ -22,9 +25,9 @@
             </div>
         
             <div class="d-flex gap-4 ms-auto align-self-center order-md-5">
-                @await Html.PartialAsync("Header/_SiteTasksDropdown", Model)
-                @await Html.PartialAsync("Header/_NotificationDropdown", Model)
-                @await Html.PartialAsync("Header/_SiteAccountDropdown", Model)
+                @await Html.PartialAsync("Header/_SiteTasksDropdown")
+                @await Html.PartialAsync("Header/_NotificationDropdown")
+                @await Html.PartialAsync("Header/_SiteAccountDropdown")
             </div>
 
             <div class="navbar-collapse site-nav" id="@id">
@@ -33,13 +36,13 @@
                         <a class="nav-link" href="/pricing">Pricing</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="@OdkRoutes.Groups.Index(Model.Platform)">Groups</a>
+                        <a class="nav-link" href="@OdkRoutes.Groups.Index()">Groups</a>
                     </li>
 
-                    @if (Model.IsAuthenticated)
+                    @if (RequestStore.CurrentMemberIdOrDefault != null)
                     {
                         <li class="nav-item">
-                            <a class="nav-link" href="@OdkRoutes.MemberGroups.Index(Model.Platform)">My groups</a>
+                            <a class="nav-link" href="@OdkRoutes.GroupAdmin.Index()">My groups</a>
                         </li>
                     }                
                 </ul>

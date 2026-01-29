@@ -8,8 +8,9 @@
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Events
 @model GroupEventsPageViewModel
+@inject IOdkRoutes OdkRoutes
 @{
-    var past = Context.ForPath(OdkRoutes.Groups.PastEvents(Model.Platform, Model.Chapter));    
+    var past = Context.ForPath(OdkRoutes.Groups.PastEvents(Model.Chapter));
 }
 
 @if (Model.Events.Count == 0)

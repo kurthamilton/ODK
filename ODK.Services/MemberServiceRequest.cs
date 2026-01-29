@@ -5,10 +5,6 @@ namespace ODK.Services;
 
 public class MemberServiceRequest : ServiceRequest
 {
-    public MemberServiceRequest()
-    {
-    }
-
     public required Guid CurrentMemberId { get; init; }
 
     public static MemberServiceRequest Create(Guid currentMemberId, ServiceRequest request)
@@ -22,6 +18,7 @@ public class MemberServiceRequest : ServiceRequest
         return new MemberServiceRequest
         {
             CurrentMemberId = currentMemberId,
+            CurrentMemberIdOrDefault = currentMemberId,
             HttpRequestContext = httpRequestContext,
             Platform = platform
         };

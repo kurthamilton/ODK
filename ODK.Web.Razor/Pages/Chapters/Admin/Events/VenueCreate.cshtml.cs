@@ -21,7 +21,7 @@ public class VenueCreateModel : AdminPageModel
 
     public async Task<IActionResult> OnPostAsync(VenueFormViewModel viewModel)
     {
-        var request = await CreateMemberChapterServiceRequest();
+        var request = MemberChapterServiceRequest;
         var result = await _venueAdminService.CreateVenue(request, new CreateVenue
         {
             Address = viewModel.Address,
@@ -36,8 +36,7 @@ public class VenueCreateModel : AdminPageModel
             return Page();
         }
 
-        var chapter = await GetChapter();
         AddFeedback(new FeedbackViewModel("Venue created", FeedbackType.Success));
-        return Redirect($"/{chapter.ShortName}/Admin/Events/Venues");
+        return Redirect(OdkRoutes.GroupAdmin.Venues(Chapter));
     }
 }

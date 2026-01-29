@@ -2,8 +2,9 @@
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @model UpgradeButtonViewModel
+@inject IOdkRoutes OdkRoutes
 
-<a href="@OdkRoutes.Account.Subscription(Model.Platform, Model.Chapter)" class="btn btn-outline-primary btn-sm">
+<a href="@OdkRoutes.Account.Subscription(Model.Chapter)" class="btn btn-outline-primary btn-sm">
     @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Unlock))
     <span>Upgrade to unlock</span>
 </a>

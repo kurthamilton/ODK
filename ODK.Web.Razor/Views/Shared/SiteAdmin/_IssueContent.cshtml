@@ -6,6 +6,7 @@
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.SiteAdmin
 @model IssueAdminPageViewModel
+@inject IOdkRoutes OdkRoutes
 
 @await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
 {

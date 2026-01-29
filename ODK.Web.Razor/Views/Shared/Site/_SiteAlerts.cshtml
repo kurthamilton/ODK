@@ -1,11 +1,15 @@
 ﻿@using ODK.Core.Utils
 @using ODK.Services.Chapters
 @using ODK.Web.Common.Routes
+@using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models
-@model OdkComponentContext
+@using ODK.Web.Razor.Services
 @inject IChapterService ChapterService
+@inject IOdkRoutes OdkRoutes
+@inject IRequestStore RequestStore
 @{
-    var memberId = Model.CurrentMemberIdOrDefault;
+    var platform = RequestStore.Platform;
+    var memberId = RequestStore.CurrentMemberIdOrDefault;
 
     var ownedChapters = memberId != null 
         ? await ChapterService.GetChaptersByOwnerId(memberId.Value)
@@ -23,6 +27,6 @@
         @chaptersPendingPublication.Length 
         @StringUtils.Pluralise(chaptersPendingPublication.Length, "group") 
         waiting to be published.
-        <a href="@OdkRoutes.MemberGroups.Index(Model.Platform)">My groups</a>
+        <a href="@OdkRoutes.GroupAdmin.Index()">My groups</a>
     </div>
 }

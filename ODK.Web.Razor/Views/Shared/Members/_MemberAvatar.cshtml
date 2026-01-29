@@ -1,5 +1,7 @@
 ﻿@using ODK.Web.Common.Routes
-@model ODK.Web.Razor.Models.Members.MemberAvatarViewModel
+@using ODK.Web.Razor.Models.Members
+@model MemberAvatarViewModel
+@inject IOdkRoutes OdkRoutes
 @{
     var imageUrl = OdkRoutes.Members.Avatar(Model.Member.Id);
     var maxWidth = Model.MaxWidth > 0 ? Model.MaxWidth : 75;

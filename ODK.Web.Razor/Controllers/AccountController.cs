@@ -19,11 +19,11 @@ using ODK.Services.Users.ViewModels;
 using ODK.Web.Common.Account;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
+using ODK.Web.Common.Services;
 using ODK.Web.Razor.Models.Account;
 using ODK.Web.Razor.Models.Login;
 using ODK.Web.Razor.Models.Notifications;
 using ODK.Web.Razor.Models.Topics;
-using ODK.Web.Razor.Services;
 
 namespace ODK.Web.Razor.Controllers;
 
@@ -37,7 +37,6 @@ public class AccountController : OdkControllerBase
     private readonly ILoginHandler _loginHandler;
     private readonly IMemberService _memberService;
     private readonly INotificationService _notificationService;
-    private readonly IRequestStore _requestStore;
     private readonly ISiteSubscriptionService _siteSubscriptionService;
 
     public AccountController(
@@ -48,8 +47,9 @@ public class AccountController : OdkControllerBase
         ISiteSubscriptionService siteSubscriptionService,
         INotificationService notificationService,
         IIssueService issueService,
-        IRequestStore requestStore)
-        : base(requestStore)
+        IRequestStore requestStore,
+        IOdkRoutes odkRoutes)
+        : base(requestStore, odkRoutes)
     {
         _authenticationService = authenticationService;
         _featureService = featureService;
@@ -57,7 +57,6 @@ public class AccountController : OdkControllerBase
         _loginHandler = loginHandler;
         _memberService = memberService;
         _notificationService = notificationService;
-        _requestStore = requestStore;
         _siteSubscriptionService = siteSubscriptionService;
     }
 
@@ -87,7 +86,7 @@ public class AccountController : OdkControllerBase
     {
         var result = await _authenticationService.ActivateChapterAccountAsync(
             ServiceRequest,
-            chapterId,
+            Chapter,
             viewModel.Token,
             viewModel.Password);
         if (!result.Success)
@@ -96,9 +95,8 @@ public class AccountController : OdkControllerBase
             return RedirectToReferrer();
         }
 
-        var chapter = await _requestStore.GetChapter();
         AddFeedback("Your account has been activated. You can now login.", FeedbackType.Success);
-        return Redirect($"/{chapter.ShortName}/Account/Login");
+        return Redirect(OdkRoutes.Account.Login(Chapter));
     }
 
     [AllowAnonymous]
@@ -131,7 +129,7 @@ public class AccountController : OdkControllerBase
         if (result.Value?.Activated == true)
         {
             AddFeedback(result, "Your account has been created and is now ready to use");
-            return Redirect(OdkRoutes.Account.Login(null));
+            return Redirect(OdkRoutes.Account.Login(chapter: null));
         }
 
         string successMessage =
@@ -203,11 +201,10 @@ public class AccountController : OdkControllerBase
 
         if (result.Success && result.Member != null)
         {
-            var platform = _requestStore.Platform;
-            var chapter = await _requestStore.GetChapter();
-
+            var platform = Platform;
+            
             var redirectUrl = string.IsNullOrEmpty(returnUrl)
-                ? OdkRoutes.Groups.Group(platform, chapter)
+                ? OdkRoutes.Groups.Group(Chapter)
                 : returnUrl;
 
             return Redirect(redirectUrl);
@@ -227,8 +224,7 @@ public class AccountController : OdkControllerBase
         {
             if (string.IsNullOrEmpty(returnUrl))
             {
-                var chapter = await _requestStore.GetChapter();
-                return Redirect(OdkRoutes.Groups.Group(Platform, chapter));
+                return Redirect(OdkRoutes.Groups.Group(Chapter));
             }
 
             return Redirect(returnUrl);
@@ -261,7 +257,7 @@ public class AccountController : OdkControllerBase
 
         if (Platform == PlatformType.DrunkenKnitwits)
         {
-            var member = await _requestStore.GetCurrentMember();
+            var member = CurrentMember;
             chapterId = member.Chapters.Count == 1
                 ? member.Chapters.First().ChapterId
                 : null;
@@ -413,7 +409,7 @@ public class AccountController : OdkControllerBase
             "if it is associated with an account";
         AddFeedback(result, successMessage);
 
-        var fallback = OdkRoutes.Account.Login(null);
+        var fallback = OdkRoutes.Account.Login(chapter: null);
         return RedirectToReferrer(fallback);
     }
 

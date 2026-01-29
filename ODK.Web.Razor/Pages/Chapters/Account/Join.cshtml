@@ -10,7 +10,7 @@
     Layout = "_OdkChapterLayout";
     Model.Title = "Join";
 
-    var chapter = await Model.GetChapter();
+    var chapter = Model.Chapter;
     var viewModel = await AccountViewModelService.GetChapterJoinPage(Model.ServiceRequest, chapter);
 }
 
@@ -32,7 +32,7 @@
     {
         new MenuItem 
         { 
-            Link = OdkRoutes.Groups.Group(Model.Platform, viewModel.Chapter), 
+            Link = Model.OdkRoutes.Groups.Group(Model.Chapter), 
             Text = viewModel.Chapter.GetDisplayName(Model.Platform)
         },
         new MenuItem { Text = "Join" }

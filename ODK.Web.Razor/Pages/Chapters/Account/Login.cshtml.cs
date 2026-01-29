@@ -1,5 +1,3 @@
-using ODK.Web.Common.Routes;
-
 namespace ODK.Web.Razor.Pages.Chapters.Account;
 
 public class LoginModel : OdkPageModel
@@ -10,8 +8,7 @@ public class LoginModel : OdkPageModel
     {
         if (CurrentMemberIdOrDefault != null)
         {
-            var chapter = await GetChapter();
-            Response.Redirect(returnUrl ?? OdkRoutes.Groups.Group(Platform, chapter));
+            Response.Redirect(returnUrl ?? OdkRoutes.Groups.Group(Chapter));
         }
 
         ReturnUrl = returnUrl;

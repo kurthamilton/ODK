@@ -1,10 +1,13 @@
 ﻿@using ODK.Services.Settings
+@using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.SiteAdmin
-@model OdkComponentContext
+@using ODK.Web.Razor.Services
+@inject IRequestStore RequestStore
 @inject ISettingsService SettingsService
 @{
-    var settings = await SettingsService.GetSiteEmailSettings(Model.Platform);
+    var platform = RequestStore.Platform;
+    var settings = await SettingsService.GetSiteEmailSettings(platform);
 }
 
 <section class="section--admin">

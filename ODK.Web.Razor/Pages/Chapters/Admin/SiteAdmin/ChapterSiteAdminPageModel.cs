@@ -9,8 +9,8 @@ public abstract class ChapterSiteAdminPageModel : AdminPageModel
         PageHandlerExecutingContext context,
         PageHandlerExecutionDelegate next)
     {
-        var member = await RequestStore.GetCurrentMember();
-        if (member?.SiteAdmin != true)
+        var member = CurrentMember;
+        if (member.SiteAdmin != true)
         {
             throw new OdkNotAuthorizedException();
         }

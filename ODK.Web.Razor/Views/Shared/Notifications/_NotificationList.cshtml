@@ -3,16 +3,18 @@
 @using ODK.Services.Notifications.ViewModels
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
+@using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Notifications;
 @using ODK.Web.Razor.Pages.Chapters
 @using ODK.Web.Razor.Services
 @model UnreadNotificationsViewModel
+@inject IOdkRoutes OdkRoutes
 @inject IRequestStore RequestStore
 @{
     var notifications = Model.Unread;
 
-    var chapter = await RequestStore.GetChapterOrDefault();
+    var chapter = RequestStore.ChapterOrDefault;
 
     var showIfEmptyClass = notifications.Count == 0 ? null : "d-none";
     var hideIfEmptyClass = notifications.Count == 0 ? "d-none" : null;

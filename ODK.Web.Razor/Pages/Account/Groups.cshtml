@@ -20,7 +20,7 @@
     Title = "Account",
     Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
     {
-        Active = OdkRoutes.Account.Groups(),
+        Active = Model.OdkRoutes.Account.Groups(),
         Title = "My groups",
         Content =
             @<div>
@@ -38,14 +38,14 @@
                             {
                                 <tr>
                                     <td>
-                                        <a href="@OdkRoutes.Groups.Group(Model.Platform, chapter.Chapter)">
+                                        <a href="@Model.OdkRoutes.Groups.Group(chapter.Chapter)">
                                             @chapter.Chapter.GetDisplayName(Model.Platform)
                                         </a>
                                     </td>
                                     <td>
                                         @if (chapter.IsAdmin)
                                         {
-                                            <a href="@OdkRoutes.MemberGroups.Group(Model.Platform, chapter.Chapter)">
+                                            <a href="@Model.OdkRoutes.GroupAdmin.Group(chapter.Chapter)">
                                                 @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Settings))
                                                 <span>Manage</span>
                                             </a>

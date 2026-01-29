@@ -3,6 +3,7 @@
 @using ODK.Services.Members.ViewModels
 @using ODK.Web.Common.Routes
 @model MemberConversationsPageViewModel
+@inject IOdkRoutes OdkRoutes
 @{
     var chapterDictionary = Model.Chapters
         .ToDictionary(x => x.Id);
@@ -41,14 +42,14 @@
                     @if (Model.Platform != PlatformType.DrunkenKnitwits)
                     {
                         <td>
-                            <a href="@OdkRoutes.Groups.Group(Model.Platform, chapter)">
+                            <a href="@OdkRoutes.Groups.Group(chapter)">
                                 @chapter.GetDisplayName(Model.Platform)
                             </a>
                         </td>
                     }
                     
                     <td>
-                        <a href="@OdkRoutes.Groups.Conversation(Model.Platform, chapter, dto.Conversation.Id)">
+                        <a href="@OdkRoutes.Groups.Conversation(chapter, dto.Conversation.Id)">
                             @dto.Conversation.Subject
                         </a>
                     </td>

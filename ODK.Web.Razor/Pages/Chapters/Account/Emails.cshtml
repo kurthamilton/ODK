@@ -12,7 +12,7 @@
     Layout = "_OdkChapterLayout";
     Model.Title = "Email preferences";
 
-    var chapter = await Model.GetChapter();
+    var chapter = Model.Chapter;
     var viewModel = await AccountViewModelService.GetMemberEmailPreferencesPage(Model.MemberServiceRequest);
 }
 

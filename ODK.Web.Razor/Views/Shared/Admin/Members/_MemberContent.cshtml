@@ -6,6 +6,7 @@
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin.Members
 @model MemberAdminPageViewModel
+@inject IOdkRoutes OdkRoutes
 
 @await Html.PartialAsync("Admin/Members/_MemberAdminTabs", Model)
 
@@ -18,7 +19,7 @@
     })
     <div class="d-flex">
         <button type="submit" class="btn btn-primary me-auto">Update</button>
-        <a class="btn btn-danger" href="@OdkRoutes.MemberGroups.MemberDelete(Model.Platform, Model.Chapter, Model.Member.Id)">
+        <a class="btn btn-danger" href="@OdkRoutes.GroupAdmin.MemberDelete(Model.Chapter, Model.Member.Id)">
             Delete
         </a>
     </div>

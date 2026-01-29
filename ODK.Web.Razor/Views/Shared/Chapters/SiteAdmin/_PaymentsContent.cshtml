@@ -3,10 +3,11 @@
 @using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Chapters.SiteAdmin
-@model OdkComponentViewModel<Chapter>
+@using ODK.Web.Razor.Services
 @inject IChapterAdminService ChapterAdminService
+@inject IRequestStore RequestStore
 @{
-    var serviceRequest = Model.CreateMemberChapterServiceRequest(Model.Value.Id);
+    var serviceRequest = RequestStore.MemberChapterServiceRequest;
     var viewModel = await ChapterAdminService.GetChapterPaymentSettingsViewModel(serviceRequest);
 }
 

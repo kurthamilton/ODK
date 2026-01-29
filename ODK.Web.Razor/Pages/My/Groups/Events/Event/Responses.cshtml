@@ -10,7 +10,7 @@
     Layout = "_GroupAdminLayout";
     Model.Title = "Event responses";
 
-    var viewModel = await EventAdminService.GetEventAttendeesViewModel(Model.AdminServiceRequest, Model.EventId);
+    var viewModel = await EventAdminService.GetEventAttendeesViewModel(Model.MemberChapterServiceRequest, Model.EventId);
 }
 
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
@@ -22,7 +22,7 @@
         {
             new MenuItem
             {
-                Link = OdkRoutes.MemberGroups.Events(Model.Platform, viewModel.Chapter),
+                Link = Model.OdkRoutes.GroupAdmin.Events(Model.Chapter),
                 Text = "Back to events",
                 Icon = IconType.ArrowLeft
             }

@@ -9,6 +9,7 @@
 @using ODK.Web.Razor.Models.Admin.Events
 @using ODK.Web.Razor.Models.Components
 @model VenueEventsAdminPageViewModel
+@inject IOdkRoutes OdkRoutes
 
 @await Html.PartialAsync("Admin/Venues/_VenueAdminTabs", new VenueAdminTabsViewModel
 {
@@ -18,7 +19,7 @@
 })
 
 <p>
-    <a href="@OdkRoutes.MemberGroups.EventCreate(Model.Platform, Model.Chapter)?venueId=@Model.Venue.Id" class="btn btn-primary">
+    <a href="@OdkRoutes.GroupAdmin.EventCreate(Model.Chapter)?venueId=@Model.Venue.Id" class="btn btn-primary">
         Create event
     </a>
 </p>
@@ -36,7 +37,7 @@
         {
             <tr>
                 <td>
-                    <a href="@OdkRoutes.MemberGroups.Event(Model.Platform, Model.Chapter, @event.Id)">@(@event.GetDisplayName())</a>
+                    <a href="@OdkRoutes.GroupAdmin.Event(Model.Chapter, @event.Id)">@(@event.GetDisplayName())</a>
                 </td>
                 <td>@(@event.Date.EventDate())</td>
             </tr>

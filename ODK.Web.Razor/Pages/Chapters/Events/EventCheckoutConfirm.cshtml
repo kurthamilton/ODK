@@ -13,7 +13,7 @@
 
     var eventUrl = Model.RedirectUrl;
 
-    var chapter = await Model.GetChapter();
+    var chapter = Model.Chapter;
     var viewModel = await EventViewModelService.GetEventPageViewModel(
         Model.ServiceRequest, Model.CurrentMemberIdOrDefault, chapter, Model.Shortcode);
 }
@@ -26,7 +26,7 @@
         new MenuItem
         {
             Icon = IconType.ArrowLeft,
-            Link = OdkRoutes.Groups.Event(Model.Platform, viewModel.Chapter, viewModel.Event.Shortcode),
+            Link = Model.OdkRoutes.Groups.Event(Model.Chapter, viewModel.Event.Shortcode),
             Text = "Back to event"
         }
     },

@@ -10,7 +10,6 @@ using ODK.Services.Logging;
 using ODK.Web.Common.Config.Settings;
 using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
-using ODK.Web.Razor.Services;
 using OdkHttpRequest = ODK.Services.Logging.HttpRequest;
 
 namespace ODK.Web.Razor.Middleware;
@@ -29,7 +28,8 @@ public class ErrorHandlingMiddleware
         ILoggingService loggingService,
         AppSettings appSettings,
         IRequestStore requestStore,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IOdkRoutes odkRoutes)
     {
         try
         {
@@ -52,7 +52,7 @@ public class ErrorHandlingMiddleware
                 _ => 500
             };
 
-            await HandleAsync(context, ex, requestStore, unitOfWork);
+            await HandleAsync(context, requestStore, unitOfWork, odkRoutes);
         }
     }
 
@@ -62,7 +62,7 @@ public class ErrorHandlingMiddleware
         // We can't always get the chapter from the request store for 404s, as it matches by route params.
         // If we have a 404 as a result of not matching a route, we won't have any route params.
 
-        var chapter = await requestStore.GetChapterOrDefault();
+        var chapter = requestStore.ChapterOrDefault;
         if (chapter != null)
         {
             return chapter;
@@ -101,9 +101,9 @@ public class ErrorHandlingMiddleware
 
     private async Task HandleAsync(
         HttpContext httpContext,
-        Exception ex,
         IRequestStore requestStore,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IOdkRoutes odkRoutes)
     {
         var request = httpContext.Request;
         var response = httpContext.Response;
@@ -111,7 +111,7 @@ public class ErrorHandlingMiddleware
         var originalMethod = request.Method;
         var originalPath = request.Path;
 
-        var path = await GetErrorPath(httpContext, ex, requestStore, unitOfWork);
+        var path = await GetErrorPath(httpContext, requestStore, unitOfWork, odkRoutes);
 
         ResetHttpContext(httpContext);
 
@@ -131,13 +131,16 @@ public class ErrorHandlingMiddleware
     }
 
     private async Task<string?> GetErrorPath(
-        HttpContext httpContext, Exception ex, IRequestStore requestStore, IUnitOfWork unitOfWork)
+        HttpContext httpContext, 
+        IRequestStore requestStore, 
+        IUnitOfWork unitOfWork, 
+        IOdkRoutes odkRoutes)
     {
         var statusCode = httpContext.Response.StatusCode;
         var platform = requestStore.Platform;
 
         var chapter = await FindChapter(httpContext, requestStore, unitOfWork);
-        return OdkRoutes.Error(platform, chapter, statusCode);
+        return odkRoutes.Error(chapter, statusCode);
     }
 
     private async Task LogError(

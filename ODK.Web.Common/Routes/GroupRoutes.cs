@@ -6,75 +6,81 @@ namespace ODK.Web.Common.Routes;
 
 public class GroupRoutes
 {
-    public string About(PlatformType platform, Chapter chapter) => GroupPath(platform, chapter, "/about");
+    public GroupRoutes(AccountRoutes accountRoutes, PlatformType platform)
+    {
+        AccountRoutes = accountRoutes;
+        Platform = platform;
+    }
 
-    public string Contact(PlatformType platform, Chapter chapter) => GroupPath(platform, chapter, "/contact");
+    protected PlatformType Platform { get; }
 
-    public string Conversation(PlatformType platform, Chapter chapter, Guid conversationId)
-        => $"{Conversations(platform, chapter)}/{conversationId}";
+    private AccountRoutes AccountRoutes { get; }
 
-    public string Conversations(PlatformType platform, Chapter chapter)
-        => $"{Group(platform, chapter)}/conversations";
+    public string About(Chapter chapter) => GroupPath(chapter, "/about");
 
-    public string Error(PlatformType platform, Chapter chapter, int statusCode)
-        => $"{Group(platform, chapter)}/error/{statusCode}";
+    public string Contact(Chapter chapter) => GroupPath(chapter, "/contact");
 
-    public string Event(PlatformType platform, Chapter chapter, string shortcode)
-        => $"{Events(platform, chapter)}/{shortcode}";
+    public string Conversation(Chapter chapter, Guid conversationId)
+        => $"{Conversations(chapter)}/{conversationId}";
 
-    public string EventLegacy(PlatformType platform, Chapter chapter, Guid eventId)
-        => $"{Events(platform, chapter)}/{eventId}";
+    public string Conversations(Chapter chapter) => $"{Group(chapter)}/conversations";
 
-    public string EventAttend(PlatformType platform, Chapter chapter, string shortcode)
-        => $"{Event(platform, chapter, shortcode)}/rsvp";
+    public string Error(Chapter chapter, int statusCode)
+        => $"{Group(chapter)}/error/{statusCode}";
 
-    public string EventAttendLegacy(PlatformType platform, Chapter chapter, Guid eventId)
-        => $"{EventLegacy(platform, chapter, eventId)}/rsvp";
+    public string Event(Chapter chapter, string shortcode) => $"{Events(chapter)}/{shortcode}";
 
-    public string EventCheckout(PlatformType platform, Chapter chapter, string shortcode)
-        => $"{Event(platform, chapter, shortcode)}/checkout";
+    public string EventLegacy(Chapter chapter, Guid eventId) => $"{Events(chapter)}/{eventId}";
 
-    public string EventCheckoutConfirm(PlatformType platform, Chapter chapter, string shortcode)
-        => $"{EventCheckout(platform, chapter, shortcode)}/confirm";
+    public string EventAttend(Chapter chapter, string shortcode) => $"{Event(chapter, shortcode)}/rsvp";
 
-    public string Events(PlatformType platform, Chapter chapter) => GroupPath(platform, chapter, "/events");
+    public string EventAttendLegacy(Chapter chapter, Guid eventId)
+        => $"{EventLegacy(chapter, eventId)}/rsvp";
 
-    public string Group(PlatformType platform, Chapter chapter) => platform switch
+    public string EventCheckout(Chapter chapter, string shortcode)
+        => $"{Event(chapter, shortcode)}/checkout";
+
+    public string EventCheckoutConfirm(Chapter chapter, string shortcode)
+        => $"{EventCheckout(chapter, shortcode)}/confirm";
+
+    public string Events(Chapter chapter) => GroupPath(chapter, "/events");
+
+    public string Group(Chapter chapter) => Platform switch
     {
         PlatformType.DrunkenKnitwits => $"/{chapter.ShortName}".ToLowerInvariant(),
-        _ => $"{Index(platform)}/{chapter.Slug}".ToLowerInvariant()
+        _ => $"{Index()}/{chapter.Slug}".ToLowerInvariant()
     };
 
     public string Image(Guid chapterId) => $"/groups/{chapterId}/image";
 
-    public string Index(PlatformType platform) => platform switch
+    public string Index() => Platform switch
     {
         PlatformType.DrunkenKnitwits => string.Empty,
         _ => "/groups"
     };
 
-    public string Join(PlatformType platform, Chapter chapter) => GroupPath(platform, chapter, "/join");
+    public string Join(Chapter chapter) => GroupPath(chapter, "/join");
 
-    public string Member(PlatformType platform, Chapter chapter, Guid memberId)
-        => $"{Members(platform, chapter)}/{memberId}";
+    public string Member(Chapter chapter, Guid memberId)
+        => $"{Members(chapter)}/{memberId}";
 
-    public string Members(PlatformType platform, Chapter chapter) => GroupPath(platform, chapter, "/members");
+    public string Members(Chapter chapter) => GroupPath(chapter, "/members");
 
-    public string PastEvents(PlatformType platform, Chapter chapter) => $"{Events(platform, chapter)}/past";
+    public string PastEvents(Chapter chapter) => $"{Events(chapter)}/past";
 
-    public string Profile(PlatformType platform, Chapter chapter) => GroupPath(platform, chapter, "/profile");
+    public string Profile(Chapter chapter) => GroupPath(chapter, "/profile");
 
-    public string Questions(PlatformType platform, Chapter chapter) => GroupPath(platform, chapter, "/faq");
+    public string Questions(Chapter chapter) => GroupPath(chapter, "/faq");
 
-    public string Subscription(PlatformType platform, Chapter chapter) => platform switch
+    public string Subscription(Chapter chapter) => Platform switch
     {
-        PlatformType.DrunkenKnitwits => OdkRoutes.Account.Subscription(platform, chapter),
-        _ => GroupPath(platform, chapter, "/subscription")
+        PlatformType.DrunkenKnitwits => AccountRoutes.Subscription(chapter),
+        _ => GroupPath(chapter, "/subscription")
     };
 
-    public string SubscriptionCheckout(PlatformType platform, Chapter chapter, ChapterSubscription subscription)
-        => $"{Subscription(platform, chapter)}/{subscription.Id}/checkout";
+    public string SubscriptionCheckout(Chapter chapter, ChapterSubscription subscription)
+        => $"{Subscription(chapter)}/{subscription.Id}/checkout";
 
-    private string GroupPath(PlatformType platform, Chapter chapter, string path)
-        => $"{Group(platform, chapter)}{path}";
+    private string GroupPath(Chapter chapter, string path) => $"{Group(chapter)}{path}";
+
 }

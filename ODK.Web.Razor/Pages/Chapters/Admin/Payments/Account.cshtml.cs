@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Chapters;
-using ODK.Web.Common.Routes;
 
 namespace ODK.Web.Razor.Pages.Chapters.Admin.Payments;
 
@@ -19,10 +18,9 @@ public class AccountModel : AdminPageModel
     {
         if (action == RefreshAction)
         {
-            var chapter = await GetChapter();
-            var request = await CreateMemberChapterServiceRequest();
+            var request = MemberChapterServiceRequest;
 
-            var returnPath = OdkRoutes.Payments.PaymentAccount(Platform, chapter);
+            var returnPath = OdkRoutes.Payments.PaymentAccount(Chapter);
             var refreshPath = $"{returnPath}?action={RefreshAction}";
 
             var url = await _chapterAdminService.GenerateChapterPaymentAccountSetupUrl(
@@ -41,10 +39,9 @@ public class AccountModel : AdminPageModel
 
     public async Task<IActionResult> OnPostAsync()
     {
-        var chapter = await GetChapter();
-        var request = await CreateMemberChapterServiceRequest();
+        var request = MemberChapterServiceRequest;
 
-        var returnPath = OdkRoutes.Payments.PaymentAccount(Platform, chapter);
+        var returnPath = OdkRoutes.Payments.PaymentAccount(Chapter);
         var refreshPath = $"{returnPath}?action={RefreshAction}";
 
         var result = await _chapterAdminService.CreateChapterPaymentAccount(

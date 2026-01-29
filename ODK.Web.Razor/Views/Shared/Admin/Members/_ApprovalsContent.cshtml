@@ -2,12 +2,13 @@
 @using ODK.Services.Members.ViewModels
 @using ODK.Web.Common.Routes
 @model MemberApprovalsAdminPageViewModel
+@inject IOdkRoutes OdkRoutes
 
 @if (Model.MembershipSettings?.ApproveNewMembers != true)
 {
     <p>
         Members don't require approval at the moment. 
-        <a href="@OdkRoutes.MemberGroups.MembershipSettings(Model.Platform, Model.Chapter)">Membership settings</a>
+        <a href="@OdkRoutes.GroupAdmin.MembershipSettings(Model.Chapter)">Membership settings</a>
     </p>
 
     if (Model.Pending.Count == 0)
@@ -33,7 +34,7 @@
                     {
                         <tr>
                             <td>
-                                <a href="@OdkRoutes.MemberGroups.Member(Model.Platform, Model.Chapter, member.Id)" target="_blank">
+                                <a href="@OdkRoutes.GroupAdmin.Member(Model.Chapter, member.Id)" target="_blank">
                                     @member.FullName
                                 </a>
                             </td>

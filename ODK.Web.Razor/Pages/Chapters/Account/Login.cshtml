@@ -9,7 +9,7 @@
     Layout = "_OdkChapterLayout";
     Model.Title = "Login";
 
-    var chapter = await Model.GetChapter();
+    var chapter = Model.Chapter;
     var viewModel = await AccountViewModelService.GetChapterLoginPage();
 }
 

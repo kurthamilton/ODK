@@ -2,8 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Authentication;
 using ODK.Services.Chapters;
+using ODK.Web.Common.Routes;
+using ODK.Web.Common.Services;
 using ODK.Web.Razor.Controllers.Admin;
-using ODK.Web.Razor.Services;
 
 namespace ODK.Web.Razor.Controllers.SiteAdmin;
 
@@ -14,8 +15,9 @@ public class ChapterSiteAdminController : AdminControllerBase
 
     public ChapterSiteAdminController(
         IChapterAdminService chapterAdminService,
-        IRequestStore requestStore)
-        : base(requestStore)
+        IRequestStore requestStore,
+        IOdkRoutes odkRoutes)
+        : base(requestStore, odkRoutes)
     {
         _chapterAdminService = chapterAdminService;
     }

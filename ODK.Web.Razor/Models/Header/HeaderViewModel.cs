@@ -1,12 +1,7 @@
 ﻿namespace ODK.Web.Razor.Models.Header;
 
-public class HeaderViewModel : OdkComponentViewModel
+public class HeaderViewModel
 {
-    public HeaderViewModel(OdkComponentContext context)
-        : base(context)
-    {
-    }
-
     public string? ImageAltText { get; init; }
 
     public string? ImageLink { get; init; }

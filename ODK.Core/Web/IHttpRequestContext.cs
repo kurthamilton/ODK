@@ -8,5 +8,7 @@ public interface IHttpRequestContext
 
     string RequestUrl { get; }
 
+    IReadOnlyDictionary<string, string?> RouteValues { get; }
+
     string UserAgent { get; }
 }
