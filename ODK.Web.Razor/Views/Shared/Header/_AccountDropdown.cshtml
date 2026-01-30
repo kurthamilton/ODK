@@ -1,11 +1,8 @@
-﻿@using ODK.Core.Chapters
-@using ODK.Services.Authentication
-@using ODK.Web.Common.Components
+﻿@using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
 @using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Header
-@using ODK.Web.Razor.Services
 @inject IOdkRoutes OdkRoutes
 @inject IRequestStore RequestStore
 @model AccountMenuViewModel
@@ -15,8 +12,6 @@
     var defaultChapter = Model.CurrentChapter != null && Model.Member != null && Model.Member.IsMemberOf(Model.CurrentChapter.Id)
         ? Model.CurrentChapter
         : Model.MemberChapters.FirstOrDefault();
-
-    var isAdmin = User.IsInRole(OdkRoles.Admin);
 
     var adminChapterDictionary = Model.AdminChapters
         .ToDictionary(x => x.Id);
@@ -66,7 +61,7 @@
                     @if (adminChapter != null)
                     {
                         <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="@OdkRoutes.GroupAdmin.Group(adminChapter)">
+                        <a class="dropdown-item" href="@OdkRoutes.GroupAdmin.Home(adminChapter)">
                             @chapter.GetDisplayName(platform) Admin
                         </a>
                         <a class="dropdown-item" href="@OdkRoutes.GroupAdmin.EventCreate(adminChapter)">Create event</a>
@@ -99,7 +94,7 @@
                                 {
                                     <div class="dropdown-divider"></div>
                                     
-                                    <a class="dropdown-item" href="@OdkRoutes.GroupAdmin.Group(chapter)">Admin</a>
+                                    <a class="dropdown-item" href="@OdkRoutes.GroupAdmin.Home(chapter)">Admin</a>
                                     <a class="dropdown-item" href="@OdkRoutes.GroupAdmin.EventCreate(chapter)">Create event</a>
 
                                     if (Model.Member?.SiteAdmin == true)

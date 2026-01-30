@@ -123,6 +123,8 @@ public class GroupAdminRoutes
         _ => $"{Base(chapter)}/topics"
     };
 
+    public string Home(Chapter chapter) => Base(chapter);
+
     public string Index() => Platform switch
     {
         // Member groups not implemented in DrunkenKnitwits platform

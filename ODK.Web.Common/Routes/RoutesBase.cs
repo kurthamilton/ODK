@@ -21,10 +21,10 @@ public abstract class RoutesBase
             PlatformType.DrunkenKnitwits => $"/{chapter.ShortName.ToLowerInvariant()}",
             _ => $"/groups/{chapter.Slug}"
         }
-        : "/";
+        : "";
 
     private string PathSuffix(string path)
         => !string.IsNullOrEmpty(path)
-            ? $"{path}"
+            ? path
             : string.Empty;
 }
