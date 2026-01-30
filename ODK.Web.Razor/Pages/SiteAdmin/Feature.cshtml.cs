@@ -19,12 +19,12 @@ public class FeatureModel : SiteAdminPageModel
 
     public async Task OnGetAsync(Guid id)
     {
-        Feature = await _featureService.GetFeature(CurrentMemberId, id);
+        Feature = await _featureService.GetFeature(MemberServiceRequest, id);
     }
 
     public async Task<IActionResult> OnPostAsync(Guid id, FeatureFormViewModel viewModel)
     {
-        await _featureService.UpdateFeature(CurrentMemberId, id, new UpdateFeature
+        await _featureService.UpdateFeature(MemberServiceRequest, id, new UpdateFeature
         {
             Description = viewModel.Description,
             Name = viewModel.Name

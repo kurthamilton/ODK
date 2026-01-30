@@ -63,27 +63,23 @@ public class ChapterService : IChapterService
     public async Task<SubscriptionsPageViewModel> GetChapterMemberSubscriptionsViewModel(
         MemberChapterServiceRequest request)
     {
-        var (chapterId, platform, currentMemberId) =
-            (request.ChapterId, request.Platform, request.CurrentMemberId);
+        var (chapter, platform, currentMember) =
+            (request.Chapter, request.Platform, request.CurrentMember);
 
         var (
-            chapter,
-            currentMember,
             memberSubscription,
             chapterSubscriptions,
             sitePaymentSettings,
             memberSubscriptionRecord,
             membershipSettings
         ) = await _unitOfWork.RunAsync(
-            x => x.ChapterRepository.GetById(chapterId),
-            x => x.MemberRepository.GetById(currentMemberId),
-            x => x.MemberSubscriptionRepository.GetByMemberId(currentMemberId, chapterId),
-            x => x.ChapterSubscriptionRepository.GetByChapterId(chapterId, includeDisabled: true),
+            x => x.MemberSubscriptionRepository.GetByMemberId(currentMember.Id, chapter.Id),
+            x => x.ChapterSubscriptionRepository.GetByChapterId(chapter.Id, includeDisabled: true),
             x => x.SitePaymentSettingsRepository.GetAll(),
-            x => x.MemberSubscriptionRecordRepository.GetLatest(currentMemberId, chapterId),
-            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId));
+            x => x.MemberSubscriptionRecordRepository.GetLatest(currentMember.Id, chapter.Id),
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id));
 
-        OdkAssertions.MemberOf(currentMember, chapterId);
+        OdkAssertions.MemberOf(currentMember, chapter.Id);
 
         var currentSubscription = chapterSubscriptions
             .FirstOrDefault(x => x.Id == memberSubscriptionRecord?.ChapterSubscriptionId);

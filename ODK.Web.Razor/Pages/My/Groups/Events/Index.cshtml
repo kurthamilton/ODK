@@ -8,12 +8,13 @@
     Layout = "_GroupAdminLayout";
     Model.Title = "Events";
 
-    var viewModel = await EventAdminService.GetEventsAdminPageViewModel(Model.MemberChapterServiceRequest, 1, 500);
+    var viewModel = await EventAdminService.GetEventsAdminPageViewModel(
+        Model.MemberChapterServiceRequest, Model.Chapter, 1, 1000);
 }
 
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
 {
     Title = "Events",
-    BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Events/_EventsContent", viewModel)</div>,
+    BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Events/_AdminEventsContent", viewModel)</div>,
     MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu")
 })

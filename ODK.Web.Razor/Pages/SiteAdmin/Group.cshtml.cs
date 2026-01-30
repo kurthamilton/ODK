@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using ODK.Services;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.ViewModels;
 using ODK.Web.Common.Feedback;
-using ODK.Web.Common.Routes;
 
 namespace ODK.Web.Razor.Pages.SiteAdmin;
 
@@ -15,9 +13,6 @@ public class GroupModel : SiteAdminPageModel
     {
         _chapterAdminService = chapterAdminService;
     }
-
-    public MemberChapterServiceRequest AdminServiceRequest
-        => MemberChapterServiceRequest.Create(ChapterId, MemberServiceRequest);
 
     public Guid ChapterId { get; private set; }
 

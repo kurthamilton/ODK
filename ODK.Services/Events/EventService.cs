@@ -44,16 +44,15 @@ public class EventService : IEventService
     public async Task<ServiceResult> AddComment(
         MemberServiceRequest request, Guid eventId, Chapter chapter, string comment, Guid? parentEventCommentId)
     {
-        var currentMemberId = request.CurrentMemberId;
+        var currentMember = request.CurrentMember;
 
-        var (member, @event, settings) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(currentMemberId),
+        var (@event, settings) = await _unitOfWork.RunAsync(
             x => x.EventRepository.GetById(eventId),
             x => x.ChapterEventSettingsRepository.GetByChapterId(chapter.Id));
 
         OdkAssertions.BelongsToChapter(@event, chapter.Id);
 
-        if (settings?.DisableComments == true || !@event.CanComment || !@event.IsAuthorized(member))
+        if (settings?.DisableComments == true || !@event.CanComment || !@event.IsAuthorized(currentMember))
         {
             return ServiceResult.Failure("You cannot comment on this event");
         }
@@ -86,7 +85,7 @@ public class EventService : IEventService
             CreatedUtc = DateTime.UtcNow,
             EventId = eventId,
             Hidden = hidden,
-            MemberId = currentMemberId,
+            MemberId = currentMember.Id,
             ParentEventCommentId = parentComment?.Id,
             Text = comment
         };
@@ -290,18 +289,17 @@ public class EventService : IEventService
         EventResponseType responseType,
         Guid? adminMemberId)
     {
-        var memberId = request.CurrentMemberId;
+        var currentMember = request.CurrentMember;
 
-        var (member, @event, memberResponse, waitlist) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(memberId),
+        var (@event, memberResponse, waitlist) = await _unitOfWork.RunAsync(
             x => x.EventRepository.GetById(eventId),
-            x => x.EventResponseRepository.GetByMemberId(memberId, eventId),
+            x => x.EventResponseRepository.GetByMemberId(currentMember.Id, eventId),
             x => x.EventWaitlistMemberRepository.GetByEventId(eventId));
 
         return await UpdateMemberResponse(
             request,
             @event,
-            member,
+            currentMember,
             responseType,
             memberResponse,
             waitlist,
@@ -311,18 +309,17 @@ public class EventService : IEventService
     public async Task<ServiceResult> UpdateMemberResponse(
         MemberServiceRequest request, string shortcode, EventResponseType responseType, Guid? adminMemberId)
     {
-        var memberId = request.CurrentMemberId;
+        var currentMember = request.CurrentMember;
 
-        var (member, @event, memberResponse, waitlist) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(memberId),
+        var (@event, memberResponse, waitlist) = await _unitOfWork.RunAsync(
             x => x.EventRepository.GetByShortcode(shortcode),
-            x => x.EventResponseRepository.GetByMemberId(memberId, shortcode),
+            x => x.EventResponseRepository.GetByMemberId(currentMember.Id, shortcode),
             x => x.EventWaitlistMemberRepository.GetByEventShortcode(shortcode));
 
         return await UpdateMemberResponse(
             request,
             @event,
-            member,
+            currentMember,
             responseType,
             memberResponse,
             waitlist,

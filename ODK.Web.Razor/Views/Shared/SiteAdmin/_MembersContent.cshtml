@@ -10,6 +10,7 @@
 @inject IChapterAdminService ChapterAdminService
 @inject IRequestStore RequestStore
 @{
+    var chapter = RequestStore.Chapter;
     var serviceRequest = RequestStore.MemberChapterServiceRequest;
     var adminMembers = await ChapterAdminService.GetChapterAdminMembers(serviceRequest);
 }
@@ -31,7 +32,7 @@
                 <tr>
                     <td>@adminMember.Member.FullName</td>
                     <td>
-                        @if (Model.Value.OwnerId == adminMember.MemberId)
+                        @if (chapter.OwnerId == adminMember.MemberId)
                         {
                             @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Star)
                             {
@@ -40,7 +41,7 @@
                         }
                         else
                         {
-                            <form action="/groups/@Model.Value.Id/owner" method="post">
+                            <form action="/groups/@chapter.Id/owner" method="post">
                                 @Html.Hidden("memberId", adminMember.MemberId)
                                 <button class="btn btn-icon" data-bs-toggle="tooltip" data-bs-title="Set as owner">
                                     @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.StarOutline)
@@ -52,8 +53,8 @@
                         }
                     </td>
                     <td>
-                        <form action="/groups/@Model.Value.Id/members/@adminMember.MemberId/visibility" method="post">
-                            @if (adminMember.Member.Visible(Model.Value.Id))
+                        <form action="/groups/@chapter.Id/members/@adminMember.MemberId/visibility" method="post">
+                            @if (adminMember.Member.Visible(chapter.Id))
                             {
                                 @Html.Hidden("visible", false)
                                 <button class="btn btn-danger btn-sm" type="submit">Hide</button>

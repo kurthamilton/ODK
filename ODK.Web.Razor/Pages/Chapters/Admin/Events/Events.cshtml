@@ -10,11 +10,11 @@
     Model.Title = "Events | Admin";
 
     var request = Model.MemberChapterServiceRequest;
-    var viewModel = await EventAdminService.GetEventsAdminPageViewModel(request, 1, 1000);
+    var viewModel = await EventAdminService.GetEventsAdminPageViewModel(request, Model.Chapter, 1, 1000);
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
     Title = "Events",
-    ContentFunc = @<div>@await Html.PartialAsync("Admin/Events/_EventsContent", viewModel)</div>
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Events/_AdminEventsContent", viewModel)</div>
 })

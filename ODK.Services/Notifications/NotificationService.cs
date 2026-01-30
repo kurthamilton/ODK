@@ -125,12 +125,12 @@ public class NotificationService : INotificationService
     public async Task<UnreadNotificationsViewModel> GetUnreadNotificationsViewModel(
         MemberServiceRequest request)
     {
-        var (memberId, platform) = (request.CurrentMemberId, request.Platform);
+        var (currentMember, platform) = (request.CurrentMember, request.Platform);
 
         var (unread, totalCount, settings) = await _unitOfWork.RunAsync(
-            x => x.NotificationRepository.GetUnreadByMemberId(memberId),
-            x => x.NotificationRepository.GetCountByMemberId(memberId),
-            x => x.MemberNotificationSettingsRepository.GetByMemberId(memberId));
+            x => x.NotificationRepository.GetUnreadByMemberId(currentMember.Id),
+            x => x.NotificationRepository.GetCountByMemberId(currentMember.Id),
+            x => x.MemberNotificationSettingsRepository.GetByMemberId(currentMember.Id));
 
         var excludedTypes = settings
             .Where(x => x.Disabled)

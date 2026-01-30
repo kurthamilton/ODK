@@ -90,7 +90,7 @@ public class MemberAdminController : AdminControllerBase
     [HttpPost("groups/{chapterId:guid}/members/{id:guid}/visibility")]
     public async Task<IActionResult> SetMemberVisibility(Guid chapterId, Guid id, [FromForm] bool visible)
     {
-        var request = MemberChapterServiceRequest.Create(chapterId, MemberServiceRequest);
+        var request = MemberChapterServiceRequest;
         await _memberAdminService.SetMemberVisibility(request, id, visible);
         AddFeedback("Member updated", FeedbackType.Success);
         return RedirectToReferrer();
@@ -118,7 +118,7 @@ public class MemberAdminController : AdminControllerBase
     [HttpGet("groups/{chapterId:guid}/members/download")]
     public async Task<IActionResult> DownloadAdminMembers(Guid chapterId)
     {
-        var request = MemberChapterServiceRequest.Create(chapterId, MemberServiceRequest);
+        var request = MemberChapterServiceRequest;
         var data = await _memberAdminService.GetMemberCsv(request);
 
         return DownloadCsv(data, $"Members.{DateTime.UtcNow:yyyyMMdd}.csv");

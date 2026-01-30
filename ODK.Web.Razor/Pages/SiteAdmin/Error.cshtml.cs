@@ -16,7 +16,7 @@ public class ErrorModel : SiteAdminPageModel
 
     public async Task<IActionResult> OnGet(Guid id)
     {
-        Error = await _loggingService.GetErrorDto(CurrentMemberId, id);
+        Error = await _loggingService.GetErrorDto(MemberServiceRequest, id);
         return Page();
     }
 }

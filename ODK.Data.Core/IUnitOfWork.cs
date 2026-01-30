@@ -61,7 +61,6 @@ public interface IUnitOfWork
     IMemberPasswordResetRequestRepository MemberPasswordResetRequestRepository { get; }
     IMemberPaymentSettingsRepository MemberPaymentSettingsRepository { get; }
     IMemberPreferencesRepository MemberPreferencesRepository { get; }
-    IMemberPrivacySettingsRepository MemberPrivacySettingsRepository { get; }
     IMemberPropertyRepository MemberPropertyRepository { get; }
     IMemberRepository MemberRepository { get; }
     IMemberSiteSubscriptionRepository MemberSiteSubscriptionRepository { get; }

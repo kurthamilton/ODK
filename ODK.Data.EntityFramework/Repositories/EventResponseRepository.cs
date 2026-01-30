@@ -1,5 +1,4 @@
-﻿using Azure;
-using ODK.Core.Events;
+﻿using ODK.Core.Events;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Events;
 using ODK.Data.Core.Repositories;

@@ -1,4 +1,5 @@
-﻿using ODK.Core.Events;
+﻿using ODK.Core.Chapters;
+using ODK.Core.Events;
 using ODK.Services.Events.ViewModels;
 
 namespace ODK.Services.Events;
@@ -19,7 +20,7 @@ public interface IEventAdminService
 
     Task<EventInvitesAdminPageViewModel> GetEventInvitesViewModel(MemberChapterServiceRequest request, Guid eventId);
 
-    Task<EventsAdminPageViewModel> GetEventsAdminPageViewModel(MemberChapterServiceRequest request, int page, int pageSize);
+    Task<EventsAdminPageViewModel> GetEventsAdminPageViewModel(MemberChapterServiceRequest request, Chapter chapter, int page, int pageSize);
 
     Task<EventSettingsAdminPageViewModel> GetEventSettingsViewModel(MemberChapterServiceRequest request);
 

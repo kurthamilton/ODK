@@ -25,8 +25,8 @@ public class ChapterSiteAdminController : AdminControllerBase
     [HttpPost("/siteadmin/groups/{id:guid}/approve")]
     public async Task<IActionResult> Approve(Guid id)
     {
-        var request = CreateMemberChapterServiceRequest(id);
-        var result = await _chapterAdminService.ApproveChapter(request);
+        var request = MemberServiceRequest;
+        var result = await _chapterAdminService.ApproveChapter(request, id);
         AddFeedback(result, "Group approved");
         return RedirectToReferrer();
     }
@@ -34,8 +34,8 @@ public class ChapterSiteAdminController : AdminControllerBase
     [HttpPost("/siteadmin/groups/{id:guid}/delete")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var request = CreateMemberChapterServiceRequest(id);
-        var result = await _chapterAdminService.DeleteChapter(request);
+        var request = MemberServiceRequest;
+        var result = await _chapterAdminService.DeleteChapter(request, id);
         AddFeedback(result, "Chapter deleted");
         return RedirectToReferrer();
     }

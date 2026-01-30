@@ -65,9 +65,9 @@ public class ContactAdminService : OdkAdminServiceBase, IContactAdminService
 
     public async Task<ServiceResult> ReplyToMessage(MemberServiceRequest request, Guid messageId, string message)
     {
-        var (currentMember, originalMessage) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(request.CurrentMemberId),
-            x => x.SiteContactMessageRepository.GetById(messageId));
+        var currentMember = request.CurrentMember;
+
+        var originalMessage = await _unitOfWork.SiteContactMessageRepository.GetById(messageId).Run();
 
         AssertMemberIsSiteAdmin(currentMember);
 
@@ -89,7 +89,7 @@ public class ContactAdminService : OdkAdminServiceBase, IContactAdminService
         {
             CreatedUtc = now,
             Message = _htmlSanitizer.Sanitize(message, DefaultHtmlSantizerOptions) ?? string.Empty,
-            MemberId = request.CurrentMemberId,
+            MemberId = currentMember.Id,
             SiteContactMessageId = originalMessage.Id
         });
 

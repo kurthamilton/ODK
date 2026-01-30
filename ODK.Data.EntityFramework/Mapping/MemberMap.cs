@@ -32,9 +32,5 @@ public class MemberMap : IEntityTypeConfiguration<Member>
         builder.HasMany(x => x.Chapters)
             .WithOne()
             .HasForeignKey(x => x.MemberId);
-
-        builder.HasMany(x => x.PrivacySettings)
-            .WithOne()
-            .HasForeignKey(x => x.MemberId);
     }
 }

@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ODK.Core.Events;
+using ODK.Core.Venues;
 using ODK.Data.Core.Deferred;
+using ODK.Data.Core.Events;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
 
@@ -21,13 +23,6 @@ public class EventRepository : ReadWriteRepositoryBase<Event>, IEventRepository
         .ConditionalWhere(x => x.Date >= after, after != null)
         .OrderByDescending(x => x.Date)
         .DeferredMultiple();
-
-    public IDeferredQueryMultiple<Event> GetByChapterId(Guid chapterId, int page, int pageSize)
-        => Set()
-            .Where(x => x.ChapterId == chapterId)
-            .OrderByDescending(x => x.Date)
-            .Page(page, pageSize)
-            .DeferredMultiple();
 
     public IDeferredQuerySingle<Event> GetByShortcode(string shortcode)
         => Set()
@@ -54,6 +49,50 @@ public class EventRepository : ReadWriteRepositoryBase<Event>, IEventRepository
         => GetPastEventQuery(chapterId, pageSize)
             .OrderByDescending(x => x.Date)
             .DeferredMultiple();
+
+    public IDeferredQueryMultiple<EventSummaryDto> GetSummariesByChapterId(
+        Guid chapterId, int page, int pageSize)
+    {
+        var query =
+            from @event in Set()
+            from venue in Set<Venue>()
+                .Where(x => x.Id == @event.VenueId)
+            from email in Set<EventEmail>()
+                .Where(x => x.EventId == @event.Id)
+                .DefaultIfEmpty()
+            where @event.ChapterId == chapterId
+            select new EventSummaryDto
+            {
+                Email = email,
+                Event = @event,
+                Invites = new EventInviteSummaryDto
+                {
+                    EventId = @event.Id,
+                    Sent = Set<EventInvite>()
+                        .Where(x => x.EventId == @event.Id)
+                        .Count()
+                },
+                Responses = new EventResponseSummaryDto
+                {
+                    EventId = @event.Id,
+                    Maybe = Set<EventResponse>()
+                        .Where(x => x.EventId == @event.Id && x.Type == EventResponseType.Maybe)
+                        .Count(),
+                    No = Set<EventResponse>()
+                        .Where(x => x.EventId == @event.Id && x.Type == EventResponseType.No)
+                        .Count(),
+                    Yes = Set<EventResponse>()
+                        .Where(x => x.EventId == @event.Id && x.Type == EventResponseType.Yes)
+                        .Count()
+                },
+                Venue = venue
+            };
+
+        return query
+            .OrderByDescending(x => x.Event.Date)
+            .Page(page, pageSize)
+            .DeferredMultiple();
+    }
 
     public IDeferredQuery<bool> ShortcodeExists(string shortcode)
         => Set()

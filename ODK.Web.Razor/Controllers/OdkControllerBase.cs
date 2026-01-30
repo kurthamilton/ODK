@@ -68,9 +68,6 @@ public abstract class OdkControllerBase : Controller
         TempData!.AddFeedback(viewModel);
     }
 
-    protected MemberChapterServiceRequest CreateMemberChapterServiceRequest(Guid chapterId)
-        => MemberChapterServiceRequestImpl.Create(chapterId, MemberChapterServiceRequest);
-
     protected IActionResult DownloadCsv(IReadOnlyCollection<IReadOnlyCollection<string>> data, string fileName)
     {
         var csv = StringUtils.ToCsv(data);

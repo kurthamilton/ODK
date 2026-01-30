@@ -5,12 +5,13 @@
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
+@using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Components
 @inject IFeatureService FeatureService
 @inject IOdkRoutes OdkRoutes
+@inject IRequestStore RequestStore
 @{
-    var memberId = User.MemberId();
-    var features = await FeatureService.GetFeatures(memberId);
+    var features = await FeatureService.GetFeatures(RequestStore.MemberServiceRequest);
 }
 
 <h2>Feature notifications</h2>

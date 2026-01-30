@@ -191,8 +191,8 @@ public class ChapterViewModelService : IChapterViewModelService
         MemberServiceRequest request)
     {
         var (adminChapters, memberChapters) = await _unitOfWork.RunAsync(
-            x => x.ChapterRepository.GetByAdminMemberId(request.CurrentMemberId),
-            x => x.ChapterRepository.GetByMemberId(request.CurrentMemberId));
+            x => x.ChapterRepository.GetByAdminMemberId(request.CurrentMember.Id),
+            x => x.ChapterRepository.GetByMemberId(request.CurrentMember.Id));
 
         return new AccountMenuChaptersViewModel
         {
@@ -908,11 +908,11 @@ public class ChapterViewModelService : IChapterViewModelService
 
     public async Task<MemberChaptersViewModel> GetMemberChapters(MemberServiceRequest request)
     {
-        var (memberId, platform) = (request.CurrentMemberId, request.Platform);
+        var (currentMember, platform) = (request.CurrentMember, request.Platform);
 
         var (chapters, adminMembers) = await _unitOfWork.RunAsync(
-            x => x.ChapterRepository.GetByMemberId(memberId),
-            x => x.ChapterAdminMemberRepository.GetByMemberId(memberId));
+            x => x.ChapterRepository.GetByMemberId(currentMember.Id),
+            x => x.ChapterAdminMemberRepository.GetByMemberId(currentMember.Id));
 
         var chapterIds = chapters
             .Select(x => x.Id)
@@ -947,7 +947,7 @@ public class ChapterViewModelService : IChapterViewModelService
                 HasImage = image != null,
                 IsAdmin = adminMember != null,
                 IsMember = true,
-                IsOwner = chapter.OwnerId == request.CurrentMemberId,
+                IsOwner = chapter.OwnerId == currentMember.Id,
                 // no need to show location for existing groups
                 Location = null,
                 Platform = platform,
@@ -956,7 +956,7 @@ public class ChapterViewModelService : IChapterViewModelService
                 Topics = []
             };
 
-            if (chapter.OwnerId == memberId)
+            if (chapter.OwnerId == currentMember.Id)
             {
                 owned.Add(viewModel);
             }

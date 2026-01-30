@@ -96,9 +96,7 @@ public class AccountViewModelService : IAccountViewModelService
     public async Task<ChapterProfilePageViewModel> GetChapterProfilePage(
         MemberServiceRequest request, Chapter chapter)
     {
-        var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
-
-        var member = await _unitOfWork.MemberRepository.GetById(currentMemberId).Run();
+        var (currentMember, platform) = (request.CurrentMember, request.Platform);
 
         var (
                 chapterProperties,
@@ -107,9 +105,9 @@ public class AccountViewModelService : IAccountViewModelService
             ) = await _unitOfWork.RunAsync(
                 x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
                 x => x.ChapterPropertyOptionRepository.GetByChapterId(chapter.Id),
-                x => x.MemberPropertyRepository.GetByMemberId(currentMemberId, chapter.Id));
+                x => x.MemberPropertyRepository.GetByMemberId(currentMember.Id, chapter.Id));
 
-        OdkAssertions.MemberOf(member, chapter.Id);
+        OdkAssertions.MemberOf(currentMember, chapter.Id);
 
         chapterProperties = chapterProperties
             .Where(x => !x.ApplicationOnly)
@@ -119,13 +117,13 @@ public class AccountViewModelService : IAccountViewModelService
         return new ChapterProfilePageViewModel
         {
             Chapter = chapter,
-            CurrentMember = member,
+            CurrentMember = currentMember,
             ChapterProfile = CreateProfileFormViewModel(
                 platform,
                 chapter,
                 chapterProperties,
                 chapterPropertyOptions,
-                member,
+                currentMember,
                 memberProperties)
         };
     }
@@ -133,16 +131,14 @@ public class AccountViewModelService : IAccountViewModelService
     public async Task<MemberChapterPaymentsPageViewModel> GetMemberChapterPaymentsPage(
         MemberServiceRequest request, Chapter chapter)
     {
-        var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
+        var (currentMember, platform) = (request.CurrentMember, request.Platform);
 
-        var (member, payments) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(currentMemberId),
-            x => x.PaymentRepository.GetChapterDtosByMemberId(currentMemberId));
+        var payments = await _unitOfWork.PaymentRepository.GetChapterDtosByMemberId(currentMember.Id).Run();
 
         return new MemberChapterPaymentsPageViewModel
         {
             Chapter = chapter,
-            CurrentMember = member,
+            CurrentMember = currentMember,
             Payments = payments
                 .Select(x => new MemberPaymentsPageViewModelPayment(x))
                 .ToArray(),
@@ -153,15 +149,13 @@ public class AccountViewModelService : IAccountViewModelService
     public async Task<MemberEmailPreferencesPageViewModel> GetMemberEmailPreferencesPage(
         MemberServiceRequest request)
     {
-        var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
+        var (currentMember, platform) = (request.CurrentMember, request.Platform);
 
-        var (member, preferences) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(currentMemberId),
-            x => x.MemberEmailPreferenceRepository.GetByMemberId(currentMemberId));
+        var preferences = await _unitOfWork.MemberEmailPreferenceRepository.GetByMemberId(currentMember.Id).Run();
 
         return new MemberEmailPreferencesPageViewModel
         {
-            CurrentMember = member,
+            CurrentMember = currentMember,
             Platform = platform,
             Preferences = preferences
         };
@@ -169,16 +163,15 @@ public class AccountViewModelService : IAccountViewModelService
 
     public async Task<MemberPaymentsPageViewModel> GetMemberPaymentsPage(MemberServiceRequest request)
     {
-        var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
+        var (currentMember, platform) = (request.CurrentMember, request.Platform);
 
-        var (member, chapterPayments, sitePayments) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(currentMemberId),
-            x => x.PaymentRepository.GetChapterDtosByMemberId(currentMemberId),
-            x => x.PaymentRepository.GetSitePaymentsByMemberId(currentMemberId));
+        var (chapterPayments, sitePayments) = await _unitOfWork.RunAsync(
+            x => x.PaymentRepository.GetChapterDtosByMemberId(currentMember.Id),
+            x => x.PaymentRepository.GetSitePaymentsByMemberId(currentMember.Id));
 
         return new MemberPaymentsPageViewModel
         {
-            CurrentMember = member,
+            CurrentMember = currentMember,
             Payments = chapterPayments
                 .Select(x => new MemberPaymentsPageViewModelPayment(x))
                 .Union(sitePayments.Select(x => new MemberPaymentsPageViewModelPayment(x)))

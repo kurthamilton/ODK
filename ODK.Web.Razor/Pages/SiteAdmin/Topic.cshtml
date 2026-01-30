@@ -6,7 +6,7 @@
     Layout = "_SiteAdminLayout";
     Model.Title = "Topic | SiteAdmin";
 
-    var viewModel = await TopicAdminService.GetTopicAdminPageViewModel(Model.CurrentMemberId, Model.TopicId);
+    var viewModel = await TopicAdminService.GetTopicAdminPageViewModel(Model.MemberServiceRequest, Model.TopicId);
 }
 
 @await Html.PartialAsync("SiteAdmin/_SiteAdminTopicContent", viewModel)

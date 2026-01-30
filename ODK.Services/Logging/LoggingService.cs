@@ -29,18 +29,18 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
         _unitOfWorkFactory = unitOfWorkFactory;
     }
 
-    public async Task DeleteError(Guid currentMemberId, Guid id)
+    public async Task DeleteError(MemberServiceRequest request, Guid id)
     {
-        var error = await GetSiteAdminRestrictedContent(currentMemberId,
+        var error = await GetSiteAdminRestrictedContent(request,
             x => x.ErrorRepository.GetById(id));
 
         _unitOfWork.ErrorRepository.Delete(error);
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task DeleteAllErrors(Guid currentMemberId, Guid id)
+    public async Task DeleteAllErrors(MemberServiceRequest request, Guid id)
     {
-        var error = await GetSiteAdminRestrictedContent(currentMemberId,
+        var error = await GetSiteAdminRestrictedContent(request,
             x => x.ErrorRepository.GetById(id));
 
         throw new NotImplementedException();
@@ -132,9 +132,9 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
         await unitOfWork.SaveChangesAsync();
     }
 
-    public async Task<ErrorDto> GetErrorDto(Guid currentMemberId, Guid errorId)
+    public async Task<ErrorDto> GetErrorDto(MemberServiceRequest request, Guid errorId)
     {
-        var (error, properties) = await GetSiteAdminRestrictedContent(currentMemberId,
+        var (error, properties) = await GetSiteAdminRestrictedContent(request,
             x => x.ErrorRepository.GetById(errorId),
             x => x.ErrorPropertyRepository.GetByErrorId(errorId));
 
@@ -145,9 +145,9 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
         };
     }
 
-    public async Task<IReadOnlyCollection<Error>> GetErrors(Guid currentMemberId, int page, int pageSize)
+    public async Task<IReadOnlyCollection<Error>> GetErrors(MemberServiceRequest request, int page, int pageSize)
     {
-        return await GetSiteAdminRestrictedContent(currentMemberId,
+        return await GetSiteAdminRestrictedContent(request,
             x => x.ErrorRepository.GetErrors(page, pageSize));
     }
 

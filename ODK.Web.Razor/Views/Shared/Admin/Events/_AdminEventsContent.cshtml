@@ -12,18 +12,6 @@
 @using ODK.Web.Razor.Models.Components
 @model EventsAdminPageViewModel
 @inject IOdkRoutes OdkRoutes
-@{
-    var (events, venues, allInvites, allResponses) = 
-        (Model.Events, Model.Venues, Model.Invites, Model.Responses);
-
-    var venueDictionary = venues.ToDictionary(x => x.Id);
-
-    var invitesDictionary = allInvites
-        .ToDictionary(x => x.EventId);
-
-    var responseDictionary = allResponses
-        .ToDictionary(x => x.EventId);
-}
 
 <p>
     <a class="btn btn-primary" href="@OdkRoutes.GroupAdmin.EventCreate(Model.Chapter)">Create</a>
@@ -42,29 +30,30 @@
                     @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.CheckCircle)
                     {
                         Class = "text-success"
-                                        })
+                    })
                 </th>
                 <th>
                     @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.QuestionCircle)
-                                        {
+                    {
                         Class = "text-warning"
-                                        })
+                    })
                 </th>
                 <th>
                     @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.TimesCircle)
-                                        {
+                    {
                         Class = "text-danger"
-                                        })
+                    })
                 </th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var @event in events)
+            @foreach (var dto in Model.Events)
             {
-                invitesDictionary.TryGetValue(@event.Id, out var eventInvites);
-                responseDictionary.TryGetValue(@event.Id, out var eventResponses);
-
-                var venue = venueDictionary[@event.VenueId];
+                var @event = dto.Event;
+                var venue = dto.Venue;
+                var invites = dto.Invites;
+                var email = dto.Email;
+                var responses = dto.Responses;
 
                 <tr>
                     <td>
@@ -77,20 +66,20 @@
                     <td>@(@event.Date.EventDate())</td>
                     <td><a href="@OdkRoutes.GroupAdmin.Venue(Model.Chapter, venue.Id)">@venue.Name</a></td>
                     <td>
-                        @if (eventInvites?.SentUtc == null)
+                        @if (email?.SentUtc == null)
                         {
                             <a href="@OdkRoutes.GroupAdmin.EventInvites(Model.Chapter, @event.Id)">
-                                @(eventInvites?.ScheduledUtc != null ? "Scheduled" : "Send")
+                                @(email?.ScheduledUtc != null ? "Scheduled" : "Send")
                             </a>
                         }
                         else
                         {
-                            @eventInvites.Sent
+                            @invites.Sent
                         }
                     </td>
-                    <td>@(eventResponses?.Yes ?? 0)</td>
-                    <td>@(eventResponses?.Maybe ?? 0)</td>
-                    <td>@(eventResponses?.No ?? 0)</td>
+                    <td>@responses.Yes</td>
+                    <td>@responses.Maybe</td>
+                    <td>@responses.No</td>
                 </tr>
             }
         </tbody>

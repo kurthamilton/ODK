@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using ODK.Services;
 using ODK.Services.Authentication;
 using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
@@ -15,7 +14,4 @@ public class AdminControllerBase : OdkControllerBase
         : base(requestStore, odkRoutes)
     {
     }
-
-    protected MemberChapterServiceRequest AdminServiceRequest(Guid chapterId)
-        => MemberChapterServiceRequest.Create(chapterId, MemberServiceRequest);
 }

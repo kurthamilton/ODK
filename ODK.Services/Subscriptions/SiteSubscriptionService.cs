@@ -35,13 +35,13 @@ public class SiteSubscriptionService : ISiteSubscriptionService
     public async Task<ServiceResult> CancelMemberSiteSubscription(
         MemberServiceRequest request, Guid siteSubscriptionId)
     {
-        var (memberId, platform) = (request.CurrentMemberId, request.Platform);
+        var (currentMember, platform) = (request.CurrentMember, request.Platform);
 
         var (memberSubscription, sitePaymentSettings) = await _unitOfWork.RunAsync(
             x => x.MemberSiteSubscriptionRepository.GetByIdOrDefault(siteSubscriptionId),
             x => x.SitePaymentSettingsRepository.GetAll());
 
-        OdkAssertions.BelongsToMember(memberSubscription, memberId);
+        OdkAssertions.BelongsToMember(memberSubscription, currentMember.Id);
 
         if (memberSubscription == null)
         {
@@ -69,11 +69,11 @@ public class SiteSubscriptionService : ISiteSubscriptionService
         Guid siteSubscriptionPriceId,
         string externalId)
     {
-        var (memberId, platform) = (request.CurrentMemberId, request.Platform);
+        var (currentMember, platform) = (request.CurrentMember, request.Platform);
 
         var (sitePaymentSettings, memberSubscription, siteSubscriptionPrice) = await _unitOfWork.RunAsync(
             x => x.SitePaymentSettingsRepository.GetAll(),
-            x => x.MemberSiteSubscriptionRepository.GetByMemberId(memberId, platform),
+            x => x.MemberSiteSubscriptionRepository.GetByMemberId(currentMember.Id, platform),
             x => x.SiteSubscriptionPriceRepository.GetById(siteSubscriptionPriceId));
 
         var siteSubscription = await _unitOfWork.SiteSubscriptionRepository.GetById(siteSubscriptionPrice.SiteSubscriptionId).Run();
@@ -103,7 +103,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
 
         if (memberSubscription.MemberId == default)
         {
-            memberSubscription.MemberId = memberId;
+            memberSubscription.MemberId = currentMember.Id;
             _unitOfWork.MemberSiteSubscriptionRepository.Add(memberSubscription);
         }
         else
@@ -194,10 +194,9 @@ public class SiteSubscriptionService : ISiteSubscriptionService
     public async Task<SiteSubscriptionCheckoutViewModel> StartSiteSubscriptionCheckout(
         MemberServiceRequest request, Guid priceId, string returnPath, Guid? chapterId)
     {
-        var (memberId, platform) = (request.CurrentMemberId, request.Platform);
+        var (currentMember, platform) = (request.CurrentMember, request.Platform);
 
-        var (member, siteSubscription, price, chapter) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(memberId),
+        var (siteSubscription, price, chapter) = await _unitOfWork.RunAsync(
             x => x.SiteSubscriptionRepository.GetByPriceId(priceId),
             x => x.SiteSubscriptionPriceRepository.GetById(priceId),
             x => chapterId != null
@@ -226,14 +225,14 @@ public class SiteSubscriptionService : ISiteSubscriptionService
 
         var metadata = new PaymentMetadataModel(
             PaymentReasonType.SiteSubscription,
-            member,
+            currentMember,
             price,
             paymentCheckoutSessionId: paymentCheckoutSessionId,
             paymentId: paymentId);
 
         var externalCheckoutSession = await paymentProvider.StartCheckout(
             request,
-            member.EmailAddress,
+            currentMember.EmailAddress,
             externalSubscriptionPlan,
             returnPath,
             metadata);
@@ -241,7 +240,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
         _unitOfWork.PaymentCheckoutSessionRepository.Add(new PaymentCheckoutSession
         {
             Id = paymentCheckoutSessionId,
-            MemberId = memberId,
+            MemberId = currentMember.Id,
             PaymentId = paymentId,
             SessionId = externalCheckoutSession.SessionId,
             StartedUtc = utcNow
@@ -254,7 +253,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             CurrencyId = price.CurrencyId,
             ExternalId = externalCheckoutSession.PaymentId,
             Id = paymentId,
-            MemberId = memberId,
+            MemberId = currentMember.Id,
             Reference = siteSubscription.ToReference(),
             SitePaymentSettingId = siteSubscription.SitePaymentSettingId
         });

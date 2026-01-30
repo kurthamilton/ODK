@@ -10,7 +10,7 @@
     Layout = "_SiteAdminLayout";
     Model.Title = "Payments | SiteAdmin";
 
-    var settings = await SettingsService.GetSitePaymentSettings(Model.CurrentMemberId, Model.Id);
+    var settings = await SettingsService.GetSitePaymentSettings(Model.MemberServiceRequest, Model.Id);
 }
 
 @await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel

@@ -1,8 +1,8 @@
-﻿@page "/{chapterName}/admin"
+﻿@page "/{chapterName}/admin/chapter"
 @using ODK.Web.Common.Routes
 @model IndexModel
 @{
     Layout = "_OdkChapterAdminLayout";
 
-    Response.Redirect(Model.OdkRoutes.GroupAdmin.Events(Model.Chapter));
+    Response.Redirect(Model.OdkRoutes.GroupAdmin.GroupTexts(Model.Chapter));
 }

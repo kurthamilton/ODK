@@ -11,7 +11,7 @@ public interface IChapterAdminService
 {
     Task<ServiceResult> AddChapterAdminMember(MemberChapterServiceRequest request, Guid memberId);
 
-    Task<ServiceResult> ApproveChapter(MemberChapterServiceRequest request);
+    Task<ServiceResult> ApproveChapter(MemberServiceRequest request, Guid chapterId);
 
     Task<ServiceResult<Chapter?>> CreateChapter(
         MemberServiceRequest request,
@@ -26,7 +26,7 @@ public interface IChapterAdminService
 
     Task<ServiceResult> CreateChapterSubscription(MemberChapterServiceRequest request, CreateChapterSubscription model);
 
-    Task<ServiceResult> DeleteChapter(MemberChapterServiceRequest request);
+    Task<ServiceResult> DeleteChapter(MemberServiceRequest request, Guid chapterId);
 
     Task<ServiceResult> DeleteChapterAdminMember(MemberChapterServiceRequest request, Guid memberId);
 
@@ -89,7 +89,7 @@ public interface IChapterAdminService
 
     Task<SiteAdminChaptersViewModel> GetSiteAdminChaptersViewModel(MemberServiceRequest request);
 
-    Task<SiteAdminChapterViewModel> GetSiteAdminChapterViewModel(MemberChapterServiceRequest request);
+    Task<SiteAdminChapterViewModel> GetSiteAdminChapterViewModel(MemberServiceRequest request, Guid chapterId);
 
     Task<ServiceResult> PublishChapter(MemberChapterServiceRequest request);
 

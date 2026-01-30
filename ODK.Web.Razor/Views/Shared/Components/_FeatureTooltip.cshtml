@@ -7,8 +7,8 @@
 @inject IFeatureService FeatureService
 @inject IRequestStore RequestStore
 @{
-    var (platform, memberId) = (RequestStore.Platform, RequestStore.CurrentMemberId);
-    var feature = await FeatureService.GetUnseeen(memberId, Model.Name);
+    var platform = RequestStore.Platform;
+    var feature = await FeatureService.GetUnseeen(RequestStore.MemberServiceRequest, Model.Name);
     if (feature == null)
     {
         return;

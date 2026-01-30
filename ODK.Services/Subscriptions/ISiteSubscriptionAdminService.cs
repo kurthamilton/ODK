@@ -12,14 +12,14 @@ public interface ISiteSubscriptionAdminService
         Guid siteSubscriptionId,
         SiteSubscriptionPriceCreateModel model);
 
-    Task DeleteSiteSubscriptionPrice(Guid currentMemberId, Guid siteSubscriptionId, Guid siteSubscriptionPriceId);
+    Task DeleteSiteSubscriptionPrice(MemberServiceRequest request, Guid siteSubscriptionId, Guid siteSubscriptionPriceId);
 
     Task<IReadOnlyCollection<SiteSubscription>> GetAllSubscriptions(MemberServiceRequest request);
 
     Task<IReadOnlyCollection<SiteSubscriptionSiteAdminListItemViewModel>> GetSiteSubscriptionSiteAdminListItems(
         MemberServiceRequest request);
 
-    Task<SiteSubscriptionViewModel> GetSubscriptionViewModel(Guid currentMemberId, Guid siteSubscriptionId);
+    Task<SiteSubscriptionViewModel> GetSubscriptionViewModel(MemberServiceRequest request, Guid siteSubscriptionId);
 
     Task MakeDefault(MemberServiceRequest request, Guid siteSubscriptionId);
 
@@ -28,6 +28,6 @@ public interface ISiteSubscriptionAdminService
         Guid siteSubscriptionId,
         SiteSubscriptionCreateModel model);
 
-    Task<ServiceResult> UpdateSiteSubscriptionEnabled(Guid currentMemberId, Guid siteSubscriptionId,
-        bool enabled);
+    Task<ServiceResult> UpdateSiteSubscriptionEnabled(
+        MemberServiceRequest request, Guid siteSubscriptionId, bool enabled);
 }

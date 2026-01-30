@@ -9,8 +9,7 @@
 @inject IOdkRoutes OdkRoutes
 @inject IRequestStore RequestStore
 @{
-    var memberId = RequestStore.CurrentMemberId;
-    var errors = await LoggingService.GetErrors(memberId, 1, 1000);
+    var errors = await LoggingService.GetErrors(RequestStore.MemberServiceRequest, 1, 1000);
 }
 
 <h2>Error log</h2>

@@ -26,7 +26,7 @@ public class FeatureCreateModel : SiteAdminPageModel
             return Page();
         }
 
-        var result = await _featureService.AddFeature(CurrentMemberId, new UpdateFeature
+        var result = await _featureService.AddFeature(MemberServiceRequest, new UpdateFeature
         {
             Description = viewModel.Description,
             Name = viewModel.Name

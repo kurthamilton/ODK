@@ -23,8 +23,6 @@ public class Member : IVersioned, IDatabaseEntity, ITimeZoneEntity
 
     public string LastName { get; set; } = string.Empty;
 
-    public ICollection<MemberChapterPrivacySettings> PrivacySettings { get; set; } = new HashSet<MemberChapterPrivacySettings>();
-
     public bool SiteAdmin { get; set; }
 
     public TimeZoneInfo? TimeZone { get; set; }
@@ -63,5 +61,5 @@ public class Member : IVersioned, IDatabaseEntity, ITimeZoneEntity
         .Where(x => x.Approved)
         .Any(x => IsApprovedMemberOf(x.ChapterId));
 
-    public bool Visible(Guid chapterId) => !PrivacySettings.Any(x => x.ChapterId == chapterId && x.HideProfile);
+    public bool Visible(Guid chapterId) => MemberChapter(chapterId)?.HideProfile == false;
 }

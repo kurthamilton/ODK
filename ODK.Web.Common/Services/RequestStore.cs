@@ -41,8 +41,8 @@ public class RequestStore : IRequestStore
 
         _currentMemberId = new(
             () => CurrentMemberIdOrDefault ?? throw new OdkNotAuthorizedException());
-        _memberChapterServiceRequest = new(() => MemberChapterServiceRequest.Create(Chapter.Id, MemberServiceRequest));
-        _memberServiceRequest = new(() => MemberServiceRequest.Create(CurrentMemberId, ServiceRequest));
+        _memberChapterServiceRequest = new(() => MemberChapterServiceRequest.Create(Chapter, MemberServiceRequest));
+        _memberServiceRequest = new(() => MemberServiceRequest.Create(CurrentMember, ServiceRequest));
     }
 
     public Chapter Chapter => _chapter ?? throw new OdkNotFoundException();

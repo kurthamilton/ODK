@@ -2,11 +2,11 @@
 
 public class EventResponseSummaryDto
 {
-    public Guid EventId { get; set; }
+    public required Guid EventId { get; init; }
 
-    public int Yes { get; set; }
+    public required int Yes { get; init; }
 
-    public int Maybe { get; set; }
+    public required int Maybe { get; init; }
 
-    public int No { get; set; }
+    public required int No { get; init; }
 }

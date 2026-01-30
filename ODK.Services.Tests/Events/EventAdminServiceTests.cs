@@ -77,8 +77,13 @@ public static class EventAdminServiceTests
             unitOfWork: unitOfWork);
 
         var request = MemberChapterServiceRequest.Create(
-            ChapterId,
-            CurrentMemberId,
+            new Chapter 
+            { 
+                Id = ChapterId,
+                Name = "",
+                Slug = ""
+            },
+            new Member { Id = CurrentMemberId },
             Mock.Of<IHttpRequestContext>(),
             PlatformType.Default);
 

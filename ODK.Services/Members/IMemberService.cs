@@ -18,7 +18,7 @@ public interface IMemberService
 
     Task<ServiceResult> DeleteMember(Guid memberId);
 
-    Task<ServiceResult<(Member Member, MemberChapter MemberChapter)>> DeleteMemberChapterData(Guid memberId, Guid chapterId);
+    Task<ServiceResult> DeleteMemberChapterData(MemberChapterServiceRequest request);
 
     Task<Member?> FindMemberByEmailAddress(string emailAddress);
 

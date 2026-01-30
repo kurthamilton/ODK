@@ -46,7 +46,6 @@ public class ChapterAdminMemberRepository : WriteRepositoryBase<ChapterAdminMemb
                 .Include(x => x.Member)
                 .ThenInclude(x => x.Chapters)
                 .Include(x => x.Member)
-                .ThenInclude(x => x.PrivacySettings)
             from chapter in chapterQuery
                 .Where(x => x.Id == chapterAdminMember.ChapterId)
             select chapterAdminMember;

@@ -1,4 +1,4 @@
-﻿@page "/siteadmin/groups/{id}"
+﻿@page "/siteadmin/groups/{id:guid}"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Services.Chapters
@@ -9,7 +9,7 @@
     Layout = "_SiteAdminLayout";
     Model.Title = "Group | SiteAdmin";
 
-    var viewModel = await ChapterAdminService.GetSiteAdminChapterViewModel(Model.AdminServiceRequest);
+    var viewModel = await ChapterAdminService.GetSiteAdminChapterViewModel(Model.MemberServiceRequest, Model.ChapterId);
 }
 
 @await Html.PartialAsync("SiteAdmin/_SiteAdminGroupContent", viewModel)

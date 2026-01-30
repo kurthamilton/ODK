@@ -20,11 +20,11 @@ public class TopicService : ITopicService
 
     public async Task AddNewChapterTopics(MemberChapterServiceRequest request, IReadOnlyCollection<NewTopicModel> models)
     {
-        var (currentMemberId, chapterId, platform) = (request.CurrentMemberId, request.ChapterId, request.Platform);
+        var (platform, chapter) = (request.Platform, request.Chapter);
 
         var (topics, chapterNewTopics, siteEmailSettings) = await _unitOfWork.RunAsync(
             x => x.TopicRepository.GetAll(),
-            x => x.NewChapterTopicRepository.GetByChapterId(chapterId),
+            x => x.NewChapterTopicRepository.GetByChapterId(chapter.Id),
             x => x.SiteEmailSettingsRepository.Get(platform));
 
         var topicGroupDictionary = topics
@@ -67,8 +67,8 @@ public class TopicService : ITopicService
 
             newTopics.Add(new NewChapterTopic
             {
-                ChapterId = chapterId,
-                MemberId = currentMemberId,
+                ChapterId = chapter.Id,
+                MemberId = request.CurrentMember.Id,
                 Topic = topic,
                 TopicGroup = topicGroup
             });
@@ -87,11 +87,11 @@ public class TopicService : ITopicService
 
     public async Task AddNewMemberTopics(MemberServiceRequest request, IReadOnlyCollection<NewTopicModel> models)
     {
-        var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
+        var (currentMember, platform) = (request.CurrentMember, request.Platform);
 
         var (topics, memberNewTopics, siteEmailSettings) = await _unitOfWork.RunAsync(
             x => x.TopicRepository.GetAll(),
-            x => x.NewMemberTopicRepository.GetByMemberId(currentMemberId),
+            x => x.NewMemberTopicRepository.GetByMemberId(currentMember.Id),
             x => x.SiteEmailSettingsRepository.Get(platform));
 
         var topicGroupDictionary = topics
@@ -134,7 +134,7 @@ public class TopicService : ITopicService
 
             newTopics.Add(new NewMemberTopic
             {
-                MemberId = currentMemberId,
+                MemberId = currentMember.Id,
                 Topic = topic,
                 TopicGroup = topicGroup
             });

@@ -1,5 +1,6 @@
 ﻿using ODK.Core.Events;
 using ODK.Data.Core.Deferred;
+using ODK.Data.Core.Events;
 
 namespace ODK.Data.Core.Repositories;
 
@@ -8,8 +9,6 @@ public interface IEventRepository : IReadWriteRepository<Event>
     IDeferredQueryMultiple<Event> GetByChapterId(Guid chapterId);
 
     IDeferredQueryMultiple<Event> GetByChapterId(Guid chapterId, DateTime? after);
-
-    IDeferredQueryMultiple<Event> GetByChapterId(Guid chapterId, int page, int pageSize);
 
     IDeferredQuerySingle<Event> GetByShortcode(string shortcode);
 
@@ -20,6 +19,9 @@ public interface IEventRepository : IReadWriteRepository<Event>
     IDeferredQueryMultiple<Event> GetPublicEventsByChapterId(Guid chapterId, DateTime? after);
 
     IDeferredQueryMultiple<Event> GetRecentEventsByChapterId(Guid chapterId, int pageSize);
+
+    IDeferredQueryMultiple<EventSummaryDto> GetSummariesByChapterId(
+        Guid chapterId, int page, int pageSize);
 
     IDeferredQuery<bool> ShortcodeExists(string shortcode);
 }

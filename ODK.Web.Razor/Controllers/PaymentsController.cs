@@ -29,8 +29,8 @@ public class PaymentsController : OdkControllerBase
 
         if (groupId != null)
         {
-            var request = CreateMemberChapterServiceRequest(groupId.Value);
-            status = await _paymentService.GetMemberChapterPaymentCheckoutSessionStatus(request, id);
+            var request = MemberServiceRequest;
+            status = await _paymentService.GetMemberChapterPaymentCheckoutSessionStatus(request, groupId.Value, id);
         }
         else
         {

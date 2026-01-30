@@ -96,7 +96,7 @@ public class GroupsController : OdkControllerBase
     [HttpPost("groups/{chapterId:guid}/leave")]
     public async Task<IActionResult> LeaveGroup(Guid chapterId, [FromForm] string reason)
     {
-        var request = MemberChapterServiceRequest.Create(chapterId, MemberServiceRequest);
+        var request = MemberChapterServiceRequest;
         var result = await _memberService.LeaveChapter(request, reason);
         AddFeedback(result, "You have left the group");
 

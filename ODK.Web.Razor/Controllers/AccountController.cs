@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Identity.Client;
+using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Images;
 using ODK.Core.Issues;
@@ -250,23 +252,26 @@ public class AccountController : OdkControllerBase
         return Redirect("/");
     }
 
+    [HttpPost("{chapterName}/account/email/change")]
+    public async Task<IActionResult> ChangeChapterEmailRequest(
+        string chapterName, [FromForm] ChangeEmailFormViewModel viewModel)
+    {
+        var result = await _memberService.RequestMemberEmailAddressUpdate(
+                MemberChapterServiceRequest, viewModel.Email ?? string.Empty);
+
+        var successMessage =
+            "An email has been sent to the email address you provided. " +
+            "Please complete your update by following the link in the email.";
+        AddFeedback(result, successMessage);
+
+        return RedirectToReferrer();
+    }
+
     [HttpPost("account/email/change")]
     public async Task<IActionResult> ChangeEmailRequest([FromForm] ChangeEmailFormViewModel viewModel)
     {
-        Guid? chapterId = null;
-
-        if (Platform == PlatformType.DrunkenKnitwits)
-        {
-            var member = CurrentMember;
-            chapterId = member.Chapters.Count == 1
-                ? member.Chapters.First().ChapterId
-                : null;
-        }
-
-        var result = chapterId != null
-            ? await _memberService.RequestMemberEmailAddressUpdate(
-                MemberChapterServiceRequest.Create(chapterId.Value, MemberServiceRequest), viewModel.Email ?? string.Empty)
-            : await _memberService.RequestMemberEmailAddressUpdate(MemberServiceRequest, viewModel.Email ?? string.Empty);
+        var result = await _memberService.RequestMemberEmailAddressUpdate(
+            MemberServiceRequest, viewModel.Email ?? string.Empty);
 
         var successMessage =
             "An email has been sent to the email address you provided. " +
@@ -362,7 +367,7 @@ public class AccountController : OdkControllerBase
     [HttpPost("Account/FeatureTips/{name}/Hide")]
     public async Task<IActionResult> HideFeatureTip(string name)
     {
-        await _featureService.MarkAsSeen(MemberId, name);
+        await _featureService.MarkAsSeen(MemberServiceRequest, name);
         return Ok();
     }
 

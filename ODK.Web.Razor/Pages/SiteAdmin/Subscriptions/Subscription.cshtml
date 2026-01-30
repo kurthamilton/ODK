@@ -11,7 +11,7 @@
     Layout = "_SiteAdminLayout";
     Model.Title = "Subscription | SiteAdmin";
 
-    var viewModel = await SiteSubscriptionAdminService.GetSubscriptionViewModel(Model.CurrentMemberId, Model.SubscriptionId);
+    var viewModel = await SiteSubscriptionAdminService.GetSubscriptionViewModel(Model.MemberServiceRequest, Model.SubscriptionId);
 }
 
 @await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel

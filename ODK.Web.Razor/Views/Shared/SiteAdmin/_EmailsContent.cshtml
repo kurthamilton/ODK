@@ -6,8 +6,8 @@
 @inject IRequestStore RequestStore
 @inject ISettingsService SettingsService
 @{
-    var platform = RequestStore.Platform;
-    var settings = await SettingsService.GetSiteEmailSettings(platform);
+    var request = RequestStore.MemberChapterServiceRequest;
+    var settings = await SettingsService.GetSiteEmailSettings(request);
 }
 
 <section class="section--admin">

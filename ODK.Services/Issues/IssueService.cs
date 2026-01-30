@@ -26,16 +26,14 @@ public class IssueService : IIssueService
             return ServiceResult.Failure("Title and message cannot be empty");
         }
 
-        var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
+        var (currentMember, platform) = (request.CurrentMember, request.Platform);
 
-        var (member, siteEmailSettings) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(currentMemberId),
-            x => x.SiteEmailSettingsRepository.Get(platform));
+        var siteEmailSettings = await _unitOfWork.SiteEmailSettingsRepository.Get(platform).Run();
 
         var issue = new Issue
         {
             CreatedUtc = DateTime.UtcNow,
-            MemberId = currentMemberId,
+            MemberId = currentMember.Id,
             Status = IssueStatusType.New,
             Title = model.Title,
             Type = model.Type
@@ -47,7 +45,7 @@ public class IssueService : IIssueService
         {
             CreatedUtc = issue.CreatedUtc,
             IssueId = issue.Id,
-            MemberId = currentMemberId,
+            MemberId = currentMember.Id,
             Text = model.Message
         };
 
@@ -57,7 +55,7 @@ public class IssueService : IIssueService
 
         await _memberEmailService.SendNewIssueEmail(
             request,
-            member,
+            currentMember,
             issue,
             issueMessage,
             siteEmailSettings);
@@ -94,13 +92,13 @@ public class IssueService : IIssueService
 
     public async Task<ServiceResult> ReplyToIssue(MemberServiceRequest request, Guid issueId, string message)
     {
-        var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
+        var (currentMember, platform) = (request.CurrentMember, request.Platform);
 
         var (issue, siteEmailSettings) = await _unitOfWork.RunAsync(
             x => x.IssueRepository.GetById(issueId),
             x => x.SiteEmailSettingsRepository.Get(platform));
 
-        OdkAssertions.MeetsCondition(issue, x => x.MemberId == currentMemberId);
+        OdkAssertions.MeetsCondition(issue, x => x.MemberId == currentMember.Id);
 
         if (string.IsNullOrWhiteSpace(message))
         {
@@ -111,7 +109,7 @@ public class IssueService : IIssueService
         {
             CreatedUtc = DateTime.UtcNow,
             IssueId = issueId,
-            MemberId = currentMemberId,
+            MemberId = currentMember.Id,
             Text = message
         };
 

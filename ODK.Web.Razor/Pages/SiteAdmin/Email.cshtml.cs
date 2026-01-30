@@ -20,7 +20,7 @@ public class EmailModel : SiteAdminPageModel
 
     public async Task<IActionResult> OnGetAsync(EmailType type)
     {
-        Email = await _emailAdminService.GetEmail(CurrentMemberId, type);
+        Email = await _emailAdminService.GetEmail(MemberServiceRequest, type);
         return Page();
     }
 
@@ -28,7 +28,7 @@ public class EmailModel : SiteAdminPageModel
         [FromForm] ChapterEmailFormViewModel viewModel,
         [FromForm] bool overridable)
     {
-        var result = await _emailAdminService.UpdateEmail(CurrentMemberId, type, new UpdateEmail
+        var result = await _emailAdminService.UpdateEmail(MemberServiceRequest, type, new UpdateEmail
         {
             HtmlContent = viewModel.Content,
             Overridable = overridable,

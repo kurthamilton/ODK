@@ -75,6 +75,5 @@ public class MemberRepository : ReadWriteRepositoryBase<Member>, IMemberReposito
     }
 
     protected override IQueryable<Member> Set() => base.Set()
-        .Include(x => x.Chapters)
-        .Include(x => x.PrivacySettings);
+        .Include(x => x.Chapters);
 }

@@ -22,10 +22,12 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
 
     public async Task<ServiceResult> DeleteChapterEmail(MemberChapterServiceRequest request, EmailType type)
     {
+        var chapter = request.Chapter;
+
         var chapterEmail = await GetChapterAdminRestrictedContent(
             ChapterAdminSecurable.Emails,
             request,
-            x => x.ChapterEmailRepository.GetByChapterId(request.ChapterId, type));
+            x => x.ChapterEmailRepository.GetByChapterId(chapter.Id, type));
 
         OdkAssertions.Exists(chapterEmail);
 
@@ -37,10 +39,12 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
 
     public async Task<ChapterEmail> GetChapterEmail(MemberChapterServiceRequest request, EmailType type)
     {
+        var chapter = request.Chapter;
+
         var (chapterEmail, siteEmail) = await GetChapterAdminRestrictedContent(
             ChapterAdminSecurable.Emails,            
             request,
-            x => x.ChapterEmailRepository.GetByChapterId(request.ChapterId, type),
+            x => x.ChapterEmailRepository.GetByChapterId(chapter.Id, type),
             x => x.EmailRepository.GetByType(type));
 
         if (chapterEmail != null)
@@ -50,7 +54,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
 
         return new ChapterEmail
         {
-            ChapterId = request.ChapterId,
+            ChapterId = chapter.Id,
             HtmlContent = siteEmail.HtmlContent,
             Subject = siteEmail.Subject,
             Type = siteEmail.Type
@@ -59,10 +63,12 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
 
     public async Task<IReadOnlyCollection<ChapterEmail>> GetChapterEmails(MemberChapterServiceRequest request)
     {
+        var chapter = request.Chapter;
+
         var (chapterEmails, siteEmails) = await GetChapterAdminRestrictedContent(
             ChapterAdminSecurable.Emails,
             request,
-            x => x.ChapterEmailRepository.GetByChapterId(request.ChapterId),
+            x => x.ChapterEmailRepository.GetByChapterId(chapter.Id),
             x => x.EmailRepository.GetAll());
 
         var chapterEmailDictionary = chapterEmails.ToDictionary(x => x.Type);
@@ -84,7 +90,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
             {
                 emails.Add(new ChapterEmail
                 {
-                    ChapterId = request.ChapterId,
+                    ChapterId = chapter.Id,
                     HtmlContent = siteEmail.HtmlContent,
                     Subject = siteEmail.Subject,
                     Type = siteEmail.Type
@@ -95,48 +101,43 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         return emails;
     }
 
-    public async Task<Email> GetEmail(Guid currentMemberId, EmailType type)
+    public async Task<Email> GetEmail(MemberServiceRequest request, EmailType type)
     {
-        return await GetSiteAdminRestrictedContent(currentMemberId,
+        return await GetSiteAdminRestrictedContent(request,
             x => x.EmailRepository.GetByType(type));
     }
 
-    public async Task<IReadOnlyCollection<Email>> GetEmails(Guid currentMemberId)
+    public async Task<IReadOnlyCollection<Email>> GetEmails(MemberServiceRequest request)
     {
-        return await GetSiteAdminRestrictedContent(currentMemberId,
+        return await GetSiteAdminRestrictedContent(request,
             x => x.EmailRepository.GetAll());
     }
 
     public async Task<ServiceResult> SendTestEmail(MemberChapterServiceRequest request, EmailType type)
     {
-        var (chapterId, currentMemberId) = (request.ChapterId, request.CurrentMemberId);
+        var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
 
-        var (chapter, currentMember) = await GetChapterAdminRestrictedContent(
-            ChapterAdminSecurable.Emails,
-            request,
-            x => x.ChapterRepository.GetById(chapterId),
-            x => x.MemberRepository.GetById(currentMemberId));
+        await AssertMemberIsChapterAdmin(ChapterAdminSecurable.Emails, request);
 
         return await _memberEmailService.SendTestEmail(request, chapter, currentMember, type);
     }
 
     public async Task<ServiceResult> SendTestMemberEmail(MemberServiceRequest request, EmailType type)
     {
-        var currentMemberId = request.CurrentMemberId;
+        AssertMemberIsSiteAdmin(request.CurrentMember);
 
-        var currentMember = await GetSiteAdminRestrictedContent(currentMemberId,
-            x => x.MemberRepository.GetById(currentMemberId));
-
-        return await _memberEmailService.SendTestEmail(request, null, currentMember, type);
+        return await _memberEmailService.SendTestEmail(request, null, request.CurrentMember, type);
     }
 
     public async Task<ServiceResult> UpdateChapterEmail(MemberChapterServiceRequest request, EmailType type,
         UpdateEmail model)
     {
+        var chapter = request.Chapter;
+
         var (chapterEmail, siteEmail) = await GetChapterAdminRestrictedContent(
             ChapterAdminSecurable.Emails,
             request,
-            x => x.ChapterEmailRepository.GetByChapterId(request.ChapterId, type),
+            x => x.ChapterEmailRepository.GetByChapterId(chapter.Id, type),
             x => x.EmailRepository.GetByType(type));
 
         if (!siteEmail.Overridable)
@@ -146,7 +147,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
 
         chapterEmail ??= new ChapterEmail
         {
-            ChapterId = request.ChapterId,
+            ChapterId = chapter.Id,
             Type = type
         };
 
@@ -165,9 +166,9 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> UpdateEmail(Guid currentMemberId, EmailType type, UpdateEmail model)
+    public async Task<ServiceResult> UpdateEmail(MemberServiceRequest request, EmailType type, UpdateEmail model)
     {
-        var existing = await GetSiteAdminRestrictedContent(currentMemberId,
+        var existing = await GetSiteAdminRestrictedContent(request,
             x => x.EmailRepository.GetByType(type));
 
         existing.HtmlContent = model.HtmlContent;

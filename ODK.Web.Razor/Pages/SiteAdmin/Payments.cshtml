@@ -9,7 +9,7 @@
     Layout = "_SiteAdminLayout";
     Model.Title = "Payments | SiteAdmin";
 
-    var settings = await SettingsService.GetSitePaymentSettings(Model.CurrentMemberId);
+    var settings = await SettingsService.GetSitePaymentSettings(Model.MemberServiceRequest);
 }
 
 @await Html.PartialAsync("SiteAdmin/_PaymentsContent", settings)
