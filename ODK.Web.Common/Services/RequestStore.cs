@@ -65,7 +65,7 @@ public class RequestStore : IRequestStore
 
     public ServiceRequest ServiceRequest => _serviceRequest!;
 
-    public async Task<ChapterAdminMember> GetCurrentChapterAdminMember()
+    public async Task<ChapterAdminMember?> GetCurrentChapterAdminMember()
     {
         if (_currentChapterAdminMember != null)
         {
@@ -80,19 +80,7 @@ public class RequestStore : IRequestStore
         }
         catch
         {
-            var currentMember = CurrentMember;
-            if (currentMember.SiteAdmin)
-            {
-                _currentChapterAdminMember = new ChapterAdminMember
-                {
-                    ChapterId = Chapter.Id,
-                    MemberId = currentMember.Id,
-                    Role = ChapterAdminRole.Owner
-                };
-                return _currentChapterAdminMember;
-            }
-
-            throw;
+            return null;
         }
     }    
 

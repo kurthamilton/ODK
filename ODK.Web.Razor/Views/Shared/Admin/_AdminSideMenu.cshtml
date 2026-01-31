@@ -14,10 +14,9 @@
     var chapter = RequestStore.Chapter;
     var currentMember = RequestStore.CurrentMember;
     var chapterAdminMember = await RequestStore.GetCurrentChapterAdminMember();
-    var currentMemberId = RequestStore.CurrentMemberId;
     var platform = RequestStore.Platform;
 
-    var groupLinks = new ChapterAdminMenuItemGroup(chapterAdminMember, platform)
+    var groupLinks = new ChapterAdminMenuItemGroup(currentMember, chapterAdminMember, platform)
         .Add(ChapterAdminSecurable.Conversations, 
             new MenuItem { Link = OdkRoutes.GroupAdmin.GroupConversations(chapter), Text = "Conversations" })
         .Add(ChapterAdminSecurable.Emails,
@@ -57,13 +56,13 @@
             new MenuItem { Link = OdkRoutes.GroupAdmin.GroupDelete(chapter), Text = "Delete" },
             PlatformType.Default);
 
-    var eventsLinks = new ChapterAdminMenuItemGroup(chapterAdminMember, platform)
+    var eventsLinks = new ChapterAdminMenuItemGroup(currentMember, chapterAdminMember, platform)
         .Add(ChapterAdminSecurable.Venues,
             new MenuItem { Link = OdkRoutes.GroupAdmin.Venues(chapter), Text = "Venues" })
         .Add(ChapterAdminSecurable.EventSettings,
             new MenuItem { Link = OdkRoutes.GroupAdmin.EventSettings(chapter), Text = "Settings" });
 
-    var membersLinks = new ChapterAdminMenuItemGroup(chapterAdminMember, platform)
+    var membersLinks = new ChapterAdminMenuItemGroup(currentMember, chapterAdminMember, platform)
         .Add(ChapterAdminSecurable.AdminMembers,
             new MenuItem { Link = OdkRoutes.GroupAdmin.MemberAdmins(chapter), Text = "Admins" })
         .Add(ChapterAdminSecurable.MembershipSettings,
@@ -78,8 +77,8 @@
             new MenuItem { Link = OdkRoutes.GroupAdmin.MemberApprovals(chapter), Text = "Approvals" },
             PlatformType.Default);
 
-    var paymentsLinks = chapterAdminMember.HasAccessTo(ChapterAdminSecurable.Payments)
-        ? new ChapterAdminMenuItemGroup(chapterAdminMember, platform)
+    var paymentsLinks = chapterAdminMember.HasAccessTo(ChapterAdminSecurable.Payments, currentMember)
+        ? new ChapterAdminMenuItemGroup(currentMember, chapterAdminMember, platform)
             .Add(ChapterAdminSecurable.PaymentAccount,
                 new MenuItem { Text = "Account", Link = OdkRoutes.Payments.PaymentAccount(chapter) })
         : new List<MenuItem>();
@@ -107,7 +106,7 @@
                 Children = groupLinks
             }
             : new MenuItem(),
-        eventsLinks.Count > 0
+        chapterAdminMember.HasAccessTo(ChapterAdminSecurable.Events, currentMember)
             ? new MenuItem
             {
                 Link = OdkRoutes.GroupAdmin.Events(chapter),
@@ -115,7 +114,7 @@
                 Children = eventsLinks,
             }
             : new MenuItem(),
-        membersLinks.Count > 0
+        chapterAdminMember.HasAccessTo(ChapterAdminSecurable.Members, currentMember)
             ? new MenuItem
             {
                 Link = OdkRoutes.GroupAdmin.Members(chapter),
@@ -123,7 +122,7 @@
                 Children = membersLinks
             }
             : new MenuItem(),
-        chapterAdminMember.HasAccessTo(ChapterAdminSecurable.Payments)
+        chapterAdminMember.HasAccessTo(ChapterAdminSecurable.Payments, currentMember)
             ? new MenuItem
             {
                 Link = OdkRoutes.Payments.Payments(chapter),

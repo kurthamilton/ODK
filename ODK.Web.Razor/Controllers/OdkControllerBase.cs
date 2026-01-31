@@ -10,7 +10,6 @@ using ODK.Web.Common.Extensions;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
-using MemberChapterServiceRequestImpl = ODK.Services.MemberChapterServiceRequest;
 
 namespace ODK.Web.Razor.Controllers;
 

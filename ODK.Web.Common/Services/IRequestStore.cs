@@ -29,7 +29,7 @@ public interface IRequestStore
 
     ServiceRequest ServiceRequest { get; }    
 
-    Task<ChapterAdminMember> GetCurrentChapterAdminMember();    
+    Task<ChapterAdminMember?> GetCurrentChapterAdminMember();    
 
     Task<IRequestStore> Load(ServiceRequest request);
 

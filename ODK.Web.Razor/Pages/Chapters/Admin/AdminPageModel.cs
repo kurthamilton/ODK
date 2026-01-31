@@ -22,7 +22,7 @@ public abstract class AdminPageModel : OdkPageModel
         PageHandlerExecutingContext context, PageHandlerExecutionDelegate next)
     {
         var adminMember = await RequestStore.GetCurrentChapterAdminMember();
-        if (!adminMember.HasAccessTo(Securable))
+        if (!adminMember.HasAccessTo(Securable, CurrentMember))
         {
             context.HttpContext.Response.Redirect(OdkRoutes.GroupAdmin.Events(Chapter));
             return;
