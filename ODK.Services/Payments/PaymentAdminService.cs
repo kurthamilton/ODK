@@ -16,7 +16,7 @@ public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
     public async Task<ChapterPaymentsViewModel> GetPayments(
         MemberChapterAdminServiceRequest request)
     {
-        var (platform, chapter) = (request.Platform, request.Chapter);
+        var chapter = request.Chapter;
 
         var payments = await GetChapterAdminRestrictedContent(
             request,
@@ -27,8 +27,7 @@ public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
             Chapter = chapter,
             Payments = payments
                 .OrderByDescending(x => x.Payment.PaidUtc)
-                .ToArray(),
-            Platform = platform
+                .ToArray()
         };
     }
 }

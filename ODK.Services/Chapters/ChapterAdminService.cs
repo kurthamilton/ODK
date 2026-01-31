@@ -762,16 +762,13 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<ChapterAdminPageViewModel> GetChapterAdminPageViewModel(MemberChapterAdminServiceRequest request)
     {
-        var platform = request.Platform;
-
         var chapter = await GetChapterAdminRestrictedContent(
             request,
             x => x.ChapterRepository.GetById(request.Chapter.Id));
 
         return new ChapterAdminPageViewModel
         {
-            Chapter = chapter,
-            Platform = platform
+            Chapter = chapter
         };
     }
 
@@ -861,7 +858,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             Member = member,
             Messages = messages,
             OtherConversations = otherConversations.Where(x => x.Conversation.Id != id).ToArray(),
-            OwnerSubscription = ownerSubscription,
             Platform = platform
         };
     }
@@ -885,7 +881,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<ChapterImageAdminPageViewModel> GetChapterImageViewModel(MemberChapterAdminServiceRequest request)
     {
-        var (platform, chapter) = (request.Platform, request.Chapter);
+        var chapter = request.Chapter;
 
         var image = await GetChapterAdminRestrictedContent(
             request,
@@ -894,14 +890,13 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return new ChapterImageAdminPageViewModel
         {
             Chapter = chapter,
-            Image = image,
-            Platform = platform
+            Image = image
         };
     }
 
     public async Task<ChapterLinksAdminPageViewModel> GetChapterLinksViewModel(MemberChapterAdminServiceRequest request)
     {
-        var (platform, chapter) = (request.Platform, request.Chapter);
+        var chapter = request.Chapter;
 
         var (ownerSubscription, links, privacySettings) = await GetChapterAdminRestrictedContent(
             request,
@@ -914,7 +909,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             Chapter = chapter,
             Links = links,
             OwnerSubscription = ownerSubscription,
-            Platform = platform,
             ShowInstagramFeed = privacySettings?.InstagramFeed != null
                 ? privacySettings.InstagramFeed.Value
                 : !string.IsNullOrEmpty(links?.InstagramName)
@@ -924,7 +918,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     public async Task<ChapterLocationAdminPageViewModel> GetChapterLocationViewModel(
         MemberChapterAdminServiceRequest request)
     {
-        var (chapter, platform) = (request.Chapter, request.Platform);
+        var chapter = request.Chapter;
 
         var country = await GetChapterAdminRestrictedContent(
             request,
@@ -936,8 +930,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         {
             Chapter = chapter,
             Country = country,
-            Location = location,
-            Platform = platform
+            Location = location
         };
     }
 
@@ -976,7 +969,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     public async Task<ChapterMessageAdminPageViewModel> GetChapterMessageViewModel(
         MemberChapterAdminServiceRequest request, Guid id)
     {
-        var (platform, chapter) = (request.Platform, request.Chapter);
+        var chapter = request.Chapter;
 
         var (message, replies) = await GetChapterAdminRestrictedContent(
             request,
@@ -989,7 +982,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         {
             Chapter = chapter,
             Message = message,
-            Platform = platform,
             Replies = replies
         };
     }
@@ -1108,7 +1100,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<ChapterPrivacyAdminPageViewModel> GetChapterPrivacyViewModel(MemberChapterAdminServiceRequest request)
     {
-        var (platform, chapter) = (request.Platform, request.Chapter);
+        var chapter = request.Chapter;
 
         var privacySettings = await GetChapterAdminRestrictedContent(
             request,
@@ -1117,7 +1109,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return new ChapterPrivacyAdminPageViewModel
         {
             Chapter = chapter,
-            Platform = platform,
             PrivacySettings = privacySettings
         };
     }
@@ -1142,7 +1133,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         MemberChapterAdminServiceRequest request,
         Guid propertyId)
     {
-        var (platform, chapter) = (request.Platform, request.Chapter);
+        var chapter = request.Chapter;
 
         var (property, options) = await GetChapterAdminRestrictedContent(
             request,
@@ -1153,8 +1144,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         return new ChapterPropertyAdminPageViewModel
         {
-            Chapter = chapter,
-            Platform = platform,
             Options = options,
             Property = property
         };
@@ -1179,7 +1168,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     public async Task<ChapterQuestionAdminPageViewModel> GetChapterQuestionViewModel(
         MemberChapterAdminServiceRequest request, Guid questionId)
     {
-        var (platform, chapter) = (request.Platform, request.Chapter);
+        var chapter = request.Chapter;
 
         var question = await GetChapterAdminRestrictedContent(
             request,
@@ -1190,7 +1179,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return new ChapterQuestionAdminPageViewModel
         {
             Chapter = chapter,
-            Platform = platform,
             Question = question
         };
     }
@@ -1237,7 +1225,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<ChapterTextsAdminPageViewModel> GetChapterTextsViewModel(MemberChapterAdminServiceRequest request)
     {
-        var (platform, chapter) = (request.Platform, request.Chapter);
+        var chapter = request.Chapter;
 
         var texts = await GetChapterAdminRestrictedContent(
             request,
@@ -1246,14 +1234,13 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return new ChapterTextsAdminPageViewModel
         {
             Chapter = chapter,
-            Platform = platform,
             Texts = texts
         };
     }
 
     public async Task<ChapterTopicsAdminPageViewModel> GetChapterTopicsViewModel(MemberChapterAdminServiceRequest request)
     {
-        var (platform, chapter) = (request.Platform, request.Chapter);
+        var chapter = request.Chapter;
 
         var (chapterTopics, topicGroups, topics) = await GetChapterAdminRestrictedContent(
             request,
@@ -1265,7 +1252,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         {
             Chapter = chapter,
             ChapterTopics = chapterTopics,
-            Platform = platform,
             TopicGroups = topicGroups,
             Topics = topics
         };
@@ -1273,7 +1259,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<MembershipSettingsAdminPageViewModel> GetMembershipSettingsViewModel(MemberChapterAdminServiceRequest request)
     {
-        var (platform, chapter) = (request.Platform, request.Chapter);
+        var chapter = request.Chapter;
 
         var (ownerSubscription, membershipSettings) = await GetChapterAdminRestrictedContent(
             request,
@@ -1284,8 +1270,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         {
             Chapter = chapter,
             MembershipSettings = membershipSettings,
-            OwnerSubscription = ownerSubscription,
-            Platform = platform
+            OwnerSubscription = ownerSubscription
         };
     }
 

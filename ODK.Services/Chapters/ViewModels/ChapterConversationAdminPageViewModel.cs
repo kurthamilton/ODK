@@ -21,7 +21,5 @@ public class ChapterConversationAdminPageViewModel
 
     public required IReadOnlyCollection<ChapterConversationDto> OtherConversations { get; init; }
 
-    public required MemberSiteSubscription? OwnerSubscription { get; init; }
-
     public required PlatformType Platform { get; init; }
 }

@@ -66,7 +66,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     public async Task<AdminMemberAdminPageViewModel> GetAdminMemberViewModel(
         MemberChapterAdminServiceRequest request, Guid memberId)
     {
-        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
+        var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
 
         var adminMembers = await _unitOfWork.ChapterAdminMemberRepository
             .GetByChapterId(chapter.Id).Run();
@@ -80,9 +80,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
         return new AdminMemberAdminPageViewModel
         {
-            AdminMember = adminMember,
-            Chapter = chapter,
-            Platform = platform
+            AdminMember = adminMember
         };
     }
 
@@ -404,9 +402,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         {
             Chapter = chapter,
             ChapterSubscriptions = chapterSubscriptions,
-            ExternalSubscription = null,
             MembershipSettings = membershipSettings ?? new(),
-            MemberSubscription = null,
             OwnerSubscription = ownerSubscription,
             Platform = platform
         };

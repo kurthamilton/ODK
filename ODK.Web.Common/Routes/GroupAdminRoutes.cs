@@ -14,9 +14,17 @@ public class GroupAdminRoutes
 
     protected PlatformType Platform { get; }
 
-    public string Email(Chapter chapter, EmailType type) => $"{Emails(chapter)}/{type}";
+    public string Email(Chapter chapter, EmailType type) => Platform switch
+    {
+        PlatformType.DrunkenKnitwits => $"{Emails(chapter)}/{type}",
+        _ => "/"
+    };
 
-    public string Emails(Chapter chapter) => $"{Group(chapter)}/emails";
+    public string Emails(Chapter chapter) => Platform switch
+    {
+        PlatformType.DrunkenKnitwits => $"{Group(chapter)}/emails",
+        _ => "/"
+    };
 
     public string Event(Chapter chapter, Guid eventId) 
         => $"{Events(chapter)}/{eventId}";

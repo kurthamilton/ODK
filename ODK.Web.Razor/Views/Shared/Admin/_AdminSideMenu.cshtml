@@ -20,7 +20,7 @@
         .Add(ChapterAdminSecurable.Conversations, 
             new MenuItem { Link = OdkRoutes.GroupAdmin.GroupConversations(chapter), Text = "Conversations" })
         .Add(ChapterAdminSecurable.Emails,
-            new MenuItem { Link = $"/{chapter.ShortName}/admin/chapter/emails", Text = "Emails" },
+            new MenuItem { Link = OdkRoutes.GroupAdmin.Emails(chapter), Text = "Emails" },
             PlatformType.DrunkenKnitwits)
         .Add(ChapterAdminSecurable.Questions,
             new MenuItem { Link = OdkRoutes.GroupAdmin.GroupQuestions(chapter), Text = "FAQ" })

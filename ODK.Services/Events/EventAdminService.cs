@@ -376,7 +376,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     public async Task<EventSettingsAdminPageViewModel> GetEventSettingsViewModel(
         MemberChapterAdminServiceRequest request)
     {
-        var (platform, chapter) = (request.Platform, request.Chapter);
+        var chapter = request.Chapter;
 
         var (ownerSubscription, settings) = await GetChapterAdminRestrictedContent(
             request,
@@ -387,7 +387,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         {
             Chapter = chapter,
             OwnerSubscription = ownerSubscription,
-            Platform = platform,
             Settings = settings
         };
     }

@@ -45,6 +45,6 @@ public class EmailModel : AdminPageModel
 
         var chapter = Chapter;
         AddFeedback(new FeedbackViewModel("Email updated", FeedbackType.Success));
-        return Redirect($"/{chapter.ShortName}/Admin/Chapter/Emails");
+        return Redirect(OdkRoutes.GroupAdmin.Emails(chapter));
     }
 }
