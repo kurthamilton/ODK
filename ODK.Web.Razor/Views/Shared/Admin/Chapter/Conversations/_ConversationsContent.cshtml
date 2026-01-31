@@ -39,6 +39,7 @@
                     <th>Subject</th>
                     <th>Started</th>
                     <th>Last message</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -75,6 +76,11 @@
                                     @dto.LastMessage.Member?.FullName
                                 </div>
                             }
+                        </td>
+                        <td>
+                            <a href="@OdkRoutes.GroupAdmin.GroupConversation(Model.Chapter, conversation.Id)">
+                                Reply
+                            </a>
                         </td>
                     </tr>
                 }
