@@ -9,9 +9,10 @@
 @{
     Layout = "_GroupAdminLayout";
 
-    var viewModel = await MemberAdminService.GetMemberPaymentsViewModel(Model.MemberChapterServiceRequest, Model.MemberId);
+    var request = Model.MemberChapterAdminServiceRequest;
+    var viewModel = await MemberAdminService.GetMemberPaymentsViewModel(request, Model.MemberId);
 
-    Model.Title = viewModel.Member.GetDisplayName(viewModel.Chapter.Id);
+    Model.Title = viewModel.Member.GetDisplayName(Model.Chapter.Id);
 }
 
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel

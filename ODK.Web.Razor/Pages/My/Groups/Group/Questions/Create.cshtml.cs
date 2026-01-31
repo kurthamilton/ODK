@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.Models;
+using ODK.Services.Security;
 using ODK.Web.Razor.Models.Admin.Chapters;
 
 namespace ODK.Web.Razor.Pages.My.Groups.Group.Questions;
@@ -8,6 +9,8 @@ namespace ODK.Web.Razor.Pages.My.Groups.Group.Questions;
 public class CreateModel : OdkGroupAdminPageModel
 {
     private readonly IChapterAdminService _chapterAdminService;
+
+    public override ChapterAdminSecurable Securable => ChapterAdminSecurable.Questions;
 
     public CreateModel(IChapterAdminService chapterAdminService)
     {
@@ -20,7 +23,7 @@ public class CreateModel : OdkGroupAdminPageModel
 
     public async Task<IActionResult> OnPostAsync(ChapterQuestionFormViewModel model)
     {
-        var serviceRequest = MemberChapterServiceRequest;
+        var serviceRequest = MemberChapterAdminServiceRequest;
 
         var result = await _chapterAdminService.CreateChapterQuestion(serviceRequest, new CreateChapterQuestion
         {

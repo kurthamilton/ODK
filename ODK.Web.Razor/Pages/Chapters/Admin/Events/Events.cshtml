@@ -9,7 +9,7 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Events | Admin";
 
-    var request = Model.MemberChapterServiceRequest;
+    var request = Model.MemberChapterAdminServiceRequest;
     var viewModel = await EventAdminService.GetEventsAdminPageViewModel(request, Model.Chapter, 1, 1000);
 }
 

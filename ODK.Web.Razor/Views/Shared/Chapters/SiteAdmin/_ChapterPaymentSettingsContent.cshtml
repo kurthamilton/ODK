@@ -1,15 +1,12 @@
 ﻿@using ODK.Core.Chapters
+@using ODK.Services
 @using ODK.Services.Chapters
+@using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Chapters.SiteAdmin
 @using ODK.Web.Razor.Services
-@inject IChapterAdminService ChapterAdminService
-@inject IRequestStore RequestStore
-@{
-    var serviceRequest = RequestStore.MemberChapterServiceRequest;
-    var viewModel = await ChapterAdminService.GetChapterPaymentSettingsViewModel(serviceRequest);
-}
+@model ChapterPaymentSettingsAdminPageViewModel
 
 <h2 class="d-none d-md-block">Payment settings</h2>
 
@@ -17,8 +14,8 @@
     @*@Html.AntiForgeryToken()*@
     @await Html.PartialAsync("Chapters/siteadmin/_PaymentSettingsForm", new PaymentSettingsFormViewModel
     {
-        CurrencyOptions = viewModel.Currencies,
-        CurrencyId = viewModel.PaymentSettings?.CurrencyId
+        CurrencyOptions = Model.Currencies,
+        CurrencyId = Model.PaymentSettings?.CurrencyId
     })
     <button class="btn btn-primary">Update</button>
 </form>

@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
 using ODK.Core.Venues;
-using ODK.Services.Events;
+using ODK.Services.Security;
 using ODK.Services.Venues;
 using ODK.Web.Common.Feedback;
-using ODK.Web.Common.Routes;
 
 namespace ODK.Web.Razor.Pages.Chapters.Admin.Events;
 
@@ -13,6 +12,8 @@ public abstract class VenueAdminPageModel : AdminPageModel
     {
         VenueAdminService = venueAdminService;
     }
+
+    public override ChapterAdminSecurable Securable => ChapterAdminSecurable.Venues;
 
     public Venue Venue { get; private set; } = null!;
 
@@ -28,7 +29,7 @@ public abstract class VenueAdminPageModel : AdminPageModel
             return;
         }
 
-        var request = RequestStore.MemberChapterServiceRequest;
+        var request = MemberChapterAdminServiceRequest;
 
         try
         {

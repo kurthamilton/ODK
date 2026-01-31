@@ -1,5 +1,7 @@
 ﻿@page "/my/groups/{chapterId:guid}/messages/spam"
+@using ODK.Services
 @using ODK.Services.Chapters
+@using ODK.Services.Security
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model SpamModel
@@ -8,7 +10,8 @@
     Layout = "_GroupAdminLayout";
     Model.Title = "Messages";
 
-    var viewModel = await ChapterAdminService.GetChapterMessagesViewModel(Model.MemberChapterServiceRequest, true);
+    var request = Model.MemberChapterAdminServiceRequest;
+    var viewModel = await ChapterAdminService.GetChapterMessagesViewModel(request, true);
 }
 
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel

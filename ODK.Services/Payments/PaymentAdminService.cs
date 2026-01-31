@@ -13,12 +13,12 @@ public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
     {
     }
 
-    public async Task<ChapterPaymentsViewModel> GetPayments(MemberChapterServiceRequest request)
+    public async Task<ChapterPaymentsViewModel> GetPayments(
+        MemberChapterAdminServiceRequest request)
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
 
         var payments = await GetChapterAdminRestrictedContent(
-            ChapterAdminSecurable.Payments,
             request,
             x => x.PaymentRepository.GetMemberDtosByChapterId(chapter.Id));
 

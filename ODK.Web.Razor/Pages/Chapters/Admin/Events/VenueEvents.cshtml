@@ -11,7 +11,7 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Venue events | Admin";
 
-    var request = Model.MemberChapterServiceRequest;
+    var request = Model.MemberChapterAdminServiceRequest;
     var viewModel = await VenueAdminService.GetVenueEventsViewModel(request, Model.Venue.Id);
 }
 

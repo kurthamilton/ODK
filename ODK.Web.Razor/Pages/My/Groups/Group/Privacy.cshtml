@@ -1,5 +1,7 @@
 ﻿@page "/my/groups/{chapterId:guid}/privacy"
+@using ODK.Services
 @using ODK.Services.Chapters
+@using ODK.Services.Security
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.My.Groups.Group.PrivacyModel
@@ -8,7 +10,8 @@
     Layout = "_GroupAdminLayout";
     Model.Title = "Privacy";
 
-    var viewModel = await ChapterAdminService.GetChapterPrivacyViewModel(Model.MemberChapterServiceRequest);
+    var request = Model.MemberChapterAdminServiceRequest;
+    var viewModel = await ChapterAdminService.GetChapterPrivacyViewModel(request);
 }
 
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel

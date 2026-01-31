@@ -1,5 +1,7 @@
 ﻿@page "/my/groups/{chapterId:guid}"
+@using ODK.Services
 @using ODK.Services.Chapters
+@using ODK.Services.Security
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model IndexModel
@@ -7,7 +9,8 @@
 @{
     Layout = "_GroupAdminLayout";
 
-    var viewModel = await ChapterAdminService.GetChapterAdminPageViewModel(Model.MemberChapterServiceRequest);
+    var request = Model.MemberChapterAdminServiceRequest;
+    var viewModel = await ChapterAdminService.GetChapterAdminPageViewModel(request);
 
     Model.Title = viewModel.Chapter.GetDisplayName(Model.Platform);
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using ODK.Core.Chapters;
+using ODK.Core.Emails;
 using ODK.Core.Platforms;
 
 namespace ODK.Web.Common.Routes;
@@ -12,6 +13,10 @@ public class GroupAdminRoutes
     }
 
     protected PlatformType Platform { get; }
+
+    public string Email(Chapter chapter, EmailType type) => $"{Emails(chapter)}/{type}";
+
+    public string Emails(Chapter chapter) => $"{Group(chapter)}/emails";
 
     public string Event(Chapter chapter, Guid eventId) 
         => $"{Events(chapter)}/{eventId}";

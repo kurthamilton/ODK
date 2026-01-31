@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Utils;
 using ODK.Services.Events;
+using ODK.Services.Security;
 using ODK.Web.Common.Feedback;
-using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Admin.Events;
 
 namespace ODK.Web.Razor.Pages.My.Groups.Events;
@@ -16,6 +16,8 @@ public class CreateModel : OdkGroupAdminPageModel
         _eventAdminService = eventAdminService;
     }
 
+    public override ChapterAdminSecurable Securable => ChapterAdminSecurable.Events;
+
     public Guid? VenueId { get; private set; }
 
     public void OnGet([FromQuery] Guid? venueId = null)
@@ -25,7 +27,8 @@ public class CreateModel : OdkGroupAdminPageModel
 
     public async Task<IActionResult> OnPostAsync([FromForm] EventFormSubmitViewModel viewModel)
     {
-        var result = await _eventAdminService.CreateEvent(MemberChapterServiceRequest, new CreateEvent
+        var request = MemberChapterAdminServiceRequest;
+        var result = await _eventAdminService.CreateEvent(request, new CreateEvent
         {
             AttendeeLimit = viewModel.AttendeeLimit,
             Date = viewModel.Date,

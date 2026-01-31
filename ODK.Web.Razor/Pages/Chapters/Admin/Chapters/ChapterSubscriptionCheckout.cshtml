@@ -14,7 +14,7 @@
     Model.Title = "Checkout | Subscription | Admin";
 
     var chapter = Model.Chapter;
-    var request = Model.MemberChapterServiceRequest;
+    var request = Model.MemberChapterAdminServiceRequest;
 
     var returnPath = $"/{chapter.ShortName}/admin/chapter/subscription/{Model.PriceId}/confirm?sessionId={{sessionId}}";
     var viewModel = await ChapterAdminService.StartSiteSubscriptionCheckout(

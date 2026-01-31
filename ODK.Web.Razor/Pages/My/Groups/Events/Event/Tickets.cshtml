@@ -10,7 +10,8 @@
     Layout = "_GroupAdminLayout";
     Model.Title = "Event tickets";
 
-    var viewModel = await EventAdminService.GetEventTicketsViewModel(Model.MemberChapterServiceRequest, Model.EventId);
+    var request = Model.MemberChapterAdminServiceRequest;
+    var viewModel = await EventAdminService.GetEventTicketsViewModel(request, Model.EventId);
 }
 
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel

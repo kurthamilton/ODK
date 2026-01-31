@@ -10,7 +10,8 @@
     Layout = "_GroupAdminLayout";
     Model.Title = "Edit subscription";
 
-    var viewModel = await MemberAdminService.GetMemberSubscriptionViewModel(Model.MemberChapterServiceRequest, Model.SubscriptionId);
+    var request = Model.MemberChapterAdminServiceRequest;
+    var viewModel = await MemberAdminService.GetMemberSubscriptionViewModel(request, Model.SubscriptionId);
 }
 
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel

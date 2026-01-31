@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Members;
 using ODK.Services.Members;
 using ODK.Services.Members.Models;
+using ODK.Services.Security;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Members;
 
@@ -18,6 +19,8 @@ public class MemberModel : AdminPageModel
 
     public Guid MemberId { get; private set; }
 
+    public override ChapterAdminSecurable Securable => ChapterAdminSecurable.Members;
+
     public void OnGet(Guid id)
     {
         MemberId = id;
@@ -25,7 +28,7 @@ public class MemberModel : AdminPageModel
 
     public async Task<IActionResult> OnPostAsync(Guid id, MemberFormViewModel viewModel)
     {
-        var request = MemberChapterServiceRequest;
+        var request = MemberChapterAdminServiceRequest;
         var result = await _memberAdminService.UpdateMemberSubscription(request, id, new UpdateMemberSubscription
         {
             ExpiryDate = viewModel.SubscriptionExpiryDate,

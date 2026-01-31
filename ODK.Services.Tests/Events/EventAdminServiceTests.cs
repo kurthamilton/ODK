@@ -21,6 +21,7 @@ using ODK.Services.Logging;
 using ODK.Services.Members;
 using ODK.Services.Notifications;
 using ODK.Services.Payments;
+using ODK.Services.Security;
 using ODK.Services.Tasks;
 using ODK.Services.Tests.Helpers;
 
@@ -76,9 +77,9 @@ public static class EventAdminServiceTests
         var service = CreateService(
             unitOfWork: unitOfWork);
 
-        var request = MemberChapterServiceRequest.Create(
-            new Chapter 
-            { 
+        var memberChapterServiceRequest = MemberChapterServiceRequest.Create(
+            new Chapter
+            {
                 Id = ChapterId,
                 Name = "",
                 Slug = ""
@@ -86,6 +87,10 @@ public static class EventAdminServiceTests
             new Member { Id = CurrentMemberId },
             Mock.Of<IHttpRequestContext>(),
             PlatformType.Default);
+
+        var request = MemberChapterAdminServiceRequest.Create(
+            ChapterAdminSecurable.Events,
+            memberChapterServiceRequest);
 
         // Act
         await service.CreateEvent(request, new CreateEvent

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.Models;
+using ODK.Services.Security;
 using ODK.Web.Razor.Models.Admin.Chapters;
 
 namespace ODK.Web.Razor.Pages.My.Groups.Members.Properties;
@@ -14,13 +15,16 @@ public class CreateModel : OdkGroupAdminPageModel
         _chapterAdminService = chapterAdminService;
     }
 
+    public override ChapterAdminSecurable Securable => ChapterAdminSecurable.Properties;
+
     public void OnGet()
     {
     }
 
     public async Task<IActionResult> OnPostAsync(ChapterPropertyFormViewModel viewModel)
     {
-        var result = await _chapterAdminService.CreateChapterProperty(MemberChapterServiceRequest, new CreateChapterProperty
+        var request = MemberChapterAdminServiceRequest;
+        var result = await _chapterAdminService.CreateChapterProperty(request, new CreateChapterProperty
         {
             ApplicationOnly = viewModel.ApplicationOnly,
             DataType = viewModel.DataType,

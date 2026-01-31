@@ -16,7 +16,6 @@ using ODK.Services.Logging;
 using ODK.Services.Members;
 using ODK.Services.Notifications;
 using ODK.Services.Payments;
-using ODK.Services.Security;
 using ODK.Services.Tasks;
 
 namespace ODK.Services.Events;
@@ -60,7 +59,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     }
 
     public async Task<ServiceResult> CreateEvent(
-        MemberChapterServiceRequest request, CreateEvent model, bool draft)
+        MemberChapterAdminServiceRequest request, CreateEvent model, bool draft)
     {
         var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
 
@@ -84,9 +83,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.CurrencyRepository.GetByChapterId(chapter.Id));
 
         AssertMemberIsChapterAdmin(
-            ChapterAdminSecurable.Events,
-            currentMember,
-            chapter.Id,
+            request,
             chapterAdminMembers.FirstOrDefault(x => x.MemberId == currentMember.Id));
 
         var date = Event.FromLocalTime(model.Date, chapter.TimeZone);
@@ -173,10 +170,9 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         return ServiceResult.Successful();
     }
 
-    public async Task DeleteEvent(MemberChapterServiceRequest request, Guid id)
+    public async Task DeleteEvent(MemberChapterAdminServiceRequest request, Guid id)
     {
         var (@event, eventEmail, responses) = await GetChapterAdminRestrictedContent(
-            ChapterAdminSecurable.Events,
             request,
             x => x.EventRepository.GetById(id),
             x => x.EventEmailRepository.GetByEventId(id),
@@ -188,12 +184,11 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task<Event> GetEvent(MemberChapterServiceRequest request, Guid id)
+    public async Task<Event> GetEvent(MemberChapterAdminServiceRequest request, Guid id)
     {
         var chapter = request.Chapter;
 
         var @event = await GetChapterAdminRestrictedContent(
-            ChapterAdminSecurable.Events,
             request,
             x => x.EventRepository.GetById(id));
         
@@ -203,7 +198,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     }
 
     public async Task<EventAttendeesAdminPageViewModel> GetEventAttendeesViewModel(
-        MemberChapterServiceRequest request, Guid eventId)
+        MemberChapterAdminServiceRequest request, Guid eventId)
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
 
@@ -216,7 +211,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             chapterMembershipSettings,
             chapterPrivacySettings,
             waitlist) = await GetChapterAdminRestrictedContent(
-            ChapterAdminSecurable.Events,
             request,
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
             x => x.EventRepository.GetById(eventId),
@@ -263,12 +257,12 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         };
     }
 
-    public async Task<EventCreateAdminPageViewModel> GetEventCreateViewModel(MemberChapterServiceRequest request)
+    public async Task<EventCreateAdminPageViewModel> GetEventCreateViewModel(
+        MemberChapterAdminServiceRequest request)
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
 
         var (venues, adminMembers, eventSettings, currency, ownerSubscription) = await GetChapterAdminRestrictedContent(
-            ChapterAdminSecurable.Events,
             request,
             x => x.VenueRepository.GetByChapterId(chapter.Id),
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
@@ -289,7 +283,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         };
     }
 
-    public async Task<EventEditAdminPageViewModel> GetEventEditViewModel(MemberChapterServiceRequest request, Guid eventId)
+    public async Task<EventEditAdminPageViewModel> GetEventEditViewModel(
+        MemberChapterAdminServiceRequest request, Guid eventId)
     {
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
@@ -309,7 +304,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.VenueRepository.GetByChapterId(chapter.Id));
 
         AssertMemberIsChapterAdmin(
-            ChapterAdminSecurable.Events,
             request,
             adminMembers.FirstOrDefault(x => x.MemberId == currentMember.Id));
 
@@ -330,12 +324,11 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     }
 
     public async Task<EventInvitesAdminPageViewModel> GetEventInvitesViewModel(
-        MemberChapterServiceRequest request, Guid eventId)
+        MemberChapterAdminServiceRequest request, Guid eventId)
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
 
         var (ownerSubscription, @event, eventEmail, members, invites, venue) = await GetChapterAdminRestrictedContent(
-            ChapterAdminSecurable.Events,
             request,
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
             x => x.EventRepository.GetById(eventId),
@@ -365,12 +358,11 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     }
 
     public async Task<EventsAdminPageViewModel> GetEventsAdminPageViewModel(
-        MemberChapterServiceRequest request, Chapter chapter, int page, int pageSize)
+        MemberChapterAdminServiceRequest request, Chapter chapter, int page, int pageSize)
     {
         var platform = request.Platform;
 
         var eventSummaries = await GetChapterAdminRestrictedContent(
-            ChapterAdminSecurable.Events,
             request,
             x => x.EventRepository.GetSummariesByChapterId(chapter.Id, page, pageSize));
 
@@ -381,12 +373,12 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         };
     }
 
-    public async Task<EventSettingsAdminPageViewModel> GetEventSettingsViewModel(MemberChapterServiceRequest request)
+    public async Task<EventSettingsAdminPageViewModel> GetEventSettingsViewModel(
+        MemberChapterAdminServiceRequest request)
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
 
         var (ownerSubscription, settings) = await GetChapterAdminRestrictedContent(
-            ChapterAdminSecurable.EventSettings,
             request,
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
             x => x.ChapterEventSettingsRepository.GetByChapterId(chapter.Id));
@@ -400,7 +392,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         };
     }
 
-    public async Task<EventTicketsAdminPageViewModel> GetEventTicketsViewModel(MemberChapterServiceRequest request, Guid eventId)
+    public async Task<EventTicketsAdminPageViewModel> GetEventTicketsViewModel(
+        MemberChapterAdminServiceRequest request, Guid eventId)
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
 
@@ -411,7 +404,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             venue,
             payments
         ) = await GetChapterAdminRestrictedContent(
-            ChapterAdminSecurable.Events,
             request,
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
             x => x.MemberRepository.GetAllByChapterId(chapter.Id),
@@ -448,7 +440,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         };
     }
 
-    public async Task<DateTime> GetNextAvailableEventDate(MemberChapterServiceRequest request)
+    public async Task<DateTime> GetNextAvailableEventDate(MemberChapterAdminServiceRequest request)
     {
         var chapter = request.Chapter;
 
@@ -456,7 +448,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         var startOfDayUtc = chapter.FromLocalTime(startOfDay);
 
         var (events, settings) = await GetChapterAdminRestrictedContent(
-            ChapterAdminSecurable.Events,
             request,
             x => x.EventRepository.GetByChapterId(chapter.Id, startOfDayUtc),
             x => x.ChapterEventSettingsRepository.GetByChapterId(chapter.Id));
@@ -464,12 +455,11 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         return GetNextAvailableEventDate(chapter, settings, events);
     }
 
-    public async Task PublishEvent(MemberChapterServiceRequest request, Guid eventId)
+    public async Task PublishEvent(MemberChapterAdminServiceRequest request, Guid eventId)
     {
         var chapter = request.Chapter;
 
         var @event = await GetChapterAdminRestrictedContent(
-            ChapterAdminSecurable.Events,
             request,
             x => x.EventRepository.GetById(eventId));
 
@@ -493,13 +483,12 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task SendEventInviteeEmail(MemberChapterServiceRequest request, Guid eventId,
+    public async Task SendEventInviteeEmail(MemberChapterAdminServiceRequest request, Guid eventId,
         IEnumerable<EventResponseType> responseTypes, string subject, string body)
     {
         var chapter = request.Chapter;
 
         var (@event, members, responses, invites) = await GetChapterAdminRestrictedContent(
-            ChapterAdminSecurable.Events,
             request,
             x => x.EventRepository.GetById(eventId),
             x => x.MemberRepository.GetByChapterId(chapter.Id),
@@ -537,7 +526,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         await _memberEmailService.SendBulkEmail(request, chapter, to, subject, body);
     }
 
-    public async Task<ServiceResult> SendEventInvites(MemberChapterServiceRequest request, Guid eventId, bool test = false)
+    public async Task<ServiceResult> SendEventInvites(
+        MemberChapterAdminServiceRequest request, Guid eventId, bool test = false)
     {
         var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
 
@@ -549,7 +539,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             eventEmail,
             responses,
             invites
-        ) = await GetChapterAdminRestrictedContent(ChapterAdminSecurable.Events, request,
+        ) = await GetChapterAdminRestrictedContent(request,
             x => x.VenueRepository.GetByEventId(eventId),
             x => x.MemberRepository.GetByChapterId(chapter.Id),
             x => x.MemberEmailPreferenceRepository.GetByChapterId(chapter.Id, MemberEmailPreferenceType.Events),
@@ -680,7 +670,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     }
 
     public async Task<ServiceResult> UpdateEvent(
-        MemberChapterServiceRequest request, Guid id, CreateEvent model)
+        MemberChapterAdminServiceRequest request, Guid id, CreateEvent model)
     {
         var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
 
@@ -701,7 +691,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.EventResponseRepository.GetByEventId(id, EventResponseType.Yes));
 
         AssertMemberIsChapterAdmin(
-            ChapterAdminSecurable.Events,
             request,
             chapterAdminMembers.FirstOrDefault(x => x.MemberId == currentMember.Id));
 
@@ -795,7 +784,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
     public async Task<ServiceResult> SetMissingEventShortcodes(MemberServiceRequest request)
     {
-        var chapters = await _unitOfWork.ChapterRepository.GetAll().Run();
+        var chapters = await GetSiteAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetAll());
 
         foreach (var chapter in chapters)
         {
@@ -817,12 +807,12 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         return ServiceResult.Successful();
     }
 
-    public async Task UpdateEventSettings(MemberChapterServiceRequest request, UpdateEventSettings model)
+    public async Task UpdateEventSettings(
+        MemberChapterAdminServiceRequest request, UpdateEventSettings model)
     {
         var chapter = request.Chapter;
 
         var (ownerSubscription, settings) = await GetChapterAdminRestrictedContent(
-            ChapterAdminSecurable.EventSettings,
             request,
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
             x => x.ChapterEventSettingsRepository.GetByChapterId(chapter.Id));
@@ -860,7 +850,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     }
 
     public async Task<ServiceResult> UpdateMemberResponse(
-        MemberChapterServiceRequest request,
+        MemberChapterAdminServiceRequest request,
         Guid eventId,
         Guid memberId,
         EventResponseType responseType)
@@ -872,7 +862,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             $"response to '{responseType}' for event '{eventId}'");
 
         var (@event, member) = await GetChapterAdminRestrictedContent(
-            ChapterAdminSecurable.MemberEventResponses,
             request,
             x => x.EventRepository.GetById(eventId),
             x => x.MemberRepository.GetById(memberId));
@@ -888,12 +877,11 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     }
 
     public async Task<ServiceResult> UpdateScheduledEmail(
-        MemberChapterServiceRequest request, Guid eventId, DateTime? date)
+        MemberChapterAdminServiceRequest request, Guid eventId, DateTime? date)
     {
         var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
 
         var (@event, eventEmail, ownerSubscription) = await GetChapterAdminRestrictedContent(
-            ChapterAdminSecurable.Events,
             request,
             x => x.EventRepository.GetById(eventId),
             x => x.EventEmailRepository.GetByEventId(eventId),

@@ -1,19 +1,7 @@
-﻿@using ODK.Core.Chapters
-@using ODK.Services
-@using ODK.Services.Chapters
-@using ODK.Web.Common.Components
-@using ODK.Web.Common.Services
-@using ODK.Web.Razor.Models
+﻿@using ODK.Web.Common.Components
+@using ODK.Web.Razor.Models.Admin.Members
 @using ODK.Web.Razor.Models.Components
-@using ODK.Web.Razor.Models.SiteAdmin
-@using ODK.Web.Razor.Services
-@inject IChapterAdminService ChapterAdminService
-@inject IRequestStore RequestStore
-@{
-    var chapter = RequestStore.Chapter;
-    var serviceRequest = RequestStore.MemberChapterServiceRequest;
-    var adminMembers = await ChapterAdminService.GetChapterAdminMembers(serviceRequest);
-}
+@model SiteAdminAdminMembersViewModel
 
 <h2 class="d-none d-md-block">Members</h2>
 
@@ -27,12 +15,12 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var adminMember in adminMembers.OrderBy(x => x.Member.FullName))
+            @foreach (var adminMember in Model.AdminMembers.OrderBy(x => x.Member.FullName))
             {
                 <tr>
                     <td>@adminMember.Member.FullName</td>
                     <td>
-                        @if (chapter.OwnerId == adminMember.MemberId)
+                        @if (Model.Chapter.OwnerId == adminMember.MemberId)
                         {
                             @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Star)
                             {
@@ -41,7 +29,7 @@
                         }
                         else
                         {
-                            <form action="/groups/@chapter.Id/owner" method="post">
+                            <form action="/groups/@Model.Chapter.Id/owner" method="post">
                                 @Html.Hidden("memberId", adminMember.MemberId)
                                 <button class="btn btn-icon" data-bs-toggle="tooltip" data-bs-title="Set as owner">
                                     @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.StarOutline)
@@ -53,8 +41,8 @@
                         }
                     </td>
                     <td>
-                        <form action="/groups/@chapter.Id/members/@adminMember.MemberId/visibility" method="post">
-                            @if (adminMember.Member.Visible(chapter.Id))
+                        <form action="/groups/@Model.Chapter.Id/members/@adminMember.MemberId/visibility" method="post">
+                            @if (adminMember.Member.Visible(Model.Chapter.Id))
                             {
                                 @Html.Hidden("visible", false)
                                 <button class="btn btn-danger btn-sm" type="submit">Hide</button>

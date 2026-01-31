@@ -17,6 +17,7 @@ public enum ChapterAdminSecurable
     MemberApprovals,
     MemberEventResponses,
     MemberExport,
+    MemberImage,
     Members,
     MembershipSettings,
     Pages,

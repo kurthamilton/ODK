@@ -32,7 +32,7 @@ public class GroupModel : SiteAdminPageModel
 
         var request = MemberChapterServiceRequest;
 
-        var result = await _chapterAdminService.UpdateSiteAdminChapter(request, viewModel);
+        var result = await _chapterAdminService.UpdateSiteAdminChapter(request, id, viewModel);
 
         if (!result.Success)
         {

@@ -9,7 +9,8 @@
 @{
     Layout = "_GroupAdminLayout";
 
-    var viewModel = await EventAdminService.GetEventEditViewModel(Model.MemberChapterServiceRequest, Model.EventId);
+    var request = Model.MemberChapterAdminServiceRequest;
+    var viewModel = await EventAdminService.GetEventEditViewModel(request, Model.EventId);
 
     Model.Title = viewModel.Event.GetDisplayName();
 }

@@ -1,5 +1,7 @@
 ﻿@page "/my/groups/{chapterId:guid}/messages/{messageId:guid}"
+@using ODK.Services
 @using ODK.Services.Chapters
+@using ODK.Services.Security
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
@@ -10,7 +12,8 @@
     Layout = "_GroupAdminLayout";
     Model.Title = "Message";
 
-    var viewModel = await ChapterAdminService.GetChapterMessageViewModel(Model.MemberChapterServiceRequest, Model.MessageId);
+    var request = Model.MemberChapterAdminServiceRequest;
+    var viewModel = await ChapterAdminService.GetChapterMessageViewModel(request, Model.MessageId);
 }
 
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel

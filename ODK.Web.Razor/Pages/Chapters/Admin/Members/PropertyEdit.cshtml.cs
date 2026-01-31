@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.Models;
+using ODK.Services.Security;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Chapters;
 
@@ -17,6 +18,8 @@ public class PropertyEditModel : AdminPageModel
 
     public Guid PropertyId { get; set; }
 
+    public override ChapterAdminSecurable Securable => ChapterAdminSecurable.Properties;
+
     public IActionResult OnGet(Guid id)
     {
         PropertyId = id;
@@ -25,7 +28,7 @@ public class PropertyEditModel : AdminPageModel
 
     public async Task<IActionResult> OnPostAsync(Guid id, ChapterPropertyFormViewModel viewModel)
     {
-        var serviceRequest = MemberChapterServiceRequest;
+        var serviceRequest = MemberChapterAdminServiceRequest;
         var result = await _chapterAdminService.UpdateChapterProperty(serviceRequest, id, new UpdateChapterProperty
         {
             ApplicationOnly = viewModel.ApplicationOnly,

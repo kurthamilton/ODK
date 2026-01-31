@@ -1,3 +1,5 @@
+using ODK.Services.Security;
+
 namespace ODK.Web.Razor.Pages.Chapters.Admin.Chapters;
 
 public class ChapterSubscriptionCheckoutModel : AdminPageModel
@@ -7,6 +9,8 @@ public class ChapterSubscriptionCheckoutModel : AdminPageModel
     }
 
     public Guid PriceId { get; private set; }
+
+    public override ChapterAdminSecurable Securable => ChapterAdminSecurable.SiteSubscription;
 
     public void OnGet(Guid id)
     {

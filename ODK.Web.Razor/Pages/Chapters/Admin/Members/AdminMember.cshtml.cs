@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using ODK.Core.Chapters;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.Models;
+using ODK.Services.Security;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Members;
 
@@ -18,6 +18,8 @@ public class AdminMemberModel : AdminPageModel
 
     public Guid MemberId { get; private set; }
 
+    public override ChapterAdminSecurable Securable => ChapterAdminSecurable.AdminMembers;
+
     public void OnGet(Guid id)
     {
         MemberId = id;
@@ -25,7 +27,7 @@ public class AdminMemberModel : AdminPageModel
 
     public async Task<IActionResult> OnPostAsync(Guid id, AdminMemberFormViewModel viewModel)
     {
-        var serviceRequest = MemberChapterServiceRequest;
+        var serviceRequest = MemberChapterAdminServiceRequest;
         var result = await _chapterAdminService.UpdateChapterAdminMember(serviceRequest, id, new UpdateChapterAdminMember
         {
             AdminEmailAddress = viewModel.AdminEmailAddress,

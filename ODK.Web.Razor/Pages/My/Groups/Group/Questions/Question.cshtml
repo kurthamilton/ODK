@@ -10,7 +10,8 @@
     Layout = "_GroupAdminLayout";
     Model.Title = "Edit | FAQ";
 
-    var viewModel = await ChapterAdminService.GetChapterQuestionViewModel(Model.MemberChapterServiceRequest, Model.QuestionId);
+    var request = Model.MemberChapterAdminServiceRequest;
+    var viewModel = await ChapterAdminService.GetChapterQuestionViewModel(request, Model.QuestionId);
 }
 
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel

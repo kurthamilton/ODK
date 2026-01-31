@@ -1,3 +1,5 @@
+using ODK.Services.Security;
+
 namespace ODK.Web.Razor.Pages.Chapters.Admin.Members;
 
 public class MemberEventsModel : AdminPageModel
@@ -7,6 +9,8 @@ public class MemberEventsModel : AdminPageModel
     }
 
     public Guid MemberId { get; private set; }
+
+    public override ChapterAdminSecurable Securable => ChapterAdminSecurable.Members;
 
     public void OnGet(Guid id)
     {

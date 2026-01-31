@@ -17,8 +17,8 @@ public class PaymentSettingsModel : ChapterSiteAdminPageModel
 
     public async Task<IActionResult> OnPostAsync(PaymentSettingsFormViewModel viewModel)
     {
-        var serviceRequest = MemberChapterServiceRequest;
-        var result = await _chapterAdminService.UpdateChapterPaymentSettings(serviceRequest,
+        var request = MemberChapterAdminServiceRequest;
+        var result = await _chapterAdminService.UpdateChapterPaymentSettings(request,
             new UpdateChapterPaymentSettings
             {
                 CurrencyId = viewModel.CurrencyId

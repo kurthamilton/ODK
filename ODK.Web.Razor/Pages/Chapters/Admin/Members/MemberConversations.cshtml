@@ -8,7 +8,7 @@
 @{
     Layout = "_OdkChapterAdminLayout";
 
-    var request = Model.MemberChapterServiceRequest;
+    var request = Model.MemberChapterAdminServiceRequest;
     var viewModel = await MemberAdminService.GetMemberConversationsViewModel(request, Model.MemberId);
 
     Model.Title = viewModel.Member.GetDisplayName(viewModel.Chapter.Id);

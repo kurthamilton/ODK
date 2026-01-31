@@ -1,5 +1,7 @@
 ﻿@page "/{chapterName}/Admin/Chapter/Messages/{id:guid}"
+@using ODK.Services
 @using ODK.Services.Chapters
+@using ODK.Services.Security
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
@@ -10,7 +12,7 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Message | Admin";
 
-    var request = Model.MemberChapterServiceRequest;
+    var request = Model.MemberChapterAdminServiceRequest;
     var viewModel = await ChapterAdminService.GetChapterMessageViewModel(request, Model.MessageId);
 }
 

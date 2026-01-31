@@ -1,5 +1,7 @@
 ﻿@page "/{chapterName}/admin/chapter/privacy"
+@using ODK.Services
 @using ODK.Services.Chapters
+@using ODK.Services.Security
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model PrivacyModel
@@ -8,7 +10,7 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Privacy | Admin";
 
-    var request = Model.MemberChapterServiceRequest;
+    var request = Model.MemberChapterAdminServiceRequest;
     var viewModel = await ChapterAdminService.GetChapterPrivacyViewModel(request);
 }
 

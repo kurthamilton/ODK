@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ODK.Services;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.Models;
+using ODK.Services.Security;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
@@ -29,7 +31,8 @@ public class GroupAdminController : OdkControllerBase
     public async Task<IActionResult> StartConversation(Guid chapterId,
         [FromForm] ChapterAdminStartConversationFormViewModel viewModel)
     {
-        var request = MemberChapterServiceRequest;
+        var request = MemberChapterAdminServiceRequest.Create(
+            ChapterAdminSecurable.Conversations, MemberChapterServiceRequest);
         await _chapterAdminService.StartConversation(request, viewModel.MemberId,
             viewModel.Subject ?? string.Empty, viewModel.Message ?? string.Empty);
         AddFeedback("Message sent", FeedbackType.Success);
@@ -40,8 +43,10 @@ public class GroupAdminController : OdkControllerBase
     public async Task<IActionResult> ReplyToConversation(Guid chapterId, Guid conversationId,
         [FromForm] ChapterConversationReplyFormViewModel viewModel)
     {
-        var request = MemberChapterServiceRequest;
-        var result = await _chapterAdminService.ReplyToConversation(request, conversationId, viewModel.Message ?? string.Empty);
+        var request = MemberChapterAdminServiceRequest.Create(
+            ChapterAdminSecurable.Conversations, MemberChapterServiceRequest);
+        var result = await _chapterAdminService.ReplyToConversation(
+            request, conversationId, viewModel.Message ?? string.Empty);
         AddFeedback(result, "Reply sent");
         return RedirectToReferrer();
     }
@@ -49,7 +54,8 @@ public class GroupAdminController : OdkControllerBase
     [HttpPost("admin/groups/{chapterId:guid}/description")]
     public async Task<IActionResult> UpdateDescription(Guid chapterId, [FromForm] string description)
     {
-        var request = MemberChapterServiceRequest;
+        var request = MemberChapterAdminServiceRequest.Create(
+            ChapterAdminSecurable.Texts, MemberChapterServiceRequest);
         await _chapterAdminService.UpdateChapterDescription(request, description);
         return RedirectToReferrer();
     }
@@ -58,7 +64,8 @@ public class GroupAdminController : OdkControllerBase
     public async Task<IActionResult> UpdateQuestion(
         Guid chapterId, Guid questionId, [FromForm] ChapterQuestionFormViewModel viewModel)
     {
-        var request = MemberChapterServiceRequest;
+        var request = MemberChapterAdminServiceRequest.Create(
+            ChapterAdminSecurable.Questions, MemberChapterServiceRequest);
         var result = await _chapterAdminService.UpdateChapterQuestion(request, questionId,
             new CreateChapterQuestion
             {
@@ -81,7 +88,8 @@ public class GroupAdminController : OdkControllerBase
     [HttpPost("admin/groups/{chapterId:guid}/texts/register")]
     public async Task<IActionResult> UpdateRegisterText(Guid chapterId, [FromForm] string text)
     {
-        var request = MemberChapterServiceRequest;
+        var request = MemberChapterAdminServiceRequest.Create(
+            ChapterAdminSecurable.Texts, MemberChapterServiceRequest);
         await _chapterAdminService.UpdateChapterDescription(request, text);
         return RedirectToReferrer();
     }
@@ -89,7 +97,8 @@ public class GroupAdminController : OdkControllerBase
     [HttpPost("admin/groups/{chapterId:guid}/topics")]
     public async Task<IActionResult> UpdateTopics(Guid chapterId, [FromForm] TopicPickerViewModel viewModel)
     {
-        var request = MemberChapterServiceRequest;
+        var request = MemberChapterAdminServiceRequest.Create(
+            ChapterAdminSecurable.Topics, MemberChapterServiceRequest);
         var result = await _chapterAdminService.UpdateChapterTopics(request, viewModel.TopicIds ?? []);
         AddFeedback(result, "Topics updated");
         return RedirectToReferrer();

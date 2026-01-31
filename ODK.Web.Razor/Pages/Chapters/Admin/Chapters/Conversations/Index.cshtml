@@ -1,5 +1,7 @@
-﻿@page "/{chapterName}/Admin/Chapter/Conversations"
+﻿@page "/{chapterName}/admin/chapter/conversations"
+@using ODK.Services
 @using ODK.Services.Chapters
+@using ODK.Services.Security
 @using ODK.Web.Razor.Models.Admin
 @model IndexModel
 @inject IChapterAdminService ChapterAdminService
@@ -7,7 +9,7 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Conversations | Admin";
 
-    var request = Model.MemberChapterServiceRequest;
+    var request = Model.MemberChapterAdminServiceRequest;
     var viewModel = await ChapterAdminService.GetChapterConversationsViewModel(request, readByChapter: false);
 }
 

@@ -8,7 +8,8 @@
     Layout = "_GroupAdminLayout";
     Model.Title = "Venues";
 
-    var viewModel = await VenueAdminService.GetVenuesViewModel(Model.MemberChapterServiceRequest);
+    var request = Model.MemberChapterAdminServiceRequest;
+    var viewModel = await VenueAdminService.GetVenuesViewModel(request);
 }
 
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel

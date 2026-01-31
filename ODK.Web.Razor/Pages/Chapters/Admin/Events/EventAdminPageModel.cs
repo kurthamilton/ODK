@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
 using ODK.Core.Events;
 using ODK.Services.Events;
+using ODK.Services.Security;
 using ODK.Web.Common.Feedback;
 
 namespace ODK.Web.Razor.Pages.Chapters.Admin.Events;
@@ -16,6 +17,8 @@ public abstract class EventAdminPageModel : AdminPageModel
 
     protected IEventAdminService EventAdminService { get; }
 
+    public override ChapterAdminSecurable Securable => ChapterAdminSecurable.Events;
+
     public override async Task OnPageHandlerExecutionAsync(
         PageHandlerExecutingContext context,
         PageHandlerExecutionDelegate next)
@@ -26,7 +29,7 @@ public abstract class EventAdminPageModel : AdminPageModel
             return;
         }
 
-        var request = RequestStore.MemberChapterServiceRequest;
+        var request = MemberChapterAdminServiceRequest;
 
         try
         {

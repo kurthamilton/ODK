@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.Models;
+using ODK.Services.Security;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Members;
 
@@ -15,6 +16,8 @@ public class SubscriptionEditModel : AdminPageModel
         _chapterAdminService = chapterAdminService;
     }
 
+    public override ChapterAdminSecurable Securable => ChapterAdminSecurable.Subscriptions;
+
     public Guid SubscriptionId { get; set; }
 
     public IActionResult OnGet(Guid id)
@@ -25,7 +28,7 @@ public class SubscriptionEditModel : AdminPageModel
 
     public async Task<IActionResult> OnPostAsync(Guid id, SubscriptionFormSubmitViewModel viewModel)
     {
-        var serviceRequest = MemberChapterServiceRequest;
+        var serviceRequest = MemberChapterAdminServiceRequest;
         var result = await _chapterAdminService.UpdateChapterSubscription(serviceRequest, id, new CreateChapterSubscription
         {
             Amount = viewModel.Amount ?? 0,

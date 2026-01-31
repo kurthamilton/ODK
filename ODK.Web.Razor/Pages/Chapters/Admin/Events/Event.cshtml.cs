@@ -19,7 +19,7 @@ public class EventModel : EventAdminPageModel
 
     public async Task<IActionResult> OnPostAsync(Guid id, [FromForm] EventFormSubmitViewModel viewModel)
     {
-        var request = MemberChapterServiceRequest;
+        var request = MemberChapterAdminServiceRequest;
         var result = await EventAdminService.UpdateEvent(request, id, new CreateEvent
         {
             AttendeeLimit = viewModel.AttendeeLimit,

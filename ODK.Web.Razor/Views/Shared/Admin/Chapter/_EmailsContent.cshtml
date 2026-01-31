@@ -3,19 +3,16 @@
 @using ODK.Services
 @using ODK.Services.Emails
 @using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
 @using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Admin.Chapters
+@using ODK.Web.Razor.Models.Admin.Emails
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Services
-@inject IEmailAdminService EmailAdminService
-@inject IRequestStore RequestStore
-@{
-    var chapter = RequestStore.Chapter;
-    var request = RequestStore.MemberChapterServiceRequest;
-    var emails = await EmailAdminService.GetChapterEmails(request);
-}
+@model ChapterEmailsViewModel
+@inject IOdkRoutes OdkRoutes
 
 <p>
     The emails sent by the site use the templates below.
@@ -33,11 +30,11 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (ChapterEmail email in emails.OrderBy(x => x.Type.ToString()))
+            @foreach (var email in Model.Emails.OrderBy(x => x.Type.ToString()))
             {
                 <tr>
                     <td>
-                        <a href="/@chapter.ShortName/Admin/Chapter/Emails/@email.Type">@email.Type</a>
+                        <a href="@OdkRoutes.GroupAdmin.Email(Model.Chapter, email.Type)">@email.Type</a>
                     </td>
                     <td>
                         @if (email.IsDefault())
