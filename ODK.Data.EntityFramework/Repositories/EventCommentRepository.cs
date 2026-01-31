@@ -23,7 +23,7 @@ public class EventCommentRepository : ReadWriteRepositoryBase<EventComment>, IEv
         var query =
             from comment in Set()
             from @event in Set<Event>()
-                .Where(x => x.Id == comment.Id)
+                .Where(x => x.Id == comment.EventId)
             where @event.Shortcode == shortcode
             select comment;
 
