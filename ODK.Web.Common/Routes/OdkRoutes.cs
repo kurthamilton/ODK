@@ -16,6 +16,7 @@ public class OdkRoutes : IOdkRoutes
     private readonly Lazy<MemberRoutes> _memberRoutes;
     private readonly Lazy<PaymentsRoutes> _paymentsRoutes;
     private readonly Lazy<SiteAdminRoutes> _siteAdminRoutes;
+    private readonly Lazy<SiteRoutes> _siteRoutes;
 
     private readonly IRequestStore _requestStore;
 
@@ -29,6 +30,7 @@ public class OdkRoutes : IOdkRoutes
         _memberRoutes = new(() => new MemberRoutes());
         _paymentsRoutes = new(() => new PaymentsRoutes(_requestStore.Platform));
         _siteAdminRoutes = new(() => new SiteAdminRoutes());
+        _siteRoutes = new(() => new SiteRoutes());
     }
 
     public AccountRoutes Account => _accountRoutes.Value;
@@ -36,6 +38,7 @@ public class OdkRoutes : IOdkRoutes
     public GroupRoutes Groups => _groupRoutes.Value;
     public MemberRoutes Members => _memberRoutes.Value;
     public PaymentsRoutes Payments => _paymentsRoutes.Value;
+    public SiteRoutes Site => _siteRoutes.Value;
     public SiteAdminRoutes SiteAdmin => _siteAdminRoutes.Value;
 
     public string Error(Chapter? chapter, int statusCode)

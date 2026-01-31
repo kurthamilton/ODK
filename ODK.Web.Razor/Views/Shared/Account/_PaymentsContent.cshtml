@@ -5,6 +5,12 @@
 @model MemberPaymentsPageViewModel
 @inject IOdkRoutes OdkRoutes
 
+@if (Model.Payments.Count == 0)
+{
+    <p>You haven't made any payments yet</p>
+    return;
+}
+
 <div class="table-responsive">
     <table class="table table-striped">
         <thead>

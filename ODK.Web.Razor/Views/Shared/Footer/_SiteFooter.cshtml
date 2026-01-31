@@ -1,8 +1,10 @@
 ﻿@using ODK.Core.Platforms
+@using ODK.Web.Common.Routes
 @using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Footer
 @using ODK.Web.Razor.Services
 @model FooterViewModel
+@inject IOdkRoutes OdkRoutes
 @inject IRequestStore RequestStore
 @{
     if (RequestStore.Platform != PlatformType.Default)
@@ -18,13 +20,13 @@
                 <a href="/">Home</a>
             </div>
             <div>
-                <a href="/privacy">Privacy</a>
+                <a href="@OdkRoutes.Site.Privacy">Privacy</a>
             </div>
             <div>
-                <a href="/contact">Contact</a>
+                <a href="@OdkRoutes.Site.Contact">Contact</a>
             </div>
             <div>
-                <a href="/pricing">Pricing</a>
+                <a href="@OdkRoutes.Site.Pricing">Pricing</a>
             </div>
         </div>
     </section>

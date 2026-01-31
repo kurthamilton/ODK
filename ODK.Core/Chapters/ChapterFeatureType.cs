@@ -2,8 +2,10 @@
 
 public enum ChapterFeatureType
 {
-    None = 0,
-    Events = 1,
-    Members = 2,
-    Venues = 3
+    None,
+    Conversations,
+    EventResponses,
+    Events,
+    Members,
+    Venues
 }

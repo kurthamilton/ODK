@@ -1,6 +1,8 @@
-﻿@using ODK.Web.Razor.Models.Components
+﻿@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Footer
 @model FooterViewModel
+@inject IOdkRoutes OdkRoutes
 
 <footer>
     <section class="section--footer">
@@ -11,7 +13,7 @@
                         <a href="/">Knitwits International Home</a>
                     </div>
                     <div>
-                        <a href="/Privacy">Privacy</a>
+                        <a href="@OdkRoutes.Site.Privacy">Privacy</a>
                     </div>
                 </div>
                 @if (Model.Links != null)

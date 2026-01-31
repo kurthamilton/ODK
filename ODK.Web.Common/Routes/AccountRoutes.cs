@@ -56,7 +56,7 @@ public class AccountRoutes : RoutesBase
 
     public string Payments(Chapter? chapter) => AccountPath(chapter, "/payments");
 
-    public string PersonalDetails() => AccountPath(null, string.Empty);
+    public string PersonalDetails(Chapter? chapter) => AccountPath(chapter, string.Empty);
 
     public string Picture(Chapter? chapter) => AccountPath(chapter, "/picture");
 

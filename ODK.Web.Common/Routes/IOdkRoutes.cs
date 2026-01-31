@@ -9,7 +9,8 @@ public interface IOdkRoutes
     GroupAdminRoutes GroupAdmin { get; }
     MemberRoutes Members { get; }
     PaymentsRoutes Payments { get; }
+    SiteRoutes Site { get; }
     SiteAdminRoutes SiteAdmin { get; }
 
-    string Error(Chapter? chapter, int statusCode);
+    string Error(Chapter? chapter, int statusCode);    
 }

@@ -6,9 +6,11 @@
 @using ODK.Services.Users.ViewModels
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Extensions
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
 @model ChapterProfileFormViewModel
+@inject IOdkRoutes OdkRoutes
 @{
     var memberId = User.MemberIdOrDefault();
 
@@ -193,7 +195,7 @@
                data-val-required="The Privacy field is required." />
 
         <label for="@Html.IdFor(x => x.PrivacyPolicy)" class="form-check-label">
-            I have read the <a href="/Privacy" target="_blank">privacy policy</a>
+            I have read the <a href="@OdkRoutes.Site.Privacy" target="_blank">privacy policy</a>
         </label>
         @Html.ValidationMessageFor(x => x.PrivacyPolicy)
     </div>

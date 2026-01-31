@@ -48,13 +48,13 @@
 @if (status == SubscriptionStatus.Expired || status == SubscriptionStatus.Disabled)
 {
     <div class="page-alert alert alert-danger">
-        Your @type has expired <a href="@OdkRoutes.Groups.Subscription(Model.Chapter)">@action</a>
+        Your @type has expired <a href="@OdkRoutes.Groups.Subscription(chapter)">@action</a>
     </div>
 }
 else if (status == SubscriptionStatus.Expiring && memberSubscription.ExpiresUtc != null)
 {
     var expiresOn = TimeZoneEntityExtensions.ToLocalTime(chapter, memberSubscription.ExpiresUtc.Value).ToString("d MMMM");
     <div class="page-alert alert alert-warning">
-        Your @type expires @expiresOn <a href="@OdkRoutes.Groups.Subscription(Model.Chapter)">@action</a>
+        Your @type expires @expiresOn <a href="@OdkRoutes.Groups.Subscription(chapter)">@action</a>
     </div>
 }

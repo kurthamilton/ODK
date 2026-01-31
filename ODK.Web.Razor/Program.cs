@@ -29,8 +29,8 @@ public class Program
             .UseMiddleware<RateLimitingMiddleware>()
             .UseRouting()
             .UseAuthentication()
-            .UseAuthorization()
             .UseMiddleware<RequestStoreMiddleware>()
+            .UseAuthorization()
             .UseSerilogRequestLogging()
             .UseMiddleware<ErrorHandlingMiddleware>();
 
