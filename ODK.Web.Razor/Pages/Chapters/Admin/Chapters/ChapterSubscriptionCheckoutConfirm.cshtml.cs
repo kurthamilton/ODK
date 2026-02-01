@@ -29,7 +29,7 @@ public class ChapterSubscriptionCheckoutConfirmModel : AdminPageModel
         SessionId = sessionId;
         SubscriptionId = id;
 
-        RedirectUrl = OdkRoutes.GroupAdmin.GroupSubscription(Chapter);
+        RedirectUrl = AdminRoutes.Subscription(Chapter).Path;
 
         var request = MemberChapterAdminServiceRequest;
         var status = await _chapterAdminService.GetChapterPaymentCheckoutSessionStatus(

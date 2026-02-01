@@ -34,7 +34,11 @@
             {
                 <tr>
                     <td>
-                        <a href="@OdkRoutes.GroupAdmin.Email(Model.Chapter, email.Type)">@email.Type</a>
+                        @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                        {
+                            Route = OdkRoutes.GroupAdmin.Email(Model.Chapter, email.Type),
+                            Text = email.Type.ToString()
+                        })
                     </td>
                     <td>
                         @if (email.IsDefault())

@@ -21,7 +21,7 @@
     {
         new MenuItem
         {
-            Link = Model.OdkRoutes.GroupAdmin.Members(Model.Chapter),
+            Link = Model.AdminRoutes.Members(Model.Chapter).Path,
             Text = "Members"
         },
         new MenuItem { Text = viewModel.Member.GetDisplayName(viewModel.Chapter.Id) }

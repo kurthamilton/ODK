@@ -14,7 +14,6 @@ public class OdkRoutes : IOdkRoutes
     private readonly Lazy<GroupAdminRoutes> _groupAdminRoutes;
     private readonly Lazy<GroupRoutes> _groupRoutes;
     private readonly Lazy<MemberRoutes> _memberRoutes;
-    private readonly Lazy<PaymentsRoutes> _paymentsRoutes;
     private readonly Lazy<SiteAdminRoutes> _siteAdminRoutes;
     private readonly Lazy<SiteRoutes> _siteRoutes;
 
@@ -28,7 +27,6 @@ public class OdkRoutes : IOdkRoutes
         _groupAdminRoutes = new(() => new GroupAdminRoutes(_requestStore.Platform));
         _groupRoutes = new(() => new GroupRoutes(Account, _requestStore.Platform));
         _memberRoutes = new(() => new MemberRoutes());
-        _paymentsRoutes = new(() => new PaymentsRoutes(_requestStore.Platform));
         _siteAdminRoutes = new(() => new SiteAdminRoutes());
         _siteRoutes = new(() => new SiteRoutes());
     }
@@ -37,7 +35,6 @@ public class OdkRoutes : IOdkRoutes
     public GroupAdminRoutes GroupAdmin => _groupAdminRoutes.Value;
     public GroupRoutes Groups => _groupRoutes.Value;
     public MemberRoutes Members => _memberRoutes.Value;
-    public PaymentsRoutes Payments => _paymentsRoutes.Value;
     public SiteRoutes Site => _siteRoutes.Value;
     public SiteAdminRoutes SiteAdmin => _siteAdminRoutes.Value;
 

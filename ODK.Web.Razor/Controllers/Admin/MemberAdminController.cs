@@ -79,7 +79,7 @@ public class MemberAdminController : AdminControllerBase
         }
 
         var chapter = Chapter;
-        return Redirect(OdkRoutes.GroupAdmin.Members(Chapter));
+        return Redirect(OdkRoutes.GroupAdmin.Members(Chapter).Path);
     }
 
     [HttpPost("groups/{chapterId:guid}members/{id:guid}/emails/activation/send")]

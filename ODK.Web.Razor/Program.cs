@@ -25,10 +25,10 @@ public class Program
 
         // Configure the HTTP request pipeline.
         app
-            .UseMiddleware<HttpContextLoggingMiddleware>()
-            .UseMiddleware<RateLimitingMiddleware>()
             .UseRouting()
             .UseAuthentication()
+            .UseMiddleware<HttpContextLoggingMiddleware>()
+            .UseMiddleware<RateLimitingMiddleware>()
             .UseMiddleware<RequestStoreMiddleware>()
             .UseAuthorization()
             .UseSerilogRequestLogging()

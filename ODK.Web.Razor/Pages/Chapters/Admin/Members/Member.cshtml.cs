@@ -37,11 +37,11 @@ public class MemberModel : AdminPageModel
 
         if (!result.Success)
         {
-            AddFeedback(new FeedbackViewModel(result));
+            AddFeedback(result);
             return Page();
         }
 
-        AddFeedback(new FeedbackViewModel("Member subscription updated", FeedbackType.Success));
-        return Redirect(OdkRoutes.GroupAdmin.Member(Chapter, id));
+        AddFeedback("Member subscription updated", FeedbackType.Success);
+        return Redirect(AdminRoutes.Member(Chapter, id).Path);
     }
 }

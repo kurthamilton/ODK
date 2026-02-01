@@ -48,11 +48,11 @@ public class EventCreateModel : AdminPageModel
 
         if (!result.Success)
         {
-            AddFeedback(new FeedbackViewModel(result));
+            AddFeedback(result);
             return Page();
         }
 
-        AddFeedback(new FeedbackViewModel("Event created", FeedbackType.Success));
-        return Redirect(OdkRoutes.GroupAdmin.Events(Chapter));
+        AddFeedback("Event created", FeedbackType.Success);
+        return Redirect(AdminRoutes.Events(Chapter).Path);
     }
 }

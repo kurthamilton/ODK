@@ -2,6 +2,7 @@
 @using ODK.Core.Countries
 @using ODK.Services.Chapters
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model IndexModel
 @inject IChapterViewModelService ChapterViewModelService
@@ -47,8 +48,13 @@
                 else
                 {
                     <p>
-                        No matching results. 
-                        <a href="@Model.OdkRoutes.GroupAdmin.GroupCreate()">Create a group</a>
+                        <span>No matching results.</span>
+                        
+                        @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                        {
+                            Route = Model.OdkRoutes.GroupAdmin.Create(),
+                            Text = "Create a group"
+                        })
                     </p>
                 }
             </div>

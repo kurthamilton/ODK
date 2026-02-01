@@ -19,10 +19,15 @@
 
     @if (Model.Enabled)
     {
-        var subscriptionsUrl = OdkRoutes.GroupAdmin.MembersSubscriptions(Model.Chapter);
+        var subscriptionsUrl = OdkRoutes.GroupAdmin.Subscriptions(Model.Chapter);
         <div class="alert alert-success">
-            You have set up a payment account.
-            Set up your <a href="@subscriptionsUrl">memberships</a>.
+            <span>You have set up a payment account. Set up your </span>
+            @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+            {
+                Route = OdkRoutes.GroupAdmin.Subscriptions(Model.Chapter),
+                Text = "subscriptions"
+            })
+            <span>.</span>
         </div>
     }
     else if (!string.IsNullOrEmpty(Model.OnboardingUrl))

@@ -20,22 +20,22 @@
         _ => null
     };
 
-    var url = notification.Type switch
+    var path = notification.Type switch
     {
         NotificationType.ChapterContactMessage => notification.Chapter != null && notification.EntityId != null
-            ? OdkRoutes.GroupAdmin.GroupMessage(notification.Chapter, notification.EntityId.Value)
+            ? OdkRoutes.GroupAdmin.Message(notification.Chapter, notification.EntityId.Value).Path
             : null,
         NotificationType.ConversationAdminMessage => notification.Chapter != null && notification.EntityId != null
             ? OdkRoutes.Groups.Conversation(notification.Chapter, notification.EntityId.Value)
             : null,
         NotificationType.ConversationOwnerMessage => notification.Chapter != null && notification.EntityId != null
-            ? OdkRoutes.GroupAdmin.GroupConversation(notification.Chapter, notification.EntityId.Value)
+            ? OdkRoutes.GroupAdmin.Conversation(notification.Chapter, notification.EntityId.Value).Path
             : null,
         NotificationType.NewEvent => notification.Chapter != null && notification.EntityId != null
             ? OdkRoutes.Groups.EventLegacy(notification.Chapter, notification.EntityId.Value)
             : null,
         NotificationType.NewMember => notification.Chapter != null && notification.EntityId != null
-            ? OdkRoutes.GroupAdmin.Member(notification.Chapter, notification.EntityId.Value)
+            ? OdkRoutes.GroupAdmin.Member(notification.Chapter, notification.EntityId.Value).Path
             : null,
         _ => null
     };
@@ -63,9 +63,9 @@
         </div>        
     </div>
     <div class="notification-body">
-        @if (!string.IsNullOrEmpty(url))
+        @if (!string.IsNullOrEmpty(path))
         {
-            <a class="notification-row notification-link" href="@url">
+            <a class="notification-row notification-link" href="@path">
                 <div class="notification-col">
                     @notificationContent.Invoke(null)
                 </div>

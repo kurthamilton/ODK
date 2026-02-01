@@ -131,6 +131,7 @@ public static class DependencyConfig
                 ContactMessageRecaptchaScoreThreshold = appSettings.Recaptcha.ScoreThreshold
             })
             .AddScoped<IChapterService, ChapterService>()   
+            .AddScoped<IChapterSiteAdminService, ChapterSiteAdminService>()
             .AddScoped<IChapterViewModelService, ChapterViewModelService>()
             .AddScoped<IContactAdminService, ContactAdminService>()
             .AddScoped<IContactService, ContactService>()

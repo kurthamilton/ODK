@@ -38,11 +38,11 @@ public class AdminMemberModel : AdminPageModel
 
         if (result.Success)
         {
-            AddFeedback(new FeedbackViewModel("Chapter admin member updated", FeedbackType.Success));
-            return Redirect(OdkRoutes.GroupAdmin.MemberAdmins(Chapter));
+            AddFeedback("Chapter admin member updated", FeedbackType.Success);
+            return Redirect(AdminRoutes.AdminMembers(Chapter).Path);
         }
 
-        AddFeedback(new FeedbackViewModel(result));
+        AddFeedback(result);
         return Page();
     }
 }

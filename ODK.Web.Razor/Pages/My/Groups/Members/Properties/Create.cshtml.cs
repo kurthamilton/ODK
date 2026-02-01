@@ -44,6 +44,7 @@ public class CreateModel : OdkGroupAdminPageModel
             return Page();
         }
 
-        return Redirect(OdkRoutes.GroupAdmin.MemberProperties(Chapter));
+        var path = OdkRoutes.GroupAdmin.MemberProperties(Chapter).Path;
+        return Redirect(path);
     }
 }

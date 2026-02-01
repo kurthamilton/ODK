@@ -41,11 +41,15 @@
                             @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.CheckCircle)
                             {
                                 Class = "text-success"
-                                        })
-                                        }
+                            })
+                        }
                     </td>
                     <td>
-                        <a href="@OdkRoutes.GroupAdmin.GroupMessage(Model.Chapter, message.Id)">View</a>
+                        @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                        {
+                            Route = OdkRoutes.GroupAdmin.Message(Model.Chapter, message.Id),
+                            Text = "View"
+                        })
                     </td>
                     <td>
                         <form method="post" action="/groups/@Model.Chapter.Id/messages/@message.Id/delete">

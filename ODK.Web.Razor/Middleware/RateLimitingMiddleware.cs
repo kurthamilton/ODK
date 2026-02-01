@@ -22,7 +22,7 @@ public class RateLimitingMiddleware
         HttpContext context,
         ILoggingService loggingService,
         AppSettings appSettings)
-    {
+    {        
         var ipAddress = context.Connection.RemoteIpAddress?.ToString() ?? string.Empty;
 
         // Check black list
@@ -46,6 +46,11 @@ public class RateLimitingMiddleware
             // No reason to block - run the remaining pipeline
             await _next(context);
             return;
+        }
+
+        if (context.User.Identity?.IsAuthenticated == true)
+        {
+            await loggingService.Warn($"Authenticated user has triggered rate limiting middleware");
         }
 
         // Use 429 for lack of more accurate status code

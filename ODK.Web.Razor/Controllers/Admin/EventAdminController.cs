@@ -45,7 +45,7 @@ public class EventAdminController : AdminControllerBase
         await _eventAdminService.DeleteEvent(request, id);
         AddFeedback("Event deleted", FeedbackType.Success);
 
-        return Redirect(OdkRoutes.GroupAdmin.Events(Chapter));
+        return Redirect(OdkRoutes.GroupAdmin.Events(Chapter).Path);
     }
 
     [HttpPost("groups/{chapterId:guid}/events/{id:guid}/invites/send")]

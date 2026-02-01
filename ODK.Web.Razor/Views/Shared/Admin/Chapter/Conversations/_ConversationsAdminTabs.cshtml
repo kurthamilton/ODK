@@ -7,8 +7,8 @@
 @{
     var menuItems = new[]
     {
-        new MenuItem { Link = OdkRoutes.GroupAdmin.GroupConversations(Model.Chapter), Text = "Unread" },
-        new MenuItem { Link = OdkRoutes.GroupAdmin.GroupConversationsRead(Model.Chapter), Text = "Read" }
+        new MenuItem { Link = OdkRoutes.GroupAdmin.Conversations(Model.Chapter).Path, Text = "Unread" },
+        new MenuItem { Link = OdkRoutes.GroupAdmin.ConversationsRead(Model.Chapter).Path, Text = "Read" }
     };
 }
 

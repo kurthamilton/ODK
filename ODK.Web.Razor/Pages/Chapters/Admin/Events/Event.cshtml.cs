@@ -44,7 +44,7 @@ public class EventModel : EventAdminPageModel
             return Page();
         }
 
-        AddFeedback(new FeedbackViewModel("Event updated", FeedbackType.Success));
-        return Redirect(OdkRoutes.GroupAdmin.Events(Chapter));
+        AddFeedback("Event updated", FeedbackType.Success);
+        return Redirect(AdminRoutes.Events(Chapter).Path);
     }
 }

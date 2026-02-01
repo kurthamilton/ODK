@@ -42,6 +42,7 @@ public class AdminMemberModel : OdkGroupAdminPageModel
             return Page();
         }
 
-        return Redirect(OdkRoutes.GroupAdmin.MemberAdmins(Chapter));
+        var path = OdkRoutes.GroupAdmin.AdminMembers(Chapter).Path;
+        return Redirect(path);
     }
 }

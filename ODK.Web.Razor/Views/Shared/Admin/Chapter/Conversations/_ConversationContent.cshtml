@@ -3,6 +3,7 @@
 @using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Admin.Chapters
 @using ODK.Web.Razor.Models.Chapters
 @using ODK.Web.Razor.Models.Components
@@ -12,9 +13,11 @@
 <h5>@Model.Conversation.Subject</h5>
 
 <p>
-    <a href="@OdkRoutes.GroupAdmin.MemberConversations(Model.Chapter, Model.Member.Id)">
-        @Model.Member.GetDisplayName(Model.Chapter.Id)
-    </a>
+    @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+    {
+        Route = OdkRoutes.GroupAdmin.MemberConversations(Model.Chapter, Model.Member.Id),
+        Text = Model.Member.GetDisplayName(Model.Chapter.Id)
+    })
 </p>
 
 <div class="row">
@@ -71,11 +74,15 @@
                 @<div class="list-group">
                     @foreach (var dto in Model.OtherConversations.OrderByDescending(x => x.LastMessage.CreatedUtc))
                     {
+                        var conversation = dto.Conversation;
+
                         <div class="list-group-item">
                             <div>
-                            <a href="@OdkRoutes.GroupAdmin.GroupConversation(Model.Chapter, dto.Conversation.Id)">
-                                    @dto.Conversation.Subject
-                                </a>
+                                @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                                {
+                                    Route = OdkRoutes.GroupAdmin.Conversation(Model.Chapter, conversation.Id),
+                                    Text = conversation.Subject
+                                })                                
                             </div>
                             <div>
                                 @dto.LastMessage.CreatedUtc.ToFriendlyDateTimeString(Model.Chapter.TimeZone)

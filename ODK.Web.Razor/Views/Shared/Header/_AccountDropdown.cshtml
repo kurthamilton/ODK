@@ -1,6 +1,7 @@
 ﻿@using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
 @using ODK.Web.Common.Services
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Header
 @inject IOdkRoutes OdkRoutes
@@ -61,10 +62,18 @@
                     @if (adminChapter != null)
                     {
                         <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="@OdkRoutes.GroupAdmin.Home(adminChapter)">
-                            @chapter.GetDisplayName(platform) Admin
-                        </a>
-                        <a class="dropdown-item" href="@OdkRoutes.GroupAdmin.EventCreate(adminChapter)">Create event</a>
+                        @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                        {
+                            Class = "dropdown-item",
+                            Route = OdkRoutes.GroupAdmin.Home(adminChapter),
+                            Text = $"{chapter.GetDisplayName(platform)} Admin"
+                        })
+                        @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                        {
+                            Class = "dropdown-item",
+                            Route = OdkRoutes.GroupAdmin.EventCreate(adminChapter),
+                            Text = "Create event"
+                        })
                     }
                 }
                 else if (chapters.Length > 1)
@@ -93,13 +102,27 @@
                                 @if (adminChapter != null || Model.Member?.SiteAdmin == true)
                                 {
                                     <div class="dropdown-divider"></div>
-                                    
-                                    <a class="dropdown-item" href="@OdkRoutes.GroupAdmin.Home(chapter)">Admin</a>
-                                    <a class="dropdown-item" href="@OdkRoutes.GroupAdmin.EventCreate(chapter)">Create event</a>
+                                    @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                                    {
+                                        Class = "dropdown-item",
+                                        Route = OdkRoutes.GroupAdmin.Home(chapter),
+                                        Text = "Admin"
+                                    })
+                                    @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                                    {
+                                        Class = "dropdown-item",
+                                        Route = OdkRoutes.GroupAdmin.EventCreate(chapter),
+                                        Text = "Create event"
+                                    })
 
                                     if (Model.Member?.SiteAdmin == true)
                                     {
-                                        <a class="dropdown-item" href="/@chapter.ShortName/admin/siteadmin">Site admin</a>
+                                        @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                                        {
+                                            Class = "dropdown-item",
+                                            Route = OdkRoutes.GroupAdmin.SiteAdmin(chapter),
+                                            Text = "Site admin"
+                                        })
                                     }
                                 }
                             </div>                            

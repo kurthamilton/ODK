@@ -45,6 +45,6 @@ public class EmailModel : AdminPageModel
 
         var chapter = Chapter;
         AddFeedback(new FeedbackViewModel("Email updated", FeedbackType.Success));
-        return Redirect(OdkRoutes.GroupAdmin.Emails(chapter));
+        return Redirect(AdminRoutes.Emails(chapter).Path);
     }
 }

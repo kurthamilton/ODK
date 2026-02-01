@@ -1,6 +1,7 @@
 ﻿@using ODK.Core.Utils
 @using ODK.Services.Members.ViewModels
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Admin.Chapters
 @using ODK.Web.Razor.Models.Admin.Members
 @using ODK.Web.Razor.Models.Components
@@ -25,23 +26,25 @@
                 <tbody>
                     @foreach (var dto in Model.Conversations.OrderByDescending(x => x.LastMessage.CreatedUtc))
                     {
-                        var conversation = dto.Conversation;
+                        var (conversation, lastMessage) = (dto.Conversation, dto.LastMessage);
 
                         <tr>
                             <td>
-                                <a href="@OdkRoutes.GroupAdmin.GroupConversation(Model.Chapter, conversation.Id)">
-                                    @dto.Conversation.Subject
-                                </a>
+                                @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                                {
+                                    Route = OdkRoutes.GroupAdmin.Conversation(Model.Chapter, conversation.Id),
+                                    Text = conversation.Subject
+                                })                                
                             </td>
                             <td>@conversation.CreatedUtc.ToFriendlyDateTimeString(Model.Chapter.TimeZone)</td>
                             <td>
                                 <div>
-                                    @dto.LastMessage.CreatedUtc.ToFriendlyDateTimeString(Model.Chapter.TimeZone)
+                                    @lastMessage.CreatedUtc.ToFriendlyDateTimeString(Model.Chapter.TimeZone)
                                 </div>
-                                @if (dto.LastMessage.MemberId != dto.Conversation.MemberId)
+                                @if (lastMessage.MemberId != conversation.MemberId)
                                 {
                                     <div>
-                                        @dto.LastMessage.Member?.FullName
+                                        @lastMessage.Member?.FullName
                                     </div>
                                 }
                             </td>

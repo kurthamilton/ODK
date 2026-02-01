@@ -30,7 +30,7 @@
         {
             Icon = IconType.ArrowLeft,
             Text = "Back to subscription",
-            Link = Model.OdkRoutes.GroupAdmin.GroupSubscription(Model.Chapter)
+            Link = Model.AdminRoutes.Subscription(Model.Chapter).Path
         }
     },
     ContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_ChapterSubscriptionCheckoutContent", viewModel)</div>

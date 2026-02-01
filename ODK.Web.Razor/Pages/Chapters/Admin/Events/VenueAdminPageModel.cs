@@ -46,7 +46,7 @@ public abstract class VenueAdminPageModel : AdminPageModel
 
     private async Task Redirect(PageHandlerExecutingContext context)
     {
-        var redirectPath = OdkRoutes.GroupAdmin.Venues(Chapter);
+        var redirectPath = AdminRoutes.Venues(Chapter).Path;
         context.Result = Redirect(redirectPath);
     }
 }

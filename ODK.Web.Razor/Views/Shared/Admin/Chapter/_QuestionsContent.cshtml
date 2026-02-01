@@ -25,10 +25,12 @@ else
 }
 
 <p>
-    <a href="@OdkRoutes.GroupAdmin.GroupQuestionCreate(Model.Chapter)"
-       class="btn btn-primary">
-        Create question
-    </a>
+    @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+    {
+        Class = "btn btn-primary",
+        Route = OdkRoutes.GroupAdmin.QuestionCreate(Model.Chapter),
+        Text = "Create question"
+    })
 </p>
 
 @if (Model.Questions.Count > 0)
@@ -47,7 +49,11 @@ else
                 {
                     <tr>
                         <td>
-                            <a href="@OdkRoutes.GroupAdmin.GroupQuestion(Model.Chapter, question.Id)">@question.Name</a>
+                            @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                            {
+                                Route = OdkRoutes.GroupAdmin.Question(Model.Chapter, question.Id),
+                                Text = question.Name
+                            })
                         </td>
                         <td>
                             <div class="d-flex">

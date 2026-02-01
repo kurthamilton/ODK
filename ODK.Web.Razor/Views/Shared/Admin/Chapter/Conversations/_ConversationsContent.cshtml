@@ -9,7 +9,13 @@
 <p>Contact messages sent by logged in users</p>
 
 <p>
-    Your <a href="@OdkRoutes.GroupAdmin.GroupPrivacy(Model.Chapter)">privacy settings</a> currently allow
+    <span>Your </span>  
+    @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+    {
+        Route = OdkRoutes.GroupAdmin.Privacy(Model.Chapter),
+        Text = "privacy settings"
+    })    
+    <span>currently allow</span>
     @switch (Model.PrivacySettings?.Conversations)
     {
         case null:
@@ -45,15 +51,17 @@
             <tbody>
                 @foreach (var dto in Model.Conversations.OrderByDescending(x => x.LastMessage.CreatedUtc))
                 {
-                    var conversation = dto.Conversation;
+                    var (conversation, member) = (dto.Conversation, dto.Member);
 
                     <tr>
                         <td>
                             @if (dto.Member.IsMemberOf(Model.Chapter.Id))
                             {
-                                <a href="@OdkRoutes.GroupAdmin.Member(Model.Chapter, dto.Member.Id)">
-                                    @dto.Member.FullName
-                                </a>
+                                @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                                {
+                                    Route = OdkRoutes.GroupAdmin.Member(Model.Chapter, member.Id),
+                                    Text = member.FullName
+                                })
                             }
                             else
                             {
@@ -61,9 +69,11 @@
                             }
                         </td>
                         <td>
-                            <a href="@OdkRoutes.GroupAdmin.GroupConversation(Model.Chapter, conversation.Id)">
-                                @dto.Conversation.Subject
-                            </a>
+                            @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                            {
+                                Route = OdkRoutes.GroupAdmin.Conversation(Model.Chapter, conversation.Id),
+                                Text = conversation.Subject
+                            })                            
                         </td>
                         <td>@conversation.CreatedUtc.ToFriendlyDateTimeString(Model.Chapter.TimeZone)</td>
                         <td>
@@ -78,9 +88,11 @@
                             }
                         </td>
                         <td>
-                            <a href="@OdkRoutes.GroupAdmin.GroupConversation(Model.Chapter, conversation.Id)">
-                                Reply
-                            </a>
+                            @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                            {
+                                Route = OdkRoutes.GroupAdmin.Conversation(Model.Chapter, conversation.Id),
+                                Text = "Reply"
+                            })                            
                         </td>
                     </tr>
                 }

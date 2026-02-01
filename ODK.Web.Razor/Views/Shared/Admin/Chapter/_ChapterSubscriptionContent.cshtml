@@ -40,7 +40,7 @@
     <h4>Change subscription</h4>
     @await Html.PartialAsync("Pricing/_PricingContent", new PricingContentViewModel
     {
-        CheckoutUrl = OdkRoutes.GroupAdmin.GroupSubscriptionCheckout(Model.Chapter, "{price.id}"),
+        CheckoutUrl = OdkRoutes.GroupAdmin.SubscriptionCheckout(Model.Chapter, "{price.id}").Path,
         CheckoutUrlPriceIdPlaceholder = "{price.id}",
         SiteSubscriptions = Model.SiteSubscriptions
     })

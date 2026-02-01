@@ -1,5 +1,6 @@
 ﻿@using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model MemberChaptersViewModel
 @inject IOdkRoutes OdkRoutes
@@ -13,9 +14,11 @@
                 @<div>
                     @if (Model.Owned.Count > 0)
                     {
-                        <a href="@OdkRoutes.GroupAdmin.GroupCreate()">
-                           Create group
-                        </a>
+                        @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                        {
+                            Route = OdkRoutes.GroupAdmin.Create(),
+                            Text = "Create group"
+                        })
                     }
                 </div>,
             BodyContentFunc =
@@ -27,8 +30,12 @@
                     else
                     {
                         <p>
-                            You haven't created any groups.
-                            <a href="@OdkRoutes.GroupAdmin.GroupCreate()">Create a group</a>
+                            <span>You haven't created any groups.</span>
+                            @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                            {
+                                Route = OdkRoutes.GroupAdmin.Create(),
+                                Text = "Create a group"
+                            })
                         </p>
                     }
                 </div>           

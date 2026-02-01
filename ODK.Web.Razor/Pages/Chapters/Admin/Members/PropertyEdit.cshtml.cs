@@ -43,11 +43,11 @@ public class PropertyEditModel : AdminPageModel
 
         if (!result.Success)
         {
-            AddFeedback(new FeedbackViewModel(result));
+            AddFeedback(result);
             return Page();
         }
 
-        AddFeedback(new FeedbackViewModel("Property updated", FeedbackType.Success));
-        return Redirect(OdkRoutes.GroupAdmin.MemberProperties(Chapter));
+        AddFeedback("Property updated", FeedbackType.Success);
+        return Redirect(AdminRoutes.MemberProperties(Chapter).Path);
     }
 }

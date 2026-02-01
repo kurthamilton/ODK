@@ -3,9 +3,12 @@
 @using ODK.Services.Events
 @using ODK.Services.Events.ViewModels
 @using ODK.Web.Common.Extensions
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Admin.Events
 @using ODK.Web.Razor.Models.Members
 @model EventTicketsAdminPageViewModel
+@inject IOdkRoutes OdkRoutes
 
 @await Html.PartialAsync("Admin/Events/Event/_EventHeader")
 @await Html.PartialAsync("Admin/Events/Event/_EventAdminTabs")
@@ -46,7 +49,11 @@
                         </div>
                     </td>
                     <td>
-                        <a href="/@Model.Chapter.ShortName/Admin/Members/@payment.Member.Id">@payment.Member.FullName</a>
+                        @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                        {
+                            Route = OdkRoutes.GroupAdmin.Member(Model.Chapter, payment.Member.Id),
+                            Text = payment.Member.GetDisplayName(Model.Chapter.Id)
+                        })
                     </td>                    
                     <td>
                         @currency.ToAmountString(payment.AmountPaid)

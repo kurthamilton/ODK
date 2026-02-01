@@ -12,13 +12,13 @@
         new MenuItem
         {
             Active = !Model.IsSpam,
-            Link = OdkRoutes.GroupAdmin.GroupMessages(Model.Chapter),
+            Link = OdkRoutes.GroupAdmin.Messages(Model.Chapter).Path,
             Text = $"Messages ({Model.MessageCount})"
         },
         new MenuItem
         {
             Active = Model.IsSpam,
-            Link = OdkRoutes.GroupAdmin.GroupMessagesSpam(Model.Chapter),
+            Link = OdkRoutes.GroupAdmin.MessagesSpam(Model.Chapter).Path,
             Text = $"Spam ({Model.SpamMessageCount})"
         }
     }

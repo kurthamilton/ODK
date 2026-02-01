@@ -4,5 +4,5 @@
 @{
     Layout = "_OdkChapterAdminLayout";
 
-    Response.Redirect(Model.OdkRoutes.GroupAdmin.Events(Model.Chapter));
+    Response.Redirect(Model.AdminRoutes.Events(Model.Chapter).Path);
 }

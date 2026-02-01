@@ -5,13 +5,13 @@
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model PaymentSettingsModel
-@inject IChapterAdminService ChapterAdminService
+@inject IChapterSiteAdminService ChapterSiteAdminService
 @{
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Payments | SiteAdmin";
 
-    var request = Model.MemberChapterAdminServiceRequest;
-    var viewModel = await ChapterAdminService.GetChapterPaymentSettingsViewModel(request);
+    var request = Model.MemberServiceRequest;
+    var viewModel = await ChapterSiteAdminService.GetChapterPaymentSettingsViewModel(request, Model.Chapter.Id);
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel

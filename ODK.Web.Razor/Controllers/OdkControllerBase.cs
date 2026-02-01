@@ -15,33 +15,33 @@ namespace ODK.Web.Razor.Controllers;
 
 public abstract class OdkControllerBase : Controller
 {
-    private static readonly Regex VersionRegex = new(@"^""(?<version>-?\d+)""$");
-
-    private readonly IRequestStore _requestStore;
+    private static readonly Regex VersionRegex = new(@"^""(?<version>-?\d+)""$");    
 
     protected OdkControllerBase(
         IRequestStore requestStore,
         IOdkRoutes odkRoutes)
     {
-        _requestStore = requestStore;
+        RequestStore = requestStore;
         OdkRoutes = odkRoutes;
     }
 
-    protected Chapter Chapter => _requestStore.Chapter;
+    protected Chapter Chapter => RequestStore.Chapter;
 
-    protected Member CurrentMember => _requestStore.CurrentMember;
+    protected Member CurrentMember => RequestStore.CurrentMember;
 
-    protected MemberChapterServiceRequest MemberChapterServiceRequest => _requestStore.MemberChapterServiceRequest;
+    protected MemberChapterServiceRequest MemberChapterServiceRequest => RequestStore.MemberChapterServiceRequest;
 
-    protected Guid MemberId => _requestStore.CurrentMemberId;
+    protected Guid MemberId => RequestStore.CurrentMemberId;
 
-    protected MemberServiceRequest MemberServiceRequest => _requestStore.MemberServiceRequest;
+    protected MemberServiceRequest MemberServiceRequest => RequestStore.MemberServiceRequest;
 
     protected IOdkRoutes OdkRoutes { get; }
 
-    protected PlatformType Platform => _requestStore.Platform;
+    protected PlatformType Platform => RequestStore.Platform;
 
-    protected ServiceRequest ServiceRequest => _requestStore.ServiceRequest;
+    protected IRequestStore RequestStore { get; }
+
+    protected ServiceRequest ServiceRequest => RequestStore.ServiceRequest;
 
     protected void AddFeedback(string message, FeedbackType type)
         => AddFeedback(new FeedbackViewModel(message, type));

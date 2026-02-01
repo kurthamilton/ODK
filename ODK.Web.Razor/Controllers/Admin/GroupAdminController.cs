@@ -64,8 +64,9 @@ public class GroupAdminController : OdkControllerBase
     public async Task<IActionResult> UpdateQuestion(
         Guid chapterId, Guid questionId, [FromForm] ChapterQuestionFormViewModel viewModel)
     {
+        var securable = OdkRoutes.GroupAdmin.Question(Chapter, questionId).Securable;
         var request = MemberChapterAdminServiceRequest.Create(
-            ChapterAdminSecurable.Questions, MemberChapterServiceRequest);
+            securable, MemberChapterServiceRequest);
         var result = await _chapterAdminService.UpdateChapterQuestion(request, questionId,
             new CreateChapterQuestion
             {
@@ -81,8 +82,7 @@ public class GroupAdminController : OdkControllerBase
 
         AddFeedback("Question updated", FeedbackType.Success);
 
-        var redirectUrl = OdkRoutes.GroupAdmin.GroupQuestions(Chapter);
-        return Redirect(redirectUrl);
+        return Redirect(OdkRoutes.GroupAdmin.Questions(Chapter).Path);
     }
 
     [HttpPost("admin/groups/{chapterId:guid}/texts/register")]

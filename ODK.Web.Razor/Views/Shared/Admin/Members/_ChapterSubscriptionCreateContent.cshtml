@@ -2,6 +2,7 @@
 @using ODK.Services.Members.ViewModels
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Admin.Members
 @using ODK.Web.Razor.Models.Components
 @model SubscriptionCreateAdminPageViewModel
@@ -16,11 +17,14 @@
             @<div>
                 @if (!Model.HasPaymentAccount && !Model.CurrentMember.SiteAdmin)
                 {
-                var paymentAccountUrl = OdkRoutes.Payments.PaymentAccount(Model.Chapter);
                     <div class="alert alert-danger">
-                        You must set up a 
-                        <a href="@paymentAccountUrl">payment account</a>
-                        before you can create a subscription.
+                        <span>You must set up a </span>
+                        @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                        {
+                            Route = OdkRoutes.GroupAdmin.PaymentAccount(Model.Chapter),
+                            Text = "payment account"
+                        })
+                        <span> before you can create a subscription.</span>
                     </div>
                 }
                 else

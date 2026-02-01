@@ -105,7 +105,7 @@ public class GroupsController : OdkControllerBase
             return RedirectToReferrer();
         }
 
-        return Redirect(OdkRoutes.GroupAdmin.Index());
+        return Redirect(OdkRoutes.GroupAdmin.Index().Path);
     }
 
     [Authorize]

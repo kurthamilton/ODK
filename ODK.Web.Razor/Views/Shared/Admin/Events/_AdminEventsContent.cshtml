@@ -14,7 +14,12 @@
 @inject IOdkRoutes OdkRoutes
 
 <p>
-    <a class="btn btn-primary" href="@OdkRoutes.GroupAdmin.EventCreate(Model.Chapter)">Create</a>
+    @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+    {
+        Class = "btn btn-primary",
+        Route = OdkRoutes.GroupAdmin.EventCreate(Model.Chapter),
+        Text = "Create"
+    })
 </p>
 
 <div class="table-responsive">
@@ -62,15 +67,29 @@
                             @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Ticket))
                         }
                     </td>
-                    <td><a href="@OdkRoutes.GroupAdmin.Event(Model.Chapter, @event.Id)">@(@event.GetDisplayName())</a></td>
+                    <td>
+                        @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                        {
+                            Route = OdkRoutes.GroupAdmin.Event(Model.Chapter, @event.Id),
+                            Text = @event.GetDisplayName()
+                        })                        
+                    </td>
                     <td>@(@event.Date.EventDate())</td>
-                    <td><a href="@OdkRoutes.GroupAdmin.Venue(Model.Chapter, venue.Id)">@venue.Name</a></td>
+                    <td>
+                        @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                        {
+                            Route = OdkRoutes.GroupAdmin.Venue(Model.Chapter, venue.Id),
+                            Text = venue.Name
+                        })                        
+                    </td>
                     <td>
                         @if (email?.SentUtc == null)
                         {
-                            <a href="@OdkRoutes.GroupAdmin.EventInvites(Model.Chapter, @event.Id)">
-                                @(email?.ScheduledUtc != null ? "Scheduled" : "Send")
-                            </a>
+                            @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                            {
+                                Route = OdkRoutes.GroupAdmin.EventInvites(Model.Chapter, @event.Id),
+                                Text = email?.ScheduledUtc != null ? "Scheduled" : "Send"
+                            })
                         }
                         else
                         {

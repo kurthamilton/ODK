@@ -48,12 +48,12 @@ public class CreateModel : OdkGroupAdminPageModel
 
         if (!result.Success)
         {
-            AddFeedback(new FeedbackViewModel(result));
+            AddFeedback(result);
             return Page();
         }
 
-        AddFeedback(new FeedbackViewModel("Event created", FeedbackType.Success));
-        var url = OdkRoutes.GroupAdmin.Events(Chapter);
-        return Redirect(url);
+        AddFeedback("Event created", FeedbackType.Success);
+        var path = OdkRoutes.GroupAdmin.Events(Chapter).Path;
+        return Redirect(path);
     }
 }

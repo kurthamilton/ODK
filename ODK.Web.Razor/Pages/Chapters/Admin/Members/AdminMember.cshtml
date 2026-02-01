@@ -19,7 +19,11 @@
     Title = "Edit admin member",
     Breadcrumbs = new[]
     {
-        new MenuItem { Link = Model.OdkRoutes.GroupAdmin.MemberAdmins(Model.Chapter), Text = "Admins" },
+        new MenuItem 
+        { 
+            Link = Model.AdminRoutes.AdminMembers(Model.Chapter).Path, 
+            Text = "Admins" 
+        },
         new MenuItem { Text = viewModel.AdminMember.Member.FullName }
     },
     ContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_AdminMemberContent", viewModel)</div>

@@ -30,11 +30,11 @@ public class VenueModel : VenueAdminPageModel
 
         if (!result.Success)
         {
-            AddFeedback(new FeedbackViewModel(result));
+            AddFeedback(result);
             return Page();
         }
 
-        AddFeedback(new FeedbackViewModel("Venue updated", FeedbackType.Success));
-        return Redirect(OdkRoutes.GroupAdmin.Venues(Chapter));
+        AddFeedback("Venue updated", FeedbackType.Success);
+        return Redirect(AdminRoutes.Venues(Chapter).Path);
     }
 }

@@ -5,6 +5,7 @@
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model GroupsModel
 @inject IChapterViewModelService ChapterViewModelService
@@ -45,10 +46,12 @@
                                     <td>
                                         @if (chapter.IsAdmin)
                                         {
-                                            <a href="@Model.OdkRoutes.GroupAdmin.Group(chapter.Chapter)">
-                                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Settings))
-                                                <span>Manage</span>
-                                            </a>
+                                            @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                                            {
+                                                Icon = IconType.Settings,
+                                                Route = Model.OdkRoutes.GroupAdmin.Group(chapter.Chapter),
+                                                Text = "Manage"
+                                            })
                                         }                                        
                                     </td>
                                     <td>

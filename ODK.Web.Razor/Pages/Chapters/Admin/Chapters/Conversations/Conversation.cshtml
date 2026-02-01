@@ -22,7 +22,7 @@
     {
         new MenuItem
         {
-            Link = Model.OdkRoutes.GroupAdmin.GroupConversations(Model.Chapter),
+            Link = Model.AdminRoutes.Conversations(Model.Chapter).Path,
             Text = "Back to conversations",
             Icon = IconType.ArrowLeft
         }

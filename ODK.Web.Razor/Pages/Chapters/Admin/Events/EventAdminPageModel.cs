@@ -46,7 +46,7 @@ public abstract class EventAdminPageModel : AdminPageModel
 
     private async Task Redirect(PageHandlerExecutingContext context)
     {
-        var redirectPath = OdkRoutes.GroupAdmin.Events(Chapter);
+        var redirectPath = AdminRoutes.Events(Chapter).Path;
         context.Result = Redirect(redirectPath);
     }
 }

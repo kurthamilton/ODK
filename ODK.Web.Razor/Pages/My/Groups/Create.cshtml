@@ -24,7 +24,7 @@
     WidthClass = "col-12 col-lg-8",
     Breadcrumbs = new[]
     {
-        new MenuItem { Link = Model.OdkRoutes.GroupAdmin.Index(), Text = "My groups" },
+        new MenuItem { Link = Model.OdkRoutes.GroupAdmin.Index().Path, Text = "My groups" },
         new MenuItem { Text = "Create" }
     },
     ContentFunc = 

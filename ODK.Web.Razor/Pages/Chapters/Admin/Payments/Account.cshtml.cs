@@ -23,7 +23,7 @@ public class AccountModel : AdminPageModel
         {
             var request = MemberChapterAdminServiceRequest;
 
-            var returnPath = OdkRoutes.Payments.PaymentAccount(Chapter);
+            var returnPath = AdminRoutes.PaymentAccount(Chapter).Path;
             var refreshPath = $"{returnPath}?action={RefreshAction}";
 
             var url = await _chapterAdminService.GenerateChapterPaymentAccountSetupUrl(
@@ -44,7 +44,7 @@ public class AccountModel : AdminPageModel
     {
         var request = MemberChapterAdminServiceRequest;
 
-        var returnPath = OdkRoutes.Payments.PaymentAccount(Chapter);
+        var returnPath = AdminRoutes.PaymentAccount(Chapter).Path;
         var refreshPath = $"{returnPath}?action={RefreshAction}";
 
         var result = await _chapterAdminService.CreateChapterPaymentAccount(

@@ -1,0 +1,12 @@
+﻿@using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Components
+@model AdminLinkViewModel
+
+<a href="@Model.Route.Path" class="@Model.Class">
+    @if (Model.Icon != null)
+    {
+        @await Html.PartialAsync("Components/_Icon", new IconViewModel(Model.Icon.Value))
+    }
+    
+    <span>@Model.Text</span>
+</a>

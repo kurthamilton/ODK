@@ -38,6 +38,6 @@ public class CreateModel : OdkGroupAdminPageModel
             return Page();
         }
 
-        return Redirect(OdkRoutes.GroupAdmin.GroupQuestions(Chapter));
+        return Redirect(OdkRoutes.GroupAdmin.Questions(Chapter).Path);
     }
 }

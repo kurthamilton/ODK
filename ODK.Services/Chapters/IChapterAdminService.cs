@@ -9,9 +9,7 @@ namespace ODK.Services.Chapters;
 
 public interface IChapterAdminService
 {
-    Task<ServiceResult> AddChapterAdminMember(MemberChapterAdminServiceRequest request, Guid memberId);
-
-    Task<ServiceResult> ApproveChapter(MemberServiceRequest request, Guid chapterId);
+    Task<ServiceResult> AddChapterAdminMember(MemberChapterAdminServiceRequest request, Guid memberId);    
 
     Task<ServiceResult<Chapter?>> CreateChapter(
         MemberServiceRequest request,
@@ -24,9 +22,8 @@ public interface IChapterAdminService
 
     Task<ServiceResult> CreateChapterQuestion(MemberChapterAdminServiceRequest request, CreateChapterQuestion model);
 
-    Task<ServiceResult> CreateChapterSubscription(MemberChapterAdminServiceRequest request, CreateChapterSubscription model);
-
-    Task<ServiceResult> DeleteChapter(MemberServiceRequest request, Guid chapterId);
+    Task<ServiceResult> CreateChapterSubscription(
+        MemberChapterAdminServiceRequest request, CreateChapterSubscription model);    
 
     Task<ServiceResult> DeleteChapterAdminMember(MemberChapterAdminServiceRequest request, Guid memberId);
 
@@ -45,9 +42,11 @@ public interface IChapterAdminService
 
     Task<ChapterAdminPageViewModel> GetChapterAdminPageViewModel(MemberChapterAdminServiceRequest request);
 
-    Task<ChapterConversationsAdminPageViewModel> GetChapterConversationsViewModel(MemberChapterAdminServiceRequest request, bool readByChapter);
+    Task<ChapterConversationsAdminPageViewModel> GetChapterConversationsViewModel(
+        MemberChapterAdminServiceRequest request, bool readByChapter);
 
-    Task<ChapterConversationAdminPageViewModel> GetChapterConversationViewModel(MemberChapterAdminServiceRequest request, Guid id);
+    Task<ChapterConversationAdminPageViewModel> GetChapterConversationViewModel(
+        MemberChapterAdminServiceRequest request, Guid id);
 
     Task<ChapterDeleteAdminPageViewModel> GetChapterDeleteViewModel(MemberChapterAdminServiceRequest request);
 
@@ -63,21 +62,23 @@ public interface IChapterAdminService
 
     Task<ChapterPagesAdminPageViewModel> GetChapterPagesViewModel(MemberChapterAdminServiceRequest request);
 
-    Task<ChapterPaymentAccountAdminPageViewModel> GetChapterPaymentAccountViewModel(MemberChapterAdminServiceRequest request);
-
-    Task<ChapterPaymentSettingsAdminPageViewModel> GetChapterPaymentSettingsViewModel(MemberChapterAdminServiceRequest request);
+    Task<ChapterPaymentAccountAdminPageViewModel> GetChapterPaymentAccountViewModel(MemberChapterAdminServiceRequest request);    
 
     Task<ChapterPrivacyAdminPageViewModel> GetChapterPrivacyViewModel(MemberChapterAdminServiceRequest request);
 
     Task<ChapterPropertiesAdminPageViewModel> GetChapterPropertiesViewModel(MemberChapterAdminServiceRequest request);
 
-    Task<ChapterPropertyAdminPageViewModel> GetChapterPropertyViewModel(MemberChapterAdminServiceRequest request, Guid propertyId);
+    Task<ChapterPropertyAdminPageViewModel> GetChapterPropertyViewModel(
+        MemberChapterAdminServiceRequest request, Guid propertyId);
 
-    Task<ChapterQuestionsAdminPageViewModel> GetChapterQuestionsViewModel(MemberChapterAdminServiceRequest request);
+    Task<ChapterQuestionsAdminPageViewModel> GetChapterQuestionsViewModel(
+        MemberChapterAdminServiceRequest request);
 
-    Task<ChapterQuestionAdminPageViewModel> GetChapterQuestionViewModel(MemberChapterAdminServiceRequest request, Guid questionId);
+    Task<ChapterQuestionAdminPageViewModel> GetChapterQuestionViewModel(
+        MemberChapterAdminServiceRequest request, Guid questionId);
 
-    Task<PaymentStatusType> GetChapterPaymentCheckoutSessionStatus(MemberChapterAdminServiceRequest request, string externalSessionId);
+    Task<PaymentStatusType> GetChapterPaymentCheckoutSessionStatus(
+        MemberChapterAdminServiceRequest request, string externalSessionId);
 
     Task<ChapterSubscriptionAdminPageViewModel> GetChapterSubscriptionViewModel(MemberChapterAdminServiceRequest request);
 
@@ -85,11 +86,7 @@ public interface IChapterAdminService
 
     Task<ChapterTopicsAdminPageViewModel> GetChapterTopicsViewModel(MemberChapterAdminServiceRequest request);
 
-    Task<MembershipSettingsAdminPageViewModel> GetMembershipSettingsViewModel(MemberChapterAdminServiceRequest request);
-
-    Task<SiteAdminChaptersViewModel> GetSiteAdminChaptersViewModel(MemberServiceRequest request);
-
-    Task<SiteAdminChapterViewModel> GetSiteAdminChapterViewModel(MemberServiceRequest request, Guid chapterId);
+    Task<MembershipSettingsAdminPageViewModel> GetMembershipSettingsViewModel(MemberChapterAdminServiceRequest request);    
 
     Task<ServiceResult> PublishChapter(MemberChapterAdminServiceRequest request);
 
@@ -116,7 +113,9 @@ public interface IChapterAdminService
     Task<SiteSubscriptionCheckoutViewModel> StartSiteSubscriptionCheckout(
         MemberChapterAdminServiceRequest request, Guid priceId, string returnPath);
 
-    Task<ServiceResult> UpdateChapterAdminMember(MemberChapterAdminServiceRequest request, Guid memberId,
+    Task<ServiceResult> UpdateChapterAdminMember(
+        MemberChapterAdminServiceRequest request, 
+        Guid memberId,
         UpdateChapterAdminMember model);
 
     Task<ServiceResult> UpdateChapterDescription(MemberChapterAdminServiceRequest request, string description);
@@ -181,10 +180,5 @@ public interface IChapterAdminService
 
     Task<ServiceResult> UpdateChapterTopics(
         MemberChapterAdminServiceRequest request,
-        IReadOnlyCollection<Guid> topicIds);
-
-    Task<ServiceResult> UpdateSiteAdminChapter(
-        MemberServiceRequest request,
-        Guid chapterId,
-        SiteAdminChapterUpdateViewModel viewModel);
+        IReadOnlyCollection<Guid> topicIds);    
 }

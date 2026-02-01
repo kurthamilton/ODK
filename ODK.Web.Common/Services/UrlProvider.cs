@@ -27,7 +27,7 @@ public class UrlProvider : IUrlProvider
         => GetUrl(_odkRoutes.Account.EmailAddressChangeConfirm(chapter, token));
 
     public string ConversationAdminUrl(Chapter chapter, Guid conversationId)
-        => GetUrl(_odkRoutes.GroupAdmin.GroupConversation(chapter, conversationId));
+        => GetUrl(_odkRoutes.GroupAdmin.Conversation(chapter, conversationId));
 
     public string ConversationUrl(Chapter chapter, Guid conversationId) 
         => GetUrl(_odkRoutes.Groups.Conversation(chapter, conversationId));
@@ -58,7 +58,7 @@ public class UrlProvider : IUrlProvider
     public string MemberSiteSubscriptionUrl() => GetUrl(_odkRoutes.Account.Subscription(null));
 
     public string MessageAdminUrl(Chapter chapter, Guid messageId) 
-        => GetUrl(_odkRoutes.GroupAdmin.GroupMessage(chapter, messageId));
+        => GetUrl(_odkRoutes.GroupAdmin.Message(chapter, messageId));
 
     public string MessageSiteAdminUrl(Guid messageId) => GetUrl(_odkRoutes.SiteAdmin.Message(messageId));
 
@@ -70,4 +70,6 @@ public class UrlProvider : IUrlProvider
 
     private string GetUrl(string path)
         => $"{_httpRequestContext.BaseUrl}{path}";
+
+    private string GetUrl(GroupAdminRoute adminRoute) => GetUrl(adminRoute.Path);
 }

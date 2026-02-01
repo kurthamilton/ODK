@@ -3,6 +3,7 @@ using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Services.Security;
+using ODK.Web.Common.Routes;
 
 namespace ODK.Web.Common.Components;
 
@@ -21,15 +22,28 @@ public class ChapterAdminMenuItemGroup : List<MenuItem>
     }
 
     public ChapterAdminMenuItemGroup Add(
-        ChapterAdminSecurable securable, MenuItem menuItem, PlatformType? platform = null)
+        GroupAdminRoute route, string text)
     {
-        if (!_adminMember.HasAccessTo(securable, _currentMember) ||
-            (platform != null && platform != _platform))
+        if (!_adminMember.HasAccessTo(route.Securable, _currentMember))
         {
             return this;
         }
 
-        Add(menuItem);
+        if (route.Platform != null && route.Platform != _platform)
+        {
+            return this;
+        }
+
+        if (route.IsDefault)
+        {
+            return this;
+        }
+
+        Add(new MenuItem
+        {
+            Link = route.Path,
+            Text = text,
+        });
 
         return this;
     }

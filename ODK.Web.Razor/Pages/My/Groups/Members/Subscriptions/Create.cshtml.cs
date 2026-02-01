@@ -43,6 +43,7 @@ public class CreateModel : OdkGroupAdminPageModel
             return Page();
         }
 
-        return Redirect(OdkRoutes.GroupAdmin.MembersSubscriptions(Chapter));
+        var path = OdkRoutes.GroupAdmin.Subscriptions(Chapter).Path;
+        return Redirect(path);
     }
 }

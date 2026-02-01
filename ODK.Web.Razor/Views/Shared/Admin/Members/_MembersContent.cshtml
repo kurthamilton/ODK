@@ -78,10 +78,12 @@
             </select>
         </div>
         <div class="col ms-auto align-self-end">
-            <a href="@OdkRoutes.GroupAdmin.MembersDownload(Model.Chapter)">
-                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Excel))
-                Download CSV
-            </a>
+            @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+            {
+                Icon = IconType.Excel,
+                Route = OdkRoutes.GroupAdmin.MembersDownload(Model.Chapter),
+                Text = "Download CSV"
+            })
         </div>
     </div>
 </p>
@@ -116,15 +118,19 @@
                         })
                 </td>
                 <td>
-                    <a href="@OdkRoutes.GroupAdmin.Member(Model.Chapter, member.Id)" data-sort-value="@member.FullName">
-                        @member.GetDisplayName(Model.Chapter.Id)
-                    </a>
+                    <span class="d-none" data-sort-value="@member.FullName"></span>
+                    @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                    {
+                        Route = OdkRoutes.GroupAdmin.Member(Model.Chapter, member.Id),
+                        Text = member.GetDisplayName(Model.Chapter.Id)
+                    })
                 </td>
                 <td>@(subscription?.Type ?? SubscriptionType.Full)</td>
                 <td>
                     <span class="d-none" data-sort-value="@(subscription?.ExpiresUtc?.ToString("yyyy-MM-dd") ?? "")"></span>
-                    <span class="@(subscription?.ExpiresUtc < DateTime.Today ? "text-danger" : null)
-                                             @(subscription?.ExpiresUtc < subscriptionWarningDate ? "text-warning" : null)">
+                    <span class="
+                        @(subscription?.ExpiresUtc < DateTime.Today ? "text-danger" : null)
+                        @(subscription?.ExpiresUtc < subscriptionWarningDate ? "text-warning" : null)">
                         @subscription?.ExpiresUtc?.ToString("yyyy-MM-dd")
                     </span>
                 </td>

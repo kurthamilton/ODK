@@ -8,6 +8,7 @@
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Admin.Members
 @using ODK.Web.Razor.Models.Components
 @model AdminMembersAdminPageViewModel
@@ -75,7 +76,11 @@
 
                             <tr>
                                 <td>
-                                    <a href="@OdkRoutes.GroupAdmin.MemberAdmin(Model.Chapter, adminMember)">@member.FullName</a>
+                                    @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                                    {
+                                        Route = OdkRoutes.GroupAdmin.AdminMember(Model.Chapter, adminMember),
+                                        Text = member.FullName
+                                    })
                                 </td>
                                 <td class="text-break">
                                     @adminMember.AdminEmailAddress

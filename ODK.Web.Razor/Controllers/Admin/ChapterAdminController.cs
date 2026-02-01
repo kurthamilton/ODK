@@ -20,16 +20,19 @@ namespace ODK.Web.Razor.Controllers.Admin;
 public class ChapterAdminController : AdminControllerBase
 {
     private readonly IChapterAdminService _chapterAdminService;
+    private readonly IChapterSiteAdminService _chapterSiteAdminService;
     private readonly IEmailAdminService _emailAdminService;
 
     public ChapterAdminController(
         IChapterAdminService chapterAdminService,
+        IChapterSiteAdminService chapterSiteAdminService,
         IEmailAdminService emailAdminService,
         IRequestStore requestStore,
         IOdkRoutes odkRoutes)
         : base(requestStore, odkRoutes)
     {
         _chapterAdminService = chapterAdminService;
+        _chapterSiteAdminService = chapterSiteAdminService;
         _emailAdminService = emailAdminService;
     }
 
@@ -37,7 +40,7 @@ public class ChapterAdminController : AdminControllerBase
     public async Task<IActionResult> Delete(Guid chapterId)
     {
         var request = MemberServiceRequest;
-        var result = await _chapterAdminService.DeleteChapter(request, chapterId);
+        var result = await _chapterSiteAdminService.DeleteChapter(request, chapterId);
         AddFeedback(result, "Group deleted");
 
         if (!result.Success)
@@ -45,7 +48,7 @@ public class ChapterAdminController : AdminControllerBase
             return RedirectToReferrer();
         }
 
-        return Redirect(OdkRoutes.GroupAdmin.Index());
+        return Redirect(OdkRoutes.GroupAdmin.Index().Path);
     }
 
     [HttpPost("groups/{chapterId:guid}/image")]

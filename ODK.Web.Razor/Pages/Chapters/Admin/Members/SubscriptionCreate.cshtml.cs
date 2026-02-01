@@ -38,11 +38,11 @@ public class SubscriptionCreateModel : AdminPageModel
 
         if (result.Success)
         {
-            AddFeedback(new FeedbackViewModel("Subscription created", FeedbackType.Success));
-            return Redirect(OdkRoutes.GroupAdmin.MembersSubscriptions(Chapter));
+            AddFeedback("Subscription created", FeedbackType.Success);
+            return Redirect(AdminRoutes.Subscriptions(Chapter).Path);
         }
 
-        AddFeedback(new FeedbackViewModel(result));
+        AddFeedback(result);
         return Page();
     }
 }

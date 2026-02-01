@@ -30,10 +30,12 @@
                             @Model.Chapter.ToChapterTime(payment.PaidUtc.Value).ToString("yyyy-MM-dd HH:mm:ss")
                         </td>
                         <td>
-                            <a href="@OdkRoutes.GroupAdmin.MemberPayments(Model.Chapter, member.Id)"
-                               data-sort-value="@member.FullName">
-                                @member.FullName
-                            </a>
+                            <span class="d-none" data-sort-value="@member.FullName"></span>
+                            @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                            {
+                                Route = OdkRoutes.GroupAdmin.MemberPayments(Model.Chapter, member.Id),
+                                Text = member.FullName
+                            })
                         </td>
                         <td>@payment.Reference</td>
                         <td>

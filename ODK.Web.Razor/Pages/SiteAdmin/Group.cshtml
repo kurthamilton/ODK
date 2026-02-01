@@ -4,12 +4,13 @@
 @using ODK.Services.Chapters
 @using ODK.Web.Razor.Models.Components
 @model GroupModel
-@inject IChapterAdminService ChapterAdminService
+@inject IChapterSiteAdminService ChapterSiteAdminService
 @{
     Layout = "_SiteAdminLayout";
     Model.Title = "Group | SiteAdmin";
 
-    var viewModel = await ChapterAdminService.GetSiteAdminChapterViewModel(Model.MemberServiceRequest, Model.ChapterId);
+    var request = Model.MemberServiceRequest;
+    var viewModel = await ChapterSiteAdminService.GetSiteAdminChapterViewModel(request, Model.ChapterId);
 }
 
 @await Html.PartialAsync("SiteAdmin/_SiteAdminGroupContent", viewModel)

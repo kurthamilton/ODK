@@ -43,6 +43,7 @@ public class VenueModel : OdkGroupAdminPageModel
             return Page();
         }
 
-        return Redirect(OdkRoutes.GroupAdmin.Venues(Chapter));
+        var path = OdkRoutes.GroupAdmin.Venues(Chapter).Path;
+        return Redirect(path);
     }
 }
