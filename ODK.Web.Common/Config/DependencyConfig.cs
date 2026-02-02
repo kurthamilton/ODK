@@ -121,8 +121,8 @@ public static class DependencyConfig
     private static void ConfigureServices(this IServiceCollection services, AppSettings appSettings)
     {
         services
-            .AddScoped<IAccountViewModelService, AccountViewModelService>() 
-            .AddScoped<IAuthenticationService, AuthenticationService>() 
+            .AddScoped<IAccountViewModelService, AccountViewModelService>()
+            .AddScoped<IAuthenticationService, AuthenticationService>()
             .AddScoped<IAuthorizationService, AuthorizationService>()
             .AddScoped<ICacheService, CacheService>()
             .AddScoped<IChapterAdminService, ChapterAdminService>()
@@ -130,7 +130,7 @@ public static class DependencyConfig
             {
                 ContactMessageRecaptchaScoreThreshold = appSettings.Recaptcha.ScoreThreshold
             })
-            .AddScoped<IChapterService, ChapterService>()   
+            .AddScoped<IChapterService, ChapterService>()
             .AddScoped<IChapterSiteAdminService, ChapterSiteAdminService>()
             .AddScoped<IChapterViewModelService, ChapterViewModelService>()
             .AddScoped<IContactAdminService, ContactAdminService>()
@@ -160,7 +160,9 @@ public static class DependencyConfig
                 IgnoreUnknownPathPatterns = appSettings.Logging.IgnorePatterns
                     .Concat(appSettings.RateLimiting.BlockPatterns)
                     .ToArray(),
-                IgnoreUnknownPaths = appSettings.Logging.IgnorePaths,
+                IgnoreUnknownPaths = appSettings.Logging.IgnorePaths
+                    .Concat(appSettings.RateLimiting.BlockPaths)
+                    .ToArray(),
                 IgnoreUnknownPathUserAgents = appSettings.Logging.IgnoreUserAgents
             })
             .AddScoped<IEmailService, EmailService>()

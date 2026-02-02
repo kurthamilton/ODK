@@ -1,8 +1,10 @@
 ﻿using System.Collections.Concurrent;
 using System.Net;
 using System.Text.RegularExpressions;
+using ODK.Core.Utils;
 using ODK.Services.Logging;
 using ODK.Web.Common.Config.Settings;
+using ODK.Web.Common.Services;
 
 namespace ODK.Web.Razor.Middleware;
 
@@ -22,7 +24,7 @@ public class RateLimitingMiddleware
         HttpContext context,
         ILoggingService loggingService,
         AppSettings appSettings)
-    {        
+    {
         var ipAddress = context.Connection.RemoteIpAddress?.ToString() ?? string.Empty;
 
         // Check black list
@@ -38,7 +40,8 @@ public class RateLimitingMiddleware
             : default(DateTime?);
 
         // Does the current request warrant rate limiting?
-        var isRateLimited = IsRateLimited(context.Request.Path, appSettings.RateLimiting);
+        var path = UrlUtils.NormalisePath(context.Request.Path);
+        var isRateLimited = IsRateLimited(path, appSettings.RateLimiting);
 
         var shouldBlock = isRateLimited || blockedUntilUtc > DateTime.UtcNow;
         if (!shouldBlock)
@@ -82,14 +85,39 @@ public class RateLimitingMiddleware
 
     private static bool IsRateLimited(string requestPath, RateLimitingSettings settings)
     {
-        if (settings.BlockPatterns.Length == 0)
+        if (settings.BlockPatterns.Length == 0 && settings.BlockPaths.Length == 0)
         {
             return false;
         }
 
-        var pattern = $@"^({string.Join('|', settings.BlockPatterns)})$";
+        if (settings.BlockPaths.Any(x => MatchesConfigRule(x, requestPath)))
+        {
+            return true;
+        }
 
-        var shouldBlock = Regex.IsMatch(requestPath, pattern, RegexOptions.IgnoreCase);
-        return shouldBlock;
+        var pattern = $@"^({string.Join('|', settings.BlockPatterns)})$";
+        return Regex.IsMatch(requestPath, pattern, RegexOptions.IgnoreCase);
+    }
+
+    private static bool MatchesConfigRule(string rule, string value)
+    {
+        var (wildStart, wildEnd) = (rule.StartsWith('*'), rule.EndsWith('*'));
+
+        if (wildStart && wildEnd)
+        {
+            return value.Contains(rule[1..^1], StringComparison.OrdinalIgnoreCase);
+        }
+
+        if (wildStart)
+        {
+            return value.EndsWith(rule[1..], StringComparison.OrdinalIgnoreCase);
+        }
+
+        if (wildEnd)
+        {
+            return value.StartsWith(rule[..^1], StringComparison.OrdinalIgnoreCase);
+        }
+
+        return value.Equals(rule, StringComparison.OrdinalIgnoreCase);
     }
 }
