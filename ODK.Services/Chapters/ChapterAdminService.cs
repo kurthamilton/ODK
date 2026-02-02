@@ -759,18 +759,18 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     public async Task<ChapterConversationAdminPageViewModel> GetChapterConversationViewModel(
         MemberChapterAdminServiceRequest request, Guid id)
     {
-        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
+        var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
 
         var (
             ownerSubscription,
             conversation,
-            messages,
+            messageDtos,
             notifications
         ) = await GetChapterAdminRestrictedContent(
             request,
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
             x => x.ChapterConversationRepository.GetById(id),
-            x => x.ChapterConversationMessageRepository.GetByConversationId(id),
+            x => x.ChapterConversationMessageRepository.GetDtosByConversationId(id),
             x => x.NotificationRepository.GetUnreadByChapterId(chapter.Id, NotificationType.ConversationOwnerMessage, id));
 
         var adminMemberNotifications = notifications
@@ -783,14 +783,16 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             x => x.MemberRepository.GetById(conversation.MemberId),
             x => x.ChapterConversationRepository.GetDtosByMemberId(conversation.MemberId, chapter.Id));
 
-        var lastMessage = messages
+        var lastMessage = messageDtos
+            .Select(x => x.Message)
             .OrderByDescending(x => x.CreatedUtc)
             .First();
 
         var canReply = lastMessage.MemberId == conversation.MemberId ||
             ownerSubscription?.HasFeature(SiteFeatureType.SendMemberEmails) == true;
 
-        var unread = messages
+        var unread = messageDtos
+            .Select(x => x.Message)
             .Where(x => !x.ReadByChapter)
             .ToArray();
 
@@ -817,9 +819,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             Conversation = conversation,
             CurrentMember = currentMember,
             Member = member,
-            Messages = messages,
-            OtherConversations = otherConversations.Where(x => x.Conversation.Id != id).ToArray(),
-            Platform = platform
+            Messages = messageDtos,
+            OtherConversations = otherConversations.Where(x => x.Conversation.Id != id).ToArray()
         };
     }
 

@@ -72,7 +72,7 @@
             TitleContentFunc = @<h5>Other conversations</h5>,
             BodyContentFunc = 
                 @<div class="list-group">
-                    @foreach (var dto in Model.OtherConversations.OrderByDescending(x => x.LastMessage.CreatedUtc))
+                    @foreach (var dto in Model.OtherConversations.OrderByDescending(x => x.LastMessage.Message.CreatedUtc))
                     {
                         var conversation = dto.Conversation;
 
@@ -85,7 +85,7 @@
                                 })                                
                             </div>
                             <div>
-                                @dto.LastMessage.CreatedUtc.ToFriendlyDateTimeString(Model.Chapter.TimeZone)
+                                @dto.LastMessage.Message.CreatedUtc.ToFriendlyDateTimeString(Model.Chapter.TimeZone)
                             </div>
                         </div>
                     }

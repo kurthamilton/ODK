@@ -38,7 +38,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var dto in Model.Conversations.OrderByDescending(x => x.LastMessage.CreatedUtc))
+                    @foreach (var dto in Model.Conversations.OrderByDescending(x => x.LastMessage.Message.CreatedUtc))
                     {
                         <tr>
                             <td>
@@ -50,7 +50,7 @@
                                 @dto.Conversation.CreatedUtc.ToFriendlyDateTimeString(Model.TimeZone)
                             </td>
                             <td>
-                                @dto.LastMessage.CreatedUtc.ToFriendlyDateTimeString(Model.TimeZone)
+                                @dto.LastMessage.Message.CreatedUtc.ToFriendlyDateTimeString(Model.TimeZone)
                             </td>
                         </tr>
                     }

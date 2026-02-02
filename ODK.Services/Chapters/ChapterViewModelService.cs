@@ -326,7 +326,7 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
             x => x.ChapterConversationRepository.GetDtosByMemberId(currentMember.Id, chapter.Id),
-            x => x.ChapterConversationMessageRepository.GetByConversationId(conversationId),
+            x => x.ChapterConversationMessageRepository.GetDtosByConversationId(conversationId),
             x => x.NotificationRepository.GetUnreadByMemberId(
                 currentMember.Id, NotificationType.ConversationAdminMessage, conversationId),
             x => x.ChapterPageRepository.GetByChapterId(chapter.Id));
@@ -336,6 +336,7 @@ public class ChapterViewModelService : IChapterViewModelService
         OdkAssertions.Exists(dto);
 
         var unread = messages
+            .Select(x => x.Message)
             .Where(x => !x.ReadByMember)
             .ToArray();
 

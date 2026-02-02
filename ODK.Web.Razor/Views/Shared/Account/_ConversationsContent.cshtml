@@ -41,7 +41,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var dto in Model.Conversations.OrderByDescending(x => x.LastMessage.CreatedUtc))
+            @foreach (var dto in Model.Conversations.OrderByDescending(x => x.LastMessage.Message.CreatedUtc))
             {
                 if (!chapterDictionary.TryGetValue(dto.Conversation.ChapterId, out var chapter))
                 {
@@ -68,12 +68,12 @@
                     <td>@dto.Conversation.CreatedUtc.ToFriendlyDateTimeString(timeZone)</td>
                     <td>
                         <div>
-                            @dto.LastMessage.CreatedUtc.ToFriendlyDateTimeString(timeZone)
+                            @dto.LastMessage.Message.CreatedUtc.ToFriendlyDateTimeString(timeZone)
                         </div>
-                        @if (dto.LastMessage.MemberId != Model.CurrentMember.Id)
+                        @if (dto.LastMessage.Message.MemberId != Model.CurrentMember.Id)
                         {
                             <div>
-                                @dto.LastMessage.Member?.FullName
+                                @dto.LastMessage.MemberFullName
                             </div>
                         }
                     </td>

@@ -32,7 +32,8 @@
                         .Select(x => new MessageViewModel
                         {
                             CreatedUtc = x.CreatedUtc,
-                            Member = x.Member,
+                            MemberFullName = x.Member.FullName,
+                            MemberId = x.Member.Id,
                             Text = x.Text
                         })
                         .ToArray(),

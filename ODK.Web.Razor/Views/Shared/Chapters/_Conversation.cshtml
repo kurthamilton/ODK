@@ -10,9 +10,10 @@
     Messages = Model.Messages
         .Select(x => new MessageViewModel
         {
-            CreatedUtc = x.CreatedUtc,
-            Member = x.Member,
-            Text = x.Text
+            CreatedUtc = x.Message.CreatedUtc,
+            MemberId = x.Message.MemberId,
+            MemberFullName = x.MemberFullName,
+            Text = x.Message.Text
         })
         .ToArray()
 })

@@ -15,23 +15,10 @@ public class ChapterConversationRepository : ReadWriteRepositoryBase<ChapterConv
     {
     }
 
-    public IDeferredQueryMultiple<ChapterConversation> GetByChapterId(Guid chapterId) => Set()
-        .Where(x => x.ChapterId == chapterId)
-        .DeferredMultiple();
-
-    public IDeferredQueryMultiple<ChapterConversation> GetByMemberId(Guid memberId, Guid chapterId) => Set()
-        .Where(x => x.MemberId == memberId && x.ChapterId == chapterId)
-        .DeferredMultiple();
-
-    public IDeferredQueryMultiple<ChapterConversationDto> GetDtosByChapterId(Guid chapterId)
-        => ChapterConversationDtoSet()
-            .Where(x => x.Conversation.ChapterId == chapterId)
-            .DeferredMultiple();
-
     public IDeferredQueryMultiple<ChapterConversationDto> GetDtosByChapterId(Guid chapterId, bool readByChapter)
         => ChapterConversationDtoSet()
             .Where(x => x.Conversation.ChapterId == chapterId &&
-                x.LastMessage.ReadByChapter == readByChapter)
+                x.LastMessage.Message.ReadByChapter == readByChapter)
             .DeferredMultiple();
 
     public IDeferredQueryMultiple<ChapterConversationDto> GetDtosByMemberId(Guid memberId)
@@ -50,22 +37,24 @@ public class ChapterConversationRepository : ReadWriteRepositoryBase<ChapterConv
         var query =
             from conversation in Set()
             from conversationMessage in Set<ChapterConversationMessage>()
-                .Include(x => x.Member)
-                .ThenInclude(x => x!.Chapters)
                 .Where(x => x.ChapterConversationId == conversation.Id)
                 .OrderByDescending(x => x.CreatedUtc)
                 .Take(1)
-            from member in Set<Member>().Include(x => x.Chapters)
-            from memberSubscription in Set<MemberSubscription>()
-                .Where(x => x.MemberChapter.MemberId == member.Id && x.MemberChapter.ChapterId == conversation.ChapterId)
-                .DefaultIfEmpty()
-            where member.Id == conversation.MemberId
+            from conversationMessageMember in Set<Member>()
+                .Where(x => x.Id == conversationMessage.MemberId)
+            from member in Set<Member>()
+                .Include(x => x.Chapters)
+                .Where(x => x.Id == conversation.MemberId)
             select new ChapterConversationDto
             {
                 Conversation = conversation,
-                LastMessage = conversationMessage,
-                Member = member,
-                MemberSubscription = memberSubscription
+                LastMessage = new ChapterConversationMessageDto
+                {                    
+                    MemberFirstName = conversationMessageMember.FirstName,
+                    MemberLastName = conversationMessageMember.LastName,
+                    Message = conversationMessage
+                },
+                Member = member
             };
 
         return query;

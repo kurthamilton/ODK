@@ -7,7 +7,7 @@ public class GroupConversationPageViewModel : GroupPageViewModel
 {
     public required ChapterConversation Conversation { get; init; }
 
-    public required IReadOnlyCollection<ChapterConversationMessage> Messages { get; init; }
+    public required IReadOnlyCollection<ChapterConversationMessageDto> Messages { get; init; }
 
     public required IReadOnlyCollection<ChapterConversationDto> OtherConversations { get; init; }
 }

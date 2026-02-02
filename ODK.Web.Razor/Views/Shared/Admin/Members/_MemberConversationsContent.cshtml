@@ -24,7 +24,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var dto in Model.Conversations.OrderByDescending(x => x.LastMessage.CreatedUtc))
+                    @foreach (var dto in Model.Conversations.OrderByDescending(x => x.LastMessage.Message.CreatedUtc))
                     {
                         var (conversation, lastMessage) = (dto.Conversation, dto.LastMessage);
 
@@ -39,12 +39,12 @@
                             <td>@conversation.CreatedUtc.ToFriendlyDateTimeString(Model.Chapter.TimeZone)</td>
                             <td>
                                 <div>
-                                    @lastMessage.CreatedUtc.ToFriendlyDateTimeString(Model.Chapter.TimeZone)
+                                    @lastMessage.Message.CreatedUtc.ToFriendlyDateTimeString(Model.Chapter.TimeZone)
                                 </div>
-                                @if (lastMessage.MemberId != conversation.MemberId)
+                                @if (lastMessage.Message.MemberId != conversation.MemberId)
                                 {
                                     <div>
-                                        @lastMessage.Member?.FullName
+                                        @lastMessage.MemberFullName
                                     </div>
                                 }
                             </td>
