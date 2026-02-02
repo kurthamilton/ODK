@@ -38,24 +38,32 @@ namespace ODK.Services.Tests.Chapters;
 
 [TestFixture]
 public static class ChapterAdminServiceTests
-{
+{    
+    private static readonly Guid CurrentMemberId = Guid.NewGuid();
+    
     [Test]
     public static void AddChapterAdminMember_WhenMemberNotChapterAdmin_ThrowsException()
     {
         // Arrange
         var memberId = Guid.NewGuid();
-        var currentMemberId = Guid.NewGuid();
         var chapter = CreateChapter();
+        
         var chapterAdminMemberRepository = CreateMockChapterAdminMemberRepository();
-        var memberRepository = CreateMockMemberRepository(new[] { CreateMember(id: currentMemberId), CreateMember(id: memberId) });
+        var memberRepository = CreateMockMemberRepository(new[] { CreateMember(id: CurrentMemberId), CreateMember(id: memberId) });
+        
         var subscription = CreateMemberSiteSubscription(feature: SiteFeatureType.AdminMembers);
         var memberSubscriptionRepository = CreateMockMemberSiteSubscriptionRepository(subscription);
+        
         var unitOfWork = CreateMockUnitOfWork(
             chapterAdminMemberRepository: chapterAdminMemberRepository,
             memberRepository: memberRepository,
             memberSiteSubscriptionRepository: memberSubscriptionRepository);
+        
         var service = CreateChapterAdminService(unitOfWork);
-        var request = CreateMemberChapterAdminServiceRequest(chapter: chapter, currentMemberId: currentMemberId);
+        
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter, 
+            securable: ChapterAdminSecurable.AdminMembers);
 
         // Act & Assert
         Assert.ThrowsAsync<OdkNotAuthorizedException>(async () => await service.AddChapterAdminMember(request, memberId));
@@ -66,19 +74,26 @@ public static class ChapterAdminServiceTests
     {
         // Arrange
         var memberId = Guid.NewGuid();
-        var currentMemberId = Guid.NewGuid();
         var chapter = CreateChapter();
-        var adminMembers = new List<ChapterAdminMember> { CreateChapterAdminMember(currentMemberId: currentMemberId, chapterId: chapter.Id) };
-        var chapterAdminMemberRepository = CreateMockChapterAdminMemberRepository(adminMembers);
-        var memberRepository = CreateMockMemberRepository(new[] { CreateMember(id: currentMemberId), CreateMember(id: memberId) });
+
+        var adminMember = CreateChapterAdminMember(currentMemberId: CurrentMemberId, chapterId: chapter.Id);
+        var chapterAdminMemberRepository = CreateMockChapterAdminMemberRepository([adminMember]);
+
+        var memberRepository = CreateMockMemberRepository(new[] { CreateMember(id: CurrentMemberId), CreateMember(id: memberId) });
+        
         var subscription = CreateMemberSiteSubscription();
         var memberSubscriptionRepository = CreateMockMemberSiteSubscriptionRepository(subscription);
+        
         var unitOfWork = CreateMockUnitOfWork(
             chapterAdminMemberRepository: chapterAdminMemberRepository,
             memberRepository: memberRepository,
             memberSiteSubscriptionRepository: memberSubscriptionRepository);
+        
         var service = CreateChapterAdminService(unitOfWork);
-        var request = CreateMemberChapterAdminServiceRequest(chapter: chapter, currentMemberId: currentMemberId);
+        
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            securable: ChapterAdminSecurable.AdminMembers);
 
         // Act
         var result = await service.AddChapterAdminMember(request, memberId);
@@ -93,23 +108,29 @@ public static class ChapterAdminServiceTests
     {
         // Arrange
         var memberId = Guid.NewGuid();
-        var currentMemberId = Guid.NewGuid();
         var chapter = CreateChapter();
+
         var adminMembers = new List<ChapterAdminMember>
         {
-            CreateChapterAdminMember(currentMemberId: currentMemberId, chapterId: chapter.Id),
+            CreateChapterAdminMember(currentMemberId: CurrentMemberId, chapterId: chapter.Id),
             CreateChapterAdminMember(currentMemberId: memberId, chapterId: chapter.Id)
         };
         var chapterAdminMemberRepository = CreateMockChapterAdminMemberRepository(adminMembers);
-        var memberRepository = CreateMockMemberRepository(new[] { CreateMember(id: currentMemberId), CreateMember(id: memberId) });
+        
+        var memberRepository = CreateMockMemberRepository(new[] { CreateMember(id: CurrentMemberId), CreateMember(id: memberId) });
+        
         var subscription = CreateMemberSiteSubscription(feature: SiteFeatureType.AdminMembers);
         var memberSubscriptionRepository = CreateMockMemberSiteSubscriptionRepository(subscription);
+        
         var unitOfWork = CreateMockUnitOfWork(
             chapterAdminMemberRepository: chapterAdminMemberRepository,
             memberRepository: memberRepository,
             memberSiteSubscriptionRepository: memberSubscriptionRepository);
+        
         var service = CreateChapterAdminService(unitOfWork);
-        var request = CreateMemberChapterAdminServiceRequest(chapter: chapter, currentMemberId: currentMemberId);
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            securable: ChapterAdminSecurable.AdminMembers);
 
         // Act
         var result = await service.AddChapterAdminMember(request, memberId);
@@ -119,24 +140,98 @@ public static class ChapterAdminServiceTests
         result.Message.Should().Be("Member is already a chapter admin");
     }
 
+    [TestCase(ChapterAdminRole.Owner)]
+    [TestCase(ChapterAdminRole.Admin)]
+    public static async Task AddChapterAdminMember_WhenMemberHasRole_ReturnsSuccess(ChapterAdminRole role)
+    {
+        // Arrange
+        var memberId = Guid.NewGuid();
+        var chapter = CreateChapter();
+
+        var adminMember = CreateChapterAdminMember(currentMemberId: CurrentMemberId, chapterId: chapter.Id, role: role);
+        var chapterAdminMemberRepository = CreateMockChapterAdminMemberRepository([adminMember]);
+        
+        var memberRepository = CreateMockMemberRepository(new[] { CreateMember(id: CurrentMemberId), CreateMember(id: memberId) });
+        
+        var subscription = CreateMemberSiteSubscription(feature: SiteFeatureType.AdminMembers);        
+        var memberSubscriptionRepository = CreateMockMemberSiteSubscriptionRepository(subscription);
+        
+        var unitOfWork = CreateMockUnitOfWork(
+            chapterAdminMemberRepository: chapterAdminMemberRepository,
+            memberRepository: memberRepository,
+            memberSiteSubscriptionRepository: memberSubscriptionRepository);
+
+        var service = CreateChapterAdminService(unitOfWork);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            securable: ChapterAdminSecurable.AdminMembers);
+
+        // Act
+        var result = await service.AddChapterAdminMember(request, memberId);
+
+        // Assert
+        result.Success.Should().BeTrue();
+    }
+
+    [TestCase(ChapterAdminRole.Organiser)]
+    public static async Task AddChapterAdminMember_WhenMemberDoesNotHaveRole_ReturnsSuccess(ChapterAdminRole role)
+    {
+        // Arrange
+        var memberId = Guid.NewGuid();
+        var chapter = CreateChapter();
+
+        var adminMember = CreateChapterAdminMember(currentMemberId: CurrentMemberId, chapterId: chapter.Id, role: role);
+        var chapterAdminMemberRepository = CreateMockChapterAdminMemberRepository([adminMember]);
+
+        var memberRepository = CreateMockMemberRepository(new[] { CreateMember(id: CurrentMemberId), CreateMember(id: memberId) });
+
+        var subscription = CreateMemberSiteSubscription(feature: SiteFeatureType.AdminMembers);
+        var memberSubscriptionRepository = CreateMockMemberSiteSubscriptionRepository(subscription);
+
+        var unitOfWork = CreateMockUnitOfWork(
+            chapterAdminMemberRepository: chapterAdminMemberRepository,
+            memberRepository: memberRepository,
+            memberSiteSubscriptionRepository: memberSubscriptionRepository);
+
+        var service = CreateChapterAdminService(unitOfWork);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            securable: ChapterAdminSecurable.AdminMembers);
+
+        // Act & Assert
+        Func<Task> act = () => service.AddChapterAdminMember(request, memberId);
+
+        // Assert
+        await act.Should().ThrowAsync<OdkNotAuthorizedException>();
+    }
+
     [Test]
     public static async Task AddChapterAdminMember_WhenValid_ReturnsSuccess()
     {
         // Arrange
         var memberId = Guid.NewGuid();
-        var currentMemberId = Guid.NewGuid();
         var chapter = CreateChapter();
-        var adminMembers = new List<ChapterAdminMember> { CreateChapterAdminMember(currentMemberId: currentMemberId, chapterId: chapter.Id) };
+
+        var adminMembers = new List<ChapterAdminMember> { CreateChapterAdminMember(currentMemberId: CurrentMemberId, chapterId: chapter.Id) };
         var chapterAdminMemberRepository = CreateMockChapterAdminMemberRepository(adminMembers);
-        var memberRepository = CreateMockMemberRepository(new[] { CreateMember(id: currentMemberId), CreateMember(id: memberId) });
+        
+        var memberRepository = CreateMockMemberRepository(new[] { CreateMember(id: CurrentMemberId), CreateMember(id: memberId) });
+        
         var subscription = CreateMemberSiteSubscription(feature: SiteFeatureType.AdminMembers);
         var memberSubscriptionRepository = CreateMockMemberSiteSubscriptionRepository(subscription);
+        
         var unitOfWork = CreateMockUnitOfWork(
             chapterAdminMemberRepository: chapterAdminMemberRepository,
             memberRepository: memberRepository,
             memberSiteSubscriptionRepository: memberSubscriptionRepository);
+        
         var service = CreateChapterAdminService(unitOfWork);
-        var request = CreateMemberChapterAdminServiceRequest(chapter: chapter, currentMemberId: currentMemberId);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            securable: ChapterAdminSecurable.AdminMembers);
 
         // Act
         var result = await service.AddChapterAdminMember(request, memberId);
@@ -149,18 +244,22 @@ public static class ChapterAdminServiceTests
     public static async Task CreateChapter_WhenChapterLimitReached_ReturnsFailure()
     {
         // Arrange
-        var currentMemberId = Guid.NewGuid();
         var subscription = CreateMemberSiteSubscription(groupLimit: 1);
-        var existingChapters = new List<Chapter> { CreateChapter(ownerId: currentMemberId) };
         var memberSubscriptionRepository = CreateMockMemberSiteSubscriptionRepository(memberSubscription: subscription);
+
+        var existingChapters = new List<Chapter> { CreateChapter(ownerId: CurrentMemberId) };
         var chapterRepository = CreateMockChapterRepository(existingChapters);
+
         var siteEmailSettingsRepository = CreateMockSiteEmailSettingsRepository(new SiteEmailSettings());
+
         var unitOfWork = CreateMockUnitOfWork(
             memberSiteSubscriptionRepository: memberSubscriptionRepository,
             chapterRepository: chapterRepository,
             siteEmailSettingsRepository: siteEmailSettingsRepository);
+
         var service = CreateChapterAdminService(unitOfWork);
-        var request = CreateMemberServiceRequest(currentMemberId: currentMemberId);
+
+        var request = CreateMemberServiceRequest();
         var model = CreateChapterCreateModel();
 
         // Act
@@ -175,17 +274,20 @@ public static class ChapterAdminServiceTests
     public static async Task CreateChapter_WhenSubscriptionExpired_ReturnsFailure()
     {
         // Arrange
-        var currentMemberId = Guid.NewGuid();
         var subscription = CreateMemberSiteSubscription(expiresUtc: DateTime.UtcNow.AddDays(-1));
         var memberSubscriptionRepository = CreateMockMemberSiteSubscriptionRepository(memberSubscription: subscription);
+        
         var chapterRepository = CreateMockChapterRepository(new List<Chapter>());
         var siteEmailSettingsRepository = CreateMockSiteEmailSettingsRepository(new SiteEmailSettings());
+        
         var unitOfWork = CreateMockUnitOfWork(
             memberSiteSubscriptionRepository: memberSubscriptionRepository,
             chapterRepository: chapterRepository,
             siteEmailSettingsRepository: siteEmailSettingsRepository);
+        
         var service = CreateChapterAdminService(unitOfWork);
-        var request = CreateMemberServiceRequest(currentMemberId: currentMemberId);
+        
+        var request = CreateMemberServiceRequest();        
         var model = CreateChapterCreateModel();
 
         // Act
@@ -200,18 +302,22 @@ public static class ChapterAdminServiceTests
     public static async Task CreateChapter_WhenNameTaken_ReturnsFailure()
     {
         // Arrange
-        var currentMemberId = Guid.NewGuid();
         var subscription = CreateMemberSiteSubscription();
-        var existingChapters = new List<Chapter> { CreateChapter(name: "Test Chapter") };
         var memberSubscriptionRepository = CreateMockMemberSiteSubscriptionRepository(memberSubscription: subscription);
+        
+        var existingChapters = new List<Chapter> { CreateChapter(name: "Test Chapter") };
         var chapterRepository = CreateMockChapterRepository(existingChapters);
+        
         var siteEmailSettingsRepository = CreateMockSiteEmailSettingsRepository(new SiteEmailSettings());
+        
         var unitOfWork = CreateMockUnitOfWork(
             memberSiteSubscriptionRepository: memberSubscriptionRepository,
             chapterRepository: chapterRepository,
             siteEmailSettingsRepository: siteEmailSettingsRepository);
+        
         var service = CreateChapterAdminService(unitOfWork);
-        var request = CreateMemberServiceRequest(currentMemberId: currentMemberId);
+        
+        var request = CreateMemberServiceRequest();        
         var model = CreateChapterCreateModel();
 
         // Act
@@ -225,21 +331,25 @@ public static class ChapterAdminServiceTests
     [Test]
     public static async Task CreateChapter_WhenImageInvalid_ReturnsFailure()
     {
-        // Arrange
-        var currentMemberId = Guid.NewGuid();
-        var imageData = new byte[] { 1, 2, 3 };
+        // Arrange        
         var subscription = CreateMemberSiteSubscription();
         var memberSubscriptionRepository = CreateMockMemberSiteSubscriptionRepository(memberSubscription: subscription);
+        
         var chapterRepository = CreateMockChapterRepository(new List<Chapter>());
+        
         var siteEmailSettingsRepository = CreateMockSiteEmailSettingsRepository(new SiteEmailSettings());
-        var imageService = CreateMockImageService(isValidImage: false);
+                
         var unitOfWork = CreateMockUnitOfWork(
             memberSiteSubscriptionRepository: memberSubscriptionRepository,
             chapterRepository: chapterRepository,
             siteEmailSettingsRepository: siteEmailSettingsRepository);
+        
+        var imageService = CreateMockImageService(isValidImage: false);
+        
         var service = CreateChapterAdminService(unitOfWork, imageService: imageService);
-        var request = CreateMemberServiceRequest(currentMemberId: currentMemberId);
-        var model = CreateChapterCreateModel(imageData: imageData);
+        
+        var request = CreateMemberServiceRequest();
+        var model = CreateChapterCreateModel();
 
         // Act
         var result = await service.CreateChapter(request, model);
@@ -253,30 +363,26 @@ public static class ChapterAdminServiceTests
     public static async Task CreateChapter_WhenValid_ReturnsSuccessfulChapter()
     {
         // Arrange
-        var currentMemberId = Guid.NewGuid();
-        var imageData = new byte[] { 1, 2, 3 };
         var subscription = CreateMemberSiteSubscription();
         var memberSubscriptionRepository = CreateMockMemberSiteSubscriptionRepository(memberSubscription: subscription);
+
         var chapterRepository = CreateMockChapterRepository(new List<Chapter>());
+        
         var siteEmailSettingsRepository = CreateMockSiteEmailSettingsRepository(new SiteEmailSettings());
-        var imageService = CreateMockImageService(isValidImage: true, processedData: imageData);
-        var htmlSanitizer = CreateMockHtmlSanitizer();
-        var geolocationService = CreateMockGeolocationService();
-        var topicService = CreateMockTopicService();
-        var memberEmailService = CreateMockMemberEmailService();
+        
+        var imageService = CreateMockImageService(isValidImage: true);
+
         var unitOfWork = CreateMockUnitOfWork(
             memberSiteSubscriptionRepository: memberSubscriptionRepository,
             chapterRepository: chapterRepository,
             siteEmailSettingsRepository: siteEmailSettingsRepository);
+
         var service = CreateChapterAdminService(
             unitOfWork,
-            imageService: imageService,
-            htmlSanitizer: htmlSanitizer,
-            geolocationService: geolocationService,
-            topicService: topicService,
-            memberEmailService: memberEmailService);
-        var request = CreateMemberServiceRequest(currentMemberId: currentMemberId);
-        var model = CreateChapterCreateModel(imageData: imageData);
+            imageService: imageService);
+
+        var request = CreateMemberServiceRequest();
+        var model = CreateChapterCreateModel();
 
         // Act
         var result = await service.CreateChapter(request, model);
@@ -292,16 +398,22 @@ public static class ChapterAdminServiceTests
     {
         // Arrange
         var memberId = Guid.NewGuid();
-        var currentMemberId = Guid.NewGuid();
         var chapter = CreateChapter();
-        var adminMembers = new List<ChapterAdminMember> { CreateChapterAdminMember(currentMemberId: currentMemberId, chapterId: chapter.Id) };
-        var chapterAdminMemberRepository = CreateMockChapterAdminMemberRepository(adminMembers);
+
+        var adminMember = CreateChapterAdminMember(currentMemberId: CurrentMemberId, chapterId: chapter.Id);
+        var chapterAdminMemberRepository = CreateMockChapterAdminMemberRepository([adminMember]);
+        
         var memberRepository = CreateMockMemberRepository(new[] { CreateMember(id: memberId) });
+        
         var unitOfWork = CreateMockUnitOfWork(
             chapterAdminMemberRepository: chapterAdminMemberRepository,
             memberRepository: memberRepository);
+        
         var service = CreateChapterAdminService(unitOfWork);
-        var request = CreateMemberChapterAdminServiceRequest(chapter: chapter, currentMemberId: currentMemberId);
+        
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            securable: ChapterAdminSecurable.AdminMembers);
 
         // Act
         var result = await service.DeleteChapterAdminMember(request, memberId);
@@ -316,20 +428,25 @@ public static class ChapterAdminServiceTests
     {
         // Arrange
         var memberId = Guid.NewGuid();
-        var currentMemberId = Guid.NewGuid();
         var chapter = CreateChapter();
+
         var adminMembers = new List<ChapterAdminMember>
         {
-            CreateChapterAdminMember(currentMemberId: currentMemberId, chapterId: chapter.Id),
+            CreateChapterAdminMember(currentMemberId: CurrentMemberId, chapterId: chapter.Id),
             CreateChapterAdminMember(currentMemberId: memberId, chapterId: chapter.Id)
         };
         var chapterAdminMemberRepository = CreateMockChapterAdminMemberRepository(adminMembers);
+        
         var memberRepository = CreateMockMemberRepository(new[] { CreateMember(id: memberId, siteAdmin: true) });
+        
         var unitOfWork = CreateMockUnitOfWork(
             chapterAdminMemberRepository: chapterAdminMemberRepository,
             memberRepository: memberRepository);
+        
         var service = CreateChapterAdminService(unitOfWork);
-        var request = CreateMemberChapterAdminServiceRequest(chapter: chapter, currentMemberId: currentMemberId);
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter, 
+            securable: ChapterAdminSecurable.AdminMembers);
 
         // Act
         var result = await service.DeleteChapterAdminMember(request, memberId);
@@ -344,22 +461,27 @@ public static class ChapterAdminServiceTests
     {
         // Arrange
         var memberId = Guid.NewGuid();
-        var currentMemberId = Guid.NewGuid();
-        var chapter = CreateChapter();
+        var chapter = CreateChapter(ownerId: memberId);
+
         var adminMembers = new List<ChapterAdminMember>
         {
-            CreateChapterAdminMember(currentMemberId: currentMemberId, chapterId: chapter.Id),
+            CreateChapterAdminMember(currentMemberId: CurrentMemberId, chapterId: chapter.Id),
             CreateChapterAdminMember(currentMemberId: memberId, chapterId: chapter.Id)
         };
         var chapterAdminMemberRepository = CreateMockChapterAdminMemberRepository(adminMembers);
+
         var memberRepository = CreateMockMemberRepository(new[] { CreateMember(id: memberId) });
+        
         var unitOfWork = CreateMockUnitOfWork(
             chapterAdminMemberRepository: chapterAdminMemberRepository,
             memberRepository: memberRepository);
+        
         var service = CreateChapterAdminService(unitOfWork);
-        var request = CreateMemberChapterAdminServiceRequest(chapter: chapter, currentMemberId: currentMemberId);
-        request.Chapter.OwnerId = memberId;
-
+        
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            securable: ChapterAdminSecurable.AdminMembers);
+        
         // Act
         var result = await service.DeleteChapterAdminMember(request, memberId);
 
@@ -373,20 +495,26 @@ public static class ChapterAdminServiceTests
     {
         // Arrange
         var memberId = Guid.NewGuid();
-        var currentMemberId = Guid.NewGuid();
         var chapter = CreateChapter();
+        
         var adminMembers = new List<ChapterAdminMember>
         {
-            CreateChapterAdminMember(currentMemberId: currentMemberId, chapterId: chapter.Id),
+            CreateChapterAdminMember(currentMemberId: CurrentMemberId, chapterId: chapter.Id),
             CreateChapterAdminMember(currentMemberId: memberId, chapterId: chapter.Id)
         };
         var chapterAdminMemberRepository = CreateMockChapterAdminMemberRepository(adminMembers);
+
         var memberRepository = CreateMockMemberRepository(new[] { CreateMember(id: memberId) });
+        
         var unitOfWork = CreateMockUnitOfWork(
             chapterAdminMemberRepository: chapterAdminMemberRepository,
             memberRepository: memberRepository);
+        
         var service = CreateChapterAdminService(unitOfWork);
-        var request = CreateMemberChapterAdminServiceRequest(chapter: chapter, currentMemberId: currentMemberId);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            securable: ChapterAdminSecurable.AdminMembers);
 
         // Act
         var result = await service.DeleteChapterAdminMember(request, memberId);
@@ -401,16 +529,22 @@ public static class ChapterAdminServiceTests
         // Arrange
         var messageId = Guid.NewGuid();
         var chapter = CreateChapter();
-        var currentMemberId = Guid.NewGuid();
+        
         var message = CreateChapterContactMessage(id: messageId, chapterId: chapter.Id);
         var contactMessageRepository = CreateMockChapterContactMessageRepository(message);
-        var adminMember = CreateChapterAdminMember(currentMemberId: currentMemberId, chapterId: chapter.Id);
+        
+        var adminMember = CreateChapterAdminMember(currentMemberId: CurrentMemberId, chapterId: chapter.Id);
         var chapterAdminMemberRepository = CreateMockChapterAdminMemberRepository(new[] { adminMember });
+
         var unitOfWork = CreateMockUnitOfWork(
             chapterContactMessageRepository: contactMessageRepository,
             chapterAdminMemberRepository: chapterAdminMemberRepository);
+        
         var service = CreateChapterAdminService(unitOfWork);
-        var request = CreateMemberChapterAdminServiceRequest(chapter: chapter, currentMemberId: currentMemberId);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            securable: ChapterAdminSecurable.ContactMessages);
 
         // Act
         var result = await service.DeleteChapterContactMessage(request, messageId);
@@ -424,15 +558,21 @@ public static class ChapterAdminServiceTests
     {
         // Arrange
         var chapter = CreateChapter();
-        var currentMemberId = Guid.NewGuid();
-        var adminMember = CreateChapterAdminMember(currentMemberId: currentMemberId, chapterId: chapter.Id);
+        
+        var adminMember = CreateChapterAdminMember(currentMemberId: CurrentMemberId, chapterId: chapter.Id);
         var chapterAdminMemberRepository = CreateMockChapterAdminMemberRepository(new[] { adminMember });
+
         var propertyRepository = CreateMockChapterPropertyRepository(new List<ChapterProperty>());
+        
         var unitOfWork = CreateMockUnitOfWork(
             chapterPropertyRepository: propertyRepository,
             chapterAdminMemberRepository: chapterAdminMemberRepository);
+        
         var service = CreateChapterAdminService(unitOfWork);
-        var request = CreateMemberChapterAdminServiceRequest(chapter: chapter, currentMemberId: currentMemberId);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            securable: ChapterAdminSecurable.Properties);
         var model = CreateChapterPropertyCreateModel();
 
         // Act
@@ -447,16 +587,23 @@ public static class ChapterAdminServiceTests
     {
         // Arrange
         var chapter = CreateChapter();
-        var currentMemberId = Guid.NewGuid();
+        
         var propertyRepository = CreateMockChapterPropertyRepository(new List<ChapterProperty>());
-        var adminMember = CreateChapterAdminMember(currentMemberId: currentMemberId, chapterId: chapter.Id);
+        
+        var adminMember = CreateChapterAdminMember(currentMemberId: CurrentMemberId, chapterId: chapter.Id);
         var chapterAdminMemberRepository = CreateMockChapterAdminMemberRepository(new[] { adminMember });
+        
         var unitOfWork = CreateMockUnitOfWork(
             chapterPropertyRepository: propertyRepository,
             chapterAdminMemberRepository: chapterAdminMemberRepository);
+        
         var service = CreateChapterAdminService(unitOfWork);
-        var request = CreateMemberChapterAdminServiceRequest(chapter: chapter, currentMemberId: currentMemberId);
-        var model = CreateChapterPropertyCreateModel(dataType: DataType.DropDown, options: new List<string> { "Option 1", "Option 2" });
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            securable: ChapterAdminSecurable.Properties);
+        var model = CreateChapterPropertyCreateModel(
+            dataType: DataType.DropDown, options: new List<string> { "Option 1", "Option 2" });
 
         // Act
         var result = await service.CreateChapterProperty(request, model);
@@ -470,15 +617,21 @@ public static class ChapterAdminServiceTests
     {
         // Arrange
         var chapter = CreateChapter();
-        var currentMemberId = Guid.NewGuid();
+        
         var propertyRepository = CreateMockChapterPropertyRepository(new List<ChapterProperty>());
-        var adminMember = CreateChapterAdminMember(currentMemberId: currentMemberId, chapterId: chapter.Id);
+        
+        var adminMember = CreateChapterAdminMember(currentMemberId: CurrentMemberId, chapterId: chapter.Id);
         var chapterAdminMemberRepository = CreateMockChapterAdminMemberRepository(new[] { adminMember });
+        
         var unitOfWork = CreateMockUnitOfWork(
             chapterPropertyRepository: propertyRepository, 
             chapterAdminMemberRepository: chapterAdminMemberRepository);
+        
         var service = CreateChapterAdminService(unitOfWork);
-        var request = CreateMemberChapterAdminServiceRequest(chapter: chapter, currentMemberId: currentMemberId);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            securable: ChapterAdminSecurable.Properties);
         var model = CreateChapterPropertyCreateModel(label: string.Empty);
 
         // Act
@@ -493,16 +646,21 @@ public static class ChapterAdminServiceTests
     {
         // Arrange
         var chapter = CreateChapter();
-        var currentMemberId = Guid.NewGuid();
+        
         var questionRepository = CreateMockChapterQuestionRepository(new List<ChapterQuestion>());
-        var htmlSanitizer = CreateMockHtmlSanitizer();
-        var adminMember = CreateChapterAdminMember(currentMemberId: currentMemberId, chapterId: chapter.Id);
+
+        var adminMember = CreateChapterAdminMember(currentMemberId: CurrentMemberId, chapterId: chapter.Id);
         var chapterAdminMemberRepository = CreateMockChapterAdminMemberRepository(new[] { adminMember });
+        
         var unitOfWork = CreateMockUnitOfWork(
             chapterQuestionRepository: questionRepository,
             chapterAdminMemberRepository: chapterAdminMemberRepository);
-        var service = CreateChapterAdminService(unitOfWork, htmlSanitizer: htmlSanitizer);
-        var request = CreateMemberChapterAdminServiceRequest(chapter: chapter, currentMemberId: currentMemberId);
+        
+        var service = CreateChapterAdminService(unitOfWork);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            securable: ChapterAdminSecurable.Questions);
         var model = CreateChapterQuestionCreateModel();
 
         // Act
@@ -517,15 +675,21 @@ public static class ChapterAdminServiceTests
     {
         // Arrange
         var chapter = CreateChapter();
-        var currentMemberId = Guid.NewGuid();
+        
         var questionRepository = CreateMockChapterQuestionRepository(new List<ChapterQuestion>());
-        var adminMember = CreateChapterAdminMember(currentMemberId: currentMemberId, chapterId: chapter.Id);
+        
+        var adminMember = CreateChapterAdminMember(currentMemberId: CurrentMemberId, chapterId: chapter.Id);
         var chapterAdminMemberRepository = CreateMockChapterAdminMemberRepository(new[] { adminMember });
+        
         var unitOfWork = CreateMockUnitOfWork(
             chapterQuestionRepository: questionRepository,
             chapterAdminMemberRepository: chapterAdminMemberRepository);
+        
         var service = CreateChapterAdminService(unitOfWork);
-        var request = CreateMemberChapterAdminServiceRequest(chapter: chapter, currentMemberId: currentMemberId);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            securable: ChapterAdminSecurable.Questions);
         var model = CreateChapterQuestionCreateModel(name: string.Empty);
 
         // Act
@@ -540,15 +704,21 @@ public static class ChapterAdminServiceTests
     {
         // Arrange
         var chapter = CreateChapter(name: "Test Chapter");
-        var currentMemberId = Guid.NewGuid();
+        
         var chapterRepository = CreateMockChapterRepository(new[] { chapter });
-        var adminMember = CreateChapterAdminMember(currentMemberId: currentMemberId, chapterId: chapter.Id);
+
+        var adminMember = CreateChapterAdminMember(currentMemberId: CurrentMemberId, chapterId: chapter.Id);
         var chapterAdminMemberRepository = CreateMockChapterAdminMemberRepository(new[] { adminMember });
+
         var unitOfWork = CreateMockUnitOfWork(
             chapterRepository: chapterRepository,
             chapterAdminMemberRepository: chapterAdminMemberRepository);
+        
         var service = CreateChapterAdminService(unitOfWork);
-        var request = CreateMemberChapterAdminServiceRequest(chapter: chapter, currentMemberId: currentMemberId);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            securable: ChapterAdminSecurable.Any);
 
         // Act
         var result = await service.GetChapterAdminPageViewModel(request);
@@ -563,16 +733,22 @@ public static class ChapterAdminServiceTests
     {
         // Arrange
         var chapter = CreateChapter();
-        var currentMemberId = Guid.NewGuid();
+        
         var memberCount = 42;
         var memberRepository = CreateMockMemberRepository(memberCount: memberCount);
-        var adminMember = CreateChapterAdminMember(currentMemberId: currentMemberId, chapterId: chapter.Id);
+        
+        var adminMember = CreateChapterAdminMember(currentMemberId: CurrentMemberId, chapterId: chapter.Id, role: ChapterAdminRole.Owner);
         var chapterAdminMemberRepository = CreateMockChapterAdminMemberRepository(new[] { adminMember });
+        
         var unitOfWork = CreateMockUnitOfWork(
             memberRepository: memberRepository,
             chapterAdminMemberRepository: chapterAdminMemberRepository);
+
         var service = CreateChapterAdminService(unitOfWork);
-        var request = CreateMemberChapterAdminServiceRequest(chapter: chapter, currentMemberId: currentMemberId);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            securable: ChapterAdminSecurable.Delete);
 
         // Act
         var result = await service.GetChapterDeleteViewModel(request);
@@ -587,22 +763,30 @@ public static class ChapterAdminServiceTests
     {
         // Arrange
         var chapter = CreateChapter();
-        var currentMemberId = Guid.NewGuid();
+        
         var links = CreateChapterLinks(chapterId: chapter.Id);
-        var subscription = CreateMemberSiteSubscription(feature: SiteFeatureType.AdminMembers);
-        var privacySettings = CreateChapterPrivacySettings(chapterId: chapter.Id);
-        var memberSubscriptionRepository = CreateMockMemberSiteSubscriptionRepository(subscription);
         var linksRepository = CreateMockChapterLinksRepository(links);
+        
+        var subscription = CreateMemberSiteSubscription(feature: SiteFeatureType.AdminMembers);
+        var memberSubscriptionRepository = CreateMockMemberSiteSubscriptionRepository(subscription);
+        
+        var privacySettings = CreateChapterPrivacySettings(chapterId: chapter.Id);
         var privacyRepository = CreateMockChapterPrivacySettingsRepository(privacySettings);
-        var adminMember = CreateChapterAdminMember(currentMemberId: currentMemberId, chapterId: chapter.Id);
+        
+        var adminMember = CreateChapterAdminMember(currentMemberId: CurrentMemberId, chapterId: chapter.Id);
         var chapterAdminMemberRepository = CreateMockChapterAdminMemberRepository(new[] { adminMember });
+        
         var unitOfWork = CreateMockUnitOfWork(
             memberSiteSubscriptionRepository: memberSubscriptionRepository,
             chapterLinksRepository: linksRepository,
             chapterPrivacySettingsRepository: privacyRepository,
             chapterAdminMemberRepository: chapterAdminMemberRepository);
+        
         var service = CreateChapterAdminService(unitOfWork);
-        var request = CreateMemberChapterAdminServiceRequest(chapter: chapter, currentMemberId: currentMemberId);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            securable: ChapterAdminSecurable.SocialMedia);
 
         // Act
         var result = await service.GetChapterLinksViewModel(request);
@@ -617,16 +801,22 @@ public static class ChapterAdminServiceTests
     {
         // Arrange
         var chapter = CreateChapter();
-        var currentMemberId = Guid.NewGuid();
+        
         var properties = new List<ChapterProperty> { CreateChapterProperty(chapterId: chapter.Id, name: "prop1") };
         var propertyRepository = CreateMockChapterPropertyRepository(properties);
-        var adminMember = CreateChapterAdminMember(currentMemberId: currentMemberId, chapterId: chapter.Id);
+        
+        var adminMember = CreateChapterAdminMember(currentMemberId: CurrentMemberId, chapterId: chapter.Id);
         var chapterAdminMemberRepository = CreateMockChapterAdminMemberRepository(new[] { adminMember });
+        
         var unitOfWork = CreateMockUnitOfWork(
             chapterPropertyRepository: propertyRepository,
             chapterAdminMemberRepository: chapterAdminMemberRepository);
+        
         var service = CreateChapterAdminService(unitOfWork);
-        var request = CreateMemberChapterAdminServiceRequest(chapter: chapter, currentMemberId: currentMemberId);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            securable: ChapterAdminSecurable.Properties);
 
         // Act
         var result = await service.GetChapterPropertiesViewModel(request);
@@ -642,16 +832,22 @@ public static class ChapterAdminServiceTests
     {
         // Arrange
         var chapter = CreateChapter();
-        var currentMemberId = Guid.NewGuid();
+        
         var questions = new List<ChapterQuestion> { CreateChapterQuestion(chapterId: chapter.Id, name: "q1") };
         var questionRepository = CreateMockChapterQuestionRepository(questions);
-        var adminMember = CreateChapterAdminMember(currentMemberId: currentMemberId, chapterId: chapter.Id);
+        
+        var adminMember = CreateChapterAdminMember(currentMemberId: CurrentMemberId, chapterId: chapter.Id);
         var chapterAdminMemberRepository = CreateMockChapterAdminMemberRepository(new[] { adminMember });
+        
         var unitOfWork = CreateMockUnitOfWork(
             chapterQuestionRepository: questionRepository,
             chapterAdminMemberRepository: chapterAdminMemberRepository);
+        
         var service = CreateChapterAdminService(unitOfWork);
-        var request = CreateMemberChapterAdminServiceRequest(chapter: chapter, currentMemberId: currentMemberId);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            securable: ChapterAdminSecurable.Questions);
 
         // Act
         var result = await service.GetChapterQuestionsViewModel(request);
@@ -666,18 +862,23 @@ public static class ChapterAdminServiceTests
     public static async Task UpdateChapterAdminMember_WhenValid_UpdatesSuccessfully()
     {
         // Arrange
-        var memberId = Guid.NewGuid();
-        var currentMemberId = Guid.NewGuid();
+        var memberId = Guid.NewGuid();        
         var chapter = CreateChapter();
+        
         var adminMembers = new List<ChapterAdminMember>
         {
-            CreateChapterAdminMember(currentMemberId: currentMemberId, chapterId: chapter.Id),
+            CreateChapterAdminMember(currentMemberId: CurrentMemberId, chapterId: chapter.Id),
             CreateChapterAdminMember(currentMemberId: memberId, chapterId: chapter.Id)
         };
         var chapterAdminMemberRepository = CreateMockChapterAdminMemberRepository(adminMembers);
+        
         var unitOfWork = CreateMockUnitOfWork(chapterAdminMemberRepository: chapterAdminMemberRepository);
+        
         var service = CreateChapterAdminService(unitOfWork);
-        var request = CreateMemberChapterAdminServiceRequest(chapter: chapter, currentMemberId: currentMemberId);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            securable: ChapterAdminSecurable.AdminMembers);
         var model = CreateChapterAdminMemberUpdateModel();
 
         // Act
@@ -692,19 +893,25 @@ public static class ChapterAdminServiceTests
     {
         // Arrange
         var chapter = CreateChapter();
-        var currentMemberId = Guid.NewGuid();
-        var imageData = new byte[] { 1, 2, 3 };
+                
         var image = CreateChapterImage(chapterId: chapter.Id);
         var imageRepository = CreateMockChapterImageRepository(image);
+
         var imageService = CreateMockImageService(isValidImage: false);
-        var adminMember = CreateChapterAdminMember(currentMemberId: currentMemberId, chapterId: chapter.Id);
+
+        var adminMember = CreateChapterAdminMember(currentMemberId: CurrentMemberId, chapterId: chapter.Id);
         var chapterAdminMemberRepository = CreateMockChapterAdminMemberRepository(new[] { adminMember });
+        
         var unitOfWork = CreateMockUnitOfWork(
             chapterImageRepository: imageRepository,
             chapterAdminMemberRepository: chapterAdminMemberRepository);
+        
         var service = CreateChapterAdminService(unitOfWork, imageService: imageService);
-        var request = CreateMemberChapterAdminServiceRequest(chapter: chapter, currentMemberId: currentMemberId);
-        var model = CreateChapterImageUpdateModel(imageData: imageData);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            securable: ChapterAdminSecurable.Branding);
+        var model = CreateChapterImageUpdateModel();
 
         // Act
         var result = await service.UpdateChapterImage(request, model);
@@ -719,19 +926,25 @@ public static class ChapterAdminServiceTests
     {
         // Arrange
         var chapter = CreateChapter();
-        var currentMemberId = Guid.NewGuid();
-        var imageData = new byte[] { 1, 2, 3 };
+                
         var image = CreateChapterImage(chapterId: chapter.Id);
         var imageRepository = CreateMockChapterImageRepository(image);
-        var imageService = CreateMockImageService(isValidImage: true, processedData: imageData);
-        var adminMember = CreateChapterAdminMember(currentMemberId: currentMemberId, chapterId: chapter.Id);
+        
+        var imageService = CreateMockImageService(isValidImage: true);
+        
+        var adminMember = CreateChapterAdminMember(currentMemberId: CurrentMemberId, chapterId: chapter.Id);
         var chapterAdminMemberRepository = CreateMockChapterAdminMemberRepository(new[] { adminMember });
+        
         var unitOfWork = CreateMockUnitOfWork(
             chapterImageRepository: imageRepository,
             chapterAdminMemberRepository: chapterAdminMemberRepository);
+        
         var service = CreateChapterAdminService(unitOfWork, imageService: imageService);
-        var request = CreateMemberChapterAdminServiceRequest(chapter: chapter, currentMemberId: currentMemberId);
-        var model = CreateChapterImageUpdateModel(imageData: imageData);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            securable: ChapterAdminSecurable.Branding);
+        var model = CreateChapterImageUpdateModel();
 
         // Act
         var result = await service.UpdateChapterImage(request, model);
@@ -745,18 +958,24 @@ public static class ChapterAdminServiceTests
     {
         // Arrange
         var chapter = CreateChapter();
-        var currentMemberId = Guid.NewGuid();
-        var description = "<p>New Description</p>";
+                
         var texts = CreateChapterTexts(chapterId: chapter.Id);
         var textsRepository = CreateMockChapterTextsRepository(texts);
-        var htmlSanitizer = CreateMockHtmlSanitizer();
-        var adminMember = CreateChapterAdminMember(currentMemberId: currentMemberId, chapterId: chapter.Id);
+        
+        var adminMember = CreateChapterAdminMember(currentMemberId: CurrentMemberId, chapterId: chapter.Id);
         var chapterAdminMemberRepository = CreateMockChapterAdminMemberRepository(new[] { adminMember });
+        
         var unitOfWork = CreateMockUnitOfWork(
             chapterTextsRepository: textsRepository, 
             chapterAdminMemberRepository: chapterAdminMemberRepository);
-        var service = CreateChapterAdminService(unitOfWork, htmlSanitizer: htmlSanitizer);
-        var request = CreateMemberChapterAdminServiceRequest(chapter: chapter, currentMemberId: currentMemberId);
+        
+        var service = CreateChapterAdminService(unitOfWork);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            securable: ChapterAdminSecurable.Texts);
+
+        var description = "<p>New Description</p>";
 
         // Act
         var result = await service.UpdateChapterDescription(request, description);
@@ -770,12 +989,17 @@ public static class ChapterAdminServiceTests
     {
         // Arrange
         var chapter = CreateChapter();
-        var currentMemberId = Guid.NewGuid();
-        var adminMembers = new List<ChapterAdminMember> { CreateChapterAdminMember(currentMemberId: currentMemberId, chapterId: chapter.Id) };
-        var chapterAdminMemberRepository = CreateMockChapterAdminMemberRepository(adminMembers);
+        
+        var adminMember = CreateChapterAdminMember(currentMemberId: CurrentMemberId, chapterId: chapter.Id);
+        var chapterAdminMemberRepository = CreateMockChapterAdminMemberRepository([adminMember]);
+
         var unitOfWork = CreateMockUnitOfWork(chapterAdminMemberRepository: chapterAdminMemberRepository);
+        
         var service = CreateChapterAdminService(unitOfWork);
-        var request = CreateMemberChapterAdminServiceRequest(chapter: chapter, currentMemberId: currentMemberId);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            securable: ChapterAdminSecurable.Branding);
         var model = CreateChapterThemeUpdateModel();
 
         // Act
@@ -790,12 +1014,17 @@ public static class ChapterAdminServiceTests
     {
         // Arrange
         var chapter = CreateChapter(approvedUtc: DateTime.UtcNow);
-        var currentMemberId = Guid.NewGuid();
-        var adminMembers = new List<ChapterAdminMember> { CreateChapterAdminMember(currentMemberId: currentMemberId, chapterId: chapter.Id) };
-        var chapterAdminMemberRepository = CreateMockChapterAdminMemberRepository(adminMembers);
+
+        var adminMember = CreateChapterAdminMember(currentMemberId: CurrentMemberId, chapterId: chapter.Id, role: ChapterAdminRole.Owner);
+        var chapterAdminMemberRepository = CreateMockChapterAdminMemberRepository([adminMember]);
+
         var unitOfWork = CreateMockUnitOfWork(chapterAdminMemberRepository: chapterAdminMemberRepository);
+        
         var service = CreateChapterAdminService(unitOfWork);
-        var request = CreateMemberChapterAdminServiceRequest(chapter: chapter, currentMemberId: currentMemberId);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            securable: ChapterAdminSecurable.Publish);
 
         // Act
         var result = await service.PublishChapter(request);
@@ -1094,27 +1323,28 @@ public static class ChapterAdminServiceTests
         return new ChapterAdminService(
             unitOfWork,
             cacheService ?? new Mock<ICacheService>().Object,
-            htmlSanitizer ?? new Mock<IHtmlSanitizer>().Object,
+            htmlSanitizer ?? CreateMockHtmlSanitizer(),
             socialMediaService ?? new Mock<ISocialMediaService>().Object,
             notificationService ?? new Mock<INotificationService>().Object,
             imageService ?? new Mock<IImageService>().Object,
-            memberEmailService ?? new Mock<IMemberEmailService>().Object,
-            topicService ?? new Mock<ITopicService>().Object,
+            memberEmailService ?? CreateMockMemberEmailService(),
+            topicService ?? CreateMockTopicService(),
             settings,
             siteSubscriptionService ?? new Mock<ISiteSubscriptionService>().Object,
             urlProviderFactory ?? new Mock<IUrlProviderFactory>().Object,
             paymentProviderFactory ?? new Mock<IPaymentProviderFactory>().Object,
             paymentService ?? new Mock<IPaymentService>().Object,
-            geolocationService ?? new Mock<IGeolocationService>().Object,
+            geolocationService ?? CreateMockGeolocationService(),
             loggingService ?? new Mock<ILoggingService>().Object);
     }
 
     private static MemberChapterAdminServiceRequest CreateMemberChapterAdminServiceRequest(
         Chapter? chapter = null,
         Guid? currentMemberId = null,
-        PlatformType? platform = null)
+        PlatformType? platform = null,
+        ChapterAdminSecurable? securable = null)
     {
-        var currentMember = CreateMember(id: currentMemberId);
+        var currentMember = CreateMember(id: currentMemberId ?? CurrentMemberId);
 
         return new MemberChapterAdminServiceRequest
         {
@@ -1123,13 +1353,13 @@ public static class ChapterAdminServiceTests
             CurrentMember = currentMember,
             Platform = platform ?? PlatformType.Default,
             HttpRequestContext = CreateHttpRequestContext(),
-            Securable = ChapterAdminSecurable.Any
+            Securable = securable ?? ChapterAdminSecurable.Any
         };
     }
 
     private static MemberServiceRequest CreateMemberServiceRequest(Guid? currentMemberId = null, PlatformType? platform = null)
     {
-        var currentMember = CreateMember(id: currentMemberId);
+        var currentMember = CreateMember(id: currentMemberId ?? CurrentMemberId);
 
         return new MemberServiceRequest
         {

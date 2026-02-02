@@ -12,6 +12,7 @@ public static class ChapterAdminSecurableExtensions
         ChapterAdminSecurable.BulkEmail => ChapterAdminRole.Admin,
         ChapterAdminSecurable.ContactMessages => ChapterAdminRole.Organiser,
         ChapterAdminSecurable.Conversations => ChapterAdminRole.Organiser,
+        ChapterAdminSecurable.Delete => ChapterAdminRole.Owner,
         ChapterAdminSecurable.Emails => ChapterAdminRole.Admin,        
         ChapterAdminSecurable.Events => ChapterAdminRole.Organiser,
         ChapterAdminSecurable.EventSettings => ChapterAdminRole.Admin,

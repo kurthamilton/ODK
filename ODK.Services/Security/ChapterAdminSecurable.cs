@@ -9,6 +9,7 @@ public enum ChapterAdminSecurable
     BulkEmail,
     ContactMessages,
     Conversations,
+    Delete,
     Emails,
     Events,
     EventSettings,

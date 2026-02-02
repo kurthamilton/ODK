@@ -35,7 +35,7 @@ public class GroupAdminRoutes
     public GroupAdminRoute Delete(Chapter chapter) => Platform switch
     {
         PlatformType.DrunkenKnitwits => GroupAdminRoute.Default,
-        _ => Group(chapter).Child("/delete", ChapterAdminSecurable.Publish, PlatformType.Default)
+        _ => Group(chapter).Child("/delete", ChapterAdminSecurable.Delete, PlatformType.Default)
     };
 
     public GroupAdminRoute Email(Chapter chapter, EmailType type) => Emails(chapter).Child($"/{type}");
