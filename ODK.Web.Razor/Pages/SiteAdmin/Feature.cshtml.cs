@@ -30,7 +30,7 @@ public class FeatureModel : SiteAdminPageModel
             Name = viewModel.Name
         });
 
-        AddFeedback(new FeedbackViewModel("Feature updated", FeedbackType.Success));
+        AddFeedback("Feature updated", FeedbackType.Success);
 
         return RedirectToPage();
     }

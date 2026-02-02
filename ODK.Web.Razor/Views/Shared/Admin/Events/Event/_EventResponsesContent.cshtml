@@ -95,7 +95,7 @@
                             responseDictionary.TryGetValue(member.Id, out var response);
 
                             <div class="col mb-3">
-                                <a href="@OdkRoutes.GroupAdmin.Member(Model.Chapter, member.Id)"
+                                <a href="@OdkRoutes.GroupAdmin.Member(Model.Chapter, member.Id).Path"
                                     class="text-center">
                                     <div>
                                         @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel

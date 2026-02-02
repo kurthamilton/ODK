@@ -76,7 +76,7 @@ public class GroupAdminController : OdkControllerBase
 
         if (!result.Success)
         {
-            AddFeedback(new FeedbackViewModel(result));
+            AddFeedback(result);
             return RedirectToReferrer();
         }
 

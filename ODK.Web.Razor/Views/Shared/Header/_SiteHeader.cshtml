@@ -3,6 +3,7 @@
 @using ODK.Web.Common.Routes
 @using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Services
 @inject IOdkRoutes OdkRoutes
 @inject IRequestStore RequestStore
@@ -42,7 +43,12 @@
                     @if (RequestStore.CurrentMemberIdOrDefault != null)
                     {
                         <li class="nav-item">
-                            <a class="nav-link" href="@OdkRoutes.GroupAdmin.Index()">My groups</a>
+                            @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                            {
+                                Class = "nav-link",
+                                Route = OdkRoutes.GroupAdmin.Index(),
+                                Text = "My groups"
+                            })
                         </li>
                     }                
                 </ul>

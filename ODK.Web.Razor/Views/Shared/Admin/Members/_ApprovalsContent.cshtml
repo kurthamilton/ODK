@@ -1,14 +1,19 @@
 ﻿@using ODK.Core.Utils
 @using ODK.Services.Members.ViewModels
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
 @model MemberApprovalsAdminPageViewModel
 @inject IOdkRoutes OdkRoutes
 
 @if (Model.MembershipSettings?.ApproveNewMembers != true)
 {
     <p>
-        Members don't require approval at the moment. 
-        <a href="@OdkRoutes.GroupAdmin.MembershipSettings(Model.Chapter)">Membership settings</a>
+        <span>Members don't require approval at the moment.</span>
+        @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+        {
+            Route = OdkRoutes.GroupAdmin.MembershipSettings(Model.Chapter),
+            Text = "Membership settings"
+        })
     </p>
 
     if (Model.Pending.Count == 0)
@@ -34,9 +39,11 @@
                     {
                         <tr>
                             <td>
-                                <a href="@OdkRoutes.GroupAdmin.Member(Model.Chapter, member.Id)" target="_blank">
-                                    @member.FullName
-                                </a>
+                                @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                                {
+                                    Route = OdkRoutes.GroupAdmin.Member(Model.Chapter, member.Id),
+                                    Text = member.FullName
+                                })
                             </td>
                             <td>
                                 @member.MemberChapter(Model.Chapter.Id)?.CreatedUtc.ToFriendlyDateString(Model.Chapter.TimeZone)

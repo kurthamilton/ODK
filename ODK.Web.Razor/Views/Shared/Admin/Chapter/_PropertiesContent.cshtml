@@ -15,9 +15,12 @@
     Answers are visible to other members.
 </p>
 <p>
-    <a href="@OdkRoutes.GroupAdmin.MemberPropertyCreate(Model.Chapter)" class="btn btn-primary">
-        Create question
-    </a>
+    @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+    {
+        Class = "btn btn-primary",
+        Route = OdkRoutes.GroupAdmin.MemberPropertyCreate(Model.Chapter),
+        Text = "Create question"
+    })
 </p>
 
 <div class="table-responsive">
@@ -35,7 +38,11 @@
             {
                 <tr>
                     <td>
-                        <a href="@OdkRoutes.GroupAdmin.MemberProperty(Model.Chapter, property.Id)">@property.Label</a>
+                        @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                        {
+                            Route = OdkRoutes.GroupAdmin.MemberProperty(Model.Chapter, property.Id),
+                            Text = property.Label
+                        })
                     </td>
                     <td>@property.Name</td>
                     <td>

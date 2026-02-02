@@ -3,6 +3,7 @@
 @using ODK.Web.Common.Routes
 @using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Services
 @inject IChapterService ChapterService
 @inject IOdkRoutes OdkRoutes
@@ -27,6 +28,10 @@
         @chaptersPendingPublication.Length 
         @StringUtils.Pluralise(chaptersPendingPublication.Length, "group") 
         waiting to be published.
-        <a href="@OdkRoutes.GroupAdmin.Index()">My groups</a>
+        @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+        {
+            Route = OdkRoutes.GroupAdmin.Index(),
+            Text = "My groups"
+        })
     </div>
 }

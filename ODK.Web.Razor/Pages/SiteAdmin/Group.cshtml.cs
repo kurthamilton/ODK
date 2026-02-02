@@ -40,11 +40,11 @@ public class GroupModel : SiteAdminPageModel
 
         if (!result.Success)
         {
-            AddFeedback(new FeedbackViewModel(result));
+            AddFeedback(result);
             return OnGet(id);
         }
 
-        AddFeedback(new FeedbackViewModel("Group updated", FeedbackType.Success));
+        AddFeedback("Group updated", FeedbackType.Success);
         return Redirect(OdkRoutes.SiteAdmin.Groups);
     }
 }

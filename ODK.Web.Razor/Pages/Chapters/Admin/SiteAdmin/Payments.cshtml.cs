@@ -26,11 +26,11 @@ public class PaymentSettingsModel : ChapterSiteAdminPageModel
 
         if (!result.Success)
         {
-            AddFeedback(new FeedbackViewModel(result));
+            AddFeedback(result);
             return Page();
         }
 
-        AddFeedback(new FeedbackViewModel("Payment settings updated", FeedbackType.Success));
+        AddFeedback("Payment settings updated", FeedbackType.Success);
         return RedirectToPage();
     }
 }

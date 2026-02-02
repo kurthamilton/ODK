@@ -6,6 +6,7 @@
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Admin.Events
 @using ODK.Web.Razor.Models.Components
 @model VenueEventsAdminPageViewModel
@@ -19,9 +20,13 @@
 })
 
 <p>
-    <a href="@OdkRoutes.GroupAdmin.EventCreate(Model.Chapter)?venueId=@Model.Venue.Id" class="btn btn-primary">
-        Create event
-    </a>
+    @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+    {
+        Class = "btn btn-primary",
+        QueryString = $"venueId={Model.Venue.Id}",
+        Route = OdkRoutes.GroupAdmin.EventCreate(Model.Chapter),
+        Text = "Create event"
+    })
 </p>
 
 <div class="table-responsive">
@@ -37,7 +42,11 @@
         {
             <tr>
                 <td>
-                    <a href="@OdkRoutes.GroupAdmin.Event(Model.Chapter, @event.Id)">@(@event.GetDisplayName())</a>
+                    @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                    {
+                        Route = OdkRoutes.GroupAdmin.Event(Model.Chapter, @event.Id),
+                        Text = @event.GetDisplayName()
+                    })
                 </td>
                 <td>@(@event.Date.EventDate())</td>
             </tr>

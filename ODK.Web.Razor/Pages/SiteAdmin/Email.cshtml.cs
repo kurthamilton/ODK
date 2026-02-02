@@ -37,11 +37,11 @@ public class EmailModel : SiteAdminPageModel
 
         if (!result.Success)
         {
-            AddFeedback(new FeedbackViewModel(result));
+            AddFeedback(result);
             return Page();
         }
 
-        AddFeedback(new FeedbackViewModel("Email updated", FeedbackType.Success));
+        AddFeedback("Email updated", FeedbackType.Success);
         return Redirect(OdkRoutes.SiteAdmin.Emails);
     }
 }

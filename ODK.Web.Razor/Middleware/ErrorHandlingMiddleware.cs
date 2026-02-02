@@ -71,6 +71,7 @@ public class ErrorHandlingMiddleware
         // We might end up on a valid chapter route as a result of being redirected to a chapter error page,
         // so reset the request store just in case any downstream calls want to use the request store to get
         // the chapter based on the new route.
+        var platform = requestStore.Platform;
         requestStore.Reset();
 
         var request = httpContext.Request;
@@ -85,18 +86,31 @@ public class ErrorHandlingMiddleware
         {
             return null;
         }
-
-        // Default routes are like /{chapter.Slug}/...
+        
         // DrunkenKnitwits chapter routes are like /{chapter.ShortName}/...
-        var platform = requestStore.Platform;
         if (platform == PlatformType.DrunkenKnitwits)
         {
             var fullName = Chapter.GetFullName(platform, pathParts[0]);
             return await unitOfWork.ChapterRepository.GetByName(fullName).Run();
         }
 
-        var slug = pathParts[0];
-        return await unitOfWork.ChapterRepository.GetBySlug(slug).Run();
+        // Default routes are like
+        // /groups/{chapter.Slug}/...
+        // /my/groups/{chapter.Id}/...
+        if (path.StartsWith("/groups/", StringComparison.OrdinalIgnoreCase) &&
+            pathParts.Length > 1)
+        {
+            var slug = pathParts[1];
+            return await unitOfWork.ChapterRepository.GetBySlug(slug).Run();
+        }
+        else if (path.StartsWith("/my/groups/", StringComparison.OrdinalIgnoreCase) &&
+            pathParts.Length > 2 &&
+            Guid.TryParse(pathParts[2], out var chapterId))
+        {
+            return await unitOfWork.ChapterRepository.GetByIdOrDefault(chapterId).Run();
+        }
+
+        return null;
     }
 
     private async Task HandleAsync(

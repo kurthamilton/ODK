@@ -17,7 +17,12 @@
 else
 {
     <p>
-        You cannot delete a group while there are other
-        <a href="@OdkRoutes.GroupAdmin.Members(Model.Chapter)">members</a>.
+        <span>You cannot delete a group while there are other</span>
+        @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+        {
+            Route = OdkRoutes.GroupAdmin.Members(Model.Chapter),
+            Text = "members"
+        })
+    <span>.</span>
     </p>
 }

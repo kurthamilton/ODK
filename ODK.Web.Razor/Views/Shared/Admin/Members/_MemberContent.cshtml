@@ -4,6 +4,7 @@
 @using ODK.Services.Members.ViewModels
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Admin.Members
 @model MemberAdminPageViewModel
 @inject IOdkRoutes OdkRoutes
@@ -19,8 +20,11 @@
     })
     <div class="d-flex">
         <button type="submit" class="btn btn-primary me-auto">Update</button>
-        <a class="btn btn-danger" href="@OdkRoutes.GroupAdmin.MemberDelete(Model.Chapter, Model.Member.Id)">
-            Delete
-        </a>
+        @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+        {
+            Class = "btn btn-danger",
+            Route = OdkRoutes.GroupAdmin.MemberDelete(Model.Chapter, Model.Member.Id),
+            Text = "Delete"
+        })
     </div>
 </form>

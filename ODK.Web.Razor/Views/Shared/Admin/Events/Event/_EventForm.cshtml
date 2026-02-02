@@ -1,6 +1,7 @@
 ﻿@using ODK.Core.Features
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Admin.Events
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Payments
@@ -27,7 +28,11 @@
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.Venue, new { @class = "form-label" })
     @await Html.PartialAsync("Components/_Tooltip", "Select an existing venue or create a new venue first on the venues page")
-    <a href="@OdkRoutes.GroupAdmin.VenueCreate(Model.Chapter)">Create venue</a>
+    @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+    {
+        Route = OdkRoutes.GroupAdmin.VenueCreate(Model.Chapter),
+        Text = "Create venue"
+    })
     @Html.DropDownListFor(x => x.Venue, venueOptions, "", new { @class = "form-select", data_select = "", data_searchable = "", data_clearable = "" })
     @Html.ValidationMessageFor(x => x.Venue)
 </div>
@@ -37,7 +42,11 @@
     <span class="ms-1 text-muted">Event date. Start time defaults to value set in event settings</span>
     @if (Model.Date.Date == Model.Date)
     {
-        <a href="@OdkRoutes.GroupAdmin.EventSettings(Model.Chapter)">Set default start time</a>
+        @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+        {
+            Route = OdkRoutes.GroupAdmin.EventSettings(Model.Chapter),
+            Text = "Set default start time"
+        })
     }    
     @Html.TextBoxFor(x => x.Date, format: "{0:dd/MM/yyyy HH:mm}", new 
     { 

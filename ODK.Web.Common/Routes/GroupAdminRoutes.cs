@@ -16,7 +16,7 @@ public class GroupAdminRoutes
     protected PlatformType Platform { get; }
 
     public GroupAdminRoute AdminMember(Chapter chapter, ChapterAdminMember adminMember)
-        => AdminMembers(chapter).Child($"{adminMember.MemberId}");
+        => AdminMembers(chapter).Child($"/{adminMember.MemberId}");
 
     public GroupAdminRoute AdminMembers(Chapter chapter)
         => Members(chapter).Child("/admins", ChapterAdminSecurable.AdminMembers);
@@ -42,12 +42,8 @@ public class GroupAdminRoutes
 
     public GroupAdminRoute Emails(Chapter chapter) => Platform switch
     {
-        PlatformType.DrunkenKnitwits => new GroupAdminRoute 
-        { 
-            Path = $"{Group(chapter)}/emails", 
-            Platform = PlatformType.DrunkenKnitwits,
-            Securable = ChapterAdminSecurable.Emails 
-        },
+        PlatformType.DrunkenKnitwits 
+            => Group(chapter).Child("/emails", ChapterAdminSecurable.Emails, PlatformType.DrunkenKnitwits),
         _ => GroupAdminRoute.Default
     };
 
@@ -184,7 +180,7 @@ public class GroupAdminRoutes
         => Payments(chapter).Child("/account", ChapterAdminSecurable.PaymentAccount);
 
     public GroupAdminRoute Payments(Chapter chapter)
-        => Group(chapter).Child("/payments", ChapterAdminSecurable.Payments);
+        => Base(chapter).Child("/payments", ChapterAdminSecurable.Payments);
 
     public GroupAdminRoute Privacy(Chapter chapter) 
         => Group(chapter).Child("/privacy", ChapterAdminSecurable.PrivacySettings);
@@ -199,7 +195,7 @@ public class GroupAdminRoutes
         => Group(chapter).Child("/questions", ChapterAdminSecurable.Questions);
 
     public GroupAdminRoute SiteAdmin(Chapter chapter)
-        => Group(chapter).Child("/siteadmin");
+        => Base(chapter).Child("/siteadmin");
 
     public GroupAdminRoute SocialMedia(Chapter chapter) 
         => Group(chapter).Child("/social-media", ChapterAdminSecurable.SocialMedia);

@@ -132,7 +132,7 @@ public class EventAdminController : AdminControllerBase
             DisableComments = viewModel.DisableComments
         });
 
-        AddFeedback(new FeedbackViewModel("Event settings updated", FeedbackType.Success));
+        AddFeedback("Event settings updated", FeedbackType.Success);
 
         return RedirectToReferrer();
     }

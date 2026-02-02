@@ -66,9 +66,7 @@ public abstract class OdkPageModel : PageModel
     {
         get => ViewData["Title"] as string;
         set => ViewData["Title"] = value;
-    }    
-
-    protected void AddFeedback(FeedbackViewModel viewModel) => TempData!.AddFeedback(viewModel);
+    }        
 
     protected void AddFeedback(string message, FeedbackType type = FeedbackType.Success)
         => AddFeedback(new FeedbackViewModel(message, type));
@@ -88,4 +86,6 @@ public abstract class OdkPageModel : PageModel
             AddFeedback(result);
         }
     }
+
+    private void AddFeedback(FeedbackViewModel viewModel) => TempData!.AddFeedback(viewModel);
 }

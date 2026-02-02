@@ -34,11 +34,11 @@ public class FeatureCreateModel : SiteAdminPageModel
 
         if (!result.Success)
         {
-            AddFeedback(new FeedbackViewModel(result));
+            AddFeedback(result);
             return Page();
         }
 
-        AddFeedback(new FeedbackViewModel("Feature created", FeedbackType.Success));
+        AddFeedback("Feature created", FeedbackType.Success);
         return Redirect(OdkRoutes.SiteAdmin.Features);
     }
 }

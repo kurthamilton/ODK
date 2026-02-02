@@ -19,7 +19,6 @@
 
     @if (Model.Enabled)
     {
-        var subscriptionsUrl = OdkRoutes.GroupAdmin.Subscriptions(Model.Chapter);
         <div class="alert alert-success">
             <span>You have set up a payment account. Set up your </span>
             @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel

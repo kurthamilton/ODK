@@ -39,20 +39,23 @@
             Venues = Model.Venues
         })
 
-    <div class="button-container">
-        <button type="submit" class="btn btn-primary">Create</button>
-        <button type="submit" class="btn btn-secondary" name="draft" value="true">Save as draft</button>
-    </div>
-</form>
-            }
+        <div class="button-container">
+            <button type="submit" class="btn btn-primary">Create</button>
+            <button type="submit" class="btn btn-secondary" name="draft" value="true">Save as draft</button>
+        </div>
+    </form>
+}
 else
 {
-    var venueCreateUrl = OdkRoutes.GroupAdmin.VenueCreate(Model.Chapter);
-
     <p>
         You have not yet created any venues.
     </p>
     <p>
-        <a class="btn btn-primary" href="@venueCreateUrl">Create venue</a>
+        @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+        {
+            Class = "btn btn-primary",
+            Route = OdkRoutes.GroupAdmin.VenueCreate(Model.Chapter),
+            Text = "Create venue"
+        })
     </p>
 }

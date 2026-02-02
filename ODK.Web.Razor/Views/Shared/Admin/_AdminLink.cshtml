@@ -1,8 +1,15 @@
 ﻿@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model AdminLinkViewModel
+@{
+    var href = Model.Route.Path;
+    if (!string.IsNullOrEmpty(Model.QueryString))
+    {
+        href += $"?{Model.QueryString}";
+    }
+}
 
-<a href="@Model.Route.Path" class="@Model.Class">
+<a href="@href" class="@Model.Class">
     @if (Model.Icon != null)
     {
         @await Html.PartialAsync("Components/_Icon", new IconViewModel(Model.Icon.Value))

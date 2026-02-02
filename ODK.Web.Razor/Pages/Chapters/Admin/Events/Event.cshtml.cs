@@ -40,7 +40,7 @@ public class EventModel : EventAdminPageModel
 
         if (!result.Success)
         {
-            AddFeedback(new FeedbackViewModel(result));
+            AddFeedback(result);
             return Page();
         }
 

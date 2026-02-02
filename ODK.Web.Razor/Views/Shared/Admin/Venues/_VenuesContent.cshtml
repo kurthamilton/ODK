@@ -21,7 +21,12 @@
 }
 
 <p>
-    <a href="@OdkRoutes.GroupAdmin.VenueCreate(Model.Chapter)" class="btn btn-primary">Create</a>
+    @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+    {
+        Class = "btn btn-primary",
+        Route = OdkRoutes.GroupAdmin.VenueCreate(Model.Chapter),
+        Text = "Create"
+    })
 </p>
 
 <div class="table-responsive">
@@ -39,7 +44,12 @@
             {
                 <tr>
                     <td>
-                        <a data-sort-value="@venue.Name" href="@OdkRoutes.GroupAdmin.Venue(Model.Chapter, venue.Id)">@venue.Name</a>
+                        <span class="d-none" data-sort-value="@venue.Name"></span>
+                        @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                        {
+                            Route = OdkRoutes.GroupAdmin.Venue(Model.Chapter, venue.Id),
+                            Text = venue.Name
+                        })
                     </td>
                     <td>@venue.MapQuery</td>
                     <td>@(eventCounts.ContainsKey(venue.Id) ? eventCounts[venue.Id] : 0)</td>

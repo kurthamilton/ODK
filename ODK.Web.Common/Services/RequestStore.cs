@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using ODK.Core.Chapters;
 using ODK.Core.Exceptions;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
+using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
 using ODK.Services;
@@ -61,7 +63,7 @@ public class RequestStore : IRequestStore
 
     public MemberServiceRequest MemberServiceRequest => _memberServiceRequest.Value;
 
-    public PlatformType Platform => ServiceRequest.Platform;
+    public PlatformType Platform { get; private set; }
 
     public ServiceRequest ServiceRequest => _serviceRequest!;
 
@@ -100,37 +102,52 @@ public class RequestStore : IRequestStore
 
     private IDeferredQuerySingleOrDefault<Chapter> GetChapterQuery(IUnitOfWork unitOfWork, bool verbose)
     {
-        var chapterName = ServiceRequest.HttpRequestContext.ChapterName();
-        if (!string.IsNullOrEmpty(chapterName))
+        var context = ServiceRequest.HttpRequestContext;                   
+        
+        if (Platform == PlatformType.DrunkenKnitwits)
         {
-            if (verbose)
-            {
-                _loggingService.Info($"RequestStore: getting chapter by name: '{chapterName}'");
-            }
+            context.RouteValues.TryGetValue("chapterName", out var chapterName);
 
-            return unitOfWork.ChapterRepository.GetByName(chapterName);
+            if (!string.IsNullOrEmpty(chapterName))
+            {
+                chapterName = Chapter.GetFullName(PlatformType.DrunkenKnitwits, chapterName);
+
+                if (verbose)
+                {
+                    _loggingService.Info($"RequestStore: getting chapter by name: '{chapterName}'");
+                }
+
+                return unitOfWork.ChapterRepository.GetByName(chapterName);
+            }                 
         }
-
-        var slug = ServiceRequest.HttpRequestContext.ChapterSlug();
-        if (!string.IsNullOrEmpty(slug))
+        else
         {
-            if (verbose)
+            context.RouteValues.TryGetValue("slug", out var slug);
+
+            var chapterId = context.RouteValues.TryGetValue("chapterId", out var chapterIdRouteValue) &&
+               Guid.TryParse(chapterIdRouteValue, out Guid id)
+                ? id
+                : default(Guid?);
+
+            if (!string.IsNullOrEmpty(slug))
             {
-                _loggingService.Info($"RequestStore: getting chapter by slug: '{slug}'");
+                if (verbose)
+                {
+                    _loggingService.Info($"RequestStore: getting chapter by slug: '{slug}'");
+                }
+
+                return unitOfWork.ChapterRepository.GetBySlug(slug);
             }
 
-            return unitOfWork.ChapterRepository.GetBySlug(slug);
-        }
-
-        var chapterId = ServiceRequest.HttpRequestContext.ChapterId();
-        if (chapterId != null)
-        {
-            if (verbose)
+            if (chapterId != null)
             {
-                _loggingService.Info($"RequestStore: getting chapter by id: '{chapterId}'");
-            }
+                if (verbose)
+                {
+                    _loggingService.Info($"RequestStore: getting chapter by id: '{chapterId}'");
+                }
 
-            return _unitOfWork.ChapterRepository.GetByIdOrDefault(chapterId.Value);
+                return _unitOfWork.ChapterRepository.GetByIdOrDefault(chapterId.Value);
+            }
         }
 
         if (verbose)
@@ -161,7 +178,9 @@ public class RequestStore : IRequestStore
             return this;
         }
 
+        // Set the platform directly to persist when resetting other state
         _serviceRequest = serviceRequest;
+        Platform = serviceRequest.Platform;
 
         var (chapter, currentMember) = await _unitOfWork.RunAsync(
             x => GetChapterQuery(x, verbose),

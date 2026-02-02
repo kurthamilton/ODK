@@ -39,12 +39,12 @@ public class EmailModel : AdminPageModel
 
         if (!result.Success)
         {
-            AddFeedback(new FeedbackViewModel(result));
+            AddFeedback(result);
             return Page();
         }
 
         var chapter = Chapter;
-        AddFeedback(new FeedbackViewModel("Email updated", FeedbackType.Success));
+        AddFeedback("Email updated", FeedbackType.Success);
         return Redirect(AdminRoutes.Emails(chapter).Path);
     }
 }

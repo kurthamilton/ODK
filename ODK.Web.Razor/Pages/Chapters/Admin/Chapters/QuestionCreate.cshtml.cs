@@ -34,12 +34,12 @@ public class QuestionCreateModel : AdminPageModel
 
         if (!result.Success)
         {
-            AddFeedback(new FeedbackViewModel(result));
+            AddFeedback(result);
             return Page();
         }
 
         var chapter = Chapter;
-        AddFeedback(new FeedbackViewModel("Question created", FeedbackType.Success));
+        AddFeedback("Question created", FeedbackType.Success);
         return Redirect($"/{chapter.ShortName}/Admin/Chapter/Questions");
     }
 }
