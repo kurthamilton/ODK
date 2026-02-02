@@ -1,8 +1,8 @@
 ﻿using ODK.Core.Countries;
 
-namespace ODK.Services.Venues;
+namespace ODK.Services.Venues.Models;
 
-public class CreateVenue
+public class VenueCreateModel
 {
     public required string? Address { get; set; }
 

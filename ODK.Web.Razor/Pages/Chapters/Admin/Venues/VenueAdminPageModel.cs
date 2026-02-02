@@ -4,7 +4,7 @@ using ODK.Services.Security;
 using ODK.Services.Venues;
 using ODK.Web.Common.Feedback;
 
-namespace ODK.Web.Razor.Pages.Chapters.Admin.Events;
+namespace ODK.Web.Razor.Pages.Chapters.Admin.Venues;
 
 public abstract class VenueAdminPageModel : AdminPageModel
 {

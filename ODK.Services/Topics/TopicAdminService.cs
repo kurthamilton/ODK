@@ -295,7 +295,7 @@ public class TopicAdminService : OdkAdminServiceBase, ITopicAdminService
         };
     }
 
-    public async Task<ServiceResult> UpdateTopic(MemberServiceRequest request, Guid topicId, UpdateTopicModel model)
+    public async Task<ServiceResult> UpdateTopic(MemberServiceRequest request, Guid topicId, TopicUpdateModel model)
     {
         var topic = await GetSiteAdminRestrictedContent(request,
             x => x.TopicRepository.GetById(topicId));

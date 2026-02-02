@@ -4,6 +4,7 @@ using ODK.Core.Venues;
 using ODK.Data.Core;
 using ODK.Services.Caching;
 using ODK.Services.Security;
+using ODK.Services.Venues.Models;
 using ODK.Services.Venues.ViewModels;
 
 namespace ODK.Services.Venues;
@@ -23,7 +24,7 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
     }
 
     public async Task<ServiceResult> CreateVenue(
-        MemberChapterAdminServiceRequest request, CreateVenue model)
+        MemberChapterAdminServiceRequest request, VenueCreateModel model)
     {
         var chapter = request.Chapter;
 
@@ -138,7 +139,7 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
     }
 
     public async Task<ServiceResult> UpdateVenue(
-        MemberChapterAdminServiceRequest request, Guid id, CreateVenue model)
+        MemberChapterAdminServiceRequest request, Guid id, VenueCreateModel model)
     {
         var chapter = request.Chapter;
 

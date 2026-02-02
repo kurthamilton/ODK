@@ -2,7 +2,7 @@
 
 namespace ODK.Services.Members.Models;
 
-public class UpdateMemberSubscription
+public class MemberSubscriptionUpdateModel
 {
     public DateTime? ExpiryDate { get; set; }
 

@@ -696,7 +696,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     public async Task<ServiceResult> UpdateMemberImage(
         MemberChapterAdminServiceRequest request, 
         Guid id,
-        UpdateMemberImage model)
+        MemberImagUpdateModel model)
     {
         var chapter = request.Chapter;
 
@@ -749,7 +749,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     public async Task<ServiceResult> UpdateMemberSubscription(
         MemberChapterAdminServiceRequest request, 
         Guid memberId,
-        UpdateMemberSubscription model)
+        MemberSubscriptionUpdateModel model)
     {
         var chapter = request.Chapter;
 

@@ -1,10 +1,11 @@
 ﻿using ODK.Core.Features;
+using ODK.Services.Features.Models;
 
 namespace ODK.Services.Features;
 
 public interface IFeatureService
 {
-    Task<ServiceResult> AddFeature(MemberServiceRequest request, UpdateFeature model);
+    Task<ServiceResult> AddFeature(MemberServiceRequest request, FeatureUpdateModel model);
 
     Task DeleteFeature(MemberServiceRequest request, Guid featureId);
 
@@ -16,5 +17,5 @@ public interface IFeatureService
 
     Task MarkAsSeen(MemberServiceRequest request, string featureName);
 
-    Task UpdateFeature(MemberServiceRequest request, Guid featureId, UpdateFeature model);
+    Task UpdateFeature(MemberServiceRequest request, Guid featureId, FeatureUpdateModel model);
 }

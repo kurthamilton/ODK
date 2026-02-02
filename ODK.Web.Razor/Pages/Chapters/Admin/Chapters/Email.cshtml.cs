@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Emails;
 using ODK.Services.Emails;
+using ODK.Services.Emails.Models;
 using ODK.Services.Security;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Chapters;
@@ -30,7 +31,7 @@ public class EmailModel : AdminPageModel
     public async Task<IActionResult> OnPostAsync(EmailType type, ChapterEmailFormViewModel viewModel)
     {
         var request = MemberChapterAdminServiceRequest;
-        var result = await _emailAdminService.UpdateChapterEmail(request, type, new UpdateEmail
+        var result = await _emailAdminService.UpdateChapterEmail(request, type, new EmailUpdateModel
         {
             HtmlContent = viewModel.Content,
             Overridable = false,

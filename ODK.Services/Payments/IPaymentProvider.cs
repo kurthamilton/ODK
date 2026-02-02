@@ -8,7 +8,7 @@ public interface IPaymentProvider
 
     Task<bool> CancelSubscription(string externalId);
 
-    Task<RemoteAccount?> CreateConnectedAccount(CreateRemoteAccountOptions options);
+    Task<RemoteAccount?> CreateConnectedAccount(RemoteAccountCreateOptions options);
 
     Task<string?> CreateProduct(string name);
 

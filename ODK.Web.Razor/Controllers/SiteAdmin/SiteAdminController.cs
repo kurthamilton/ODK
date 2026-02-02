@@ -10,6 +10,7 @@ using ODK.Services.Payments;
 using ODK.Services.Settings;
 using ODK.Services.SocialMedia;
 using ODK.Services.Subscriptions;
+using ODK.Services.Subscriptions.Models;
 using ODK.Services.Topics;
 using ODK.Services.Topics.Models;
 using ODK.Web.Common.Feedback;
@@ -324,7 +325,7 @@ public class SiteAdminController : OdkControllerBase
     [HttpPost("siteadmin/topics/{id:guid}")]
     public async Task<IActionResult> UpdateTopic(Guid id, [FromForm] TopicFormSubmitViewModel viewModel)
     {
-        var result = await _topicAdminService.UpdateTopic(MemberServiceRequest, id, new UpdateTopicModel
+        var result = await _topicAdminService.UpdateTopic(MemberServiceRequest, id, new TopicUpdateModel
         {
             TopicGroupId = viewModel.TopicGroupId
         });

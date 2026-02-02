@@ -111,7 +111,7 @@ public class AccountController : OdkControllerBase
     {
         var newTopics = NewTopicModel.Build(topics.NewTopicGroups, topics.NewTopics);
 
-        var model = new CreateAccountModel
+        var model = new AccountCreateModel
         {
             EmailAddress = personalDetails.EmailAddress,
             FirstName = personalDetails.FirstName,
@@ -350,7 +350,7 @@ public class AccountController : OdkControllerBase
     [HttpPost("account/personaldetails")]
     public async Task<IActionResult> UpdatePersonalDetails([FromForm] PersonalDetailsFormViewModel viewModel)
     {
-        var model = new UpdateMemberSiteProfile
+        var model = new MemberSiteProfileUpdateModel
         {
             FirstName = viewModel.FirstName,
             LastName = viewModel.LastName

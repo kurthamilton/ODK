@@ -1,6 +1,6 @@
 ﻿namespace ODK.Services.Members.Models;
 
-public class CreateMemberProfile : UpdateMemberChapterProfile
+public class MemberCreateProfile : MemberChapterProfileUpdateModel
 {
     public string EmailAddress { get; set; } = string.Empty;
 

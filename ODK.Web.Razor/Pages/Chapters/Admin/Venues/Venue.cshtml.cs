@@ -1,22 +1,18 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Countries;
-using ODK.Services.Security;
 using ODK.Services.Venues;
+using ODK.Services.Venues.Models;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Venues;
 
-namespace ODK.Web.Razor.Pages.Chapters.Admin.Events;
+namespace ODK.Web.Razor.Pages.Chapters.Admin.Venues;
 
-public class VenueCreateModel : AdminPageModel
+public class VenueModel : VenueAdminPageModel
 {
-    private readonly IVenueAdminService _venueAdminService;
-
-    public VenueCreateModel(IVenueAdminService venueAdminService)
+    public VenueModel(IVenueAdminService venueAdminService)
+        : base(venueAdminService)
     {
-        _venueAdminService = venueAdminService;
     }
-
-    public override ChapterAdminSecurable Securable => ChapterAdminSecurable.Venues;
 
     public void OnGet()
     {
@@ -25,7 +21,7 @@ public class VenueCreateModel : AdminPageModel
     public async Task<IActionResult> OnPostAsync(VenueFormViewModel viewModel)
     {
         var request = MemberChapterAdminServiceRequest;
-        var result = await _venueAdminService.CreateVenue(request, new CreateVenue
+        var result = await VenueAdminService.UpdateVenue(request, Venue.Id, new VenueCreateModel
         {
             Address = viewModel.Address,
             Location = LatLong.FromCoords(viewModel.Lat, viewModel.Long),
@@ -39,7 +35,7 @@ public class VenueCreateModel : AdminPageModel
             return Page();
         }
 
-        AddFeedback("Venue created", FeedbackType.Success);
-        return Redirect(AdminRoutes.Venues(Chapter).Path);
+        AddFeedback("Venue updated", FeedbackType.Success);
+        return Redirect(OdkRoutes.GroupAdmin.Venues(Chapter).Path);
     }
 }

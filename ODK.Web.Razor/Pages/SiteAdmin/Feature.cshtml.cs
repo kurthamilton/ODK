@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Features;
 using ODK.Services.Features;
+using ODK.Services.Features.Models;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.SiteAdmin;
 
@@ -24,7 +25,7 @@ public class FeatureModel : SiteAdminPageModel
 
     public async Task<IActionResult> OnPostAsync(Guid id, FeatureFormViewModel viewModel)
     {
-        await _featureService.UpdateFeature(MemberServiceRequest, id, new UpdateFeature
+        await _featureService.UpdateFeature(MemberServiceRequest, id, new FeatureUpdateModel
         {
             Description = viewModel.Description,
             Name = viewModel.Name

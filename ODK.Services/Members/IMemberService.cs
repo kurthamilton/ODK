@@ -12,9 +12,9 @@ public interface IMemberService
 
     Task<ServiceResult> ConfirmEmailAddressUpdate(Guid memberId, string confirmationToken);
 
-    Task<ServiceResult<Member?>> CreateAccount(ServiceRequest request, CreateAccountModel model);
+    Task<ServiceResult<Member?>> CreateAccount(ServiceRequest request, AccountCreateModel model);
 
-    Task<ServiceResult> CreateChapterAccount(ServiceRequest request, Guid chapterId, CreateMemberProfile model);
+    Task<ServiceResult> CreateChapterAccount(ServiceRequest request, Guid chapterId, MemberCreateProfile model);
 
     Task<ServiceResult> DeleteMember(Guid memberId);
 
@@ -30,7 +30,7 @@ public interface IMemberService
 
     Task<MemberSubscriptionAlertViewModel> GetMemberSubscriptionAlertViewModel(Guid memberId, Guid chapterId);
 
-    Task<ServiceResult> JoinChapter(MemberChapterServiceRequest request, IEnumerable<UpdateMemberProperty> memberProperties);
+    Task<ServiceResult> JoinChapter(MemberChapterServiceRequest request, IEnumerable<MemberPropertyUpdateModel> memberProperties);
 
     Task<ServiceResult> LeaveChapter(MemberChapterServiceRequest request, string reason);
 
@@ -45,7 +45,7 @@ public interface IMemberService
 
     Task<ServiceResult> UpdateMemberEmailPreferences(Guid id, IEnumerable<MemberEmailPreferenceType> disabledTypes);
 
-    Task<ServiceResult> UpdateMemberChapterProfile(MemberChapterServiceRequest request, UpdateMemberChapterProfile model);
+    Task<ServiceResult> UpdateMemberChapterProfile(MemberChapterServiceRequest request, MemberChapterProfileUpdateModel model);
 
     Task<ServiceResult> UpdateMemberCurrency(Guid id, Guid currencyId);
 
@@ -53,7 +53,7 @@ public interface IMemberService
 
     Task<ServiceResult> UpdateMemberLocation(Guid id, LatLong? location, string? name, Guid? distanceUnitId);
 
-    Task<ServiceResult> UpdateMemberSiteProfile(MemberServiceRequest request, UpdateMemberSiteProfile model);
+    Task<ServiceResult> UpdateMemberSiteProfile(MemberServiceRequest request, MemberSiteProfileUpdateModel model);
 
     Task<ServiceResult> UpdateMemberTopics(
         MemberServiceRequest request,

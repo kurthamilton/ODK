@@ -1,17 +1,18 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Utils;
 using ODK.Services.Events;
+using ODK.Services.Events.Models;
 using ODK.Services.Security;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Events;
 
 namespace ODK.Web.Razor.Pages.Chapters.Admin.Events;
 
-public class EventCreateModel : AdminPageModel
+public class CreateModel : AdminPageModel
 {
     private readonly IEventAdminService _eventAdminService;
 
-    public EventCreateModel(IEventAdminService eventAdminService)
+    public CreateModel(IEventAdminService eventAdminService)
     {
         _eventAdminService = eventAdminService;
     }
@@ -28,7 +29,7 @@ public class EventCreateModel : AdminPageModel
     public async Task<IActionResult> OnPostAsync([FromForm] EventFormSubmitViewModel viewModel)
     {
         var request = MemberChapterAdminServiceRequest;
-        var result = await _eventAdminService.CreateEvent(request, new CreateEvent
+        var result = await _eventAdminService.CreateEvent(request, new EventCreateModel
         {
             AttendeeLimit = viewModel.AttendeeLimit,
             Date = viewModel.Date,

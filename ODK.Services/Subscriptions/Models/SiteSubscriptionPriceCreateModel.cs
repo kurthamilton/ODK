@@ -1,6 +1,6 @@
 ﻿using ODK.Core.Subscriptions;
 
-namespace ODK.Services.Subscriptions;
+namespace ODK.Services.Subscriptions.Models;
 
 public class SiteSubscriptionPriceCreateModel
 {

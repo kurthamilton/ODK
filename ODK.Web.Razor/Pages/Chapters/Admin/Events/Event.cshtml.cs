@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Utils;
 using ODK.Services.Events;
+using ODK.Services.Events.Models;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Events;
 
@@ -20,7 +21,7 @@ public class EventModel : EventAdminPageModel
     public async Task<IActionResult> OnPostAsync(Guid id, [FromForm] EventFormSubmitViewModel viewModel)
     {
         var request = MemberChapterAdminServiceRequest;
-        var result = await EventAdminService.UpdateEvent(request, id, new CreateEvent
+        var result = await EventAdminService.UpdateEvent(request, id, new EventCreateModel
         {
             AttendeeLimit = viewModel.AttendeeLimit,
             Date = viewModel.Date,

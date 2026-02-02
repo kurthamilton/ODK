@@ -80,7 +80,7 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
             x => x.SitePaymentSettingsRepository.GetById(id));
     }
 
-    public async Task<ServiceResult> UpdateEmailSettings(MemberServiceRequest request, UpdateEmailSettings model)
+    public async Task<ServiceResult> UpdateEmailSettings(MemberServiceRequest request, EmailSettingsUpdateModel model)
     {
         var settings = await GetSiteAdminRestrictedContent(request,
             x => x.SiteEmailSettingsRepository.Get(request.Platform));

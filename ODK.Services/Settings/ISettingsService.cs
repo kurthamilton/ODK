@@ -23,7 +23,7 @@ public interface ISettingsService
 
     Task<SitePaymentSettings> GetSitePaymentSettings(MemberServiceRequest request, Guid id);
 
-    Task<ServiceResult> UpdateEmailSettings(MemberServiceRequest request, UpdateEmailSettings model);
+    Task<ServiceResult> UpdateEmailSettings(MemberServiceRequest request, EmailSettingsUpdateModel model);
 
     Task<ServiceResult> UpdatePaymentSettings(
         MemberServiceRequest request,

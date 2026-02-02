@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Emails;
+using ODK.Services.Emails.Models;
 
 namespace ODK.Services.Emails;
 
@@ -18,7 +19,7 @@ public interface IEmailAdminService
 
     Task<ServiceResult> SendTestMemberEmail(MemberServiceRequest request, EmailType type);
 
-    Task<ServiceResult> UpdateChapterEmail(MemberChapterAdminServiceRequest request, EmailType type, UpdateEmail model);
+    Task<ServiceResult> UpdateChapterEmail(MemberChapterAdminServiceRequest request, EmailType type, EmailUpdateModel model);
 
-    Task<ServiceResult> UpdateEmail(MemberServiceRequest request, EmailType type, UpdateEmail model);
+    Task<ServiceResult> UpdateEmail(MemberServiceRequest request, EmailType type, EmailUpdateModel model);
 }

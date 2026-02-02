@@ -22,7 +22,7 @@ public class JoinModel : OdkPageModel
 
     public async Task<IActionResult> OnPost([FromForm] ChapterProfileFormViewModel viewModel)
     {
-        var properties = viewModel.Properties.Select(x => new UpdateMemberProperty
+        var properties = viewModel.Properties.Select(x => new MemberPropertyUpdateModel
         {
             ChapterPropertyId = x.ChapterPropertyId,
             Value = string.Equals(x.Value, "Other", StringComparison.InvariantCultureIgnoreCase) &&

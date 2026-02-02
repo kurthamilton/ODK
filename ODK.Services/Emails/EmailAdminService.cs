@@ -1,6 +1,7 @@
 ﻿using ODK.Core;
 using ODK.Core.Emails;
 using ODK.Data.Core;
+using ODK.Services.Emails.Models;
 using ODK.Services.Members;
 
 namespace ODK.Services.Emails;
@@ -128,7 +129,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
     public async Task<ServiceResult> UpdateChapterEmail(
         MemberChapterAdminServiceRequest request, 
         EmailType type,
-        UpdateEmail model)
+        EmailUpdateModel model)
     {
         var chapter = request.Chapter;
 
@@ -163,7 +164,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> UpdateEmail(MemberServiceRequest request, EmailType type, UpdateEmail model)
+    public async Task<ServiceResult> UpdateEmail(MemberServiceRequest request, EmailType type, EmailUpdateModel model)
     {
         var existing = await GetSiteAdminRestrictedContent(request,
             x => x.EmailRepository.GetByType(type));

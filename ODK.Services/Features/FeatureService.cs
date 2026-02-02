@@ -1,5 +1,6 @@
 ﻿using ODK.Core.Features;
 using ODK.Data.Core;
+using ODK.Services.Features.Models;
 
 namespace ODK.Services.Features;
 
@@ -13,7 +14,7 @@ public class FeatureService : OdkAdminServiceBase, IFeatureService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ServiceResult> AddFeature(MemberServiceRequest request, UpdateFeature model)
+    public async Task<ServiceResult> AddFeature(MemberServiceRequest request, FeatureUpdateModel model)
     {
         AssertMemberIsSiteAdmin(request.CurrentMember);
 
@@ -69,7 +70,7 @@ public class FeatureService : OdkAdminServiceBase, IFeatureService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task UpdateFeature(MemberServiceRequest request, Guid featureId, UpdateFeature model)
+    public async Task UpdateFeature(MemberServiceRequest request, Guid featureId, FeatureUpdateModel model)
     {
         var feature = await GetSiteAdminRestrictedContent(request,
             x => x.FeatureRepository.GetById(featureId));

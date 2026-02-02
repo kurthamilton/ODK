@@ -34,14 +34,14 @@ public class JoinModel : OdkPageModel
             return Page();
         }
 
-        var model = new CreateMemberProfile
+        var model = new MemberCreateProfile
         {
             EmailAddress = personalDetailsViewModel.EmailAddress,
             EmailOptIn = personalDetailsViewModel.EmailOptIn,
             FirstName = personalDetailsViewModel.FirstName,
             ImageData = imageData,
             LastName = personalDetailsViewModel.LastName,
-            Properties = profileViewModel.Properties.Select(x => new UpdateMemberProperty
+            Properties = profileViewModel.Properties.Select(x => new MemberPropertyUpdateModel
             {
                 ChapterPropertyId = x.ChapterPropertyId,
                 Value = string.Equals(x.Value, "Other", StringComparison.InvariantCultureIgnoreCase) &&

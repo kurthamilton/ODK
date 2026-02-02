@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Emails;
 using ODK.Services.Emails;
+using ODK.Services.Emails.Models;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Admin.Chapters;
@@ -28,7 +29,7 @@ public class EmailModel : SiteAdminPageModel
         [FromForm] ChapterEmailFormViewModel viewModel,
         [FromForm] bool overridable)
     {
-        var result = await _emailAdminService.UpdateEmail(MemberServiceRequest, type, new UpdateEmail
+        var result = await _emailAdminService.UpdateEmail(MemberServiceRequest, type, new EmailUpdateModel
         {
             HtmlContent = viewModel.Content,
             Overridable = overridable,

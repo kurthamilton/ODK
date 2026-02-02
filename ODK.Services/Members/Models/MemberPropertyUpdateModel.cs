@@ -2,7 +2,7 @@
 
 namespace ODK.Services.Members.Models;
 
-public class UpdateMemberProperty
+public class MemberPropertyUpdateModel
 {
     public Guid ChapterPropertyId { get; set; }
 

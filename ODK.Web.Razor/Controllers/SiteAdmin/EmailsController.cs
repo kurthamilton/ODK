@@ -41,7 +41,7 @@ public class EmailsController : OdkControllerBase
     [HttpPost("siteadmin/emails/settings")]
     public async Task<IActionResult> UpdateSettings(SiteEmailSettingsViewModel viewModel)
     {
-        var model = new UpdateEmailSettings
+        var model = new EmailSettingsUpdateModel
         {
             ContactEmailAddress = viewModel.ContactEmailAddress,
             FromEmailAddress = viewModel.FromEmailAddress,

@@ -68,10 +68,10 @@ public interface IMemberAdminService
     Task<ServiceResult> UpdateMemberImage(
         MemberChapterAdminServiceRequest request, 
         Guid id,
-        UpdateMemberImage model);
+        MemberImagUpdateModel model);
 
     Task<ServiceResult> UpdateMemberSubscription(
         MemberChapterAdminServiceRequest request, 
         Guid memberId,
-        UpdateMemberSubscription subscription);
+        MemberSubscriptionUpdateModel subscription);
 }

@@ -1,8 +1,8 @@
 ﻿using ODK.Core.Issues;
 
-namespace ODK.Services.Issues.Models;
+namespace ODK.Services.Issues.ViewModels;
 
-public class IssuesAdminPageViewModel
+public class IssuesPageViewModel
 {
     public required IReadOnlyCollection<Issue> Issues { get; init; }
 }

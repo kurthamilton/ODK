@@ -1,4 +1,5 @@
 ﻿using ODK.Services.Issues.Models;
+using ODK.Services.Issues.ViewModels;
 
 namespace ODK.Services.Issues;
 

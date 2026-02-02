@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Utils;
 using ODK.Services.Events;
+using ODK.Services.Events.Models;
 using ODK.Services.Security;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Events;
@@ -28,7 +29,7 @@ public class CreateModel : OdkGroupAdminPageModel
     public async Task<IActionResult> OnPostAsync([FromForm] EventFormSubmitViewModel viewModel)
     {
         var request = MemberChapterAdminServiceRequest;
-        var result = await _eventAdminService.CreateEvent(request, new CreateEvent
+        var result = await _eventAdminService.CreateEvent(request, new EventCreateModel
         {
             AttendeeLimit = viewModel.AttendeeLimit,
             Date = viewModel.Date,

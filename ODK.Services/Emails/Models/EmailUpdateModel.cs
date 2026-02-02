@@ -1,6 +1,6 @@
-﻿namespace ODK.Services.Emails;
+﻿namespace ODK.Services.Emails.Models;
 
-public class UpdateEmail
+public class EmailUpdateModel
 {
     public required string HtmlContent { get; init; }
 

@@ -4,7 +4,7 @@ using ODK.Services.Topics.Models;
 
 namespace ODK.Services.Members.Models;
 
-public class CreateAccountModel
+public class AccountCreateModel
 {
     public required string EmailAddress { get; init; }
 

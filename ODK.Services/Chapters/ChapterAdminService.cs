@@ -317,7 +317,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(sitePaymentSettings);
 
-        var result = await paymentProvider.CreateConnectedAccount(new CreateRemoteAccountOptions
+        var result = await paymentProvider.CreateConnectedAccount(new RemoteAccountCreateOptions
         {
             Chapter = chapter,
             ChapterUrl = urlProvider.GroupUrl(chapter),

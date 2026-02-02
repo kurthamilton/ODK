@@ -1,6 +1,6 @@
 ﻿namespace ODK.Services.Settings.Models;
 
-public class UpdateEmailSettings
+public class EmailSettingsUpdateModel
 {
     public required string ContactEmailAddress { get; init; }
     public required string Title { get; init; }

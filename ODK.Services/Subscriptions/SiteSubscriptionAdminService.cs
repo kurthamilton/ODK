@@ -3,6 +3,7 @@ using ODK.Core.Subscriptions;
 using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Services.Payments;
+using ODK.Services.Subscriptions.Models;
 using ODK.Services.Subscriptions.ViewModels;
 
 namespace ODK.Services.Subscriptions;

@@ -15,5 +15,5 @@ public interface ITopicAdminService
 
     Task<TopicsAdminPageViewModel> GetTopicsAdminPageViewModel(MemberServiceRequest request);
 
-    Task<ServiceResult> UpdateTopic(MemberServiceRequest request, Guid topicId, UpdateTopicModel model);
+    Task<ServiceResult> UpdateTopic(MemberServiceRequest request, Guid topicId, TopicUpdateModel model);
 }

@@ -1,6 +1,6 @@
 ﻿namespace ODK.Services.Members.Models;
 
-public class UpdateMemberSiteProfile
+public class MemberSiteProfileUpdateModel
 {
     public required string FirstName { get; set; }
 

@@ -1,6 +1,6 @@
 using ODK.Services.Venues;
 
-namespace ODK.Web.Razor.Pages.Chapters.Admin.Events;
+namespace ODK.Web.Razor.Pages.Chapters.Admin.Venues;
 
 public class VenueEventsModel : VenueAdminPageModel
 {

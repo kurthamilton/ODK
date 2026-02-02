@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Countries;
 using ODK.Services.Security;
 using ODK.Services.Venues;
+using ODK.Services.Venues.Models;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Admin.Venues;
@@ -26,7 +27,7 @@ public class CreateModel : OdkGroupAdminPageModel
     public async Task<IActionResult> OnPostAsync(VenueFormViewModel viewModel)
     {
         var request = MemberChapterAdminServiceRequest;
-        var result = await _venueAdminService.CreateVenue(request, new CreateVenue
+        var result = await _venueAdminService.CreateVenue(request, new VenueCreateModel
         {
             Address = viewModel.Address,
             Location = LatLong.FromCoords(viewModel.Lat, viewModel.Long),

@@ -1,6 +1,6 @@
-﻿namespace ODK.Services.Features;
+﻿namespace ODK.Services.Features.Models;
 
-public class UpdateFeature
+public class FeatureUpdateModel
 {
     public required string Description { get; set; }
 

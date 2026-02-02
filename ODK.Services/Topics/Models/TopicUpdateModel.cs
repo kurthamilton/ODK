@@ -1,6 +1,6 @@
 ﻿namespace ODK.Services.Topics.Models;
 
-public class UpdateTopicModel
+public class TopicUpdateModel
 {
     public required Guid TopicGroupId { get; init; }
 }

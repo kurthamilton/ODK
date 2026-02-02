@@ -113,9 +113,9 @@ public class GroupsController : OdkControllerBase
     public async Task<IActionResult> UpdateChapterProfile(Guid chapterId,
         [FromForm] ChapterProfileFormSubmitViewModel profileViewModel)
     {
-        var model = new UpdateMemberChapterProfile
+        var model = new MemberChapterProfileUpdateModel
         {
-            Properties = profileViewModel.Properties.Select(x => new UpdateMemberProperty
+            Properties = profileViewModel.Properties.Select(x => new MemberPropertyUpdateModel
             {
                 ChapterPropertyId = x.ChapterPropertyId,
                 Value = string.Equals(x.Value, "Other", StringComparison.InvariantCultureIgnoreCase) &&

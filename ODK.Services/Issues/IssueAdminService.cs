@@ -1,6 +1,6 @@
 ﻿using ODK.Core.Issues;
 using ODK.Data.Core;
-using ODK.Services.Issues.Models;
+using ODK.Services.Issues.ViewModels;
 using ODK.Services.Members;
 
 namespace ODK.Services.Issues;

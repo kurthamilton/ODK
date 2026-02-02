@@ -112,7 +112,7 @@ public class MemberService : IMemberService
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult<Member?>> CreateAccount(ServiceRequest request, CreateAccountModel model)
+    public async Task<ServiceResult<Member?>> CreateAccount(ServiceRequest request, AccountCreateModel model)
     {
         var (existing, siteSubscription, distanceUnits, topics) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetByEmailAddress(model.EmailAddress),
@@ -226,7 +226,7 @@ public class MemberService : IMemberService
         return ServiceResult<Member?>.Successful(member);
     }
 
-    public async Task<ServiceResult> CreateChapterAccount(ServiceRequest request, Guid chapterId, CreateMemberProfile model)
+    public async Task<ServiceResult> CreateChapterAccount(ServiceRequest request, Guid chapterId, MemberCreateProfile model)
     {
         await _loggingService.Info($"Creating chapter account for {model.EmailAddress}");
 
@@ -504,7 +504,7 @@ public class MemberService : IMemberService
     }
 
     public async Task<ServiceResult> JoinChapter(
-        MemberChapterServiceRequest request, IEnumerable<UpdateMemberProperty> properties)
+        MemberChapterServiceRequest request, IEnumerable<MemberPropertyUpdateModel> properties)
     {
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
@@ -783,7 +783,7 @@ public class MemberService : IMemberService
     }
 
     public async Task<ServiceResult> UpdateMemberChapterProfile(
-        MemberChapterServiceRequest request, UpdateMemberChapterProfile model)
+        MemberChapterServiceRequest request, MemberChapterProfileUpdateModel model)
     {
         var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
 
@@ -972,7 +972,7 @@ public class MemberService : IMemberService
     }
 
     public async Task<ServiceResult> UpdateMemberSiteProfile(
-        MemberServiceRequest request, UpdateMemberSiteProfile model)
+        MemberServiceRequest request, MemberSiteProfileUpdateModel model)
     {
         var member = request.CurrentMember;
 
@@ -1021,7 +1021,7 @@ public class MemberService : IMemberService
 
     private static IEnumerable<string> GetMissingMemberProfileProperties(
         IEnumerable<ChapterProperty> chapterProperties,
-        IEnumerable<UpdateMemberProperty> memberProperties,
+        IEnumerable<MemberPropertyUpdateModel> memberProperties,
         bool forApplication)
     {
         var memberPropertyDictionary = memberProperties
@@ -1162,7 +1162,7 @@ public class MemberService : IMemberService
 
     private ServiceResult ValidateMemberProfile(
         IReadOnlyCollection<ChapterProperty> chapterProperties,
-        UpdateMemberChapterProfile profile,
+        MemberChapterProfileUpdateModel profile,
         bool forApplication)
     {
         var missingProperties = GetMissingMemberProfileProperties(chapterProperties, profile.Properties, forApplication).ToArray();
@@ -1176,7 +1176,7 @@ public class MemberService : IMemberService
 
     private ServiceResult ValidateMemberProfile(
         IReadOnlyCollection<ChapterProperty> chapterProperties,
-        CreateMemberProfile profile,
+        MemberCreateProfile profile,
         bool forApplication)
     {
         var propertyResult = ValidateMemberProperties(chapterProperties, profile.Properties, forApplication);
@@ -1191,7 +1191,7 @@ public class MemberService : IMemberService
 
     private ServiceResult ValidateMemberProperties(
         IReadOnlyCollection<ChapterProperty> chapterProperties,
-        IEnumerable<UpdateMemberProperty> memberProperties,
+        IEnumerable<MemberPropertyUpdateModel> memberProperties,
         bool forApplication)
     {
         var missingProperties = GetMissingMemberProfileProperties(chapterProperties, memberProperties, forApplication)

@@ -4,7 +4,7 @@ using ODK.Core.Members;
 
 namespace ODK.Services.Payments.Models;
 
-public class CreateRemoteAccountOptions
+public class RemoteAccountCreateOptions
 {
     public required Chapter Chapter { get; init; }
 
