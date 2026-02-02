@@ -1,6 +1,6 @@
 ﻿namespace ODK.Services.Chapters.Models;
 
-public class CreateChapterSubscription
+public class ChapterSubscriptionCreateModel
 {
     public required double Amount { get; init; }
 

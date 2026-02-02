@@ -2,7 +2,7 @@
 
 namespace ODK.Services.Chapters.Models;
 
-public class CreateChapterProperty : UpdateChapterProperty
+public class ChapterPropertyCreateModel : ChapterPropertyUpdateModel
 {
     public DataType DataType { get; set; }
 }

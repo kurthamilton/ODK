@@ -2,7 +2,7 @@
 
 namespace ODK.Services.Chapters.Models;
 
-public class UpdateChapterPrivacySettings
+public class ChapterPrivacySettingsUpdateModel
 {
     public ChapterFeatureVisibilityType? Conversations { get; init; }
 

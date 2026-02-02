@@ -10,6 +10,7 @@ using ODK.Core.Venues;
 using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
+using ODK.Services.Events.Models;
 using ODK.Services.Events.ViewModels;
 using ODK.Services.Exceptions;
 using ODK.Services.Logging;
@@ -59,7 +60,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     }
 
     public async Task<ServiceResult> CreateEvent(
-        MemberChapterAdminServiceRequest request, CreateEvent model, bool draft)
+        MemberChapterAdminServiceRequest request, EventCreateModel model, bool draft)
     {
         var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
 
@@ -669,7 +670,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     }
 
     public async Task<ServiceResult> UpdateEvent(
-        MemberChapterAdminServiceRequest request, Guid id, CreateEvent model)
+        MemberChapterAdminServiceRequest request, Guid id, EventCreateModel model)
     {
         var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
 
@@ -807,7 +808,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     }
 
     public async Task UpdateEventSettings(
-        MemberChapterAdminServiceRequest request, UpdateEventSettings model)
+        MemberChapterAdminServiceRequest request, EventSettingsUpdateModel model)
     {
         var chapter = request.Chapter;
 

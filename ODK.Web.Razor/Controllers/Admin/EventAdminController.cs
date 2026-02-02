@@ -121,7 +121,7 @@ public class EventAdminController : AdminControllerBase
             ChapterAdminSecurable.EventSettings,
             MemberChapterServiceRequest);
 
-        await _eventAdminService.UpdateEventSettings(request, new UpdateEventSettings
+        await _eventAdminService.UpdateEventSettings(request, new EventSettingsUpdateModel
         {
             DefaultDayOfWeek = viewModel.DefaultDayOfWeek,
             DefaultDescription = viewModel.DefaultDescription,

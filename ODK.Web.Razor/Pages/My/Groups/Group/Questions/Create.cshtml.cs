@@ -25,7 +25,7 @@ public class CreateModel : OdkGroupAdminPageModel
     {
         var serviceRequest = MemberChapterAdminServiceRequest;
 
-        var result = await _chapterAdminService.CreateChapterQuestion(serviceRequest, new CreateChapterQuestion
+        var result = await _chapterAdminService.CreateChapterQuestion(serviceRequest, new ChapterQuestionCreateModel
         {
             Name = model.Question ?? string.Empty,
             Answer = model.Answer ?? string.Empty

@@ -1,12 +1,13 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Events;
+using ODK.Services.Events.Models;
 using ODK.Services.Events.ViewModels;
 
 namespace ODK.Services.Events;
 
 public interface IEventAdminService
 {
-    Task<ServiceResult> CreateEvent(MemberChapterAdminServiceRequest request, CreateEvent createEvent, bool draft);
+    Task<ServiceResult> CreateEvent(MemberChapterAdminServiceRequest request, EventCreateModel createEvent, bool draft);
 
     Task DeleteEvent(MemberChapterAdminServiceRequest request, Guid id);
 
@@ -37,9 +38,9 @@ public interface IEventAdminService
 
     Task<ServiceResult> SetMissingEventShortcodes(MemberServiceRequest request);
 
-    Task UpdateEventSettings(MemberChapterAdminServiceRequest request, UpdateEventSettings model);
+    Task UpdateEventSettings(MemberChapterAdminServiceRequest request, EventSettingsUpdateModel model);
 
-    Task<ServiceResult> UpdateEvent(MemberChapterAdminServiceRequest request, Guid id, CreateEvent @event);
+    Task<ServiceResult> UpdateEvent(MemberChapterAdminServiceRequest request, Guid id, EventCreateModel @event);
 
     Task<ServiceResult> UpdateMemberResponse(MemberChapterAdminServiceRequest request, Guid eventId, Guid memberId,
         EventResponseType responseType);

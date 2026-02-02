@@ -68,7 +68,7 @@ public class ChapterAdminController : AdminControllerBase
 
         var request = MemberChapterAdminServiceRequest.Create(
             ChapterAdminSecurable.MemberImage, MemberChapterServiceRequest);
-        var result = await _chapterAdminService.UpdateChapterImage(request, new UpdateChapterImage
+        var result = await _chapterAdminService.UpdateChapterImage(request, new ChapterImageUpdateModel
         {
             ImageData = bytes
         });
@@ -82,7 +82,7 @@ public class ChapterAdminController : AdminControllerBase
     {
         var request = MemberChapterAdminServiceRequest.Create(
             ChapterAdminSecurable.PrivacySettings, MemberChapterServiceRequest);
-        await _chapterAdminService.UpdateChapterLinks(request, new UpdateChapterLinks
+        await _chapterAdminService.UpdateChapterLinks(request, new ChapterLinksUpdateModel
         {
             Facebook = viewModel.Facebook ?? string.Empty,
             Instagram = viewModel.Instagram ?? string.Empty,
@@ -122,7 +122,7 @@ public class ChapterAdminController : AdminControllerBase
         var request = MemberChapterAdminServiceRequest.Create(
             ChapterAdminSecurable.MembershipSettings, MemberChapterServiceRequest);
         var result = await _chapterAdminService.UpdateChapterMembershipSettings(request,
-            new UpdateChapterMembershipSettings
+            new ChapterMembershipSettingsUpdateModel
             {
                 ApproveNewMembers = viewModel.ApproveNewMembers,
                 Enabled = viewModel.Enabled,
@@ -162,9 +162,9 @@ public class ChapterAdminController : AdminControllerBase
     {
         var request = MemberChapterAdminServiceRequest.Create(
             ChapterAdminSecurable.Pages, MemberChapterServiceRequest);
-        var result = await _chapterAdminService.UpdateChapterPages(request, new UpdateChapterPages
+        var result = await _chapterAdminService.UpdateChapterPages(request, new ChapterPagesUpdateModel
         {
-            Pages = viewModel.Pages.Select(x => new UpdateChapterPage
+            Pages = viewModel.Pages.Select(x => new ChapterPageUpdateModel
             {
                 Hidden = x.Hidden,
                 Title = x.Title,
@@ -194,7 +194,7 @@ public class ChapterAdminController : AdminControllerBase
     {
         var request = MemberChapterAdminServiceRequest.Create(
             ChapterAdminSecurable.PrivacySettings, MemberChapterServiceRequest);
-        var result = await _chapterAdminService.UpdateChapterPrivacySettings(request, new UpdateChapterPrivacySettings
+        var result = await _chapterAdminService.UpdateChapterPrivacySettings(request, new ChapterPrivacySettingsUpdateModel
         {
             Conversations = viewModel.Conversations,
             EventResponseVisibility = viewModel.EventResponseVisibility,
@@ -210,7 +210,7 @@ public class ChapterAdminController : AdminControllerBase
     public async Task<IActionResult> CreateQuestion(Guid chapterId,
         [FromForm] string? name, [FromForm] string? answer)
     {
-        var model = new CreateChapterQuestion
+        var model = new ChapterQuestionCreateModel
         {
             Answer = answer ?? string.Empty,
             Name = name ?? string.Empty
@@ -280,7 +280,7 @@ public class ChapterAdminController : AdminControllerBase
     {
         var request = MemberChapterAdminServiceRequest.Create(
             ChapterAdminSecurable.Branding, MemberChapterServiceRequest);
-        var result = await _chapterAdminService.UpdateChapterTheme(request, new UpdateChapterTheme
+        var result = await _chapterAdminService.UpdateChapterTheme(request, new ChapterThemeUpdateModel
         {
             Background = viewModel.Background,
             Color = viewModel.Color
@@ -352,7 +352,7 @@ public class ChapterAdminController : AdminControllerBase
     {
         var request = MemberChapterAdminServiceRequest.Create(
             ChapterAdminSecurable.Texts, MemberChapterServiceRequest);
-        var result = await _chapterAdminService.UpdateChapterTexts(request, new UpdateChapterTexts
+        var result = await _chapterAdminService.UpdateChapterTexts(request, new ChapterTextsUpdateModel
         {
             Description = viewModel.Description,
             RegisterText = viewModel.RegisterMessage,

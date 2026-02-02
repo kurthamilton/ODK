@@ -19,7 +19,7 @@ public class PaymentSettingsModel : ChapterSiteAdminPageModel
     {
         var request = MemberChapterAdminServiceRequest;
         var result = await _chapterAdminService.UpdateChapterPaymentSettings(request,
-            new UpdateChapterPaymentSettings
+            new ChapterPaymentSettingsUpdateModel
             {
                 CurrencyId = viewModel.CurrencyId
             });

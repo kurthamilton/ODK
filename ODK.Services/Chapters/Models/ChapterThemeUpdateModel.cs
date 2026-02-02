@@ -1,6 +1,6 @@
 ﻿namespace ODK.Services.Chapters.Models;
 
-public class UpdateChapterTheme
+public class ChapterThemeUpdateModel
 {
     public required string? Background { get; init; }
 

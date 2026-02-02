@@ -1,6 +1,6 @@
 ﻿namespace ODK.Services.Chapters.Models;
 
-public class UpdateChapterTexts
+public class ChapterTextsUpdateModel
 {
     public required string? Description { get; init; }
 

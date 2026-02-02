@@ -1,6 +1,6 @@
 ﻿namespace ODK.Services.Events;
 
-public class UpdateEventSettings
+public class EventSettingsUpdateModel
 {
     public required DayOfWeek? DefaultDayOfWeek { get; init; }
 

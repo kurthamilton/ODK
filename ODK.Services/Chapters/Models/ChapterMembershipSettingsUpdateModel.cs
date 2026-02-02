@@ -1,6 +1,6 @@
 ﻿namespace ODK.Services.Chapters.Models;
 
-public class UpdateChapterMembershipSettings
+public class ChapterMembershipSettingsUpdateModel
 {
     public required bool ApproveNewMembers { get; set; }
 

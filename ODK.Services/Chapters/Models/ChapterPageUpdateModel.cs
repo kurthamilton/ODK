@@ -2,7 +2,7 @@
 
 namespace ODK.Services.Chapters.Models;
 
-public class UpdateChapterPage
+public class ChapterPageUpdateModel
 {
     public bool Hidden { get; init; }
 

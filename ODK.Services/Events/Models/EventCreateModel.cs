@@ -1,6 +1,6 @@
-﻿namespace ODK.Services.Events;
+﻿namespace ODK.Services.Events.Models;
 
-public class CreateEvent
+public class EventCreateModel
 {
     public required int? AttendeeLimit { get; init; }
 

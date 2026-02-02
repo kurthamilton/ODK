@@ -28,7 +28,7 @@ public class AdminMemberModel : AdminPageModel
     public async Task<IActionResult> OnPostAsync(Guid id, AdminMemberFormViewModel viewModel)
     {
         var serviceRequest = MemberChapterAdminServiceRequest;
-        var result = await _chapterAdminService.UpdateChapterAdminMember(serviceRequest, id, new UpdateChapterAdminMember
+        var result = await _chapterAdminService.UpdateChapterAdminMember(serviceRequest, id, new ChapterAdminMemberUpdateModel
         {
             AdminEmailAddress = viewModel.AdminEmailAddress,
             ReceiveContactEmails = viewModel.ReceiveContactEmails,

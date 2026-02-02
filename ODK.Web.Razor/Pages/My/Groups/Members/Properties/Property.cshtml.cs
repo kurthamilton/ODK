@@ -27,7 +27,7 @@ public class PropertyModel : OdkGroupAdminPageModel
     public async Task<IActionResult> OnPostAsync(Guid propertyId, ChapterPropertyFormViewModel viewModel)
     {
         var request = MemberChapterAdminServiceRequest;
-        var result = await _chapterAdminService.UpdateChapterProperty(request, propertyId, new UpdateChapterProperty
+        var result = await _chapterAdminService.UpdateChapterProperty(request, propertyId, new ChapterPropertyUpdateModel
         {
             ApplicationOnly = viewModel.ApplicationOnly,
             DisplayName = viewModel.DisplayName,

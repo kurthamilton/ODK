@@ -24,7 +24,7 @@ public class CreateModel : OdkGroupAdminPageModel
     public async Task<IActionResult> OnPostAsync(ChapterPropertyFormViewModel viewModel)
     {
         var request = MemberChapterAdminServiceRequest;
-        var result = await _chapterAdminService.CreateChapterProperty(request, new CreateChapterProperty
+        var result = await _chapterAdminService.CreateChapterProperty(request, new ChapterPropertyCreateModel
         {
             ApplicationOnly = viewModel.ApplicationOnly,
             DataType = viewModel.DataType,

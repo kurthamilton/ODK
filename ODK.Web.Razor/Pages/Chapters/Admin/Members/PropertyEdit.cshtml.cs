@@ -29,7 +29,7 @@ public class PropertyEditModel : AdminPageModel
     public async Task<IActionResult> OnPostAsync(Guid id, ChapterPropertyFormViewModel viewModel)
     {
         var serviceRequest = MemberChapterAdminServiceRequest;
-        var result = await _chapterAdminService.UpdateChapterProperty(serviceRequest, id, new UpdateChapterProperty
+        var result = await _chapterAdminService.UpdateChapterProperty(serviceRequest, id, new ChapterPropertyUpdateModel
         {
             ApplicationOnly = viewModel.ApplicationOnly,
             DisplayName = viewModel.DisplayName,

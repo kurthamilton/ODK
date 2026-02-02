@@ -29,7 +29,7 @@ public class SubscriptionEditModel : AdminPageModel
     public async Task<IActionResult> OnPostAsync(Guid id, SubscriptionFormSubmitViewModel viewModel)
     {
         var serviceRequest = MemberChapterAdminServiceRequest;
-        var result = await _chapterAdminService.UpdateChapterSubscription(serviceRequest, id, new CreateChapterSubscription
+        var result = await _chapterAdminService.UpdateChapterSubscription(serviceRequest, id, new ChapterSubscriptionCreateModel
         {
             Amount = viewModel.Amount ?? 0,
             Description = viewModel.Description,

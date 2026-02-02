@@ -355,7 +355,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ServiceResult> CreateChapterProperty(MemberChapterAdminServiceRequest request,
-        CreateChapterProperty model)
+        ChapterPropertyCreateModel model)
     {
         var chapterId = request.Chapter.Id;
 
@@ -407,7 +407,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ServiceResult> CreateChapterQuestion(MemberChapterAdminServiceRequest request,
-        CreateChapterQuestion model)
+        ChapterQuestionCreateModel model)
     {
         var chapterId = request.Chapter.Id;
 
@@ -439,7 +439,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<ServiceResult> CreateChapterSubscription(
         MemberChapterAdminServiceRequest request,
-        CreateChapterSubscription model)
+        ChapterSubscriptionCreateModel model)
     {
         var (chapter, chapterId, currentMember) = (request.Chapter, request.Chapter.Id, request.CurrentMember);
 
@@ -1444,7 +1444,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     public async Task<ServiceResult> UpdateChapterAdminMember(
         MemberChapterAdminServiceRequest request, 
         Guid memberId,
-        UpdateChapterAdminMember model)
+        ChapterAdminMemberUpdateModel model)
     {
         var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
 
@@ -1471,7 +1471,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> UpdateChapterImage(MemberChapterAdminServiceRequest request, UpdateChapterImage model)
+    public async Task<ServiceResult> UpdateChapterImage(MemberChapterAdminServiceRequest request, ChapterImageUpdateModel model)
     {
         var chapter = request.Chapter;
 
@@ -1493,7 +1493,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return ServiceResult.Successful();
     }
 
-    public async Task UpdateChapterLinks(MemberChapterAdminServiceRequest request, UpdateChapterLinks model)
+    public async Task UpdateChapterLinks(MemberChapterAdminServiceRequest request, ChapterLinksUpdateModel model)
     {
         var chapter = request.Chapter;
 
@@ -1635,7 +1635,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ServiceResult> UpdateChapterMembershipSettings(
-        MemberChapterAdminServiceRequest request, UpdateChapterMembershipSettings model)
+        MemberChapterAdminServiceRequest request, ChapterMembershipSettingsUpdateModel model)
     {
         var chapter = request.Chapter;
 
@@ -1688,7 +1688,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> UpdateChapterPages(MemberChapterAdminServiceRequest request, UpdateChapterPages model)
+    public async Task<ServiceResult> UpdateChapterPages(MemberChapterAdminServiceRequest request, ChapterPagesUpdateModel model)
     {
         var chapter = request.Chapter;
 
@@ -1749,7 +1749,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<ServiceResult> UpdateChapterPaymentSettings(
         MemberChapterAdminServiceRequest request,
-        UpdateChapterPaymentSettings model)
+        ChapterPaymentSettingsUpdateModel model)
     {
         var chapter = request.Chapter;
 
@@ -1794,7 +1794,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<ServiceResult> UpdateChapterPrivacySettings(
         MemberChapterAdminServiceRequest request,
-        UpdateChapterPrivacySettings model)
+        ChapterPrivacySettingsUpdateModel model)
     {
         var chapter = request.Chapter;
 
@@ -1828,7 +1828,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ServiceResult> UpdateChapterProperty(MemberChapterAdminServiceRequest request,
-        Guid propertyId, UpdateChapterProperty model)
+        Guid propertyId, ChapterPropertyUpdateModel model)
     {
         var chapter = request.Chapter;
 
@@ -1931,7 +1931,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return properties.OrderBy(x => x.DisplayOrder).ToArray();
     }
 
-    public async Task<ServiceResult> UpdateChapterQuestion(MemberChapterAdminServiceRequest request, Guid questionId, CreateChapterQuestion model)
+    public async Task<ServiceResult> UpdateChapterQuestion(MemberChapterAdminServiceRequest request, Guid questionId, ChapterQuestionCreateModel model)
     {
         var chapter = request.Chapter;
 
@@ -2020,7 +2020,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ServiceResult> UpdateChapterSubscription(MemberChapterAdminServiceRequest request,
-        Guid id, CreateChapterSubscription model)
+        Guid id, ChapterSubscriptionCreateModel model)
     {
         var chapter = request.Chapter;
 
@@ -2070,7 +2070,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ServiceResult> UpdateChapterTexts(MemberChapterAdminServiceRequest request,
-        UpdateChapterTexts model)
+        ChapterTextsUpdateModel model)
     {
         var chapter = request.Chapter;
 
@@ -2110,7 +2110,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ServiceResult> UpdateChapterTheme(
-        MemberChapterAdminServiceRequest request, UpdateChapterTheme model)
+        MemberChapterAdminServiceRequest request, ChapterThemeUpdateModel model)
     {
         var chapter = request.Chapter;
 

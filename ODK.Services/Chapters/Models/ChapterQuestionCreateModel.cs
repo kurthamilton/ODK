@@ -1,6 +1,6 @@
 ﻿namespace ODK.Services.Chapters.Models;
 
-public class CreateChapterQuestion
+public class ChapterQuestionCreateModel
 {
     public required string Answer { get; init; }
 

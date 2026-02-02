@@ -25,7 +25,7 @@ public class CreateModel : OdkGroupAdminPageModel
     public async Task<IActionResult> OnPostAsync(SubscriptionFormSubmitViewModel viewModel)
     {
         var request = MemberChapterAdminServiceRequest;
-        var result = await _chapterAdminService.CreateChapterSubscription(request, new CreateChapterSubscription
+        var result = await _chapterAdminService.CreateChapterSubscription(request, new ChapterSubscriptionCreateModel
         {
             Amount = viewModel.Amount ?? 0,
             Description = viewModel.Description,

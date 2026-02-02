@@ -18,12 +18,12 @@ public interface IChapterAdminService
     Task<ServiceResult<ChapterPaymentAccount>> CreateChapterPaymentAccount(
         MemberChapterAdminServiceRequest request, string refreshPath, string returnPath);
 
-    Task<ServiceResult> CreateChapterProperty(MemberChapterAdminServiceRequest request, CreateChapterProperty model);
+    Task<ServiceResult> CreateChapterProperty(MemberChapterAdminServiceRequest request, ChapterPropertyCreateModel model);
 
-    Task<ServiceResult> CreateChapterQuestion(MemberChapterAdminServiceRequest request, CreateChapterQuestion model);
+    Task<ServiceResult> CreateChapterQuestion(MemberChapterAdminServiceRequest request, ChapterQuestionCreateModel model);
 
     Task<ServiceResult> CreateChapterSubscription(
-        MemberChapterAdminServiceRequest request, CreateChapterSubscription model);    
+        MemberChapterAdminServiceRequest request, ChapterSubscriptionCreateModel model);    
 
     Task<ServiceResult> DeleteChapterAdminMember(MemberChapterAdminServiceRequest request, Guid memberId);
 
@@ -116,13 +116,13 @@ public interface IChapterAdminService
     Task<ServiceResult> UpdateChapterAdminMember(
         MemberChapterAdminServiceRequest request, 
         Guid memberId,
-        UpdateChapterAdminMember model);
+        ChapterAdminMemberUpdateModel model);
 
     Task<ServiceResult> UpdateChapterDescription(MemberChapterAdminServiceRequest request, string description);
 
-    Task<ServiceResult> UpdateChapterImage(MemberChapterAdminServiceRequest request, UpdateChapterImage model);
+    Task<ServiceResult> UpdateChapterImage(MemberChapterAdminServiceRequest request, ChapterImageUpdateModel model);
 
-    Task UpdateChapterLinks(MemberChapterAdminServiceRequest request, UpdateChapterLinks model);
+    Task UpdateChapterLinks(MemberChapterAdminServiceRequest request, ChapterLinksUpdateModel model);
 
     Task<ServiceResult> UpdateChapterLocation(
         MemberChapterAdminServiceRequest request,
@@ -131,24 +131,24 @@ public interface IChapterAdminService
 
     Task<ServiceResult> UpdateChapterMembershipSettings(
         MemberChapterAdminServiceRequest request,
-        UpdateChapterMembershipSettings model);
+        ChapterMembershipSettingsUpdateModel model);
 
     Task<ServiceResult> UpdateChapterPages(
         MemberChapterAdminServiceRequest request, 
-        UpdateChapterPages model);
+        ChapterPagesUpdateModel model);
 
     Task<ServiceResult> UpdateChapterPaymentSettings(
         MemberChapterAdminServiceRequest request,
-        UpdateChapterPaymentSettings model);
+        ChapterPaymentSettingsUpdateModel model);
 
     Task<ServiceResult> UpdateChapterPrivacySettings(
         MemberChapterAdminServiceRequest request,
-        UpdateChapterPrivacySettings model);
+        ChapterPrivacySettingsUpdateModel model);
 
     Task<ServiceResult> UpdateChapterProperty(
         MemberChapterAdminServiceRequest request,
         Guid propertyId, 
-        UpdateChapterProperty model);
+        ChapterPropertyUpdateModel model);
 
     Task<IReadOnlyCollection<ChapterProperty>> UpdateChapterPropertyDisplayOrder(
         MemberChapterAdminServiceRequest request,
@@ -158,7 +158,7 @@ public interface IChapterAdminService
     Task<ServiceResult> UpdateChapterQuestion(
         MemberChapterAdminServiceRequest request,
         Guid questionId, 
-        CreateChapterQuestion model);
+        ChapterQuestionCreateModel model);
 
     Task<IReadOnlyCollection<ChapterQuestion>> UpdateChapterQuestionDisplayOrder(
         MemberChapterAdminServiceRequest request,
@@ -170,13 +170,13 @@ public interface IChapterAdminService
     Task<ServiceResult> UpdateChapterSubscription(
         MemberChapterAdminServiceRequest request,
         Guid subscriptionId, 
-        CreateChapterSubscription model);
+        ChapterSubscriptionCreateModel model);
 
     Task<ServiceResult> UpdateChapterTexts(
         MemberChapterAdminServiceRequest request,
-        UpdateChapterTexts model);
+        ChapterTextsUpdateModel model);
 
-    Task<ServiceResult> UpdateChapterTheme(MemberChapterAdminServiceRequest request, UpdateChapterTheme model);
+    Task<ServiceResult> UpdateChapterTheme(MemberChapterAdminServiceRequest request, ChapterThemeUpdateModel model);
 
     Task<ServiceResult> UpdateChapterTopics(
         MemberChapterAdminServiceRequest request,

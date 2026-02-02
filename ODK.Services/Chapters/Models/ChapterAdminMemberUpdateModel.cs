@@ -1,6 +1,6 @@
 ﻿namespace ODK.Services.Chapters.Models;
 
-public class UpdateChapterAdminMember
+public class ChapterAdminMemberUpdateModel
 {
     public string? AdminEmailAddress { get; set; }
 

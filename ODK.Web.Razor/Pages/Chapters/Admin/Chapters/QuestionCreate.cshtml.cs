@@ -26,7 +26,7 @@ public class QuestionCreateModel : AdminPageModel
     {
         var serviceRequest = MemberChapterAdminServiceRequest;
         var result = await _chapterAdminService.CreateChapterQuestion(serviceRequest,
-            new CreateChapterQuestion
+            new ChapterQuestionCreateModel
             {
                 Answer = viewModel.Answer ?? "",
                 Name = viewModel.Question ?? ""

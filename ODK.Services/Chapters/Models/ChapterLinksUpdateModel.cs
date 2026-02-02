@@ -1,6 +1,6 @@
 ﻿namespace ODK.Services.Chapters.Models;
 
-public class UpdateChapterLinks
+public class ChapterLinksUpdateModel
 {
     public required string? Facebook { get; init; }
 

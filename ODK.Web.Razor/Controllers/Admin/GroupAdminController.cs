@@ -68,7 +68,7 @@ public class GroupAdminController : OdkControllerBase
         var request = MemberChapterAdminServiceRequest.Create(
             securable, MemberChapterServiceRequest);
         var result = await _chapterAdminService.UpdateChapterQuestion(request, questionId,
-            new CreateChapterQuestion
+            new ChapterQuestionCreateModel
             {
                 Answer = viewModel.Answer ?? string.Empty,
                 Name = viewModel.Question ?? string.Empty

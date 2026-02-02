@@ -7,6 +7,7 @@ using FluentAssertions;
 using Moq;
 using NUnit.Framework;
 using ODK.Core.Chapters;
+using ODK.Core.Countries;
 using ODK.Core.Events;
 using ODK.Core.Members;
 using ODK.Core.Notifications;
@@ -17,6 +18,7 @@ using ODK.Data.Core;
 using ODK.Data.Core.Repositories;
 using ODK.Services.Authorization;
 using ODK.Services.Events;
+using ODK.Services.Events.Models;
 using ODK.Services.Logging;
 using ODK.Services.Members;
 using ODK.Services.Notifications;
@@ -78,12 +80,7 @@ public static class EventAdminServiceTests
             unitOfWork: unitOfWork);
 
         var memberChapterServiceRequest = MemberChapterServiceRequest.Create(
-            new Chapter
-            {
-                Id = ChapterId,
-                Name = "",
-                Slug = ""
-            },
+            chapter,
             new Member { Id = CurrentMemberId },
             Mock.Of<IHttpRequestContext>(),
             PlatformType.Default);
@@ -93,7 +90,7 @@ public static class EventAdminServiceTests
             memberChapterServiceRequest);
 
         // Act
-        await service.CreateEvent(request, new CreateEvent
+        await service.CreateEvent(request, new EventCreateModel
         {
             AttendeeLimit = null,
             Date = eventDate,
@@ -123,6 +120,17 @@ public static class EventAdminServiceTests
             Id = ChapterId,
             Name = "Dummy",
             Slug = "slug"
+        };
+    }
+
+    private static ChapterAdminMember CreateChapterAdminMember(
+        Guid? chapterId,
+        Guid? memberId)
+    {
+        return new ChapterAdminMember
+        {
+            ChapterId = chapterId ?? Guid.NewGuid(),
+            MemberId = memberId ?? Guid.NewGuid()
         };
     }
 
@@ -180,6 +188,19 @@ public static class EventAdminServiceTests
         return mock.Object;
     }
 
+    private static ICurrencyRepository CreateMockCurrencyRepository()
+    {       
+        var mock = new Mock<ICurrencyRepository>();
+        mock.Setup(x => x.GetByChapterId(It.IsAny<Guid>()))
+            .Returns(new MockDeferredQuerySingle<Currency>(new Currency
+            {
+                Code = "",
+                Symbol = "$",
+                Id = Guid.NewGuid()
+            }));
+        return mock.Object;
+    }
+
     private static IEventEmailRepository CreateMockEventEmailRepository()
     {
         var mock = new Mock<IEventEmailRepository>();
@@ -197,6 +218,10 @@ public static class EventAdminServiceTests
     private static IEventRepository CreateMockEventRepository()
     {
         var mock = new Mock<IEventRepository>();
+
+        mock.Setup(x => x.ShortcodeExists(It.IsAny<string>()))
+            .Returns(new MockDeferredQuery<bool>(false));
+
         return mock.Object;
     }
 
@@ -249,12 +274,14 @@ public static class EventAdminServiceTests
     private static MockUnitOfWork CreateMockUnitOfWork(
         IChapterRepository? chapterRepository = null,
         IChapterEventSettingsRepository? chapterEventSettingsRepository = null,
-        IEventEmailRepository? eventEmailRepository = null)
+        IEventEmailRepository? eventEmailRepository = null,
+        IChapterAdminMemberRepository? chapterAdminMemberRepository = null)
     {
         var mock = new Mock<IUnitOfWork>();
 
         mock.Setup(x => x.ChapterAdminMemberRepository)
-            .Returns(CreateMockChapterAdminMemberRepository([new ChapterAdminMember { ChapterId = ChapterId, MemberId = CurrentMemberId }]));
+            .Returns(chapterAdminMemberRepository ?? CreateMockChapterAdminMemberRepository(
+                [new ChapterAdminMember { ChapterId = ChapterId, MemberId = CurrentMemberId, Role = ChapterAdminRole.Admin }]));
 
         mock.Setup(x => x.ChapterEventSettingsRepository)
             .Returns(chapterEventSettingsRepository ?? CreateMockChapterEventSettingsRepository());
@@ -267,6 +294,9 @@ public static class EventAdminServiceTests
 
         mock.Setup(x => x.ChapterTopicRepository)
             .Returns(CreateMockChapterTopicRepository());
+
+        mock.Setup(x => x.CurrencyRepository)
+            .Returns(CreateMockCurrencyRepository());
 
         mock.Setup(x => x.EventEmailRepository)
             .Returns(eventEmailRepository ?? CreateMockEventEmailRepository());

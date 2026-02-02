@@ -1,6 +1,6 @@
 ﻿namespace ODK.Services.Chapters.Models;
 
-public class UpdateChapterProperty
+public class ChapterPropertyUpdateModel
 {
     public string? DisplayName { get; set; }
 
