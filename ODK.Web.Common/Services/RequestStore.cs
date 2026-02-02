@@ -1,18 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using ODK.Core.Chapters;
 using ODK.Core.Exceptions;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
-using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
 using ODK.Services;
 using ODK.Services.Exceptions;
 using ODK.Services.Logging;
-using ODK.Web.Common.Extensions;
 
 namespace ODK.Web.Common.Services;
 
@@ -26,7 +23,6 @@ public class RequestStore : IRequestStore
     private ChapterAdminMember? _currentChapterAdminMember;
     private Member? _currentMember;
     private readonly ILoggingService _loggingService;
-    private bool _loaded;
     private ServiceRequest? _serviceRequest;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -58,6 +54,8 @@ public class RequestStore : IRequestStore
     public Guid? CurrentMemberIdOrDefault => ServiceRequest.CurrentMemberIdOrDefault;
     
     public Member? CurrentMemberOrDefault => _currentMember;
+
+    public bool Loaded { get; private set; }
 
     public MemberChapterServiceRequest MemberChapterServiceRequest => _memberChapterServiceRequest.Value;
 
@@ -96,7 +94,7 @@ public class RequestStore : IRequestStore
         _chapter = null;
         _currentChapterAdminMember = null;
         _currentMember = null;
-        _loaded = false;
+        Loaded = false;
         _serviceRequest = null;
     }
 
@@ -173,7 +171,7 @@ public class RequestStore : IRequestStore
 
     private async Task<IRequestStore> Load(ServiceRequest serviceRequest, bool verbose)
     {
-        if (_loaded)
+        if (Loaded)
         {
             return this;
         }
@@ -190,7 +188,7 @@ public class RequestStore : IRequestStore
 
         _chapter = chapter;
         _currentMember = currentMember;
-        _loaded = true;
+        Loaded = true;
 
         return this;
     }

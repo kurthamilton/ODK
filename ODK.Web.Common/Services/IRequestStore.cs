@@ -21,6 +21,8 @@ public interface IRequestStore
 
     Member? CurrentMemberOrDefault { get; }
 
+    bool Loaded { get; }
+
     MemberChapterServiceRequest MemberChapterServiceRequest { get; }
 
     MemberServiceRequest MemberServiceRequest { get; }
