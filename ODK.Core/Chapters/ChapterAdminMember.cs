@@ -24,7 +24,7 @@ public class ChapterAdminMember : IDatabaseEntity
     public ChapterAdminRole Role { get; set; }
 
     public bool HasAccessTo(ChapterAdminRole target)
-        => Role.HasAccessTo(target, Member);
+        => this.HasAccessTo(target, Member);
 
     public EmailAddressee ToEmailAddressee()
     {

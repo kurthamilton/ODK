@@ -1,7 +1,32 @@
-﻿@using ODK.Web.Razor.Models.Admin
+﻿@using ODK.Core.Chapters
+@using ODK.Services.Security
+@using ODK.Web.Common.Services
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model AdminLinkViewModel
+@inject IRequestStore RequestStore
 @{
+    if (Model.UnauthorizedBehaviour != null)
+    {
+        var currentMember = RequestStore.CurrentMember;
+        var adminMember = await RequestStore.GetCurrentChapterAdminMember();
+        var requiredRole = Model.Route.Securable.Role();
+
+        if (!adminMember.HasAccessTo(requiredRole, currentMember))
+        {
+            if (Model.UnauthorizedBehaviour == AdminLinkUnauthorizedBehaviour.Hide)
+            {
+                return;
+            }
+
+            if (Model.UnauthorizedBehaviour == AdminLinkUnauthorizedBehaviour.Disable)
+            {
+                <span>@Model.Text</span>
+                return;
+            }
+        }
+    }
+
     var href = Model.Route.Path;
     if (!string.IsNullOrEmpty(Model.QueryString))
     {

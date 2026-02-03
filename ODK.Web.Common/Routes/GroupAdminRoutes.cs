@@ -139,7 +139,7 @@ public class GroupAdminRoutes
         });
 
     public GroupAdminRoute MembersDownload(Chapter chapter)
-        => new GroupAdminRoute
+        => new()
         {
             Path = $"/groups/{chapter.Id}/members/download",
             Securable = ChapterAdminSecurable.MemberExport
@@ -247,6 +247,6 @@ public class GroupAdminRoutes
             PlatformType.DrunkenKnitwits => $"/{chapter.ShortName.ToLowerInvariant()}/admin",
             _ => $"{Index()}/{chapter.Id}"
         },
-        Securable = ChapterAdminSecurable.None
+        Securable = ChapterAdminSecurable.Any
     };
 }

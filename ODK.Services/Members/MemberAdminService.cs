@@ -78,12 +78,10 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
         AssertMemberIsChapterAdmin(request, currentAdminMember);
 
-        var currentRole = currentAdminMember?.Role;
-
         // Owners can't have their role changed
         // Admins can edit other admins at or below their own level
         // Admins cannot change roles at their own level, except for their own
-        var readOnly = !currentRole.HasAccessTo(adminMember.Role, currentMember);
+        var readOnly = !currentAdminMember.HasAccessTo(adminMember.Role, currentMember);
         var canEditRole = 
             !readOnly && 
             adminMember.Role != ChapterAdminRole.Owner && 
@@ -93,7 +91,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         {
             ChapterAdminRole.Admin,
             ChapterAdminRole.Organiser
-        }.Where(x => currentRole.HasAccessTo(x, currentMember));
+        }.Where(x => currentAdminMember.HasAccessTo(x, currentMember));
 
         return new AdminMemberAdminPageViewModel
         {
@@ -700,11 +698,8 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
         AssertMemberIsInChapter(member, request);
 
-        var memberChapter = member.MemberChapter(chapter.Id);
-        if (memberChapter == null)
-        {
-            throw new OdkServiceException($"Member {memberId} not a member of chapter {chapter.Id}");
-        }
+        var memberChapter = member.MemberChapter(chapter.Id) 
+            ?? throw new OdkServiceException($"Member {memberId} not a member of chapter {chapter.Id}");
 
         memberChapter.HideProfile = !visible;
 
@@ -840,7 +835,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
     private ServiceResult ValidateMemberSubscription(MemberSubscription subscription)
     {
-        if (!Enum.IsDefined(typeof(SubscriptionType), subscription.Type) || subscription.Type == SubscriptionType.None)
+        if (!Enum.IsDefined(subscription.Type) || subscription.Type == SubscriptionType.None)
         {
             return ServiceResult.Failure("Invalid type");
         }

@@ -35,8 +35,8 @@ namespace ODK.Services.Chapters;
 
 public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 {
-    private static readonly IReadOnlyDictionary<PlatformType, IReadOnlyCollection<PageType>> _platformPages =
-        new Dictionary<PlatformType, IReadOnlyCollection<PageType>>
+    private static readonly Dictionary<PlatformType, IReadOnlyCollection<PageType>> _platformPages =
+        new()
         {
             { PlatformType.Default, new[] { PageType.Contact, PageType.Members } },
             { PlatformType.DrunkenKnitwits, new[] { PageType.About, PageType.Contact, PageType.Members } }
@@ -525,12 +525,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             Name = subscription.Name,
             NumberOfMonths = subscription.Months,
             Recurring = model.Recurring
-        });
-
-        if (externalId == null)
-        {
-            throw new Exception("Error creating subscription");
-        }
+        }) ?? throw new Exception("Error creating subscription");
 
         subscription.ExternalId = externalId;
 
@@ -1134,12 +1129,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
 
         var owner = await GetChapterAdminRestrictedContent(request,
-            x => x.MemberRepository.GetChapterOwner(request.Chapter.Id));
-
-        if (owner == null)
-        {
-            throw new OdkServiceException("Chapter owner not found");
-        }
+            x => x.MemberRepository.GetChapterOwner(request.Chapter.Id)) 
+            ?? throw new OdkServiceException("Chapter owner not found");
 
         var statusRequest = MemberChapterServiceRequest.Create(
             request.Chapter, owner, request);
@@ -1431,10 +1422,9 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     public async Task<SiteSubscriptionCheckoutViewModel> StartSiteSubscriptionCheckout(
         MemberChapterAdminServiceRequest request, Guid priceId, string returnPath)
     {
-        var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
-
         await AssertMemberIsChapterAdmin(request);
 
+        var chapter = request.Chapter;
         OdkAssertions.Exists(chapter.OwnerId);
 
         return await _siteSubscriptionService.StartSiteSubscriptionCheckout(
@@ -1460,8 +1450,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         var existing = chapterAdminMembers.FirstOrDefault(x => x.MemberId == memberId);
         OdkAssertions.Exists(existing);
 
-        var currentRole = chapterAdminMember?.Role;
-        if (!currentRole.HasAccessTo(existing.Role, currentMember))
+        if (!chapterAdminMember.HasAccessTo(existing.Role, currentMember))
         {
             return ServiceResult.Failure($"You do not have permission to update an admin with the role '{existing.Role}'");
         }
@@ -2210,7 +2199,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         if (string.IsNullOrEmpty(property.Name) ||
             string.IsNullOrEmpty(property.Label) ||
-            !Enum.IsDefined(typeof(DataType), property.DataType) || property.DataType == DataType.None)
+            !Enum.IsDefined(property.DataType) || property.DataType == DataType.None)
         {
             return ServiceResult.Failure("Some required fields are missing");
         }
@@ -2226,7 +2215,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     private ServiceResult ValidateChapterSubscription(ChapterSubscription subscription,
         IReadOnlyCollection<ChapterSubscription> subscriptions)
     {
-        if (!Enum.IsDefined(typeof(SubscriptionType), subscription.Type) || subscription.Type == SubscriptionType.None)
+        if (!Enum.IsDefined(subscription.Type) || subscription.Type == SubscriptionType.None)
         {
             return ServiceResult.Failure("Invalid type");
         }

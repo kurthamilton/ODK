@@ -1,6 +1,4 @@
-﻿using System.IO;
-using Azure;
-using Microsoft.AspNetCore.Diagnostics;
+﻿using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Features;
 using ODK.Core.Chapters;
@@ -10,7 +8,6 @@ using ODK.Data.Core;
 using ODK.Services;
 using ODK.Services.Exceptions;
 using ODK.Services.Logging;
-using ODK.Web.Common.Config.Settings;
 using ODK.Web.Common.Extensions;
 using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
@@ -30,7 +27,6 @@ public class ErrorHandlingMiddleware
     public async Task InvokeAsync(
         HttpContext context,
         ILoggingService loggingService,
-        AppSettings appSettings,
         IRequestStore requestStore,
         IUnitOfWork unitOfWork,
         IOdkRoutes odkRoutes,
@@ -47,7 +43,7 @@ public class ErrorHandlingMiddleware
         }
         catch (Exception ex)
         {            
-            await LogError(context, ex, loggingService, appSettings);
+            await LogError(context, ex, loggingService);
 
             if (context.Response.HasStarted)
             {
@@ -171,7 +167,6 @@ public class ErrorHandlingMiddleware
         IPlatformProvider platformProvider)
     {
         var statusCode = httpContext.Response.StatusCode;
-        var platform = requestStore.Platform;
 
         var chapter = await FindChapter(httpContext, requestStore, unitOfWork, platformProvider);
         return odkRoutes.Error(chapter, statusCode);
@@ -180,8 +175,7 @@ public class ErrorHandlingMiddleware
     private async Task LogError(
         HttpContext httpContext,
         Exception ex,
-        ILoggingService loggingService,
-        AppSettings appSettings)
+        ILoggingService loggingService)
     {
         if (ex is OdkNotFoundException)
         {
