@@ -33,7 +33,7 @@ public class RequestStore : IRequestStore
     public RequestStore(
         IUnitOfWork unitOfWork,
         ILoggingService loggingService)
-    {        
+    {
         _loggingService = loggingService;
         _unitOfWork = unitOfWork;
 
@@ -52,7 +52,7 @@ public class RequestStore : IRequestStore
     public Guid CurrentMemberId => _currentMemberId.Value;
 
     public Guid? CurrentMemberIdOrDefault => ServiceRequest.CurrentMemberIdOrDefault;
-    
+
     public Member? CurrentMemberOrDefault => _currentMember;
 
     public bool Loaded { get; private set; }
@@ -82,7 +82,7 @@ public class RequestStore : IRequestStore
         {
             return null;
         }
-    }    
+    }
 
     /// <summary>
     /// Called from middleware and <see cref="RequestStoreFactory"/>
@@ -100,8 +100,8 @@ public class RequestStore : IRequestStore
 
     private IDeferredQuerySingleOrDefault<Chapter> GetChapterQuery(IUnitOfWork unitOfWork, bool verbose)
     {
-        var context = ServiceRequest.HttpRequestContext;                   
-        
+        var context = ServiceRequest.HttpRequestContext;
+
         if (Platform == PlatformType.DrunkenKnitwits)
         {
             context.RouteValues.TryGetValue("chapterName", out var chapterName);
@@ -116,16 +116,11 @@ public class RequestStore : IRequestStore
                 }
 
                 return unitOfWork.ChapterRepository.GetByName(chapterName);
-            }                 
+            }
         }
         else
         {
             context.RouteValues.TryGetValue("slug", out var slug);
-
-            var chapterId = context.RouteValues.TryGetValue("chapterId", out var chapterIdRouteValue) &&
-               Guid.TryParse(chapterIdRouteValue, out Guid id)
-                ? id
-                : default(Guid?);
 
             if (!string.IsNullOrEmpty(slug))
             {
@@ -136,16 +131,21 @@ public class RequestStore : IRequestStore
 
                 return unitOfWork.ChapterRepository.GetBySlug(slug);
             }
+        }
 
-            if (chapterId != null)
+        var chapterId = context.RouteValues.TryGetValue("chapterId", out var chapterIdRouteValue) &&
+            Guid.TryParse(chapterIdRouteValue, out Guid id)
+                ? id
+                : default(Guid?);
+
+        if (chapterId != null)
+        {
+            if (verbose)
             {
-                if (verbose)
-                {
-                    _loggingService.Info($"RequestStore: getting chapter by id: '{chapterId}'");
-                }
-
-                return _unitOfWork.ChapterRepository.GetByIdOrDefault(chapterId.Value);
+                _loggingService.Info($"RequestStore: getting chapter by id: '{chapterId}'");
             }
+
+            return _unitOfWork.ChapterRepository.GetByIdOrDefault(chapterId.Value);
         }
 
         if (verbose)

@@ -1,12 +1,16 @@
-﻿namespace ODK.Services.Chapters.Models;
+﻿using ODK.Core.Chapters;
+
+namespace ODK.Services.Chapters.Models;
 
 public class ChapterAdminMemberUpdateModel
 {
-    public string? AdminEmailAddress { get; set; }
+    public required string? AdminEmailAddress { get; init; }
 
-    public bool ReceiveContactEmails { get; set; }
+    public required bool ReceiveContactEmails { get; init; }
 
-    public bool ReceiveEventCommentEmails { get; set; }
+    public required bool ReceiveEventCommentEmails { get; init; }
 
-    public bool ReceiveNewMemberEmails { get; set; }
+    public required bool ReceiveNewMemberEmails { get; init; }
+
+    public required ChapterAdminRole Role { get; init; }
 }

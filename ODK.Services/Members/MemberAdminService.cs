@@ -74,13 +74,16 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         var adminMember = adminMembers.FirstOrDefault(x => x.MemberId == memberId);
         OdkAssertions.Exists(adminMember);
 
-        AssertMemberIsChapterAdmin(
-            request,
-            adminMembers.FirstOrDefault(x => x.MemberId == currentMember.Id));
+        var currentAdminMember = adminMembers.FirstOrDefault(x => x.MemberId == currentMember.Id);
+
+        AssertMemberIsChapterAdmin(request, currentAdminMember);
+
+        var currentRole = currentAdminMember?.Role;
 
         return new AdminMemberAdminPageViewModel
         {
-            AdminMember = adminMember
+            AdminMember = adminMember,
+            ReadOnly = currentRole.HasAccessTo(adminMember.Role, currentMember)
         };
     }
 
@@ -89,7 +92,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     {
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
-        var (adminMembers, members, ownerSubscription) = await _unitOfWork.RunAsync(            
+        var (adminMembers, members, ownerSubscription) = await _unitOfWork.RunAsync(
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
             x => x.MemberRepository.GetByChapterId(chapter.Id),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id));
@@ -244,7 +247,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
 
-        var (member, subscription) = await GetChapterAdminRestrictedContent(            
+        var (member, subscription) = await GetChapterAdminRestrictedContent(
             request,
             x => x.MemberRepository.GetById(memberId),
             x => x.MemberSubscriptionRepository.GetByMemberId(memberId, chapter.Id));
@@ -467,7 +470,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
 
-        var (member, subscription, notifications) = await GetChapterAdminRestrictedContent( 
+        var (member, subscription, notifications) = await GetChapterAdminRestrictedContent(
             request,
             x => x.MemberRepository.GetById(memberId),
             x => x.MemberSubscriptionRepository.GetByMemberId(memberId, chapter.Id),
@@ -694,7 +697,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     }
 
     public async Task<ServiceResult> UpdateMemberImage(
-        MemberChapterAdminServiceRequest request, 
+        MemberChapterAdminServiceRequest request,
         Guid id,
         MemberImagUpdateModel model)
     {
@@ -747,13 +750,13 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     }
 
     public async Task<ServiceResult> UpdateMemberSubscription(
-        MemberChapterAdminServiceRequest request, 
+        MemberChapterAdminServiceRequest request,
         Guid memberId,
         MemberSubscriptionUpdateModel model)
     {
         var chapter = request.Chapter;
 
-        var (member, memberSubscription) = await GetChapterAdminRestrictedContent(        
+        var (member, memberSubscription) = await GetChapterAdminRestrictedContent(
             request,
             x => x.MemberRepository.GetById(memberId),
             x => x.MemberSubscriptionRepository.GetByMemberId(memberId, chapter.Id));

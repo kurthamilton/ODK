@@ -33,7 +33,8 @@ public class AdminMemberModel : AdminPageModel
             AdminEmailAddress = viewModel.AdminEmailAddress,
             ReceiveContactEmails = viewModel.ReceiveContactEmails,
             ReceiveEventCommentEmails = viewModel.ReceiveEventCommentEmails,
-            ReceiveNewMemberEmails = viewModel.ReceiveNewMemberEmails
+            ReceiveNewMemberEmails = viewModel.ReceiveNewMemberEmails,
+            Role = viewModel.Role ?? default
         });
 
         if (result.Success)

@@ -16,15 +16,15 @@
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
-    Title = "Edit admin member",
+    Title = viewModel.AdminMember.Member.FullName,
     Breadcrumbs = new[]
     {
         new MenuItem 
         { 
+            Icon = IconType.ArrowLeft,
             Link = Model.AdminRoutes.AdminMembers(Model.Chapter).Path, 
-            Text = "Admins" 
-        },
-        new MenuItem { Text = viewModel.AdminMember.Member.FullName }
+            Text = "Back to admins" 
+        }
     },
     ContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_AdminMemberContent", viewModel)</div>
 })

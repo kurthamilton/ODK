@@ -10,13 +10,20 @@
 
 <form method="post">
     @*@Html.AntiForgeryToken()*@
-    @await Html.PartialAsync("Admin/Members/_AdminMemberForm", new AdminMemberFormViewModel
+    <fieldset disabled="@(Model.ReadOnly ? "" : null)">
+        @await Html.PartialAsync("Admin/Members/_AdminMemberForm", new AdminMemberFormViewModel
+        {
+            AdminEmailAddress = Model.AdminMember.AdminEmailAddress,
+            Name = Model.AdminMember.Member.FullName,
+            ReceiveContactEmails = Model.AdminMember.ReceiveContactEmails,
+            ReceiveEventCommentEmails = Model.AdminMember.ReceiveEventCommentEmails,
+            ReceiveNewMemberEmails = Model.AdminMember.ReceiveNewMemberEmails,
+            Role = Model.AdminMember.Role
+        })
+    </fieldset>
+
+    @if (!Model.ReadOnly)
     {
-        AdminEmailAddress = Model.AdminMember.AdminEmailAddress,
-        Name = Model.AdminMember.Member.FullName,
-        ReceiveContactEmails = Model.AdminMember.ReceiveContactEmails,
-        ReceiveEventCommentEmails = Model.AdminMember.ReceiveEventCommentEmails,
-        ReceiveNewMemberEmails = Model.AdminMember.ReceiveNewMemberEmails
-    })
-    <button class="btn btn-primary">Update</button>
+        <button class="btn btn-primary">Update</button>
+    }    
 </form>

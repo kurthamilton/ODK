@@ -1,5 +1,12 @@
 ﻿@using ODK.Web.Common.Extensions
-@model ODK.Web.Razor.Models.Admin.Members.AdminMemberFormViewModel
+@using ODK.Web.Razor.Models.Admin.Members
+@model AdminMemberFormViewModel
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.Role, new { @class = "form-label" })
+    @Html.OdkEnumDropDownFor(x => x.Role, new { @class = "form-control", data_select = "" })
+    @Html.ValidationMessageFor(x => x.Role)
+</div>
 
 <div class="form-group mb-3">
     @Html.LabelFor(x => x.AdminEmailAddress, new { @class = "form-label" })

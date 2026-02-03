@@ -118,17 +118,16 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             return ServiceResult.Failure("Member is already a chapter admin");
         }
 
-        var adminMember = new ChapterAdminMember
+        _unitOfWork.ChapterAdminMemberRepository.Add(new ChapterAdminMember
         {
             ChapterId = chapterId,
-            MemberId = member.Id
-        };
-
-        _unitOfWork.ChapterAdminMemberRepository.Add(adminMember);
+            MemberId = member.Id,
+            Role = ChapterAdminRole.Organiser
+        });
         await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();
-    }    
+    }
 
     public async Task<ServiceResult<Chapter?>> CreateChapter(
         MemberServiceRequest request,
@@ -233,7 +232,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             MemberId = currentMember.Id,
             ReceiveContactEmails = true,
             ReceiveEventCommentEmails = true,
-            ReceiveNewMemberEmails = true
+            ReceiveNewMemberEmails = true,
+            Role = ChapterAdminRole.Owner
         });
 
         _unitOfWork.MemberChapterRepository.Add(new MemberChapter
@@ -544,16 +544,14 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();
-    }    
+    }
 
     public async Task<ServiceResult> DeleteChapterAdminMember(
         MemberChapterAdminServiceRequest request, Guid memberId)
     {
         var (chapter, chapterId, currentMember) = (request.Chapter, request.Chapter.Id, request.CurrentMember);
 
-        var (chapterAdminMembers, member) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
-            x => x.MemberRepository.GetById(memberId));
+        var chapterAdminMembers = await _unitOfWork.ChapterAdminMemberRepository.GetByChapterId(chapterId).Run();
 
         AssertMemberIsChapterAdmin(
             request,
@@ -565,6 +563,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             return ServiceResult.Failure("Admin member not found");
         }
 
+        var member = adminMember.Member;
         if (member.SiteAdmin && !currentMember.SiteAdmin)
         {
             return ServiceResult.Failure("Cannot delete a site admin");
@@ -1042,7 +1041,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             Platform = platform,
             RemainingSteps = remainingSteps
         };
-    }    
+    }
 
     public async Task<ChapterPrivacyAdminPageViewModel> GetChapterPrivacyViewModel(MemberChapterAdminServiceRequest request)
     {
@@ -1155,7 +1154,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         var (platform, chapter) = (request.Platform, request.Chapter);
 
         await AssertMemberIsChapterAdmin(request);
-        
+
         OdkAssertions.Exists(chapter.OwnerId);
 
         var siteSubscriptionsViewModel = await _siteSubscriptionService.GetSiteSubscriptionsViewModel(
@@ -1219,7 +1218,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             OwnerSubscription = ownerSubscription
         };
     }
-    
+
     public async Task<ServiceResult> PublishChapter(MemberChapterAdminServiceRequest request)
     {
         var chapter = request.Chapter;
@@ -1344,7 +1343,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         var originalMessage = await GetChapterAdminRestrictedContent(
             request,
             x => x.ChapterContactMessageRepository.GetById(messageId));
-        
+
         OdkAssertions.BelongsToChapter(originalMessage, chapter.Id);
 
         originalMessage.RepliedUtc = DateTime.UtcNow;
@@ -1443,7 +1442,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ServiceResult> UpdateChapterAdminMember(
-        MemberChapterAdminServiceRequest request, 
+        MemberChapterAdminServiceRequest request,
         Guid memberId,
         ChapterAdminMemberUpdateModel model)
     {
@@ -1460,6 +1459,25 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         var existing = chapterAdminMembers.FirstOrDefault(x => x.MemberId == memberId);
         OdkAssertions.Exists(existing);
+
+        var currentRole = chapterAdminMember?.Role;
+        if (!currentRole.HasAccessTo(existing.Role, currentMember))
+        {
+            return ServiceResult.Failure($"You do not have permission to update an admin with the role '{existing.Role}'");
+        }
+
+        if (model.Role != existing.Role)
+        {
+            if (model.Role == ChapterAdminRole.None || !Enum.IsDefined(model.Role))
+            {
+                return ServiceResult.Failure("Role not set");
+            }
+
+            if (existing.Role == ChapterAdminRole.Owner)
+            {
+                return ServiceResult.Failure("Owner role cannot be changed");
+            }
+        }
 
         existing.AdminEmailAddress = model.AdminEmailAddress;
         existing.ReceiveContactEmails = model.ReceiveContactEmails;
@@ -1939,7 +1957,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         var question = await GetChapterAdminRestrictedContent(
             request,
             x => x.ChapterQuestionRepository.GetById(questionId));
-        
+
         OdkAssertions.BelongsToChapter(question, chapter.Id);
 
         question.Answer = _htmlSanitizer.Sanitize(model.Answer, DefaultHtmlSantizerOptions);
@@ -2143,7 +2161,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         }
 
         return ServiceResult.Successful();
-    }    
+    }
 
     private ServiceResult UpdateChapterImage(ChapterImage image, byte[] imageData)
     {

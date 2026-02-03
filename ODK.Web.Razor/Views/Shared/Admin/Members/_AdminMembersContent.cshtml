@@ -66,6 +66,7 @@
                             <th>Receive contact emails</th>
                             <th>Receive new member emails</th>
                             <th>Receive event comment emails</th>
+                            <th>Role</th>
                             <th></th>
                         </tr>
                         </thead>
@@ -102,6 +103,9 @@
                                     {
                                         @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Check))
                                     }
+                                </td>
+                                <td>
+                                    @adminMember.Role
                                 </td>
                                 <td>
                                     @if (Model.Chapter.OwnerId != adminMember.MemberId)

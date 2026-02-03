@@ -32,7 +32,8 @@ public class AdminMemberModel : OdkGroupAdminPageModel
             AdminEmailAddress = viewModel.AdminEmailAddress,
             ReceiveContactEmails = viewModel.ReceiveContactEmails,
             ReceiveEventCommentEmails = viewModel.ReceiveEventCommentEmails,
-            ReceiveNewMemberEmails = viewModel.ReceiveNewMemberEmails
+            ReceiveNewMemberEmails = viewModel.ReceiveNewMemberEmails,
+            Role = viewModel.Role ?? default
         });
 
         AddFeedback(result, "Admin member updated");

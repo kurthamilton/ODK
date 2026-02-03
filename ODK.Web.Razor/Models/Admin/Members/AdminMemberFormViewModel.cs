@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using ODK.Core.Chapters;
 
 namespace ODK.Web.Razor.Models.Admin.Members;
 
@@ -19,4 +20,8 @@ public class AdminMemberFormViewModel
 
     [DisplayName("Receive new member emails")]
     public bool ReceiveNewMemberEmails { get; set; }
+
+    [DisplayName("Role")]
+    [Required]
+    public ChapterAdminRole? Role { get; set; }
 }

@@ -16,7 +16,7 @@
 
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
 {
-    Title = "Admin member",
+    Title = viewModel.AdminMember.Member.FullName,
     Breadcrumbs = new BreadcrumbsViewModel
     {
         Breadcrumbs = new[]
