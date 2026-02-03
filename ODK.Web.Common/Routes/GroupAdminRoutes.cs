@@ -42,15 +42,18 @@ public class GroupAdminRoutes
 
     public GroupAdminRoute Emails(Chapter chapter) => Platform switch
     {
-        PlatformType.DrunkenKnitwits 
+        PlatformType.DrunkenKnitwits
             => Group(chapter).Child("/emails", ChapterAdminSecurable.Emails, PlatformType.DrunkenKnitwits),
         _ => GroupAdminRoute.Default
     };
 
-    public GroupAdminRoute Event(Chapter chapter, Guid eventId) 
+    public GroupAdminRoute Event(Chapter chapter, Guid eventId)
         => Events(chapter).Child($"/{eventId}");
 
-    public GroupAdminRoute EventCreate(Chapter chapter) 
+    public GroupAdminRoute EventComments(Chapter chapter, Guid eventId)
+        => Event(chapter, eventId).Child("/comments");
+
+    public GroupAdminRoute EventCreate(Chapter chapter)
         => Events(chapter).Child(Platform switch
         {
             PlatformType.DrunkenKnitwits => "/create",
@@ -66,7 +69,7 @@ public class GroupAdminRoutes
     public GroupAdminRoute Events(Chapter chapter)
         => Base(chapter).Child("/events", ChapterAdminSecurable.Events);
 
-    public GroupAdminRoute EventSettings(Chapter chapter) 
+    public GroupAdminRoute EventSettings(Chapter chapter)
         => Events(chapter).Child("/settings", ChapterAdminSecurable.EventSettings);
 
     public GroupAdminRoute EventTickets(Chapter chapter, Guid eventId)
@@ -167,13 +170,13 @@ public class GroupAdminRoutes
     public GroupAdminRoute Message(Chapter chapter, Guid messageId)
         => Messages(chapter).Child($"/{messageId}");
 
-    public GroupAdminRoute Messages(Chapter chapter) 
+    public GroupAdminRoute Messages(Chapter chapter)
         => Group(chapter).Child("/messages", ChapterAdminSecurable.ContactMessages);
 
     public GroupAdminRoute MessagesSpam(Chapter chapter)
         => Messages(chapter).Child("/spam");
 
-    public GroupAdminRoute Pages(Chapter chapter) 
+    public GroupAdminRoute Pages(Chapter chapter)
         => Group(chapter).Child("/pages", ChapterAdminSecurable.Pages, PlatformType.Default);
 
     public GroupAdminRoute PaymentAccount(Chapter chapter)
@@ -182,28 +185,28 @@ public class GroupAdminRoutes
     public GroupAdminRoute Payments(Chapter chapter)
         => Base(chapter).Child("/payments", ChapterAdminSecurable.Payments);
 
-    public GroupAdminRoute Privacy(Chapter chapter) 
+    public GroupAdminRoute Privacy(Chapter chapter)
         => Group(chapter).Child("/privacy", ChapterAdminSecurable.PrivacySettings);
 
     public GroupAdminRoute Question(Chapter chapter, Guid questionId)
         => Questions(chapter).Child($"/{questionId}");
 
-    public GroupAdminRoute QuestionCreate(Chapter chapter) 
+    public GroupAdminRoute QuestionCreate(Chapter chapter)
         => Questions(chapter).Child(Platform == PlatformType.DrunkenKnitwits ? "/create" : "/new");
 
-    public GroupAdminRoute Questions(Chapter chapter) 
+    public GroupAdminRoute Questions(Chapter chapter)
         => Group(chapter).Child("/questions", ChapterAdminSecurable.Questions);
 
     public GroupAdminRoute SiteAdmin(Chapter chapter)
         => Base(chapter).Child("/siteadmin");
 
-    public GroupAdminRoute SocialMedia(Chapter chapter) 
+    public GroupAdminRoute SocialMedia(Chapter chapter)
         => Group(chapter).Child("/social-media", ChapterAdminSecurable.SocialMedia);
 
-    public GroupAdminRoute Subscription(Chapter chapter) 
+    public GroupAdminRoute Subscription(Chapter chapter)
         => Group(chapter).Child("/subscription", ChapterAdminSecurable.SiteSubscription, PlatformType.DrunkenKnitwits);
 
-    public GroupAdminRoute SubscriptionCheckout(Chapter chapter, string priceIdPlaceholder) 
+    public GroupAdminRoute SubscriptionCheckout(Chapter chapter, string priceIdPlaceholder)
         => Subscription(chapter).Child($"/{priceIdPlaceholder}/checkout");
 
     public GroupAdminRoute Texts(Chapter chapter)
@@ -219,15 +222,15 @@ public class GroupAdminRoutes
     {
         PlatformType.DrunkenKnitwits => GroupAdminRoute.Default,
         _ => Group(chapter).Child("/topics", ChapterAdminSecurable.Topics, PlatformType.Default)
-    };            
+    };
 
-    public GroupAdminRoute Subscriptions(Chapter chapter) 
+    public GroupAdminRoute Subscriptions(Chapter chapter)
         => Members(chapter).Child("/subscriptions", ChapterAdminSecurable.Subscriptions);
 
     public GroupAdminRoute Venue(Chapter chapter, Guid venueId) =>
         Venues(chapter).Child($"/{venueId}");
 
-    public GroupAdminRoute VenueCreate(Chapter chapter) => 
+    public GroupAdminRoute VenueCreate(Chapter chapter) =>
         Venues(chapter).Child(Platform switch
         {
             PlatformType.DrunkenKnitwits => "/create",
@@ -245,7 +248,7 @@ public class GroupAdminRoutes
         Path = Platform switch
         {
             PlatformType.DrunkenKnitwits => $"/{chapter.ShortName.ToLowerInvariant()}/admin",
-            _ => $"{Index()}/{chapter.Id}"
+            _ => Index().Child($"/{chapter.Id}").Path
         },
         Securable = ChapterAdminSecurable.Any
     };

@@ -15,6 +15,8 @@ public interface IEventAdminService
 
     Task<EventAttendeesAdminPageViewModel> GetEventAttendeesViewModel(MemberChapterAdminServiceRequest request, Guid eventId);
 
+    Task<EventCommentsAdminPageViewModel> GetEventCommentsViewModel(MemberChapterAdminServiceRequest request, Guid eventId);
+
     Task<EventCreateAdminPageViewModel> GetEventCreateViewModel(MemberChapterAdminServiceRequest request);
 
     Task<EventEditAdminPageViewModel> GetEventEditViewModel(MemberChapterAdminServiceRequest request, Guid eventId);
@@ -30,6 +32,12 @@ public interface IEventAdminService
     Task<DateTime> GetNextAvailableEventDate(MemberChapterAdminServiceRequest request);
 
     Task PublishEvent(MemberChapterAdminServiceRequest request, Guid eventId);
+
+    Task<ServiceResult> SetEventCommentVisibility(
+        MemberChapterAdminServiceRequest request,
+        Guid eventId,
+        Guid eventCommentId,
+        bool hidden);
 
     Task SendEventInviteeEmail(MemberChapterAdminServiceRequest request, Guid eventId,
         IEnumerable<EventResponseType> responseTypes, string subject, string body);

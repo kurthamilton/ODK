@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
-using ODK.Core.Events;
 using ODK.Services.Events;
 using ODK.Services.Security;
 using ODK.Web.Common.Feedback;
+using CoreEvent = ODK.Core.Events.Event;
 
 namespace ODK.Web.Razor.Pages.Chapters.Admin.Events;
 
@@ -13,7 +13,7 @@ public abstract class EventAdminPageModel : AdminPageModel
         EventAdminService = eventAdminService;
     }
 
-    public Event Event { get; private set; } = null!;
+    public CoreEvent Event { get; private set; } = null!;
 
     protected IEventAdminService EventAdminService { get; }
 
@@ -25,7 +25,7 @@ public abstract class EventAdminPageModel : AdminPageModel
     {
         if (!Guid.TryParse(Request.RouteValues["id"]?.ToString(), out Guid id))
         {
-            await Redirect(context);
+            Redirect(context);
             return;
         }
 
@@ -40,11 +40,11 @@ public abstract class EventAdminPageModel : AdminPageModel
         {
             AddFeedback("Event not found", FeedbackType.Error);
 
-            await Redirect(context);
+            Redirect(context);
         }
     }
 
-    private async Task Redirect(PageHandlerExecutingContext context)
+    private void Redirect(PageHandlerExecutingContext context)
     {
         var redirectPath = AdminRoutes.Events(Chapter).Path;
         context.Result = Redirect(redirectPath);

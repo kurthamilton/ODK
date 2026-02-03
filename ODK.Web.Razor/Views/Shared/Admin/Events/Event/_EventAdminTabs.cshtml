@@ -12,7 +12,8 @@
     {
         new MenuItem { Link = routes.Event(Model.Chapter, Model.Event.Id).Path, Text = "Edit" },
         new MenuItem { Link = routes.EventInvites(Model.Chapter, Model.Event.Id).Path, Text = "Invites" },
-        new MenuItem { Link = routes.EventResponses(Model.Chapter, Model.Event.Id).Path, Text = "Responses" }
+        new MenuItem { Link = routes.EventResponses(Model.Chapter, Model.Event.Id).Path, Text = "Responses" },
+        new MenuItem { Link = routes.EventComments(Model.Chapter, Model.Event.Id).Path, Text = "Comments" }
     };
 
     if (Model.Event.Ticketed)

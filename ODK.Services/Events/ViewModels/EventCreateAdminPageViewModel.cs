@@ -1,7 +1,6 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Members;
-using ODK.Core.Platforms;
 using ODK.Core.Venues;
 
 namespace ODK.Services.Events.ViewModels;
@@ -19,8 +18,6 @@ public class EventCreateAdminPageViewModel
     public required ChapterEventSettings? EventSettings { get; init; }
 
     public required MemberSiteSubscription? OwnerSubscription { get; init; }
-
-    public required PlatformType Platform { get; init; }
 
     public Guid? VenueId { get; set; }
 

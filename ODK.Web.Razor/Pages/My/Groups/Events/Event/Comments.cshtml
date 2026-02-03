@@ -1,0 +1,32 @@
+﻿@page "/my/groups/{chapterId:guid}/events/{eventId:guid}/comments"
+@using ODK.Services.Events
+@using ODK.Web.Common.Components
+@using ODK.Web.Razor.Models.Components
+@model CommentsModel
+@inject IEventAdminService EventAdminService
+@{
+    Layout = "_GroupAdminLayout";
+    Model.Title = "Event comments";
+
+    var request = Model.MemberChapterAdminServiceRequest;
+    var viewModel = await EventAdminService.GetEventCommentsViewModel(request, Model.EventId);
+}
+
+@await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
+{
+    Title = "Event comments",
+    Breadcrumbs = new BreadcrumbsViewModel
+    {
+        Breadcrumbs = new[]
+        {
+            new MenuItem
+            {
+                Link = Model.OdkRoutes.GroupAdmin.Events(Model.Chapter).Path,
+                Text = "Back to events",
+                Icon = IconType.ArrowLeft
+            }
+        }
+    },
+    BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Events/Event/_EventCommentsContent", viewModel)</div>,
+    MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu")
+})

@@ -1,0 +1,79 @@
+﻿@using ODK.Core.Events
+@using ODK.Core.Extensions
+@using ODK.Core.Features
+@using ODK.Core.Utils
+@using ODK.Services
+@using ODK.Services.Events.ViewModels
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Extensions
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Admin.Events
+@using ODK.Web.Razor.Models.Components
+@model EventCommentsAdminPageViewModel
+@inject IOdkRoutes OdkRoutes
+
+@await Html.PartialAsync("Admin/Events/Event/_EventHeader")
+@await Html.PartialAsync("Admin/Events/Event/_EventAdminTabs")
+
+@if (Model.Comments.Count == 0)
+{
+    <p>This event doesn't have any comments yet</p>
+    return;
+}
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Member</th>
+                <th>Date</th>
+                <th>Comment</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var dto in Model.Comments)
+            {
+                var comment = dto.Comment;
+                var member = dto.Member;
+
+                <tr>
+                    <td>
+                        <a>
+                            @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                            {
+                                Route = OdkRoutes.GroupAdmin.Member(Model.Chapter, member.Id),
+                                Text = member.FullName                                
+                            })
+                        </a>
+                    </td>
+                    <td class="@(comment.Hidden ? "text-muted" : null)">
+                        @comment.CreatedUtc.ToFriendlyDateTimeString(Model.Chapter.TimeZone)
+                    </td>
+                    <td class="@(comment.Hidden ? "text-muted" : null)">
+                        @comment.Text
+                    </td>
+                    <td>
+                        @if (!comment.Hidden)
+                        {
+                            <form method="post" action="/groups/@Model.Chapter.Id/events/@Model.Event.Id/comments/@comment.Id/hide">
+                                <button class="btn btn-outline-danger btn-sm" onclick="return confirm('Are you sure you want to hide this comment?');">
+                                    Hide
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <form method="post" action="/groups/@Model.Chapter.Id/events/@Model.Event.Id/comments/@comment.Id/show">
+                                <button class="btn btn-outline-success btn-sm" onclick="return confirm('Are you sure you want to show this comment?');">
+                                    Show
+                                </button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

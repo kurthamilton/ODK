@@ -5,11 +5,11 @@ using ODK.Services.Events.Models;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Events;
 
-namespace ODK.Web.Razor.Pages.Chapters.Admin.Events;
+namespace ODK.Web.Razor.Pages.Chapters.Admin.Events.Event;
 
-public class EventModel : EventAdminPageModel
+public class IndexModel : EventAdminPageModel
 {
-    public EventModel(IEventAdminService eventAdminService)
+    public IndexModel(IEventAdminService eventAdminService)
         : base(eventAdminService)
     {
     }

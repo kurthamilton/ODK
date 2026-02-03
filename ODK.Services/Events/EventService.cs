@@ -16,7 +16,8 @@ namespace ODK.Services.Events;
 
 public class EventService : IEventService
 {
-    private static readonly Regex HideCommentRegex = new Regex("http://|https://|<script>.*</script>|<img",
+    private static readonly Regex HideCommentRegex = new(
+        "http://|https://|<script>.*</script>|<img",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     private readonly IAuthorizationService _authorizationService;

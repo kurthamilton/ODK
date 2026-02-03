@@ -192,16 +192,16 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         var @event = await GetChapterAdminRestrictedContent(
             request,
             x => x.EventRepository.GetById(id));
-        
+
         OdkAssertions.BelongsToChapter(@event, chapter.Id);
-        
+
         return @event;
     }
 
     public async Task<EventAttendeesAdminPageViewModel> GetEventAttendeesViewModel(
         MemberChapterAdminServiceRequest request, Guid eventId)
     {
-        var (platform, chapter) = (request.Platform, request.Chapter);
+        var chapter = request.Chapter;
 
         var (ownerSubscription,
             @event,
@@ -251,10 +251,31 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
                         chapterPrivacySettings))
                 .ToArray(),
             OwnerSubscription = ownerSubscription,
-            Platform = platform,
             Responses = responses,
             Venue = venue,
             Waitlist = waitlist
+        };
+    }
+
+    public async Task<EventCommentsAdminPageViewModel> GetEventCommentsViewModel(MemberChapterAdminServiceRequest request, Guid eventId)
+    {
+        var chapter = request.Chapter;
+
+        var (@event, venue, comments, ownerSubscription) = await GetChapterAdminRestrictedContent(request,
+            x => x.EventRepository.GetById(eventId),
+            x => x.VenueRepository.GetByEventId(eventId),
+            x => x.EventCommentRepository.GetDtosByEventId(eventId, includeHidden: true),
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id));
+
+        OdkAssertions.BelongsToChapter(@event, chapter.Id);
+
+        return new EventCommentsAdminPageViewModel
+        {
+            Chapter = chapter,
+            Comments = comments,
+            Event = @event,
+            OwnerSubscription = ownerSubscription,
+            Venue = venue,
         };
     }
 
@@ -279,7 +300,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             Date = await GetNextAvailableEventDate(request),
             EventSettings = eventSettings,
             OwnerSubscription = ownerSubscription,
-            Platform = platform,
             Venues = venues
         };
     }
@@ -287,7 +307,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     public async Task<EventEditAdminPageViewModel> GetEventEditViewModel(
         MemberChapterAdminServiceRequest request, Guid eventId)
     {
-        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
+        var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
 
         var (
             ownerSubscription,
@@ -296,7 +316,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             currency,
             hosts,
             venues
-        ) = await _unitOfWork.RunAsync(            
+        ) = await _unitOfWork.RunAsync(
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
             x => x.EventRepository.GetById(eventId),
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
@@ -318,7 +338,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             Event = @event,
             Hosts = hosts,
             OwnerSubscription = ownerSubscription,
-            Platform = platform,
             Venue = venues.First(x => x.Id == @event.VenueId),
             Venues = venues
         };
@@ -327,7 +346,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     public async Task<EventInvitesAdminPageViewModel> GetEventInvitesViewModel(
         MemberChapterAdminServiceRequest request, Guid eventId)
     {
-        var (platform, chapter) = (request.Platform, request.Chapter);
+        var chapter = request.Chapter;
 
         var (ownerSubscription, @event, eventEmail, members, invites, venue) = await GetChapterAdminRestrictedContent(
             request,
@@ -353,7 +372,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             },
             Members = members,
             OwnerSubscription = ownerSubscription,
-            Platform = platform,
             Venue = venue
         };
     }
@@ -395,7 +413,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     public async Task<EventTicketsAdminPageViewModel> GetEventTicketsViewModel(
         MemberChapterAdminServiceRequest request, Guid eventId)
     {
-        var (platform, chapter) = (request.Platform, request.Chapter);
+        var chapter = request.Chapter;
 
         var (
             ownerSubscription,
@@ -435,7 +453,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
                 })
                 .ToArray(),
             OwnerSubscription = ownerSubscription,
-            Platform = platform,
             Venue = venue
         };
     }
@@ -549,7 +566,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.EventInviteRepository.GetByEventId(eventId));
 
         OdkAssertions.BelongsToChapter(@event, chapter.Id);
-        
+
         var validationResult = ValidateEventEmailCanBeSent(@event);
         if (!validationResult.Success)
         {
@@ -669,6 +686,35 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         }
     }
 
+    public async Task<ServiceResult> SetEventCommentVisibility(
+        MemberChapterAdminServiceRequest request,
+        Guid eventId,
+        Guid eventCommentId,
+        bool hidden)
+    {
+        var chapter = request.Chapter;
+
+        var (@event, eventComment) = await GetChapterAdminRestrictedContent(request,
+            x => x.EventRepository.GetById(eventId),
+            x => x.EventCommentRepository.GetById(eventCommentId, includeHidden: true));
+
+        OdkAssertions.BelongsToChapter(@event, chapter.Id);
+        OdkAssertions.MeetsCondition(eventComment, x => x.EventId == eventId);
+
+        if (eventComment.Hidden == hidden)
+        {
+            return ServiceResult.Successful();
+        }
+
+        eventComment.Hidden = hidden;
+        _unitOfWork.EventCommentRepository.Update(eventComment);
+        await _unitOfWork.SaveChangesAsync();
+
+        await _loggingService.Info($"Event comment {eventComment.Id} hidden set to '{hidden}' by member {request.CurrentMember.Id}");
+
+        return ServiceResult.Successful();
+    }
+
     public async Task<ServiceResult> UpdateEvent(
         MemberChapterAdminServiceRequest request, Guid id, EventCreateModel model)
     {
@@ -681,7 +727,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             venue,
             currency,
             attendees
-        ) = await _unitOfWork.RunAsync(            
+        ) = await _unitOfWork.RunAsync(
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
             x => x.EventRepository.GetById(id),

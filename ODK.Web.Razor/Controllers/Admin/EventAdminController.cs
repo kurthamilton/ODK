@@ -36,6 +36,30 @@ public class EventAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
+    [HttpPost("groups/{chapterId:guid}/events/{eventId:guid}/comments/{id:guid}/hide")]
+    public async Task<IActionResult> HideEventComment(Guid chapterId, Guid eventId, Guid id)
+    {
+        var request = MemberChapterAdminServiceRequest.Create(
+            ChapterAdminSecurable.Events,
+            MemberChapterServiceRequest);
+        await _eventAdminService.SetEventCommentVisibility(request, eventId, id, hidden: true);
+        AddFeedback("Comment hidden", FeedbackType.Success);
+
+        return Redirect(OdkRoutes.GroupAdmin.EventComments(Chapter, eventId).Path);
+    }
+
+    [HttpPost("groups/{chapterId:guid}/events/{eventId:guid}/comments/{id:guid}/show")]
+    public async Task<IActionResult> ShowEventComment(Guid chapterId, Guid eventId, Guid id)
+    {
+        var request = MemberChapterAdminServiceRequest.Create(
+            ChapterAdminSecurable.Events,
+            MemberChapterServiceRequest);
+        await _eventAdminService.SetEventCommentVisibility(request, eventId, id, hidden: false);
+        AddFeedback("Comment unhidden", FeedbackType.Success);
+
+        return Redirect(OdkRoutes.GroupAdmin.EventComments(Chapter, eventId).Path);
+    }
+
     [HttpPost("groups/{chapterId:guid}/events/{id:guid}/delete")]
     public async Task<IActionResult> DeleteEvent(Guid chapterId, Guid id)
     {

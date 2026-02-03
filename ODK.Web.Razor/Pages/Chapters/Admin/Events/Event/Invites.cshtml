@@ -1,24 +1,23 @@
-﻿@page "/{chapterName}/admin/events/{id:guid}/responses"
+﻿@page "/{chapterName}/admin/events/{id:guid}/invites"
 @using ODK.Services
 @using ODK.Services.Events
+@using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
-@using ODK.Web.Common.Components
-@using ODK.Web.Razor.Models.Admin.Events
-@model EventResponsesModel
+@model InvitesModel
 @inject IEventAdminService EventAdminService
 @{
     Layout = "_OdkChapterAdminLayout";
-    Model.Title = "Event responses | Admin";
+    Model.Title = "Event invites | Admin";
 
     var request = Model.MemberChapterAdminServiceRequest;
-    var viewModel = await EventAdminService.GetEventAttendeesViewModel(request, Model.Event.Id);
+    var viewModel = await EventAdminService.GetEventInvitesViewModel(request, Model.Event.Id);
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
-    Title = "Event responses",
+    Title = "Event invites",
     Breadcrumbs = new[]
     {
         new MenuItem
@@ -28,5 +27,5 @@
             Icon = IconType.ArrowLeft
         }
     },
-    ContentFunc = @<div>@await Html.PartialAsync("Admin/Events/Event/_EventResponsesContent", viewModel)</div>
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Events/Event/_EventInvitesContent", viewModel)</div>
 })
