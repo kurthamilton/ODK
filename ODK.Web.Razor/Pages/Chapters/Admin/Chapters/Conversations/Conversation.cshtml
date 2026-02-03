@@ -1,5 +1,7 @@
 ﻿@page "/{chapterName}/Admin/Chapter/Conversations/{id:guid}"
+@using ODK.Services
 @using ODK.Services.Chapters
+@using ODK.Services.Security
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
@@ -9,7 +11,7 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Conversation";
 
-    var request = await Model.CreateMemberChapterServiceRequest();
+    var request = Model.MemberChapterAdminServiceRequest;
     var viewModel = await ChapterAdminService.GetChapterConversationViewModel(request, Model.ConversationId);
 }
 
@@ -20,7 +22,7 @@
     {
         new MenuItem
         {
-            Link = OdkRoutes.MemberGroups.GroupConversations(Model.Platform, viewModel.Chapter),
+            Link = Model.AdminRoutes.Conversations(Model.Chapter).Path,
             Text = "Back to conversations",
             Icon = IconType.ArrowLeft
         }

@@ -16,11 +16,9 @@ public class MemberViewModelService : IMemberViewModelService
 
     public async Task<MemberConversationsPageViewModel> GetMemberConversationsPage(MemberServiceRequest request)
     {
-        var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
+        var (currentMember, platform) = (request.CurrentMember, request.Platform);
 
-        var (currentMember, conversations) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(currentMemberId),
-            x => x.ChapterConversationRepository.GetDtosByMemberId(currentMemberId));
+        var conversations = await _unitOfWork.ChapterConversationRepository.GetDtosByMemberId(currentMember.Id).Run();
 
         var chapterIds = conversations
             .Select(x => x.Conversation.ChapterId)
@@ -42,12 +40,11 @@ public class MemberViewModelService : IMemberViewModelService
 
     public async Task<MemberConversationsPageViewModel> GetMemberConversationsPage(MemberChapterServiceRequest request)
     {
-        var (chapterId, currentMemberId, platform) = (request.ChapterId, request.CurrentMemberId, request.Platform);
+        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
-        var (chapter, currentMember, conversations) = await _unitOfWork.RunAsync(
-            x => x.ChapterRepository.GetById(chapterId),
-            x => x.MemberRepository.GetById(currentMemberId),
-            x => x.ChapterConversationRepository.GetDtosByMemberId(currentMemberId, chapterId));
+        var conversations = await _unitOfWork.ChapterConversationRepository
+            .GetDtosByMemberId(currentMember.Id, chapter.Id)
+            .Run();
 
         return new MemberConversationsPageViewModel
         {
@@ -77,10 +74,9 @@ public class MemberViewModelService : IMemberViewModelService
 
     public async Task<MemberPageViewModel> GetMemberPage(MemberServiceRequest request, Chapter chapter, Guid memberId)
     {
-        var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
+        var (currentMember, platform) = (request.CurrentMember, request.Platform);
 
         var (
-            currentMember,
             member,
             chapterProperties,
             memberProperties,
@@ -88,7 +84,6 @@ public class MemberViewModelService : IMemberViewModelService
             adminMembers,
             ownerSubscription,
             chapterPages) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(currentMemberId),
             x => x.MemberRepository.GetById(memberId),
             x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
             x => x.MemberPropertyRepository.GetByMemberId(memberId, chapter.Id),
@@ -107,7 +102,7 @@ public class MemberViewModelService : IMemberViewModelService
             CurrentMember = currentMember,
             HasProfiles = chapterProperties.Any(),
             HasQuestions = hasQuestions,
-            IsAdmin = adminMembers.Any(x => x.MemberId == currentMemberId),
+            IsAdmin = adminMembers.Any(x => x.MemberId == currentMember.Id),
             IsMember = currentMember.IsMemberOf(chapter.Id),
             Member = member,
             MemberProperties = memberProperties,
@@ -118,12 +113,11 @@ public class MemberViewModelService : IMemberViewModelService
 
     public async Task<MembersPageViewModel> GetMembersPage(MemberServiceRequest request, Chapter chapter)
     {
-        var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
+        var (currentMember, platform) = (request.CurrentMember, request.Platform);
 
         // get current member separately as they might be hidden from the list of members
         var (
             members,
-            currentMember,
             hasProperties,
             hasQuestions,
             adminMembers,
@@ -131,7 +125,6 @@ public class MemberViewModelService : IMemberViewModelService
             chapterPages) =
             await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetByChapterId(chapter.Id),
-            x => x.MemberRepository.GetById(currentMemberId),
             x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
@@ -147,7 +140,7 @@ public class MemberViewModelService : IMemberViewModelService
             CurrentMember = currentMember,
             HasProfiles = hasProperties,
             HasQuestions = hasQuestions,
-            IsAdmin = adminMembers.Any(x => x.MemberId == currentMemberId),
+            IsAdmin = adminMembers.Any(x => x.MemberId == currentMember.Id),
             IsMember = isMember,
             Members = isMember ? members : [],
             OwnerSubscription = ownerSubscription,

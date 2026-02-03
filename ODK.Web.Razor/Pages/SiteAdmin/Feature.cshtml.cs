@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Features;
 using ODK.Services.Features;
+using ODK.Services.Features.Models;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.SiteAdmin;
 
@@ -19,18 +20,18 @@ public class FeatureModel : SiteAdminPageModel
 
     public async Task OnGetAsync(Guid id)
     {
-        Feature = await _featureService.GetFeature(CurrentMemberId, id);
+        Feature = await _featureService.GetFeature(MemberServiceRequest, id);
     }
 
     public async Task<IActionResult> OnPostAsync(Guid id, FeatureFormViewModel viewModel)
     {
-        await _featureService.UpdateFeature(CurrentMemberId, id, new UpdateFeature
+        await _featureService.UpdateFeature(MemberServiceRequest, id, new FeatureUpdateModel
         {
             Description = viewModel.Description,
             Name = viewModel.Name
         });
 
-        AddFeedback(new FeedbackViewModel("Feature updated", FeedbackType.Success));
+        AddFeedback("Feature updated", FeedbackType.Success);
 
         return RedirectToPage();
     }

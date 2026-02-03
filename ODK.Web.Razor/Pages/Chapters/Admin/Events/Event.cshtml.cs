@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Utils;
 using ODK.Services.Events;
+using ODK.Services.Events.Models;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Events;
 
@@ -19,8 +20,8 @@ public class EventModel : EventAdminPageModel
 
     public async Task<IActionResult> OnPostAsync(Guid id, [FromForm] EventFormSubmitViewModel viewModel)
     {
-        var request = await CreateMemberChapterServiceRequest();
-        var result = await EventAdminService.UpdateEvent(request, id, new CreateEvent
+        var request = MemberChapterAdminServiceRequest;
+        var result = await EventAdminService.UpdateEvent(request, id, new EventCreateModel
         {
             AttendeeLimit = viewModel.AttendeeLimit,
             Date = viewModel.Date,
@@ -40,12 +41,11 @@ public class EventModel : EventAdminPageModel
 
         if (!result.Success)
         {
-            AddFeedback(new FeedbackViewModel(result));
+            AddFeedback(result);
             return Page();
         }
 
-        var chapter = await GetChapter();
-        AddFeedback(new FeedbackViewModel("Event updated", FeedbackType.Success));
-        return Redirect($"/{chapter.ShortName}/Admin/Events");
+        AddFeedback("Event updated", FeedbackType.Success);
+        return Redirect(AdminRoutes.Events(Chapter).Path);
     }
 }

@@ -20,7 +20,7 @@
     Title = "Account",
     Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
     {
-        Active = OdkRoutes.Account.EmailPreferences(null),
+        Active = Model.OdkRoutes.Account.EmailPreferences(null),
         Title = "Email preferences",
         Content =
             @<div>

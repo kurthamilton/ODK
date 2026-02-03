@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.Models;
-using ODK.Web.Common.Routes;
+using ODK.Services.Security;
 using ODK.Web.Razor.Models.Admin.Chapters;
 
 namespace ODK.Web.Razor.Pages.My.Groups.Group.Questions;
@@ -9,6 +9,8 @@ namespace ODK.Web.Razor.Pages.My.Groups.Group.Questions;
 public class CreateModel : OdkGroupAdminPageModel
 {
     private readonly IChapterAdminService _chapterAdminService;
+
+    public override ChapterAdminSecurable Securable => ChapterAdminSecurable.Questions;
 
     public CreateModel(IChapterAdminService chapterAdminService)
     {
@@ -21,9 +23,9 @@ public class CreateModel : OdkGroupAdminPageModel
 
     public async Task<IActionResult> OnPostAsync(ChapterQuestionFormViewModel model)
     {
-        var serviceRequest = await CreateMemberChapterServiceRequest();
+        var serviceRequest = MemberChapterAdminServiceRequest;
 
-        var result = await _chapterAdminService.CreateChapterQuestion(serviceRequest, new CreateChapterQuestion
+        var result = await _chapterAdminService.CreateChapterQuestion(serviceRequest, new ChapterQuestionCreateModel
         {
             Name = model.Question ?? string.Empty,
             Answer = model.Answer ?? string.Empty
@@ -36,7 +38,6 @@ public class CreateModel : OdkGroupAdminPageModel
             return Page();
         }
 
-        var chapter = await GetChapter();
-        return Redirect(OdkRoutes.MemberGroups.GroupQuestions(Platform, chapter));
+        return Redirect(OdkRoutes.GroupAdmin.Questions(Chapter).Path);
     }
 }

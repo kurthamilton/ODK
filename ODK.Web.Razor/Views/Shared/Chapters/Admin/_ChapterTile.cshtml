@@ -3,6 +3,7 @@
 @using ODK.Web.Razor.Models.Chapters
 @using ODK.Web.Razor.Models.Components
 @model ChapterTileViewModel
+@inject IOdkRoutes OdkRoutes
 @{
     var chapter = Model.Chapter;
 }
@@ -12,7 +13,7 @@
     HeaderContentFunc = 
         @<div class="d-flex gap-3">
             <div class="me-auto">
-                <a href="@OdkRoutes.Groups.Group(Model.Platform, chapter)">
+                <a href="@OdkRoutes.Groups.Group(chapter)">
                     @chapter.GetDisplayName(Model.Platform)
                 </a>
             </div>

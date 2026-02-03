@@ -2,10 +2,12 @@
 @using ODK.Services.Events
 @using ODK.Services.Members.ViewModels
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Admin.Members
 @using ODK.Web.Razor.Models.Events;
 @using ODK.Services.Events.ViewModels
 @model MemberEventsAdminPageViewModel
+@inject IOdkRoutes OdkRoutes
 @{
     var responses = Model.Responses
         .OrderByDescending(x => x.Date);
@@ -31,16 +33,20 @@
         {
             <tr>
                 <td>
-                    <a href="@OdkRoutes.MemberGroups.Event(Model.Platform, Model.Chapter, response.EventId)">
-                        @response.Date.ToString("yyyy-MM-dd")
-                    </a>
+                    @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                    {
+                        Route = OdkRoutes.GroupAdmin.Event(Model.Chapter, response.EventId),
+                        Text = response.Date.ToString("yyyy-MM-dd")
+                    })
                 </td>
                 <td>
                     @if (response.VenueId != null && !string.IsNullOrEmpty(response.VenueName))
                     {
-                        <a href="@OdkRoutes.MemberGroups.Venue(Model.Platform, Model.Chapter, response.VenueId.Value)">
-                            @response.VenueName
-                        </a>
+                        @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                        {
+                            Route = OdkRoutes.GroupAdmin.Venue(Model.Chapter, response.VenueId.Value),
+                            Text = response.VenueName
+                        })                        
                     }                 
                 </td>
                 <td>

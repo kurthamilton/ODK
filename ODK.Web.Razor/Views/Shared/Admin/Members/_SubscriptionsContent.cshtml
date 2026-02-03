@@ -8,9 +8,11 @@
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Admin.Members
 @using ODK.Web.Razor.Models.Components
 @model SubscriptionsAdminPageViewModel
+@inject IOdkRoutes OdkRoutes
 @{        
     var (subscriptions, membershipSettings) = 
         (Model.ChapterSubscriptions, Model.MembershipSettings);
@@ -34,14 +36,21 @@
                 {
                     <div class="alert alert-warning">
                         Membership is currently disabled. 
-                        <a href="@OdkRoutes.MemberGroups.MembershipSettings(Model.Platform, Model.Chapter)">Update membership settings</a>
+                        @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                        {
+                            Route = OdkRoutes.GroupAdmin.MembershipSettings(Model.Chapter),
+                            Text = "Update membership settings"
+                        })
                     </div>
                 }
 
                 <p>
-                    <a href="@OdkRoutes.MemberGroups.MembersSubscriptionCreate(Model.Platform, Model.Chapter)" class="btn btn-primary">
-                        Create subscription
-                    </a>
+                    @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                    {
+                        Class = "btn btn-primary",
+                        Route = OdkRoutes.GroupAdmin.MembersSubscriptionCreate(Model.Chapter),
+                        Text = "Create subscription"
+                    })                    
                 </p>
 
                 <div class="table-responsive">
@@ -71,7 +80,11 @@
                                     }
                                 </td>    
                                 <td>
-                                    <a href="@OdkRoutes.MemberGroups.MembersSubscription(Model.Platform, Model.Chapter, subscription)">@subscription.Name</a>
+                                    @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                                    {
+                                        Route = OdkRoutes.GroupAdmin.MembersSubscription(Model.Chapter, subscription),
+                                        Text = subscription.Name
+                                    })
                                 </td>                                
                                 <td>
                                     @subscription.Currency.ToAmountString(subscription.Amount)

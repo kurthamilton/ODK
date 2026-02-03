@@ -4,11 +4,18 @@
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
 @model ChapterConversationsAdminPageViewModel
+@inject IOdkRoutes OdkRoutes
 
 <p>Contact messages sent by logged in users</p>
 
 <p>
-    Your <a href="@OdkRoutes.MemberGroups.GroupPrivacy(Model.Platform, Model.Chapter)">privacy settings</a> currently allow
+    <span>Your </span>  
+    @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+    {
+        Route = OdkRoutes.GroupAdmin.Privacy(Model.Chapter),
+        Text = "privacy settings"
+    })    
+    <span>currently allow</span>
     @switch (Model.PrivacySettings?.Conversations)
     {
         case null:
@@ -38,20 +45,23 @@
                     <th>Subject</th>
                     <th>Started</th>
                     <th>Last message</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
-                @foreach (var dto in Model.Conversations.OrderByDescending(x => x.LastMessage.CreatedUtc))
+                @foreach (var dto in Model.Conversations.OrderByDescending(x => x.LastMessage.Message.CreatedUtc))
                 {
-                    var conversation = dto.Conversation;
+                    var (conversation, member) = (dto.Conversation, dto.Member);
 
                     <tr>
                         <td>
                             @if (dto.Member.IsMemberOf(Model.Chapter.Id))
                             {
-                                <a href="@OdkRoutes.MemberGroups.Member(Model.Platform, Model.Chapter, dto.Member.Id)">
-                                    @dto.Member.FullName
-                                </a>
+                                @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                                {
+                                    Route = OdkRoutes.GroupAdmin.Member(Model.Chapter, member.Id),
+                                    Text = member.FullName
+                                })
                             }
                             else
                             {
@@ -59,21 +69,30 @@
                             }
                         </td>
                         <td>
-                            <a href="@OdkRoutes.MemberGroups.GroupConversation(Model.Platform, Model.Chapter, conversation.Id)">
-                                @dto.Conversation.Subject
-                            </a>
+                            @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                            {
+                                Route = OdkRoutes.GroupAdmin.Conversation(Model.Chapter, conversation.Id),
+                                Text = conversation.Subject
+                            })                            
                         </td>
                         <td>@conversation.CreatedUtc.ToFriendlyDateTimeString(Model.Chapter.TimeZone)</td>
                         <td>
                             <div>
-                                @dto.LastMessage.CreatedUtc.ToFriendlyDateTimeString(Model.Chapter.TimeZone)
+                                @dto.LastMessage.Message.CreatedUtc.ToFriendlyDateTimeString(Model.Chapter.TimeZone)
                             </div>
-                            @if (dto.LastMessage.MemberId != dto.Conversation.MemberId)
+                            @if (dto.LastMessage.Message.MemberId != dto.Conversation.MemberId)
                             {
                                 <div>
-                                    @dto.LastMessage.Member?.FullName
+                                    @dto.LastMessage.MemberFullName
                                 </div>
                             }
+                        </td>
+                        <td>
+                            @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                            {
+                                Route = OdkRoutes.GroupAdmin.Conversation(Model.Chapter, conversation.Id),
+                                Text = "Reply"
+                            })                            
                         </td>
                     </tr>
                 }

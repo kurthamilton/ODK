@@ -5,11 +5,16 @@ namespace ODK.Services;
 
 public class ServiceRequest
 {
-    public ServiceRequest()
-    {
-    }
+    public virtual required Guid? CurrentMemberIdOrDefault { get; init; }
 
     public required IHttpRequestContext HttpRequestContext { get; init; }
 
     public required PlatformType Platform { get; init; }
+
+    public static ServiceRequest Create(ServiceRequest other) => new()
+    {
+        CurrentMemberIdOrDefault = other.CurrentMemberIdOrDefault,
+        HttpRequestContext = other.HttpRequestContext,
+        Platform = other.Platform
+    };
 }

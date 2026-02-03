@@ -9,7 +9,7 @@
 @{
     Layout = "_HomeLayout";
 
-    var chapter = await Model.GetChapter();
+    var chapter = Model.Chapter;
     var viewModel = await EventViewModelService.GetEventPageViewModel(
         Model.ServiceRequest, Model.CurrentMemberIdOrDefault, chapter, Model.Shortcode);
 
@@ -28,13 +28,13 @@
             ? new MenuItem 
             {
                 Icon = IconType.ArrowLeft,
-                Link = OdkRoutes.Groups.PastEvents(viewModel.Platform, viewModel.Chapter), 
+                Link = Model.OdkRoutes.Groups.PastEvents(Model.Chapter),
                 Text = "back to past events" 
             }
             : new MenuItem 
             { 
                 Icon = IconType.ArrowLeft,
-                Link = OdkRoutes.Groups.Events(viewModel.Platform, viewModel.Chapter), 
+                Link = Model.OdkRoutes.Groups.Events(Model.Chapter),
                 Text = "Back to events" 
             }
     }

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.Models;
+using ODK.Services.Security;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Members;
 
@@ -15,14 +16,16 @@ public class SubscriptionCreateModel : AdminPageModel
         _chapterAdminService = chapterAdminService;
     }
 
+    public override ChapterAdminSecurable Securable => ChapterAdminSecurable.Subscriptions;
+
     public void OnGet()
     {
     }
 
     public async Task<IActionResult> OnPostAsync(SubscriptionFormSubmitViewModel viewModel)
     {
-        var serviceRequest = await CreateMemberChapterServiceRequest();
-        var result = await _chapterAdminService.CreateChapterSubscription(serviceRequest, new CreateChapterSubscription
+        var serviceRequest = MemberChapterAdminServiceRequest;
+        var result = await _chapterAdminService.CreateChapterSubscription(serviceRequest, new ChapterSubscriptionCreateModel
         {
             Amount = viewModel.Amount ?? 0,
             Description = viewModel.Description,
@@ -35,12 +38,11 @@ public class SubscriptionCreateModel : AdminPageModel
 
         if (result.Success)
         {
-            var chapter = await GetChapter();
-            AddFeedback(new FeedbackViewModel("Subscription created", FeedbackType.Success));
-            return Redirect($"/{chapter.ShortName}/Admin/Members/Subscriptions");
+            AddFeedback("Subscription created", FeedbackType.Success);
+            return Redirect(AdminRoutes.Subscriptions(Chapter).Path);
         }
 
-        AddFeedback(new FeedbackViewModel(result));
+        AddFeedback(result);
         return Page();
     }
 }

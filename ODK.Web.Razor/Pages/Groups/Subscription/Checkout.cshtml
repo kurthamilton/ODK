@@ -10,11 +10,11 @@
 @{
     Layout = "_HomeLayout";
 
-    var chapter = await Model.GetChapter();
+    var chapter = Model.Chapter;
     var group = await ChapterViewModelService.GetGroupPage(
-        Model.ServiceRequest, Model.CurrentMemberIdOrDefault, chapter);
+        Model.ServiceRequest, Model.CurrentMemberOrDefault, chapter);
 
-    var request = await Model.CreateMemberChapterServiceRequest();
+    var request = Model.MemberChapterServiceRequest;
     var returnUrl = "";
 
     var viewModel = await MemberService.StartChapterSubscriptionCheckoutSession(

@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Countries;
+using ODK.Services.Security;
 using ODK.Services.Venues;
+using ODK.Services.Venues.Models;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Admin.Venues;
@@ -16,13 +18,16 @@ public class CreateModel : OdkGroupAdminPageModel
         _venueAdminService = venueAdminService;
     }
 
+    public override ChapterAdminSecurable Securable => ChapterAdminSecurable.Venues;
+
     public void OnGet()
     {
     }
 
     public async Task<IActionResult> OnPostAsync(VenueFormViewModel viewModel)
     {
-        var result = await _venueAdminService.CreateVenue(AdminServiceRequest, new CreateVenue
+        var request = MemberChapterAdminServiceRequest;
+        var result = await _venueAdminService.CreateVenue(request, new VenueCreateModel
         {
             Address = viewModel.Address,
             Location = LatLong.FromCoords(viewModel.Lat, viewModel.Long),
@@ -32,13 +37,12 @@ public class CreateModel : OdkGroupAdminPageModel
 
         if (!result.Success)
         {
-            AddFeedback(new FeedbackViewModel(result));
+            AddFeedback(result);
             return Page();
         }
 
-        var chapter = await GetChapter();
-        AddFeedback(new FeedbackViewModel("Venue created", FeedbackType.Success));
-        var url = OdkRoutes.MemberGroups.Venues(Platform, chapter);
-        return Redirect(url);
+        AddFeedback("Venue created", FeedbackType.Success);
+        var path = OdkRoutes.GroupAdmin.Venues(Chapter).Path;
+        return Redirect(path);
     }
 }

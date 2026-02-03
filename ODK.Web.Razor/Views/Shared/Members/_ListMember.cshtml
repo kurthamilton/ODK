@@ -1,12 +1,13 @@
 ﻿@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Members
-@model ODK.Web.Razor.Models.Members.ListMemberViewModel
+@model ListMemberViewModel
+@inject IOdkRoutes OdkRoutes
 @{
     var showTooltip = Model.HideName && User.Identity?.IsAuthenticated == true;
 }
 
 <div class="member-tile @(Model.HideName ? "member-tile-sm" : null)">
-    <a href="@OdkRoutes.Groups.Member(Model.Platform, Model.Chapter, Model.Member.Id)" 
+    <a href="@OdkRoutes.Groups.Member(Model.Chapter, Model.Member.Id)" 
        data-bs-toggle="@(showTooltip ? "tooltip" : "")" 
        data-bs-title="@(showTooltip ? Model.Member.FullName : "")" container="body">
 

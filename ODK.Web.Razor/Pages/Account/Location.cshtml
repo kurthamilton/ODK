@@ -21,7 +21,7 @@
     Title = "Account",
     Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
     {
-        Active = OdkRoutes.Account.Location(),
+        Active = Model.OdkRoutes.Account.Location(),
         Title = "Location",
         Content = 
             @<div>

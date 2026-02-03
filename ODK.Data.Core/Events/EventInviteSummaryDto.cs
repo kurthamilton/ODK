@@ -2,7 +2,7 @@
 
 public class EventInviteSummaryDto
 {
-    public Guid EventId { get; set; }
+    public required Guid EventId { get; init; }
 
-    public int Sent { get; set; }
+    public required int Sent { get; init; }
 }

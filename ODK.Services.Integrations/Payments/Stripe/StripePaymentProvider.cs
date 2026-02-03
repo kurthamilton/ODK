@@ -61,7 +61,7 @@ public class StripePaymentProvider : IPaymentProvider
         }
     }
 
-    public async Task<RemoteAccount?> CreateConnectedAccount(CreateRemoteAccountOptions options)
+    public async Task<RemoteAccount?> CreateConnectedAccount(RemoteAccountCreateOptions options)
     {
         var emailAddress = options.Owner.EmailAddress;
 

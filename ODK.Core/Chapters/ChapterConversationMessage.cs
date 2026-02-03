@@ -10,8 +10,6 @@ public class ChapterConversationMessage : IDatabaseEntity
 
     public Guid Id { get; set; }
 
-    public Member? Member { get; set; }
-
     public Guid MemberId { get; set; }
 
     public bool ReadByChapter { get; set; }
@@ -27,7 +25,6 @@ public class ChapterConversationMessage : IDatabaseEntity
         ChapterConversationId = ChapterConversationId,
         CreatedUtc = CreatedUtc,
         Id = Id,
-        Member = Member,
         MemberId = MemberId,
         ReadByChapter = ReadByChapter,
         ReadByMember = ReadByMember,

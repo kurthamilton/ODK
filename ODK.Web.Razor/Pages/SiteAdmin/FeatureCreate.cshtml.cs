@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Features;
+using ODK.Services.Features.Models;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.SiteAdmin;
@@ -26,7 +27,7 @@ public class FeatureCreateModel : SiteAdminPageModel
             return Page();
         }
 
-        var result = await _featureService.AddFeature(CurrentMemberId, new UpdateFeature
+        var result = await _featureService.AddFeature(MemberServiceRequest, new FeatureUpdateModel
         {
             Description = viewModel.Description,
             Name = viewModel.Name
@@ -34,11 +35,11 @@ public class FeatureCreateModel : SiteAdminPageModel
 
         if (!result.Success)
         {
-            AddFeedback(new FeedbackViewModel(result));
+            AddFeedback(result);
             return Page();
         }
 
-        AddFeedback(new FeedbackViewModel("Feature created", FeedbackType.Success));
+        AddFeedback("Feature created", FeedbackType.Success);
         return Redirect(OdkRoutes.SiteAdmin.Features);
     }
 }

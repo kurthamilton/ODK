@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Members;
 using ODK.Services.Members;
 using ODK.Services.Members.Models;
+using ODK.Services.Security;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Members;
 
@@ -18,6 +19,8 @@ public class MemberModel : AdminPageModel
 
     public Guid MemberId { get; private set; }
 
+    public override ChapterAdminSecurable Securable => ChapterAdminSecurable.Members;
+
     public void OnGet(Guid id)
     {
         MemberId = id;
@@ -25,8 +28,8 @@ public class MemberModel : AdminPageModel
 
     public async Task<IActionResult> OnPostAsync(Guid id, MemberFormViewModel viewModel)
     {
-        var request = await CreateMemberChapterServiceRequest();
-        var result = await _memberAdminService.UpdateMemberSubscription(request, id, new UpdateMemberSubscription
+        var request = MemberChapterAdminServiceRequest;
+        var result = await _memberAdminService.UpdateMemberSubscription(request, id, new MemberSubscriptionUpdateModel
         {
             ExpiryDate = viewModel.SubscriptionExpiryDate,
             Type = viewModel.SubscriptionType ?? SubscriptionType.None
@@ -34,12 +37,11 @@ public class MemberModel : AdminPageModel
 
         if (!result.Success)
         {
-            AddFeedback(new FeedbackViewModel(result));
+            AddFeedback(result);
             return Page();
         }
 
-        var chapter = await GetChapter();
-        AddFeedback(new FeedbackViewModel("Member subscription updated", FeedbackType.Success));
-        return Redirect($"/{chapter.ShortName}/Admin/Members/{id}");
+        AddFeedback("Member subscription updated", FeedbackType.Success);
+        return Redirect(AdminRoutes.Member(Chapter, id).Path);
     }
 }

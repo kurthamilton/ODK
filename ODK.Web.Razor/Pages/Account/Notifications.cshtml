@@ -19,7 +19,7 @@
     Title = "Account",
     Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
     {
-        Active = OdkRoutes.Account.Notifications(null),
+        Active = Model.OdkRoutes.Account.Notifications(null),
         Title = "Notification preferences",
         Content =
             @<div>

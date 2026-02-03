@@ -75,11 +75,6 @@
             });
         };
 
-        const getOption = (value) => {
-            return Array.from($select.querySelectorAll('option'))
-                .filter(x => x.value === value)[0];
-        };
-
         const getSelectedValues = () => {
             // assume multi select
             return Array.from($select.querySelectorAll('option'))
@@ -98,7 +93,6 @@
                 }
             }
 
-            const option = getOption(value);
             $select.dispatchEvent(new CustomEvent('odk:change', {
                 detail: {
                     values: selectedValues
@@ -165,6 +159,9 @@
                 slimSelect.destroy();
             }
 
+            const $fieldset = $select.closest('fieldset');
+            const disabled = !!$fieldset ? $fieldset.hasAttribute('disabled') : false;
+
             const $options = $select.options;
             const originalValues = Array.from($options).map(x => x.innerText);
             slimSelect = new SlimSelect({
@@ -229,6 +226,7 @@
                 settings: {
                     allowDeselect: allowDeselect,
                     closeOnSelect: !alwaysOpen,
+                    disabled: disabled,
                     placeholderText: placeholder,
                     showSearch: searchable
                 }

@@ -1,5 +1,23 @@
 ﻿@using ODK.Web.Common.Extensions
-@model ODK.Web.Razor.Models.Admin.Members.AdminMemberFormViewModel
+@using ODK.Web.Razor.Models.Admin.Members
+@model AdminMemberFormViewModel
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.Role, new { @class = "form-label" })
+    @if (!Model.CanEditRole || Model.ReadOnly)
+    {
+        @Html.TextBoxFor(x => x.Role, new { @class = "form-control-plaintext", @readonly = "" })
+    }
+    else
+    {
+        var roleOptions = Model.RoleOptions
+            .Select(x => new SelectListItem { Value = ((int)x).ToString(), Text = x.ToString() })
+            .ToList();
+
+        @Html.DropDownListFor(x => x.Role, roleOptions, new { @class = "form-control", data_select = "" })
+        @Html.ValidationMessageFor(x => x.Role)
+    }    
+</div>
 
 <div class="form-group mb-3">
     @Html.LabelFor(x => x.AdminEmailAddress, new { @class = "form-label" })
@@ -15,11 +33,6 @@
 <div class="form-check form-switch mb-3">
     @Html.OdkCheckBoxFor(x => x.ReceiveNewMemberEmails, new { @class = "form-check-input" })
     @Html.LabelFor(x => x.ReceiveNewMemberEmails, new { @class = "form-check-label" })
-</div>
-
-<div class="form-check form-switch mb-3">
-    @Html.OdkCheckBoxFor(x => x.SendNewMemberEmails, new { @class = "form-check-input" })
-    @Html.LabelFor(x => x.SendNewMemberEmails, new { @class = "form-check-label" })
 </div>
 
 <div class="form-check form-switch mb-3">

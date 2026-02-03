@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Emails;
 using ODK.Services.Emails;
+using ODK.Services.Emails.Models;
+using ODK.Services.Security;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Chapters;
 
@@ -17,17 +19,19 @@ public class EmailModel : AdminPageModel
 
     public ChapterEmail Email { get; private set; } = null!;
 
+    public override ChapterAdminSecurable Securable => ChapterAdminSecurable.Emails;
+
     public async Task<IActionResult> OnGetAsync(EmailType type)
     {
-        var request = await CreateMemberChapterServiceRequest();
+        var request = MemberChapterAdminServiceRequest;
         Email = await _emailAdminService.GetChapterEmail(request, type);
         return Page();
     }
 
     public async Task<IActionResult> OnPostAsync(EmailType type, ChapterEmailFormViewModel viewModel)
     {
-        var request = await CreateMemberChapterServiceRequest();
-        var result = await _emailAdminService.UpdateChapterEmail(request, type, new UpdateEmail
+        var request = MemberChapterAdminServiceRequest;
+        var result = await _emailAdminService.UpdateChapterEmail(request, type, new EmailUpdateModel
         {
             HtmlContent = viewModel.Content,
             Overridable = false,
@@ -36,12 +40,12 @@ public class EmailModel : AdminPageModel
 
         if (!result.Success)
         {
-            AddFeedback(new FeedbackViewModel(result));
+            AddFeedback(result);
             return Page();
         }
 
-        var chapter = await GetChapter();
-        AddFeedback(new FeedbackViewModel("Email updated", FeedbackType.Success));
-        return Redirect($"/{chapter.ShortName}/Admin/Chapter/Emails");
+        var chapter = Chapter;
+        AddFeedback("Email updated", FeedbackType.Success);
+        return Redirect(AdminRoutes.Emails(chapter).Path);
     }
 }

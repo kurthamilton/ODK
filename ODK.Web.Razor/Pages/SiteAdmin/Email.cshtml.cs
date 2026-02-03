@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Emails;
 using ODK.Services.Emails;
+using ODK.Services.Emails.Models;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Admin.Chapters;
@@ -20,7 +21,7 @@ public class EmailModel : SiteAdminPageModel
 
     public async Task<IActionResult> OnGetAsync(EmailType type)
     {
-        Email = await _emailAdminService.GetEmail(CurrentMemberId, type);
+        Email = await _emailAdminService.GetEmail(MemberServiceRequest, type);
         return Page();
     }
 
@@ -28,7 +29,7 @@ public class EmailModel : SiteAdminPageModel
         [FromForm] ChapterEmailFormViewModel viewModel,
         [FromForm] bool overridable)
     {
-        var result = await _emailAdminService.UpdateEmail(CurrentMemberId, type, new UpdateEmail
+        var result = await _emailAdminService.UpdateEmail(MemberServiceRequest, type, new EmailUpdateModel
         {
             HtmlContent = viewModel.Content,
             Overridable = overridable,
@@ -37,11 +38,11 @@ public class EmailModel : SiteAdminPageModel
 
         if (!result.Success)
         {
-            AddFeedback(new FeedbackViewModel(result));
+            AddFeedback(result);
             return Page();
         }
 
-        AddFeedback(new FeedbackViewModel("Email updated", FeedbackType.Success));
+        AddFeedback("Email updated", FeedbackType.Success);
         return Redirect(OdkRoutes.SiteAdmin.Emails);
     }
 }

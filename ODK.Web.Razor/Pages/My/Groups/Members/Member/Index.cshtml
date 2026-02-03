@@ -9,9 +9,10 @@
 @{
     Layout = "_GroupAdminLayout";
 
-    var viewModel = await MemberAdminService.GetMemberViewModel(Model.AdminServiceRequest, Model.MemberId);
+    var request = Model.MemberChapterAdminServiceRequest;
+    var viewModel = await MemberAdminService.GetMemberViewModel(request, Model.MemberId);
     
-    Model.Title = viewModel.Member.GetDisplayName(viewModel.Chapter.Id);
+    Model.Title = viewModel.Member.GetDisplayName(Model.Chapter.Id);
 }
 
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
@@ -23,7 +24,7 @@
         {
             new MenuItem
             {
-                Link = OdkRoutes.MemberGroups.Members(Model.Platform, viewModel.Chapter),
+                Link = Model.OdkRoutes.GroupAdmin.Members(Model.Chapter).Path,
                 Text = "Back to members",
                 Icon = IconType.ArrowLeft
             }

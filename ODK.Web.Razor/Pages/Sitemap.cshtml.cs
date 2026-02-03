@@ -11,7 +11,7 @@ public class SitemapModel : OdkPageModel
 
     public SitemapModel(IChapterService chapterService)
     {
-        _baseUrl = new(() => HttpRequestContext.BaseUrl);
+        _baseUrl = new(() => ServiceRequest.HttpRequestContext.BaseUrl);
         _chapterService = chapterService;
     }
 
@@ -37,7 +37,7 @@ public class SitemapModel : OdkPageModel
         {
             nodes.Add(new SitemapNodeModel
             {
-                Url = GetUrl(OdkRoutes.Groups.Group(Platform, chapter))
+                Url = GetUrl(OdkRoutes.Groups.Group(chapter))
             });
 
             nodes.Add(new SitemapNodeModel
@@ -47,17 +47,17 @@ public class SitemapModel : OdkPageModel
 
             nodes.Add(new SitemapNodeModel
             {
-                Url = GetUrl(OdkRoutes.Groups.Events(Platform, chapter))
+                Url = GetUrl(OdkRoutes.Groups.Events(chapter))
             });
 
             nodes.Add(new SitemapNodeModel
             {
-                Url = GetUrl(OdkRoutes.Groups.Contact(Platform, chapter))
+                Url = GetUrl(OdkRoutes.Groups.Contact(chapter))
             });
 
             nodes.Add(new SitemapNodeModel
             {
-                Url = GetUrl(OdkRoutes.Groups.About(Platform, chapter))
+                Url = GetUrl(OdkRoutes.Groups.About(chapter))
             });
         }
 

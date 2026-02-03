@@ -11840,6 +11840,9 @@ textarea.form-control-lg {
   --ss-border-radius: 0;
   display: flex;
 }
+.ss-main.ss-disabled {
+  --ss-disabled-color: var(--bs-secondary-bg);
+}
 .ss-main .ss-arrow {
   display: none;
 }

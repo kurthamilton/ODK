@@ -9,7 +9,7 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Member payments | Admin";
 
-    var request = await Model.CreateMemberChapterServiceRequest();
+    var request = Model.MemberChapterAdminServiceRequest;
     var viewModel = await MemberAdminService.GetMemberPaymentsViewModel(request, Model.MemberId);
 }
 
@@ -20,7 +20,7 @@
     {
         new MenuItem
         {
-            Link = OdkRoutes.MemberGroups.Members(Model.Platform, viewModel.Chapter),
+            Link = Model.AdminRoutes.Members(Model.Chapter).Path,
             Text = "Members"
         },
         new MenuItem { Text = viewModel.Member.GetDisplayName(viewModel.Chapter.Id) }

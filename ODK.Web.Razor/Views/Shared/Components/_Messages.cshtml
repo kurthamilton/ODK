@@ -7,10 +7,10 @@
     {
         <div class="row list-group">
             <div class="conversation-message list-group-item
-                        col-10 col-md-8 @(message.Member?.Id != Model.CurrentMember.Id ? "offset-2 offset-md-4" : null)">
+                        col-10 col-md-8 @(message.MemberId != Model.CurrentMember.Id ? "offset-2 offset-md-4" : null)">
                 <div class="d-flex gap-2 small">
                     <div>
-                        @(message.Member?.Id == Model.CurrentMember.Id ? "You" : message.Member?.FullName ?? "[deleted]")
+                        @(message.MemberId == Model.CurrentMember.Id ? "You" : message.MemberFullName ?? "[deleted]")
                     </div>
                     <div>&#8226;</div>
                     <div>

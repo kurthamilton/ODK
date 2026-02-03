@@ -8,7 +8,8 @@
     Layout = "_GroupAdminLayout";
     Model.Title = "Social media";
 
-    var viewModel = await ChapterAdminService.GetChapterLinksViewModel(Model.AdminServiceRequest);
+    var request = Model.MemberChapterAdminServiceRequest;
+    var viewModel = await ChapterAdminService.GetChapterLinksViewModel(request);
 }
 
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel

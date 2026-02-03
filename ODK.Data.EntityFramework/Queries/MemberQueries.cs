@@ -19,6 +19,7 @@ internal static class MemberQueries
     internal static IQueryable<Member> InChapter(this IQueryable<Member> query, Guid chapterId)
         => query.Where(x => x.Chapters.Any(c => c.ChapterId == chapterId));
 
-    internal static IQueryable<Member> Visible(this IQueryable<Member> query, Guid chapterId) => query
-        .Where(member => !member.PrivacySettings.Any(x => x.ChapterId == chapterId && x.HideProfile));
+    internal static IQueryable<Member> Visible(this IQueryable<Member> query, Guid chapterId) 
+        => query
+            .Where(member => member.Chapters.Any(x => x.ChapterId == chapterId && !x.HideProfile));
 }

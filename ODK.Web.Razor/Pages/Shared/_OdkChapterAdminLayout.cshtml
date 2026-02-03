@@ -1,21 +1,6 @@
-﻿@using ODK.Web.Common.Extensions
-@using ODK.Web.Razor.Models.Admin
-@using ODK.Web.Razor.Models.Components
-@using ODK.Web.Razor.Models.Header
-@using ODK.Core.Chapters
-@using ODK.Core.Members
-@using ODK.Web.Razor.Pages.Chapters
-@using ODK.Web.Razor.Services
-@inject IRequestStore RequestStore
+﻿@using ODK.Web.Razor.Models.Components
 @{
-    Layout = "_OdkChapterLayout";
-
-    var chapter = await RequestStore.GetChapter();
-    var member = await RequestStore.GetCurrentMemberOrDefault();
-    if (chapter == null || member == null)
-    {
-        return;
-    }
+    Layout = "_OdkChapterLayout";    
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

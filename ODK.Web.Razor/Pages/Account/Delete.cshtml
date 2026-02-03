@@ -5,7 +5,7 @@
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
-@model ODK.Web.Razor.Pages.Account.DeleteModel
+@model DeleteModel
 @{
     Layout = "_AccountLayout";
     Model.Title = "Delete account";
@@ -16,7 +16,7 @@
     Title = "Account",
     Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
     {
-        Active = OdkRoutes.Account.Delete(null),
+        Active = Model.OdkRoutes.Account.Delete(null),
         Title = "Delete account",
         Content = 
             @<div>

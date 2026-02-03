@@ -1,11 +1,13 @@
 ﻿@using ODK.Core.Utils
 @using ODK.Services.Members.ViewModels
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Admin.Chapters
 @using ODK.Web.Razor.Models.Admin.Members
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Contact
 @model MemberConversationsAdminPageViewModel
+@inject IOdkRoutes OdkRoutes
 
 @await Html.PartialAsync("Admin/Members/_MemberAdminTabs", Model)
 
@@ -22,25 +24,27 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var dto in Model.Conversations.OrderByDescending(x => x.LastMessage.CreatedUtc))
+                    @foreach (var dto in Model.Conversations.OrderByDescending(x => x.LastMessage.Message.CreatedUtc))
                     {
-                        var conversation = dto.Conversation;
+                        var (conversation, lastMessage) = (dto.Conversation, dto.LastMessage);
 
                         <tr>
                             <td>
-                                <a href="@OdkRoutes.MemberGroups.GroupConversation(Model.Platform, Model.Chapter, conversation.Id)">
-                                    @dto.Conversation.Subject
-                                </a>
+                                @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                                {
+                                    Route = OdkRoutes.GroupAdmin.Conversation(Model.Chapter, conversation.Id),
+                                    Text = conversation.Subject
+                                })                                
                             </td>
                             <td>@conversation.CreatedUtc.ToFriendlyDateTimeString(Model.Chapter.TimeZone)</td>
                             <td>
                                 <div>
-                                    @dto.LastMessage.CreatedUtc.ToFriendlyDateTimeString(Model.Chapter.TimeZone)
+                                    @lastMessage.Message.CreatedUtc.ToFriendlyDateTimeString(Model.Chapter.TimeZone)
                                 </div>
-                                @if (dto.LastMessage.MemberId != dto.Conversation.MemberId)
+                                @if (lastMessage.Message.MemberId != conversation.MemberId)
                                 {
                                     <div>
-                                        @dto.LastMessage.Member?.FullName
+                                        @lastMessage.MemberFullName
                                     </div>
                                 }
                             </td>

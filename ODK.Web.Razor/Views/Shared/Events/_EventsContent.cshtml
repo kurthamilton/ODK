@@ -1,13 +1,15 @@
 ﻿@using ODK.Core.Chapters
 @using ODK.Services.Events
 @using ODK.Services.Events.ViewModels
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Events
 @model EventsPageViewModel
+@inject IOdkRoutes OdkRoutes
 
 @await Html.PartialAsync("Components/_AdminBar", new AdminBarViewModel
 {
-    AdminLink = $"/{Model.Chapter.ShortName}/Admin/Events",
+    AdminLink = OdkRoutes.GroupAdmin.Events(Model.Chapter).Path,
     AdminLinkText = "Edit",
     Chapter = Model.Chapter,
     CurrentMember = Model.CurrentMember
@@ -34,7 +36,14 @@ else
     {
         <p>
             There are no upcoming public events.
-            <a href="/@Model.Chapter.ShortName/Account/Login?returnUrl=/@Model.Chapter.ShortName/Events">Sign in</a>
+            
+            @if (Model.CurrentMember == null)
+            {
+                var loginUrl = $"{OdkRoutes.Account.Login(Model.Chapter)}?returnUrl={OdkRoutes.Groups.Events(Model.Chapter)}";
+                <a href="@loginUrl">
+                    Sign in
+                </a>
+            }            
         </p>
     }
 }

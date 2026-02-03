@@ -5,38 +5,40 @@
 @using ODK.Services.Chapters
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
+@using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Header
 @using ODK.Web.Razor.Services
-@model OdkComponentContext
 @inject IChapterService ChapterService
+@inject IOdkRoutes OdkRoutes
 @inject IRequestStore RequestStore
 @{
-    if (Model.Platform != PlatformType.DrunkenKnitwits)
+    var platform = RequestStore.Platform;
+    if (platform != PlatformType.DrunkenKnitwits)
     {
         return;
     }
 
-    var member = await RequestStore.GetCurrentMemberOrDefault();
+    var member = RequestStore.CurrentMemberOrDefault;
 
-    var viewModel = await ChapterService.GetChaptersHomePageViewModel(Model.Platform);
+    var viewModel = await ChapterService.GetChaptersHomePageViewModel(platform);
     var menuItems = viewModel
         .Chapters
         .OrderBy(x => x.Name)
         .Select(c => new MenuItem
         {
             ExternalLink = !string.IsNullOrEmpty(c.RedirectUrl) ? c.RedirectUrl : null,
-            Link = string.IsNullOrEmpty(c.RedirectUrl) ? OdkRoutes.Groups.Group(Model.Platform, c) : null,
-            Text = c.GetDisplayName(Model.Platform)
+            Link = string.IsNullOrEmpty(c.RedirectUrl) ? OdkRoutes.Groups.Group(c) : null,
+            Text = c.GetDisplayName(platform)
         })
         .ToArray();
 }
 
-@await Html.PartialAsync("Header/_Header", new HeaderViewModel(Model)
+@await Html.PartialAsync("Header/_Header", new HeaderViewModel()
 {   
    ImageLink = "/",
    ImageUrl = "/assets/img/home-banner.png",
-   Navbar = new NavbarViewModel(Model)
+   Navbar = new NavbarViewModel
    {
        Breakpoint = "md",
        Chapter = null,

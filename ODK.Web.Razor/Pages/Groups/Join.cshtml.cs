@@ -22,7 +22,7 @@ public class JoinModel : OdkPageModel
 
     public async Task<IActionResult> OnPost([FromForm] ChapterProfileFormViewModel viewModel)
     {
-        var properties = viewModel.Properties.Select(x => new UpdateMemberProperty
+        var properties = viewModel.Properties.Select(x => new MemberPropertyUpdateModel
         {
             ChapterPropertyId = x.ChapterPropertyId,
             Value = string.Equals(x.Value, "Other", StringComparison.InvariantCultureIgnoreCase) &&
@@ -31,7 +31,7 @@ public class JoinModel : OdkPageModel
                     : x.Value ?? ""
         });
 
-        var request = await CreateMemberChapterServiceRequest();
+        var request = MemberChapterServiceRequest;
         var result = await _memberService.JoinChapter(request, properties);
         if (!result.Success)
         {
@@ -39,7 +39,6 @@ public class JoinModel : OdkPageModel
             return Page();
         }
 
-        var chapter = await GetChapter();
-        return Redirect(OdkRoutes.Groups.Group(PlatformType.Default, chapter));
+        return Redirect(OdkRoutes.Groups.Group(Chapter));
     }
 }

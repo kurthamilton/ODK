@@ -1,23 +1,22 @@
 using Microsoft.AspNetCore.Mvc;
-using ODK.Services;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.ViewModels;
 using ODK.Web.Common.Feedback;
-using ODK.Web.Common.Routes;
 
 namespace ODK.Web.Razor.Pages.SiteAdmin;
 
 public class GroupModel : SiteAdminPageModel
 {
     private readonly IChapterAdminService _chapterAdminService;
+    private readonly IChapterSiteAdminService _chapterSiteAdminService;
 
-    public GroupModel(IChapterAdminService chapterAdminService)
+    public GroupModel(
+        IChapterAdminService chapterAdminService, 
+        IChapterSiteAdminService chapterSiteAdminService)
     {
         _chapterAdminService = chapterAdminService;
+        _chapterSiteAdminService = chapterSiteAdminService;
     }
-
-    public MemberChapterServiceRequest AdminServiceRequest
-        => MemberChapterServiceRequest.Create(ChapterId, MemberServiceRequest);
 
     public Guid ChapterId { get; private set; }
 
@@ -35,17 +34,17 @@ public class GroupModel : SiteAdminPageModel
             return OnGet(id);
         }
 
-        var request = CreateMemberChapterServiceRequest(id);
+        var request = MemberChapterServiceRequest;
 
-        var result = await _chapterAdminService.UpdateSiteAdminChapter(request, viewModel);
+        var result = await _chapterSiteAdminService.UpdateSiteAdminChapter(request, id, viewModel);
 
         if (!result.Success)
         {
-            AddFeedback(new FeedbackViewModel(result));
+            AddFeedback(result);
             return OnGet(id);
         }
 
-        AddFeedback(new FeedbackViewModel("Group updated", FeedbackType.Success));
+        AddFeedback("Group updated", FeedbackType.Success);
         return Redirect(OdkRoutes.SiteAdmin.Groups);
     }
 }

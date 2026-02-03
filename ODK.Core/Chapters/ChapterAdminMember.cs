@@ -21,7 +21,10 @@ public class ChapterAdminMember : IDatabaseEntity
 
     public bool ReceiveNewMemberEmails { get; set; }
 
-    public bool SendNewMemberEmails { get; set; }
+    public ChapterAdminRole Role { get; set; }
+
+    public bool HasAccessTo(ChapterAdminRole target)
+        => Role.HasAccessTo(target, Member);
 
     public EmailAddressee ToEmailAddressee()
     {

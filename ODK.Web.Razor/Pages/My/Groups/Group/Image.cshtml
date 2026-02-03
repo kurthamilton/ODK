@@ -1,5 +1,7 @@
 ﻿@page "/my/groups/{chapterId:guid}/image"
+@using ODK.Services
 @using ODK.Services.Chapters
+@using ODK.Services.Security
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model ImageModel
@@ -8,7 +10,8 @@
     Layout = "_GroupAdminLayout";
     Model.Title = "Picture";
 
-    var viewModel = await ChapterAdminService.GetChapterImageViewModel(Model.AdminServiceRequest);
+    var request = Model.MemberChapterAdminServiceRequest;
+    var viewModel = await ChapterAdminService.GetChapterImageViewModel(request);
 }
 
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel

@@ -67,7 +67,6 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IMemberPasswordResetRequestRepository> _memberPasswordResetRequestRepository;
     private readonly Lazy<IMemberPaymentSettingsRepository> _memberPaymentSettingsRepository;
     private readonly Lazy<IMemberPreferencesRepository> _memberPreferencesRepository;
-    private readonly Lazy<IMemberPrivacySettingsRepository> _memberPrivacySettingsRepository;
     private readonly Lazy<IMemberPropertyRepository> _memberPropertyRepository;
     private readonly Lazy<IMemberRepository> _memberRepository;
     private readonly Lazy<IMemberSiteSubscriptionRepository> _memberSiteSubscriptionRepository;
@@ -157,7 +156,6 @@ public class UnitOfWork : IUnitOfWork
         _memberPasswordResetRequestRepository = new(() => new MemberPasswordResetRequestRepository(_context));
         _memberPaymentSettingsRepository = new(() => new MemberPaymentSettingsRepository(_context));
         _memberPreferencesRepository = new(() => new MemberPreferencesRepository(_context));
-        _memberPrivacySettingsRepository = new(() => new MemberPrivacySettingsRepository(_context));
         _memberPropertyRepository = new(() => new MemberPropertyRepository(_context));
         _memberRepository = new(() => new MemberRepository(_context));
         _memberSiteSubscriptionRepository = new(() => new MemberSiteSubscriptionRepository(_context));
@@ -243,7 +241,6 @@ public class UnitOfWork : IUnitOfWork
     public IMemberPasswordResetRequestRepository MemberPasswordResetRequestRepository => _memberPasswordResetRequestRepository.Value;
     public IMemberPaymentSettingsRepository MemberPaymentSettingsRepository => _memberPaymentSettingsRepository.Value;
     public IMemberPreferencesRepository MemberPreferencesRepository => _memberPreferencesRepository.Value;
-    public IMemberPrivacySettingsRepository MemberPrivacySettingsRepository => _memberPrivacySettingsRepository.Value;
     public IMemberPropertyRepository MemberPropertyRepository => _memberPropertyRepository.Value;
     public IMemberRepository MemberRepository => _memberRepository.Value;
     public IMemberSiteSubscriptionRepository MemberSiteSubscriptionRepository => _memberSiteSubscriptionRepository.Value;

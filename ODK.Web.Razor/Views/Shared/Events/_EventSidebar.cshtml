@@ -10,6 +10,7 @@
 @using ODK.Web.Razor.Models.Members
 @using ODK.Web.Razor.Models.Payments
 @model EventPageViewModel
+@inject IOdkRoutes OdkRoutes
 
 <div class="sidebar">
     @if (Model.Hosts.Count > 0)
@@ -22,7 +23,7 @@
                 <div class="d-flex flex-column gap-2">
                     @foreach (var host in Model.Hosts.OrderBy(x => x.FullName))
                     {
-                        var hostUrl = OdkRoutes.Groups.Member(Model.Platform, Model.Chapter, host.Id);
+                        var hostUrl = OdkRoutes.Groups.Member(Model.Chapter, host.Id);
 
                         <div class="d-flex align-items-center justify-content-start">
                             @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel

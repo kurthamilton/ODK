@@ -1,19 +1,20 @@
 ﻿using ODK.Core.Venues;
+using ODK.Services.Venues.Models;
 using ODK.Services.Venues.ViewModels;
 
 namespace ODK.Services.Venues;
 
 public interface IVenueAdminService
 {
-    Task<ServiceResult> CreateVenue(MemberChapterServiceRequest request, CreateVenue venue);
+    Task<ServiceResult> CreateVenue(MemberChapterAdminServiceRequest request, VenueCreateModel venue);
 
-    Task<Venue> GetVenue(MemberChapterServiceRequest request, Guid venueId);
+    Task<Venue> GetVenue(MemberChapterAdminServiceRequest request, Guid venueId);
 
-    Task<VenueEventsAdminPageViewModel> GetVenueEventsViewModel(MemberChapterServiceRequest request, Guid venueId);
+    Task<VenueEventsAdminPageViewModel> GetVenueEventsViewModel(MemberChapterAdminServiceRequest request, Guid venueId);
 
-    Task<VenuesAdminPageViewModel> GetVenuesViewModel(MemberChapterServiceRequest request);
+    Task<VenuesAdminPageViewModel> GetVenuesViewModel(MemberChapterAdminServiceRequest request);
 
-    Task<VenueAdminPageViewModel> GetVenueViewModel(MemberChapterServiceRequest request, Guid venueId);
+    Task<VenueAdminPageViewModel> GetVenueViewModel(MemberChapterAdminServiceRequest request, Guid venueId);
 
-    Task<ServiceResult> UpdateVenue(MemberChapterServiceRequest request, Guid id, CreateVenue venue);
+    Task<ServiceResult> UpdateVenue(MemberChapterAdminServiceRequest request, Guid id, VenueCreateModel venue);
 }

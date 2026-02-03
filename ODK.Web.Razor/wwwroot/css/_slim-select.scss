@@ -1,9 +1,13 @@
 ﻿/*Style SlimSelect like Bootstrap 5*/
-.ss-main {    
+.ss-main {
     --ss-border-radius: 0;
-
     // for positioning the deselect icon
     display: flex;
+
+    &.ss-disabled {
+        --ss-disabled-color: var(--bs-secondary-bg);
+    }
+
 
     .ss-arrow {
         display: none;

@@ -9,7 +9,7 @@ public interface IPaymentService
     Task EnsureProductExists(Guid chapterId);
 
     Task<PaymentStatusType> GetMemberChapterPaymentCheckoutSessionStatus(
-        MemberChapterServiceRequest request, string externalSessionId);
+        MemberServiceRequest request, Guid chapterId, string externalSessionId);
 
     Task<PaymentStatusType> GetMemberSitePaymentCheckoutSessionStatus(
         MemberServiceRequest request, string externalSessionId);

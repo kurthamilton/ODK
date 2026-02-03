@@ -1,5 +1,7 @@
 ﻿@page "/my/groups/{chapterId:guid}/delete"
+@using ODK.Services
 @using ODK.Services.Chapters
+@using ODK.Services.Security
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model DeleteModel
@@ -7,8 +9,9 @@
 @{
     Layout = "_GroupAdminLayout";
     Model.Title = "Delete group";
-
-    var viewModel = await ChapterAdminService.GetChapterDeleteViewModel(Model.AdminServiceRequest);
+    
+    var request = Model.MemberChapterAdminServiceRequest;
+    var viewModel = await ChapterAdminService.GetChapterDeleteViewModel(request);
 }
 
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel

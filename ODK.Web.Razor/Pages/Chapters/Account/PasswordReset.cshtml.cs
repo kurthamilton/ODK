@@ -28,14 +28,13 @@ public class PasswordResetModel : OdkPageModel
         ServiceResult result = await _authenticationService.ResetPasswordAsync(viewModel.Token, viewModel.NewPassword);
         if (result.Success)
         {
-            AddFeedback(new FeedbackViewModel("Your password has been updated.", FeedbackType.Success));
+            AddFeedback("Your password has been updated.", FeedbackType.Success);
 
-            var chapter = await GetChapter();
-            var redirectUrl = OdkRoutes.Account.Login(chapter);
+            var redirectUrl = OdkRoutes.Account.Login(Chapter);
             return Redirect(redirectUrl);
         }
 
-        AddFeedback(new FeedbackViewModel(result));
+        AddFeedback(result);
         return Page();
     }
 }

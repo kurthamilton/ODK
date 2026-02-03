@@ -9,7 +9,8 @@
 @{
     Layout = "_GroupAdminLayout";
 
-    var viewModel = await VenueAdminService.GetVenueEventsViewModel(Model.AdminServiceRequest, Model.VenueId);
+    var request = Model.MemberChapterAdminServiceRequest;
+    var viewModel = await VenueAdminService.GetVenueEventsViewModel(request, Model.VenueId);
 
     Model.Title = viewModel.Venue.Name;
 }
@@ -23,7 +24,7 @@
         {
             new MenuItem
             {
-                Link = OdkRoutes.MemberGroups.Venues(Model.Platform, viewModel.Chapter),
+                Link = Model.OdkRoutes.GroupAdmin.Venues(Model.Chapter).Path,
                 Text = "Back to venues",
                 Icon = IconType.ArrowLeft
             }

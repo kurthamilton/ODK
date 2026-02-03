@@ -41,7 +41,7 @@ public class Event : IDatabaseEntity, IChapterEntity, ICloneable<Event>
 
     public bool RsvpDisabled { get; set; }
 
-    public string? Shortcode { get; set; }
+    public string Shortcode { get; set; } = string.Empty;
 
     public bool Ticketed => TicketSettings?.Cost > 0;
 

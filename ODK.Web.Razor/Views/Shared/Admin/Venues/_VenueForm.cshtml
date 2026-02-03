@@ -14,7 +14,7 @@
     @Html.TextBoxFor(x => x.Address, new { @class = "form-control" })
 </div>
 
-<div class="form-group mb-3">
+<div class="form-group mb-3 required">
     @Html.LabelFor(x => x.LocationName, new { @class = "form-label" })
     @await Html.PartialAsync("Components/_LocationPicker", Model)
     @Html.ValidationMessageFor(x => x.LocationName)

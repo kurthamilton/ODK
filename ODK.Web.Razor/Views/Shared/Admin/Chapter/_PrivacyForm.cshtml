@@ -5,8 +5,8 @@
 
 <div class="form-group mb-3">
     @Html.LabelFor(x => x.Conversations, new { @class = "form-label" })
-    <span class="ms-1 text-muted">Public allows logged in users from other groups to start conversations</span>
-    @Html.OdkEnumDropDownFor(x => x.Conversations, "", new { @class = "form-select" })
+    <span class="ms-1 text-muted">Public allows logged in members from other groups to start conversations</span>
+    @Html.OdkEnumDropDownFor(x => x.Conversations, new { @class = "form-select", data_select = "" })
     @Html.ValidationMessageFor(x => x.Conversations)
 </div>
 
@@ -15,13 +15,13 @@
     <div class="form-group mb-3">
         @Html.LabelFor(x => x.EventVisibility, new { @class = "form-label" })
         <span class="ms-1 text-muted">Public allows all users to view event listings</span>
-        @Html.OdkEnumDropDownFor(x => x.EventVisibility, "", new { @class = "form-select" })
+        @Html.OdkEnumDropDownFor(x => x.EventVisibility, new { @class = "form-select", data_select = "" })
         @Html.ValidationMessageFor(x => x.EventVisibility)
     </div>
 
     <div class="form-group mb-3">
         @Html.LabelFor(x => x.EventResponseVisibility, new { @class = "form-label" })
-        @Html.OdkEnumDropDownFor(x => x.EventResponseVisibility, "", new { @class = "form-select" },
+        @Html.OdkEnumDropDownFor(x => x.EventResponseVisibility, new { @class = "form-select", data_select = "" },
                  excludeOptions: new[] { ChapterFeatureVisibilityType.Public })
         @Html.ValidationMessageFor(x => x.EventResponseVisibility)
     </div>
@@ -29,13 +29,13 @@
     <div class="form-group mb-3">
         @Html.LabelFor(x => x.VenueVisibility, new { @class = "form-label" })
         <span class="ms-1 text-muted">Public allows all users to see venue details for events</span>
-        @Html.OdkEnumDropDownFor(x => x.VenueVisibility, "", new { @class = "form-select" })
+        @Html.OdkEnumDropDownFor(x => x.VenueVisibility, new { @class = "form-select", data_select = "" })
         @Html.ValidationMessageFor(x => x.VenueVisibility)
     </div>
 </fieldset>
 
 <div class="form-group mb-3 d-none">
     @Html.LabelFor(x => x.MemberVisibility, new { @class = "form-label" })
-    @Html.OdkEnumDropDownFor(x => x.MemberVisibility, "", new { @class = "form-select" })
+    @Html.OdkEnumDropDownFor(x => x.MemberVisibility, new { @class = "form-select", data_select = "" })
     @Html.ValidationMessageFor(x => x.MemberVisibility)
 </div>

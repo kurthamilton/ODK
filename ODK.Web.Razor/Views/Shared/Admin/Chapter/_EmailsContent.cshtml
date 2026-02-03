@@ -3,17 +3,16 @@
 @using ODK.Services
 @using ODK.Services.Emails
 @using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
 @using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Admin.Chapters
+@using ODK.Web.Razor.Models.Admin.Emails
 @using ODK.Web.Razor.Models.Components
-@model OdkComponentViewModel<Chapter>
-@inject IEmailAdminService EmailAdminService
-@{
-    var request = Model.CreateMemberChapterServiceRequest(Model.Value.Id);
-    var emails = await EmailAdminService.GetChapterEmails(request);
-}
+@using ODK.Web.Razor.Services
+@model ChapterEmailsViewModel
+@inject IOdkRoutes OdkRoutes
 
 <p>
     The emails sent by the site use the templates below.
@@ -31,11 +30,15 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (ChapterEmail email in emails.OrderBy(x => x.Type.ToString()))
+            @foreach (var email in Model.Emails.OrderBy(x => x.Type.ToString()))
             {
                 <tr>
                     <td>
-                        <a href="/@Model.Value.ShortName/Admin/Chapter/Emails/@email.Type">@email.Type</a>
+                        @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                        {
+                            Route = OdkRoutes.GroupAdmin.Email(Model.Chapter, email.Type),
+                            Text = email.Type.ToString()
+                        })
                     </td>
                     <td>
                         @if (email.IsDefault())
@@ -48,9 +51,9 @@
                                 @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.CheckCircle)
                                 {
                                     Class = "text-success"
-                                                })
-                    </span>
-                                        }
+                                })
+                            </span>
+                        }
                     </td>
                 </tr>
             }

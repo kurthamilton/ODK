@@ -1,5 +1,6 @@
 ﻿using ODK.Data.Core;
 using ODK.Services.Payments.ViewModels;
+using ODK.Services.Security;
 
 namespace ODK.Services.Payments;
 
@@ -12,21 +13,21 @@ public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
     {
     }
 
-    public async Task<ChapterPaymentsViewModel> GetPayments(MemberChapterServiceRequest request)
+    public async Task<ChapterPaymentsViewModel> GetPayments(
+        MemberChapterAdminServiceRequest request)
     {
-        var platform = request.Platform;
+        var chapter = request.Chapter;
 
-        var (chapter, payments) = await GetChapterAdminRestrictedContent(request,
-            x => x.ChapterRepository.GetById(request.ChapterId),
-            x => x.PaymentRepository.GetMemberDtosByChapterId(request.ChapterId));
+        var payments = await GetChapterAdminRestrictedContent(
+            request,
+            x => x.PaymentRepository.GetMemberDtosByChapterId(chapter.Id));
 
         return new ChapterPaymentsViewModel
         {
             Chapter = chapter,
             Payments = payments
                 .OrderByDescending(x => x.Payment.PaidUtc)
-                .ToArray(),
-            Platform = platform
+                .ToArray()
         };
     }
 }

@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Utils;
 using ODK.Services.Events;
+using ODK.Services.Events.Models;
+using ODK.Services.Security;
 using ODK.Web.Common.Feedback;
-using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Admin.Events;
 
 namespace ODK.Web.Razor.Pages.My.Groups.Events;
@@ -16,6 +17,8 @@ public class CreateModel : OdkGroupAdminPageModel
         _eventAdminService = eventAdminService;
     }
 
+    public override ChapterAdminSecurable Securable => ChapterAdminSecurable.Events;
+
     public Guid? VenueId { get; private set; }
 
     public void OnGet([FromQuery] Guid? venueId = null)
@@ -25,7 +28,8 @@ public class CreateModel : OdkGroupAdminPageModel
 
     public async Task<IActionResult> OnPostAsync([FromForm] EventFormSubmitViewModel viewModel)
     {
-        var result = await _eventAdminService.CreateEvent(AdminServiceRequest, new CreateEvent
+        var request = MemberChapterAdminServiceRequest;
+        var result = await _eventAdminService.CreateEvent(request, new EventCreateModel
         {
             AttendeeLimit = viewModel.AttendeeLimit,
             Date = viewModel.Date,
@@ -45,13 +49,12 @@ public class CreateModel : OdkGroupAdminPageModel
 
         if (!result.Success)
         {
-            AddFeedback(new FeedbackViewModel(result));
+            AddFeedback(result);
             return Page();
         }
 
-        var chapter = await GetChapter();
-        AddFeedback(new FeedbackViewModel("Event created", FeedbackType.Success));
-        var url = OdkRoutes.MemberGroups.Events(Platform, chapter);
-        return Redirect(url);
+        AddFeedback("Event created", FeedbackType.Success);
+        var path = OdkRoutes.GroupAdmin.Events(Chapter).Path;
+        return Redirect(path);
     }
 }

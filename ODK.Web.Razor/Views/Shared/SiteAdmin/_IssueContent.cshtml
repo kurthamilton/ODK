@@ -1,11 +1,13 @@
 ﻿@using ODK.Core.Utils
 @using ODK.Services.Issues.Models
+@using ODK.Services.Issues.ViewModels
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.SiteAdmin
 @model IssueAdminPageViewModel
+@inject IOdkRoutes OdkRoutes
 
 @await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
 {
@@ -49,7 +51,8 @@
                         .Select(x => new MessageViewModel
                         {
                             CreatedUtc = x.CreatedUtc,
-                            Member = x.Member,
+                            MemberFullName = x.Member.FullName,
+                            MemberId = x.Member.Id,
                             Text = x.Text
                         })
                         .ToArray(),

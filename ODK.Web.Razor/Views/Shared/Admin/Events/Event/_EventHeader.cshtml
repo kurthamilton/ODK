@@ -5,6 +5,7 @@
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @model EventAdminPageViewModelBase
+@inject IOdkRoutes OdkRoutes
 
 <div class="d-flex flex-column flex-md-row">
     <h5 class="d-flex flex-column flex-md-row me-md-auto gap-2">
@@ -12,7 +13,7 @@
         <span class="d-none d-md-block">|</span>
         <span>@Model.Venue.Name</span>
     </h5>
-    <a href="@OdkRoutes.Groups.Event(Model.Platform, Model.Chapter, Model.Event.Shortcode)">
+    <a href="@OdkRoutes.Groups.Event(Model.Chapter, Model.Event.Shortcode)">
         @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Home)) View in site
     </a>
 </div>

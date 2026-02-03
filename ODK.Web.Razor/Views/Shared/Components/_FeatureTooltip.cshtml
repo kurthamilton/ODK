@@ -1,22 +1,22 @@
-﻿@using Microsoft.AspNetCore.Html
-@using ODK.Services.Features
+﻿@using ODK.Services.Features
+@using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Pages.Chapters
 @using ODK.Web.Razor.Services
 @model FeatureTooltipViewModel
 @inject IFeatureService FeatureService
-@inject IHttpContextAccessor HttpContextAccessor
 @inject IRequestStore RequestStore
 @{
-    var (platform, memberId) = (RequestStore.Platform, RequestStore.CurrentMemberId);
-    var feature = await FeatureService.GetUnseeen(memberId, Model.Name);
+    var platform = RequestStore.Platform;
+    var feature = await FeatureService.GetUnseeen(RequestStore.MemberServiceRequest, Model.Name);
     if (feature == null)
     {
         return;
     }    
 
-    var chapter = await RequestStore.GetChapterOrDefault();
-    var description = feature.Description.Replace("{chapter.name}", chapter?.GetDisplayName(platform) ?? "");
+    var chapter = RequestStore.ChapterOrDefault;
+    var description = feature.Description
+        .Replace("{chapter.name}", chapter?.GetDisplayName(platform) ?? string.Empty);
 }
 
 <div class="ms-1 d-inline"

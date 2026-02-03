@@ -3,7 +3,7 @@
 @{
     Layout = "_OdkChapterAdminLayout";
 
-    var chapter = await Model.GetChapter();
+    var chapter = Model.Chapter;
     Response.Redirect($"/{chapter.ShortName}/admin/siteadmin/members");
 }
 

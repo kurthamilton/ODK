@@ -1,8 +1,10 @@
 ﻿@using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model SiteAdminChaptersViewModel
+@inject IOdkRoutes OdkRoutes
 @{
     var tabs = new TabsViewModel
     {
@@ -50,9 +52,11 @@
                                 <td>@row.SiteSubscriptionName</td>
                                 <td>@row.SiteSubscriptionExpiresUtc?.ToString("yyyy-MM-dd HH:mm:ss")</td>
                                 <td>
-                                    <a href="@OdkRoutes.MemberGroups.Group(Model.Platform, chapter)">
-                                        Admin
-                                    </a>
+                                    @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                                    {
+                                        Route = OdkRoutes.GroupAdmin.Group(chapter),
+                                        Text = "Admin"
+                                    })
                                 </td>
                             </tr>
                         }
@@ -84,9 +88,11 @@
                                 <td>@chapter.GetDisplayName(Model.Platform)</td>
                                 <td>@chapter.CreatedUtc.ToString("yyyy-MM-dd HH:mm:ss")</td>
                                 <td>
-                                    <a href="@OdkRoutes.MemberGroups.Group(Model.Platform, chapter)">
-                                        Admin
-                                    </a>
+                                    @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                                    {
+                                        Route = OdkRoutes.GroupAdmin.Group(chapter),
+                                        Text = "Admin"
+                                    })
                                 </td>
                                 <td>
                                     <div class="button-container">

@@ -10,19 +10,20 @@
     Layout = "_GroupAdminLayout";
     Model.Title = "Edit admin member";
 
-    var viewModel = await MemberAdminService.GetAdminMemberViewModel(Model.AdminServiceRequest, Model.MemberId);
+    var request = Model.MemberChapterAdminServiceRequest;
+    var viewModel = await MemberAdminService.GetAdminMemberViewModel(request, Model.MemberId);
 }
 
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
 {
-    Title = "Admin member",
+    Title = viewModel.AdminMember.Member.FullName,
     Breadcrumbs = new BreadcrumbsViewModel
     {
         Breadcrumbs = new[]
         {
             new MenuItem
             {
-                Link = OdkRoutes.MemberGroups.MemberAdmins(Model.Platform, viewModel.Chapter),
+                Link = Model.OdkRoutes.GroupAdmin.AdminMembers(Model.Chapter).Path,
                 Text = "Back to admin members",
                 Icon = IconType.ArrowLeft
             }

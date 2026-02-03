@@ -17,20 +17,20 @@ public class PaymentSettingsModel : ChapterSiteAdminPageModel
 
     public async Task<IActionResult> OnPostAsync(PaymentSettingsFormViewModel viewModel)
     {
-        var serviceRequest = await CreateMemberChapterServiceRequest();
-        var result = await _chapterAdminService.UpdateChapterPaymentSettings(serviceRequest,
-            new UpdateChapterPaymentSettings
+        var request = MemberChapterAdminServiceRequest;
+        var result = await _chapterAdminService.UpdateChapterPaymentSettings(request,
+            new ChapterPaymentSettingsUpdateModel
             {
                 CurrencyId = viewModel.CurrencyId
             });
 
         if (!result.Success)
         {
-            AddFeedback(new FeedbackViewModel(result));
+            AddFeedback(result);
             return Page();
         }
 
-        AddFeedback(new FeedbackViewModel("Payment settings updated", FeedbackType.Success));
+        AddFeedback("Payment settings updated", FeedbackType.Success);
         return RedirectToPage();
     }
 }

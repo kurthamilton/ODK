@@ -37,11 +37,9 @@ public class ContactService : IContactService
     public async Task<ServiceResult> ReplyToChapterConversation(
         MemberServiceRequest request, Guid conversationId, string message)
     {
-        var (currentMember, conversation) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(request.CurrentMemberId),
-            x => x.ChapterConversationRepository.GetById(conversationId));
+        var conversation = await _unitOfWork.ChapterConversationRepository.GetById(conversationId).Run();
 
-        OdkAssertions.MeetsCondition(conversation, x => x.MemberId == request.CurrentMemberId);
+        OdkAssertions.MeetsCondition(conversation, x => x.MemberId == request.CurrentMember.Id);
 
         var (chapter, adminMembers, notificationSettings) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(conversation.ChapterId),
@@ -53,7 +51,7 @@ public class ContactService : IContactService
         {
             ChapterConversationId = conversationId,
             CreatedUtc = DateTime.UtcNow,
-            MemberId = request.CurrentMemberId,
+            MemberId = request.CurrentMember.Id,
             ReadByMember = true,
             Text = message
         };
@@ -179,19 +177,17 @@ public class ContactService : IContactService
         string message,
         string recaptchaToken)
     {
-        var currentMemberId = request.CurrentMemberId;
+        var currentMember = request.CurrentMember;
 
         var (
             chapter,
-            currentMember,
             memberSubscription,
             privacySettings,
             membershipSettings,
             adminMembers,
             notificationSettings) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(chapterId),
-            x => x.MemberRepository.GetById(currentMemberId),
-            x => x.MemberSubscriptionRepository.GetByMemberId(currentMemberId, chapterId),
+            x => x.MemberSubscriptionRepository.GetByMemberId(currentMember.Id, chapterId),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapterId),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId),
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
@@ -210,7 +206,7 @@ public class ContactService : IContactService
         {
             ChapterId = chapterId,
             CreatedUtc = now,
-            MemberId = currentMemberId,
+            MemberId = currentMember.Id,
             Subject = subject
         };
 
@@ -220,7 +216,7 @@ public class ContactService : IContactService
         {
             ChapterConversationId = conversation.Id,
             CreatedUtc = now,
-            MemberId = currentMemberId,
+            MemberId = currentMember.Id,
             ReadByMember = true,
             RecaptchaScore = result.Score,
             Text = message

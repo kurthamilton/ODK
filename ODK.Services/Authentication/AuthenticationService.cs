@@ -37,7 +37,7 @@ public class AuthenticationService : IAuthenticationService
 
     public async Task<ServiceResult> ActivateChapterAccountAsync(
         ServiceRequest request,
-        Guid chapterId,
+        Chapter chapter,
         string activationToken,
         string password)
     {
@@ -49,16 +49,15 @@ public class AuthenticationService : IAuthenticationService
             return ServiceResult.Failure("The link you followed is no longer valid");
         }
 
-        var (chapter, adminMembers, notificationSettings, member, memberPassword, chapterProperties, memberProperties) = await _unitOfWork.RunAsync(
-            x => x.ChapterRepository.GetById(chapterId),
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
-            x => x.MemberNotificationSettingsRepository.GetByChapterId(chapterId, NotificationType.NewMember),
+        var (adminMembers, notificationSettings, member, memberPassword, chapterProperties, memberProperties) = await _unitOfWork.RunAsync(
+            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
+            x => x.MemberNotificationSettingsRepository.GetByChapterId(chapter.Id, NotificationType.NewMember),
             x => x.MemberRepository.GetById(token.MemberId),
             x => x.MemberPasswordRepository.GetByMemberId(token.MemberId),
-            x => x.ChapterPropertyRepository.GetByChapterId(chapterId),
-            x => x.MemberPropertyRepository.GetByMemberId(token.MemberId, chapterId));
+            x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
+            x => x.MemberPropertyRepository.GetByMemberId(token.MemberId, chapter.Id));
 
-        OdkAssertions.MeetsCondition(token, x => x.ChapterId == chapterId);
+        OdkAssertions.MeetsCondition(token, x => x.ChapterId == chapter.Id);
 
         memberPassword = UpdatePassword(memberPassword, password);
         member.Activated = true;

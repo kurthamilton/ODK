@@ -38,7 +38,7 @@ public class MemberEmailService : IMemberEmailService
         Member member,
         string token)
     {
-        var urlProvider = _urlProviderFactory.Create(request);
+        var urlProvider = await _urlProviderFactory.Create(request);
         var url = urlProvider.ActivateAccountUrl(chapter, token);
 
         var to = member.ToEmailAddressee();
@@ -58,7 +58,7 @@ public class MemberEmailService : IMemberEmailService
         string newEmailAddress,
         string token)
     {
-        var urlProvider = _urlProviderFactory.Create(request);
+        var urlProvider = await _urlProviderFactory.Create(request);
         var url = urlProvider.ConfirmEmailAddressUpdate(chapter, token);
 
         var to = new EmailAddressee(newEmailAddress, member.FullName);
@@ -120,7 +120,7 @@ public class MemberEmailService : IMemberEmailService
             }
         }
 
-        var urlProvider = _urlProviderFactory.Create(request);
+        var urlProvider = await _urlProviderFactory.Create(request);
         var url = isToMember
             ? urlProvider.ConversationUrl(chapter, conversation.Id)
             : urlProvider.ConversationAdminUrl(chapter, conversation.Id);
@@ -143,7 +143,7 @@ public class MemberEmailService : IMemberEmailService
         IReadOnlyCollection<ChapterAdminMember> adminMembers,
         ChapterContactMessage message)
     {
-        var urlProvider = _urlProviderFactory.Create(request);
+        var urlProvider = await _urlProviderFactory.Create(request);
         var url = urlProvider.MessageAdminUrl(chapter, message.Id);
 
         var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -171,7 +171,7 @@ public class MemberEmailService : IMemberEmailService
         ChapterContactMessage originalMessage,
         string reply)
     {
-        var urlProvider = _urlProviderFactory.Create(request);
+        var urlProvider = await _urlProviderFactory.Create(request);
         var url = urlProvider.GroupUrl(chapter);
 
         var to = new[]
@@ -206,7 +206,7 @@ public class MemberEmailService : IMemberEmailService
         Chapter? chapter,
         Member member)
     {
-        var urlProvider = _urlProviderFactory.Create(request);
+        var urlProvider = await _urlProviderFactory.Create(request);
 
         var url = urlProvider.LoginUrl(chapter);
 
@@ -228,7 +228,7 @@ public class MemberEmailService : IMemberEmailService
         EventComment eventComment,
         Member? parentCommentMember)
     {
-        var urlProvider = _urlProviderFactory.Create(request);
+        var urlProvider = await _urlProviderFactory.Create(request);
         var url = urlProvider.EventUrl(chapter, @event.Shortcode);
 
         var parameters = new Dictionary<string, string>
@@ -255,7 +255,7 @@ public class MemberEmailService : IMemberEmailService
     {
         var time = @event.ToLocalTimeString(chapter.TimeZone);
 
-        var urlProvider = _urlProviderFactory.Create(request);
+        var urlProvider = await _urlProviderFactory.Create(request);
         var eventUrl = urlProvider.EventUrl(chapter, @event.Shortcode);
         var rsvpUrl = @event.Ticketed
             ? urlProvider.EventUrl(chapter, @event.Shortcode)
@@ -288,7 +288,7 @@ public class MemberEmailService : IMemberEmailService
         Event @event,
         IEnumerable<Member> members)
     {
-        var urlProvider = _urlProviderFactory.Create(request);
+        var urlProvider = await _urlProviderFactory.Create(request);
         var url = urlProvider.EventUrl(chapter, @event.Shortcode);
 
         var subject = "{title} - You're in! A spot opened up for {event.name}";
@@ -324,7 +324,7 @@ public class MemberEmailService : IMemberEmailService
         Chapter chapter,
         Member owner)
     {
-        var urlProvider = _urlProviderFactory.Create(request);
+        var urlProvider = await _urlProviderFactory.Create(request);
         var url = urlProvider.GroupUrl(chapter);
 
         var subject = "{title} - Your group has been approved 🚀";
@@ -355,7 +355,7 @@ public class MemberEmailService : IMemberEmailService
         Chapter chapter,
         Member member)
     {
-        var urlProvider = _urlProviderFactory.Create(request);
+        var urlProvider = await _urlProviderFactory.Create(request);
         var url = urlProvider.GroupUrl(chapter);
 
         var parameters = new Dictionary<string, string>
@@ -407,7 +407,7 @@ public class MemberEmailService : IMemberEmailService
             .AddParagraphLink("url")
             .ToString();
 
-        var urlProvider = _urlProviderFactory.Create(request);
+        var urlProvider = await _urlProviderFactory.Create(request);
         var url = isToMember
             ? urlProvider.IssueUrl(issue.Id)
             : urlProvider.IssueAdminUrl(issue.Id);
@@ -584,7 +584,7 @@ public class MemberEmailService : IMemberEmailService
         ChapterTexts texts,
         SiteEmailSettings settings)
     {
-        var urlProvider = _urlProviderFactory.Create(request);
+        var urlProvider = await _urlProviderFactory.Create(request);
         var url = urlProvider.SiteAdminGroups();
 
         var parameters = new Dictionary<string, string>
@@ -629,7 +629,7 @@ public class MemberEmailService : IMemberEmailService
             .AddParagraphLink("url")
             .ToString();
 
-        var urlProvider = _urlProviderFactory.Create(request);
+        var urlProvider = await _urlProviderFactory.Create(request);
         var to = new EmailAddressee(settings.ContactEmailAddress, string.Empty);
         await _emailService.SendMemberEmail(
             request,
@@ -668,7 +668,7 @@ public class MemberEmailService : IMemberEmailService
                 memberProperty?.Value ?? "-");
         }
 
-        var urlProvider = _urlProviderFactory.Create(request);
+        var urlProvider = await _urlProviderFactory.Create(request);
         var url = urlProvider.MemberAdminUrl(chapter, member.Id);
 
         var parameters = new Dictionary<string, string>
@@ -698,7 +698,7 @@ public class MemberEmailService : IMemberEmailService
         IReadOnlyCollection<ChapterProperty> chapterProperties,
         IReadOnlyCollection<MemberProperty> memberProperties)
     {
-        var urlProvider = _urlProviderFactory.Create(request);
+        var urlProvider = await _urlProviderFactory.Create(request);
         var eventsUrl = urlProvider.EventsUrl(chapter);
 
         var parameters = new Dictionary<string, string>
@@ -728,7 +728,7 @@ public class MemberEmailService : IMemberEmailService
         IReadOnlyCollection<INewTopic> newTopics,
         SiteEmailSettings settings)
     {
-        var urlProvider = _urlProviderFactory.Create(request);
+        var urlProvider = await _urlProviderFactory.Create(request);
         var url = urlProvider.TopicApprovalUrl();
 
         var parameters = new Dictionary<string, string>
@@ -771,7 +771,7 @@ public class MemberEmailService : IMemberEmailService
         Member member,
         string token)
     {
-        var urlProvider = _urlProviderFactory.Create(request);
+        var urlProvider = await _urlProviderFactory.Create(request);
         var url = urlProvider.PasswordReset(chapter, token);
 
         var parameters = new Dictionary<string, string>
@@ -826,13 +826,13 @@ public class MemberEmailService : IMemberEmailService
         SiteContactMessage message,
         SiteEmailSettings settings)
     {
-        var urlProvider = _urlProviderFactory.Create(request);
+        var urlProvider = await _urlProviderFactory.Create(request);
 
         var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             { "message.from", message.FromAddress },
             { "message.text", message.Message },
-            { "url", urlProvider.MessageAdminUrl(message.Id) }
+            { "url", urlProvider.MessageSiteAdminUrl(message.Id) }
         };
 
         var to = new EmailAddressee(settings.ContactEmailAddress, string.Empty);
@@ -876,7 +876,7 @@ public class MemberEmailService : IMemberEmailService
         ServiceRequest request,
         Member member)
     {
-        var urlProvider = _urlProviderFactory.Create(request);
+        var urlProvider = await _urlProviderFactory.Create(request);
         var url = urlProvider.MemberSiteSubscriptionUrl();
 
         var subject = "{title} - Subscription Expired";
@@ -902,7 +902,7 @@ public class MemberEmailService : IMemberEmailService
         ServiceRequest request,
         Member member)
     {
-        var urlProvider = _urlProviderFactory.Create(request);
+        var urlProvider = await _urlProviderFactory.Create(request);
         var url = urlProvider.GroupsUrl();
 
         var subject = "{title} - Welcome!";

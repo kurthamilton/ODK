@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.Models;
-using ODK.Web.Common.Routes;
+using ODK.Services.Security;
 using ODK.Web.Razor.Models.Admin.Chapters;
 
 namespace ODK.Web.Razor.Pages.My.Groups.Members.Properties;
@@ -15,13 +15,16 @@ public class CreateModel : OdkGroupAdminPageModel
         _chapterAdminService = chapterAdminService;
     }
 
+    public override ChapterAdminSecurable Securable => ChapterAdminSecurable.Properties;
+
     public void OnGet()
     {
     }
 
     public async Task<IActionResult> OnPostAsync(ChapterPropertyFormViewModel viewModel)
     {
-        var result = await _chapterAdminService.CreateChapterProperty(AdminServiceRequest, new CreateChapterProperty
+        var request = MemberChapterAdminServiceRequest;
+        var result = await _chapterAdminService.CreateChapterProperty(request, new ChapterPropertyCreateModel
         {
             ApplicationOnly = viewModel.ApplicationOnly,
             DataType = viewModel.DataType,
@@ -41,8 +44,7 @@ public class CreateModel : OdkGroupAdminPageModel
             return Page();
         }
 
-        var chapter = await GetChapter();
-
-        return Redirect(OdkRoutes.MemberGroups.MemberProperties(Platform, chapter));
+        var path = OdkRoutes.GroupAdmin.MemberProperties(Chapter).Path;
+        return Redirect(path);
     }
 }

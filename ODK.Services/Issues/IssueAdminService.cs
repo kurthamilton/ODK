@@ -1,6 +1,6 @@
 ﻿using ODK.Core.Issues;
 using ODK.Data.Core;
-using ODK.Services.Issues.Models;
+using ODK.Services.Issues.ViewModels;
 using ODK.Services.Members;
 
 namespace ODK.Services.Issues;
@@ -19,10 +19,9 @@ public class IssueAdminService : OdkAdminServiceBase, IIssueAdminService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<IssueAdminPageViewModel> GetIssueAdminPageViewModel(Guid currentMemberId, Guid issueId)
+    public async Task<IssueAdminPageViewModel> GetIssueAdminPageViewModel(MemberServiceRequest request, Guid issueId)
     {
-        var (currentMember, issue, messages) = await GetSiteAdminRestrictedContent(currentMemberId,
-            x => x.MemberRepository.GetById(currentMemberId),
+        var (issue, messages) = await GetSiteAdminRestrictedContent(request,
             x => x.IssueRepository.GetById(issueId),
             x => x.IssueMessageRepository.GetByIssueId(issueId));
 
@@ -30,16 +29,16 @@ public class IssueAdminService : OdkAdminServiceBase, IIssueAdminService
 
         return new IssueAdminPageViewModel
         {
-            CurrentMember = currentMember,
+            CurrentMember = request.CurrentMember,
             Issue = issue,
             Member = member,
             Messages = messages
         };
     }
 
-    public async Task<IssuesAdminPageViewModel> GetIssuesAdminPageViewModel(Guid currentMemberId)
+    public async Task<IssuesAdminPageViewModel> GetIssuesAdminPageViewModel(MemberServiceRequest request)
     {
-        var issues = await GetSiteAdminRestrictedContent(currentMemberId,
+        var issues = await GetSiteAdminRestrictedContent(request,
             x => x.IssueRepository.GetAll());
 
         return new IssuesAdminPageViewModel
@@ -50,9 +49,9 @@ public class IssueAdminService : OdkAdminServiceBase, IIssueAdminService
 
     public async Task<ServiceResult> ReplyToIssue(MemberServiceRequest request, Guid issueId, string message)
     {
-        var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
+        var (currentMember, platform) = (request.CurrentMember, request.Platform);
 
-        var issue = await GetSiteAdminRestrictedContent(currentMemberId,
+        var issue = await GetSiteAdminRestrictedContent(request,
             x => x.IssueRepository.GetById(issueId));
 
         if (string.IsNullOrWhiteSpace(message))
@@ -64,7 +63,7 @@ public class IssueAdminService : OdkAdminServiceBase, IIssueAdminService
         {
             CreatedUtc = DateTime.UtcNow,
             IssueId = issueId,
-            MemberId = currentMemberId,
+            MemberId = currentMember.Id,
             Text = message
         };
 

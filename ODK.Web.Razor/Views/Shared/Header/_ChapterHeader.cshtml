@@ -2,9 +2,15 @@
 @using ODK.Core.Platforms
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
+@using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Header
+@using ODK.Web.Razor.Services
 @model ChapterHeaderViewModel
+@inject IOdkRoutes OdkRoutes
+@inject IRequestStore RequestStore
 @{
+    var platform = RequestStore.Platform;
+
     var isMember = Model.Member?.IsMemberOf(Model.Chapter.Id) == true;
     var pages = Model.Pages
         .ToDictionary(x => x.PageType);
@@ -14,7 +20,7 @@
     menuItems.Add(new MenuItem 
     { 
         Text = "Events", 
-        Link = OdkRoutes.Groups.Events(Model.Platform, Model.Chapter)
+        Link = OdkRoutes.Groups.Events(Model.Chapter)
     });
 
     if (isMember)
@@ -26,7 +32,7 @@
             menuItems.Add(new MenuItem
             {
                 Text = !string.IsNullOrEmpty(membersPage?.Title) ? membersPage.Title : "Knitwits",
-                Link = OdkRoutes.Groups.Members(Model.Platform, Model.Chapter)
+                Link = OdkRoutes.Groups.Members(Model.Chapter)
             });
         }        
     }
@@ -38,7 +44,7 @@
         menuItems.Add(new MenuItem
         {
             Text = !string.IsNullOrEmpty(contactPage?.Title) ? contactPage.Title : "Contact",
-            Link = OdkRoutes.Groups.Contact(Model.Platform, Model.Chapter)
+            Link = OdkRoutes.Groups.Contact(Model.Chapter)
         });
     }
 
@@ -49,17 +55,17 @@
         menuItems.Add(new MenuItem
         {
             Text = !string.IsNullOrEmpty(aboutPage?.Title) ? aboutPage.Title : "About",
-            Link = OdkRoutes.Groups.About(Model.Platform, Model.Chapter)
+            Link = OdkRoutes.Groups.About(Model.Chapter)
         });
     }    
 }
 
-@await Html.PartialAsync("Header/_Header", new HeaderViewModel(Model.Context)
+@await Html.PartialAsync("Header/_Header", new HeaderViewModel
 {
-    ImageAltText = $"{Model.Chapter.GetDisplayName(Model.Platform)} Header Image",
-    ImageLink = OdkRoutes.Groups.Group(Model.Platform, Model.Chapter),
+    ImageAltText = $"{Model.Chapter.GetDisplayName(platform)} Header Image",
+    ImageLink = OdkRoutes.Groups.Group(Model.Chapter),
     ImageUrl = Model.Chapter.BannerImageUrl,
-    Navbar = new NavbarViewModel(Model.Context)
+    Navbar = new NavbarViewModel
     {
         Breakpoint = "md",
         Chapter = Model.Chapter,

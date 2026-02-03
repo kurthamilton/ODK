@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.Models;
+using ODK.Services.Security;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Chapters;
 
@@ -15,14 +16,16 @@ public class PropertyCreateModel : AdminPageModel
         _chapterAdminService = chapterAdminService;
     }
 
+    public override ChapterAdminSecurable Securable => ChapterAdminSecurable.Properties;
+
     public void OnGet()
     {
     }
 
     public async Task<IActionResult> OnPostAsync(ChapterPropertyFormViewModel viewModel)
     {
-        var serviceRequest = await CreateMemberChapterServiceRequest();
-        var result = await _chapterAdminService.CreateChapterProperty(serviceRequest, new CreateChapterProperty
+        var serviceRequest = MemberChapterAdminServiceRequest;
+        var result = await _chapterAdminService.CreateChapterProperty(serviceRequest, new ChapterPropertyCreateModel
         {
             ApplicationOnly = viewModel.ApplicationOnly,
             DataType = viewModel.DataType,
@@ -37,12 +40,11 @@ public class PropertyCreateModel : AdminPageModel
 
         if (!result.Success)
         {
-            AddFeedback(new FeedbackViewModel(result));
+            AddFeedback(result);
             return Page();
         }
 
-        var chapter = await GetChapter();
-        AddFeedback(new FeedbackViewModel("Property created", FeedbackType.Success));
-        return Redirect($"/{chapter.ShortName}/Admin/Chapter/Properties");
+        AddFeedback("Property created", FeedbackType.Success);
+        return Redirect(AdminRoutes.MemberProperties(Chapter).Path);
     }
 }

@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Payments;
+using ODK.Services;
 using ODK.Services.Chapters;
+using ODK.Services.Security;
 using ODK.Web.Common.Feedback;
-using ODK.Web.Common.Routes;
 
 namespace ODK.Web.Razor.Pages.Chapters.Admin.Chapters;
 
@@ -17,6 +18,8 @@ public class ChapterSubscriptionCheckoutConfirmModel : AdminPageModel
 
     public string RedirectUrl { get; private set; } = string.Empty;
 
+    public override ChapterAdminSecurable Securable => ChapterAdminSecurable.SiteSubscription;
+
     public string? SessionId { get; set; }
 
     public Guid SubscriptionId { get; set; }
@@ -26,10 +29,9 @@ public class ChapterSubscriptionCheckoutConfirmModel : AdminPageModel
         SessionId = sessionId;
         SubscriptionId = id;
 
-        var chapter = await GetChapter();
-        RedirectUrl = OdkRoutes.MemberGroups.GroupSubscription(Platform, chapter);
+        RedirectUrl = AdminRoutes.Subscription(Chapter).Path;
 
-        var request = await CreateMemberChapterServiceRequest();
+        var request = MemberChapterAdminServiceRequest;
         var status = await _chapterAdminService.GetChapterPaymentCheckoutSessionStatus(
             request, sessionId);
 

@@ -8,13 +8,13 @@
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
-@model ODK.Web.Razor.Pages.Chapters.Account.PictureModel
+@model PictureModel
 @inject IAccountViewModelService AccountViewModelService
 @{
     Layout = "_OdkChapterLayout";
     Model.Title = "Profile picture";
 
-    var chapter = await Model.GetChapter();
+    var chapter = Model.Chapter;
     var viewModel = await AccountViewModelService.GetChapterPicturePage(Model.CurrentMemberId, chapter);
 }
 

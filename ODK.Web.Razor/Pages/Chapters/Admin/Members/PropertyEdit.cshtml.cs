@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using ODK.Core.Chapters;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.Models;
+using ODK.Services.Security;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Chapters;
 
@@ -18,6 +18,8 @@ public class PropertyEditModel : AdminPageModel
 
     public Guid PropertyId { get; set; }
 
+    public override ChapterAdminSecurable Securable => ChapterAdminSecurable.Properties;
+
     public IActionResult OnGet(Guid id)
     {
         PropertyId = id;
@@ -26,8 +28,8 @@ public class PropertyEditModel : AdminPageModel
 
     public async Task<IActionResult> OnPostAsync(Guid id, ChapterPropertyFormViewModel viewModel)
     {
-        var serviceRequest = await CreateMemberChapterServiceRequest();
-        var result = await _chapterAdminService.UpdateChapterProperty(serviceRequest, id, new UpdateChapterProperty
+        var serviceRequest = MemberChapterAdminServiceRequest;
+        var result = await _chapterAdminService.UpdateChapterProperty(serviceRequest, id, new ChapterPropertyUpdateModel
         {
             ApplicationOnly = viewModel.ApplicationOnly,
             DisplayName = viewModel.DisplayName,
@@ -41,12 +43,11 @@ public class PropertyEditModel : AdminPageModel
 
         if (!result.Success)
         {
-            AddFeedback(new FeedbackViewModel(result));
+            AddFeedback(result);
             return Page();
         }
 
-        var chapter = await GetChapter();
-        AddFeedback(new FeedbackViewModel("Property updated", FeedbackType.Success));
-        return Redirect($"/{chapter.ShortName}/Admin/Chapter/Properties");
+        AddFeedback("Property updated", FeedbackType.Success);
+        return Redirect(AdminRoutes.MemberProperties(Chapter).Path);
     }
 }

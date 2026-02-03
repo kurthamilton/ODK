@@ -1,0 +1,31 @@
+﻿@page "/{chapterName}/Admin/Events/Create"
+@using ODK.Services.Events
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Common.Components
+@model CreateModel
+@inject IEventAdminService EventAdminService
+@{
+    Layout = "_OdkChapterAdminLayout";
+    Model.Title = "Create event | Admin";
+
+    var request = Model.MemberChapterAdminServiceRequest;
+    var viewModel = await EventAdminService.GetEventCreateViewModel(request);
+    viewModel.VenueId = Model.VenueId;
+}
+
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    Title = "Create event",
+    Breadcrumbs = new[]
+    {
+        new MenuItem
+        {
+            Link = Model.AdminRoutes.Events(Model.Chapter).Path,
+            Text = "Back to events",
+            Icon = IconType.ArrowLeft
+        }
+    },
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Events/_EventCreateContent", viewModel)</div>
+})

@@ -2,16 +2,19 @@
 @using ODK.Services.Chapters
 @using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Components
+@using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Header
+@using ODK.Web.Razor.Services
 @model NavbarViewModel
 @inject IChapterViewModelService ChapterViewModelService
+@inject IRequestStore RequestStore
 @{
     AccountMenuChaptersViewModel chaptersViewModel;
 
-    if (Model.Member != null)
+    if (RequestStore.CurrentMemberOrDefault != null)
     {
-        var request = Model.MemberServiceRequest;
+        var request = RequestStore.MemberServiceRequest;
         chaptersViewModel = await ChapterViewModelService.GetAccountMenuChaptersViewModel(request);
     }
     else
@@ -67,7 +70,7 @@
                 }
                 else
                 {
-                    @await Html.PartialAsync("Header/_AnonymousLinks", accountMenu)
+                    @await Html.PartialAsync("Header/_AnonymousLinks")
                 }
             }
         </div>

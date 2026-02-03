@@ -1,13 +1,14 @@
-﻿@model ChapterConversationsAdminPageViewModel
-@using ODK.Services.Chapters.ViewModels
+﻿@using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
+@model ChapterConversationsAdminPageViewModel
+@inject IOdkRoutes OdkRoutes
 @{
     var menuItems = new[]
     {
-        new MenuItem { Link = OdkRoutes.MemberGroups.GroupConversations(Model.Platform, Model.Chapter), Text = "Unread" },
-        new MenuItem { Link = OdkRoutes.MemberGroups.GroupConversationsRead(Model.Platform, Model.Chapter), Text = "Read" }
+        new MenuItem { Link = OdkRoutes.GroupAdmin.Conversations(Model.Chapter).Path, Text = "Unread" },
+        new MenuItem { Link = OdkRoutes.GroupAdmin.ConversationsRead(Model.Chapter).Path, Text = "Read" }
     };
 }
 

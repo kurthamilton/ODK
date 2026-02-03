@@ -1,9 +1,11 @@
 ﻿@using ODK.Services.Issues.Models
+@using ODK.Services.Issues.ViewModels
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
 @model IssuePageViewModel
+@inject IOdkRoutes OdkRoutes
 @{
     var breadcrumbs = new[]
     {
@@ -30,7 +32,8 @@
                         .Select(x => new MessageViewModel
                         {
                             CreatedUtc = x.CreatedUtc,
-                            Member = x.Member,
+                            MemberFullName = x.Member.FullName,
+                            MemberId = x.Member.Id,
                             Text = x.Text
                         })
                         .ToArray(),

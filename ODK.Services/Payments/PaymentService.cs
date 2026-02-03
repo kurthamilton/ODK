@@ -84,12 +84,12 @@ public class PaymentService : IPaymentService
     }
 
     public async Task<PaymentStatusType> GetMemberChapterPaymentCheckoutSessionStatus(
-        MemberChapterServiceRequest request, string externalSessionId)
+        MemberServiceRequest request, Guid chapterId, string externalSessionId)
     {
         var (sitePaymentSettings, paymentAccount, checkoutSession) = await _unitOfWork.RunAsync(
             x => x.SitePaymentSettingsRepository.GetActive(),
-            x => x.ChapterPaymentAccountRepository.GetByChapterId(request.ChapterId),
-            x => x.PaymentCheckoutSessionRepository.GetByMemberId(request.CurrentMemberId, externalSessionId));
+            x => x.ChapterPaymentAccountRepository.GetByChapterId(chapterId),
+            x => x.PaymentCheckoutSessionRepository.GetByMemberId(request.CurrentMember.Id, externalSessionId));
 
         OdkAssertions.Exists(checkoutSession);
 
@@ -106,7 +106,7 @@ public class PaymentService : IPaymentService
 
         var externalSession = await paymentProvider.GetCheckoutSession(externalSessionId);
 
-        return externalSession == null || externalSession.Metadata.ChapterId != request.ChapterId
+        return externalSession == null || externalSession.Metadata.ChapterId != chapterId
             ? PaymentStatusType.Expired
             : PaymentStatusType.Pending;
     }
@@ -115,7 +115,7 @@ public class PaymentService : IPaymentService
         MemberServiceRequest request, string externalSessionId)
     {
         var (checkoutSession, sitePaymentSettings) = await _unitOfWork.RunAsync(
-            x => x.PaymentCheckoutSessionRepository.GetByMemberId(request.CurrentMemberId, externalSessionId),
+            x => x.PaymentCheckoutSessionRepository.GetByMemberId(request.CurrentMember.Id, externalSessionId),
             x => x.SitePaymentSettingsRepository.GetAll());
 
         OdkAssertions.Exists(checkoutSession);

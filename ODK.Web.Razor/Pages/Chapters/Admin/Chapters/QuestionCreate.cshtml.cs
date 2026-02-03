@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.Models;
+using ODK.Services.Security;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Chapters;
 
@@ -15,15 +16,17 @@ public class QuestionCreateModel : AdminPageModel
         _chapterAdminService = chapterAdminService;
     }
 
+    public override ChapterAdminSecurable Securable => ChapterAdminSecurable.Questions;
+
     public void OnGet()
     {
     }
 
     public async Task<IActionResult> OnPostAsync(ChapterQuestionFormViewModel viewModel)
     {
-        var serviceRequest = await CreateMemberChapterServiceRequest();
+        var serviceRequest = MemberChapterAdminServiceRequest;
         var result = await _chapterAdminService.CreateChapterQuestion(serviceRequest,
-            new CreateChapterQuestion
+            new ChapterQuestionCreateModel
             {
                 Answer = viewModel.Answer ?? "",
                 Name = viewModel.Question ?? ""
@@ -31,12 +34,12 @@ public class QuestionCreateModel : AdminPageModel
 
         if (!result.Success)
         {
-            AddFeedback(new FeedbackViewModel(result));
+            AddFeedback(result);
             return Page();
         }
 
-        var chapter = await GetChapter();
-        AddFeedback(new FeedbackViewModel("Question created", FeedbackType.Success));
+        var chapter = Chapter;
+        AddFeedback("Question created", FeedbackType.Success);
         return Redirect($"/{chapter.ShortName}/Admin/Chapter/Questions");
     }
 }

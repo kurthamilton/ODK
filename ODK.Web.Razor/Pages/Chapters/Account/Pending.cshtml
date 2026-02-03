@@ -6,19 +6,17 @@
 @{
     Layout = "_OdkChapterLayout";
     Model.Title = "Join";
-
-    var chapter = await Model.GetChapter();
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Title = $"Join the {chapter.FullName}",
+    Title = $"Join the {Model.Chapter.FullName}",
     Breadcrumbs = new []
     {
         new MenuItem 
         { 
-            Link = OdkRoutes.Groups.Group(Model.Platform, chapter),
-            Text = chapter.GetDisplayName(Model.Platform)
+            Link = Model.OdkRoutes.Groups.Group(Model.Chapter),
+            Text = Model.Chapter.GetDisplayName(Model.Platform)
         },
         new MenuItem { Text = "Join" }
     },

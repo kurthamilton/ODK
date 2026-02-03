@@ -1,6 +1,5 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Members;
-using ODK.Core.Platforms;
 using ODK.Data.Core.Chapters;
 
 namespace ODK.Services.Chapters.ViewModels;
@@ -17,11 +16,7 @@ public class ChapterConversationAdminPageViewModel
 
     public required Member Member { get; init; }
 
-    public required IReadOnlyCollection<ChapterConversationMessage> Messages { get; init; }
+    public required IReadOnlyCollection<ChapterConversationMessageDto> Messages { get; init; }
 
     public required IReadOnlyCollection<ChapterConversationDto> OtherConversations { get; init; }
-
-    public required MemberSiteSubscription? OwnerSubscription { get; init; }
-
-    public required PlatformType Platform { get; init; }
 }

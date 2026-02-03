@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Chapters;
-using ODK.Services;
 using ODK.Services.Chapters;
 using ODK.Services.Contact;
 using ODK.Services.Members;
@@ -9,9 +8,10 @@ using ODK.Services.Members.Models;
 using ODK.Services.Users.ViewModels;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
+using ODK.Web.Common.Services;
+using ODK.Web.Razor.Attributes;
 using ODK.Web.Razor.Models.Chapters;
 using ODK.Web.Razor.Models.Contact;
-using ODK.Web.Razor.Services;
 
 namespace ODK.Web.Razor.Controllers;
 
@@ -25,8 +25,9 @@ public class GroupsController : OdkControllerBase
         IMemberService memberService,
         IRequestStore requestStore,
         IContactService contactService,
-        IChapterService chapterService)
-        : base(requestStore)
+        IChapterService chapterService,
+        IOdkRoutes odkRoutes)
+        : base(requestStore, odkRoutes)
     {
         _chapterService = chapterService;
         _contactService = contactService;
@@ -85,6 +86,7 @@ public class GroupsController : OdkControllerBase
         return RedirectToReferrer();
     }
 
+    [SkipRequestStoreMiddleware]
     [HttpGet("groups/{chapterId:guid}/image")]
     public Task<IActionResult> Image(Guid chapterId)
         => HandleVersionedRequest(version => _chapterService.GetChapterImage(version, chapterId), ChapterImageResult);
@@ -93,7 +95,7 @@ public class GroupsController : OdkControllerBase
     [HttpPost("groups/{chapterId:guid}/leave")]
     public async Task<IActionResult> LeaveGroup(Guid chapterId, [FromForm] string reason)
     {
-        var request = MemberChapterServiceRequest.Create(chapterId, MemberServiceRequest);
+        var request = MemberChapterServiceRequest;
         var result = await _memberService.LeaveChapter(request, reason);
         AddFeedback(result, "You have left the group");
 
@@ -102,7 +104,7 @@ public class GroupsController : OdkControllerBase
             return RedirectToReferrer();
         }
 
-        return Redirect(OdkRoutes.MemberGroups.Index(Platform));
+        return Redirect(OdkRoutes.GroupAdmin.Index().Path);
     }
 
     [Authorize]
@@ -110,9 +112,9 @@ public class GroupsController : OdkControllerBase
     public async Task<IActionResult> UpdateChapterProfile(Guid chapterId,
         [FromForm] ChapterProfileFormSubmitViewModel profileViewModel)
     {
-        var model = new UpdateMemberChapterProfile
+        var model = new MemberChapterProfileUpdateModel
         {
-            Properties = profileViewModel.Properties.Select(x => new UpdateMemberProperty
+            Properties = profileViewModel.Properties.Select(x => new MemberPropertyUpdateModel
             {
                 ChapterPropertyId = x.ChapterPropertyId,
                 Value = string.Equals(x.Value, "Other", StringComparison.InvariantCultureIgnoreCase) &&
@@ -122,7 +124,7 @@ public class GroupsController : OdkControllerBase
             })
         };
 
-        var request = CreateMemberChapterServiceRequest(chapterId);
+        var request = MemberChapterServiceRequest;
 
         var result = await _memberService.UpdateMemberChapterProfile(request, model);
         AddFeedback(result, "Profile updated");

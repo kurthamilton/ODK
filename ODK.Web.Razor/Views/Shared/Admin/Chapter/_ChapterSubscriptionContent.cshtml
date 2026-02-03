@@ -10,6 +10,7 @@
 @using ODK.Web.Razor.Models.Payments
 @using ODK.Web.Razor.Models.Pricing
 @model ChapterSubscriptionAdminPageViewModel
+@inject IOdkRoutes OdkRoutes
 @{
     var subscription = Model.SiteSubscriptions.CurrentMemberSubscription;
 }
@@ -39,7 +40,7 @@
     <h4>Change subscription</h4>
     @await Html.PartialAsync("Pricing/_PricingContent", new PricingContentViewModel
     {
-        CheckoutUrl = OdkRoutes.MemberGroups.GroupSubscriptionCheckout(Model.Platform, Model.Chapter, "{price.id}"),
+        CheckoutUrl = OdkRoutes.GroupAdmin.SubscriptionCheckout(Model.Chapter, "{price.id}").Path,
         CheckoutUrlPriceIdPlaceholder = "{price.id}",
         SiteSubscriptions = Model.SiteSubscriptions
     })

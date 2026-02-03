@@ -1,5 +1,7 @@
-﻿@page "/{chapterName}/Admin/Members/Properties/{id:guid}"
+﻿@page "/{chapterName}/admin/members/properties/{id:guid}"
+@using ODK.Services
 @using ODK.Services.Chapters
+@using ODK.Services.Security
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
@@ -10,7 +12,7 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Edit profile question | Admin";
 
-    var request = await Model.CreateMemberChapterServiceRequest();
+    var request = Model.MemberChapterAdminServiceRequest;
     var viewModel = await ChapterAdminService.GetChapterPropertyViewModel(request, Model.PropertyId);
 }
 
@@ -21,7 +23,7 @@
     {
         new MenuItem
         {
-            Link = OdkRoutes.MemberGroups.MemberProperties(Model.Platform, viewModel.Chapter),
+            Link = Model.AdminRoutes.MemberProperties(Model.Chapter).Path,
             Text = "Back to profile questions",
             Icon = IconType.ArrowLeft
         }

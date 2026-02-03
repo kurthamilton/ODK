@@ -27,8 +27,12 @@ public class Program
         app
             .UseMiddleware<HttpContextLoggingMiddleware>()
             .UseMiddleware<RateLimitingMiddleware>()
-            .UseSerilogRequestLogging()
-            .UseMiddleware<ErrorHandlingMiddleware>();
+            .UseMiddleware<ErrorHandlingMiddleware>()
+            .UseRouting()
+            .UseAuthentication()
+            .UseMiddleware<RequestStoreMiddleware>()
+            .UseAuthorization()
+            .UseSerilogRequestLogging();
 
         if (!app.Environment.IsDevelopment())
         {
@@ -57,12 +61,7 @@ public class Program
 
         app.UseWebOptimizer();
         app.UseHttpsRedirection();
-        app.UseStaticFiles();
-
-        app.UseRouting();
-
-        app.UseAuthentication();
-        app.UseAuthorization();
+        app.UseStaticFiles();                
 
         app.UseHangfireDashboard("/hangfire", new DashboardOptions
         {
@@ -90,18 +89,26 @@ public class Program
     private static WebApplicationBuilder AddHangfire(
         WebApplicationBuilder builder,
         AppSettings appSettings)
-    {
+    {        
         builder
             .Services
             .AddHangfire((provider, configuration) =>
             {
                 BaseHangfireConfig(provider, configuration, appSettings.Hangfire);
-                configuration.UseSqlServerStorage(
-                    appSettings.ConnectionStrings.Default,
-                    new SqlServerStorageOptions
-                    {
-                        SchemaName = appSettings.Hangfire.SchemaName
-                    });
+
+                if (appSettings.Hangfire.InMemory)
+                {
+                    configuration.UseInMemoryStorage();
+                }
+                else
+                {
+                    configuration.UseSqlServerStorage(
+                        appSettings.ConnectionStrings.Default,
+                        new SqlServerStorageOptions
+                        {
+                            SchemaName = appSettings.Hangfire.SchemaName
+                        });
+                }                
             })
             .AddHangfireServer(options =>
             {
@@ -152,8 +159,7 @@ public class Program
         var appSettings = AppStartup.ConfigureServices(builder.Configuration, builder.Services);
 
         builder.Services
-            .AddScoped<IBackgroundTaskService, HangfireService>()
-            .AddScoped<IRequestStore, RequestStore>();
+            .AddScoped<IBackgroundTaskService, HangfireService>();
 
         LoggingConfig.Configure(builder, appSettings);
 

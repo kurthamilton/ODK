@@ -14,7 +14,7 @@
     Layout = "_OdkChapterLayout";    
     Model.Description = "More information about this Drunken Knitwits chapter, including some frequently asked questions";
 
-    var chapter = await Model.GetChapter();
+    var chapter = Model.Chapter;
     var viewModel = await ChapterViewModelService.GetChapterAboutPage(chapter);
     if (viewModel.ChapterPage?.Hidden == true)
     {
@@ -24,7 +24,7 @@
     var title = StringUtils.Coalesce(viewModel.ChapterPage?.Title, "About");
 
     Model.Title = title;
-    Model.Path = OdkRoutes.Groups.About(Model.Platform, chapter);
+    Model.Path = Model.OdkRoutes.Groups.About(Model.Chapter);
 }
 
 @if (!chapter.IsOpenForRegistration())
@@ -45,7 +45,7 @@
     {
         new MenuItem 
         { 
-            Link = OdkRoutes.Groups.Group(Model.Platform, chapter), 
+            Link = Model.OdkRoutes.Groups.Group(Model.Chapter), 
             Text = chapter.GetDisplayName(Model.Platform)
         },
         new MenuItem { Text = title }

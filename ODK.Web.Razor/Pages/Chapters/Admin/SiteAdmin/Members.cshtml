@@ -1,18 +1,29 @@
 ﻿@page "/{chapterName}/admin/siteadmin/members"
 @using ODK.Core.Chapters
+@using ODK.Services.Chapters
 @using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Admin.Members
 @using ODK.Web.Razor.Models.Components
 @model MembersModel
+@inject IChapterAdminService ChapterAdminService
 @{
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Members | SiteAdmin";
 
-    var chapter = await Model.GetChapter();
-    var viewModel = new OdkComponentViewModel<Chapter>(Model.ComponentContext, chapter);
+    var request = Model.MemberChapterAdminServiceRequest;
+    var adminMembers = await ChapterAdminService.GetChapterAdminMembers(request);
+    var viewModel = new SiteAdminAdminMembersViewModel
+    {
+        AdminMembers = adminMembers,
+        Chapter = Model.Chapter
+    };
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
-    ContentFunc = @<div>@await Html.PartialAsync("SiteAdmin/_MembersContent", viewModel)</div>
+    ContentFunc = 
+        @<div>
+            @await Html.PartialAsync("SiteAdmin/_SiteAdminAdminMembersContent", viewModel)
+        </div>
 })

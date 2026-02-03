@@ -5,7 +5,6 @@ using ODK.Services.Chapters;
 using ODK.Services.Chapters.Models;
 using ODK.Services.Topics.Models;
 using ODK.Web.Common.Feedback;
-using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Chapters;
 using ODK.Web.Razor.Models.Topics;
 
@@ -75,10 +74,12 @@ public class CreateModel : OdkPageModel
             return Page();
         }
 
-        AddFeedback("Group created. Once approved you will be able to publish and start accepting group members.", FeedbackType.Success);
+        AddFeedback(
+            "Group created. Once approved you will be able to publish and start accepting group members.", 
+            FeedbackType.Success);
 
         return result.Value != null
-            ? Redirect(OdkRoutes.MemberGroups.Group(Platform, result.Value))
-            : Redirect(OdkRoutes.MemberGroups.Index(Platform));
+            ? Redirect(OdkRoutes.GroupAdmin.Group(result.Value).Path)
+            : Redirect(OdkRoutes.GroupAdmin.Index().Path);
     }
 }

@@ -34,14 +34,14 @@ public class JoinModel : OdkPageModel
             return Page();
         }
 
-        var model = new CreateMemberProfile
+        var model = new MemberCreateProfile
         {
             EmailAddress = personalDetailsViewModel.EmailAddress,
             EmailOptIn = personalDetailsViewModel.EmailOptIn,
             FirstName = personalDetailsViewModel.FirstName,
             ImageData = imageData,
             LastName = personalDetailsViewModel.LastName,
-            Properties = profileViewModel.Properties.Select(x => new UpdateMemberProperty
+            Properties = profileViewModel.Properties.Select(x => new MemberPropertyUpdateModel
             {
                 ChapterPropertyId = x.ChapterPropertyId,
                 Value = string.Equals(x.Value, "Other", StringComparison.InvariantCultureIgnoreCase) &&
@@ -51,7 +51,7 @@ public class JoinModel : OdkPageModel
             })
         };
 
-        var chapter = await GetChapter();
+        var chapter = Chapter;
         var result = await _memberService.CreateChapterAccount(ServiceRequest, chapter.Id, model);
         PostJoin(result);
         return result.Success

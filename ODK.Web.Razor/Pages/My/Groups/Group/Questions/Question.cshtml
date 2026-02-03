@@ -10,7 +10,8 @@
     Layout = "_GroupAdminLayout";
     Model.Title = "Edit | FAQ";
 
-    var viewModel = await ChapterAdminService.GetChapterQuestionViewModel(Model.AdminServiceRequest, Model.QuestionId);
+    var request = Model.MemberChapterAdminServiceRequest;
+    var viewModel = await ChapterAdminService.GetChapterQuestionViewModel(request, Model.QuestionId);
 }
 
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
@@ -22,7 +23,7 @@
         {
             new MenuItem
             {
-                Link = OdkRoutes.MemberGroups.GroupQuestions(Model.Platform, viewModel.Chapter),
+                Link = Model.OdkRoutes.GroupAdmin.Questions(Model.Chapter).Path,
                 Text = "Back to FAQ",
                 Icon = IconType.ArrowLeft
             }

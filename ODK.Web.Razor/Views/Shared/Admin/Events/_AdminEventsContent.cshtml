@@ -1,0 +1,106 @@
+﻿@using ODK.Core.Events
+@using ODK.Core.Utils
+@using ODK.Core.Venues
+@using ODK.Services
+@using ODK.Services.Events
+@using ODK.Services.Events.ViewModels
+@using ODK.Services.Venues
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Extensions
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Components
+@model EventsAdminPageViewModel
+@inject IOdkRoutes OdkRoutes
+
+<p>
+    @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+    {
+        Class = "btn btn-primary",
+        Route = OdkRoutes.GroupAdmin.EventCreate(Model.Chapter),
+        Text = "Create"
+    })
+</p>
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Name</th>
+                <th>Date</th>
+                <th>Venue</th>
+                <th>@await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Envelope))</th>
+                <th>
+                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.CheckCircle)
+                    {
+                        Class = "text-success"
+                    })
+                </th>
+                <th>
+                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.QuestionCircle)
+                    {
+                        Class = "text-warning"
+                    })
+                </th>
+                <th>
+                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.TimesCircle)
+                    {
+                        Class = "text-danger"
+                    })
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var dto in Model.Events)
+            {
+                var @event = dto.Event;
+                var venue = dto.Venue;
+                var invites = dto.Invites;
+                var email = dto.Email;
+                var responses = dto.Responses;
+
+                <tr>
+                    <td>
+                        @if (@event.Ticketed)
+                        {
+                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Ticket))
+                        }
+                    </td>
+                    <td>
+                        @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                        {
+                            Route = OdkRoutes.GroupAdmin.Event(Model.Chapter, @event.Id),
+                            Text = @event.GetDisplayName()
+                        })                        
+                    </td>
+                    <td>@(@event.Date.EventDate())</td>
+                    <td>
+                        @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                        {
+                            Route = OdkRoutes.GroupAdmin.Venue(Model.Chapter, venue.Id),
+                            Text = venue.Name
+                        })                        
+                    </td>
+                    <td>
+                        @if (email?.SentUtc == null)
+                        {
+                            @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                            {
+                                Route = OdkRoutes.GroupAdmin.EventInvites(Model.Chapter, @event.Id),
+                                Text = email?.ScheduledUtc != null ? "Scheduled" : "Send"
+                            })
+                        }
+                        else
+                        {
+                            @invites.Sent
+                        }
+                    </td>
+                    <td>@responses.Yes</td>
+                    <td>@responses.Maybe</td>
+                    <td>@responses.No</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

@@ -9,7 +9,7 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Admin members | Admin";
 
-    var request = await Model.CreateMemberChapterServiceRequest();
+    var request = Model.MemberChapterAdminServiceRequest;
     var viewModel = await MemberAdminService.GetAdminMembersAdminPageViewModel(request);
 }
 

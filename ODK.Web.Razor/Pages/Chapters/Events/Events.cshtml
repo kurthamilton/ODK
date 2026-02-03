@@ -10,12 +10,12 @@
     Layout = "_OdkChapterLayout";
     Model.Title = "Events";
 
-    var chapter = await Model.GetChapter();
+    var chapter = Model.Chapter;
 
     var viewModel = await EventViewModelService.GetEventsPage(
         Model.ServiceRequest, Model.CurrentMemberIdOrDefault, chapter);
 
-    Model.Path = OdkRoutes.Groups.Events(Model.Platform, viewModel.Chapter);
+    Model.Path = Model.OdkRoutes.Groups.Events(Model.Chapter);
 }
 
 @if (!viewModel.Chapter.IsOpenForRegistration())
@@ -36,7 +36,7 @@
     {
         new MenuItem 
         { 
-            Link = OdkRoutes.Groups.Group(Model.Platform, viewModel.Chapter),
+            Link = Model.OdkRoutes.Groups.Group(Model.Chapter),
             Text = viewModel.Chapter.GetDisplayName(Model.Platform)
         },
         new MenuItem { Text = "Events" }

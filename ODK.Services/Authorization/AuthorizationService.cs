@@ -24,8 +24,8 @@ public class AuthorizationService : IAuthorizationService
         ChapterPrivacySettings? privacySettings)
     {
         var memberVisibility = GetMemberVisibilityType(@event.ChapterId, member, subscription, membershipSettings);
-        var responseVisibility = privacySettings?.EventResponseVisibility ?? ChapterFeatureVisibilityType.AllMembers;
-        return memberVisibility.CanView(responseVisibility);
+        var chapterVisibility = privacySettings.Visibility(ChapterFeatureType.EventResponses);
+        return memberVisibility.CanView(chapterVisibility);
     }
 
     public bool CanStartConversation(
@@ -36,8 +36,8 @@ public class AuthorizationService : IAuthorizationService
         ChapterPrivacySettings? privacySettings)
     {
         var memberVisibility = GetMemberVisibilityType(chapterId, member, subscription, membershipSettings);
-        var conversationVisibility = privacySettings?.Conversations ?? ChapterFeatureVisibilityType.Public;
-        return memberVisibility.CanView(conversationVisibility);
+        var chapterVisibility = privacySettings.Visibility(ChapterFeatureType.Conversations);
+        return memberVisibility.CanView(chapterVisibility);
     }
 
     public bool CanViewEvent(
@@ -53,8 +53,8 @@ public class AuthorizationService : IAuthorizationService
         }
 
         var memberVisibility = GetMemberVisibilityType(@event.ChapterId, member, subscription, membershipSettings);
-        var eventVisibility = privacySettings?.EventVisibility ?? ChapterFeatureVisibilityType.ActiveMembers;
-        return memberVisibility.CanView(eventVisibility);
+        var chapterVisibility = privacySettings.Visibility(ChapterFeatureType.Events);
+        return memberVisibility.CanView(chapterVisibility);
     }
 
     public bool CanViewVenue(
@@ -65,8 +65,8 @@ public class AuthorizationService : IAuthorizationService
         ChapterPrivacySettings? privacySettings)
     {
         var memberVisibility = GetMemberVisibilityType(venue.ChapterId, member, subscription, membershipSettings);
-        var venueVisibility = privacySettings?.VenueVisibility ?? ChapterFeatureVisibilityType.ActiveMembers;
-        return memberVisibility.CanView(venueVisibility);
+        var chapterVisibility = privacySettings.Visibility(ChapterFeatureType.Venues);
+        return memberVisibility.CanView(chapterVisibility);
     }
 
     public async Task<bool> ChapterHasAccess(

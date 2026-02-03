@@ -7,6 +7,7 @@ using FluentAssertions;
 using Moq;
 using NUnit.Framework;
 using ODK.Core.Chapters;
+using ODK.Core.Countries;
 using ODK.Core.Events;
 using ODK.Core.Members;
 using ODK.Core.Notifications;
@@ -17,10 +18,12 @@ using ODK.Data.Core;
 using ODK.Data.Core.Repositories;
 using ODK.Services.Authorization;
 using ODK.Services.Events;
+using ODK.Services.Events.Models;
 using ODK.Services.Logging;
 using ODK.Services.Members;
 using ODK.Services.Notifications;
 using ODK.Services.Payments;
+using ODK.Services.Security;
 using ODK.Services.Tasks;
 using ODK.Services.Tests.Helpers;
 
@@ -43,8 +46,14 @@ public static class EventAdminServiceTests
         string eventDateString, string expectedScheduledEmailDate)
     {
         // Arrange
-        var chapter = CreateChapter();
-        chapter.TimeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+        var chapter = CreateChapter(
+            timeZone: TimeZoneInfo.FindSystemTimeZoneById(timeZoneId));
+        var currentMember = CreateMember(id: CurrentMemberId);
+
+        var adminMember = CreateChapterAdminMember(
+            chapterId: chapter.Id,
+            member: currentMember);
+        var adminMemberRepository = CreateMockChapterAdminMemberRepository([adminMember]);
 
         var eventDate = DateTime.ParseExact(eventDateString, "yyyy-MM-dd", CultureInfo.InvariantCulture);
 
@@ -69,6 +78,7 @@ public static class EventAdminServiceTests
             });
 
         var unitOfWork = CreateMockUnitOfWork(
+            chapterAdminMemberRepository: adminMemberRepository,
             chapterRepository: chapterRepository,
             chapterEventSettingsRepository: chapterEventSettingsRepository,
             eventEmailRepository: eventEmailRepository);
@@ -76,14 +86,18 @@ public static class EventAdminServiceTests
         var service = CreateService(
             unitOfWork: unitOfWork);
 
-        var request = MemberChapterServiceRequest.Create(
-            ChapterId,
-            CurrentMemberId,
+        var memberChapterServiceRequest = MemberChapterServiceRequest.Create(
+            chapter,
+            new Member { Id = CurrentMemberId },
             Mock.Of<IHttpRequestContext>(),
             PlatformType.Default);
 
+        var request = MemberChapterAdminServiceRequest.Create(
+            ChapterAdminSecurable.Events,
+            memberChapterServiceRequest);
+
         // Act
-        await service.CreateEvent(request, new CreateEvent
+        await service.CreateEvent(request, new EventCreateModel
         {
             AttendeeLimit = null,
             Date = eventDate,
@@ -106,26 +120,77 @@ public static class EventAdminServiceTests
             .Verify(x => x.Add(It.IsAny<EventEmail>()), Times.Once());
     }
 
-    private static Chapter CreateChapter()
+    private static Chapter CreateChapter(
+        TimeZoneInfo? timeZone = null)
     {
         return new Chapter
         {
             Id = ChapterId,
             Name = "Dummy",
-            Slug = "slug"
+            Slug = "slug",
+            TimeZone = timeZone ?? TimeZoneInfo.Utc
         };
     }
 
+    private static ChapterAdminMember CreateChapterAdminMember(
+        Member? member = null,
+        Guid? chapterId = null,
+        ChapterAdminRole? role = null)
+    {
+        member ??= CreateMember();
+
+        return new ChapterAdminMember
+        {
+            Id = Guid.NewGuid(),
+            Member = member,
+            MemberId = member.Id,
+            ChapterId = chapterId ?? Guid.NewGuid(),
+            Role = role ?? ChapterAdminRole.Admin
+        };
+    }
     private static IChapterAdminMemberRepository CreateMockChapterAdminMemberRepository(
-        IEnumerable<ChapterAdminMember>? chapterAdminMembers = null)
+        IEnumerable<ChapterAdminMember>? adminMembers = null)
     {
         var mock = new Mock<IChapterAdminMemberRepository>();
 
         mock.Setup(x => x.GetByChapterId(It.IsAny<Guid>()))
             .Returns((Guid chapterId) => new MockDeferredQueryMultiple<ChapterAdminMember>(
-                chapterAdminMembers?.Where(x => x.ChapterId == chapterId)));
+                adminMembers?.Where(x => x.ChapterId == chapterId)));
+
+        mock.Setup(x => x.GetByMemberId(It.IsAny<Guid>(), It.IsAny<Guid>()))
+            .Returns((Guid memberId, Guid chapterId) =>
+                new MockDeferredQuerySingle<ChapterAdminMember>(
+                    adminMembers?.FirstOrDefault(x => x.ChapterId == chapterId && x.MemberId == memberId)));
 
         return mock.Object;
+    }
+
+    private static Member CreateMember(
+        Guid? id = null,
+        Chapter? chapter = null,
+        bool? approved = null)
+    {
+        var member = new Member
+        {
+            Id = id ?? Guid.NewGuid(),
+            SiteAdmin = false,
+            Activated = true
+        };
+
+        if (chapter != null)
+        {
+            var memberChapter = new MemberChapter
+            {
+                Id = Guid.NewGuid(),
+                ChapterId = chapter.Id,
+                MemberId = member.Id,
+                Approved = approved ?? true,
+                CreatedUtc = DateTime.UtcNow
+            };
+            member.Chapters.Add(memberChapter);
+        }
+
+        return member;
     }
 
     private static IChapterEventSettingsRepository CreateMockChapterEventSettingsRepository(
@@ -170,6 +235,19 @@ public static class EventAdminServiceTests
         return mock.Object;
     }
 
+    private static ICurrencyRepository CreateMockCurrencyRepository()
+    {       
+        var mock = new Mock<ICurrencyRepository>();
+        mock.Setup(x => x.GetByChapterId(It.IsAny<Guid>()))
+            .Returns(new MockDeferredQuerySingle<Currency>(new Currency
+            {
+                Code = "",
+                Symbol = "$",
+                Id = Guid.NewGuid()
+            }));
+        return mock.Object;
+    }
+
     private static IEventEmailRepository CreateMockEventEmailRepository()
     {
         var mock = new Mock<IEventEmailRepository>();
@@ -187,6 +265,10 @@ public static class EventAdminServiceTests
     private static IEventRepository CreateMockEventRepository()
     {
         var mock = new Mock<IEventRepository>();
+
+        mock.Setup(x => x.ShortcodeExists(It.IsAny<string>()))
+            .Returns(new MockDeferredQuery<bool>(false));
+
         return mock.Object;
     }
 
@@ -239,12 +321,14 @@ public static class EventAdminServiceTests
     private static MockUnitOfWork CreateMockUnitOfWork(
         IChapterRepository? chapterRepository = null,
         IChapterEventSettingsRepository? chapterEventSettingsRepository = null,
-        IEventEmailRepository? eventEmailRepository = null)
+        IEventEmailRepository? eventEmailRepository = null,
+        IChapterAdminMemberRepository? chapterAdminMemberRepository = null)
     {
         var mock = new Mock<IUnitOfWork>();
 
         mock.Setup(x => x.ChapterAdminMemberRepository)
-            .Returns(CreateMockChapterAdminMemberRepository([new ChapterAdminMember { ChapterId = ChapterId, MemberId = CurrentMemberId }]));
+            .Returns(chapterAdminMemberRepository ?? CreateMockChapterAdminMemberRepository(
+                [new ChapterAdminMember { ChapterId = ChapterId, MemberId = CurrentMemberId, Role = ChapterAdminRole.Admin }]));
 
         mock.Setup(x => x.ChapterEventSettingsRepository)
             .Returns(chapterEventSettingsRepository ?? CreateMockChapterEventSettingsRepository());
@@ -257,6 +341,9 @@ public static class EventAdminServiceTests
 
         mock.Setup(x => x.ChapterTopicRepository)
             .Returns(CreateMockChapterTopicRepository());
+
+        mock.Setup(x => x.CurrencyRepository)
+            .Returns(CreateMockCurrencyRepository());
 
         mock.Setup(x => x.EventEmailRepository)
             .Returns(eventEmailRepository ?? CreateMockEventEmailRepository());

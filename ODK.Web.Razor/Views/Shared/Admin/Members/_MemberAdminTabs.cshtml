@@ -2,22 +2,24 @@
 @using ODK.Services.Members.ViewModels
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
+@using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Components
 @model MemberAdminPageViewModelBase
+@inject IOdkRoutes OdkRoutes
+@inject IRequestStore RequestStore
 @{
-    var menuItems = new List<MenuItem>
-    {
-        new MenuItem { Link = OdkRoutes.MemberGroups.Member(Model.Platform, Model.Chapter, Model.Member.Id), Text = "Subscription" },
-        new MenuItem { Link = OdkRoutes.MemberGroups.MemberEvents(Model.Platform, Model.Chapter, Model.Member.Id), Text = "Events" },
-        new MenuItem { Link = OdkRoutes.MemberGroups.MemberPayments(Model.Platform, Model.Chapter, Model.Member.Id), Text = "Payments" },
-        new MenuItem { Link = OdkRoutes.MemberGroups.MemberConversations(Model.Platform, Model.Chapter, Model.Member.Id), Text = "Conversations" },
-        new MenuItem { Link = OdkRoutes.MemberGroups.MemberDelete(Model.Platform, Model.Chapter, Model.Member.Id), Text = "Delete" }
-    };
+    var currentMember = RequestStore.CurrentMember;
+    var adminMember = await RequestStore.GetCurrentChapterAdminMember();
+    var routes = OdkRoutes.GroupAdmin;
 
-    if (Model.Platform == PlatformType.DrunkenKnitwits)
-    {
-        menuItems.Add(new MenuItem { Link = OdkRoutes.MemberGroups.MemberImage(Model.Platform, Model.Chapter, Model.Member.Id), Text = "Image" });
-    }
+    var menuItems = new ChapterAdminMenuItemGroup(currentMember, adminMember, Model.Platform)
+        .Add(routes.Member(Model.Chapter, Model.Member.Id), "Subscription")
+        .Add(routes.MemberEvents(Model.Chapter, Model.Member.Id), "Events")
+        .Add(routes.MemberPayments(Model.Chapter, Model.Member.Id), "Payments")
+        .Add(routes.MemberConversations(Model.Chapter, Model.Member.Id), "Conversations")
+        .Add(routes.MemberDelete(Model.Chapter, Model.Member.Id), "Delete")
+        .Add(routes.MemberImage(Model.Chapter, Model.Member.Id), "Image");
+
 }
 
 @await Html.PartialAsync("Components/_Tabs", new TabsViewModel

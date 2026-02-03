@@ -7,6 +7,7 @@
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Members
 @model GroupHomePageViewModel
+@inject IOdkRoutes OdkRoutes
 @inject ISocialMediaService SocialMediaService
 
 <div class="sidebar sidebar--cards">
@@ -16,7 +17,7 @@
     {
         TitleContentFunc = @<h5>Organisers</h5>,
         TitleEndContentFunc = 
-            @<a class="d-flex align-items-center gap-1" href="@OdkRoutes.Groups.Contact(Model.Platform, Model.Chapter)">
+            @<a class="d-flex align-items-center gap-1" href="@OdkRoutes.Groups.Contact(Model.Chapter)">
                 @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Contact))
                 <span>Contact</span>
             </a>,

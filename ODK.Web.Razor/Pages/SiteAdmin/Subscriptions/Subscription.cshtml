@@ -11,14 +11,14 @@
     Layout = "_SiteAdminLayout";
     Model.Title = "Subscription | SiteAdmin";
 
-    var viewModel = await SiteSubscriptionAdminService.GetSubscriptionViewModel(Model.CurrentMemberId, Model.SubscriptionId);
+    var viewModel = await SiteSubscriptionAdminService.GetSubscriptionViewModel(Model.MemberServiceRequest, Model.SubscriptionId);
 }
 
 @await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
 {
     Breadcrumbs = new[]
     {
-        new MenuItem { Link = OdkRoutes.SiteAdmin.Subscriptions, Text = "Subscriptions" },
+        new MenuItem { Link = Model.OdkRoutes.SiteAdmin.Subscriptions, Text = "Subscriptions" },
         new MenuItem { Text = viewModel.Subscription.Name }
     }
 })

@@ -1,13 +1,14 @@
 ﻿@using ODK.Core.Platforms
+@using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Footer
-@model OdkComponentContext
+@inject IRequestStore RequestStore
 
-@if (Model.Platform == PlatformType.DrunkenKnitwits)
+@if (RequestStore.Platform == PlatformType.DrunkenKnitwits)
 {
-    @await Html.PartialAsync("Footer/_OdkFooter", new FooterViewModel(Model))
+    @await Html.PartialAsync("Footer/_OdkFooter", new FooterViewModel())
 }
 else
 {
-    @await Html.PartialAsync("Footer/_SiteFooter", new FooterViewModel(Model))
+    @await Html.PartialAsync("Footer/_SiteFooter", new FooterViewModel())
 }

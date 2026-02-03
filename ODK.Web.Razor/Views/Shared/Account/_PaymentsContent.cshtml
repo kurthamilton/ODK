@@ -3,6 +3,13 @@
 @using ODK.Services.Users.ViewModels
 @using ODK.Web.Common.Routes
 @model MemberPaymentsPageViewModel
+@inject IOdkRoutes OdkRoutes
+
+@if (Model.Payments.Count == 0)
+{
+    <p>You haven't made any payments yet</p>
+    return;
+}
 
 <div class="table-responsive">
     <table class="table table-striped">
@@ -22,7 +29,7 @@
                     <td>
                         @if (payment.Chapter != null)
                         {
-                            <a href="@OdkRoutes.Groups.Group(Model.Platform, payment.Chapter)">
+                            <a href="@OdkRoutes.Groups.Group(payment.Chapter)">
                                 @payment.Chapter.GetDisplayName(Model.Platform)
                             </a>
                         }       

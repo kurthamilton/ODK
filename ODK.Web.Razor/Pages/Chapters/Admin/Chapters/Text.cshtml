@@ -1,5 +1,7 @@
-﻿@page "/{chapterName}/Admin/Chapter/Text"
+﻿@page "/{chapterName}/admin/chapter/texts"
+@using ODK.Services
 @using ODK.Services.Chapters
+@using ODK.Services.Security
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model TextModel
@@ -8,7 +10,7 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Texts | Admin";
 
-    var request = await Model.CreateMemberChapterServiceRequest();
+    var request = Model.MemberChapterAdminServiceRequest;
     var viewModel = await ChapterAdminService.GetChapterTextsViewModel(request);
 }
 

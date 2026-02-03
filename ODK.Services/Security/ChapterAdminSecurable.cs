@@ -1,0 +1,38 @@
+﻿namespace ODK.Services.Security;
+
+public enum ChapterAdminSecurable
+{
+    None,
+    AdminMembers,
+    Any,
+    Branding,
+    BulkEmail,
+    ContactMessages,
+    Conversations,
+    Delete,
+    Emails,
+    Events,
+    EventSettings,
+    Location,
+    MemberAdmin,
+    MemberApprovals,
+    MemberEventResponses,
+    MemberExport,
+    MemberImage,
+    Members,
+    MembershipSettings,
+    Pages,
+    PaymentAccount,
+    Payments,
+    PaymentSettings,
+    PrivacySettings,
+    Properties,
+    Publish,
+    Questions,
+    SiteSubscription,
+    SocialMedia,
+    Subscriptions,
+    Texts,
+    Topics,
+    Venues
+}

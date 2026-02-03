@@ -1,15 +1,23 @@
-﻿@page "/{chapterName}/Admin/Chapter/Emails"
+﻿@page "/{chapterName}/admin/chapter/emails"
 @using ODK.Core.Chapters
+@using ODK.Services.Emails
 @using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Admin.Emails
 @using ODK.Web.Razor.Models.Components
 @model EmailsModel
+@inject IEmailAdminService EmailAdminService
 @{
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Email templates | Admin";
 
-    var chapter = await Model.GetChapter();
-    var viewModel = new OdkComponentViewModel<Chapter>(Model.ComponentContext, chapter);
+    var request = Model.MemberChapterAdminServiceRequest;
+    var emails = await EmailAdminService.GetChapterEmails(request);
+    var viewModel = new ChapterEmailsViewModel
+    {
+        Chapter = Model.Chapter,
+        Emails = emails
+    };
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel

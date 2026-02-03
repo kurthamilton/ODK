@@ -11,7 +11,7 @@ public abstract class SiteAdminPageModel : OdkPageModel
         PageHandlerExecutingContext context,
         PageHandlerExecutionDelegate next)
     {
-        var member = await RequestStore.GetCurrentMember();
+        var member = CurrentMember;
         if (member?.SiteAdmin != true)
         {
             throw new OdkNotAuthorizedException();

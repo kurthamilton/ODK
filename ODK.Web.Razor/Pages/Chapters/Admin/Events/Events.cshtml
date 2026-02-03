@@ -9,12 +9,12 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Events | Admin";
 
-    var request = await Model.CreateMemberChapterServiceRequest();
-    var viewModel = await EventAdminService.GetEventsDto(request, 1, 1000);
+    var request = Model.MemberChapterAdminServiceRequest;
+    var viewModel = await EventAdminService.GetEventsAdminPageViewModel(request, Model.Chapter, 1, 1000);
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
     Title = "Events",
-    ContentFunc = @<div>@await Html.PartialAsync("Admin/Events/_EventsContent", viewModel)</div>
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Events/_AdminEventsContent", viewModel)</div>
 })

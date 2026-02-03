@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc.Filters;
-using ODK.Core;
 using ODK.Services;
-using ODK.Web.Common.Extensions;
+using ODK.Services.Security;
 
 namespace ODK.Web.Razor.Pages.My.Groups;
 
@@ -12,26 +10,15 @@ namespace ODK.Web.Razor.Pages.My.Groups;
 [Authorize]
 public abstract class OdkGroupAdminPageModel : OdkPageModel
 {
-    private readonly Lazy<MemberChapterServiceRequest> _adminServiceRequest;
+    private readonly Lazy<MemberChapterAdminServiceRequest> _memberChapterAdminServiceRequest;
 
     protected OdkGroupAdminPageModel()
     {
-        _adminServiceRequest = new(() => MemberChapterServiceRequest.Create(ChapterId, MemberServiceRequest));
+        _memberChapterAdminServiceRequest = new(() =>
+        MemberChapterAdminServiceRequest.Create(Securable, MemberChapterServiceRequest));
     }
 
-    public Guid ChapterId { get; private set; }
+    public MemberChapterAdminServiceRequest MemberChapterAdminServiceRequest => _memberChapterAdminServiceRequest.Value;
 
-    public MemberChapterServiceRequest AdminServiceRequest => _adminServiceRequest.Value;
-
-    public override async Task OnPageHandlerExecutionAsync(
-        PageHandlerExecutingContext context,
-        PageHandlerExecutionDelegate next)
-    {
-        var chapterId = HttpContext.ChapterId();
-        OdkAssertions.Exists(chapterId, "ChapterId missing");
-
-        ChapterId = chapterId.Value;
-
-        await next();
-    }
+    public abstract ChapterAdminSecurable Securable { get; }
 }

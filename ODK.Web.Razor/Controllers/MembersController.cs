@@ -2,7 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Members;
 using ODK.Services.Members;
-using ODK.Web.Razor.Services;
+using ODK.Web.Common.Routes;
+using ODK.Web.Common.Services;
+using ODK.Web.Razor.Attributes;
 
 namespace ODK.Web.Razor.Controllers;
 
@@ -13,17 +15,20 @@ public class MembersController : OdkControllerBase
 
     public MembersController(
         IMemberService memberService,
-        IRequestStore requestStore)
-        : base(requestStore)
+        IRequestStore requestStore,
+        IOdkRoutes odkRoutes)
+        : base(requestStore, odkRoutes)
     {
         _memberService = memberService;
     }
 
+    [SkipRequestStoreMiddleware]
     [Authorize]
     [HttpGet("members/{Id}/avatar")]
     public Task<IActionResult> Avatar(Guid id)
         => HandleVersionedRequest(version => _memberService.GetMemberAvatar(version, id), MemberAvatarResult);
 
+    [SkipRequestStoreMiddleware]
     [Authorize]
     [HttpGet("members/{Id}/image")]
     public Task<IActionResult> Image(Guid id)

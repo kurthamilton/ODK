@@ -14,7 +14,7 @@
     Model.Title = "Subscription pending confirmation";
 
     var subscriptionUrl = Model.RedirectUrl;
-    var chapter = await Model.GetChapter();
+    var chapter = Model.Chapter;
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -32,7 +32,7 @@
                 {
                     Icon = IconType.ArrowLeft,
                     Text = "My subscription",
-                    Link = OdkRoutes.Account.Subscription(Model.Platform, chapter)
+                    Link = Model.OdkRoutes.Account.Subscription(Model.Chapter)
                 }
             }
         },

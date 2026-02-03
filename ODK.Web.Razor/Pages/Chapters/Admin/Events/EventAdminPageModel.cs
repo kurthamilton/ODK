@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
 using ODK.Core.Events;
 using ODK.Services.Events;
+using ODK.Services.Security;
 using ODK.Web.Common.Feedback;
-using ODK.Web.Common.Routes;
 
 namespace ODK.Web.Razor.Pages.Chapters.Admin.Events;
 
@@ -17,6 +17,8 @@ public abstract class EventAdminPageModel : AdminPageModel
 
     protected IEventAdminService EventAdminService { get; }
 
+    public override ChapterAdminSecurable Securable => ChapterAdminSecurable.Events;
+
     public override async Task OnPageHandlerExecutionAsync(
         PageHandlerExecutingContext context,
         PageHandlerExecutionDelegate next)
@@ -27,7 +29,7 @@ public abstract class EventAdminPageModel : AdminPageModel
             return;
         }
 
-        var request = await CreateMemberChapterServiceRequest();
+        var request = MemberChapterAdminServiceRequest;
 
         try
         {
@@ -44,8 +46,7 @@ public abstract class EventAdminPageModel : AdminPageModel
 
     private async Task Redirect(PageHandlerExecutingContext context)
     {
-        var chapter = await RequestStore.GetChapter();
-        var redirectPath = OdkRoutes.MemberGroups.Events(Platform, chapter);
+        var redirectPath = AdminRoutes.Events(Chapter).Path;
         context.Result = Redirect(redirectPath);
     }
 }

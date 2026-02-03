@@ -10,13 +10,14 @@ using ODK.Services.Payments;
 using ODK.Services.Settings;
 using ODK.Services.SocialMedia;
 using ODK.Services.Subscriptions;
+using ODK.Services.Subscriptions.Models;
 using ODK.Services.Topics;
 using ODK.Services.Topics.Models;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
+using ODK.Web.Common.Services;
 using ODK.Web.Razor.Models.Admin.Chapters;
 using ODK.Web.Razor.Models.SiteAdmin;
-using ODK.Web.Razor.Services;
 
 namespace ODK.Web.Razor.Controllers.SiteAdmin;
 
@@ -42,8 +43,9 @@ public class SiteAdminController : OdkControllerBase
         ITopicAdminService topicAdminService,
         IPaymentAdminService paymentAdminService,
         IRequestStore requestStore,
-        IEventAdminService eventAdminService)
-        : base(requestStore)
+        IEventAdminService eventAdminService,
+        IOdkRoutes odkRoutes)
+        : base(requestStore, odkRoutes)
     {
         _contactAdminService = contactAdminService;
         _eventAdminService = eventAdminService;
@@ -64,7 +66,7 @@ public class SiteAdminController : OdkControllerBase
     [HttpPost("siteadmin/errors/{id:guid}/delete")]
     public async Task<IActionResult> DeleteError(Guid id)
     {
-        await _loggingService.DeleteError(MemberId, id);
+        await _loggingService.DeleteError(MemberServiceRequest, id);
 
         return Redirect(OdkRoutes.SiteAdmin.Errors);
     }
@@ -72,7 +74,7 @@ public class SiteAdminController : OdkControllerBase
     [HttpPost("siteadmin/errors/{id:Guid}/deleteall")]
     public async Task<IActionResult> DeleteAllErrors(Guid id)
     {
-        await _loggingService.DeleteAllErrors(MemberId, id);
+        await _loggingService.DeleteAllErrors(MemberServiceRequest, id);
 
         return Redirect(OdkRoutes.SiteAdmin.Errors);
     }
@@ -87,7 +89,7 @@ public class SiteAdminController : OdkControllerBase
     [HttpPost("siteadmin/features/{id:guid}/delete")]
     public async Task<IActionResult> DeleteFeature(Guid id)
     {
-        await _featureService.DeleteFeature(MemberId, id);
+        await _featureService.DeleteFeature(MemberServiceRequest, id);
         return Redirect(OdkRoutes.SiteAdmin.Features);
     }
 
@@ -111,7 +113,7 @@ public class SiteAdminController : OdkControllerBase
     [HttpPost("siteadmin/payments")]
     public async Task<IActionResult> CreatePaymentSettings([FromForm] SitePaymentSettingsFormViewModel viewModel)
     {
-        var result = await _settingsService.CreatePaymentSettings(MemberId,
+        var result = await _settingsService.CreatePaymentSettings(MemberServiceRequest,
             viewModel.Provider ?? PaymentProviderType.None,
             viewModel.Name ?? string.Empty,
             viewModel.PublicKey ?? string.Empty,
@@ -128,7 +130,7 @@ public class SiteAdminController : OdkControllerBase
     public async Task<IActionResult> UpdatePaymentSettings(Guid id,
         [FromForm] SitePaymentSettingsFormViewModel viewModel)
     {
-        var result = await _settingsService.UpdatePaymentSettings(MemberId,
+        var result = await _settingsService.UpdatePaymentSettings(MemberServiceRequest,
             id,
             viewModel.Name ?? string.Empty,
             viewModel.PublicKey ?? string.Empty,
@@ -144,7 +146,7 @@ public class SiteAdminController : OdkControllerBase
     [HttpPost("siteadmin/payments/{id:guid}/activate")]
     public async Task<IActionResult> ActivatePaymentSettings(Guid id)
     {
-        var result = await _settingsService.ActivatePaymentSettings(MemberId, id);
+        var result = await _settingsService.ActivatePaymentSettings(MemberServiceRequest, id);
 
         AddFeedback(result, "Active payment settings updated");
 
@@ -206,7 +208,7 @@ public class SiteAdminController : OdkControllerBase
     [HttpPost("siteadmin/subscriptions/{id:guid}/disable")]
     public async Task<IActionResult> DisableSubscription(Guid id)
     {
-        await _siteSubscriptionAdminService.UpdateSiteSubscriptionEnabled(MemberId, id, false);
+        await _siteSubscriptionAdminService.UpdateSiteSubscriptionEnabled(MemberServiceRequest, id, false);
         AddFeedback("Subscription disabled", FeedbackType.Success);
         return RedirectToReferrer();
     }
@@ -214,7 +216,7 @@ public class SiteAdminController : OdkControllerBase
     [HttpPost("siteadmin/subscriptions/{id:guid}/enable")]
     public async Task<IActionResult> EnableSubscription(Guid id)
     {
-        await _siteSubscriptionAdminService.UpdateSiteSubscriptionEnabled(MemberId, id, true);
+        await _siteSubscriptionAdminService.UpdateSiteSubscriptionEnabled(MemberServiceRequest, id, true);
         AddFeedback("Subscription enabled", FeedbackType.Success);
         return RedirectToReferrer();
     }
@@ -245,7 +247,7 @@ public class SiteAdminController : OdkControllerBase
     [HttpPost("siteadmin/subscriptions/{siteSubscriptionId:guid}/Prices/{id:guid}/Delete")]
     public async Task<IActionResult> DeleteSiteSubscriptionPrice(Guid siteSubscriptionId, Guid id)
     {
-        await _siteSubscriptionAdminService.DeleteSiteSubscriptionPrice(MemberId, siteSubscriptionId, id);
+        await _siteSubscriptionAdminService.DeleteSiteSubscriptionPrice(MemberServiceRequest, siteSubscriptionId, id);
         AddFeedback("Subscription price deleted", FeedbackType.Success);
         return RedirectToReferrer();
     }
@@ -253,7 +255,7 @@ public class SiteAdminController : OdkControllerBase
     [HttpPost("siteadmin/topic-groups")]
     public async Task<IActionResult> AddTopicGroup([FromForm] string name)
     {
-        var result = await _topicAdminService.AddTopicGroup(MemberId, name);
+        var result = await _topicAdminService.AddTopicGroup(MemberServiceRequest, name);
         AddFeedback(result, "Topic group added");
         return RedirectToReferrer();
     }
@@ -261,7 +263,7 @@ public class SiteAdminController : OdkControllerBase
     [HttpPost("siteadmin/topics")]
     public async Task<IActionResult> AddTopic([FromForm] Guid topicGroupId, [FromForm] string name)
     {
-        var result = await _topicAdminService.AddTopic(MemberId, topicGroupId, name);
+        var result = await _topicAdminService.AddTopic(MemberServiceRequest, topicGroupId, name);
         AddFeedback(result, "Topic added");
         return RedirectToReferrer();
     }
@@ -323,7 +325,7 @@ public class SiteAdminController : OdkControllerBase
     [HttpPost("siteadmin/topics/{id:guid}")]
     public async Task<IActionResult> UpdateTopic(Guid id, [FromForm] TopicFormSubmitViewModel viewModel)
     {
-        var result = await _topicAdminService.UpdateTopic(MemberServiceRequest, id, new UpdateTopicModel
+        var result = await _topicAdminService.UpdateTopic(MemberServiceRequest, id, new TopicUpdateModel
         {
             TopicGroupId = viewModel.TopicGroupId
         });

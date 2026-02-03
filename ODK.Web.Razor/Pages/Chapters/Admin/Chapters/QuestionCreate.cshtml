@@ -9,8 +9,6 @@
 @{
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Create question | Admin";
-
-    var chapter = await Model.GetChapter();
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
@@ -20,7 +18,7 @@
     {
         new MenuItem
         {
-            Link = OdkRoutes.MemberGroups.GroupQuestions(Model.Platform, chapter),
+            Link = Model.AdminRoutes.Questions(Model.Chapter).Path,
             Text = "Back to FAQ",
             Icon = IconType.ArrowLeft
         }

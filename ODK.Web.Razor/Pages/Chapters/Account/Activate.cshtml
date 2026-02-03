@@ -1,15 +1,15 @@
 ﻿@page "/{chapterName}/Account/Activate"
 @using ODK.Web.Razor.Models.Account
-@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Login
 @model ActivateModel
 @{
     Layout = "_OdkChapterLayout";
     Model.Title = "Activate account";
 
-    var chapter = await Model.GetChapter();
+    var chapter = Model.Chapter;
 }
 
-@await Html.PartialAsync("Components/_Body", new BodyViewModel
+@await Html.PartialAsync("Account/_LoginBody", new LoginBodyViewModel
 {
     Title = "Activate your account",
     Content = await Html.PartialAsync("Account/_ActivateContent", new ActivateFormViewModel

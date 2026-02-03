@@ -1,13 +1,15 @@
-﻿@page "/{chapterName}/Admin/Chapter/Pages"
+﻿@page "/{chapterName}/admin/chapter/pages"
+@using ODK.Services
 @using ODK.Services.Chapters
+@using ODK.Services.Security
 @using ODK.Web.Razor.Models.Admin
 @model PagesModel
 @inject IChapterAdminService ChapterAdminService
 @{
     Layout = "_OdkChapterAdminLayout";
-    Model.Title = "Privacy | Admin";
+    Model.Title = "Pages | Admin";
 
-    var request = await Model.CreateMemberChapterServiceRequest();
+    var request = Model.MemberChapterAdminServiceRequest;
     var viewModel = await ChapterAdminService.GetChapterPagesViewModel(request);
 }
 

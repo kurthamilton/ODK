@@ -1,5 +1,7 @@
 ﻿@page "/{chapterName}/admin/payments/account"
+@using ODK.Services
 @using ODK.Services.Chapters
+@using ODK.Services.Security
 @using ODK.Web.Razor.Models.Admin
 @model AccountModel
 @inject IChapterAdminService ChapterAdminService
@@ -7,7 +9,7 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Payment account | Admin";
 
-    var request = await Model.CreateMemberChapterServiceRequest();
+    var request = Model.MemberChapterAdminServiceRequest;
     var viewModel = await ChapterAdminService.GetChapterPaymentAccountViewModel(request);
 }
 

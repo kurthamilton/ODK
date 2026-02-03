@@ -3,6 +3,7 @@
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @model SiteAdminChapterViewModel
+@inject IOdkRoutes OdkRoutes
 @{
     var chapterName = Model.Chapter.GetDisplayName(Model.Platform);
 }

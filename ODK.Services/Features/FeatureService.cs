@@ -1,5 +1,6 @@
 ﻿using ODK.Core.Features;
 using ODK.Data.Core;
+using ODK.Services.Features.Models;
 
 namespace ODK.Services.Features;
 
@@ -13,9 +14,9 @@ public class FeatureService : OdkAdminServiceBase, IFeatureService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ServiceResult> AddFeature(Guid currentMemberId, UpdateFeature model)
+    public async Task<ServiceResult> AddFeature(MemberServiceRequest request, FeatureUpdateModel model)
     {
-        await AssertMemberIsSiteAdmin(currentMemberId);
+        AssertMemberIsSiteAdmin(request.CurrentMember);
 
         _unitOfWork.FeatureRepository.Add(new Feature
         {
@@ -30,43 +31,35 @@ public class FeatureService : OdkAdminServiceBase, IFeatureService
         return ServiceResult.Successful();
     }
 
-    public async Task DeleteFeature(Guid currentMemberId, Guid featureId)
+    public async Task DeleteFeature(MemberServiceRequest request, Guid featureId)
     {
-        var feature = await GetSiteAdminRestrictedContent(currentMemberId,
+        var feature = await GetSiteAdminRestrictedContent(request,
             x => x.FeatureRepository.GetById(featureId));
 
         _unitOfWork.FeatureRepository.Delete(feature);
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task<Feature> GetFeature(Guid currentMemberId, Guid featureId)
+    public async Task<Feature> GetFeature(MemberServiceRequest request, Guid featureId)
     {
-        var (currentMember, feature) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(currentMemberId),
+        return await GetSiteAdminRestrictedContent(request,
             x => x.FeatureRepository.GetById(featureId));
-
-        AssertMemberIsSiteAdmin(currentMember);
-
-        return feature;
     }
 
-    public async Task<IReadOnlyCollection<Feature>> GetFeatures(Guid currentMemberId)
+    public async Task<IReadOnlyCollection<Feature>> GetFeatures(MemberServiceRequest request)
     {
-        var (currentMember, features) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(currentMemberId),
+        return await GetSiteAdminRestrictedContent(request,
             x => x.FeatureRepository.GetAll());
-
-        AssertMemberIsSiteAdmin(currentMember);
-
-        return features;
     }
 
-    public Task<Feature?> GetUnseeen(Guid memberId, string featureName) => _unitOfWork.FeatureRepository
-        .GetUnseen(memberId, featureName)
+    public Task<Feature?> GetUnseeen(MemberServiceRequest request, string featureName) => _unitOfWork.FeatureRepository
+        .GetUnseen(request.CurrentMember.Id, featureName)
         .Run();
 
-    public async Task MarkAsSeen(Guid memberId, string featureName)
+    public async Task MarkAsSeen(MemberServiceRequest request, string featureName)
     {
+        var memberId = request.CurrentMember.Id;
+
         var feature = await _unitOfWork.FeatureRepository.GetUnseen(memberId, featureName).Run();
         if (feature == null)
         {
@@ -77,13 +70,10 @@ public class FeatureService : OdkAdminServiceBase, IFeatureService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task UpdateFeature(Guid memberId, Guid featureId, UpdateFeature model)
+    public async Task UpdateFeature(MemberServiceRequest request, Guid featureId, FeatureUpdateModel model)
     {
-        var (currentMember, feature) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(memberId),
+        var feature = await GetSiteAdminRestrictedContent(request,
             x => x.FeatureRepository.GetById(featureId));
-
-        AssertMemberIsSiteAdmin(currentMember);
 
         feature.Description = model.Description;
         feature.Name = model.Name;

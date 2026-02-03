@@ -1,16 +1,19 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
 using ODK.Services.Exceptions;
+using ODK.Services.Security;
 
 namespace ODK.Web.Razor.Pages.Chapters.Admin.SiteAdmin;
 
 public abstract class ChapterSiteAdminPageModel : AdminPageModel
 {
+    public override ChapterAdminSecurable Securable => ChapterAdminSecurable.Any;
+
     public override async Task OnPageHandlerExecutionAsync(
         PageHandlerExecutingContext context,
         PageHandlerExecutionDelegate next)
     {
-        var member = await RequestStore.GetCurrentMember();
-        if (member?.SiteAdmin != true)
+        var member = CurrentMember;
+        if (member.SiteAdmin != true)
         {
             throw new OdkNotAuthorizedException();
         }

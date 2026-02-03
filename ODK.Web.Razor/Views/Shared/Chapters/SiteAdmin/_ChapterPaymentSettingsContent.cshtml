@@ -1,0 +1,21 @@
+﻿@using ODK.Core.Chapters
+@using ODK.Services
+@using ODK.Services.Chapters
+@using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Common.Services
+@using ODK.Web.Razor.Models
+@using ODK.Web.Razor.Models.Chapters.SiteAdmin
+@using ODK.Web.Razor.Services
+@model ChapterPaymentSettingsAdminPageViewModel
+
+<h2 class="d-none d-md-block">Payment settings</h2>
+
+<form method="post">
+    @*@Html.AntiForgeryToken()*@
+    @await Html.PartialAsync("Chapters/siteadmin/_PaymentSettingsForm", new PaymentSettingsFormViewModel
+    {
+        CurrencyOptions = Model.Currencies,
+        CurrencyId = Model.PaymentSettings?.CurrencyId
+    })
+    <button class="btn btn-primary">Update</button>
+</form>

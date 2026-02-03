@@ -2,15 +2,28 @@
 @using ODK.Core.Utils
 @using ODK.Services.Members.ViewModels
 @using ODK.Web.Common.Routes
+@using ODK.Web.Common.Services
 @model MemberConversationsPageViewModel
+@inject IOdkRoutes OdkRoutes
+@inject IRequestStore RequestStore
 @{
+    var currentChapter = RequestStore.ChapterOrDefault;
+
     var chapterDictionary = Model.Chapters
         .ToDictionary(x => x.Id);
 }
 
 @if (Model.Conversations.Count == 0)
 {
+    var contactUrl = currentChapter != null
+        ? OdkRoutes.Groups.Contact(currentChapter)
+        : OdkRoutes.Site.Contact;
+
     <p>You haven't started any conversations yet</p>
+
+    <p>
+        <a href="@contactUrl">Get in touch</a>
+    </p>
     return;
 }
 
@@ -28,7 +41,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var dto in Model.Conversations.OrderByDescending(x => x.LastMessage.CreatedUtc))
+            @foreach (var dto in Model.Conversations.OrderByDescending(x => x.LastMessage.Message.CreatedUtc))
             {
                 if (!chapterDictionary.TryGetValue(dto.Conversation.ChapterId, out var chapter))
                 {
@@ -41,26 +54,26 @@
                     @if (Model.Platform != PlatformType.DrunkenKnitwits)
                     {
                         <td>
-                            <a href="@OdkRoutes.Groups.Group(Model.Platform, chapter)">
+                            <a href="@OdkRoutes.Groups.Group(chapter)">
                                 @chapter.GetDisplayName(Model.Platform)
                             </a>
                         </td>
                     }
                     
                     <td>
-                        <a href="@OdkRoutes.Groups.Conversation(Model.Platform, chapter, dto.Conversation.Id)">
+                        <a href="@OdkRoutes.Groups.Conversation(chapter, dto.Conversation.Id)">
                             @dto.Conversation.Subject
                         </a>
                     </td>
                     <td>@dto.Conversation.CreatedUtc.ToFriendlyDateTimeString(timeZone)</td>
                     <td>
                         <div>
-                            @dto.LastMessage.CreatedUtc.ToFriendlyDateTimeString(timeZone)
+                            @dto.LastMessage.Message.CreatedUtc.ToFriendlyDateTimeString(timeZone)
                         </div>
-                        @if (dto.LastMessage.MemberId != Model.CurrentMember.Id)
+                        @if (dto.LastMessage.Message.MemberId != Model.CurrentMember.Id)
                         {
                             <div>
-                                @dto.LastMessage.Member?.FullName
+                                @dto.LastMessage.MemberFullName
                             </div>
                         }
                     </td>

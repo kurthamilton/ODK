@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.Models;
-using ODK.Web.Common.Routes;
+using ODK.Services.Security;
 using ODK.Web.Razor.Models.Admin.Members;
 
 namespace ODK.Web.Razor.Pages.My.Groups.Members.Admins;
@@ -17,20 +17,23 @@ public class AdminMemberModel : OdkGroupAdminPageModel
 
     public Guid MemberId { get; private set; }
 
+    public override ChapterAdminSecurable Securable => ChapterAdminSecurable.AdminMembers;
+
     public void OnGet(Guid memberId)
     {
         MemberId = memberId;
     }
 
-    public async Task<IActionResult> OnPostAsync(Guid memberId, AdminMemberFormViewModel viewModel)
+    public async Task<IActionResult> OnPostAsync(Guid memberId, AdminMemberFormSubmitViewModel viewModel)
     {
-        var result = await _chapterAdminService.UpdateChapterAdminMember(AdminServiceRequest, memberId, new UpdateChapterAdminMember
+        var request = MemberChapterAdminServiceRequest;
+        var result = await _chapterAdminService.UpdateChapterAdminMember(request, memberId, new ChapterAdminMemberUpdateModel
         {
             AdminEmailAddress = viewModel.AdminEmailAddress,
             ReceiveContactEmails = viewModel.ReceiveContactEmails,
             ReceiveEventCommentEmails = viewModel.ReceiveEventCommentEmails,
             ReceiveNewMemberEmails = viewModel.ReceiveNewMemberEmails,
-            SendNewMemberEmails = viewModel.SendNewMemberEmails
+            Role = viewModel.Role ?? default
         });
 
         AddFeedback(result, "Admin member updated");
@@ -40,7 +43,7 @@ public class AdminMemberModel : OdkGroupAdminPageModel
             return Page();
         }
 
-        var chapter = await GetChapter();
-        return Redirect(OdkRoutes.MemberGroups.MemberAdmins(Platform, chapter));
+        var path = OdkRoutes.GroupAdmin.AdminMembers(Chapter).Path;
+        return Redirect(path);
     }
 }

@@ -9,10 +9,6 @@
 @{
     Layout = "_GroupAdminLayout";
     Model.Title = "Create profile question";
-
-    var chapter = await Model.GetChapter();
-
-    var viewModel = new OdkComponentViewModel<Chapter>(Model.ComponentContext, chapter);
 }
 
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
@@ -24,7 +20,7 @@
         {
             new MenuItem 
             { 
-                Link = OdkRoutes.MemberGroups.MemberProperties(Model.Platform, chapter), 
+                Link = Model.OdkRoutes.GroupAdmin.MemberProperties(Model.Chapter).Path,
                 Text = "Back to profile questions",
                 Icon = IconType.ArrowLeft
             }
@@ -32,7 +28,7 @@
     },
     BodyContentFunc = 
         @<div>
-            @await Html.PartialAsync("Admin/Chapter/_PropertyCreateContent", viewModel)
+            @await Html.PartialAsync("Admin/Chapter/_PropertyCreateContent")
         </div>,
     MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu")
 })

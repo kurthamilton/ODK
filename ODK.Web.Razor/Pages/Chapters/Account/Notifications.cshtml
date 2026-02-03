@@ -11,7 +11,7 @@
     Layout = "_OdkChapterLayout";
     Model.Title = "Notifications";
 
-    var chapter = await Model.GetChapter();
+    var chapter = Model.Chapter;
     var viewModel = await NotificationService.GetNotificationsPageViewModel(Model.CurrentMemberId);
 }
 

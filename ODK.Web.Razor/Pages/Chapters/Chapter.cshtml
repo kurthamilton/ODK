@@ -8,9 +8,9 @@
 @{
     Layout = "_OdkChapterLayout";
 
-    var chapter = await Model.GetChapter();
+    var chapter = Model.Chapter;
     var viewModel = await ChapterViewModelService.GetHomePage(
-        Model.ServiceRequest, Model.CurrentMemberIdOrDefault, chapter);
+        Model.ServiceRequest, Model.CurrentMemberOrDefault, chapter);
 
     var description = viewModel.Chapter.GetDisplayName(Model.Platform);
 
@@ -24,7 +24,7 @@
     }
 
     Model.Description = description;
-    Model.Path = OdkRoutes.Groups.Group(Model.Platform, viewModel.Chapter);
+    Model.Path = Model.OdkRoutes.Groups.Group(Model.Chapter);
     Model.Keywords = viewModel.Topics
         .Select(x => x.Name)
         .ToArray();

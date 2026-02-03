@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Identity.Client;
+using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Images;
 using ODK.Core.Issues;
@@ -19,11 +21,11 @@ using ODK.Services.Users.ViewModels;
 using ODK.Web.Common.Account;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
+using ODK.Web.Common.Services;
 using ODK.Web.Razor.Models.Account;
 using ODK.Web.Razor.Models.Login;
 using ODK.Web.Razor.Models.Notifications;
 using ODK.Web.Razor.Models.Topics;
-using ODK.Web.Razor.Services;
 
 namespace ODK.Web.Razor.Controllers;
 
@@ -37,7 +39,6 @@ public class AccountController : OdkControllerBase
     private readonly ILoginHandler _loginHandler;
     private readonly IMemberService _memberService;
     private readonly INotificationService _notificationService;
-    private readonly IRequestStore _requestStore;
     private readonly ISiteSubscriptionService _siteSubscriptionService;
 
     public AccountController(
@@ -48,8 +49,9 @@ public class AccountController : OdkControllerBase
         ISiteSubscriptionService siteSubscriptionService,
         INotificationService notificationService,
         IIssueService issueService,
-        IRequestStore requestStore)
-        : base(requestStore)
+        IRequestStore requestStore,
+        IOdkRoutes odkRoutes)
+        : base(requestStore, odkRoutes)
     {
         _authenticationService = authenticationService;
         _featureService = featureService;
@@ -57,7 +59,6 @@ public class AccountController : OdkControllerBase
         _loginHandler = loginHandler;
         _memberService = memberService;
         _notificationService = notificationService;
-        _requestStore = requestStore;
         _siteSubscriptionService = siteSubscriptionService;
     }
 
@@ -87,7 +88,7 @@ public class AccountController : OdkControllerBase
     {
         var result = await _authenticationService.ActivateChapterAccountAsync(
             ServiceRequest,
-            chapterId,
+            Chapter,
             viewModel.Token,
             viewModel.Password);
         if (!result.Success)
@@ -96,9 +97,8 @@ public class AccountController : OdkControllerBase
             return RedirectToReferrer();
         }
 
-        var chapter = await _requestStore.GetChapter();
         AddFeedback("Your account has been activated. You can now login.", FeedbackType.Success);
-        return Redirect($"/{chapter.ShortName}/Account/Login");
+        return Redirect(OdkRoutes.Account.Login(Chapter));
     }
 
     [AllowAnonymous]
@@ -111,7 +111,7 @@ public class AccountController : OdkControllerBase
     {
         var newTopics = NewTopicModel.Build(topics.NewTopicGroups, topics.NewTopics);
 
-        var model = new CreateAccountModel
+        var model = new AccountCreateModel
         {
             EmailAddress = personalDetails.EmailAddress,
             FirstName = personalDetails.FirstName,
@@ -131,7 +131,7 @@ public class AccountController : OdkControllerBase
         if (result.Value?.Activated == true)
         {
             AddFeedback(result, "Your account has been created and is now ready to use");
-            return Redirect(OdkRoutes.Account.Login(null));
+            return Redirect(OdkRoutes.Account.Login(chapter: null));
         }
 
         string successMessage =
@@ -203,11 +203,10 @@ public class AccountController : OdkControllerBase
 
         if (result.Success && result.Member != null)
         {
-            var platform = _requestStore.Platform;
-            var chapter = await _requestStore.GetChapter();
-
+            var platform = Platform;
+            
             var redirectUrl = string.IsNullOrEmpty(returnUrl)
-                ? OdkRoutes.Groups.Group(platform, chapter)
+                ? OdkRoutes.Groups.Group(Chapter)
                 : returnUrl;
 
             return Redirect(redirectUrl);
@@ -227,8 +226,7 @@ public class AccountController : OdkControllerBase
         {
             if (string.IsNullOrEmpty(returnUrl))
             {
-                var chapter = await _requestStore.GetChapter();
-                return Redirect(OdkRoutes.Groups.Group(Platform, chapter));
+                return Redirect(OdkRoutes.Groups.Group(Chapter));
             }
 
             return Redirect(returnUrl);
@@ -254,23 +252,26 @@ public class AccountController : OdkControllerBase
         return Redirect("/");
     }
 
+    [HttpPost("{chapterName}/account/email/change")]
+    public async Task<IActionResult> ChangeChapterEmailRequest(
+        string chapterName, [FromForm] ChangeEmailFormViewModel viewModel)
+    {
+        var result = await _memberService.RequestMemberEmailAddressUpdate(
+                MemberChapterServiceRequest, viewModel.Email ?? string.Empty);
+
+        var successMessage =
+            "An email has been sent to the email address you provided. " +
+            "Please complete your update by following the link in the email.";
+        AddFeedback(result, successMessage);
+
+        return RedirectToReferrer();
+    }
+
     [HttpPost("account/email/change")]
     public async Task<IActionResult> ChangeEmailRequest([FromForm] ChangeEmailFormViewModel viewModel)
     {
-        Guid? chapterId = null;
-
-        if (Platform == PlatformType.DrunkenKnitwits)
-        {
-            var member = await _requestStore.GetCurrentMember();
-            chapterId = member.Chapters.Count == 1
-                ? member.Chapters.First().ChapterId
-                : null;
-        }
-
-        var result = chapterId != null
-            ? await _memberService.RequestMemberEmailAddressUpdate(
-                MemberChapterServiceRequest.Create(chapterId.Value, MemberServiceRequest), viewModel.Email ?? string.Empty)
-            : await _memberService.RequestMemberEmailAddressUpdate(MemberServiceRequest, viewModel.Email ?? string.Empty);
+        var result = await _memberService.RequestMemberEmailAddressUpdate(
+            MemberServiceRequest, viewModel.Email ?? string.Empty);
 
         var successMessage =
             "An email has been sent to the email address you provided. " +
@@ -349,7 +350,7 @@ public class AccountController : OdkControllerBase
     [HttpPost("account/personaldetails")]
     public async Task<IActionResult> UpdatePersonalDetails([FromForm] PersonalDetailsFormViewModel viewModel)
     {
-        var model = new UpdateMemberSiteProfile
+        var model = new MemberSiteProfileUpdateModel
         {
             FirstName = viewModel.FirstName,
             LastName = viewModel.LastName
@@ -366,7 +367,7 @@ public class AccountController : OdkControllerBase
     [HttpPost("Account/FeatureTips/{name}/Hide")]
     public async Task<IActionResult> HideFeatureTip(string name)
     {
-        await _featureService.MarkAsSeen(MemberId, name);
+        await _featureService.MarkAsSeen(MemberServiceRequest, name);
         return Ok();
     }
 
@@ -413,7 +414,7 @@ public class AccountController : OdkControllerBase
             "if it is associated with an account";
         AddFeedback(result, successMessage);
 
-        var fallback = OdkRoutes.Account.Login(null);
+        var fallback = OdkRoutes.Account.Login(chapter: null);
         return RedirectToReferrer(fallback);
     }
 

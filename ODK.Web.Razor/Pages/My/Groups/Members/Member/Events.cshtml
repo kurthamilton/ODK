@@ -9,7 +9,8 @@
 @{
     Layout = "_GroupAdminLayout";
 
-    var viewModel = await MemberAdminService.GetMemberEventsViewModel(Model.AdminServiceRequest, Model.MemberId);
+    var request = Model.MemberChapterAdminServiceRequest;
+    var viewModel = await MemberAdminService.GetMemberEventsViewModel(request, Model.MemberId);
 
     Model.Title = viewModel.Member.GetDisplayName(viewModel.Chapter.Id);
 }
@@ -23,7 +24,7 @@
         {
             new MenuItem
             {
-                Link = OdkRoutes.MemberGroups.Members(Model.Platform, viewModel.Chapter),
+                Link = Model.OdkRoutes.GroupAdmin.Members(Model.Chapter).Path,
                 Text = "Back to members",
                 Icon = IconType.ArrowLeft
             }

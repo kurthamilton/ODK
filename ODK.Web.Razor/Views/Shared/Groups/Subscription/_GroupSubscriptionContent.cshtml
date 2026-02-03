@@ -2,6 +2,7 @@
 @using ODK.Services
 @using ODK.Services.Chapters
 @using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
@@ -11,7 +12,7 @@
 @inject IChapterService ChapterService
 @inject IRequestStore RequestStore
 @{
-    var request = MemberChapterServiceRequest.Create(Model.Chapter.Id, RequestStore.MemberServiceRequest);
+    var request = RequestStore.MemberChapterServiceRequest;
     var chapterSubscriptionViewModel = await ChapterService.GetChapterMemberSubscriptionsViewModel(request);
 }
 

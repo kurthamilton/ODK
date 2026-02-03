@@ -8,6 +8,7 @@
 @using ODK.Web.Razor.Models.Header
 @model GroupPageViewModel
 @inject IHttpContextAccessor HttpContextAccessor
+@inject IOdkRoutes OdkRoutes
 @{
     var chapterPageDictionary = Model.ChapterPages
         .ToDictionary(x => x.PageType);
@@ -21,12 +22,12 @@
         menuItems.Add(new MenuItem 
         { 
             Text = StringUtils.Coalesce(aboutPage?.Title, "About"), 
-            Link = OdkRoutes.Groups.Group(Model.Platform, Model.Chapter), 
+            Link = OdkRoutes.Groups.Group(Model.Chapter), 
             ActiveIsExactMatch = true 
         });
     }    
 
-    menuItems.Add(new MenuItem { Text = "Events", Link = OdkRoutes.Groups.Events(Model.Platform, Model.Chapter) });
+    menuItems.Add(new MenuItem { Text = "Events", Link = OdkRoutes.Groups.Events(Model.Chapter) });
 
     if (Model.IsMember)
     {
@@ -37,14 +38,14 @@
             menuItems.Add(new MenuItem
             {
                 Text = StringUtils.Coalesce(membersPage?.Title, "Members"),
-                Link = OdkRoutes.Groups.Members(Model.Platform, Model.Chapter)
+                Link = OdkRoutes.Groups.Members(Model.Chapter)
             });
         }        
     }
 
     if (Model.HasQuestions)
     {
-        menuItems.Add(new MenuItem { Text = "FAQ", Link = OdkRoutes.Groups.Questions(Model.Platform, Model.Chapter) });
+        menuItems.Add(new MenuItem { Text = "FAQ", Link = OdkRoutes.Groups.Questions(Model.Chapter) });
     }
 
     chapterPageDictionary.TryGetValue(PageType.Contact, out var contactPage);
@@ -54,10 +55,10 @@
         menuItems.Add(new MenuItem
         {
             Text = StringUtils.Coalesce(contactPage?.Title, "Contact"),
-            Link = OdkRoutes.Groups.Contact(Model.Platform, Model.Chapter),
+            Link = OdkRoutes.Groups.Contact(Model.Chapter),
             Active =
-               Context.ForPath(OdkRoutes.Groups.Contact(Model.Platform, Model.Chapter)) ||
-               Context.ForPath(OdkRoutes.Groups.Conversations(Model.Platform, Model.Chapter))
+               Context.ForPath(OdkRoutes.Groups.Contact(Model.Chapter)) ||
+               Context.ForPath(OdkRoutes.Groups.Conversations(Model.Chapter))
         });
     }      
 
@@ -68,14 +69,14 @@
             menuItems.Add(new MenuItem
             {
                 Text = "My profile",
-                Link = OdkRoutes.Groups.Profile(Model.Platform, Model.Chapter)
+                Link = OdkRoutes.Groups.Profile(Model.Chapter)
             });
         }        
 
         menuItems.Add(new MenuItem
         {
             Text = "My subscription",
-            Link = OdkRoutes.Groups.Subscription(Model.Platform, Model.Chapter)
+            Link = OdkRoutes.Groups.Subscription(Model.Chapter)
         });
     }
 
@@ -85,7 +86,7 @@
         { 
             Text = "Manage", 
             Icon = IconType.Settings, 
-            Link = OdkRoutes.MemberGroups.Group(Model.Platform, Model.Chapter) 
+            Link = OdkRoutes.GroupAdmin.Group(Model.Chapter).Path
         });
     }
 
@@ -124,7 +125,7 @@
 
         @if (!Model.IsMember)
         {
-            <a href="@OdkRoutes.Groups.Join(Model.Platform, Model.Chapter)" class="btn btn-success">Join</a>
+            <a href="@OdkRoutes.Groups.Join(Model.Chapter)" class="btn btn-success">Join</a>
         }
     </div>
 </nav>

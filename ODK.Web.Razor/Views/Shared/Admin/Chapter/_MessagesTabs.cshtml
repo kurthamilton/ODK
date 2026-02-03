@@ -3,6 +3,7 @@
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @model ChapterMessagesAdminPageViewModel
+@inject IOdkRoutes OdkRoutes
 
 @await Html.PartialAsync("Components/_Tabs", new TabsViewModel
 {
@@ -11,13 +12,13 @@
         new MenuItem
         {
             Active = !Model.IsSpam,
-            Link = OdkRoutes.MemberGroups.GroupMessages(Model.Platform, Model.Chapter),
+            Link = OdkRoutes.GroupAdmin.Messages(Model.Chapter).Path,
             Text = $"Messages ({Model.MessageCount})"
         },
         new MenuItem
         {
             Active = Model.IsSpam,
-            Link = OdkRoutes.MemberGroups.GroupMessagesSpam(Model.Platform, Model.Chapter),
+            Link = OdkRoutes.GroupAdmin.MessagesSpam(Model.Chapter).Path,
             Text = $"Spam ({Model.SpamMessageCount})"
         }
     }

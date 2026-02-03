@@ -1,5 +1,7 @@
 ﻿@page "/{chapterName}/Admin/Chapter/Questions/{id:guid}"
+@using ODK.Services
 @using ODK.Services.Chapters
+@using ODK.Services.Security
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
@@ -10,7 +12,7 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Edit question | Admin";
 
-    var request = await Model.CreateMemberChapterServiceRequest();
+    var request = Model.MemberChapterAdminServiceRequest;
     var viewModel = await ChapterAdminService.GetChapterQuestionViewModel(request, Model.QuestionId);
 }
 
@@ -21,7 +23,7 @@
     {
         new MenuItem
         {
-            Link = OdkRoutes.MemberGroups.GroupQuestions(Model.Platform, viewModel.Chapter),
+            Link = Model.AdminRoutes.Questions(Model.Chapter).Path,
             Text = "Back to FAQ",
             Icon = IconType.ArrowLeft
         }

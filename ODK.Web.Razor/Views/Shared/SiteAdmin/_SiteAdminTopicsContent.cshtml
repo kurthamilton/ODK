@@ -4,6 +4,7 @@
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.SiteAdmin
 @model TopicsAdminPageViewModel
+@inject IOdkRoutes OdkRoutes
 @inject ITopicAdminService TopicAdminService
 @{
     var topicDictionary = Model.Topics

@@ -1,4 +1,5 @@
-﻿@using ODK.Services
+﻿@using ODK.Core.Chapters
+@using ODK.Services
 @using ODK.Services.Chapters
 @using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Extensions
@@ -10,11 +11,11 @@
     @*@Html.AntiForgeryToken()*@
     @await Html.PartialAsync("Admin/Chapter/_PrivacyForm", new ChapterPrivacySettingsFormViewModel
     {
-        Conversations = Model.PrivacySettings?.Conversations,
-        EventResponseVisibility = Model.PrivacySettings?.EventResponseVisibility,
-        EventVisibility = Model.PrivacySettings?.EventVisibility,
-        MemberVisibility = Model.PrivacySettings?.MemberVisibility,
-        VenueVisibility = Model.PrivacySettings?.VenueVisibility
+        Conversations = Model.PrivacySettings.Visibility(ChapterFeatureType.Conversations),
+        EventResponseVisibility = Model.PrivacySettings.Visibility(ChapterFeatureType.EventResponses),
+        EventVisibility = Model.PrivacySettings.Visibility(ChapterFeatureType.Events),
+        MemberVisibility = Model.PrivacySettings.Visibility(ChapterFeatureType.Members),
+        VenueVisibility = Model.PrivacySettings.Visibility(ChapterFeatureType.Venues)
     })
     <button class="btn btn-primary">Update</button>
 </form>

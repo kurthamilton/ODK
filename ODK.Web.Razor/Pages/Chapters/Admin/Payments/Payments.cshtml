@@ -8,7 +8,7 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Payments | Admin";
     
-    var request = await Model.CreateMemberChapterServiceRequest();
+    var request = Model.MemberChapterAdminServiceRequest;
     var viewModel = await PaymentAdminService.GetPayments(request);
 }
 

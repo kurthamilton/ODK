@@ -11,7 +11,7 @@
     Layout = "_OdkChapterLayout";
     Model.Title = "Payments";
 
-    var chapter = await Model.GetChapter();
+    var chapter = Model.Chapter;
     var viewModel = await AccountViewModelService.GetMemberChapterPaymentsPage(Model.MemberServiceRequest, chapter);
 }
 

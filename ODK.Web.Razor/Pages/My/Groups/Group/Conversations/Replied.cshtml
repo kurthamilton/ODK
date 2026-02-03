@@ -1,5 +1,7 @@
 ﻿@page "/my/groups/{chapterId:guid}/conversations/read"
+@using ODK.Services
 @using ODK.Services.Chapters
+@using ODK.Services.Security
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model RepliedModel
@@ -8,7 +10,8 @@
     Layout = "_GroupAdminLayout";
     Model.Title = "Conversations";
 
-    var viewModel = await ChapterAdminService.GetChapterConversationsViewModel(Model.AdminServiceRequest, readByChapter: true);
+    var request = Model.MemberChapterAdminServiceRequest;
+    var viewModel = await ChapterAdminService.GetChapterConversationsViewModel(request, readByChapter: true);
 }
 
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel

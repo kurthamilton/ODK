@@ -36,9 +36,9 @@ public interface IUrlProvider
 
     string MemberSiteSubscriptionUrl();
 
-    string MessageAdminUrl(Guid messageId);
-
     string MessageAdminUrl(Chapter chapter, Guid messageId);
+
+    string MessageSiteAdminUrl(Guid messageId);
 
     string PasswordReset(Chapter? chapter, string token);
 

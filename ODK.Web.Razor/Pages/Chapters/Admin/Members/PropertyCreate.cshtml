@@ -9,9 +9,6 @@
 @{
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Create profile question | Admin";
-
-    var chapter = await Model.GetChapter();
-    var componentViewModel = new OdkComponentViewModel<Chapter>(Model.ComponentContext, chapter);
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
@@ -21,13 +18,13 @@
     {
         new MenuItem
         {
-            Link = OdkRoutes.MemberGroups.MemberProperties(Model.Platform, chapter),
+            Link = Model.AdminRoutes.MemberProperties(Model.Chapter).Path,
             Text = "Back to profile questions",
             Icon = IconType.ArrowLeft
         }
     },
     ContentFunc = 
         @<div>
-            @await Html.PartialAsync("Admin/Chapter/_PropertyCreateContent", componentViewModel)
+            @await Html.PartialAsync("Admin/Chapter/_PropertyCreateContent")
         </div>
 })

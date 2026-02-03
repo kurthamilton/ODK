@@ -1,0 +1,32 @@
+﻿@page "/{chapterName}/Admin/Events/Venues/Create"
+@using ODK.Core.Chapters
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models
+@using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Common.Components
+@model CreateModel
+@{
+    Layout = "_OdkChapterAdminLayout";
+    Model.Title = "Create venue | Admin";
+}
+
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    Title = "Venue events",
+    Breadcrumbs = new[]
+    {
+        new MenuItem
+        {
+            Link = Model.AdminRoutes.Venues(Model.Chapter).Path,
+            Text = "Back to venues",
+            Icon = IconType.ArrowLeft
+        }
+    },
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Venues/_VenueCreateContent")</div>
+})
+
+@section scripts
+{
+    @await Html.PartialAsync("Components/Scripts/_GoogleLocation")
+}

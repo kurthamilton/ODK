@@ -1,6 +1,5 @@
 ﻿using System;
 using ODK.Core.Chapters;
-using ODK.Core.Platforms;
 using ODK.Core.Web;
 using ODK.Services;
 using ODK.Services.Web;
@@ -11,76 +10,66 @@ namespace ODK.Web.Common.Services;
 public class UrlProvider : IUrlProvider
 {
     private readonly IHttpRequestContext _httpRequestContext;
-    private readonly PlatformType _platform;
-
-    public UrlProvider(ServiceRequest request)
+    private readonly IOdkRoutes _odkRoutes;
+    
+    public UrlProvider(ServiceRequest request, IOdkRoutes odkRoutes)
     {
         _httpRequestContext = request.HttpRequestContext;
-        _platform = request.Platform;
+        _odkRoutes = odkRoutes;
     }
 
     public string ActivateAccountUrl(Chapter? chapter, string token)
-        => GetUrl(OdkRoutes.Account.Activate(chapter, token));
+        => GetUrl(_odkRoutes.Account.Activate(chapter, token));
 
     public string BaseUrl() => GetUrl(string.Empty);
 
     public string ConfirmEmailAddressUpdate(Chapter? chapter, string token)
-        => GetUrl(OdkRoutes.Account.EmailAddressChangeConfirm(chapter, token));
+        => GetUrl(_odkRoutes.Account.EmailAddressChangeConfirm(chapter, token));
 
     public string ConversationAdminUrl(Chapter chapter, Guid conversationId)
-        => GetUrl(OdkRoutes.MemberGroups.GroupConversation(_platform, chapter, conversationId));
+        => GetUrl(_odkRoutes.GroupAdmin.Conversation(chapter, conversationId));
 
-    public string ConversationUrl(Chapter chapter, Guid conversationId)
-        => GetUrl(OdkRoutes.Groups.Conversation(_platform, chapter, conversationId));
+    public string ConversationUrl(Chapter chapter, Guid conversationId) 
+        => GetUrl(_odkRoutes.Groups.Conversation(chapter, conversationId));
 
-    public string EmailPreferences(Chapter? chapter)
-        => GetUrl(OdkRoutes.Account.EmailPreferences(chapter));
+    public string EmailPreferences(Chapter? chapter) => GetUrl(_odkRoutes.Account.EmailPreferences(chapter));
 
-    public string EventRsvpUrl(Chapter chapter, string shortcode)
-        => GetUrl(OdkRoutes.Groups.EventAttend(_platform, chapter, shortcode));
+    public string EventRsvpUrl(Chapter chapter, string shortcode) 
+        => GetUrl(_odkRoutes.Groups.EventAttend(chapter, shortcode));
 
-    public string EventsUrl(Chapter chapter)
-        => GetUrl(OdkRoutes.Groups.Events(_platform, chapter));
+    public string EventsUrl(Chapter chapter) => GetUrl(_odkRoutes.Groups.Events(chapter));
 
-    public string EventUrl(Chapter chapter, string shortcode)
-        => GetUrl(OdkRoutes.Groups.Event(_platform, chapter, shortcode));
+    public string EventUrl(Chapter chapter, string shortcode) 
+        => GetUrl(_odkRoutes.Groups.Event(chapter, shortcode));
 
-    public string GroupUrl(Chapter chapter)
-        => GetUrl(OdkRoutes.Groups.Group(_platform, chapter));
+    public string GroupUrl(Chapter chapter) => GetUrl(_odkRoutes.Groups.Group(chapter));
 
-    public string GroupsUrl()
-        => GetUrl(OdkRoutes.Groups.Index(_platform));
+    public string GroupsUrl() => GetUrl(_odkRoutes.Groups.Index());
 
-    public string IssueAdminUrl(Guid issueId)
-        => GetUrl(OdkRoutes.SiteAdmin.Issue(issueId));
+    public string IssueAdminUrl(Guid issueId) => GetUrl(_odkRoutes.SiteAdmin.Issue(issueId));
 
-    public string IssueUrl(Guid issueId)
-        => GetUrl(OdkRoutes.Account.Issue(issueId));
+    public string IssueUrl(Guid issueId) => GetUrl(_odkRoutes.Account.Issue(issueId));
 
-    public string LoginUrl(Chapter? chapter)
-        => GetUrl(OdkRoutes.Account.Login(chapter));
+    public string LoginUrl(Chapter? chapter) => GetUrl(_odkRoutes.Account.Login(chapter));
 
-    public string MemberAdminUrl(Chapter chapter, Guid memberId)
-        => GetUrl(OdkRoutes.MemberGroups.Member(_platform, chapter, memberId));
+    public string MemberAdminUrl(Chapter chapter, Guid memberId) 
+        => GetUrl(_odkRoutes.GroupAdmin.Member(chapter, memberId));
 
-    public string MemberSiteSubscriptionUrl()
-        => GetUrl(OdkRoutes.Account.Subscription(_platform, null));
+    public string MemberSiteSubscriptionUrl() => GetUrl(_odkRoutes.Account.Subscription(null));
 
-    public string MessageAdminUrl(Guid messageId)
-        => GetUrl(OdkRoutes.SiteAdmin.Message(messageId));
+    public string MessageAdminUrl(Chapter chapter, Guid messageId) 
+        => GetUrl(_odkRoutes.GroupAdmin.Message(chapter, messageId));
 
-    public string MessageAdminUrl(Chapter chapter, Guid messageId)
-        => GetUrl(OdkRoutes.MemberGroups.GroupMessage(_platform, chapter, messageId));
+    public string MessageSiteAdminUrl(Guid messageId) => GetUrl(_odkRoutes.SiteAdmin.Message(messageId));
 
-    public string PasswordReset(Chapter? chapter, string token)
-        => GetUrl(OdkRoutes.Account.PasswordReset(chapter, token));
+    public string PasswordReset(Chapter? chapter, string token) => GetUrl(_odkRoutes.Account.PasswordReset(chapter, token));
 
-    public string SiteAdminGroups()
-        => GetUrl(OdkRoutes.SiteAdmin.Groups);
+    public string SiteAdminGroups() => GetUrl(_odkRoutes.SiteAdmin.Groups);
 
-    public string TopicApprovalUrl()
-        => GetUrl(OdkRoutes.SiteAdmin.Topics);
+    public string TopicApprovalUrl() => GetUrl(_odkRoutes.SiteAdmin.Topics);
 
     private string GetUrl(string path)
         => $"{_httpRequestContext.BaseUrl}{path}";
+
+    private string GetUrl(GroupAdminRoute adminRoute) => GetUrl(adminRoute.Path);
 }

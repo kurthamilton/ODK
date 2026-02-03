@@ -9,9 +9,9 @@
 @{
     Layout = "_HomeLayout";
 
-    var chapter = await Model.GetChapter();
+    var chapter = Model.Chapter;
     var viewModel = await ChapterViewModelService.GetGroupProfilePage(
-        Model.MemberServiceRequest, chapter);
+        Model.ServiceRequest, Model.CurrentMember, chapter);
 
     Model.Title = $"Profile | {viewModel.Chapter.GetDisplayName(Model.Platform)}";
 }

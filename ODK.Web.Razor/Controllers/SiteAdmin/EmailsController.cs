@@ -6,6 +6,8 @@ using ODK.Services.Emails;
 using ODK.Services.Settings;
 using ODK.Services.Settings.Models;
 using ODK.Web.Common.Feedback;
+using ODK.Web.Common.Routes;
+using ODK.Web.Common.Services;
 using ODK.Web.Razor.Models.SiteAdmin;
 using ODK.Web.Razor.Services;
 
@@ -20,8 +22,9 @@ public class EmailsController : OdkControllerBase
     public EmailsController(
         ISettingsService settingsService,
         IEmailAdminService emailAdminService,
-        IRequestStore requestStore)
-        : base(requestStore)
+        IRequestStore requestStore,
+        IOdkRoutes odkRoutes)
+        : base(requestStore, odkRoutes)
     {
         _emailAdminService = emailAdminService;
         _settingsService = settingsService;
@@ -38,7 +41,7 @@ public class EmailsController : OdkControllerBase
     [HttpPost("siteadmin/emails/settings")]
     public async Task<IActionResult> UpdateSettings(SiteEmailSettingsViewModel viewModel)
     {
-        var model = new UpdateEmailSettings
+        var model = new EmailSettingsUpdateModel
         {
             ContactEmailAddress = viewModel.ContactEmailAddress,
             FromEmailAddress = viewModel.FromEmailAddress,
