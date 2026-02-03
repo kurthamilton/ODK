@@ -6,7 +6,7 @@ using ODK.Core.Members;
 namespace ODK.Core.Tests.Chapters;
 
 [Parallelizable]
-public static class ChapterAdminRoleExtensionsTests
+public static class ChapterAdminMemberExtensionsTests
 {
     [TestCase(ChapterAdminRole.Owner)]
     [TestCase(ChapterAdminRole.Admin)]
@@ -14,11 +14,11 @@ public static class ChapterAdminRoleExtensionsTests
     public static void HasAccessTo_SiteAdmin_ReturnsTrue(ChapterAdminRole targetRole)
     {
         // Arrange
-        ChapterAdminRole? role = null;
+        ChapterAdminMember? adminMember = null;
         var currentMember = CreateMember(siteAdmin: true);
 
         // Act
-        var result = role.HasAccessTo(targetRole, currentMember);
+        var result = adminMember.HasAccessTo(targetRole, currentMember);
 
         // Assert
         result.Should().BeTrue();
@@ -30,11 +30,11 @@ public static class ChapterAdminRoleExtensionsTests
     public static void HasAccessTo_NoRole_ReturnsFalse(ChapterAdminRole targetRole)
     {
         // Arrange
-        ChapterAdminRole? role = null;
+        ChapterAdminMember? adminMember = null;
         var currentMember = CreateMember(siteAdmin: false);
 
         // Act
-        var result = role.HasAccessTo(targetRole, currentMember);
+        var result = adminMember.HasAccessTo(targetRole, currentMember);
 
         // Assert
         result.Should().BeFalse();
@@ -52,16 +52,22 @@ public static class ChapterAdminRoleExtensionsTests
     public static bool HasAccessTo_ComparesLevels(ChapterAdminRole currentRole, ChapterAdminRole targetRole)
     {
         // Arrange
+        var adminMember = CreateAdminMember(currentRole);
         var currentMember = CreateMember(siteAdmin: false);
 
         // Act
-        var result = currentRole.HasAccessTo(targetRole, currentMember);
+        var result = adminMember.HasAccessTo(targetRole, currentMember);
 
         // Assert
         return result;
     }
 
-    private static Member CreateMember(bool siteAdmin = false) => new Member
+    private static ChapterAdminMember CreateAdminMember(ChapterAdminRole role) => new()
+    {
+        Role = role
+    };
+
+    private static Member CreateMember(bool siteAdmin = false) => new()
     {
         SiteAdmin = siteAdmin
     };

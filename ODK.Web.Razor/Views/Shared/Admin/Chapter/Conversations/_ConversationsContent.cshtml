@@ -1,7 +1,9 @@
 ﻿@using ODK.Core.Chapters
 @using ODK.Core.Utils
 @using ODK.Services.Chapters.ViewModels
+@using ODK.Services.Security
 @using ODK.Web.Common.Routes
+@using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Admin
 @model ChapterConversationsAdminPageViewModel
 @inject IOdkRoutes OdkRoutes
@@ -9,12 +11,13 @@
 <p>Contact messages sent by logged in users</p>
 
 <p>
-    <span>Your </span>  
+    <span>Your </span>
     @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
     {
         Route = OdkRoutes.GroupAdmin.Privacy(Model.Chapter),
-        Text = "privacy settings"
-    })    
+        Text = "privacy settings",
+        UnauthorizedBehaviour = AdminLinkUnauthorizedBehaviour.Disable
+    })
     <span>currently allow</span>
     @switch (Model.PrivacySettings?.Conversations)
     {

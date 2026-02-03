@@ -24,17 +24,9 @@ public class ChapterAdminMenuItemGroup : List<MenuItem>
     public ChapterAdminMenuItemGroup Add(
         GroupAdminRoute route, string text)
     {
-        if (!_adminMember.HasAccessTo(route.Securable, _currentMember))
-        {
-            return this;
-        }
-
-        if (route.Platform != null && route.Platform != _platform)
-        {
-            return this;
-        }
-
-        if (route.IsDefault)
+        if (route.IsDefault ||
+            route.Platform != null && route.Platform != _platform ||
+            !_adminMember.HasAccessTo(route.Securable, _currentMember))
         {
             return this;
         }

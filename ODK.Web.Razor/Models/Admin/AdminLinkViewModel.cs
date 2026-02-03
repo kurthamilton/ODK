@@ -16,4 +16,6 @@ public class AdminLinkViewModel
     public required GroupAdminRoute Route { get; init; }
 
     public required string Text { get; init; }
+
+    public AdminLinkUnauthorizedBehaviour? UnauthorizedBehaviour { get; init; }
 }
