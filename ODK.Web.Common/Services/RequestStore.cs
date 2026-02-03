@@ -21,6 +21,7 @@ public class RequestStore : IRequestStore
 {
     private Chapter? _chapter;
     private ChapterAdminMember? _currentChapterAdminMember;
+    private bool _currentChapterAdminMemberLoaded;
     private Member? _currentMember;
     private readonly ILoggingService _loggingService;
     private ServiceRequest? _serviceRequest;
@@ -67,21 +68,15 @@ public class RequestStore : IRequestStore
 
     public async Task<ChapterAdminMember?> GetCurrentChapterAdminMember()
     {
-        if (_currentChapterAdminMember != null)
+        if (_currentChapterAdminMemberLoaded)
         {
             return _currentChapterAdminMember;
         }
 
-        try
-        {
-            _currentChapterAdminMember = await _unitOfWork.ChapterAdminMemberRepository
-                .GetByMemberId(CurrentMemberId, Chapter.Id).Run();
-            return _currentChapterAdminMember;
-        }
-        catch
-        {
-            return null;
-        }
+        _currentChapterAdminMember = await _unitOfWork.ChapterAdminMemberRepository
+            .GetByMemberId(CurrentMemberId, Chapter.Id).Run();
+        _currentChapterAdminMemberLoaded = true;
+        return _currentChapterAdminMember;
     }
 
     /// <summary>

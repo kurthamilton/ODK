@@ -148,6 +148,7 @@ public static class EventAdminServiceTests
             Role = role ?? ChapterAdminRole.Admin
         };
     }
+
     private static IChapterAdminMemberRepository CreateMockChapterAdminMemberRepository(
         IEnumerable<ChapterAdminMember>? adminMembers = null)
     {
@@ -159,7 +160,7 @@ public static class EventAdminServiceTests
 
         mock.Setup(x => x.GetByMemberId(It.IsAny<Guid>(), It.IsAny<Guid>()))
             .Returns((Guid memberId, Guid chapterId) =>
-                new MockDeferredQuerySingle<ChapterAdminMember>(
+                new MockDeferredQuerySingleOrDefault<ChapterAdminMember>(
                     adminMembers?.FirstOrDefault(x => x.ChapterId == chapterId && x.MemberId == memberId)));
 
         return mock.Object;
@@ -236,7 +237,7 @@ public static class EventAdminServiceTests
     }
 
     private static ICurrencyRepository CreateMockCurrencyRepository()
-    {       
+    {
         var mock = new Mock<ICurrencyRepository>();
         mock.Setup(x => x.GetByChapterId(It.IsAny<Guid>()))
             .Returns(new MockDeferredQuerySingle<Currency>(new Currency

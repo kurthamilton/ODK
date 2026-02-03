@@ -78,7 +78,7 @@ public static class MemberAdminServiceTests
         var chapterAdminMemberRepository = CreateMockChapterAdminMemberRepository([adminMember]);
 
         var memberRepository = CreateMockMemberRepository([member]);
-        
+
         MemberChapter? updatedMemberChapter = null;
         var memberChapterRepository = CreateMockMemberChapterRepository(
             onUpdate: mc => updatedMemberChapter = mc);
@@ -187,11 +187,11 @@ public static class MemberAdminServiceTests
         // Arrange
         var chapter = CreateChapter();
         var currentMember = CreateMember(id: CurrentMemberId);
-        
+
         var adminMember = CreateChapterAdminMember(
             member: currentMember,
             chapterId: chapter.Id,
-            role: ChapterAdminRole.Owner);        
+            role: ChapterAdminRole.Owner);
         var adminMemberRepository = CreateMockChapterAdminMemberRepository([adminMember]);
 
         var unitOfWork = CreateMockUnitOfWork(
@@ -254,11 +254,11 @@ public static class MemberAdminServiceTests
         // Arrange
         var chapter = CreateChapter();
         var currentMember = CreateMember(id: CurrentMemberId);
-        
+
         var adminMember = CreateChapterAdminMember(
             member: currentMember,
             chapterId: chapter.Id,
-            role: ChapterAdminRole.Admin);       
+            role: ChapterAdminRole.Admin);
         var adminMemberRepository = CreateMockChapterAdminMemberRepository([adminMember]);
 
         var unitOfWork = CreateMockUnitOfWork(
@@ -388,7 +388,7 @@ public static class MemberAdminServiceTests
 
         var request = CreateMemberChapterAdminServiceRequest(
             chapter: chapter,
-            currentMember: currentMember, 
+            currentMember: currentMember,
             securable: ChapterAdminSecurable.Members);
 
         // Act
@@ -934,7 +934,7 @@ public static class MemberAdminServiceTests
 
         mock.Setup(x => x.GetByMemberId(It.IsAny<Guid>(), It.IsAny<Guid>()))
             .Returns((Guid memberId, Guid chapterId) =>
-                new MockDeferredQuerySingle<ChapterAdminMember>(
+                new MockDeferredQuerySingleOrDefault<ChapterAdminMember>(
                     adminMembers.FirstOrDefault(x => x.ChapterId == chapterId && x.MemberId == memberId)));
 
         return mock.Object;
@@ -1178,7 +1178,7 @@ public static class MemberAdminServiceTests
             Member = member,
             MemberId = member.Id,
             ChapterId = chapterId ?? Guid.NewGuid(),
-            Role = role ?? ChapterAdminRole.Admin            
+            Role = role ?? ChapterAdminRole.Admin
         };
     }
 

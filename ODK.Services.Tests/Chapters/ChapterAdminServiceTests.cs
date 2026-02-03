@@ -1243,7 +1243,7 @@ public static class ChapterAdminServiceTests
 
         mock.Setup(x => x.GetByMemberId(It.IsAny<Guid>(), It.IsAny<Guid>()))
             .Returns((Guid memberId, Guid chapterId) =>
-                new MockDeferredQuerySingle<ChapterAdminMember>(
+                new MockDeferredQuerySingleOrDefault<ChapterAdminMember>(
                     adminMembers.FirstOrDefault(x => x.ChapterId == chapterId && x.MemberId == memberId)));
 
         mock.Setup(x => x.GetByChapterId(It.IsAny<Guid>()))

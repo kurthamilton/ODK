@@ -9,5 +9,5 @@ public interface IChapterAdminMemberRepository : IWriteRepository<ChapterAdminMe
 
     IDeferredQueryMultiple<ChapterAdminMember> GetByMemberId(Guid memberId);
 
-    IDeferredQuerySingle<ChapterAdminMember> GetByMemberId(Guid memberId, Guid chapterId);
+    IDeferredQuerySingleOrDefault<ChapterAdminMember> GetByMemberId(Guid memberId, Guid chapterId);
 }
