@@ -297,7 +297,7 @@ public static class MemberAdminServiceTests
         var subscriptions = new[] { CreateMemberSubscription() };
         var memberSubscriptionRepository = CreateMockMemberSubscriptionRepository(subscriptions: subscriptions);
 
-        var emailPreferences = new MemberEmailPreference[0];
+        var emailPreferences = Array.Empty<MemberEmailPreference>();
         var emailPreferenceRepository = CreateMockMemberEmailPreferenceRepository(emailPreferences);
 
         var unitOfWork = CreateMockUnitOfWork(
@@ -723,7 +723,7 @@ public static class MemberAdminServiceTests
         result.First().Should().Contain("FirstName");
     }
 
-    private static IMemberAdminService CreateMemberAdminService(
+    private static MemberAdminService CreateMemberAdminService(
         IUnitOfWork unitOfWork,
         IAuthorizationService? authorizationService = null,
         ICacheService? cacheService = null,
