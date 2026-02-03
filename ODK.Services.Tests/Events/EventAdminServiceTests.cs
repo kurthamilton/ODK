@@ -46,8 +46,14 @@ public static class EventAdminServiceTests
         string eventDateString, string expectedScheduledEmailDate)
     {
         // Arrange
-        var chapter = CreateChapter();
-        chapter.TimeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+        var chapter = CreateChapter(
+            timeZone: TimeZoneInfo.FindSystemTimeZoneById(timeZoneId));
+        var currentMember = CreateMember(id: CurrentMemberId);
+
+        var adminMember = CreateChapterAdminMember(
+            chapterId: chapter.Id,
+            member: currentMember);
+        var adminMemberRepository = CreateMockChapterAdminMemberRepository([adminMember]);
 
         var eventDate = DateTime.ParseExact(eventDateString, "yyyy-MM-dd", CultureInfo.InvariantCulture);
 
@@ -72,6 +78,7 @@ public static class EventAdminServiceTests
             });
 
         var unitOfWork = CreateMockUnitOfWork(
+            chapterAdminMemberRepository: adminMemberRepository,
             chapterRepository: chapterRepository,
             chapterEventSettingsRepository: chapterEventSettingsRepository,
             eventEmailRepository: eventEmailRepository);
@@ -113,37 +120,77 @@ public static class EventAdminServiceTests
             .Verify(x => x.Add(It.IsAny<EventEmail>()), Times.Once());
     }
 
-    private static Chapter CreateChapter()
+    private static Chapter CreateChapter(
+        TimeZoneInfo? timeZone = null)
     {
         return new Chapter
         {
             Id = ChapterId,
             Name = "Dummy",
-            Slug = "slug"
+            Slug = "slug",
+            TimeZone = timeZone ?? TimeZoneInfo.Utc
         };
     }
 
     private static ChapterAdminMember CreateChapterAdminMember(
-        Guid? chapterId,
-        Guid? memberId)
+        Member? member = null,
+        Guid? chapterId = null,
+        ChapterAdminRole? role = null)
     {
+        member ??= CreateMember();
+
         return new ChapterAdminMember
         {
+            Id = Guid.NewGuid(),
+            Member = member,
+            MemberId = member.Id,
             ChapterId = chapterId ?? Guid.NewGuid(),
-            MemberId = memberId ?? Guid.NewGuid()
+            Role = role ?? ChapterAdminRole.Admin
         };
     }
-
     private static IChapterAdminMemberRepository CreateMockChapterAdminMemberRepository(
-        IEnumerable<ChapterAdminMember>? chapterAdminMembers = null)
+        IEnumerable<ChapterAdminMember>? adminMembers = null)
     {
         var mock = new Mock<IChapterAdminMemberRepository>();
 
         mock.Setup(x => x.GetByChapterId(It.IsAny<Guid>()))
             .Returns((Guid chapterId) => new MockDeferredQueryMultiple<ChapterAdminMember>(
-                chapterAdminMembers?.Where(x => x.ChapterId == chapterId)));
+                adminMembers?.Where(x => x.ChapterId == chapterId)));
+
+        mock.Setup(x => x.GetByMemberId(It.IsAny<Guid>(), It.IsAny<Guid>()))
+            .Returns((Guid memberId, Guid chapterId) =>
+                new MockDeferredQuerySingle<ChapterAdminMember>(
+                    adminMembers?.FirstOrDefault(x => x.ChapterId == chapterId && x.MemberId == memberId)));
 
         return mock.Object;
+    }
+
+    private static Member CreateMember(
+        Guid? id = null,
+        Chapter? chapter = null,
+        bool? approved = null)
+    {
+        var member = new Member
+        {
+            Id = id ?? Guid.NewGuid(),
+            SiteAdmin = false,
+            Activated = true
+        };
+
+        if (chapter != null)
+        {
+            var memberChapter = new MemberChapter
+            {
+                Id = Guid.NewGuid(),
+                ChapterId = chapter.Id,
+                MemberId = member.Id,
+                Approved = approved ?? true,
+                CreatedUtc = DateTime.UtcNow
+            };
+            member.Chapters.Add(memberChapter);
+        }
+
+        return member;
     }
 
     private static IChapterEventSettingsRepository CreateMockChapterEventSettingsRepository(

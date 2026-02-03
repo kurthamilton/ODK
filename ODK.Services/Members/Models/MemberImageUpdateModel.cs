@@ -1,6 +1,6 @@
 ﻿namespace ODK.Services.Members.Models;
 
-public class MemberImagUpdateModel
+public class MemberImageUpdateModel
 {
     public required byte[] ImageData { get; set; }
 }

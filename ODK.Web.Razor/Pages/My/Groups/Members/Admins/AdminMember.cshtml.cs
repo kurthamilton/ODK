@@ -24,7 +24,7 @@ public class AdminMemberModel : OdkGroupAdminPageModel
         MemberId = memberId;
     }
 
-    public async Task<IActionResult> OnPostAsync(Guid memberId, AdminMemberFormViewModel viewModel)
+    public async Task<IActionResult> OnPostAsync(Guid memberId, AdminMemberFormSubmitViewModel viewModel)
     {
         var request = MemberChapterAdminServiceRequest;
         var result = await _chapterAdminService.UpdateChapterAdminMember(request, memberId, new ChapterAdminMemberUpdateModel

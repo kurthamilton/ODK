@@ -57,7 +57,7 @@ public class MemberAdminController : AdminControllerBase
 
         var request = MemberChapterAdminServiceRequest.Create(
             ChapterAdminSecurable.MemberImage, MemberChapterServiceRequest);
-        var result = await _memberAdminService.UpdateMemberImage(request, id, new MemberImagUpdateModel
+        var result = await _memberAdminService.UpdateMemberImage(request, id, new MemberImageUpdateModel
         {
             ImageData = bytes
         });

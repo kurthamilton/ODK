@@ -80,14 +80,27 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
         var currentRole = currentAdminMember?.Role;
 
+        // Owners can't have their role changed
+        // Admins can edit other admins at or below their own level
+        // Admins cannot change roles at their own level, except for their own
         var readOnly = !currentRole.HasAccessTo(adminMember.Role, currentMember);
-        var canEditRole = !readOnly && adminMember.Role != ChapterAdminRole.Owner;
+        var canEditRole = 
+            !readOnly && 
+            adminMember.Role != ChapterAdminRole.Owner && 
+            (adminMember.MemberId == currentMember.Id || adminMember.Role != currentAdminMember?.Role);
+
+        var roleOptions = new[]
+        {
+            ChapterAdminRole.Admin,
+            ChapterAdminRole.Organiser
+        }.Where(x => currentRole.HasAccessTo(x, currentMember));
 
         return new AdminMemberAdminPageViewModel
         {
             AdminMember = adminMember,
             CanEditRole = canEditRole,
-            ReadOnly = readOnly
+            ReadOnly = readOnly,
+            RoleOptions = roleOptions.ToArray()
         };
     }
 
@@ -703,7 +716,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     public async Task<ServiceResult> UpdateMemberImage(
         MemberChapterAdminServiceRequest request,
         Guid id,
-        MemberImagUpdateModel model)
+        MemberImageUpdateModel model)
     {
         var chapter = request.Chapter;
 

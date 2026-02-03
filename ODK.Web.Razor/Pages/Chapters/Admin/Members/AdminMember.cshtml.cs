@@ -25,7 +25,7 @@ public class AdminMemberModel : AdminPageModel
         MemberId = id;
     }
 
-    public async Task<IActionResult> OnPostAsync(Guid id, AdminMemberFormViewModel viewModel)
+    public async Task<IActionResult> OnPostAsync(Guid id, AdminMemberFormSubmitViewModel viewModel)
     {
         var serviceRequest = MemberChapterAdminServiceRequest;
         var result = await _chapterAdminService.UpdateChapterAdminMember(serviceRequest, id, new ChapterAdminMemberUpdateModel

@@ -14,11 +14,14 @@
         @await Html.PartialAsync("Admin/Members/_AdminMemberForm", new AdminMemberFormViewModel
         {
             AdminEmailAddress = Model.AdminMember.AdminEmailAddress,
+            CanEditRole = Model.CanEditRole,
             Name = Model.AdminMember.Member.FullName,
+            ReadOnly = Model.ReadOnly,
             ReceiveContactEmails = Model.AdminMember.ReceiveContactEmails,
             ReceiveEventCommentEmails = Model.AdminMember.ReceiveEventCommentEmails,
             ReceiveNewMemberEmails = Model.AdminMember.ReceiveNewMemberEmails,
-            Role = Model.AdminMember.Role
+            Role = Model.AdminMember.Role,
+            RoleOptions = Model.RoleOptions
         })
     </fieldset>
 

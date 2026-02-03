@@ -68,7 +68,7 @@ public interface IMemberAdminService
     Task<ServiceResult> UpdateMemberImage(
         MemberChapterAdminServiceRequest request, 
         Guid id,
-        MemberImagUpdateModel model);
+        MemberImageUpdateModel model);
 
     Task<ServiceResult> UpdateMemberSubscription(
         MemberChapterAdminServiceRequest request, 

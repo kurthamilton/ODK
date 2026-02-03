@@ -4,8 +4,19 @@
 
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.Role, new { @class = "form-label" })
-    @Html.OdkEnumDropDownFor(x => x.Role, new { @class = "form-control", data_select = "" })
-    @Html.ValidationMessageFor(x => x.Role)
+    @if (!Model.CanEditRole || Model.ReadOnly)
+    {
+        @Html.TextBoxFor(x => x.Role, new { @class = "form-control-plaintext", @readonly = "" })
+    }
+    else
+    {
+        var roleOptions = Model.RoleOptions
+            .Select(x => new SelectListItem { Value = ((int)x).ToString(), Text = x.ToString() })
+            .ToList();
+
+        @Html.DropDownListFor(x => x.Role, roleOptions, new { @class = "form-control", data_select = "" })
+        @Html.ValidationMessageFor(x => x.Role)
+    }    
 </div>
 
 <div class="form-group mb-3">

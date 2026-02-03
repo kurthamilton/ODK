@@ -1483,6 +1483,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         existing.ReceiveContactEmails = model.ReceiveContactEmails;
         existing.ReceiveEventCommentEmails = model.ReceiveEventCommentEmails;
         existing.ReceiveNewMemberEmails = model.ReceiveNewMemberEmails;
+        existing.Role = model.Role;
 
         _unitOfWork.ChapterAdminMemberRepository.Update(existing);
         await _unitOfWork.SaveChangesAsync();
