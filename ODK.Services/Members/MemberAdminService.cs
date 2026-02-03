@@ -80,10 +80,14 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
         var currentRole = currentAdminMember?.Role;
 
+        var readOnly = !currentRole.HasAccessTo(adminMember.Role, currentMember);
+        var canEditRole = !readOnly && adminMember.Role != ChapterAdminRole.Owner;
+
         return new AdminMemberAdminPageViewModel
         {
             AdminMember = adminMember,
-            ReadOnly = currentRole.HasAccessTo(adminMember.Role, currentMember)
+            CanEditRole = canEditRole,
+            ReadOnly = readOnly
         };
     }
 
