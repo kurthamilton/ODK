@@ -38,8 +38,7 @@ public class GroupsController : OdkControllerBase
     public async Task<IActionResult> Contact(Guid chapterId, [FromForm] ContactFormViewModel viewModel)
     {
         await _contactService.SendChapterContactMessage(
-            ServiceRequest,
-            chapterId,
+            ChapterServiceRequest,
             viewModel.EmailAddress ?? string.Empty,
             viewModel.Message ?? string.Empty,
             viewModel.Recaptcha ?? string.Empty);
@@ -52,7 +51,7 @@ public class GroupsController : OdkControllerBase
     [HttpGet("groups/available")]
     public async Task<bool> Available(string name)
     {
-        return await _chapterService.NameIsAvailable(name);
+        return await _chapterService.NameIsAvailable(ServiceRequest, name);
     }
 
     [Authorize]
@@ -60,8 +59,7 @@ public class GroupsController : OdkControllerBase
     public async Task<IActionResult> StartConversation(Guid chapterId, [FromForm] ConversationFormViewModel viewModel)
     {
         await _contactService.StartChapterConversation(
-            MemberServiceRequest,
-            chapterId,
+            MemberChapterServiceRequest,
             viewModel.Subject ?? string.Empty,
             viewModel.Message ?? string.Empty,
             viewModel.Recaptcha ?? string.Empty);

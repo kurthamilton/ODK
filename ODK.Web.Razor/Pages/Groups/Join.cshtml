@@ -9,9 +9,9 @@
 @{
     Layout = "_HomeLayout";
 
-    var chapter = Model.Chapter;
+    var request = Model.ChapterServiceRequest;
     var viewModel = await ChapterViewModelService.GetGroupJoinPage(
-        Model.ServiceRequest, Model.CurrentMemberOrDefault, chapter);
+        request, Model.CurrentMemberOrDefault);
 
     Model.Title = $"Join | {viewModel.Chapter.GetDisplayName(Model.Platform)}";
 }

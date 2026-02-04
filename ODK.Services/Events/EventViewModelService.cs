@@ -1,5 +1,4 @@
 ﻿using ODK.Core;
-using ODK.Core.Chapters;
 using ODK.Core.Events;
 using ODK.Core.Extensions;
 using ODK.Core.Members;
@@ -63,7 +62,7 @@ public class EventViewModelService : IEventViewModelService
             x => x.SitePaymentSettingsRepository.GetActive(),
             x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
-            x => x.ChapterAdminMemberRepository.IsAdmin(chapter.Id, currentMember.Id),
+            x => x.ChapterAdminMemberRepository.IsAdmin(platform, chapter.Id, currentMember.Id),
             x => x.EventTicketPaymentRepository.GetConfirmedPayments(currentMember.Id, shortcode),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id));
@@ -194,9 +193,9 @@ public class EventViewModelService : IEventViewModelService
     }
 
     public async Task<EventPageViewModel> GetEventPageViewModel(
-        ServiceRequest request, Member? currentMember, Chapter chapter, string shortcode)
+        ChapterServiceRequest request, Member? currentMember, string shortcode)
     {
-        var platform = request.Platform;
+        var (platform, chapter) = (request.Platform, request.Chapter);
 
         var (
             membershipSettings,
@@ -226,7 +225,7 @@ public class EventViewModelService : IEventViewModelService
             x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
             x => currentMember != null
-                ? x.ChapterAdminMemberRepository.IsAdmin(chapter.Id, currentMember.Id)
+                ? x.ChapterAdminMemberRepository.IsAdmin(platform, chapter.Id, currentMember.Id)
                 : new DefaultDeferredQueryAny(false),
             x => x.ChapterPageRepository.GetByChapterId(chapter.Id),
             x => currentMember != null
@@ -354,9 +353,9 @@ public class EventViewModelService : IEventViewModelService
     }
 
     public async Task<EventsPageViewModel> GetEventsPage(
-        ServiceRequest request, Guid? currentMemberId, Chapter chapter)
+        ChapterServiceRequest request, Guid? currentMemberId)
     {
-        var platform = request.Platform;
+        var (platform, chapter) = (request.Platform, request.Chapter);
 
         var currentTime = chapter.CurrentTime();
         var afterUtc = currentTime.StartOfDay();

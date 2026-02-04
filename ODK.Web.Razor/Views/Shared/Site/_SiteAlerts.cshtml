@@ -13,7 +13,7 @@
     var memberId = RequestStore.CurrentMemberIdOrDefault;
 
     var ownedChapters = memberId != null 
-        ? await ChapterService.GetChaptersByOwnerId(memberId.Value)
+        ? await ChapterService.GetChaptersByOwnerId(RequestStore.ServiceRequest, memberId.Value)
         : [];
 
     var chaptersPendingPublication = ownedChapters

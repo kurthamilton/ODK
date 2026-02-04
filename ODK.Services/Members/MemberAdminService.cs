@@ -58,7 +58,9 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         _unitOfWork.MemberChapterRepository.Update(memberChapter);
         await _unitOfWork.SaveChangesAsync();
 
-        await _memberEmailService.SendMemberApprovedEmail(request, chapter, member);
+        await _memberEmailService.SendMemberApprovedEmail(
+            ChapterServiceRequest.Create(chapter, request), 
+            member);
 
         return ServiceResult.Successful();
     }
@@ -66,10 +68,10 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     public async Task<AdminMemberAdminPageViewModel> GetAdminMemberViewModel(
         MemberChapterAdminServiceRequest request, Guid memberId)
     {
-        var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
+        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
         var adminMembers = await _unitOfWork.ChapterAdminMemberRepository
-            .GetByChapterId(chapter.Id).Run();
+            .GetByChapterId(platform, chapter.Id).Run();
 
         var adminMember = adminMembers.FirstOrDefault(x => x.MemberId == memberId);
         OdkAssertions.Exists(adminMember);
@@ -82,9 +84,9 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         // Admins can edit other admins at or below their own level
         // Admins cannot change roles at their own level, except for their own
         var readOnly = !currentAdminMember.HasAccessTo(adminMember.Role, currentMember);
-        var canEditRole = 
-            !readOnly && 
-            adminMember.Role != ChapterAdminRole.Owner && 
+        var canEditRole =
+            !readOnly &&
+            adminMember.Role != ChapterAdminRole.Owner &&
             (adminMember.MemberId == currentMember.Id || adminMember.Role != currentAdminMember?.Role);
 
         var roleOptions = new[]
@@ -108,7 +110,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
         var (adminMembers, members, ownerSubscription) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => x.MemberRepository.GetByChapterId(chapter.Id),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id));
 
@@ -533,7 +535,10 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             return result;
         }
 
-        await _memberEmailService.SendMemberDeleteEmail(request, chapter, member, reason);
+        await _memberEmailService.SendMemberDeleteEmail(
+            ChapterServiceRequest.Create(chapter, request), 
+            member, 
+            reason);
 
         return ServiceResult.Successful();
     }
@@ -596,14 +601,20 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             .Where(x => !optOutMemberIds.Contains(x.Id))
             .ToArray();
 
-        await _memberEmailService.SendBulkEmail(request, chapter, filteredMembers, subject, body);
+        await _memberEmailService.SendBulkEmail(
+            ChapterServiceRequest.Create(chapter, request), 
+            filteredMembers, 
+            subject, 
+            body);
 
         return ServiceResult.Successful($"Bulk email sent to {filteredMembers.Length} members");
     }
 
     public async Task SendMemberSubscriptionReminderEmails(ServiceRequest request)
     {
-        var chapters = await _unitOfWork.ChapterRepository.GetAll().Run();
+        var platform = request.Platform;
+
+        var chapters = await _unitOfWork.ChapterRepository.GetAll(platform).Run();
         foreach (var chapter in chapters)
         {
             var (members, memberSubscriptions, membershipSettings) = await _unitOfWork.RunAsync(
@@ -674,8 +685,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                     .AddDays(membershipSettings.MembershipDisabledAfterDaysExpired);
 
                 await _memberEmailService.SendMemberChapterSubscriptionExpiringEmail(
-                    request,
-                    chapter,
+                    ChapterServiceRequest.Create(chapter, request),
                     member,
                     memberSubscription,
                     expires: expires,
@@ -698,7 +708,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
         AssertMemberIsInChapter(member, request);
 
-        var memberChapter = member.MemberChapter(chapter.Id) 
+        var memberChapter = member.MemberChapter(chapter.Id)
             ?? throw new OdkServiceException($"Member {memberId} not a member of chapter {chapter.Id}");
 
         memberChapter.HideProfile = !visible;

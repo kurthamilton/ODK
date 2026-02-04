@@ -24,9 +24,11 @@ public abstract class OdkAdminServiceBase
 
     protected async Task AssertMemberIsChapterAdmin(MemberChapterAdminServiceRequest request)
     {
-        var (chapterId, member) = (request.Chapter.Id, request.CurrentMember);
+        var (platform, chapterId, member) = (request.Platform, request.Chapter.Id, request.CurrentMember);
 
-        var chapterAdminMember = await _unitOfWork.ChapterAdminMemberRepository.GetByMemberId(member.Id, chapterId).Run();
+        var chapterAdminMember = await _unitOfWork.ChapterAdminMemberRepository
+            .GetByMemberId(platform, member.Id, chapterId)
+            .Run();
         AssertMemberIsChapterAdmin(request, chapterAdminMember);
     }
 
@@ -34,7 +36,10 @@ public abstract class OdkAdminServiceBase
         MemberChapterAdminServiceRequest request,
         ChapterAdminMember? chapterAdminMember)
     {
-        var (chapterId, member, securable) = (request.Chapter.Id, request.CurrentMember, request.Securable);
+        var (chapterId, member, securable) = (
+            request.Chapter.Id, 
+            request.CurrentMember, 
+            request.Securable);
 
         var isChapterAdmin = MemberIsChapterAdmin(securable, member, chapterId, chapterAdminMember);
         if (!isChapterAdmin)
@@ -47,10 +52,10 @@ public abstract class OdkAdminServiceBase
         MemberChapterAdminServiceRequest request,
         Func<IUnitOfWork, IDeferredQuery<T1>> query)
     {
-        var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
+        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
         var (chapterAdminMember, result1) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByMemberId(currentMember.Id, chapter.Id),
+            x => x.ChapterAdminMemberRepository.GetByMemberId(platform, currentMember.Id, chapter.Id),
             query);
 
         AssertMemberIsChapterAdmin(request, chapterAdminMember);
@@ -63,10 +68,10 @@ public abstract class OdkAdminServiceBase
         Func<IUnitOfWork, IDeferredQuery<T1>> query1,
         Func<IUnitOfWork, IDeferredQuery<T2>> query2)
     {
-        var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
+        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
         var (chapterAdminMember, result1, result2) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByMemberId(currentMember.Id, chapter.Id),
+            x => x.ChapterAdminMemberRepository.GetByMemberId(platform, currentMember.Id, chapter.Id),
             query1,
             query2);
 
@@ -81,10 +86,10 @@ public abstract class OdkAdminServiceBase
         Func<IUnitOfWork, IDeferredQuery<T2>> query2,
         Func<IUnitOfWork, IDeferredQuery<T3>> query3)
     {
-        var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
+        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
         var (chapterAdminMember, result1, result2, result3) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByMemberId(currentMember.Id, chapter.Id),
+            x => x.ChapterAdminMemberRepository.GetByMemberId(platform, currentMember.Id, chapter.Id),
             query1,
             query2,
             query3);
@@ -101,10 +106,10 @@ public abstract class OdkAdminServiceBase
         Func<IUnitOfWork, IDeferredQuery<T3>> query3,
         Func<IUnitOfWork, IDeferredQuery<T4>> query4)
     {
-        var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
+        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
         var (chapterAdminMember, result1, result2, result3, result4) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByMemberId(currentMember.Id, chapter.Id),
+            x => x.ChapterAdminMemberRepository.GetByMemberId(platform, currentMember.Id, chapter.Id),
             query1,
             query2,
             query3,
@@ -123,10 +128,10 @@ public abstract class OdkAdminServiceBase
         Func<IUnitOfWork, IDeferredQuery<T4>> query4,
         Func<IUnitOfWork, IDeferredQuery<T5>> query5)
     {
-        var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
+        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
         var (chapterAdminMember, result1, result2, result3, result4, result5) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByMemberId(currentMember.Id, chapter.Id),
+            x => x.ChapterAdminMemberRepository.GetByMemberId(platform, currentMember.Id, chapter.Id),
             query1,
             query2,
             query3,
@@ -147,10 +152,10 @@ public abstract class OdkAdminServiceBase
         Func<IUnitOfWork, IDeferredQuery<T5>> query5,
         Func<IUnitOfWork, IDeferredQuery<T6>> query6)
     {
-        var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
+        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
         var (chapterAdminMember, result1, result2, result3, result4, result5, result6) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByMemberId(currentMember.Id, chapter.Id),
+            x => x.ChapterAdminMemberRepository.GetByMemberId(platform, currentMember.Id, chapter.Id),
             query1,
             query2,
             query3,
@@ -173,10 +178,10 @@ public abstract class OdkAdminServiceBase
         Func<IUnitOfWork, IDeferredQuery<T6>> query6,
         Func<IUnitOfWork, IDeferredQuery<T7>> query7)
     {
-        var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
+        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
         var (chapterAdminMember, result1, result2, result3, result4, result5, result6, result7) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByMemberId(currentMember.Id, chapter.Id),
+            x => x.ChapterAdminMemberRepository.GetByMemberId(platform, currentMember.Id, chapter.Id),
             query1,
             query2,
             query3,
@@ -201,10 +206,18 @@ public abstract class OdkAdminServiceBase
         Func<IUnitOfWork, IDeferredQuery<T7>> query7,
         Func<IUnitOfWork, IDeferredQuery<T8>> query8)
     {
-        var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
+        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
-        var (chapterAdminMember, result1, result2, result3, result4, result5, result6, result7, result8) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByMemberId(currentMember.Id, chapter.Id),
+        var (chapterAdminMember, 
+            result1, 
+            result2, 
+            result3, 
+            result4, 
+            result5, 
+            result6, 
+            result7, 
+            result8) = await _unitOfWork.RunAsync(
+            x => x.ChapterAdminMemberRepository.GetByMemberId(platform, currentMember.Id, chapter.Id),
             query1,
             query2,
             query3,
@@ -231,10 +244,20 @@ public abstract class OdkAdminServiceBase
         Func<IUnitOfWork, IDeferredQuery<T8>> query8,
         Func<IUnitOfWork, IDeferredQuery<T9>> query9)
     {
-        var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
+        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
-        var (chapterAdminMember, result1, result2, result3, result4, result5, result6, result7, result8, result9) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByMemberId(currentMember.Id, chapter.Id),
+        var (
+            chapterAdminMember, 
+            result1, 
+            result2, 
+            result3, 
+            result4, 
+            result5, 
+            result6, 
+            result7, 
+            result8, 
+            result9) = await _unitOfWork.RunAsync(
+            x => x.ChapterAdminMemberRepository.GetByMemberId(platform, currentMember.Id, chapter.Id),
             query1,
             query2,
             query3,
@@ -263,7 +286,7 @@ public abstract class OdkAdminServiceBase
         Func<IUnitOfWork, IDeferredQuery<T9>> query9,
         Func<IUnitOfWork, IDeferredQuery<T10>> query10)
     {
-        var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
+        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
         var (chapterAdminMember,
             result1,
@@ -276,7 +299,7 @@ public abstract class OdkAdminServiceBase
             result8,
             result9,
             result10) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByMemberId(currentMember.Id, chapter.Id),
+            x => x.ChapterAdminMemberRepository.GetByMemberId(platform, currentMember.Id, chapter.Id),
             query1,
             query2,
             query3,

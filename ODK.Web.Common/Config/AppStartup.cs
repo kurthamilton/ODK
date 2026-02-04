@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ODK.Web.Common.Config.Settings;
-using ODK.Web.Common.Services;
 
 namespace ODK.Web.Common.Config;
 
@@ -23,7 +22,6 @@ public static class AppStartup
 
         var appSettings = GetAppSettings(config);
         services.ConfigureDependencies(appSettings);
-        services.AddScoped<IHttpRequestContextProvider, HttpRequestContextProvider>();
 
         return appSettings;
     }

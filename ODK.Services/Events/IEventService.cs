@@ -1,12 +1,11 @@
-﻿using ODK.Core.Chapters;
-using ODK.Core.Events;
+﻿using ODK.Core.Events;
 
 namespace ODK.Services.Events;
 
 public interface IEventService
 {
     Task<ServiceResult> AddComment(
-        MemberServiceRequest request, Guid eventId, Chapter chapter, string comment, Guid? parentEventCommentId);
+        MemberChapterServiceRequest request, Guid eventId, string comment, Guid? parentEventCommentId);
 
     Task CompleteEventTicketPurchase(Guid eventId, Guid memberId);
 

@@ -16,6 +16,8 @@ public abstract class OdkPageModel : PageModel
 {
     public Chapter Chapter => RequestStore.Chapter;
 
+    public ChapterServiceRequest ChapterServiceRequest => RequestStore.ChapterServiceRequest;
+
     public Member CurrentMember => RequestStore.CurrentMember;
 
     public Guid CurrentMemberId => RequestStore.CurrentMemberId;

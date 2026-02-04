@@ -927,13 +927,13 @@ public static class MemberAdminServiceTests
         var mock = new Mock<IChapterAdminMemberRepository>();
         adminMembers ??= [];
 
-        mock.Setup(x => x.GetByChapterId(It.IsAny<Guid>()))
-            .Returns((Guid chapterId) =>
+        mock.Setup(x => x.GetByChapterId(It.IsAny<PlatformType>(), It.IsAny<Guid>()))
+            .Returns((PlatformType platform, Guid chapterId) =>
                 new MockDeferredQueryMultiple<ChapterAdminMember>(
                     adminMembers.Where(x => x.ChapterId == chapterId)));
 
-        mock.Setup(x => x.GetByMemberId(It.IsAny<Guid>(), It.IsAny<Guid>()))
-            .Returns((Guid memberId, Guid chapterId) =>
+        mock.Setup(x => x.GetByMemberId(It.IsAny<PlatformType>(), It.IsAny<Guid>(), It.IsAny<Guid>()))
+            .Returns((PlatformType platform, Guid memberId, Guid chapterId) =>
                 new MockDeferredQuerySingleOrDefault<ChapterAdminMember>(
                     adminMembers.FirstOrDefault(x => x.ChapterId == chapterId && x.MemberId == memberId)));
 
@@ -1064,13 +1064,11 @@ public static class MemberAdminServiceTests
     {
         var mock = new Mock<IMemberEmailService>();
         mock.Setup(x => x.SendMemberApprovedEmail(
-                It.IsAny<MemberChapterAdminServiceRequest>(),
-                It.IsAny<Chapter>(),
+                It.IsAny<ChapterServiceRequest>(),
                 It.IsAny<Member>()))
             .Returns(Task.CompletedTask);
         mock.Setup(x => x.SendMemberDeleteEmail(
-                It.IsAny<MemberChapterAdminServiceRequest>(),
-                It.IsAny<Chapter>(),
+                It.IsAny<ChapterServiceRequest>(),
                 It.IsAny<Member>(),
                 It.IsAny<string>()))
             .Returns(Task.CompletedTask);

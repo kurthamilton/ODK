@@ -8,9 +8,9 @@
 @{
     Layout = "_OdkChapterLayout";
 
-    var chapter = Model.Chapter;
+    var request = Model.ChapterServiceRequest;
     var viewModel = await ChapterViewModelService.GetHomePage(
-        Model.ServiceRequest, Model.CurrentMemberOrDefault, chapter);
+        request, Model.CurrentMemberOrDefault);
 
     var description = viewModel.Chapter.GetDisplayName(Model.Platform);
 

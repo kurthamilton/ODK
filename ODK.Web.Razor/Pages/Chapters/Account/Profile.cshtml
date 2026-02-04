@@ -13,8 +13,7 @@
     Layout = "_OdkChapterLayout";
     Model.Title = "Profile";
 
-    var chapter = Model.Chapter;
-    var viewModel = await AccountViewModelService.GetChapterProfilePage(Model.MemberServiceRequest, chapter);
+    var viewModel = await AccountViewModelService.GetChapterProfilePage(Model.MemberChapterServiceRequest);
     var memberChapter = viewModel.CurrentMember.MemberChapter(viewModel.Chapter.Id);
     if (memberChapter == null)
     {

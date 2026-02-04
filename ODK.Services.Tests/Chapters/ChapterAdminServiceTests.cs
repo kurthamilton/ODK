@@ -1241,13 +1241,13 @@ public static class ChapterAdminServiceTests
         mock.Setup(x => x.Add(It.IsAny<ChapterAdminMember>()))
             .Callback((ChapterAdminMember adminMember) => onAdd?.Invoke(adminMember));
 
-        mock.Setup(x => x.GetByMemberId(It.IsAny<Guid>(), It.IsAny<Guid>()))
-            .Returns((Guid memberId, Guid chapterId) =>
+        mock.Setup(x => x.GetByMemberId(It.IsAny<PlatformType>(), It.IsAny<Guid>(), It.IsAny<Guid>()))
+            .Returns((PlatformType platform, Guid memberId, Guid chapterId) =>
                 new MockDeferredQuerySingleOrDefault<ChapterAdminMember>(
                     adminMembers.FirstOrDefault(x => x.ChapterId == chapterId && x.MemberId == memberId)));
 
-        mock.Setup(x => x.GetByChapterId(It.IsAny<Guid>()))
-            .Returns((Guid chapterId) =>
+        mock.Setup(x => x.GetByChapterId(It.IsAny<PlatformType>(), It.IsAny<Guid>()))
+            .Returns((PlatformType platform, Guid chapterId) =>
                 new MockDeferredQueryMultiple<ChapterAdminMember>(
                     adminMembers.Where(x => x.ChapterId == chapterId)));
 
@@ -1295,12 +1295,12 @@ public static class ChapterAdminServiceTests
         var mock = new Mock<IChapterRepository>();
         chapters ??= [];
 
-        mock.Setup(x => x.GetById(It.IsAny<Guid>()))
-            .Returns((Guid chapterId) =>
+        mock.Setup(x => x.GetById(It.IsAny<PlatformType>(), It.IsAny<Guid>()))
+            .Returns((PlatformType platform, Guid chapterId) =>
                 new MockDeferredQuerySingle<Chapter>(
                     chapters.FirstOrDefault(x => x.Id == chapterId)!));
 
-        mock.Setup(x => x.GetAll())
+        mock.Setup(x => x.GetAll(It.IsAny<PlatformType>()))
             .Returns(new MockDeferredQueryMultiple<Chapter>(chapters));
 
         mock.Setup(x => x.Add(It.IsAny<Chapter>()));
@@ -1496,7 +1496,7 @@ public static class ChapterAdminServiceTests
     private static IMemberEmailService CreateMockMemberEmailService()
     {
         var mock = new Mock<IMemberEmailService>();
-        mock.Setup(x => x.SendNewGroupEmail(It.IsAny<MemberServiceRequest>(), It.IsAny<Chapter>(), It.IsAny<ChapterTexts>(), It.IsAny<SiteEmailSettings>()))
+        mock.Setup(x => x.SendNewGroupEmail(It.IsAny<MemberChapterServiceRequest>(), It.IsAny<ChapterTexts>(), It.IsAny<SiteEmailSettings>()))
             .Returns(Task.CompletedTask);
         return mock.Object;
     }

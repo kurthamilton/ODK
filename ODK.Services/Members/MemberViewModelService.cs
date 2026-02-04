@@ -16,7 +16,7 @@ public class MemberViewModelService : IMemberViewModelService
 
     public async Task<MemberConversationsPageViewModel> GetMemberConversationsPage(MemberServiceRequest request)
     {
-        var (currentMember, platform) = (request.CurrentMember, request.Platform);
+        var (platform, currentMember) = (request.Platform, request.CurrentMember);
 
         var conversations = await _unitOfWork.ChapterConversationRepository.GetDtosByMemberId(currentMember.Id).Run();
 
@@ -26,7 +26,7 @@ public class MemberViewModelService : IMemberViewModelService
             .ToArray();
 
         var chapters = chapterIds.Length > 0
-            ? await _unitOfWork.ChapterRepository.GetByIds(chapterIds).Run()
+            ? await _unitOfWork.ChapterRepository.GetByIds(platform, chapterIds).Run()
             : [];
 
         return new MemberConversationsPageViewModel
@@ -87,7 +87,7 @@ public class MemberViewModelService : IMemberViewModelService
             x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
             x => x.MemberPropertyRepository.GetByMemberId(memberId, chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
-            x => x.ChapterAdminMemberRepository.IsAdmin(chapter.Id, currentMember.Id),
+            x => x.ChapterAdminMemberRepository.IsAdmin(platform, chapter.Id, currentMember.Id),
             x => x.ChapterPageRepository.GetByChapterId(chapter.Id));
 
         OdkAssertions.MemberOf(member, chapter.Id);
@@ -123,7 +123,7 @@ public class MemberViewModelService : IMemberViewModelService
             x => x.MemberRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
-            x => x.ChapterAdminMemberRepository.IsAdmin(chapter.Id, currentMember.Id),
+            x => x.ChapterAdminMemberRepository.IsAdmin(platform, chapter.Id, currentMember.Id),
             x => x.ChapterPageRepository.GetByChapterId(chapter.Id));
 
         var isMember = currentMember.IsMemberOf(chapter.Id);

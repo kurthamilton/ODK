@@ -10,8 +10,8 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Payments | SiteAdmin";
 
-    var request = Model.MemberServiceRequest;
-    var viewModel = await ChapterSiteAdminService.GetChapterPaymentSettingsViewModel(request, Model.Chapter.Id);
+    var request = Model.MemberChapterServiceRequest;
+    var viewModel = await ChapterSiteAdminService.GetChapterPaymentSettingsViewModel(request);
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel

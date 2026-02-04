@@ -25,7 +25,8 @@ public class ImpersonateModel : SiteAdminPageModel
             return OnGet();
         }
 
-        var result = await _loginHandler.Impersonate(CurrentMemberId, viewModel.MemberId.Value);
+        var request = MemberServiceRequest;
+        var result = await _loginHandler.Impersonate(request, viewModel.MemberId.Value);
         if (result.Success)
         {
             return Redirect("/");

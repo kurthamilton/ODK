@@ -10,7 +10,7 @@ public interface IEventViewModelService
         (MemberChapterServiceRequest request, string shortcode, string returnPath);
 
     Task<EventPageViewModel> GetEventPageViewModel(
-        ServiceRequest request, Member? currentMember, Chapter chapter, string shortcode);
+        ChapterServiceRequest request, Member? currentMember, string shortcode);
 
-    Task<EventsPageViewModel> GetEventsPage(ServiceRequest request, Guid? currentMemberId, Chapter chapter);
+    Task<EventsPageViewModel> GetEventsPage(ChapterServiceRequest request, Guid? currentMemberId);
 }

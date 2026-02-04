@@ -1,4 +1,5 @@
-﻿using System.Web;
+﻿using System.Reflection.Metadata;
+using System.Web;
 using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Emails;
@@ -72,28 +73,27 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendBulkEmail(
-        ServiceRequest request,
-        Chapter chapter,
+        ChapterServiceRequest request,
         IEnumerable<Member> to,
         string subject,
         string body)
     {
         await _emailService.SendBulkEmail(
             request,
-            chapter,
             to,
             subject,
             body);
     }
 
     public async Task SendChapterConversationEmail(
-        ServiceRequest request,
-        Chapter chapter,
+        ChapterServiceRequest request,
         ChapterConversation conversation,
         ChapterConversationMessage message,
         IReadOnlyCollection<Member> to,
         bool isReply)
     {
+        var chapter = request.Chapter;
+
         var subject = "{conversation.subject} - {title}";
 
         if (isReply)
@@ -138,11 +138,12 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendChapterMessage(
-        ServiceRequest request,
-        Chapter chapter,
+        ChapterServiceRequest request,
         IReadOnlyCollection<ChapterAdminMember> adminMembers,
         ChapterContactMessage message)
     {
+        var chapter = request.Chapter;
+
         var urlProvider = await _urlProviderFactory.Create(request);
         var url = urlProvider.MessageAdminUrl(chapter, message.Id);
 
@@ -166,11 +167,12 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task<ServiceResult> SendChapterMessageReply(
-        ServiceRequest request,
-        Chapter chapter,
+        ChapterServiceRequest request,
         ChapterContactMessage originalMessage,
         string reply)
     {
+        var chapter = request.Chapter;
+
         var urlProvider = await _urlProviderFactory.Create(request);
         var url = urlProvider.GroupUrl(chapter);
 
@@ -222,12 +224,13 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendEventCommentEmail(
-        ServiceRequest request,
-        Chapter chapter,
+        ChapterServiceRequest request,
         Event @event,
         EventComment eventComment,
         Member? parentCommentMember)
     {
+        var chapter = request.Chapter;
+
         var urlProvider = await _urlProviderFactory.Create(request);
         var url = urlProvider.EventUrl(chapter, @event.Shortcode);
 
@@ -247,12 +250,12 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendEventInvites(
-        ServiceRequest request,
-        Chapter chapter,
+        ChapterServiceRequest request,
         Event @event,
         Venue venue,
         IEnumerable<Member> members)
     {
+        var chapter = request.Chapter;
         var time = @event.ToLocalTimeString(chapter.TimeZone);
 
         var urlProvider = await _urlProviderFactory.Create(request);
@@ -276,18 +279,18 @@ public class MemberEmailService : IMemberEmailService
 
         await _emailService.SendBulkEmail(
             request,
-            chapter,
             members,
             EmailType.EventInvite,
             parameters);
     }
 
     public async Task SendEventWaitlistPromotionNotification(
-        ServiceRequest request,
-        Chapter chapter,
+        ChapterServiceRequest request,
         Event @event,
         IEnumerable<Member> members)
     {
+        var chapter = request.Chapter;
+
         var urlProvider = await _urlProviderFactory.Create(request);
         var url = urlProvider.EventUrl(chapter, @event.Shortcode);
 
@@ -320,10 +323,11 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendGroupApprovedEmail(
-        ServiceRequest request,
-        Chapter chapter,
+        ChapterServiceRequest request,
         Member owner)
     {
+        var chapter = request.Chapter;
+
         var urlProvider = await _urlProviderFactory.Create(request);
         var url = urlProvider.GroupUrl(chapter);
 
@@ -351,10 +355,11 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendMemberApprovedEmail(
-        ServiceRequest request,
-        Chapter chapter,
+        ChapterServiceRequest request,
         Member member)
     {
+        var chapter = request.Chapter;
+
         var urlProvider = await _urlProviderFactory.Create(request);
         var url = urlProvider.GroupUrl(chapter);
 
@@ -431,12 +436,13 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendMemberChapterSubscriptionConfirmationEmail(
-        ServiceRequest request,
-        Chapter chapter,
+        ChapterServiceRequest request,
         ChapterSubscription chapterSubscription,
         Member member,
         DateTime expiresUtc)
     {
+        var chapter = request.Chapter;
+
         var currency = chapterSubscription.Currency;
 
         var parameters = new Dictionary<string, string>
@@ -454,13 +460,14 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendMemberChapterSubscriptionExpiringEmail(
-        ServiceRequest request,
-        Chapter chapter,
+        ChapterServiceRequest request,
         Member member,
         MemberSubscription memberSubscription,
         DateTime expires,
         DateTime disabledDate)
     {
+        var chapter = request.Chapter;
+
         var expiring = expires > DateTime.UtcNow;
 
         var properties = new Dictionary<string, string>
@@ -491,11 +498,12 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendMemberDeleteEmail(
-        ServiceRequest request,
-        Chapter chapter,
+        ChapterServiceRequest request,
         Member member,
         string? reason)
     {
+        var chapter = request.Chapter;
+
         var subject = "{title} - you have been removed from a group";
 
         var bodyBuilder = new EmailBodyBuilder()
@@ -525,12 +533,13 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendMemberLeftChapterEmail(
-        ServiceRequest request,
-        Chapter chapter,
+        ChapterServiceRequest request,
         IReadOnlyCollection<ChapterAdminMember> adminMembers,
         Member member,
         string? reason)
     {
+        var chapter = request.Chapter;
+
         var emailRecipients = adminMembers
             .Where(x => x.MemberId != member.Id && x.ReceiveNewMemberEmails)
             .Select(x => x.ToEmailAddressee())
@@ -580,7 +589,6 @@ public class MemberEmailService : IMemberEmailService
 
     public async Task SendNewGroupEmail(
         ServiceRequest request,
-        Chapter chapter,
         ChapterTexts texts,
         SiteEmailSettings settings)
     {
@@ -646,13 +654,14 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendNewMemberAdminEmail(
-        ServiceRequest request,
-        Chapter chapter,
+        ChapterServiceRequest request,
         IReadOnlyCollection<ChapterAdminMember> adminMembers,
         Member member,
         IReadOnlyCollection<ChapterProperty> chapterProperties,
         IReadOnlyCollection<MemberProperty> memberProperties)
     {
+        var chapter = request.Chapter;
+
         var memberPropertyDictionary = memberProperties
             .ToDictionary(x => x.ChapterPropertyId);
 
@@ -691,13 +700,14 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendNewMemberEmailsAsync(
-        ServiceRequest request,
-        Chapter chapter,
+        ChapterServiceRequest request,
         IReadOnlyCollection<ChapterAdminMember> adminMembers,
         Member member,
         IReadOnlyCollection<ChapterProperty> chapterProperties,
         IReadOnlyCollection<MemberProperty> memberProperties)
     {
+        var chapter = request.Chapter;
+
         var urlProvider = await _urlProviderFactory.Create(request);
         var eventsUrl = urlProvider.EventsUrl(chapter);
 
@@ -716,7 +726,6 @@ public class MemberEmailService : IMemberEmailService
 
         await SendNewMemberAdminEmail(
             request,
-            chapter,
             adminMembers,
             member,
             chapterProperties,

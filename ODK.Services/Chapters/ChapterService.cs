@@ -27,7 +27,8 @@ public class ChapterService : IChapterService
         _unitOfWork = unitOfWork;
     }
 
-    public Task<Chapter> GetByEventId(Guid eventId) => _unitOfWork.ChapterRepository.GetByEventId(eventId).Run();
+    public Task<Chapter> GetByEventId(ServiceRequest request, Guid eventId) 
+        => _unitOfWork.ChapterRepository.GetByEventId(request.Platform, eventId).Run();
 
     public async Task<VersionedServiceResult<ChapterImage>> GetChapterImage(long? currentVersion, Guid chapterId)
     {
@@ -104,17 +105,17 @@ public class ChapterService : IChapterService
         };
     }
 
-    public async Task<IReadOnlyCollection<Chapter>> GetChaptersByOwnerId(Guid ownerId)
+    public async Task<IReadOnlyCollection<Chapter>> GetChaptersByOwnerId(
+        ServiceRequest request, Guid ownerId)
     {
-        return await _unitOfWork.ChapterRepository.GetByOwnerId(ownerId).Run();
+        var platform = request.Platform;
+        return await _unitOfWork.ChapterRepository.GetByOwnerId(platform, ownerId).Run();
     }
 
     public async Task<ChaptersHomePageViewModel> GetChaptersHomePageViewModel(PlatformType platform)
     {
         var (chapters, countries) = await _unitOfWork.RunAsync(
-            x => platform == PlatformType.Default
-                ? x.ChapterRepository.GetAll()
-                : x.ChapterRepository.GetByPlatform(platform),
+            x => x.ChapterRepository.GetAll(platform),
             x => x.CountryRepository.GetAll());
 
         if (platform != PlatformType.Default)
@@ -135,13 +136,15 @@ public class ChapterService : IChapterService
         };
     }
 
-    public async Task<Chapter?> GetDefaultChapter(Member member)
+    public async Task<Chapter?> GetDefaultChapter(MemberServiceRequest request)
     {
+        var (platform, currentMember) = (request.Platform, request.CurrentMember);
+
         var chapters = await _unitOfWork.ChapterRepository
-            .GetByMemberId(member.Id)
+            .GetByMemberId(platform, currentMember.Id)
             .Run();
 
-        var chapterDates = member
+        var chapterDates = currentMember
             .Chapters
             .ToDictionary(x => x.ChapterId, x => x.CreatedUtc);
 
@@ -151,9 +154,13 @@ public class ChapterService : IChapterService
             .FirstOrDefault();
     }
 
-    public async Task<bool> NameIsAvailable(string name)
+    public async Task<bool> NameIsAvailable(ServiceRequest request, string name)
     {
-        var existing = await _unitOfWork.ChapterRepository.GetByName(name).Run();
+        var platform = request.Platform;
+
+        var existing = await _unitOfWork.ChapterRepository
+            .GetByName(platform, name)
+            .Run();
         return existing == null;
     }
 

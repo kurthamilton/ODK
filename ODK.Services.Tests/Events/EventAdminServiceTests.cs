@@ -154,12 +154,12 @@ public static class EventAdminServiceTests
     {
         var mock = new Mock<IChapterAdminMemberRepository>();
 
-        mock.Setup(x => x.GetByChapterId(It.IsAny<Guid>()))
-            .Returns((Guid chapterId) => new MockDeferredQueryMultiple<ChapterAdminMember>(
+        mock.Setup(x => x.GetByChapterId(It.IsAny<PlatformType>(), It.IsAny<Guid>()))
+            .Returns((PlatformType platform, Guid chapterId) => new MockDeferredQueryMultiple<ChapterAdminMember>(
                 adminMembers?.Where(x => x.ChapterId == chapterId)));
 
-        mock.Setup(x => x.GetByMemberId(It.IsAny<Guid>(), It.IsAny<Guid>()))
-            .Returns((Guid memberId, Guid chapterId) =>
+        mock.Setup(x => x.GetByMemberId(It.IsAny<PlatformType>(), It.IsAny<Guid>(), It.IsAny<Guid>()))
+            .Returns((PlatformType platform, Guid memberId, Guid chapterId) =>
                 new MockDeferredQuerySingleOrDefault<ChapterAdminMember>(
                     adminMembers?.FirstOrDefault(x => x.ChapterId == chapterId && x.MemberId == memberId)));
 
@@ -220,8 +220,9 @@ public static class EventAdminServiceTests
     {
         var mock = new Mock<IChapterRepository>();
 
-        mock.Setup(x => x.GetById(ChapterId))
-            .Returns((Guid id) => new MockDeferredQuerySingle<Chapter>(chapter?.Id == id ? chapter : null));
+        mock.Setup(x => x.GetById(It.IsAny<PlatformType>(), It.IsAny<Guid>()))
+            .Returns((PlatformType platform, Guid id) 
+                => new MockDeferredQuerySingle<Chapter>(chapter?.Id == id ? chapter : null));
 
         return mock.Object;
     }

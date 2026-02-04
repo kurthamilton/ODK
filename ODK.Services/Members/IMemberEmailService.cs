@@ -27,29 +27,25 @@ public interface IMemberEmailService
         string token);
 
     Task SendBulkEmail(
-        ServiceRequest request,
-        Chapter chapter,
+        ChapterServiceRequest request,
         IEnumerable<Member> to,
         string subject,
         string body);
 
     Task SendChapterConversationEmail(
-        ServiceRequest request,
-        Chapter chapter,
+        ChapterServiceRequest request,
         ChapterConversation conversation,
         ChapterConversationMessage message,
         IReadOnlyCollection<Member> to,
         bool isReply);
 
     Task SendChapterMessage(
-        ServiceRequest request,
-        Chapter chapter,
+        ChapterServiceRequest request,
         IReadOnlyCollection<ChapterAdminMember> adminMembers,
         ChapterContactMessage contactMessage);
 
     Task<ServiceResult> SendChapterMessageReply(
-        ServiceRequest request,
-        Chapter chapter,
+        ChapterServiceRequest request,
         ChapterContactMessage originalMessage,
         string reply);
 
@@ -59,33 +55,28 @@ public interface IMemberEmailService
         Member member);
 
     Task SendEventCommentEmail(
-        ServiceRequest request,
-        Chapter chapter,
+        ChapterServiceRequest request,
         Event @event,
         EventComment eventComment,
         Member? parentCommentMember);
 
     Task SendEventInvites(
-        ServiceRequest request,
-        Chapter chapter,
+        ChapterServiceRequest request,
         Event @event,
         Venue venue,
         IEnumerable<Member> members);
 
     Task SendEventWaitlistPromotionNotification(
-        ServiceRequest request,
-        Chapter chapter,
+        ChapterServiceRequest request,
         Event @event,
         IEnumerable<Member> members);
 
     Task SendGroupApprovedEmail(
-        ServiceRequest request,
-        Chapter chapter,
+        ChapterServiceRequest request,
         Member owner);
 
     Task SendMemberApprovedEmail(
-        ServiceRequest request,
-        Chapter chapter,
+        ChapterServiceRequest request,
         Member member);
 
     Task SendIssueReply(
@@ -96,36 +87,31 @@ public interface IMemberEmailService
         SiteEmailSettings siteEmailSettings);
 
     Task SendMemberChapterSubscriptionConfirmationEmail(
-        ServiceRequest request,
-        Chapter chapter,
+        ChapterServiceRequest request,
         ChapterSubscription chapterSubscription,
         Member member,
         DateTime expiresUtc);
 
     Task SendMemberChapterSubscriptionExpiringEmail(
-        ServiceRequest request,
-        Chapter chapter,
+        ChapterServiceRequest request,
         Member member,
         MemberSubscription memberSubscription,
         DateTime expires,
         DateTime disabledDate);
 
     Task SendMemberDeleteEmail(
-        ServiceRequest request,
-        Chapter chapter,
+        ChapterServiceRequest request,
         Member member,
         string? reason);
 
     Task SendMemberLeftChapterEmail(
-        ServiceRequest request,
-        Chapter chapter,
+        ChapterServiceRequest request,
         IReadOnlyCollection<ChapterAdminMember> adminMembers,
         Member member,
         string? reason);
 
     Task SendNewGroupEmail(
         ServiceRequest request,
-        Chapter chapter,
         ChapterTexts texts,
         SiteEmailSettings settings);
 
@@ -137,16 +123,14 @@ public interface IMemberEmailService
         SiteEmailSettings settings);
 
     Task SendNewMemberAdminEmail(
-        ServiceRequest request,
-        Chapter chapter,
+        ChapterServiceRequest request,
         IReadOnlyCollection<ChapterAdminMember> adminMembers,
         Member member,
         IReadOnlyCollection<ChapterProperty> chapterProperties,
         IReadOnlyCollection<MemberProperty> memberProperties);
 
     Task SendNewMemberEmailsAsync(
-        ServiceRequest request,
-        Chapter chapter,
+        ChapterServiceRequest request,
         IReadOnlyCollection<ChapterAdminMember> adminMembers,
         Member member,
         IReadOnlyCollection<ChapterProperty> chapterProperties,

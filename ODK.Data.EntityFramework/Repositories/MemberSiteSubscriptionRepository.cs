@@ -5,6 +5,7 @@ using ODK.Core.Platforms;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
+using ODK.Data.EntityFramework.Queries;
 
 namespace ODK.Data.EntityFramework.Repositories;
 
@@ -24,6 +25,7 @@ public class MemberSiteSubscriptionRepository : ReadWriteRepositoryBase<MemberSi
     {
         var query =
             from chapter in Set<Chapter>()
+                .ForPlatform(platform)
             from subscription in Set()
                 .Where(x => x.MemberId == chapter.OwnerId && x.SiteSubscription.Platform == platform)
             select subscription;

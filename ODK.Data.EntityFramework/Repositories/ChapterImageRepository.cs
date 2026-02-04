@@ -23,20 +23,15 @@ public class ChapterImageRepository : WriteRepositoryBase<ChapterImage>, IChapte
         .Where(x => x.ChapterId == chapterId)
         .DeferredSingleOrDefault();
 
-    public IDeferredQueryMultiple<ChapterImageMetadata> GetDtosByChapterIds(IEnumerable<Guid> chapterIds)
-    {
-        var query =
-            from chapter in Set<Chapter>()
-            from image in Set()
-            where image.ChapterId == chapter.Id
-                && chapterIds.Contains(chapter.Id)
-            select new ChapterImageMetadata
+    public IDeferredQueryMultiple<ChapterImageMetadata> GetMetadatasByChapterIds(IEnumerable<Guid> chapterIds)
+        => Set()
+            .Where(x => chapterIds.Contains(x.ChapterId))
+            .Select(x => new ChapterImageMetadata
             {
-                ChapterId = chapter.Id,
-                MimeType = image.MimeType
-            };
-        return query.DeferredMultiple();
-    }
+                ChapterId = x.ChapterId,
+                MimeType = x.MimeType
+            })
+            .DeferredMultiple();
 
     public void Upsert(ChapterImage entity, Guid chapterId)
     {

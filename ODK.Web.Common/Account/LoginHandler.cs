@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using ODK.Core;
 using ODK.Core.Members;
 using ODK.Data.Core;
+using ODK.Services;
 using ODK.Services.Authentication.OAuth;
 using ODK.Services.Members;
 using IAuthenticationService = ODK.Services.Authentication.IAuthenticationService;
@@ -39,23 +40,22 @@ public class LoginHandler : ILoginHandler
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<AuthenticationResult> Impersonate(Guid currentMemberId, Guid memberId)
+    public async Task<AuthenticationResult> Impersonate(MemberServiceRequest request, Guid memberId)
     {
-        var (currentMember, member) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(currentMemberId),
-            x => x.MemberRepository.GetById(memberId));
+        var currentMember = request.CurrentMember;
+        var member = await _unitOfWork.MemberRepository.GetById(memberId).Run();
 
         OdkAssertions.MeetsCondition(currentMember, x => x.SiteAdmin);
 
         await Logout();
-        return await Login(member);
+        return await Login(request, member);
     }
 
-    public async Task<AuthenticationResult> Login(string username, string password,
-        bool rememberMe)
+    public async Task<AuthenticationResult> Login(
+        ServiceRequest request, string username, string password, bool rememberMe)
     {
         var member = await _authenticationService.GetMemberAsync(username, password);
-        return await Login(member);
+        return await Login(request, member);
     }
 
     public async Task Logout()
@@ -69,15 +69,16 @@ public class LoginHandler : ILoginHandler
         await httpContext.SignOutAsync();
     }
 
-    public async Task<AuthenticationResult> OAuthLogin(OAuthProviderType providerType, string token)
+    public async Task<AuthenticationResult> OAuthLogin(
+        ServiceRequest request, OAuthProviderType providerType, string token)
     {
         var provider = _oauthProviderFactory.GetProvider(providerType);
         var oauthUser = await provider.GetUser(token);
         var member = await _memberService.FindMemberByEmailAddress(oauthUser.Email);
-        return await Login(member);
+        return await Login(request, member);
     }
 
-    private async Task<AuthenticationResult> Login(Member? member)
+    private async Task<AuthenticationResult> Login(ServiceRequest request, Member? member)
     {
         if (member == null)
         {
@@ -90,7 +91,8 @@ public class LoginHandler : ILoginHandler
             return new AuthenticationResult();
         }
 
-        var claims = await _authenticationService.GetClaimsAsync(member);
+        var claims = await _authenticationService.GetClaimsAsync(
+            MemberServiceRequest.Create(member, request));
         await SetAuthCookieAsync(httpContext, claims);
         return new AuthenticationResult
         {

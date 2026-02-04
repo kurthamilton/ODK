@@ -13,11 +13,9 @@
 @{
     Layout = "_OdkChapterLayout";
 
-    var chapter = Model.Chapter;
     var viewModel = await EventViewModelService.GetEventPageViewModel(
-        Model.ServiceRequest,
+        Model.ChapterServiceRequest,
         Model.CurrentMemberOrDefault,
-        chapter,
         Model.Shortcode);
 
     Model.Title = viewModel.Event.GetDisplayName();

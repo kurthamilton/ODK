@@ -14,7 +14,7 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
 
     public ChapterSiteAdminService(
         IUnitOfWork unitOfWork,
-        IMemberEmailService memberEmailService) 
+        IMemberEmailService memberEmailService)
         : base(unitOfWork)
     {
         _memberEmailService = memberEmailService;
@@ -23,8 +23,10 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
 
     public async Task<ServiceResult> ApproveChapter(MemberServiceRequest request, Guid chapterId)
     {
+        var platform = request.Platform;
+
         var (chapter, members) = await GetSiteAdminRestrictedContent(request,
-            x => x.ChapterRepository.GetById(chapterId),
+            x => x.ChapterRepository.GetById(platform, chapterId),
             x => x.MemberRepository.GetAllByChapterId(chapterId));
 
         var owner = members.FirstOrDefault(x => x.Id == chapter.OwnerId);
@@ -41,8 +43,7 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
         await _unitOfWork.SaveChangesAsync();
 
         await _memberEmailService.SendGroupApprovedEmail(
-            request,
-            chapter,
+            ChapterServiceRequest.Create(chapter, request),
             owner);
 
         return ServiceResult.Successful();
@@ -50,8 +51,10 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
 
     public async Task<ServiceResult> DeleteChapter(MemberServiceRequest request, Guid chapterId)
     {
+        var platform = request.Platform;
+
         var chapter = await GetSiteAdminRestrictedContent(request,
-            x => x.ChapterRepository.GetById(chapterId));
+            x => x.ChapterRepository.GetById(platform, chapterId));
 
         _unitOfWork.ChapterRepository.Delete(chapter);
         await _unitOfWork.SaveChangesAsync();
@@ -60,10 +63,12 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
     }
 
     public async Task<ChapterPaymentSettingsAdminPageViewModel> GetChapterPaymentSettingsViewModel(
-        MemberServiceRequest request, Guid chapterId)
+        MemberChapterServiceRequest request)
     {
+        var chapter = request.Chapter;
+
         var (paymentSettings, currencies) = await GetSiteAdminRestrictedContent(request,
-            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapter.Id),
             x => x.CurrencyRepository.GetAll());
 
         return new ChapterPaymentSettingsAdminPageViewModel
@@ -78,7 +83,7 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
         var platform = request.Platform;
 
         var (chapters, subscriptions) = await GetSiteAdminRestrictedContent(request,
-            x => x.ChapterRepository.GetAll(),
+            x => x.ChapterRepository.GetAll(platform),
             x => x.MemberSiteSubscriptionRepository.GetAllChapterOwnerSubscriptions(platform));
 
         var subscriptionDictionary = subscriptions
@@ -129,13 +134,12 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
     }
 
     public async Task<SiteAdminChapterViewModel> GetSiteAdminChapterViewModel(
-        MemberServiceRequest request, Guid chapterId)
+        MemberChapterServiceRequest request)
     {
-        var platform = request.Platform;
+        var (platform, chapter) = (request.Platform, request.Chapter);
 
-        var (chapter, subscription, siteSubscriptions, sitePaymentSettings) = await GetSiteAdminRestrictedContent(request,
-            x => x.ChapterRepository.GetById(chapterId),
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapterId),
+        var (subscription, siteSubscriptions, sitePaymentSettings) = await GetSiteAdminRestrictedContent(request,
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
             x => x.SiteSubscriptionRepository.GetAll(platform),
             x => x.SitePaymentSettingsRepository.GetAll());
 
@@ -152,13 +156,13 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
     }
 
     public async Task<ServiceResult> UpdateSiteAdminChapter(
-        MemberServiceRequest request,
-        Guid chapterId,
+        MemberChapterServiceRequest request,
         SiteAdminChapterUpdateViewModel viewModel)
     {
-        var (chapter, subscription) = await GetSiteAdminRestrictedContent(request,
-            x => x.ChapterRepository.GetById(chapterId),
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapterId));
+        var (platform, chapter) = (request.Platform, request.Chapter);
+
+        var subscription = await GetSiteAdminRestrictedContent(request,
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id));
 
         if (chapter.OwnerId == null)
         {

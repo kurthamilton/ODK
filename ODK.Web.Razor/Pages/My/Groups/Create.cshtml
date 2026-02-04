@@ -14,8 +14,8 @@
     Layout = "_HomeLayout";
     Model.Title = "Create group";
 
-    var viewModel = await ChapterViewModelService.GetChapterCreate(
-        Model.Platform, Model.CurrentMember);
+    var viewModel = await ChapterViewModelService.GetChapterCreateViewModel(
+        Model.MemberServiceRequest);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
