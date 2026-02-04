@@ -14,7 +14,7 @@ public interface IChapterViewModelService
 
     Task<ChapterAboutPageViewModel> GetChapterAboutPage(Chapter chapter);
 
-    Task<ChapterCreateViewModel> GetChapterCreate(PlatformType platform, Member currentMember);
+    Task<ChapterCreateViewModel> GetChapterCreateViewModel(MemberServiceRequest request);
 
     Task<GroupContactPageViewModel> GetGroupContactPage(
         ServiceRequest request, Member? currentMember, Chapter chapter);

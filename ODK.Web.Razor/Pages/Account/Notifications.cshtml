@@ -11,7 +11,8 @@
     Layout = "_AccountLayout";
     Model.Title = "Notifications";
 
-    var viewModel = await NotificationService.GetNotificationsPageViewModel(Model.CurrentMemberId);
+    var request = Model.MemberServiceRequest;
+    var viewModel = await NotificationService.GetNotificationsPageViewModel(request);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

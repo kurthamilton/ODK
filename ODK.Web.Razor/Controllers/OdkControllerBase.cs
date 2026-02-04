@@ -27,6 +27,8 @@ public abstract class OdkControllerBase : Controller
 
     protected Chapter Chapter => RequestStore.Chapter;
 
+    protected ChapterServiceRequest ChapterServiceRequest => RequestStore.ChapterServiceRequest;
+
     protected Member CurrentMember => RequestStore.CurrentMember;
 
     protected MemberChapterServiceRequest MemberChapterServiceRequest => RequestStore.MemberChapterServiceRequest;

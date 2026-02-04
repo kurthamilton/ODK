@@ -27,10 +27,8 @@ public class ContactModel : OdkPageModel
             return Page();
         }
 
-        var chapter = Chapter;
         await _contactService.SendChapterContactMessage(
-            ServiceRequest,
-            chapter,
+            ChapterServiceRequest,
             viewModel.EmailAddress ?? "",
             viewModel.Message ?? "",
             viewModel.Recaptcha ?? "");

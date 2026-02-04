@@ -109,15 +109,18 @@ public class NotificationService : INotificationService
             chapterId: chapterId);
     }
 
-    public async Task<NotificationsPageViewModel> GetNotificationsPageViewModel(Guid memberId)
+    public async Task<NotificationsPageViewModel> GetNotificationsPageViewModel(
+        MemberServiceRequest request)
     {
-        var (settings, adminMembers) = await _unitOfWork.RunAsync(
-            x => x.MemberNotificationSettingsRepository.GetByMemberId(memberId),
-            x => x.ChapterAdminMemberRepository.GetByMemberId(memberId));
+        var (platform, currentMember) = (request.Platform, request.CurrentMember);
+
+        var (settings, isAdmin) = await _unitOfWork.RunAsync(
+            x => x.MemberNotificationSettingsRepository.GetByMemberId(currentMember.Id),
+            x => x.ChapterAdminMemberRepository.IsAdmin(platform, currentMember.Id));
 
         return new NotificationsPageViewModel
         {
-            IsAdmin = adminMembers.Count > 0,
+            IsAdmin = isAdmin,
             Settings = settings
         };
     }

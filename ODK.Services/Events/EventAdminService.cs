@@ -62,7 +62,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     public async Task<ServiceResult> CreateEvent(
         MemberChapterAdminServiceRequest request, EventCreateModel model, bool draft)
     {
-        var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
+        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
         var (
             ownerSubscription,
@@ -75,7 +75,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             currency
         ) = await _unitOfWork.RunAsync(
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => x.VenueRepository.GetById(model.VenueId),
             x => x.ChapterEventSettingsRepository.GetByChapterId(chapter.Id),
             x => x.MemberRepository.GetAllByChapterId(chapter.Id),
@@ -165,7 +165,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         if (@event.Ticketed)
         {
-            _backgroundTaskService.Enqueue(() => _paymentService.EnsureProductExists(chapter.Id));
+            _backgroundTaskService.Enqueue(() => _paymentService.EnsureProductExists(request, chapter.Id));
         }
 
         return ServiceResult.Successful();
@@ -287,7 +287,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         var (venues, adminMembers, eventSettings, currency, ownerSubscription) = await GetChapterAdminRestrictedContent(
             request,
             x => x.VenueRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => x.ChapterEventSettingsRepository.GetByChapterId(chapter.Id),
             x => x.CurrencyRepository.GetByChapterId(chapter.Id),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id));
@@ -307,7 +307,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     public async Task<EventEditAdminPageViewModel> GetEventEditViewModel(
         MemberChapterAdminServiceRequest request, Guid eventId)
     {
-        var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
+        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
         var (
             ownerSubscription,
@@ -319,7 +319,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         ) = await _unitOfWork.RunAsync(
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
             x => x.EventRepository.GetById(eventId),
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => x.CurrencyRepository.GetByChapterId(chapter.Id),
             x => x.EventHostRepository.GetByEventId(eventId),
             x => x.VenueRepository.GetByChapterId(chapter.Id));
@@ -606,6 +606,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     // Public for Hangfire
     public async Task SendScheduledEmails(ServiceRequest request, Guid eventEmailId)
     {
+        var platform = request.Platform;
+
         await _loggingService.Info($"Sending event email {eventEmailId}");
 
         var email = await _unitOfWork.EventEmailRepository.GetByIdOrDefault(eventEmailId).Run();
@@ -622,7 +624,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             return;
         }
 
-        var chapter = await _unitOfWork.ChapterRepository.GetById(@event.ChapterId).Run();
+        var chapter = await _unitOfWork.ChapterRepository.GetById(platform, @event.ChapterId).Run();
 
         if (@event.Date < chapter.CurrentTime().StartOfDay())
         {
@@ -718,7 +720,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     public async Task<ServiceResult> UpdateEvent(
         MemberChapterAdminServiceRequest request, Guid id, EventCreateModel model)
     {
-        var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
+        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
         var (ownerSubscription,
             chapterAdminMembers,
@@ -729,7 +731,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             attendees
         ) = await _unitOfWork.RunAsync(
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => x.EventRepository.GetById(id),
             x => x.EventHostRepository.GetByEventId(id),
             x => x.VenueRepository.GetById(model.VenueId),
@@ -817,7 +819,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         if (@event.Ticketed)
         {
-            _backgroundTaskService.Enqueue(() => _paymentService.EnsureProductExists(chapter.Id));
+            _backgroundTaskService.Enqueue(() => _paymentService.EnsureProductExists(request, chapter.Id));
         }
 
         if (@event.AttendeeLimit > previousAttendeeLimit)

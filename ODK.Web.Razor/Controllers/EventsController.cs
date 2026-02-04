@@ -34,11 +34,12 @@ public class EventsController : OdkControllerBase
         return RedirectPermanent(url);
     }
 
+    [Obsolete]
     [Authorize]
     [HttpGet("events/{id:guid}/attend")]
     public async Task<IActionResult> EmailRsvpLegacyLegacy(Guid id)
     {
-        var chapter = await _chapterService.GetByEventId(id);
+        var chapter = await _chapterService.GetByEventId(ServiceRequest, id);
         var @event = await _eventService.GetById(id);
         var url = OdkRoutes.Groups.EventAttend(chapter, @event.Shortcode);
         return RedirectPermanent(url);

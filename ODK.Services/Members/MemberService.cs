@@ -226,26 +226,24 @@ public class MemberService : IMemberService
         return ServiceResult<Member?>.Successful(member);
     }
 
-    public async Task<ServiceResult> CreateChapterAccount(ServiceRequest request, Guid chapterId, MemberCreateProfile model)
+    public async Task<ServiceResult> CreateChapterAccount(ChapterServiceRequest request, MemberCreateProfile model)
     {
+        var (platform, chapter) = (request.Platform, request.Chapter);
+
         await _loggingService.Info($"Creating chapter account for {model.EmailAddress}");
 
-        var platform = request.Platform;
-
         var (
-            chapter,
             chapterProperties,
             membershipSettings,
             existing,
             siteSubscription,
             ownerSubscription
         ) = await _unitOfWork.RunAsync(
-            x => x.ChapterRepository.GetById(chapterId),
-            x => x.ChapterPropertyRepository.GetByChapterId(chapterId),
-            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId),
+            x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.MemberRepository.GetByEmailAddress(model.EmailAddress),
             x => x.SiteSubscriptionRepository.GetDefault(platform),
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapterId));
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id));
 
         var validationResult = ValidateMemberProfile(chapterProperties, model, forApplication: true);
         if (!validationResult.Success)
@@ -300,7 +298,7 @@ public class MemberService : IMemberService
 
         AddMemberToChapter(now, member, chapter, memberProperties, membershipSettings, ownerSubscription);
 
-        var chapterLocation = await _unitOfWork.ChapterLocationRepository.GetByChapterId(chapterId);
+        var chapterLocation = await _unitOfWork.ChapterLocationRepository.GetByChapterId(chapter.Id);
         if (chapterLocation != null)
         {
             _unitOfWork.MemberLocationRepository.Add(new MemberLocation
@@ -328,7 +326,7 @@ public class MemberService : IMemberService
         _unitOfWork.MemberActivationTokenRepository.Add(new MemberActivationToken
         {
             ActivationToken = activationToken,
-            ChapterId = chapterId,
+            ChapterId = chapter.Id,
             MemberId = member.Id
         });
 
@@ -364,11 +362,13 @@ public class MemberService : IMemberService
         }
     }
 
-    public async Task<ServiceResult> DeleteMember(Guid memberId)
+    public async Task<ServiceResult> DeleteMember(MemberServiceRequest request)
     {
-        var (member, chapters) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(memberId),
-            x => x.ChapterRepository.GetByOwnerId(memberId));
+        var (platform, currentMember) = (request.Platform, request.CurrentMember);
+
+        var chapters = await _unitOfWork.ChapterRepository
+            .GetByOwnerId(platform, currentMember.Id)
+            .Run();
 
         var activeChapters = chapters
             .Where(x => x.IsOpenForRegistration())
@@ -384,7 +384,7 @@ public class MemberService : IMemberService
             _unitOfWork.ChapterRepository.Update(chapter);
         }
 
-        _unitOfWork.MemberRepository.Delete(member);
+        _unitOfWork.MemberRepository.Delete(currentMember);
         await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();
@@ -392,10 +392,10 @@ public class MemberService : IMemberService
 
     public async Task<ServiceResult> DeleteMemberChapterData(MemberChapterServiceRequest request)
     {
-        var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
+        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
         var (chapterAdminMembers, memberProperties, notifications) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => x.MemberPropertyRepository.GetByMemberId(currentMember.Id, chapter.Id),
             x => x.NotificationRepository.GetByMemberId(currentMember.Id, chapter.Id));
 
@@ -516,7 +516,7 @@ public class MemberService : IMemberService
             chapterPropertyOptions,
             membershipSettings
             ) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => x.MemberNotificationSettingsRepository.GetByChapterId(chapter.Id, NotificationType.NewMember),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
             x => x.MemberRepository.GetCountByChapterId(chapter.Id),
@@ -564,10 +564,10 @@ public class MemberService : IMemberService
 
     public async Task<ServiceResult> LeaveChapter(MemberChapterServiceRequest request, string reason)
     {
-        var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
+        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
         var (adminMembers, subscription) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => x.MemberSubscriptionRecordRepository.GetLatest(currentMember.Id, chapter.Id));
 
         var result = await DeleteMemberChapterData(request);        

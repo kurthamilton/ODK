@@ -108,7 +108,7 @@ public class ErrorHandlingMiddleware
         if (platform == PlatformType.DrunkenKnitwits)
         {
             var fullName = Chapter.GetFullName(platform, pathParts[0]);
-            return await unitOfWork.ChapterRepository.GetByName(fullName).Run();
+            return await unitOfWork.ChapterRepository.GetByName(platform, fullName).Run();
         }
 
         // Default routes are like
@@ -118,13 +118,13 @@ public class ErrorHandlingMiddleware
             pathParts.Length > 1)
         {
             var slug = pathParts[1];
-            return await unitOfWork.ChapterRepository.GetBySlug(slug).Run();
+            return await unitOfWork.ChapterRepository.GetBySlug(platform, slug).Run();
         }
         else if (path.StartsWith("/my/groups/", StringComparison.OrdinalIgnoreCase) &&
             pathParts.Length > 2 &&
             Guid.TryParse(pathParts[2], out var chapterId))
         {
-            return await unitOfWork.ChapterRepository.GetByIdOrDefault(chapterId).Run();
+            return await unitOfWork.ChapterRepository.GetByIdOrDefault(platform, chapterId).Run();
         }
 
         return null;

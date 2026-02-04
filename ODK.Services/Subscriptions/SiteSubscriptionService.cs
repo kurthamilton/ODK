@@ -194,13 +194,13 @@ public class SiteSubscriptionService : ISiteSubscriptionService
     public async Task<SiteSubscriptionCheckoutViewModel> StartSiteSubscriptionCheckout(
         MemberServiceRequest request, Guid priceId, string returnPath, Guid? chapterId)
     {
-        var (currentMember, platform) = (request.CurrentMember, request.Platform);
+        var (platform, currentMember) = (request.Platform, request.CurrentMember);
 
         var (siteSubscription, price, chapter) = await _unitOfWork.RunAsync(
             x => x.SiteSubscriptionRepository.GetByPriceId(priceId),
             x => x.SiteSubscriptionPriceRepository.GetById(priceId),
             x => chapterId != null
-                ? x.ChapterRepository.GetByIdOrDefault(chapterId.Value)
+                ? x.ChapterRepository.GetByIdOrDefault(platform, chapterId.Value)
                 : new DefaultDeferredQuerySingleOrDefault<Chapter>());
 
         if (string.IsNullOrEmpty(price.ExternalId))

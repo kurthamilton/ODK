@@ -41,6 +41,8 @@ public class AuthenticationService : IAuthenticationService
         string activationToken,
         string password)
     {
+        var platform = request.Platform;
+
         var token = await _unitOfWork.MemberActivationTokenRepository
             .GetByToken(activationToken)
             .Run();
@@ -50,7 +52,7 @@ public class AuthenticationService : IAuthenticationService
         }
 
         var (adminMembers, notificationSettings, member, memberPassword, chapterProperties, memberProperties) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => x.MemberNotificationSettingsRepository.GetByChapterId(chapter.Id, NotificationType.NewMember),
             x => x.MemberRepository.GetById(token.MemberId),
             x => x.MemberPasswordRepository.GetByMemberId(token.MemberId),
@@ -180,11 +182,14 @@ public class AuthenticationService : IAuthenticationService
         return member;
     }
 
-    public async Task<IReadOnlyCollection<Claim>> GetClaimsAsync(Member member)
+    public async Task<IReadOnlyCollection<Claim>> GetClaimsAsync(MemberServiceRequest request)
     {
-        var adminMembers = await _unitOfWork.ChapterAdminMemberRepository.GetByMemberId(member.Id).Run();
+        var (platform, currentMember) = (request.Platform, request.CurrentMember);
 
-        var claimsUser = new OdkClaimsUser(member, adminMembers);
+        var adminMembers = await _unitOfWork.ChapterAdminMemberRepository
+            .GetByMemberId(platform, currentMember.Id).Run();
+
+        var claimsUser = new OdkClaimsUser(currentMember, adminMembers);
         return claimsUser
             .GetClaims()
             .ToArray();

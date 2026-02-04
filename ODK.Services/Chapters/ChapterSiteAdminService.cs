@@ -23,8 +23,10 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
 
     public async Task<ServiceResult> ApproveChapter(MemberServiceRequest request, Guid chapterId)
     {
+        var platform = request.Platform;
+
         var (chapter, members) = await GetSiteAdminRestrictedContent(request,
-            x => x.ChapterRepository.GetById(chapterId),
+            x => x.ChapterRepository.GetById(platform, chapterId),
             x => x.MemberRepository.GetAllByChapterId(chapterId));
 
         var owner = members.FirstOrDefault(x => x.Id == chapter.OwnerId);
@@ -50,8 +52,10 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
 
     public async Task<ServiceResult> DeleteChapter(MemberServiceRequest request, Guid chapterId)
     {
+        var platform = request.Platform;
+
         var chapter = await GetSiteAdminRestrictedContent(request,
-            x => x.ChapterRepository.GetById(chapterId));
+            x => x.ChapterRepository.GetById(platform, chapterId));
 
         _unitOfWork.ChapterRepository.Delete(chapter);
         await _unitOfWork.SaveChangesAsync();
@@ -134,7 +138,7 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
         var platform = request.Platform;
 
         var (chapter, subscription, siteSubscriptions, sitePaymentSettings) = await GetSiteAdminRestrictedContent(request,
-            x => x.ChapterRepository.GetById(chapterId),
+            x => x.ChapterRepository.GetById(platform, chapterId),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapterId),
             x => x.SiteSubscriptionRepository.GetAll(platform),
             x => x.SitePaymentSettingsRepository.GetAll());
@@ -156,8 +160,10 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
         Guid chapterId,
         SiteAdminChapterUpdateViewModel viewModel)
     {
+        var platform = request.Platform;
+
         var (chapter, subscription) = await GetSiteAdminRestrictedContent(request,
-            x => x.ChapterRepository.GetById(chapterId),
+            x => x.ChapterRepository.GetById(platform, chapterId),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapterId));
 
         if (chapter.OwnerId == null)

@@ -66,10 +66,10 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     public async Task<AdminMemberAdminPageViewModel> GetAdminMemberViewModel(
         MemberChapterAdminServiceRequest request, Guid memberId)
     {
-        var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
+        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
         var adminMembers = await _unitOfWork.ChapterAdminMemberRepository
-            .GetByChapterId(chapter.Id).Run();
+            .GetByChapterId(platform, chapter.Id).Run();
 
         var adminMember = adminMembers.FirstOrDefault(x => x.MemberId == memberId);
         OdkAssertions.Exists(adminMember);
@@ -108,7 +108,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
         var (adminMembers, members, ownerSubscription) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => x.MemberRepository.GetByChapterId(chapter.Id),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id));
 

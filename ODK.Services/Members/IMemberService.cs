@@ -14,9 +14,9 @@ public interface IMemberService
 
     Task<ServiceResult<Member?>> CreateAccount(ServiceRequest request, AccountCreateModel model);
 
-    Task<ServiceResult> CreateChapterAccount(ServiceRequest request, Guid chapterId, MemberCreateProfile model);
+    Task<ServiceResult> CreateChapterAccount(ChapterServiceRequest request, MemberCreateProfile model);
 
-    Task<ServiceResult> DeleteMember(Guid memberId);
+    Task<ServiceResult> DeleteMember(MemberServiceRequest request);
 
     Task<ServiceResult> DeleteMemberChapterData(MemberChapterServiceRequest request);
 

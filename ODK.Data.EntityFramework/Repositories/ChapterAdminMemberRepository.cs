@@ -5,24 +5,37 @@ using ODK.Core.Platforms;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
+using ODK.Data.EntityFramework.Queries;
 
 namespace ODK.Data.EntityFramework.Repositories;
 
 public class ChapterAdminMemberRepository : WriteRepositoryBase<ChapterAdminMember>, IChapterAdminMemberRepository
 {
-    private readonly PlatformType _platform;
-
-    public ChapterAdminMemberRepository(OdkContext context, IPlatformProvider platformProvider)
+    public ChapterAdminMemberRepository(OdkContext context)
         : base(context)
     {
-        _platform = platformProvider.GetPlatform();
-    }
+    }    
 
-    public IDeferredQuery<bool> IsAdmin(Guid chapterId, Guid memberId)
+    public IDeferredQueryMultiple<ChapterAdminMember> GetByChapterId(PlatformType platform, Guid chapterId) 
+        => Set(platform)
+            .Where(x => x.ChapterId == chapterId)
+            .DeferredMultiple();
+
+    public IDeferredQueryMultiple<ChapterAdminMember> GetByMemberId(PlatformType platform, Guid memberId) 
+        => Set(platform)
+            .Where(x => x.MemberId == memberId)
+            .DeferredMultiple();
+
+    public IDeferredQuerySingleOrDefault<ChapterAdminMember> GetByMemberId(PlatformType platform, Guid memberId, Guid chapterId) 
+        => Set(platform)
+            .Where(x => x.MemberId == memberId && x.ChapterId == chapterId)
+            .DeferredSingleOrDefault();
+
+    public IDeferredQuery<bool> IsAdmin(PlatformType platform, Guid chapterId, Guid memberId)
     {
         var query =
             from member in Set<Member>()
-            from adminMember in Set()
+            from adminMember in Set(platform)
                 .Where(x => x.MemberId == member.Id && x.ChapterId == chapterId)
                 .DefaultIfEmpty()
             where
@@ -33,29 +46,17 @@ public class ChapterAdminMemberRepository : WriteRepositoryBase<ChapterAdminMemb
         return query.DeferredAny();
     }
 
-    public IDeferredQueryMultiple<ChapterAdminMember> GetByChapterId(Guid chapterId) => Set()
-        .Where(x => x.ChapterId == chapterId)
-        .DeferredMultiple();
+    public IDeferredQuery<bool> IsAdmin(PlatformType platform, Guid memberId)
+        => Set(platform)
+            .Where(x => x.MemberId == memberId)
+            .DeferredAny();
 
-    public IDeferredQueryMultiple<ChapterAdminMember> GetByMemberId(Guid memberId) => Set()
-        .Where(x => x.MemberId == memberId)
-        .DeferredMultiple();
-
-    public IDeferredQuerySingleOrDefault<ChapterAdminMember> GetByMemberId(Guid memberId, Guid chapterId) => Set()
-        .Where(x => x.MemberId == memberId && x.ChapterId == chapterId)
-        .DeferredSingleOrDefault();
-
-    protected override IQueryable<ChapterAdminMember> Set()
+    protected IQueryable<ChapterAdminMember> Set(PlatformType platform)
     {
         var chapterQuery =
             from chapter in Set<Chapter>()
+                .ForPlatform(platform)
             select chapter;
-
-        if (_platform != PlatformType.Default)
-        {
-            chapterQuery = chapterQuery
-                .Where(x => x.Platform == _platform);
-        }
 
         var query =
             from chapterAdminMember in base.Set()

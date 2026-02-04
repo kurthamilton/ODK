@@ -27,6 +27,7 @@ public class RequestStore : IRequestStore
     private ServiceRequest? _serviceRequest;
     private readonly IUnitOfWork _unitOfWork;
 
+    private readonly Lazy<ChapterServiceRequest> _chapterServiceRequest;
     private readonly Lazy<Guid> _currentMemberId;
     private readonly Lazy<MemberChapterServiceRequest> _memberChapterServiceRequest;
     private readonly Lazy<MemberServiceRequest> _memberServiceRequest;
@@ -38,6 +39,7 @@ public class RequestStore : IRequestStore
         _loggingService = loggingService;
         _unitOfWork = unitOfWork;
 
+        _chapterServiceRequest = new(() => ChapterServiceRequest.Create(Chapter, ServiceRequest));
         _currentMemberId = new(
             () => CurrentMemberIdOrDefault ?? throw new OdkNotAuthorizedException());
         _memberChapterServiceRequest = new(() => MemberChapterServiceRequest.Create(Chapter, MemberServiceRequest));
@@ -47,6 +49,8 @@ public class RequestStore : IRequestStore
     public Chapter Chapter => _chapter ?? throw new OdkNotFoundException();
 
     public Chapter? ChapterOrDefault => _chapter;
+
+    public ChapterServiceRequest ChapterServiceRequest => _chapterServiceRequest.Value;
 
     public Member CurrentMember => _currentMember ?? throw new OdkNotAuthenticatedException();
 
@@ -74,7 +78,7 @@ public class RequestStore : IRequestStore
         }
 
         _currentChapterAdminMember = await _unitOfWork.ChapterAdminMemberRepository
-            .GetByMemberId(CurrentMemberId, Chapter.Id).Run();
+            .GetByMemberId(Platform, CurrentMemberId, Chapter.Id).Run();
         _currentChapterAdminMemberLoaded = true;
         return _currentChapterAdminMember;
     }
@@ -110,7 +114,7 @@ public class RequestStore : IRequestStore
                     _loggingService.Info($"RequestStore: getting chapter by name: '{chapterName}'");
                 }
 
-                return unitOfWork.ChapterRepository.GetByName(chapterName);
+                return unitOfWork.ChapterRepository.GetByName(Platform, chapterName);
             }
         }
         else
@@ -124,7 +128,7 @@ public class RequestStore : IRequestStore
                     _loggingService.Info($"RequestStore: getting chapter by slug: '{slug}'");
                 }
 
-                return unitOfWork.ChapterRepository.GetBySlug(slug);
+                return unitOfWork.ChapterRepository.GetBySlug(Platform, slug);
             }
         }
 
@@ -140,7 +144,7 @@ public class RequestStore : IRequestStore
                 _loggingService.Info($"RequestStore: getting chapter by id: '{chapterId}'");
             }
 
-            return _unitOfWork.ChapterRepository.GetByIdOrDefault(chapterId.Value);
+            return _unitOfWork.ChapterRepository.GetByIdOrDefault(Platform, chapterId.Value);
         }
 
         if (verbose)

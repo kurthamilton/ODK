@@ -9,5 +9,5 @@ public interface IChapterImageRepository : IWriteRepository<ChapterImage>, IChap
 
     IDeferredQuerySingleOrDefault<ChapterImage> GetByChapterId(Guid chapterId);
 
-    IDeferredQueryMultiple<ChapterImageMetadata> GetDtosByChapterIds(IEnumerable<Guid> chapterIds);
+    IDeferredQueryMultiple<ChapterImageMetadata> GetMetadatasByChapterIds(IEnumerable<Guid> chapterIds);
 }

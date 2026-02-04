@@ -21,8 +21,7 @@ public abstract class OdkSiteAccountPageModel : OdkPageModel
             return;
         }
 
-        var member = CurrentMember;
-        var chapter = await ChapterService.GetDefaultChapter(member);
+        var chapter = await ChapterService.GetDefaultChapter(MemberServiceRequest);
 
         var redirectPath = chapter == null
             ? "/"

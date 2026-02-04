@@ -202,8 +202,10 @@ public class EventService : IEventService
 
     public async Task NotifyWaitlist(ServiceRequest request, Guid eventId)
     {
+        var platform = request.Platform;
+
         var (chapter, @event, waitlist, responses) = await _unitOfWork.RunAsync(
-            x => x.ChapterRepository.GetByEventId(eventId),
+            x => x.ChapterRepository.GetByEventId(platform, eventId),
             x => x.EventRepository.GetById(@eventId),
             x => x.EventWaitlistMemberRepository.GetByEventId(eventId),
             x => x.EventResponseRepository.GetByEventId(eventId));

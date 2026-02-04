@@ -95,10 +95,10 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<ServiceResult> AddChapterAdminMember(MemberChapterAdminServiceRequest request, Guid memberId)
     {
-        var (chapterId, currentMemberId) = (request.Chapter.Id, request.CurrentMember.Id);
+        var (platform, chapterId, currentMemberId) = (request.Platform, request.Chapter.Id, request.CurrentMember.Id);
 
         var (chapterAdminMembers, currentMember, member, ownerSubscription) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
+            x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapterId),
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.MemberRepository.GetById(memberId),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapterId));
@@ -544,10 +544,12 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     public async Task<ServiceResult> DeleteChapterAdminMember(
         MemberChapterAdminServiceRequest request, Guid memberId)
     {
-        var (chapter, chapterId, currentMember) = (request.Chapter, request.Chapter.Id, request.CurrentMember);
+        var (platform, chapter, chapterId, currentMember) = (request.Platform, request.Chapter, request.Chapter.Id, request.CurrentMember);
 
-        var chapterAdminMembers = await _unitOfWork.ChapterAdminMemberRepository.GetByChapterId(chapterId).Run();
-
+        var chapterAdminMembers = await _unitOfWork.ChapterAdminMemberRepository
+            .GetByChapterId(platform, chapterId)
+            .Run();
+        
         AssertMemberIsChapterAdmin(
             request,
             chapterAdminMembers.FirstOrDefault(x => x.MemberId == currentMember.Id));
@@ -704,9 +706,9 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<IReadOnlyCollection<ChapterAdminMember>> GetChapterAdminMembers(MemberChapterAdminServiceRequest request)
     {
-        var (chapterId, currentMember) = (request.Chapter.Id, request.CurrentMember);
+        var (platform, chapterId, currentMember) = (request.Platform, request.Chapter.Id, request.CurrentMember);
 
-        var chapterAdminMembers = await _unitOfWork.ChapterAdminMemberRepository.GetByChapterId(chapterId).Run();
+        var chapterAdminMembers = await _unitOfWork.ChapterAdminMemberRepository.GetByChapterId(platform, chapterId).Run();
 
         AssertMemberIsChapterAdmin(
             request,
@@ -717,13 +719,11 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<ChapterAdminPageViewModel> GetChapterAdminPageViewModel(MemberChapterAdminServiceRequest request)
     {
-        var chapter = await GetChapterAdminRestrictedContent(
-            request,
-            x => x.ChapterRepository.GetById(request.Chapter.Id));
+        await AssertMemberIsChapterAdmin(request);
 
         return new ChapterAdminPageViewModel
         {
-            Chapter = chapter
+            Chapter = request.Chapter
         };
     }
 
@@ -1293,11 +1293,11 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         Guid messageId,
         string message)
     {
-        var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
+        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
         var (adminMembers, originalMessage) = await GetChapterAdminRestrictedContent(
             request,
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => x.ChapterContactMessageRepository.GetById(messageId));
 
         OdkAssertions.BelongsToChapter(originalMessage, chapter.Id);
@@ -1436,10 +1436,10 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         Guid memberId,
         ChapterAdminMemberUpdateModel model)
     {
-        var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
+        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
         var chapterAdminMembers = await _unitOfWork.ChapterAdminMemberRepository
-            .GetByChapterId(chapter.Id).Run();
+            .GetByChapterId(platform, chapter.Id).Run();
 
         var chapterAdminMember = chapterAdminMembers.FirstOrDefault(x => x.MemberId == currentMember.Id);
 

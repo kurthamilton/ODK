@@ -154,8 +154,11 @@ public class AccountController : OdkControllerBase
     [HttpPost("account/login")]
     public async Task<IActionResult> Login([FromForm] LoginViewModel viewModel, string? returnUrl)
     {
-        var result = await _loginHandler.Login(viewModel.Email ?? string.Empty,
-            viewModel.Password ?? string.Empty, true);
+        var result = await _loginHandler.Login(
+            ServiceRequest, 
+            viewModel.Email ?? string.Empty,
+            viewModel.Password ?? string.Empty, 
+            rememberMe: true);
 
         if (result.Success && result.Member != null)
         {
@@ -176,7 +179,10 @@ public class AccountController : OdkControllerBase
     [HttpPost("account/login/google")]
     public async Task<IActionResult> GoogleSiteLogin([FromForm] string token, string? returnUrl)
     {
-        var result = await _loginHandler.OAuthLogin(OAuthProviderType.Google, token);
+        var result = await _loginHandler.OAuthLogin(
+            ServiceRequest,
+            OAuthProviderType.Google, 
+            token);
         if (result.Success && result.Member != null)
         {
             if (string.IsNullOrEmpty(returnUrl))
@@ -197,6 +203,7 @@ public class AccountController : OdkControllerBase
     public async Task<IActionResult> Login(string chapterName, [FromForm] LoginViewModel viewModel, string? returnUrl)
     {
         var result = await _loginHandler.Login(
+            ServiceRequest,
             viewModel.Email ?? string.Empty,
             viewModel.Password ?? string.Empty,
             rememberMe: true);
@@ -221,7 +228,10 @@ public class AccountController : OdkControllerBase
     [HttpPost("{chapterName}/account/login/google")]
     public async Task<IActionResult> GoogleChapterLogin(string chapterName, [FromForm] string token, string? returnUrl)
     {
-        var result = await _loginHandler.OAuthLogin(OAuthProviderType.Google, token);
+        var result = await _loginHandler.OAuthLogin(
+            ServiceRequest, 
+            OAuthProviderType.Google, 
+            token);
         if (result.Success && result.Member != null)
         {
             if (string.IsNullOrEmpty(returnUrl))
@@ -240,7 +250,7 @@ public class AccountController : OdkControllerBase
     [HttpPost("account/delete")]
     public async Task<IActionResult> DeleteAccount()
     {
-        var result = await _memberService.DeleteMember(MemberId);
+        var result = await _memberService.DeleteMember(MemberServiceRequest);
         AddFeedback(result, "Account deleted");
 
         if (!result.Success)

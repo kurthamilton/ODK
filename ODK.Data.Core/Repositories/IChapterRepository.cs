@@ -4,21 +4,27 @@ using ODK.Data.Core.Deferred;
 
 namespace ODK.Data.Core.Repositories;
 
-public interface IChapterRepository : IReadWriteRepository<Chapter>
+public interface IChapterRepository : IWriteRepository<Chapter>
 {
     IDeferredQueryMultiple<Chapter> GetAll(PlatformType platform);
 
-    IDeferredQueryMultiple<Chapter> GetByAdminMemberId(PlatformType platformType, Guid memberId);
+    IDeferredQueryMultiple<Chapter> GetByAdminMemberId(PlatformType platform, Guid memberId);
 
-    IDeferredQuerySingle<Chapter> GetByEventId(Guid eventId);
+    IDeferredQuerySingle<Chapter> GetByEventId(PlatformType platform, Guid eventId);
 
-    IDeferredQueryMultiple<Chapter> GetByMemberId(Guid memberId);
+    IDeferredQuerySingle<Chapter> GetById(PlatformType platform, Guid id);
 
-    IDeferredQuerySingleOrDefault<Chapter> GetByName(string name);
+    IDeferredQuerySingleOrDefault<Chapter> GetByIdOrDefault(PlatformType platform, Guid id);
 
-    IDeferredQueryMultiple<Chapter> GetByOwnerId(Guid ownerId);
+    IDeferredQueryMultiple<Chapter> GetByIds(PlatformType platform, IEnumerable<Guid> ids);
+
+    IDeferredQueryMultiple<Chapter> GetByMemberId(PlatformType platform, Guid memberId);
+
+    IDeferredQuerySingleOrDefault<Chapter> GetByName(PlatformType platform, string name);
+
+    IDeferredQueryMultiple<Chapter> GetByOwnerId(PlatformType platform, Guid ownerId);
 
     IDeferredQueryMultiple<Chapter> GetByTopicGroupId(PlatformType platform, Guid topicGroupId);
 
-    IDeferredQuerySingleOrDefault<Chapter> GetBySlug(string slug);
+    IDeferredQuerySingleOrDefault<Chapter> GetBySlug(PlatformType platform, string slug);
 }

@@ -13,6 +13,8 @@ public interface IRequestStore
 
     Chapter? ChapterOrDefault { get; }
 
+    ChapterServiceRequest ChapterServiceRequest { get; }
+
     Member CurrentMember { get; }
 
     Guid CurrentMemberId { get; }

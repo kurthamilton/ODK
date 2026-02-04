@@ -9,8 +9,7 @@ namespace ODK.Data.EntityFramework;
 public class UnitOfWork : IUnitOfWork
 {
     private readonly OdkContext _context;
-    private readonly IPlatformProvider _platformProvider;
-
+    
     private readonly Lazy<IChapterAdminMemberRepository> _chapterAdminMemberRepository;
     private readonly Lazy<IChapterContactMessageReplyRepository> _chapterContactMessageReplyRepository;
     private readonly Lazy<IChapterContactMessageRepository> _chapterContactMessageRepository;
@@ -98,9 +97,8 @@ public class UnitOfWork : IUnitOfWork
     public UnitOfWork(OdkContext context, IPlatformProvider platformProvider)
     {
         _context = context;
-        _platformProvider = platformProvider;
-
-        _chapterAdminMemberRepository = new(() => new ChapterAdminMemberRepository(_context, _platformProvider));
+        
+        _chapterAdminMemberRepository = new(() => new ChapterAdminMemberRepository(_context));
         _chapterContactMessageReplyRepository = new(() => new ChapterContactMessageReplyRepository(_context));
         _chapterContactMessageRepository = new(() => new ChapterContactMessageRepository(_context));
         _chapterConversationMessageRepository = new(() => new ChapterConversationMessageRepository(_context));
@@ -118,7 +116,7 @@ public class UnitOfWork : IUnitOfWork
         _chapterPropertyOptionRepository = new(() => new ChapterPropertyOptionRepository(_context));
         _chapterPropertyRepository = new(() => new ChapterPropertyRepository(_context));
         _chapterQuestionRepository = new(() => new ChapterQuestionRepository(_context));
-        _chapterRepository = new(() => new ChapterRepository(_context, _platformProvider));
+        _chapterRepository = new(() => new ChapterRepository(_context));
         _chapterSubscriptionRepository = new(() => new ChapterSubscriptionRepository(_context));
         _chapterTextsRepository = new(() => new ChapterTextsRepository(_context));
         _chapterTopicRepository = new(() => new ChapterTopicRepository(_context));

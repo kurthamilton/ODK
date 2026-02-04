@@ -37,13 +37,15 @@ public class ContactService : IContactService
     public async Task<ServiceResult> ReplyToChapterConversation(
         MemberServiceRequest request, Guid conversationId, string message)
     {
+        var platform = request.Platform;
+
         var conversation = await _unitOfWork.ChapterConversationRepository.GetById(conversationId).Run();
 
         OdkAssertions.MeetsCondition(conversation, x => x.MemberId == request.CurrentMember.Id);
 
         var (chapter, adminMembers, notificationSettings) = await _unitOfWork.RunAsync(
-            x => x.ChapterRepository.GetById(conversation.ChapterId),
-            x => x.ChapterAdminMemberRepository.GetByChapterId(conversation.ChapterId),
+            x => x.ChapterRepository.GetById(platform, conversation.ChapterId),
+            x => x.ChapterAdminMemberRepository.GetByChapterId(platform, conversation.ChapterId),
             x => x.MemberNotificationSettingsRepository.GetByChapterId(
                 conversation.ChapterId, NotificationType.ConversationOwnerMessage));
 
@@ -81,23 +83,13 @@ public class ContactService : IContactService
     }
 
     public async Task SendChapterContactMessage(
-        ServiceRequest request,
-        Guid chapterId,
+        ChapterServiceRequest request,
         string fromAddress,
         string message,
         string recaptchaToken)
     {
-        var chapter = await _unitOfWork.ChapterRepository.GetById(chapterId).Run();
-        await SendChapterContactMessage(request, chapter, fromAddress, message, recaptchaToken);
-    }
+        var (platform, chapter) = (request.Platform, request.Chapter);
 
-    public async Task SendChapterContactMessage(
-        ServiceRequest request,
-        Chapter chapter,
-        string fromAddress,
-        string message,
-        string recaptchaToken)
-    {
         ValidateRequest(fromAddress, message);
 
         var result = await _recaptchaService.Verify(recaptchaToken);
@@ -108,7 +100,7 @@ public class ContactService : IContactService
         }
 
         var (adminMembers, notificationSettings) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => x.MemberNotificationSettingsRepository.GetByChapterId(chapter.Id, NotificationType.ChapterContactMessage));
 
         var contactMessage = new ChapterContactMessage
@@ -171,29 +163,26 @@ public class ContactService : IContactService
     }
 
     public async Task<ServiceResult> StartChapterConversation(
-        MemberServiceRequest request,
-        Guid chapterId,
+        MemberChapterServiceRequest request,
         string subject,
         string message,
         string recaptchaToken)
     {
-        var currentMember = request.CurrentMember;
+        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
         var (
-            chapter,
             memberSubscription,
             privacySettings,
             membershipSettings,
             adminMembers,
             notificationSettings) = await _unitOfWork.RunAsync(
-            x => x.ChapterRepository.GetById(chapterId),
-            x => x.MemberSubscriptionRepository.GetByMemberId(currentMember.Id, chapterId),
-            x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapterId),
-            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId),
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
-            x => x.MemberNotificationSettingsRepository.GetByChapterId(chapterId, NotificationType.ConversationOwnerMessage));
+            x => x.MemberSubscriptionRepository.GetByMemberId(currentMember.Id, chapter.Id),
+            x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
+            x => x.MemberNotificationSettingsRepository.GetByChapterId(chapter.Id, NotificationType.ConversationOwnerMessage));
 
-        if (!_authorizationService.CanStartConversation(chapterId, currentMember, memberSubscription, membershipSettings, privacySettings))
+        if (!_authorizationService.CanStartConversation(chapter.Id, currentMember, memberSubscription, membershipSettings, privacySettings))
         {
             return ServiceResult.Failure("Permission denied");
         }
@@ -204,7 +193,7 @@ public class ContactService : IContactService
 
         var conversation = new ChapterConversation
         {
-            ChapterId = chapterId,
+            ChapterId = chapter.Id,
             CreatedUtc = now,
             MemberId = currentMember.Id,
             Subject = subject

@@ -63,7 +63,7 @@ public class EventViewModelService : IEventViewModelService
             x => x.SitePaymentSettingsRepository.GetActive(),
             x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
-            x => x.ChapterAdminMemberRepository.IsAdmin(chapter.Id, currentMember.Id),
+            x => x.ChapterAdminMemberRepository.IsAdmin(platform, chapter.Id, currentMember.Id),
             x => x.EventTicketPaymentRepository.GetConfirmedPayments(currentMember.Id, shortcode),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id));
@@ -226,7 +226,7 @@ public class EventViewModelService : IEventViewModelService
             x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
             x => currentMember != null
-                ? x.ChapterAdminMemberRepository.IsAdmin(chapter.Id, currentMember.Id)
+                ? x.ChapterAdminMemberRepository.IsAdmin(platform, chapter.Id, currentMember.Id)
                 : new DefaultDeferredQueryAny(false),
             x => x.ChapterPageRepository.GetByChapterId(chapter.Id),
             x => currentMember != null

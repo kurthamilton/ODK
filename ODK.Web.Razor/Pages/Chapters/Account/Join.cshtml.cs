@@ -51,8 +51,7 @@ public class JoinModel : OdkPageModel
             })
         };
 
-        var chapter = Chapter;
-        var result = await _memberService.CreateChapterAccount(ServiceRequest, chapter.Id, model);
+        var result = await _memberService.CreateChapterAccount(ChapterServiceRequest, model);
         PostJoin(result);
         return result.Success
             ? Redirect($"/{chapterName}/Account/Pending")

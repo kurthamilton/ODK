@@ -19,7 +19,7 @@ public interface IAuthenticationService
 
     Task<ServiceResult> ChangePasswordAsync(Guid memberId, string currentPassword, string newPassword);
 
-    Task<IReadOnlyCollection<Claim>> GetClaimsAsync(Member member);
+    Task<IReadOnlyCollection<Claim>> GetClaimsAsync(MemberServiceRequest request);
 
     Task<Member?> GetMemberAsync(string username, string password);
 

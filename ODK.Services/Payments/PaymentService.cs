@@ -38,10 +38,12 @@ public class PaymentService : IPaymentService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task EnsureProductExists(Guid chapterId)
+    public async Task EnsureProductExists(ServiceRequest request, Guid chapterId)
     {
+        var platform = request.Platform;
+
         var (chapter, chapterPaymentSettings, sitePaymentSettings) = await _unitOfWork.RunAsync(
-            x => x.ChapterRepository.GetById(chapterId),
+            x => x.ChapterRepository.GetById(platform, chapterId),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
             x => x.SitePaymentSettingsRepository.GetActive());
 
@@ -162,7 +164,7 @@ public class PaymentService : IPaymentService
         {
             case PaymentProviderWebhookType.CheckoutSessionCompleted:
             case PaymentProviderWebhookType.PaymentSucceeded:
-                result = await ProcessWebhookPayment(webhook);
+                result = await ProcessWebhookPayment(request, webhook);
                 break;
 
             case PaymentProviderWebhookType.CheckoutSessionExpired:
@@ -255,8 +257,10 @@ public class PaymentService : IPaymentService
         return PaymentWebhookProcessingResult.Successful(member: null, chapter: null, payment: null, currency: null);
     }
 
-    private async Task<PaymentWebhookProcessingResult> ProcessWebhookPayment(PaymentProviderWebhook webhook)
+    private async Task<PaymentWebhookProcessingResult> ProcessWebhookPayment(ServiceRequest request, PaymentProviderWebhook webhook)
     {
+        var platform = request.Platform;
+
         var utcNow = webhook.OriginatedUtc;
 
         if (string.IsNullOrEmpty(webhook.PaymentId))
@@ -343,13 +347,16 @@ public class PaymentService : IPaymentService
 
             _backgroundTaskService.Enqueue(() => _eventService.CompleteEventTicketPurchase(@event.Id, member.Id));
 
-            var chapter = await _unitOfWork.ChapterRepository.GetById(@event.ChapterId).Run();
-            var currency = await _unitOfWork.CurrencyRepository.GetById(payment.CurrencyId).Run();
+            var (chapter, currency) = await _unitOfWork.RunAsync(
+                x => x.ChapterRepository.GetById(platform, @event.ChapterId),
+                x => x.CurrencyRepository.GetById(payment.CurrencyId));
+            
             return PaymentWebhookProcessingResult.Successful(
                 member, chapter, payment, currency);
         }
 
         return await UpdateMemberChapterSubscription(
+            request,
             metadata,
             member,
             payment,
@@ -358,6 +365,7 @@ public class PaymentService : IPaymentService
     }
 
     private async Task<PaymentWebhookProcessingResult> ProcessWebhookChapterSubscription(
+        ServiceRequest request,
         PaymentProviderWebhook webhook,
         PaymentMetadataModel metadata)
     {
@@ -469,6 +477,7 @@ public class PaymentService : IPaymentService
         }
 
         return await UpdateMemberChapterSubscription(
+            request,
             metadata,
             member,
             payment,
@@ -614,7 +623,7 @@ public class PaymentService : IPaymentService
 
         if (metadata.ChapterSubscriptionId != null)
         {
-            return await ProcessWebhookChapterSubscription(webhook, metadata);
+            return await ProcessWebhookChapterSubscription(request, webhook, metadata);
         }
 
         if (metadata.SiteSubscriptionPriceId != null)
@@ -630,12 +639,15 @@ public class PaymentService : IPaymentService
     }
 
     private async Task<PaymentWebhookProcessingResult> UpdateMemberChapterSubscription(
+        ServiceRequest request,
         PaymentMetadataModel metadata,
         Member member,
         Payment payment,
         string externalId,
         DateTime utcNow)
     {
+        var platform = request.Platform;
+
         if (metadata.ChapterId == null || metadata.ChapterSubscriptionId == null)
         {
             var message =
@@ -646,7 +658,7 @@ public class PaymentService : IPaymentService
         }
 
         var (chapter, chapterSubscription) = await _unitOfWork.RunAsync(
-            x => x.ChapterRepository.GetById(metadata.ChapterId.Value),
+            x => x.ChapterRepository.GetById(platform, metadata.ChapterId.Value),
             x => x.ChapterSubscriptionRepository.GetById(metadata.ChapterSubscriptionId.Value));
 
         if (chapter.Id != chapterSubscription.ChapterId)
