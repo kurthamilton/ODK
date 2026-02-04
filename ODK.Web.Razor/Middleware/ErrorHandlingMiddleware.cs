@@ -42,7 +42,7 @@ public class ErrorHandlingMiddleware
             }
         }
         catch (Exception ex)
-        {            
+        {
             await LogError(context, ex, loggingService);
 
             if (context.Response.HasStarted)
@@ -77,13 +77,14 @@ public class ErrorHandlingMiddleware
 
         if (!requestStore.Loaded)
         {
+            var requestContext = HttpRequestContext.Create(httpContext.Request);
             await requestStore.Load(new ServiceRequest
             {
                 CurrentMemberIdOrDefault = httpContext.User.MemberIdOrDefault(),
-                HttpRequestContext = HttpRequestContext.Create(httpContext.Request),
-                Platform = platformProvider.GetPlatform()
+                HttpRequestContext = requestContext,
+                Platform = platformProvider.GetPlatform(requestContext.RequestUrl)
             });
-        }        
+        }
 
         // We might end up on a valid chapter route as a result of being redirected to a chapter error page,
         // so reset the request store just in case any downstream calls want to use the request store to get
@@ -103,7 +104,7 @@ public class ErrorHandlingMiddleware
         {
             return null;
         }
-        
+
         // DrunkenKnitwits chapter routes are like /{chapter.ShortName}/...
         if (platform == PlatformType.DrunkenKnitwits)
         {
@@ -145,7 +146,7 @@ public class ErrorHandlingMiddleware
 
         var path = await GetErrorPath(httpContext, requestStore, unitOfWork, odkRoutes, platformProvider);
 
-        ResetHttpContext(httpContext, path);        
+        ResetHttpContext(httpContext, path);
 
         try
         {
@@ -160,9 +161,9 @@ public class ErrorHandlingMiddleware
     }
 
     private async Task<string?> GetErrorPath(
-        HttpContext httpContext, 
-        IRequestStore requestStore, 
-        IUnitOfWork unitOfWork, 
+        HttpContext httpContext,
+        IRequestStore requestStore,
+        IUnitOfWork unitOfWork,
         IOdkRoutes odkRoutes,
         IPlatformProvider platformProvider)
     {
