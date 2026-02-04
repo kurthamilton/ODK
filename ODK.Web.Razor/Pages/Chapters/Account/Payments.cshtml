@@ -11,8 +11,8 @@
     Layout = "_OdkChapterLayout";
     Model.Title = "Payments";
 
-    var chapter = Model.Chapter;
-    var viewModel = await AccountViewModelService.GetMemberChapterPaymentsPage(Model.MemberServiceRequest, chapter);
+    var viewModel = await AccountViewModelService.GetMemberChapterPaymentsPage(
+        Model.MemberChapterServiceRequest);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

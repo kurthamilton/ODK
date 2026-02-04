@@ -1,5 +1,4 @@
 ﻿using ODK.Core;
-using ODK.Core.Chapters;
 using ODK.Core.Events;
 using ODK.Core.Extensions;
 using ODK.Core.Members;
@@ -194,9 +193,9 @@ public class EventViewModelService : IEventViewModelService
     }
 
     public async Task<EventPageViewModel> GetEventPageViewModel(
-        ServiceRequest request, Member? currentMember, Chapter chapter, string shortcode)
+        ChapterServiceRequest request, Member? currentMember, string shortcode)
     {
-        var platform = request.Platform;
+        var (platform, chapter) = (request.Platform, request.Chapter);
 
         var (
             membershipSettings,
@@ -354,9 +353,9 @@ public class EventViewModelService : IEventViewModelService
     }
 
     public async Task<EventsPageViewModel> GetEventsPage(
-        ServiceRequest request, Guid? currentMemberId, Chapter chapter)
+        ChapterServiceRequest request, Guid? currentMemberId)
     {
-        var platform = request.Platform;
+        var (platform, chapter) = (request.Platform, request.Chapter);
 
         var currentTime = chapter.CurrentTime();
         var afterUtc = currentTime.StartOfDay();

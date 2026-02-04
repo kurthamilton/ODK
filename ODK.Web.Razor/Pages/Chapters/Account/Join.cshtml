@@ -10,8 +10,8 @@
     Layout = "_OdkChapterLayout";
     Model.Title = "Join";
 
-    var chapter = Model.Chapter;
-    var viewModel = await AccountViewModelService.GetChapterJoinPage(Model.ServiceRequest, chapter);
+    var request = Model.ChapterServiceRequest;
+    var viewModel = await AccountViewModelService.GetChapterJoinPage(request);
 }
 
 @if (!viewModel.Chapter.IsOpenForRegistration())

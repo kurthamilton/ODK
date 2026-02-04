@@ -72,8 +72,7 @@ public class ContactService : IContactService
             .Select(x => x.Member);
 
         await _memberEmailService.SendChapterConversationEmail(
-            request,
-            chapter,
+            ChapterServiceRequest.Create(chapter, request),
             conversation,
             conversationMessage,
             addressees.ToArray(),
@@ -126,7 +125,7 @@ public class ContactService : IContactService
 
         if (!flagged)
         {
-            await _memberEmailService.SendChapterMessage(request, chapter, adminMembers, contactMessage);
+            await _memberEmailService.SendChapterMessage(request, adminMembers, contactMessage);
         }
     }
 
@@ -225,8 +224,7 @@ public class ContactService : IContactService
             .Select(x => x.Member);
 
         await _memberEmailService.SendChapterConversationEmail(
-            request,
-            chapter,
+            ChapterServiceRequest.Create(chapter, request),
             conversation,
             conversationMessage,
             emailMembers.ToArray(),

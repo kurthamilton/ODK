@@ -7,8 +7,7 @@ namespace ODK.Services.Authentication;
 public interface IAuthenticationService
 {
     Task<ServiceResult> ActivateChapterAccountAsync(
-        ServiceRequest request,
-        Chapter chapter,
+        ChapterServiceRequest request,
         string activationToken,
         string password);
 

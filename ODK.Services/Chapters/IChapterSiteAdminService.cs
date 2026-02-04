@@ -9,14 +9,13 @@ public interface IChapterSiteAdminService
     Task<ServiceResult> DeleteChapter(MemberServiceRequest request, Guid chapterId);
 
     Task<ChapterPaymentSettingsAdminPageViewModel> GetChapterPaymentSettingsViewModel(
-        MemberServiceRequest request, Guid chapterId);
+        MemberChapterServiceRequest request);
 
     Task<SiteAdminChaptersViewModel> GetSiteAdminChaptersViewModel(MemberServiceRequest request);
 
-    Task<SiteAdminChapterViewModel> GetSiteAdminChapterViewModel(MemberServiceRequest request, Guid chapterId);
+    Task<SiteAdminChapterViewModel> GetSiteAdminChapterViewModel(MemberChapterServiceRequest request);
 
     Task<ServiceResult> UpdateSiteAdminChapter(
-        MemberServiceRequest request,
-        Guid chapterId,
+        MemberChapterServiceRequest request,
         SiteAdminChapterUpdateViewModel viewModel);
 }

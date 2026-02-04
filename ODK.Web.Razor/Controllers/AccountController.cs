@@ -87,8 +87,7 @@ public class AccountController : OdkControllerBase
         Guid chapterId, [FromForm] ActivateFormViewModel viewModel)
     {
         var result = await _authenticationService.ActivateChapterAccountAsync(
-            ServiceRequest,
-            Chapter,
+            ChapterServiceRequest,
             viewModel.Token,
             viewModel.Password);
         if (!result.Success)

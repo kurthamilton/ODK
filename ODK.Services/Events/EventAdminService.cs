@@ -165,7 +165,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         if (@event.Ticketed)
         {
-            _backgroundTaskService.Enqueue(() => _paymentService.EnsureProductExists(request, chapter.Id));
+            var chapterRequest = ChapterServiceRequest.Create(chapter, request);
+            _backgroundTaskService.Enqueue(() => _paymentService.EnsureProductExists(chapterRequest));
         }
 
         return ServiceResult.Successful();
@@ -540,7 +541,11 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             .Where(x => x.IsCurrent() && responseDictionary.ContainsKey(x.Id))
             .ToArray();
 
-        await _memberEmailService.SendBulkEmail(request, chapter, to, subject, body);
+        await _memberEmailService.SendBulkEmail(
+            ChapterServiceRequest.Create(chapter, request), 
+            to, 
+            subject, 
+            body);
     }
 
     public async Task<ServiceResult> SendEventInvites(
@@ -580,7 +585,11 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         if (test)
         {
-            await _memberEmailService.SendEventInvites(request, chapter, @event, venue, [currentMember]);
+            await _memberEmailService.SendEventInvites(
+                ChapterServiceRequest.Create(chapter, request),
+                @event, 
+                venue, 
+                [currentMember]);
             return ServiceResult.Successful();
         }
 
@@ -819,7 +828,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         if (@event.Ticketed)
         {
-            _backgroundTaskService.Enqueue(() => _paymentService.EnsureProductExists(request, chapter.Id));
+            var chapterRequest = ChapterServiceRequest.Create(chapter, request);
+            _backgroundTaskService.Enqueue(() => _paymentService.EnsureProductExists(chapterRequest));
         }
 
         if (@event.AttendeeLimit > previousAttendeeLimit)
@@ -1201,8 +1211,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             .ToArray();
 
         await _memberEmailService.SendEventInvites(
-            request,
-            chapter,
+            ChapterServiceRequest.Create(chapter, request),
             @event,
             venue,
             invitees);

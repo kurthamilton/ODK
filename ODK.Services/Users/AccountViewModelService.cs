@@ -35,18 +35,17 @@ public class AccountViewModelService : IAccountViewModelService
     }
 
     public async Task<ChapterJoinPageViewModel> GetChapterJoinPage(
-        ServiceRequest request, Chapter chapter)
+        ChapterServiceRequest request)
     {
-        var platform = request.Platform;
+        var (platform, chapter) = (request.Platform, request.Chapter);
 
         var (
-                chapterProperties,
-                chapterPropertyOptions,
-                chapterTexts
-            ) = await _unitOfWork.RunAsync(
-                x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
-                x => x.ChapterPropertyOptionRepository.GetByChapterId(chapter.Id),
-                x => x.ChapterTextsRepository.GetByChapterId(chapter.Id));
+            chapterProperties,
+            chapterPropertyOptions,
+            chapterTexts) = await _unitOfWork.RunAsync(
+            x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterPropertyOptionRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterTextsRepository.GetByChapterId(chapter.Id));
 
         return new ChapterJoinPageViewModel
         {
@@ -94,9 +93,9 @@ public class AccountViewModelService : IAccountViewModelService
     }
 
     public async Task<ChapterProfilePageViewModel> GetChapterProfilePage(
-        MemberServiceRequest request, Chapter chapter)
+        MemberChapterServiceRequest request)
     {
-        var (currentMember, platform) = (request.CurrentMember, request.Platform);
+        var (currentMember, platform, chapter) = (request.CurrentMember, request.Platform, request.Chapter);
 
         var (
                 chapterProperties,
@@ -129,9 +128,9 @@ public class AccountViewModelService : IAccountViewModelService
     }
 
     public async Task<MemberChapterPaymentsPageViewModel> GetMemberChapterPaymentsPage(
-        MemberServiceRequest request, Chapter chapter)
+        MemberChapterServiceRequest request)
     {
-        var (currentMember, platform) = (request.CurrentMember, request.Platform);
+        var (currentMember, platform, chapter) = (request.CurrentMember, request.Platform, request.Chapter);
 
         var payments = await _unitOfWork.PaymentRepository.GetChapterDtosByMemberId(currentMember.Id).Run();
 

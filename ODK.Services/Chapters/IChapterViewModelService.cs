@@ -17,36 +17,36 @@ public interface IChapterViewModelService
     Task<ChapterCreateViewModel> GetChapterCreateViewModel(MemberServiceRequest request);
 
     Task<GroupContactPageViewModel> GetGroupContactPage(
-        ServiceRequest request, Member? currentMember, Chapter chapter);
+        ChapterServiceRequest request, Member? currentMember);
 
     Task<GroupConversationPageViewModel> GetGroupConversationPage(
         MemberChapterServiceRequest request, Guid conversationId);
 
     Task<GroupEventsPageViewModel> GetGroupEventsPage(
-        ServiceRequest request, Member? currentMember, Chapter chapter);
+        ChapterServiceRequest request, Member? currentMember);
 
     Task<GroupPageViewModel> GetGroupPage(
-        ServiceRequest request, Member? currentMember, Chapter chapter);
+        ChapterServiceRequest request, Member? currentMember);
 
     Task<GroupEventsPageViewModel> GetGroupPastEventsPage(
-        ServiceRequest request, Member? currentMember, Chapter chapter);
+        ChapterServiceRequest request, Member? currentMember);
 
     Task<GroupHomePageViewModel> GetGroupHomePage(
-        ServiceRequest request, Member? currentMember, Chapter chapter);
+        ChapterServiceRequest request, Member? currentMember);
 
     Task<GroupJoinPageViewModel> GetGroupJoinPage(
-        ServiceRequest request, Member? currentMember, Chapter chapter);
+        ChapterServiceRequest request, Member? currentMember);
 
     Task<GroupProfilePageViewModel> GetGroupProfilePage(MemberChapterServiceRequest request);
 
     Task<GroupQuestionsPageViewModel> GetGroupQuestionsPage(
-        ServiceRequest request, Member? currentMember, Chapter chapter);
+        ChapterServiceRequest request, Member? currentMember);
 
     Task<GroupSubscriptionPageViewModel> GetGroupSubscriptionPage(
         MemberChapterServiceRequest request);
 
     Task<ChapterHomePageViewModel> GetHomePage(
-        ServiceRequest request, Member? currentMember, Chapter chapter);
+        ChapterServiceRequest request, Member? currentMember);
 
     Task<MemberChaptersViewModel> GetMemberChapters(MemberServiceRequest request);
 }

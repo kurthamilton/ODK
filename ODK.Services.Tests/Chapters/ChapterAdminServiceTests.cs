@@ -1496,7 +1496,7 @@ public static class ChapterAdminServiceTests
     private static IMemberEmailService CreateMockMemberEmailService()
     {
         var mock = new Mock<IMemberEmailService>();
-        mock.Setup(x => x.SendNewGroupEmail(It.IsAny<MemberServiceRequest>(), It.IsAny<Chapter>(), It.IsAny<ChapterTexts>(), It.IsAny<SiteEmailSettings>()))
+        mock.Setup(x => x.SendNewGroupEmail(It.IsAny<MemberChapterServiceRequest>(), It.IsAny<ChapterTexts>(), It.IsAny<SiteEmailSettings>()))
             .Returns(Task.CompletedTask);
         return mock.Object;
     }

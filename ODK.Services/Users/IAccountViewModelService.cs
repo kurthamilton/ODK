@@ -7,16 +7,16 @@ public interface IAccountViewModelService
 {
     Task<AccountCreatePageViewModel> GetAccountCreatePage();
 
-    Task<ChapterJoinPageViewModel> GetChapterJoinPage(ServiceRequest request, Chapter chapter);
+    Task<ChapterJoinPageViewModel> GetChapterJoinPage(ChapterServiceRequest request);
 
     Task<ChapterLoginPageViewModel> GetChapterLoginPage();
 
     Task<ChapterPicturePageViewModel> GetChapterPicturePage(Guid currentMemberId, Chapter chapter);
 
-    Task<ChapterProfilePageViewModel> GetChapterProfilePage(MemberServiceRequest request, Chapter chapter);
+    Task<ChapterProfilePageViewModel> GetChapterProfilePage(MemberChapterServiceRequest request);
 
     Task<MemberChapterPaymentsPageViewModel> GetMemberChapterPaymentsPage(
-        MemberServiceRequest request, Chapter chapter);
+        MemberChapterServiceRequest request);
 
     Task<MemberEmailPreferencesPageViewModel> GetMemberEmailPreferencesPage(MemberServiceRequest request);
 

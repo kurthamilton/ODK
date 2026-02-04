@@ -36,12 +36,11 @@ public class AuthenticationService : IAuthenticationService
     }
 
     public async Task<ServiceResult> ActivateChapterAccountAsync(
-        ServiceRequest request,
-        Chapter chapter,
+        ChapterServiceRequest request,
         string activationToken,
         string password)
     {
-        var platform = request.Platform;
+        var (platform, chapter) = (request.Platform, request.Chapter);
 
         var token = await _unitOfWork.MemberActivationTokenRepository
             .GetByToken(activationToken)
@@ -84,7 +83,6 @@ public class AuthenticationService : IAuthenticationService
 
         await _memberEmailService.SendNewMemberEmailsAsync(
             request,
-            chapter,
             adminMembers,
             member,
             chapterProperties,

@@ -5,7 +5,7 @@ namespace ODK.Services.Payments;
 
 public interface IPaymentService
 {
-    Task EnsureProductExists(ServiceRequest request, Guid chapterId);
+    Task EnsureProductExists(ChapterServiceRequest request);
 
     Task<PaymentStatusType> GetMemberChapterPaymentCheckoutSessionStatus(
         MemberServiceRequest request, Guid chapterId, string externalSessionId);

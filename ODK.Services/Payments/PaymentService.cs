@@ -38,13 +38,12 @@ public class PaymentService : IPaymentService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task EnsureProductExists(ServiceRequest request, Guid chapterId)
+    public async Task EnsureProductExists(ChapterServiceRequest request)
     {
-        var platform = request.Platform;
+        var chapter = request.Chapter;
 
-        var (chapter, chapterPaymentSettings, sitePaymentSettings) = await _unitOfWork.RunAsync(
-            x => x.ChapterRepository.GetById(platform, chapterId),
-            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
+        var (chapterPaymentSettings, sitePaymentSettings) = await _unitOfWork.RunAsync(
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapter.Id),
             x => x.SitePaymentSettingsRepository.GetActive());
 
         if (!string.IsNullOrEmpty(chapterPaymentSettings?.ExternalProductId))

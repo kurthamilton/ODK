@@ -58,7 +58,9 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         _unitOfWork.MemberChapterRepository.Update(memberChapter);
         await _unitOfWork.SaveChangesAsync();
 
-        await _memberEmailService.SendMemberApprovedEmail(request, chapter, member);
+        await _memberEmailService.SendMemberApprovedEmail(
+            ChapterServiceRequest.Create(chapter, request), 
+            member);
 
         return ServiceResult.Successful();
     }
@@ -533,7 +535,10 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             return result;
         }
 
-        await _memberEmailService.SendMemberDeleteEmail(request, chapter, member, reason);
+        await _memberEmailService.SendMemberDeleteEmail(
+            ChapterServiceRequest.Create(chapter, request), 
+            member, 
+            reason);
 
         return ServiceResult.Successful();
     }
@@ -596,7 +601,11 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             .Where(x => !optOutMemberIds.Contains(x.Id))
             .ToArray();
 
-        await _memberEmailService.SendBulkEmail(request, chapter, filteredMembers, subject, body);
+        await _memberEmailService.SendBulkEmail(
+            ChapterServiceRequest.Create(chapter, request), 
+            filteredMembers, 
+            subject, 
+            body);
 
         return ServiceResult.Successful($"Bulk email sent to {filteredMembers.Length} members");
     }
@@ -676,8 +685,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                     .AddDays(membershipSettings.MembershipDisabledAfterDaysExpired);
 
                 await _memberEmailService.SendMemberChapterSubscriptionExpiringEmail(
-                    request,
-                    chapter,
+                    ChapterServiceRequest.Create(chapter, request),
                     member,
                     memberSubscription,
                     expires: expires,

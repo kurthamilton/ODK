@@ -1064,13 +1064,11 @@ public static class MemberAdminServiceTests
     {
         var mock = new Mock<IMemberEmailService>();
         mock.Setup(x => x.SendMemberApprovedEmail(
-                It.IsAny<MemberChapterAdminServiceRequest>(),
-                It.IsAny<Chapter>(),
+                It.IsAny<ChapterServiceRequest>(),
                 It.IsAny<Member>()))
             .Returns(Task.CompletedTask);
         mock.Setup(x => x.SendMemberDeleteEmail(
-                It.IsAny<MemberChapterAdminServiceRequest>(),
-                It.IsAny<Chapter>(),
+                It.IsAny<ChapterServiceRequest>(),
                 It.IsAny<Member>(),
                 It.IsAny<string>()))
             .Returns(Task.CompletedTask);

@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using ODK.Core;
 using ODK.Core.Chapters;
 using ODK.Core.Events;
@@ -43,9 +42,9 @@ public class EventService : IEventService
     }
 
     public async Task<ServiceResult> AddComment(
-        MemberServiceRequest request, Guid eventId, Chapter chapter, string comment, Guid? parentEventCommentId)
+        MemberChapterServiceRequest request, Guid eventId, string comment, Guid? parentEventCommentId)
     {
-        var currentMember = request.CurrentMember;
+        var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
 
         var (@event, settings) = await _unitOfWork.RunAsync(
             x => x.EventRepository.GetById(eventId),
@@ -94,8 +93,7 @@ public class EventService : IEventService
         await _unitOfWork.SaveChangesAsync();
 
         await _memberEmailService.SendEventCommentEmail(
-            request,
-            chapter,
+            ChapterServiceRequest.Create(chapter, request),
             @event,
             eventComment,
             parentCommentMember);
@@ -283,7 +281,7 @@ public class EventService : IEventService
         await _unitOfWork.SaveChangesAsync();
 
         await _memberEmailService.SendEventWaitlistPromotionNotification(
-            request, chapter, @event, members);
+            ChapterServiceRequest.Create(chapter, request), @event, members);
     }
 
     public async Task<ServiceResult> UpdateMemberResponse(
@@ -302,7 +300,6 @@ public class EventService : IEventService
         return await UpdateMemberResponse(
             request,
             @event,
-            currentMember,
             responseType,
             memberResponse,
             waitlist,
@@ -322,7 +319,6 @@ public class EventService : IEventService
         return await UpdateMemberResponse(
             request,
             @event,
-            currentMember,
             responseType,
             memberResponse,
             waitlist,
@@ -401,15 +397,14 @@ public class EventService : IEventService
     }
 
     private async Task<ServiceResult> UpdateMemberResponse(
-        ServiceRequest request,
+        MemberServiceRequest request,
         Event @event,
-        Member member,
         EventResponseType responseType,
         EventResponse? memberResponse,
         IReadOnlyCollection<EventWaitlistMember> waitlist,
         Guid? adminMemberId)
     {
-        var (eventId, memberId) = (@event.Id, member.Id);
+        var (eventId, member) = (@event.Id, request.CurrentMember);
 
         responseType = NormalizeResponseType(responseType);
         if (memberResponse?.Type == responseType)
@@ -432,7 +427,7 @@ public class EventService : IEventService
         var (membershipSettings, privacySettings, memberSubscription, numberOfAttendees) = await _unitOfWork.RunAsync(
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(@event.ChapterId),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(@event.ChapterId),
-            x => x.MemberSubscriptionRepository.GetByMemberId(memberId, @event.ChapterId),
+            x => x.MemberSubscriptionRepository.GetByMemberId(member.Id, @event.ChapterId),
             x => x.EventResponseRepository.GetNumberOfAttendees(eventId));
 
         var validationResult = MemberCanAttendEvent(
@@ -453,13 +448,13 @@ public class EventService : IEventService
             var spacesLeft = EventHasSpaces(@event, numberOfAttendees);
             if (!spacesLeft.Success)
             {
-                if (!@event.WaitlistDisabled && !waitlist.Any(x => x.MemberId == memberId))
+                if (!@event.WaitlistDisabled && !waitlist.Any(x => x.MemberId == member.Id))
                 {
                     _unitOfWork.EventWaitlistMemberRepository.Add(new EventWaitlistMember
                     {
                         CreatedUtc = DateTime.UtcNow,
                         EventId = eventId,
-                        MemberId = memberId
+                        MemberId = member.Id
                     });
                     await _unitOfWork.SaveChangesAsync();
 

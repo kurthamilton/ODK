@@ -72,9 +72,8 @@ public class EventsController : OdkControllerBase
     public async Task<IActionResult> AddComment(
         Guid chapterId, Guid id, [FromForm] EventCommentFormViewModel viewModel)
     {
-        var chapter = Chapter;
         var result = await _eventService.AddComment(
-            MemberServiceRequest, id, chapter, viewModel.Text ?? string.Empty, viewModel.Parent);
+            MemberChapterServiceRequest, id, viewModel.Text ?? string.Empty, viewModel.Parent);
         if (!result.Success)
         {
             AddFeedback(result);

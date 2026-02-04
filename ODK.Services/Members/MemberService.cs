@@ -552,8 +552,7 @@ public class MemberService : IMemberService
         await _unitOfWork.SaveChangesAsync();
 
         await _memberEmailService.SendNewMemberAdminEmail(
-            request,
-            chapter,
+            ChapterServiceRequest.Create(chapter, request),
             adminMembers,
             currentMember,
             chapterProperties,
@@ -582,8 +581,7 @@ public class MemberService : IMemberService
         }
 
         await _memberEmailService.SendMemberLeftChapterEmail(
-            request,
-            chapter,
+            ChapterServiceRequest.Create(chapter, request),
             adminMembers,
             currentMember,
             reason);

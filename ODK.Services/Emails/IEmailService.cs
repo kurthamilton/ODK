@@ -10,15 +10,13 @@ public interface IEmailService
     Task AddEvent(string externalId, string eventName);
 
     Task SendBulkEmail(
-        ServiceRequest request,
-        Chapter chapter,
+        ChapterServiceRequest request,
         IEnumerable<Member> to,
         EmailType type,
         IDictionary<string, string> parameters);
 
     Task SendBulkEmail(
-        ServiceRequest request,
-        Chapter chapter,
+        ChapterServiceRequest request,
         IEnumerable<Member> to,
         string subject,
         string body);

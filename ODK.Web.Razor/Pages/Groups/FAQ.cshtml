@@ -6,9 +6,9 @@
 @{
     Layout = "_HomeLayout";
 
-    var chapter = Model.Chapter;
+    var request = Model.ChapterServiceRequest;
     var viewModel = await ChapterViewModelService.GetGroupQuestionsPage(
-        Model.ServiceRequest, Model.CurrentMemberOrDefault, chapter);
+        request, Model.CurrentMemberOrDefault);
 
     Model.Title = $"FAQ | {viewModel.Chapter.GetDisplayName(Model.Platform)}";
 }

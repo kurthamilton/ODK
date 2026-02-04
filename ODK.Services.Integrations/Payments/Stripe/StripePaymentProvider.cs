@@ -443,8 +443,6 @@ public class StripePaymentProvider : IPaymentProvider
 
     private AccountService CreateAccountService() => new(_client);
 
-    private PaymentIntentService CreatePaymentIntentService() => new(_client);
-
     private PriceService CreatePriceService() => new(_client);
 
     private ProductService CreateProductService() => new(_client);

@@ -258,9 +258,9 @@ public class ChapterViewModelService : IChapterViewModelService
     }
 
     public async Task<GroupContactPageViewModel> GetGroupContactPage(
-        ServiceRequest request, Member? currentMember, Chapter chapter)
+        ChapterServiceRequest request, Member? currentMember)
     {
-        var platform = request.Platform;
+        var (platform, chapter) = (request.Platform, request.Chapter);
 
         var (
             isAdmin,
@@ -375,9 +375,9 @@ public class ChapterViewModelService : IChapterViewModelService
     }
 
     public async Task<GroupEventsPageViewModel> GetGroupEventsPage(
-        ServiceRequest request, Member? currentMember, Chapter chapter)
+        ChapterServiceRequest request, Member? currentMember)
     {
-        var platform = request.Platform;
+        var (platform, chapter) = (request.Platform, request.Chapter);
 
         var (
             memberSubscription,
@@ -440,9 +440,9 @@ public class ChapterViewModelService : IChapterViewModelService
     }
 
     public async Task<GroupPageViewModel> GetGroupPage(
-        ServiceRequest request, Member? currentMember, Chapter chapter)
+        ChapterServiceRequest request, Member? currentMember)
     {
-        var platform = request.Platform;
+        var (platform, chapter) = (request.Platform, request.Chapter);
 
         var (
             isAdmin,
@@ -471,9 +471,9 @@ public class ChapterViewModelService : IChapterViewModelService
     }
 
     public async Task<GroupEventsPageViewModel> GetGroupPastEventsPage(
-        ServiceRequest request, Member? currentMember, Chapter chapter)
+        ChapterServiceRequest request, Member? currentMember)
     {
-        var platform = request.Platform;
+        var (platform, chapter) = (request.Platform, request.Chapter);
 
         var (
             memberSubscription,
@@ -534,9 +534,9 @@ public class ChapterViewModelService : IChapterViewModelService
     }
 
     public async Task<GroupHomePageViewModel> GetGroupHomePage(
-        ServiceRequest request, Member? currentMember, Chapter chapter)
+        ChapterServiceRequest request, Member? currentMember)
     {
-        var platform = request.Platform;
+        var (platform, chapter) = (request.Platform, request.Chapter);
 
         var (
             memberSubscription,
@@ -647,9 +647,9 @@ public class ChapterViewModelService : IChapterViewModelService
     }
 
     public async Task<GroupJoinPageViewModel> GetGroupJoinPage(
-        ServiceRequest request, Member? currentMember, Chapter chapter)
+        ChapterServiceRequest request, Member? currentMember)
     {
-        var platform = request.Platform;
+        var (platform, chapter) = (request.Platform, request.Chapter);
 
         var (
             isAdmin,
@@ -724,9 +724,9 @@ public class ChapterViewModelService : IChapterViewModelService
     }
 
     public async Task<GroupQuestionsPageViewModel> GetGroupQuestionsPage(
-        ServiceRequest request, Member? currentMember, Chapter chapter)
+        ChapterServiceRequest request, Member? currentMember)
     {
-        var platform = request.Platform;
+        var (platform, chapter) = (request.Platform, request.Chapter);
 
         var (
             isAdmin,
@@ -784,9 +784,9 @@ public class ChapterViewModelService : IChapterViewModelService
     }
 
     public async Task<ChapterHomePageViewModel> GetHomePage(
-        ServiceRequest request, Member? currentMember, Chapter chapter)
+        ChapterServiceRequest request, Member? currentMember)
     {
-        var platform = request.Platform;
+        var (platform, chapter) = (request.Platform, request.Chapter);
 
         var today = chapter.TodayUtc();
 

@@ -58,12 +58,13 @@ public class EmailService : IEmailService
     }
 
     public async Task SendBulkEmail(
-        ServiceRequest request,
-        Chapter chapter,
+        ChapterServiceRequest request,
         IEnumerable<Member> to,
         EmailType type,
         IDictionary<string, string> parameters)
     {
+        var chapter = request.Chapter;
+
         await SendEmail(request, new SendEmailOptions
         {
             Body = string.Empty,
@@ -76,12 +77,13 @@ public class EmailService : IEmailService
     }
 
     public async Task SendBulkEmail(
-        ServiceRequest request,
-        Chapter chapter,
+        ChapterServiceRequest request,
         IEnumerable<Member> to,
         string subject,
         string body)
     {
+        var chapter = request.Chapter;
+
         await SendEmail(request, new SendEmailOptions
         {
             Body = body,
