@@ -4,20 +4,23 @@
 @using ODK.Web.Razor.Models.Groups
 @using ODK.Web.Razor.Models.Payments
 @model IndexModel
+@inject IChapterService ChapterService
 @inject IChapterViewModelService ChapterViewModelService
 @{
     Layout = "_HomeLayout";
 
-    var chapter = Model.Chapter;
-    var viewModel = await ChapterViewModelService.GetGroupSubscriptionPage(
-        Model.ServiceRequest, Model.CurrentMember, chapter);
+    var request = Model.MemberChapterServiceRequest;
+    
+    // TODO: merge these calls
+    var groupViewModel = await ChapterViewModelService.GetGroupSubscriptionPage(request);
+    var subscriptionViewModel = await ChapterService.GetChapterMemberSubscriptionsViewModel(request);
 
-    Model.Title = $"Subscription | Profile | {viewModel.Chapter.GetDisplayName(Model.Platform)}";
+    Model.Title = $"Subscription | Profile | {groupViewModel.Chapter.GetDisplayName(Model.Platform)}";
 }
 
 @await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel
 {
     Title = "",
-    Content = await Html.PartialAsync("Groups/Subscription/_GroupSubscriptionContent", viewModel),
-    Group = viewModel
+    Content = await Html.PartialAsync("Groups/Subscription/_GroupSubscriptionContent", subscriptionViewModel),
+    Group = groupViewModel
 })

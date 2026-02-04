@@ -16,7 +16,7 @@
     var chapter = Model.Chapter;
     var viewModel = await EventViewModelService.GetEventPageViewModel(
         Model.ServiceRequest,
-        Model.CurrentMemberIdOrDefault,
+        Model.CurrentMemberOrDefault,
         chapter,
         Model.Shortcode);
 

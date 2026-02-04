@@ -100,8 +100,7 @@ public class ChapterService : IChapterService
             CurrentSubscription = currentSubscription,
             ExternalSubscription = externalSubscription,
             MembershipSettings = membershipSettings,
-            MemberSubscription = memberSubscription,
-            Platform = platform
+            MemberSubscription = memberSubscription
         };
     }
 

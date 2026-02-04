@@ -13,8 +13,7 @@
 @{
     Layout = "_OdkChapterLayout";
 
-    var chapter = Model.Chapter;
-    var viewModel = await MemberViewModelService.GetMembersPage(Model.MemberServiceRequest, chapter);
+    var viewModel = await MemberViewModelService.GetMembersPage(Model.MemberChapterServiceRequest);
     if (!viewModel.IsMember)
     {
         Response.Redirect(Model.OdkRoutes.Groups.Join(Model.Chapter));

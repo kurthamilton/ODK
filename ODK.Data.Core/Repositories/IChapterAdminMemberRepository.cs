@@ -10,4 +10,6 @@ public interface IChapterAdminMemberRepository : IWriteRepository<ChapterAdminMe
     IDeferredQueryMultiple<ChapterAdminMember> GetByMemberId(Guid memberId);
 
     IDeferredQuerySingleOrDefault<ChapterAdminMember> GetByMemberId(Guid memberId, Guid chapterId);
+
+    IDeferredQuery<bool> IsAdmin(Guid chapterId, Guid memberId);
 }

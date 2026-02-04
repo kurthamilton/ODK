@@ -72,24 +72,22 @@ public class MemberViewModelService : IMemberViewModelService
         };
     }
 
-    public async Task<MemberPageViewModel> GetMemberPage(MemberServiceRequest request, Chapter chapter, Guid memberId)
+    public async Task<MemberPageViewModel> GetMemberPage(MemberChapterServiceRequest request, Guid memberId)
     {
-        var (currentMember, platform) = (request.CurrentMember, request.Platform);
+        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
         var (
             member,
             chapterProperties,
             memberProperties,
             hasQuestions,
-            adminMembers,
-            ownerSubscription,
+            isAdmin,
             chapterPages) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(memberId),
             x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
             x => x.MemberPropertyRepository.GetByMemberId(memberId, chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterAdminMemberRepository.IsAdmin(chapter.Id, currentMember.Id),
             x => x.ChapterPageRepository.GetByChapterId(chapter.Id));
 
         OdkAssertions.MemberOf(member, chapter.Id);
@@ -102,33 +100,30 @@ public class MemberViewModelService : IMemberViewModelService
             CurrentMember = currentMember,
             HasProfiles = chapterProperties.Any(),
             HasQuestions = hasQuestions,
-            IsAdmin = adminMembers.Any(x => x.MemberId == currentMember.Id),
+            IsAdmin = isAdmin,
             IsMember = currentMember.IsMemberOf(chapter.Id),
             Member = member,
             MemberProperties = memberProperties,
-            OwnerSubscription = ownerSubscription,
             Platform = platform
         };
     }
 
-    public async Task<MembersPageViewModel> GetMembersPage(MemberServiceRequest request, Chapter chapter)
+    public async Task<MembersPageViewModel> GetMembersPage(MemberChapterServiceRequest request)
     {
-        var (currentMember, platform) = (request.CurrentMember, request.Platform);
+        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
         // get current member separately as they might be hidden from the list of members
         var (
             members,
             hasProperties,
             hasQuestions,
-            adminMembers,
-            ownerSubscription,
+            isAdmin,
             chapterPages) =
             await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterAdminMemberRepository.IsAdmin(chapter.Id, currentMember.Id),
             x => x.ChapterPageRepository.GetByChapterId(chapter.Id));
 
         var isMember = currentMember.IsMemberOf(chapter.Id);
@@ -140,10 +135,9 @@ public class MemberViewModelService : IMemberViewModelService
             CurrentMember = currentMember,
             HasProfiles = hasProperties,
             HasQuestions = hasQuestions,
-            IsAdmin = adminMembers.Any(x => x.MemberId == currentMember.Id),
+            IsAdmin = isAdmin,
             IsMember = isMember,
             Members = isMember ? members : [],
-            OwnerSubscription = ownerSubscription,
             Platform = platform
         };
     }

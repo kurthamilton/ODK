@@ -1,44 +1,8 @@
-﻿@using ODK.Core.Chapters
-@using ODK.Services
-@using ODK.Services.Chapters
-@using ODK.Services.Chapters.ViewModels
-@using ODK.Web.Common.Services
-@using ODK.Web.Razor.Models
-@using ODK.Web.Razor.Models.Account
-@using ODK.Web.Razor.Models.Components
-@using ODK.Web.Razor.Models.Groups.Profile
-@using ODK.Web.Razor.Services
-@model GroupSubscriptionPageViewModel
-@inject IChapterService ChapterService
-@inject IRequestStore RequestStore
-@{
-    var request = RequestStore.MemberChapterServiceRequest;
-    var chapterSubscriptionViewModel = await ChapterService.GetChapterMemberSubscriptionsViewModel(request);
-}
+﻿@using ODK.Services.Chapters.ViewModels
+@using ODK.Services.Members.ViewModels
+@model SubscriptionsPageViewModel
 
-<div>
-    <section class="section">
-        <h3>My subscription</h3>
-        @await Html.PartialAsync("Account/_ChapterSubscriptionContent", chapterSubscriptionViewModel)
-    </section>
-    <section class="section">
-        <h3>Leave group</h3>
-
-        @if (Model.Chapter.OwnerId == Model.CurrentMember?.Id)
-        {
-            <p>You cannot leave groups you own</p>
-        }
-        else
-        {
-            <form action="/groups/@Model.Chapter.Id/leave" method="post">
-                @*@Html.AntiForgeryToken()*@
-                <p>If you leave the group we will delete your data associated with this group, including any subscriptions you currently have.</p>
-                <div class="form-group mb-3">
-                    <label for="reason" class="form-label">Reason you want to leave this group</label>
-                    <textarea id="reason" name="reason" class="form-control"></textarea>
-                </div>
-                <button class="btn btn-danger" onclick="return confirm('Are you sure you want to leave this group?');">Leave</button>
-            </form>
-        }
-    </section>
-</div> 
+<section class="section">
+    <h3>My subscription</h3>
+    @await Html.PartialAsync("Account/_ChapterSubscriptionContent", Model)
+</section>

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ODK.Core.Chapters;
+using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
@@ -15,6 +16,21 @@ public class ChapterAdminMemberRepository : WriteRepositoryBase<ChapterAdminMemb
         : base(context)
     {
         _platform = platformProvider.GetPlatform();
+    }
+
+    public IDeferredQuery<bool> IsAdmin(Guid chapterId, Guid memberId)
+    {
+        var query =
+            from member in Set<Member>()
+            from adminMember in Set()
+                .Where(x => x.MemberId == member.Id && x.ChapterId == chapterId)
+                .DefaultIfEmpty()
+            where
+                member.Id == memberId &&
+                (member.SiteAdmin || adminMember.MemberId == member.Id)
+            select member.Id;
+
+        return query.DeferredAny();
     }
 
     public IDeferredQueryMultiple<ChapterAdminMember> GetByChapterId(Guid chapterId) => Set()

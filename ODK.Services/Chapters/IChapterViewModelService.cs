@@ -20,7 +20,7 @@ public interface IChapterViewModelService
         ServiceRequest request, Member? currentMember, Chapter chapter);
 
     Task<GroupConversationPageViewModel> GetGroupConversationPage(
-        ServiceRequest request, Member currentMember, Chapter chapter, Guid conversationId);
+        MemberChapterServiceRequest request, Guid conversationId);
 
     Task<GroupEventsPageViewModel> GetGroupEventsPage(
         ServiceRequest request, Member? currentMember, Chapter chapter);
@@ -37,14 +37,13 @@ public interface IChapterViewModelService
     Task<GroupJoinPageViewModel> GetGroupJoinPage(
         ServiceRequest request, Member? currentMember, Chapter chapter);
 
-    Task<GroupProfilePageViewModel> GetGroupProfilePage(
-        ServiceRequest request, Member currentMember, Chapter chapter);
+    Task<GroupProfilePageViewModel> GetGroupProfilePage(MemberChapterServiceRequest request);
 
     Task<GroupQuestionsPageViewModel> GetGroupQuestionsPage(
         ServiceRequest request, Member? currentMember, Chapter chapter);
 
     Task<GroupSubscriptionPageViewModel> GetGroupSubscriptionPage(
-        ServiceRequest request, Member member, Chapter chapter);
+        MemberChapterServiceRequest request);
 
     Task<ChapterHomePageViewModel> GetHomePage(
         ServiceRequest request, Member? currentMember, Chapter chapter);

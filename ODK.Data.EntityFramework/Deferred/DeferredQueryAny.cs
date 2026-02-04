@@ -3,7 +3,7 @@ using Z.EntityFramework.Plus;
 
 namespace ODK.Data.EntityFramework.Deferred;
 
-public class DeferredQueryAny<T> : IDeferredQuerySingle<bool> where T : class
+public class DeferredQueryAny<T> : IDeferredQuerySingle<bool>
 {
     private readonly QueryFutureValue<bool> _query;
 

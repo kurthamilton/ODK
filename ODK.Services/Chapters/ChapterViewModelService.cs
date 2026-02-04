@@ -58,7 +58,7 @@ public class ChapterViewModelService : IChapterViewModelService
             x => topicGroup != null
                 ? x.ChapterRepository.GetByTopicGroupId(topicGroup.Id)
                 : x.ChapterRepository.GetAll(),
-            x => x.DistanceUnitRepository.GetAll(),          
+            x => x.DistanceUnitRepository.GetAll(),
             x => currentMember != null
                 ? x.MemberPreferencesRepository.GetByMemberId(currentMember.Id)
                 : new DefaultDeferredQuerySingleOrDefault<MemberPreferences>(),
@@ -260,8 +260,7 @@ public class ChapterViewModelService : IChapterViewModelService
         var platform = request.Platform;
 
         var (
-            ownerSubscription,
-            adminMembers,
+            isAdmin,
             hasProperties,
             hasQuestions,
             conversations,
@@ -271,8 +270,9 @@ public class ChapterViewModelService : IChapterViewModelService
             chapterPages,
             sitePaymentSettings
         ) = await _unitOfWork.RunAsync(
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
+            x => currentMember != null
+                ? x.ChapterAdminMemberRepository.IsAdmin(chapter.Id, currentMember.Id)
+                : new DefaultDeferredQueryAny(false),
             x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
             x => currentMember != null
@@ -299,21 +299,19 @@ public class ChapterViewModelService : IChapterViewModelService
             CurrentMember = currentMember,
             HasProfiles = hasProperties,
             HasQuestions = hasQuestions,
-            IsAdmin = adminMembers.Any(x => x.MemberId == currentMember?.Id),
+            IsAdmin = isAdmin,
             IsMember = currentMember?.IsMemberOf(chapter.Id) == true,
-            OwnerSubscription = ownerSubscription,
             Platform = platform
         };
     }
 
     public async Task<GroupConversationPageViewModel> GetGroupConversationPage(
-        ServiceRequest request, Member currentMember, Chapter chapter, Guid conversationId)
+        MemberChapterServiceRequest request, Guid conversationId)
     {
-        var platform = request.Platform;
+        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
         var (
-            ownerSubscription,
-            adminMembers,
+            isAdmin,
             hasProperties,
             hasQuestions,
             conversations,
@@ -321,8 +319,7 @@ public class ChapterViewModelService : IChapterViewModelService
             notifications,
             chapterPages
         ) = await _unitOfWork.RunAsync(
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterAdminMemberRepository.IsAdmin(chapter.Id, currentMember.Id),
             x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
             x => x.ChapterConversationRepository.GetDtosByMemberId(currentMember.Id, chapter.Id),
@@ -364,10 +361,9 @@ public class ChapterViewModelService : IChapterViewModelService
             CurrentMember = currentMember,
             HasProfiles = hasProperties,
             HasQuestions = hasQuestions,
-            IsAdmin = adminMembers.Any(x => x.MemberId == currentMember.Id),
+            IsAdmin = isAdmin,
             IsMember = currentMember?.IsMemberOf(chapter.Id) == true,
             Messages = messages,
-            OwnerSubscription = ownerSubscription,
             OtherConversations = conversations
                 .Where(x => x.Conversation.Id != conversationId)
                 .ToArray(),
@@ -382,10 +378,9 @@ public class ChapterViewModelService : IChapterViewModelService
 
         var (
             memberSubscription,
-            ownerSubscription,
             membershipSettings,
             privacySettings,
-            adminMembers,
+            isAdmin,
             upcomingEvents,
             hasProperties,
             hasQuestions,
@@ -395,10 +390,11 @@ public class ChapterViewModelService : IChapterViewModelService
             x => currentMember != null
                 ? x.MemberSubscriptionRepository.GetByMemberId(currentMember.Id, chapter.Id)
                 : new DefaultDeferredQuerySingleOrDefault<MemberSubscription>(),
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
+            x => currentMember != null
+                ? x.ChapterAdminMemberRepository.IsAdmin(chapter.Id, currentMember.Id)
+                : new DefaultDeferredQueryAny(false),
             x => x.EventRepository.GetByChapterId(chapter.Id, after: DateTime.UtcNow),
             x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
@@ -424,9 +420,8 @@ public class ChapterViewModelService : IChapterViewModelService
             ChapterPages = chapterPages,
             HasProfiles = hasProperties,
             HasQuestions = hasQuestions,
-            IsAdmin = adminMembers.Any(x => x.MemberId == currentMember?.Id),
+            IsAdmin = isAdmin,
             IsMember = currentMember?.IsMemberOf(chapter.Id) == true,
-            OwnerSubscription = ownerSubscription,
             Events = ToGroupPageListEvents(
                 upcomingEvents.OrderBy(x => x.Date),
                 venues,
@@ -447,14 +442,14 @@ public class ChapterViewModelService : IChapterViewModelService
         var platform = request.Platform;
 
         var (
-            ownerSubscription,
-            adminMembers,
+            isAdmin,
             hasProperties,
             hasQuestions,
             chapterPages
         ) = await _unitOfWork.RunAsync(
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
+            x => currentMember != null
+                ? x.ChapterAdminMemberRepository.IsAdmin(chapter.Id, currentMember.Id)
+                : new DefaultDeferredQueryAny(false),
             x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
             x => x.ChapterPageRepository.GetByChapterId(chapter.Id));
@@ -466,9 +461,8 @@ public class ChapterViewModelService : IChapterViewModelService
             CurrentMember = currentMember,
             HasProfiles = hasProperties,
             HasQuestions = hasQuestions,
-            IsAdmin = adminMembers.Any(x => x.MemberId == currentMember?.Id),
+            IsAdmin = isAdmin,
             IsMember = currentMember?.IsMemberOf(chapter.Id) == true,
-            OwnerSubscription = ownerSubscription,
             Platform = platform
         };
     }
@@ -480,10 +474,9 @@ public class ChapterViewModelService : IChapterViewModelService
 
         var (
             memberSubscription,
-            ownerSubscription,
             membershipSettings,
             privacySettings,
-            adminMembers,
+            isAdmin,
             pastEvents,
             hasProperties,
             hasQuestions,
@@ -492,12 +485,11 @@ public class ChapterViewModelService : IChapterViewModelService
             x => currentMember != null
                 ? x.MemberSubscriptionRepository.GetByMemberId(currentMember.Id, chapter.Id)
                 : new DefaultDeferredQuerySingleOrDefault<MemberSubscription>(),
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
             x => currentMember != null
-                ? x.ChapterAdminMemberRepository.GetByMemberId(currentMember.Id)
-                : new DefaultDeferredQueryMultiple<ChapterAdminMember>(),
+                ? x.ChapterAdminMemberRepository.IsAdmin(chapter.Id, currentMember.Id)
+                : new DefaultDeferredQueryAny(false),
             x => x.EventRepository.GetRecentEventsByChapterId(chapter.Id, 1000),
             x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
@@ -522,9 +514,8 @@ public class ChapterViewModelService : IChapterViewModelService
             CurrentMember = currentMember,
             HasProfiles = hasProperties,
             HasQuestions = hasQuestions,
-            IsAdmin = adminMembers.Any(x => x.MemberId == currentMember?.Id),
+            IsAdmin = isAdmin,
             IsMember = currentMember?.IsMemberOf(chapter.Id) == true,
-            OwnerSubscription = ownerSubscription,
             Events = ToGroupPageListEvents(
                 pastEvents.OrderByDescending(x => x.Date),
                 venues,
@@ -644,7 +635,6 @@ public class ChapterViewModelService : IChapterViewModelService
                 .Select(x => x.Member)
                 .Where(x => x.Visible(chapter.Id))
                 .ToArray(),
-            OwnerSubscription = ownerSubscription,
             Platform = platform,
             RecentEvents = recentEventViewModels,
             Texts = texts,
@@ -659,18 +649,16 @@ public class ChapterViewModelService : IChapterViewModelService
         var platform = request.Platform;
 
         var (
-            adminMembers,
-            ownerSubscription,
-            hasProperties,
+            isAdmin,
             hasQuestions,
             properties,
             propertyOptions,
             texts,
             membershipSettings,
             chapterPages) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
+            x => currentMember != null
+                ? x.ChapterAdminMemberRepository.IsAdmin(chapter.Id, currentMember.Id)
+                : new DefaultDeferredQueryAny(false),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
             x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPropertyOptionRepository.GetByChapterId(chapter.Id),
@@ -683,12 +671,11 @@ public class ChapterViewModelService : IChapterViewModelService
             Chapter = chapter,
             CurrentMember = currentMember,
             ChapterPages = chapterPages,
-            HasProfiles = hasProperties,
+            HasProfiles = properties.Any(),
             HasQuestions = hasQuestions,
-            IsAdmin = adminMembers.Any(x => x.MemberId == currentMember?.Id),
+            IsAdmin = isAdmin,
             IsMember = currentMember?.IsMemberOf(chapter.Id) == true,
             MembershipSettings = membershipSettings,
-            OwnerSubscription = ownerSubscription,
             Platform = platform,
             Properties = properties,
             PropertyOptions = propertyOptions,
@@ -698,21 +685,19 @@ public class ChapterViewModelService : IChapterViewModelService
     }
 
     public async Task<GroupProfilePageViewModel> GetGroupProfilePage(
-        ServiceRequest request, Member currentMember, Chapter chapter)
+        MemberChapterServiceRequest request)
     {
-        var platform = request.Platform;
+        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
         var (
-            adminMembers,
-            ownerSubscription,
+            isAdmin,
             hasQuestions,
             chapterProperties,
             chapterPropertyOptions,
             memberProperties,
             chapterPages
         ) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterAdminMemberRepository.IsAdmin(chapter.Id, currentMember.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
             x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPropertyOptionRepository.GetByChapterId(chapter.Id),
@@ -728,10 +713,9 @@ public class ChapterViewModelService : IChapterViewModelService
             CurrentMember = currentMember,
             HasProfiles = chapterProperties.Any(),
             HasQuestions = hasQuestions,
-            IsAdmin = adminMembers.Any(x => x.MemberId == currentMember.Id),
+            IsAdmin = isAdmin,
             IsMember = currentMember.IsMemberOf(chapter.Id) == true,
             MemberProperties = memberProperties,
-            OwnerSubscription = ownerSubscription,
             Platform = platform
         };
     }
@@ -742,13 +726,13 @@ public class ChapterViewModelService : IChapterViewModelService
         var platform = request.Platform;
 
         var (
-            adminMembers,
-            ownerSubscription,
+            isAdmin,
             hasProperties,
             questions,
             chapterPages) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
+            x => currentMember != null
+                ? x.ChapterAdminMemberRepository.IsAdmin(chapter.Id, currentMember.Id)
+                : new DefaultDeferredQueryAny(false),
             x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
             x => x.ChapterQuestionRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPageRepository.GetByChapterId(chapter.Id));
@@ -760,34 +744,27 @@ public class ChapterViewModelService : IChapterViewModelService
             CurrentMember = currentMember,
             HasProfiles = hasProperties,
             HasQuestions = questions.Count > 0,
-            IsAdmin = adminMembers.Any(x => x.MemberId == currentMember?.Id),
+            IsAdmin = isAdmin,
             IsMember = currentMember?.IsMemberOf(chapter.Id) == true,
-            OwnerSubscription = ownerSubscription,
             Platform = platform,
             Questions = questions.OrderBy(x => x.DisplayOrder).ToArray()
         };
     }
 
     public async Task<GroupSubscriptionPageViewModel> GetGroupSubscriptionPage(
-        ServiceRequest request, Member currentMember, Chapter chapter)
+        MemberChapterServiceRequest request)
     {
-        var platform = request.Platform;
+        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
         var (
-            adminMembers,
-            ownerSubscription,
+            isAdmin,
             hasProperties,
             hasQuestions,
-            currency,
-            sitePaymentSettings,
             chapterPages
         ) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterAdminMemberRepository.IsAdmin(chapter.Id, currentMember.Id),
             x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
-            x => x.CurrencyRepository.GetByChapterId(chapter.Id),
-            x => x.SitePaymentSettingsRepository.GetActive(),
             x => x.ChapterPageRepository.GetByChapterId(chapter.Id));
 
         return new GroupSubscriptionPageViewModel
@@ -797,12 +774,9 @@ public class ChapterViewModelService : IChapterViewModelService
             CurrentMember = currentMember,
             HasProfiles = hasProperties,
             HasQuestions = hasQuestions,
-            IsAdmin = adminMembers.Any(x => x.MemberId == currentMember.Id),
+            IsAdmin = isAdmin,
             IsMember = currentMember.IsMemberOf(chapter.Id) == true,
-            OwnerSubscription = ownerSubscription,
-            Currency = currency,
-            Platform = platform,
-            SitePaymentSettings = sitePaymentSettings
+            Platform = platform
         };
     }
 
@@ -869,8 +843,8 @@ public class ChapterViewModelService : IChapterViewModelService
             .Select(x => new EventResponseViewModel(
                 @event: x,
                 venue: venueDictionary.ContainsKey(x.VenueId) ? venueDictionary[x.VenueId] : null,
-                response: memberResponseDictionary.ContainsKey(x.Id) 
-                    ? memberResponseDictionary[x.Id].Type 
+                response: memberResponseDictionary.ContainsKey(x.Id)
+                    ? memberResponseDictionary[x.Id].Type
                     : EventResponseType.None,
                 invited: false,
                 responseSummary: responseSummaryDictionary.ContainsKey(x.Id) ? responseSummaryDictionary[x.Id] : null))

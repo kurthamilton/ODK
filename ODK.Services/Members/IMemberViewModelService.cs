@@ -11,7 +11,7 @@ public interface IMemberViewModelService
 
     Task<MemberInterestsPageViewModel> GetMemberInterestsPage(Guid currentMemberId);
 
-    Task<MemberPageViewModel> GetMemberPage(MemberServiceRequest request, Chapter chapter, Guid memberId);
+    Task<MemberPageViewModel> GetMemberPage(MemberChapterServiceRequest request, Guid memberId);
 
-    Task<MembersPageViewModel> GetMembersPage(MemberServiceRequest request, Chapter chapter);
+    Task<MembersPageViewModel> GetMembersPage(MemberChapterServiceRequest request);
 }

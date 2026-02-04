@@ -17,11 +17,9 @@ internal static class QueryableExtensions
     }
 
     internal static IDeferredQuery<bool> DeferredAny<T>(this IQueryable<T> query)
-        where T : class
         => new DeferredQueryAny<T>(query);
 
     internal static IDeferredQuery<int> DeferredCount<T>(this IQueryable<T> query)
-        where T : class
         => new DeferredQueryCount<T>(query);
 
     internal static IDeferredQueryMultiple<T> DeferredMultiple<T>(this IQueryable<T> query)

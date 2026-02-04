@@ -18,6 +18,4 @@ public class SubscriptionsPageViewModel
     public required ChapterMembershipSettings? MembershipSettings { get; init; }
 
     public required MemberSubscription? MemberSubscription { get; init; }
-
-    public required PlatformType Platform { get; init; }
 }

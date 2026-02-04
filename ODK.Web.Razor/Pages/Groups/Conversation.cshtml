@@ -8,9 +8,8 @@
 @{
     Layout = "_HomeLayout";
 
-    var chapter = Model.Chapter;
     var viewModel = await ChapterViewModelService.GetGroupConversationPage(
-        Model.ServiceRequest, Model.CurrentMember, chapter, Model.ConversationId);
+        Model.MemberChapterServiceRequest, Model.ConversationId);
 
     Model.Title = $"{viewModel.Conversation.Subject} | Conversations | {viewModel.Chapter.GetDisplayName(Model.Platform)}";
 }
