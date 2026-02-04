@@ -135,7 +135,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         var now = DateTime.UtcNow;
 
-        var (currentMember, platform) = (request.CurrentMember, request.Platform);
+        var (platform, currentMember) = (request.Platform, request.CurrentMember);
 
         var (
             memberSubscription,
@@ -143,7 +143,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             siteEmailSettings
         ) = await _unitOfWork.RunAsync(
             x => x.MemberSiteSubscriptionRepository.GetByMemberId(currentMember.Id, platform),
-            x => x.ChapterRepository.GetAll(),
+            x => x.ChapterRepository.GetAll(platform),
             x => x.SiteEmailSettingsRepository.Get(platform));
 
         var memberChapters = existing
@@ -1129,7 +1129,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
 
         var owner = await GetChapterAdminRestrictedContent(request,
-            x => x.MemberRepository.GetChapterOwner(request.Chapter.Id)) 
+            x => x.MemberRepository.GetChapterOwner(request.Chapter.Id))
             ?? throw new OdkServiceException("Chapter owner not found");
 
         var statusRequest = MemberChapterServiceRequest.Create(

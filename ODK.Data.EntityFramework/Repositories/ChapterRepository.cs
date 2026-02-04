@@ -6,6 +6,7 @@ using ODK.Core.Topics;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
+using ODK.Data.EntityFramework.Queries;
 
 namespace ODK.Data.EntityFramework.Repositories;
 
@@ -19,20 +20,20 @@ public class ChapterRepository : ReadWriteRepositoryBase<Chapter>, IChapterRepos
         _platform = platformProvider.GetPlatform();
     }
 
-    public IDeferredQueryMultiple<Chapter> GetByAdminMemberId(Guid memberId)
+    public IDeferredQueryMultiple<Chapter> GetAll(PlatformType platform)
+        => Set(platform)
+            .DeferredMultiple();
+
+    public IDeferredQueryMultiple<Chapter> GetByAdminMemberId(PlatformType platform, Guid memberId)
     {
         var query =
-            from chapter in Set()
+            from chapter in Set(platform)
             from chapterAdminMember in Set<ChapterAdminMember>()
                 .Where(x => x.ChapterId == chapter.Id)
             where chapterAdminMember.MemberId == memberId
             select chapter;
         return query.DeferredMultiple();
     }
-
-    public IDeferredQueryMultiple<Chapter> GetAll()
-        => Set()
-            .DeferredMultiple();
 
     public IDeferredQuerySingle<Chapter> GetByEventId(Guid eventId)
     {
@@ -69,20 +70,15 @@ public class ChapterRepository : ReadWriteRepositoryBase<Chapter>, IChapterRepos
             .Where(x => x.OwnerId == ownerId)
             .DeferredMultiple();
 
-    public IDeferredQueryMultiple<Chapter> GetByPlatform(PlatformType platform)
-        => Set()
-            .Where(x => x.Platform == platform)
-            .DeferredMultiple();
-
     public IDeferredQuerySingleOrDefault<Chapter> GetBySlug(string slug)
         => Set()
             .Where(x => x.Slug == slug)
             .DeferredSingleOrDefault();
 
-    public IDeferredQueryMultiple<Chapter> GetByTopicGroupId(Guid topicGroupId)
+    public IDeferredQueryMultiple<Chapter> GetByTopicGroupId(PlatformType platform, Guid topicGroupId)
     {
         var query =
-            from chapter in Set()
+            from chapter in Set(platform)
             where
             (
                 from chapterTopic in Set<ChapterTopic>()
@@ -108,6 +104,9 @@ public class ChapterRepository : ReadWriteRepositoryBase<Chapter>, IChapterRepos
         base.Update(clone);
     }
 
-    protected override IQueryable<Chapter> Set() => base.Set()
-        .ConditionalWhere(x => x.Platform == _platform, _platform != PlatformType.Default);
+    protected override IQueryable<Chapter> Set() => Set(_platform);
+
+    private IQueryable<Chapter> Set(PlatformType platform)
+        => base.Set()
+            .ForPlatform(platform);
 }

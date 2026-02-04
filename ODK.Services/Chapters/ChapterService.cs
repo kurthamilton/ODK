@@ -112,9 +112,7 @@ public class ChapterService : IChapterService
     public async Task<ChaptersHomePageViewModel> GetChaptersHomePageViewModel(PlatformType platform)
     {
         var (chapters, countries) = await _unitOfWork.RunAsync(
-            x => platform == PlatformType.Default
-                ? x.ChapterRepository.GetAll()
-                : x.ChapterRepository.GetByPlatform(platform),
+            x => x.ChapterRepository.GetAll(platform),
             x => x.CountryRepository.GetAll());
 
         if (platform != PlatformType.Default)

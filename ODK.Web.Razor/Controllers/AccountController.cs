@@ -204,7 +204,7 @@ public class AccountController : OdkControllerBase
         if (result.Success && result.Member != null)
         {
             var platform = Platform;
-            
+
             var redirectUrl = string.IsNullOrEmpty(returnUrl)
                 ? OdkRoutes.Groups.Group(Chapter)
                 : returnUrl;
@@ -422,9 +422,10 @@ public class AccountController : OdkControllerBase
     [HttpPost("/{chapterId:guid}/Account/Password/Forgotten")]
     public async Task<IActionResult> ForgottenPassword(Guid chapterId, [FromForm] ForgottenPasswordFormViewModel viewModel)
     {
+        var chapter = Chapter;
         var result = await _authenticationService.RequestPasswordResetAsync(
             ServiceRequest,
-            chapterId,
+            chapter,
             viewModel.EmailAddress ?? string.Empty);
 
         var successMessage =

@@ -192,14 +192,63 @@ public class AuthenticationService : IAuthenticationService
 
     public async Task<ServiceResult> RequestPasswordResetAsync(
         ServiceRequest request,
-        Guid chapterId,
+        Chapter? chapter,
         string emailAddress)
     {
-        var chapter = await _unitOfWork.ChapterRepository
-            .GetById(chapterId)
-            .Run();
+        if (!MailUtils.ValidEmailAddress(emailAddress))
+        {
+            return ServiceResult.Failure("Invalid email address format");
+        }
 
-        return await RequestPasswordResetAsync(request, chapter, emailAddress);
+        var member = await _unitOfWork.MemberRepository
+            .GetByEmailAddress(emailAddress)
+            .Run();
+        if (member == null)
+        {
+            // return fake success to avoid leaking valid email addresses
+            return ServiceResult.Successful();
+        }
+
+        if (!member.Activated)
+        {
+            var activationToken = await _unitOfWork.MemberActivationTokenRepository.GetByMemberId(member.Id).Run();
+            if (activationToken == null)
+            {
+                activationToken = new MemberActivationToken
+                {
+                    ActivationToken = TokenGenerator.GenerateBase64Token(64),
+                    ChapterId = chapter?.Id,
+                    MemberId = member.Id
+                };
+                _unitOfWork.MemberActivationTokenRepository.Add(activationToken);
+                await _unitOfWork.SaveChangesAsync();
+            }
+
+            await _memberEmailService.SendActivationEmail(
+                request,
+                chapter,
+                member,
+                activationToken.ActivationToken);
+            return ServiceResult.Successful();
+        }
+
+        var created = DateTime.UtcNow;
+        var expires = created.AddMinutes(_settings.PasswordResetTokenLifetimeMinutes);
+        var token = TokenGenerator.GenerateBase64Token(64);
+
+        _unitOfWork.MemberPasswordResetRequestRepository.Add(new MemberPasswordResetRequest
+        {
+            CreatedUtc = created,
+            ExpiresUtc = expires,
+            MemberId = member.Id,
+            Token = token
+        });
+
+        await _unitOfWork.SaveChangesAsync();
+
+        await _memberEmailService.SendPasswordResetEmail(request, chapter, member, token);
+
+        return ServiceResult.Successful();
     }
 
     public async Task<ServiceResult> RequestPasswordResetAsync(
@@ -268,67 +317,6 @@ public class AuthenticationService : IAuthenticationService
         return memberPassword != null
             ? _passwordHasher.Check(password, memberPassword)
             : false;
-    }
-
-    private async Task<ServiceResult> RequestPasswordResetAsync(
-        ServiceRequest request,
-        Chapter? chapter,
-        string emailAddress)
-    {
-        if (!MailUtils.ValidEmailAddress(emailAddress))
-        {
-            return ServiceResult.Failure("Invalid email address format");
-        }
-
-        var member = await _unitOfWork.MemberRepository
-            .GetByEmailAddress(emailAddress)
-            .Run();
-        if (member == null)
-        {
-            // return fake success to avoid leaking valid email addresses
-            return ServiceResult.Successful();
-        }
-
-        if (!member.Activated)
-        {
-            var activationToken = await _unitOfWork.MemberActivationTokenRepository.GetByMemberId(member.Id).Run();
-            if (activationToken == null)
-            {
-                activationToken = new MemberActivationToken
-                {
-                    ActivationToken = TokenGenerator.GenerateBase64Token(64),
-                    ChapterId = chapter?.Id,
-                    MemberId = member.Id
-                };
-                _unitOfWork.MemberActivationTokenRepository.Add(activationToken);
-                await _unitOfWork.SaveChangesAsync();
-            }
-
-            await _memberEmailService.SendActivationEmail(
-                request,
-                chapter,
-                member,
-                activationToken.ActivationToken);
-            return ServiceResult.Successful();
-        }
-
-        var created = DateTime.UtcNow;
-        var expires = created.AddMinutes(_settings.PasswordResetTokenLifetimeMinutes);
-        var token = TokenGenerator.GenerateBase64Token(64);
-
-        _unitOfWork.MemberPasswordResetRequestRepository.Add(new MemberPasswordResetRequest
-        {
-            CreatedUtc = created,
-            ExpiresUtc = expires,
-            MemberId = member.Id,
-            Token = token
-        });
-
-        await _unitOfWork.SaveChangesAsync();
-
-        await _memberEmailService.SendPasswordResetEmail(request, chapter, member, token);
-
-        return ServiceResult.Successful();
     }
 
     private MemberPassword UpdatePassword(MemberPassword? memberPassword, string password)

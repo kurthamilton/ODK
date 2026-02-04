@@ -56,8 +56,8 @@ public class ChapterViewModelService : IChapterViewModelService
 
         var (chapters, distanceUnits, preferences, adminMembers) = await _unitOfWork.RunAsync(
             x => topicGroup != null
-                ? x.ChapterRepository.GetByTopicGroupId(topicGroup.Id)
-                : x.ChapterRepository.GetAll(),
+                ? x.ChapterRepository.GetByTopicGroupId(platform, topicGroup.Id)
+                : x.ChapterRepository.GetAll(platform),
             x => x.DistanceUnitRepository.GetAll(),
             x => currentMember != null
                 ? x.MemberPreferencesRepository.GetByMemberId(currentMember.Id)
@@ -190,9 +190,11 @@ public class ChapterViewModelService : IChapterViewModelService
     public async Task<AccountMenuChaptersViewModel> GetAccountMenuChaptersViewModel(
         MemberServiceRequest request)
     {
+        var (platform, currentMember) = (request.Platform, request.CurrentMember);
+
         var (adminChapters, memberChapters) = await _unitOfWork.RunAsync(
-            x => x.ChapterRepository.GetByAdminMemberId(request.CurrentMember.Id),
-            x => x.ChapterRepository.GetByMemberId(request.CurrentMember.Id));
+            x => x.ChapterRepository.GetByAdminMemberId(platform, currentMember.Id),
+            x => x.ChapterRepository.GetByMemberId(currentMember.Id));
 
         return new AccountMenuChaptersViewModel
         {
@@ -883,7 +885,7 @@ public class ChapterViewModelService : IChapterViewModelService
 
     public async Task<MemberChaptersViewModel> GetMemberChapters(MemberServiceRequest request)
     {
-        var (currentMember, platform) = (request.CurrentMember, request.Platform);
+        var (platform, currentMember) = (request.Platform, request.CurrentMember);
 
         var (chapters, adminMembers) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetByMemberId(currentMember.Id),

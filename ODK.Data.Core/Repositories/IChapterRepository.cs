@@ -6,9 +6,9 @@ namespace ODK.Data.Core.Repositories;
 
 public interface IChapterRepository : IReadWriteRepository<Chapter>
 {
-    IDeferredQueryMultiple<Chapter> GetByAdminMemberId(Guid memberId);
+    IDeferredQueryMultiple<Chapter> GetAll(PlatformType platform);
 
-    IDeferredQueryMultiple<Chapter> GetAll();
+    IDeferredQueryMultiple<Chapter> GetByAdminMemberId(PlatformType platformType, Guid memberId);
 
     IDeferredQuerySingle<Chapter> GetByEventId(Guid eventId);
 
@@ -18,9 +18,7 @@ public interface IChapterRepository : IReadWriteRepository<Chapter>
 
     IDeferredQueryMultiple<Chapter> GetByOwnerId(Guid ownerId);
 
-    IDeferredQueryMultiple<Chapter> GetByPlatform(PlatformType platform);
-
-    IDeferredQueryMultiple<Chapter> GetByTopicGroupId(Guid topicGroupId);
+    IDeferredQueryMultiple<Chapter> GetByTopicGroupId(PlatformType platform, Guid topicGroupId);
 
     IDeferredQuerySingleOrDefault<Chapter> GetBySlug(string slug);
 }

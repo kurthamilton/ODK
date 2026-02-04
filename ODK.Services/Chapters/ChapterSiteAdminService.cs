@@ -14,7 +14,7 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
 
     public ChapterSiteAdminService(
         IUnitOfWork unitOfWork,
-        IMemberEmailService memberEmailService) 
+        IMemberEmailService memberEmailService)
         : base(unitOfWork)
     {
         _memberEmailService = memberEmailService;
@@ -78,7 +78,7 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
         var platform = request.Platform;
 
         var (chapters, subscriptions) = await GetSiteAdminRestrictedContent(request,
-            x => x.ChapterRepository.GetAll(),
+            x => x.ChapterRepository.GetAll(platform),
             x => x.MemberSiteSubscriptionRepository.GetAllChapterOwnerSubscriptions(platform));
 
         var subscriptionDictionary = subscriptions

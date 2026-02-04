@@ -25,7 +25,7 @@ public interface IAuthenticationService
 
     Task<ServiceResult> RequestPasswordResetAsync(
         ServiceRequest request,
-        Guid chapterId,
+        Chapter? chapter,
         string emailAddress);
 
     Task<ServiceResult> RequestPasswordResetAsync(

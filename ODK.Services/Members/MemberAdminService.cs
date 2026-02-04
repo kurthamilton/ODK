@@ -82,9 +82,9 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         // Admins can edit other admins at or below their own level
         // Admins cannot change roles at their own level, except for their own
         var readOnly = !currentAdminMember.HasAccessTo(adminMember.Role, currentMember);
-        var canEditRole = 
-            !readOnly && 
-            adminMember.Role != ChapterAdminRole.Owner && 
+        var canEditRole =
+            !readOnly &&
+            adminMember.Role != ChapterAdminRole.Owner &&
             (adminMember.MemberId == currentMember.Id || adminMember.Role != currentAdminMember?.Role);
 
         var roleOptions = new[]
@@ -603,7 +603,9 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
     public async Task SendMemberSubscriptionReminderEmails(ServiceRequest request)
     {
-        var chapters = await _unitOfWork.ChapterRepository.GetAll().Run();
+        var platform = request.Platform;
+
+        var chapters = await _unitOfWork.ChapterRepository.GetAll(platform).Run();
         foreach (var chapter in chapters)
         {
             var (members, memberSubscriptions, membershipSettings) = await _unitOfWork.RunAsync(
@@ -698,7 +700,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
         AssertMemberIsInChapter(member, request);
 
-        var memberChapter = member.MemberChapter(chapter.Id) 
+        var memberChapter = member.MemberChapter(chapter.Id)
             ?? throw new OdkServiceException($"Member {memberId} not a member of chapter {chapter.Id}");
 
         memberChapter.HideProfile = !visible;

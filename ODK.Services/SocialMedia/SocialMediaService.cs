@@ -1,5 +1,6 @@
 ﻿using ODK.Core.Extensions;
 using ODK.Core.Features;
+using ODK.Core.Platforms;
 using ODK.Core.SocialMedia;
 using ODK.Core.Utils;
 using ODK.Data.Core;
@@ -75,7 +76,7 @@ public class SocialMediaService : ISocialMediaService
     {
         await _loggingService.Info("Scraping latest Instagram posts for all groups");
 
-        var chapters = await _unitOfWork.ChapterRepository.GetAll().Run();
+        var chapters = await _unitOfWork.ChapterRepository.GetAll(PlatformType.Default).Run();
         var chapterIds = chapters
             .Select(x => x.Id)
             .ToQueue();

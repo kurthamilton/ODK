@@ -830,8 +830,10 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
     public async Task<ServiceResult> SetMissingEventShortcodes(MemberServiceRequest request)
     {
+        var platform = request.Platform;
+
         var chapters = await GetSiteAdminRestrictedContent(request,
-            x => x.ChapterRepository.GetAll());
+            x => x.ChapterRepository.GetAll(platform));
 
         foreach (var chapter in chapters)
         {
