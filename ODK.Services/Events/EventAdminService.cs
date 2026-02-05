@@ -602,11 +602,12 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
             x => x.MemberSubscriptionRepository.GetByChapterId(chapter.Id));
 
-        return await SendEventInvites(
+        var result = await SendEventInvites(
             request,
             chapter,
             @event,
             venue,
+            eventEmail,
             membershipSettings,
             privacySettings,
             responses,
@@ -614,6 +615,15 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             members,
             memberEmailPreferences,
             memberSubscriptions);
+
+        if (eventEmail != null)
+        {
+            _unitOfWork.EventEmailRepository.Update(eventEmail);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+
+        return result;
     }
 
     // Public for Hangfire
@@ -623,14 +633,14 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         await _loggingService.Info($"Sending event email {eventEmailId}");
 
-        var email = await _unitOfWork.EventEmailRepository.GetByIdOrDefault(eventEmailId).Run();
-        if (email == null)
+        var eventEmail = await _unitOfWork.EventEmailRepository.GetByIdOrDefault(eventEmailId).Run();
+        if (eventEmail == null)
         {
             await _loggingService.Info($"Error sending event email {eventEmailId}: not found");
             return;
         }
 
-        var @event = await _unitOfWork.EventRepository.GetById(email.EventId).Run();
+        var @event = await _unitOfWork.EventRepository.GetById(eventEmail.EventId).Run();
         if (!@event.IsPublished)
         {
             await _loggingService.Info($"Error sending event email {eventEmailId}: event not published");
@@ -643,8 +653,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         {
             await _loggingService.Info($"Not sending event email {eventEmailId}: event is in the past");
 
-            email.ScheduledUtc = null;
-            _unitOfWork.EventEmailRepository.Update(email);
+            eventEmail.ScheduledUtc = null;
+            _unitOfWork.EventEmailRepository.Update(eventEmail);
             await _unitOfWork.SaveChangesAsync();
             return;
         }
@@ -683,6 +693,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
                 chapter,
                 @event,
                 venue,
+                eventEmail,
                 membershipSettings,
                 privacySettings,
                 responses,
@@ -691,8 +702,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
                 memberEmailPreferences,
                 memberSubscriptions);
 
-            email.SentUtc = DateTime.UtcNow;
-            _unitOfWork.EventEmailRepository.Update(email);
+            eventEmail.SentUtc = DateTime.UtcNow;
+            _unitOfWork.EventEmailRepository.Update(eventEmail);
             await _unitOfWork.SaveChangesAsync();
         }
         catch (Exception ex)
@@ -1177,6 +1188,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         Chapter chapter,
         Event @event,
         Venue venue,
+        EventEmail? eventEmail,
         ChapterMembershipSettings? membershipSettings,
         ChapterPrivacySettings? privacySettings,
         IReadOnlyCollection<EventResponse> responses,
@@ -1218,7 +1230,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         var sentDate = DateTime.UtcNow;
 
-        var eventEmail = await _unitOfWork.EventEmailRepository.GetByEventId(@event.Id).Run();
         eventEmail ??= new();
 
         eventEmail.SentUtc = sentDate;
@@ -1227,10 +1238,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         {
             eventEmail.EventId = @event.Id;
             _unitOfWork.EventEmailRepository.Add(eventEmail);
-        }
-        else
-        {
-            _unitOfWork.EventEmailRepository.Update(eventEmail);
         }
 
         // Add null event responses to indicate that members have been invited
@@ -1243,8 +1250,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             });
 
         _unitOfWork.EventInviteRepository.AddMany(newInvites);
-
-        await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();
     }
