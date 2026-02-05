@@ -6,7 +6,7 @@ public class LoginModel : OdkPageModel
 
     public async Task OnGet(string? returnUrl)
     {
-        if (CurrentMemberIdOrDefault != null)
+        if (CurrentMemberOrDefault != null)
         {
             Response.Redirect(returnUrl ?? OdkRoutes.Groups.Group(Chapter));
         }

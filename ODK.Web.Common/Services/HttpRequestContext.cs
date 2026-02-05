@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using ODK.Core.Utils;
@@ -30,7 +29,7 @@ public class HttpRequestContext : IHttpRequestContext
     public static HttpRequestContext Create(HttpRequest? request)
     {
         var routeValues = new Dictionary<string, string?>();
-        
+
         if (request != null)
         {
             foreach (var routeValue in request.RouteValues)

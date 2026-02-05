@@ -13,7 +13,7 @@
     Layout = "_AccountLayout";
     Model.Title = "Profile picture";
 
-    var viewModel = await AccountViewModelService.GetSitePicturePage(Model.CurrentMemberId);
+    var viewModel = await AccountViewModelService.GetSitePicturePage(Model.CurrentMember.Id);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

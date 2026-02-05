@@ -8,8 +8,7 @@
 @{
     Layout = "_HomeLayout";
 
-    var viewModel = await ChapterViewModelService.GetGroupContactPage(
-        Model.ChapterServiceRequest, Model.CurrentMemberOrDefault);
+    var viewModel = await ChapterViewModelService.GetGroupContactPage(Model.ChapterServiceRequest);
 
     var chapterPage = viewModel.ChapterPages.FirstOrDefault(x => x.PageType == PageType.Contact);
     if (chapterPage?.Hidden == true)
@@ -17,7 +16,8 @@
         throw new OdkNotFoundException();
     }
 
-    Model.Title = $"Contact | {viewModel.Chapter.GetDisplayName(Model.Platform)}";
+    var title = chapterPage?.Title ?? "Contact";
+    Model.Title = $"{title} | {viewModel.Chapter.GetDisplayName(Model.Platform)}";
 }
 
 @await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel

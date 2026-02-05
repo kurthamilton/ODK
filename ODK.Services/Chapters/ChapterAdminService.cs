@@ -1151,12 +1151,14 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
 
-        await AssertMemberIsChapterAdmin(request);
+        var owner = await GetChapterAdminRestrictedContent(request,
+            x => x.MemberRepository.GetChapterOwner(chapter.Id));
 
-        OdkAssertions.Exists(chapter.OwnerId);
+        OdkAssertions.Exists(owner);
 
         var siteSubscriptionsViewModel = await _siteSubscriptionService.GetSiteSubscriptionsViewModel(
-            request, chapter.OwnerId, chapter.Id);
+            MemberServiceRequest.Create(owner, request),
+            chapter.Id);
 
         return new ChapterSubscriptionAdminPageViewModel
         {

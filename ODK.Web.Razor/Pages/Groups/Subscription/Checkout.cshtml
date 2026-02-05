@@ -10,15 +10,12 @@
 @{
     Layout = "_HomeLayout";
 
-    var groupRequest = Model.ChapterServiceRequest;
-    var group = await ChapterViewModelService.GetGroupPage(
-        groupRequest, Model.CurrentMemberOrDefault);
+    var group = await ChapterViewModelService.GetGroupPage(Model.ChapterServiceRequest);
 
     var returnUrl = "";
 
-    var checkoutRequest = Model.MemberChapterServiceRequest;
     var viewModel = await MemberService.StartChapterSubscriptionCheckoutSession(
-        checkoutRequest, Model.ChapterSubscriptionId, returnUrl);
+        Model.MemberChapterServiceRequest, Model.ChapterSubscriptionId, returnUrl);
 }
 
 @await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel

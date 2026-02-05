@@ -23,7 +23,7 @@ public class MemberChapterServiceRequest : MemberServiceRequest, IMemberChapterS
         {
             Chapter = chapter,
             CurrentMember = currentMember,
-            CurrentMemberIdOrDefault = currentMember.Id,
+            CurrentMemberOrDefault = currentMember,
             HttpRequestContext = request.HttpRequestContext,
             Platform = request.Platform
         };

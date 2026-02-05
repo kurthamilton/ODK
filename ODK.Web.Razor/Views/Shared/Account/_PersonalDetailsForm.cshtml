@@ -7,15 +7,15 @@
 @inject IOdkRoutes OdkRoutes
 @inject IRequestStore RequestStore
 @{
-    var memberId = RequestStore.CurrentMemberIdOrDefault;
+    var member = RequestStore.CurrentMemberOrDefault;
     var platform = RequestStore.Platform;
     var chapter = RequestStore.ChapterOrDefault;
 }
 
-<div class="form-group mb-3 @(memberId == null ? "required" : null)">
+<div class="form-group mb-3 @(member == null ? "required" : null)">
     @Html.LabelFor(x => x.EmailAddress, new { @class = "form-label" })
 
-    @if (memberId != null)
+    @if (member != null)
     {
         @Html.HiddenFor(x => x.EmailAddress)
         <div class="form-control-plaintext">
@@ -31,7 +31,7 @@
     }
 </div>
 
-@if (memberId == null && platform == PlatformType.DrunkenKnitwits)
+@if (member == null && platform == PlatformType.DrunkenKnitwits)
 {
     <div class="mb-3 form-check">
         @Html.CheckBoxFor(x => x.EmailOptIn, new { @class = "form-check-input" })

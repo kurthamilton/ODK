@@ -10,8 +10,7 @@
     Layout = "_OdkChapterLayout";
     Model.Title = "Events";
 
-    var viewModel = await EventViewModelService.GetEventsPage(
-        Model.ChapterServiceRequest, Model.CurrentMemberIdOrDefault);
+    var viewModel = await EventViewModelService.GetEventsPage(Model.ChapterServiceRequest);
 
     Model.Path = Model.OdkRoutes.Groups.Events(Model.Chapter);
 }

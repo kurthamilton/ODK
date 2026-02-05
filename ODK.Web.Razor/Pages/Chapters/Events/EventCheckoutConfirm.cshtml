@@ -14,7 +14,7 @@
     var eventUrl = Model.RedirectUrl;
 
     var viewModel = await EventViewModelService.GetEventPageViewModel(
-        Model.ChapterServiceRequest, Model.CurrentMemberOrDefault, Model.Shortcode);
+        Model.ChapterServiceRequest, Model.Shortcode);
 }
 
 @await Html.PartialAsync("Components/_BodyWithSidebar", new BodyWithSidebarViewModel

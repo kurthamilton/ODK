@@ -6,9 +6,7 @@
 @{
     Layout = "_HomeLayout";
 
-    var request = Model.ChapterServiceRequest;
-    var viewModel = await ChapterViewModelService.GetGroupPastEventsPage(
-        request, Model.CurrentMemberOrDefault);
+    var viewModel = await ChapterViewModelService.GetGroupPastEventsPage(Model.ChapterServiceRequest);
 }
 
 @await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel

@@ -11,7 +11,7 @@
     Layout = "_AccountLayout";
     Model.Title = "Issue";
 
-    var viewModel = await IssueService.GetIssuePageViewModel(Model.CurrentMemberId, Model.IssueId);
+    var viewModel = await IssueService.GetIssuePageViewModel(Model.CurrentMember.Id, Model.IssueId);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

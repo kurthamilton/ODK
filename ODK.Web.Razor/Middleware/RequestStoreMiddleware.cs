@@ -1,5 +1,4 @@
 ﻿using ODK.Core.Platforms;
-using ODK.Services;
 using ODK.Web.Common.Extensions;
 using ODK.Web.Common.Services;
 using ODK.Web.Razor.Attributes;
@@ -17,9 +16,7 @@ public class RequestStoreMiddleware
 
     public async Task InvokeAsync(
         HttpContext context,
-        IRequestStore requestStore,
-        IRequestStoreFactory requestStoreFactory,
-        IPlatformProvider platformProvider)
+        IRequestStore requestStore)
     {
         var endpoint = context.GetEndpoint();
 
@@ -29,16 +26,10 @@ public class RequestStoreMiddleware
             return;
         }
 
-        var httpRequestContext = HttpRequestContext.Create(context.Request);
+        var requestContext = HttpRequestContext.Create(context.Request);
+        var currentMemberIdOrDefault = context.User.MemberIdOrDefault();
+        await requestStore.Load(requestContext, currentMemberIdOrDefault);
 
-        var serviceRequest = new ServiceRequest
-        {
-            CurrentMemberIdOrDefault = context.User.MemberIdOrDefault(),
-            HttpRequestContext = httpRequestContext,
-            Platform = platformProvider.GetPlatform(httpRequestContext.BaseUrl)
-        };
-
-        await requestStore.Load(serviceRequest);
         await _next(context);
     }
 }

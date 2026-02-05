@@ -10,11 +10,10 @@
 @inject IRequestStore RequestStore
 @{
     var currentMember = RequestStore.CurrentMemberOrDefault;
-    var currentMemberId = RequestStore.CurrentMemberIdOrDefault;
 }
 
 <div data-odk-component="_SiteAccountDropdown">
-    @if (currentMemberId != null)
+    @if (currentMember != null)
     {
         <div class="dropdown" role="button">
             <div class="text-light account-links__user dropdown-toggle" data-bs-toggle="dropdown">

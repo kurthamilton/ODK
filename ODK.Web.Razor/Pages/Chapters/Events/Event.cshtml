@@ -15,7 +15,6 @@
 
     var viewModel = await EventViewModelService.GetEventPageViewModel(
         Model.ChapterServiceRequest,
-        Model.CurrentMemberOrDefault,
         Model.Shortcode);
 
     Model.Title = viewModel.Event.GetDisplayName();

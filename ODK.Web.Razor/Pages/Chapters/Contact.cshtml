@@ -14,8 +14,7 @@
     Layout = "_OdkChapterLayout";    
     Model.Description = "Form for sending messages to the owners of this Drunken Knitwits chapter";    
 
-    var viewModel = await ChapterViewModelService.GetGroupContactPage(
-        Model.ChapterServiceRequest, Model.CurrentMemberOrDefault);
+    var viewModel = await ChapterViewModelService.GetGroupContactPage(Model.ChapterServiceRequest);
 
     var chapterPage = viewModel.ChapterPages.FirstOrDefault(x => x.PageType == PageType.Contact);
     if (chapterPage?.Hidden == true)

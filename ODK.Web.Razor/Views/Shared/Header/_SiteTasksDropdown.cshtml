@@ -10,10 +10,10 @@
 @inject IRequestStore RequestStore
 @{
     var platform = RequestStore.Platform;
-    var memberId = RequestStore.CurrentMemberIdOrDefault;
+    var member = RequestStore.CurrentMemberOrDefault;
 
-    var ownedChapters = memberId != null
-        ? await ChapterService.GetChaptersByOwnerId(RequestStore.ServiceRequest, memberId.Value)
+    var ownedChapters = member != null
+        ? await ChapterService.GetChaptersByOwnerId(RequestStore.ServiceRequest, member.Id)
         : [];
 
     var notificationCount = 0;

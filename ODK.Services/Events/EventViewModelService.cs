@@ -193,9 +193,9 @@ public class EventViewModelService : IEventViewModelService
     }
 
     public async Task<EventPageViewModel> GetEventPageViewModel(
-        IChapterServiceRequest request, Member? currentMember, string shortcode)
+        IChapterServiceRequest request, string shortcode)
     {
-        var (platform, chapter) = (request.Platform, request.Chapter);
+        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMemberOrDefault);
 
         var (
             membershipSettings,
@@ -353,21 +353,18 @@ public class EventViewModelService : IEventViewModelService
     }
 
     public async Task<EventsPageViewModel> GetEventsPage(
-        IChapterServiceRequest request, Guid? currentMemberId)
+        IChapterServiceRequest request)
     {
-        var (platform, chapter) = (request.Platform, request.Chapter);
+        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMemberOrDefault);
 
         var currentTime = chapter.CurrentTime();
         var afterUtc = currentTime.StartOfDay();
 
-        var (chapterPrivacySettings, membershipSettings, member, memberSubscription, events) = await _unitOfWork.RunAsync(
+        var (chapterPrivacySettings, membershipSettings, memberSubscription, events) = await _unitOfWork.RunAsync(
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
-            x => currentMemberId != null
-                ? x.MemberRepository.GetByIdOrDefault(currentMemberId.Value)
-                : new DefaultDeferredQuerySingleOrDefault<Member>(),
-            x => currentMemberId != null
-                ? x.MemberSubscriptionRepository.GetByMemberId(currentMemberId.Value, chapter.Id)
+            x => currentMember != null
+                ? x.MemberSubscriptionRepository.GetByMemberId(currentMember.Id, chapter.Id)
                 : new DefaultDeferredQuerySingleOrDefault<MemberSubscription>(),
             x => x.EventRepository.GetByChapterId(chapter.Id, afterUtc));
 
@@ -380,12 +377,12 @@ public class EventViewModelService : IEventViewModelService
         IReadOnlyCollection<Venue> venues = [];
         IReadOnlyCollection<EventResponseSummaryDto> responseSummaries = [];
 
-        if (eventIds.Length > 0 && member?.IsMemberOf(chapter.Id) == true)
+        if (eventIds.Length > 0 && currentMember?.IsMemberOf(chapter.Id) == true)
         {
             (venues, memberResponses, invites, responseSummaries) = await _unitOfWork.RunAsync(
                 x => x.VenueRepository.GetByEventIds(eventIds),
-                x => x.EventResponseRepository.GetByMemberId(member.Id, eventIds),
-                x => x.EventInviteRepository.GetByMemberId(member.Id, eventIds),
+                x => x.EventResponseRepository.GetByMemberId(currentMember.Id, eventIds),
+                x => x.EventInviteRepository.GetByMemberId(currentMember.Id, eventIds),
                 x => x.EventResponseRepository.GetResponseSummaries(eventIds));
 
             invitedEventIds = invites
@@ -413,14 +410,16 @@ public class EventViewModelService : IEventViewModelService
         var viewModels = new List<EventResponseViewModel>();
         foreach (var @event in events.Where(x => x.PublishedUtc != null))
         {
-            var canViewEvent = _authorizationService.CanViewEvent(@event, member, memberSubscription, membershipSettings, chapterPrivacySettings);
+            var canViewEvent = _authorizationService
+                .CanViewEvent(@event, currentMember, memberSubscription, membershipSettings, chapterPrivacySettings);
             if (!canViewEvent)
             {
                 continue;
             }
 
             var venue = venueLookup[@event.VenueId];
-            var canViewVenue = _authorizationService.CanViewVenue(venue, member, memberSubscription, membershipSettings, chapterPrivacySettings);
+            var canViewVenue = _authorizationService
+                .CanViewVenue(venue, currentMember, memberSubscription, membershipSettings, chapterPrivacySettings);
 
             var invited = invitedEventIds.Contains(@event.Id);
             memberResponseLookup.TryGetValue(@event.Id, out EventResponseType responseType);
@@ -439,7 +438,7 @@ public class EventViewModelService : IEventViewModelService
         return new EventsPageViewModel
         {
             Chapter = chapter,
-            CurrentMember = member,
+            CurrentMember = currentMember,
             Events = viewModels.OrderBy(x => x.Date).ToArray(),
             Platform = platform
         };

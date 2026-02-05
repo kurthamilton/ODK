@@ -2,7 +2,7 @@
 @using ODK.Services.Subscriptions
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Pricing
-@model ODK.Web.Razor.Pages.PricingModel
+@model PricingModel
 @inject ISiteSubscriptionService SiteSubscriptionService
 @{
     Layout = "_HomeLayout";
@@ -10,7 +10,7 @@
     Model.Path = "/pricing";
 
     var siteSubscriptions = await SiteSubscriptionService
-        .GetSiteSubscriptionsViewModel(Model.ServiceRequest, Model.CurrentMemberIdOrDefault, chapterId: null);
+        .GetSiteSubscriptionsViewModel(Model.ServiceRequest, chapterId: null);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

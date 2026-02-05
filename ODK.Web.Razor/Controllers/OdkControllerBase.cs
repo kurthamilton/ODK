@@ -33,8 +33,6 @@ public abstract class OdkControllerBase : Controller
 
     protected IMemberChapterServiceRequest MemberChapterServiceRequest => RequestStore.MemberChapterServiceRequest;
 
-    protected Guid MemberId => RequestStore.CurrentMemberId;
-
     protected IMemberServiceRequest MemberServiceRequest => RequestStore.MemberServiceRequest;
 
     protected IOdkRoutes OdkRoutes { get; }

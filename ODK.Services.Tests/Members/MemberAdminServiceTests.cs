@@ -1101,15 +1101,27 @@ public static class MemberAdminServiceTests
     {
         currentMember ??= CreateMember(id: CurrentMemberId);
 
-        return new MemberChapterAdminServiceRequest
-        {
-            Chapter = chapter ?? CreateChapter(),
-            CurrentMemberIdOrDefault = currentMember.Id,
-            CurrentMember = currentMember,
-            HttpRequestContext = CreateHttpRequestContext(),
-            Platform = platform ?? PlatformType.Default,
-            Securable = securable ?? ChapterAdminSecurable.Any
-        };
+        var mock = new Mock<IMemberChapterAdminServiceRequest>();
+
+        mock.Setup(x => x.Chapter)
+            .Returns(chapter ?? CreateChapter());
+
+        mock.Setup(x => x.CurrentMember)
+            .Returns(currentMember);
+
+        mock.Setup(x => x.CurrentMemberOrDefault)
+            .Returns(currentMember);
+
+        mock.Setup(x => x.HttpRequestContext)
+            .Returns(CreateHttpRequestContext());
+
+        mock.Setup(x => x.Platform)
+            .Returns(platform ?? PlatformType.Default);
+
+        mock.Setup(x => x.Securable)
+            .Returns(securable ?? ChapterAdminSecurable.Any);
+
+        return mock.Object;
     }
 
     private static IHttpRequestContext CreateHttpRequestContext(string? baseUrl = null)

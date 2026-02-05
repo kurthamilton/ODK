@@ -5,6 +5,7 @@ using ODK.Core.Chapters;
 using ODK.Core.Exceptions;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
+using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
 using ODK.Services;
@@ -25,26 +26,25 @@ public class RequestStore : IRequestStore
     private Chapter? _chapter;
     private ChapterAdminMember? _currentChapterAdminMember;
     private bool _currentChapterAdminMemberLoaded;
-    private Member? _currentMember;
     private readonly ILoggingService _loggingService;
+    private readonly IPlatformProvider _platformProvider;
     private IServiceRequest? _serviceRequest;
     private readonly IUnitOfWork _unitOfWork;
 
     private readonly Lazy<IChapterServiceRequest> _chapterServiceRequest;
-    private readonly Lazy<Guid> _currentMemberId;
     private readonly Lazy<IMemberChapterServiceRequest> _memberChapterServiceRequest;
     private readonly Lazy<IMemberServiceRequest> _memberServiceRequest;
 
     public RequestStore(
         IUnitOfWork unitOfWork,
-        ILoggingService loggingService)
+        ILoggingService loggingService,
+        IPlatformProvider platformProvider)
     {
         _loggingService = loggingService;
+        _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
 
         _chapterServiceRequest = new(() => ChapterServiceRequestImpl.Create(Chapter, ServiceRequest));
-        _currentMemberId = new(
-            () => CurrentMemberIdOrDefault ?? throw new OdkNotAuthorizedException());
         _memberChapterServiceRequest = new(() => MemberChapterServiceRequestImpl.Create(Chapter, MemberServiceRequest));
         _memberServiceRequest = new(() => MemberServiceRequestImpl.Create(CurrentMember, ServiceRequest));
     }
@@ -55,13 +55,9 @@ public class RequestStore : IRequestStore
 
     public IChapterServiceRequest ChapterServiceRequest => _chapterServiceRequest.Value;
 
-    public Member CurrentMember => _currentMember ?? throw new OdkNotAuthenticatedException();
+    public Member CurrentMember => ServiceRequest.CurrentMemberOrDefault ?? throw new OdkNotAuthenticatedException();
 
-    public Guid CurrentMemberId => _currentMemberId.Value;
-
-    public Guid? CurrentMemberIdOrDefault => ServiceRequest.CurrentMemberIdOrDefault;
-
-    public Member? CurrentMemberOrDefault => _currentMember;
+    public Member? CurrentMemberOrDefault => ServiceRequest.CurrentMemberOrDefault;
 
     public bool Loaded { get; private set; }
 
@@ -81,7 +77,7 @@ public class RequestStore : IRequestStore
         }
 
         _currentChapterAdminMember = await _unitOfWork.ChapterAdminMemberRepository
-            .GetByMemberId(Platform, CurrentMemberId, Chapter.Id).Run();
+            .GetByMemberId(Platform, CurrentMember.Id, Chapter.Id).Run();
         _currentChapterAdminMemberLoaded = true;
         return _currentChapterAdminMember;
     }
@@ -89,21 +85,22 @@ public class RequestStore : IRequestStore
     /// <summary>
     /// Called from middleware and <see cref="RequestStoreFactory"/>
     /// </summary>
-    public Task<IRequestStore> Load(IServiceRequest request) => Load(request, verbose: false);
+    public Task<IRequestStore> Load(IHttpRequestContext context, Guid? currentMemberIdOrDefault)
+        => Load(context, currentMemberIdOrDefault, verbose: false);
 
     public void Reset()
     {
         _chapter = null;
         _currentChapterAdminMember = null;
-        _currentMember = null;
-        Loaded = false;
         _serviceRequest = null;
+        Loaded = false;
     }
 
-    private IDeferredQuerySingleOrDefault<Chapter> GetChapterQuery(IUnitOfWork unitOfWork, bool verbose)
+    private IDeferredQuerySingleOrDefault<Chapter> GetChapterQuery(
+        IHttpRequestContext context,
+        IUnitOfWork unitOfWork,
+        bool verbose)
     {
-        var context = ServiceRequest.HttpRequestContext;
-
         if (Platform == PlatformType.DrunkenKnitwits)
         {
             context.RouteValues.TryGetValue("chapterName", out var chapterName);
@@ -171,7 +168,7 @@ public class RequestStore : IRequestStore
         return new DefaultDeferredQuerySingleOrDefault<Chapter>();
     }
 
-    private async Task<IRequestStore> Load(IServiceRequest serviceRequest, bool verbose)
+    private async Task<IRequestStore> Load(IHttpRequestContext context, Guid? currentMemberIdOrDefault, bool verbose)
     {
         if (Loaded)
         {
@@ -179,17 +176,21 @@ public class RequestStore : IRequestStore
         }
 
         // Set the platform directly to persist when resetting other state
-        _serviceRequest = serviceRequest;
-        Platform = serviceRequest.Platform;
+        Platform = _platformProvider.GetPlatform(context.RequestUrl);
 
         var (chapter, currentMember) = await _unitOfWork.RunAsync(
-            x => GetChapterQuery(x, verbose),
-            x => CurrentMemberIdOrDefault != null
-                ? x.MemberRepository.GetByIdOrDefault(CurrentMemberIdOrDefault.Value)
+            x => GetChapterQuery(context, x, verbose),
+            x => currentMemberIdOrDefault != null
+                ? x.MemberRepository.GetByIdOrDefault(currentMemberIdOrDefault.Value)
                 : new DefaultDeferredQuerySingleOrDefault<Member>());
 
         _chapter = chapter;
-        _currentMember = currentMember;
+        _serviceRequest = new ServiceRequest
+        {
+            CurrentMemberOrDefault = currentMember,
+            HttpRequestContext = context,
+            Platform = Platform
+        };
         Loaded = true;
 
         return this;

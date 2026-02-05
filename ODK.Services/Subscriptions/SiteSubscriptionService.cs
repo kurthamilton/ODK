@@ -117,9 +117,9 @@ public class SiteSubscriptionService : ISiteSubscriptionService
     }
 
     public async Task<SiteSubscriptionsViewModel> GetSiteSubscriptionsViewModel(
-        IServiceRequest request, Guid? memberId, Guid? chapterId)
+        IServiceRequest request, Guid? chapterId)
     {
-        var platform = request.Platform;
+        var (platform, memberId) = (request.Platform, request.CurrentMemberIdOrDefault);
 
         var (sitePaymentSettings,
             subscriptions,

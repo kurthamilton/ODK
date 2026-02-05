@@ -5,7 +5,7 @@
 @inject IChapterService ChapterService
 @inject IRequestStore RequestStore
 @{
-    var (platform, memberId) = (RequestStore.Platform, RequestStore.CurrentMemberId);
+    var (platform, memberId) = (RequestStore.Platform, RequestStore.CurrentMember.Id);
     var chapters = await ChapterService.GetChaptersByOwnerId(RequestStore.ServiceRequest, memberId);
     chapters = chapters.Where(x => x.IsOpenForRegistration()).ToArray();
 }

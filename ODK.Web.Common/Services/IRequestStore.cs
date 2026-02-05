@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
+using ODK.Core.Web;
 using ODK.Services;
 
 namespace ODK.Web.Common.Services;
@@ -16,10 +17,6 @@ public interface IRequestStore
     IChapterServiceRequest ChapterServiceRequest { get; }
 
     Member CurrentMember { get; }
-
-    Guid CurrentMemberId { get; }
-
-    Guid? CurrentMemberIdOrDefault { get; }
 
     Member? CurrentMemberOrDefault { get; }
 
@@ -35,7 +32,7 @@ public interface IRequestStore
 
     Task<ChapterAdminMember?> GetCurrentChapterAdminMember();
 
-    Task<IRequestStore> Load(IServiceRequest request);
+    Task<IRequestStore> Load(IHttpRequestContext context, Guid? currentMemberIdOrDefault);
 
     void Reset();
 }

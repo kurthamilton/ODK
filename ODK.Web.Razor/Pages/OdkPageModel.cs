@@ -20,10 +20,6 @@ public abstract class OdkPageModel : PageModel
 
     public Member CurrentMember => RequestStore.CurrentMember;
 
-    public Guid CurrentMemberId => RequestStore.CurrentMemberId;
-
-    public Guid? CurrentMemberIdOrDefault => RequestStore.CurrentMemberIdOrDefault;
-
     public Member? CurrentMemberOrDefault => RequestStore.CurrentMemberOrDefault;
 
     public string? Description

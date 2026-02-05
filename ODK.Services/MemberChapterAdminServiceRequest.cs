@@ -13,7 +13,7 @@ public class MemberChapterAdminServiceRequest : MemberChapterServiceRequest, IMe
         {
             Chapter = request.Chapter,
             CurrentMember = request.CurrentMember,
-            CurrentMemberIdOrDefault = request.CurrentMember.Id,
+            CurrentMemberOrDefault = request.CurrentMember,
             HttpRequestContext = request.HttpRequestContext,
             Platform = request.Platform,
             Securable = securable

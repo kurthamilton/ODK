@@ -6,8 +6,8 @@
 @inject INotificationService NotificationService
 @inject IRequestStore RequestStore
 @{
-    var memberId = RequestStore.CurrentMemberIdOrDefault;
-    if (memberId == null)
+    var member = RequestStore.CurrentMemberOrDefault;
+    if (member == null)
     {
         return;
     }

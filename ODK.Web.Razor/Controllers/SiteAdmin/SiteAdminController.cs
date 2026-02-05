@@ -96,7 +96,7 @@ public class SiteAdminController : OdkControllerBase
     [HttpPost("siteadmin/messages/{id:guid}/replied")]
     public async Task<IActionResult> MarkMessageAsReplied(Guid id)
     {
-        var result = await _contactAdminService.SetMessageAsReplied(MemberId, id);
+        var result = await _contactAdminService.SetMessageAsReplied(CurrentMember.Id, id);
         AddFeedback(result, "Message updated");
         return RedirectToReferrer();
     }

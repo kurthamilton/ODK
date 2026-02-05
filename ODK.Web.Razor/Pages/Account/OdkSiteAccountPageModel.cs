@@ -15,7 +15,7 @@ public abstract class OdkSiteAccountPageModel : OdkPageModel
         PageHandlerExecutionDelegate next)
     {
         if (Platform == PlatformType.Default ||
-            CurrentMemberIdOrDefault == null)
+            CurrentMemberOrDefault == null)
         {
             await next();
             return;

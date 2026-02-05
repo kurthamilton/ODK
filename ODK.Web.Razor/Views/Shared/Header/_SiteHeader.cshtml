@@ -40,7 +40,7 @@
                         <a class="nav-link" href="@OdkRoutes.Groups.Index()">Groups</a>
                     </li>
 
-                    @if (RequestStore.CurrentMemberIdOrDefault != null)
+                    @if (RequestStore.CurrentMemberOrDefault != null)
                     {
                         <li class="nav-item">
                             @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel

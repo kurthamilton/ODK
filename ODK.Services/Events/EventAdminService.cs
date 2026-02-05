@@ -695,9 +695,9 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             _unitOfWork.EventEmailRepository.Update(email);
             await _unitOfWork.SaveChangesAsync();
         }
-        catch
+        catch (Exception ex)
         {
-            await _loggingService.Error("Error sending scheduled event emails");
+            await _loggingService.Error("Error sending scheduled event emails", ex);
         }
     }
 

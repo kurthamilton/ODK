@@ -144,7 +144,7 @@ public class AccountController : OdkControllerBase
     [HttpPost("account/currency")]
     public async Task<IActionResult> UpdateCurrency([FromForm] Guid currencyId)
     {
-        var result = await _memberService.UpdateMemberCurrency(MemberId, currencyId);
+        var result = await _memberService.UpdateMemberCurrency(CurrentMember.Id, currencyId);
         AddFeedback(result, "Currency updated");
         return RedirectToReferrer();
     }
@@ -154,9 +154,9 @@ public class AccountController : OdkControllerBase
     public async Task<IActionResult> Login([FromForm] LoginViewModel viewModel, string? returnUrl)
     {
         var result = await _loginHandler.Login(
-            ServiceRequest, 
+            ServiceRequest,
             viewModel.Email ?? string.Empty,
-            viewModel.Password ?? string.Empty, 
+            viewModel.Password ?? string.Empty,
             rememberMe: true);
 
         if (result.Success && result.Member != null)
@@ -180,7 +180,7 @@ public class AccountController : OdkControllerBase
     {
         var result = await _loginHandler.OAuthLogin(
             ServiceRequest,
-            OAuthProviderType.Google, 
+            OAuthProviderType.Google,
             token);
         if (result.Success && result.Member != null)
         {
@@ -228,8 +228,8 @@ public class AccountController : OdkControllerBase
     public async Task<IActionResult> GoogleChapterLogin(string chapterName, [FromForm] string token, string? returnUrl)
     {
         var result = await _loginHandler.OAuthLogin(
-            ServiceRequest, 
-            OAuthProviderType.Google, 
+            ServiceRequest,
+            OAuthProviderType.Google,
             token);
         if (result.Success && result.Member != null)
         {
@@ -293,7 +293,7 @@ public class AccountController : OdkControllerBase
     [HttpGet("account/email/change/confirm")]
     public async Task<IActionResult> ChangeEmailConfirm(string token)
     {
-        var result = await _memberService.ConfirmEmailAddressUpdate(MemberId, token);
+        var result = await _memberService.ConfirmEmailAddressUpdate(CurrentMember.Id, token);
         AddFeedback(result, "Email address updated");
         return Redirect("/account");
     }
@@ -301,7 +301,7 @@ public class AccountController : OdkControllerBase
     [HttpGet("{chapterName}/Account/Email/Change/Confirm")]
     public async Task<IActionResult> ChangeEmailConfirm(string chapterName, string token)
     {
-        var result = await _memberService.ConfirmEmailAddressUpdate(MemberId, token);
+        var result = await _memberService.ConfirmEmailAddressUpdate(CurrentMember.Id, token);
         AddFeedback(result, "Email address updated");
         return Redirect($"/{chapterName}/Account");
     }
@@ -314,7 +314,7 @@ public class AccountController : OdkControllerBase
             .Select(x => x.Type)
             .ToArray();
 
-        var result = await _memberService.UpdateMemberEmailPreferences(MemberId, disabledTypes);
+        var result = await _memberService.UpdateMemberEmailPreferences(CurrentMember.Id, disabledTypes);
 
         AddFeedback(result, "Email preferences updated");
 
@@ -327,7 +327,7 @@ public class AccountController : OdkControllerBase
         var location = viewModel.Lat != null && viewModel.Long != null
             ? new LatLong(viewModel.Lat.Value, viewModel.Long.Value)
             : default(LatLong?);
-        await _memberService.UpdateMemberLocation(MemberId, location, viewModel.LocationName, viewModel.DistanceUnit);
+        await _memberService.UpdateMemberLocation(CurrentMember.Id, location, viewModel.LocationName, viewModel.DistanceUnit);
 
         AddFeedback("Location updated", FeedbackType.Success);
 
@@ -342,7 +342,7 @@ public class AccountController : OdkControllerBase
             .Select(x => x.Type)
             .ToArray();
 
-        var result = await _notificationService.UpdateMemberNotificationSettings(MemberId, disabledTypes);
+        var result = await _notificationService.UpdateMemberNotificationSettings(CurrentMember.Id, disabledTypes);
 
         AddFeedback(result, "Notification preferences updated");
 
@@ -352,7 +352,7 @@ public class AccountController : OdkControllerBase
     [HttpPost("account/notifications/{id:guid}/dismiss")]
     public async Task<IActionResult> DismissNotification(Guid id)
     {
-        await _notificationService.MarkAsRead(MemberId, id);
+        await _notificationService.MarkAsRead(CurrentMember.Id, id);
         return Ok();
     }
 
@@ -406,7 +406,7 @@ public class AccountController : OdkControllerBase
     [HttpPost("account/password/change")]
     public async Task<IActionResult> ChangePassword([FromForm] ChangePasswordFormViewModel viewModel)
     {
-        var result = await _authenticationService.ChangePasswordAsync(MemberId,
+        var result = await _authenticationService.ChangePasswordAsync(CurrentMember.Id,
             viewModel.CurrentPassword ?? string.Empty, viewModel.NewPassword ?? string.Empty);
         AddFeedback(result, "Password changed");
         return RedirectToReferrer();
@@ -459,7 +459,7 @@ public class AccountController : OdkControllerBase
             return RedirectToReferrer();
         }
 
-        var result = await _memberService.UpdateMemberImage(MemberId, bytes);
+        var result = await _memberService.UpdateMemberImage(CurrentMember.Id, bytes);
         AddFeedback(result);
         return RedirectToReferrer();
     }
@@ -467,7 +467,7 @@ public class AccountController : OdkControllerBase
     [HttpPost("account/picture/rotate")]
     public async Task<IActionResult> RotatePicture()
     {
-        await _memberService.RotateMemberImage(MemberId);
+        await _memberService.RotateMemberImage(CurrentMember.Id);
 
         return RedirectToReferrer();
     }
@@ -497,7 +497,7 @@ public class AccountController : OdkControllerBase
     [HttpPost("Chapters/{chapterId:guid}/Account/Subscription/Cancel")]
     public async Task<IActionResult> CancelChapterSubscription(Guid chapterId, [FromForm] CancelSubscriptionRequest form)
     {
-        var result = await _memberService.CancelChapterSubscription(MemberId, form.ExternalId);
+        var result = await _memberService.CancelChapterSubscription(CurrentMember.Id, form.ExternalId);
         AddFeedback(result, "Purchase complete. Thank you for subscribing.");
         return RedirectToReferrer();
     }

@@ -12,9 +12,7 @@
     Layout = "_HomeLayout";
     Model.Title = "Error";
 
-    var request = Model.ChapterServiceRequest;
-    var viewModel = await ChapterViewModelService.GetGroupPage(
-        request, Model.CurrentMemberOrDefault);
+    var viewModel = await ChapterViewModelService.GetGroupPage(Model.ChapterServiceRequest);
 }
 
 @await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel

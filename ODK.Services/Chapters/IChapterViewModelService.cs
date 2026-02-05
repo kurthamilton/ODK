@@ -16,37 +16,28 @@ public interface IChapterViewModelService
 
     Task<ChapterCreateViewModel> GetChapterCreateViewModel(IMemberServiceRequest request);
 
-    Task<GroupContactPageViewModel> GetGroupContactPage(
-        IChapterServiceRequest request, Member? currentMember);
+    Task<GroupContactPageViewModel> GetGroupContactPage(IChapterServiceRequest request);
 
     Task<GroupConversationPageViewModel> GetGroupConversationPage(
         IMemberChapterServiceRequest request, Guid conversationId);
 
-    Task<GroupEventsPageViewModel> GetGroupEventsPage(
-        IChapterServiceRequest request, Member? currentMember);
+    Task<GroupEventsPageViewModel> GetGroupEventsPage(IChapterServiceRequest request);
 
-    Task<GroupPageViewModel> GetGroupPage(
-        IChapterServiceRequest request, Member? currentMember);
+    Task<GroupPageViewModel> GetGroupPage(IChapterServiceRequest request);
 
-    Task<GroupEventsPageViewModel> GetGroupPastEventsPage(
-        IChapterServiceRequest request, Member? currentMember);
+    Task<GroupEventsPageViewModel> GetGroupPastEventsPage(IChapterServiceRequest request);
 
-    Task<GroupHomePageViewModel> GetGroupHomePage(
-        IChapterServiceRequest request, Member? currentMember);
+    Task<GroupHomePageViewModel> GetGroupHomePage(IChapterServiceRequest request);
 
-    Task<GroupJoinPageViewModel> GetGroupJoinPage(
-        IChapterServiceRequest request, Member? currentMember);
+    Task<GroupJoinPageViewModel> GetGroupJoinPage(IChapterServiceRequest request);
 
     Task<GroupProfilePageViewModel> GetGroupProfilePage(IMemberChapterServiceRequest request);
 
-    Task<GroupQuestionsPageViewModel> GetGroupQuestionsPage(
-        IChapterServiceRequest request, Member? currentMember);
+    Task<GroupQuestionsPageViewModel> GetGroupQuestionsPage(IChapterServiceRequest request);
 
-    Task<GroupSubscriptionPageViewModel> GetGroupSubscriptionPage(
-        IMemberChapterServiceRequest request);
+    Task<GroupSubscriptionPageViewModel> GetGroupSubscriptionPage(IMemberChapterServiceRequest request);
 
-    Task<ChapterHomePageViewModel> GetHomePage(
-        IChapterServiceRequest request, Member? currentMember);
+    Task<ChapterHomePageViewModel> GetHomePage(IChapterServiceRequest request);
 
     Task<MemberChaptersViewModel> GetMemberChapters(IMemberServiceRequest request);
 }

@@ -12,20 +12,14 @@
 @inject IOdkRoutes OdkRoutes
 @inject IRequestStore RequestStore
 @{
-    var (platform, memberId) = (RequestStore.Platform, RequestStore.CurrentMemberIdOrDefault);
-    if (memberId == null)
+    var (platform, member) = (RequestStore.Platform, RequestStore.CurrentMemberOrDefault);
+    if (member == null)
     {
         return;
     }
 
     var chapter = RequestStore.ChapterOrDefault;
     if (chapter == null)
-    {
-        return;
-    }
-
-    var member = RequestStore.CurrentMemberOrDefault;
-    if (member == null)
     {
         return;
     }

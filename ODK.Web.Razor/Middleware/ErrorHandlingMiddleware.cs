@@ -5,7 +5,6 @@ using ODK.Core.Chapters;
 using ODK.Core.Exceptions;
 using ODK.Core.Platforms;
 using ODK.Data.Core;
-using ODK.Services;
 using ODK.Services.Exceptions;
 using ODK.Services.Logging;
 using ODK.Web.Common.Extensions;
@@ -29,8 +28,7 @@ public class ErrorHandlingMiddleware
         ILoggingService loggingService,
         IRequestStore requestStore,
         IUnitOfWork unitOfWork,
-        IOdkRoutes odkRoutes,
-        IPlatformProvider platformProvider)
+        IOdkRoutes odkRoutes)
     {
         try
         {
@@ -59,12 +57,12 @@ public class ErrorHandlingMiddleware
                 _ => 500
             };
 
-            await HandleAsync(context, requestStore, unitOfWork, odkRoutes, platformProvider);
+            await HandleAsync(context, requestStore, unitOfWork, odkRoutes);
         }
     }
 
     private async Task<Chapter?> FindChapter(
-        HttpContext httpContext, IRequestStore requestStore, IUnitOfWork unitOfWork, IPlatformProvider platformProvider)
+        HttpContext httpContext, IRequestStore requestStore, IUnitOfWork unitOfWork)
     {
         // We can't always get the chapter from the request store for 404s, as it matches by route params.
         // If we have a 404 as a result of not matching a route, we won't have any route params.
@@ -78,12 +76,8 @@ public class ErrorHandlingMiddleware
         if (!requestStore.Loaded)
         {
             var requestContext = HttpRequestContext.Create(httpContext.Request);
-            await requestStore.Load(new ServiceRequest
-            {
-                CurrentMemberIdOrDefault = httpContext.User.MemberIdOrDefault(),
-                HttpRequestContext = requestContext,
-                Platform = platformProvider.GetPlatform(requestContext.RequestUrl)
-            });
+            var currentMemberIdOrDefault = httpContext.User.MemberIdOrDefault();
+            await requestStore.Load(requestContext, currentMemberIdOrDefault);
         }
 
         // We might end up on a valid chapter route as a result of being redirected to a chapter error page,
@@ -135,8 +129,7 @@ public class ErrorHandlingMiddleware
         HttpContext httpContext,
         IRequestStore requestStore,
         IUnitOfWork unitOfWork,
-        IOdkRoutes odkRoutes,
-        IPlatformProvider platformProvider)
+        IOdkRoutes odkRoutes)
     {
         var request = httpContext.Request;
         var response = httpContext.Response;
@@ -144,7 +137,7 @@ public class ErrorHandlingMiddleware
         var originalMethod = request.Method;
         var originalPath = request.Path;
 
-        var path = await GetErrorPath(httpContext, requestStore, unitOfWork, odkRoutes, platformProvider);
+        var path = await GetErrorPath(httpContext, requestStore, unitOfWork, odkRoutes);
 
         ResetHttpContext(httpContext, path);
 
@@ -164,12 +157,11 @@ public class ErrorHandlingMiddleware
         HttpContext httpContext,
         IRequestStore requestStore,
         IUnitOfWork unitOfWork,
-        IOdkRoutes odkRoutes,
-        IPlatformProvider platformProvider)
+        IOdkRoutes odkRoutes)
     {
         var statusCode = httpContext.Response.StatusCode;
 
-        var chapter = await FindChapter(httpContext, requestStore, unitOfWork, platformProvider);
+        var chapter = await FindChapter(httpContext, requestStore, unitOfWork);
         return odkRoutes.Error(chapter, statusCode);
     }
 

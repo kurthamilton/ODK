@@ -13,7 +13,7 @@ public class ChapterServiceRequest : ServiceRequest, IChapterServiceRequest
         return new ChapterServiceRequest
         {
             Chapter = chapter,
-            CurrentMemberIdOrDefault = request.CurrentMemberIdOrDefault,
+            CurrentMemberOrDefault = request.CurrentMemberOrDefault,
             HttpRequestContext = request.HttpRequestContext,
             Platform = request.Platform
         };

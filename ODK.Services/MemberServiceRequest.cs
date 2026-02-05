@@ -13,7 +13,7 @@ public class MemberServiceRequest : ServiceRequest, IMemberServiceRequest
         return new MemberServiceRequest
         {
             CurrentMember = currentMember,
-            CurrentMemberIdOrDefault = currentMember.Id,
+            CurrentMemberOrDefault = currentMember,
             HttpRequestContext = request.HttpRequestContext,
             Platform = request.Platform
         };

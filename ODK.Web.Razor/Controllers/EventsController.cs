@@ -100,7 +100,7 @@ public class EventsController : OdkControllerBase
     [HttpPost("events/{id:guid}/wait-list")]
     public async Task<IActionResult> JoinWaitlist(Guid id)
     {
-        var result = await _eventService.JoinWaitlist(id, MemberId);
+        var result = await _eventService.JoinWaitlist(id, CurrentMember.Id);
         AddFeedback(result, "You have joined the waiting list");
         return RedirectToReferrer();
     }
@@ -109,7 +109,7 @@ public class EventsController : OdkControllerBase
     [HttpPost("events/{id:guid}/wait-list/leave")]
     public async Task<IActionResult> LeaveWaitlist(Guid id)
     {
-        var result = await _eventService.LeaveWaitlist(id, MemberId);
+        var result = await _eventService.LeaveWaitlist(id, CurrentMember.Id);
         AddFeedback(result, "You have left the waiting list");
         return RedirectToReferrer();
     }
