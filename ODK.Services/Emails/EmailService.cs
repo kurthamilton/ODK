@@ -58,7 +58,7 @@ public class EmailService : IEmailService
     }
 
     public async Task SendBulkEmail(
-        ChapterServiceRequest request,
+        IChapterServiceRequest request,
         IEnumerable<Member> to,
         EmailType type,
         IDictionary<string, string> parameters)
@@ -77,7 +77,7 @@ public class EmailService : IEmailService
     }
 
     public async Task SendBulkEmail(
-        ChapterServiceRequest request,
+        IChapterServiceRequest request,
         IEnumerable<Member> to,
         string subject,
         string body)
@@ -94,7 +94,7 @@ public class EmailService : IEmailService
     }
 
     public async Task SendEventCommentEmail(
-        ServiceRequest request,
+        IServiceRequest request,
         Chapter chapter,
         Member? replyToMember,
         EventComment comment,
@@ -126,7 +126,7 @@ public class EmailService : IEmailService
     }
 
     public Task<ServiceResult> SendEmail(
-        ServiceRequest request,
+        IServiceRequest request,
         Chapter? chapter,
         EmailAddressee to,
         EmailType type,
@@ -134,7 +134,7 @@ public class EmailService : IEmailService
         => SendEmail(request, chapter, [to], type, parameters);
 
     public async Task<ServiceResult> SendEmail(
-        ServiceRequest request,
+        IServiceRequest request,
         Chapter? chapter,
         IEnumerable<EmailAddressee> to,
         EmailType type,
@@ -152,7 +152,7 @@ public class EmailService : IEmailService
     }
 
     public async Task<ServiceResult> SendEmail(
-        ServiceRequest request,
+        IServiceRequest request,
         Chapter? chapter,
         IEnumerable<EmailAddressee> to,
         string subject,
@@ -162,7 +162,7 @@ public class EmailService : IEmailService
     }
 
     public async Task<ServiceResult> SendEmail(
-        ServiceRequest request,
+        IServiceRequest request,
         Chapter? chapter,
         IEnumerable<EmailAddressee> to,
         string subject,
@@ -180,7 +180,7 @@ public class EmailService : IEmailService
     }
 
     public async Task<ServiceResult> SendMemberEmail(
-        ServiceRequest request,
+        IServiceRequest request,
         Chapter? chapter,
         EmailAddressee to,
         string subject,
@@ -196,7 +196,7 @@ public class EmailService : IEmailService
     }
 
     public async Task<ServiceResult> SendMemberEmail(
-        ServiceRequest request,
+        IServiceRequest request,
         Chapter? chapter,
         EmailAddressee to,
         string subject,
@@ -267,7 +267,7 @@ public class EmailService : IEmailService
     }
 
     private async Task<ServiceResult> SendEmail(
-        ServiceRequest request, SendEmailOptions options)
+        IServiceRequest request, SendEmailOptions options)
     {
         var platform = request.Platform;
         var chapterId = options.Chapter?.Id;

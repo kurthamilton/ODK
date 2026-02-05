@@ -5,5 +5,5 @@ namespace ODK.Web.Common.Services;
 
 public interface IRequestStoreFactory
 {
-    Task<IRequestStore> Create(ServiceRequest request);
+    Task<IRequestStore> Create(IServiceRequest request);
 }

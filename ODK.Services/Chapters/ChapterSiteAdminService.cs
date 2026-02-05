@@ -21,7 +21,7 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ServiceResult> ApproveChapter(MemberServiceRequest request, Guid chapterId)
+    public async Task<ServiceResult> ApproveChapter(IMemberServiceRequest request, Guid chapterId)
     {
         var platform = request.Platform;
 
@@ -49,7 +49,7 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> DeleteChapter(MemberServiceRequest request, Guid chapterId)
+    public async Task<ServiceResult> DeleteChapter(IMemberServiceRequest request, Guid chapterId)
     {
         var platform = request.Platform;
 
@@ -63,7 +63,7 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
     }
 
     public async Task<ChapterPaymentSettingsAdminPageViewModel> GetChapterPaymentSettingsViewModel(
-        MemberChapterServiceRequest request)
+        IMemberChapterServiceRequest request)
     {
         var chapter = request.Chapter;
 
@@ -78,7 +78,7 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
         };
     }
 
-    public async Task<SiteAdminChaptersViewModel> GetSiteAdminChaptersViewModel(MemberServiceRequest request)
+    public async Task<SiteAdminChaptersViewModel> GetSiteAdminChaptersViewModel(IMemberServiceRequest request)
     {
         var platform = request.Platform;
 
@@ -134,7 +134,7 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
     }
 
     public async Task<SiteAdminChapterViewModel> GetSiteAdminChapterViewModel(
-        MemberChapterServiceRequest request)
+        IMemberChapterServiceRequest request)
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
 
@@ -156,7 +156,7 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
     }
 
     public async Task<ServiceResult> UpdateSiteAdminChapter(
-        MemberChapterServiceRequest request,
+        IMemberChapterServiceRequest request,
         SiteAdminChapterUpdateViewModel viewModel)
     {
         var (platform, chapter) = (request.Platform, request.Chapter);

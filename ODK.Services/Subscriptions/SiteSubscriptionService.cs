@@ -33,7 +33,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
     }
 
     public async Task<ServiceResult> CancelMemberSiteSubscription(
-        MemberServiceRequest request, Guid siteSubscriptionId)
+        IMemberServiceRequest request, Guid siteSubscriptionId)
     {
         var (currentMember, platform) = (request.CurrentMember, request.Platform);
 
@@ -65,7 +65,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
     }
 
     public async Task<ServiceResult> ConfirmMemberSiteSubscription(
-        MemberServiceRequest request,
+        IMemberServiceRequest request,
         Guid siteSubscriptionPriceId,
         string externalId)
     {
@@ -117,7 +117,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
     }
 
     public async Task<SiteSubscriptionsViewModel> GetSiteSubscriptionsViewModel(
-        ServiceRequest request, Guid? memberId, Guid? chapterId)
+        IServiceRequest request, Guid? memberId, Guid? chapterId)
     {
         var platform = request.Platform;
 
@@ -192,7 +192,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
     }
 
     public async Task<SiteSubscriptionCheckoutViewModel> StartSiteSubscriptionCheckout(
-        MemberServiceRequest request, Guid priceId, string returnPath, Guid? chapterId)
+        IMemberServiceRequest request, Guid priceId, string returnPath, Guid? chapterId)
     {
         var (platform, currentMember) = (request.Platform, request.CurrentMember);
 
@@ -269,7 +269,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
         };
     }
 
-    public async Task SyncExpiredSubscriptions(ServiceRequest request)
+    public async Task SyncExpiredSubscriptions(IServiceRequest request)
     {
         var (sitePaymentSettings, subscriptions) = await _unitOfWork.RunAsync(
             x => x.SitePaymentSettingsRepository.GetAll(),

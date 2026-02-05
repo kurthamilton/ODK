@@ -40,7 +40,7 @@ public class LoginHandler : ILoginHandler
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<AuthenticationResult> Impersonate(MemberServiceRequest request, Guid memberId)
+    public async Task<AuthenticationResult> Impersonate(IMemberServiceRequest request, Guid memberId)
     {
         var currentMember = request.CurrentMember;
         var member = await _unitOfWork.MemberRepository.GetById(memberId).Run();
@@ -52,7 +52,7 @@ public class LoginHandler : ILoginHandler
     }
 
     public async Task<AuthenticationResult> Login(
-        ServiceRequest request, string username, string password, bool rememberMe)
+        IServiceRequest request, string username, string password, bool rememberMe)
     {
         var member = await _authenticationService.GetMemberAsync(username, password);
         return await Login(request, member);
@@ -70,7 +70,7 @@ public class LoginHandler : ILoginHandler
     }
 
     public async Task<AuthenticationResult> OAuthLogin(
-        ServiceRequest request, OAuthProviderType providerType, string token)
+        IServiceRequest request, OAuthProviderType providerType, string token)
     {
         var provider = _oauthProviderFactory.GetProvider(providerType);
         var oauthUser = await provider.GetUser(token);
@@ -78,7 +78,7 @@ public class LoginHandler : ILoginHandler
         return await Login(request, member);
     }
 
-    private async Task<AuthenticationResult> Login(ServiceRequest request, Member? member)
+    private async Task<AuthenticationResult> Login(IServiceRequest request, Member? member)
     {
         if (member == null)
         {

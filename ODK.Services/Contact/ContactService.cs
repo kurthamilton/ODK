@@ -35,7 +35,7 @@ public class ContactService : IContactService
     }
 
     public async Task<ServiceResult> ReplyToChapterConversation(
-        MemberServiceRequest request, Guid conversationId, string message)
+        IMemberServiceRequest request, Guid conversationId, string message)
     {
         var platform = request.Platform;
 
@@ -82,7 +82,7 @@ public class ContactService : IContactService
     }
 
     public async Task SendChapterContactMessage(
-        ChapterServiceRequest request,
+        IChapterServiceRequest request,
         string fromAddress,
         string message,
         string recaptchaToken)
@@ -130,7 +130,7 @@ public class ContactService : IContactService
     }
 
     public async Task SendSiteContactMessage(
-        ServiceRequest request,
+        IServiceRequest request,
         string fromAddress,
         string message,
         string recaptchaToken)
@@ -162,7 +162,7 @@ public class ContactService : IContactService
     }
 
     public async Task<ServiceResult> StartChapterConversation(
-        MemberChapterServiceRequest request,
+        IMemberChapterServiceRequest request,
         string subject,
         string message,
         string recaptchaToken)
@@ -224,7 +224,7 @@ public class ContactService : IContactService
             .Select(x => x.Member);
 
         await _memberEmailService.SendChapterConversationEmail(
-            ChapterServiceRequest.Create(chapter, request),
+            request,
             conversation,
             conversationMessage,
             emailMembers.ToArray(),

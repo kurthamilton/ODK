@@ -3,7 +3,7 @@ using ODK.Core.Web;
 
 namespace ODK.Services;
 
-public class ServiceRequest
+public class ServiceRequest : IServiceRequest
 {
     public virtual required Guid? CurrentMemberIdOrDefault { get; init; }
 
@@ -11,7 +11,7 @@ public class ServiceRequest
 
     public required PlatformType Platform { get; init; }
 
-    public static ServiceRequest Create(ServiceRequest other) => new()
+    public static ServiceRequest Create(IServiceRequest other) => new()
     {
         CurrentMemberIdOrDefault = other.CurrentMemberIdOrDefault,
         HttpRequestContext = other.HttpRequestContext,

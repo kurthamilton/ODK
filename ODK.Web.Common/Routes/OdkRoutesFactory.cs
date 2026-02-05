@@ -14,7 +14,7 @@ public class OdkRoutesFactory : IOdkRoutesFactory
         _requestStoreFactory = requestStoreFactory;
     }
 
-    public async Task<IOdkRoutes> Create(ServiceRequest request)
+    public async Task<IOdkRoutes> Create(IServiceRequest request)
     {
         if (_odkRoutes != null)
         {

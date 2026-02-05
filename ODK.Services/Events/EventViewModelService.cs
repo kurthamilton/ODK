@@ -34,8 +34,8 @@ public class EventViewModelService : IEventViewModelService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<EventCheckoutPageViewModel> GetEventCheckoutPageViewModel
-        (MemberChapterServiceRequest request, string shortcode, string returnPath)
+    public async Task<EventCheckoutPageViewModel> GetEventCheckoutPageViewModel(
+        IMemberChapterServiceRequest request, string shortcode, string returnPath)
     {
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
@@ -193,7 +193,7 @@ public class EventViewModelService : IEventViewModelService
     }
 
     public async Task<EventPageViewModel> GetEventPageViewModel(
-        ChapterServiceRequest request, Member? currentMember, string shortcode)
+        IChapterServiceRequest request, Member? currentMember, string shortcode)
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
 
@@ -353,7 +353,7 @@ public class EventViewModelService : IEventViewModelService
     }
 
     public async Task<EventsPageViewModel> GetEventsPage(
-        ChapterServiceRequest request, Guid? currentMemberId)
+        IChapterServiceRequest request, Guid? currentMemberId)
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
 

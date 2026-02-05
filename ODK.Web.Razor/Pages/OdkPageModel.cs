@@ -16,7 +16,7 @@ public abstract class OdkPageModel : PageModel
 {
     public Chapter Chapter => RequestStore.Chapter;
 
-    public ChapterServiceRequest ChapterServiceRequest => RequestStore.ChapterServiceRequest;
+    public IChapterServiceRequest ChapterServiceRequest => RequestStore.ChapterServiceRequest;
 
     public Member CurrentMember => RequestStore.CurrentMember;
 
@@ -44,9 +44,9 @@ public abstract class OdkPageModel : PageModel
         set => ViewData["Keywords"] = value;
     }
 
-    public MemberChapterServiceRequest MemberChapterServiceRequest => RequestStore.MemberChapterServiceRequest;
+    public IMemberChapterServiceRequest MemberChapterServiceRequest => RequestStore.MemberChapterServiceRequest;
 
-    public MemberServiceRequest MemberServiceRequest => RequestStore.MemberServiceRequest;
+    public IMemberServiceRequest MemberServiceRequest => RequestStore.MemberServiceRequest;
 
     [OdkInject]
     public required IOdkRoutes OdkRoutes { get; set; }
@@ -62,13 +62,13 @@ public abstract class OdkPageModel : PageModel
     [OdkInject]
     public required IRequestStore RequestStore { get; set; }
 
-    public ServiceRequest ServiceRequest => RequestStore.ServiceRequest;
+    public IServiceRequest ServiceRequest => RequestStore.ServiceRequest;
 
     public string? Title
     {
         get => ViewData["Title"] as string;
         set => ViewData["Title"] = value;
-    }        
+    }
 
     protected void AddFeedback(string message, FeedbackType type = FeedbackType.Success)
         => AddFeedback(new FeedbackViewModel(message, type));

@@ -29,7 +29,7 @@ public interface IPaymentProvider
     Task<ExternalSubscriptionPlan?> GetSubscriptionPlan(string externalId);
 
     Task<ExternalCheckoutSession> StartCheckout(
-        ServiceRequest request,
+        IServiceRequest request,
         string emailAddress,
         ExternalSubscriptionPlan subscriptionPlan,
         string returnPath,

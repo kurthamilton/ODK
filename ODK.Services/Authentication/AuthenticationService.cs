@@ -36,7 +36,7 @@ public class AuthenticationService : IAuthenticationService
     }
 
     public async Task<ServiceResult> ActivateChapterAccountAsync(
-        ChapterServiceRequest request,
+        IChapterServiceRequest request,
         string activationToken,
         string password)
     {
@@ -92,7 +92,7 @@ public class AuthenticationService : IAuthenticationService
     }
 
     public async Task<ServiceResult> ActivateSiteAccountAsync(
-        ServiceRequest request,
+        IServiceRequest request,
         string activationToken,
         string password)
     {
@@ -180,7 +180,7 @@ public class AuthenticationService : IAuthenticationService
         return member;
     }
 
-    public async Task<IReadOnlyCollection<Claim>> GetClaimsAsync(MemberServiceRequest request)
+    public async Task<IReadOnlyCollection<Claim>> GetClaimsAsync(IMemberServiceRequest request)
     {
         var (platform, currentMember) = (request.Platform, request.CurrentMember);
 
@@ -194,7 +194,7 @@ public class AuthenticationService : IAuthenticationService
     }
 
     public async Task<ServiceResult> RequestPasswordResetAsync(
-        ServiceRequest request,
+        IServiceRequest request,
         Chapter? chapter,
         string emailAddress)
     {
@@ -255,7 +255,7 @@ public class AuthenticationService : IAuthenticationService
     }
 
     public async Task<ServiceResult> RequestPasswordResetAsync(
-        ServiceRequest request,
+        IServiceRequest request,
         string emailAddress)
     {
         return await RequestPasswordResetAsync(request, null, emailAddress);

@@ -5,5 +5,5 @@ namespace ODK.Web.Common.Routes;
 
 public interface IOdkRoutesFactory
 {
-    Task<IOdkRoutes> Create(ServiceRequest request);
+    Task<IOdkRoutes> Create(IServiceRequest request);
 }

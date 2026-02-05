@@ -11,8 +11,8 @@ public class UrlProvider : IUrlProvider
 {
     private readonly IHttpRequestContext _httpRequestContext;
     private readonly IOdkRoutes _odkRoutes;
-    
-    public UrlProvider(ServiceRequest request, IOdkRoutes odkRoutes)
+
+    public UrlProvider(IServiceRequest request, IOdkRoutes odkRoutes)
     {
         _httpRequestContext = request.HttpRequestContext;
         _odkRoutes = odkRoutes;
@@ -29,17 +29,17 @@ public class UrlProvider : IUrlProvider
     public string ConversationAdminUrl(Chapter chapter, Guid conversationId)
         => GetUrl(_odkRoutes.GroupAdmin.Conversation(chapter, conversationId));
 
-    public string ConversationUrl(Chapter chapter, Guid conversationId) 
+    public string ConversationUrl(Chapter chapter, Guid conversationId)
         => GetUrl(_odkRoutes.Groups.Conversation(chapter, conversationId));
 
     public string EmailPreferences(Chapter? chapter) => GetUrl(_odkRoutes.Account.EmailPreferences(chapter));
 
-    public string EventRsvpUrl(Chapter chapter, string shortcode) 
+    public string EventRsvpUrl(Chapter chapter, string shortcode)
         => GetUrl(_odkRoutes.Groups.EventAttend(chapter, shortcode));
 
     public string EventsUrl(Chapter chapter) => GetUrl(_odkRoutes.Groups.Events(chapter));
 
-    public string EventUrl(Chapter chapter, string shortcode) 
+    public string EventUrl(Chapter chapter, string shortcode)
         => GetUrl(_odkRoutes.Groups.Event(chapter, shortcode));
 
     public string GroupUrl(Chapter chapter) => GetUrl(_odkRoutes.Groups.Group(chapter));
@@ -52,12 +52,12 @@ public class UrlProvider : IUrlProvider
 
     public string LoginUrl(Chapter? chapter) => GetUrl(_odkRoutes.Account.Login(chapter));
 
-    public string MemberAdminUrl(Chapter chapter, Guid memberId) 
+    public string MemberAdminUrl(Chapter chapter, Guid memberId)
         => GetUrl(_odkRoutes.GroupAdmin.Member(chapter, memberId));
 
     public string MemberSiteSubscriptionUrl() => GetUrl(_odkRoutes.Account.Subscription(null));
 
-    public string MessageAdminUrl(Chapter chapter, Guid messageId) 
+    public string MessageAdminUrl(Chapter chapter, Guid messageId)
         => GetUrl(_odkRoutes.GroupAdmin.Message(chapter, messageId));
 
     public string MessageSiteAdminUrl(Guid messageId) => GetUrl(_odkRoutes.SiteAdmin.Message(messageId));

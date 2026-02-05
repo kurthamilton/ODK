@@ -5,7 +5,7 @@ namespace ODK.Services.Events;
 public interface IEventService
 {
     Task<ServiceResult> AddComment(
-        MemberChapterServiceRequest request, Guid eventId, string comment, Guid? parentEventCommentId);
+        IMemberChapterServiceRequest request, Guid eventId, string comment, Guid? parentEventCommentId);
 
     Task CompleteEventTicketPurchase(Guid eventId, Guid memberId);
 
@@ -15,11 +15,11 @@ public interface IEventService
 
     Task<ServiceResult> LeaveWaitlist(Guid eventId, Guid memberId);
 
-    Task NotifyWaitlist(ServiceRequest request, Guid eventId);
+    Task NotifyWaitlist(IServiceRequest request, Guid eventId);
 
     Task<ServiceResult> UpdateMemberResponse(
-        MemberServiceRequest request, Guid eventId, EventResponseType responseType, Guid? adminMemberId);
+        IMemberServiceRequest request, Guid eventId, EventResponseType responseType, Guid? adminMemberId);
 
     Task<ServiceResult> UpdateMemberResponse(
-        MemberServiceRequest request, string shortcode, EventResponseType responseType, Guid? adminMemberId);
+        IMemberServiceRequest request, string shortcode, EventResponseType responseType, Guid? adminMemberId);
 }

@@ -26,7 +26,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
     }
 
     public async Task<ServiceResult> AddSiteSubscription(
-        MemberServiceRequest request, SiteSubscriptionCreateModel model)
+        IMemberServiceRequest request, SiteSubscriptionCreateModel model)
     {
         var platform = request.Platform;
 
@@ -69,7 +69,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
     }
 
     public async Task<ServiceResult> AddSiteSubscriptionPrice(
-        MemberServiceRequest request,
+        IMemberServiceRequest request,
         Guid siteSubscriptionId,
         SiteSubscriptionPriceCreateModel model)
     {
@@ -129,7 +129,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
     }
 
     public async Task DeleteSiteSubscriptionPrice(
-        MemberServiceRequest request, Guid siteSubscriptionId, Guid siteSubscriptionPriceId)
+        IMemberServiceRequest request, Guid siteSubscriptionId, Guid siteSubscriptionPriceId)
     {
         var (sitePaymentSettings, siteSubscription, price) = await GetSiteAdminRestrictedContent(request,
             x => x.SitePaymentSettingsRepository.GetAll(),
@@ -151,7 +151,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
     }
 
     public async Task<IReadOnlyCollection<SiteSubscription>> GetAllSubscriptions(
-        MemberServiceRequest request)
+        IMemberServiceRequest request)
     {
         var platform = request.Platform;
 
@@ -160,7 +160,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
     }
 
     public async Task<IReadOnlyCollection<SiteSubscriptionSiteAdminListItemViewModel>> GetSiteSubscriptionSiteAdminListItems(
-        MemberServiceRequest request)
+        IMemberServiceRequest request)
     {
         var platform = request.Platform;
 
@@ -213,7 +213,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
             .ToArray();
     }
 
-    public async Task<SiteSubscriptionViewModel> GetSubscriptionViewModel(MemberServiceRequest request, Guid siteSubscriptionId)
+    public async Task<SiteSubscriptionViewModel> GetSubscriptionViewModel(IMemberServiceRequest request, Guid siteSubscriptionId)
     {
         var (subscription, prices, currencies, sitePaymentSettings) = await GetSiteAdminRestrictedContent(request,
             x => x.SiteSubscriptionRepository.GetById(siteSubscriptionId),
@@ -230,7 +230,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         };
     }
 
-    public async Task MakeDefault(MemberServiceRequest request, Guid siteSubscriptionId)
+    public async Task MakeDefault(IMemberServiceRequest request, Guid siteSubscriptionId)
     {
         var platform = request.Platform;
 
@@ -257,7 +257,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
     }
 
     public async Task<ServiceResult> UpdateSiteSubscription(
-        MemberServiceRequest request, Guid siteSubscriptionId, SiteSubscriptionCreateModel model)
+        IMemberServiceRequest request, Guid siteSubscriptionId, SiteSubscriptionCreateModel model)
     {
         var platform = request.Platform;
 
@@ -291,7 +291,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
     }
 
     public async Task<ServiceResult> UpdateSiteSubscriptionEnabled(
-        MemberServiceRequest request, Guid siteSubscriptionId, bool enabled)
+        IMemberServiceRequest request, Guid siteSubscriptionId, bool enabled)
     {
         var subscription = await GetSiteAdminRestrictedContent(request,
             x => x.SiteSubscriptionRepository.GetById(siteSubscriptionId));

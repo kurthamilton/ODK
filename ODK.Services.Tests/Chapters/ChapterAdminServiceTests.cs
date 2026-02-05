@@ -1488,7 +1488,7 @@ public static class ChapterAdminServiceTests
     private static ITopicService CreateMockTopicService()
     {
         var mock = new Mock<ITopicService>();
-        mock.Setup(x => x.AddNewChapterTopics(It.IsAny<MemberChapterServiceRequest>(), It.IsAny<IReadOnlyCollection<NewTopicModel>>()))
+        mock.Setup(x => x.AddNewChapterTopics(It.IsAny<IMemberChapterServiceRequest>(), It.IsAny<IReadOnlyCollection<NewTopicModel>>()))
             .Returns(Task.CompletedTask);
         return mock.Object;
     }
@@ -1496,7 +1496,7 @@ public static class ChapterAdminServiceTests
     private static IMemberEmailService CreateMockMemberEmailService()
     {
         var mock = new Mock<IMemberEmailService>();
-        mock.Setup(x => x.SendNewGroupEmail(It.IsAny<MemberChapterServiceRequest>(), It.IsAny<ChapterTexts>(), It.IsAny<SiteEmailSettings>()))
+        mock.Setup(x => x.SendNewGroupEmail(It.IsAny<IMemberChapterServiceRequest>(), It.IsAny<ChapterTexts>(), It.IsAny<SiteEmailSettings>()))
             .Returns(Task.CompletedTask);
         return mock.Object;
     }
@@ -1536,7 +1536,7 @@ public static class ChapterAdminServiceTests
             loggingService ?? new Mock<ILoggingService>().Object);
     }
 
-    private static MemberChapterAdminServiceRequest CreateMemberChapterAdminServiceRequest(
+    private static IMemberChapterAdminServiceRequest CreateMemberChapterAdminServiceRequest(
         Chapter? chapter = null,
         Member? currentMember = null,
         PlatformType? platform = null,
@@ -1555,7 +1555,7 @@ public static class ChapterAdminServiceTests
         };
     }
 
-    private static MemberServiceRequest CreateMemberServiceRequest(Guid? currentMemberId = null, PlatformType? platform = null)
+    private static IMemberServiceRequest CreateMemberServiceRequest(Guid? currentMemberId = null, PlatformType? platform = null)
     {
         var currentMember = CreateMember(id: currentMemberId ?? CurrentMemberId);
 

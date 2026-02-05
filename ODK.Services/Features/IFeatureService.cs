@@ -5,17 +5,17 @@ namespace ODK.Services.Features;
 
 public interface IFeatureService
 {
-    Task<ServiceResult> AddFeature(MemberServiceRequest request, FeatureUpdateModel model);
+    Task<ServiceResult> AddFeature(IMemberServiceRequest request, FeatureUpdateModel model);
 
-    Task DeleteFeature(MemberServiceRequest request, Guid featureId);
+    Task DeleteFeature(IMemberServiceRequest request, Guid featureId);
 
-    Task<Feature> GetFeature(MemberServiceRequest request, Guid featureId);
+    Task<Feature> GetFeature(IMemberServiceRequest request, Guid featureId);
 
-    Task<IReadOnlyCollection<Feature>> GetFeatures(MemberServiceRequest request);
+    Task<IReadOnlyCollection<Feature>> GetFeatures(IMemberServiceRequest request);
 
-    Task<Feature?> GetUnseeen(MemberServiceRequest request, string featureName);
+    Task<Feature?> GetUnseeen(IMemberServiceRequest request, string featureName);
 
-    Task MarkAsSeen(MemberServiceRequest request, string featureName);
+    Task MarkAsSeen(IMemberServiceRequest request, string featureName);
 
-    Task UpdateFeature(MemberServiceRequest request, Guid featureId, FeatureUpdateModel model);
+    Task UpdateFeature(IMemberServiceRequest request, Guid featureId, FeatureUpdateModel model);
 }

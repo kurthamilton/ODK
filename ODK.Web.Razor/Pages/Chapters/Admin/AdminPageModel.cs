@@ -2,24 +2,25 @@
 using ODK.Services;
 using ODK.Services.Security;
 using ODK.Web.Common.Routes;
+using MemberChapterAdminServiceRequestImpl = ODK.Services.MemberChapterAdminServiceRequest;
 
 namespace ODK.Web.Razor.Pages.Chapters.Admin;
 
 public abstract class AdminPageModel : OdkPageModel
 {
-    private readonly Lazy<MemberChapterAdminServiceRequest> _memberChapterAdminServiceRequest;
+    private readonly Lazy<IMemberChapterAdminServiceRequest> _memberChapterAdminServiceRequest;
 
     protected AdminPageModel()
     {
         _memberChapterAdminServiceRequest =
-            new(() => MemberChapterAdminServiceRequest.Create(Securable, MemberChapterServiceRequest));
+            new(() => MemberChapterAdminServiceRequestImpl.Create(Securable, MemberChapterServiceRequest));
     }
 
     public GroupAdminRoutes AdminRoutes => OdkRoutes.GroupAdmin;
 
-    public MemberChapterAdminServiceRequest MemberChapterAdminServiceRequest => _memberChapterAdminServiceRequest.Value;
+    public IMemberChapterAdminServiceRequest MemberChapterAdminServiceRequest => _memberChapterAdminServiceRequest.Value;
 
-    public abstract ChapterAdminSecurable Securable { get; }    
+    public abstract ChapterAdminSecurable Securable { get; }
 
     public override async Task OnPageHandlerExecutionAsync(
         PageHandlerExecutingContext context, PageHandlerExecutionDelegate next)
@@ -37,7 +38,7 @@ public abstract class AdminPageModel : OdkPageModel
     public async Task Redirect(GroupAdminRoute route)
     {
         var adminMember = await RequestStore.GetCurrentChapterAdminMember();
-        var permittedRoute = 
+        var permittedRoute =
             route.GetPermitted(adminMember, CurrentMember) ??
             AdminRoutes.Events(Chapter);
         Response.Redirect(permittedRoute.Path);

@@ -1,5 +1,4 @@
-﻿using System.Reflection.Metadata;
-using System.Web;
+﻿using System.Web;
 using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Emails;
@@ -34,7 +33,7 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendActivationEmail(
-        ServiceRequest request,
+        IServiceRequest request,
         Chapter? chapter,
         Member member,
         string token)
@@ -53,7 +52,7 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendAddressUpdateEmail(
-        ServiceRequest request,
+        IServiceRequest request,
         Chapter? chapter,
         Member member,
         string newEmailAddress,
@@ -73,7 +72,7 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendBulkEmail(
-        ChapterServiceRequest request,
+        IChapterServiceRequest request,
         IEnumerable<Member> to,
         string subject,
         string body)
@@ -86,7 +85,7 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendChapterConversationEmail(
-        ChapterServiceRequest request,
+        IChapterServiceRequest request,
         ChapterConversation conversation,
         ChapterConversationMessage message,
         IReadOnlyCollection<Member> to,
@@ -138,7 +137,7 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendChapterMessage(
-        ChapterServiceRequest request,
+        IChapterServiceRequest request,
         IReadOnlyCollection<ChapterAdminMember> adminMembers,
         ChapterContactMessage message)
     {
@@ -167,7 +166,7 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task<ServiceResult> SendChapterMessageReply(
-        ChapterServiceRequest request,
+        IChapterServiceRequest request,
         ChapterContactMessage originalMessage,
         string reply)
     {
@@ -204,7 +203,7 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendDuplicateMemberEmail(
-        ServiceRequest request,
+        IServiceRequest request,
         Chapter? chapter,
         Member member)
     {
@@ -224,7 +223,7 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendEventCommentEmail(
-        ChapterServiceRequest request,
+        IChapterServiceRequest request,
         Event @event,
         EventComment eventComment,
         Member? parentCommentMember)
@@ -250,7 +249,7 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendEventInvites(
-        ChapterServiceRequest request,
+        IChapterServiceRequest request,
         Event @event,
         Venue venue,
         IEnumerable<Member> members)
@@ -285,7 +284,7 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendEventWaitlistPromotionNotification(
-        ChapterServiceRequest request,
+        IChapterServiceRequest request,
         Event @event,
         IEnumerable<Member> members)
     {
@@ -323,7 +322,7 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendGroupApprovedEmail(
-        ChapterServiceRequest request,
+        IChapterServiceRequest request,
         Member owner)
     {
         var chapter = request.Chapter;
@@ -355,7 +354,7 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendMemberApprovedEmail(
-        ChapterServiceRequest request,
+        IChapterServiceRequest request,
         Member member)
     {
         var chapter = request.Chapter;
@@ -384,7 +383,7 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendIssueReply(
-        ServiceRequest request,
+        IServiceRequest request,
         Issue issue,
         IssueMessage reply,
         Member? toMember,
@@ -436,7 +435,7 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendMemberChapterSubscriptionConfirmationEmail(
-        ChapterServiceRequest request,
+        IChapterServiceRequest request,
         ChapterSubscription chapterSubscription,
         Member member,
         DateTime expiresUtc)
@@ -460,7 +459,7 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendMemberChapterSubscriptionExpiringEmail(
-        ChapterServiceRequest request,
+        IChapterServiceRequest request,
         Member member,
         MemberSubscription memberSubscription,
         DateTime expires,
@@ -498,7 +497,7 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendMemberDeleteEmail(
-        ChapterServiceRequest request,
+        IChapterServiceRequest request,
         Member member,
         string? reason)
     {
@@ -533,7 +532,7 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendMemberLeftChapterEmail(
-        ChapterServiceRequest request,
+        IChapterServiceRequest request,
         IReadOnlyCollection<ChapterAdminMember> adminMembers,
         Member member,
         string? reason)
@@ -588,7 +587,7 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendNewGroupEmail(
-        ServiceRequest request,
+        IServiceRequest request,
         ChapterTexts texts,
         SiteEmailSettings settings)
     {
@@ -622,7 +621,7 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendNewIssueEmail(
-        ServiceRequest request,
+        IServiceRequest request,
         Member member,
         Issue issue,
         IssueMessage message,
@@ -654,7 +653,7 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendNewMemberAdminEmail(
-        ChapterServiceRequest request,
+        IChapterServiceRequest request,
         IReadOnlyCollection<ChapterAdminMember> adminMembers,
         Member member,
         IReadOnlyCollection<ChapterProperty> chapterProperties,
@@ -700,7 +699,7 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendNewMemberEmailsAsync(
-        ChapterServiceRequest request,
+        IChapterServiceRequest request,
         IReadOnlyCollection<ChapterAdminMember> adminMembers,
         Member member,
         IReadOnlyCollection<ChapterProperty> chapterProperties,
@@ -733,7 +732,7 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendNewTopicEmail(
-        ServiceRequest request,
+        IServiceRequest request,
         IReadOnlyCollection<INewTopic> newTopics,
         SiteEmailSettings settings)
     {
@@ -775,7 +774,7 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendPasswordResetEmail(
-        ServiceRequest request,
+        IServiceRequest request,
         Chapter? chapter,
         Member member,
         string token)
@@ -797,7 +796,7 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendPaymentNotification(
-        ServiceRequest request,
+        IServiceRequest request,
         Member member,
         Chapter? chapter,
         Payment payment,
@@ -831,7 +830,7 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendSiteMessage(
-        ServiceRequest request,
+        IServiceRequest request,
         SiteContactMessage message,
         SiteEmailSettings settings)
     {
@@ -855,7 +854,7 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task<ServiceResult> SendSiteMessageReply(
-        ServiceRequest request,
+        IServiceRequest request,
         SiteContactMessage originalMessage,
         string reply)
     {
@@ -882,7 +881,7 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendSiteSubscriptionExpiredEmail(
-        ServiceRequest request,
+        IServiceRequest request,
         Member member)
     {
         var urlProvider = await _urlProviderFactory.Create(request);
@@ -908,7 +907,7 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendSiteWelcomeEmail(
-        ServiceRequest request,
+        IServiceRequest request,
         Member member)
     {
         var urlProvider = await _urlProviderFactory.Create(request);
@@ -938,7 +937,7 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task<ServiceResult> SendTestEmail(
-        ServiceRequest request,
+        IServiceRequest request,
         Chapter? chapter,
         Member to,
         EmailType type)
@@ -959,7 +958,7 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendTopicApprovedEmails(
-        ServiceRequest request,
+        IServiceRequest request,
         IReadOnlyCollection<INewTopic> newTopics,
         IReadOnlyCollection<Member> members)
     {
@@ -1020,7 +1019,7 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendTopicRejectedEmails(
-        ServiceRequest request,
+        IServiceRequest request,
         IReadOnlyCollection<INewTopic> newTopics,
         IReadOnlyCollection<Member> members)
     {

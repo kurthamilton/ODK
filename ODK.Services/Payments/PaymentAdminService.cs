@@ -1,6 +1,5 @@
 ﻿using ODK.Data.Core;
 using ODK.Services.Payments.ViewModels;
-using ODK.Services.Security;
 
 namespace ODK.Services.Payments;
 
@@ -14,7 +13,7 @@ public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
     }
 
     public async Task<ChapterPaymentsViewModel> GetPayments(
-        MemberChapterAdminServiceRequest request)
+        IMemberChapterAdminServiceRequest request)
     {
         var chapter = request.Chapter;
 

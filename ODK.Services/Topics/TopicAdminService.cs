@@ -22,7 +22,7 @@ public class TopicAdminService : OdkAdminServiceBase, ITopicAdminService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ServiceResult> AddTopic(MemberServiceRequest request, Guid topicGroupId, string name)
+    public async Task<ServiceResult> AddTopic(IMemberServiceRequest request, Guid topicGroupId, string name)
     {
         var (topicGroup, existing) = await GetSiteAdminRestrictedContent(request,
             x => x.TopicGroupRepository.GetById(topicGroupId),
@@ -45,7 +45,7 @@ public class TopicAdminService : OdkAdminServiceBase, ITopicAdminService
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> AddTopicGroup(MemberServiceRequest request, string name)
+    public async Task<ServiceResult> AddTopicGroup(IMemberServiceRequest request, string name)
     {
         AssertMemberIsSiteAdmin(request.CurrentMember);
 
@@ -59,7 +59,7 @@ public class TopicAdminService : OdkAdminServiceBase, ITopicAdminService
     }
 
     public async Task ApproveTopics(
-        MemberServiceRequest request, ApproveTopicsModel approved, ApproveTopicsModel rejected)
+        IMemberServiceRequest request, ApproveTopicsModel approved, ApproveTopicsModel rejected)
     {
         var rejectedNewChapterTopicIds = rejected.Chapters
             .Select(x => x.NewTopicId)
@@ -265,7 +265,7 @@ public class TopicAdminService : OdkAdminServiceBase, ITopicAdminService
     }
 
     public async Task<TopicAdminPageViewModel> GetTopicAdminPageViewModel(
-        MemberServiceRequest request, Guid topicId)
+        IMemberServiceRequest request, Guid topicId)
     {
         var (topic, topicGroups) = await GetSiteAdminRestrictedContent(request,
             x => x.TopicRepository.GetById(topicId),
@@ -278,7 +278,7 @@ public class TopicAdminService : OdkAdminServiceBase, ITopicAdminService
         };
     }
 
-    public async Task<TopicsAdminPageViewModel> GetTopicsAdminPageViewModel(MemberServiceRequest request)
+    public async Task<TopicsAdminPageViewModel> GetTopicsAdminPageViewModel(IMemberServiceRequest request)
     {
         var (topicGroups, topics, newMemberTopics, newChapterTopics) = await GetSiteAdminRestrictedContent(request,
             x => x.TopicGroupRepository.GetAll(),
@@ -295,7 +295,7 @@ public class TopicAdminService : OdkAdminServiceBase, ITopicAdminService
         };
     }
 
-    public async Task<ServiceResult> UpdateTopic(MemberServiceRequest request, Guid topicId, TopicUpdateModel model)
+    public async Task<ServiceResult> UpdateTopic(IMemberServiceRequest request, Guid topicId, TopicUpdateModel model)
     {
         var topic = await GetSiteAdminRestrictedContent(request,
             x => x.TopicRepository.GetById(topicId));

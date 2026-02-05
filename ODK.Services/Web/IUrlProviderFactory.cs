@@ -2,5 +2,5 @@
 
 public interface IUrlProviderFactory
 {
-    Task<IUrlProvider> Create(ServiceRequest request);
+    Task<IUrlProvider> Create(IServiceRequest request);
 }

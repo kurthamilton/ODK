@@ -1,13 +1,12 @@
-﻿using ODK.Core.Members;
-using ODK.Services.Issues.ViewModels;
+﻿using ODK.Services.Issues.ViewModels;
 
 namespace ODK.Services.Issues;
 
 public interface IIssueAdminService
 {
-    Task<IssueAdminPageViewModel> GetIssueAdminPageViewModel(MemberServiceRequest request, Guid issueId);
+    Task<IssueAdminPageViewModel> GetIssueAdminPageViewModel(IMemberServiceRequest request, Guid issueId);
 
-    Task<IssuesAdminPageViewModel> GetIssuesAdminPageViewModel(MemberServiceRequest request);
+    Task<IssuesAdminPageViewModel> GetIssuesAdminPageViewModel(IMemberServiceRequest request);
 
-    Task<ServiceResult> ReplyToIssue(MemberServiceRequest request, Guid issueId, string message);
+    Task<ServiceResult> ReplyToIssue(IMemberServiceRequest request, Guid issueId, string message);
 }

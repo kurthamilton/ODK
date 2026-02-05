@@ -18,7 +18,7 @@ public class TopicService : ITopicService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task AddNewChapterTopics(MemberChapterServiceRequest request, IReadOnlyCollection<NewTopicModel> models)
+    public async Task AddNewChapterTopics(IMemberChapterServiceRequest request, IReadOnlyCollection<NewTopicModel> models)
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
 
@@ -85,7 +85,7 @@ public class TopicService : ITopicService
         }
     }
 
-    public async Task AddNewMemberTopics(MemberServiceRequest request, IReadOnlyCollection<NewTopicModel> models)
+    public async Task AddNewMemberTopics(IMemberServiceRequest request, IReadOnlyCollection<NewTopicModel> models)
     {
         var (currentMember, platform) = (request.CurrentMember, request.Platform);
 

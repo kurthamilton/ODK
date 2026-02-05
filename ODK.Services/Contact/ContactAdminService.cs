@@ -63,7 +63,7 @@ public class ContactAdminService : OdkAdminServiceBase, IContactAdminService
         };
     }
 
-    public async Task<ServiceResult> ReplyToMessage(MemberServiceRequest request, Guid messageId, string message)
+    public async Task<ServiceResult> ReplyToMessage(IMemberServiceRequest request, Guid messageId, string message)
     {
         var currentMember = request.CurrentMember;
 

@@ -27,7 +27,7 @@ public class ChapterService : IChapterService
         _unitOfWork = unitOfWork;
     }
 
-    public Task<Chapter> GetByEventId(ServiceRequest request, Guid eventId) 
+    public Task<Chapter> GetByEventId(IServiceRequest request, Guid eventId)
         => _unitOfWork.ChapterRepository.GetByEventId(request.Platform, eventId).Run();
 
     public async Task<VersionedServiceResult<ChapterImage>> GetChapterImage(long? currentVersion, Guid chapterId)
@@ -62,7 +62,7 @@ public class ChapterService : IChapterService
     }
 
     public async Task<SubscriptionsPageViewModel> GetChapterMemberSubscriptionsViewModel(
-        MemberChapterServiceRequest request)
+        IMemberChapterServiceRequest request)
     {
         var (chapter, platform, currentMember) =
             (request.Chapter, request.Platform, request.CurrentMember);
@@ -106,7 +106,7 @@ public class ChapterService : IChapterService
     }
 
     public async Task<IReadOnlyCollection<Chapter>> GetChaptersByOwnerId(
-        ServiceRequest request, Guid ownerId)
+        IServiceRequest request, Guid ownerId)
     {
         var platform = request.Platform;
         return await _unitOfWork.ChapterRepository.GetByOwnerId(platform, ownerId).Run();
@@ -136,7 +136,7 @@ public class ChapterService : IChapterService
         };
     }
 
-    public async Task<Chapter?> GetDefaultChapter(MemberServiceRequest request)
+    public async Task<Chapter?> GetDefaultChapter(IMemberServiceRequest request)
     {
         var (platform, currentMember) = (request.Platform, request.CurrentMember);
 
@@ -154,7 +154,7 @@ public class ChapterService : IChapterService
             .FirstOrDefault();
     }
 
-    public async Task<bool> NameIsAvailable(ServiceRequest request, string name)
+    public async Task<bool> NameIsAvailable(IServiceRequest request, string name)
     {
         var platform = request.Platform;
 

@@ -89,8 +89,7 @@ public static class EventAdminServiceTests
         var memberChapterServiceRequest = MemberChapterServiceRequest.Create(
             chapter,
             new Member { Id = CurrentMemberId },
-            Mock.Of<IHttpRequestContext>(),
-            PlatformType.Default);
+            Mock.Of<IServiceRequest>());
 
         var request = MemberChapterAdminServiceRequest.Create(
             ChapterAdminSecurable.Events,
@@ -221,7 +220,7 @@ public static class EventAdminServiceTests
         var mock = new Mock<IChapterRepository>();
 
         mock.Setup(x => x.GetById(It.IsAny<PlatformType>(), It.IsAny<Guid>()))
-            .Returns((PlatformType platform, Guid id) 
+            .Returns((PlatformType platform, Guid id)
                 => new MockDeferredQuerySingle<Chapter>(chapter?.Id == id ? chapter : null));
 
         return mock.Object;

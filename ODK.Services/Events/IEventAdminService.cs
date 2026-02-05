@@ -7,51 +7,51 @@ namespace ODK.Services.Events;
 
 public interface IEventAdminService
 {
-    Task<ServiceResult> CreateEvent(MemberChapterAdminServiceRequest request, EventCreateModel createEvent, bool draft);
+    Task<ServiceResult> CreateEvent(IMemberChapterAdminServiceRequest request, EventCreateModel createEvent, bool draft);
 
-    Task DeleteEvent(MemberChapterAdminServiceRequest request, Guid id);
+    Task DeleteEvent(IMemberChapterAdminServiceRequest request, Guid id);
 
-    Task<Event> GetEvent(MemberChapterAdminServiceRequest request, Guid id);
+    Task<Event> GetEvent(IMemberChapterAdminServiceRequest request, Guid id);
 
-    Task<EventAttendeesAdminPageViewModel> GetEventAttendeesViewModel(MemberChapterAdminServiceRequest request, Guid eventId);
+    Task<EventAttendeesAdminPageViewModel> GetEventAttendeesViewModel(IMemberChapterAdminServiceRequest request, Guid eventId);
 
-    Task<EventCommentsAdminPageViewModel> GetEventCommentsViewModel(MemberChapterAdminServiceRequest request, Guid eventId);
+    Task<EventCommentsAdminPageViewModel> GetEventCommentsViewModel(IMemberChapterAdminServiceRequest request, Guid eventId);
 
-    Task<EventCreateAdminPageViewModel> GetEventCreateViewModel(MemberChapterAdminServiceRequest request);
+    Task<EventCreateAdminPageViewModel> GetEventCreateViewModel(IMemberChapterAdminServiceRequest request);
 
-    Task<EventEditAdminPageViewModel> GetEventEditViewModel(MemberChapterAdminServiceRequest request, Guid eventId);
+    Task<EventEditAdminPageViewModel> GetEventEditViewModel(IMemberChapterAdminServiceRequest request, Guid eventId);
 
-    Task<EventInvitesAdminPageViewModel> GetEventInvitesViewModel(MemberChapterAdminServiceRequest request, Guid eventId);
+    Task<EventInvitesAdminPageViewModel> GetEventInvitesViewModel(IMemberChapterAdminServiceRequest request, Guid eventId);
 
-    Task<EventsAdminPageViewModel> GetEventsAdminPageViewModel(MemberChapterAdminServiceRequest request, Chapter chapter, int page, int pageSize);
+    Task<EventsAdminPageViewModel> GetEventsAdminPageViewModel(IMemberChapterAdminServiceRequest request, Chapter chapter, int page, int pageSize);
 
-    Task<EventSettingsAdminPageViewModel> GetEventSettingsViewModel(MemberChapterAdminServiceRequest request);
+    Task<EventSettingsAdminPageViewModel> GetEventSettingsViewModel(IMemberChapterAdminServiceRequest request);
 
-    Task<EventTicketsAdminPageViewModel> GetEventTicketsViewModel(MemberChapterAdminServiceRequest request, Guid eventId);
+    Task<EventTicketsAdminPageViewModel> GetEventTicketsViewModel(IMemberChapterAdminServiceRequest request, Guid eventId);
 
-    Task<DateTime> GetNextAvailableEventDate(MemberChapterAdminServiceRequest request);
+    Task<DateTime> GetNextAvailableEventDate(IMemberChapterAdminServiceRequest request);
 
-    Task PublishEvent(MemberChapterAdminServiceRequest request, Guid eventId);
+    Task PublishEvent(IMemberChapterAdminServiceRequest request, Guid eventId);
 
     Task<ServiceResult> SetEventCommentVisibility(
-        MemberChapterAdminServiceRequest request,
+        IMemberChapterAdminServiceRequest request,
         Guid eventId,
         Guid eventCommentId,
         bool hidden);
 
-    Task SendEventInviteeEmail(MemberChapterAdminServiceRequest request, Guid eventId,
+    Task SendEventInviteeEmail(IMemberChapterAdminServiceRequest request, Guid eventId,
         IEnumerable<EventResponseType> responseTypes, string subject, string body);
 
-    Task<ServiceResult> SendEventInvites(MemberChapterAdminServiceRequest request, Guid eventId, bool test = false);
+    Task<ServiceResult> SendEventInvites(IMemberChapterAdminServiceRequest request, Guid eventId, bool test = false);
 
-    Task<ServiceResult> SetMissingEventShortcodes(MemberServiceRequest request);
+    Task<ServiceResult> SetMissingEventShortcodes(IMemberServiceRequest request);
 
-    Task UpdateEventSettings(MemberChapterAdminServiceRequest request, EventSettingsUpdateModel model);
+    Task UpdateEventSettings(IMemberChapterAdminServiceRequest request, EventSettingsUpdateModel model);
 
-    Task<ServiceResult> UpdateEvent(MemberChapterAdminServiceRequest request, Guid id, EventCreateModel @event);
+    Task<ServiceResult> UpdateEvent(IMemberChapterAdminServiceRequest request, Guid id, EventCreateModel @event);
 
-    Task<ServiceResult> UpdateMemberResponse(MemberChapterAdminServiceRequest request, Guid eventId, Guid memberId,
+    Task<ServiceResult> UpdateMemberResponse(IMemberChapterAdminServiceRequest request, Guid eventId, Guid memberId,
         EventResponseType responseType);
 
-    Task<ServiceResult> UpdateScheduledEmail(MemberChapterAdminServiceRequest request, Guid eventId, DateTime? date);
+    Task<ServiceResult> UpdateScheduledEmail(IMemberChapterAdminServiceRequest request, Guid eventId, DateTime? date);
 }

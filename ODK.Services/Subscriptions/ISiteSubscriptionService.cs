@@ -5,16 +5,16 @@ namespace ODK.Services.Subscriptions;
 public interface ISiteSubscriptionService
 {
     Task<ServiceResult> CancelMemberSiteSubscription(
-        MemberServiceRequest request, Guid siteSubscriptionId);
+        IMemberServiceRequest request, Guid siteSubscriptionId);
 
     Task<ServiceResult> ConfirmMemberSiteSubscription(
-        MemberServiceRequest request, Guid siteSubscriptionId, string externalId);
+        IMemberServiceRequest request, Guid siteSubscriptionId, string externalId);
 
     Task<SiteSubscriptionsViewModel> GetSiteSubscriptionsViewModel(
-        ServiceRequest request, Guid? memberId, Guid? chapterId);
+        IServiceRequest request, Guid? memberId, Guid? chapterId);
 
     Task<SiteSubscriptionCheckoutViewModel> StartSiteSubscriptionCheckout(
-        MemberServiceRequest request, Guid priceId, string returnPath, Guid? chapterId);
+        IMemberServiceRequest request, Guid priceId, string returnPath, Guid? chapterId);
 
-    Task SyncExpiredSubscriptions(ServiceRequest request);
+    Task SyncExpiredSubscriptions(IServiceRequest request);
 }

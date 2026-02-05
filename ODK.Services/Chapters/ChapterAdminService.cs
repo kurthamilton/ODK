@@ -93,7 +93,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         _urlProviderFactory = urlProviderFactory;
     }
 
-    public async Task<ServiceResult> AddChapterAdminMember(MemberChapterAdminServiceRequest request, Guid memberId)
+    public async Task<ServiceResult> AddChapterAdminMember(IMemberChapterAdminServiceRequest request, Guid memberId)
     {
         var (platform, chapterId, currentMemberId) = (request.Platform, request.Chapter.Id, request.CurrentMember.Id);
 
@@ -130,7 +130,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ServiceResult<Chapter?>> CreateChapter(
-        MemberServiceRequest request,
+        IMemberServiceRequest request,
         ChapterCreateModel model)
     {
         var now = DateTime.UtcNow;
@@ -276,7 +276,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ServiceResult<ChapterPaymentAccount>> CreateChapterPaymentAccount(
-        MemberChapterAdminServiceRequest request, string refreshPath, string returnPath)
+        IMemberChapterAdminServiceRequest request, string refreshPath, string returnPath)
     {
         var (chapter, chapterId) = (request.Chapter, request.Chapter.Id);
 
@@ -354,7 +354,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ServiceResult> CreateChapterProperty(
-        MemberChapterAdminServiceRequest request, ChapterPropertyCreateModel model)
+        IMemberChapterAdminServiceRequest request, ChapterPropertyCreateModel model)
     {
         var chapterId = request.Chapter.Id;
 
@@ -406,7 +406,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ServiceResult> CreateChapterQuestion(
-        MemberChapterAdminServiceRequest request, ChapterQuestionCreateModel model)
+        IMemberChapterAdminServiceRequest request, ChapterQuestionCreateModel model)
     {
         var chapterId = request.Chapter.Id;
 
@@ -437,7 +437,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ServiceResult> CreateChapterSubscription(
-        MemberChapterAdminServiceRequest request, ChapterSubscriptionCreateModel model)
+        IMemberChapterAdminServiceRequest request, ChapterSubscriptionCreateModel model)
     {
         var (chapter, chapterId, currentMember) = (request.Chapter, request.Chapter.Id, request.CurrentMember);
 
@@ -540,14 +540,14 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ServiceResult> DeleteChapterAdminMember(
-        MemberChapterAdminServiceRequest request, Guid memberId)
+        IMemberChapterAdminServiceRequest request, Guid memberId)
     {
         var (platform, chapter, chapterId, currentMember) = (request.Platform, request.Chapter, request.Chapter.Id, request.CurrentMember);
 
         var chapterAdminMembers = await _unitOfWork.ChapterAdminMemberRepository
             .GetByChapterId(platform, chapterId)
             .Run();
-        
+
         AssertMemberIsChapterAdmin(
             request,
             chapterAdminMembers.FirstOrDefault(x => x.MemberId == currentMember.Id));
@@ -576,7 +576,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ServiceResult> DeleteChapterContactMessage(
-        MemberChapterAdminServiceRequest request, Guid id)
+        IMemberChapterAdminServiceRequest request, Guid id)
     {
         var contactMessage = await GetChapterAdminRestrictedContent(
             request,
@@ -591,7 +591,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task DeleteChapterProperty(
-        MemberChapterAdminServiceRequest request, Guid id)
+        IMemberChapterAdminServiceRequest request, Guid id)
     {
         var properties = await GetChapterAdminRestrictedContent(
             request,
@@ -618,7 +618,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         _cacheService.RemoveVersionedCollection<ChapterProperty>(property.ChapterId);
     }
 
-    public async Task DeleteChapterQuestion(MemberChapterAdminServiceRequest request, Guid id)
+    public async Task DeleteChapterQuestion(IMemberChapterAdminServiceRequest request, Guid id)
     {
         var questions = await GetChapterAdminRestrictedContent(
             request,
@@ -645,7 +645,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         _cacheService.RemoveVersionedCollection<ChapterQuestion>(question.ChapterId);
     }
 
-    public async Task<ServiceResult> DeleteChapterSubscription(MemberChapterAdminServiceRequest request, Guid id)
+    public async Task<ServiceResult> DeleteChapterSubscription(IMemberChapterAdminServiceRequest request, Guid id)
     {
         var (subscription, inUse) = await GetChapterAdminRestrictedContent(
             request,
@@ -665,7 +665,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ServiceResult<string>> GenerateChapterPaymentAccountSetupUrl(
-        MemberChapterAdminServiceRequest request, string refreshPath, string returnPath)
+        IMemberChapterAdminServiceRequest request, string refreshPath, string returnPath)
     {
         var existing = await GetChapterAdminRestrictedContent(
             request,
@@ -705,7 +705,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<IReadOnlyCollection<ChapterAdminMember>> GetChapterAdminMembers(
-        MemberChapterAdminServiceRequest request)
+        IMemberChapterAdminServiceRequest request)
     {
         var (platform, chapterId, currentMember) = (request.Platform, request.Chapter.Id, request.CurrentMember);
 
@@ -719,7 +719,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ChapterAdminPageViewModel> GetChapterAdminPageViewModel(
-        MemberChapterAdminServiceRequest request)
+        IMemberChapterAdminServiceRequest request)
     {
         await AssertMemberIsChapterAdmin(request);
 
@@ -730,7 +730,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ChapterConversationsAdminPageViewModel> GetChapterConversationsViewModel(
-        MemberChapterAdminServiceRequest request, bool readByChapter)
+        IMemberChapterAdminServiceRequest request, bool readByChapter)
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
 
@@ -753,7 +753,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ChapterConversationAdminPageViewModel> GetChapterConversationViewModel(
-        MemberChapterAdminServiceRequest request, Guid id)
+        IMemberChapterAdminServiceRequest request, Guid id)
     {
         var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
 
@@ -821,7 +821,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ChapterDeleteAdminPageViewModel> GetChapterDeleteViewModel(
-        MemberChapterAdminServiceRequest request)
+        IMemberChapterAdminServiceRequest request)
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
 
@@ -838,7 +838,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ChapterImageAdminPageViewModel> GetChapterImageViewModel(
-        MemberChapterAdminServiceRequest request)
+        IMemberChapterAdminServiceRequest request)
     {
         var chapter = request.Chapter;
 
@@ -854,7 +854,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ChapterLinksAdminPageViewModel> GetChapterLinksViewModel(
-        MemberChapterAdminServiceRequest request)
+        IMemberChapterAdminServiceRequest request)
     {
         var chapter = request.Chapter;
 
@@ -876,7 +876,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ChapterLocationAdminPageViewModel> GetChapterLocationViewModel(
-        MemberChapterAdminServiceRequest request)
+        IMemberChapterAdminServiceRequest request)
     {
         var chapter = request.Chapter;
 
@@ -895,7 +895,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ChapterMessagesAdminPageViewModel> GetChapterMessagesViewModel(
-        MemberChapterAdminServiceRequest request, bool spam)
+        IMemberChapterAdminServiceRequest request, bool spam)
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
 
@@ -927,7 +927,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ChapterMessageAdminPageViewModel> GetChapterMessageViewModel(
-        MemberChapterAdminServiceRequest request, Guid id)
+        IMemberChapterAdminServiceRequest request, Guid id)
     {
         var chapter = request.Chapter;
 
@@ -946,7 +946,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         };
     }
 
-    public async Task<ChapterPagesAdminPageViewModel> GetChapterPagesViewModel(MemberChapterAdminServiceRequest request)
+    public async Task<ChapterPagesAdminPageViewModel> GetChapterPagesViewModel(IMemberChapterAdminServiceRequest request)
     {
         var chapter = request.Chapter;
 
@@ -980,7 +980,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ChapterPaymentAccountAdminPageViewModel> GetChapterPaymentAccountViewModel(
-        MemberChapterAdminServiceRequest request)
+        IMemberChapterAdminServiceRequest request)
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
 
@@ -1042,7 +1042,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         };
     }
 
-    public async Task<ChapterPrivacyAdminPageViewModel> GetChapterPrivacyViewModel(MemberChapterAdminServiceRequest request)
+    public async Task<ChapterPrivacyAdminPageViewModel> GetChapterPrivacyViewModel(
+        IMemberChapterAdminServiceRequest request)
     {
         var chapter = request.Chapter;
 
@@ -1057,7 +1058,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         };
     }
 
-    public async Task<ChapterPropertiesAdminPageViewModel> GetChapterPropertiesViewModel(MemberChapterAdminServiceRequest request)
+    public async Task<ChapterPropertiesAdminPageViewModel> GetChapterPropertiesViewModel(
+        IMemberChapterAdminServiceRequest request)
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
 
@@ -1074,7 +1076,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ChapterPropertyAdminPageViewModel> GetChapterPropertyViewModel(
-        MemberChapterAdminServiceRequest request,
+        IMemberChapterAdminServiceRequest request,
         Guid propertyId)
     {
         var chapter = request.Chapter;
@@ -1093,7 +1095,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         };
     }
 
-    public async Task<ChapterQuestionsAdminPageViewModel> GetChapterQuestionsViewModel(MemberChapterAdminServiceRequest request)
+    public async Task<ChapterQuestionsAdminPageViewModel> GetChapterQuestionsViewModel(
+        IMemberChapterAdminServiceRequest request)
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
 
@@ -1110,7 +1113,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ChapterQuestionAdminPageViewModel> GetChapterQuestionViewModel(
-        MemberChapterAdminServiceRequest request, Guid questionId)
+        IMemberChapterAdminServiceRequest request, Guid questionId)
     {
         var chapter = request.Chapter;
 
@@ -1128,7 +1131,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<PaymentStatusType> GetChapterPaymentCheckoutSessionStatus(
-        MemberChapterAdminServiceRequest request, string externalSessionId)
+        IMemberChapterAdminServiceRequest request, string externalSessionId)
     {
         var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
 
@@ -1140,11 +1143,11 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             request.Chapter, owner, request);
 
         return await _paymentService.GetMemberSitePaymentCheckoutSessionStatus(
-            statusRequest, externalSessionId);
+            request, externalSessionId);
     }
 
     public async Task<ChapterSubscriptionAdminPageViewModel> GetChapterSubscriptionViewModel(
-        MemberChapterAdminServiceRequest request)
+        IMemberChapterAdminServiceRequest request)
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
 
@@ -1163,7 +1166,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         };
     }
 
-    public async Task<ChapterTextsAdminPageViewModel> GetChapterTextsViewModel(MemberChapterAdminServiceRequest request)
+    public async Task<ChapterTextsAdminPageViewModel> GetChapterTextsViewModel(
+        IMemberChapterAdminServiceRequest request)
     {
         var chapter = request.Chapter;
 
@@ -1178,7 +1182,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         };
     }
 
-    public async Task<ChapterTopicsAdminPageViewModel> GetChapterTopicsViewModel(MemberChapterAdminServiceRequest request)
+    public async Task<ChapterTopicsAdminPageViewModel> GetChapterTopicsViewModel(
+        IMemberChapterAdminServiceRequest request)
     {
         var chapter = request.Chapter;
 
@@ -1198,7 +1203,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<MembershipSettingsAdminPageViewModel> GetMembershipSettingsViewModel(
-        MemberChapterAdminServiceRequest request)
+        IMemberChapterAdminServiceRequest request)
     {
         var chapter = request.Chapter;
 
@@ -1215,7 +1220,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         };
     }
 
-    public async Task<ServiceResult> PublishChapter(MemberChapterAdminServiceRequest request)
+    public async Task<ServiceResult> PublishChapter(IMemberChapterAdminServiceRequest request)
     {
         var chapter = request.Chapter;
 
@@ -1234,7 +1239,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ServiceResult> ReplyToConversation(
-        MemberChapterAdminServiceRequest request,
+        IMemberChapterAdminServiceRequest request,
         Guid conversationId,
         string message)
     {
@@ -1283,7 +1288,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         await _unitOfWork.SaveChangesAsync();
 
         await _memberEmailService.SendChapterConversationEmail(
-            ChapterServiceRequest.Create(chapter, request),
+            request,
             conversation,
             conversationMessage,
             [member],
@@ -1293,7 +1298,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ServiceResult> ReplyToMessage(
-        MemberChapterAdminServiceRequest request,
+        IMemberChapterAdminServiceRequest request,
         Guid messageId,
         string message)
     {
@@ -1307,8 +1312,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         OdkAssertions.BelongsToChapter(originalMessage, chapter.Id);
 
         var sendResult = await _memberEmailService.SendChapterMessageReply(
-            ChapterServiceRequest.Create(chapter, request), 
-            originalMessage, 
+            request,
+            originalMessage,
             message);
         if (!sendResult.Success)
         {
@@ -1333,7 +1338,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> SetMessageAsReplied(MemberChapterAdminServiceRequest request, Guid messageId)
+    public async Task<ServiceResult> SetMessageAsReplied(
+        IMemberChapterAdminServiceRequest request, Guid messageId)
     {
         var chapter = request.Chapter;
 
@@ -1352,7 +1358,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return ServiceResult.Successful();
     }
 
-    public async Task SetOwner(MemberChapterAdminServiceRequest request, Guid memberId)
+    public async Task SetOwner(IMemberChapterAdminServiceRequest request, Guid memberId)
     {
         var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
 
@@ -1364,7 +1370,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ServiceResult> StartConversation(
-        MemberChapterAdminServiceRequest request,
+        IMemberChapterAdminServiceRequest request,
         Guid memberId,
         string subject,
         string message)
@@ -1415,7 +1421,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         await _unitOfWork.SaveChangesAsync();
 
         await _memberEmailService.SendChapterConversationEmail(
-            ChapterServiceRequest.Create(chapter, request),
+            request,
             conversation,
             conversationMessage,
             [member],
@@ -1425,7 +1431,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<SiteSubscriptionCheckoutViewModel> StartSiteSubscriptionCheckout(
-        MemberChapterAdminServiceRequest request, Guid priceId, string returnPath)
+        IMemberChapterAdminServiceRequest request, Guid priceId, string returnPath)
     {
         await AssertMemberIsChapterAdmin(request);
 
@@ -1437,7 +1443,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ServiceResult> UpdateChapterAdminMember(
-        MemberChapterAdminServiceRequest request,
+        IMemberChapterAdminServiceRequest request,
         Guid memberId,
         ChapterAdminMemberUpdateModel model)
     {
@@ -1486,7 +1492,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ServiceResult> UpdateChapterImage(
-        MemberChapterAdminServiceRequest request, ChapterImageUpdateModel model)
+        IMemberChapterAdminServiceRequest request, ChapterImageUpdateModel model)
     {
         var chapter = request.Chapter;
 
@@ -1508,7 +1514,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return ServiceResult.Successful();
     }
 
-    public async Task UpdateChapterLinks(MemberChapterAdminServiceRequest request, ChapterLinksUpdateModel model)
+    public async Task UpdateChapterLinks(IMemberChapterAdminServiceRequest request, ChapterLinksUpdateModel model)
     {
         var chapter = request.Chapter;
 
@@ -1575,7 +1581,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         }
     }
 
-    public async Task<ServiceResult> UpdateChapterDescription(MemberChapterAdminServiceRequest request, string description)
+    public async Task<ServiceResult> UpdateChapterDescription(
+        IMemberChapterAdminServiceRequest request, string description)
     {
         var chapter = request.Chapter;
 
@@ -1603,8 +1610,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ServiceResult> UpdateChapterLocation(
-        MemberChapterAdminServiceRequest request,
-        LatLong? location, 
+        IMemberChapterAdminServiceRequest request,
+        LatLong? location,
         string? name)
     {
         var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
@@ -1652,7 +1659,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ServiceResult> UpdateChapterMembershipSettings(
-        MemberChapterAdminServiceRequest request, ChapterMembershipSettingsUpdateModel model)
+        IMemberChapterAdminServiceRequest request, ChapterMembershipSettingsUpdateModel model)
     {
         var chapter = request.Chapter;
 
@@ -1706,7 +1713,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ServiceResult> UpdateChapterPages(
-        MemberChapterAdminServiceRequest request, ChapterPagesUpdateModel model)
+        IMemberChapterAdminServiceRequest request, ChapterPagesUpdateModel model)
     {
         var chapter = request.Chapter;
 
@@ -1766,7 +1773,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ServiceResult> UpdateChapterPaymentSettings(
-        MemberChapterAdminServiceRequest request,
+        IMemberChapterAdminServiceRequest request,
         ChapterPaymentSettingsUpdateModel model)
     {
         var chapter = request.Chapter;
@@ -1811,7 +1818,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ServiceResult> UpdateChapterPrivacySettings(
-        MemberChapterAdminServiceRequest request,
+        IMemberChapterAdminServiceRequest request,
         ChapterPrivacySettingsUpdateModel model)
     {
         var chapter = request.Chapter;
@@ -1846,8 +1853,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ServiceResult> UpdateChapterProperty(
-        MemberChapterAdminServiceRequest request,
-        Guid propertyId, 
+        IMemberChapterAdminServiceRequest request,
+        Guid propertyId,
         ChapterPropertyUpdateModel model)
     {
         var chapter = request.Chapter;
@@ -1901,7 +1908,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<IReadOnlyCollection<ChapterProperty>> UpdateChapterPropertyDisplayOrder(
-        MemberChapterAdminServiceRequest request, Guid propertyId, int moveBy)
+        IMemberChapterAdminServiceRequest request, Guid propertyId, int moveBy)
     {
         var chapter = request.Chapter;
 
@@ -1952,7 +1959,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ServiceResult> UpdateChapterQuestion(
-        MemberChapterAdminServiceRequest request, Guid questionId, ChapterQuestionCreateModel model)
+        IMemberChapterAdminServiceRequest request, Guid questionId, ChapterQuestionCreateModel model)
     {
         var chapter = request.Chapter;
 
@@ -1978,7 +1985,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<IReadOnlyCollection<ChapterQuestion>> UpdateChapterQuestionDisplayOrder(
-        MemberChapterAdminServiceRequest request, Guid questionId, int moveBy)
+        IMemberChapterAdminServiceRequest request, Guid questionId, int moveBy)
     {
         var chapter = request.Chapter;
 
@@ -2028,7 +2035,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return questions.OrderBy(x => x.DisplayOrder).ToArray();
     }
 
-    public async Task UpdateChapterRedirectUrl(MemberChapterAdminServiceRequest request, string? redirectUrl)
+    public async Task UpdateChapterRedirectUrl(IMemberChapterAdminServiceRequest request, string? redirectUrl)
     {
         var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
 
@@ -2041,8 +2048,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ServiceResult> UpdateChapterSubscription(
-        MemberChapterAdminServiceRequest request,
-        Guid id, 
+        IMemberChapterAdminServiceRequest request,
+        Guid id,
         ChapterSubscriptionCreateModel model)
     {
         var chapter = request.Chapter;
@@ -2093,7 +2100,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ServiceResult> UpdateChapterTexts(
-        MemberChapterAdminServiceRequest request,
+        IMemberChapterAdminServiceRequest request,
         ChapterTextsUpdateModel model)
     {
         var chapter = request.Chapter;
@@ -2134,7 +2141,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ServiceResult> UpdateChapterTheme(
-        MemberChapterAdminServiceRequest request, ChapterThemeUpdateModel model)
+        IMemberChapterAdminServiceRequest request, ChapterThemeUpdateModel model)
     {
         var chapter = request.Chapter;
 
@@ -2150,7 +2157,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ServiceResult> UpdateChapterTopics(
-        MemberChapterAdminServiceRequest request,
+        IMemberChapterAdminServiceRequest request,
         IReadOnlyCollection<Guid> topicIds)
     {
         var chapter = request.Chapter;
@@ -2209,7 +2216,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return ServiceResult.Successful();
     }
 
-    private ServiceResult ValidateChapterProperty(ChapterProperty property,
+    private ServiceResult ValidateChapterProperty(
+        ChapterProperty property,
         IReadOnlyCollection<ChapterProperty> existing)
     {
         if (string.IsNullOrEmpty(property.Name) ||
@@ -2227,7 +2235,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return ServiceResult.Successful();
     }
 
-    private ServiceResult ValidateChapterSubscription(ChapterSubscription subscription,
+    private ServiceResult ValidateChapterSubscription(
+        ChapterSubscription subscription,
         IReadOnlyCollection<ChapterSubscription> subscriptions)
     {
         if (!Enum.IsDefined(subscription.Type) || subscription.Type == SubscriptionType.None)

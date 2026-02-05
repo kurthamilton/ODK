@@ -5,13 +5,13 @@ namespace ODK.Services.Payments;
 
 public interface IPaymentService
 {
-    Task EnsureProductExists(ChapterServiceRequest request);
+    Task EnsureProductExists(IChapterServiceRequest request);
 
     Task<PaymentStatusType> GetMemberChapterPaymentCheckoutSessionStatus(
-        MemberServiceRequest request, Guid chapterId, string externalSessionId);
+        IMemberServiceRequest request, Guid chapterId, string externalSessionId);
 
     Task<PaymentStatusType> GetMemberSitePaymentCheckoutSessionStatus(
-        MemberServiceRequest request, string externalSessionId);
+        IMemberServiceRequest request, string externalSessionId);
 
-    Task ProcessWebhook(ServiceRequest request, PaymentProviderWebhook webhook);
+    Task ProcessWebhook(IServiceRequest request, PaymentProviderWebhook webhook);
 }

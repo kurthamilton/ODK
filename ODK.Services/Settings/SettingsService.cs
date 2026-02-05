@@ -15,7 +15,7 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ServiceResult> ActivatePaymentSettings(MemberServiceRequest request, Guid id)
+    public async Task<ServiceResult> ActivatePaymentSettings(IMemberServiceRequest request, Guid id)
     {
         var paymentSettings = await GetSiteAdminRestrictedContent(request,
             x => x.SitePaymentSettingsRepository.GetAll());
@@ -37,7 +37,7 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
     }
 
     public async Task<ServiceResult> CreatePaymentSettings(
-        MemberServiceRequest request,
+        IMemberServiceRequest request,
         PaymentProviderType provider,
         string name,
         string publicKey,
@@ -62,25 +62,25 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
         return ServiceResult.Successful();
     }
 
-    public async Task<SiteEmailSettings> GetSiteEmailSettings(MemberServiceRequest request)
+    public async Task<SiteEmailSettings> GetSiteEmailSettings(IMemberServiceRequest request)
     {
-        return await GetSiteAdminRestrictedContent(request, 
+        return await GetSiteAdminRestrictedContent(request,
             x => x.SiteEmailSettingsRepository.Get(request.Platform));
     }
 
-    public async Task<IReadOnlyCollection<SitePaymentSettings>> GetSitePaymentSettings(MemberServiceRequest request)
+    public async Task<IReadOnlyCollection<SitePaymentSettings>> GetSitePaymentSettings(IMemberServiceRequest request)
     {
         return await GetSiteAdminRestrictedContent(request,
             x => x.SitePaymentSettingsRepository.GetAll());
     }
 
-    public async Task<SitePaymentSettings> GetSitePaymentSettings(MemberServiceRequest request, Guid id)
+    public async Task<SitePaymentSettings> GetSitePaymentSettings(IMemberServiceRequest request, Guid id)
     {
         return await GetSiteAdminRestrictedContent(request,
             x => x.SitePaymentSettingsRepository.GetById(id));
     }
 
-    public async Task<ServiceResult> UpdateEmailSettings(MemberServiceRequest request, EmailSettingsUpdateModel model)
+    public async Task<ServiceResult> UpdateEmailSettings(IMemberServiceRequest request, EmailSettingsUpdateModel model)
     {
         var settings = await GetSiteAdminRestrictedContent(request,
             x => x.SiteEmailSettingsRepository.Get(request.Platform));
@@ -98,7 +98,7 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
     }
 
     public async Task<ServiceResult> UpdatePaymentSettings(
-        MemberServiceRequest request,
+        IMemberServiceRequest request,
         Guid id,
         string name,
         string publicKey,

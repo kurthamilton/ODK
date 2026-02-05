@@ -4,5 +4,5 @@ namespace ODK.Services.Payments;
 
 public interface IPaymentAdminService
 {
-    Task<ChapterPaymentsViewModel> GetPayments(MemberChapterAdminServiceRequest request);
+    Task<ChapterPaymentsViewModel> GetPayments(IMemberChapterAdminServiceRequest request);
 }

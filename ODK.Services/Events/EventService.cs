@@ -42,7 +42,7 @@ public class EventService : IEventService
     }
 
     public async Task<ServiceResult> AddComment(
-        MemberChapterServiceRequest request, Guid eventId, string comment, Guid? parentEventCommentId)
+        IMemberChapterServiceRequest request, Guid eventId, string comment, Guid? parentEventCommentId)
     {
         var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
 
@@ -93,7 +93,7 @@ public class EventService : IEventService
         await _unitOfWork.SaveChangesAsync();
 
         await _memberEmailService.SendEventCommentEmail(
-            ChapterServiceRequest.Create(chapter, request),
+            request,
             @event,
             eventComment,
             parentCommentMember);
@@ -198,7 +198,7 @@ public class EventService : IEventService
         return ServiceResult.Successful("You have left the waiting list");
     }
 
-    public async Task NotifyWaitlist(ServiceRequest request, Guid eventId)
+    public async Task NotifyWaitlist(IServiceRequest request, Guid eventId)
     {
         var platform = request.Platform;
 
@@ -285,7 +285,7 @@ public class EventService : IEventService
     }
 
     public async Task<ServiceResult> UpdateMemberResponse(
-        MemberServiceRequest request,
+        IMemberServiceRequest request,
         Guid eventId,
         EventResponseType responseType,
         Guid? adminMemberId)
@@ -307,7 +307,7 @@ public class EventService : IEventService
     }
 
     public async Task<ServiceResult> UpdateMemberResponse(
-        MemberServiceRequest request, string shortcode, EventResponseType responseType, Guid? adminMemberId)
+        IMemberServiceRequest request, string shortcode, EventResponseType responseType, Guid? adminMemberId)
     {
         var currentMember = request.CurrentMember;
 
@@ -397,7 +397,7 @@ public class EventService : IEventService
     }
 
     private async Task<ServiceResult> UpdateMemberResponse(
-        MemberServiceRequest request,
+        IMemberServiceRequest request,
         Event @event,
         EventResponseType responseType,
         EventResponse? memberResponse,

@@ -4,18 +4,18 @@ namespace ODK.Services.Chapters;
 
 public interface IChapterSiteAdminService
 {
-    Task<ServiceResult> ApproveChapter(MemberServiceRequest request, Guid chapterId);
+    Task<ServiceResult> ApproveChapter(IMemberServiceRequest request, Guid chapterId);
 
-    Task<ServiceResult> DeleteChapter(MemberServiceRequest request, Guid chapterId);
+    Task<ServiceResult> DeleteChapter(IMemberServiceRequest request, Guid chapterId);
 
     Task<ChapterPaymentSettingsAdminPageViewModel> GetChapterPaymentSettingsViewModel(
-        MemberChapterServiceRequest request);
+        IMemberChapterServiceRequest request);
 
-    Task<SiteAdminChaptersViewModel> GetSiteAdminChaptersViewModel(MemberServiceRequest request);
+    Task<SiteAdminChaptersViewModel> GetSiteAdminChaptersViewModel(IMemberServiceRequest request);
 
-    Task<SiteAdminChapterViewModel> GetSiteAdminChapterViewModel(MemberChapterServiceRequest request);
+    Task<SiteAdminChapterViewModel> GetSiteAdminChapterViewModel(IMemberChapterServiceRequest request);
 
     Task<ServiceResult> UpdateSiteAdminChapter(
-        MemberChapterServiceRequest request,
+        IMemberChapterServiceRequest request,
         SiteAdminChapterUpdateViewModel viewModel);
 }

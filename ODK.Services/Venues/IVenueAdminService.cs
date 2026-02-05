@@ -6,15 +6,15 @@ namespace ODK.Services.Venues;
 
 public interface IVenueAdminService
 {
-    Task<ServiceResult> CreateVenue(MemberChapterAdminServiceRequest request, VenueCreateModel venue);
+    Task<ServiceResult> CreateVenue(IMemberChapterAdminServiceRequest request, VenueCreateModel venue);
 
-    Task<Venue> GetVenue(MemberChapterAdminServiceRequest request, Guid venueId);
+    Task<Venue> GetVenue(IMemberChapterAdminServiceRequest request, Guid venueId);
 
-    Task<VenueEventsAdminPageViewModel> GetVenueEventsViewModel(MemberChapterAdminServiceRequest request, Guid venueId);
+    Task<VenueEventsAdminPageViewModel> GetVenueEventsViewModel(IMemberChapterAdminServiceRequest request, Guid venueId);
 
-    Task<VenuesAdminPageViewModel> GetVenuesViewModel(MemberChapterAdminServiceRequest request);
+    Task<VenuesAdminPageViewModel> GetVenuesViewModel(IMemberChapterAdminServiceRequest request);
 
-    Task<VenueAdminPageViewModel> GetVenueViewModel(MemberChapterAdminServiceRequest request, Guid venueId);
+    Task<VenueAdminPageViewModel> GetVenueViewModel(IMemberChapterAdminServiceRequest request, Guid venueId);
 
-    Task<ServiceResult> UpdateVenue(MemberChapterAdminServiceRequest request, Guid id, VenueCreateModel venue);
+    Task<ServiceResult> UpdateVenue(IMemberChapterAdminServiceRequest request, Guid id, VenueCreateModel venue);
 }

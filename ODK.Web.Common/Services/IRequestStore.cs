@@ -13,7 +13,7 @@ public interface IRequestStore
 
     Chapter? ChapterOrDefault { get; }
 
-    ChapterServiceRequest ChapterServiceRequest { get; }
+    IChapterServiceRequest ChapterServiceRequest { get; }
 
     Member CurrentMember { get; }
 
@@ -25,17 +25,17 @@ public interface IRequestStore
 
     bool Loaded { get; }
 
-    MemberChapterServiceRequest MemberChapterServiceRequest { get; }
+    IMemberChapterServiceRequest MemberChapterServiceRequest { get; }
 
-    MemberServiceRequest MemberServiceRequest { get; }
+    IMemberServiceRequest MemberServiceRequest { get; }
 
     PlatformType Platform { get; }
 
-    ServiceRequest ServiceRequest { get; }    
+    IServiceRequest ServiceRequest { get; }
 
-    Task<ChapterAdminMember?> GetCurrentChapterAdminMember();    
+    Task<ChapterAdminMember?> GetCurrentChapterAdminMember();
 
-    Task<IRequestStore> Load(ServiceRequest request);
+    Task<IRequestStore> Load(IServiceRequest request);
 
     void Reset();
 }

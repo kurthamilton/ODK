@@ -2,22 +2,22 @@
 
 public interface IContactService
 {
-    Task<ServiceResult> ReplyToChapterConversation(MemberServiceRequest request, Guid conversationId, string message);
+    Task<ServiceResult> ReplyToChapterConversation(IMemberServiceRequest request, Guid conversationId, string message);
 
     Task SendChapterContactMessage(
-        ChapterServiceRequest request,
+        IChapterServiceRequest request,
         string fromAddress,
         string message,
         string recaptchaToken);
 
     Task SendSiteContactMessage(
-        ServiceRequest request,
+        IServiceRequest request,
         string fromAddress,
         string message,
         string recaptchaToken);
 
     Task<ServiceResult> StartChapterConversation(
-        MemberChapterServiceRequest request,
+        IMemberChapterServiceRequest request,
         string subject,
         string message,
         string recaptchaToken);

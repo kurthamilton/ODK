@@ -6,10 +6,10 @@ namespace ODK.Services.Settings;
 
 public interface ISettingsService
 {
-    Task<ServiceResult> ActivatePaymentSettings(MemberServiceRequest request, Guid id);
+    Task<ServiceResult> ActivatePaymentSettings(IMemberServiceRequest request, Guid id);
 
     Task<ServiceResult> CreatePaymentSettings(
-        MemberServiceRequest request,
+        IMemberServiceRequest request,
         PaymentProviderType provider,
         string name,
         string publicKey,
@@ -17,16 +17,16 @@ public interface ISettingsService
         decimal commission,
         bool enabled);
 
-    Task<SiteEmailSettings> GetSiteEmailSettings(MemberServiceRequest request);
+    Task<SiteEmailSettings> GetSiteEmailSettings(IMemberServiceRequest request);
 
-    Task<IReadOnlyCollection<SitePaymentSettings>> GetSitePaymentSettings(MemberServiceRequest request);
+    Task<IReadOnlyCollection<SitePaymentSettings>> GetSitePaymentSettings(IMemberServiceRequest request);
 
-    Task<SitePaymentSettings> GetSitePaymentSettings(MemberServiceRequest request, Guid id);
+    Task<SitePaymentSettings> GetSitePaymentSettings(IMemberServiceRequest request, Guid id);
 
-    Task<ServiceResult> UpdateEmailSettings(MemberServiceRequest request, EmailSettingsUpdateModel model);
+    Task<ServiceResult> UpdateEmailSettings(IMemberServiceRequest request, EmailSettingsUpdateModel model);
 
     Task<ServiceResult> UpdatePaymentSettings(
-        MemberServiceRequest request,
+        IMemberServiceRequest request,
         Guid id,
         string name,
         string publicKey,

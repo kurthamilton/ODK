@@ -10,6 +10,9 @@ using ODK.Data.Core.Deferred;
 using ODK.Services;
 using ODK.Services.Exceptions;
 using ODK.Services.Logging;
+using ChapterServiceRequestImpl = ODK.Services.ChapterServiceRequest;
+using MemberChapterServiceRequestImpl = ODK.Services.MemberChapterServiceRequest;
+using MemberServiceRequestImpl = ODK.Services.MemberServiceRequest;
 
 namespace ODK.Web.Common.Services;
 
@@ -24,13 +27,13 @@ public class RequestStore : IRequestStore
     private bool _currentChapterAdminMemberLoaded;
     private Member? _currentMember;
     private readonly ILoggingService _loggingService;
-    private ServiceRequest? _serviceRequest;
+    private IServiceRequest? _serviceRequest;
     private readonly IUnitOfWork _unitOfWork;
 
-    private readonly Lazy<ChapterServiceRequest> _chapterServiceRequest;
+    private readonly Lazy<IChapterServiceRequest> _chapterServiceRequest;
     private readonly Lazy<Guid> _currentMemberId;
-    private readonly Lazy<MemberChapterServiceRequest> _memberChapterServiceRequest;
-    private readonly Lazy<MemberServiceRequest> _memberServiceRequest;
+    private readonly Lazy<IMemberChapterServiceRequest> _memberChapterServiceRequest;
+    private readonly Lazy<IMemberServiceRequest> _memberServiceRequest;
 
     public RequestStore(
         IUnitOfWork unitOfWork,
@@ -39,18 +42,18 @@ public class RequestStore : IRequestStore
         _loggingService = loggingService;
         _unitOfWork = unitOfWork;
 
-        _chapterServiceRequest = new(() => ChapterServiceRequest.Create(Chapter, ServiceRequest));
+        _chapterServiceRequest = new(() => ChapterServiceRequestImpl.Create(Chapter, ServiceRequest));
         _currentMemberId = new(
             () => CurrentMemberIdOrDefault ?? throw new OdkNotAuthorizedException());
-        _memberChapterServiceRequest = new(() => MemberChapterServiceRequest.Create(Chapter, MemberServiceRequest));
-        _memberServiceRequest = new(() => MemberServiceRequest.Create(CurrentMember, ServiceRequest));
+        _memberChapterServiceRequest = new(() => MemberChapterServiceRequestImpl.Create(Chapter, MemberServiceRequest));
+        _memberServiceRequest = new(() => MemberServiceRequestImpl.Create(CurrentMember, ServiceRequest));
     }
 
     public Chapter Chapter => _chapter ?? throw new OdkNotFoundException();
 
     public Chapter? ChapterOrDefault => _chapter;
 
-    public ChapterServiceRequest ChapterServiceRequest => _chapterServiceRequest.Value;
+    public IChapterServiceRequest ChapterServiceRequest => _chapterServiceRequest.Value;
 
     public Member CurrentMember => _currentMember ?? throw new OdkNotAuthenticatedException();
 
@@ -62,13 +65,13 @@ public class RequestStore : IRequestStore
 
     public bool Loaded { get; private set; }
 
-    public MemberChapterServiceRequest MemberChapterServiceRequest => _memberChapterServiceRequest.Value;
+    public IMemberChapterServiceRequest MemberChapterServiceRequest => _memberChapterServiceRequest.Value;
 
-    public MemberServiceRequest MemberServiceRequest => _memberServiceRequest.Value;
+    public IMemberServiceRequest MemberServiceRequest => _memberServiceRequest.Value;
 
     public PlatformType Platform { get; private set; }
 
-    public ServiceRequest ServiceRequest => _serviceRequest!;
+    public IServiceRequest ServiceRequest => _serviceRequest!;
 
     public async Task<ChapterAdminMember?> GetCurrentChapterAdminMember()
     {
@@ -86,7 +89,7 @@ public class RequestStore : IRequestStore
     /// <summary>
     /// Called from middleware and <see cref="RequestStoreFactory"/>
     /// </summary>
-    public Task<IRequestStore> Load(ServiceRequest request) => Load(request, verbose: false);
+    public Task<IRequestStore> Load(IServiceRequest request) => Load(request, verbose: false);
 
     public void Reset()
     {
@@ -168,7 +171,7 @@ public class RequestStore : IRequestStore
         return new DefaultDeferredQuerySingleOrDefault<Chapter>();
     }
 
-    private async Task<IRequestStore> Load(ServiceRequest serviceRequest, bool verbose)
+    private async Task<IRequestStore> Load(IServiceRequest serviceRequest, bool verbose)
     {
         if (Loaded)
         {

@@ -110,7 +110,7 @@ public class NotificationService : INotificationService
     }
 
     public async Task<NotificationsPageViewModel> GetNotificationsPageViewModel(
-        MemberServiceRequest request)
+        IMemberServiceRequest request)
     {
         var (platform, currentMember) = (request.Platform, request.CurrentMember);
 
@@ -126,7 +126,7 @@ public class NotificationService : INotificationService
     }
 
     public async Task<UnreadNotificationsViewModel> GetUnreadNotificationsViewModel(
-        MemberServiceRequest request)
+        IMemberServiceRequest request)
     {
         var (currentMember, platform) = (request.CurrentMember, request.Platform);
 

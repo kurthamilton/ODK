@@ -29,7 +29,7 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
         _unitOfWorkFactory = unitOfWorkFactory;
     }
 
-    public async Task DeleteError(MemberServiceRequest request, Guid id)
+    public async Task DeleteError(IMemberServiceRequest request, Guid id)
     {
         var error = await GetSiteAdminRestrictedContent(request,
             x => x.ErrorRepository.GetById(id));
@@ -38,7 +38,7 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task DeleteAllErrors(MemberServiceRequest request, Guid id)
+    public async Task DeleteAllErrors(IMemberServiceRequest request, Guid id)
     {
         var error = await GetSiteAdminRestrictedContent(request,
             x => x.ErrorRepository.GetById(id));
@@ -132,7 +132,7 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
         await unitOfWork.SaveChangesAsync();
     }
 
-    public async Task<ErrorDto> GetErrorDto(MemberServiceRequest request, Guid errorId)
+    public async Task<ErrorDto> GetErrorDto(IMemberServiceRequest request, Guid errorId)
     {
         var (error, properties) = await GetSiteAdminRestrictedContent(request,
             x => x.ErrorRepository.GetById(errorId),
@@ -145,7 +145,7 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
         };
     }
 
-    public async Task<IReadOnlyCollection<Error>> GetErrors(MemberServiceRequest request, int page, int pageSize)
+    public async Task<IReadOnlyCollection<Error>> GetErrors(IMemberServiceRequest request, int page, int pageSize)
     {
         return await GetSiteAdminRestrictedContent(request,
             x => x.ErrorRepository.GetErrors(page, pageSize));

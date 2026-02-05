@@ -338,7 +338,7 @@ public class StripePaymentProvider : IPaymentProvider
     }
 
     public async Task<ExternalCheckoutSession> StartCheckout(
-        ServiceRequest request,
+        IServiceRequest request,
         string emailAddress,
         ExternalSubscriptionPlan subscriptionPlan,
         string returnPath,

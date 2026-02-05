@@ -12,13 +12,13 @@ public interface IMemberService
 
     Task<ServiceResult> ConfirmEmailAddressUpdate(Guid memberId, string confirmationToken);
 
-    Task<ServiceResult<Member?>> CreateAccount(ServiceRequest request, AccountCreateModel model);
+    Task<ServiceResult<Member?>> CreateAccount(IServiceRequest request, AccountCreateModel model);
 
-    Task<ServiceResult> CreateChapterAccount(ChapterServiceRequest request, MemberCreateProfile model);
+    Task<ServiceResult> CreateChapterAccount(IChapterServiceRequest request, MemberCreateProfile model);
 
-    Task<ServiceResult> DeleteMember(MemberServiceRequest request);
+    Task<ServiceResult> DeleteMember(IMemberServiceRequest request);
 
-    Task<ServiceResult> DeleteMemberChapterData(MemberChapterServiceRequest request);
+    Task<ServiceResult> DeleteMemberChapterData(IMemberChapterServiceRequest request);
 
     Task<Member?> FindMemberByEmailAddress(string emailAddress);
 
@@ -26,26 +26,26 @@ public interface IMemberService
 
     Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid memberId);
 
-    Task<MemberLocationViewModel> GetMemberLocationViewModel(MemberServiceRequest request);
+    Task<MemberLocationViewModel> GetMemberLocationViewModel(IMemberServiceRequest request);
 
     Task<MemberSubscriptionAlertViewModel> GetMemberSubscriptionAlertViewModel(Guid memberId, Guid chapterId);
 
-    Task<ServiceResult> JoinChapter(MemberChapterServiceRequest request, IEnumerable<MemberPropertyUpdateModel> memberProperties);
+    Task<ServiceResult> JoinChapter(IMemberChapterServiceRequest request, IEnumerable<MemberPropertyUpdateModel> memberProperties);
 
-    Task<ServiceResult> LeaveChapter(MemberChapterServiceRequest request, string reason);
+    Task<ServiceResult> LeaveChapter(IMemberChapterServiceRequest request, string reason);
 
-    Task<ServiceResult> RequestMemberEmailAddressUpdate(MemberChapterServiceRequest request, string newEmailAddress);
+    Task<ServiceResult> RequestMemberEmailAddressUpdate(IMemberChapterServiceRequest request, string newEmailAddress);
 
-    Task<ServiceResult> RequestMemberEmailAddressUpdate(MemberServiceRequest request, string newEmailAddress);
+    Task<ServiceResult> RequestMemberEmailAddressUpdate(IMemberServiceRequest request, string newEmailAddress);
 
     Task RotateMemberImage(Guid memberId);
 
     Task<ChapterSubscriptionCheckoutStartedViewModel> StartChapterSubscriptionCheckoutSession(
-        MemberChapterServiceRequest request, Guid chapterSubscriptionId, string returnPath);
+        IMemberChapterServiceRequest request, Guid chapterSubscriptionId, string returnPath);
 
     Task<ServiceResult> UpdateMemberEmailPreferences(Guid id, IEnumerable<MemberEmailPreferenceType> disabledTypes);
 
-    Task<ServiceResult> UpdateMemberChapterProfile(MemberChapterServiceRequest request, MemberChapterProfileUpdateModel model);
+    Task<ServiceResult> UpdateMemberChapterProfile(IMemberChapterServiceRequest request, MemberChapterProfileUpdateModel model);
 
     Task<ServiceResult> UpdateMemberCurrency(Guid id, Guid currencyId);
 
@@ -53,10 +53,10 @@ public interface IMemberService
 
     Task<ServiceResult> UpdateMemberLocation(Guid id, LatLong? location, string? name, Guid? distanceUnitId);
 
-    Task<ServiceResult> UpdateMemberSiteProfile(MemberServiceRequest request, MemberSiteProfileUpdateModel model);
+    Task<ServiceResult> UpdateMemberSiteProfile(IMemberServiceRequest request, MemberSiteProfileUpdateModel model);
 
     Task<ServiceResult> UpdateMemberTopics(
-        MemberServiceRequest request,
+        IMemberServiceRequest request,
         IReadOnlyCollection<Guid> topicIds,
         IReadOnlyCollection<NewTopicModel> newTopics);
 }

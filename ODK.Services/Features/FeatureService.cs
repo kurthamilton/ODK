@@ -14,7 +14,7 @@ public class FeatureService : OdkAdminServiceBase, IFeatureService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ServiceResult> AddFeature(MemberServiceRequest request, FeatureUpdateModel model)
+    public async Task<ServiceResult> AddFeature(IMemberServiceRequest request, FeatureUpdateModel model)
     {
         AssertMemberIsSiteAdmin(request.CurrentMember);
 
@@ -31,7 +31,7 @@ public class FeatureService : OdkAdminServiceBase, IFeatureService
         return ServiceResult.Successful();
     }
 
-    public async Task DeleteFeature(MemberServiceRequest request, Guid featureId)
+    public async Task DeleteFeature(IMemberServiceRequest request, Guid featureId)
     {
         var feature = await GetSiteAdminRestrictedContent(request,
             x => x.FeatureRepository.GetById(featureId));
@@ -40,23 +40,23 @@ public class FeatureService : OdkAdminServiceBase, IFeatureService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task<Feature> GetFeature(MemberServiceRequest request, Guid featureId)
+    public async Task<Feature> GetFeature(IMemberServiceRequest request, Guid featureId)
     {
         return await GetSiteAdminRestrictedContent(request,
             x => x.FeatureRepository.GetById(featureId));
     }
 
-    public async Task<IReadOnlyCollection<Feature>> GetFeatures(MemberServiceRequest request)
+    public async Task<IReadOnlyCollection<Feature>> GetFeatures(IMemberServiceRequest request)
     {
         return await GetSiteAdminRestrictedContent(request,
             x => x.FeatureRepository.GetAll());
     }
 
-    public Task<Feature?> GetUnseeen(MemberServiceRequest request, string featureName) => _unitOfWork.FeatureRepository
+    public Task<Feature?> GetUnseeen(IMemberServiceRequest request, string featureName) => _unitOfWork.FeatureRepository
         .GetUnseen(request.CurrentMember.Id, featureName)
         .Run();
 
-    public async Task MarkAsSeen(MemberServiceRequest request, string featureName)
+    public async Task MarkAsSeen(IMemberServiceRequest request, string featureName)
     {
         var memberId = request.CurrentMember.Id;
 
@@ -70,7 +70,7 @@ public class FeatureService : OdkAdminServiceBase, IFeatureService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task UpdateFeature(MemberServiceRequest request, Guid featureId, FeatureUpdateModel model)
+    public async Task UpdateFeature(IMemberServiceRequest request, Guid featureId, FeatureUpdateModel model)
     {
         var feature = await GetSiteAdminRestrictedContent(request,
             x => x.FeatureRepository.GetById(featureId));

@@ -15,7 +15,7 @@ namespace ODK.Web.Razor.Controllers;
 
 public abstract class OdkControllerBase : Controller
 {
-    private static readonly Regex VersionRegex = new(@"^""(?<version>-?\d+)""$");    
+    private static readonly Regex VersionRegex = new(@"^""(?<version>-?\d+)""$");
 
     protected OdkControllerBase(
         IRequestStore requestStore,
@@ -27,15 +27,15 @@ public abstract class OdkControllerBase : Controller
 
     protected Chapter Chapter => RequestStore.Chapter;
 
-    protected ChapterServiceRequest ChapterServiceRequest => RequestStore.ChapterServiceRequest;
+    protected IChapterServiceRequest ChapterServiceRequest => RequestStore.ChapterServiceRequest;
 
     protected Member CurrentMember => RequestStore.CurrentMember;
 
-    protected MemberChapterServiceRequest MemberChapterServiceRequest => RequestStore.MemberChapterServiceRequest;
+    protected IMemberChapterServiceRequest MemberChapterServiceRequest => RequestStore.MemberChapterServiceRequest;
 
     protected Guid MemberId => RequestStore.CurrentMemberId;
 
-    protected MemberServiceRequest MemberServiceRequest => RequestStore.MemberServiceRequest;
+    protected IMemberServiceRequest MemberServiceRequest => RequestStore.MemberServiceRequest;
 
     protected IOdkRoutes OdkRoutes { get; }
 
@@ -43,7 +43,7 @@ public abstract class OdkControllerBase : Controller
 
     protected IRequestStore RequestStore { get; }
 
-    protected ServiceRequest ServiceRequest => RequestStore.ServiceRequest;
+    protected IServiceRequest ServiceRequest => RequestStore.ServiceRequest;
 
     protected void AddFeedback(string message, FeedbackType type)
         => AddFeedback(new FeedbackViewModel(message, type));
@@ -73,7 +73,7 @@ public abstract class OdkControllerBase : Controller
     {
         var csv = StringUtils.ToCsv(data);
         return File(Encoding.UTF8.GetBytes(csv), "text/csv", fileName);
-    }    
+    }
 
     protected async Task<IActionResult> HandleVersionedRequest<T>(Func<long?, Task<VersionedServiceResult<T>>> getter, Func<T?, IActionResult> map) where T : class
     {

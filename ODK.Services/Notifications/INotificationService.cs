@@ -42,9 +42,9 @@ public interface INotificationService
         IReadOnlyCollection<ChapterAdminMember> adminMembers,
         IReadOnlyCollection<MemberNotificationSettings> settings);
 
-    Task<NotificationsPageViewModel> GetNotificationsPageViewModel(MemberServiceRequest request);
+    Task<NotificationsPageViewModel> GetNotificationsPageViewModel(IMemberServiceRequest request);
 
-    Task<UnreadNotificationsViewModel> GetUnreadNotificationsViewModel(MemberServiceRequest request);
+    Task<UnreadNotificationsViewModel> GetUnreadNotificationsViewModel(IMemberServiceRequest request);
 
     Task MarkAsRead(Guid memberId, Guid notificationId);
 

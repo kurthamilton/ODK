@@ -2,20 +2,19 @@
 using ODK.Services;
 using ODK.Services.Web;
 using ODK.Web.Common.Routes;
-using Org.BouncyCastle.Security;
 
 namespace ODK.Web.Common.Services;
 
 public class UrlProviderFactory : IUrlProviderFactory
 {
     private readonly IOdkRoutesFactory _odkRoutesFactory;
-    
+
     public UrlProviderFactory(IOdkRoutesFactory odkRoutesFactory)
     {
         _odkRoutesFactory = odkRoutesFactory;
     }
 
-    public async Task<IUrlProvider> Create(ServiceRequest request)
+    public async Task<IUrlProvider> Create(IServiceRequest request)
     {
         var odkRoutes = await _odkRoutesFactory.Create(request);
 

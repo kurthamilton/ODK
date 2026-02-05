@@ -5,15 +5,15 @@ namespace ODK.Services.Topics;
 
 public interface ITopicAdminService
 {
-    Task<ServiceResult> AddTopic(MemberServiceRequest request, Guid topicGroupId, string name);
+    Task<ServiceResult> AddTopic(IMemberServiceRequest request, Guid topicGroupId, string name);
 
-    Task<ServiceResult> AddTopicGroup(MemberServiceRequest request, string name);
+    Task<ServiceResult> AddTopicGroup(IMemberServiceRequest request, string name);
 
-    Task ApproveTopics(MemberServiceRequest request, ApproveTopicsModel approved, ApproveTopicsModel rejected);
+    Task ApproveTopics(IMemberServiceRequest request, ApproveTopicsModel approved, ApproveTopicsModel rejected);
 
-    Task<TopicAdminPageViewModel> GetTopicAdminPageViewModel(MemberServiceRequest request, Guid topicId);
+    Task<TopicAdminPageViewModel> GetTopicAdminPageViewModel(IMemberServiceRequest request, Guid topicId);
 
-    Task<TopicsAdminPageViewModel> GetTopicsAdminPageViewModel(MemberServiceRequest request);
+    Task<TopicsAdminPageViewModel> GetTopicsAdminPageViewModel(IMemberServiceRequest request);
 
-    Task<ServiceResult> UpdateTopic(MemberServiceRequest request, Guid topicId, TopicUpdateModel model);
+    Task<ServiceResult> UpdateTopic(IMemberServiceRequest request, Guid topicId, TopicUpdateModel model);
 }

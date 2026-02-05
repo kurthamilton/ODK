@@ -60,7 +60,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     }
 
     public async Task<ServiceResult> CreateEvent(
-        MemberChapterAdminServiceRequest request, EventCreateModel model, bool draft)
+        IMemberChapterAdminServiceRequest request, EventCreateModel model, bool draft)
     {
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
@@ -165,14 +165,13 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         if (@event.Ticketed)
         {
-            var chapterRequest = ChapterServiceRequest.Create(chapter, request);
-            _backgroundTaskService.Enqueue(() => _paymentService.EnsureProductExists(chapterRequest));
+            _backgroundTaskService.Enqueue(() => _paymentService.EnsureProductExists(request));
         }
 
         return ServiceResult.Successful();
     }
 
-    public async Task DeleteEvent(MemberChapterAdminServiceRequest request, Guid id)
+    public async Task DeleteEvent(IMemberChapterAdminServiceRequest request, Guid id)
     {
         var (@event, eventEmail, responses) = await GetChapterAdminRestrictedContent(
             request,
@@ -186,7 +185,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task<Event> GetEvent(MemberChapterAdminServiceRequest request, Guid id)
+    public async Task<Event> GetEvent(IMemberChapterAdminServiceRequest request, Guid id)
     {
         var chapter = request.Chapter;
 
@@ -200,7 +199,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     }
 
     public async Task<EventAttendeesAdminPageViewModel> GetEventAttendeesViewModel(
-        MemberChapterAdminServiceRequest request, Guid eventId)
+        IMemberChapterAdminServiceRequest request, Guid eventId)
     {
         var chapter = request.Chapter;
 
@@ -258,7 +257,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         };
     }
 
-    public async Task<EventCommentsAdminPageViewModel> GetEventCommentsViewModel(MemberChapterAdminServiceRequest request, Guid eventId)
+    public async Task<EventCommentsAdminPageViewModel> GetEventCommentsViewModel(
+        IMemberChapterAdminServiceRequest request, Guid eventId)
     {
         var chapter = request.Chapter;
 
@@ -281,7 +281,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     }
 
     public async Task<EventCreateAdminPageViewModel> GetEventCreateViewModel(
-        MemberChapterAdminServiceRequest request)
+        IMemberChapterAdminServiceRequest request)
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
 
@@ -306,7 +306,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     }
 
     public async Task<EventEditAdminPageViewModel> GetEventEditViewModel(
-        MemberChapterAdminServiceRequest request, Guid eventId)
+        IMemberChapterAdminServiceRequest request, Guid eventId)
     {
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
@@ -345,7 +345,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     }
 
     public async Task<EventInvitesAdminPageViewModel> GetEventInvitesViewModel(
-        MemberChapterAdminServiceRequest request, Guid eventId)
+        IMemberChapterAdminServiceRequest request, Guid eventId)
     {
         var chapter = request.Chapter;
 
@@ -378,7 +378,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     }
 
     public async Task<EventsAdminPageViewModel> GetEventsAdminPageViewModel(
-        MemberChapterAdminServiceRequest request, Chapter chapter, int page, int pageSize)
+        IMemberChapterAdminServiceRequest request, Chapter chapter, int page, int pageSize)
     {
         var platform = request.Platform;
 
@@ -394,7 +394,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     }
 
     public async Task<EventSettingsAdminPageViewModel> GetEventSettingsViewModel(
-        MemberChapterAdminServiceRequest request)
+        IMemberChapterAdminServiceRequest request)
     {
         var chapter = request.Chapter;
 
@@ -412,7 +412,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     }
 
     public async Task<EventTicketsAdminPageViewModel> GetEventTicketsViewModel(
-        MemberChapterAdminServiceRequest request, Guid eventId)
+        IMemberChapterAdminServiceRequest request, Guid eventId)
     {
         var chapter = request.Chapter;
 
@@ -458,7 +458,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         };
     }
 
-    public async Task<DateTime> GetNextAvailableEventDate(MemberChapterAdminServiceRequest request)
+    public async Task<DateTime> GetNextAvailableEventDate(IMemberChapterAdminServiceRequest request)
     {
         var chapter = request.Chapter;
 
@@ -473,7 +473,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         return GetNextAvailableEventDate(chapter, settings, events);
     }
 
-    public async Task PublishEvent(MemberChapterAdminServiceRequest request, Guid eventId)
+    public async Task PublishEvent(IMemberChapterAdminServiceRequest request, Guid eventId)
     {
         var chapter = request.Chapter;
 
@@ -501,8 +501,12 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task SendEventInviteeEmail(MemberChapterAdminServiceRequest request, Guid eventId,
-        IEnumerable<EventResponseType> responseTypes, string subject, string body)
+    public async Task SendEventInviteeEmail(
+        IMemberChapterAdminServiceRequest request,
+        Guid eventId,
+        IEnumerable<EventResponseType> responseTypes,
+        string subject,
+        string body)
     {
         var chapter = request.Chapter;
 
@@ -542,14 +546,14 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             .ToArray();
 
         await _memberEmailService.SendBulkEmail(
-            ChapterServiceRequest.Create(chapter, request), 
-            to, 
-            subject, 
+            request,
+            to,
+            subject,
             body);
     }
 
     public async Task<ServiceResult> SendEventInvites(
-        MemberChapterAdminServiceRequest request, Guid eventId, bool test = false)
+        IMemberChapterAdminServiceRequest request, Guid eventId, bool test = false)
     {
         var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
 
@@ -586,9 +590,9 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         if (test)
         {
             await _memberEmailService.SendEventInvites(
-                ChapterServiceRequest.Create(chapter, request),
-                @event, 
-                venue, 
+                request,
+                @event,
+                venue,
                 [currentMember]);
             return ServiceResult.Successful();
         }
@@ -613,7 +617,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     }
 
     // Public for Hangfire
-    public async Task SendScheduledEmails(ServiceRequest request, Guid eventEmailId)
+    public async Task SendScheduledEmails(IServiceRequest request, Guid eventEmailId)
     {
         var platform = request.Platform;
 
@@ -698,7 +702,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     }
 
     public async Task<ServiceResult> SetEventCommentVisibility(
-        MemberChapterAdminServiceRequest request,
+        IMemberChapterAdminServiceRequest request,
         Guid eventId,
         Guid eventCommentId,
         bool hidden)
@@ -727,7 +731,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     }
 
     public async Task<ServiceResult> UpdateEvent(
-        MemberChapterAdminServiceRequest request, Guid id, EventCreateModel model)
+        IMemberChapterAdminServiceRequest request, Guid id, EventCreateModel model)
     {
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
@@ -828,8 +832,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         if (@event.Ticketed)
         {
-            var chapterRequest = ChapterServiceRequest.Create(chapter, request);
-            _backgroundTaskService.Enqueue(() => _paymentService.EnsureProductExists(chapterRequest));
+            _backgroundTaskService.Enqueue(() => _paymentService.EnsureProductExists(request));
         }
 
         if (@event.AttendeeLimit > previousAttendeeLimit)
@@ -840,7 +843,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> SetMissingEventShortcodes(MemberServiceRequest request)
+    public async Task<ServiceResult> SetMissingEventShortcodes(IMemberServiceRequest request)
     {
         var platform = request.Platform;
 
@@ -868,7 +871,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     }
 
     public async Task UpdateEventSettings(
-        MemberChapterAdminServiceRequest request, EventSettingsUpdateModel model)
+        IMemberChapterAdminServiceRequest request, EventSettingsUpdateModel model)
     {
         var chapter = request.Chapter;
 
@@ -910,7 +913,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     }
 
     public async Task<ServiceResult> UpdateMemberResponse(
-        MemberChapterAdminServiceRequest request,
+        IMemberChapterAdminServiceRequest request,
         Guid eventId,
         Guid memberId,
         EventResponseType responseType)
@@ -928,16 +931,15 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         OdkAssertions.BelongsToChapter(@event, chapter.Id);
 
-        var memberServiceRequest = MemberServiceRequest.Create(member, request);
         return await _eventService.UpdateMemberResponse(
-            memberServiceRequest,
+            request,
             eventId,
             responseType,
             adminMemberId: currentMember.Id);
     }
 
     public async Task<ServiceResult> UpdateScheduledEmail(
-        MemberChapterAdminServiceRequest request, Guid eventId, DateTime? date)
+        IMemberChapterAdminServiceRequest request, Guid eventId, DateTime? date)
     {
         var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
 
@@ -1002,8 +1004,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         _unitOfWork.EventEmailRepository.Add(eventEmail);
         await _unitOfWork.SaveChangesAsync();
-
-        var scheduledJobRequest = ServiceRequest.Create(request);
 
         eventEmail.JobId = _backgroundTaskService.Schedule(
             () => SendScheduledEmails(request, eventEmail.Id),
@@ -1173,7 +1173,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     }
 
     private async Task<ServiceResult> SendEventInvites(
-        ServiceRequest request,
+        IServiceRequest request,
         Chapter chapter,
         Event @event,
         Venue venue,

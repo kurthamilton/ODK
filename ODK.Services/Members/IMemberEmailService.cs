@@ -14,141 +14,141 @@ namespace ODK.Services.Members;
 public interface IMemberEmailService
 {
     Task SendActivationEmail(
-        ServiceRequest request,
+        IServiceRequest request,
         Chapter? chapter,
         Member member,
         string activationToken);
 
     Task SendAddressUpdateEmail(
-        ServiceRequest request,
+        IServiceRequest request,
         Chapter? chapter,
         Member member,
         string newEmailAddress,
         string token);
 
     Task SendBulkEmail(
-        ChapterServiceRequest request,
+        IChapterServiceRequest request,
         IEnumerable<Member> to,
         string subject,
         string body);
 
     Task SendChapterConversationEmail(
-        ChapterServiceRequest request,
+        IChapterServiceRequest request,
         ChapterConversation conversation,
         ChapterConversationMessage message,
         IReadOnlyCollection<Member> to,
         bool isReply);
 
     Task SendChapterMessage(
-        ChapterServiceRequest request,
+        IChapterServiceRequest request,
         IReadOnlyCollection<ChapterAdminMember> adminMembers,
         ChapterContactMessage contactMessage);
 
     Task<ServiceResult> SendChapterMessageReply(
-        ChapterServiceRequest request,
+        IChapterServiceRequest request,
         ChapterContactMessage originalMessage,
         string reply);
 
     Task SendDuplicateMemberEmail(
-        ServiceRequest request,
+        IServiceRequest request,
         Chapter? chapter,
         Member member);
 
     Task SendEventCommentEmail(
-        ChapterServiceRequest request,
+        IChapterServiceRequest request,
         Event @event,
         EventComment eventComment,
         Member? parentCommentMember);
 
     Task SendEventInvites(
-        ChapterServiceRequest request,
+        IChapterServiceRequest request,
         Event @event,
         Venue venue,
         IEnumerable<Member> members);
 
     Task SendEventWaitlistPromotionNotification(
-        ChapterServiceRequest request,
+        IChapterServiceRequest request,
         Event @event,
         IEnumerable<Member> members);
 
     Task SendGroupApprovedEmail(
-        ChapterServiceRequest request,
+        IChapterServiceRequest request,
         Member owner);
 
     Task SendMemberApprovedEmail(
-        ChapterServiceRequest request,
+        IChapterServiceRequest request,
         Member member);
 
     Task SendIssueReply(
-        ServiceRequest request,
+        IServiceRequest request,
         Issue issue,
         IssueMessage reply,
         Member? toMember,
         SiteEmailSettings siteEmailSettings);
 
     Task SendMemberChapterSubscriptionConfirmationEmail(
-        ChapterServiceRequest request,
+        IChapterServiceRequest request,
         ChapterSubscription chapterSubscription,
         Member member,
         DateTime expiresUtc);
 
     Task SendMemberChapterSubscriptionExpiringEmail(
-        ChapterServiceRequest request,
+        IChapterServiceRequest request,
         Member member,
         MemberSubscription memberSubscription,
         DateTime expires,
         DateTime disabledDate);
 
     Task SendMemberDeleteEmail(
-        ChapterServiceRequest request,
+        IChapterServiceRequest request,
         Member member,
         string? reason);
 
     Task SendMemberLeftChapterEmail(
-        ChapterServiceRequest request,
+        IChapterServiceRequest request,
         IReadOnlyCollection<ChapterAdminMember> adminMembers,
         Member member,
         string? reason);
 
     Task SendNewGroupEmail(
-        ServiceRequest request,
+        IServiceRequest request,
         ChapterTexts texts,
         SiteEmailSettings settings);
 
     Task SendNewIssueEmail(
-        ServiceRequest request,
+        IServiceRequest request,
         Member member,
         Issue issue,
         IssueMessage message,
         SiteEmailSettings settings);
 
     Task SendNewMemberAdminEmail(
-        ChapterServiceRequest request,
+        IChapterServiceRequest request,
         IReadOnlyCollection<ChapterAdminMember> adminMembers,
         Member member,
         IReadOnlyCollection<ChapterProperty> chapterProperties,
         IReadOnlyCollection<MemberProperty> memberProperties);
 
     Task SendNewMemberEmailsAsync(
-        ChapterServiceRequest request,
+        IChapterServiceRequest request,
         IReadOnlyCollection<ChapterAdminMember> adminMembers,
         Member member,
         IReadOnlyCollection<ChapterProperty> chapterProperties,
         IReadOnlyCollection<MemberProperty> memberProperties);
 
     Task SendNewTopicEmail(
-        ServiceRequest request,
+        IServiceRequest request,
         IReadOnlyCollection<INewTopic> newTopics,
         SiteEmailSettings settings);
 
     Task SendPasswordResetEmail(
-        ServiceRequest request,
+        IServiceRequest request,
         Chapter? chapter,
         Member member,
         string token);
 
     Task SendPaymentNotification(
-        ServiceRequest request,
+        IServiceRequest request,
         Member member,
         Chapter? chapter,
         Payment payment,
@@ -156,36 +156,36 @@ public interface IMemberEmailService
         SiteEmailSettings settings);
 
     Task SendSiteMessage(
-        ServiceRequest request,
+        IServiceRequest request,
         SiteContactMessage message,
         SiteEmailSettings settings);
 
     Task<ServiceResult> SendSiteMessageReply(
-        ServiceRequest request,
+        IServiceRequest request,
         SiteContactMessage originalMessage,
         string reply);
 
     Task SendSiteSubscriptionExpiredEmail(
-        ServiceRequest request,
+        IServiceRequest request,
         Member member);
 
     Task SendSiteWelcomeEmail(
-        ServiceRequest request,
+        IServiceRequest request,
         Member member);
 
     Task<ServiceResult> SendTestEmail(
-        ServiceRequest request,
+        IServiceRequest request,
         Chapter? chapter,
         Member to,
         EmailType type);
 
     Task SendTopicApprovedEmails(
-        ServiceRequest request,
+        IServiceRequest request,
         IReadOnlyCollection<INewTopic> newTopics,
         IReadOnlyCollection<Member> members);
 
     Task SendTopicRejectedEmails(
-        ServiceRequest request,
+        IServiceRequest request,
         IReadOnlyCollection<INewTopic> newTopics,
         IReadOnlyCollection<Member> members);
 }

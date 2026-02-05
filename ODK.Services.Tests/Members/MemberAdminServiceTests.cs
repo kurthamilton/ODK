@@ -1064,11 +1064,11 @@ public static class MemberAdminServiceTests
     {
         var mock = new Mock<IMemberEmailService>();
         mock.Setup(x => x.SendMemberApprovedEmail(
-                It.IsAny<ChapterServiceRequest>(),
+                It.IsAny<IChapterServiceRequest>(),
                 It.IsAny<Member>()))
             .Returns(Task.CompletedTask);
         mock.Setup(x => x.SendMemberDeleteEmail(
-                It.IsAny<ChapterServiceRequest>(),
+                It.IsAny<IChapterServiceRequest>(),
                 It.IsAny<Member>(),
                 It.IsAny<string>()))
             .Returns(Task.CompletedTask);
@@ -1086,14 +1086,14 @@ public static class MemberAdminServiceTests
     private static IMemberService CreateMockMemberService()
     {
         var mock = new Mock<IMemberService>();
-        mock.Setup(x => x.DeleteMemberChapterData(It.IsAny<MemberChapterServiceRequest>()))
+        mock.Setup(x => x.DeleteMemberChapterData(It.IsAny<IMemberChapterServiceRequest>()))
             .ReturnsAsync(ServiceResult.Successful());
         mock.Setup(x => x.RotateMemberImage(It.IsAny<Guid>()))
             .Returns(Task.CompletedTask);
         return mock.Object;
     }
 
-    private static MemberChapterAdminServiceRequest CreateMemberChapterAdminServiceRequest(
+    private static IMemberChapterAdminServiceRequest CreateMemberChapterAdminServiceRequest(
         Chapter? chapter = null,
         Member? currentMember = null,
         PlatformType? platform = null,

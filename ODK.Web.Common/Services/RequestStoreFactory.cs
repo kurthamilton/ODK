@@ -12,5 +12,5 @@ public class RequestStoreFactory : IRequestStoreFactory
         _requestStore = requestStore;
     }
 
-    public Task<IRequestStore> Create(ServiceRequest request) => _requestStore.Load(request);
+    public Task<IRequestStore> Create(IServiceRequest request) => _requestStore.Load(request);
 }

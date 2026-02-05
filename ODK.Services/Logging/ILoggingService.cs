@@ -5,9 +5,9 @@ namespace ODK.Services.Logging;
 
 public interface ILoggingService
 {
-    Task DeleteError(MemberServiceRequest request, Guid id);
+    Task DeleteError(IMemberServiceRequest request, Guid id);
 
-    Task DeleteAllErrors(MemberServiceRequest request, Guid id);
+    Task DeleteAllErrors(IMemberServiceRequest request, Guid id);
 
     Task Error(string message);
 
@@ -17,9 +17,9 @@ public interface ILoggingService
 
     Task Error(Exception exception, IDictionary<string, string?> properties);
 
-    Task<ErrorDto> GetErrorDto(MemberServiceRequest request, Guid errorId);
+    Task<ErrorDto> GetErrorDto(IMemberServiceRequest request, Guid errorId);
 
-    Task<IReadOnlyCollection<Error>> GetErrors(MemberServiceRequest request, int page, int pageSize);
+    Task<IReadOnlyCollection<Error>> GetErrors(IMemberServiceRequest request, int page, int pageSize);
 
     bool IgnoreUnknownRequestPath(IHttpRequestContext httpRequestContext);
 

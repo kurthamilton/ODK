@@ -8,7 +8,7 @@ public interface IContactAdminService
 
     Task<MessageAdminPageViewModel> GetMessageViewModel(Guid currentMemberId, Guid messageId);
 
-    Task<ServiceResult> ReplyToMessage(MemberServiceRequest request, Guid messageId, string message);
+    Task<ServiceResult> ReplyToMessage(IMemberServiceRequest request, Guid messageId, string message);
 
     Task<ServiceResult> SetMessageAsReplied(Guid currentMemberId, Guid messageId);
 }

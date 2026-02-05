@@ -20,7 +20,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ServiceResult> DeleteChapterEmail(MemberChapterAdminServiceRequest request, EmailType type)
+    public async Task<ServiceResult> DeleteChapterEmail(IMemberChapterAdminServiceRequest request, EmailType type)
     {
         var chapter = request.Chapter;
 
@@ -36,11 +36,11 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         return ServiceResult.Successful();
     }
 
-    public async Task<ChapterEmail> GetChapterEmail(MemberChapterAdminServiceRequest request, EmailType type)
+    public async Task<ChapterEmail> GetChapterEmail(IMemberChapterAdminServiceRequest request, EmailType type)
     {
         var chapter = request.Chapter;
 
-        var (chapterEmail, siteEmail) = await GetChapterAdminRestrictedContent(           
+        var (chapterEmail, siteEmail) = await GetChapterAdminRestrictedContent(
             request,
             x => x.ChapterEmailRepository.GetByChapterId(chapter.Id, type),
             x => x.EmailRepository.GetByType(type));
@@ -59,7 +59,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         };
     }
 
-    public async Task<IReadOnlyCollection<ChapterEmail>> GetChapterEmails(MemberChapterAdminServiceRequest request)
+    public async Task<IReadOnlyCollection<ChapterEmail>> GetChapterEmails(IMemberChapterAdminServiceRequest request)
     {
         var chapter = request.Chapter;
 
@@ -98,19 +98,19 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         return emails;
     }
 
-    public async Task<Email> GetEmail(MemberServiceRequest request, EmailType type)
+    public async Task<Email> GetEmail(IMemberServiceRequest request, EmailType type)
     {
         return await GetSiteAdminRestrictedContent(request,
             x => x.EmailRepository.GetByType(type));
     }
 
-    public async Task<IReadOnlyCollection<Email>> GetEmails(MemberServiceRequest request)
+    public async Task<IReadOnlyCollection<Email>> GetEmails(IMemberServiceRequest request)
     {
         return await GetSiteAdminRestrictedContent(request,
             x => x.EmailRepository.GetAll());
     }
 
-    public async Task<ServiceResult> SendTestEmail(MemberChapterAdminServiceRequest request, EmailType type)
+    public async Task<ServiceResult> SendTestEmail(IMemberChapterAdminServiceRequest request, EmailType type)
     {
         var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
 
@@ -119,7 +119,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         return await _memberEmailService.SendTestEmail(request, chapter, currentMember, type);
     }
 
-    public async Task<ServiceResult> SendTestMemberEmail(MemberServiceRequest request, EmailType type)
+    public async Task<ServiceResult> SendTestMemberEmail(IMemberServiceRequest request, EmailType type)
     {
         AssertMemberIsSiteAdmin(request.CurrentMember);
 
@@ -127,7 +127,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
     }
 
     public async Task<ServiceResult> UpdateChapterEmail(
-        MemberChapterAdminServiceRequest request, 
+        IMemberChapterAdminServiceRequest request,
         EmailType type,
         EmailUpdateModel model)
     {
@@ -164,7 +164,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> UpdateEmail(MemberServiceRequest request, EmailType type, EmailUpdateModel model)
+    public async Task<ServiceResult> UpdateEmail(IMemberServiceRequest request, EmailType type, EmailUpdateModel model)
     {
         var existing = await GetSiteAdminRestrictedContent(request,
             x => x.EmailRepository.GetByType(type));

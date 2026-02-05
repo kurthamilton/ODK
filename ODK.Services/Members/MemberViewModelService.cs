@@ -14,7 +14,7 @@ public class MemberViewModelService : IMemberViewModelService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<MemberConversationsPageViewModel> GetMemberConversationsPage(MemberServiceRequest request)
+    public async Task<MemberConversationsPageViewModel> GetMemberConversationsPage(IMemberServiceRequest request)
     {
         var (platform, currentMember) = (request.Platform, request.CurrentMember);
 
@@ -38,7 +38,7 @@ public class MemberViewModelService : IMemberViewModelService
         };
     }
 
-    public async Task<MemberConversationsPageViewModel> GetMemberConversationsPage(MemberChapterServiceRequest request)
+    public async Task<MemberConversationsPageViewModel> GetMemberConversationsPage(IMemberChapterServiceRequest request)
     {
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
@@ -72,7 +72,7 @@ public class MemberViewModelService : IMemberViewModelService
         };
     }
 
-    public async Task<MemberPageViewModel> GetMemberPage(MemberChapterServiceRequest request, Guid memberId)
+    public async Task<MemberPageViewModel> GetMemberPage(IMemberChapterServiceRequest request, Guid memberId)
     {
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
@@ -108,7 +108,7 @@ public class MemberViewModelService : IMemberViewModelService
         };
     }
 
-    public async Task<MembersPageViewModel> GetMembersPage(MemberChapterServiceRequest request)
+    public async Task<MembersPageViewModel> GetMembersPage(IMemberChapterServiceRequest request)
     {
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 

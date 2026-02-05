@@ -35,7 +35,7 @@ public class AccountViewModelService : IAccountViewModelService
     }
 
     public async Task<ChapterJoinPageViewModel> GetChapterJoinPage(
-        ChapterServiceRequest request)
+        IChapterServiceRequest request)
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
 
@@ -70,30 +70,27 @@ public class AccountViewModelService : IAccountViewModelService
     }
 
     public async Task<ChapterPicturePageViewModel> GetChapterPicturePage(
-        Guid currentMemberId, Chapter chapter)
+        IMemberChapterServiceRequest request)
     {
-        var (
-                member,
-                avatar,
-                image
-            ) = await _unitOfWork.RunAsync(
-                x => x.MemberRepository.GetById(currentMemberId),
-                x => x.MemberAvatarRepository.GetByMemberId(currentMemberId),
-                x => x.MemberImageRepository.GetByMemberId(currentMemberId));
+        var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
 
-        OdkAssertions.MemberOf(member, chapter.Id);
+        var (avatar, image) = await _unitOfWork.RunAsync(
+                x => x.MemberAvatarRepository.GetByMemberId(currentMember.Id),
+                x => x.MemberImageRepository.GetByMemberId(currentMember.Id));
+
+        OdkAssertions.MemberOf(currentMember, chapter.Id);
 
         return new ChapterPicturePageViewModel
         {
             Avatar = avatar,
             Image = image,
             Chapter = chapter,
-            CurrentMember = member
+            CurrentMember = currentMember
         };
     }
 
     public async Task<ChapterProfilePageViewModel> GetChapterProfilePage(
-        MemberChapterServiceRequest request)
+        IMemberChapterServiceRequest request)
     {
         var (currentMember, platform, chapter) = (request.CurrentMember, request.Platform, request.Chapter);
 
@@ -128,7 +125,7 @@ public class AccountViewModelService : IAccountViewModelService
     }
 
     public async Task<MemberChapterPaymentsPageViewModel> GetMemberChapterPaymentsPage(
-        MemberChapterServiceRequest request)
+        IMemberChapterServiceRequest request)
     {
         var (currentMember, platform, chapter) = (request.CurrentMember, request.Platform, request.Chapter);
 
@@ -146,7 +143,7 @@ public class AccountViewModelService : IAccountViewModelService
     }
 
     public async Task<MemberEmailPreferencesPageViewModel> GetMemberEmailPreferencesPage(
-        MemberServiceRequest request)
+        IMemberServiceRequest request)
     {
         var (currentMember, platform) = (request.CurrentMember, request.Platform);
 
@@ -160,7 +157,7 @@ public class AccountViewModelService : IAccountViewModelService
         };
     }
 
-    public async Task<MemberPaymentsPageViewModel> GetMemberPaymentsPage(MemberServiceRequest request)
+    public async Task<MemberPaymentsPageViewModel> GetMemberPaymentsPage(IMemberServiceRequest request)
     {
         var (currentMember, platform) = (request.CurrentMember, request.Platform);
 

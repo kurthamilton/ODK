@@ -7,12 +7,12 @@ namespace ODK.Web.Common.Account;
 
 public interface ILoginHandler
 {
-    Task<AuthenticationResult> Impersonate(MemberServiceRequest request, Guid memberId);
+    Task<AuthenticationResult> Impersonate(IMemberServiceRequest request, Guid memberId);
 
     Task<AuthenticationResult> Login(
-        ServiceRequest request, string username, string password, bool rememberMe);
+        IServiceRequest request, string username, string password, bool rememberMe);
 
     Task Logout();
 
-    Task<AuthenticationResult> OAuthLogin(ServiceRequest request, OAuthProviderType providerType, string token);
+    Task<AuthenticationResult> OAuthLogin(IServiceRequest request, OAuthProviderType providerType, string token);
 }

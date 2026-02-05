@@ -22,7 +22,7 @@ public abstract class OdkAdminServiceBase
         _unitOfWork = unitOfWork;
     }
 
-    protected async Task AssertMemberIsChapterAdmin(MemberChapterAdminServiceRequest request)
+    protected async Task AssertMemberIsChapterAdmin(IMemberChapterAdminServiceRequest request)
     {
         var (platform, chapterId, member) = (request.Platform, request.Chapter.Id, request.CurrentMember);
 
@@ -33,12 +33,12 @@ public abstract class OdkAdminServiceBase
     }
 
     protected void AssertMemberIsChapterAdmin(
-        MemberChapterAdminServiceRequest request,
+        IMemberChapterAdminServiceRequest request,
         ChapterAdminMember? chapterAdminMember)
     {
         var (chapterId, member, securable) = (
-            request.Chapter.Id, 
-            request.CurrentMember, 
+            request.Chapter.Id,
+            request.CurrentMember,
             request.Securable);
 
         var isChapterAdmin = MemberIsChapterAdmin(securable, member, chapterId, chapterAdminMember);
@@ -49,7 +49,7 @@ public abstract class OdkAdminServiceBase
     }
 
     protected async Task<T1> GetChapterAdminRestrictedContent<T1>(
-        MemberChapterAdminServiceRequest request,
+        IMemberChapterAdminServiceRequest request,
         Func<IUnitOfWork, IDeferredQuery<T1>> query)
     {
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
@@ -64,7 +64,7 @@ public abstract class OdkAdminServiceBase
     }
 
     protected async Task<(T1, T2)> GetChapterAdminRestrictedContent<T1, T2>(
-        MemberChapterAdminServiceRequest request,
+        IMemberChapterAdminServiceRequest request,
         Func<IUnitOfWork, IDeferredQuery<T1>> query1,
         Func<IUnitOfWork, IDeferredQuery<T2>> query2)
     {
@@ -81,7 +81,7 @@ public abstract class OdkAdminServiceBase
     }
 
     protected async Task<(T1, T2, T3)> GetChapterAdminRestrictedContent<T1, T2, T3>(
-        MemberChapterAdminServiceRequest request,
+        IMemberChapterAdminServiceRequest request,
         Func<IUnitOfWork, IDeferredQuery<T1>> query1,
         Func<IUnitOfWork, IDeferredQuery<T2>> query2,
         Func<IUnitOfWork, IDeferredQuery<T3>> query3)
@@ -100,7 +100,7 @@ public abstract class OdkAdminServiceBase
     }
 
     protected async Task<(T1, T2, T3, T4)> GetChapterAdminRestrictedContent<T1, T2, T3, T4>(
-        MemberChapterAdminServiceRequest request,
+        IMemberChapterAdminServiceRequest request,
         Func<IUnitOfWork, IDeferredQuery<T1>> query1,
         Func<IUnitOfWork, IDeferredQuery<T2>> query2,
         Func<IUnitOfWork, IDeferredQuery<T3>> query3,
@@ -121,7 +121,7 @@ public abstract class OdkAdminServiceBase
     }
 
     protected async Task<(T1, T2, T3, T4, T5)> GetChapterAdminRestrictedContent<T1, T2, T3, T4, T5>(
-        MemberChapterAdminServiceRequest request,
+        IMemberChapterAdminServiceRequest request,
         Func<IUnitOfWork, IDeferredQuery<T1>> query1,
         Func<IUnitOfWork, IDeferredQuery<T2>> query2,
         Func<IUnitOfWork, IDeferredQuery<T3>> query3,
@@ -144,7 +144,7 @@ public abstract class OdkAdminServiceBase
     }
 
     protected async Task<(T1, T2, T3, T4, T5, T6)> GetChapterAdminRestrictedContent<T1, T2, T3, T4, T5, T6>(
-        MemberChapterAdminServiceRequest request,
+        IMemberChapterAdminServiceRequest request,
         Func<IUnitOfWork, IDeferredQuery<T1>> query1,
         Func<IUnitOfWork, IDeferredQuery<T2>> query2,
         Func<IUnitOfWork, IDeferredQuery<T3>> query3,
@@ -169,7 +169,7 @@ public abstract class OdkAdminServiceBase
     }
 
     protected async Task<(T1, T2, T3, T4, T5, T6, T7)> GetChapterAdminRestrictedContent<T1, T2, T3, T4, T5, T6, T7>(
-        MemberChapterAdminServiceRequest request,
+        IMemberChapterAdminServiceRequest request,
         Func<IUnitOfWork, IDeferredQuery<T1>> query1,
         Func<IUnitOfWork, IDeferredQuery<T2>> query2,
         Func<IUnitOfWork, IDeferredQuery<T3>> query3,
@@ -196,7 +196,7 @@ public abstract class OdkAdminServiceBase
     }
 
     protected async Task<(T1, T2, T3, T4, T5, T6, T7, T8)> GetChapterAdminRestrictedContent<T1, T2, T3, T4, T5, T6, T7, T8>(
-        MemberChapterAdminServiceRequest request,
+        IMemberChapterAdminServiceRequest request,
         Func<IUnitOfWork, IDeferredQuery<T1>> query1,
         Func<IUnitOfWork, IDeferredQuery<T2>> query2,
         Func<IUnitOfWork, IDeferredQuery<T3>> query3,
@@ -208,14 +208,14 @@ public abstract class OdkAdminServiceBase
     {
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
-        var (chapterAdminMember, 
-            result1, 
-            result2, 
-            result3, 
-            result4, 
-            result5, 
-            result6, 
-            result7, 
+        var (chapterAdminMember,
+            result1,
+            result2,
+            result3,
+            result4,
+            result5,
+            result6,
+            result7,
             result8) = await _unitOfWork.RunAsync(
             x => x.ChapterAdminMemberRepository.GetByMemberId(platform, currentMember.Id, chapter.Id),
             query1,
@@ -233,7 +233,7 @@ public abstract class OdkAdminServiceBase
     }
 
     protected async Task<(T1, T2, T3, T4, T5, T6, T7, T8, T9)> GetChapterAdminRestrictedContent<T1, T2, T3, T4, T5, T6, T7, T8, T9>(
-        MemberChapterAdminServiceRequest request,
+        IMemberChapterAdminServiceRequest request,
         Func<IUnitOfWork, IDeferredQuery<T1>> query1,
         Func<IUnitOfWork, IDeferredQuery<T2>> query2,
         Func<IUnitOfWork, IDeferredQuery<T3>> query3,
@@ -247,15 +247,15 @@ public abstract class OdkAdminServiceBase
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
         var (
-            chapterAdminMember, 
-            result1, 
-            result2, 
-            result3, 
-            result4, 
-            result5, 
-            result6, 
-            result7, 
-            result8, 
+            chapterAdminMember,
+            result1,
+            result2,
+            result3,
+            result4,
+            result5,
+            result6,
+            result7,
+            result8,
             result9) = await _unitOfWork.RunAsync(
             x => x.ChapterAdminMemberRepository.GetByMemberId(platform, currentMember.Id, chapter.Id),
             query1,
@@ -273,8 +273,8 @@ public abstract class OdkAdminServiceBase
         return (result1, result2, result3, result4, result5, result6, result7, result8, result9);
     }
 
-    protected async Task<(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10)> GetChapterAdminRestrictedContent<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(        
-        MemberChapterAdminServiceRequest request,
+    protected async Task<(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10)> GetChapterAdminRestrictedContent<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(
+        IMemberChapterAdminServiceRequest request,
         Func<IUnitOfWork, IDeferredQuery<T1>> query1,
         Func<IUnitOfWork, IDeferredQuery<T2>> query2,
         Func<IUnitOfWork, IDeferredQuery<T3>> query3,
@@ -317,7 +317,7 @@ public abstract class OdkAdminServiceBase
     }
 
     protected async Task<T1> GetSiteAdminRestrictedContent<T1>(
-        MemberServiceRequest request,
+        IMemberServiceRequest request,
         Func<IUnitOfWork, IDeferredQuery<T1>> query1)
     {
         var result1 = await query1(_unitOfWork).Run();
@@ -328,7 +328,7 @@ public abstract class OdkAdminServiceBase
     }
 
     protected async Task<(T1, T2)> GetSiteAdminRestrictedContent<T1, T2>(
-        MemberServiceRequest request,
+        IMemberServiceRequest request,
         Func<IUnitOfWork, IDeferredQuery<T1>> query1,
         Func<IUnitOfWork, IDeferredQuery<T2>> query2)
     {
@@ -342,7 +342,7 @@ public abstract class OdkAdminServiceBase
     }
 
     protected async Task<(T1, T2, T3)> GetSiteAdminRestrictedContent<T1, T2, T3>(
-        MemberServiceRequest request,
+        IMemberServiceRequest request,
         Func<IUnitOfWork, IDeferredQuery<T1>> query1,
         Func<IUnitOfWork, IDeferredQuery<T2>> query2,
         Func<IUnitOfWork, IDeferredQuery<T3>> query3)
@@ -358,7 +358,7 @@ public abstract class OdkAdminServiceBase
     }
 
     protected async Task<(T1, T2, T3, T4)> GetSiteAdminRestrictedContent<T1, T2, T3, T4>(
-        MemberServiceRequest request,
+        IMemberServiceRequest request,
         Func<IUnitOfWork, IDeferredQuery<T1>> query1,
         Func<IUnitOfWork, IDeferredQuery<T2>> query2,
         Func<IUnitOfWork, IDeferredQuery<T3>> query3,
@@ -400,9 +400,9 @@ public abstract class OdkAdminServiceBase
         }
 
         var role = securable.Role();
-        return 
-            chapterAdminMember.ChapterId == chapterId && 
-            chapterAdminMember.MemberId == member.Id && 
+        return
+            chapterAdminMember.ChapterId == chapterId &&
+            chapterAdminMember.MemberId == member.Id &&
             chapterAdminMember.HasAccessTo(role);
     }
 }

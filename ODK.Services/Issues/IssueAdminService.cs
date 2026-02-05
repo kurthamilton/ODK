@@ -19,7 +19,7 @@ public class IssueAdminService : OdkAdminServiceBase, IIssueAdminService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<IssueAdminPageViewModel> GetIssueAdminPageViewModel(MemberServiceRequest request, Guid issueId)
+    public async Task<IssueAdminPageViewModel> GetIssueAdminPageViewModel(IMemberServiceRequest request, Guid issueId)
     {
         var (issue, messages) = await GetSiteAdminRestrictedContent(request,
             x => x.IssueRepository.GetById(issueId),
@@ -36,7 +36,7 @@ public class IssueAdminService : OdkAdminServiceBase, IIssueAdminService
         };
     }
 
-    public async Task<IssuesAdminPageViewModel> GetIssuesAdminPageViewModel(MemberServiceRequest request)
+    public async Task<IssuesAdminPageViewModel> GetIssuesAdminPageViewModel(IMemberServiceRequest request)
     {
         var issues = await GetSiteAdminRestrictedContent(request,
             x => x.IssueRepository.GetAll());
@@ -47,7 +47,7 @@ public class IssueAdminService : OdkAdminServiceBase, IIssueAdminService
         };
     }
 
-    public async Task<ServiceResult> ReplyToIssue(MemberServiceRequest request, Guid issueId, string message)
+    public async Task<ServiceResult> ReplyToIssue(IMemberServiceRequest request, Guid issueId, string message)
     {
         var (currentMember, platform) = (request.CurrentMember, request.Platform);
 

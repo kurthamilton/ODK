@@ -2,12 +2,12 @@
 
 namespace ODK.Services;
 
-public class MemberChapterAdminServiceRequest : MemberChapterServiceRequest
+public class MemberChapterAdminServiceRequest : MemberChapterServiceRequest, IMemberChapterAdminServiceRequest
 {
     public required ChapterAdminSecurable Securable { get; init; }
 
     public static MemberChapterAdminServiceRequest Create(
-        ChapterAdminSecurable securable, MemberChapterServiceRequest request)
+        ChapterAdminSecurable securable, IMemberChapterServiceRequest request)
     {
         return new MemberChapterAdminServiceRequest
         {

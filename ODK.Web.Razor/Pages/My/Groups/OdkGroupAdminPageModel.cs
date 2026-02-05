@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using ODK.Services;
 using ODK.Services.Security;
+using MemberChapterAdminServiceRequestImpl = ODK.Services.MemberChapterAdminServiceRequest;
 
 namespace ODK.Web.Razor.Pages.My.Groups;
 
@@ -10,15 +11,15 @@ namespace ODK.Web.Razor.Pages.My.Groups;
 [Authorize]
 public abstract class OdkGroupAdminPageModel : OdkPageModel
 {
-    private readonly Lazy<MemberChapterAdminServiceRequest> _memberChapterAdminServiceRequest;
+    private readonly Lazy<IMemberChapterAdminServiceRequest> _memberChapterAdminServiceRequest;
 
     protected OdkGroupAdminPageModel()
     {
         _memberChapterAdminServiceRequest = new(() =>
-        MemberChapterAdminServiceRequest.Create(Securable, MemberChapterServiceRequest));
+        MemberChapterAdminServiceRequestImpl.Create(Securable, MemberChapterServiceRequest));
     }
 
-    public MemberChapterAdminServiceRequest MemberChapterAdminServiceRequest => _memberChapterAdminServiceRequest.Value;
+    public IMemberChapterAdminServiceRequest MemberChapterAdminServiceRequest => _memberChapterAdminServiceRequest.Value;
 
     public abstract ChapterAdminSecurable Securable { get; }
 }

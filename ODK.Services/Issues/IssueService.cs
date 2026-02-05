@@ -20,7 +20,7 @@ public class IssueService : IIssueService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ServiceResult> CreateIssue(MemberServiceRequest request, IssueCreateModel model)
+    public async Task<ServiceResult> CreateIssue(IMemberServiceRequest request, IssueCreateModel model)
     {
         if (string.IsNullOrWhiteSpace(model.Title) || string.IsNullOrWhiteSpace(model.Message))
         {
@@ -91,7 +91,7 @@ public class IssueService : IIssueService
         };
     }
 
-    public async Task<ServiceResult> ReplyToIssue(MemberServiceRequest request, Guid issueId, string message)
+    public async Task<ServiceResult> ReplyToIssue(IMemberServiceRequest request, Guid issueId, string message)
     {
         var (currentMember, platform) = (request.CurrentMember, request.Platform);
 

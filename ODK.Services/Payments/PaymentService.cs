@@ -38,7 +38,7 @@ public class PaymentService : IPaymentService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task EnsureProductExists(ChapterServiceRequest request)
+    public async Task EnsureProductExists(IChapterServiceRequest request)
     {
         var chapter = request.Chapter;
 
@@ -85,7 +85,7 @@ public class PaymentService : IPaymentService
     }
 
     public async Task<PaymentStatusType> GetMemberChapterPaymentCheckoutSessionStatus(
-        MemberServiceRequest request, Guid chapterId, string externalSessionId)
+        IMemberServiceRequest request, Guid chapterId, string externalSessionId)
     {
         var (sitePaymentSettings, paymentAccount, checkoutSession) = await _unitOfWork.RunAsync(
             x => x.SitePaymentSettingsRepository.GetActive(),
@@ -113,7 +113,7 @@ public class PaymentService : IPaymentService
     }
 
     public async Task<PaymentStatusType> GetMemberSitePaymentCheckoutSessionStatus(
-        MemberServiceRequest request, string externalSessionId)
+        IMemberServiceRequest request, string externalSessionId)
     {
         var (checkoutSession, sitePaymentSettings) = await _unitOfWork.RunAsync(
             x => x.PaymentCheckoutSessionRepository.GetByMemberId(request.CurrentMember.Id, externalSessionId),
@@ -139,7 +139,7 @@ public class PaymentService : IPaymentService
     }
 
     public async Task ProcessWebhook(
-        ServiceRequest request, PaymentProviderWebhook webhook)
+        IServiceRequest request, PaymentProviderWebhook webhook)
     {
         var existingEvent = await _unitOfWork.PaymentProviderWebhookEventRepository
             .GetByExternalId(webhook.PaymentProviderType, webhook.Id).Run();
@@ -256,7 +256,7 @@ public class PaymentService : IPaymentService
         return PaymentWebhookProcessingResult.Successful(member: null, chapter: null, payment: null, currency: null);
     }
 
-    private async Task<PaymentWebhookProcessingResult> ProcessWebhookPayment(ServiceRequest request, PaymentProviderWebhook webhook)
+    private async Task<PaymentWebhookProcessingResult> ProcessWebhookPayment(IServiceRequest request, PaymentProviderWebhook webhook)
     {
         var platform = request.Platform;
 
@@ -349,7 +349,7 @@ public class PaymentService : IPaymentService
             var (chapter, currency) = await _unitOfWork.RunAsync(
                 x => x.ChapterRepository.GetById(platform, @event.ChapterId),
                 x => x.CurrencyRepository.GetById(payment.CurrencyId));
-            
+
             return PaymentWebhookProcessingResult.Successful(
                 member, chapter, payment, currency);
         }
@@ -364,7 +364,7 @@ public class PaymentService : IPaymentService
     }
 
     private async Task<PaymentWebhookProcessingResult> ProcessWebhookChapterSubscription(
-        ServiceRequest request,
+        IServiceRequest request,
         PaymentProviderWebhook webhook,
         PaymentMetadataModel metadata)
     {
@@ -485,7 +485,7 @@ public class PaymentService : IPaymentService
     }
 
     private async Task<PaymentWebhookProcessingResult> ProcessWebhookSiteSubscription(
-        ServiceRequest request,
+        IServiceRequest request,
         PaymentProviderWebhook webhook,
         PaymentMetadataModel metadata)
     {
@@ -597,7 +597,7 @@ public class PaymentService : IPaymentService
     }
 
     private async Task<PaymentWebhookProcessingResult> ProcessWebhookSubscription(
-        ServiceRequest request, PaymentProviderWebhook webhook)
+        IServiceRequest request, PaymentProviderWebhook webhook)
     {
         if (string.IsNullOrEmpty(webhook.SubscriptionId))
         {
@@ -638,7 +638,7 @@ public class PaymentService : IPaymentService
     }
 
     private async Task<PaymentWebhookProcessingResult> UpdateMemberChapterSubscription(
-        ServiceRequest request,
+        IServiceRequest request,
         PaymentMetadataModel metadata,
         Member member,
         Payment payment,
@@ -733,7 +733,7 @@ public class PaymentService : IPaymentService
     }
 
     private async Task<PaymentWebhookProcessingResult> UpdateMemberSiteSubscription(
-        ServiceRequest request,
+        IServiceRequest request,
         Member member,
         SiteSubscription siteSubscription,
         SiteSubscriptionPrice siteSubscriptionPrice,

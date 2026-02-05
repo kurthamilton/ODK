@@ -1,33 +1,21 @@
 ﻿using ODK.Core.Chapters;
-using ODK.Core.Members;
-using ODK.Core.Platforms;
-using ODK.Core.Web;
 
 namespace ODK.Services;
 
-public class ChapterServiceRequest : ServiceRequest
+public class ChapterServiceRequest : ServiceRequest, IChapterServiceRequest
 {
     public required Chapter Chapter { get; init; }
 
-    public static ChapterServiceRequest Create(Chapter chapter, ServiceRequest request)
-        => Create(
-            chapter, 
-            request.CurrentMemberIdOrDefault,
-            request.HttpRequestContext, 
-            request.Platform);
-
     public static ChapterServiceRequest Create(
         Chapter chapter,
-        Guid? currentMemberIdOrDefault,
-        IHttpRequestContext httpRequestContext,
-        PlatformType platform)
+        IServiceRequest request)
     {
         return new ChapterServiceRequest
         {
             Chapter = chapter,
-            CurrentMemberIdOrDefault = currentMemberIdOrDefault,
-            HttpRequestContext = httpRequestContext,
-            Platform = platform
+            CurrentMemberIdOrDefault = request.CurrentMemberIdOrDefault,
+            HttpRequestContext = request.HttpRequestContext,
+            Platform = request.Platform
         };
     }
 }

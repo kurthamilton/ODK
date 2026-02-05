@@ -112,7 +112,7 @@ public class MemberService : IMemberService
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult<Member?>> CreateAccount(ServiceRequest request, AccountCreateModel model)
+    public async Task<ServiceResult<Member?>> CreateAccount(IServiceRequest request, AccountCreateModel model)
     {
         var (existing, siteSubscription, distanceUnits, topics) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetByEmailAddress(model.EmailAddress),
@@ -226,7 +226,7 @@ public class MemberService : IMemberService
         return ServiceResult<Member?>.Successful(member);
     }
 
-    public async Task<ServiceResult> CreateChapterAccount(ChapterServiceRequest request, MemberCreateProfile model)
+    public async Task<ServiceResult> CreateChapterAccount(IChapterServiceRequest request, MemberCreateProfile model)
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
 
@@ -362,7 +362,7 @@ public class MemberService : IMemberService
         }
     }
 
-    public async Task<ServiceResult> DeleteMember(MemberServiceRequest request)
+    public async Task<ServiceResult> DeleteMember(IMemberServiceRequest request)
     {
         var (platform, currentMember) = (request.Platform, request.CurrentMember);
 
@@ -390,7 +390,7 @@ public class MemberService : IMemberService
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> DeleteMemberChapterData(MemberChapterServiceRequest request)
+    public async Task<ServiceResult> DeleteMemberChapterData(IMemberChapterServiceRequest request)
     {
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
@@ -473,7 +473,7 @@ public class MemberService : IMemberService
             : new VersionedServiceResult<MemberImage>(0, null);
     }
 
-    public async Task<MemberLocationViewModel> GetMemberLocationViewModel(MemberServiceRequest request)
+    public async Task<MemberLocationViewModel> GetMemberLocationViewModel(IMemberServiceRequest request)
     {
         var (distanceUnits, memberPreferences) = await _unitOfWork.RunAsync(
             x => x.DistanceUnitRepository.GetAll(),
@@ -504,7 +504,7 @@ public class MemberService : IMemberService
     }
 
     public async Task<ServiceResult> JoinChapter(
-        MemberChapterServiceRequest request, IEnumerable<MemberPropertyUpdateModel> properties)
+        IMemberChapterServiceRequest request, IEnumerable<MemberPropertyUpdateModel> properties)
     {
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
@@ -552,7 +552,7 @@ public class MemberService : IMemberService
         await _unitOfWork.SaveChangesAsync();
 
         await _memberEmailService.SendNewMemberAdminEmail(
-            ChapterServiceRequest.Create(chapter, request),
+            request,
             adminMembers,
             currentMember,
             chapterProperties,
@@ -561,7 +561,7 @@ public class MemberService : IMemberService
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> LeaveChapter(MemberChapterServiceRequest request, string reason)
+    public async Task<ServiceResult> LeaveChapter(IMemberChapterServiceRequest request, string reason)
     {
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
@@ -569,7 +569,7 @@ public class MemberService : IMemberService
             x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => x.MemberSubscriptionRecordRepository.GetLatest(currentMember.Id, chapter.Id));
 
-        var result = await DeleteMemberChapterData(request);        
+        var result = await DeleteMemberChapterData(request);
         if (!result.Success)
         {
             return result;
@@ -581,7 +581,7 @@ public class MemberService : IMemberService
         }
 
         await _memberEmailService.SendMemberLeftChapterEmail(
-            ChapterServiceRequest.Create(chapter, request),
+            request,
             adminMembers,
             currentMember,
             reason);
@@ -589,7 +589,7 @@ public class MemberService : IMemberService
         return ServiceResult.Successful($"You have left the group '{chapter.GetDisplayName(request.Platform)}'");
     }
 
-    public async Task<ServiceResult> RequestMemberEmailAddressUpdate(MemberChapterServiceRequest request, string newEmailAddress)
+    public async Task<ServiceResult> RequestMemberEmailAddressUpdate(IMemberChapterServiceRequest request, string newEmailAddress)
     {
         var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
 
@@ -605,7 +605,7 @@ public class MemberService : IMemberService
             existingToken);
     }
 
-    public async Task<ServiceResult> RequestMemberEmailAddressUpdate(MemberServiceRequest request, string newEmailAddress)
+    public async Task<ServiceResult> RequestMemberEmailAddressUpdate(IMemberServiceRequest request, string newEmailAddress)
     {
         var currentMember = request.CurrentMember;
 
@@ -655,7 +655,7 @@ public class MemberService : IMemberService
     }
 
     public async Task<ChapterSubscriptionCheckoutStartedViewModel> StartChapterSubscriptionCheckoutSession(
-        MemberChapterServiceRequest request, Guid chapterSubscriptionId, string returnPath)
+        IMemberChapterServiceRequest request, Guid chapterSubscriptionId, string returnPath)
     {
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
@@ -781,7 +781,7 @@ public class MemberService : IMemberService
     }
 
     public async Task<ServiceResult> UpdateMemberChapterProfile(
-        MemberChapterServiceRequest request, MemberChapterProfileUpdateModel model)
+        IMemberChapterServiceRequest request, MemberChapterProfileUpdateModel model)
     {
         var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
 
@@ -970,7 +970,7 @@ public class MemberService : IMemberService
     }
 
     public async Task<ServiceResult> UpdateMemberSiteProfile(
-        MemberServiceRequest request, MemberSiteProfileUpdateModel model)
+        IMemberServiceRequest request, MemberSiteProfileUpdateModel model)
     {
         var member = request.CurrentMember;
 
@@ -984,7 +984,7 @@ public class MemberService : IMemberService
     }
 
     public async Task<ServiceResult> UpdateMemberTopics(
-        MemberServiceRequest request,
+        IMemberServiceRequest request,
         IReadOnlyCollection<Guid> topicIds,
         IReadOnlyCollection<NewTopicModel> newTopics)
     {
@@ -1118,7 +1118,7 @@ public class MemberService : IMemberService
     }
 
     private async Task<ServiceResult> RequestMemberEmailAddressUpdate(
-        ServiceRequest request,
+        IServiceRequest request,
         Chapter? chapter,
         Member member,
         string newEmailAddress,
