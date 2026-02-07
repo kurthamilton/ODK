@@ -43,9 +43,17 @@ public class AccountRoutes : RoutesBase
 
     public string Location() => AccountPath(null, "/location");
 
-    public string Login(Chapter? chapter) => AccountPath(chapter, "/login");
+    public string Login(Chapter? chapter) => AccountPath(Platform switch
+    {
+        PlatformType.DrunkenKnitwits => chapter,
+        _ => null
+    }, "/login");
 
-    public string Logout(Chapter? chapter) => AccountPath(chapter, "/logout");
+    public string Logout(Chapter? chapter) => AccountPath(Platform switch
+    {
+        PlatformType.DrunkenKnitwits => chapter,
+        _ => null
+    }, "/logout");
 
     public string Notifications(Chapter? chapter) => AccountPath(chapter, "/notifications");
 
@@ -68,6 +76,6 @@ public class AccountRoutes : RoutesBase
 
     public string Subscription(Chapter? chapter) => AccountPath(chapter, "/subscription");
 
-    private string AccountPath(Chapter? chapter, string path) 
+    private string AccountPath(Chapter? chapter, string path)
         => GetRoute(chapter, "/account" + path);
 }
