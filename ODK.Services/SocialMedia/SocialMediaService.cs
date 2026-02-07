@@ -76,7 +76,10 @@ public class SocialMediaService : ISocialMediaService
     {
         await _loggingService.Info("Scraping latest Instagram posts for all groups");
 
-        var chapters = await _unitOfWork.ChapterRepository.GetAll(PlatformType.Default).Run();
+        var chapters = await _unitOfWork.ChapterRepository
+            .GetAll(PlatformType.Default, includeUnpublished: false)
+            .Run();
+
         var chapterIds = chapters
             .Select(x => x.Id)
             .ToQueue();

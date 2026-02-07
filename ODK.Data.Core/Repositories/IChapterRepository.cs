@@ -6,7 +6,7 @@ namespace ODK.Data.Core.Repositories;
 
 public interface IChapterRepository : IWriteRepository<Chapter>
 {
-    IDeferredQueryMultiple<Chapter> GetAll(PlatformType platform);
+    IDeferredQueryMultiple<Chapter> GetAll(PlatformType platform, bool includeUnpublished);
 
     IDeferredQueryMultiple<Chapter> GetByAdminMemberId(PlatformType platform, Guid memberId);
 

@@ -859,7 +859,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         var platform = request.Platform;
 
         var chapters = await GetSiteAdminRestrictedContent(request,
-            x => x.ChapterRepository.GetAll(platform));
+            x => x.ChapterRepository.GetAll(platform, includeUnpublished: true));
 
         foreach (var chapter in chapters)
         {

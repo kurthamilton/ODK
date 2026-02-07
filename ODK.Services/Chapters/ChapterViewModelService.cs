@@ -57,7 +57,7 @@ public class ChapterViewModelService : IChapterViewModelService
         var (chapters, distanceUnits, preferences, adminMembers) = await _unitOfWork.RunAsync(
             x => topicGroup != null
                 ? x.ChapterRepository.GetByTopicGroupId(platform, topicGroup.Id)
-                : x.ChapterRepository.GetAll(platform),
+                : x.ChapterRepository.GetAll(platform, includeUnpublished: false),
             x => x.DistanceUnitRepository.GetAll(),
             x => currentMember != null
                 ? x.MemberPreferencesRepository.GetByMemberId(currentMember.Id)

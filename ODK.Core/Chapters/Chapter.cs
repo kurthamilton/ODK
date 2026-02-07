@@ -2,7 +2,7 @@
 
 namespace ODK.Core.Chapters;
 
-public class Chapter : IDatabaseEntity, ITimeZoneEntity, ICloneable<Chapter>
+public class Chapter : IDatabaseEntity, ITimeZoneEntity
 {
     public const string DefaultTimeZoneId = "GMT Standard Time";
 
@@ -91,25 +91,6 @@ public class Chapter : IDatabaseEntity, ITimeZoneEntity, ICloneable<Chapter>
     public bool CanBeDeleted(int memberCount) => memberCount == 1;
 
     public bool CanBePublished() => Approved() && !Published();
-
-    public Chapter Clone() => new Chapter
-    {
-        ApprovedUtc = ApprovedUtc,
-        BannerImageUrl = BannerImageUrl,
-        CountryId = CountryId,
-        CreatedUtc = CreatedUtc,
-        DisplayOrder = DisplayOrder,
-        Id = Id,
-        Name = Name,
-        OwnerId = OwnerId,
-        Platform = Platform,
-        PublishedUtc = PublishedUtc,
-        RedirectUrl = RedirectUrl,
-        Slug = Slug,
-        ThemeBackground = ThemeBackground,
-        ThemeColor = ThemeColor,
-        TimeZone = TimeZone
-    };
 
     public string GetDisplayName(PlatformType currentPlatform)
         => GetDisplayName(currentPlatform, Platform, Name);

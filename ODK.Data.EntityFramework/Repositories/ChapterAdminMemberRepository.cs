@@ -14,19 +14,19 @@ public class ChapterAdminMemberRepository : WriteRepositoryBase<ChapterAdminMemb
     public ChapterAdminMemberRepository(OdkContext context)
         : base(context)
     {
-    }    
+    }
 
-    public IDeferredQueryMultiple<ChapterAdminMember> GetByChapterId(PlatformType platform, Guid chapterId) 
+    public IDeferredQueryMultiple<ChapterAdminMember> GetByChapterId(PlatformType platform, Guid chapterId)
         => Set(platform)
             .Where(x => x.ChapterId == chapterId)
             .DeferredMultiple();
 
-    public IDeferredQueryMultiple<ChapterAdminMember> GetByMemberId(PlatformType platform, Guid memberId) 
+    public IDeferredQueryMultiple<ChapterAdminMember> GetByMemberId(PlatformType platform, Guid memberId)
         => Set(platform)
             .Where(x => x.MemberId == memberId)
             .DeferredMultiple();
 
-    public IDeferredQuerySingleOrDefault<ChapterAdminMember> GetByMemberId(PlatformType platform, Guid memberId, Guid chapterId) 
+    public IDeferredQuerySingleOrDefault<ChapterAdminMember> GetByMemberId(PlatformType platform, Guid memberId, Guid chapterId)
         => Set(platform)
             .Where(x => x.MemberId == memberId && x.ChapterId == chapterId)
             .DeferredSingleOrDefault();
@@ -55,7 +55,7 @@ public class ChapterAdminMemberRepository : WriteRepositoryBase<ChapterAdminMemb
     {
         var chapterQuery =
             from chapter in Set<Chapter>()
-                .ForPlatform(platform)
+                .ForPlatform(platform, includeUnpublished: true)
             select chapter;
 
         var query =

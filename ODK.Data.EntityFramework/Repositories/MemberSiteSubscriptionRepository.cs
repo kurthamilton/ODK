@@ -25,7 +25,7 @@ public class MemberSiteSubscriptionRepository : ReadWriteRepositoryBase<MemberSi
     {
         var query =
             from chapter in Set<Chapter>()
-                .ForPlatform(platform)
+                .ForPlatform(platform, includeUnpublished: true)
             from subscription in Set()
                 .Where(x => x.MemberId == chapter.OwnerId && x.SiteSubscription.Platform == platform)
             select subscription;

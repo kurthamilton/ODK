@@ -83,7 +83,7 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
         var platform = request.Platform;
 
         var (chapters, subscriptions) = await GetSiteAdminRestrictedContent(request,
-            x => x.ChapterRepository.GetAll(platform),
+            x => x.ChapterRepository.GetAll(platform, includeUnpublished: true),
             x => x.MemberSiteSubscriptionRepository.GetAllChapterOwnerSubscriptions(platform));
 
         var subscriptionDictionary = subscriptions

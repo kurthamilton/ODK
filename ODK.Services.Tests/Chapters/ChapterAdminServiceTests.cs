@@ -1300,7 +1300,7 @@ public static class ChapterAdminServiceTests
                 new MockDeferredQuerySingle<Chapter>(
                     chapters.FirstOrDefault(x => x.Id == chapterId)!));
 
-        mock.Setup(x => x.GetAll(It.IsAny<PlatformType>()))
+        mock.Setup(x => x.GetAll(It.IsAny<PlatformType>(), It.IsAny<bool>()))
             .Returns(new MockDeferredQueryMultiple<Chapter>(chapters));
 
         mock.Setup(x => x.Add(It.IsAny<Chapter>()));

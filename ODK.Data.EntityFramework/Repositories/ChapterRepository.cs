@@ -17,14 +17,14 @@ public class ChapterRepository : WriteRepositoryBase<Chapter>, IChapterRepositor
     {
     }
 
-    public IDeferredQueryMultiple<Chapter> GetAll(PlatformType platform)
-        => Set(platform)
+    public IDeferredQueryMultiple<Chapter> GetAll(PlatformType platform, bool includeUnpublished)
+        => Set(platform, includeUnpublished)
             .DeferredMultiple();
 
     public IDeferredQueryMultiple<Chapter> GetByAdminMemberId(PlatformType platform, Guid memberId)
     {
         var query =
-            from chapter in Set(platform)
+            from chapter in Set(platform, includeUnpublished: true)
             from chapterAdminMember in Set<ChapterAdminMember>()
                 .Where(x => x.ChapterId == chapter.Id)
             where chapterAdminMember.MemberId == memberId
@@ -35,7 +35,7 @@ public class ChapterRepository : WriteRepositoryBase<Chapter>, IChapterRepositor
     public IDeferredQuerySingle<Chapter> GetByEventId(PlatformType platform, Guid eventId)
     {
         var query =
-            from chapter in Set(platform)
+            from chapter in Set(platform, includeUnpublished: true)
             from @event in Set<Event>()
                 .Where(x => x.ChapterId == chapter.Id)
             where @event.Id == eventId
@@ -45,24 +45,24 @@ public class ChapterRepository : WriteRepositoryBase<Chapter>, IChapterRepositor
     }
 
     public IDeferredQuerySingle<Chapter> GetById(PlatformType platform, Guid id)
-        => Set(platform)
+        => Set(platform, includeUnpublished: true)
             .Where(x => x.Id == id)
             .DeferredSingle();
 
     public IDeferredQuerySingleOrDefault<Chapter> GetByIdOrDefault(PlatformType platform, Guid id)
-        => Set(platform)
+        => Set(platform, includeUnpublished: true)
             .Where(x => x.Id == id)
             .DeferredSingleOrDefault();
 
     public IDeferredQueryMultiple<Chapter> GetByIds(PlatformType platform, IEnumerable<Guid> ids)
-        => Set(platform)
+        => Set(platform, includeUnpublished: true)
             .Where(x => ids.Contains(x.Id))
             .DeferredMultiple();
 
     public IDeferredQueryMultiple<Chapter> GetByMemberId(PlatformType platform, Guid memberId)
     {
         var query =
-            from chapter in Set(platform)
+            from chapter in Set(platform, includeUnpublished: true)
             from memberChapter in Set<MemberChapter>()
                 .Where(x => x.ChapterId == chapter.Id)
             where memberChapter.MemberId == memberId
@@ -72,25 +72,25 @@ public class ChapterRepository : WriteRepositoryBase<Chapter>, IChapterRepositor
 
     public IDeferredQuerySingleOrDefault<Chapter> GetByName(PlatformType platform, string name)
     {
-        return Set(platform)
+        return Set(platform, includeUnpublished: true)
             .Where(x => x.Name == name)
             .DeferredSingleOrDefault();
     }
 
     public IDeferredQueryMultiple<Chapter> GetByOwnerId(PlatformType platform, Guid ownerId)
-        => Set(platform)
+        => Set(platform, includeUnpublished: true)
             .Where(x => x.OwnerId == ownerId)
             .DeferredMultiple();
 
     public IDeferredQuerySingleOrDefault<Chapter> GetBySlug(PlatformType platform, string slug)
-        => Set(platform)
+        => Set(platform, includeUnpublished: true)
             .Where(x => x.Slug == slug)
             .DeferredSingleOrDefault();
 
     public IDeferredQueryMultiple<Chapter> GetByTopicGroupId(PlatformType platform, Guid topicGroupId)
     {
         var query =
-            from chapter in Set(platform)
+            from chapter in Set(platform, includeUnpublished: false)
             where
             (
                 from chapterTopic in Set<ChapterTopic>()
@@ -105,18 +105,7 @@ public class ChapterRepository : WriteRepositoryBase<Chapter>, IChapterRepositor
         return query.DeferredMultiple();
     }
 
-    public override void Update(Chapter entity)
-    {
-        var clone = entity.Clone();
-        if (clone.Platform == PlatformType.DrunkenKnitwits && !clone.Name.EndsWith(Chapter.DrunkenKnitwitsSuffix))
-        {
-            clone.Name += Chapter.DrunkenKnitwitsSuffix;
-        }
-
-        base.Update(clone);
-    }
-
-    private IQueryable<Chapter> Set(PlatformType platform)
+    private IQueryable<Chapter> Set(PlatformType platform, bool includeUnpublished)
         => base.Set()
-            .ForPlatform(platform);
+            .ForPlatform(platform, includeUnpublished);
 }

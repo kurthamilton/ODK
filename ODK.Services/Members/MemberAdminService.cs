@@ -614,7 +614,10 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     {
         var platform = request.Platform;
 
-        var chapters = await _unitOfWork.ChapterRepository.GetAll(platform).Run();
+        var chapters = await _unitOfWork.ChapterRepository
+            .GetAll(platform, includeUnpublished: false)
+            .Run();
+
         foreach (var chapter in chapters)
         {
             var (members, memberSubscriptions, membershipSettings) = await _unitOfWork.RunAsync(

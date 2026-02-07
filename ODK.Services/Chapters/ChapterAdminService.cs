@@ -143,7 +143,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             siteEmailSettings
         ) = await _unitOfWork.RunAsync(
             x => x.MemberSiteSubscriptionRepository.GetByMemberId(currentMember.Id, platform),
-            x => x.ChapterRepository.GetAll(platform),
+            x => x.ChapterRepository.GetAll(platform, includeUnpublished: true),
             x => x.SiteEmailSettingsRepository.Get(platform));
 
         var memberChapters = existing
