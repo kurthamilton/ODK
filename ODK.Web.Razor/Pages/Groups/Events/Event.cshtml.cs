@@ -1,6 +1,6 @@
 namespace ODK.Web.Razor.Pages.Groups.Events;
 
-public class EventModel : OdkPageModel
+public class EventModel : OdkGroupPageModel
 {
     public string Shortcode { get; private set; } = string.Empty;
 

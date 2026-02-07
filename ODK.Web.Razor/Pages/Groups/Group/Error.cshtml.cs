@@ -1,8 +1,8 @@
 using System.Net;
 
-namespace ODK.Web.Razor.Pages.Groups;
+namespace ODK.Web.Razor.Pages.Groups.Group;
 
-public class ErrorModel : OdkPageModel
+public class ErrorModel : OdkGroupPageModel
 {
     public HttpStatusCode ErrorStatusCode { get; private set; }
 

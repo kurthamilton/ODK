@@ -15,7 +15,7 @@
     Model.Title = $"{viewModel.Event.GetDisplayName()} | {viewModel.Chapter.GetDisplayName(Model.Platform)}";
 }
 
-@await Html.PartialAsync("Groups/_GroupBodyWithSidebar", new GroupBodyWithSidebarViewModel
+@await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel
 {
     Title = "",
     Content = await Html.PartialAsync("Events/_EventContent", viewModel),

@@ -1,0 +1,12 @@
+﻿@using ODK.Core.Chapters
+@model Chapter
+@{
+    if (Model.IsPublished())
+    {
+        return;
+    }
+}
+
+<div class="preview-badge">
+    PREVIEW
+</div>

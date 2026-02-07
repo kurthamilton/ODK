@@ -90,14 +90,14 @@ public class Chapter : IDatabaseEntity, ITimeZoneEntity
 
     public bool CanBeDeleted(int memberCount) => memberCount == 1;
 
-    public bool CanBePublished() => Approved() && !Published();
+    public bool CanBePublished() => Approved() && !IsPublished();
 
     public string GetDisplayName(PlatformType currentPlatform)
         => GetDisplayName(currentPlatform, Platform, Name);
 
-    public bool IsOpenForRegistration() => Approved() && Published();
+    public bool IsOpenForRegistration() => Approved() && IsPublished();
 
-    public bool Published() => PublishedUtc != null;
+    public bool IsPublished() => PublishedUtc != null;
 
     public DateTime ToChapterTime(DateTime utc) => TimeZone != null
         ? TimeZoneInfo.ConvertTimeFromUtc(utc, TimeZone)

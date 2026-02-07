@@ -39,7 +39,7 @@ public class OdkRoutes : IOdkRoutes
     public SiteAdminRoutes SiteAdmin => _siteAdminRoutes.Value;
 
     public string Error(Chapter? chapter, int statusCode)
-        => chapter != null
+        => chapter != null && chapter.IsPublished()
             ? Groups.Error(chapter, statusCode)
             : $"/error/{statusCode}";
 }

@@ -1,13 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
-using ODK.Core.Platforms;
 using ODK.Services.Members;
 using ODK.Services.Members.Models;
 using ODK.Services.Users.ViewModels;
-using ODK.Web.Common.Routes;
 
-namespace ODK.Web.Razor.Pages.Groups;
+namespace ODK.Web.Razor.Pages.Groups.Group;
 
-public class JoinModel : OdkPageModel
+public class JoinModel : OdkGroupPageModel
 {
     private readonly IMemberService _memberService;
 

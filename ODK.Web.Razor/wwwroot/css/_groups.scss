@@ -1,0 +1,14 @@
+﻿.preview-badge {
+    position: fixed;
+    top: 30px;
+    right: -70px;
+    transform: rotate(45deg);
+    width: 240px;
+    display: flex;
+    justify-content: center;
+    z-index: 1050;
+    background-color: red;
+    color: white;
+    font-weight: 700;
+    font-size: 18px;
+}

@@ -1,6 +1,6 @@
 namespace ODK.Web.Razor.Pages.Groups.Events;
 
-public class IndexModel : OdkPageModel
+public class IndexModel : OdkGroupPageModel
 {
     public void OnGet()
     {

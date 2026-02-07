@@ -12,5 +12,7 @@ public class GroupBodyViewModel
 
     public required GroupPageViewModel Group { get; init; }
 
+    public IHtmlContent? SidebarContent { get; init; }
+
     public required string Title { get; init; }
 }
