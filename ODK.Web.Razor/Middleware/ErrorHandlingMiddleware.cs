@@ -34,7 +34,7 @@ public class ErrorHandlingMiddleware
         {
             await _next(context);
 
-            if (context.Response.StatusCode == 404)
+            if (context.Response.StatusCode == 404 && !context.Response.HasStarted)
             {
                 throw new OdkNotFoundException($"Path not found: {context.Request.Path}");
             }
@@ -153,7 +153,7 @@ public class ErrorHandlingMiddleware
         }
     }
 
-    private async Task<string?> GetErrorPath(
+    private async Task<string> GetErrorPath(
         HttpContext httpContext,
         IRequestStore requestStore,
         IUnitOfWork unitOfWork,
@@ -217,15 +217,19 @@ public class ErrorHandlingMiddleware
         }
     }
 
-    private void ResetHttpContext(HttpContext context, string? path)
+    private void ResetHttpContext(HttpContext context, string path)
     {
         context.SetEndpoint(endpoint: null);
 
-        var routeValuesFeature = context.Features.Get<IRouteValuesFeature>();
-        routeValuesFeature?.RouteValues.Clear();
+        context.Features.Get<IRouteValuesFeature>()?.RouteValues.Clear();
 
-        context.Response.Clear();
-        context.Request.Method = HttpMethod.Get.Method;
+        // Only clear if it hasn't started (Clear throws if started)
+        if (!context.Response.HasStarted)
+        {
+            context.Response.Clear();
+        }
+
+        context.Request.Method = HttpMethods.Get;
         context.Request.Path = path;
     }
 }

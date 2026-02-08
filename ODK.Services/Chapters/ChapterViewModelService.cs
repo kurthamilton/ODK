@@ -19,6 +19,7 @@ using ODK.Data.Core.SocialMedia;
 using ODK.Services.Authorization;
 using ODK.Services.Chapters.ViewModels;
 using ODK.Services.Events.ViewModels;
+using ODK.Services.Logging;
 using ODK.Services.Security;
 using ODK.Services.SocialMedia;
 using ODK.Services.SocialMedia.ViewModels;
@@ -28,15 +29,18 @@ namespace ODK.Services.Chapters;
 public class ChapterViewModelService : IChapterViewModelService
 {
     private readonly IAuthorizationService _authorizationService;
+    private readonly ILoggingService _loggingService;
     private readonly ISocialMediaService _socialMediaService;
     private readonly IUnitOfWork _unitOfWork;
 
     public ChapterViewModelService(
         IUnitOfWork unitOfWork,
         IAuthorizationService authorizationService,
-        ISocialMediaService socialMediaService)
+        ISocialMediaService socialMediaService,
+        ILoggingService loggingService)
     {
         _authorizationService = authorizationService;
+        _loggingService = loggingService;
         _socialMediaService = socialMediaService;
         _unitOfWork = unitOfWork;
     }
@@ -189,7 +193,7 @@ public class ChapterViewModelService : IChapterViewModelService
     }
 
     public async Task<AccountMenuChaptersViewModel> GetAccountMenuChaptersViewModel(
-IMemberServiceRequest request)
+        IMemberServiceRequest request)
     {
         var (platform, currentMember) = (request.Platform, request.CurrentMember);
 
@@ -229,6 +233,7 @@ IMemberServiceRequest request)
         var (platform, currentMember) = (request.Platform, request.CurrentMember);
         if (platform != PlatformType.Default)
         {
+            await _loggingService.Error($"Platform '{platform}' does not support chapter creation");
             throw new OdkNotFoundException();
         }
 
