@@ -23,6 +23,8 @@ public class SiteAdminRoutes
 
     public string Groups => Path("/groups");
 
+    public string Impersonate => Path("/impersonate");
+
     public string Index => "/siteadmin";
 
     public string Issue(Guid id) => $"{Issues}/{id}";
