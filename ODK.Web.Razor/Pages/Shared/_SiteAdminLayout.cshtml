@@ -28,7 +28,7 @@
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Title = "Site admin",
+    TitleContent = await Html.PartialAsync("SiteAdmin/_PageTitle"),
     Content = await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
     {
         BodyContentFunc = _ => RenderBody(),
