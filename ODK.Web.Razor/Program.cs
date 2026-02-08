@@ -61,7 +61,7 @@ public class Program
 
         app.UseWebOptimizer();
         app.UseHttpsRedirection();
-        app.UseStaticFiles();                
+        app.UseStaticFiles();
 
         app.UseHangfireDashboard("/hangfire", new DashboardOptions
         {
@@ -71,14 +71,15 @@ public class Program
         app.MapRazorPages();
         app.MapControllers();
 
+        var defaultCulture = new CultureInfo("en-GB");
         var supportedCultures = new[]
         {
-            new CultureInfo("en-GB")
+            defaultCulture
         };
 
         app.UseRequestLocalization(new RequestLocalizationOptions
         {
-            DefaultRequestCulture = new RequestCulture("en-GB"),
+            DefaultRequestCulture = new RequestCulture(defaultCulture.Name),
             SupportedCultures = supportedCultures,
             SupportedUICultures = supportedCultures
         });
@@ -89,7 +90,7 @@ public class Program
     private static WebApplicationBuilder AddHangfire(
         WebApplicationBuilder builder,
         AppSettings appSettings)
-    {        
+    {
         builder
             .Services
             .AddHangfire((provider, configuration) =>
@@ -108,7 +109,7 @@ public class Program
                         {
                             SchemaName = appSettings.Hangfire.SchemaName
                         });
-                }                
+                }
             })
             .AddHangfireServer(options =>
             {
@@ -160,6 +161,8 @@ public class Program
 
         builder.Services
             .AddScoped<IBackgroundTaskService, HangfireService>();
+
+        builder.Services.AddLocalization();
 
         LoggingConfig.Configure(builder, appSettings);
 

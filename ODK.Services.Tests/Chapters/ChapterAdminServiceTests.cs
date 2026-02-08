@@ -16,6 +16,7 @@ using ODK.Core.Subscriptions;
 using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Data.Core.Repositories;
+using ODK.Resources.Resources;
 using ODK.Services.Caching;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.Models;
@@ -313,7 +314,7 @@ public static class ChapterAdminServiceTests
 
         // Assert
         result.Success.Should().BeFalse();
-        result.Message.Should().Be("You cannot create any more groups");
+        result.Message.Should().Be(ErrorMessagesResource.GroupLimitReached);
     }
 
     [Test]
@@ -339,7 +340,7 @@ public static class ChapterAdminServiceTests
 
         // Assert
         result.Success.Should().BeFalse();
-        result.Message.Should().Be("Your subscription has expired");
+        result.Message.Should().Be(ErrorMessagesResource.SubscriptionExpired);
     }
 
     [Test]
@@ -367,6 +368,7 @@ public static class ChapterAdminServiceTests
 
         // Assert
         result.Success.Should().BeFalse();
+        result.Message.Should().Be(ErrorMessagesResource.NameTaken.Replace("{name}", name));
     }
 
     [Test]
@@ -424,7 +426,7 @@ public static class ChapterAdminServiceTests
 
         // Assert
         result.Success.Should().BeFalse();
-        result.Message.Should().Be("Invalid image");
+        result.Message.Should().Be(ErrorMessagesResource.InvalidImage);
     }
 
     [Test]
@@ -1759,7 +1761,7 @@ public static class ChapterAdminServiceTests
             Id = id ?? Guid.NewGuid(),
             Name = name,
             Slug = Chapter.GetSlug(name),
-            OwnerId = ownerId,
+            OwnerId = ownerId ?? Guid.NewGuid(),
             CreatedUtc = DateTime.UtcNow,
             CountryId = Guid.NewGuid(),
             Platform = PlatformType.Default

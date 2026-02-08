@@ -35,11 +35,7 @@ public class MemberRepository : ReadWriteRepositoryBase<Member>, IMemberReposito
         .Where(x => x.EmailAddress == emailAddress)
         .DeferredSingleOrDefault();
 
-    public IDeferredQueryMultiple<Member> GetByEmailAddresses(IEnumerable<string> emailAddresses) => Set()
-        .Where(x => emailAddresses.Contains(x.EmailAddress))
-        .DeferredMultiple();
-
-    public IDeferredQuerySingleOrDefault<Member> GetChapterOwner(Guid chapterId)
+    public IDeferredQuerySingle<Member> GetChapterOwner(Guid chapterId)
     {
         var query =
             from member in Set()
@@ -48,7 +44,7 @@ public class MemberRepository : ReadWriteRepositoryBase<Member>, IMemberReposito
             where chapter.Id == chapterId
             select member;
 
-        return query.DeferredSingleOrDefault();
+        return query.DeferredSingle();
     }
 
     public IDeferredQuery<int> GetCountByChapterId(Guid chapterId) => Set()

@@ -25,12 +25,9 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
     {
         var platform = request.Platform;
 
-        var (chapter, members) = await GetSiteAdminRestrictedContent(request,
+        var (chapter, owner) = await GetSiteAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(platform, chapterId),
-            x => x.MemberRepository.GetAllByChapterId(chapterId));
-
-        var owner = members.FirstOrDefault(x => x.Id == chapter.OwnerId);
-        OdkAssertions.Exists(owner);
+            x => x.MemberRepository.GetChapterOwner(chapterId));
 
         if (chapter.Approved())
         {
@@ -96,8 +93,7 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
         foreach (var chapter in chapters)
         {
             MemberSiteSubscription? chapterSubscription = null;
-            if (chapter.OwnerId != null &&
-                subscriptionDictionary.TryGetValue(chapter.OwnerId.Value, out var memberSubscriptions))
+            if (subscriptionDictionary.TryGetValue(chapter.OwnerId, out var memberSubscriptions))
             {
                 chapterSubscription = memberSubscriptions
                     .OrderByDescending(x => x.ExpiresUtc ?? DateTime.MaxValue)
@@ -164,11 +160,6 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
         var subscription = await GetSiteAdminRestrictedContent(request,
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id));
 
-        if (chapter.OwnerId == null)
-        {
-            throw new OdkServiceException($"Error updating group '{chapter.Id}': owner not found");
-        }
-
         if (viewModel.SiteSubscriptionId == null)
         {
             throw new OdkServiceException($"Error updating group '{chapter.Id}': subscription not provided");
@@ -176,7 +167,7 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
 
         subscription ??= new MemberSiteSubscription
         {
-            MemberId = chapter.OwnerId.Value,
+            MemberId = chapter.OwnerId,
             SiteSubscriptionId = viewModel.SiteSubscriptionId.Value
         };
 

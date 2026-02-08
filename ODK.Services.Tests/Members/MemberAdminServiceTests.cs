@@ -1140,7 +1140,7 @@ public static class MemberAdminServiceTests
             Id = id ?? Guid.NewGuid(),
             Name = slugName,
             Slug = slugName.ToLowerInvariant().Replace(" ", "-"),
-            OwnerId = ownerId,
+            OwnerId = ownerId ?? Guid.NewGuid(),
             CreatedUtc = DateTime.UtcNow,
             CountryId = Guid.NewGuid(),
             Platform = PlatformType.Default
