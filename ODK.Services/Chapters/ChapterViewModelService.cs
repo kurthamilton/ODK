@@ -19,6 +19,7 @@ using ODK.Data.Core.SocialMedia;
 using ODK.Services.Authorization;
 using ODK.Services.Chapters.ViewModels;
 using ODK.Services.Events.ViewModels;
+using ODK.Services.Security;
 using ODK.Services.SocialMedia;
 using ODK.Services.SocialMedia.ViewModels;
 
@@ -626,7 +627,10 @@ IMemberServiceRequest request)
                         .ToArray()
                     : []
             },
-            IsAdmin = adminMembers.Any(x => x.MemberId == currentMember?.Id),
+            IsAdmin =
+                currentMember != null &&
+                adminMembers.FirstOrDefault(x => x.MemberId == currentMember.Id)
+                    .HasAccessTo(ChapterAdminSecurable.Any, currentMember),
             IsMember = currentMember?.IsMemberOf(chapter.Id) == true,
             Links = links,
             MemberCount = memberCount,

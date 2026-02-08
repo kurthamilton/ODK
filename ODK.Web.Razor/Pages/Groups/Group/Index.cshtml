@@ -8,8 +8,6 @@
 
     var viewModel = await ChapterViewModelService.GetGroupHomePage(Model.ChapterServiceRequest);
 
-    Model.Title = viewModel.Chapter.GetDisplayName(Model.Platform);
-
     Model.Keywords = viewModel.Topics
         .Select(x => x.Name)
         .ToArray();

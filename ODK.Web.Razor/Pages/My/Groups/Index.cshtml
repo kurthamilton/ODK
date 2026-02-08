@@ -2,14 +2,13 @@
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Services.Chapters
-@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Chapters
 @using ODK.Web.Razor.Models.Components
 @model IndexModel
 @inject IChapterViewModelService ChapterViewModelService
 @{
     Layout = "_HomeLayout";
-    Model.Title = "My groups";
+    Model.Title = "My groups";    
 
     var viewModel = await ChapterViewModelService.GetMemberChapters(Model.MemberServiceRequest);
 }

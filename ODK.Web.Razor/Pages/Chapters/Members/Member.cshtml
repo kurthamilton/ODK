@@ -24,12 +24,13 @@
         throw new OdkNotFoundException();
     }
 
-    Model.Title = viewModel.Member.FullName;
+    var title = viewModel.Member.FullName;
+    Model.Title = title;
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Title = viewModel.Member.FullName,
+    Title = title,
     Breadcrumbs = new []
     {
         new MenuItem 

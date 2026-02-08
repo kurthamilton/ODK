@@ -1,15 +1,9 @@
-﻿@using ODK.Web.Common.Services
-@using ODK.Web.Razor.Models.Components
+﻿@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Groups
-@using ODK.Web.Razor.Services
-@inject IRequestStore RequestStore
 @model GroupBodyViewModel
 @{
-    var platform = RequestStore.Platform;
     var memberChapter = Model.Group.CurrentMember?.MemberChapter(Model.Group.Chapter.Id);
 }
-
-@await Html.PartialAsync("Groups/_GroupPreviewBadge", Model.Group.Chapter)
 
 @if (Model.SidebarContent != null)
 {
@@ -17,9 +11,9 @@
     {
         Breadcrumbs = Model.Breadcrumbs,
         Class = "--group-body-with-sidebar",
-        Menu = await Html.PartialAsync("Groups/_GroupMenu", Model.Group),
+        Menu = await Html.PartialAsync("Groups/_GroupMenu", Model.Group.Chapter),
         SidebarContent = Model.SidebarContent,
-        Title = Model.Group.Chapter.GetDisplayName(platform),
+        TitleContent = await Html.PartialAsync("Groups/_GroupTitle", Model.Group),
         ContentFunc =
             @<div>
                 @if (memberChapter != null)
@@ -29,7 +23,7 @@
 
                 @if (!string.IsNullOrEmpty(Model.Title))
                 {
-                        <h2>@Model.Title</h2>
+                    <h2>@Model.Title</h2>
                 }
 
                 @Model.Content
@@ -42,7 +36,7 @@ else
     {
         Breadcrumbs = Model.Breadcrumbs,
         Menu = await Html.PartialAsync("Groups/_GroupMenu", Model.Group),
-        Title = Model.Group.Chapter.GetDisplayName(platform),
+        TitleContent = await Html.PartialAsync("Groups/_GroupTitle", Model.Group.Chapter),
         ContentFunc =
             @<div>   
                 @if (memberChapter != null)

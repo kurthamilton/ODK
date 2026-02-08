@@ -11,8 +11,6 @@
 
     var request = Model.MemberChapterAdminServiceRequest;
     var viewModel = await ChapterAdminService.GetChapterAdminPageViewModel(request);
-
-    Model.Title = viewModel.Chapter.GetDisplayName(Model.Platform);
 }
 
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel

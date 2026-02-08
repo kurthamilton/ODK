@@ -8,7 +8,7 @@
 
     var viewModel = await ChapterViewModelService.GetGroupQuestionsPage(Model.ChapterServiceRequest);
 
-    Model.Title = $"FAQ | {viewModel.Chapter.GetDisplayName(Model.Platform)}";
+    Model.Title = "FAQ";
 }
 
 @await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel

@@ -24,7 +24,7 @@
         throw new OdkNotFoundException();
     }
 
-    Model.Title = $"{viewModel.Member.GetDisplayName(viewModel.Chapter.Id)} | {viewModel.Chapter.GetDisplayName(Model.Platform)}";
+    Model.Title = viewModel.Member.GetDisplayName(viewModel.Chapter.Id);
 }
 
 @await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel

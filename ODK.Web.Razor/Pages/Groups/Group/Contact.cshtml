@@ -1,6 +1,7 @@
 ﻿@page "/groups/{slug}/contact"
 @using ODK.Core.Exceptions
 @using ODK.Core.Pages
+@using ODK.Core.Utils
 @using ODK.Services.Chapters
 @using ODK.Web.Razor.Models.Groups
 @model ContactModel
@@ -16,8 +17,7 @@
         throw new OdkNotFoundException();
     }
 
-    var title = chapterPage?.Title ?? "Contact";
-    Model.Title = $"{title} | {viewModel.Chapter.GetDisplayName(Model.Platform)}";
+    Model.Title = StringUtils.Coalesce(chapterPage?.Title, "Contact");
 }
 
 @await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel

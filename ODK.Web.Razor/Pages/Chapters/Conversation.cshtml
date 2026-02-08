@@ -13,7 +13,7 @@
     var viewModel = await ChapterViewModelService.GetGroupConversationPage(
         Model.MemberChapterServiceRequest, Model.ConversationId);
 
-    Model.Title = $"{viewModel.Conversation.Subject} | Conversations | {viewModel.Chapter.GetDisplayName(Model.Platform)}";
+    Model.Title = $"{viewModel.Conversation.Subject} | Conversations";
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
