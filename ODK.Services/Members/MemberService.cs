@@ -370,18 +370,9 @@ public class MemberService : IMemberService
             .GetByOwnerId(platform, currentMember.Id)
             .Run();
 
-        var activeChapters = chapters
-            .Where(x => x.IsOpenForRegistration())
-            .ToArray();
-        if (activeChapters.Length > 0)
+        if (chapters.Count > 0)
         {
-            return ServiceResult.Failure("Group owners cannot delete their account");
-        }
-
-        foreach (var chapter in chapters)
-        {
-            chapter.OwnerId = null;
-            _unitOfWork.ChapterRepository.Update(chapter);
+            return ServiceResult.Failure("Your groups must be transferred or deleted before deleting your account");
         }
 
         _unitOfWork.MemberRepository.Delete(currentMember);

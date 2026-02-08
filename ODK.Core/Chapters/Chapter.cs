@@ -26,7 +26,7 @@ public class Chapter : IDatabaseEntity, ITimeZoneEntity
 
     public required string Name { get; set; }
 
-    public Guid? OwnerId { get; set; }
+    public Guid OwnerId { get; set; }
 
     public PlatformType Platform { get; set; }
 

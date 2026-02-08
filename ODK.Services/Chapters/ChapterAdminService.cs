@@ -14,6 +14,7 @@ using ODK.Core.Utils;
 using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Data.Core.Chapters;
+using ODK.Resources.Resources;
 using ODK.Services.Caching;
 using ODK.Services.Chapters.Models;
 using ODK.Services.Chapters.ViewModels;
@@ -153,7 +154,12 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         var slugValidationResult = ValidateSlug(slug, slugExists);
         if (!slugValidationResult.Success)
         {
-            return ServiceResult<Chapter?>.FromResult(slugValidationResult, null);
+            return ServiceResult<Chapter?>.Failure(
+                StringUtils.Interpolate(ErrorMessagesResource.NameTaken, new Dictionary<string, string>
+                {
+                    { "name", model.Name },
+                    { "slug", slug },
+                }));
         }
 
         var chapterLimit = memberSubscription != null
@@ -162,12 +168,12 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         if (memberChapters.Count >= chapterLimit)
         {
-            return ServiceResult<Chapter?>.Failure("You cannot create any more groups");
+            return ServiceResult<Chapter?>.Failure(ErrorMessagesResource.GroupLimitReached);
         }
 
         if (memberSubscription?.ExpiresUtc < now)
         {
-            return ServiceResult<Chapter?>.Failure("Your subscription has expired");
+            return ServiceResult<Chapter?>.Failure(ErrorMessagesResource.SubscriptionExpired);
         }
 
         var timeZone = await _geolocationService.GetTimeZoneFromLocation(model.Location);
@@ -287,17 +293,12 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         if (ownerSubscription?.HasFeature(SiteFeatureType.Payments) != true)
         {
-            return ServiceResult<ChapterPaymentAccount>.Failure("Not permitted");
+            return ServiceResult<ChapterPaymentAccount>.Failure(ErrorMessagesResource.NotPermitted);
         }
 
         if (existing != null)
         {
             return ServiceResult<ChapterPaymentAccount>.Failure("Payment account already exists");
-        }
-
-        if (owner == null)
-        {
-            return ServiceResult<ChapterPaymentAccount>.Failure("Set group owner before you can create a payment account");
         }
 
         var baseUrl = request.HttpRequestContext.BaseUrl;
@@ -448,7 +449,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         if (ownerSubscription?.HasFeature(SiteFeatureType.MemberSubscriptions) != true)
         {
-            return ServiceResult.Failure("Not permitted");
+            return ServiceResult.Failure(ErrorMessagesResource.NotPermitted);
         }
 
         if (!currentMember.SiteAdmin)
@@ -1126,8 +1127,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
 
         var owner = await GetChapterAdminRestrictedContent(request,
-            x => x.MemberRepository.GetChapterOwner(request.Chapter.Id))
-            ?? throw new OdkServiceException("Chapter owner not found");
+            x => x.MemberRepository.GetChapterOwner(request.Chapter.Id));
 
         var statusRequest = MemberChapterServiceRequest.Create(
             request.Chapter, owner, request);
@@ -1143,8 +1143,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         var owner = await GetChapterAdminRestrictedContent(request,
             x => x.MemberRepository.GetChapterOwner(chapter.Id));
-
-        OdkAssertions.Exists(owner);
 
         var siteSubscriptionsViewModel = await _siteSubscriptionService.GetSiteSubscriptionsViewModel(
             MemberServiceRequest.Create(owner, request),
@@ -1437,11 +1435,12 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     public async Task<SiteSubscriptionCheckoutViewModel> StartSiteSubscriptionCheckout(
         IMemberChapterAdminServiceRequest request, Guid priceId, string returnPath)
     {
-        await AssertMemberIsChapterAdmin(request);
-
         var chapter = request.Chapter;
-        OdkAssertions.Exists(chapter.OwnerId);
 
+        var owner = await GetChapterAdminRestrictedContent(request,
+            x => x.MemberRepository.GetChapterOwner(chapter.Id));
+
+        var chapterOwnerRequest = MemberServiceRequest.Create(owner, request);
         return await _siteSubscriptionService.StartSiteSubscriptionCheckout(
             request, priceId, returnPath, chapter.Id);
     }
@@ -1800,14 +1799,14 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             _unitOfWork.ChapterPaymentSettingsRepository.Update(chapterPaymentSettings);
         }
 
-        if (model.CurrencyId != null && chapter.OwnerId != null)
+        if (model.CurrencyId != null)
         {
             memberPaymentSettings ??= new MemberPaymentSettings();
             memberPaymentSettings.CurrencyId = model.CurrencyId.Value;
 
             if (memberPaymentSettings.MemberId == default)
             {
-                memberPaymentSettings.MemberId = chapter.OwnerId.Value;
+                memberPaymentSettings.MemberId = chapter.OwnerId;
                 _unitOfWork.MemberPaymentSettingsRepository.Add(memberPaymentSettings);
             }
             else
@@ -2183,7 +2182,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         if (!_imageService.IsImage(imageData))
         {
-            return ServiceResult.Failure("Invalid image");
+            return ServiceResult.Failure(ErrorMessagesResource.InvalidImage);
         }
 
         var mimeType = ChapterImage.DefaultMimeType;
@@ -2203,7 +2202,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         if (string.IsNullOrWhiteSpace(question.Name) ||
             string.IsNullOrWhiteSpace(question.Answer))
         {
-            return ServiceResult.Failure("Some required fields are missing");
+            return ServiceResult.Failure(ErrorMessagesResource.RequiredFieldsMissing);
         }
 
         return ServiceResult.Successful();
@@ -2214,7 +2213,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         if (settings.MembershipDisabledAfterDaysExpired < 0 ||
             settings.TrialPeriodMonths < 0)
         {
-            return ServiceResult.Failure("Some required fields are missing");
+            return ServiceResult.Failure(ErrorMessagesResource.RequiredFieldsMissing);
         }
 
         return ServiceResult.Successful();
@@ -2228,7 +2227,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             string.IsNullOrEmpty(property.Label) ||
             !Enum.IsDefined(property.DataType) || property.DataType == DataType.None)
         {
-            return ServiceResult.Failure("Some required fields are missing");
+            return ServiceResult.Failure(ErrorMessagesResource.RequiredFieldsMissing);
         }
 
         if (existing.Any(x => x.Name.Equals(property.Name, StringComparison.OrdinalIgnoreCase) && x.Id != property.Id))
@@ -2283,6 +2282,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         return !slugExists && !isReserved
             ? ServiceResult.Successful()
-            : ServiceResult.Failure($"The group '{slug}' is already in use");
+            : ServiceResult.Failure("");
     }
 }
