@@ -137,24 +137,30 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         var (platform, currentMember) = (request.Platform, request.CurrentMember);
 
+        var slug = Chapter.GetSlug(model.Name);
+
         var (
             memberSubscription,
-            existing,
+            memberChapters,
+            slugExists,
             siteEmailSettings
         ) = await _unitOfWork.RunAsync(
             x => x.MemberSiteSubscriptionRepository.GetByMemberId(currentMember.Id, platform),
-            x => x.ChapterRepository.GetAll(platform, includeUnpublished: true),
+            x => x.ChapterRepository.GetByOwnerId(platform, currentMember.Id),
+            x => x.ChapterRepository.SlugExists(slug),
             x => x.SiteEmailSettingsRepository.Get(platform));
 
-        var memberChapters = existing
-            .Where(x => x.OwnerId == currentMember.Id)
-            .ToArray();
+        var slugValidationResult = ValidateSlug(slug, slugExists);
+        if (!slugValidationResult.Success)
+        {
+            return ServiceResult<Chapter?>.FromResult(slugValidationResult, null);
+        }
 
         var chapterLimit = memberSubscription != null
             ? memberSubscription.SiteSubscription.GroupLimit
             : SiteSubscription.DefaultGroupLimit;
 
-        if (memberChapters.Length >= chapterLimit)
+        if (memberChapters.Count >= chapterLimit)
         {
             return ServiceResult<Chapter?>.Failure("You cannot create any more groups");
         }
@@ -162,11 +168,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         if (memberSubscription?.ExpiresUtc < now)
         {
             return ServiceResult<Chapter?>.Failure("Your subscription has expired");
-        }
-
-        if (existing.Any(x => string.Equals(x.GetDisplayName(platform), model.Name, StringComparison.OrdinalIgnoreCase)))
-        {
-            return ServiceResult<Chapter?>.Failure($"The name '{model.Name}' is taken");
         }
 
         var timeZone = await _geolocationService.GetTimeZoneFromLocation(model.Location);
@@ -180,30 +181,19 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             return ServiceResult<Chapter?>.Failure(result.Message ?? string.Empty);
         }
 
-        var originalSlug = model.Name
-            .ToLowerInvariant()
-            .Replace(' ', '-');
-
-        var slug = originalSlug;
-        int version = 2;
-        while (existing.Any(x => string.Equals(x.Slug, slug, StringComparison.InvariantCultureIgnoreCase)))
-        {
-            slug = $"{originalSlug}-{version++}";
-        }
-
         if (country == null)
         {
-            var countries = await _unitOfWork.CountryRepository.GetAll().Run();
-            country = countries.First(x => x.IsoCode2 == "GB");
+            country = await _unitOfWork.CountryRepository.GetByIsoCode(_settings.DefaultCountryCode).Run();
 
-            await _loggingService.Error($"Error setting country for group '{model.Name}', choosing UK as default");
+            await _loggingService.Error(
+                $"Error setting country for group '{model.Name}', choosing '{country!.Name}' as default");
         }
 
         var chapter = new Chapter
         {
             CountryId = country.Id,
             CreatedUtc = now,
-            Name = model.Name,
+            Name = Chapter.CleanName(model.Name),
             OwnerId = currentMember.Id,
             Platform = platform,
             Slug = slug,
@@ -1220,6 +1210,18 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             MembershipSettings = membershipSettings,
             OwnerSubscription = ownerSubscription
         };
+    }
+
+    public async Task<bool> NameIsAvailable(IServiceRequest request, string name)
+    {
+        var slug = Chapter.GetSlug(name);
+
+        var slugExists = await _unitOfWork.ChapterRepository
+            .SlugExists(slug)
+            .Run();
+
+        var result = ValidateSlug(slug, slugExists);
+        return result.Success;
     }
 
     public async Task<ServiceResult> PublishChapter(IMemberChapterAdminServiceRequest request)
@@ -2273,5 +2275,14 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         }
 
         return ServiceResult.Successful();
+    }
+
+    private ServiceResult ValidateSlug(string slug, bool slugExists)
+    {
+        var isReserved = _settings.ReservedSlugs.Contains(slug, StringComparer.OrdinalIgnoreCase);
+
+        return !slugExists && !isReserved
+            ? ServiceResult.Successful()
+            : ServiceResult.Failure($"The group '{slug}' is already in use");
     }
 }

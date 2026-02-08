@@ -16,6 +16,8 @@ public class AppSettings
 
     public required GoogleSettings Google { get; init; }
 
+    public required GroupsSettings Groups { get; init; }
+
     public required HangfireSettings Hangfire { get; init; }
 
     public required InstagramSettings Instagram { get; init; }

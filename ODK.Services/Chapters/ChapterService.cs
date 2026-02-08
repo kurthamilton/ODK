@@ -154,16 +154,6 @@ public class ChapterService : IChapterService
             .FirstOrDefault();
     }
 
-    public async Task<bool> NameIsAvailable(IServiceRequest request, string name)
-    {
-        var platform = request.Platform;
-
-        var existing = await _unitOfWork.ChapterRepository
-            .GetByName(platform, name)
-            .Run();
-        return existing == null;
-    }
-
     private async Task<ExternalSubscription?> GetExternalSubscription(
         IReadOnlyCollection<SitePaymentSettings> sitePaymentSettings,
         MemberSubscriptionRecord? memberSubscriptionRecord,

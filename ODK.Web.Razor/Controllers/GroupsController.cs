@@ -17,6 +17,7 @@ namespace ODK.Web.Razor.Controllers;
 
 public class GroupsController : OdkControllerBase
 {
+    private readonly IChapterAdminService _chapterAdminService;
     private readonly IChapterService _chapterService;
     private readonly IContactService _contactService;
     private readonly IMemberService _memberService;
@@ -26,9 +27,11 @@ public class GroupsController : OdkControllerBase
         IRequestStore requestStore,
         IContactService contactService,
         IChapterService chapterService,
-        IOdkRoutes odkRoutes)
+        IOdkRoutes odkRoutes,
+        IChapterAdminService chapterAdminService)
         : base(requestStore, odkRoutes)
     {
+        _chapterAdminService = chapterAdminService;
         _chapterService = chapterService;
         _contactService = contactService;
         _memberService = memberService;
@@ -49,10 +52,8 @@ public class GroupsController : OdkControllerBase
     }
 
     [HttpGet("groups/available")]
-    public async Task<bool> Available(string name)
-    {
-        return await _chapterService.NameIsAvailable(ServiceRequest, name);
-    }
+    public Task<bool> Available(string name)
+        => _chapterAdminService.NameIsAvailable(ServiceRequest, name);
 
     [Authorize]
     [HttpPost("groups/{chapterId:guid}/conversations")]

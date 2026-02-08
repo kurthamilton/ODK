@@ -128,7 +128,9 @@ public static class DependencyConfig
             .AddScoped<IChapterAdminService, ChapterAdminService>()
             .AddSingleton(new ChapterAdminServiceSettings
             {
-                ContactMessageRecaptchaScoreThreshold = appSettings.Recaptcha.ScoreThreshold
+                ContactMessageRecaptchaScoreThreshold = appSettings.Recaptcha.ScoreThreshold,
+                DefaultCountryCode = appSettings.Groups.DefaultCountryCode,
+                ReservedSlugs = appSettings.Groups.ReservedSlugs
             })
             .AddScoped<IChapterService, ChapterService>()
             .AddScoped<IChapterSiteAdminService, ChapterSiteAdminService>()

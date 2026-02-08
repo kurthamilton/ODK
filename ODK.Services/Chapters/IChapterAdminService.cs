@@ -88,6 +88,8 @@ public interface IChapterAdminService
 
     Task<MembershipSettingsAdminPageViewModel> GetMembershipSettingsViewModel(IMemberChapterAdminServiceRequest request);
 
+    Task<bool> NameIsAvailable(IServiceRequest request, string name);
+
     Task<ServiceResult> PublishChapter(IMemberChapterAdminServiceRequest request);
 
     Task<ServiceResult> ReplyToConversation(

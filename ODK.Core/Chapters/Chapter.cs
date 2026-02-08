@@ -44,6 +44,8 @@ public class Chapter : IDatabaseEntity, ITimeZoneEntity
 
     public TimeZoneInfo? TimeZone { get; set; }
 
+    public static string CleanName(string name) => name.Trim();
+
     public static string GetDisplayName(
         PlatformType currentPlatform, PlatformType platform, string name)
     {
@@ -85,6 +87,11 @@ public class Chapter : IDatabaseEntity, ITimeZoneEntity
             ? name.Substring(0, name.Length - DrunkenKnitwitsSuffix.Length)
             : name;
     }
+
+    public static string GetSlug(string name)
+        => CleanName(name)
+            .ToLowerInvariant()
+            .Replace(' ', '-');
 
     public bool Approved() => ApprovedUtc != null;
 

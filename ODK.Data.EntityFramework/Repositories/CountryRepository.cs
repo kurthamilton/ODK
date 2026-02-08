@@ -33,6 +33,27 @@ public class CountryRepository : CachingReadWriteRepositoryBase<Country>, ICount
         return query.DeferredSingle();
     }
 
+    public IDeferredQuerySingleOrDefault<Country> GetByIsoCode(string isoCode)
+    {
+        var query = Set();
+
+        if (isoCode.Length == 2)
+        {
+            query = query.Where(x => x.IsoCode2 == isoCode);
+        }
+        else if (isoCode.Length == 3)
+        {
+            query = query.Where(x => x.IsoCode3 == isoCode);
+        }
+        else
+        {
+            return new DefaultDeferredQuerySingleOrDefault<Country>();
+        }
+
+        return query
+            .DeferredSingleOrDefault();
+    }
+
     public IDeferredQuerySingleOrDefault<Country> GetByIsoCode2(string isoCode2)
         => Set()
             .Where(x => x.IsoCode2 == isoCode2)

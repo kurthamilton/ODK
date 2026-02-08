@@ -105,7 +105,12 @@ public class ChapterRepository : WriteRepositoryBase<Chapter>, IChapterRepositor
         return query.DeferredMultiple();
     }
 
+    public IDeferredQuery<bool> SlugExists(string slug)
+        => Set(PlatformType.Default, includeUnpublished: true)
+            .Where(x => x.Slug == slug)
+            .DeferredAny();
+
     private IQueryable<Chapter> Set(PlatformType platform, bool includeUnpublished)
-        => base.Set()
+        => Set()
             .ForPlatform(platform, includeUnpublished);
 }

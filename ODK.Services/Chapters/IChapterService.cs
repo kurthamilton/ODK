@@ -20,6 +20,4 @@ public interface IChapterService
     Task<ChaptersHomePageViewModel> GetChaptersHomePageViewModel(PlatformType platform);
 
     Task<Chapter?> GetDefaultChapter(IMemberServiceRequest request);
-
-    Task<bool> NameIsAvailable(IServiceRequest request, string name);
 }

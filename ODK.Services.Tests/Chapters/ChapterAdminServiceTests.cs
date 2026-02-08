@@ -295,15 +295,13 @@ public static class ChapterAdminServiceTests
         var subscription = CreateMemberSiteSubscription(groupLimit: 1);
         var memberSubscriptionRepository = CreateMockMemberSiteSubscriptionRepository(memberSubscription: subscription);
 
-        var existingChapters = new List<Chapter> { CreateChapter(ownerId: CurrentMemberId) };
-        var chapterRepository = CreateMockChapterRepository(existingChapters);
-
-        var siteEmailSettingsRepository = CreateMockSiteEmailSettingsRepository(new SiteEmailSettings());
+        var chapterRepository = CreateMockChapterRepository([CreateChapter(
+            ownerId: CurrentMemberId,
+            name: "Existing group")]);
 
         var unitOfWork = CreateMockUnitOfWork(
             memberSiteSubscriptionRepository: memberSubscriptionRepository,
-            chapterRepository: chapterRepository,
-            siteEmailSettingsRepository: siteEmailSettingsRepository);
+            chapterRepository: chapterRepository);
 
         var service = CreateChapterAdminService(unitOfWork);
 
@@ -326,12 +324,10 @@ public static class ChapterAdminServiceTests
         var memberSubscriptionRepository = CreateMockMemberSiteSubscriptionRepository(memberSubscription: subscription);
 
         var chapterRepository = CreateMockChapterRepository([]);
-        var siteEmailSettingsRepository = CreateMockSiteEmailSettingsRepository(new SiteEmailSettings());
 
         var unitOfWork = CreateMockUnitOfWork(
             memberSiteSubscriptionRepository: memberSubscriptionRepository,
-            chapterRepository: chapterRepository,
-            siteEmailSettingsRepository: siteEmailSettingsRepository);
+            chapterRepository: chapterRepository);
 
         var service = CreateChapterAdminService(unitOfWork);
 
@@ -350,20 +346,47 @@ public static class ChapterAdminServiceTests
     public static async Task CreateChapter_WhenNameTaken_ReturnsFailure()
     {
         // Arrange
+        var name = "Test Chapter";
+        var existingChapter = CreateChapter(name: name);
+        var chapterRepository = CreateMockChapterRepository([existingChapter]);
+
         var subscription = CreateMemberSiteSubscription();
         var memberSubscriptionRepository = CreateMockMemberSiteSubscriptionRepository(memberSubscription: subscription);
 
-        var existingChapter = CreateChapter(name: "Test Chapter");
-        var chapterRepository = CreateMockChapterRepository([existingChapter]);
-
-        var siteEmailSettingsRepository = CreateMockSiteEmailSettingsRepository(new SiteEmailSettings());
-
         var unitOfWork = CreateMockUnitOfWork(
             memberSiteSubscriptionRepository: memberSubscriptionRepository,
-            chapterRepository: chapterRepository,
-            siteEmailSettingsRepository: siteEmailSettingsRepository);
+            chapterRepository: chapterRepository);
 
         var service = CreateChapterAdminService(unitOfWork);
+
+        var request = CreateMemberServiceRequest();
+        var model = CreateChapterCreateModel(name: name);
+
+        // Act
+        var result = await service.CreateChapter(request, model);
+
+        // Assert
+        result.Success.Should().BeFalse();
+    }
+
+    [Test]
+    public static async Task CreateChapter_WhenCountryNotFound_UsesDefaultChapter()
+    {
+        // Arrange
+        var isoCode = "GB";
+        var country = CreateCountry(isoCode);
+        var countryRepository = CreateMockCountryRepository([country]);
+
+        var unitOfWork = CreateMockUnitOfWork(countryRepository: countryRepository);
+
+        var geolocationService = CreateMockGeolocationService(country: null);
+
+        var settings = CreateChapterAdminServiceSettings(defaultCountryCode: isoCode);
+
+        var service = CreateChapterAdminService(
+            unitOfWork,
+            geolocationService: geolocationService,
+            settings: settings);
 
         var request = CreateMemberServiceRequest();
         var model = CreateChapterCreateModel();
@@ -372,8 +395,8 @@ public static class ChapterAdminServiceTests
         var result = await service.CreateChapter(request, model);
 
         // Assert
-        result.Success.Should().BeFalse();
-        result.Message.Should().Contain("is taken");
+        result.Value.Should().NotBeNull();
+        result.Value.CountryId.Should().Be(country.Id);
     }
 
     [Test]
@@ -385,12 +408,9 @@ public static class ChapterAdminServiceTests
 
         var chapterRepository = CreateMockChapterRepository([]);
 
-        var siteEmailSettingsRepository = CreateMockSiteEmailSettingsRepository(new SiteEmailSettings());
-
         var unitOfWork = CreateMockUnitOfWork(
             memberSiteSubscriptionRepository: memberSubscriptionRepository,
-            chapterRepository: chapterRepository,
-            siteEmailSettingsRepository: siteEmailSettingsRepository);
+            chapterRepository: chapterRepository);
 
         var imageService = CreateMockImageService(isValidImage: false);
 
@@ -416,14 +436,11 @@ public static class ChapterAdminServiceTests
 
         var chapterRepository = CreateMockChapterRepository([]);
 
-        var siteEmailSettingsRepository = CreateMockSiteEmailSettingsRepository(new SiteEmailSettings());
-
         var imageService = CreateMockImageService(isValidImage: true);
 
         var unitOfWork = CreateMockUnitOfWork(
             memberSiteSubscriptionRepository: memberSubscriptionRepository,
-            chapterRepository: chapterRepository,
-            siteEmailSettingsRepository: siteEmailSettingsRepository);
+            chapterRepository: chapterRepository);
 
         var service = CreateChapterAdminService(
             unitOfWork,
@@ -1303,8 +1320,12 @@ public static class ChapterAdminServiceTests
         mock.Setup(x => x.GetAll(It.IsAny<PlatformType>(), It.IsAny<bool>()))
             .Returns(new MockDeferredQueryMultiple<Chapter>(chapters));
 
-        mock.Setup(x => x.Add(It.IsAny<Chapter>()));
-        mock.Setup(x => x.Update(It.IsAny<Chapter>()));
+        mock.Setup(x => x.GetByOwnerId(It.IsAny<PlatformType>(), It.IsAny<Guid>()))
+            .Returns((PlatformType platform, Guid ownerId)
+                => new MockDeferredQueryMultiple<Chapter>(chapters?.Where(x => x.OwnerId == ownerId)));
+
+        mock.Setup(x => x.SlugExists(It.IsAny<string>()))
+            .Returns((string slug) => new MockDeferredQuery<bool>(chapters?.Any(x => x.Slug == slug) == true));
 
         return mock.Object;
     }
@@ -1407,6 +1428,17 @@ public static class ChapterAdminServiceTests
         return mock.Object;
     }
 
+    private static ICountryRepository CreateMockCountryRepository(IEnumerable<Country>? countries = null)
+    {
+        var mock = new Mock<ICountryRepository>();
+
+        mock.Setup(x => x.GetByIsoCode(It.IsAny<string>()))
+            .Returns((string isoCode) => new MockDeferredQuerySingleOrDefault<Country>(
+                countries?.FirstOrDefault(x => x.IsoCode2 == isoCode)));
+
+        return mock.Object;
+    }
+
     private static MockUnitOfWork CreateMockUnitOfWork(
         IChapterAdminMemberRepository? chapterAdminMemberRepository = null,
         IMemberRepository? memberRepository = null,
@@ -1419,12 +1451,15 @@ public static class ChapterAdminServiceTests
         IChapterLinksRepository? chapterLinksRepository = null,
         IChapterPrivacySettingsRepository? chapterPrivacySettingsRepository = null,
         IChapterImageRepository? chapterImageRepository = null,
-        IChapterTextsRepository? chapterTextsRepository = null)
+        IChapterTextsRepository? chapterTextsRepository = null,
+        ICountryRepository? countryRepository = null)
     {
         var mock = new Mock<IUnitOfWork>();
 
         mock.Setup(x => x.ChapterAdminMemberRepository)
             .Returns(chapterAdminMemberRepository ?? CreateMockChapterAdminMemberRepository());
+        mock.Setup(x => x.CountryRepository)
+            .Returns(countryRepository ?? CreateMockCountryRepository());
         mock.Setup(x => x.MemberRepository)
             .Returns(memberRepository ?? CreateMockMemberRepository());
         mock.Setup(x => x.MemberSiteSubscriptionRepository)
@@ -1460,7 +1495,8 @@ public static class ChapterAdminServiceTests
     private static IImageService CreateMockImageService(bool isValidImage, byte[]? processedData = null)
     {
         var mock = new Mock<IImageService>();
-        mock.Setup(x => x.IsImage(It.IsAny<byte[]>())).Returns(isValidImage);
+        mock.Setup(x => x.IsImage(It.IsAny<byte[]>()))
+            .Returns(isValidImage);
         if (processedData != null)
             mock.Setup(x => x.Process(It.IsAny<byte[]>(), It.IsAny<ImageProcessingOptions>())).Returns(processedData);
         return mock.Object;
@@ -1474,14 +1510,15 @@ public static class ChapterAdminServiceTests
         return mock.Object;
     }
 
-    private static IGeolocationService CreateMockGeolocationService()
+    private static IGeolocationService CreateMockGeolocationService(
+        Country? country)
     {
         var mock = new Mock<IGeolocationService>();
         mock.Setup(x => x.GetTimeZoneFromLocation(It.IsAny<LatLong>()))
             .ReturnsAsync(TimeZoneInfo.FindSystemTimeZoneById("Europe/London"));
 
         mock.Setup(x => x.GetCountryFromLocation(It.IsAny<LatLong>()))
-            .ReturnsAsync(CreateCountry());
+            .ReturnsAsync(country);
         return mock.Object;
     }
 
@@ -1515,26 +1552,35 @@ public static class ChapterAdminServiceTests
         IPaymentProviderFactory? paymentProviderFactory = null,
         IPaymentService? paymentService = null,
         IGeolocationService? geolocationService = null,
-        ILoggingService? loggingService = null)
+        ILoggingService? loggingService = null,
+        ChapterAdminServiceSettings? settings = null)
     {
-        var settings = new ChapterAdminServiceSettings { ContactMessageRecaptchaScoreThreshold = 0.5 };
         return new ChapterAdminService(
             unitOfWork,
             cacheService ?? new Mock<ICacheService>().Object,
             htmlSanitizer ?? CreateMockHtmlSanitizer(),
             socialMediaService ?? new Mock<ISocialMediaService>().Object,
             notificationService ?? new Mock<INotificationService>().Object,
-            imageService ?? new Mock<IImageService>().Object,
+            imageService ?? CreateMockImageService(isValidImage: true),
             memberEmailService ?? CreateMockMemberEmailService(),
             topicService ?? CreateMockTopicService(),
-            settings,
+            settings ?? CreateChapterAdminServiceSettings(),
             siteSubscriptionService ?? new Mock<ISiteSubscriptionService>().Object,
             urlProviderFactory ?? new Mock<IUrlProviderFactory>().Object,
             paymentProviderFactory ?? new Mock<IPaymentProviderFactory>().Object,
             paymentService ?? new Mock<IPaymentService>().Object,
-            geolocationService ?? CreateMockGeolocationService(),
+            geolocationService ?? CreateMockGeolocationService(country: CreateCountry()),
             loggingService ?? new Mock<ILoggingService>().Object);
     }
+
+    private static ChapterAdminServiceSettings CreateChapterAdminServiceSettings(
+        string? defaultCountryCode = null) =>
+        new ChapterAdminServiceSettings
+        {
+            ContactMessageRecaptchaScoreThreshold = 0.5,
+            DefaultCountryCode = defaultCountryCode ?? "",
+            ReservedSlugs = []
+        };
 
     private static IMemberChapterAdminServiceRequest CreateMemberChapterAdminServiceRequest(
         Chapter? chapter = null,
@@ -1705,13 +1751,14 @@ public static class ChapterAdminServiceTests
         Guid? ownerId = null,
         DateTime? approvedUtc = null)
     {
-        var slugName = name ?? "Test Chapter";
+        name = Chapter.CleanName(name ?? "Test Chapter");
+
         return new Chapter
         {
             ApprovedUtc = approvedUtc,
             Id = id ?? Guid.NewGuid(),
-            Name = slugName,
-            Slug = slugName.ToLowerInvariant().Replace(" ", "-"),
+            Name = name,
+            Slug = Chapter.GetSlug(name),
             OwnerId = ownerId,
             CreatedUtc = DateTime.UtcNow,
             CountryId = Guid.NewGuid(),
@@ -1784,14 +1831,16 @@ public static class ChapterAdminServiceTests
     private static ChapterPrivacySettings CreateChapterPrivacySettings(Guid? chapterId = null)
         => new ChapterPrivacySettings { ChapterId = chapterId ?? Guid.NewGuid() };
 
-    private static Country CreateCountry() => new Country
-    {
-        Continent = "",
-        Id = Guid.NewGuid(),
-        IsoCode2 = "GB",
-        IsoCode3 = "",
-        Name = ""
-    };
+    private static Country CreateCountry(
+        string? isoCode2 = null)
+        => new Country
+        {
+            Continent = "",
+            Id = Guid.NewGuid(),
+            IsoCode2 = isoCode2 ?? "GB",
+            IsoCode3 = "",
+            Name = ""
+        };
 
     private static MemberSiteSubscription CreateMemberSiteSubscription(
         DateTime? expiresUtc = null,

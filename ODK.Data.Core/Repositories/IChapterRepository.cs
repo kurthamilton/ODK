@@ -27,4 +27,6 @@ public interface IChapterRepository : IWriteRepository<Chapter>
     IDeferredQueryMultiple<Chapter> GetByTopicGroupId(PlatformType platform, Guid topicGroupId);
 
     IDeferredQuerySingleOrDefault<Chapter> GetBySlug(PlatformType platform, string slug);
+
+    IDeferredQuery<bool> SlugExists(string slug);
 }
