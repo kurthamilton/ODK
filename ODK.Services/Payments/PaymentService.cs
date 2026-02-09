@@ -344,7 +344,9 @@ public class PaymentService : IPaymentService
         if (metadata.EventTicketPaymentId != null)
         {
             var eventTicketPayment = await _unitOfWork.EventTicketPaymentRepository
-                .GetById(metadata.EventTicketPaymentId.Value).Run();
+                .GetById(metadata.EventTicketPaymentId.Value)
+                .Run();
+            
             var @event = await _unitOfWork.EventRepository.GetById(eventTicketPayment.EventId).Run();
 
             _backgroundTaskService.Enqueue(() => _eventService.CompleteEventTicketPurchase(@event.Id, member.Id));
@@ -651,8 +653,10 @@ public class PaymentService : IPaymentService
             return PaymentWebhookProcessingResult.Failure();
         }
 
+        var platform = metadata.Platform ?? PlatformType.DrunkenKnitwits;
+
         var (chapter, chapterSubscription) = await _unitOfWork.RunAsync(
-            x => x.ChapterRepository.GetById(PlatformType.Default, metadata.ChapterId.Value),
+            x => x.ChapterRepository.GetById(platform, metadata.ChapterId.Value),
             x => x.ChapterSubscriptionRepository.GetById(metadata.ChapterSubscriptionId.Value));
 
         if (chapter.Id != chapterSubscription.ChapterId)
