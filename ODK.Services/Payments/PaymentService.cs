@@ -2,6 +2,7 @@
 using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Core.Payments;
+using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
@@ -138,8 +139,7 @@ public class PaymentService : IPaymentService
             : PaymentStatusType.Pending;
     }
 
-    public async Task ProcessWebhook(
-        IServiceRequest request, PaymentProviderWebhook webhook)
+    public async Task ProcessWebhook(IServiceRequest request, PaymentProviderWebhook webhook)
     {
         var existingEvent = await _unitOfWork.PaymentProviderWebhookEventRepository
             .GetByExternalId(webhook.PaymentProviderType, webhook.Id).Run();
@@ -163,7 +163,7 @@ public class PaymentService : IPaymentService
         {
             case PaymentProviderWebhookType.CheckoutSessionCompleted:
             case PaymentProviderWebhookType.PaymentSucceeded:
-                result = await ProcessWebhookPayment(request, webhook);
+                result = await ProcessWebhookPayment(webhook);
                 break;
 
             case PaymentProviderWebhookType.CheckoutSessionExpired:
@@ -172,7 +172,7 @@ public class PaymentService : IPaymentService
 
             case PaymentProviderWebhookType.InvoicePaymentSucceeded:
             case PaymentProviderWebhookType.SubscriptionCancelled:
-                result = await ProcessWebhookSubscription(request, webhook);
+                result = await ProcessWebhookSubscription(webhook);
                 break;
 
             default:
@@ -191,8 +191,13 @@ public class PaymentService : IPaymentService
             result.Currency != null &&
             result.Member != null)
         {
+            var metadata = PaymentMetadataModel.FromDictionary(webhook.Metadata);
+            var platform = metadata.Platform ?? PlatformType.DrunkenKnitwits;
+
             var siteEmailSettings = await _unitOfWork.SiteEmailSettingsRepository
-                .Get(request.Platform).Run();
+                .Get(platform)
+                .Run();
+
             var (member, chapter, currency, payment) = (result.Member, result.Chapter, result.Currency, result.Payment);
 
             await _memberEmailService.SendPaymentNotification(request, member, chapter, payment, currency, siteEmailSettings);
@@ -256,10 +261,8 @@ public class PaymentService : IPaymentService
         return PaymentWebhookProcessingResult.Successful(member: null, chapter: null, payment: null, currency: null);
     }
 
-    private async Task<PaymentWebhookProcessingResult> ProcessWebhookPayment(IServiceRequest request, PaymentProviderWebhook webhook)
+    private async Task<PaymentWebhookProcessingResult> ProcessWebhookPayment(PaymentProviderWebhook webhook)
     {
-        var platform = request.Platform;
-
         var utcNow = webhook.OriginatedUtc;
 
         if (string.IsNullOrEmpty(webhook.PaymentId))
@@ -341,13 +344,15 @@ public class PaymentService : IPaymentService
         if (metadata.EventTicketPaymentId != null)
         {
             var eventTicketPayment = await _unitOfWork.EventTicketPaymentRepository
-                .GetById(metadata.EventTicketPaymentId.Value).Run();
+                .GetById(metadata.EventTicketPaymentId.Value)
+                .Run();
+            
             var @event = await _unitOfWork.EventRepository.GetById(eventTicketPayment.EventId).Run();
 
             _backgroundTaskService.Enqueue(() => _eventService.CompleteEventTicketPurchase(@event.Id, member.Id));
 
             var (chapter, currency) = await _unitOfWork.RunAsync(
-                x => x.ChapterRepository.GetById(platform, @event.ChapterId),
+                x => x.ChapterRepository.GetById(PlatformType.Default, @event.ChapterId),
                 x => x.CurrencyRepository.GetById(payment.CurrencyId));
 
             return PaymentWebhookProcessingResult.Successful(
@@ -355,7 +360,6 @@ public class PaymentService : IPaymentService
         }
 
         return await UpdateMemberChapterSubscription(
-            request,
             metadata,
             member,
             payment,
@@ -364,7 +368,6 @@ public class PaymentService : IPaymentService
     }
 
     private async Task<PaymentWebhookProcessingResult> ProcessWebhookChapterSubscription(
-        IServiceRequest request,
         PaymentProviderWebhook webhook,
         PaymentMetadataModel metadata)
     {
@@ -476,7 +479,6 @@ public class PaymentService : IPaymentService
         }
 
         return await UpdateMemberChapterSubscription(
-            request,
             metadata,
             member,
             payment,
@@ -485,7 +487,6 @@ public class PaymentService : IPaymentService
     }
 
     private async Task<PaymentWebhookProcessingResult> ProcessWebhookSiteSubscription(
-        IServiceRequest request,
         PaymentProviderWebhook webhook,
         PaymentMetadataModel metadata)
     {
@@ -581,9 +582,8 @@ public class PaymentService : IPaymentService
         try
         {
             return await UpdateMemberSiteSubscription(
-                request,
+                metadata.Platform ?? PlatformType.DrunkenKnitwits,
                 member,
-                siteSubscription,
                 siteSubscriptionPrice,
                 payment,
                 externalId: webhook.SubscriptionId,
@@ -597,7 +597,7 @@ public class PaymentService : IPaymentService
     }
 
     private async Task<PaymentWebhookProcessingResult> ProcessWebhookSubscription(
-        IServiceRequest request, PaymentProviderWebhook webhook)
+        PaymentProviderWebhook webhook)
     {
         if (string.IsNullOrEmpty(webhook.SubscriptionId))
         {
@@ -622,12 +622,12 @@ public class PaymentService : IPaymentService
 
         if (metadata.ChapterSubscriptionId != null)
         {
-            return await ProcessWebhookChapterSubscription(request, webhook, metadata);
+            return await ProcessWebhookChapterSubscription(webhook, metadata);
         }
 
         if (metadata.SiteSubscriptionPriceId != null)
         {
-            return await ProcessWebhookSiteSubscription(request, webhook, metadata);
+            return await ProcessWebhookSiteSubscription(webhook, metadata);
         }
 
         await _loggingService.Error(
@@ -638,15 +638,12 @@ public class PaymentService : IPaymentService
     }
 
     private async Task<PaymentWebhookProcessingResult> UpdateMemberChapterSubscription(
-        IServiceRequest request,
         PaymentMetadataModel metadata,
         Member member,
         Payment payment,
         string externalId,
         DateTime utcNow)
     {
-        var platform = request.Platform;
-
         if (metadata.ChapterId == null || metadata.ChapterSubscriptionId == null)
         {
             var message =
@@ -655,6 +652,8 @@ public class PaymentService : IPaymentService
             await _loggingService.Warn(message);
             return PaymentWebhookProcessingResult.Failure();
         }
+
+        var platform = metadata.Platform ?? PlatformType.DrunkenKnitwits;
 
         var (chapter, chapterSubscription) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(platform, metadata.ChapterId.Value),
@@ -733,9 +732,8 @@ public class PaymentService : IPaymentService
     }
 
     private async Task<PaymentWebhookProcessingResult> UpdateMemberSiteSubscription(
-        IServiceRequest request,
+        PlatformType platform,
         Member member,
-        SiteSubscription siteSubscription,
         SiteSubscriptionPrice siteSubscriptionPrice,
         Payment payment,
         string externalId,
@@ -744,7 +742,8 @@ public class PaymentService : IPaymentService
         var memberId = member.Id;
 
         var memberSubscription = await _unitOfWork.MemberSiteSubscriptionRepository
-            .GetByMemberId(memberId, request.Platform).Run();
+            .GetByMemberId(memberId, platform)
+            .Run();
 
         memberSubscription ??= new MemberSiteSubscription();
 
@@ -759,7 +758,6 @@ public class PaymentService : IPaymentService
         memberSubscription.ExpiresUtc = expiresUtc;
         memberSubscription.ExternalId = externalId;
         memberSubscription.SiteSubscriptionPriceId = siteSubscriptionPrice.Id;
-        memberSubscription.SiteSubscription = siteSubscription;
         memberSubscription.SiteSubscriptionId = siteSubscriptionPrice.SiteSubscriptionId;
 
         if (memberSubscription.Id == default)

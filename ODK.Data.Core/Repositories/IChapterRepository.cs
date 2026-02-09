@@ -28,5 +28,7 @@ public interface IChapterRepository : IWriteRepository<Chapter>
 
     IDeferredQuerySingleOrDefault<Chapter> GetBySlug(PlatformType platform, string slug);
 
+    IDeferredQuery<bool> NameExists(string name);
+
     IDeferredQuery<bool> SlugExists(string slug);
 }

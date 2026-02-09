@@ -82,5 +82,4 @@ public class GroupRoutes
         => $"{Subscription(chapter)}/{subscription.Id}/checkout";
 
     private string GroupPath(Chapter chapter, string path) => $"{Group(chapter)}{path}";
-
 }

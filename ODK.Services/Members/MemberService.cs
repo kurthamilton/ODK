@@ -679,6 +679,7 @@ public class MemberService : IMemberService
         var paymentId = Guid.NewGuid();
 
         var metadata = new PaymentMetadataModel(
+            platform,
             PaymentReasonType.ChapterSubscription,
             currentMember,
             chapterSubscription,

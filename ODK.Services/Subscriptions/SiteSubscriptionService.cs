@@ -224,6 +224,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
         var paymentId = Guid.NewGuid();
 
         var metadata = new PaymentMetadataModel(
+            platform,
             PaymentReasonType.SiteSubscription,
             currentMember,
             price,

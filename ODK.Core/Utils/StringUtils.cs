@@ -18,6 +18,31 @@ public static class StringUtils
     public static string Coalesce(params string?[] values)
         => values.FirstOrDefault(x => !string.IsNullOrEmpty(x)) ?? string.Empty;
 
+    public static string CollapseMultipleChars(string text, char collapseChar)
+    {
+        var result = new StringBuilder(text.Length);
+
+        var collapsing = false;
+        foreach (var c in text)
+        {
+            if (c == collapseChar)
+            {
+                if (!collapsing)
+                {
+                    result.Append(collapseChar);
+                    collapsing = true;
+                }
+            }
+            else
+            {
+                result.Append(c);
+                collapsing = false;
+            }
+        }
+
+        return result.ToString();
+    }
+
     public static string EnsureLeading(this string? text, string leadingText)
         => EnsureLeading(text, leadingText, StringComparison.OrdinalIgnoreCase);
 
@@ -91,17 +116,7 @@ public static class StringUtils
         return new string(buffer);
     }
 
-    public static string RemoveLeading(string text, string leadingText)
-    {
-        if (string.IsNullOrEmpty(text) ||
-            string.IsNullOrEmpty(leadingText) ||
-            !text.StartsWith(leadingText, StringComparison.OrdinalIgnoreCase))
-        {
-            return text;
-        }
-
-        return text.Substring(leadingText.Length);
-    }
+    public static string RemoveLeading(string text, string leadingText) => text.TrimStart(leadingText).ToString();
 
     public static string ToCsv(IReadOnlyCollection<IReadOnlyCollection<string>> data)
     {
