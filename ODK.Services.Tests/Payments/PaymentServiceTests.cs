@@ -80,7 +80,7 @@ public static class PaymentServiceTests
 
     [TestCase(PaymentProviderWebhookType.CheckoutSessionCompleted)]
     [TestCase(PaymentProviderWebhookType.PaymentSucceeded)]
-    public static async Task ProcessWebhook_PaymentSucceededUpdatesPayment(PaymentProviderWebhookType webhookType)
+    public static async Task ProcessWebhook_PaymentSucceeded_UpdatesPayment(PaymentProviderWebhookType webhookType)
     {
         // Arrange
         var member = CreateMember();
@@ -100,7 +100,7 @@ public static class PaymentServiceTests
             });
 
         var webhookEventRepository = CreateMockPaymentProviderWebhookEventRepository([]);
-        var memberRepository = CreateMockMemberRepository(member);
+        var memberRepository = CreateMockMemberRepository([member]);
         var paymentRepository = CreateMockPaymentRepository([payment]);
 
         var paymentCheckoutSessionRepository = CreateMockPaymentCheckoutSessionRepository(paymentCheckoutSession);
@@ -157,7 +157,7 @@ public static class PaymentServiceTests
             });
 
         var webhookEventRepository = CreateMockPaymentProviderWebhookEventRepository([]);
-        var memberRepository = CreateMockMemberRepository(member);
+        var memberRepository = CreateMockMemberRepository([member]);
         var paymentRepository = CreateMockPaymentRepository([payment]);
         var eventRepository = CreateMockEventRepository([@event]);
         var eventTicketPaymentRepository = CreateMockEventTicketPaymentRepository(eventTicketPayment);
@@ -211,7 +211,7 @@ public static class PaymentServiceTests
         var paymentCheckoutSession = CreatePaymentCheckoutSession();
         var chapterSubscription = CreateChapterSubscription(
             chapterId: chapter.Id);
-        
+
         var webhook = CreatePaymentProviderWebhook(
             type: webhookType,
             paymentId: payment.Id.ToString(),
@@ -225,8 +225,8 @@ public static class PaymentServiceTests
             });
 
         var webhookEventRepository = CreateMockPaymentProviderWebhookEventRepository([]);
-        var memberRepository = CreateMockMemberRepository(member);
-        var paymentRepository = CreateMockPaymentRepository([payment]);        
+        var memberRepository = CreateMockMemberRepository([member]);
+        var paymentRepository = CreateMockPaymentRepository([payment]);
         var paymentCheckoutSessionRepository = CreateMockPaymentCheckoutSessionRepository(paymentCheckoutSession);
         var chapterRepository = CreateMockChapterRepository([chapter]);
         var chapterSubscriptionRepository = CreateMockChapterSubscriptionRepository([chapterSubscription]);
@@ -257,7 +257,7 @@ public static class PaymentServiceTests
 
         Mock.Get(memberSubscriptionRecordRepository)
             .Verify(x => x.Add(It.Is<MemberSubscriptionRecord>(
-                x => x.ChapterSubscriptionId == chapterSubscription.Id && 
+                x => x.ChapterSubscriptionId == chapterSubscription.Id &&
                     x.MemberId == member.Id)), Times.Once);
     }
 
@@ -300,25 +300,37 @@ public static class PaymentServiceTests
     }
 
     [TestCase(PaymentProviderWebhookType.InvoicePaymentSucceeded)]
-    [TestCase(PaymentProviderWebhookType.SubscriptionCancelled)]
-    public static async Task ProcessWebhook_WhenSubscriptionWebhookType_ProcessesSubscription(PaymentProviderWebhookType webhookType)
+    public static async Task ProcessWebhook_SubscriptionSucceeded_UpdatesChapterSubscription(PaymentProviderWebhookType webhookType)
     {
         // Arrange
+        var chapter = CreateChapter();
+        var memberChapter = CreateMemberChapter(chapterId: chapter.Id);
+        var member = CreateMember(
+            memberChapters: [memberChapter]);
+        var chapterSubscription = CreateChapterSubscription(
+            chapterId: chapter.Id);
+
         var webhook = CreatePaymentProviderWebhook(
             type: webhookType,
             subscriptionId: "sub_123",
             metadata: new Dictionary<string, string>
             {
-                { "ChapterSubscriptionId", Guid.NewGuid().ToString() }
+                { "ChapterId", chapter.Id.ToString() },
+                { "ChapterSubscriptionId", chapterSubscription.Id.ToString() },
+                { "MemberId", member.Id.ToString() }
             });
 
-        var webhookEventRepository = CreateMockPaymentProviderWebhookEventRepository([]);
-
-        var memberSubscriptionRecord = CreateMemberSubscriptionRecord();
-        var memberSubscriptionRecordRepository = CreateMockMemberSubscriptionRecordRepository([memberSubscriptionRecord]);
+        var chapterRepository = CreateMockChapterRepository([chapter]);
+        var memberRepository = CreateMockMemberRepository([member]);
+        var chapterSubscriptionRepository = CreateMockChapterSubscriptionRepository([chapterSubscription]);
+        var memberSubscriptionRepository = CreateMockMemberSubscriptionRepository();
+        var memberSubscriptionRecordRepository = CreateMockMemberSubscriptionRecordRepository();
 
         var unitOfWork = CreateMockUnitOfWork(
-            paymentProviderWebhookEventRepository: webhookEventRepository,
+            chapterRepository: chapterRepository,
+            memberRepository: memberRepository,
+            chapterSubscriptionRepository: chapterSubscriptionRepository,
+            memberSubscriptionRepository: memberSubscriptionRepository,
             memberSubscriptionRecordRepository: memberSubscriptionRecordRepository);
 
         var service = CreatePaymentService(unitOfWork);
@@ -328,6 +340,15 @@ public static class PaymentServiceTests
         await service.ProcessWebhook(request, webhook);
 
         // Assert
+        Mock.Get(memberSubscriptionRepository)
+            .Verify(x => x.Add(It.Is<MemberSubscription>(
+                x => x.MemberChapterId == memberChapter.Id)), Times.Once);
+
+        Mock.Get(memberSubscriptionRecordRepository)
+            .Verify(x => x.Add(It.Is<MemberSubscriptionRecord>(
+                x => x.ChapterSubscriptionId == chapterSubscription.Id &&
+                    x.MemberId == member.Id)), Times.Once);
+
         unitOfWork.Mock.Verify(x => x.SaveChangesAsync(), Times.AtLeastOnce);
     }
 
@@ -399,7 +420,7 @@ public static class PaymentServiceTests
             });
 
         var webhookEventRepository = CreateMockPaymentProviderWebhookEventRepository([]);
-        var memberRepository = CreateMockMemberRepository(member);
+        var memberRepository = CreateMockMemberRepository([member]);
         var paymentRepository = CreateMockPaymentRepository([payment]);
         var paymentCheckoutSessionRepository = CreateMockPaymentCheckoutSessionRepository(paymentCheckoutSession);
 
@@ -440,7 +461,7 @@ public static class PaymentServiceTests
             });
 
         var webhookEventRepository = CreateMockPaymentProviderWebhookEventRepository([]);
-        var memberRepository = CreateMockMemberRepository(member);
+        var memberRepository = CreateMockMemberRepository([member]);
         var paymentRepository = CreateMockPaymentRepository([payment]);
         var paymentCheckoutSessionRepository = CreateMockPaymentCheckoutSessionRepository(paymentCheckoutSession);
 
@@ -567,14 +588,19 @@ public static class PaymentServiceTests
         return mock.Object;
     }
 
-    private static IMemberRepository CreateMockMemberRepository(Member? member = null)
+    private static IMemberRepository CreateMockMemberRepository(IEnumerable<Member>? members = null)
     {
         var mock = new Mock<IMemberRepository>();
 
         mock.Setup(x => x.GetById(It.IsAny<Guid>()))
-            .Returns((Guid memberId) =>
+            .Returns((Guid id) =>
                 new MockDeferredQuerySingle<Member>(
-                    member ?? CreateMember(id: memberId)));
+                    members?.FirstOrDefault(x => x.Id == id)));
+
+        mock.Setup(x => x.GetByIdOrDefault(It.IsAny<Guid>()))
+            .Returns((Guid id) =>
+                new MockDeferredQuerySingleOrDefault<Member>(
+                    members?.FirstOrDefault(x => x.Id == id)));
 
         return mock.Object;
     }
@@ -583,7 +609,7 @@ public static class PaymentServiceTests
         IEnumerable<MemberSubscriptionRecord>? subscriptionRecords = null)
     {
         var mock = new Mock<IMemberSubscriptionRecordRepository>();
-        
+
         mock.Setup(x => x.GetByExternalId(It.IsAny<string>()))
             .Returns((string externalId) =>
                 new MockDeferredQuerySingle<MemberSubscriptionRecord>(
@@ -600,12 +626,12 @@ public static class PaymentServiceTests
     private static IMemberSubscriptionRepository CreateMockMemberSubscriptionRepository()
     {
         var mock = new Mock<IMemberSubscriptionRepository>();
-        
+
         mock.Setup(x => x.GetByMemberId(It.IsAny<Guid>(), It.IsAny<Guid>()))
             .Returns((Guid memberId, Guid chapterId) =>
                 new MockDeferredQuerySingleOrDefault<MemberSubscription>(
                     null));
-        
+
         return mock.Object;
     }
 
@@ -660,6 +686,10 @@ public static class PaymentServiceTests
             .Returns((Guid id) => new MockDeferredQuerySingle<ChapterSubscription>(
                 subscriptions?.FirstOrDefault(x => x.Id == id)));
 
+        mock.Setup(x => x.GetByIdOrDefault(It.IsAny<Guid>()))
+            .Returns((Guid id) => new MockDeferredQuerySingleOrDefault<ChapterSubscription>(
+                subscriptions?.FirstOrDefault(x => x.Id == id)));
+
         return mock.Object;
     }
 
@@ -676,7 +706,7 @@ public static class PaymentServiceTests
     private static IEventRepository CreateMockEventRepository(IEnumerable<Event>? events = null)
     {
         var mock = new Mock<IEventRepository>();
-        
+
         mock.Setup(x => x.GetById(It.IsAny<Guid>()))
             .Returns((Guid id) =>
                 new MockDeferredQuerySingle<Event>(
@@ -858,7 +888,7 @@ public static class PaymentServiceTests
             Id = Guid.NewGuid()
         };
 
-    private static Event CreateEvent(Guid? chapterId = null) 
+    private static Event CreateEvent(Guid? chapterId = null)
         => new Event
         {
             ChapterId = chapterId ?? Guid.NewGuid(),
