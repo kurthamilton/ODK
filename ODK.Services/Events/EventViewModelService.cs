@@ -124,6 +124,7 @@ public class EventViewModelService : IEventViewModelService
         };
 
         var metadata = new PaymentMetadataModel(
+            platform,
             reason,
             currentMember,
             eventTicketPayment,

@@ -13,6 +13,7 @@ using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
+using ODK.Core.Utils;
 using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Data.Core.Repositories;
@@ -433,20 +434,13 @@ public static class ChapterAdminServiceTests
     public static async Task CreateChapter_WhenValid_ReturnsSuccessfulChapter()
     {
         // Arrange
-        var subscription = CreateMemberSiteSubscription();
-        var memberSubscriptionRepository = CreateMockMemberSiteSubscriptionRepository(memberSubscription: subscription);
-
         var chapterRepository = CreateMockChapterRepository([]);
 
-        var imageService = CreateMockImageService(isValidImage: true);
-
         var unitOfWork = CreateMockUnitOfWork(
-            memberSiteSubscriptionRepository: memberSubscriptionRepository,
             chapterRepository: chapterRepository);
 
         var service = CreateChapterAdminService(
-            unitOfWork,
-            imageService: imageService);
+            unitOfWork);
 
         var request = CreateMemberServiceRequest();
         var model = CreateChapterCreateModel();
@@ -458,6 +452,33 @@ public static class ChapterAdminServiceTests
         result.Success.Should().BeTrue();
         result.Value.Should().NotBeNull();
         result.Value.Name.Should().Be("Test Chapter");
+        result.Value.Slug.Should().Be("test-chapter");
+    }
+
+    [Test]
+    public static async Task CreateChapter_WhenSlugExists_AppendsVersion()
+    {
+        // Arrange
+        var chapterRepository = CreateMockChapterRepository([
+            CreateChapter(name: "Test Chapter"),
+            CreateChapter(name: "Test Chapter 2")
+        ]);
+
+        var unitOfWork = CreateMockUnitOfWork(
+            chapterRepository: chapterRepository);
+
+        var service = CreateChapterAdminService(
+            unitOfWork);
+
+        var request = CreateMemberServiceRequest();
+        var model = CreateChapterCreateModel(name: "Test Chapter!");
+
+        // Act
+        var result = await service.CreateChapter(request, model);
+
+        // Assert
+        result.Value.Should().NotBeNull();
+        result.Value.Slug.Should().Be("test-chapter-3");
     }
 
     [Test]
@@ -1326,6 +1347,9 @@ public static class ChapterAdminServiceTests
             .Returns((PlatformType platform, Guid ownerId)
                 => new MockDeferredQueryMultiple<Chapter>(chapters?.Where(x => x.OwnerId == ownerId)));
 
+        mock.Setup(x => x.NameExists(It.IsAny<string>()))
+            .Returns((string name) => new MockDeferredQuery<bool>(chapters?.Any(x => x.Name == name) == true));
+
         mock.Setup(x => x.SlugExists(It.IsAny<string>()))
             .Returns((string slug) => new MockDeferredQuery<bool>(chapters?.Any(x => x.Slug == slug) == true));
 
@@ -1760,7 +1784,7 @@ public static class ChapterAdminServiceTests
             ApprovedUtc = approvedUtc,
             Id = id ?? Guid.NewGuid(),
             Name = name,
-            Slug = Chapter.GetSlug(name),
+            Slug = UrlUtils.Slugify(name),
             OwnerId = ownerId ?? Guid.NewGuid(),
             CreatedUtc = DateTime.UtcNow,
             CountryId = Guid.NewGuid(),

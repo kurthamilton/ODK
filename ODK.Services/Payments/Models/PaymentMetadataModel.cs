@@ -2,6 +2,7 @@
 using ODK.Core.Events;
 using ODK.Core.Extensions;
 using ODK.Core.Members;
+using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
 
 namespace ODK.Services.Payments.Models;
@@ -9,6 +10,7 @@ namespace ODK.Services.Payments.Models;
 public class PaymentMetadataModel
 {
     public PaymentMetadataModel(
+        PlatformType platform,
         PaymentReasonType reason,
         Member member,
         ChapterSubscription chapterSubscription,
@@ -20,10 +22,12 @@ public class PaymentMetadataModel
         MemberId = member.Id;
         PaymentCheckoutSessionId = paymentCheckoutSessionId;
         PaymentId = paymentId;
+        Platform = platform;
         Reason = reason;
     }
 
     public PaymentMetadataModel(
+        PlatformType platform,
         PaymentReasonType reason,
         Member member,
         SiteSubscriptionPrice siteSubscriptionPrice,
@@ -33,11 +37,13 @@ public class PaymentMetadataModel
         MemberId = member.Id;
         PaymentCheckoutSessionId = paymentCheckoutSessionId;
         PaymentId = paymentId;
+        Platform = platform;
         Reason = reason;
         SiteSubscriptionPriceId = siteSubscriptionPrice.Id;
     }
 
     public PaymentMetadataModel(
+        PlatformType platform,
         PaymentReasonType reason,
         Member member,
         EventTicketPayment eventTicketPayment,
@@ -48,6 +54,7 @@ public class PaymentMetadataModel
         MemberId = member.Id;
         PaymentCheckoutSessionId = paymentCheckoutSessionId;
         PaymentId = eventTicketPayment.PaymentId;
+        Platform = platform;
         Reason = reason;
     }
 
@@ -69,6 +76,8 @@ public class PaymentMetadataModel
 
     public Guid? PaymentId { get; private set; }
 
+    public PlatformType? Platform { get; private set; }
+
     public PaymentReasonType? Reason { get; private set; }
 
     public Guid? SiteSubscriptionPriceId { get; private set; }
@@ -82,6 +91,7 @@ public class PaymentMetadataModel
         dictionary.TryGetGuidValue("MemberId", out var memberId);
         dictionary.TryGetGuidValue("PaymentCheckoutSessionId", out var paymentCheckoutSessionId);
         dictionary.TryGetGuidValue("PaymentId", out var paymentId);
+        dictionary.TryGetEnumValue<PlatformType>("Platform", out var platform);
         dictionary.TryGetEnumValue<PaymentReasonType>("Reason", out var reason);
         dictionary.TryGetGuidValue("SiteSubscriptionPriceId", out var siteSubscriptionPriceId);
 
@@ -94,6 +104,7 @@ public class PaymentMetadataModel
             MemberId = memberId,
             PaymentCheckoutSessionId = paymentCheckoutSessionId,
             PaymentId = paymentId,
+            Platform = platform,
             Reason = reason,
             SiteSubscriptionPriceId = siteSubscriptionPriceId
         };
@@ -136,6 +147,11 @@ public class PaymentMetadataModel
         if (PaymentId != null)
         {
             dictionary.Add("PaymentId", PaymentId.Value.ToString());
+        }
+
+        if (Platform != null)
+        {
+            dictionary.Add("Platform", Platform.Value.ToString());
         }
 
         if (Reason != null)

@@ -88,11 +88,6 @@ public class Chapter : IDatabaseEntity, ITimeZoneEntity
             : name;
     }
 
-    public static string GetSlug(string name)
-        => CleanName(name)
-            .ToLowerInvariant()
-            .Replace(' ', '-');
-
     public bool Approved() => ApprovedUtc != null;
 
     public bool CanBeDeleted(int memberCount) => memberCount == 1;

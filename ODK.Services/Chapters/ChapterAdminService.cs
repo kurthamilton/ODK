@@ -138,27 +138,25 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         var (platform, currentMember) = (request.Platform, request.CurrentMember);
 
-        var slug = Chapter.GetSlug(model.Name);
+        var name = Chapter.CleanName(model.Name);
 
         var (
             memberSubscription,
             memberChapters,
-            slugExists,
+            nameExists,
             siteEmailSettings
         ) = await _unitOfWork.RunAsync(
             x => x.MemberSiteSubscriptionRepository.GetByMemberId(currentMember.Id, platform),
             x => x.ChapterRepository.GetByOwnerId(platform, currentMember.Id),
-            x => x.ChapterRepository.SlugExists(slug),
+            x => x.ChapterRepository.NameExists(name),
             x => x.SiteEmailSettingsRepository.Get(platform));
 
-        var slugValidationResult = ValidateSlug(slug, slugExists);
-        if (!slugValidationResult.Success)
+        if (nameExists)
         {
             return ServiceResult<Chapter?>.Failure(
                 StringUtils.Interpolate(ErrorMessagesResource.NameTaken, new Dictionary<string, string>
                 {
-                    { "name", model.Name },
-                    { "slug", slug },
+                    { "name", model.Name }
                 }));
         }
 
@@ -195,11 +193,19 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
                 $"Error setting country for group '{model.Name}', choosing '{country!.Name}' as default");
         }
 
+        var baseSlug = UrlUtils.Slugify(name);
+        var slug = baseSlug;
+
+        for (var i = 2; await _unitOfWork.ChapterRepository.SlugExists(slug).Run(); i++)
+        {
+            slug = $"{baseSlug}-{i}";
+        }
+
         var chapter = new Chapter
         {
             CountryId = country.Id,
             CreatedUtc = now,
-            Name = Chapter.CleanName(model.Name),
+            Name = name,
             OwnerId = currentMember.Id,
             Platform = platform,
             Slug = slug,
@@ -1212,14 +1218,13 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<bool> NameIsAvailable(IServiceRequest request, string name)
     {
-        var slug = Chapter.GetSlug(name);
+        name = Chapter.CleanName(name);
 
-        var slugExists = await _unitOfWork.ChapterRepository
-            .SlugExists(slug)
+        var nameExists = await _unitOfWork.ChapterRepository
+            .NameExists(name)
             .Run();
 
-        var result = ValidateSlug(slug, slugExists);
-        return result.Success;
+        return !nameExists;
     }
 
     public async Task<ServiceResult> PublishChapter(IMemberChapterAdminServiceRequest request)
@@ -2274,14 +2279,5 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         }
 
         return ServiceResult.Successful();
-    }
-
-    private ServiceResult ValidateSlug(string slug, bool slugExists)
-    {
-        var isReserved = _settings.ReservedSlugs.Contains(slug, StringComparer.OrdinalIgnoreCase);
-
-        return !slugExists && !isReserved
-            ? ServiceResult.Successful()
-            : ServiceResult.Failure("");
     }
 }
