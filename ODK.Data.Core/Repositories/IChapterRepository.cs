@@ -8,6 +8,8 @@ public interface IChapterRepository : IWriteRepository<Chapter>
 {
     IDeferredQueryMultiple<Chapter> GetAll(PlatformType platform, bool includeUnpublished);
 
+    IDeferredQueryMultiple<Chapter> GetApproved(PlatformType platform);
+
     IDeferredQueryMultiple<Chapter> GetByAdminMemberId(PlatformType platform, Guid memberId);
 
     IDeferredQuerySingle<Chapter> GetByEventId(PlatformType platform, Guid eventId);

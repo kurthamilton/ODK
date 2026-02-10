@@ -1,16 +1,16 @@
 ﻿@using ODK.Services.Chapters
+@using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Home
 @using ODK.Web.Razor.Services
-@inject IChapterService ChapterService
+@model OdkHomePageViewModel
 @inject IRequestStore RequestStore
 @{
-    var platform = RequestStore.Platform;
-    var viewModel = await ChapterService.GetChaptersHomePageViewModel(platform);
+    var platform = RequestStore.Platform;    
 
-    var (countries, chapters) = (viewModel.Countries, viewModel.Chapters);
+    var (countries, chapters) = (Model.Countries, Model.Chapters);
     var continents = countries
         .Select(x => x.Continent)
         .Distinct()
@@ -28,7 +28,8 @@
 
     @await Html.PartialAsync("Components/_Section", new SectionViewModel
     {
-        Content = @<p>
+        Content = 
+            @<p>
                 We are the Drunken Knitwits, and we are knit-aholics.
                 Sip by sip and stitch by stitch, we continue to pursue drunken,
                 hand-cramping knit-thood, whereby all Knitwits have the holy grail of drunken knitting to show off to our friends: a hand-crafted item whose place,
@@ -36,7 +37,7 @@
                 If you want to follow us on our path, we can show you the way...
             </p>,
         Hero = true,
-        Theme = "dark",
+        Theme = SectionThemeType.Dark,
         Title = "The Drunken Knitifesto"
     })
 
@@ -58,7 +59,7 @@
                 </p>
             </div>,
         Hero = true,
-        Theme = "light",
+        Theme = SectionThemeType.Grey,
         Title = "About the Drunken Knitwits"
     })
 
@@ -66,7 +67,8 @@
 
     @await Html.PartialAsync("Components/_Section", new SectionViewModel
     {
-        Content = @<div>
+        Content = 
+            @<div>
                 <div class="small">-</div>
                 <div class="small">Warnings and Disclaimers:</div>
                 <p>&nbsp;</p>
@@ -75,6 +77,6 @@
                 <div class="small">3. Drinking is optional; crafting is not.</div>
             </div>,
         Hero = true,
-        Theme = "dark"
+        Theme = SectionThemeType.Dark
     })
 </main>

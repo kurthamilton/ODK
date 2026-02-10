@@ -4,15 +4,17 @@ namespace ODK.Web.Razor.Models.Components;
 
 public class SectionViewModel
 {
-    public string? Class { get; set; }
+    public string? Class { get; init; }
 
-    public Func<object?, IHtmlContent>? Content { get; set; }
+    public Func<object?, IHtmlContent>? Content { get; init; }
 
-    public bool Hero { get; set; }
+    public bool Hero { get; init; }
 
-    public string? Id { get; set; }
+    public string? Id { get; init; }
 
-    public string? Theme { get; set; }
+    public string? Subtitle { get; init; }
 
-    public string? Title { get; set; }
+    public SectionThemeType? Theme { get; init; }
+
+    public string? Title { get; init; }
 }

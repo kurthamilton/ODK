@@ -21,9 +21,8 @@
 
     var member = RequestStore.CurrentMemberOrDefault;
 
-    var viewModel = await ChapterService.GetChaptersHomePageViewModel(platform);
-    var menuItems = viewModel
-        .Chapters
+    var chapters = await ChapterService.GetApprovedChapters(platform);
+    var menuItems = chapters
         .OrderBy(x => x.Name)
         .Select(c => new MenuItem
         {
@@ -50,3 +49,18 @@
        MenuItems = menuItems.Segment(5).ToArray()
    }
 })
+
+<div class="mb-1 d-none d-md-block">
+    @await Html.PartialAsync("Header/_Navbar", new NavbarViewModel
+    {
+        Breakpoint = "md",
+        Color = "dark",
+        Compact = false,
+        CssClass = null,
+        Member = member,
+        MenuItems =
+            [
+                [new MenuItem { Hidden = true, Text = "" }]
+            ]
+     })
+</div>

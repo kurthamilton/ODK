@@ -31,26 +31,11 @@
 
 @section header
 {
-    @await Html.PartialAsync("Header/_HomeHeader")
-
     @if (platform == PlatformType.DrunkenKnitwits)
     {
-        <div class="mb-1 d-none d-md-block">
-            @await Html.PartialAsync("Header/_Navbar", new NavbarViewModel
-            {
-                Breakpoint = "md",
-                Color = "dark",
-                Compact = false,
-                CssClass = null,
-                Member = member,
-                MenuItems = 
-                [
-                    [new MenuItem { Hidden = true, Text = "" }]
-                ]
-            })
-        </div>
+        @await Html.PartialAsync("Header/_OdkHomeHeader")
     }
-
+    
     @await RenderSectionAsync("header", required: false)
 }
 

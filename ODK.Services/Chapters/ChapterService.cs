@@ -27,6 +27,9 @@ public class ChapterService : IChapterService
         _unitOfWork = unitOfWork;
     }
 
+    public Task<IReadOnlyCollection<Chapter>> GetApprovedChapters(PlatformType platform)
+        => _unitOfWork.ChapterRepository.GetApproved(platform).Run();
+
     public Task<Chapter> GetByEventId(IServiceRequest request, Guid eventId)
         => _unitOfWork.ChapterRepository.GetByEventId(request.Platform, eventId).Run();
 
@@ -112,30 +115,6 @@ public class ChapterService : IChapterService
         return await _unitOfWork.ChapterRepository.GetByOwnerId(platform, ownerId).Run();
     }
 
-    public async Task<ChaptersHomePageViewModel> GetChaptersHomePageViewModel(PlatformType platform)
-    {
-        var (chapters, countries) = await _unitOfWork.RunAsync(
-            x => x.ChapterRepository.GetAll(platform, includeUnpublished: false),
-            x => x.CountryRepository.GetAll());
-
-        if (platform != PlatformType.Default)
-        {
-            var countryIds = chapters
-                .Select(x => x.CountryId)
-                .ToHashSet();
-
-            countries = countries
-                .Where(x => countryIds.Contains(x.Id))
-                .ToArray();
-        }
-
-        return new ChaptersHomePageViewModel
-        {
-            Chapters = chapters,
-            Countries = countries
-        };
-    }
-
     public async Task<Chapter?> GetDefaultChapter(IMemberServiceRequest request)
     {
         var (platform, currentMember) = (request.Platform, request.CurrentMember);
@@ -152,6 +131,27 @@ public class ChapterService : IChapterService
             .Where(x => chapterDates.ContainsKey(x.Id))
             .OrderBy(x => chapterDates[x.Id])
             .FirstOrDefault();
+    }
+
+    public async Task<OdkHomePageViewModel> GetOdkHomePageViewModel()
+    {
+        var (chapters, countries) = await _unitOfWork.RunAsync(
+            x => x.ChapterRepository.GetAll(PlatformType.DrunkenKnitwits, includeUnpublished: false),
+            x => x.CountryRepository.GetAll());
+
+        var countryIds = chapters
+            .Select(x => x.CountryId)
+            .ToHashSet();
+
+        countries = countries
+            .Where(x => countryIds.Contains(x.Id))
+            .ToArray();
+
+        return new OdkHomePageViewModel
+        {
+            Chapters = chapters,
+            Countries = countries
+        };
     }
 
     private async Task<ExternalSubscription?> GetExternalSubscription(

@@ -89,6 +89,8 @@ public class GroupAdminRoutes
         _ => Group(chapter).Child("/image", ChapterAdminSecurable.Branding, PlatformType.Default)
     };
 
+    public GroupAdminRoute Import() => Index().Child("/import");
+
     public GroupAdminRoute Index() => Platform switch
     {
         // Member groups not implemented in DrunkenKnitwits platform

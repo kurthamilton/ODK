@@ -7,6 +7,8 @@ namespace ODK.Services.Chapters;
 
 public interface IChapterService
 {
+    Task<IReadOnlyCollection<Chapter>> GetApprovedChapters(PlatformType platform);
+
     Task<Chapter> GetByEventId(IServiceRequest request, Guid eventId);
 
     Task<VersionedServiceResult<ChapterImage>> GetChapterImage(long? currentVersion, Guid chapterId);
@@ -17,7 +19,7 @@ public interface IChapterService
 
     Task<IReadOnlyCollection<Chapter>> GetChaptersByOwnerId(IServiceRequest request, Guid ownerId);
 
-    Task<ChaptersHomePageViewModel> GetChaptersHomePageViewModel(PlatformType platform);
-
     Task<Chapter?> GetDefaultChapter(IMemberServiceRequest request);
+
+    Task<OdkHomePageViewModel> GetOdkHomePageViewModel();
 }
