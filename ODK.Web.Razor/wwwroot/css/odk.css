@@ -11923,6 +11923,8 @@ textarea.form-control-lg {
 }
 
 :root {
+  --odk-bg-level-0-light: #fff;
+  --odk-bg-level-0-dark: #212529;
   --odk-bg-level-0: #fff;
   --odk-bg-level-0-rgb: 255, 255, 255;
   --odk-bg-level-0-hover: white;
@@ -12077,6 +12079,18 @@ html[data-platform=odk] {
   display: flex;
   gap: 0.5rem;
   align-items: center;
+}
+
+.button-container-md {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-direction: column;
+}
+@media (min-width: 768px) {
+  .button-container-md {
+    flex-direction: row;
+  }
 }
 
 .card-body-sm {
@@ -13080,7 +13094,11 @@ html[data-platform=odk] {
   margin-bottom: 0;
 }
 
-.section:not(:first-child),
+.section {
+  background: var(--bs-body-bg);
+  color: var(--bs-body-color);
+}
+
 .mt-section {
   margin-top: 2rem;
 }
@@ -13125,16 +13143,8 @@ html[data-platform=odk] {
   padding-bottom: 1rem;
 }
 
-.section--dark {
-  background: rgba(37, 33, 33, 0.6);
-}
-
-.section--light {
-  background: hsla(0, 0%, 88%, 0.6);
-}
-
-.section--dark .section--hero__content {
-  color: #fff;
+.section--grey {
+  background-color: hsla(0, 0%, 88%, 0.6);
 }
 
 .section--admin {

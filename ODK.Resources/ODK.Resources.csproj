@@ -7,6 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Update="Resources\ButtonResources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ButtonResources.resx</DependentUpon>
+    </Compile>
     <Compile Update="Resources\ErrorMessagesResource.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -17,9 +22,18 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>GroupsResource.resx</DependentUpon>
     </Compile>
+    <Compile Update="Resources\HomePageResources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>HomePageResources.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Update="Resources\ButtonResources.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ButtonResources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Update="Resources\ErrorMessagesResource.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>ErrorMessagesResource.Designer.cs</LastGenOutput>
@@ -28,6 +42,10 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>GroupsResource.Designer.cs</LastGenOutput>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\HomePageResources.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>HomePageResources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
 

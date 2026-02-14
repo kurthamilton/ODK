@@ -1,3 +1,101 @@
-﻿<main>
-    <p>Home content</p>
+﻿@using ODK.Resources.Resources
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Components
+@inject IOdkRoutes OdkRoutes
+@{
+    var themes = new[] { SectionThemeType.Dark, SectionThemeType.Light };
+    var i = 0;
+}
+<main>
+    @await Html.PartialAsync("Components/_Section", new SectionViewModel
+    {
+        Content = 
+            @<div>
+                <div class="button-container justify-content-center">
+                    @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                    {
+                        Class = "btn btn-primary",
+                        Icon = IconType.Rocket,
+                        Route = OdkRoutes.GroupAdmin.Create(),
+                        Text = ButtonResources.StartYourGroup
+                    })                    
+                </div>
+            </div>,
+        Hero = true,
+        Subtitle = HomePageResources.ASimplerFairerPlatformForRunningGroupsAndEvents,
+        Theme = themes[i++ % 2],
+        Title = $"{HomePageResources.BuildYourCommunity}."
+    })
+
+    @await Html.PartialAsync("Components/_Section", new SectionViewModel
+    {
+        Content = 
+            @<div>
+                <p>@HomePageResources.NoBloatedFeatures</p>
+                <ul class="list-group list-group-flush mb-3">
+                    <li class="list-group-item">@HomePageResources.CreateAndManageGroups</li>
+                    <li class="list-group-item">@HomePageResources.ScheduleEvents</li>
+                    <li class="list-group-item">@HomePageResources.FlexiblePrivacyControls</li>
+                    <li class="list-group-item">@HomePageResources.MemberRolesAndApprovals</li>
+                    <li class="list-group-item">@HomePageResources.BuiltInNotifications</li>
+                    <li class="list-group-item">@HomePageResources.PaymentPortal</li>
+                </ul>                
+            </div>,
+        Hero = true,
+        Theme = themes[i++ % 2],
+        Title = $"{HomePageResources.HowWeEnableYou}."
+    })
+
+    @await Html.PartialAsync("Components/_Section", new SectionViewModel
+    {
+        Content = 
+            @<div>
+                <div>@HomePageResources.YouControl:</div>
+                <ul class="list-group list-group-flush mb-3">
+                    <li class="list-group-item">@HomePageResources.WhoCanSeeEvents</li>
+                    <li class="list-group-item">@HomePageResources.WhoCanRespond</li>
+                    <li class="list-group-item">@HomePageResources.WhoCanSeeVenues</li>
+                    <li class="list-group-item">@HomePageResources.HowMembersInteract</li>
+                </ul>
+                <p>@HomePageResources.YouDecideHowYourGroupRuns</p>
+            </div>,
+        Hero = true,
+        Theme = themes[i++ % 2],
+        Title = $"{HomePageResources.BuiltWithOrganisersInMind}."
+    })
+
+    @await Html.PartialAsync("Components/_Section", new SectionViewModel
+    {
+        Content = 
+            @<div>
+                <p>@HomePageResources.SwitchingPlatformsShouldntMeanStartingOver</p>
+                <div>@HomePageResources.WeSupport:</div>
+                <ul class="list-group list-group-flush mb-3">
+                    <li class="list-group-item">@HomePageResources.FamiliarGroupAndEventStructures</li>
+                    <li class="list-group-item">@HomePageResources.SimpleOnboardingForExistingMembers</li>
+                </ul>
+                <p>
+                    <a class="btn btn-secondary">
+                        @ButtonResources.SeeHowMigrationWorks
+                    </a>
+                </p>
+            </div>,
+        Hero = true,
+        Theme = themes[i++ % 2],
+        Title = $"{HomePageResources.MovingFromAnotherPlatform}"
+    })
+
+    @await Html.PartialAsync("Components/_Section", new SectionViewModel
+    {
+        Content = 
+            @<div>
+                @*<p>@HomePageResources.CommunitiesGrowBestWhenOrganisersArentStressedAboutMonthlyBills</p>*@
+                <p>@HomePageResources.OurGoalIsSimple</p>
+            </div>,
+        Hero = true,
+        Theme = themes[i++ % 2],
+        Title = $"{HomePageResources.FairPricingNoSurprises}"
+    })
 </main>

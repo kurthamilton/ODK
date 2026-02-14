@@ -28,7 +28,7 @@
 
 @await Html.PartialAsync("Components/_Section", new SectionViewModel
 {
-   Class = "bg-dark text-light section--chapters d-none d-md-flex",
+   Class = "section--chapters d-none d-md-flex",
    Content = 
     @<div class="container navbar--home">
         <div class="d-none d-md-block">
@@ -91,5 +91,6 @@
         </div>                               
         </div>,
    Hero = true,
-   Id = "chapters"
+   Id = "chapters",
+   Theme = SectionThemeType.Dark
 })

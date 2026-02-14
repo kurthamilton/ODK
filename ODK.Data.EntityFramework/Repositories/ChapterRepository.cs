@@ -21,6 +21,11 @@ public class ChapterRepository : WriteRepositoryBase<Chapter>, IChapterRepositor
         => Set(platform, includeUnpublished)
             .DeferredMultiple();
 
+    public IDeferredQueryMultiple<Chapter> GetApproved(PlatformType platform)
+        => Set(platform, includeUnpublished: false)
+            .Where(x => x.ApprovedUtc != null)
+            .DeferredMultiple();
+
     public IDeferredQueryMultiple<Chapter> GetByAdminMemberId(PlatformType platform, Guid memberId)
     {
         var query =

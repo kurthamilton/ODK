@@ -1,5 +1,4 @@
 using ODK.Services.Chapters;
-using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Sitemap;
 
 namespace ODK.Web.Razor.Pages;
@@ -27,11 +26,10 @@ public class SitemapModel : OdkPageModel
             }
         };
 
-        var viewModel = await _chapterService.GetChaptersHomePageViewModel(Platform);
-        var chapters = viewModel
-            .Chapters
-            .Where(x => x.Approved())
-            .OrderBy(x => x.GetDisplayName(Platform));
+        var chapters = await _chapterService.GetApprovedChapters(Platform);
+        chapters = chapters
+            .OrderBy(x => x.GetDisplayName(Platform))
+            .ToArray();
 
         foreach (var chapter in chapters)
         {

@@ -1,6 +1,8 @@
 ﻿@page "/"
 @using ODK.Core.Platforms
+@using ODK.Services.Chapters
 @model IndexModel
+@inject IChapterService ChapterService
 @{
     Layout = "_HomeLayout";
     Model.Path = "/";
@@ -8,9 +10,10 @@
 
 @if (Model.Platform == PlatformType.DrunkenKnitwits)
 {
-    @await Html.PartialAsync("Home/_OdkHomeContent")
+    var viewModel = await ChapterService.GetOdkHomePageViewModel();
+    @await Html.PartialAsync("Home/_OdkHomeContent", viewModel)
 }
 else
 {
-    
+    @await Html.PartialAsync("Home/_HomeContent")
 }

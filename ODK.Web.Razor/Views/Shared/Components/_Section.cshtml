@@ -1,32 +1,78 @@
-﻿@model ODK.Web.Razor.Models.Components.SectionViewModel
+﻿@using ODK.Web.Razor.Models.Components
+@model SectionViewModel
+@{
+    var bsTheme = Model.Theme == SectionThemeType.Dark ? "dark" : "light";
 
-<section class="@(Model.Hero ? "section--hero" : null)
-                @(Model.Theme == "dark" ? "section--dark" : null)
-                @(Model.Theme == "light" ? "section--light" : null)
-                @Model.Class"
-         id="@Model.Id">
+    var classes = new List<string>
+    {
+        "section"
+    };
+
+    if (Model.Hero)
+    {
+        classes.Add("section--hero");
+    }
+
+    if (Model.Theme == SectionThemeType.Dark)
+    {
+        classes.Add("section--dark");
+    }
+    else if (Model.Theme == SectionThemeType.Light)
+    {
+        classes.Add("section--light");
+    }
+    else if (Model.Theme == SectionThemeType.Grey)
+    {
+        classes.Add("section--grey");
+    }
+
+    if (!string.IsNullOrEmpty(Model.Class))
+    {
+        classes.Add(Model.Class);
+    }
+}
+
+<section class="@string.Join(' ', classes)"
+         id="@Model.Id"
+         data-bs-theme="@bsTheme">
     @if (Model.Hero)
     {
         <div class="section--hero__content">
-            @if (!string.IsNullOrEmpty(Model.Title))
-            {
-                <h1>@Model.Title</h1>
-            }
-            @if (Model.Content != null)
-            {
-                @Model.Content.Invoke(null)
-            }
+            <div class="d-flex flex-column gap-3">
+                @if (!string.IsNullOrEmpty(Model.Title))
+                {
+                    <h1>@Model.Title</h1>
+                }
+                @if (!string.IsNullOrEmpty(Model.Subtitle))
+                {
+                    <h3>@Model.Subtitle</h3>
+                }    
+                @if (Model.Content != null)
+                {
+                    <div>
+                        @Model.Content.Invoke(null)
+                    </div>
+                }
+            </div>
         </div>
     }
     else
     {
-        @if (!string.IsNullOrEmpty(Model.Title))
-        {
-            <h1>@Model.Title</h1>
-        }
-        @if (Model.Content != null)
-        {
-            @Model.Content.Invoke(null)
-        }
+        <div class="d-flex flex-column gap-3">
+            @if (!string.IsNullOrEmpty(Model.Title))
+            {
+                <h1>@Model.Title</h1>
+            }
+            @if (!string.IsNullOrEmpty(Model.Subtitle))
+            {
+                <h3>@Model.Subtitle</h3>
+            }
+            @if (Model.Content != null)
+            {
+                <div>
+                    @Model.Content.Invoke(null)
+                </div>
+            }
+        </div>        
     }
 </section>
