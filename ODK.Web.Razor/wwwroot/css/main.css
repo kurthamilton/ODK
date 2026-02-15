@@ -11975,6 +11975,11 @@ p:last-child {
   color: var(--bs-body-color);
 }
 
+@media (max-width: 767.98px) {
+  .hide-below-md {
+    display: none !important;
+  }
+}
 /*mimic BS4-style card header*/
 .accordion-button {
   background-color: rgba(0, 0, 0, 0.03);
@@ -12964,14 +12969,25 @@ html[data-platform=odk] {
   margin-left: 0.25rem;
 }
 
+.notification-items {
+  max-height: 80dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.offcanvas--notifications {
+  --bs-offcanvas-width: 500px;
+}
+.offcanvas--notifications .offcanvas-body {
+  padding-left: 0;
+  padding-right: 0;
+}
+
 .notification-item {
   --odk-notification-item-padding-y: 1rem;
-  --odk-notification-item-padding-x: var(--bs-dropdown-item-padding-x);
+  --odk-notification-item-padding-x: 1rem;
   padding: 0;
   cursor: default;
-}
-.notification-item:hover {
-  background-color: var(--odk-bg-level-1) !important;
 }
 .notification-item .notification-row {
   display: flex;
@@ -13003,9 +13019,9 @@ html[data-platform=odk] {
 }
 .notification-item .notification-header {
   margin-top: var(--odk-notification-item-padding-y);
+  padding-left: var(--bs-offcanvas-padding-x);
 }
 .notification-item .notification-title {
-  padding-left: var(--odk-notification-item-padding-x);
   margin-right: 0.5rem;
 }
 .notification-item .btn-close {
@@ -13021,8 +13037,10 @@ html[data-platform=odk] {
 .notification-item .notification-text p:last-child {
   margin-bottom: 0;
 }
-.notification-item .notification-placeholder {
-  padding: var(--odk-notification-item-padding-y) var(--odk-notification-item-padding-x);
+
+.offcanvas-subtitle {
+  padding-left: var(--bs-offcanvas-padding-x);
+  padding-right: var(--bs-offcanvas-padding-x);
 }
 
 .overlay {

@@ -1,12 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Identity.Client;
-using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Images;
 using ODK.Core.Issues;
-using ODK.Core.Platforms;
-using ODK.Services;
 using ODK.Services.Authentication;
 using ODK.Services.Authentication.OAuth;
 using ODK.Services.Features;
@@ -347,6 +343,13 @@ public class AccountController : OdkControllerBase
         AddFeedback(result, "Notification preferences updated");
 
         return RedirectToReferrer();
+    }
+
+    [HttpPost("account/notifications/dismiss")]
+    public async Task<IActionResult> DismissNotifications()
+    {
+        await _notificationService.MarkAllAsRead(CurrentMember.Id);
+        return Ok();
     }
 
     [HttpPost("account/notifications/{id:guid}/dismiss")]

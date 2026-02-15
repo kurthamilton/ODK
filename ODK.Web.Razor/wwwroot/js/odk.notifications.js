@@ -1,39 +1,166 @@
-﻿(function() {
-    const $dismissButtons = document.querySelectorAll('[data-notification-dismiss]');
-    $dismissButtons.forEach($button => {
-        $button.addEventListener('click', e => {
-            e.preventDefault();
+﻿(async function () {
+    await load();
 
-            const $notification = $button.closest('[data-notification]');
+    function bindDismiss($container) {
+        const $dismissButtons = $container.querySelectorAll('[data-notification-dismiss]');
+        $dismissButtons.forEach($button => {
+            $button.addEventListener('click', e => {
+                e.preventDefault();
 
-            const url = $button.getAttribute('data-notification-dismiss');
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', url, true);
+                const $notification = $button.closest('[data-notification]');
 
-            xhr.onreadystatechange = () => {
-                if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-                    const $container = $notification.closest('[data-notifications]');
-                    const tooltip = bootstrap.Tooltip.getOrCreateInstance($button);
-                    tooltip.dispose();
+                const url = $button.getAttribute('data-notification-dismiss');
+                fetch(url, { method: 'POST' })
+                    .then(() => {
+                        const tooltip = bootstrap.Tooltip.getOrCreateInstance($button);
+                        tooltip.dispose();
+                        $notification.remove();
+                        onDismiss($container);
+                    });
+            });
+        });
+    }
 
-                    $notification.remove();
+    function bindDismissAll($container) {
+        const $dismissAllButtons = $container.querySelectorAll('[data-notifications-dismiss-all]');
+        $dismissAllButtons.forEach($button => {
+            $button.addEventListener('click', e => {
+                e.preventDefault();
 
-                    const $notifications = $container.querySelectorAll('[data-notification]');
-                    if ($notifications.length === 0) {
-                        const $hide = $container.querySelectorAll('[data-notifications-hide-if-empty]');
-                        const $show = $container.querySelectorAll('[data-notifications-show-if-empty]');
+                const url = $button.getAttribute('data-url');
+                fetch(url, { method: 'POST' })
+                    .then(() => {
+                        const $notifications = $container.querySelectorAll('[data-notification]');
+                        $notifications.forEach($notification => $notification.remove());
+                        onDismiss($container);
+                    });
+            });
+        });
+    }
 
-                        $hide.forEach(x => x.classList.add('d-none'));
-                        $show.forEach(x => x.classList.remove('d-none'));
-                    } else {
-                        const $counter = $container.querySelector('[data-notification-count]');
-                        const count = $notifications.length > 9 ? '9+' : $notifications.length.toString();
-                        $counter.innerHTML = count;
-                    }
-                }
+    function bindTabs($container) {
+        const $tabContainer = $container.querySelector('[data-notification-group-tabs]');
+        if (!$tabContainer) return;
+
+        let $tabs = $tabContainer.querySelectorAll('[data-notification-group-tab]');
+        $tabs.forEach($tab => {
+            $tab.addEventListener('click', () => onTabClick($container, $tabs, $tab));
+        });
+
+        $container.addEventListener('odk:dismiss', () => {
+            const $notifications = $container.querySelectorAll('[data-notification]');
+            const groups = {
+                All: 0
             };
 
-            xhr.send();
+            $notifications.forEach($notification => {
+                const group = $notification.getAttribute('data-notification-group');
+                if (!groups[group]) groups[group] = 0;
+                groups.All++;
+                groups[group]++;
+            });
+
+            if (groups.All === 0) return;
+
+            $tabs.forEach($tab => {
+                const tabGroup = $tab.getAttribute('data-notification-group-tab');
+                const count = groups[tabGroup] || 0;
+                if (!count) {
+                    $tab.remove();
+                    $tabs = $tabContainer.querySelectorAll('[data-notification-group-tab]');
+
+                    if (tabs.length === 2) {
+                        // Don't show individual groups if there's only one group + "All"
+                        $tabs[1].remove();
+                        $tabs = $tabContainer.querySelectorAll('[data-notification-group-tab]');
+                    }
+
+                    onTabClick($container, $tabs, $tabs[0]);
+
+                    if ($tabs.length <= 1) return $tabContainer.remove();
+                }
+
+                const $count = $tab.querySelector('[data-notification-count]');
+                $count.innerHTML = count;
+            });
         });
-    });
+    }
+
+    async function load() {
+        const $placeholder = document.querySelector('[data-notifications-load]');
+        if (!$placeholder) return;
+
+        const url = $placeholder.getAttribute('data-notifications-load');
+        const response = await fetch(url);
+        if (!response.ok) return;
+        const html = await response.text();
+        $placeholder.innerHTML = html;
+
+        onLoad();
+    }
+
+    function onChange($container) {
+        const $notifications = $container.querySelectorAll('[data-notification]');
+
+        updateCounts($container, $notifications);
+        toggleVisibilities($notifications.length === 0);
+    }
+
+    function onDismiss($container) {
+        onChange($container);
+
+        $container.dispatchEvent(new Event('odk:dismiss'));
+    }
+
+    function onLoad() {
+        const $container = document.querySelector('[data-notifications]');
+        bindDismiss($container);
+        bindDismissAll($container);
+        bindTabs($container);
+
+        onChange($container);
+    }
+
+    function onTabClick($container, $tabs, $tab) {
+        const $notifications = $container.querySelectorAll('[data-notification]');
+        $notifications.forEach($notification => $notification.classList.remove('d-none'));
+
+        $tabs.forEach(x => x.classList.remove('active'));
+        $tab.classList.add('active');
+
+        const tabGroup = $tab.getAttribute('data-notification-group-tab');
+        if (tabGroup === 'All') return;
+
+        $notifications.forEach($notification => {
+            const notificationGroup = $notification.getAttribute('data-notification-group');
+            if (notificationGroup === tabGroup) return;
+            $notification.classList.add('d-none');
+        });
+    }
+
+    function toggleVisibilities(empty) {
+        const $elementContainers = document.querySelectorAll('[data-notification-components]');
+        $elementContainers.forEach($elementContainer => {
+            const $hideIfEmpty = $elementContainer.querySelectorAll('[data-notifications-hide-if-empty]');
+            const $showIfEmpty = $elementContainer.querySelectorAll('[data-notifications-show-if-empty]');
+
+            if (empty) {
+                $hideIfEmpty.forEach(x => x.classList.add('d-none'));
+                $showIfEmpty.forEach(x => x.classList.remove('d-none'));
+            } else {
+                $showIfEmpty.forEach(x => x.classList.add('d-none'));
+                $hideIfEmpty.forEach(x => x.classList.remove('d-none'));
+            }
+        });
+    }
+
+    function updateCounts($container, $notifications) {
+        const totalCount = $notifications.length;
+
+        const $countBadge = document.querySelector('[data-notification-count-badge]');
+        if ($countBadge) $countBadge.innerHTML = totalCount > 9 ? '9+' : totalCount.toString();
+
+        const $count = $container.querySelector('[data-notification-count]');
+        if ($count) $count.innerHTML = totalCount.toString();
+    }
 })();

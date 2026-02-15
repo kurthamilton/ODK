@@ -1,4 +1,5 @@
-﻿(function () {
+﻿(function() {
+    bindAttachTo();
     bindCollapseToggle();
     bindConditionals();
     bindCopyToClipboard();
@@ -7,7 +8,18 @@
     bindImages();
     bindMenuLinks();
     bindPopovers();
-    bindTooltips();    
+    bindTooltips();
+
+    function bindAttachTo() {
+        const $elements = document.querySelectorAll('[data-attach-to]');
+        $elements.forEach($element => {
+            const selector = $element.getAttribute('data-attach-to');
+            const $target = document.querySelector(selector);
+            $element.removeAttribute('data-attach-to');
+            if (!$target) return;
+            $target.appendChild($element);
+        });
+    }
 
     function bindCollapseToggle() {
         const hiddenClass = 'd-none';
@@ -26,7 +38,7 @@
             $trigger.setAttribute('aria-controls', showSelector);
             $trigger.setAttribute('aria-expanded', !$show.classList.contains(hiddenClass))
 
-            $trigger.addEventListener('click', e => {                
+            $trigger.addEventListener('click', e => {
                 $show.classList.remove(hiddenClass);
                 $hide.classList.add(hiddenClass);
                 $trigger.setAttribute('aria-expanded', 'true');
@@ -67,8 +79,8 @@
             $source.addEventListener('click', () => {
                 const text = $source.getAttribute('data-copy-to-clipboard');
                 navigator.clipboard.writeText(text);
-            });            
-        });        
+            });
+        });
     }
 
     function bindFeaturePopovers() {
@@ -77,10 +89,10 @@
             if (!target.hasAttribute('data-feature-hidetip')) {
                 return;
             }
-            
-            const name = target.getAttribute('data-feature-hidetip');                        
+
+            const name = target.getAttribute('data-feature-hidetip');
             const url = `/Account/FeatureTips/${encodeURIComponent(name)}/Hide`;
-            
+
             fetch(url, {
                 method: 'POST'
             }).then(() => {
@@ -102,7 +114,7 @@
     function bindForms() {
         document.querySelectorAll('[data-onchange]').forEach(input => {
             const action = input.getAttribute('data-onchange');
-            if (action === 'submit') {                
+            if (action === 'submit') {
                 input.addEventListener('change', () => {
                     const form = input.closest('form');
                     if (form) {
@@ -120,7 +132,7 @@
             });
         });
 
-        document.querySelectorAll('[data-select-freetext]').forEach(select => {            
+        document.querySelectorAll('[data-select-freetext]').forEach(select => {
             const targetSelector = select.getAttribute('data-select-freetext');
             const triggerValue = select.getAttribute('data-select-freetext-value');
             const target = document.querySelector(targetSelector);
@@ -164,20 +176,20 @@
                 constrainImage(image);
             } else {
                 image.onload = () => constrainImage(image);
-            }            
+            }
         });
 
         const fallbackImages = document.querySelectorAll('[data-img-fallback]');
         fallbackImages.forEach(image => {
-            if (image.complete) { 
+            if (image.complete) {
                 if (image.error) {
                     loadFallback(image);
                 }
             } else {
                 image.onerror = () => loadFallback(image);
-            }            
+            }
         });
-    }    
+    }
 
     function bindMenuLinks() {
         const currentPath = window.location.pathname.toLocaleLowerCase();
@@ -210,7 +222,7 @@
                 return;
             }
 
-            const html = content.innerHTML;            
+            const html = content.innerHTML;
             element.setAttribute('data-bs-content', html);
         });
 
@@ -221,16 +233,16 @@
             }
 
             const popover = new bootstrap.Popover(element, options);
-            if (element.hasAttribute('data-popover-show')) {            
+            if (element.hasAttribute('data-popover-show')) {
                 popover.show();
             }
-        });        
-    }    
+        });
+    }
 
     function bindTooltips() {
         const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
         const tooltipList = [...tooltipTriggerList]
-            .filter(x => !!x.getAttribute('data-bs-title'))
-            .map(x => new bootstrap.Tooltip(x));
-    }    
+   .filter(x => !!x.getAttribute('data-bs-title'))
+   .map(x => new bootstrap.Tooltip(x));
+    }
 })();

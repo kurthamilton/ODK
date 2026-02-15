@@ -2,13 +2,15 @@
 @using ODK.Core.Countries
 @using ODK.Core.Platforms
 @using ODK.Core.Utils
+@using ODK.Web.Common.Routes
 @using ODK.Web.Common.Services
 @using ODK.Web.Razor.Pages.Chapters
 @using ODK.Web.Razor.Services
+@inject IOdkRoutes OdkRoutes
 @inject IRequestStore RequestStore
 @{
-    var platform = RequestStore.Platform;
-    var chapter = RequestStore.ChapterOrDefault;
+    var (platform, chapter, currentMember) = 
+        (RequestStore.Platform, RequestStore.ChapterOrDefault, RequestStore.CurrentMemberOrDefault);
 
     var title = platform switch
     {
@@ -134,6 +136,12 @@
 
     @await RenderSectionAsync("footer", required: false)
     
+    @if (currentMember != null)
+    {
+        <div data-notifications-load="/notifications">
+        </div>
+    }    
+
     <script src="~/lib/tinymce/tinymce.min.js" asp-append-version="true"></script>
     <script src="~/js/odk.bundle.js" asp-append-version="true"></script>
     @await RenderSectionAsync("scripts", required: false)

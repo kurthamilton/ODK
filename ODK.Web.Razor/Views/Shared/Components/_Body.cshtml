@@ -6,7 +6,7 @@
 @using ODK.Web.Razor.Pages.Chapters
 @model ODK.Web.Razor.Models.Components.BodyViewModel
 
-<main>
+<main id="main">
     @await Html.PartialAsync("Components/_PageTitle", new PageTitleViewModel
     {
         Content = Model.TitleContent,

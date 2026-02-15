@@ -1,9 +1,6 @@
-﻿@using ODK.Core.Notifications
-@using ODK.Services.Notifications
-@using ODK.Services.Notifications.ViewModels
+﻿@using ODK.Web.Common.Components
 @using ODK.Web.Common.Services
-@using ODK.Web.Razor.Services
-@inject INotificationService NotificationService
+@using ODK.Web.Razor.Models.Components
 @inject IRequestStore RequestStore
 @{
     var member = RequestStore.CurrentMemberOrDefault;
@@ -11,12 +8,27 @@
     {
         return;
     }
-
-    var viewModel = await NotificationService.GetUnreadNotificationsViewModel(RequestStore.MemberServiceRequest);
 }
 
-@*Only show notifications to users who have seen them before*@
-@if (viewModel.TotalCount > 0)
-{
-    @await Html.PartialAsync("Notifications/_NotificationList", viewModel)
-}
+<div data-odk-component="_NotificationList">
+    <div class="dropdown position-relative" role="button" data-notification-components>        
+        @*Counter badge*@
+        <span data-notifications-hide-if-empty
+              class="position-absolute top-0 start-100 translate-middle badge badge-sm rounded-pill bg-danger d-none">
+            <span data-notification-count-badge></span>
+            <span class="visually-hidden">unread messages</span>
+        </span>
+
+        @*Offcanvas button*@
+        <div class="text-light account-links__user dropdown-toggle"
+             data-bs-toggle="offcanvas" data-bs-target="#notification-content-offcanvas"
+             id="notifications-button-offcanvas">
+            <span class="icon-wrapper d-none" data-notifications-show-if-empty>
+                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.BellOutline))
+            </span>
+            <span class="icon-wrapper d-none" data-notifications-hide-if-empty>
+                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Bell))
+            </span>
+        </div>
+    </div>
+</div>

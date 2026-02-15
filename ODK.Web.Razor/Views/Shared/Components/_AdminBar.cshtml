@@ -3,7 +3,8 @@
 @using ODK.Web.Razor.Models.Components
 @model AdminBarViewModel
 
-@if (!User.IsInRole(OdkRoles.Admin) || Model.CurrentMember?.IsMemberOf(Model.Chapter.Id) != true)
+@if (Model.CurrentMember?.MemberChapter(Model.Chapter.Id) == null &&
+    Model.CurrentMember?.SiteAdmin != true)
 {
     return;    
 }

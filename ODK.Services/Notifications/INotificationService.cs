@@ -46,6 +46,8 @@ public interface INotificationService
 
     Task<UnreadNotificationsViewModel> GetUnreadNotificationsViewModel(IMemberServiceRequest request);
 
+    Task MarkAllAsRead(Guid memberId);
+
     Task MarkAsRead(Guid memberId, Guid notificationId);
 
     Task<ServiceResult> UpdateMemberNotificationSettings(
