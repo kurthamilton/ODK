@@ -13,7 +13,7 @@
 <div data-notifications data-notification-components>
     @await Html.PartialAsync("Components/_Offcanvas", new OffcanvasViewModel
     {
-        Class = "offcanvas--notifications",
+        Class = "offcanvas--flush",
         Content = await Html.PartialAsync("Notifications/_NotificationListContent", new NotificationListContentViewModel
         {
             Notifications = Model

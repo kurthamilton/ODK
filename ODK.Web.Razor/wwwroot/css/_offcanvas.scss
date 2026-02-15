@@ -2,3 +2,25 @@
     padding-left: var(--bs-offcanvas-padding-x);
     padding-right: var(--bs-offcanvas-padding-x);
 }
+
+.offcanvas {
+    --bs-offcanvas-width: 500px;
+
+    hr {
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+}
+
+.offcanvas-flush {
+    .offcanvas-body {
+        // move padding into the items so that the link highlights are flush
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .offcanvas-flush-item {
+        padding-left: var(--bs-offcanvas-padding-x);
+        padding-right: var(--bs-offcanvas-padding-x);
+    }
+}
