@@ -20,6 +20,7 @@
             const selector = $element.getAttribute('data-attach-to');
             const $target = document.querySelector(selector);
             $element.removeAttribute('data-attach-to');
+            $element.classList.remove('d-none');
             if (!$target) return;
             $target.appendChild($element);
         });

@@ -13,82 +13,99 @@
 }
 
 <div data-odk-component="_SiteAccountDropdown">
-    @if (currentMember != null)
-    {
-        <div class="dropdown" role="button">
-            <div class="text-light account-links__user dropdown-toggle" data-bs-toggle="dropdown">
-                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.User))
-            </div>
-            <div class="dropdown-menu dropdown-menu-end">
-                <a class="dropdown-item dropdown-item--icon" href="/account">
-                    <span class="icon">
-                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.UserOutline))
-                    </span>
-                    <span>My account</span>
-                </a>
-
-                <div class="dropdown-divider"></div>
-
-                <div class="dropdown-header dropdown-item--header">Groups</div>
-
-                @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
-                {
-                    Class = "dropdown-item dropdown-item--icon",
-                    Icon = IconType.Groups,
-                    Route = OdkRoutes.GroupAdmin.Index(),
-                    Text = "My groups"
-                })
-                
-                @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
-                {
-                    Class = "dropdown-item dropdown-item--icon",
-                    Icon = IconType.Plus,
-                    Route = OdkRoutes.GroupAdmin.Create(),
-                    Text = "Create"
-                })
-
-                <div class="dropdown-divider"></div>
-
-                <a class="dropdown-item dropdown-item--icon" href="#" data-theme-selector="dark">
-                    <span class="icon">
-                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Moon))
-                    </span>
-                    <span>Dark mode</span>
-                </a>
-                <a class="dropdown-item dropdown-item--icon" href="#" data-theme-selector="light">
-                    <span class="icon">
-                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Sun))
-                    </span>
-                    <span>Light mode</span>
-                </a>
-
-                @if (currentMember?.SiteAdmin == true)
-                {
-                    <div class="dropdown-divider"></div>
-
-                    <a class="dropdown-item dropdown-item--icon" href="@OdkRoutes.SiteAdmin.Index">
-                        <span class="icon">
-                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Wrench))
-                        </span>
-                        <span>Site admin</span>
-                    </a>
-                }
-
-                <div class="dropdown-divider"></div>
-                <a class="dropdown-item dropdown-item--icon" href="/account/logout">
-                    <span class="icon">
-                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Logout))
-                    </span>
-                    <span>Sign Out</span>
-                </a>
-            </div>
-        </div>
-    }
-    else
+    @if (currentMember == null)
     {
         <div class="button-container">
-            <a class="btn btn-outline-primary anonymous-link" href="/account/login">Sign in</a>
-            <a class="btn btn-primary anonymous-link" href="/account/create">Sign up</a>
+            <a class="btn btn-outline-primary anonymous-link" href="@OdkRoutes.Account.Login(null)">Sign in</a>
+            <a class="btn btn-primary anonymous-link" href="@OdkRoutes.Account.Create()">Sign up</a>
         </div>
+        return;
     }
+
+    <div class="text-light account-links__user" role="button"
+         data-bs-toggle="offcanvas" data-bs-target="#account-menu-offcanvas">
+        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.User))
+    </div>
+
+    <div class="d-none" data-attach-to="main">
+        @await Html.PartialAsync("Components/_Offcanvas", new OffcanvasViewModel
+        {        
+            BodyClass = "pt-0",
+            Class = "offcanvas-flush",
+            Id = "account-menu-offcanvas",
+            Position = "end",
+            ContentFunc =
+                @<div>
+                    <div class="list-group list-group-flush list-group-border-0">
+                        <a class="list-group-item list-group-item-action" href="/account">
+                            <span class="icon">
+                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.UserOutline))
+                            </span>
+                            <span>My account</span>
+                        </a>
+                    </div>                    
+
+                    <hr/>
+
+                    <div class="offcanvas-flush-item"><strong>Groups</strong></div>
+
+                    <div class="list-group list-group-flush list-group-border-0">
+                        @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                        {
+                            Class = "list-group-item list-group-item-action",
+                            Icon = IconType.Groups,
+                            Route = OdkRoutes.GroupAdmin.Index(),
+                            Text = "My groups"
+                        })
+                
+                        @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                        {
+                            Class = "list-group-item list-group-item-action",
+                            Icon = IconType.Plus,
+                            Route = OdkRoutes.GroupAdmin.Create(),
+                            Text = "Create"
+                        })
+                    </div>                    
+
+                    @if (currentMember?.SiteAdmin == true)
+                    {
+                        <hr/>
+                        <div class="list-group list-group-flush list-group-border-0">
+                            <a class="list-group-item list-group-item-action" href="@OdkRoutes.SiteAdmin.Index">
+                                <span class="icon">
+                                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Wrench))
+                                </span>
+                                <span>Site admin</span>
+                            </a>
+                        </div>                        
+                    }
+
+                    <hr/>
+                    <div class="list-group list-group-flush list-group-border-0">
+                        <a class="list-group-item list-group-item-action" href="/account/logout">
+                            <span class="icon">
+                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Logout))
+                            </span>
+                            <span>Sign Out</span>
+                        </a>
+                    </div>                    
+                </div>,
+            FooterFunc = 
+                @<div>
+                    <div class="list-group list-group-flush list-group-border-0">
+                        <div class="offcanvas-flush-item"><strong>Appearance</strong></div>
+
+                        <label class="list-group-item list-group-item-action d-flex align-items-center offcanvas-flush-item">
+                            <span class="me-3">Dark mode</span>
+
+                            <span class="d-flex gap-1">
+                                <span class="form-switch p-0 d-flex align-items-center">
+                                    <input class="form-check-input ms-0 mt-0" type="checkbox" role="switch" data-theme-switch />
+                                </span>                
+                            </span>
+                        </label>
+                    </div>
+                </div>
+        })  
+    </div>
 </div>

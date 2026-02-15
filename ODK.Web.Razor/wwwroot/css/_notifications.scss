@@ -4,16 +4,6 @@
     overscroll-behavior: contain;
 }
 
-.offcanvas--notifications {
-    --bs-offcanvas-width: 500px;
-
-    .offcanvas-body {
-        // move padding into the notification items so that the link highlights are flush
-        padding-left: 0;
-        padding-right: 0;
-    }
-}
-
 .notification-item {
     --odk-notification-item-padding-y: 1rem;
     --odk-notification-item-padding-x: 1rem;

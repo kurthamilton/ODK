@@ -15,6 +15,12 @@ public class AccountRoutes : RoutesBase
     public string Activate(Chapter? chapter, string token)
         => AccountPath(chapter, $"/activate?token={HttpUtility.UrlEncode(token)}");
 
+    public string Create() => Platform switch
+    {
+        PlatformType.DrunkenKnitwits => "/",
+        _ => AccountPath(null, "/create")
+    };
+
     public string Conversations(Chapter? chapter) => AccountPath(chapter, "/conversations");
 
     public string Delete(Chapter? chapter) => AccountPath(chapter, "/delete");

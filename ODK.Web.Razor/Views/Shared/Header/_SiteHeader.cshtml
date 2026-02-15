@@ -23,13 +23,7 @@
                 <a href="/">
                     <img class="site-logo" src="/assets/groupsquirrel/logo2.webp" />
                 </a>
-            </div>
-        
-            <div class="d-flex gap-4 ms-auto align-self-center order-md-5">
-                @await Html.PartialAsync("Header/_SiteTasksDropdown")
-                @await Html.PartialAsync("Header/_NotificationDropdown")
-                @await Html.PartialAsync("Header/_SiteAccountDropdown")
-            </div>
+            </div>                    
 
             <div class="navbar-collapse site-nav" id="@id">
                 <ul class="navbar-nav">
@@ -52,6 +46,12 @@
                         </li>
                     }                
                 </ul>
+            </div>
+
+            <div class="d-flex gap-4 ms-auto align-self-center order-md-5">
+                @await Html.PartialAsync("Header/_SiteTasksDropdown")
+                @await Html.PartialAsync("Header/_NotificationDropdown")
+                @await Html.PartialAsync("Header/_SiteAccountDropdown")
             </div>
         </div>
     </nav>

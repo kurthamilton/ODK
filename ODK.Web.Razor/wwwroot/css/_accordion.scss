@@ -3,8 +3,23 @@
     background-color: rgba(0,0,0,.03);
 }
 
+.accordion-flush {
+    .accordion-button {
+        border-left: none;
+        border-right: none;
+    }
+}
+
+.accordion--no-theme {
+    .accordion-button {
+        --bs-accordion-active-color: none;
+        --bs-accordion-active-bg: none;
+    }
+}
+
 .accordion--transition-0 {
     --bs-accordion-transition: none;
+
     .collapsing {
         transition: none;
     }

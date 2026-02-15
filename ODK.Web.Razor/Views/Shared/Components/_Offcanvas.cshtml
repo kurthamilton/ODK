@@ -53,5 +53,12 @@
                 @Model.ContentFunc.Invoke(null)
             }
         </div>
+
+        @if (Model.FooterFunc != null)
+        {
+            <div class="offcanvas-footer">
+                @Model.FooterFunc.Invoke(null)
+            </div>
+        }        
     </div>
 </div>
