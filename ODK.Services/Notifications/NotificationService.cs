@@ -142,12 +142,29 @@ public class NotificationService : INotificationService
 
         return new UnreadNotificationsViewModel
         {
+            CurrentMember = currentMember,
+            Platform = platform,
             Unread = unread
                 .Where(x => !excludedTypes.Contains(x.Type))
                 .ToArray(),
-            Platform = platform,
             TotalCount = totalCount
         };
+    }
+
+    public async Task MarkAllAsRead(Guid memberId)
+    {
+        var unread = await _unitOfWork.NotificationRepository
+            .GetUnreadByMemberId(memberId)
+            .Run();
+
+        var utcNow = DateTime.UtcNow;
+        foreach (var notification in unread)
+        {
+            notification.ReadUtc = utcNow;
+            _unitOfWork.NotificationRepository.Update(notification);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
     }
 
     public async Task MarkAsRead(Guid memberId, Guid notificationId)

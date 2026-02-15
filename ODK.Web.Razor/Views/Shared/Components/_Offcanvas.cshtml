@@ -1,0 +1,57 @@
+﻿@using ODK.Web.Razor.Models.Components
+@model OffcanvasViewModel
+@{
+    var customClasses = new List<string>();
+    if (!string.IsNullOrEmpty(Model.Breakpoint))
+    {
+        customClasses.Add($"offcanvas-{Model.Breakpoint.ToLowerInvariant()}");
+    }
+
+    if (!string.IsNullOrEmpty(Model.Class))
+    {
+        customClasses.Add(Model.Class);
+    }
+
+    if (!string.IsNullOrEmpty(Model.Position))
+    {
+        customClasses.Add($"offcanvas-{Model.Position.ToLowerInvariant()}");
+    }
+}
+
+<div data-odk-component="_Offcanvas">
+    <div class="offcanvas @string.Join(' ', customClasses)" tabindex="-1" id="@Model.Id" aria-labelledby="offcanvas-label">
+        
+        <div class="offcanvas-header">            
+            <h5 class="offcanvas-title" id="offcanvas-label">
+                @if (Model.TitleContent != null)
+                {
+                    @Model.TitleContent.Invoke(null)
+                }
+                else
+                {
+                    @Model.Title
+                }
+            </h5>
+            
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        
+        @if (Model.SubtitleContent != null)
+        {
+            <div class="offcanvas-subtitle">
+                @Model.SubtitleContent.Invoke(null)
+            </div>
+        }
+
+        <div class="offcanvas-body @Model.BodyClass">
+            @if (Model.Content != null)
+            {
+                @Model.Content
+            }
+            else if (Model.ContentFunc != null)
+            {
+                @Model.ContentFunc.Invoke(null)
+            }
+        </div>
+    </div>
+</div>

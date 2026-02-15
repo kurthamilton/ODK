@@ -1,0 +1,36 @@
+﻿@using ODK.Core.Notifications
+@using ODK.Services.Notifications.ViewModels
+@using ODK.Web.Razor.Models.Notifications
+@model NotificationListContentViewModel
+@{
+    var currentMember = Model.Notifications.CurrentMember;
+    var platform = Model.Notifications.Platform;
+    var notifications = Model.Notifications.Unread;
+    var showIfEmptyClass = notifications.Count == 0 ? null : "d-none";
+}
+
+@*Content*@            
+@if (notifications.Count > 0)
+{
+    <div class="notification-items">
+        @foreach (var notification in notifications)
+        {
+            var group = notification.Type.Group();
+            <div class="notification-item @Model.ItemClass border-top" 
+                data-notification data-notification-group="@group">
+                @await Html.PartialAsync("Notifications/_NotificationListItem", new NotificationListItemViewModel
+                {
+                    Notification = notification
+                })
+            </div>
+        }
+    </div>
+}
+
+@*Placeholder*@
+<div class="notification-item @Model.ItemClass @showIfEmptyClass"
+     data-notifications-show-if-empty>
+    <div class="notification-text">
+        No unread notifications
+    </div>
+</div>

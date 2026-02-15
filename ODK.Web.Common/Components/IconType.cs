@@ -13,6 +13,7 @@ public enum IconType
     Check,
     CheckCircle,
     ChevronRight,
+    CircleNotch,
     Contact,
     Copy,
     Dollar,

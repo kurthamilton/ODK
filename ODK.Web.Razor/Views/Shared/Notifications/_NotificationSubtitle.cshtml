@@ -1,0 +1,76 @@
+﻿@using ODK.Core.Notifications
+@using ODK.Core.Utils
+@using ODK.Services.Notifications.ViewModels
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
+@using ODK.Web.Common.Services
+@using ODK.Web.Razor.Models.Admin.Venues
+@using ODK.Web.Razor.Models.Components
+@inject IOdkRoutes OdkRoutes
+@inject IRequestStore RequestStore
+@model UnreadNotificationsViewModel
+@{
+    var chapter = RequestStore.ChapterOrDefault;
+    var hideIfEmptyClass = Model.Unread.Count == 0 ? "d-none" : null;
+
+    var notifications = Model.Unread;
+    var notificationGroups = notifications
+        .GroupBy(x => x.Type.Group())
+        .OrderBy(x => EnumUtils.GetDisplayValue(x.Key));
+}
+
+<div data-odk-component="_NotificationSubtitle">
+    <div class="d-flex">
+        <a href="@OdkRoutes.Account.Notifications(chapter)">
+            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Settings))
+            <span>Manage</span>
+        </a>
+
+        <button class="btn btn-link ms-auto @hideIfEmptyClass" type="button"
+            data-notifications-dismiss-all data-notifications-hide-if-empty
+            data-url="/account/notifications/dismiss">
+            Dismiss all
+        </button>
+    </div>
+    
+    @if (notifications.Count > 0)
+    {
+        <div data-notifications-hide-if-empty>
+            <ul class="nav nav-underline my-3" data-notification-group-tabs>
+                <li class="nav-item">
+                    <a class="nav-link active" href="#" data-notification-group-tab="All">
+                        <span>All</span>
+                        <span>(</span><span data-notification-count data-notification-total-count>@notifications.Count()</span><span>)</span>
+                    </a>
+                </li>
+
+                @*Only show individual groups when there's more than 1*@
+                @if (notificationGroups.Count() > 1)
+                {
+                    foreach (var group in notificationGroups)
+                    {
+                        var link = $"#{group.Key}".ToLowerInvariant();
+
+                        var icon = group.Key switch
+                        {
+                            NotificationGroupType.Events => IconType.Calendar,
+                            NotificationGroupType.Members => IconType.User,
+                            NotificationGroupType.Messages => IconType.Envelope,
+                            _ => default(IconType?)
+                        };
+
+                        <li class="nav-item" data-notification-group-tab="@group.Key">
+                            <a class="nav-link" href="@link"
+                                data-bs-toggle="tooltip" data-bs-title="@EnumUtils.GetDisplayValue(group.Key)">
+                                <span>
+                                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(icon!.Value))
+                                </span>
+                                <span>(</span><span data-notification-count>@group.Count()</span><span>)</span>
+                            </a>
+                        </li>
+                    }
+                }                
+            </ul>
+        </div>
+    }    
+</div>
