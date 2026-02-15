@@ -10,6 +10,7 @@ public enum IconType
     Bell,
     BellOutline,
     Calendar,
+    CalendarPlus,
     Check,
     CheckCircle,
     ChevronRight,

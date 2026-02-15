@@ -17,6 +17,8 @@ public class OffcanvasViewModel
 
     public Func<object?, IHtmlContent>? ContentFunc { get; init; }
 
+    public Func<object?, IHtmlContent>? FooterFunc { get; init; }
+
     public required string Id { get; init; }
 
     public string? Position { get; init; }
