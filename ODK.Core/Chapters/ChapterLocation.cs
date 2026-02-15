@@ -6,7 +6,11 @@ public class ChapterLocation : IChapterEntity, ILocation
 {
     public Guid ChapterId { get; set; }
 
+    public decimal Latitude { get; set; }
+
     public LatLong LatLong { get; set; }
+
+    public decimal Longitude { get; set; }
 
     public string Name { get; set; } = string.Empty;
 

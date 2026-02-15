@@ -14,5 +14,9 @@ public class DistanceUnitMap : IEntityTypeConfiguration<DistanceUnit>
 
         builder.Property(x => x.Id)
             .HasColumnName("DistanceUnitId");
+
+        builder.Property(x => x.Type)
+            .HasColumnName("DistanceUnitTypeId")
+            .HasConversion<int>();
     }
 }

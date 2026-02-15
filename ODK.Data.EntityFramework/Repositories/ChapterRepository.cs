@@ -1,8 +1,10 @@
-﻿using ODK.Core.Chapters;
+﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Chapters;
 using ODK.Core.Events;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Core.Topics;
+using ODK.Data.Core.Chapters;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
@@ -114,6 +116,42 @@ public class ChapterRepository : WriteRepositoryBase<Chapter>, IChapterRepositor
         => Set(PlatformType.Default, includeUnpublished: true)
             .Where(x => x.Name == name)
             .DeferredAny();
+
+    public IDeferredQueryMultiple<Chapter> Search(PlatformType platform, ChapterSearchCriteria criteria)
+    {
+        var query = Set(platform, includeUnpublished: false);
+
+        if (criteria.Distance != null)
+        {
+            query =
+                from chapter in query
+                from chapterLocation in Set<ChapterLocation>()
+                    .Where(x => x.ChapterId == chapter.Id)
+                    .WithinDistance(criteria.Distance.Location, criteria.Distance.DistanceKm * 1000)
+                select chapter;
+            ;
+        }
+
+        if (criteria.TopicGroupNames != null)
+        {
+            query =
+                from chapter in query
+                where
+                (
+                    from chapterTopic in Set<ChapterTopic>()
+                        .Where(x => x.ChapterId == chapter.Id)
+                    from topic in Set<Topic>()
+                        .Where(x => x.Id == chapterTopic.TopicId)
+                    from topicGroup in Set<TopicGroup>()
+                        .Where(x => x.Id == topic.TopicGroupId)
+                    where criteria.TopicGroupNames.Contains(topicGroup.Name)
+                    select 1
+                ).Any()
+                select chapter;
+        }
+
+        return query.DeferredMultiple();
+    }
 
     public IDeferredQuery<bool> SlugExists(string slug)
         => Set(PlatformType.Default, includeUnpublished: true)

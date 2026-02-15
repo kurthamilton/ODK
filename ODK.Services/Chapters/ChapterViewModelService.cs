@@ -50,19 +50,43 @@ public class ChapterViewModelService : IChapterViewModelService
     {
         MemberLocation? memberLocation = null;
 
-        if (filter.Location == null && currentMember?.Id != null)
+        var distance = filter.Distance ?? 30;
+
+        var location = filter.Location != null && filter.LocationName != null
+            ? new Location
+            {
+                LatLong = filter.Location.Value,
+                Name = filter.LocationName
+            }
+            : null;
+
+        if (location == null && currentMember?.Id != null)
         {
             memberLocation = await _unitOfWork.MemberLocationRepository.GetByMemberId(currentMember.Id);
+
+            location = new Location
+            {
+                LatLong = memberLocation.LatLong,
+                Name = memberLocation.Name
+            };
         }
 
-        var topicGroups = await _unitOfWork.TopicGroupRepository.GetAll().Run();
-        var topicGroup = topicGroups
-            .FirstOrDefault(x => string.Equals(x.Name, filter.TopicGroup, StringComparison.InvariantCultureIgnoreCase));
+        var criteria = new ChapterSearchCriteria
+        {
+            Distance = filter.Distance != null && filter.Location != null
+                ? new ChapterSearchCriteriaDistance
+                {
+                    DistanceKm = filter.Distance.Value,
+                    Location = filter.Location.Value
+                }
+                : null,
+            TopicGroupNames = !string.IsNullOrEmpty(filter.TopicGroup)
+                ? [filter.TopicGroup]
+                : null
+        };
 
         var (chapters, distanceUnits, preferences, adminMembers) = await _unitOfWork.RunAsync(
-            x => topicGroup != null
-                ? x.ChapterRepository.GetByTopicGroupId(platform, topicGroup.Id)
-                : x.ChapterRepository.GetAll(platform, includeUnpublished: false),
+            x => x.ChapterRepository.Search(platform, criteria),
             x => x.DistanceUnitRepository.GetAll(),
             x => currentMember != null
                 ? x.MemberPreferencesRepository.GetByMemberId(currentMember.Id)
@@ -71,19 +95,10 @@ public class ChapterViewModelService : IChapterViewModelService
                 ? x.ChapterAdminMemberRepository.GetByMemberId(platform, currentMember.Id)
                 : new DefaultDeferredQueryMultiple<ChapterAdminMember>());
 
-        // TODO: search by location in the database
-        var chapterLocations = await _unitOfWork.ChapterLocationRepository.GetByChapterIds(chapters.Select(x => x.Id));
-
-        distanceUnits = distanceUnits
-            .OrderBy(x => x.Order)
-            .ToArray();
-
-        var distanceUnit = distanceUnits
-            .FirstOrDefault(x => string.Equals(x.Abbreviation, filter.DistanceUnit, StringComparison.OrdinalIgnoreCase))
-            ?? distanceUnits.FirstOrDefault(x => x.Id == preferences?.DistanceUnitId)
-            ?? distanceUnits.First();
-
-        if (currentMember != null && distanceUnit.Id != preferences?.DistanceUnitId)
+        var distanceUnit = filter.DistanceUnit != null
+            ? distanceUnits.First(x => x.Type == filter.DistanceUnit)
+            : null;
+        if (currentMember != null && distanceUnit != null && distanceUnit.Id != preferences?.DistanceUnitId)
         {
             preferences ??= new MemberPreferences();
 
@@ -101,28 +116,6 @@ public class ChapterViewModelService : IChapterViewModelService
 
             await _unitOfWork.SaveChangesAsync();
         }
-
-        var distance = filter.Distance ?? 30;
-
-        var location = filter.Location != null && filter.LocationName != null
-            ? new Location
-            {
-                LatLong = filter.Location.Value,
-                Name = filter.LocationName
-            }
-            : memberLocation != null
-                ? new Location
-                {
-                    LatLong = memberLocation.LatLong,
-                    Name = memberLocation.Name
-                }
-                : null;
-
-        var chaptersWithDistances = FilterChaptersByDistance(
-            chapters,
-            chapterLocations,
-            location?.LatLong,
-            new Distance { Unit = distanceUnit, Value = distance });
 
         var chapterIds = chapters
             .Select(x => x.Id)
@@ -556,7 +549,8 @@ public class ChapterViewModelService : IChapterViewModelService
             hasQuestions,
             texts,
             chapterTopics,
-            chapterPages
+            chapterPages,
+            location
         ) = await _unitOfWork.RunAsync(
             x => currentMember != null
                 ? x.MemberSubscriptionRepository.GetByMemberId(currentMember.Id, chapter.Id)
@@ -575,9 +569,8 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
             x => x.ChapterTextsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterTopicRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterPageRepository.GetByChapterId(chapter.Id));
-
-        var location = await _unitOfWork.ChapterLocationRepository.GetByChapterId(chapter.Id);
+            x => x.ChapterPageRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterLocationRepository.GetByChapterIdTest(chapter.Id));
 
         var eventIds = upcomingEvents
             .Concat(recentEvents)
@@ -802,7 +795,8 @@ public class ChapterViewModelService : IChapterViewModelService
             texts,
             instagramPosts,
             latestMembers,
-            chapterTopics) = await _unitOfWork.RunAsync(
+            chapterTopics,
+            chapterLocation) = await _unitOfWork.RunAsync(
             x => currentMember != null
                 ? x.MemberSubscriptionRepository.GetByMemberId(currentMember.Id, chapter.Id)
                 : new DefaultDeferredQuerySingleOrDefault<MemberSubscription>(),
@@ -814,9 +808,8 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.ChapterTextsRepository.GetByChapterId(chapter.Id),
             x => x.InstagramPostRepository.GetDtosByChapterId(chapter.Id, 8),
             x => x.MemberRepository.GetLatestByChapterId(chapter.Id, 8),
-            x => x.ChapterTopicRepository.GetByChapterId(chapter.Id));
-
-        var chapterLocation = await _unitOfWork.ChapterLocationRepository.GetByChapterId(chapter.Id);
+            x => x.ChapterTopicRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterLocationRepository.GetByChapterIdTest(chapter.Id));
 
         var eventIds = events.Select(x => x.Id).ToArray();
 

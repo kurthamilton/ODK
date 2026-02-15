@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using ODK.Core.Countries;
 
 namespace ODK.Web.Razor.Pages.Groups;
 
@@ -6,7 +7,7 @@ public class IndexModel : OdkPageModel
 {
     public double? Distance { get; private set; }
 
-    public string? DistanceUnit { get; private set; }
+    public DistanceUnitType? DistanceUnit { get; private set; }
 
     public double? Lat { get; private set; }
 
@@ -20,7 +21,7 @@ public class IndexModel : OdkPageModel
         [FromQuery(Name = "l")] string? latLong,
         [FromQuery(Name = "n")] string? name,
         [FromQuery(Name = "d")] double? distance,
-        [FromQuery(Name = "u")] string? unit,
+        [FromQuery(Name = "u")] DistanceUnitType? unit,
         [FromQuery(Name = "c")] string? topicGroup)
     {
         TopicGroup = topicGroup;
@@ -28,7 +29,7 @@ public class IndexModel : OdkPageModel
         UpdateLocation(latLong, name);
     }
 
-    private void UpdateDistance(double? distance, string? unit)
+    private void UpdateDistance(double? distance, DistanceUnitType? unit)
     {
         if (distance == null || unit == null)
         {

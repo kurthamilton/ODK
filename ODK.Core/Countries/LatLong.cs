@@ -37,7 +37,7 @@ public struct LatLong
         const double R = 6_371_000;
         var t1 = lat1 * Math.PI / 180; // φ1, λ in radians
         var t2 = lat2 * Math.PI / 180; // φ2
-        var dLat = (lat2 - lat1) * Math.PI / 180; // Δφ 
+        var dLat = (lat2 - lat1) * Math.PI / 180; // Δφ
         var dLon = (lon2 - lon1) * Math.PI / 180; // Δλ
 
         var a =

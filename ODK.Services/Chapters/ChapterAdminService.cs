@@ -877,11 +877,10 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         var chapter = request.Chapter;
 
-        var country = await GetChapterAdminRestrictedContent(
+        var (country, location) = await GetChapterAdminRestrictedContent(
             request,
-            x => x.CountryRepository.GetByChapterId(chapter.Id));
-
-        var location = await _unitOfWork.ChapterLocationRepository.GetByChapterId(chapter.Id);
+            x => x.CountryRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterLocationRepository.GetDtoByChapterId(chapter.Id));
 
         return new ChapterLocationAdminPageViewModel
         {
