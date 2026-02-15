@@ -9,7 +9,7 @@ public class Member : IVersioned, IDatabaseEntity, ITimeZoneEntity
 
     public bool Activated { get; set; }
 
-    public ICollection<MemberChapter> Chapters { get; set; } = new List<MemberChapter>();
+    public ICollection<MemberChapter> Chapters { get; set; } = [];
 
     public DateTime CreatedUtc { get; set; }
 

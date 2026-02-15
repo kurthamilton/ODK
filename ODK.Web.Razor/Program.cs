@@ -186,7 +186,7 @@ public class Program
                 "lib/aspnet-client-validation/dist/aspnet-validation.js",
                 "lib/jscolor/jscolor.js",
                 "lib/slim-select/slimselect.js",
-                "js/site.js",
+                "js/odk.js",
                 "js/odk.cookieconsent.js",
                 "js/odk.dropdowns.js",
                 "js/odk.forms.js",

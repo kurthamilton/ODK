@@ -1,0 +1,36 @@
+﻿@using ODK.Services.Notifications.ViewModels
+@using ODK.Web.Common.Components
+@using ODK.Web.Razor.Models.Components
+@model UnreadNotificationsViewModel
+@{
+    var notifications = Model.Unread;
+
+    var showIfEmptyClass = notifications.Count == 0 ? null : "d-none";
+    var hideIfEmptyClass = notifications.Count == 0 ? "d-none" : null;
+}
+
+@*Offcanvas content*@
+<div data-notifications data-notification-components>
+    @await Html.PartialAsync("Components/_Offcanvas", new OffcanvasViewModel
+    {
+        Class = "offcanvas--notifications",
+        Content = await Html.PartialAsync("Notifications/_NotificationListContent", new NotificationListContentViewModel
+        {
+            Notifications = Model
+        }),
+        Id = "notification-content-offcanvas",
+        Position = "end",
+        SubtitleContent =
+            @<div>@await Html.PartialAsync("Notifications/_NotificationSubtitle")</div>,
+        TitleContent =
+            @<div>
+                <span class="icon-wrapper @showIfEmptyClass" data-notifications-show-if-empty>
+                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.BellOutline))
+                </span>
+                <span class="icon-wrapper @hideIfEmptyClass" data-notifications-hide-if-empty>
+                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Bell))
+                </span>
+                <span>Notifications</span>
+            </div>
+    })
+</div>

@@ -3,9 +3,15 @@
 }
 
 .flip-horizontal {
-  transform: scaleX(-1);
+    transform: scaleX(-1);
 }
 
 .text-body {
     color: var(--bs-body-color);
+}
+
+@include media-breakpoint-down(md) {
+    .hide-below-md {
+        display: none !important;
+    }
 }

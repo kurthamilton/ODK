@@ -1,0 +1,13 @@
+﻿@page "/notifications"
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Services.Notifications
+@attribute [Authorize]
+@model NotificationsModel
+@inject INotificationService NotificationService
+@{
+    Layout = null;
+
+    var viewModel = await NotificationService.GetUnreadNotificationsViewModel(Model.MemberServiceRequest);
+}
+
+@await Html.PartialAsync("Notifications/_NotificationsContent", viewModel)

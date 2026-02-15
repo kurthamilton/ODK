@@ -4,14 +4,11 @@
 @using ODK.Web.Razor.Models.Components
 @model ManageChapterLinkViewModel
 @inject IOdkRoutes OdkRoutes
-@{
-    var iconViewModel = new IconViewModel(IconType.Settings);
-}
 
 <div data-odk-component="_ManageChapterLink">
     <a class="text-body-secondary link-hover d-flex gap-1 align-items-center" 
         href="@OdkRoutes.GroupAdmin.Group(Model.Chapter).Path">
-        @await Html.PartialAsync("Components/_Icon", iconViewModel)
+        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Settings))
         <span class="link-hover__underline">Manage</span>
     </a>
 </div>
