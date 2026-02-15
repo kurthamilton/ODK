@@ -1,4 +1,4 @@
-﻿(function() {
+﻿(function () {
     bindAttachTo();
     bindCollapseToggle();
     bindConditionals();
@@ -9,6 +9,10 @@
     bindMenuLinks();
     bindPopovers();
     bindTooltips();
+
+    window.odk = window.odk || {};
+    window.odk.utils = window.odk.utils || {};
+    window.odk.utils.bindTooltips = bindTooltips;
 
     function bindAttachTo() {
         const $elements = document.querySelectorAll('[data-attach-to]');
@@ -242,7 +246,7 @@
     function bindTooltips() {
         const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
         const tooltipList = [...tooltipTriggerList]
-   .filter(x => !!x.getAttribute('data-bs-title'))
-   .map(x => new bootstrap.Tooltip(x));
+            .filter(x => !!x.getAttribute('data-bs-title'))
+            .map(x => new bootstrap.Tooltip(x));
     }
 })();

@@ -69,7 +69,7 @@
                     $tab.remove();
                     $tabs = $tabContainer.querySelectorAll('[data-notification-group-tab]');
 
-                    if (tabs.length === 2) {
+                    if ($tabs.length === 2) {
                         // Don't show individual groups if there's only one group + "All"
                         $tabs[1].remove();
                         $tabs = $tabContainer.querySelectorAll('[data-notification-group-tab]');
@@ -102,8 +102,8 @@
     function onChange($container) {
         const $notifications = $container.querySelectorAll('[data-notification]');
 
-        updateCounts($container, $notifications);
         toggleVisibilities($notifications.length === 0);
+        updateCounts($container, $notifications);
     }
 
     function onDismiss($container) {
@@ -119,6 +119,8 @@
         bindTabs($container);
 
         onChange($container);
+
+        window.odk.utils.bindTooltips();
     }
 
     function onTabClick($container, $tabs, $tab) {
@@ -157,10 +159,10 @@
     function updateCounts($container, $notifications) {
         const totalCount = $notifications.length;
 
-        const $countBadge = document.querySelector('[data-notification-count-badge]');
-        if ($countBadge) $countBadge.innerHTML = totalCount > 9 ? '9+' : totalCount.toString();
+        const $countBadges = document.querySelectorAll('[data-notification-count-badge]');
+        $countBadges.forEach(x => x.innerHTML = totalCount > 9 ? '9+' : totalCount.toString());
 
-        const $count = $container.querySelector('[data-notification-count]');
-        if ($count) $count.innerHTML = totalCount.toString();
+        const $counts = $container.querySelectorAll('[data-notification-total-count]');
+        $counts.forEach(x => x.innerHTML = totalCount.toString());
     }
 })();

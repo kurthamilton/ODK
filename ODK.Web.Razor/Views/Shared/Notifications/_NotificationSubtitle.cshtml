@@ -40,7 +40,7 @@
                 <li class="nav-item">
                     <a class="nav-link active" href="#" data-notification-group-tab="All">
                         <span>All</span>
-                        <span>(</span><span data-notification-count>@notifications.Count()</span><span>)</span>
+                        <span>(</span><span data-notification-count data-notification-total-count>@notifications.Count()</span><span>)</span>
                     </a>
                 </li>
 
@@ -51,9 +51,20 @@
                     {
                         var link = $"#{group.Key}".ToLowerInvariant();
 
-                        <li class="nav-item">
-                            <a class="nav-link" href="@link" data-notification-group-tab="@group.Key">
-                                <span>@EnumUtils.GetDisplayValue(group.Key)</span>
+                        var icon = group.Key switch
+                        {
+                            NotificationGroupType.Events => IconType.Calendar,
+                            NotificationGroupType.Members => IconType.User,
+                            NotificationGroupType.Messages => IconType.Envelope,
+                            _ => default(IconType?)
+                        };
+
+                        <li class="nav-item" data-notification-group-tab="@group.Key">
+                            <a class="nav-link" href="@link"
+                                data-bs-toggle="tooltip" data-bs-title="@EnumUtils.GetDisplayValue(group.Key)">
+                                <span>
+                                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(icon!.Value))
+                                </span>
                                 <span>(</span><span data-notification-count>@group.Count()</span><span>)</span>
                             </a>
                         </li>
