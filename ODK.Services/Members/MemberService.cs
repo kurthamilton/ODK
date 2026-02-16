@@ -158,8 +158,8 @@ public class MemberService : IMemberService
             _unitOfWork.MemberLocationRepository.Add(new MemberLocation
             {
                 CountryId = country?.Id,
-                Latitude = (decimal)model.Location.Value.Lat,
-                Longitude = (decimal)model.Location.Value.Long,
+                Latitude = model.Location.Value.Lat,
+                Longitude = model.Location.Value.Long,
                 MemberId = member.Id,
                 Name = model.LocationName
             });
@@ -918,8 +918,8 @@ public class MemberService : IMemberService
             var country = await _geolocationService.GetCountryFromLocation(location.Value);
 
             memberLocation.CountryId = country?.Id;
-            memberLocation.Latitude = (decimal)location.Value.Lat;
-            memberLocation.Longitude = (decimal)location.Value.Long;
+            memberLocation.Latitude = location.Value.Lat;
+            memberLocation.Longitude = location.Value.Long;
             memberLocation.Name = name;
         }
         else

@@ -1003,49 +1003,6 @@ public class ChapterViewModelService : IChapterViewModelService
         return viewModels;
     }
 
-    private IDictionary<Guid, Distance> FilterChaptersByDistance(
-        IReadOnlyCollection<Chapter> chapters,
-        IReadOnlyCollection<ChapterLocation> chapterLocations,
-        LatLong? location,
-        Distance distance)
-    {
-        var chaptersWithDistances = new Dictionary<Guid, Distance>();
-
-        if (location == null)
-        {
-            return chapters
-                .ToDictionary(x => x.Id, x => new Distance { Unit = distance.Unit, Value = 0 });
-        }
-
-        var chapterLocationDictionary = chapterLocations
-            .ToDictionary(x => x.ChapterId);
-
-        foreach (var chapter in chapters)
-        {
-            if (!chapter.IsOpenForRegistration())
-            {
-                continue;
-            }
-
-            if (!chapterLocationDictionary.TryGetValue(chapter.Id, out var chapterLocation))
-            {
-                continue;
-            }
-
-            var chapterDistance = chapterLocation.LatLong.DistanceFrom(location.Value, distance.Unit);
-            if (chapterDistance > distance.Value)
-            {
-                continue;
-            }
-
-            chaptersWithDistances.Add(
-                chapter.Id,
-                new Distance { Unit = distance.Unit, Value = chapterDistance });
-        }
-
-        return chaptersWithDistances;
-    }
-
     private InstagramPostViewModel MapToInstagramPostViewModel(string username, InstagramPostDto dto)
         => new InstagramPostViewModel
         {

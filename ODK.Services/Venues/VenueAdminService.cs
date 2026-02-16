@@ -41,8 +41,8 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
 
         var location = new VenueLocation
         {
-            Latitude = (decimal?)model.Location?.Lat ?? 0,
-            Longitude = (decimal?)model.Location?.Long ?? 0,
+            Latitude = model.Location?.Lat ?? 0,
+            Longitude = model.Location?.Long ?? 0,
             Name = model.LocationName ?? string.Empty
         };
 
@@ -157,8 +157,8 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
         location ??= new VenueLocation();
 
         location.Name = model.LocationName ?? string.Empty;
-        location.Latitude = (decimal?)model.Location?.Lat ?? 0;
-        location.Longitude = (decimal?)model.Location?.Long ?? 0;
+        location.Latitude = model.Location?.Lat ?? 0;
+        location.Longitude = model.Location?.Long ?? 0;
 
         var validationResult = ValidateVenue(venue, existing, location);
         if (!validationResult.Success)

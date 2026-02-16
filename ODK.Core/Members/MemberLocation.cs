@@ -6,11 +6,11 @@ public class MemberLocation : ILocation
 {
     public Guid? CountryId { get; set; }
 
-    public decimal Latitude { get; set; }
+    public double Latitude { get; set; }
 
     public LatLong LatLong => new LatLong(Latitude, Longitude);
 
-    public decimal Longitude { get; set; }
+    public double Longitude { get; set; }
 
     public Guid MemberId { get; set; }
 

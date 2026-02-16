@@ -224,8 +224,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         _unitOfWork.ChapterLocationRepository.Add(new ChapterLocation
         {
             ChapterId = chapter.Id,
-            Latitude = (decimal)model.Location.Lat,
-            Longitude = (decimal)model.Location.Long,
+            Latitude = model.Location.Lat,
+            Longitude = model.Location.Long,
             Name = model.LocationName
         });
 
@@ -1637,8 +1637,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         chapterLocation ??= new ChapterLocation();
 
-        chapterLocation.Latitude = (decimal)location.Value.Lat;
-        chapterLocation.Longitude = (decimal)location.Value.Long;
+        chapterLocation.Latitude = location.Value.Lat;
+        chapterLocation.Longitude = location.Value.Long;
         chapterLocation.Name = name;
 
         var timeZone = await _geolocationService.GetTimeZoneFromLocation(location.Value);
