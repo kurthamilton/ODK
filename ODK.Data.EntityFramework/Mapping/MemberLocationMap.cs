@@ -15,16 +15,10 @@ public class MemberLocationMap : IEntityTypeConfiguration<MemberLocation>
 
         builder.HasKey(x => x.MemberId);
 
-        builder.Property(x => x.Latitude)
-            .ValueGeneratedOnAddOrUpdate();
-
         // Shadow property mapped to the LatLong column to enable server-side spatial queries
         builder.Property<Point>("LatLongPoint")
             .HasColumnName("LatLong")
             .HasColumnType("geography")
-            .IsRequired();
-
-        builder.Property(x => x.Longitude)
             .ValueGeneratedOnAddOrUpdate();
 
         builder.HasOne<Country>()
