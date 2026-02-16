@@ -3,10 +3,6 @@
 @using ODK.Web.Common.Extensions
 @model LocationFormViewModel
 @{
-    var latLong = Model.Lat != null && Model.Long != null
-        ? $"{Model.Lat},{Model.Long}"
-        : null;
-
     var distanceUnitOptions = Model.DistanceUnitOptions
         .Select(x => new SelectListItem
         {
@@ -27,7 +23,6 @@
         It is not seen by other members. It does not need to be an exact address.
     </div>
     @Html.ValidationMessageFor(x => x.LocationName)
-    <input type="hidden" id="map-latlong" data-location-latlong value="@latLong" />
 </div>
 
 <div class="form-group mb-3 d-none" data-map-container>

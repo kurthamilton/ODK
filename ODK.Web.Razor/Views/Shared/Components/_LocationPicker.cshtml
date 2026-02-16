@@ -2,6 +2,11 @@
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
 @model LocationPickerViewModel
+@{
+    var latLong = Model.Lat != null && Model.Long != null
+        ? $"{Model.Lat},{Model.Long}"
+        : null;
+}
 
 <div class="input-group" data-location-container>
     <span class="input-group-text">
@@ -23,4 +28,5 @@
 
     @Html.HiddenFor(x => x.Lat, new { data_location_lat = "" })
     @Html.HiddenFor(x => x.Long, new { data_location_long = "" })
+    <input type="hidden" id="map-latlong" data-location-latlong value="@latLong" />
 </div>
