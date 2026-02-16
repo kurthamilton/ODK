@@ -13,16 +13,10 @@ public class ChapterLocationMap : IEntityTypeConfiguration<ChapterLocation>
 
         builder.HasKey(x => x.ChapterId);
 
-        builder.Property(x => x.Latitude)
-            .ValueGeneratedOnAddOrUpdate();
-
         // Shadow property mapped to the LatLong column to enable server-side spatial queries
         builder.Property<Point>("LatLongPoint")
             .HasColumnName("LatLong")
             .HasColumnType("geography")
-            .IsRequired();
-
-        builder.Property(x => x.Longitude)
             .ValueGeneratedOnAddOrUpdate();
 
         builder.HasOne<Chapter>()
