@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using NetTopologySuite.Geometries;
 using ODK.Core.Countries;
 using ODK.Core.Members;
 using ODK.Data.EntityFramework.Converters;
@@ -14,8 +15,19 @@ public class MemberLocationMap : IEntityTypeConfiguration<MemberLocation>
 
         builder.HasKey(x => x.MemberId);
 
-        builder.Property(x => x.LatLong)
-            .HasConversion<LatLongConverter>();
+        builder.Property(x => x.Latitude)
+            .HasColumnType("decimal(9,6)")
+            .ValueGeneratedOnAddOrUpdate();
+
+        // Shadow property mapped to the LatLong column to enable server-side spatial queries
+        builder.Property<Point>("LatLongPoint")
+            .HasColumnName("LatLong")
+            .HasColumnType("geography")
+            .IsRequired();
+
+        builder.Property(x => x.Longitude)
+            .HasColumnType("decimal(9,6)")
+            .ValueGeneratedOnAddOrUpdate();
 
         builder.HasOne<Country>()
             .WithMany()

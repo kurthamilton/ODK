@@ -1,7 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using ODK.Core;
 using ODK.Core.Members;
+using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
+using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework.Repositories;
 
@@ -12,12 +13,8 @@ public class MemberLocationRepository : WriteRepositoryBase<MemberLocation>, IMe
     {
     }
 
-    public async Task<MemberLocation> GetByMemberId(Guid memberId)
-    {
-        var memberLocation = await Set()
+    public IDeferredQuerySingle<MemberLocation> GetByMemberId(Guid memberId)
+        => Set()
             .Where(x => x.MemberId == memberId)
-            .FirstOrDefaultAsync();
-        OdkAssertions.Exists(memberLocation);
-        return memberLocation;
-    }
+            .DeferredSingle();
 }

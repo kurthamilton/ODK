@@ -1,14 +1,11 @@
 ﻿using ODK.Core.Chapters;
-using ODK.Data.Core.Chapters;
 using ODK.Data.Core.Deferred;
 
 namespace ODK.Data.Core.Repositories;
 
 public interface IChapterLocationRepository : IWriteRepository<ChapterLocation>
 {
-    Task<ChapterLocation?> GetByChapterId(Guid chapterId);
+    IDeferredQueryMultiple<ChapterLocation> GetByChapterIds(IEnumerable<Guid> chapterIds);
 
-    IDeferredQueryMultiple<ChapterLocationDto> GetDtosByChapterIds(IEnumerable<Guid> chapterIds);
-
-    IDeferredQuerySingleOrDefault<ChapterLocationDto> GetDtoByChapterId(Guid chapterId);
+    IDeferredQuerySingleOrDefault<ChapterLocation> GetByChapterId(Guid chapterId);
 }

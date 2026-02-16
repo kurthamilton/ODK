@@ -305,7 +305,7 @@ public class EventViewModelService : IEventViewModelService
                     .ToArray());
 
         var venueLocation = canViewVenue
-            ? await _unitOfWork.VenueLocationRepository.GetByVenueId(venue.Id)
+            ? await _unitOfWork.VenueLocationRepository.GetByVenueId(venue.Id).Run()
             : null;
 
         if (notifications.Count > 0)

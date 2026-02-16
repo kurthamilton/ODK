@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using NetTopologySuite.Geometries;
 using ODK.Core.Chapters;
-using ODK.Data.EntityFramework.Converters;
 
 namespace ODK.Data.EntityFramework.Mapping;
 
@@ -18,11 +17,9 @@ public class ChapterLocationMap : IEntityTypeConfiguration<ChapterLocation>
             .HasColumnType("decimal(9,6)")
             .ValueGeneratedOnAddOrUpdate();
 
-        builder.Property(x => x.LatLong)
-            .HasConversion<LatLongConverter>();
-
         // Shadow property mapped to the LatLong column to enable server-side spatial queries
-        builder.Property<Point>("LatLong")
+        builder.Property<Point>("LatLongPoint")
+            .HasColumnName("LatLong")
             .HasColumnType("geography")
             .IsRequired();
 

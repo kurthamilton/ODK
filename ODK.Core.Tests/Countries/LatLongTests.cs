@@ -14,8 +14,8 @@ public static class LatLongTests
     public static void DistanceFrom_SameDistance_ReturnsZero()
     {
         // Arrange
-        var location1 = new LatLong(50, 5);
-        var location2 = new LatLong(50, 5);
+        var location1 = new LatLong((double)50, 5);
+        var location2 = new LatLong((double)50, 5);
 
         // Act
         var result = location1.DistanceFrom(location2, MetresUnit);

@@ -1,4 +1,5 @@
-﻿using ODK.Core.Countries;
+﻿using System.Net.Http.Headers;
+using ODK.Core.Countries;
 
 namespace ODK.Core.Chapters;
 
@@ -8,7 +9,7 @@ public class ChapterLocation : IChapterEntity, ILocation
 
     public decimal Latitude { get; set; }
 
-    public LatLong LatLong { get; set; }
+    public LatLong LatLong => new LatLong(Latitude, Longitude);
 
     public decimal Longitude { get; set; }
 

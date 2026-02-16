@@ -136,22 +136,27 @@ public class ChapterRepository : WriteRepositoryBase<Chapter>, IChapterRepositor
                 select topic;
         }
 
+        var locationQuery = criteria.Distance != null
+            ? Set<ChapterLocation>()
+                .WithinDistance(criteria.Distance.Location, criteria.Distance.DistanceMetres)
+            : Set<ChapterLocation>()
+                .DefaultIfEmpty();
+
         var query =
             from chapter in Set(platform, includeUnpublished: false)
             from image in Set<ChapterImage>()
                 .Where(x => x.ChapterId == chapter.Id)
-                .Metadata()
+                .Select(x => new ChapterImageMetadataDto
+                {
+                    ChapterId = x.ChapterId,
+                    MimeType = x.MimeType
+                })
                 .DefaultIfEmpty()
             from texts in Set<ChapterTexts>()
                 .Where(x => x.ChapterId == chapter.Id)
                 .DefaultIfEmpty()
-            from location in criteria.Distance != null
-                ? Set<ChapterLocation>()
-                    .Where(x => x.ChapterId == chapter.Id)
-                    .WithinDistance(criteria.Distance.Location, criteria.Distance.DistanceMetres)
-                : Set<ChapterLocation>()
-                    .Where(x => x.ChapterId == chapter.Id)
-                    .DefaultIfEmpty()
+            from location in locationQuery
+                .Where(x => x == null || x.ChapterId == chapter.Id)
             join chapterTopic in Set<ChapterTopic>()
                 on chapter.Id equals chapterTopic.ChapterId into chapterTopics
             where (criteria.Distance == null || location != null)

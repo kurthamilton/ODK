@@ -12,6 +12,12 @@ public struct LatLong
         Long = @long;
     }
 
+    public LatLong(decimal lat, decimal @long)
+    {
+        Lat = (double)lat;
+        Long = (double)@long;
+    }
+
     public bool IsDefault => Lat == 0 && Long == 0;
 
     public double Lat { get; set; }

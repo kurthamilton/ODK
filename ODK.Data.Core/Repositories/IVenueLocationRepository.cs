@@ -1,10 +1,11 @@
 ﻿using ODK.Core.Venues;
+using ODK.Data.Core.Deferred;
 
 namespace ODK.Data.Core.Repositories;
 
 public interface IVenueLocationRepository : IWriteRepository<VenueLocation>
 {
-    Task<VenueLocation?> GetByVenueId(Guid venueId);
+    IDeferredQuerySingleOrDefault<VenueLocation> GetByVenueId(Guid venueId);
 
-    Task<IReadOnlyCollection<VenueLocation>> GetByVenueIds(IEnumerable<Guid> venueIds);
+    IDeferredQueryMultiple<VenueLocation> GetByVenueIds(IEnumerable<Guid> venueIds);
 }

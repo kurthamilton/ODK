@@ -3,7 +3,6 @@ using NetTopologySuite;
 using NetTopologySuite.Geometries;
 using ODK.Core.Chapters;
 using ODK.Core.Countries;
-using ODK.Data.Core.Chapters;
 
 namespace ODK.Data.EntityFramework.Queries;
 
@@ -20,15 +19,6 @@ internal static class ChapterLocationQueries
         var origin = gf.CreatePoint(new Coordinate(location.Long, location.Lat));
 
         return query
-            .Where(x => EF.Property<Point>(x, "LatLong").Distance(origin) <= radiusMetres);
+            .Where(x => EF.Property<Point>(x, "LatLongPoint").Distance(origin) <= radiusMetres);
     }
-
-    internal static IQueryable<ChapterLocationDto> ToDtos(this IQueryable<ChapterLocation> query)
-        => query.Select(x => new ChapterLocationDto
-        {
-            ChapterId = x.ChapterId,
-            Latitude = x.Latitude,
-            Longitude = x.Longitude,
-            Name = x.Name
-        });
 }

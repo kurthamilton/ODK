@@ -158,8 +158,9 @@ public class MemberService : IMemberService
             _unitOfWork.MemberLocationRepository.Add(new MemberLocation
             {
                 CountryId = country?.Id,
+                Latitude = (decimal)model.Location.Value.Lat,
+                Longitude = (decimal)model.Location.Value.Long,
                 MemberId = member.Id,
-                LatLong = model.Location.Value,
                 Name = model.LocationName
             });
 
@@ -237,13 +238,15 @@ public class MemberService : IMemberService
             membershipSettings,
             existing,
             siteSubscription,
-            ownerSubscription
+            ownerSubscription, 
+            chapterLocation
         ) = await _unitOfWork.RunAsync(
             x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.MemberRepository.GetByEmailAddress(model.EmailAddress),
             x => x.SiteSubscriptionRepository.GetDefault(platform),
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id));
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterLocationRepository.GetByChapterId(chapter.Id));
 
         var validationResult = ValidateMemberProfile(chapterProperties, model, forApplication: true);
         if (!validationResult.Success)
@@ -298,14 +301,14 @@ public class MemberService : IMemberService
 
         AddMemberToChapter(now, member, chapter, memberProperties, membershipSettings, ownerSubscription);
 
-        var chapterLocation = await _unitOfWork.ChapterLocationRepository.GetByChapterId(chapter.Id);
         if (chapterLocation != null)
         {
             _unitOfWork.MemberLocationRepository.Add(new MemberLocation
             {
                 CountryId = chapter.CountryId,
                 MemberId = member.Id,
-                LatLong = chapterLocation.LatLong,
+                Latitude = chapterLocation.Latitude,
+                Longitude = chapterLocation.Longitude,
                 Name = chapterLocation.Name
             });
         }
@@ -466,11 +469,12 @@ public class MemberService : IMemberService
 
     public async Task<MemberLocationViewModel> GetMemberLocationViewModel(IMemberServiceRequest request)
     {
-        var (distanceUnits, memberPreferences) = await _unitOfWork.RunAsync(
-            x => x.DistanceUnitRepository.GetAll(),
-            x => x.MemberPreferencesRepository.GetByMemberId(request.CurrentMember.Id));
+        var currentMember = request.CurrentMember;
 
-        var memberLocation = await _unitOfWork.MemberLocationRepository.GetByMemberId(request.CurrentMember.Id);
+        var (distanceUnits, memberPreferences, memberLocation) = await _unitOfWork.RunAsync(
+            x => x.DistanceUnitRepository.GetAll(),
+            x => x.MemberPreferencesRepository.GetByMemberId(currentMember.Id),
+            x => x.MemberLocationRepository.GetByMemberId(currentMember.Id));
 
         return new MemberLocationViewModel
         {
@@ -903,9 +907,9 @@ public class MemberService : IMemberService
 
     public async Task<ServiceResult> UpdateMemberLocation(Guid id, LatLong? location, string? name, Guid? distanceUnitId)
     {
-        var memberLocation = await _unitOfWork.MemberLocationRepository.GetByMemberId(id);
-
-        var memberPreferences = await _unitOfWork.MemberPreferencesRepository.GetByMemberId(id).Run();
+        var (memberLocation, memberPreferences) = await _unitOfWork.RunAsync(
+            x => x.MemberLocationRepository.GetByMemberId(id),
+            x => x.MemberPreferencesRepository.GetByMemberId(id));
 
         if (location != null && !string.IsNullOrEmpty(name))
         {
@@ -914,7 +918,8 @@ public class MemberService : IMemberService
             var country = await _geolocationService.GetCountryFromLocation(location.Value);
 
             memberLocation.CountryId = country?.Id;
-            memberLocation.LatLong = location.Value;
+            memberLocation.Latitude = (decimal)location.Value.Lat;
+            memberLocation.Longitude = (decimal)location.Value.Long;
             memberLocation.Name = name;
         }
         else

@@ -1,6 +1,7 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Core.Topics;
+using ODK.Data.Core.Chapters;
 using ODK.Services.Events.ViewModels;
 using ODK.Services.SocialMedia.ViewModels;
 using ODK.Services.ViewModels;

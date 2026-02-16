@@ -13,12 +13,14 @@ public class MemberPreferencesRepository : WriteRepositoryBase<MemberPreferences
     {
     }
 
-    public IDeferredQuerySingleOrDefault<MemberPreferences> GetByMemberId(Guid memberId) => Set()
-        .Where(x => x.MemberId == memberId)
-        .DeferredSingleOrDefault();
+    public IDeferredQuerySingleOrDefault<MemberPreferences> GetByMemberId(Guid memberId) 
+        => Set()
+            .Where(x => x.MemberId == memberId)
+            .DeferredSingleOrDefault();
 
-    protected override IQueryable<MemberPreferences> Set() => base.Set()
-        .Include(x => x.DistanceUnit);
+    protected override IQueryable<MemberPreferences> Set() 
+        => base.Set()
+            .Include(x => x.DistanceUnit);
 
     public override void Update(MemberPreferences entity)
     {
