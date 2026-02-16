@@ -12873,6 +12873,11 @@ html[data-platform=odk] {
   }
 }
 
+.navbar-expand-sm .navbar-nav .nav-link,
+.navbar-expand-md .navbar-nav .nav-link {
+  padding-left: 0.5rem;
+}
+
 @media (min-width: 576px) {
   .navbar-expand-sm .navbar-nav .nav-link {
     padding-top: 0.1rem;
