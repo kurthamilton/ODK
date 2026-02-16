@@ -70,15 +70,18 @@ public class ChapterViewModelService : IChapterViewModelService
                     x => x.MemberLocationRepository.GetByMemberId(currentMember.Id),
                     x => x.MemberPreferencesRepository.GetByMemberId(currentMember.Id));
             }
-            else
+            else if (distanceUnitType == null)
             {
                 preferences = await _unitOfWork.MemberPreferencesRepository
                     .GetByMemberId(currentMember.Id)
                     .Run();
             }
 
-            distanceUnitType = preferences?.DistanceUnit?.Type;
-        }        
+            if (distanceUnitType == null)
+            {
+                distanceUnitType = preferences?.DistanceUnit?.Type;
+            }
+        }
 
         if (distanceUnitType == null)
         {
@@ -88,11 +91,11 @@ public class ChapterViewModelService : IChapterViewModelService
 
         var criteria = new ChapterSearchCriteria
         {
-            Distance = filter.Distance != null && filter.Location != null
+            Distance = location != null
                 ? new ChapterSearchCriteriaDistance
                 {
-                    DistanceMetres = filter.Distance.Value * distanceUnitType.Value.Metres(),
-                    Location = filter.Location.Value
+                    DistanceMetres = distance * distanceUnitType.Value.Metres(),
+                    Location = location.LatLong
                 }
                 : null,
             TopicGroupNames = !string.IsNullOrEmpty(filter.TopicGroup)
@@ -104,8 +107,6 @@ public class ChapterViewModelService : IChapterViewModelService
         IReadOnlyCollection<DistanceUnit> distanceUnits;
         IReadOnlyCollection<ChapterAdminMember> adminMembers;
         IReadOnlyCollection<TopicGroup> topicGroups;
-
-        chapters = await _unitOfWork.ChapterRepository.Search(platform, criteria).Run();
 
         (chapters, distanceUnits, preferences, adminMembers, topicGroups) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.Search(platform, criteria),
@@ -156,7 +157,7 @@ public class ChapterViewModelService : IChapterViewModelService
                     ? new Distance
                     {
                         Unit = distanceUnit,
-                        Value = distance
+                        Value = chapterDistance.Value
                     }
                     : null,
                 HasImage = hasImage,
@@ -178,7 +179,7 @@ public class ChapterViewModelService : IChapterViewModelService
             Distance = new Distance { Unit = distanceUnit, Value = distance },
             DistanceUnits = distanceUnits,
             Groups = groups
-                .OrderBy(x => x.Distance!.Value)
+                .OrderBy(x => x.Distance?.Value)
                 .ToArray(),
             Location = location,
             Platform = platform,
@@ -233,11 +234,11 @@ public class ChapterViewModelService : IChapterViewModelService
         }
 
         var (
-            current, 
-            memberSubscription, 
-            countries, 
-            topicGroups, 
-            topics, 
+            current,
+            memberSubscription,
+            countries,
+            topicGroups,
+            topics,
             memberTopics,
             memberLocation) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetByOwnerId(platform, currentMember.Id),

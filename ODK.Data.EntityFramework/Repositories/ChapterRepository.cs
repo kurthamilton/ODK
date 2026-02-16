@@ -146,12 +146,12 @@ public class ChapterRepository : WriteRepositoryBase<Chapter>, IChapterRepositor
             from chapter in Set(platform, includeUnpublished: false)
             from image in Set<ChapterImage>()
                 .Where(x => x.ChapterId == chapter.Id)
-                .Select(x => new ChapterImageMetadataDto
+                .DefaultIfEmpty()
+                .Select(x => x != null ? new ChapterImageMetadataDto
                 {
                     ChapterId = x.ChapterId,
                     MimeType = x.MimeType
-                })
-                .DefaultIfEmpty()
+                } : null)
             from texts in Set<ChapterTexts>()
                 .Where(x => x.ChapterId == chapter.Id)
                 .DefaultIfEmpty()
@@ -159,7 +159,6 @@ public class ChapterRepository : WriteRepositoryBase<Chapter>, IChapterRepositor
                 .Where(x => x == null || x.ChapterId == chapter.Id)
             join chapterTopic in Set<ChapterTopic>()
                 on chapter.Id equals chapterTopic.ChapterId into chapterTopics
-            where (criteria.Distance == null || location != null)
             select new ChapterSearchResultDto
             {
                 Chapter = chapter,
