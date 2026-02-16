@@ -1,9 +1,11 @@
 ﻿using ODK.Core.Chapters;
+using ODK.Data.Core.Deferred;
 
 namespace ODK.Data.Core.Repositories;
 
 public interface IChapterLocationRepository : IWriteRepository<ChapterLocation>
 {
-    Task<ChapterLocation?> GetByChapterId(Guid chapterId);
-    Task<IReadOnlyCollection<ChapterLocation>> GetByChapterIds(IEnumerable<Guid> chapterIds);
+    IDeferredQueryMultiple<ChapterLocation> GetByChapterIds(IEnumerable<Guid> chapterIds);
+
+    IDeferredQuerySingleOrDefault<ChapterLocation> GetByChapterId(Guid chapterId);
 }

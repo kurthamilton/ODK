@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ODK.Core.Chapters;
+using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
+using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework.Repositories;
 
@@ -11,13 +13,13 @@ public class ChapterLocationRepository : WriteRepositoryBase<ChapterLocation>, I
     {
     }
 
-    public Task<ChapterLocation?> GetByChapterId(Guid chapterId)
+    public IDeferredQuerySingleOrDefault<ChapterLocation> GetByChapterId(Guid chapterId)
         => Set()
             .Where(x => x.ChapterId == chapterId)
-            .FirstOrDefaultAsync();
+            .DeferredSingleOrDefault();
 
-    public async Task<IReadOnlyCollection<ChapterLocation>> GetByChapterIds(IEnumerable<Guid> chapterIds)
-        => await Set()
+    public IDeferredQueryMultiple<ChapterLocation> GetByChapterIds(IEnumerable<Guid> chapterIds)
+        => Set()
             .Where(x => chapterIds.Contains(x.ChapterId))
-            .ToArrayAsync();
+            .DeferredMultiple();
 }

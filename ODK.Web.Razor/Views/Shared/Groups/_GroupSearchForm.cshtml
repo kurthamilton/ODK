@@ -30,7 +30,7 @@
         <select name="u" class="form-select form-select-sm">
             @foreach (var option in Model.DistanceUnits)
             {
-                <option selected="@(option.Id == Model.Distance.Unit.Id ? "" : null)">
+                <option selected="@(option.Id == Model.Distance.Unit.Id ? "" : null)" value="@((int)option.Type)">
                     @option.Abbreviation
                 </option>
             }

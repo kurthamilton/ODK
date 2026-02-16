@@ -224,7 +224,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         _unitOfWork.ChapterLocationRepository.Add(new ChapterLocation
         {
             ChapterId = chapter.Id,
-            LatLong = model.Location,
+            Latitude = model.Location.Lat,
+            Longitude = model.Location.Long,
             Name = model.LocationName
         });
 
@@ -877,11 +878,10 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         var chapter = request.Chapter;
 
-        var country = await GetChapterAdminRestrictedContent(
+        var (country, location) = await GetChapterAdminRestrictedContent(
             request,
-            x => x.CountryRepository.GetByChapterId(chapter.Id));
-
-        var location = await _unitOfWork.ChapterLocationRepository.GetByChapterId(chapter.Id);
+            x => x.CountryRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterLocationRepository.GetByChapterId(chapter.Id));
 
         return new ChapterLocationAdminPageViewModel
         {
@@ -1626,7 +1626,9 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         AssertMemberIsSiteAdmin(currentMember);
 
-        var chapterLocation = await _unitOfWork.ChapterLocationRepository.GetByChapterId(chapter.Id);
+        var chapterLocation = await _unitOfWork.ChapterLocationRepository
+            .GetByChapterId(chapter.Id)
+            .Run();
 
         if (location == null || string.IsNullOrEmpty(name))
         {
@@ -1635,7 +1637,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         chapterLocation ??= new ChapterLocation();
 
-        chapterLocation.LatLong = location.Value;
+        chapterLocation.Latitude = location.Value.Lat;
+        chapterLocation.Longitude = location.Value.Long;
         chapterLocation.Name = name;
 
         var timeZone = await _geolocationService.GetTimeZoneFromLocation(location.Value);

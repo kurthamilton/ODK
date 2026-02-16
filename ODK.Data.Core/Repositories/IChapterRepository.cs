@@ -1,5 +1,6 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Platforms;
+using ODK.Data.Core.Chapters;
 using ODK.Data.Core.Deferred;
 
 namespace ODK.Data.Core.Repositories;
@@ -31,6 +32,8 @@ public interface IChapterRepository : IWriteRepository<Chapter>
     IDeferredQuerySingleOrDefault<Chapter> GetBySlug(PlatformType platform, string slug);
 
     IDeferredQuery<bool> NameExists(string name);
+
+    IDeferredQueryMultiple<ChapterSearchResultDto> Search(PlatformType platform, ChapterSearchCriteria criteria);
 
     IDeferredQuery<bool> SlugExists(string slug);
 }

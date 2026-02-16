@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using NetTopologySuite.Geometries;
 using ODK.Core.Venues;
-using ODK.Data.EntityFramework.Converters;
 
 namespace ODK.Data.EntityFramework.Mapping;
 
@@ -13,8 +13,17 @@ public class VenueLocationMap : IEntityTypeConfiguration<VenueLocation>
 
         builder.HasKey(x => x.VenueId);
 
-        builder.Property(x => x.LatLong)
-            .HasConversion<LatLongConverter>();
+        builder.Property(x => x.Latitude)
+            .ValueGeneratedOnAddOrUpdate();
+
+        // Shadow property mapped to the LatLong column to enable server-side spatial queries
+        builder.Property<Point>("LatLongPoint")
+            .HasColumnName("LatLong")
+            .HasColumnType("geography")
+            .IsRequired();
+
+        builder.Property(x => x.Longitude)
+            .ValueGeneratedOnAddOrUpdate();
 
         builder.HasOne<Venue>()
             .WithOne()

@@ -41,7 +41,8 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
 
         var location = new VenueLocation
         {
-            LatLong = model.Location ?? new LatLong(),
+            Latitude = model.Location?.Lat ?? 0,
+            Longitude = model.Location?.Long ?? 0,
             Name = model.LocationName ?? string.Empty
         };
 
@@ -120,13 +121,12 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
 
-        var venue = await GetChapterAdminRestrictedContent(
+        var (venue, location) = await GetChapterAdminRestrictedContent(
             request,
-            x => x.VenueRepository.GetById(venueId));
+            x => x.VenueRepository.GetById(venueId),
+            x => x.VenueLocationRepository.GetByVenueId(venueId));
 
         OdkAssertions.BelongsToChapter(venue, chapter.Id);
-
-        var location = await _unitOfWork.VenueLocationRepository.GetByVenueId(venueId);
 
         return new VenueAdminPageViewModel
         {
@@ -142,12 +142,11 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
     {
         var chapter = request.Chapter;
 
-        var (venue, existing) = await GetChapterAdminRestrictedContent(
+        var (venue, existing, location) = await GetChapterAdminRestrictedContent(
             request,
             x => x.VenueRepository.GetById(id),
-            x => x.VenueRepository.GetByName(chapter.Id, model.Name));
-
-        var location = await _unitOfWork.VenueLocationRepository.GetByVenueId(id);
+            x => x.VenueRepository.GetByName(chapter.Id, model.Name),
+            x => x.VenueLocationRepository.GetByVenueId(id));
 
         OdkAssertions.BelongsToChapter(venue, chapter.Id);
 
@@ -158,7 +157,8 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
         location ??= new VenueLocation();
 
         location.Name = model.LocationName ?? string.Empty;
-        location.LatLong = model.Location ?? new LatLong();
+        location.Latitude = model.Location?.Lat ?? 0;
+        location.Longitude = model.Location?.Long ?? 0;
 
         var validationResult = ValidateVenue(venue, existing, location);
         if (!validationResult.Success)

@@ -1,7 +1,9 @@
 ﻿using ODK.Core.Chapters;
+using ODK.Data.Core.Chapters;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
+using ODK.Data.EntityFramework.Queries;
 
 namespace ODK.Data.EntityFramework.Repositories;
 
@@ -23,14 +25,10 @@ public class ChapterImageRepository : WriteRepositoryBase<ChapterImage>, IChapte
         .Where(x => x.ChapterId == chapterId)
         .DeferredSingleOrDefault();
 
-    public IDeferredQueryMultiple<ChapterImageMetadata> GetMetadatasByChapterIds(IEnumerable<Guid> chapterIds)
+    public IDeferredQueryMultiple<ChapterImageMetadataDto> GetMetadatasByChapterIds(IEnumerable<Guid> chapterIds)
         => Set()
             .Where(x => chapterIds.Contains(x.ChapterId))
-            .Select(x => new ChapterImageMetadata
-            {
-                ChapterId = x.ChapterId,
-                MimeType = x.MimeType
-            })
+            .Metadata()
             .DeferredMultiple();
 
     public void Upsert(ChapterImage entity, Guid chapterId)

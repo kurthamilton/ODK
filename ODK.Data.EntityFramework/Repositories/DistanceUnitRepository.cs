@@ -1,22 +1,23 @@
 ﻿using ODK.Core.Countries;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
-using ODK.Data.EntityFramework.Caching;
 using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework.Repositories;
 
-public class DistanceUnitRepository : CachingReadWriteRepositoryBase<DistanceUnit>, IDistanceUnitRepository
+public class DistanceUnitRepository : ReadWriteRepositoryBase<DistanceUnit>, IDistanceUnitRepository
 {
-    private static readonly EntityCache<Guid, DistanceUnit> _cache = new DatabaseEntityCache<DistanceUnit>();
-
     public DistanceUnitRepository(OdkContext context)
-        : base(context, _cache)
+        : base(context)
     {
     }
 
-    public IDeferredQueryMultiple<DistanceUnit> GetAll() => Set()
-        .DeferredMultiple(
-            _cache.GetAll,
-            _cache.SetAll);
+    public IDeferredQueryMultiple<DistanceUnit> GetAll()
+        => Set()
+            .DeferredMultiple();
+
+    public IDeferredQuerySingle<DistanceUnit> GetByType(DistanceUnitType type)
+        => Set()
+            .Where(x => x.Type == type)
+            .DeferredSingle();
 }

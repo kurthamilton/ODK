@@ -10,4 +10,8 @@
     <ProjectReference Include="..\ODK.Core\ODK.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Members\" />
+  </ItemGroup>
+
 </Project>

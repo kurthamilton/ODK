@@ -6,7 +6,11 @@ public class MemberLocation : ILocation
 {
     public Guid? CountryId { get; set; }
 
-    public LatLong LatLong { get; set; }
+    public double Latitude { get; set; }
+
+    public LatLong LatLong => new LatLong(Latitude, Longitude);
+
+    public double Longitude { get; set; }
 
     public Guid MemberId { get; set; }
 

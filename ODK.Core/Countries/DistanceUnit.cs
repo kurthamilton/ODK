@@ -11,4 +11,6 @@ public class DistanceUnit : IDatabaseEntity
     public string Name { get; set; } = string.Empty;
 
     public int Order { get; set; }
+
+    public DistanceUnitType Type { get; set; }
 }
