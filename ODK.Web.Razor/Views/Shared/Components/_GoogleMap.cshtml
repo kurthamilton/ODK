@@ -18,7 +18,7 @@
         baseUrl += $"&zoom={Model.Zoom}";
     }
 
-    var url = "";
+    var url = string.Empty;
     if (!string.IsNullOrEmpty(Model.Query))
     {
         url = baseUrl.Replace("{query}", HttpUtility.UrlEncode(Model.Query));

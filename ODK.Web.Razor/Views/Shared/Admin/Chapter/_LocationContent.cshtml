@@ -45,7 +45,7 @@
             @await Html.PartialAsync("Components/_GoogleMap", new GoogleMapViewModel
             {
                 LatLong = Model.Location.LatLong,
-                QuerySource = "#LocationName"
+                QuerySource = "#" + Html.IdFor(x => x.LocationName)
             })
         </div>
     }    
