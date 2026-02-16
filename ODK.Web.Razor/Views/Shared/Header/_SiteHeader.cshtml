@@ -1,9 +1,11 @@
 ﻿@using ODK.Core.Platforms
 @using ODK.Services.Members
+@using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
 @using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Header
 @using ODK.Web.Razor.Services
 @inject IOdkRoutes OdkRoutes
 @inject IRequestStore RequestStore
@@ -13,46 +15,60 @@
         return;
     }
 
-    var id = "site-menu";    
+    var currentMember = RequestStore.CurrentMemberOrDefault;
+
+    var menuItems = new List<MenuItem>
+    {
+        new MenuItem
+        {
+            Link = OdkRoutes.Groups.Index(),
+            Text = "Groups"
+        }
+    };
+
+    if (currentMember != null)
+    {
+        menuItems.Add(new MenuItem
+        {
+            Link = OdkRoutes.GroupAdmin.Index().Path,
+            Text = "My groups"
+        });
+    }
+
+    menuItems.Add(new MenuItem
+    {
+        Link = OdkRoutes.Site.Pricing,
+        Text = "Pricing"
+    });
 }
 
 <div data-odk-component="_SiteHeader">
-    <nav class="navbar navbar--site navbar-dark bg-dark text-light border-bottom border-light navbar-expand">
-        <div class="container flex-wrap flex-md-nowrap">
-            <div class="me-3">
-                <a href="/">
-                    <img class="site-logo" src="/assets/groupsquirrel/logo2.webp" />
-                </a>
-            </div>                    
+    <nav class="navbar navbar-dark bg-dark text-light border-bottom border-light navbar-expand-md">
+        <div class="container-md">
+            <a href="/" class="navbar-brand">
+                <img class="site-logo" src="/assets/groupsquirrel/logo3.svg" />
+            </a>            
 
-            <div class="navbar-collapse site-nav" id="@id">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/pricing">Pricing</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="@OdkRoutes.Groups.Index()">Groups</a>
-                    </li>
-
-                    @if (RequestStore.CurrentMemberOrDefault != null)
-                    {
-                        <li class="nav-item">
-                            @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
-                            {
-                                Class = "nav-link",
-                                Route = OdkRoutes.GroupAdmin.Index(),
-                                Text = "My groups"
-                            })
-                        </li>
-                    }                
-                </ul>
-            </div>
-
-            <div class="d-flex gap-4 ms-auto align-self-center order-md-5">
+            <div class="d-flex gap-4 ms-auto align-items-center order-md-5">
                 @await Html.PartialAsync("Header/_SiteTasksDropdown")
                 @await Html.PartialAsync("Header/_NotificationDropdown")
                 @await Html.PartialAsync("Header/_SiteAccountDropdown")
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#site-nav"
+                        aria-controls="site-nav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
             </div>
+
+            <div class="collapse navbar-collapse site-nav" id="site-nav">
+                <ul class="navbar-nav">
+                    @foreach (var menuItem in menuItems)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" href="@menuItem.Link">@menuItem.Text</a>
+                        </li>
+                    }             
+                </ul>
+            </div>                        
         </div>
     </nav>
 </div>

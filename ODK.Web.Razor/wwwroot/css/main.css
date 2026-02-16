@@ -12759,10 +12759,6 @@ html[data-platform=odk] {
   margin-bottom: 0;
 }
 
-.site-nav {
-  flex-basis: 100% !important;
-}
-
 @media (min-width: 768px) {
   .site-nav {
     flex-basis: auto !important;

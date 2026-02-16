@@ -10,7 +10,6 @@
 .section--header {
     --bg-section-header: var(--theme-bg, #FF0000);
     --color-section-header: var(--theme-color, #FFF);
-
     color: var(--color-section-header);
     background-color: var(--bg-section-header);
 
@@ -20,14 +19,9 @@
     }
 }
 
-.site-nav {
-    flex-basis: 100% !important;
-}
-
 @include media-breakpoint-up(md) {
     .site-nav {
         flex-basis: auto !important;
-
         align-self: stretch;
         display: flex;
         align-items: stretch;

@@ -2,10 +2,12 @@ using System.Globalization;
 using Hangfire;
 using Hangfire.SqlServer;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using ODK.Core.Platforms;
 using ODK.Services.Tasks;
 using ODK.Web.Common.Config;
 using ODK.Web.Common.Config.Settings;
@@ -82,6 +84,18 @@ public class Program
             DefaultRequestCulture = new RequestCulture(defaultCulture.Name),
             SupportedCultures = supportedCultures,
             SupportedUICultures = supportedCultures
+        });
+
+        app.MapGet("/favicon.ico", async (HttpContext ctx, IPlatformProvider platformProvider) =>
+        {
+            var platform = platformProvider.GetPlatform(ctx.Request.GetDisplayUrl());
+
+            var file = platform == PlatformType.DrunkenKnitwits
+                ? "wwwroot/assets/drunkenknitwits/favicon/favicon.ico"
+                : "wwwroot/assets/groupsquirrel/favicon/favicon.ico";
+
+            ctx.Response.ContentType = "image/x-icon";
+            await ctx.Response.SendFileAsync(file);
         });
 
         app.Run();
