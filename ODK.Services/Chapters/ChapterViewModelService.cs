@@ -30,6 +30,7 @@ namespace ODK.Services.Chapters;
 public class ChapterViewModelService : IChapterViewModelService
 {
     private readonly IAuthorizationService _authorizationService;
+    private readonly IDistanceUnitFactory _distanceUnitFactory;
     private readonly ILoggingService _loggingService;
     private readonly ISocialMediaService _socialMediaService;
     private readonly IUnitOfWork _unitOfWork;
@@ -38,9 +39,11 @@ public class ChapterViewModelService : IChapterViewModelService
         IUnitOfWork unitOfWork,
         IAuthorizationService authorizationService,
         ISocialMediaService socialMediaService,
-        ILoggingService loggingService)
+        ILoggingService loggingService,
+        IDistanceUnitFactory distanceUnitFactory)
     {
         _authorizationService = authorizationService;
+        _distanceUnitFactory = distanceUnitFactory;
         _loggingService = loggingService;
         _socialMediaService = socialMediaService;
         _unitOfWork = unitOfWork;
@@ -79,7 +82,7 @@ public class ChapterViewModelService : IChapterViewModelService
 
             if (distanceUnitType == null)
             {
-                distanceUnitType = preferences?.DistanceUnit?.Type;
+                distanceUnitType = preferences?.DistanceUnit;
             }
         }
 
@@ -104,13 +107,11 @@ public class ChapterViewModelService : IChapterViewModelService
         };
 
         IReadOnlyCollection<ChapterSearchResultDto> chapters;
-        IReadOnlyCollection<DistanceUnit> distanceUnits;
         IReadOnlyCollection<ChapterAdminMember> adminMembers;
         IReadOnlyCollection<TopicGroup> topicGroups;
 
-        (chapters, distanceUnits, preferences, adminMembers, topicGroups) = await _unitOfWork.RunAsync(
+        (chapters, preferences, adminMembers, topicGroups) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.Search(platform, criteria),
-            x => x.DistanceUnitRepository.GetAll(),
             x => currentMember != null && preferences == null
                 ? x.MemberPreferencesRepository.GetByMemberId(currentMember.Id)
                 : DefaultDeferredQuerySingleOrDefault.For(preferences),
@@ -119,13 +120,11 @@ public class ChapterViewModelService : IChapterViewModelService
                 : new DefaultDeferredQueryMultiple<ChapterAdminMember>(),
             x => x.TopicGroupRepository.GetAll());
 
-        var distanceUnit = distanceUnits.First(x => x.Type == distanceUnitType);
-
-        if (currentMember != null && distanceUnit.Id != preferences?.DistanceUnitId)
+        if (currentMember != null && distanceUnitType != preferences?.DistanceUnit)
         {
             preferences ??= new MemberPreferences();
 
-            preferences.DistanceUnitId = distanceUnit.Id;
+            preferences.DistanceUnit = distanceUnitType;
 
             if (preferences.MemberId == default)
             {
@@ -140,6 +139,8 @@ public class ChapterViewModelService : IChapterViewModelService
             await _unitOfWork.SaveChangesAsync();
         }
 
+        var distanceUnits = _distanceUnitFactory.GetAll();
+        var distanceUnit = distanceUnits.First(x => x.Type == distanceUnitType);
         var groups = new List<ChapterWithDistanceViewModel>();
         foreach (var result in chapters)
         {
@@ -147,7 +148,7 @@ public class ChapterViewModelService : IChapterViewModelService
             var chapterId = result.Chapter.Id;
 
             var chapterDistance = result.Location != null && location != null
-                ? result.Location.DistanceFrom(location, distanceUnit)
+                ? result.Location.LatLong.DistanceFrom(location.LatLong, distanceUnit)
                 : default(double?);
 
             groups.Add(new ChapterWithDistanceViewModel

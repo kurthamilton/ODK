@@ -6,7 +6,7 @@
     var distanceUnitOptions = Model.DistanceUnitOptions
         .Select(x => new SelectListItem
         {
-            Value = x.Id.ToString(),
+            Value = ((int)x.Type).ToString(),
             Text = x.Name
         })
         .ToArray();

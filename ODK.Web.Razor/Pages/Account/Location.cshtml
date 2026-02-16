@@ -30,7 +30,7 @@
                         @*@Html.AntiForgeryToken()*@
                         @await Html.PartialAsync("Account/_LocationForm", new LocationFormViewModel
                         {
-                            DistanceUnit = viewModel.MemberPreferences?.DistanceUnit?.Id,
+                            DistanceUnit = viewModel.MemberPreferences?.DistanceUnit,
                             DistanceUnitOptions = viewModel.DistanceUnits,
                             Lat = viewModel.MemberLocation?.LatLong.Lat,
                             Long = viewModel.MemberLocation?.LatLong.Long,

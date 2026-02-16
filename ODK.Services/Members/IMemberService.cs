@@ -51,7 +51,7 @@ public interface IMemberService
 
     Task<ServiceResult> UpdateMemberImage(Guid id, byte[] imageData);
 
-    Task<ServiceResult> UpdateMemberLocation(Guid id, LatLong? location, string? name, Guid? distanceUnitId);
+    Task<ServiceResult> UpdateMemberLocation(Guid id, LatLong? location, string? name, DistanceUnitType? distanceUnit);
 
     Task<ServiceResult> UpdateMemberSiteProfile(IMemberServiceRequest request, MemberSiteProfileUpdateModel model);
 

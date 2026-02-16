@@ -1,16 +1,12 @@
 ﻿namespace ODK.Core.Countries;
 
-public class DistanceUnit : IDatabaseEntity
+public class DistanceUnit
 {
-    public string Abbreviation { get; set; } = string.Empty;
+    public required string Abbreviation { get; init; }
 
-    public Guid Id { get; set; }
+    public required double Metres { get; init; }
 
-    public double Metres { get; set; }
+    public required string Name { get; init; }
 
-    public string Name { get; set; } = string.Empty;
-
-    public int Order { get; set; }
-
-    public DistanceUnitType Type { get; set; }
+    public required DistanceUnitType Type { get; init; }
 }

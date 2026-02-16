@@ -7,8 +7,8 @@ namespace ODK.Core.Tests.Countries;
 [Parallelizable]
 public static class LatLongTests
 {
-    private static readonly DistanceUnit MetresUnit = new DistanceUnit { Metres = 1 };
-    private static readonly DistanceUnit KilometresUnit = new DistanceUnit { Metres = 1000 };
+    private static readonly DistanceUnit MetresUnit = CreateDistanceUnit(metres: 1);
+    private static readonly DistanceUnit KilometresUnit = CreateDistanceUnit(metres: 1000);
 
     [Test]
     public static void DistanceFrom_SameDistance_ReturnsZero()
@@ -53,4 +53,14 @@ public static class LatLongTests
         // Assert
         result.Should().BeApproximately(expectedApproxDistance, 1);
     }
+
+    private static DistanceUnit CreateDistanceUnit(
+        double metres)
+        => new DistanceUnit
+        {
+            Abbreviation = string.Empty,
+            Metres = metres,
+            Name = string.Empty,
+            Type = DistanceUnitType.None
+        };
 }

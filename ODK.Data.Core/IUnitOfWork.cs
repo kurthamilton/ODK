@@ -29,7 +29,6 @@ public interface IUnitOfWork
     IChapterTopicRepository ChapterTopicRepository { get; }
     ICountryRepository CountryRepository { get; }
     ICurrencyRepository CurrencyRepository { get; }
-    IDistanceUnitRepository DistanceUnitRepository { get; }
     IEmailRepository EmailRepository { get; }
     IErrorPropertyRepository ErrorPropertyRepository { get; }
     IErrorRepository ErrorRepository { get; }

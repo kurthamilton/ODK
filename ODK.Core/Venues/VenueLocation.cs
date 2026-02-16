@@ -13,7 +13,4 @@ public class VenueLocation : ILocation
     public string Name { get; set; } = string.Empty;
 
     public Guid VenueId { get; set; }
-
-    public double DistanceFrom(ILocation other, DistanceUnit unit)
-        => LatLong.DistanceFrom(other.LatLong, unit);
 }

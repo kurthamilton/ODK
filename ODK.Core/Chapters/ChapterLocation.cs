@@ -13,7 +13,4 @@ public class ChapterLocation : IChapterEntity, ILocation
     public double Longitude { get; set; }
 
     public string Name { get; set; } = string.Empty;
-
-    public double DistanceFrom(ILocation other, DistanceUnit unit)
-        => LatLong.DistanceFrom(other.LatLong, unit);
 }

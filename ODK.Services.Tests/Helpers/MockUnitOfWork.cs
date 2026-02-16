@@ -40,7 +40,6 @@ internal class MockUnitOfWork : IUnitOfWork
     public ICountryRepository CountryRepository => Mock.Object.CountryRepository;
     public IChapterTextsRepository ChapterTextsRepository => Mock.Object.ChapterTextsRepository;
     public ICurrencyRepository CurrencyRepository => Mock.Object.CurrencyRepository;
-    public IDistanceUnitRepository DistanceUnitRepository => Mock.Object.DistanceUnitRepository;
     public IEmailRepository EmailRepository => Mock.Object.EmailRepository;
     public IErrorPropertyRepository ErrorPropertyRepository => Mock.Object.ErrorPropertyRepository;
     public IErrorRepository ErrorRepository => Mock.Object.ErrorRepository;

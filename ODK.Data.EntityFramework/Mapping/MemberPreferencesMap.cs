@@ -10,11 +10,11 @@ public class MemberPreferencesMap : IEntityTypeConfiguration<MemberPreferences>
     {
         builder.ToTable("MemberPreferences");
 
-        builder.HasKey(x => x.MemberId);
+        builder.Property(x => x.DistanceUnit)
+            .HasColumnName("DistanceUnitTypeId")
+            .HasConversion<int>();
 
-        builder.HasOne(x => x.DistanceUnit)
-            .WithMany()
-            .HasForeignKey(x => x.DistanceUnitId);
+        builder.HasKey(x => x.MemberId);
 
         builder.HasOne<Member>()
             .WithOne()

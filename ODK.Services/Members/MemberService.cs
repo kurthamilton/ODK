@@ -30,6 +30,7 @@ public class MemberService : IMemberService
 {
     private readonly IAuthorizationService _authorizationService;
     private readonly ICacheService _cacheService;
+    private readonly IDistanceUnitFactory _distanceUnitFactory;
     private readonly IGeolocationService _geolocationService;
     private readonly ILoggingService _loggingService;
     private readonly IMemberEmailService _memberEmailService;
@@ -51,10 +52,12 @@ public class MemberService : IMemberService
         ITopicService topicService,
         IPaymentProviderFactory paymentProviderFactory,
         IGeolocationService geolocationService,
-        ILoggingService loggingService)
+        ILoggingService loggingService,
+        IDistanceUnitFactory distanceUnitFactory)
     {
         _authorizationService = authorizationService;
         _cacheService = cacheService;
+        _distanceUnitFactory = distanceUnitFactory;
         _geolocationService = geolocationService;
         _loggingService = loggingService;
         _memberEmailService = memberEmailService;
@@ -114,10 +117,9 @@ public class MemberService : IMemberService
 
     public async Task<ServiceResult<Member?>> CreateAccount(IServiceRequest request, AccountCreateModel model)
     {
-        var (existing, siteSubscription, distanceUnits, topics) = await _unitOfWork.RunAsync(
+        var (existing, siteSubscription, topics) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetByEmailAddress(model.EmailAddress),
             x => x.SiteSubscriptionRepository.GetDefault(request.Platform),
-            x => x.DistanceUnitRepository.GetAll(),
             x => x.TopicRepository.GetByIds(model.TopicIds));
 
         if (existing != null)
@@ -151,9 +153,10 @@ public class MemberService : IMemberService
 
         _unitOfWork.MemberRepository.Add(member);
 
+        Country? country = null;
         if (model.Location != null)
         {
-            var country = await _geolocationService.GetCountryFromLocation(model.Location.Value);
+            country = await _geolocationService.GetCountryFromLocation(model.Location.Value);
 
             _unitOfWork.MemberLocationRepository.Add(new MemberLocation
             {
@@ -174,12 +177,13 @@ public class MemberService : IMemberService
             }
         }
 
-        var distanceUnit = distanceUnits
-            .OrderBy(x => x.Order)
-            .First();
+        var distanceUnit = country != null
+            ? _distanceUnitFactory.GetByCountry(country)
+            : _distanceUnitFactory.GetDefault();
+
         _unitOfWork.MemberPreferencesRepository.Add(new MemberPreferences
         {
-            DistanceUnitId = distanceUnit.Id,
+            DistanceUnit = distanceUnit.Type,
             MemberId = member.Id
         });
 
@@ -238,7 +242,7 @@ public class MemberService : IMemberService
             membershipSettings,
             existing,
             siteSubscription,
-            ownerSubscription, 
+            ownerSubscription,
             chapterLocation
         ) = await _unitOfWork.RunAsync(
             x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
@@ -471,10 +475,11 @@ public class MemberService : IMemberService
     {
         var currentMember = request.CurrentMember;
 
-        var (distanceUnits, memberPreferences, memberLocation) = await _unitOfWork.RunAsync(
-            x => x.DistanceUnitRepository.GetAll(),
+        var (memberPreferences, memberLocation) = await _unitOfWork.RunAsync(
             x => x.MemberPreferencesRepository.GetByMemberId(currentMember.Id),
             x => x.MemberLocationRepository.GetByMemberId(currentMember.Id));
+
+        var distanceUnits = _distanceUnitFactory.GetAll();
 
         return new MemberLocationViewModel
         {
@@ -905,7 +910,7 @@ public class MemberService : IMemberService
         return ServiceResult.Successful("Picture updated");
     }
 
-    public async Task<ServiceResult> UpdateMemberLocation(Guid id, LatLong? location, string? name, Guid? distanceUnitId)
+    public async Task<ServiceResult> UpdateMemberLocation(Guid id, LatLong? location, string? name, DistanceUnitType? distanceUnit)
     {
         var (memberLocation, memberPreferences) = await _unitOfWork.RunAsync(
             x => x.MemberLocationRepository.GetByMemberId(id),
@@ -944,11 +949,11 @@ public class MemberService : IMemberService
             _unitOfWork.MemberLocationRepository.Update(memberLocation);
         }
 
-        if (memberPreferences?.DistanceUnitId != distanceUnitId)
+        if (memberPreferences?.DistanceUnit != distanceUnit)
         {
             memberPreferences ??= new MemberPreferences();
 
-            memberPreferences.DistanceUnitId = distanceUnitId;
+            memberPreferences.DistanceUnit = distanceUnit;
 
             if (memberPreferences.MemberId == default)
             {

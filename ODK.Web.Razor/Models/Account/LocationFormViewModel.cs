@@ -7,7 +7,7 @@ namespace ODK.Web.Razor.Models.Account;
 public class LocationFormViewModel : LocationPickerViewModel
 {
     [DisplayName("Show distances in")]
-    public Guid? DistanceUnit { get; set; }
+    public DistanceUnitType? DistanceUnit { get; set; }
 
     public IReadOnlyCollection<DistanceUnit> DistanceUnitOptions { get; set; } = [];
 }

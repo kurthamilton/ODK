@@ -9,7 +9,7 @@ namespace ODK.Data.EntityFramework;
 public class UnitOfWork : IUnitOfWork
 {
     private readonly OdkContext _context;
-    
+
     private readonly Lazy<IChapterAdminMemberRepository> _chapterAdminMemberRepository;
     private readonly Lazy<IChapterContactMessageReplyRepository> _chapterContactMessageReplyRepository;
     private readonly Lazy<IChapterContactMessageRepository> _chapterContactMessageRepository;
@@ -34,7 +34,6 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IChapterTopicRepository> _chapterTopicRepository;
     private readonly Lazy<ICountryRepository> _countryRepository;
     private readonly Lazy<ICurrencyRepository> _currencyRepository;
-    private readonly Lazy<IDistanceUnitRepository> _distanceUnitRepository;
     private readonly Lazy<IEmailRepository> _emailRepository;
     private readonly Lazy<IErrorPropertyRepository> _errorPropertyRepository;
     private readonly Lazy<IErrorRepository> _errorRepository;
@@ -97,7 +96,7 @@ public class UnitOfWork : IUnitOfWork
     public UnitOfWork(OdkContext context, IPlatformProvider platformProvider)
     {
         _context = context;
-        
+
         _chapterAdminMemberRepository = new(() => new ChapterAdminMemberRepository(_context));
         _chapterContactMessageReplyRepository = new(() => new ChapterContactMessageReplyRepository(_context));
         _chapterContactMessageRepository = new(() => new ChapterContactMessageRepository(_context));
@@ -122,7 +121,6 @@ public class UnitOfWork : IUnitOfWork
         _chapterTopicRepository = new(() => new ChapterTopicRepository(_context));
         _countryRepository = new(() => new CountryRepository(_context));
         _currencyRepository = new(() => new CurrencyRepository(_context));
-        _distanceUnitRepository = new(() => new DistanceUnitRepository(_context));
         _emailRepository = new(() => new EmailRepository(_context));
         _errorPropertyRepository = new(() => new ErrorPropertyRepository(_context));
         _errorRepository = new(() => new ErrorRepository(_context));
@@ -207,7 +205,6 @@ public class UnitOfWork : IUnitOfWork
     public IChapterTopicRepository ChapterTopicRepository => _chapterTopicRepository.Value;
     public ICountryRepository CountryRepository => _countryRepository.Value;
     public ICurrencyRepository CurrencyRepository => _currencyRepository.Value;
-    public IDistanceUnitRepository DistanceUnitRepository => _distanceUnitRepository.Value;
     public IEmailRepository EmailRepository => _emailRepository.Value;
     public IErrorPropertyRepository ErrorPropertyRepository => _errorPropertyRepository.Value;
     public IErrorRepository ErrorRepository => _errorRepository.Value;

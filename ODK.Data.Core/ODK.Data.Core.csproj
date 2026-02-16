@@ -7,11 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ODK.Core\ODK.Core.csproj" />
+    <Compile Remove="Members\**" />
+    <EmbeddedResource Remove="Members\**" />
+    <None Remove="Members\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Members\" />
+    <ProjectReference Include="..\ODK.Core\ODK.Core.csproj" />
   </ItemGroup>
 
 </Project>

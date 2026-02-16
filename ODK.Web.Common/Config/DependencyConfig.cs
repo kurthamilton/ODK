@@ -2,6 +2,7 @@
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using ODK.Core.Countries;
 using ODK.Core.Platforms;
 using ODK.Core.Web;
 using ODK.Data.Core;
@@ -81,8 +82,10 @@ public static class DependencyConfig
 
     private static void ConfigureCore(IServiceCollection services)
     {
-        services.AddSingleton<IHtmlSanitizer>(new HtmlSanitizer());
-        services.AddScoped<IUrlProviderFactory, UrlProviderFactory>();
+        services
+            .AddScoped<IDistanceUnitFactory, DistanceUnitFactory>()
+            .AddSingleton<IHtmlSanitizer>(new HtmlSanitizer())
+            .AddScoped<IUrlProviderFactory, UrlProviderFactory>();
     }
 
     private static void ConfigureData(IServiceCollection services, AppSettings appSettings)
