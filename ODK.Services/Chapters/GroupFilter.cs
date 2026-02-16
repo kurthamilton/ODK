@@ -6,7 +6,7 @@ public class GroupFilter
 {
     public required double? Distance { get; init; }
 
-    public required DistanceUnitType? DistanceUnit { get; init; }
+    public required DistanceUnitType DistanceUnit { get; init; }
 
     public required LatLong? Location { get; init; }
 

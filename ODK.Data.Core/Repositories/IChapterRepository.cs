@@ -33,7 +33,7 @@ public interface IChapterRepository : IWriteRepository<Chapter>
 
     IDeferredQuery<bool> NameExists(string name);
 
-    IDeferredQueryMultiple<Chapter> Search(PlatformType platform, ChapterSearchCriteria criteria);
+    IDeferredQueryMultiple<ChapterSearchResultDto> Search(PlatformType platform, ChapterSearchCriteria criteria);
 
     IDeferredQuery<bool> SlugExists(string slug);
 }

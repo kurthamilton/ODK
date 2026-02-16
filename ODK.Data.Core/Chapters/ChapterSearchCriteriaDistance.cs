@@ -4,7 +4,7 @@ namespace ODK.Data.Core.Chapters;
 
 public class ChapterSearchCriteriaDistance
 {
-    public required double DistanceKm { get; init; }
+    public required double DistanceMetres { get; init; }
 
     public required LatLong Location { get; init; }
 }

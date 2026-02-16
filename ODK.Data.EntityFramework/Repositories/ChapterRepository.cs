@@ -14,9 +14,12 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class ChapterRepository : WriteRepositoryBase<Chapter>, IChapterRepository
 {
+    private readonly OdkContext _context;
+
     public ChapterRepository(OdkContext context)
         : base(context)
     {
+        _context = context;
     }
 
     public IDeferredQueryMultiple<Chapter> GetAll(PlatformType platform, bool includeUnpublished)
@@ -117,40 +120,56 @@ public class ChapterRepository : WriteRepositoryBase<Chapter>, IChapterRepositor
             .Where(x => x.Name == name)
             .DeferredAny();
 
-    public IDeferredQueryMultiple<Chapter> Search(PlatformType platform, ChapterSearchCriteria criteria)
+    public IDeferredQueryMultiple<ChapterSearchResultDto> Search(PlatformType platform, ChapterSearchCriteria criteria)
     {
-        var query = Set(platform, includeUnpublished: false);
-
-        if (criteria.Distance != null)
-        {
-            query =
-                from chapter in query
-                from chapterLocation in Set<ChapterLocation>()
-                    .Where(x => x.ChapterId == chapter.Id)
-                    .WithinDistance(criteria.Distance.Location, criteria.Distance.DistanceKm * 1000)
-                select chapter;
-            ;
-        }
+        var topicQuery =
+            from topic in Set<Topic>()
+            select topic;
 
         if (criteria.TopicGroupNames != null)
         {
-            query =
-                from chapter in query
-                where
-                (
-                    from chapterTopic in Set<ChapterTopic>()
-                        .Where(x => x.ChapterId == chapter.Id)
-                    from topic in Set<Topic>()
-                        .Where(x => x.Id == chapterTopic.TopicId)
-                    from topicGroup in Set<TopicGroup>()
-                        .Where(x => x.Id == topic.TopicGroupId)
-                    where criteria.TopicGroupNames.Contains(topicGroup.Name)
-                    select 1
-                ).Any()
-                select chapter;
+            topicQuery =
+                from topic in topicQuery
+                from topicGroup in Set<TopicGroup>()
+                    .Where(x => x.Id == topic.TopicGroupId)
+                where criteria.TopicGroupNames.Contains(topicGroup.Name)
+                select topic;
         }
 
-        return query.DeferredMultiple();
+        var query =
+            from chapter in Set(platform, includeUnpublished: false)
+            from image in Set<ChapterImage>()
+                .Where(x => x.ChapterId == chapter.Id)
+                .Metadata()
+                .DefaultIfEmpty()
+            from texts in Set<ChapterTexts>()
+                .Where(x => x.ChapterId == chapter.Id)
+                .DefaultIfEmpty()
+            from location in criteria.Distance != null
+                ? Set<ChapterLocation>()
+                    .Where(x => x.ChapterId == chapter.Id)
+                    .WithinDistance(criteria.Distance.Location, criteria.Distance.DistanceMetres)
+                : Set<ChapterLocation>()
+                    .Where(x => x.ChapterId == chapter.Id)
+                    .DefaultIfEmpty()
+            join chapterTopic in Set<ChapterTopic>()
+                on chapter.Id equals chapterTopic.ChapterId into chapterTopics
+            where (criteria.Distance == null || location != null)
+            select new ChapterSearchResultDto
+            {
+                Chapter = chapter,
+                Image = image,
+                Location = location,
+                Texts = texts,
+                Topics = (
+                    from chapterTopic in chapterTopics
+                    from topic in topicQuery
+                        .Where(x => x.Id == chapterTopic.TopicId)
+                    select topic).ToList()
+            };
+
+        return query
+            .DeferredMultiple();
     }
 
     public IDeferredQuery<bool> SlugExists(string slug)

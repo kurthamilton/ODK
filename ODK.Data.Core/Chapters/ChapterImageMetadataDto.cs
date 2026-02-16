@@ -1,6 +1,6 @@
-﻿namespace ODK.Core.Chapters;
+﻿namespace ODK.Data.Core.Chapters;
 
-public class ChapterImageMetadata
+public class ChapterImageMetadataDto
 {
     public required Guid ChapterId { get; init; }
 

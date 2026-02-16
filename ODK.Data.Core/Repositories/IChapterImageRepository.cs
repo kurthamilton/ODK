@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Chapters;
+using ODK.Data.Core.Chapters;
 using ODK.Data.Core.Deferred;
 
 namespace ODK.Data.Core.Repositories;
@@ -9,5 +10,5 @@ public interface IChapterImageRepository : IWriteRepository<ChapterImage>, IChap
 
     IDeferredQuerySingleOrDefault<ChapterImage> GetByChapterId(Guid chapterId);
 
-    IDeferredQueryMultiple<ChapterImageMetadata> GetMetadatasByChapterIds(IEnumerable<Guid> chapterIds);
+    IDeferredQueryMultiple<ChapterImageMetadataDto> GetMetadatasByChapterIds(IEnumerable<Guid> chapterIds);
 }

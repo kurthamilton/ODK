@@ -76,7 +76,7 @@ public class ChapterViewModelService : IChapterViewModelService
             Distance = filter.Distance != null && filter.Location != null
                 ? new ChapterSearchCriteriaDistance
                 {
-                    DistanceKm = filter.Distance.Value,
+                    DistanceMetres = filter.Distance.Value * filter.DistanceUnit.Metres(),
                     Location = filter.Location.Value
                 }
                 : null,
@@ -85,7 +85,7 @@ public class ChapterViewModelService : IChapterViewModelService
                 : null
         };
 
-        var (chapters, distanceUnits, preferences, adminMembers) = await _unitOfWork.RunAsync(
+        var (chapters, distanceUnits, preferences, adminMembers, topicGroups) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.Search(platform, criteria),
             x => x.DistanceUnitRepository.GetAll(),
             x => currentMember != null
@@ -93,12 +93,12 @@ public class ChapterViewModelService : IChapterViewModelService
                 : new DefaultDeferredQuerySingleOrDefault<MemberPreferences>(),
             x => currentMember != null
                 ? x.ChapterAdminMemberRepository.GetByMemberId(platform, currentMember.Id)
-                : new DefaultDeferredQueryMultiple<ChapterAdminMember>());
+                : new DefaultDeferredQueryMultiple<ChapterAdminMember>(),
+            x => x.TopicGroupRepository.GetAll());
 
-        var distanceUnit = filter.DistanceUnit != null
-            ? distanceUnits.First(x => x.Type == filter.DistanceUnit)
-            : null;
-        if (currentMember != null && distanceUnit != null && distanceUnit.Id != preferences?.DistanceUnitId)
+        var distanceUnit = distanceUnits.First(x => x.Type == filter.DistanceUnit);
+
+        if (currentMember != null && distanceUnit.Id != preferences?.DistanceUnitId)
         {
             preferences ??= new MemberPreferences();
 
@@ -117,60 +117,40 @@ public class ChapterViewModelService : IChapterViewModelService
             await _unitOfWork.SaveChangesAsync();
         }
 
-        var chapterIds = chapters
-            .Select(x => x.Id)
-            .ToArray();
-
-        var (texts, chapterTopics, chapterImageDtos) = await _unitOfWork.RunAsync(
-            x => chapterIds.Length > 0
-                ? x.ChapterTextsRepository.GetByChapterIds(chapterIds)
-                : new DefaultDeferredQueryMultiple<ChapterTexts>(),
-            x => chapterIds.Length > 0
-                ? x.ChapterTopicRepository.GetDtosByChapterIds(chapterIds)
-                : new DefaultDeferredQueryMultiple<ChapterTopicDto>(),
-            x => chapterIds.Length > 0
-                ? x.ChapterImageRepository.GetMetadatasByChapterIds(chapterIds)
-                : new DefaultDeferredQueryMultiple<ChapterImageMetadata>());
-
-        var chapterDictionary = chapters
-            .ToDictionary(x => x.Id);
-        var chapterLocationDictionary = chapterLocations
-            .ToDictionary(x => x.ChapterId);
-
-        var chapterTopicsDictionary = chapterTopics
-            .GroupBy(x => x.ChapterId)
-            .ToDictionary(x => x.Key, x => x.ToArray());
-
-        var imageDictionary = chapterImageDtos
-            .ToDictionary(x => x.ChapterId);
-
-        var textsDictionary = texts
-            .ToDictionary(x => x.ChapterId);
-
         var groups = new List<ChapterWithDistanceViewModel>();
-        foreach (var chapterId in chaptersWithDistances.Keys)
+        foreach (var result in chapters)
         {
-            chapterLocationDictionary.TryGetValue(chapterId, out var chapterLocation);
-            textsDictionary.TryGetValue(chapterId, out var chapterTexts);
-            chapterTopicsDictionary.TryGetValue(chapterId, out var topics);
+            var hasImage = result.Image != null;
+            var chapterId = result.Chapter.Id;
 
-            var hasImage = imageDictionary.ContainsKey(chapterId);
+            var chapterDistance = result.Location != null && location != null
+                ? result.Location.DistanceFrom(location, distanceUnit)
+                : default(double?);
 
             groups.Add(new ChapterWithDistanceViewModel
             {
-                Chapter = chapterDictionary[chapterId],
-                Distance = chaptersWithDistances[chapterId],
+                Chapter = result.Chapter,
+                Distance = chapterDistance != null
+                    ? new Distance
+                    {
+                        Unit = distanceUnit,
+                        Value = distance
+                    }
+                    : null,
                 HasImage = hasImage,
                 IsAdmin = adminMembers.Any(x => x.ChapterId == chapterId),
                 IsMember = currentMember?.IsMemberOf(chapterId) == true,
-                IsOwner = chapterDictionary[chapterId].OwnerId == currentMember?.Id,
-                Location = chapterLocation,
+                IsOwner = result.Chapter.OwnerId == currentMember?.Id,
+                Location = result.Location,
                 Platform = platform,
-                Texts = chapterTexts,
-                Topics = topics?.Select(x => x.Topic).ToArray() ?? []
+                Texts = result.Texts,
+                Topics = result.Topics
             });
         }
 
+        var topicGroupId = topicGroups
+            .FirstOrDefault(x => string.Equals(x.Name, filter.TopicGroup, StringComparison.OrdinalIgnoreCase))
+            ?.Id;
         return new GroupsViewModel
         {
             Distance = new Distance { Unit = distanceUnit, Value = distance },
@@ -180,7 +160,7 @@ public class ChapterViewModelService : IChapterViewModelService
                 .ToArray(),
             Location = location,
             Platform = platform,
-            TopicGroupId = topicGroup?.Id,
+            TopicGroupId = topicGroupId,
             TopicGroups = topicGroups
         };
     }
@@ -570,7 +550,7 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.ChapterTextsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterTopicRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPageRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterLocationRepository.GetByChapterIdTest(chapter.Id));
+            x => x.ChapterLocationRepository.GetDtoByChapterId(chapter.Id));
 
         var eventIds = upcomingEvents
             .Concat(recentEvents)
@@ -897,7 +877,7 @@ public class ChapterViewModelService : IChapterViewModelService
                 : new DefaultDeferredQueryMultiple<ChapterTexts>(),
             x => chapterIds.Length > 0
                 ? x.ChapterImageRepository.GetMetadatasByChapterIds(chapterIds)
-                : new DefaultDeferredQueryMultiple<ChapterImageMetadata>());
+                : new DefaultDeferredQueryMultiple<ChapterImageMetadataDto>());
 
         var adminMemberDictionary = adminMembers.ToDictionary(x => x.ChapterId);
         var imageDictionary = images.ToDictionary(x => x.ChapterId);
