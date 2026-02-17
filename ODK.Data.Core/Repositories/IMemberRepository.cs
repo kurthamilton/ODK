@@ -1,6 +1,7 @@
 ﻿using ODK.Core.Members;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Members;
+using ODK.Data.Core.QueryBuilders;
 
 namespace ODK.Data.Core.Repositories;
 
@@ -21,4 +22,6 @@ public interface IMemberRepository : IReadWriteRepository<Member>
     IDeferredQuery<int> GetCountByChapterId(Guid chapterId);
 
     IDeferredQueryMultiple<MemberWithAvatarDto> GetLatestWithAvatarByChapterId(Guid chapterId, int pageSize);
+
+    IMemberQueryBuilder Query();
 }

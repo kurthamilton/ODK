@@ -3,20 +3,25 @@ using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Members;
+using ODK.Data.Core.QueryBuilders;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
 using ODK.Data.EntityFramework.Queries;
+using ODK.Data.EntityFramework.QueryBuilders;
 
 namespace ODK.Data.EntityFramework.Repositories;
 
 public class MemberRepository : ReadWriteRepositoryBase<Member>, IMemberRepository
 {
+    private readonly OdkContext _context;
+
     public MemberRepository(OdkContext context)
         : base(context)
     {
+        _context = context;
     }
 
-    public IDeferredQueryMultiple<Member> GetAllByChapterId(Guid chapterId) 
+    public IDeferredQueryMultiple<Member> GetAllByChapterId(Guid chapterId)
         => Set()
             .InChapter(chapterId)
             .DeferredMultiple();
@@ -38,7 +43,7 @@ public class MemberRepository : ReadWriteRepositoryBase<Member>, IMemberReposito
         return query.DeferredMultiple();
     }
 
-    public IDeferredQueryMultiple<Member> GetByChapterId(Guid chapterId) 
+    public IDeferredQueryMultiple<Member> GetByChapterId(Guid chapterId)
         => Set()
             .Current(chapterId)
             .Visible(chapterId)
@@ -64,7 +69,7 @@ public class MemberRepository : ReadWriteRepositoryBase<Member>, IMemberReposito
         return query.DeferredMultiple();
     }
 
-    public IDeferredQuerySingleOrDefault<Member> GetByEmailAddress(string emailAddress) 
+    public IDeferredQuerySingleOrDefault<Member> GetByEmailAddress(string emailAddress)
         => Set()
             .Where(x => x.EmailAddress == emailAddress)
             .DeferredSingleOrDefault();
@@ -81,7 +86,7 @@ public class MemberRepository : ReadWriteRepositoryBase<Member>, IMemberReposito
         return query.DeferredSingle();
     }
 
-    public IDeferredQuery<int> GetCountByChapterId(Guid chapterId) 
+    public IDeferredQuery<int> GetCountByChapterId(Guid chapterId)
         => Set()
             .Current(chapterId)
             .Visible(chapterId)
@@ -112,7 +117,9 @@ public class MemberRepository : ReadWriteRepositoryBase<Member>, IMemberReposito
             .DeferredMultiple();
     }
 
-    protected override IQueryable<Member> Set() 
+    public IMemberQueryBuilder Query() => new MemberQueryBuilder(_context);
+
+    protected override IQueryable<Member> Set()
         => base.Set()
             .Include(x => x.Chapters);
 }
