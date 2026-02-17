@@ -40,24 +40,6 @@ public class SocialMediaService : ISocialMediaService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<VersionedServiceResult<InstagramImage>> GetInstagramImage(long? currentVersion, Guid id)
-    {
-        var result = await _cacheService.GetOrSetVersionedItem(
-            async () => await _unitOfWork.InstagramImageRepository.GetById(id).Run(),
-            id,
-            currentVersion);
-
-        if (currentVersion == result.Version)
-        {
-            return result;
-        }
-
-        var image = result.Value;
-        return image != null
-            ? new VersionedServiceResult<InstagramImage>(BitConverter.ToInt64(image.Version), image)
-            : new VersionedServiceResult<InstagramImage>(0, null);
-    }
-
     public string GetInstagramChannelUrl(string username)
         => _settings.InstagramChannelUrlFormat.Replace("{username}", username);
 
@@ -65,6 +47,11 @@ public class SocialMediaService : ISocialMediaService
     {
         var tag = StringUtils.RemoveLeading(hashtag, "#");
         return _settings.InstagramTagUrlFormat.Replace("{tag}", tag);
+    }
+
+    public async Task<InstagramImage> GetInstagramImage(Guid id)
+    {
+        return await _unitOfWork.InstagramImageRepository.GetById(id).Run();
     }
 
     public string GetInstagramPostUrl(string externalId)

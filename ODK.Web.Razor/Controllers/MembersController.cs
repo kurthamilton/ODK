@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ODK.Core.Members;
 using ODK.Services.Members;
 using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
@@ -24,33 +23,19 @@ public class MembersController : OdkControllerBase
 
     [SkipRequestStoreMiddleware]
     [Authorize]
-    [HttpGet("members/{Id}/avatar")]
-    public Task<IActionResult> Avatar(Guid id)
-        => HandleVersionedRequest(version => _memberService.GetMemberAvatar(version, id), MemberAvatarResult);
+    [HttpGet("members/{id:guid}/avatar")]
+    public async Task<IActionResult> Avatar(Guid id, [FromQuery(Name = "v")] int? version = null)
+    {
+        var avatar = await _memberService.GetMemberAvatar(id);
+        return CacheableFile(avatar.ImageData, avatar.MimeType, version);
+    }
 
     [SkipRequestStoreMiddleware]
     [Authorize]
-    [HttpGet("members/{Id}/image")]
-    public Task<IActionResult> Image(Guid id)
-        => HandleVersionedRequest(version => _memberService.GetMemberImage(version, id), MemberImageResult);
-
-    protected IActionResult MemberAvatarResult(MemberAvatar? image)
+    [HttpGet("members/{id:guid}/image")]
+    public async Task<IActionResult> Image(Guid id, [FromQuery(Name = "v")] int? version = null)
     {
-        if (image == null)
-        {
-            return NoContent();
-        }
-
-        return File(image.ImageData, image.MimeType);
-    }
-
-    protected IActionResult MemberImageResult(MemberImage? image)
-    {
-        if (image == null)
-        {
-            return NoContent();
-        }
-
-        return File(image.ImageData, image.MimeType);
+        var image = await _memberService.GetMemberImage(id);
+        return CacheableFile(image.ImageData, image.MimeType, version);
     }
 }

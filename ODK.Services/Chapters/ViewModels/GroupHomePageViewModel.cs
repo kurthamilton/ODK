@@ -1,6 +1,7 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Core.Topics;
+using ODK.Data.Core.Chapters;
 using ODK.Services.SocialMedia.ViewModels;
 
 namespace ODK.Services.Chapters.ViewModels;
@@ -9,7 +10,7 @@ public class GroupHomePageViewModel : GroupPageViewModel
 {
     public required ChapterLocation? ChapterLocation { get; init; }
 
-    public required bool HasImage { get; init; }
+    public required ChapterImageVersionDto? Image { get; init; }
 
     public required InstagramPostsViewModel InstagramPosts { get; init; }
 

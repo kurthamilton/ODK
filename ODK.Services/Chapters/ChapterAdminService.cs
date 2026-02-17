@@ -15,10 +15,8 @@ using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Data.Core.Chapters;
 using ODK.Resources.Resources;
-using ODK.Services.Caching;
 using ODK.Services.Chapters.Models;
 using ODK.Services.Chapters.ViewModels;
-using ODK.Services.Exceptions;
 using ODK.Services.Geolocation;
 using ODK.Services.Imaging;
 using ODK.Services.Logging;
@@ -43,7 +41,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             { PlatformType.DrunkenKnitwits, new[] { PageType.About, PageType.Contact, PageType.Members } }
         };
 
-    private readonly ICacheService _cacheService;
     private readonly IGeolocationService _geolocationService;
     private readonly IHtmlSanitizer _htmlSanitizer;
     private readonly IImageService _imageService;
@@ -61,7 +58,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public ChapterAdminService(
         IUnitOfWork unitOfWork,
-        ICacheService cacheService,
         IHtmlSanitizer htmlSanitizer,
         ISocialMediaService socialMediaService,
         INotificationService notificationService,
@@ -77,7 +73,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         ILoggingService loggingService)
         : base(unitOfWork)
     {
-        _cacheService = cacheService;
         _geolocationService = geolocationService;
         _htmlSanitizer = htmlSanitizer;
         _imageService = imageService;
@@ -612,8 +607,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         _unitOfWork.ChapterPropertyRepository.Delete(property);
         await _unitOfWork.SaveChangesAsync();
-
-        _cacheService.RemoveVersionedCollection<ChapterProperty>(property.ChapterId);
     }
 
     public async Task DeleteChapterQuestion(IMemberChapterAdminServiceRequest request, Guid id)
@@ -639,8 +632,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         _unitOfWork.ChapterQuestionRepository.Delete(question);
         await _unitOfWork.SaveChangesAsync();
-
-        _cacheService.RemoveVersionedCollection<ChapterQuestion>(question.ChapterId);
     }
 
     public async Task<ServiceResult> DeleteChapterSubscription(IMemberChapterAdminServiceRequest request, Guid id)
@@ -1718,8 +1709,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         await _unitOfWork.SaveChangesAsync();
 
-        _cacheService.UpdateItem(settings, chapter.Id);
-
         return ServiceResult.Successful();
     }
 
@@ -1964,8 +1953,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         _unitOfWork.ChapterPropertyRepository.Update(switchWith);
         await _unitOfWork.SaveChangesAsync();
 
-        _cacheService.RemoveVersionedCollection<ChapterProperty>(property.ChapterId);
-
         return properties.OrderBy(x => x.DisplayOrder).ToArray();
     }
 
@@ -2040,8 +2027,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         _unitOfWork.ChapterQuestionRepository.Update(question);
         _unitOfWork.ChapterQuestionRepository.Update(switchWith);
         await _unitOfWork.SaveChangesAsync();
-
-        _cacheService.RemoveVersionedCollection<ChapterQuestion>(question.ChapterId);
 
         return questions.OrderBy(x => x.DisplayOrder).ToArray();
     }
@@ -2145,8 +2130,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         }
 
         await _unitOfWork.SaveChangesAsync();
-
-        _cacheService.RemoveVersionedItem<ChapterTexts>(chapter.Id);
 
         return ServiceResult.Successful();
     }

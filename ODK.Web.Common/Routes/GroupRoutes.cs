@@ -51,7 +51,7 @@ public class GroupRoutes
         _ => $"{Index()}/{chapter.Slug}".ToLowerInvariant()
     };
 
-    public string Image(Guid chapterId) => $"/groups/{chapterId}/image";
+    public string Image(Guid chapterId, int version) => $"/groups/{chapterId}/image?v={version}";
 
     public string Index() => Platform switch
     {

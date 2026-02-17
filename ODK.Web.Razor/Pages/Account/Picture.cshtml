@@ -7,7 +7,7 @@
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
-@model ODK.Web.Razor.Pages.Account.PictureModel
+@model PictureModel
 @inject IAccountViewModelService AccountViewModelService
 @{
     Layout = "_AccountLayout";
@@ -30,9 +30,8 @@
                 <section class="section">
                     @await Html.PartialAsync("Account/_UpdatePictureContent", new UpdatePictureViewModel
                     {
-                        Avatar = viewModel.Avatar,
                         Chapter = null,
-                        Image = viewModel.Image,
+                        ImageVersion = viewModel.ImageVersion,
                         Member = viewModel.CurrentMember                    
                     })
                 </section>

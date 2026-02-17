@@ -22,9 +22,9 @@ public interface IMemberService
 
     Task<Member?> FindMemberByEmailAddress(string emailAddress);
 
-    Task<VersionedServiceResult<MemberAvatar>> GetMemberAvatar(long? currentVersion, Guid memberId);
+    Task<MemberAvatar> GetMemberAvatar(Guid memberId);
 
-    Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid memberId);
+    Task<MemberImage> GetMemberImage(Guid memberId);
 
     Task<MemberLocationViewModel> GetMemberLocationViewModel(IMemberServiceRequest request);
 

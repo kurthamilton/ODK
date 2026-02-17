@@ -5,4 +5,6 @@ public class InstagramImageMetadataViewModel
     public required string? Alt { get; init; }
 
     public required Guid Id { get; init; }
+
+    public required int Version { get; init; }
 }

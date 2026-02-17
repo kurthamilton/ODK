@@ -43,7 +43,8 @@ public class InstagramPostRepository : ReadWriteRepositoryBase<InstagramPost>, I
                 {
                     Alt = x.Alt,
                     ExternalId = x.ExternalId,
-                    Id = x.Id
+                    Id = x.Id,
+                    VersionInt = x.VersionInt
                 })
                 .ToArray(),
             Post = post

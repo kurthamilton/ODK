@@ -7,4 +7,6 @@ public class InstagramImageMetadataDto
     public required string? ExternalId { get; init; }
 
     public required Guid Id { get; init; }
+
+    public required int VersionInt { get; init; }
 }

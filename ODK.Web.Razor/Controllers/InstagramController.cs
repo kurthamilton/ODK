@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ODK.Core.SocialMedia;
 using ODK.Services.Imaging;
 using ODK.Services.SocialMedia;
 using ODK.Web.Common.Routes;
@@ -29,28 +28,26 @@ public class InstagramController : OdkControllerBase
     [SkipRequestStoreMiddleware]
     [AllowAnonymous]
     [HttpGet("instagram/images/{id:guid}")]
-    public async Task<IActionResult> GetInstagramImage(Guid id)
+    public async Task<IActionResult> GetInstagramImage(Guid id, [FromQuery(Name = "v")] int? version = null)
     {
-        return await HandleVersionedRequest(
-            version => _socialMediaService.GetInstagramImage(version, id),
-            image => InstagramImageResult(image, null));
+        var image = await _socialMediaService.GetInstagramImage(id);
+        if (image == null)
+        {
+            return NotFound();
+        }
+
+        return CacheableFile(image.ImageData, image.MimeType, version);
     }
 
     [SkipRequestStoreMiddleware]
     [AllowAnonymous]
     [HttpGet("instagram/images/{id:guid}/thumbnail")]
-    public async Task<IActionResult> GetInstagramImageThumbnail(Guid id, int? size = null)
+    public async Task<IActionResult> GetInstagramImageThumbnail(Guid id, int? size = null, [FromQuery(Name = "v")] int? version = null)
     {
-        return await HandleVersionedRequest(
-            version => _socialMediaService.GetInstagramImage(version, id),
-            image => InstagramImageResult(image, size));
-    }
-
-    private IActionResult InstagramImageResult(InstagramImage? image, int? size = null)
-    {
+        var image = await _socialMediaService.GetInstagramImage(id);
         if (image == null)
         {
-            return NoContent();
+            return NotFound();
         }
 
         var data = image.ImageData;
@@ -61,6 +58,6 @@ public class InstagramController : OdkControllerBase
             data = _imageService.Reduce(data, size.Value, size.Value);
         }
 
-        return File(data, image.MimeType);
+        return CacheableFile(data, image.MimeType, version);
     }
 }

@@ -97,22 +97,32 @@ public class ChapterRepository : WriteRepositoryBase<Chapter>, IChapterRepositor
             .Where(x => x.Slug == slug)
             .DeferredSingleOrDefault();
 
-    public IDeferredQueryMultiple<Chapter> GetByTopicGroupId(PlatformType platform, Guid topicGroupId)
+    public IDeferredQueryMultiple<ChapterDto> GetDtosByMemberId(PlatformType platform, Guid memberId)
     {
         var query =
-            from chapter in Set(platform, includeUnpublished: false)
-            where
-            (
-                from chapterTopic in Set<ChapterTopic>()
-                from topic in Set<Topic>()
-                where chapterTopic.ChapterId == chapter.Id &&
-                    topic.Id == chapterTopic.TopicId &&
-                    topic.TopicGroupId == topicGroupId
-                select 1
-            ).Any()
-            select chapter;
+            from chapter in Set(platform, includeUnpublished: true)
+            from image in Set<ChapterImage>()
+                .Where(x => x.ChapterId == chapter.Id)
+                .DefaultIfEmpty()
+                .Select(x => x != null ? new ChapterImageVersionDto
+                {
+                    Version = x.VersionInt
+                } : null)
+            from texts in Set<ChapterTexts>()
+                .Where(x => x.ChapterId == chapter.Id)
+                .DefaultIfEmpty()
+            from memberChapter in Set<MemberChapter>()
+                .Where(x => x.ChapterId == chapter.Id)
+            where memberChapter.MemberId == memberId
+            select new ChapterDto
+            {
+                Chapter = chapter,
+                Image = image,
+                Texts = texts
+            };
 
-        return query.DeferredMultiple();
+        return query
+            .DeferredMultiple();
     }
 
     public IDeferredQuery<bool> NameExists(string name)
@@ -147,10 +157,9 @@ public class ChapterRepository : WriteRepositoryBase<Chapter>, IChapterRepositor
             from image in Set<ChapterImage>()
                 .Where(x => x.ChapterId == chapter.Id)
                 .DefaultIfEmpty()
-                .Select(x => x != null ? new ChapterImageMetadataDto
+                .Select(x => x != null ? new ChapterImageVersionDto
                 {
-                    ChapterId = x.ChapterId,
-                    MimeType = x.MimeType
+                    Version = x.VersionInt
                 } : null)
             from texts in Set<ChapterTexts>()
                 .Where(x => x.ChapterId == chapter.Id)

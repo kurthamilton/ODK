@@ -4,11 +4,11 @@ namespace ODK.Services.SocialMedia;
 
 public interface ISocialMediaService
 {
-    Task<VersionedServiceResult<InstagramImage>> GetInstagramImage(long? currentVersion, Guid id);
-
     string GetInstagramChannelUrl(string username);
 
     string GetInstagramHashtagUrl(string hashtag);
+
+    Task<InstagramImage> GetInstagramImage(Guid id);
 
     string GetInstagramPostUrl(string externalId);
 

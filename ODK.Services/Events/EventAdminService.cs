@@ -208,6 +208,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             responses,
             venue,
             members,
+            memberAvatars,
             memberSubscriptions,
             chapterMembershipSettings,
             chapterPrivacySettings,
@@ -218,6 +219,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.EventResponseRepository.GetByEventId(eventId),
             x => x.VenueRepository.GetByEventId(eventId),
             x => x.MemberRepository.GetByChapterId(chapter.Id),
+            x => x.MemberAvatarRepository.GetVersionDtosByChapterId(chapter.Id),
             x => x.MemberSubscriptionRepository.GetByChapterId(chapter.Id),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
@@ -239,6 +241,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         {
             Chapter = chapter,
             Event = @event,
+            MemberAvatars = memberAvatars,
             Members = members
                 .Where(x =>
                     responseDictionary.ContainsKey(x.Id) ||

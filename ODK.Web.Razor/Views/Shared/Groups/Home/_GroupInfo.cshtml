@@ -7,10 +7,10 @@
 @inject IOdkRoutes OdkRoutes
 
 <div class="d-flex flex-column gap-3">
-    @if (Model.HasImage)
+    @if (Model.Image != null)
     {
         <div>
-            <img src="@OdkRoutes.Groups.Image(Model.Chapter.Id)" />
+            <img src="@OdkRoutes.Groups.Image(Model.Chapter.Id, Model.Image.Version)" />
         </div>
     }    
 

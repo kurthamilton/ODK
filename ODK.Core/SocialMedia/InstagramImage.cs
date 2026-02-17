@@ -22,5 +22,7 @@ public class InstagramImage : IDatabaseEntity, IVersioned
 
     public byte[] Version { get; set; } = [];
 
+    public int VersionInt { get; set; }
+
     public int? Width { get; set; }
 }

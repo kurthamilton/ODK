@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
@@ -65,6 +66,17 @@ public abstract class OdkControllerBase : Controller
     protected void AddFeedback(FeedbackViewModel viewModel)
     {
         TempData!.AddFeedback(viewModel);
+    }
+
+    protected IActionResult CacheableFile(byte[] data, string mimeType, int? version)
+    {
+        // Do not set cache control if no version was given for the image
+        if (version != null)
+        {
+            Response.Headers.CacheControl = "public, max-age=31536000, immutable";
+        }
+
+        return File(data, mimeType);
     }
 
     protected IActionResult DownloadCsv(IReadOnlyCollection<IReadOnlyCollection<string>> data, string fileName)

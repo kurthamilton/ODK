@@ -17,9 +17,5 @@ public class MemberChaptersViewModel
 
     public required IReadOnlyCollection<ChapterWithDistanceViewModel> Owned { get; init; }
 
-    public required PlatformType Platform { get; init; }
-
-    public required IReadOnlyCollection<ChapterTexts> Texts { get; init; }
-
     public int Total => Admin.Count + Member.Count + Owned.Count;
 }

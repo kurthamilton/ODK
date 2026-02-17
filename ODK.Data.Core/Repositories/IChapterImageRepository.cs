@@ -6,9 +6,7 @@ namespace ODK.Data.Core.Repositories;
 
 public interface IChapterImageRepository : IWriteRepository<ChapterImage>, IChapterEntityRepository<ChapterImage>
 {
-    IDeferredQuery<bool> ExistsForChapterId(Guid chapterId);
-
     IDeferredQuerySingleOrDefault<ChapterImage> GetByChapterId(Guid chapterId);
 
-    IDeferredQueryMultiple<ChapterImageMetadataDto> GetMetadatasByChapterIds(IEnumerable<Guid> chapterIds);
+    IDeferredQuerySingleOrDefault<ChapterImageVersionDto> GetVersionDtoByChapterId(Guid chapterId);
 }

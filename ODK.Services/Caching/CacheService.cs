@@ -5,8 +5,6 @@ namespace ODK.Services.Caching;
 
 public class CacheService : ICacheService
 {
-    private const string CollectionInstanceKey = "";
-
     private readonly IMemoryCache _cache;
 
     public CacheService(IMemoryCache cache)
@@ -14,22 +12,11 @@ public class CacheService : ICacheService
         _cache = cache;
     }
 
-    public async Task<T?> GetOrSetItem<T>(Func<Task<T?>> getter, object instanceKey) where T : class
-    {
-        return await GetOrSet(getter, instanceKey, null, null);
-    }
-
-    public async Task<T?> GetOrSetItem<T>(Func<Task<T?>> getter, object instanceKey, TimeSpan lifetime) where T : class
-    {
-        return await GetOrSet(getter, instanceKey, null, lifetime);
-    }
-
     public async Task<VersionedServiceResult<T>> GetOrSetVersionedItem<T>(
         Func<Task<T?>> getter,
         object key,
         long? currentVersion) where T : class, IVersioned
     {
-
         return await GetOrSetVersionedItem(getter,
             t => Task.FromResult(BitConverter.ToInt64(t?.Version ?? [])),
             key,
@@ -67,11 +54,6 @@ public class CacheService : ICacheService
         return new VersionedServiceResult<T>(version.Value, item);
     }
 
-    public void RemoveVersionedCollection<T>(object? key = null)
-    {
-        RemoveVersionedItem<T>(key ?? CollectionInstanceKey);
-    }
-
     public void RemoveVersionedItem<T>(object instanceKey)
     {
         string versionKey = GetVersionKey<T>(instanceKey);
@@ -79,24 +61,6 @@ public class CacheService : ICacheService
 
         _cache.Remove(versionKey);
         _cache.Remove(key);
-    }
-
-    public void UpdateItem<T>(T item, object instanceKey)
-    {
-        Set(item, instanceKey, null, null);
-    }
-
-    public void UpdatedVersionedCollection<T>(IReadOnlyCollection<T> collection, long version, object? key = null)
-    {
-        SetVersion<T>(version, key ?? CollectionInstanceKey);
-        Set(collection, key ?? CollectionInstanceKey, version, null);
-    }
-
-    public void UpdatedVersionedItem<T>(T item, object instanceKey) where T : IVersioned
-    {
-        var longVersion = BitConverter.ToInt64(item.Version);
-        SetVersion<T>(longVersion, instanceKey);
-        Set(item, instanceKey, longVersion, null);
     }
 
     private static string GetKey<T>(object instanceKey)

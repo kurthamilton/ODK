@@ -15,6 +15,9 @@ public class MemberAvatarMap : IEntityTypeConfiguration<MemberAvatar>
         builder.Property(x => x.Version)
             .IsRowVersion();
 
+        builder.Property(x => x.VersionInt)
+            .ValueGeneratedOnAddOrUpdate();
+
         builder.HasOne<Member>()
             .WithOne()
             .HasForeignKey<MemberAvatar>(x => x.MemberId);

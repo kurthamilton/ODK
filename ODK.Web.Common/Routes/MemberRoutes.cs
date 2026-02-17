@@ -4,8 +4,7 @@ namespace ODK.Web.Common.Routes;
 
 public class MemberRoutes
 {
+    public string Avatar(Guid memberId, int version) => $"/members/{memberId}/avatar?v={version}";
 
-    public string Avatar(Guid memberId) => $"/members/{memberId}/avatar";
-
-    public string Image(Guid memberId) => $"/members/{memberId}/image";
+    public string Image(Guid memberId, int version) => $"/members/{memberId}/image?v={version}";
 }

@@ -33,23 +33,8 @@ public class ChapterService : IChapterService
     public Task<Chapter> GetByEventId(IServiceRequest request, Guid eventId)
         => _unitOfWork.ChapterRepository.GetByEventId(request.Platform, eventId).Run();
 
-    public async Task<VersionedServiceResult<ChapterImage>> GetChapterImage(long? currentVersion, Guid chapterId)
-    {
-        var result = await _cacheService.GetOrSetVersionedItem(
-            () => _unitOfWork.ChapterImageRepository.GetByChapterId(chapterId).Run(),
-            chapterId,
-            currentVersion);
-
-        if (currentVersion == result.Version)
-        {
-            return result;
-        }
-
-        var image = result.Value;
-        return image != null
-            ? new VersionedServiceResult<ChapterImage>(BitConverter.ToInt64(image.Version), image)
-            : new VersionedServiceResult<ChapterImage>(0, null);
-    }
+    public Task<ChapterImage?> GetChapterImage(Guid chapterId)
+        => _unitOfWork.ChapterImageRepository.GetByChapterId(chapterId).Run();
 
     public async Task<ChapterLayoutViewModel> GetChapterLayoutViewModel(Guid chapterId)
     {

@@ -1,8 +1,6 @@
 ﻿using ODK.Core;
-using ODK.Core.Countries;
 using ODK.Core.Venues;
 using ODK.Data.Core;
-using ODK.Services.Caching;
 using ODK.Services.Venues.Models;
 using ODK.Services.Venues.ViewModels;
 
@@ -10,15 +8,11 @@ namespace ODK.Services.Venues;
 
 public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
 {
-    private readonly ICacheService _cacheService;
     private readonly IUnitOfWork _unitOfWork;
 
-    public VenueAdminService(
-        IUnitOfWork unitOfWork,
-        ICacheService cacheService)
+    public VenueAdminService(IUnitOfWork unitOfWork)
         : base(unitOfWork)
     {
-        _cacheService = cacheService;
         _unitOfWork = unitOfWork;
     }
 
@@ -58,8 +52,6 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
         _unitOfWork.VenueLocationRepository.Add(location);
 
         await _unitOfWork.SaveChangesAsync();
-
-        _cacheService.RemoveVersionedCollection<Venue>(chapter.Id);
 
         return ServiceResult.Successful();
     }
@@ -179,9 +171,6 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
         }
 
         await _unitOfWork.SaveChangesAsync();
-
-        _cacheService.RemoveVersionedItem<Venue>(id);
-        _cacheService.RemoveVersionedCollection<Venue>(venue.ChapterId);
 
         return ServiceResult.Successful();
     }

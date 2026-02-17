@@ -27,9 +27,9 @@ public interface IChapterRepository : IWriteRepository<Chapter>
 
     IDeferredQueryMultiple<Chapter> GetByOwnerId(PlatformType platform, Guid ownerId);
 
-    IDeferredQueryMultiple<Chapter> GetByTopicGroupId(PlatformType platform, Guid topicGroupId);
-
     IDeferredQuerySingleOrDefault<Chapter> GetBySlug(PlatformType platform, string slug);
+
+    IDeferredQueryMultiple<ChapterDto> GetDtosByMemberId(PlatformType platform, Guid memberId);
 
     IDeferredQuery<bool> NameExists(string name);
 

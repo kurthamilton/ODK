@@ -13,7 +13,6 @@ using ODK.Core.Platforms;
 using ODK.Data.Core;
 using ODK.Services.Authentication.OAuth;
 using ODK.Services.Authorization;
-using ODK.Services.Caching;
 using ODK.Services.Geolocation;
 using ODK.Services.Logging;
 using ODK.Services.Members.Models;
@@ -29,7 +28,6 @@ namespace ODK.Services.Members;
 public class MemberService : IMemberService
 {
     private readonly IAuthorizationService _authorizationService;
-    private readonly ICacheService _cacheService;
     private readonly IDistanceUnitFactory _distanceUnitFactory;
     private readonly IGeolocationService _geolocationService;
     private readonly ILoggingService _loggingService;
@@ -44,7 +42,6 @@ public class MemberService : IMemberService
     public MemberService(
         IUnitOfWork unitOfWork,
         IAuthorizationService authorizationService,
-        ICacheService cacheService,
         IMemberImageService memberImageService,
         IMemberEmailService memberEmailService,
         INotificationService notificationService,
@@ -56,7 +53,6 @@ public class MemberService : IMemberService
         IDistanceUnitFactory distanceUnitFactory)
     {
         _authorizationService = authorizationService;
-        _cacheService = cacheService;
         _distanceUnitFactory = distanceUnitFactory;
         _geolocationService = geolocationService;
         _loggingService = loggingService;
@@ -431,44 +427,18 @@ public class MemberService : IMemberService
         return await _unitOfWork.MemberRepository.GetByEmailAddress(emailAddress).Run();
     }
 
-    public async Task<VersionedServiceResult<MemberAvatar>> GetMemberAvatar(long? currentVersion, Guid memberId)
+    public async Task<MemberAvatar> GetMemberAvatar(Guid memberId)
     {
-        var result = await _cacheService.GetOrSetVersionedItem(
-            () => _unitOfWork.MemberAvatarRepository.GetByMemberId(memberId).Run(),
-            memberId,
-            currentVersion);
-
-        if (currentVersion == result.Version)
-        {
-            return result;
-        }
-
-        var image = result.Value;
-        if (image == null)
-        {
-            return new VersionedServiceResult<MemberAvatar>(0, null);
-        }
-
-        var version = BitConverter.ToInt64(image.Version);
-        return new VersionedServiceResult<MemberAvatar>(version, image);
+        var avatar = await _unitOfWork.MemberAvatarRepository.GetByMemberId(memberId).Run();
+        OdkAssertions.Exists(avatar);
+        return avatar;
     }
 
-    public async Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid memberId)
+    public async Task<MemberImage> GetMemberImage(Guid memberId)
     {
-        var result = await _cacheService.GetOrSetVersionedItem(
-            () => _unitOfWork.MemberImageRepository.GetByMemberId(memberId).Run(),
-            memberId,
-            currentVersion);
-
-        if (currentVersion == result.Version)
-        {
-            return result;
-        }
-
-        var image = result.Value;
-        return image != null
-            ? new VersionedServiceResult<MemberImage>(BitConverter.ToInt64(image.Version), image)
-            : new VersionedServiceResult<MemberImage>(0, null);
+        var image = await _unitOfWork.MemberImageRepository.GetByMemberId(memberId).Run();
+        OdkAssertions.Exists(image);
+        return image;
     }
 
     public async Task<MemberLocationViewModel> GetMemberLocationViewModel(IMemberServiceRequest request)
@@ -649,9 +619,6 @@ public class MemberService : IMemberService
         }
 
         await _unitOfWork.SaveChangesAsync();
-
-        _cacheService.RemoveVersionedItem<MemberImage>(memberId);
-        _cacheService.RemoveVersionedItem<MemberAvatar>(memberId);
     }
 
     public async Task<ChapterSubscriptionCheckoutStartedViewModel> StartChapterSubscriptionCheckoutSession(
@@ -903,9 +870,6 @@ public class MemberService : IMemberService
         }
 
         await _unitOfWork.SaveChangesAsync();
-
-        _cacheService.RemoveVersionedItem<MemberImage>(id);
-        _cacheService.RemoveVersionedItem<MemberAvatar>(id);
 
         return ServiceResult.Successful("Picture updated");
     }

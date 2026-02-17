@@ -18,7 +18,6 @@ using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Data.Core.Repositories;
 using ODK.Resources.Resources;
-using ODK.Services.Caching;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.Models;
 using ODK.Services.Exceptions;
@@ -1566,7 +1565,6 @@ public static class ChapterAdminServiceTests
 
     private static ChapterAdminService CreateChapterAdminService(
         MockUnitOfWork unitOfWork,
-        ICacheService? cacheService = null,
         IHtmlSanitizer? htmlSanitizer = null,
         ISocialMediaService? socialMediaService = null,
         INotificationService? notificationService = null,
@@ -1583,7 +1581,6 @@ public static class ChapterAdminServiceTests
     {
         return new ChapterAdminService(
             unitOfWork,
-            cacheService ?? new Mock<ICacheService>().Object,
             htmlSanitizer ?? CreateMockHtmlSanitizer(),
             socialMediaService ?? new Mock<ISocialMediaService>().Object,
             notificationService ?? new Mock<INotificationService>().Object,

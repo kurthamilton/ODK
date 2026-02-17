@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ODK.Core.Chapters;
 using ODK.Services.Chapters;
 using ODK.Services.Contact;
 using ODK.Services.Members;
@@ -87,8 +86,16 @@ public class GroupsController : OdkControllerBase
 
     [SkipRequestStoreMiddleware]
     [HttpGet("groups/{chapterId:guid}/image")]
-    public Task<IActionResult> Image(Guid chapterId)
-        => HandleVersionedRequest(version => _chapterService.GetChapterImage(version, chapterId), ChapterImageResult);
+    public async Task<IActionResult> Image(Guid chapterId, [FromQuery(Name = "v")] int? version = null)
+    {
+        var image = await _chapterService.GetChapterImage(chapterId);
+        if (image == null)
+        {
+            return NotFound();
+        }
+
+        return CacheableFile(image.ImageData, image.MimeType, version);
+    }
 
     [Authorize]
     [HttpPost("groups/{chapterId:guid}/leave")]
@@ -128,15 +135,5 @@ public class GroupsController : OdkControllerBase
         var result = await _memberService.UpdateMemberChapterProfile(request, model);
         AddFeedback(result, "Profile updated");
         return result.Success ? RedirectToReferrer() : View();
-    }
-
-    protected IActionResult ChapterImageResult(ChapterImage? image)
-    {
-        if (image == null)
-        {
-            return NoContent();
-        }
-
-        return File(image.ImageData, image.MimeType);
     }
 }

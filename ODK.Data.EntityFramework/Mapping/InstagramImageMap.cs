@@ -18,6 +18,9 @@ public class InstagramImageMap : IEntityTypeConfiguration<InstagramImage>
         builder.Property(x => x.Version)
             .IsRowVersion();
 
+        builder.Property(x => x.VersionInt)
+            .ValueGeneratedOnAddOrUpdate();
+
         builder.HasOne<InstagramPost>()
             .WithMany()
             .HasForeignKey(x => x.InstagramPostId)

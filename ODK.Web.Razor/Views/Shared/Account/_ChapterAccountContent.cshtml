@@ -14,7 +14,8 @@
         <div>
             @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel
             {
-                Member = Model.CurrentMember
+                Member = Model.CurrentMember,
+                Version = Model.ImageVersion
             })
         </div>
 
@@ -42,7 +43,7 @@
         <form method="post" action="@OdkRoutes.Account.PictureUpload(Model.Chapter)" enctype="multipart/form-data">
             @await Html.PartialAsync("Account/_PictureUpload", new PictureUploadViewModel
             {
-                MemberAvatar = Model.Avatar
+                ImageVersion = Model.ImageVersion
             })
 
             <div class="d-flex justify-content-end mt-3">
