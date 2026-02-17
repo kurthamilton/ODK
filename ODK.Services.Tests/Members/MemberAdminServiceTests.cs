@@ -13,6 +13,7 @@ using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
 using ODK.Core.Web;
 using ODK.Data.Core;
+using ODK.Data.Core.Members;
 using ODK.Data.Core.Repositories;
 using ODK.Services.Authorization;
 using ODK.Services.Members;
@@ -855,6 +856,13 @@ public static class MemberAdminServiceTests
             .Returns((Guid chapterId) =>
                 new MockDeferredQueryMultiple<Member>(
                     members.Where(x => x.IsMemberOf(chapterId))));
+
+        mock.Setup(x => x.GetAllWithAvatarByChapterId(It.IsAny<Guid>()))
+            .Returns((Guid chapterId) =>
+                new MockDeferredQueryMultiple<MemberWithAvatarDto>(
+                    members
+                        .Where(x => x.IsMemberOf(chapterId))
+                        .Select(x => new MemberWithAvatarDto { AvatarVersion = null, Member = x })));
 
         return mock.Object;
     }
