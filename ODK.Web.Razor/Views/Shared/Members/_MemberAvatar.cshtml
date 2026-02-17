@@ -3,7 +3,12 @@
 @model MemberAvatarViewModel
 @inject IOdkRoutes OdkRoutes
 @{
-    var imageUrl = OdkRoutes.Members.Avatar(Model.Member.Id);
+    if (Model.Version == null)
+    {
+        return;    
+    }
+
+    var imageUrl = OdkRoutes.Members.Avatar(Model.Member.Id, Model.Version.Value);
     var maxWidth = Model.MaxWidth > 0 ? Model.MaxWidth : 75;
 
     var alt = User.Identity?.IsAuthenticated == true

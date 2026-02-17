@@ -78,12 +78,14 @@ public class MemberViewModelService : IMemberViewModelService
 
         var (
             member,
+            avatar,
             chapterProperties,
             memberProperties,
             hasQuestions,
             isAdmin,
             chapterPages) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(memberId),
+            x => x.MemberAvatarRepository.GetVersionDtoByMemberId(memberId),
             x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
             x => x.MemberPropertyRepository.GetByMemberId(memberId, chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
@@ -94,6 +96,7 @@ public class MemberViewModelService : IMemberViewModelService
 
         return new MemberPageViewModel
         {
+            AvatarVersion = avatar?.Version,
             Chapter = chapter,
             ChapterPages = chapterPages,
             ChapterProperties = chapterProperties,
@@ -120,7 +123,7 @@ public class MemberViewModelService : IMemberViewModelService
             isAdmin,
             chapterPages) =
             await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetByChapterId(chapter.Id),
+            x => x.MemberRepository.GetAllWithAvatarByChapterId(chapter.Id),
             x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
             x => x.ChapterAdminMemberRepository.IsAdmin(platform, chapter.Id, currentMember.Id),

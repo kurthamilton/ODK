@@ -7,9 +7,9 @@ public class PictureUploadViewModel
     /// <summary>
     /// Dummy form field
     /// </summary>
-    public string? Image { get; set; }
+    public string? Image { get; init; }
 
-    public string? ImageDataUrl { get; set; }
+    public string? ImageDataUrl { get; init; }
 
-    public MemberAvatar? MemberAvatar { get; set; }
+    public MemberAvatar? MemberAvatar { get; init; }
 }

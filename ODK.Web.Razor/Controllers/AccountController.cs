@@ -323,7 +323,8 @@ public class AccountController : OdkControllerBase
         var location = viewModel.Lat != null && viewModel.Long != null
             ? new LatLong(viewModel.Lat.Value, viewModel.Long.Value)
             : default(LatLong?);
-        await _memberService.UpdateMemberLocation(CurrentMember.Id, location, viewModel.LocationName, viewModel.DistanceUnit);
+        await _memberService.UpdateMemberLocation(
+            CurrentMember.Id, location, viewModel.LocationName, viewModel.DistanceUnit);
 
         AddFeedback("Location updated", FeedbackType.Success);
 

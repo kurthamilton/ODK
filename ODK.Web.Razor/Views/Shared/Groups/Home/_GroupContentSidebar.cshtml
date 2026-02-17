@@ -29,8 +29,9 @@
                     Members = Model.Owners
                         .Select(x => new ListMemberViewModel
                         {
+                            AvatarVersion = x.AvatarVersion,
                             Chapter = Model.Chapter,
-                            Member = x,
+                            Member = x.Member,
                             Platform = Model.Platform                            
                         }).ToArray(),
                     Platform = Model.Platform,

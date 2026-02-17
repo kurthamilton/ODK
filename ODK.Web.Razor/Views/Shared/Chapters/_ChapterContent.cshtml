@@ -25,8 +25,9 @@ else
         Members = Model.LatestMembers
             .Select(x => new ListMemberViewModel
             {
+                AvatarVersion = x.AvatarVersion,
                 Chapter = Model.Chapter,
-                Member = x,
+                Member = x.Member,
                 Platform = Model.Platform
             })
             .ToArray(),

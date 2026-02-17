@@ -10,8 +10,8 @@
         <div>
             @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel
             {
-                Avatar = Model.Avatar,
-                Member = Model.Member                
+                Member = Model.Member,
+                Version = Model.ImageVersion
             })
         </div>
 

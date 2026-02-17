@@ -1,10 +1,11 @@
 ﻿using ODK.Core.Members;
+using ODK.Data.Core.Members;
 
 namespace ODK.Services.Members.ViewModels;
 
 public class MemberImageAdminPageViewModel : MemberAdminPageViewModelBase
 {
-    public required MemberAvatar? Avatar { get; init; }
+    public required MemberAvatarVersionDto? Avatar { get; init; }
 
-    public required MemberImage? Image { get; init; }
+    public required MemberImageVersionDto? Image { get; init; }
 }

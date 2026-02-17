@@ -9,7 +9,8 @@
     <h3>Picture</h3>
     @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel
     {
-        Member = Model.Member
+        Member = Model.Member,
+        Version = Model.Avatar?.Version
     })
 </section>
 <section class="section--admin">

@@ -5,9 +5,7 @@ using ODK.Core.SocialMedia;
 using ODK.Core.Utils;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
-using ODK.Services.Caching;
 using ODK.Services.Logging;
-using ODK.Services.SocialMedia.Models;
 using ODK.Services.Tasks;
 
 namespace ODK.Services.SocialMedia;
@@ -16,7 +14,6 @@ public class SocialMediaService : ISocialMediaService
 {
     private readonly IAuthorizationService _authorizationService;
     private readonly IBackgroundTaskService _backgroundTaskService;
-    private readonly ICacheService _cacheService;
     private readonly IInstagramClient _instagramClient;
     private readonly ILoggingService _loggingService;
     private readonly SocialMediaServiceSettings _settings;
@@ -26,36 +23,16 @@ public class SocialMediaService : ISocialMediaService
         SocialMediaServiceSettings settings,
         IUnitOfWork unitOfWork,
         ILoggingService loggingService,
-        ICacheService cacheService,
         IAuthorizationService authorizationService,
         IInstagramClient instagramClient,
         IBackgroundTaskService backgroundTaskService)
     {
         _authorizationService = authorizationService;
         _backgroundTaskService = backgroundTaskService;
-        _cacheService = cacheService;
         _instagramClient = instagramClient;
         _loggingService = loggingService;
         _settings = settings;
         _unitOfWork = unitOfWork;
-    }
-
-    public async Task<VersionedServiceResult<InstagramImage>> GetInstagramImage(long? currentVersion, Guid id)
-    {
-        var result = await _cacheService.GetOrSetVersionedItem(
-            async () => await _unitOfWork.InstagramImageRepository.GetById(id).Run(),
-            id,
-            currentVersion);
-
-        if (currentVersion == result.Version)
-        {
-            return result;
-        }
-
-        var image = result.Value;
-        return image != null
-            ? new VersionedServiceResult<InstagramImage>(BitConverter.ToInt64(image.Version), image)
-            : new VersionedServiceResult<InstagramImage>(0, null);
     }
 
     public string GetInstagramChannelUrl(string username)
@@ -65,6 +42,11 @@ public class SocialMediaService : ISocialMediaService
     {
         var tag = StringUtils.RemoveLeading(hashtag, "#");
         return _settings.InstagramTagUrlFormat.Replace("{tag}", tag);
+    }
+
+    public async Task<InstagramImage> GetInstagramImage(Guid id)
+    {
+        return await _unitOfWork.InstagramImageRepository.GetById(id).Run();
     }
 
     public string GetInstagramPostUrl(string externalId)

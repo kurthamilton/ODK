@@ -4,7 +4,6 @@ using ODK.Core.Members;
 using ODK.Core.Payments;
 using ODK.Core.Platforms;
 using ODK.Data.Core;
-using ODK.Services.Caching;
 using ODK.Services.Chapters.ViewModels;
 using ODK.Services.Members.ViewModels;
 using ODK.Services.Payments;
@@ -13,16 +12,13 @@ namespace ODK.Services.Chapters;
 
 public class ChapterService : IChapterService
 {
-    private readonly ICacheService _cacheService;
     private readonly IPaymentProviderFactory _paymentProviderFactory;
     private readonly IUnitOfWork _unitOfWork;
 
     public ChapterService(
         IUnitOfWork unitOfWork,
-        ICacheService cacheService,
         IPaymentProviderFactory paymentProviderFactory)
     {
-        _cacheService = cacheService;
         _paymentProviderFactory = paymentProviderFactory;
         _unitOfWork = unitOfWork;
     }
@@ -33,23 +29,8 @@ public class ChapterService : IChapterService
     public Task<Chapter> GetByEventId(IServiceRequest request, Guid eventId)
         => _unitOfWork.ChapterRepository.GetByEventId(request.Platform, eventId).Run();
 
-    public async Task<VersionedServiceResult<ChapterImage>> GetChapterImage(long? currentVersion, Guid chapterId)
-    {
-        var result = await _cacheService.GetOrSetVersionedItem(
-            () => _unitOfWork.ChapterImageRepository.GetByChapterId(chapterId).Run(),
-            chapterId,
-            currentVersion);
-
-        if (currentVersion == result.Version)
-        {
-            return result;
-        }
-
-        var image = result.Value;
-        return image != null
-            ? new VersionedServiceResult<ChapterImage>(BitConverter.ToInt64(image.Version), image)
-            : new VersionedServiceResult<ChapterImage>(0, null);
-    }
+    public Task<ChapterImage?> GetChapterImage(Guid chapterId)
+        => _unitOfWork.ChapterImageRepository.GetByChapterId(chapterId).Run();
 
     public async Task<ChapterLayoutViewModel> GetChapterLayoutViewModel(Guid chapterId)
     {

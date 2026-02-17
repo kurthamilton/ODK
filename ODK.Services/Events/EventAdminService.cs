@@ -208,6 +208,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             responses,
             venue,
             members,
+            memberAvatars,
             memberSubscriptions,
             chapterMembershipSettings,
             chapterPrivacySettings,
@@ -217,7 +218,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.EventRepository.GetById(eventId),
             x => x.EventResponseRepository.GetByEventId(eventId),
             x => x.VenueRepository.GetByEventId(eventId),
-            x => x.MemberRepository.GetByChapterId(chapter.Id),
+            x => x.MemberRepository.GetAllWithAvatarByChapterId(chapter.Id),
+            x => x.MemberAvatarRepository.GetVersionDtosByChapterId(chapter.Id),
             x => x.MemberSubscriptionRepository.GetByChapterId(chapter.Id),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
@@ -241,12 +243,14 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             Event = @event,
             Members = members
                 .Where(x =>
-                    responseDictionary.ContainsKey(x.Id) ||
-                    waitlistMemberIds.Contains(x.Id) ||
+                    responseDictionary.ContainsKey(x.Member.Id) ||
+                    waitlistMemberIds.Contains(x.Member.Id) ||
                     _authorizationService.CanRespondToEvent(
                         @event,
-                        x,
-                        memberSubscriptionDictionary.ContainsKey(x.Id) ? memberSubscriptionDictionary[x.Id] : null,
+                        x.Member,
+                        memberSubscriptionDictionary.ContainsKey(x.Member.Id) 
+                            ? memberSubscriptionDictionary[x.Member.Id] 
+                            : null,
                         chapterMembershipSettings,
                         chapterPrivacySettings))
                 .ToArray(),
@@ -425,15 +429,12 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         ) = await GetChapterAdminRestrictedContent(
             request,
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
-            x => x.MemberRepository.GetAllByChapterId(chapter.Id),
+            x => x.MemberRepository.GetAllWithAvatarByChapterId(chapter.Id),
             x => x.EventRepository.GetById(eventId),
             x => x.VenueRepository.GetByEventId(eventId),
             x => x.EventTicketPaymentRepository.GetConfirmedPayments(eventId));
 
         OdkAssertions.BelongsToChapter(@event, chapter.Id);
-
-        var memberDictionary = members
-            .ToDictionary(x => x.Id);
 
         var memberPayments = payments
             .GroupBy(x => x.Payment.MemberId)
@@ -444,12 +445,12 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             Chapter = chapter,
             Event = @event,
             Payments = members
-                .Where(x => memberPayments.ContainsKey(x.Id))
-                .OrderBy(x => x.FullName)
+                .Where(x => memberPayments.ContainsKey(x.Member.Id))
+                .OrderBy(x => x.Member.FullName)
                 .Select(x => new MemberTicketPurchaseViewModel
                 {
-                    AmountPaid = memberPayments[x.Id],
-                    AmountRemaining = (@event.TicketSettings?.Cost ?? 0) - memberPayments[x.Id],
+                    AmountPaid = memberPayments[x.Member.Id],
+                    AmountRemaining = (@event.TicketSettings?.Cost ?? 0) - memberPayments[x.Member.Id],
                     Member = x
                 })
                 .ToArray(),

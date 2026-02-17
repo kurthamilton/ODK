@@ -11,4 +11,6 @@ public class MemberImage : IVersioned
     public string MimeType { get; set; } = string.Empty;
 
     public byte[] Version { get; set; } = [];
+
+    public int VersionInt { get; set; }
 }

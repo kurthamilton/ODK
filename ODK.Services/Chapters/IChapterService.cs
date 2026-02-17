@@ -11,7 +11,7 @@ public interface IChapterService
 
     Task<Chapter> GetByEventId(IServiceRequest request, Guid eventId);
 
-    Task<VersionedServiceResult<ChapterImage>> GetChapterImage(long? currentVersion, Guid chapterId);
+    Task<ChapterImage?> GetChapterImage(Guid chapterId);
 
     Task<ChapterLayoutViewModel> GetChapterLayoutViewModel(Guid chapterId);
 

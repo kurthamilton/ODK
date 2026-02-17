@@ -11,9 +11,9 @@
     {
         Breadcrumbs = Model.Breadcrumbs,
         Class = "--group-body-with-sidebar",
-        Menu = await Html.PartialAsync("Groups/_GroupMenu", Model.Group.Chapter),
+        Menu = await Html.PartialAsync("Groups/_GroupMenu", Model.Group),
         SidebarContent = Model.SidebarContent,
-        TitleContent = await Html.PartialAsync("Groups/_GroupTitle", Model.Group),
+        TitleContent = await Html.PartialAsync("Groups/_GroupTitle", Model.Group.Chapter),
         ContentFunc =
             @<div>
                 @if (memberChapter != null)

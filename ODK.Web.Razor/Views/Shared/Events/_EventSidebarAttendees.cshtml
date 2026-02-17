@@ -1,5 +1,6 @@
-﻿@using ODK.Web.Razor.Models.Members
-@model ODK.Web.Razor.Models.Events.EventSidebarAttendeesViewModel
+﻿@using ODK.Web.Razor.Models.Events
+@using ODK.Web.Razor.Models.Members
+@model EventSidebarAttendeesViewModel
 @{
     if (Model.Members.Count == 0)
     {
@@ -9,10 +10,11 @@
     var members = Model.Members
         .Select(x => new ListMemberViewModel
         {
+            AvatarVersion = x.AvatarVersion,
             Chapter = Model.Chapter,
-            Member = x,
+            Member = x.Member,
             Platform = Model.Platform,
-            Size = "xs"
+            Size = "xs",
         })
         .ToArray();
 }

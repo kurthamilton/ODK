@@ -4,9 +4,12 @@
 @model MemberImageViewModel
 @inject IOdkRoutes OdkRoutes
 @{
-    var imageUrl = Model.HasImage != null 
-        ? Model.Image != null ? ImageHelper.ToDataUrl(Model.Image.ImageData, Model.Image.MimeType) : ""
-        : OdkRoutes.Members.Image(Model.Member.Id);    
+    if (Model.ImageVersion == null)
+    {
+        return;
+    }
+
+    var imageUrl = OdkRoutes.Members.Image(Model.Member.Id, Model.ImageVersion.Value);    
 }
 
 <img class="@(Model.IsTop ? "card-img-top" : "card-img") @(imageUrl == "" ? "d-none" : "")"

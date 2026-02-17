@@ -5,11 +5,12 @@
 @model MembersPageViewModel
 @{
     var members = Model.Members
-        .OrderBy(x => x.FullName)
+        .OrderBy(x => x.Member.FullName)
         .Select(x => new ListMemberViewModel
         {
+            AvatarVersion = x.AvatarVersion,
             Chapter = Model.Chapter,
-            Member = x,
+            Member = x.Member,
             Platform = Model.Platform
         })
         .ToArray();

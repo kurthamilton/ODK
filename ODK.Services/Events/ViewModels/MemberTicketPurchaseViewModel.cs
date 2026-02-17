@@ -1,4 +1,4 @@
-﻿using ODK.Core.Members;
+﻿using ODK.Data.Core.Members;
 
 namespace ODK.Services.Events.ViewModels;
 
@@ -8,5 +8,5 @@ public class MemberTicketPurchaseViewModel
 
     public required decimal AmountRemaining { get; init; }
 
-    public required Member Member { get; init; }
+    public required MemberWithAvatarDto Member { get; init; }
 }

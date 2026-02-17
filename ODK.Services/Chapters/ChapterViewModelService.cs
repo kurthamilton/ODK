@@ -1,4 +1,5 @@
-﻿using ODK.Core;
+﻿using System.Data;
+using ODK.Core;
 using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Events;
@@ -16,6 +17,7 @@ using ODK.Data.Core;
 using ODK.Data.Core.Chapters;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Events;
+using ODK.Data.Core.Members;
 using ODK.Data.Core.SocialMedia;
 using ODK.Services.Authorization;
 using ODK.Services.Chapters.ViewModels;
@@ -144,7 +146,6 @@ public class ChapterViewModelService : IChapterViewModelService
         var groups = new List<ChapterWithDistanceViewModel>();
         foreach (var result in chapters)
         {
-            var hasImage = result.Image != null;
             var chapterId = result.Chapter.Id;
 
             var chapterDistance = result.Location != null && location != null
@@ -161,7 +162,7 @@ public class ChapterViewModelService : IChapterViewModelService
                         Value = chapterDistance.Value
                     }
                     : null,
-                HasImage = hasImage,
+                Image = result.Image,
                 IsAdmin = adminMembers.Any(x => x.ChapterId == chapterId),
                 IsMember = currentMember?.IsMemberOf(chapterId) == true,
                 IsOwner = result.Chapter.OwnerId == currentMember?.Id,
@@ -554,7 +555,7 @@ public class ChapterViewModelService : IChapterViewModelService
             links,
             upcomingEvents,
             recentEvents,
-            hasImage,
+            image,
             hasProperties,
             hasQuestions,
             texts,
@@ -568,13 +569,13 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
+            x => x.ChapterAdminMemberRepository.GetAdminMembersWithAvatarsByChapterId(platform, chapter.Id),
             x => x.MemberRepository.GetCountByChapterId(chapter.Id),
             x => x.InstagramPostRepository.GetDtosByChapterId(chapter.Id, 8),
             x => x.ChapterLinksRepository.GetByChapterId(chapter.Id),
             x => x.EventRepository.GetByChapterId(chapter.Id, after: DateTime.UtcNow),
             x => x.EventRepository.GetRecentEventsByChapterId(chapter.Id, 3),
-            x => x.ChapterImageRepository.ExistsForChapterId(chapter.Id),
+            x => x.ChapterImageRepository.GetVersionDtoByChapterId(chapter.Id),
             x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
             x => x.ChapterTextsRepository.GetByChapterId(chapter.Id),
@@ -624,9 +625,9 @@ public class ChapterViewModelService : IChapterViewModelService
             ChapterLocation = location,
             ChapterPages = chapterPages,
             CurrentMember = currentMember,
-            HasImage = hasImage,
             HasProfiles = hasProperties,
             HasQuestions = hasQuestions,
+            Image = image,
             InstagramPosts = new InstagramPostsViewModel
             {
                 Posts = showInstagramFeed
@@ -637,14 +638,19 @@ public class ChapterViewModelService : IChapterViewModelService
             },
             IsAdmin =
                 currentMember != null &&
-                adminMembers.FirstOrDefault(x => x.MemberId == currentMember.Id)
-                    .HasAccessTo(ChapterAdminSecurable.Any, currentMember),
+                adminMembers
+                    .FirstOrDefault(x => x.ChapterAdminMember.MemberId == currentMember.Id)
+                    ?.ChapterAdminMember.HasAccessTo(ChapterAdminSecurable.Any, currentMember) == true,
             IsMember = currentMember?.IsMemberOf(chapter.Id) == true,
             Links = links,
             MemberCount = memberCount,
             Owners = adminMembers
-                .Select(x => x.Member)
-                .Where(x => x.Visible(chapter.Id))
+                .Where(x => x.ChapterAdminMember.Member.Visible(chapter.Id))
+                .Select(x => new MemberWithAvatarDto
+                {
+                     AvatarVersion = x.AvatarVersion,
+                     Member = x.ChapterAdminMember.Member
+                })
                 .ToArray(),
             Platform = platform,
             RecentEvents = recentEventViewModels,
@@ -817,7 +823,7 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.ChapterLinksRepository.GetByChapterId(chapter.Id),
             x => x.ChapterTextsRepository.GetByChapterId(chapter.Id),
             x => x.InstagramPostRepository.GetDtosByChapterId(chapter.Id, 8),
-            x => x.MemberRepository.GetLatestByChapterId(chapter.Id, 8),
+            x => x.MemberRepository.GetLatestWithAvatarByChapterId(chapter.Id, 8),
             x => x.ChapterTopicRepository.GetByChapterId(chapter.Id),
             x => x.ChapterLocationRepository.GetByChapterId(chapter.Id));
 
@@ -894,47 +900,32 @@ public class ChapterViewModelService : IChapterViewModelService
         var (platform, currentMember) = (request.Platform, request.CurrentMember);
 
         var (chapters, adminMembers) = await _unitOfWork.RunAsync(
-            x => x.ChapterRepository.GetByMemberId(platform, currentMember.Id),
+            x => x.ChapterRepository.GetDtosByMemberId(platform, currentMember.Id),
             x => x.ChapterAdminMemberRepository.GetByMemberId(platform, currentMember.Id));
 
-        var chapterIds = chapters
-            .Select(x => x.Id)
-            .ToArray();
-
-        var (texts, images) = await _unitOfWork.RunAsync(
-            x => chapterIds.Length > 0
-                ? x.ChapterTextsRepository.GetByChapterIds(chapterIds)
-                : new DefaultDeferredQueryMultiple<ChapterTexts>(),
-            x => chapterIds.Length > 0
-                ? x.ChapterImageRepository.GetMetadatasByChapterIds(chapterIds)
-                : new DefaultDeferredQueryMultiple<ChapterImageMetadataDto>());
-
         var adminMemberDictionary = adminMembers.ToDictionary(x => x.ChapterId);
-        var imageDictionary = images.ToDictionary(x => x.ChapterId);
-        var textsDictionary = texts.ToDictionary(x => x.ChapterId);
 
         var admin = new List<ChapterWithDistanceViewModel>();
         var member = new List<ChapterWithDistanceViewModel>();
         var owned = new List<ChapterWithDistanceViewModel>();
 
-        foreach (var chapter in chapters)
+        foreach (var dto in chapters)
         {
+            var chapter = dto.Chapter;
             adminMemberDictionary.TryGetValue(chapter.Id, out var adminMember);
-            imageDictionary.TryGetValue(chapter.Id, out var image);
-            textsDictionary.TryGetValue(chapter.Id, out var chapterTexts);
 
             var viewModel = new ChapterWithDistanceViewModel
             {
                 Chapter = chapter,
                 Distance = null,
-                HasImage = image != null,
+                Image = dto.Image,
                 IsAdmin = adminMember != null,
                 IsMember = true,
                 IsOwner = chapter.OwnerId == currentMember.Id,
                 // no need to show location for existing groups
                 Location = null,
                 Platform = platform,
-                Texts = chapterTexts,
+                Texts = dto.Texts,
                 // no need to show topics for existing groups
                 Topics = []
             };
@@ -957,9 +948,7 @@ public class ChapterViewModelService : IChapterViewModelService
         {
             Admin = admin,
             Member = member,
-            Owned = owned,
-            Platform = platform,
-            Texts = texts
+            Owned = owned
         };
     }
 
@@ -1013,7 +1002,8 @@ public class ChapterViewModelService : IChapterViewModelService
                 .Select(x => new InstagramImageMetadataViewModel
                 {
                     Alt = x.Alt,
-                    Id = x.Id
+                    Id = x.Id,
+                    Version = x.VersionInt
                 })
                 .ToArray(),
             Url = _socialMediaService.GetInstagramPostUrl(dto.Post.ExternalId),

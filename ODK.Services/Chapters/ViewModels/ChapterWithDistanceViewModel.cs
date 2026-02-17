@@ -2,6 +2,7 @@
 using ODK.Core.Countries;
 using ODK.Core.Platforms;
 using ODK.Core.Topics;
+using ODK.Data.Core.Chapters;
 
 namespace ODK.Services.Chapters.ViewModels;
 
@@ -11,7 +12,7 @@ public class ChapterWithDistanceViewModel
 
     public required Distance? Distance { get; init; }
 
-    public required bool HasImage { get; init; }
+    public required ChapterImageVersionDto? Image { get; init; }
 
     public required bool IsAdmin { get; init; }
 

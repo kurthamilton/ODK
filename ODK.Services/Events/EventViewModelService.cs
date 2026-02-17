@@ -10,6 +10,7 @@ using ODK.Core.Venues;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Events;
+using ODK.Data.Core.Members;
 using ODK.Services.Authorization;
 using ODK.Services.Events.ViewModels;
 using ODK.Services.Exceptions;
@@ -248,8 +249,8 @@ public class EventViewModelService : IEventViewModelService
         var canViewVenue = _authorizationService.CanViewVenue(venue, currentMember, memberSubscription, membershipSettings, privacySettings);
         var canRespond = _authorizationService.CanRespondToEvent(@event, currentMember, memberSubscription, membershipSettings, privacySettings);
 
-        IReadOnlyCollection<Member> commentMembers = [];
-        IReadOnlyCollection<Member> responseMembers = [];
+        IReadOnlyCollection<MemberWithAvatarDto> commentMembers = [];
+        IReadOnlyCollection<MemberWithAvatarDto> responseMembers = [];
 
         if (!canViewEvent)
         {
@@ -270,16 +271,15 @@ public class EventViewModelService : IEventViewModelService
 
             var memberIds = commentMemberIds
                 .Concat(responseMemberIds)
-                .Distinct()
-                .ToArray();
+                .ToHashSet();
 
-            if (memberIds.Length > 0)
+            if (memberIds.Count > 0)
             {
                 var members = await _unitOfWork.MemberRepository
                     .GetByChapterId(chapter.Id, memberIds)
                     .Run();
 
-                var memberDictionary = members.ToDictionary(x => x.Id);
+                var memberDictionary = members.ToDictionary(x => x.Member.Id);
 
                 commentMembers = commentMemberIds
                     .Where(memberDictionary.ContainsKey)
@@ -293,14 +293,14 @@ public class EventViewModelService : IEventViewModelService
             }
         }
 
-        var responseMemberDictionary = responseMembers.ToDictionary(x => x.Id);
+        var responseMemberDictionary = responseMembers.ToDictionary(x => x.Member.Id);
 
         var responseDictionary = responses
             .Where(x => responseMemberDictionary.ContainsKey(x.MemberId))
             .GroupBy(x => x.Type)
             .ToDictionary(
                 x => x.Key,
-                x => (IReadOnlyCollection<Member>)x
+                x => (IReadOnlyCollection<MemberWithAvatarDto>)x
                     .Select(response => responseMemberDictionary[response.MemberId])
                     .ToArray());
 
@@ -329,13 +329,13 @@ public class EventViewModelService : IEventViewModelService
             Comments = new EventCommentsDto
             {
                 Comments = comments,
-                Members = commentMembers
+                Members = commentMembers.Select(x => x.Member).ToArray()
             },
             CurrentMember = currentMember,
             Event = @event,
             HasProfiles = hasProperties,
             HasQuestions = hasQuestions,
-            Hosts = hosts.Select(x => x.Member).ToArray(),
+            Hosts = hosts,
             IsAdmin = isAdmin,
             IsOnWaitlist = waitlist.Any(x => x.MemberId == currentMember?.Id),
             IsMember = currentMember?.IsMemberOf(chapter.Id) == true,

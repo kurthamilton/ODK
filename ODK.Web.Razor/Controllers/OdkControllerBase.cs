@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Chapters;
 using ODK.Core.Members;
@@ -15,8 +14,6 @@ namespace ODK.Web.Razor.Controllers;
 
 public abstract class OdkControllerBase : Controller
 {
-    private static readonly Regex VersionRegex = new(@"^""(?<version>-?\d+)""$");
-
     protected OdkControllerBase(
         IRequestStore requestStore,
         IOdkRoutes odkRoutes)
@@ -67,26 +64,21 @@ public abstract class OdkControllerBase : Controller
         TempData!.AddFeedback(viewModel);
     }
 
+    protected IActionResult CacheableFile(byte[] data, string mimeType, int? version)
+    {
+        // Do not set cache control if no version was given for the image
+        if (version != null)
+        {
+            Response.Headers.CacheControl = "public, max-age=31536000, immutable";
+        }
+
+        return File(data, mimeType);
+    }
+
     protected IActionResult DownloadCsv(IReadOnlyCollection<IReadOnlyCollection<string>> data, string fileName)
     {
         var csv = StringUtils.ToCsv(data);
         return File(Encoding.UTF8.GetBytes(csv), "text/csv", fileName);
-    }
-
-    protected async Task<IActionResult> HandleVersionedRequest<T>(Func<long?, Task<VersionedServiceResult<T>>> getter, Func<T?, IActionResult> map) where T : class
-    {
-        long? version = GetRequestVersion();
-
-        var result = await getter(version);
-
-        AddVersionHeader(result.Version);
-
-        if (version == result.Version)
-        {
-            return new StatusCodeResult(304);
-        }
-
-        return map(result.Value);
     }
 
     protected async Task<string> ReadBodyText()
@@ -107,22 +99,5 @@ public abstract class OdkControllerBase : Controller
         }
 
         return Redirect(url);
-    }
-
-    private void AddVersionHeader(long version)
-    {
-        Response.Headers.Append("ETag", $"\"{version}\"");
-    }
-
-    private long? GetRequestVersion()
-    {
-        string? requestETag = Request.Headers["If-None-Match"].FirstOrDefault();
-        if (requestETag == null)
-        {
-            return null;
-        }
-
-        var match = VersionRegex.Match(requestETag);
-        return match.Success ? long.Parse(match.Groups["version"].Value) : new long?();
     }
 }

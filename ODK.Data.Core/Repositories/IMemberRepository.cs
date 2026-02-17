@@ -1,5 +1,6 @@
 ﻿using ODK.Core.Members;
 using ODK.Data.Core.Deferred;
+using ODK.Data.Core.Members;
 
 namespace ODK.Data.Core.Repositories;
 
@@ -7,9 +8,11 @@ public interface IMemberRepository : IReadWriteRepository<Member>
 {
     IDeferredQueryMultiple<Member> GetAllByChapterId(Guid chapterId);
 
+    IDeferredQueryMultiple<MemberWithAvatarDto> GetAllWithAvatarByChapterId(Guid chapterId);
+
     IDeferredQueryMultiple<Member> GetByChapterId(Guid chapterId);
 
-    IDeferredQueryMultiple<Member> GetByChapterId(Guid chapterId, IEnumerable<Guid> memberIds);
+    IDeferredQueryMultiple<MemberWithAvatarDto> GetByChapterId(Guid chapterId, IEnumerable<Guid> memberIds);
 
     IDeferredQuerySingleOrDefault<Member> GetByEmailAddress(string emailAddress);
 
@@ -17,5 +20,5 @@ public interface IMemberRepository : IReadWriteRepository<Member>
 
     IDeferredQuery<int> GetCountByChapterId(Guid chapterId);
 
-    IDeferredQueryMultiple<Member> GetLatestByChapterId(Guid chapterId, int pageSize);
+    IDeferredQueryMultiple<MemberWithAvatarDto> GetLatestWithAvatarByChapterId(Guid chapterId, int pageSize);
 }

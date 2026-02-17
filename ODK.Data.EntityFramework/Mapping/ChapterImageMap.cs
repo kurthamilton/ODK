@@ -15,6 +15,9 @@ public class ChapterImageMap : IEntityTypeConfiguration<ChapterImage>
         builder.Property(x => x.Version)
             .IsRowVersion();
 
+        builder.Property(x => x.VersionInt)
+            .ValueGeneratedOnAddOrUpdate();
+
         builder.HasOne<Chapter>()
             .WithOne()
             .HasForeignKey<ChapterImage>(x => x.ChapterId);
