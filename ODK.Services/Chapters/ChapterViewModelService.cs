@@ -17,6 +17,7 @@ using ODK.Data.Core;
 using ODK.Data.Core.Chapters;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Events;
+using ODK.Data.Core.Members;
 using ODK.Data.Core.SocialMedia;
 using ODK.Services.Authorization;
 using ODK.Services.Chapters.ViewModels;
@@ -568,7 +569,7 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
+            x => x.ChapterAdminMemberRepository.GetAdminMembersWithAvatarsByChapterId(platform, chapter.Id),
             x => x.MemberRepository.GetCountByChapterId(chapter.Id),
             x => x.InstagramPostRepository.GetDtosByChapterId(chapter.Id, 8),
             x => x.ChapterLinksRepository.GetByChapterId(chapter.Id),
@@ -637,14 +638,19 @@ public class ChapterViewModelService : IChapterViewModelService
             },
             IsAdmin =
                 currentMember != null &&
-                adminMembers.FirstOrDefault(x => x.MemberId == currentMember.Id)
-                    .HasAccessTo(ChapterAdminSecurable.Any, currentMember),
+                adminMembers
+                    .FirstOrDefault(x => x.ChapterAdminMember.MemberId == currentMember.Id)
+                    ?.ChapterAdminMember.HasAccessTo(ChapterAdminSecurable.Any, currentMember) == true,
             IsMember = currentMember?.IsMemberOf(chapter.Id) == true,
             Links = links,
             MemberCount = memberCount,
             Owners = adminMembers
-                .Select(x => x.Member)
-                .Where(x => x.Visible(chapter.Id))
+                .Where(x => x.ChapterAdminMember.Member.Visible(chapter.Id))
+                .Select(x => new MemberWithAvatarDto
+                {
+                     AvatarVersion = x.AvatarVersion,
+                     Member = x.ChapterAdminMember.Member
+                })
                 .ToArray(),
             Platform = platform,
             RecentEvents = recentEventViewModels,
@@ -817,7 +823,7 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.ChapterLinksRepository.GetByChapterId(chapter.Id),
             x => x.ChapterTextsRepository.GetByChapterId(chapter.Id),
             x => x.InstagramPostRepository.GetDtosByChapterId(chapter.Id, 8),
-            x => x.MemberRepository.GetLatestByChapterId(chapter.Id, 8),
+            x => x.MemberRepository.GetLatestWithAvatarByChapterId(chapter.Id, 8),
             x => x.ChapterTopicRepository.GetByChapterId(chapter.Id),
             x => x.ChapterLocationRepository.GetByChapterId(chapter.Id));
 

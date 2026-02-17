@@ -6,6 +6,8 @@ namespace ODK.Web.Razor.Models.Members;
 
 public class ListMemberViewModel
 {
+    public required int? AvatarVersion { get; init; }
+
     public required Chapter Chapter { get; init; }
 
     public bool HideName => Size is "sm" or "xs";

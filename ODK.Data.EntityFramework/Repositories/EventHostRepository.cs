@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ODK.Core.Events;
+using ODK.Core.Members;
 using ODK.Data.Core.Deferred;
+using ODK.Data.Core.Members;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
 
@@ -18,18 +20,26 @@ public class EventHostRepository : ReadWriteRepositoryBase<EventHost>, IEventHos
             .Where(x => x.EventId == eventId)
             .DeferredMultiple();
 
-    public IDeferredQueryMultiple<EventHost> GetByEventShortcode(string shortcode)
+    public IDeferredQueryMultiple<MemberWithAvatarDto> GetByEventShortcode(string shortcode)
     {
         var query =
             from eventHost in Set()
             from @event in Set<Event>()
                 .Where(x => x.Id == eventHost.EventId)
+            from avatar in Set<MemberAvatar>()
+                .Where(x => x.MemberId == eventHost.Member.Id)
+                .DefaultIfEmpty()
             where @event.Shortcode == shortcode
-            select eventHost;
+            select new MemberWithAvatarDto
+            {
+                AvatarVersion = avatar != null ? avatar.VersionInt : null,
+                Member = eventHost.Member
+            };
 
         return query.DeferredMultiple();
     }
 
-    protected override IQueryable<EventHost> Set() => base.Set()
-        .Include(x => x.Member);
+    protected override IQueryable<EventHost> Set() 
+        => base.Set()
+            .Include(x => x.Member);
 }

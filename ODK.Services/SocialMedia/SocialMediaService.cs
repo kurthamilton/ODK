@@ -5,9 +5,7 @@ using ODK.Core.SocialMedia;
 using ODK.Core.Utils;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
-using ODK.Services.Caching;
 using ODK.Services.Logging;
-using ODK.Services.SocialMedia.Models;
 using ODK.Services.Tasks;
 
 namespace ODK.Services.SocialMedia;
@@ -16,7 +14,6 @@ public class SocialMediaService : ISocialMediaService
 {
     private readonly IAuthorizationService _authorizationService;
     private readonly IBackgroundTaskService _backgroundTaskService;
-    private readonly ICacheService _cacheService;
     private readonly IInstagramClient _instagramClient;
     private readonly ILoggingService _loggingService;
     private readonly SocialMediaServiceSettings _settings;
@@ -26,14 +23,12 @@ public class SocialMediaService : ISocialMediaService
         SocialMediaServiceSettings settings,
         IUnitOfWork unitOfWork,
         ILoggingService loggingService,
-        ICacheService cacheService,
         IAuthorizationService authorizationService,
         IInstagramClient instagramClient,
         IBackgroundTaskService backgroundTaskService)
     {
         _authorizationService = authorizationService;
         _backgroundTaskService = backgroundTaskService;
-        _cacheService = cacheService;
         _instagramClient = instagramClient;
         _loggingService = loggingService;
         _settings = settings;

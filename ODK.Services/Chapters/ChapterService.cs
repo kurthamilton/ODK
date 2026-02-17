@@ -4,7 +4,6 @@ using ODK.Core.Members;
 using ODK.Core.Payments;
 using ODK.Core.Platforms;
 using ODK.Data.Core;
-using ODK.Services.Caching;
 using ODK.Services.Chapters.ViewModels;
 using ODK.Services.Members.ViewModels;
 using ODK.Services.Payments;
@@ -13,16 +12,13 @@ namespace ODK.Services.Chapters;
 
 public class ChapterService : IChapterService
 {
-    private readonly ICacheService _cacheService;
     private readonly IPaymentProviderFactory _paymentProviderFactory;
     private readonly IUnitOfWork _unitOfWork;
 
     public ChapterService(
         IUnitOfWork unitOfWork,
-        ICacheService cacheService,
         IPaymentProviderFactory paymentProviderFactory)
     {
-        _cacheService = cacheService;
         _paymentProviderFactory = paymentProviderFactory;
         _unitOfWork = unitOfWork;
     }

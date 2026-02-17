@@ -1,7 +1,5 @@
 ﻿using System.Text;
-using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
@@ -16,8 +14,6 @@ namespace ODK.Web.Razor.Controllers;
 
 public abstract class OdkControllerBase : Controller
 {
-    private static readonly Regex VersionRegex = new(@"^""(?<version>-?\d+)""$");
-
     protected OdkControllerBase(
         IRequestStore requestStore,
         IOdkRoutes odkRoutes)
@@ -85,22 +81,6 @@ public abstract class OdkControllerBase : Controller
         return File(Encoding.UTF8.GetBytes(csv), "text/csv", fileName);
     }
 
-    protected async Task<IActionResult> HandleVersionedRequest<T>(Func<long?, Task<VersionedServiceResult<T>>> getter, Func<T?, IActionResult> map) where T : class
-    {
-        long? version = GetRequestVersion();
-
-        var result = await getter(version);
-
-        AddVersionHeader(result.Version);
-
-        if (version == result.Version)
-        {
-            return new StatusCodeResult(304);
-        }
-
-        return map(result.Value);
-    }
-
     protected async Task<string> ReadBodyText()
     {
         using var reader = new StreamReader(Request.Body);
@@ -119,22 +99,5 @@ public abstract class OdkControllerBase : Controller
         }
 
         return Redirect(url);
-    }
-
-    private void AddVersionHeader(long version)
-    {
-        Response.Headers.Append("ETag", $"\"{version}\"");
-    }
-
-    private long? GetRequestVersion()
-    {
-        string? requestETag = Request.Headers["If-None-Match"].FirstOrDefault();
-        if (requestETag == null)
-        {
-            return null;
-        }
-
-        var match = VersionRegex.Match(requestETag);
-        return match.Success ? long.Parse(match.Groups["version"].Value) : new long?();
     }
 }

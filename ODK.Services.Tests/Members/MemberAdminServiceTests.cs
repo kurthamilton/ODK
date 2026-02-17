@@ -15,7 +15,6 @@ using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Data.Core.Repositories;
 using ODK.Services.Authorization;
-using ODK.Services.Caching;
 using ODK.Services.Members;
 using ODK.Services.Members.Models;
 using ODK.Services.Security;
@@ -614,7 +613,6 @@ public static class MemberAdminServiceTests
         var memberRepository = CreateMockMemberRepository([member]);
         var imageRepository = CreateMockMemberImageRepository();
         var avatarRepository = CreateMockMemberAvatarRepository();
-        var cacheService = CreateMockCacheService();
         var memberImageService = CreateMockMemberImageService(isValid: true);
 
         var unitOfWork = CreateMockUnitOfWork(
@@ -625,7 +623,6 @@ public static class MemberAdminServiceTests
 
         var service = CreateMemberAdminService(
             unitOfWork,
-            cacheService: cacheService,
             memberImageService: memberImageService);
 
         var request = CreateMemberChapterAdminServiceRequest(
@@ -726,7 +723,6 @@ public static class MemberAdminServiceTests
     private static MemberAdminService CreateMemberAdminService(
         IUnitOfWork unitOfWork,
         IAuthorizationService? authorizationService = null,
-        ICacheService? cacheService = null,
         IMemberEmailService? memberEmailService = null,
         IMemberImageService? memberImageService = null,
         IMemberService? memberService = null)
@@ -734,7 +730,6 @@ public static class MemberAdminServiceTests
         return new MemberAdminService(
             unitOfWork,
             memberService ?? CreateMockMemberService(),
-            cacheService ?? CreateMockCacheService(),
             authorizationService ?? CreateMockAuthorizationService(),
             memberImageService ?? CreateMockMemberImageService(isValid: true),
             memberEmailService ?? CreateMockMemberEmailService());
@@ -1053,11 +1048,6 @@ public static class MemberAdminServiceTests
     private static IAuthorizationService CreateMockAuthorizationService()
     {
         return new Mock<IAuthorizationService>().Object;
-    }
-
-    private static ICacheService CreateMockCacheService()
-    {
-        return new Mock<ICacheService>().Object;
     }
 
     private static IMemberEmailService CreateMockMemberEmailService()

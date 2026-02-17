@@ -1,7 +1,7 @@
 ﻿using ODK.Core.Chapters;
-using ODK.Core.Members;
 using ODK.Core.Topics;
 using ODK.Data.Core.Chapters;
+using ODK.Data.Core.Members;
 using ODK.Services.SocialMedia.ViewModels;
 
 namespace ODK.Services.Chapters.ViewModels;
@@ -18,7 +18,7 @@ public class GroupHomePageViewModel : GroupPageViewModel
 
     public required int MemberCount { get; init; }
 
-    public required IReadOnlyCollection<Member> Owners { get; init; }
+    public required IReadOnlyCollection<MemberWithAvatarDto> Owners { get; init; }
 
     public required IReadOnlyCollection<GroupPageListEventViewModel> RecentEvents { get; init; }
 

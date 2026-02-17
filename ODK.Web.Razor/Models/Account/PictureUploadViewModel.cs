@@ -1,4 +1,6 @@
-﻿namespace ODK.Web.Razor.Models.Account;
+﻿using ODK.Core.Members;
+
+namespace ODK.Web.Razor.Models.Account;
 
 public class PictureUploadViewModel
 {
@@ -9,5 +11,5 @@ public class PictureUploadViewModel
 
     public string? ImageDataUrl { get; init; }
 
-    public int? ImageVersion { get; init; }
+    public MemberAvatar? MemberAvatar { get; init; }
 }

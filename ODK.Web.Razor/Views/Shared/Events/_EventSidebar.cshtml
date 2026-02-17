@@ -21,18 +21,19 @@
             </div>
             <div class="card-body card-body-sm">
                 <div class="d-flex flex-column gap-2">
-                    @foreach (var host in Model.Hosts.OrderBy(x => x.FullName))
+                    @foreach (var host in Model.Hosts.OrderBy(x => x.Member.FullName))
                     {
-                        var hostUrl = OdkRoutes.Groups.Member(Model.Chapter, host.Id);
+                        var hostUrl = OdkRoutes.Groups.Member(Model.Chapter, host.Member.Id);
 
                         <div class="d-flex align-items-center justify-content-start">
                             @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel
                             {
-                                Member = host,
-                                MaxWidth = 50
+                                Member = host.Member,
+                                MaxWidth = 50,
+                                Version = host.AvatarVersion
                             })
                             <span class="ms-2">
-                                <a href="@hostUrl" target="_blank">@host.FullName</a>
+                                <a href="@hostUrl" target="_blank">@host.Member.FullName</a>
                             </span>
                         </div>
                     }

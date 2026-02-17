@@ -10,7 +10,6 @@ using ODK.Data.EntityFramework;
 using ODK.Services.Authentication;
 using ODK.Services.Authentication.OAuth;
 using ODK.Services.Authorization;
-using ODK.Services.Caching;
 using ODK.Services.Chapters;
 using ODK.Services.Contact;
 using ODK.Services.Emails;
@@ -127,7 +126,6 @@ public static class DependencyConfig
             .AddScoped<IAccountViewModelService, AccountViewModelService>()
             .AddScoped<IAuthenticationService, AuthenticationService>()
             .AddScoped<IAuthorizationService, AuthorizationService>()
-            .AddScoped<ICacheService, CacheService>()
             .AddScoped<IChapterAdminService, ChapterAdminService>()
             .AddSingleton(new ChapterAdminServiceSettings
             {

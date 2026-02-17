@@ -6,7 +6,6 @@ using ODK.Core.Members;
 using ODK.Core.Notifications;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
-using ODK.Services.Caching;
 using ODK.Services.Events.ViewModels;
 using ODK.Services.Exceptions;
 using ODK.Services.Members.Models;
@@ -17,7 +16,6 @@ namespace ODK.Services.Members;
 public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 {
     private readonly IAuthorizationService _authorizationService;
-    private readonly ICacheService _cacheService;
     private readonly IMemberEmailService _memberEmailService;
     private readonly IMemberImageService _memberImageService;
     private readonly IMemberService _memberService;
@@ -26,14 +24,12 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     public MemberAdminService(
         IUnitOfWork unitOfWork,
         IMemberService memberService,
-        ICacheService cacheService,
         IAuthorizationService authorizationService,
         IMemberImageService memberImageService,
         IMemberEmailService memberEmailService)
         : base(unitOfWork)
     {
         _authorizationService = authorizationService;
-        _cacheService = cacheService;
         _memberEmailService = memberEmailService;
         _memberImageService = memberImageService;
         _memberService = memberService;
@@ -336,8 +332,8 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         var (member, image, avatar) = await GetChapterAdminRestrictedContent(
             request,
             x => x.MemberRepository.GetById(memberId),
-            x => x.MemberImageRepository.GetByMemberId(memberId),
-            x => x.MemberAvatarRepository.GetByMemberId(memberId));
+            x => x.MemberImageRepository.GetVersionDtoByMemberId(memberId),
+            x => x.MemberAvatarRepository.GetVersionDtoByMemberId(memberId));
 
         OdkAssertions.MemberOf(member, chapter.Id);
 
@@ -468,7 +464,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         var (membershipSettings, members, memberEmailPreferences, subscriptions) = await GetChapterAdminRestrictedContent(
             request,
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
-            x => x.MemberRepository.GetAllByChapterId(chapter.Id),
+            x => x.MemberRepository.GetAllWithAvatarByChapterId(chapter.Id),
             x => x.MemberEmailPreferenceRepository.GetByChapterId(chapter.Id, MemberEmailPreferenceType.Events),
             x => x.MemberSubscriptionRepository.GetByChapterId(chapter.Id));
 
@@ -767,9 +763,6 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         }
 
         await _unitOfWork.SaveChangesAsync();
-
-        _cacheService.RemoveVersionedItem<MemberImage>(id);
-        _cacheService.RemoveVersionedItem<MemberAvatar>(id);
 
         return ServiceResult.Successful("Picture updated");
     }

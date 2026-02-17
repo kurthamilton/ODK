@@ -1,6 +1,7 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Platforms;
 using ODK.Data.Core.Deferred;
+using ODK.Data.Core.Members;
 
 namespace ODK.Data.Core.Repositories;
 
@@ -11,6 +12,9 @@ public interface IChapterAdminMemberRepository : IWriteRepository<ChapterAdminMe
     IDeferredQueryMultiple<ChapterAdminMember> GetByMemberId(PlatformType platform, Guid memberId);
 
     IDeferredQuerySingleOrDefault<ChapterAdminMember> GetByMemberId(PlatformType platform, Guid memberId, Guid chapterId);
+
+    IDeferredQueryMultiple<ChapterAdminMemberWithAvatarDto> GetAdminMembersWithAvatarsByChapterId(
+        PlatformType platform, Guid chapterId);
 
     IDeferredQuery<bool> IsAdmin(PlatformType platform, Guid chapterId, Guid memberId);
 

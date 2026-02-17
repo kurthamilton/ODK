@@ -75,15 +75,15 @@ public class AccountViewModelService : IAccountViewModelService
         var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
 
         var (avatar, image) = await _unitOfWork.RunAsync(
-                x => x.MemberAvatarRepository.GetByMemberId(currentMember.Id),
-                x => x.MemberImageRepository.GetByMemberId(currentMember.Id));
+            x => x.MemberAvatarRepository.GetVersionDtoByMemberId(currentMember.Id),
+            x => x.MemberImageRepository.GetVersionDtoByMemberId(currentMember.Id));
 
         OdkAssertions.MemberOf(currentMember, chapter.Id);
 
         return new ChapterPicturePageViewModel
         {
-            Avatar = avatar,
-            Image = image,
+            AvatarVersion = avatar?.Version,
+            ImageVersion = image?.Version,
             Chapter = chapter,
             CurrentMember = currentMember
         };
@@ -188,14 +188,14 @@ public class AccountViewModelService : IAccountViewModelService
     {
         var (member, avatar, image) = await _unitOfWork.RunAsync(
              x => x.MemberRepository.GetById(currentMemberId),
-             x => x.MemberAvatarRepository.GetByMemberId(currentMemberId),
-             x => x.MemberImageRepository.GetByMemberId(currentMemberId));
+             x => x.MemberAvatarRepository.GetVersionDtoByMemberId(currentMemberId),
+             x => x.MemberImageRepository.GetVersionDtoByMemberId(currentMemberId));
 
         return new SitePicturePageViewModel
         {
-            Avatar = avatar,
+            AvatarVersion = avatar?.Version,
             CurrentMember = member,
-            Image = image
+            ImageVersion = image?.Version
         };
     }
 

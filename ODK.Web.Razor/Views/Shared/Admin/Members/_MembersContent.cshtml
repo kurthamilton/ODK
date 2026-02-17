@@ -102,8 +102,9 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var member in members)
+            @foreach (var dto in members)
             {
+                var member = dto.Member;
                 subscriptionDictionary.TryGetValue(member.Id, out var subscription);
                 var status = AuthorizationService.GetSubscriptionStatus(member, subscription, Model.MembershipSettings);
 
@@ -114,7 +115,8 @@
                         @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel
                         {
                             Member = member,
-                            Width = 30
+                            Version = dto.AvatarVersion,
+                            Width = 30,
                         })
                 </td>
                 <td>

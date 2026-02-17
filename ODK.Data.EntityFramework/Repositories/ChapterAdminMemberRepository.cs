@@ -3,6 +3,7 @@ using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Data.Core.Deferred;
+using ODK.Data.Core.Members;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
 using ODK.Data.EntityFramework.Queries;
@@ -26,10 +27,29 @@ public class ChapterAdminMemberRepository : WriteRepositoryBase<ChapterAdminMemb
             .Where(x => x.MemberId == memberId)
             .DeferredMultiple();
 
-    public IDeferredQuerySingleOrDefault<ChapterAdminMember> GetByMemberId(PlatformType platform, Guid memberId, Guid chapterId)
+    public IDeferredQuerySingleOrDefault<ChapterAdminMember> GetByMemberId(
+        PlatformType platform, Guid memberId, Guid chapterId)
         => Set(platform)
             .Where(x => x.MemberId == memberId && x.ChapterId == chapterId)
             .DeferredSingleOrDefault();
+
+    public IDeferredQueryMultiple<ChapterAdminMemberWithAvatarDto> GetAdminMembersWithAvatarsByChapterId(
+        PlatformType platform, Guid chapterId)
+    {
+        var query =
+            from adminMember in Set(platform)
+            from avatar in Set<MemberAvatar>()
+                .Where(x => x.MemberId == adminMember.Member.Id)
+                .DefaultIfEmpty()
+            where adminMember.ChapterId == chapterId
+            select new ChapterAdminMemberWithAvatarDto
+            {
+                AvatarVersion = avatar != null ? avatar.VersionInt : null,
+                ChapterAdminMember = adminMember
+            };
+
+        return query.DeferredMultiple();
+    }
 
     public IDeferredQuery<bool> IsAdmin(PlatformType platform, Guid chapterId, Guid memberId)
     {

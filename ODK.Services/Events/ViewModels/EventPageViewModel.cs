@@ -1,6 +1,6 @@
 ﻿using ODK.Core.Events;
-using ODK.Core.Members;
 using ODK.Core.Venues;
+using ODK.Data.Core.Members;
 using ODK.Services.Chapters.ViewModels;
 
 namespace ODK.Services.Events.ViewModels;
@@ -32,13 +32,13 @@ public class EventPageViewModel : GroupPageViewModel
 
     public required Event Event { get; init; }
 
-    public required IReadOnlyCollection<Member> Hosts { get; init; }
+    public required IReadOnlyCollection<MemberWithAvatarDto> Hosts { get; init; }
 
     public required bool IsOnWaitlist { get; init; }
 
     public required EventResponseType? MemberResponse { get; init; }
 
-    public required IReadOnlyDictionary<EventResponseType, IReadOnlyCollection<Member>> MembersByResponse { get; init; }
+    public required IReadOnlyDictionary<EventResponseType, IReadOnlyCollection<MemberWithAvatarDto>> MembersByResponse { get; init; }
 
     public IReadOnlyCollection<EventResponseType> ResponseTypes { get; } = [EventResponseType.Yes, EventResponseType.Maybe, EventResponseType.No];
 
