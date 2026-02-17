@@ -9,21 +9,33 @@ public class QueryBuilder<T> : IQueryBuilder<T>
 {
     private readonly OdkContext _context;
 
-    protected IQueryable<T> _query;
-
     internal QueryBuilder(OdkContext context)
     {
         _context = context;
-        _query = Set();
+        Query = Set();
     }
 
-    public IDeferredQueryMultiple<T> GetAll() => _query.DeferredMultiple();
+    private QueryBuilder(OdkContext context, IQueryable<T> query)
+    {
+        _context = context;
+        Query = query;
+    }
 
-    public IDeferredQuerySingle<T> GetSingle() => _query.DeferredSingle();
+    protected IQueryable<T> Query { get; set; }
 
-    public IDeferredQuerySingleOrDefault<T> GetSingleOrDefault() => _query.DeferredSingleOrDefault();
+    public IDeferredQuery<int> Count() => Query.DeferredCount();
 
-    protected virtual IQueryable<T> Set() => Set<T>();
+    public IDeferredQueryMultiple<T> GetAll() => Query.DeferredMultiple();
+
+    public IDeferredQuerySingle<T> GetSingle() => Query.DeferredSingle();
+
+    public IDeferredQuerySingleOrDefault<T> GetSingleOrDefault() => Query.DeferredSingleOrDefault();
+
+    protected IQueryBuilder<TDto> ProjectTo<TDto>(IQueryable<TDto> query)
+        where TDto : class
+        => new QueryBuilder<TDto>(_context, query);
+
+    protected virtual IQueryable<T> Set() => Query;
 
     protected IQueryable<TEntity> Set<TEntity>()
         where TEntity : class

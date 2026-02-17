@@ -13,18 +13,48 @@ public class MemberQueryBuilder : QueryBuilder<Member>, IMemberQueryBuilder
     {
     }
 
-    public IMemberQueryBuilder InChapter(Guid chapterId)
+    public IMemberQueryBuilder Current(Guid chapterId)
     {
-        _query = _query.InChapter(chapterId);
+        Query = Query.Current(chapterId);
         return this;
     }
 
-    public IQueryBuilder<MemberWithAvatarDto> ProjectTo()
+    public IMemberQueryBuilder InChapter(Guid chapterId)
     {
-        return new QueryBuilder<MemberWithAvatarDto>(_context)
+        Query = Query.InChapter(chapterId);
+        return this;
+    }
+
+    public IMemberQueryBuilder Latest(int pageSize)
+    {
+        Query = Query
+            .OrderByDescending(x => x.CreatedUtc)
+            .Take(pageSize);
+        return this;
+    }
+
+    public IMemberQueryBuilder Visible(Guid chapterId)
+    {
+        Query = Query.Visible(chapterId);
+        return this;
+    }
+
+    public IQueryBuilder<MemberWithAvatarDto> WithAvatar()
+    {
+        var query = 
+            from member in Query
+            from avatar in Set<MemberAvatar>()
+                .Where(x => x.MemberId == member.Id)
+                .DefaultIfEmpty()
+            select new MemberWithAvatarDto
+            {
+                AvatarVersion = avatar != null ? avatar.VersionInt : null,
+                Member = member
+            };
+
+        return ProjectTo(query);
     }
 
     protected override IQueryable<Member> Set()
-        => base.Set()
-            .Include(x => x.Chapters);
+        => Query.Include(x => x.Chapters);
 }
