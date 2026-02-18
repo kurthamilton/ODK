@@ -2,9 +2,8 @@
 using System.Net;
 using System.Text.RegularExpressions;
 using ODK.Core.Utils;
+using ODK.Infrastructure.Settings;
 using ODK.Services.Logging;
-using ODK.Web.Common.Config.Settings;
-using ODK.Web.Common.Services;
 
 namespace ODK.Web.Razor.Middleware;
 

@@ -5,9 +5,9 @@ using ODK.Services.Authentication;
 using ODK.Services.Emails;
 using ODK.Services.Settings;
 using ODK.Services.Settings.Models;
-using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
+using ODK.Web.Razor.Models.Feedback;
 using ODK.Web.Razor.Models.SiteAdmin;
 using ODK.Web.Razor.Services;
 

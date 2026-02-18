@@ -1,12 +1,11 @@
 ﻿@page "/{chapterName}/Members/{id:guid}"
 @attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
 @using ODK.Core.Exceptions
 @using ODK.Core.Pages
 @using ODK.Services.Members
-@using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
-@using Microsoft.AspNetCore.Authorization
 @inject IMemberViewModelService MemberViewModelService
 @model MemberModel
 @{

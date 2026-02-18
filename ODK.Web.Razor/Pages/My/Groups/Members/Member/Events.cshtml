@@ -1,10 +1,9 @@
 ﻿@page "/my/groups/{chapterId:guid}/members/{memberId:guid}/events"
 @using ODK.Services.Members
-@using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
-@model ODK.Web.Razor.Pages.My.Groups.Members.Member.EventsModel
+@model EventsModel
 @inject IMemberAdminService MemberAdminService
 @{
     Layout = "_GroupAdminLayout";

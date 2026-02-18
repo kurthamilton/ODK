@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.ViewModels;
-using ODK.Web.Common.Feedback;
+using ODK.Web.Razor.Models.Feedback;
 
 namespace ODK.Web.Razor.Pages.SiteAdmin;
 

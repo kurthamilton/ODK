@@ -1,12 +1,11 @@
 ﻿using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Mvc;
+using ODK.Infrastructure.Settings;
 using ODK.Services.Emails;
 using ODK.Services.Exceptions;
 using ODK.Services.Logging;
 using ODK.Services.Payments;
 using ODK.Services.Tasks;
-using ODK.Web.Common.Config.Settings;
-using ODK.Web.Common.Extensions;
 using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
 
@@ -45,13 +44,13 @@ public class WebhooksController : OdkControllerBase
     [HttpPost("webhooks/brevo")]
     public async Task Brevo()
     {
-        var env = Request.GetHeader(_appSettings.Brevo.WebhookEnvHeader);
+        var env = GetHeader(_appSettings.Brevo.WebhookEnvHeader);
         if (env != _appSettings.Brevo.WebhookEnv)
         {
             return;
         }
 
-        var password = Request.GetHeader(_appSettings.Brevo.WebhookPasswordHeader);
+        var password = GetHeader(_appSettings.Brevo.WebhookPasswordHeader);
         if (password != _appSettings.Brevo.WebhookPassword)
         {
             throw new OdkNotAuthenticatedException();

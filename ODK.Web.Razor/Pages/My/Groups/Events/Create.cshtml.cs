@@ -3,8 +3,8 @@ using ODK.Core.Utils;
 using ODK.Services.Events;
 using ODK.Services.Events.Models;
 using ODK.Services.Security;
-using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Events;
+using ODK.Web.Razor.Models.Feedback;
 
 namespace ODK.Web.Razor.Pages.My.Groups.Events;
 

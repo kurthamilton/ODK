@@ -1,10 +1,9 @@
 ﻿@page "/my/groups/{chapterId:guid}/questions/{questionId:guid}"
 @using ODK.Services.Chapters
-@using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
-@model ODK.Web.Razor.Pages.My.Groups.Group.Questions.QuestionModel
+@model QuestionModel
 @inject IChapterAdminService ChapterAdminService
 @{
     Layout = "_GroupAdminLayout";

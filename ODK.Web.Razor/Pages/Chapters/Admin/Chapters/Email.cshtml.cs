@@ -3,8 +3,8 @@ using ODK.Core.Emails;
 using ODK.Services.Emails;
 using ODK.Services.Emails.Models;
 using ODK.Services.Security;
-using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Chapters;
+using ODK.Web.Razor.Models.Feedback;
 
 namespace ODK.Web.Razor.Pages.Chapters.Admin.Chapters;
 

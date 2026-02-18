@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.Models;
-using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Chapters.SiteAdmin;
+using ODK.Web.Razor.Models.Feedback;
 
 namespace ODK.Web.Razor.Pages.Chapters.Admin.SiteAdmin;
 

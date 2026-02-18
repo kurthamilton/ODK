@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Html;
 using ODK.Services.Chapters.ViewModels;
-using ODK.Web.Common.Components;
+using ODK.Web.Razor.Models.Components;
 
 namespace ODK.Web.Razor.Models.Groups;
 

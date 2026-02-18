@@ -1,6 +1,6 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Members;
-using ODK.Web.Common.Components;
+using ODK.Web.Razor.Models.Components;
 
 namespace ODK.Web.Razor.Models.Header;
 

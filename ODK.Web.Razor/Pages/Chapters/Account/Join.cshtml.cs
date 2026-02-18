@@ -4,7 +4,7 @@ using ODK.Services;
 using ODK.Services.Members;
 using ODK.Services.Members.Models;
 using ODK.Services.Users.ViewModels;
-using ODK.Web.Common.Feedback;
+using ODK.Web.Razor.Models.Feedback;
 
 namespace ODK.Web.Razor.Pages.Chapters.Account;
 

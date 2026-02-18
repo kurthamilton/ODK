@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Payments;
 using ODK.Services.Payments;
-using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
+using ODK.Web.Razor.Models.Feedback;
 
 namespace ODK.Web.Razor.Pages.Chapters.Events;
 

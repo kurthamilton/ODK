@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
 using ODK.Services.Events;
 using ODK.Services.Security;
-using ODK.Web.Common.Feedback;
+using ODK.Web.Razor.Models.Feedback;
 using CoreEvent = ODK.Core.Events.Event;
 
 namespace ODK.Web.Razor.Pages.Chapters.Admin.Events;

@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Contact;
-using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
 using ODK.Web.Razor.Models.Contact;
+using ODK.Web.Razor.Models.Feedback;
 
 namespace ODK.Web.Razor.Controllers;
 

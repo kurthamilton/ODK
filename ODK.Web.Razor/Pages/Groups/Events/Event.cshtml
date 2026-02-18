@@ -1,7 +1,7 @@
 ﻿@page "/groups/{slug}/events/{shortcode}"
 @using ODK.Services.Events
-@using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Groups
 @using ODK.Web.Razor.Models.Payments
 @model EventModel
@@ -24,7 +24,7 @@
     Breadcrumbs = new[]
     {
         viewModel.Event.HasPassed 
-            ? new MenuItem 
+            ? new MenuItem
             {
                 Icon = IconType.ArrowLeft,
                 Link = Model.OdkRoutes.Groups.PastEvents(Model.Chapter),

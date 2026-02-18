@@ -3,7 +3,7 @@ using ODK.Core.Payments;
 using ODK.Services;
 using ODK.Services.Chapters;
 using ODK.Services.Security;
-using ODK.Web.Common.Feedback;
+using ODK.Web.Razor.Models.Feedback;
 
 namespace ODK.Web.Razor.Pages.Chapters.Admin.Chapters;
 

@@ -2,8 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Utils;
 using ODK.Services.Events;
 using ODK.Services.Events.Models;
-using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Events;
+using ODK.Web.Razor.Models.Feedback;
 
 namespace ODK.Web.Razor.Pages.Chapters.Admin.Events.Event;
 

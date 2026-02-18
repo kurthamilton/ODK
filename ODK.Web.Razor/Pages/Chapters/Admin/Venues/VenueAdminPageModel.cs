@@ -2,7 +2,7 @@
 using ODK.Core.Venues;
 using ODK.Services.Security;
 using ODK.Services.Venues;
-using ODK.Web.Common.Feedback;
+using ODK.Web.Razor.Models.Feedback;
 
 namespace ODK.Web.Razor.Pages.Chapters.Admin.Venues;
 

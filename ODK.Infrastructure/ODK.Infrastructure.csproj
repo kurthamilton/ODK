@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ODK.Core\ODK.Core.csproj" />
+    <ProjectReference Include="..\ODK.Data.Core\ODK.Data.Core.csproj" />
+    <ProjectReference Include="..\ODK.Data.EntityFramework\ODK.Data.EntityFramework.csproj" />
+    <ProjectReference Include="..\ODK.Services.Integrations\ODK.Services.Integrations.csproj" />
+    <ProjectReference Include="..\ODK.Services\ODK.Services.csproj" />
+    <ProjectReference Include="..\ODK.Web.Common\ODK.Web.Common.csproj" />
+  </ItemGroup>
+
+</Project>

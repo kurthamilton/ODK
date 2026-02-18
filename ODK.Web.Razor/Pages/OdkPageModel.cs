@@ -4,11 +4,11 @@ using ODK.Core.Countries;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Services;
-using ODK.Web.Common.Extensions;
-using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
 using ODK.Web.Razor.Attributes;
+using ODK.Web.Razor.Extensions;
+using ODK.Web.Razor.Models.Feedback;
 
 namespace ODK.Web.Razor.Pages;
 

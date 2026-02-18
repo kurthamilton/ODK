@@ -5,10 +5,10 @@ using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Core.Utils;
 using ODK.Services;
-using ODK.Web.Common.Extensions;
-using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
+using ODK.Web.Razor.Extensions;
+using ODK.Web.Razor.Models.Feedback;
 
 namespace ODK.Web.Razor.Controllers;
 
@@ -80,6 +80,11 @@ public abstract class OdkControllerBase : Controller
         var csv = StringUtils.ToCsv(data);
         return File(Encoding.UTF8.GetBytes(csv), "text/csv", fileName);
     }
+
+    protected string? GetHeader(string name)
+        => Request.Headers
+            .GetCommaSeparatedValues(name)
+            .FirstOrDefault();
 
     protected async Task<string> ReadBodyText()
     {

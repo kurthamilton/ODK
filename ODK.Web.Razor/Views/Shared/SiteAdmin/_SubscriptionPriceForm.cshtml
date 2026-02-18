@@ -1,6 +1,7 @@
 ﻿@using ODK.Core.Subscriptions
-@using ODK.Web.Common.Extensions;
-@model ODK.Web.Razor.Models.SiteAdmin.SiteSubscriptionPriceFormViewModel
+@using ODK.Web.Razor.Models.SiteAdmin
+@using ODK.Web.Razor.Mvc
+@model SiteSubscriptionPriceFormViewModel
 @{
     var currencyOptions = Model.CurrencyOptions        
         .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Code })

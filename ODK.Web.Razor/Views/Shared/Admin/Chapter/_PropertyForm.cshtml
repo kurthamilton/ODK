@@ -1,6 +1,7 @@
 ﻿@using ODK.Core.DataTypes
-@using ODK.Web.Common.Extensions
-@model ODK.Web.Razor.Models.Admin.Chapters.ChapterPropertyFormViewModel
+@using ODK.Web.Razor.Models.Admin.Chapters
+@using ODK.Web.Razor.Mvc
+@model ChapterPropertyFormViewModel
 @{
     var dataTypeOptions = Enum.GetValues<DataType>()
         .Where(x => x != DataType.None)

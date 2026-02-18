@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Features;
 using ODK.Services.Features;
 using ODK.Services.Features.Models;
-using ODK.Web.Common.Feedback;
+using ODK.Web.Razor.Models.Feedback;
 using ODK.Web.Razor.Models.SiteAdmin;
 
 namespace ODK.Web.Razor.Pages.SiteAdmin;

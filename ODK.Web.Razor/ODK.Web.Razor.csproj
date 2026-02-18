@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="BetterStack.Logs.Serilog" Version="1.2.0" />
     <PackageReference Include="GitInfo" Version="3.6.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -32,6 +33,12 @@
     <PackageReference Include="Hangfire.SqlServer" Version="1.8.23" />
     <PackageReference Include="LigerShark.WebOptimizer.Core" Version="3.0.477" />
     <PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="3.0.71" />
+    <PackageReference Include="Serilog" Version="4.3.1" />
+    <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
+    <PackageReference Include="Serilog.Enrichers.ClientInfo" Version="2.9.0" />
+    <PackageReference Include="Serilog.Extensions.Hosting" Version="10.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+    <PackageReference Include="Serilog.Sinks.MSSqlServer" Version="9.0.2" />
   </ItemGroup>
 
   <ItemGroup>
@@ -45,6 +52,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ODK.Core\ODK.Core.csproj" />
+    <ProjectReference Include="..\ODK.Infrastructure\ODK.Infrastructure.csproj" />
     <ProjectReference Include="..\ODK.Web.Common\ODK.Web.Common.csproj" />
   </ItemGroup>
 

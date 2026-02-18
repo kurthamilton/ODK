@@ -2,8 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Countries;
 using ODK.Services.Venues;
 using ODK.Services.Venues.Models;
-using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Venues;
+using ODK.Web.Razor.Models.Feedback;
 
 namespace ODK.Web.Razor.Pages.Chapters.Admin.Venues;
 

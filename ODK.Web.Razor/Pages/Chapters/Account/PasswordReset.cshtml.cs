@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Services;
 using ODK.Services.Authentication;
-using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Account;
+using ODK.Web.Razor.Models.Feedback;
 
 namespace ODK.Web.Razor.Pages.Chapters.Account;
 

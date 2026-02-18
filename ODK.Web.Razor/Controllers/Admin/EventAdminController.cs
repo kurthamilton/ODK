@@ -4,10 +4,10 @@ using ODK.Core.Utils;
 using ODK.Services;
 using ODK.Services.Events;
 using ODK.Services.Security;
-using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
 using ODK.Web.Razor.Models.Admin.Events;
+using ODK.Web.Razor.Models.Feedback;
 
 namespace ODK.Web.Razor.Controllers.Admin;
 

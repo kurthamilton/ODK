@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using ODK.Infrastructure.Settings;
 using ODK.Services.Exceptions;
 using ODK.Services.Members;
 using ODK.Services.SocialMedia;
 using ODK.Services.Subscriptions;
-using ODK.Web.Common.Config.Settings;
 using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
 

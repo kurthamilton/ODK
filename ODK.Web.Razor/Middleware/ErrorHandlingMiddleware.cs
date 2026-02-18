@@ -10,6 +10,7 @@ using ODK.Services.Logging;
 using ODK.Web.Common.Extensions;
 using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
+using ODK.Web.Razor.Services;
 using OdkHttpRequest = ODK.Services.Logging.HttpRequest;
 
 namespace ODK.Web.Razor.Middleware;
