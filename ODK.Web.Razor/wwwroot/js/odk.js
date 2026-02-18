@@ -8,6 +8,7 @@
     bindImages();
     bindMenuLinks();
     bindPopovers();
+    bindToasts();
     bindTooltips();
 
     window.odk = window.odk || {};
@@ -241,6 +242,22 @@
             if (element.hasAttribute('data-popover-show')) {
                 popover.show();
             }
+        });
+    }
+
+    function bindToasts() {
+        const $toasts = document.querySelectorAll('[data-toast]');
+
+        $toasts.forEach($toast => {
+            const autohide = $toast.getAttribute('data-toast-autohide');
+            const delay = $toast.getAttribute('data-toast-delay');
+
+            const options = {};
+            if (autohide === 'false') options.autohide = false;
+            if (delay) options.delay = parseInt(delay);
+
+            const toast = new bootstrap.Toast($toast, options);
+            toast.show();
         });
     }
 

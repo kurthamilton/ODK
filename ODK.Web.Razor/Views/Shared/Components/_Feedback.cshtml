@@ -1,0 +1,57 @@
+﻿@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Feedback
+@{
+    if (!int.TryParse(TempData["FeedbackCount"]?.ToString(), out int feedbackCount))
+    {
+        return;
+    }
+}
+
+<div class="toast-container position-fixed p-3" data-bs-theme="" data-theme-contrast>
+    @for (int i = 0; i < feedbackCount; i++)
+    {
+        var message = TempData[$"Feedback[{i}].Message"]?.ToString();
+        if (!Enum.TryParse<FeedbackType>(TempData[$"Feedback[{i}].Type"]?.ToString(), ignoreCase: true, out var type))
+        {
+            continue;
+        }
+
+        IconType icon;
+        string iconClass;
+
+        switch (type)
+        {
+            case FeedbackType.Success:
+                icon = IconType.CheckCircle;
+                iconClass = "text-success";
+                break;
+            case FeedbackType.Warning:
+                icon = IconType.ExclamationTriangle;
+                iconClass = "text-warning";
+                break;
+            case FeedbackType.Error:
+                icon = IconType.TimesCircle;
+                iconClass = "text-danger";
+                break;
+            default:
+                continue;
+        }
+
+        @await Html.PartialAsync("Components/_Toast", new ToastViewModel
+        {
+            KeepOpen = true,
+            Header = 
+                @<div class="d-flex gap-1">
+                    <span>
+                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(icon)
+                        {
+                            Class = iconClass
+                        })
+                    </span>
+                    <span class="flex-grow-1">
+                        @message
+                    </span>                
+                </div>
+        })
+    }
+</div>

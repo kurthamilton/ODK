@@ -5,6 +5,7 @@
 
 .offcanvas {
     --bs-offcanvas-width: 500px;
+    --bs-offcanvas-zindex: #{$zindex-toast + 1};
 
     hr {
         margin-top: 0.5rem;

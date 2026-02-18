@@ -13050,6 +13050,7 @@ html[data-platform=odk] {
 
 .offcanvas {
   --bs-offcanvas-width: 500px;
+  --bs-offcanvas-zindex: 1091;
 }
 .offcanvas hr {
   margin-top: 0.5rem;
@@ -13331,6 +13332,19 @@ th.sortable.sort-desc:after {
 
 .tcol-narrow {
   width: 1px;
+}
+
+.toast-container {
+  bottom: 0;
+  right: 0;
+}
+@media (max-width: 575.98px) {
+  .toast-container {
+    width: 100%;
+  }
+}
+.toast-container .toast {
+  width: 100%;
 }
 
 .event-list {

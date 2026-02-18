@@ -1,0 +1,31 @@
+﻿@using ODK.Web.Razor.Models.Components
+@model ToastViewModel
+
+<div class="toast fade @Model.Class" role="alert" aria-live="assertive" aria-atomic="true" data-toast
+    data-toast-autohide="@(Model.KeepOpen ? "false" : "true")"
+    data-toast-delay="@Model.Delay">
+    @if (Model.Header != null)
+    {
+        <div class="toast-header">
+            <div class="me-auto">
+                @Model.Header.Invoke(null)
+            </div>
+            
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    }    
+
+    @if (Model.Body != null)
+    {
+        <div class="d-flex">
+            <div class="toast-body">
+                @Model.Body.Invoke(null)
+            </div>
+
+            @if (Model.Header == null)
+            {
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            }
+        </div>
+    }    
+</div>

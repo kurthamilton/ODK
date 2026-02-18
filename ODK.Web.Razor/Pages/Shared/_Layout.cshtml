@@ -157,6 +157,8 @@
         </div>
     }    
 
+    @await Html.PartialAsync("Components/_Feedback")
+
     <script src="~/lib/tinymce/tinymce.min.js" asp-append-version="true"></script>
     <script src="~/js/odk.bundle.js" asp-append-version="true"></script>
     @await RenderSectionAsync("scripts", required: false)

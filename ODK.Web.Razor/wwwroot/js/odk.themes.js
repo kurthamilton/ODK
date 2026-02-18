@@ -6,6 +6,7 @@
     window.addEventListener('load', () => {
         bindEventListeners();
         setButtonVisibility();
+        setContrastThemes();
     });
 
     const bindEventListeners = () => {
@@ -75,11 +76,25 @@
     const changeTheme = (theme) => {
         localStorage.setItem(THEME_KEY, theme);
         setTheme(theme);
+        setContrastThemes();
+    };
+
+    const setContrastThemes = () => {
+        const $contrastEls = document.querySelectorAll('[data-theme-contrast]');
+        if (!$contrastEls.length) return;
+
+        const theme = root.getAttribute('data-bs-theme');
+        const contrastTheme = theme === 'light' ? 'dark' : 'light';
+        $contrastEls.forEach($el => $el.setAttribute('data-bs-theme', contrastTheme));
     };
 
     const setTheme = (theme, persist) => {
         root.setAttribute('data-bs-theme', theme);
         setButtonVisibility();
+
+        document.dispatchEvent(new CustomEvent('odk:theme-changed', {
+            detail: theme
+        }));
     };
 
     const theme = getTheme();
