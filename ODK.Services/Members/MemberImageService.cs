@@ -15,15 +15,12 @@ public class MemberImageService : IMemberImageService
     }
 
     public void RotateMemberImage(
-        MemberImage image,
         MemberAvatar avatar)
     {
-        image.ImageData = _imageService.Rotate(image.ImageData, 90);
         avatar.ImageData = _imageService.Rotate(avatar.ImageData, 90);
     }
 
     public ServiceResult UpdateMemberImage(
-        MemberImage image,
         MemberAvatar avatar,
         byte[] imageData)
     {
@@ -32,16 +29,13 @@ public class MemberImageService : IMemberImageService
             return ServiceResult.Failure("Invalid image");
         }
 
-        var mimeType = MemberImage.DefaultMimeType;
+        var mimeType = MemberAvatar.DefaultMimeType;
 
-        image.ImageData = _imageService.Process(imageData, new ImageProcessingOptions
+        avatar.ImageData = _imageService.Process(imageData, new ImageProcessingOptions
         {
             MaxWidth = _settings.MemberAvatarSize,
             MimeType = mimeType
         });
-        image.MimeType = mimeType;
-
-        avatar.ImageData = image.ImageData;
         avatar.MimeType = mimeType;
 
         return ServiceResult.Successful();

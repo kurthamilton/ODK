@@ -1,27 +1,54 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Data.Core.Members;
 using ODK.Data.Core.QueryBuilders;
+using ODK.Data.Core.QueryBuilders.Members;
 using ODK.Data.EntityFramework.Queries;
 
 namespace ODK.Data.EntityFramework.QueryBuilders;
 
-public class MemberQueryBuilder : QueryBuilder<Member>, IMemberQueryBuilder
+/* This is a prototype for how repository methods might be replaced by query composition.
+ * Pros: 
+ *  - composable queries
+ *  - fewer methods (e.g. GetByChapter, GetLatestByChapter, GetWithAvatarByChapter are all v similar
+ *  - high code reuse
+ * Cons:
+ *  - certain filter chains that are currently encapsulated in one method would benefit from a higher-order function, which
+ *    could lead to method explosion
+ */
+public class MemberQueryBuilder : DatabaseEntityQueryBuilder<Member, IMemberQueryBuilder>, IMemberQueryBuilder
 {
     internal MemberQueryBuilder(OdkContext context)
         : base(context)
     {
     }
 
-    public IMemberQueryBuilder Current(Guid chapterId)
+    protected override IMemberQueryBuilder Builder => this;
+
+    public IMemberQueryBuilder HasEmailAddress(string emailAddress)
     {
-        Query = Query.Current(chapterId);
+        Query = Query.Where(x => x.EmailAddress == emailAddress);
         return this;
     }
 
     public IMemberQueryBuilder InChapter(Guid chapterId)
+        => InChapter(chapterId, new());
+
+    public IMemberQueryBuilder InChapter(Guid chapterId, MemberChapterQueryOptions options)
     {
-        Query = Query.InChapter(chapterId);
+        Query = Query.InChapter(chapterId, options);
+        return this;
+    }
+
+    public IMemberQueryBuilder IsChapterOwner(Guid chapterId)
+    {
+        Query =
+            from member in Query
+            from chapter in Set<Chapter>()
+                .Where(x => x.OwnerId == member.Id)
+            where chapter.Id == chapterId
+            select member;
         return this;
     }
 
@@ -30,12 +57,6 @@ public class MemberQueryBuilder : QueryBuilder<Member>, IMemberQueryBuilder
         Query = Query
             .OrderByDescending(x => x.CreatedUtc)
             .Take(pageSize);
-        return this;
-    }
-
-    public IMemberQueryBuilder Visible(Guid chapterId)
-    {
-        Query = Query.Visible(chapterId);
         return this;
     }
 
@@ -53,8 +74,9 @@ public class MemberQueryBuilder : QueryBuilder<Member>, IMemberQueryBuilder
             };
 
         return ProjectTo(query);
-    }
+    }    
 
-    protected override IQueryable<Member> Set()
-        => Query.Include(x => x.Chapters);
+    protected override IQueryable<Member> Set(OdkContext context)
+        => base.Set(context)
+            .Include(x => x.Chapters);
 }

@@ -1,16 +1,17 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using ODK.Data.Core.QueryBuilders;
 
 namespace ODK.Data.EntityFramework;
 
 public abstract class RepositoryBase
 {
-    private readonly DbContext _context;
+    private readonly OdkContext _context;
 
     protected RepositoryBase(OdkContext context)
     {
         _context = context;
         _context.SavedChanges += OnContextSavedChanges;
-    }
+    }    
 
     protected void AddSingle<T>(T entity) where T : class => _context.Set<T>().Add(entity);
 
@@ -27,6 +28,11 @@ public abstract class RepositoryBase
     protected virtual void OnCommit()
     {
     }
+
+    protected TBuilder CreateQueryBuilder<TBuilder, T>(Func<OdkContext, TBuilder> factory)
+        where TBuilder : IQueryBuilder<T>
+        where T : class
+        => factory(_context);
 
     protected IQueryable<T> Set<T>() where T : class => _context.Set<T>();
 

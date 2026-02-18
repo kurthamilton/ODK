@@ -58,7 +58,6 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IMemberEmailAddressUpdateTokenRepository> _memberEmailAddressUpdateTokenRepository;
     private readonly Lazy<IMemberChapterRepository> _memberChapterRepository;
     private readonly Lazy<IMemberEmailPreferenceRepository> _memberEmailPreferenceRepository;
-    private readonly Lazy<IMemberImageRepository> _memberImageRepository;
     private readonly Lazy<IMemberLocationRepository> _memberLocationRepository;
     private readonly Lazy<IMemberNotificationSettingsRepository> _memberNotificationSettingsRepository;
     private readonly Lazy<IMemberPasswordRepository> _memberPasswordRepository;
@@ -145,7 +144,6 @@ public class UnitOfWork : IUnitOfWork
         _memberChapterRepository = new(() => new MemberChapterRepository(_context));
         _memberEmailAddressUpdateTokenRepository = new(() => new MemberEmailAddressUpdateTokenRepository(_context));
         _memberEmailPreferenceRepository = new(() => new MemberEmailPreferenceRepository(_context));
-        _memberImageRepository = new(() => new MemberImageRepository(_context));
         _memberLocationRepository = new(() => new MemberLocationRepository(_context));
         _memberNotificationSettingsRepository = new(() => new MemberNotificationSettingsRepository(_context));
         _memberPasswordRepository = new(() => new MemberPasswordRepository(_context));
@@ -229,7 +227,6 @@ public class UnitOfWork : IUnitOfWork
     public IMemberChapterRepository MemberChapterRepository => _memberChapterRepository.Value;
     public IMemberEmailAddressUpdateTokenRepository MemberEmailAddressUpdateTokenRepository => _memberEmailAddressUpdateTokenRepository.Value;
     public IMemberEmailPreferenceRepository MemberEmailPreferenceRepository => _memberEmailPreferenceRepository.Value;
-    public IMemberImageRepository MemberImageRepository => _memberImageRepository.Value;
     public IMemberLocationRepository MemberLocationRepository => _memberLocationRepository.Value;
     public IMemberNotificationSettingsRepository MemberNotificationSettingsRepository => _memberNotificationSettingsRepository.Value;
     public IMemberPasswordRepository MemberPasswordRepository => _memberPasswordRepository.Value;
@@ -263,6 +260,13 @@ public class UnitOfWork : IUnitOfWork
     public ITopicRepository TopicRepository => _topicRepository.Value;
     public IVenueLocationRepository VenueLocationRepository => _venueLocationRepository.Value;
     public IVenueRepository VenueRepository => _venueRepository.Value;
+
+    public async Task<T1> RunAsync<T1>(
+        Func<IUnitOfWork, IDeferredQuery<T1>> query1)
+    {
+        var q1 = query1(this);
+        return await q1.Run();
+    }
 
     public async Task<(T1, T2)> RunAsync<T1, T2>(
         Func<IUnitOfWork, IDeferredQuery<T1>> query1,

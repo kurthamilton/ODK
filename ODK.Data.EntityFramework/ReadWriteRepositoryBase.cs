@@ -1,11 +1,26 @@
 ﻿using ODK.Core;
 using ODK.Data.Core.Deferred;
+using ODK.Data.Core.QueryBuilders;
 using ODK.Data.Core.Repositories;
-using ODK.Data.EntityFramework.Extensions;
+using ODK.Data.EntityFramework.QueryBuilders;
 
 namespace ODK.Data.EntityFramework;
 
-public abstract class ReadWriteRepositoryBase<T> : WriteRepositoryBase<T>, IReadWriteRepository<T> where T : class, IDatabaseEntity
+public abstract class ReadWriteRepositoryBase<T> : ReadWriteRepositoryBase<T, IDatabaseEntityQueryBuilder<T>>
+    where T : class, IDatabaseEntity
+{
+    protected ReadWriteRepositoryBase(OdkContext context) 
+        : base(context)
+    {
+    }
+
+    public override IDatabaseEntityQueryBuilder<T> Query() 
+        => CreateQueryBuilder<IDatabaseEntityQueryBuilder<T>, T>(context => new DatabaseEntityQueryBuilder<T>(context));
+}
+
+public abstract class ReadWriteRepositoryBase<T, TBuilder> : WriteRepositoryBase<T>, IReadWriteRepository<T, TBuilder> 
+    where T : class, IDatabaseEntity
+    where TBuilder : IDatabaseEntityQueryBuilder<T, TBuilder>
 {
     protected ReadWriteRepositoryBase(OdkContext context)
         : base(context)
@@ -29,19 +44,22 @@ public abstract class ReadWriteRepositoryBase<T> : WriteRepositoryBase<T>, IRead
         base.AddMany(entities);
     }
 
-    public virtual IDeferredQuerySingle<T> GetById(Guid id) => Set()
-        .DeferredSingle(id);
+    public virtual IDeferredQuerySingle<T> GetById(Guid id) 
+        => Query()
+            .ById(id)
+            .GetSingle();
 
-    public virtual IDeferredQuerySingleOrDefault<T> GetByIdOrDefault(Guid id) => Set()
-        .Where(x => x.Id == id)
-        .DeferredSingleOrDefault();
+    public virtual IDeferredQuerySingleOrDefault<T> GetByIdOrDefault(Guid id)
+        => Query()
+            .ById(id)
+            .GetSingleOrDefault();
 
-    public IDeferredQueryMultiple<T> GetByIds(IReadOnlyCollection<Guid> ids) =>
-        ids.Count > 0
-            ? Set()
-                .Where(x => ids.Contains(x.Id))
-                .DeferredMultiple()
-            : new DefaultDeferredQueryMultiple<T>();
+    public IDeferredQueryMultiple<T> GetByIds(IReadOnlyCollection<Guid> ids)
+        => Query()
+            .ByIds(ids)
+            .GetAll();
+
+    public abstract TBuilder Query();
 
     public void Upsert(T entity)
     {

@@ -19,8 +19,6 @@ public interface IMemberAdminService
     Task<MemberApprovalsAdminPageViewModel> GetMemberApprovalsViewModel(
         IMemberChapterAdminServiceRequest request);
 
-    Task<MemberAvatar?> GetMemberAvatar(IMemberChapterAdminServiceRequest request, Guid memberId);
-
     Task<MemberConversationsAdminPageViewModel> GetMemberConversationsViewModel(
         IMemberChapterAdminServiceRequest request, Guid memberId);
 

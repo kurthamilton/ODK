@@ -5,7 +5,7 @@ using ODK.Data.Core.QueryBuilders;
 
 namespace ODK.Data.Core.Repositories;
 
-public interface IMemberRepository : IReadWriteRepository<Member>
+public interface IMemberRepository : IReadWriteRepository<Member, IMemberQueryBuilder>
 {
     IDeferredQueryMultiple<Member> GetAllByChapterId(Guid chapterId);
 
@@ -23,5 +23,5 @@ public interface IMemberRepository : IReadWriteRepository<Member>
 
     IDeferredQueryMultiple<MemberWithAvatarDto> GetLatestWithAvatarByChapterId(Guid chapterId, int pageSize);
 
-    IMemberQueryBuilder Query();
+    IDeferredQuerySingle<MemberWithAvatarDto> GetWithAvatarById(Guid memberId);
 }

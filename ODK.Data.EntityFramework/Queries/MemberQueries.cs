@@ -1,25 +1,22 @@
 ﻿using ODK.Core.Members;
+using ODK.Data.Core.QueryBuilders.Members;
 
 namespace ODK.Data.EntityFramework.Queries;
 
 internal static class MemberQueries
 {
-    internal static IQueryable<Member> Current(this IQueryable<Member> query,
-        Guid chapterId)
+    internal static IQueryable<Member> InChapter(
+        this IQueryable<Member> query, Guid chapterId, MemberChapterQueryOptions? options = null)
     {
-        query =
-            from member in query
-            where member.Activated
-                && member.Chapters.Any(x => x.ChapterId == chapterId)
-            select member;
+        var includeHidden = options?.IncludeHidden == true;
+        var includeInactive = options?.IncludeInactive == true;
 
-        return query;
+        return query
+            .Where(member =>
+                (includeInactive || member.Activated) &&
+                member.Chapters.Any(
+                    memberChapter =>
+                        memberChapter.ChapterId == chapterId &&
+                        (includeHidden || !memberChapter.HideProfile)));
     }
-
-    internal static IQueryable<Member> InChapter(this IQueryable<Member> query, Guid chapterId)
-        => query.Where(x => x.Chapters.Any(c => c.ChapterId == chapterId));
-
-    internal static IQueryable<Member> Visible(this IQueryable<Member> query, Guid chapterId) 
-        => query
-            .Where(member => member.Chapters.Any(x => x.ChapterId == chapterId && !x.HideProfile));
 }

@@ -91,11 +91,6 @@ public static class MemberImageServiceTests
     //    return avatar.CropY;
     //}
 
-    private static MemberImage CreateMemberImage()
-    {
-        return new MemberImage();
-    }
-
     private static IImageService CreateMockImageService(
         ImageSize? imageSize = null)
     {

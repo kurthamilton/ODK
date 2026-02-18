@@ -12,7 +12,7 @@ public class QueryBuilder<T> : IQueryBuilder<T>
     internal QueryBuilder(OdkContext context)
     {
         _context = context;
-        Query = Set();
+        Query = Set(context);
     }
 
     private QueryBuilder(OdkContext context, IQueryable<T> query)
@@ -35,7 +35,7 @@ public class QueryBuilder<T> : IQueryBuilder<T>
         where TDto : class
         => new QueryBuilder<TDto>(_context, query);
 
-    protected virtual IQueryable<T> Set() => Query;
+    protected virtual IQueryable<T> Set(OdkContext context) => context.Set<T>();
 
     protected IQueryable<TEntity> Set<TEntity>()
         where TEntity : class

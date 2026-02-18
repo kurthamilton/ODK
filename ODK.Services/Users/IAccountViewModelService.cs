@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Chapters;
+using ODK.Core.Members;
 using ODK.Services.Users.ViewModels;
 
 namespace ODK.Services.Users;
@@ -24,5 +25,5 @@ public interface IAccountViewModelService
 
     Task<SiteLoginPageViewModel> GetSiteLoginPage();
 
-    Task<SitePicturePageViewModel> GetSitePicturePage(Guid currentMemberId);
+    Task<SitePicturePageViewModel> GetSitePicturePage(Member currentMember);
 }

@@ -170,21 +170,6 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         };
     }
 
-    public async Task<MemberAvatar?> GetMemberAvatar(
-        IMemberChapterAdminServiceRequest request, Guid memberId)
-    {
-        var chapter = request.Chapter;
-
-        var (member, memberAvatar) = await GetChapterAdminRestrictedContent(
-            request,
-            x => x.MemberRepository.GetById(memberId),
-            x => x.MemberAvatarRepository.GetByMemberId(memberId));
-
-        OdkAssertions.MemberOf(member, chapter.Id);
-
-        return memberAvatar;
-    }
-
     public async Task<MemberConversationsAdminPageViewModel> GetMemberConversationsViewModel(
         IMemberChapterAdminServiceRequest request,
         Guid memberId)
@@ -329,20 +314,17 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
 
-        var (member, image, avatar) = await GetChapterAdminRestrictedContent(
+        var memberDto = await GetChapterAdminRestrictedContent(
             request,
-            x => x.MemberRepository.GetById(memberId),
-            x => x.MemberImageRepository.GetVersionDtoByMemberId(memberId),
-            x => x.MemberAvatarRepository.GetVersionDtoByMemberId(memberId));
+            x => x.MemberRepository.GetWithAvatarById(memberId));
 
-        OdkAssertions.MemberOf(member, chapter.Id);
+        OdkAssertions.MemberOf(memberDto.Member, chapter.Id);
 
         return new MemberImageAdminPageViewModel
         {
-            Avatar = avatar,
+            AvatarVersion = memberDto.AvatarVersion,
             Chapter = chapter,
-            Image = image,
-            Member = member,
+            Member = memberDto.Member,
             Platform = platform
         };
     }
@@ -724,32 +706,19 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     {
         var chapter = request.Chapter;
 
-        var (member, image, avatar) = await GetChapterAdminRestrictedContent(
+        var (member, avatar) = await GetChapterAdminRestrictedContent(
             request,
             x => x.MemberRepository.GetById(id),
-            x => x.MemberImageRepository.GetByMemberId(id),
             x => x.MemberAvatarRepository.GetByMemberId(id));
 
         OdkAssertions.MemberOf(member, chapter.Id);
 
-        image ??= new MemberImage();
-
         avatar ??= new MemberAvatar();
 
-        var result = _memberImageService.UpdateMemberImage(image, avatar, model.ImageData);
+        var result = _memberImageService.UpdateMemberImage(avatar, model.ImageData);
         if (!result.Success)
         {
             return result;
-        }
-
-        if (image.MemberId == Guid.Empty)
-        {
-            image.MemberId = member.Id;
-            _unitOfWork.MemberImageRepository.Add(image);
-        }
-        else
-        {
-            _unitOfWork.MemberImageRepository.Update(image);
         }
 
         if (avatar.MemberId == Guid.Empty)

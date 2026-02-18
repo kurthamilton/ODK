@@ -2,24 +2,20 @@
 using ODK.Core.Countries;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
-using ODK.Data.EntityFramework.Caching;
 using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework.Repositories;
 
-public class CountryRepository : CachingReadWriteRepositoryBase<Country>, ICountryRepository
+public class CountryRepository : ReadWriteRepositoryBase<Country>, ICountryRepository
 {
-    private static readonly EntityCache<Guid, Country> _cache = new DatabaseEntityCache<Country>();
-
     public CountryRepository(OdkContext context)
-        : base(context, _cache)
+        : base(context)
     {
     }
 
-    public IDeferredQueryMultiple<Country> GetAll() => Set()
-        .DeferredMultiple(
-            _cache.GetAll,
-            _cache.SetAll);
+    public IDeferredQueryMultiple<Country> GetAll() 
+        => Set()
+            .DeferredMultiple();
 
     public IDeferredQuerySingle<Country> GetByChapterId(Guid chapterId)
     {

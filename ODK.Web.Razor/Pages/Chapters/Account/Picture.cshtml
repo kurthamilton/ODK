@@ -32,8 +32,8 @@
                 <section class="section">
                     @await Html.PartialAsync("Account/_UpdatePictureContent", new UpdatePictureViewModel
                     {
+                        AvatarVersion = viewModel.AvatarVersion,
                         Chapter = viewModel.Chapter,
-                        ImageVersion = viewModel.ImageVersion,
                         Member = viewModel.CurrentMember                    
                     })
                 </section>

@@ -612,14 +612,12 @@ public static class MemberAdminServiceTests
         var chapterAdminMemberRepository = CreateMockChapterAdminMemberRepository([adminMember]);
 
         var memberRepository = CreateMockMemberRepository([member]);
-        var imageRepository = CreateMockMemberImageRepository();
         var avatarRepository = CreateMockMemberAvatarRepository();
         var memberImageService = CreateMockMemberImageService(isValid: true);
 
         var unitOfWork = CreateMockUnitOfWork(
             chapterAdminMemberRepository: chapterAdminMemberRepository,
             memberRepository: memberRepository,
-            memberImageRepository: imageRepository,
             memberAvatarRepository: avatarRepository);
 
         var service = CreateMemberAdminService(
@@ -654,14 +652,12 @@ public static class MemberAdminServiceTests
         var chapterAdminMemberRepository = CreateMockChapterAdminMemberRepository([adminMember]);
 
         var memberRepository = CreateMockMemberRepository([member]);
-        var imageRepository = CreateMockMemberImageRepository();
         var avatarRepository = CreateMockMemberAvatarRepository();
         var memberImageService = CreateMockMemberImageService(isValid: false);
 
         var unitOfWork = CreateMockUnitOfWork(
             chapterAdminMemberRepository: chapterAdminMemberRepository,
             memberRepository: memberRepository,
-            memberImageRepository: imageRepository,
             memberAvatarRepository: avatarRepository);
 
         var service = CreateMemberAdminService(
@@ -770,7 +766,6 @@ public static class MemberAdminServiceTests
         IMemberRepository? memberRepository = null,
         IMemberChapterRepository? memberChapterRepository = null,
         IMemberSubscriptionRepository? memberSubscriptionRepository = null,
-        IMemberImageRepository? memberImageRepository = null,
         IMemberAvatarRepository? memberAvatarRepository = null,
         IChapterAdminMemberRepository? chapterAdminMemberRepository = null,
         IChapterMembershipSettingsRepository? membershipSettingsRepository = null,
@@ -797,8 +792,6 @@ public static class MemberAdminServiceTests
             .Returns(memberChapterRepository ?? CreateMockMemberChapterRepository());
         mock.Setup(x => x.MemberSubscriptionRepository)
             .Returns(memberSubscriptionRepository ?? CreateMockMemberSubscriptionRepository());
-        mock.Setup(x => x.MemberImageRepository)
-            .Returns(memberImageRepository ?? CreateMockMemberImageRepository());
         mock.Setup(x => x.MemberAvatarRepository)
             .Returns(memberAvatarRepository ?? CreateMockMemberAvatarRepository());
         mock.Setup(x => x.ChapterAdminMemberRepository)
@@ -894,19 +887,6 @@ public static class MemberAdminServiceTests
 
         mock.Setup(x => x.Add(It.IsAny<MemberSubscription>()));
         mock.Setup(x => x.Update(It.IsAny<MemberSubscription>()));
-
-        return mock.Object;
-    }
-
-    private static IMemberImageRepository CreateMockMemberImageRepository()
-    {
-        var mock = new Mock<IMemberImageRepository>();
-
-        mock.Setup(x => x.GetByMemberId(It.IsAny<Guid>()))
-            .Returns(new MockDeferredQuerySingleOrDefault<MemberImage>(null));
-
-        mock.Setup(x => x.Add(It.IsAny<MemberImage>()));
-        mock.Setup(x => x.Update(It.IsAny<MemberImage>()));
 
         return mock.Object;
     }
@@ -1076,7 +1056,7 @@ public static class MemberAdminServiceTests
     private static IMemberImageService CreateMockMemberImageService(bool isValid)
     {
         var mock = new Mock<IMemberImageService>();
-        mock.Setup(x => x.UpdateMemberImage(It.IsAny<MemberImage>(), It.IsAny<MemberAvatar>(), It.IsAny<byte[]>()))
+        mock.Setup(x => x.UpdateMemberImage(It.IsAny<MemberAvatar>(), It.IsAny<byte[]>()))
             .Returns(isValid ? ServiceResult.Successful() : ServiceResult.Failure("Invalid image"));
         return mock.Object;
     }

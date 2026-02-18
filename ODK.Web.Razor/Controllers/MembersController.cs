@@ -29,13 +29,4 @@ public class MembersController : OdkControllerBase
         var avatar = await _memberService.GetMemberAvatar(id);
         return CacheableFile(avatar.ImageData, avatar.MimeType, version);
     }
-
-    [SkipRequestStoreMiddleware]
-    [Authorize]
-    [HttpGet("members/{id:guid}/image")]
-    public async Task<IActionResult> Image(Guid id, [FromQuery(Name = "v")] int? version = null)
-    {
-        var image = await _memberService.GetMemberImage(id);
-        return CacheableFile(image.ImageData, image.MimeType, version);
-    }
 }
