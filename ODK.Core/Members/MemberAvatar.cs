@@ -4,6 +4,8 @@ namespace ODK.Core.Members;
 
 public class MemberAvatar : IVersioned
 {
+    public const string DefaultMimeType = "image/webp";
+
     public int CropX { get; set; }
 
     public int CropY { get; set; }

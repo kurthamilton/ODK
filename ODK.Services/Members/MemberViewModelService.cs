@@ -77,26 +77,25 @@ public class MemberViewModelService : IMemberViewModelService
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
         var (
-            member,
-            avatar,
+            memberDto,
             chapterProperties,
             memberProperties,
             hasQuestions,
             isAdmin,
             chapterPages) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(memberId),
-            x => x.MemberAvatarRepository.GetVersionDtoByMemberId(memberId),
+            x => x.MemberRepository.GetWithAvatarById(memberId),
             x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
             x => x.MemberPropertyRepository.GetByMemberId(memberId, chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
             x => x.ChapterAdminMemberRepository.IsAdmin(platform, chapter.Id, currentMember.Id),
             x => x.ChapterPageRepository.GetByChapterId(chapter.Id));
 
+        var member = memberDto.Member;
         OdkAssertions.MemberOf(member, chapter.Id);
 
         return new MemberPageViewModel
         {
-            AvatarVersion = avatar?.Version,
+            AvatarVersion = memberDto.AvatarVersion,
             Chapter = chapter,
             ChapterPages = chapterPages,
             ChapterProperties = chapterProperties,

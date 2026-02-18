@@ -1,118 +1,72 @@
-﻿using Microsoft.EntityFrameworkCore;
-using ODK.Core.Chapters;
-using ODK.Core.Members;
+﻿using ODK.Core.Members;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Members;
+using ODK.Data.Core.QueryBuilders;
 using ODK.Data.Core.Repositories;
-using ODK.Data.EntityFramework.Extensions;
-using ODK.Data.EntityFramework.Queries;
+using ODK.Data.EntityFramework.QueryBuilders;
 
 namespace ODK.Data.EntityFramework.Repositories;
 
-public class MemberRepository : ReadWriteRepositoryBase<Member>, IMemberRepository
+public class MemberRepository : ReadWriteRepositoryBase<Member, IMemberQueryBuilder>, IMemberRepository
 {
+    private readonly OdkContext _context;
+
     public MemberRepository(OdkContext context)
         : base(context)
     {
+        _context = context;
     }
 
-    public IDeferredQueryMultiple<Member> GetAllByChapterId(Guid chapterId) 
-        => Set()
+    public IDeferredQueryMultiple<Member> GetAllByChapterId(Guid chapterId)
+        => Query()
             .InChapter(chapterId)
-            .DeferredMultiple();
+            .GetAll();
 
     public IDeferredQueryMultiple<MemberWithAvatarDto> GetAllWithAvatarByChapterId(Guid chapterId)
-    {
-        var query =
-            from member in Set()
-                .InChapter(chapterId)
-            from avatar in Set<MemberAvatar>()
-                .Where(x => x.MemberId == member.Id)
-                .DefaultIfEmpty()
-            select new MemberWithAvatarDto
-            {
-                AvatarVersion = avatar != null ? avatar.VersionInt : null,
-                Member = member
-            };
-
-        return query.DeferredMultiple();
-    }
-
-    public IDeferredQueryMultiple<Member> GetByChapterId(Guid chapterId) 
-        => Set()
-            .Current(chapterId)
-            .Visible(chapterId)
+        => Query()
             .InChapter(chapterId)
-            .DeferredMultiple();
+            .WithAvatar()
+            .GetAll();
+
+    public IDeferredQueryMultiple<Member> GetByChapterId(Guid chapterId)
+        => Query()
+            .InChapter(chapterId)
+            .GetAll();
 
     public IDeferredQueryMultiple<MemberWithAvatarDto> GetByChapterId(Guid chapterId, IEnumerable<Guid> memberIds)
-    {
-        var query =
-            from member in Set()
-                .Current(chapterId)
-                .InChapter(chapterId)
-                .Where(x => memberIds.Contains(x.Id))
-            from avatar in Set<MemberAvatar>()
-                .Where(x => x.MemberId == member.Id)
-                .DefaultIfEmpty()
-            select new MemberWithAvatarDto
-            {
-                AvatarVersion = avatar.VersionInt,
-                Member = member
-            };
+        => Query()
+            .InChapter(chapterId)
+            .ByIds(memberIds)
+            .WithAvatar()
+            .GetAll();
 
-        return query.DeferredMultiple();
-    }
-
-    public IDeferredQuerySingleOrDefault<Member> GetByEmailAddress(string emailAddress) 
-        => Set()
-            .Where(x => x.EmailAddress == emailAddress)
-            .DeferredSingleOrDefault();
+    public IDeferredQuerySingleOrDefault<Member> GetByEmailAddress(string emailAddress)
+        => Query()
+            .HasEmailAddress(emailAddress)
+            .GetSingleOrDefault();
 
     public IDeferredQuerySingle<Member> GetChapterOwner(Guid chapterId)
-    {
-        var query =
-            from member in Set()
-            from chapter in Set<Chapter>()
-                .Where(x => member.Id == x.OwnerId)
-            where chapter.Id == chapterId
-            select member;
+        => Query()
+            .IsChapterOwner(chapterId)
+            .GetSingle();
 
-        return query.DeferredSingle();
-    }
-
-    public IDeferredQuery<int> GetCountByChapterId(Guid chapterId) 
-        => Set()
-            .Current(chapterId)
-            .Visible(chapterId)
+    public IDeferredQuery<int> GetCountByChapterId(Guid chapterId)
+        => Query()
             .InChapter(chapterId)
-            .DeferredCount();
+            .Count();
 
     public IDeferredQueryMultiple<MemberWithAvatarDto> GetLatestWithAvatarByChapterId(Guid chapterId, int pageSize)
-    {
-        var query =
-            from member in Set()
-                .Current(chapterId)
-                .Visible(chapterId)
-            from memberChapter in Set<MemberChapter>()
-            from avatar in Set<MemberAvatar>()
-                .Where(x => x.MemberId == member.Id)
-                .DefaultIfEmpty()
-            where memberChapter.MemberId == member.Id
-                && memberChapter.ChapterId == chapterId
-            orderby memberChapter.CreatedUtc descending
-            select new MemberWithAvatarDto
-            {
-                AvatarVersion = avatar != null ? avatar.VersionInt : null,
-                Member = member
-            };
+        => Query()
+            .InChapter(chapterId)
+            .Latest(8)
+            .WithAvatar()
+            .GetAll();
 
-        return query
-            .Take(pageSize)
-            .DeferredMultiple();
-    }
+    public IDeferredQuerySingle<MemberWithAvatarDto> GetWithAvatarById(Guid memberId)
+        => Query()
+            .ById(memberId)
+            .WithAvatar()
+            .GetSingle();
 
-    protected override IQueryable<Member> Set() 
-        => base.Set()
-            .Include(x => x.Chapters);
+    public override IMemberQueryBuilder Query() => new MemberQueryBuilder(_context);    
 }

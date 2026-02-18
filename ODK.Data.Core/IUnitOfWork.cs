@@ -53,7 +53,6 @@ public interface IUnitOfWork
     IMemberChapterRepository MemberChapterRepository { get; }
     IMemberEmailAddressUpdateTokenRepository MemberEmailAddressUpdateTokenRepository { get; }
     IMemberEmailPreferenceRepository MemberEmailPreferenceRepository { get; }
-    IMemberImageRepository MemberImageRepository { get; }
     IMemberLocationRepository MemberLocationRepository { get; }
     IMemberNotificationSettingsRepository MemberNotificationSettingsRepository { get; }
     IMemberPasswordRepository MemberPasswordRepository { get; }
@@ -87,6 +86,9 @@ public interface IUnitOfWork
     ITopicRepository TopicRepository { get; }
     IVenueLocationRepository VenueLocationRepository { get; }
     IVenueRepository VenueRepository { get; }
+
+    Task<T1> RunAsync<T1>(
+        Func<IUnitOfWork, IDeferredQuery<T1>> query1);
 
     Task<(T1, T2)> RunAsync<T1, T2>(
         Func<IUnitOfWork, IDeferredQuery<T1>> query1,

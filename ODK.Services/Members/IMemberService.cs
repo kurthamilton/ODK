@@ -24,8 +24,6 @@ public interface IMemberService
 
     Task<MemberAvatar> GetMemberAvatar(Guid memberId);
 
-    Task<MemberImage> GetMemberImage(Guid memberId);
-
     Task<MemberLocationViewModel> GetMemberLocationViewModel(IMemberServiceRequest request);
 
     Task<MemberSubscriptionAlertViewModel> GetMemberSubscriptionAlertViewModel(Guid memberId, Guid chapterId);

@@ -64,7 +64,6 @@ internal class MockUnitOfWork : IUnitOfWork
     public IMemberChapterRepository MemberChapterRepository => Mock.Object.MemberChapterRepository;
     public IMemberEmailAddressUpdateTokenRepository MemberEmailAddressUpdateTokenRepository => Mock.Object.MemberEmailAddressUpdateTokenRepository;
     public IMemberEmailPreferenceRepository MemberEmailPreferenceRepository => Mock.Object.MemberEmailPreferenceRepository;
-    public IMemberImageRepository MemberImageRepository => Mock.Object.MemberImageRepository;
     public IMemberLocationRepository MemberLocationRepository => Mock.Object.MemberLocationRepository;
     public IMemberNotificationSettingsRepository MemberNotificationSettingsRepository => Mock.Object.MemberNotificationSettingsRepository;
     public IMemberPasswordRepository MemberPasswordRepository => Mock.Object.MemberPasswordRepository;
@@ -98,6 +97,13 @@ internal class MockUnitOfWork : IUnitOfWork
     public ITopicRepository TopicRepository => Mock.Object.TopicRepository;
     public IVenueLocationRepository VenueLocationRepository => Mock.Object.VenueLocationRepository;
     public IVenueRepository VenueRepository => Mock.Object.VenueRepository;
+
+    public async Task<T1> RunAsync<T1>(
+        Func<IUnitOfWork, IDeferredQuery<T1>> query1)
+    {
+        var q1 = query1(this);
+        return await q1.Run();
+    }
 
     public async Task<(T1, T2)> RunAsync<T1, T2>(
         Func<IUnitOfWork, IDeferredQuery<T1>> query1,

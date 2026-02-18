@@ -9,6 +9,4 @@ public interface IMemberAvatarRepository : IWriteRepository<MemberAvatar>
     IDeferredQuerySingleOrDefault<MemberAvatar> GetByMemberId(Guid memberId);
 
     IDeferredQuerySingleOrDefault<MemberAvatarVersionDto> GetVersionDtoByMemberId(Guid memberId);
-
-    IDeferredQueryMultiple<MemberAvatarVersionDto> GetVersionDtosByChapterId(Guid chapterId);
 }

@@ -254,10 +254,9 @@ public class MemberService : IMemberService
             return validationResult;
         }
 
-        var image = new MemberImage();
         var avatar = new MemberAvatar();
 
-        var imageValidationResult = _memberImageService.UpdateMemberImage(image, avatar, model.ImageData);
+        var imageValidationResult = _memberImageService.UpdateMemberImage(avatar, model.ImageData);
         if (!imageValidationResult.Success)
         {
             return imageValidationResult;
@@ -318,9 +317,6 @@ public class MemberService : IMemberService
             MemberId = member.Id,
             SiteSubscriptionId = siteSubscription.Id
         });
-
-        image.MemberId = member.Id;
-        _unitOfWork.MemberImageRepository.Add(image);
 
         avatar.MemberId = member.Id;
         _unitOfWork.MemberAvatarRepository.Add(avatar);
@@ -432,13 +428,6 @@ public class MemberService : IMemberService
         var avatar = await _unitOfWork.MemberAvatarRepository.GetByMemberId(memberId).Run();
         OdkAssertions.Exists(avatar);
         return avatar;
-    }
-
-    public async Task<MemberImage> GetMemberImage(Guid memberId)
-    {
-        var image = await _unitOfWork.MemberImageRepository.GetByMemberId(memberId).Run();
-        OdkAssertions.Exists(image);
-        return image;
     }
 
     public async Task<MemberLocationViewModel> GetMemberLocationViewModel(IMemberServiceRequest request)
@@ -592,31 +581,20 @@ public class MemberService : IMemberService
 
     public async Task RotateMemberImage(Guid memberId)
     {
-        var (member, image, avatar) = await _unitOfWork.RunAsync(
+        var (member, avatar) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(memberId),
-            x => x.MemberImageRepository.GetByMemberId(memberId),
             x => x.MemberAvatarRepository.GetByMemberId(memberId));
 
-        if (image == null)
+        if (avatar == null)
         {
             return;
         }
 
         avatar ??= new MemberAvatar();
 
-        _memberImageService.RotateMemberImage(image, avatar);
+        _memberImageService.RotateMemberImage(avatar);
 
-        _unitOfWork.MemberImageRepository.Update(image);
-
-        if (avatar.MemberId == Guid.Empty)
-        {
-            avatar.MemberId = memberId;
-            _unitOfWork.MemberAvatarRepository.Add(avatar);
-        }
-        else
-        {
-            _unitOfWork.MemberAvatarRepository.Update(avatar);
-        }
+        _unitOfWork.MemberAvatarRepository.Update(avatar);
 
         await _unitOfWork.SaveChangesAsync();
     }
@@ -834,29 +812,16 @@ public class MemberService : IMemberService
 
     public async Task<ServiceResult> UpdateMemberImage(Guid id, byte[] imageData)
     {
-        var (member, image, avatar) = await _unitOfWork.RunAsync(
+        var (member, avatar) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(id),
-            x => x.MemberImageRepository.GetByMemberId(id),
             x => x.MemberAvatarRepository.GetByMemberId(id));
-
-        image ??= new MemberImage();
 
         avatar ??= new MemberAvatar();
 
-        var result = _memberImageService.UpdateMemberImage(image, avatar, imageData);
+        var result = _memberImageService.UpdateMemberImage(avatar, imageData);
         if (!result.Success)
         {
             return result;
-        }
-
-        if (image.MemberId == Guid.Empty)
-        {
-            image.MemberId = member.Id;
-            _unitOfWork.MemberImageRepository.Add(image);
-        }
-        else
-        {
-            _unitOfWork.MemberImageRepository.Update(image);
         }
 
         if (avatar.MemberId == Guid.Empty)
