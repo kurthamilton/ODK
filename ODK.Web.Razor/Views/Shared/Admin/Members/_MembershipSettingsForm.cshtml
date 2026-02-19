@@ -40,7 +40,7 @@
     @Html.LabelFor(x => x.MembershipDisabledAfter, new { @class = "form-label" })
     @await Html.PartialAsync("Components/_Tooltip", 
         "Members will be able to login, but not respond to events. They will still receive event emails.")
-    <span class="text-muted">How many days after subscription expiry a member has access to events</span>
+    @await Html.PartialAsync("Components/_FormLabelSubtitle", "How many days after subscription expiry a member has access to events")
     @Html.TextBoxFor(x => x.MembershipDisabledAfter, new { @class = "form-control", type = "number" })
     @Html.ValidationMessageFor(x => x.MembershipDisabledAfter)
 </div>

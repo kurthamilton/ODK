@@ -13,6 +13,7 @@ public enum IconType
     CalendarPlus,
     Check,
     CheckCircle,
+    CheckCircleOutline,
     ChevronRight,
     CircleNotch,
     Clock,

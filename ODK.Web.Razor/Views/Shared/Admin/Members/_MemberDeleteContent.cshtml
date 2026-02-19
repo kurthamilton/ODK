@@ -16,7 +16,7 @@
     {
         <div class="form-group mb-3">
             <label for="reason" class="form-label">Reason</label>
-            <span class="text-muted ms-1">Let the member know why you are removing them from your group</span>
+            @await Html.PartialAsync("Components/_FormLabelSubtitle", "Let the member know why you are removing them from your group")
             <textarea class="form-control" name="reason" id="reason" rows="5"></textarea>
         </div>
 

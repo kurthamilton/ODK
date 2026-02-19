@@ -107,8 +107,8 @@
                         Cancel subscription
                     </button>
                 </p>       
-                <p class="text-muted">
-                    Your subscription will remain active until the expiry date, but payment will not be taken when due for renewal.
+                <p>
+                    @await Html.PartialAsync("Components/_FormLabelSubtitle", "Your subscription will remain active until the expiry date, but payment will not be taken when due for renewal.")
                 </p>
             </form>
         </div>

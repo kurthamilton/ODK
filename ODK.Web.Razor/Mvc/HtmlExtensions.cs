@@ -47,6 +47,45 @@ public static class HtmlExtensions
         where TEnum : struct, Enum
         => htmlHelper.EnumListBoxFor(expression, htmlAttributes, excludeOptions: null);
 
+    public static IHtmlContent EnumRadioButtonListFor<TModel, TEnum>(
+        this IHtmlHelper<TModel> htmlHelper,
+        Expression<Func<TModel, TEnum?>> expression,
+        IEnumerable<TEnum>? excludeOptions = null)
+        where TEnum : struct, Enum
+    {
+        var options = Enum
+            .GetValues<TEnum>()
+            .Where(x => (int)(object)x != 0 && excludeOptions?.Contains(x) != true);
+
+        var htmlBuilder = new HtmlContentBuilder();
+
+        var container = new TagBuilder("div");
+
+        foreach (var option in options)
+        {
+            var inputId = $"{htmlHelper.NameFor(expression)}_{option}";
+
+            var div = new TagBuilder("div");
+            div.AddCssClass("form-check form-check-inline");
+
+            var radio = htmlHelper.RadioButtonFor(expression, option, new
+            {
+                @class = "form-check-input"
+            });
+
+            var label = new TagBuilder("label");
+            label.InnerHtml.AppendHtml(radio);
+            label.InnerHtml.Append(EnumUtils.GetDisplayValue(option));
+            div.InnerHtml.AppendHtml(label);
+
+            container.InnerHtml.AppendHtml(div);
+        }
+
+        htmlBuilder.AppendHtml(container);
+
+        return htmlBuilder;
+    }
+
     public static IHtmlContent OdkTimeZoneDropDownFor<TModel>(this IHtmlHelper<TModel> htmlHelper,
         Expression<Func<TModel, string?>> expression, string optionLabel, object htmlAttributes)
         => htmlHelper.TimeZoneDropDownFor(expression, optionLabel, htmlAttributes);

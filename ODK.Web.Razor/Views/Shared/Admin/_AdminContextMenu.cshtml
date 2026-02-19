@@ -6,8 +6,9 @@
 
 @await Html.PartialAsync("Components/_Dropdown", new DropdownViewModel
 {
-    AlignRight = Model.AlignRight,
+    AlignRight = Model.AlignRight,    
     ButtonIcon = IconType.Settings,
+    ButtonIconClass = "small",
     ButtonSize = "sm",
     HideCaret = true,
     MenuItems = new[]

@@ -16,11 +16,12 @@
     @Html.LabelFor(x => x.LocationName, new { @class = "form-label" })    
     
     @await Html.PartialAsync("Components/_LocationPicker", Model)    
-    <div class="text-muted">
-        We use your location to help you find local groups.
+    
+    <div>
+        @await Html.PartialAsync("Components/_FormLabelSubtitle", "We use your location to help you find local groups.")
     </div>
-    <div class="text-muted">
-        It is not seen by other members. It does not need to be an exact address.
+    <div>
+        @await Html.PartialAsync("Components/_FormLabelSubtitle", "It is not seen by other members. It does not need to be an exact address.")
     </div>
     @Html.ValidationMessageFor(x => x.LocationName)
 </div>

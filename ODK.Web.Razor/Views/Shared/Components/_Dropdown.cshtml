@@ -7,6 +7,11 @@
         buttonClasses.Add($"btn-{Model.ButtonSize.ToLowerInvariant()}");
     }
 
+    if (!string.IsNullOrEmpty(Model.ButtonIconClass))
+    {
+        buttonClasses.Add(Model.ButtonIconClass);
+    }
+
     if (Model.HideCaret)
     {
         buttonClasses.Add("no-caret");
@@ -24,7 +29,10 @@
         type="button" data-bs-toggle="dropdown" aria-expanded="false">
         @if (Model.ButtonIcon != null)
         {
-            @await Html.PartialAsync("Components/_Icon", new IconViewModel(Model.ButtonIcon.Value))
+            @await Html.PartialAsync("Components/_Icon", new IconViewModel(Model.ButtonIcon.Value)
+            {
+                Class = Model.ButtonIconClass
+            })
         }
 
         @if (Model.ButtonContent != null)

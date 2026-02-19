@@ -1,5 +1,9 @@
 @import "odk/_forms";
 
+form {
+    --odk-forms-labels-font-weight: 700;
+}
+
 .form-inline {
     display: flex;
 

@@ -1,41 +1,54 @@
 ﻿@using ODK.Core.Chapters
+@using ODK.Core.Utils
 @using ODK.Web.Razor.Models.Admin.Chapters
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Mvc
 @model ChapterPrivacySettingsFormViewModel
+@{
+    var visibilityOptions = Enum.GetValues<ChapterFeatureVisibilityType>()
+        .Where(x => x != ChapterFeatureVisibilityType.None)
+        .ToArray();
+}
 
-<div class="form-group mb-3">
+<div class="form-group mb-5">
+    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Envelope))
     @Html.LabelFor(x => x.Conversations, new { @class = "form-label" })
-    @await Html.PartialAsync("Components/_FormLabelSubtitle", "Public allows logged in members from other groups to start conversations")
-    @Html.OdkEnumDropDownFor(x => x.Conversations, new { @class = "form-select", data_select = "" })
+    @await Html.PartialAsync("Components/_FormLabelSubtitle", 
+        "Public allows logged in members from other groups to start conversations.")
+    @await Html.PartialAsync("Components/_FormLabelSubtitle",
+        "Users not able to start a conversation can still send a contact message.")
+    @Html.EnumRadioButtonListFor(x => x.Conversations)
     @Html.ValidationMessageFor(x => x.Conversations)
 </div>
 
 <fieldset>
-    <legend>Events</legend>
-    <div class="form-group mb-3">
+    <div class="form-group mb-5">
+        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Calendar))
         @Html.LabelFor(x => x.EventVisibility, new { @class = "form-label" })
         @await Html.PartialAsync("Components/_FormLabelSubtitle", "Public allows all users to view event listings")
-        @Html.OdkEnumDropDownFor(x => x.EventVisibility, new { @class = "form-select", data_select = "" })
+        @Html.EnumRadioButtonListFor(x => x.EventVisibility)        
         @Html.ValidationMessageFor(x => x.EventVisibility)
     </div>
 
-    <div class="form-group mb-3">
+    <div class="form-group mb-5">
+        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.CheckCircleOutline))
         @Html.LabelFor(x => x.EventResponseVisibility, new { @class = "form-label" })
-        @Html.OdkEnumDropDownFor(x => x.EventResponseVisibility, new { @class = "form-select", data_select = "" },
-                 excludeOptions: new[] { ChapterFeatureVisibilityType.Public })
+        @Html.EnumRadioButtonListFor(x => x.EventResponseVisibility, 
+            excludeOptions: new [] { ChapterFeatureVisibilityType.Public })
         @Html.ValidationMessageFor(x => x.EventResponseVisibility)
     </div>
 
-    <div class="form-group mb-3">
+    <div class="form-group mb-5">
+        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.LocationPin))
         @Html.LabelFor(x => x.VenueVisibility, new { @class = "form-label" })
         @await Html.PartialAsync("Components/_FormLabelSubtitle", "Public allows all users to see venue details for events")
-        @Html.OdkEnumDropDownFor(x => x.VenueVisibility, new { @class = "form-select", data_select = "" })
+        @Html.EnumRadioButtonListFor(x => x.VenueVisibility)
         @Html.ValidationMessageFor(x => x.VenueVisibility)
     </div>
 </fieldset>
 
-<div class="form-group mb-3 d-none">
+<div class="form-group mb-5 d-none">
     @Html.LabelFor(x => x.MemberVisibility, new { @class = "form-label" })
-    @Html.OdkEnumDropDownFor(x => x.MemberVisibility, new { @class = "form-select", data_select = "" })
+    @Html.EnumRadioButtonListFor(x => x.MemberVisibility)
     @Html.ValidationMessageFor(x => x.MemberVisibility)
 </div>

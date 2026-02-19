@@ -12647,7 +12647,7 @@ footer {
   background-color: var(--odk-bg-level-1);
 }
 
-html[data-platform=odk] {
+form {
   --odk-forms-labels-font-weight: 700;
 }
 
