@@ -1,11 +1,15 @@
 ﻿@using Microsoft.AspNetCore.Html
 @using ODK.Core.Notifications
+@using ODK.Core.Utils
 @using ODK.Web.Common.Routes
+@using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Notifications
 @model NotificationListItemViewModel
 @inject IOdkRoutes OdkRoutes
+@inject IRequestStore RequestStore
 @{
+    var currentMember = RequestStore.CurrentMember;
     var notification = Model.Notification;
 
     var title = notification.Type switch
@@ -62,14 +66,23 @@
 
 <div>
     <div class="notification-row notification-header">
-        <div class="notification-col">
-            @if (iconType != null)
-            {
-                <span class="icon-wrapper">
-                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(iconType.Value))
-                </span>
-            }
-            <strong class="notification-title">@title</strong>
+        <div class="notification-col d-sm-flex align-items-center">
+            <div class="me-auto">
+                @if (iconType != null)
+                {
+                    <span class="icon-wrapper me-1">
+                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(iconType.Value))
+                    </span>
+                }
+
+                <strong class="notification-title">
+                    @title
+                </strong>
+            </div>
+            <div class="small text-muted me-3">
+                <span>@await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Clock))</span>
+                <span>@DateUtils.ToRelativeTime(notification.CreatedUtc, currentMember.TimeZone)</span>
+            </div>
         </div>
         <div class="notification-col-icon">
             <button type="button" class="btn-close notification-icon" aria-label="Dismiss"
@@ -77,21 +90,23 @@
                     data-notification-dismiss="/account/notifications/@notification.Id/dismiss"></button>
         </div>        
     </div>
-    <div class="notification-body">
-        @if (!string.IsNullOrEmpty(path))
-        {
-            <a class="notification-row notification-link" href="@path">
-                <div class="notification-col">
-                    @notificationContent.Invoke(null)
-                </div>
-                <div class="notification-col-icon">
-                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.ChevronRight))
-                </div>
-            </a>
-        }
-        else
-        {
-            @notificationContent.Invoke(null)
-        }
+    <div class="notification-body">        
+        <div>
+            @if (!string.IsNullOrEmpty(path))
+            {
+                <a class="notification-row notification-link" href="@path">
+                    <div class="notification-col">
+                        @notificationContent.Invoke(null)
+                    </div>
+                    <div class="notification-col-icon">
+                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.ChevronRight))
+                    </div>
+                </a>
+            }
+            else
+            {
+                @notificationContent.Invoke(null)
+            }
+        </div>        
     </div>    
 </div>

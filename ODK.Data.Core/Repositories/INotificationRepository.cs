@@ -5,8 +5,6 @@ namespace ODK.Data.Core.Repositories;
 
 public interface INotificationRepository : IReadWriteRepository<Notification>
 {
-    IDeferredQueryMultiple<Notification> GetByMemberId(Guid memberId);
-
     IDeferredQueryMultiple<Notification> GetByMemberId(Guid memberId, Guid chapterId);
 
     IDeferredQuery<int> GetCountByMemberId(Guid memberId);

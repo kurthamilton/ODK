@@ -8,6 +8,10 @@ namespace ODK.Core.Tests.Utils;
 [Parallelizable]
 public static class DateUtilsTests
 {
+    private const int OneMinuteInSeconds = 60;
+    private const int OneHourInSeconds = OneMinuteInSeconds * 60;
+    private const int OneDayInSeconds = OneHourInSeconds * 24;
+
     [TestCase(DayOfWeek.Sunday, ExpectedResult = 1)]
     [TestCase(DayOfWeek.Monday, ExpectedResult = 2)]
     [TestCase(DayOfWeek.Tuesday, ExpectedResult = 3)]
@@ -46,6 +50,25 @@ public static class DateUtilsTests
 
         // Assert
         return (result - date).Days;
+    }
+
+    [TestCase(0, ExpectedResult = "just now")]
+    [TestCase(OneMinuteInSeconds - 1, ExpectedResult = "just now")]
+    [TestCase(OneMinuteInSeconds, ExpectedResult = "1 minute ago")]
+    [TestCase((2 * OneMinuteInSeconds) - 1, ExpectedResult = "1 minute ago")]
+    [TestCase(2 * OneMinuteInSeconds, ExpectedResult = "2 minutes ago")]
+    [TestCase(OneDayInSeconds - 1, ExpectedResult = "23 hours ago")]
+    public static string ToRelativeTime(int secondsAgo)
+    {
+        // Arrange
+        var utcNow = DateTime.UtcNow;
+        var dateUtc = utcNow.AddSeconds(-1 * secondsAgo);
+
+        // Act
+        var result = DateUtils.ToRelativeTime(dateUtc);
+
+        // Assert
+        return result;
     }
 
     [TestCase("Pacific Standard Time", "2024-01-01 12:00:00", ExpectedResult = "2024-01-01 20:00:00")]

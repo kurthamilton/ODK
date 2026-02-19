@@ -106,6 +106,97 @@ public static class DateUtils
         return localDate.ToString(format);
     }
 
+    /// <summary>
+    /// Returns a human-readable relative time string.
+    /// For recent times (under 24h), uses elapsed language ("5 minutes ago").
+    /// For older times, uses calendar language ("yesterday", "3 days ago")
+    /// resolved against the user's local timezone where day boundaries matter.
+    /// </summary>
+    /// <param name="dateUtc">The UTC timestamp to describe.</param>
+    /// <param name="timeZone">
+    /// The user's timezone, used to resolve calendar boundaries (yesterday, etc.).
+    /// Defaults to UTC if null.
+    /// </param>
+    public static string ToRelativeTime(DateTime dateUtc, TimeZoneInfo? timeZone = null)
+    {
+        timeZone ??= TimeZoneInfo.Utc;
+
+        var utcNow = DateTime.UtcNow;
+        var elapsed = utcNow - dateUtc;
+
+        // Future timestamps — clock skew, optimistic saves, etc.
+        if (elapsed.TotalSeconds < 0)
+        {
+            return "just now";
+        }
+
+        // Under a minute
+        if (elapsed.TotalSeconds < 60)
+        {
+            return "just now";
+        }
+
+        // Under an hour
+        if (elapsed.TotalHours < 1)
+        {
+            var minutes = (int)elapsed.TotalMinutes;
+            return $"{minutes} {StringUtils.Pluralise(minutes, "minute")} ago";
+        }
+
+        // Under 24 hours — still elapsed language, no timezone needed
+        if (elapsed.TotalHours < 24)
+        {
+            var hours = (int)elapsed.TotalHours;
+            return $"{hours} {StringUtils.Pluralise(hours, "hour")} ago";
+        }
+
+        // 24h+ — switch to calendar language, timezone matters here
+        var userNow = TimeZoneInfo.ConvertTimeFromUtc(utcNow, timeZone);
+        var userTimestamp = TimeZoneInfo.ConvertTimeFromUtc(dateUtc, timeZone);
+
+        var calendarDaysAgo = (int)(userNow.Date - userTimestamp.Date).TotalDays;
+
+        if (calendarDaysAgo == 1)
+        {
+            return "yesterday";
+        }
+
+        if (calendarDaysAgo < 7)
+        {
+            return $"{calendarDaysAgo} days ago";
+        }
+
+        if (calendarDaysAgo < 14)
+        {
+            return "last week";
+        }
+
+        if (calendarDaysAgo < 30)
+        {
+            var weeks = calendarDaysAgo / 7;
+            return $"{weeks} {StringUtils.Pluralise(weeks, "week")} ago";
+        }
+
+        if (calendarDaysAgo < 60)
+        {
+            return "last month";
+        }
+
+        if (calendarDaysAgo < 365)
+        {
+            var months = calendarDaysAgo / 30;
+            return $"{months} {StringUtils.Pluralise(months, "month")} ago";
+        }
+
+        if (calendarDaysAgo < 730)
+        {
+            return "last year";
+        }
+
+        var years = calendarDaysAgo / 365;
+        return $"{years} {StringUtils.Pluralise(years, "year")} ago";
+    }
+
     public static long ToUnixEpochTimestamp(DateTime dateTime)
     {
         var diff = dateTime.ToUniversalTime() - UnixEpoch;
