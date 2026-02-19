@@ -1,0 +1,54 @@
+﻿@using ODK.Web.Razor.Models.Components
+@model DropdownViewModel
+@{
+    var buttonClasses = new List<string>();
+    if (!string.IsNullOrEmpty(Model.ButtonSize))
+    {
+        buttonClasses.Add($"btn-{Model.ButtonSize.ToLowerInvariant()}");
+    }
+
+    if (Model.HideCaret)
+    {
+        buttonClasses.Add("no-caret");
+    }
+
+    var dropdownClasses = new List<string>();
+    if (Model.AlignRight)
+    {
+        dropdownClasses.Add("dropdown-menu-end");
+    }
+}
+
+<div class="dropdown">
+    <button class="btn btn-secondary dropdown-toggle @string.Join(' ', buttonClasses)" 
+        type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        @if (Model.ButtonIcon != null)
+        {
+            @await Html.PartialAsync("Components/_Icon", new IconViewModel(Model.ButtonIcon.Value))
+        }
+
+        @if (Model.ButtonContent != null)
+        {
+            @Model.ButtonContent.Invoke(null)
+        }
+        else
+        {
+            @Model.ButtonText
+        }        
+    </button>
+    <ul class="dropdown-menu @string.Join(' ', dropdownClasses)">
+        @foreach (var menuItem in Model.MenuItems)
+        {
+            <li>
+                <a class="dropdown-item" href="@menuItem.Link">
+                    @if (menuItem.Icon != null)
+                    {
+                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(menuItem.Icon.Value))
+                    }
+
+                    <span>@menuItem.Text</span>
+                </a>
+            </li>
+        }
+    </ul>
+</div>

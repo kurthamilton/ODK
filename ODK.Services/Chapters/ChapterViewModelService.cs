@@ -168,7 +168,7 @@ public class ChapterViewModelService : IChapterViewModelService
                 IsOwner = result.Chapter.OwnerId == currentMember?.Id,
                 Location = result.Location,
                 Platform = platform,
-                Texts = result.Texts,
+                ShortDescription = result.Texts?.ShortDescription,
                 Topics = result.Topics
             });
         }
@@ -648,8 +648,8 @@ public class ChapterViewModelService : IChapterViewModelService
                 .Where(x => x.ChapterAdminMember.Member.Visible(chapter.Id))
                 .Select(x => new MemberWithAvatarDto
                 {
-                     AvatarVersion = x.AvatarVersion,
-                     Member = x.ChapterAdminMember.Member
+                    AvatarVersion = x.AvatarVersion,
+                    Member = x.ChapterAdminMember.Member
                 })
                 .ToArray(),
             Platform = platform,
@@ -919,13 +919,13 @@ public class ChapterViewModelService : IChapterViewModelService
                 Chapter = chapter,
                 Distance = null,
                 Image = dto.Image,
-                IsAdmin = adminMember != null,
+                IsAdmin = currentMember.SiteAdmin || adminMember != null,
                 IsMember = true,
                 IsOwner = chapter.OwnerId == currentMember.Id,
                 // no need to show location for existing groups
                 Location = null,
                 Platform = platform,
-                Texts = dto.Texts,
+                ShortDescription = dto.Texts?.ShortDescription,
                 // no need to show topics for existing groups
                 Topics = []
             };

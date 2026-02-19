@@ -20,6 +20,11 @@ public class CreateChapterSubmitViewModel : IChapterImageFormViewModel
     [Remote("Available", "Groups", ErrorMessage = "That name is already taken")]
     public string? Name { get; set; }
 
+    [Required]
+    [MaxLength(255)]
+    [Display(Name = "Short description")]
+    public string? ShortDescription { get; set; }
+
     [Display(Name = "Topics")]
     public List<Guid>? TopicIds { get; set; }
 }

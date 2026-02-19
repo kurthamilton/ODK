@@ -117,4 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="DescriptionHelpText" xml:space="preserve">
+    <value>Overview of your group. Displayed on the home page.</value>
+  </data>
+  <data name="ShortDescriptionHelpText" xml:space="preserve">
+    <value>Brief summary of your group. Displayed in search results.</value>
+  </data>
 </root>

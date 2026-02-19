@@ -24,7 +24,7 @@ public class ChapterWithDistanceViewModel
 
     public required PlatformType Platform { get; init; }
 
-    public required ChapterTexts? Texts { get; init; }
+    public required string? ShortDescription { get; init; }
 
     public required IReadOnlyCollection<Topic> Topics { get; init; }
 }

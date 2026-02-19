@@ -20,13 +20,14 @@
     }
 
     <div class="container">
+        @await Html.PartialAsync("Components/_ToastAnchor", new ToastAnchorViewModel())
         <div class="row @(Model.WidthClass != null ? "justify-content-center" : null)">
             <div class="@(Model.WidthClass ?? "col-12")">                
                 <div class="page-alerts">
                     @if (!Model.HideSubscriptionAlert)
                     {
                         @await Html.PartialAsync("Members/_SubscriptionAlert")
-                    }
+                    }                    
                 </div>
 
                 <section class="section--main">

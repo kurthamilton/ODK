@@ -38,10 +38,12 @@
             <div class="pt-5">
                 @if (viewModel.Groups.Count > 0)
                 {
-                    <div class="d-flex flex-column gap-3">
+                    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4">
                         @foreach (var group in viewModel.Groups)
                         {
-                            @await Html.PartialAsync("Chapters/_ChapterWithLocationTile", group)
+                            <div class="col mb-3">
+                                @await Html.PartialAsync("Chapters/_ChapterWithLocationTile", group)
+                            </div>
                         }
                     </div>
                 }

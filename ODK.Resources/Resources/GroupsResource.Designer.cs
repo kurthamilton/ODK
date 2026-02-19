@@ -59,5 +59,23 @@ namespace ODK.Resources.Resources {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Overview of your group. Displayed on the home page..
+        /// </summary>
+        public static string DescriptionHelpText {
+            get {
+                return ResourceManager.GetString("DescriptionHelpText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Brief summary of your group. Displayed in search results..
+        /// </summary>
+        public static string ShortDescriptionHelpText {
+            get {
+                return ResourceManager.GetString("ShortDescriptionHelpText", resourceCulture);
+            }
+        }
     }
 }

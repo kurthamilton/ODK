@@ -12588,6 +12588,9 @@ html[data-platform=odk] {
   cursor: default;
   color: var(--bs-body-color);
 }
+.dropdown .dropdown-toggle.no-caret::after {
+  display: none;
+}
 .dropdown .card,
 .dropdown .dropdown-menu {
   background-color: var(--odk-bg-level-1);
@@ -13327,19 +13330,86 @@ th.sortable.sort-desc:after {
   width: 1px;
 }
 
-.toast-container {
-  bottom: 0;
-  right: 0;
+/*.toasts is used instead of Bootstrap's .toast-container to take full control of layout*/
+.toasts {
+  z-index: 1054;
 }
+
+/*Full width toasts in xs*/
 @media (max-width: 575.98px) {
-  .toast-container {
+  .toasts {
+    left: 0;
+    width: 100%;
+  }
+  .toasts .toast {
+    --bs-toast-padding-y: 1rem;
     width: 100%;
   }
 }
-.toast-container .toast {
-  width: 100%;
+/*Fix toast-container to bottom of viewport < md*/
+@media (max-width: 767.98px) {
+  .toasts {
+    position: fixed;
+    bottom: 1rem;
+    right: 0;
+    padding: 0 1rem;
+  }
 }
-
+/*Fix toast-anchor to top of parent >= md*/
+@media (min-width: 768px) {
+  .toast-anchor,
+  .toast-anchor-container {
+    height: 0;
+    overflow: visible;
+    z-index: 1054;
+  }
+  .toast-anchor .toasts,
+  .toast-anchor-container .toasts {
+    padding-top: 1rem;
+  }
+  .toast-anchor {
+    position: sticky;
+    top: 1rem;
+    display: flex;
+    justify-content: end;
+  }
+  /*Mimic Bootstrap container classes, since nesting toast-anchor inside a parent breaks sticky top*/
+  .toast-anchor-container {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    padding: 0 0.75rem;
+  }
+}
+@media (min-width: 768px) and (min-width: 576px) {
+  .toast-anchor-container {
+    max-width: 540px;
+  }
+}
+@media (min-width: 768px) and (min-width: 768px) {
+  .toast-anchor-container {
+    max-width: 720px;
+  }
+}
+@media (min-width: 768px) and (min-width: 992px) {
+  .toast-anchor-container {
+    max-width: 960px;
+  }
+}
+@media (min-width: 768px) and (min-width: 1200px) {
+  .toast-anchor-container {
+    max-width: 1140px;
+  }
+}
+@media (min-width: 768px) and (min-width: 1400px) {
+  .toast-anchor-container {
+    max-width: 1320px;
+  }
+}
 .event-list {
   display: flex;
   flex-direction: column;

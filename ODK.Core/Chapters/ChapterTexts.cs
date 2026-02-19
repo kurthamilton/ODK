@@ -8,5 +8,7 @@ public class ChapterTexts : IChapterEntity
 
     public string RegisterText { get; set; } = string.Empty;
 
+    public string? ShortDescription { get; set; }
+
     public string WelcomeText { get; set; } = string.Empty;
 }

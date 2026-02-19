@@ -1,12 +1,68 @@
-﻿.toast-container {
-    bottom: 0;
-    right: 0;
+﻿$toast-spacing: 1rem;
+$toast-zindex: $zindex-modal - 1;
 
-    @include media-breakpoint-only(xs) {
+/*.toasts is used instead of Bootstrap's .toast-container to take full control of layout*/
+.toasts {
+    z-index: #{$toast-zindex};
+}
+
+/*Full width toasts in xs*/
+@include media-breakpoint-down(sm) {
+    .toasts {
+        left: 0;
         width: 100%;
+
+        .toast {
+            --bs-toast-padding-y: 1rem;
+            width: 100%;
+        }
+    }
+}
+
+/*Fix toast-container to bottom of viewport < md*/
+@include media-breakpoint-down(md) {
+    .toasts {
+        position: fixed;
+        bottom: #{$toast-spacing};
+        right: 0;
+        padding: 0 #{$toast-spacing};
+    }
+}
+
+/*Fix toast-anchor to top of parent >= md*/
+@include media-breakpoint-up(md) {
+    .toast-anchor,
+    .toast-anchor-container {
+        height: 0;
+        overflow: visible;
+        z-index: #{$toast-zindex};
+
+        .toasts {
+            padding-top: #{$toast-spacing};
+        }
     }
 
-    .toast {
+    .toast-anchor {
+        position: sticky;
+        top: #{$toast-spacing};
+        display: flex;
+        justify-content: end;
+    }
+    /*Mimic Bootstrap container classes, since nesting toast-anchor inside a parent breaks sticky top*/
+    .toast-anchor-container {
+        position: fixed;
+        left: 50%;
+        transform: translateX(-50%);
         width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        padding: 0 ($grid-gutter-width * .5);
+
+        @each $breakpoint, $max-width in $container-max-widths {
+            @include media-breakpoint-up($breakpoint) {
+                max-width: $max-width;
+            }
+        }
     }
 }

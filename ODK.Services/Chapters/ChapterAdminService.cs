@@ -213,6 +213,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         {
             ChapterId = chapter.Id,
             Description = _htmlSanitizer.Sanitize(model.Description, DefaultHtmlSantizerOptions),
+            ShortDescription = _htmlSanitizer.Sanitize(model.ShortDescription, DefaultHtmlSantizerOptions)
         };
         _unitOfWork.ChapterTextsRepository.Add(texts);
 
@@ -2117,6 +2118,9 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             ? _htmlSanitizer.Sanitize(model.Description, DefaultHtmlSantizerOptions)
             : null;
         texts.RegisterText = _htmlSanitizer.Sanitize(model.RegisterText, DefaultHtmlSantizerOptions);
+        texts.ShortDescription = model.ShortDescription != null
+            ? _htmlSanitizer.Sanitize(model.ShortDescription, DefaultHtmlSantizerOptions)
+            : null;
         texts.WelcomeText = _htmlSanitizer.Sanitize(model.WelcomeText, DefaultHtmlSantizerOptions);
 
         if (texts.ChapterId == default)

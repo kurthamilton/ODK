@@ -91,7 +91,7 @@
         
         @if (!string.IsNullOrEmpty(chapterProperty.Subtitle))
         {
-            <span class="ms-1 text-muted">@chapterProperty.Subtitle</span>
+            @await Html.PartialAsync("Components/_FormLabelSubtitle", chapterProperty.Subtitle)
         }
 
         @if (chapterProperty.DataType == DataType.Checkbox)

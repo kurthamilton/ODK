@@ -4,6 +4,12 @@
         color: var(--bs-body-color);
     }
 
+    .dropdown-toggle {
+        &.no-caret::after {
+            display: none;
+        }
+    }
+
     .card,
     .dropdown-menu {
         background-color: var(--odk-bg-level-1);
@@ -15,8 +21,10 @@
         }
     }
     // nested
-    .dropdown.dropstart .dropdown-menu[data-bs-popper] {
-        margin-right: 0;
+    .dropdown.dropstart {
+        .dropdown-menu[data-bs-popper] {
+            margin-right: 0;
+        }
     }
 }
 
