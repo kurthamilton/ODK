@@ -14,16 +14,16 @@
         bindCropper(context);
     }
 
-    function bindFileUpload(context) {        
+    function bindFileUpload(context) {
         context.fileUpload = context.container.querySelector('[data-img-input]');
         if (!context.fileUpload) {
             return;
         }
-        
+
         context.preview = context.container.querySelector('[data-img-preview]');
         if (!context.preview) {
             return;
-        }        
+        }
 
         context.previewContainer = context.preview.closest('[data-img-preview-container]');
 
@@ -47,51 +47,53 @@
 
             setCropData(context, {});
             bindCropper(context);
-        });        
+        });
     }
 
-    function bindCropper (context) {
+    function bindCropper(context) {
         if (context.cropper) {
             context.cropper.destroy();
             context.cropper = null;
         }
-        
+
         if (!context.resize || !context.preview.getAttribute('src')) {
-            return;            
-        }                
-        
+            return;
+        }
+
         const options = {
             aspectRatio: context.resize.hasAttribute('data-img-ratio')
-                ? context.resize.getAttribute('data-img-ratio') || NaN 
+                ? context.resize.getAttribute('data-img-ratio') || NaN
                 : 1,
             autoCrop: true,
             autoCropArea: 1, // percentage of default crop area, 0 <= x <= 1
             data: getCropData(context),
-            viewMode: 1
+            guides: true,
+            center: true,
+            viewMode: 0
         };
-        
+
         context.cropper = new Cropper(context.resize, options);
 
         handleModals(context);
     }
 
-    function bindForm(context) {        
+    function bindForm(context) {
         const form = context.container.closest('form');
         if (!form) {
             return;
         }
-        
+
         context.cropXInput = context.container.querySelector('[data-img-crop-x]');
         context.cropYInput = context.container.querySelector('[data-img-crop-y]');
         context.cropWidthInput = context.container.querySelector('[data-img-crop-width]');
-        context.cropHeightInput = context.container.querySelector('[data-img-crop-height]');        
+        context.cropHeightInput = context.container.querySelector('[data-img-crop-height]');
         context.mimeType = context.container.querySelector('[data-img-type]');
 
-        const setData = () => {            
+        const setData = () => {
             if (!context.cropper) {
                 return;
             }
-            
+
             const data = context.cropper.getData(true);
 
             if (context.dataUrl) {
@@ -101,7 +103,7 @@
                     : context.mimeType
                         ? context.mimeType.value
                         : '';
-                
+
                 if (mimeType) {
                     context.dataUrl.value = context.cropper.getCroppedCanvas().toDataURL(mimeType);
                 }
@@ -110,10 +112,10 @@
             setCropData(context, data);
         };
 
-        context.preview.addEventListener('ready', () => {            
+        context.preview.addEventListener('ready', () => {
             setData();
         });
-        context.preview.addEventListener('cropend', () => {            
+        context.preview.addEventListener('cropend', () => {
             setData();
         });
         context.preview.addEventListener('zoom', () => {
@@ -157,7 +159,7 @@
 
         // force cropper to re-bind on modal open to fix layout issues
         context.modal.addEventListener('shown.bs.modal', () => bindCropper(context));
-    }    
+    }
 
     function setCropData(context, data) {
         setValue(context.cropXInput, data.x);
@@ -172,5 +174,5 @@
         }
 
         el.value = value;
-    }    
+    }
 })(Cropper);

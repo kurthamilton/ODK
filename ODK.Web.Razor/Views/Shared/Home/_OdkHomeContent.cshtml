@@ -18,6 +18,7 @@
 }
 
 <main id="main">
+    @await Html.PartialAsync("Components/_ToastAnchor", new ToastAnchorViewModel { PseudoContainer = true })
     @await Html.PartialAsync("Home/_ChaptersSection", new ChaptersSectionViewModel
     {
         Chapters = chapters,

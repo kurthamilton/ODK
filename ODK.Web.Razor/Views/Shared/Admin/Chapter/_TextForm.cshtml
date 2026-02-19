@@ -1,7 +1,17 @@
-﻿@model ODK.Web.Razor.Models.Admin.Chapters.ChapterTextsFormViewModel
+﻿@using ODK.Resources.Resources
+@using ODK.Web.Razor.Models.Admin.Chapters
+@model ChapterTextsFormViewModel
+
+<div class="form-group mb-3">
+    @Html.LabelFor(x => x.ShortDescription, new { @class = "form-label" })
+    @await Html.PartialAsync("Components/_FormLabelSubtitle", GroupsResource.ShortDescriptionHelpText)
+    @Html.TextAreaFor(x => x.ShortDescription, new { @class = "form-control", rows = 2 })
+    @Html.ValidationMessageFor(x => x.ShortDescription)
+</div>
 
 <div class="form-group mb-3">
     @Html.LabelFor(x => x.Description, new { @class = "form-label" })
+    @await Html.PartialAsync("Components/_FormLabelSubtitle", GroupsResource.DescriptionHelpText)
     @Html.TextAreaFor(x => x.Description, new { @class = "form-control", rows = 6, data_html_editor = "" })
     @Html.ValidationMessageFor(x => x.Description)
 </div>

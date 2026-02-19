@@ -17,5 +17,7 @@ public class ChapterCreateModel
 
     public required IReadOnlyCollection<NewTopicModel> NewTopics { get; init; }
 
+    public required string ShortDescription { get; init; }
+
     public required IReadOnlyCollection<Guid> TopicIds { get; init; }
 }

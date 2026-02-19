@@ -1684,6 +1684,7 @@ public static class ChapterAdminServiceTests
             Location = location ?? new LatLong { Lat = 51.5, Long = -0.1 },
             ImageData = imageData ?? [],
             NewTopics = [],
+            ShortDescription = "<p>Test</p>",
             TopicIds = topicIds ?? [Guid.NewGuid()]
         };
 

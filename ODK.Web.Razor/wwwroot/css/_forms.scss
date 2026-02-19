@@ -1,85 +1,85 @@
 @import "odk/_forms";
 
 .form-inline {
-	display: flex;
+    display: flex;
 
-	.form-group {
-		margin-right: 1rem;
-	}
-  
-	.form-label {
-		margin-right: 0.5rem;	
-	}
+    .form-group {
+        margin-right: 1rem;
+    }
 
-	.form-select {
-		// turn off bootstrap's 100% width
-		width: auto;
-	}
+    .form-label {
+        margin-right: 0.5rem;
+    }
+
+    .form-select {
+        // turn off bootstrap's 100% width
+        width: auto;
+    }
 }
 
 .form-horizontal {
-	.form-label {
-		margin-bottom: 0;
-		text-align: right;
-		align-self: center;
-	}
+    .form-label {
+        margin-bottom: 0;
+        text-align: right;
+        align-self: center;
+    }
 }
 
 .form-label {
-	font-weight: var(--odk-forms-labels-font-weight);
+    font-weight: var(--odk-forms-labels-font-weight);
 }
 
 .form-group.required {
-	.form-label:after {
-		content: " *";
-		color: $danger;
-	}  
+    .form-label:after {
+        content: " *";
+        color: $danger;
+    }
 }
 
 .form-check.required {
-	.form-check-label:after {
-		content: " *";
-		color: $danger;
-	}
+    .form-check-label:after {
+        content: " *";
+        color: $danger;
+    }
 }
 
 .clearable {
-	position: relative;
+    position: relative;
 
-	.form-control {
-		padding-right: 2rem;
-	}
+    .form-control {
+        padding-right: 2rem;
+    }
 
-	.icon {
-		position: absolute;
-		top: 0;
-		right: 1rem;
-		height: 100%;
-		display: flex;
-		opacity: 0.8;
-		cursor: pointer;
+    .icon {
+        position: absolute;
+        top: 0;
+        right: 1rem;
+        height: 100%;
+        display: flex;
+        opacity: 0.8;
+        cursor: pointer;
 
-		&:before {
-			align-self: center;
-		}
+        &:before {
+            align-self: center;
+        }
 
-		&:hover {
-			opacity: 1;
-		}
+        &:hover {
+            opacity: 1;
+        }
 
-		@include odk-icons-times
-	}
+        @include odk-icons-times
+    }
 }
 
 .form-control-custom {
-	height: 100%;
-	padding: 0;
+    height: 100%;
+    padding: 0;
 }
 
 .form-control-plaintext {
-	padding-top: 0;
+    padding-top: 0;
 }
 
 .field-validation-error {
-	font-style: normal;
+    font-style: normal;
 }

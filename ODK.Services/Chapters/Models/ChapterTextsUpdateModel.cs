@@ -6,5 +6,7 @@ public class ChapterTextsUpdateModel
 
     public required string? RegisterText { get; init; }
 
+    public required string? ShortDescription { get; init; }
+
     public required string? WelcomeText { get; init; }
 }

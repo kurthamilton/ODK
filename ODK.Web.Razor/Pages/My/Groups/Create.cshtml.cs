@@ -52,19 +52,20 @@ public class CreateModel : OdkPageModel
 
         var result = await _chapterAdminService.CreateChapter(MemberServiceRequest, new ChapterCreateModel
         {
-            Description = viewModel.Description?.Trim() ?? "",
+            Description = viewModel.Description?.Trim() ?? string.Empty,
             ImageData = bytes,
             Location = new LatLong(viewModel.Location.Lat.Value, viewModel.Location.Long.Value),
             LocationName = viewModel.Location.LocationName,
-            Name = viewModel.Name?.Trim() ?? "",
+            Name = viewModel.Name?.Trim() ?? string.Empty,
             NewTopics = topics.NewTopics
                 ?.Where((x, i) => !string.IsNullOrEmpty(x) && !string.IsNullOrEmpty(topics.NewTopicGroups![i]))
                 ?.Select((x, i) => new NewTopicModel
                 {
-                    Topic = x ?? "",
-                    TopicGroup = topics.NewTopicGroups![i] ?? ""
+                    Topic = x ?? string.Empty,
+                    TopicGroup = topics.NewTopicGroups![i] ?? string.Empty
                 })
                 .ToArray() ?? [],
+            ShortDescription = viewModel.ShortDescription?.Trim() ?? string.Empty,
             TopicIds = viewModel.TopicIds ?? []
         });
 
@@ -75,7 +76,7 @@ public class CreateModel : OdkPageModel
         }
 
         AddFeedback(
-            "Group created. Once approved you will be able to publish and start accepting group members.", 
+            "Group created. Once approved you will be able to publish and start accepting group members.",
             FeedbackType.Success);
 
         return result.Value != null

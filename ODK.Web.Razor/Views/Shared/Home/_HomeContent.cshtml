@@ -8,6 +8,7 @@
     var i = 0;
 }
 <main id="main">
+    @await Html.PartialAsync("Components/_ToastAnchor", new ToastAnchorViewModel { PseudoContainer = true })
     @await Html.PartialAsync("Components/_Section", new SectionViewModel
     {
         Content = 

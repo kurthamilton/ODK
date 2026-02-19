@@ -11,6 +11,9 @@ public class ChapterTextsFormViewModel
     [DisplayName("Message to non-members on the registration page")]
     public string? RegisterMessage { get; set; }
 
+    [DisplayName("Short description")]
+    public string? ShortDescription { get; set; }
+
     [Required]
     [DisplayName("Message to non-members on the home page")]
     public string? WelcomeMessage { get; set; }

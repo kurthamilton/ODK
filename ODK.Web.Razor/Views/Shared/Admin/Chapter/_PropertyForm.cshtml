@@ -53,7 +53,7 @@
     data-if="#@Html.IdFor(x => x.DataType)"
     data-if-value="@((int)DataType.DropDown)">
     @Html.LabelFor(x => x.Options, new { @class = "form-label" })
-    <span class="ms-1 text-muted">One option per line</span>
+    @await Html.PartialAsync("Components/_FormLabelSubtitle", "One option per line")
     @Html.TextAreaFor(x => x.Options, new { @class = "form-control", rows = 5 })
     @Html.ValidationMessageFor(x => x.Options)
 </div>
@@ -72,7 +72,7 @@
 
 <div class="form-group mb-3">
     @Html.LabelFor(x => x.Subtitle, new { @class = "form-label" })
-    <span class="ms-1 text-muted">This is how a subtitle is displayed</span>
+    @await Html.PartialAsync("Components/_FormLabelSubtitle", "This is how a subtitle is displayed")
     @Html.TextBoxFor(x => x.Subtitle, new { @class = "form-control" })
     @Html.ValidationMessageFor(x => x.Subtitle)
 </div>

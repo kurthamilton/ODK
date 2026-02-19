@@ -26,7 +26,7 @@
     else
     {        
         @Html.TextBoxFor(x => x.EmailAddress, new { @class = "form-control", type = "Email", data_email = "" })
-        <div class="ms-1 text-muted">You will need access to this email to verify your account</div>
+        @await Html.PartialAsync("Components/_FormLabelSubtitle", "You will need access to this email to verify your account")
         @Html.ValidationMessageFor(x => x.EmailAddress)
     }
 </div>
@@ -41,7 +41,7 @@
             @await Html.PartialAsync("Components/_Tooltip", "We recommend you leave this on. Once you're set up, we'll only send you one email per event.")
         </span>
 
-        <span class="ms-1 text-muted">Opt in to emails informing you of upcoming events</span>
+        @await Html.PartialAsync("Components/_FormLabelSubtitle", "Opt in to emails informing you of upcoming events")
     </div>
 }
 

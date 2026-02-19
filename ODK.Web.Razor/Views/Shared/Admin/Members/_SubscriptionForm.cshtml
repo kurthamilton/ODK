@@ -5,14 +5,14 @@
 
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.Name, new { @class = "form-label" })
-    <span class="ms-1 text-muted">How to refer to this subscription in the system</span>
+    @await Html.PartialAsync("Components/_FormLabelSubtitle", "How to refer to this subscription in the system")
     @Html.TextBoxFor(x => x.Name, new { @class = "form-control" })
     @Html.ValidationMessageFor(x => x.Name)
 </div>
 
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.Title, new { @class = "form-label" })
-    <span class="ms-1 text-muted">Short title visible to members</span>
+    @await Html.PartialAsync("Components/_FormLabelSubtitle", "Short title visible to members")
     @Html.TextBoxFor(x => x.Title, new { @class = "form-control" })
     @Html.ValidationMessageFor(x => x.Title)
 </div>
@@ -41,8 +41,7 @@
         <div class="mb-3 form-check form-switch">
             @Html.CheckBoxFor(x => x.Recurring, new { @class = "form-check-input", role = "switch" })
             @Html.LabelFor(x => x.Recurring, new { @class = "form-check-label" })
-
-            <span class="ms-1 text-muted">Payments will automatically be taken at the start of the next subscription period</span>
+            @await Html.PartialAsync("Components/_FormLabelSubtitle", "Payments will automatically be taken at the start of the next subscription period")
         </div>
     }    
     else
@@ -69,8 +68,7 @@ else if (Model.Amount != null)
         <div class="mb-3 form-check form-switch">
             @Html.CheckBoxFor(x => x.Recurring, new { @class = "form-check-input", role = "switch", disabled = "" })
             @Html.LabelFor(x => x.Recurring, new { @class = "form-check-label" })
-
-            <span class="ms-1 text-muted">Payments will automatically be taken at the start of the next subscription period</span>
+            @await Html.PartialAsync("Components/_FormLabelSubtitle", "Payments will automatically be taken at the start of the next subscription period")
         </div>
     }
 }

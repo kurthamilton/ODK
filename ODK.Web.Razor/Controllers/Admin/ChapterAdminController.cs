@@ -356,6 +356,7 @@ public class ChapterAdminController : AdminControllerBase
         {
             Description = viewModel.Description,
             RegisterText = viewModel.RegisterMessage,
+            ShortDescription = viewModel.ShortDescription,
             WelcomeText = viewModel.WelcomeMessage
         });
 

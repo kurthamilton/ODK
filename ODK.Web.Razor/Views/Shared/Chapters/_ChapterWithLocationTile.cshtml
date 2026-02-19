@@ -1,67 +1,74 @@
 ﻿@using ODK.Core;
 @using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Chapters
+@using ODK.Web.Razor.Models.Components
 @model ChapterWithDistanceViewModel
 @inject IOdkRoutes OdkRoutes
+@{
+    var groupUrl = Model.Chapter.RedirectUrl != null ? Model.Chapter.RedirectUrl : OdkRoutes.Groups.Group(Model.Chapter);
+    var groupUrlTarget = Model.Chapter.RedirectUrl != null ? "_blank" : null;
+}
 
-<div data-odk-component="_ChapterWithLocationTile">
-    <div class="card">
-        <div class="card-body d-flex flex-column gap-3">
-            <a href="@OdkRoutes.Groups.Group(Model.Chapter)"
-               class="text-body link-hover link-hover--opacity">
+<div class="card h-100" data-odk-component="_ChapterWithLocationTile">
+    <div class="card-body d-flex flex-column gap-3">
+        <a href="@groupUrl" target="@groupUrlTarget"
+            class="text-body link-hover link-hover--opacity flex-grow-1">
         
-                @if (Model.Image != null)
+            @if (Model.Image != null)
+            {
+                <div class="mb-3">
+                    <img src="@OdkRoutes.Groups.Image(Model.Chapter.Id, Model.Image.Version)" class="w-100" />
+                </div>                               
+            }
+
+            <div class="d-flex flex-column gap-2">
+                <h6><strong>@Model.Chapter.GetDisplayName(Model.Platform)</strong></h6>
+                @if (Model.Location != null)
                 {
-                    <div class="mb-3">
-                        <img src="@OdkRoutes.Groups.Image(Model.Chapter.Id, Model.Image.Version)" />
-                    </div>                               
+                    <div class="d-flex flex-wrap gap-2 small">
+                        <div>
+                            @await Html.PartialAsync("Components/_Location", Model.Location.Name)                                
+                        </div>                            
+                        @if (Model.Distance != null)
+                        {
+                            <span> | </span>
+                            <span>
+                                @Math.Ceiling(Model.Distance.Value) @Model.Distance.Unit.Abbreviation
+                            </span>
+                        }
+                    </div>
+                }
+                
+                @if (Model.Topics.Count > 0)
+                {
+                    <div>
+                        @foreach (var topic in Model.Topics.OrderBy(x => x.Name))
+                        {
+                            <div class="badge text-bg-secondary">@topic.Name</div>
+                        }
+                    </div>
                 }
 
-                <div class="d-flex flex-column gap-2">
-                    <h6>@Model.Chapter.GetDisplayName(Model.Platform)</h6>
-                    @if (Model.Location != null)
-                    {
-                        <div class="d-flex gap-2 small">
-                            <div>
-                                @await Html.PartialAsync("Components/_Location", Model.Location.Name)                                
-                            </div>                            
-                            @if (Model.Distance != null)
-                            {
-                                <span> | </span>
-                                <span>
-                                    @Math.Ceiling(Model.Distance.Value) @Model.Distance.Unit.Abbreviation
-                                </span>
-                            }
-                        </div>
-                    }                        
-                    @if (!string.IsNullOrEmpty(Model.Texts?.Description))
-                    {
-                        <div class="card-text">
-                            @Html.Raw(Model.Texts?.Description)
-                        </div>
-                    }
-
-                    @if (Model.Topics.Count > 0)
-                    {
-                        <div>
-                            @foreach (var topic in Model.Topics.OrderBy(x => x.Name))
-                            {
-                                <div class="badge text-bg-secondary">@topic.Name</div>
-                            }
-                        </div>
-                    }
-                </div>
-            </a>
-
-            @if (Model.IsAdmin)
-            {
-                @await Html.PartialAsync("Chapters/Admin/_ManageChapterLink", new ManageChapterLinkViewModel
+                @if (!string.IsNullOrEmpty(Model.ShortDescription))
                 {
-                    Chapter = Model.Chapter,
-                    Platform = Model.Platform
+                    <div class="card-text">
+                        @Html.Raw(Model.ShortDescription)
+                    </div>
+                }                
+            </div>
+        </a>
+
+        @if (Model.IsAdmin)
+        {
+            <div class="d-flex justify-content-end">
+                @await Html.PartialAsync("Admin/_AdminContextMenu", new AdminContextMenuViewModel
+                {
+                    AlignRight = true,
+                    Chapter = Model.Chapter
                 })
-            }
-        </div>    
-    </div>
+            </div>
+        }
+    </div>    
 </div>

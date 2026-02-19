@@ -39,7 +39,7 @@
 
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.Date, new { @class = "form-label" })
-    <span class="ms-1 text-muted">Event date. Start time defaults to value set in event settings</span>
+    @await Html.PartialAsync("Components/_FormLabelSubtitle", "Event date. Start time defaults to value set in event settings")
     @if (Model.Date.Date == Model.Date)
     {
         @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
@@ -66,7 +66,7 @@
 
 <div class="form-group mb-3">
     @Html.LabelFor(x => x.RsvpDeadline, new { @class = "form-label" })
-    <span class="ms-1 text-muted">Only needed if you need to confirm numbers in advance</span>
+    @await Html.PartialAsync("Components/_FormLabelSubtitle", "Only needed if you need to confirm numbers in advance")
     <div class="clearable" data-clearable-container>
         @Html.TextBoxFor(x => x.RsvpDeadline, format: "{0:dd/MM/yyyy HH:mm}", new 
         { 
@@ -130,7 +130,7 @@
 
     <div class="form-group mb-3">
         @Html.LabelFor(x => x.TicketCost, new { @class = "form-label" })
-        <span class="ms-1 text-muted">The total ticket cost for this event. Set the max number of attendees above to set the number of tickets.</span>
+        @await Html.PartialAsync("Components/_FormLabelSubtitle", "The total ticket cost for this event. Set the max number of attendees above to set the number of tickets.")
         <div class="input-group">
             <span class="input-group-text">
                 @Model.Currency.Symbol
@@ -142,7 +142,7 @@
 
     <div class="form-group mb-3">
         @Html.LabelFor(x => x.TicketDepositCost, new { @class = "form-label" })
-        <span class="ms-1 text-muted">The deposit cost for this event. Members who pay a deposit will then only need to pay the remainder of the total cost.</span>
+        @await Html.PartialAsync("Components/_FormLabelSubtitle", "The deposit cost for this event. Members who pay a deposit will then only need to pay the remainder of the total cost.")
         <div class="input-group">
             <span class="input-group-text">
                 @Model.Currency.Symbol

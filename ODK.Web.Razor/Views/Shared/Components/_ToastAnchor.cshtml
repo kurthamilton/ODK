@@ -1,0 +1,14 @@
+﻿@using ODK.Web.Razor.Models.Components
+@model ToastAnchorViewModel
+@{
+    var classes = new List<string>();
+    if (Model.PseudoContainer)
+    {
+        classes.Add("toast-anchor-container");
+    }
+    else
+    {
+        classes.Add("toast-anchor");
+    }
+}
+<div class="@string.Join(' ', classes)" data-toast-anchor></div>

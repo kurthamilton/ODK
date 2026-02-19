@@ -16,6 +16,7 @@
                     {
                         @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
                         {
+                            Icon = IconType.Plus,
                             Route = OdkRoutes.GroupAdmin.Create(),
                             Text = "Create group"
                         })

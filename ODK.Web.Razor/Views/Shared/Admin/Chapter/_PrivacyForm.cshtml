@@ -5,7 +5,7 @@
 
 <div class="form-group mb-3">
     @Html.LabelFor(x => x.Conversations, new { @class = "form-label" })
-    <span class="ms-1 text-muted">Public allows logged in members from other groups to start conversations</span>
+    @await Html.PartialAsync("Components/_FormLabelSubtitle", "Public allows logged in members from other groups to start conversations")
     @Html.OdkEnumDropDownFor(x => x.Conversations, new { @class = "form-select", data_select = "" })
     @Html.ValidationMessageFor(x => x.Conversations)
 </div>
@@ -14,7 +14,7 @@
     <legend>Events</legend>
     <div class="form-group mb-3">
         @Html.LabelFor(x => x.EventVisibility, new { @class = "form-label" })
-        <span class="ms-1 text-muted">Public allows all users to view event listings</span>
+        @await Html.PartialAsync("Components/_FormLabelSubtitle", "Public allows all users to view event listings")
         @Html.OdkEnumDropDownFor(x => x.EventVisibility, new { @class = "form-select", data_select = "" })
         @Html.ValidationMessageFor(x => x.EventVisibility)
     </div>
@@ -28,7 +28,7 @@
 
     <div class="form-group mb-3">
         @Html.LabelFor(x => x.VenueVisibility, new { @class = "form-label" })
-        <span class="ms-1 text-muted">Public allows all users to see venue details for events</span>
+        @await Html.PartialAsync("Components/_FormLabelSubtitle", "Public allows all users to see venue details for events")
         @Html.OdkEnumDropDownFor(x => x.VenueVisibility, new { @class = "form-select", data_select = "" })
         @Html.ValidationMessageFor(x => x.VenueVisibility)
     </div>

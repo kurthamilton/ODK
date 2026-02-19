@@ -3,23 +3,43 @@
 @{
     if (!int.TryParse(TempData["FeedbackCount"]?.ToString(), out int feedbackCount))
     {
-        return;
+        // return;
     }
-}
 
-<div class="toast-container position-fixed p-3" data-bs-theme="" data-theme-contrast>
-    @for (int i = 0; i < feedbackCount; i++)
+    var models = new List<FeedbackViewModel>();
+    for (var i = 0; i < feedbackCount; i++)
     {
-        var message = TempData[$"Feedback[{i}].Message"]?.ToString();
-        if (!Enum.TryParse<FeedbackType>(TempData[$"Feedback[{i}].Type"]?.ToString(), ignoreCase: true, out var type))
+        var typeName = TempData[$"Feedback[{i}].Type"]?.ToString();
+        if (!Enum.TryParse<FeedbackType>(typeName, ignoreCase: true, out var type))
         {
             continue;
         }
 
+        var message = TempData[$"Feedback[{i}].Message"]?.ToString();
+        if (string.IsNullOrEmpty(message))
+        {
+            continue;
+        }
+
+        models.Add(new FeedbackViewModel(message, type));
+    }
+
+    models.Add(new FeedbackViewModel("Test success message", FeedbackType.Success));
+
+    if (models.Count == 0)
+    {
+        return;
+    }
+}
+
+@*d-none is removed when setting the theme*@
+<div class="toasts d-none" data-bs-theme="" data-theme-contrast data-attach-to="[data-toast-anchor]">
+    @foreach (var model in models)
+    {
         IconType icon;
         string iconClass;
 
-        switch (type)
+        switch (model.Type)
         {
             case FeedbackType.Success:
                 icon = IconType.CheckCircle;
@@ -49,7 +69,7 @@
                         })
                     </span>
                     <span class="flex-grow-1">
-                        @message
+                        @(model.Message)
                     </span>                
                 </div>
         })

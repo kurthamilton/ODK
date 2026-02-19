@@ -10,7 +10,7 @@
 
 <div class="form-group mb-3">
     @Html.LabelFor(x => x.Address, new { @class = "form-label" })
-    <span class="ms-1 text-muted">Additional location information, if required</span>
+    @await Html.PartialAsync("Components/_FormLabelSubtitle", "Additional location information, if required")
     @Html.TextBoxFor(x => x.Address, new { @class = "form-control" })
 </div>
 
