@@ -1,22 +1,22 @@
-﻿@using ODK.Web.Razor.Models.Components
+﻿@using ODK.Web.Razor.Extensions
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Feedback
 @{
-    if (!int.TryParse(TempData["FeedbackCount"]?.ToString(), out int feedbackCount))
+    if (!TempData.TryGetIntValue("FeedbackCount", out var feedbackCount))
     {
-        // return;
+        return;
     }
 
     var models = new List<FeedbackViewModel>();
     for (var i = 0; i < feedbackCount; i++)
     {
-        var typeName = TempData[$"Feedback[{i}].Type"]?.ToString();
-        if (!Enum.TryParse<FeedbackType>(typeName, ignoreCase: true, out var type))
+        var results = new[]
         {
-            continue;
-        }
+            TempData.TryGetEnumValue<FeedbackType>($"Feedback[{i}].Type", out var type),
+            TempData.TryGetStringValue($"Feedback[{i}].Message", out var message)
+        };
 
-        var message = TempData[$"Feedback[{i}].Message"]?.ToString();
-        if (string.IsNullOrEmpty(message))
+        if (results.Any(x => !x) || string.IsNullOrEmpty(message))
         {
             continue;
         }
@@ -24,15 +24,13 @@
         models.Add(new FeedbackViewModel(message, type));
     }
 
-    models.Add(new FeedbackViewModel("Test success message", FeedbackType.Success));
-
     if (models.Count == 0)
     {
         return;
     }
 }
 
-@*d-none is removed when setting the theme*@
+@*d-none is removed by attach-to*@
 <div class="toasts d-none" data-bs-theme="" data-theme-contrast data-attach-to="[data-toast-anchor]">
     @foreach (var model in models)
     {
@@ -42,16 +40,13 @@
         switch (model.Type)
         {
             case FeedbackType.Success:
-                icon = IconType.CheckCircle;
-                iconClass = "text-success";
+                (icon, iconClass) = (IconType.CheckCircle, "text-success");
                 break;
             case FeedbackType.Warning:
-                icon = IconType.ExclamationTriangle;
-                iconClass = "text-warning";
+                (icon, iconClass) = (IconType.ExclamationTriangle, "text-warning");
                 break;
             case FeedbackType.Error:
-                icon = IconType.TimesCircle;
-                iconClass = "text-danger";
+                (icon, iconClass) = (IconType.TimesCircle, "text-danger");
                 break;
             default:
                 continue;

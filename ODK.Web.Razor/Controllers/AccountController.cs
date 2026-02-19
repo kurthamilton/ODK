@@ -370,7 +370,7 @@ public class AccountController : OdkControllerBase
         };
 
         var result = await _memberService.UpdateMemberSiteProfile(MemberServiceRequest, model);
-        AddFeedback(result, "Profile updated");
+        AddFeedback(result, "Personal details updated");
 
         return result.Success
             ? RedirectToReferrer()
