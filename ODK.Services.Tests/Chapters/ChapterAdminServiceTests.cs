@@ -1558,7 +1558,7 @@ public static class ChapterAdminServiceTests
     private static IMemberEmailService CreateMockMemberEmailService()
     {
         var mock = new Mock<IMemberEmailService>();
-        mock.Setup(x => x.SendNewGroupEmail(It.IsAny<IMemberChapterServiceRequest>(), It.IsAny<ChapterTexts>(), It.IsAny<SiteEmailSettings>()))
+        mock.Setup(x => x.SendNewGroupEmail(It.IsAny<IMemberChapterServiceRequest>(), It.IsAny<SiteEmailSettings>()))
             .Returns(Task.CompletedTask);
         return mock.Object;
     }
@@ -1679,12 +1679,10 @@ public static class ChapterAdminServiceTests
         => new ChapterCreateModel
         {
             Name = name ?? "Test Chapter",
-            Description = description ?? "<p>Test</p>",
             LocationName = locationName ?? "London",
             Location = location ?? new LatLong { Lat = 51.5, Long = -0.1 },
             ImageData = imageData ?? [],
             NewTopics = [],
-            ShortDescription = "<p>Test</p>",
             TopicIds = topicIds ?? [Guid.NewGuid()]
         };
 

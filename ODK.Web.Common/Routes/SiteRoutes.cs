@@ -2,6 +2,8 @@
 
 public class SiteRoutes
 {
+    public string About => "/about";
+
     public string Contact => "/contact";
 
     public string Pricing => "/pricing";

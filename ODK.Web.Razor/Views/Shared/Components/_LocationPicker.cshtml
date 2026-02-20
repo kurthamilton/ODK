@@ -24,8 +24,9 @@
 
         <ul class="dropdown-menu google-places-suggestions" data-location-options></ul>
     </div> 
-
+    
     @Html.HiddenFor(x => x.Lat, new { data_location_lat = "" })
     @Html.HiddenFor(x => x.Long, new { data_location_long = "" })
     <input type="hidden" id="map-latlong" data-location-latlong value="@latLong" />
 </div>
+@Html.ValidationMessageFor(x => x.LocationName)

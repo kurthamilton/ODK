@@ -1,0 +1,29 @@
+﻿@using ODK.Web.Common.Services
+@inject IRequestStore RequestStore
+@{
+    var currentMember = RequestStore.CurrentMemberOrDefault;
+}
+
+<div class="list-group list-group-flush list-group-border-0">
+    <div class="offcanvas-flush-item"><strong>Appearance</strong></div>
+
+    <label class="list-group-item list-group-item-action d-flex align-items-center offcanvas-flush-item">
+        <span class="me-3">Dark mode</span>
+
+        <span class="d-flex gap-1">
+            <span class="form-switch p-0 d-flex align-items-center">
+                <input class="form-check-input ms-0 mt-0" type="checkbox" role="switch" data-theme-switch />
+            </span>
+        </span>
+    </label>
+
+    @if (currentMember != null)
+    {
+        <hr />
+        <div class="list-group list-group-flush list-group-border-0">
+            <div class="list-group-item">
+                Signed in as @currentMember.EmailAddress
+            </div>
+        </div>
+    }    
+</div>

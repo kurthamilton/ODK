@@ -9,6 +9,7 @@
 @using ODK.Web.Razor.Models.Components
 @model CreateModel
 @inject IChapterViewModelService ChapterViewModelService
+@inject IOdkRoutes OdkRoutes
 @{
     Layout = "_HomeLayout";
     Model.Title = "Create group";
@@ -28,12 +29,18 @@
     },
     ContentFunc = 
         @<div>
-            @if (viewModel.ChapterCount == viewModel.ChapterLimit)
+            @if (viewModel.ChapterCount >= viewModel.ChapterLimit)
             {
                 <div class="alert alert-danger">
                     You cannot create another group as you have reached your group limit of @viewModel.ChapterLimit.
                 </div>
-                return;
+
+                <div class="mt-3">
+                    <a href="@OdkRoutes.Account.Subscription(chapter: null)" class="btn btn-primary">
+                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Unlock))
+                        <span>Upgrade</span>
+                    </a>
+                </div>
             }
             else if (viewModel.ChapterCount > 0 && viewModel.ChapterLimit != null)
             {
@@ -41,24 +48,23 @@
                     TODO: warning
                 </div>
             }
-                        
-            <form method="post">
-                @*@Html.AntiForgeryToken()*@
+            else
+            {
+                <form method="post">
+                    @*@Html.AntiForgeryToken()*@
 
-                @await Html.PartialAsync("Groups/_GroupCreateForm", new CreateChapterFormViewModel
-                {
-                    Countries = viewModel.Countries,
-                    Location = new LocationFormViewModel
+                    @await Html.PartialAsync("Groups/_GroupCreateForm", new CreateChapterFormViewModel
                     {
+                        Countries = viewModel.Countries,
                         Lat = viewModel.MemberLocation?.LatLong.Lat,
                         Long = viewModel.MemberLocation?.LatLong.Long,
-                        LocationName = viewModel.MemberLocation?.Name ?? string.Empty
-                    },
-                    TopicGroups = viewModel.TopicGroups,
-                    TopicIds = viewModel.MemberTopics.Select(x => x.TopicId).ToList(),
-                    Topics = viewModel.Topics
-                })                
-            </form>
+                        LocationName = viewModel.MemberLocation?.Name ?? string.Empty,
+                        TopicGroups = viewModel.TopicGroups,
+                        TopicIds = viewModel.MemberTopics.Select(x => x.TopicId).ToList(),
+                        Topics = viewModel.Topics
+                    })
+                </form>
+            }                        
         </div>    
 })
 

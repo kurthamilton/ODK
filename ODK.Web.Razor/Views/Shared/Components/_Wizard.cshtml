@@ -47,13 +47,20 @@
                 var nextId = pageIds[i + 1];
 
                 <div class="d-flex justify-content-end">
-                    <button type="button" class="btn btn-primary" 
+                    <button type="submit" class="btn btn-primary" 
                         data-bs-toggle="collapse" data-bs-target="#@nextId"
                         formNoValidate
                         data-wizard-validate>
                         <span>Next</span>
                         @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.ChevronRight))
                     </button>
+                </div>
+            }
+
+            @if (page.FooterFunc != null)
+            {
+                <div>
+                    @(page.FooterFunc.Invoke(null))
                 </div>
             }
         </div>

@@ -1,7 +1,9 @@
 ﻿@using ODK.Core.Payments
 @using ODK.Core.Subscriptions
 @using ODK.Services.Subscriptions.ViewModels
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Payments
+@inject IOdkRoutes OdkRoutes
 @model SiteSubscriptionViewModel
 @{
     var subscription = Model.Subscription;
@@ -20,9 +22,9 @@
 
                 <div class="d-flex flex-column gap-3">
                     @foreach (var price in prices)
-                    {
+                    {                        
                         if (price.ExternalId == null)
-                        {
+                        {                            
                             continue;
                         }
 
@@ -31,7 +33,7 @@
 
                         <div class="d-flex align-items-center gap-1">
                             <div class="button-container mt-3">
-                                <a class="btn btn-primary" href="/account/subscription/@price.Id/checkout">
+                                <a class="btn btn-primary" href="@OdkRoutes.Account.SiteSubscriptionCheckout(price.Id)">
                                     Buy
                                 </a>
 

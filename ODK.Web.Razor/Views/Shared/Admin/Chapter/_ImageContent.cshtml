@@ -6,8 +6,8 @@
 <form action="/groups/@Model.Chapter.Id/image" method="post">
     @*@Html.AntiForgeryToken()*@
     @await Html.PartialAsync("Admin/Chapter/_ImageForm", new ChapterImageFormViewModel
-        {
+    {
         ChapterImage = Model.Image
-        })
+    })
     <button class="btn btn-primary">Update</button>
 </form>

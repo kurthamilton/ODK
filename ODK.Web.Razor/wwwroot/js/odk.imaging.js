@@ -98,15 +98,7 @@
 
             if (context.dataUrl) {
                 const [file] = context.fileUpload.files;
-                const mimeType = file
-                    ? file.type
-                    : context.mimeType
-                        ? context.mimeType.value
-                        : '';
-
-                if (mimeType) {
-                    context.dataUrl.value = context.cropper.getCroppedCanvas().toDataURL(mimeType);
-                }
+                context.dataUrl.value = context.cropper.getCroppedCanvas().toDataURL('image/png');
             }
 
             setCropData(context, data);
