@@ -9,12 +9,9 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class MemberRepository : ReadWriteRepositoryBase<Member, IMemberQueryBuilder>, IMemberRepository
 {
-    private readonly OdkContext _context;
-
     public MemberRepository(OdkContext context)
         : base(context)
     {
-        _context = context;
     }
 
     public IDeferredQueryMultiple<Member> GetAllByChapterId(Guid chapterId)
@@ -68,5 +65,6 @@ public class MemberRepository : ReadWriteRepositoryBase<Member, IMemberQueryBuil
             .WithAvatar()
             .GetSingle();
 
-    public override IMemberQueryBuilder Query() => new MemberQueryBuilder(_context);    
+    public override IMemberQueryBuilder Query() => CreateQueryBuilder<IMemberQueryBuilder, Member>(
+        context => new MemberQueryBuilder(context));
 }

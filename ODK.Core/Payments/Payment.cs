@@ -1,4 +1,6 @@
-﻿namespace ODK.Core.Payments;
+﻿using ODK.Core.Countries;
+
+namespace ODK.Core.Payments;
 
 public class Payment : IDatabaseEntity
 {
@@ -11,6 +13,8 @@ public class Payment : IDatabaseEntity
     public Guid? ChapterId { get; set; }
 
     public DateTime? CreatedUtc { get; set; }
+
+    public Currency Currency { get; set; } = null!;
 
     public Guid CurrencyId { get; set; }
 

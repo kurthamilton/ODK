@@ -2,7 +2,7 @@
 @model MemberPaymentsAdminPageViewModel
 @{
     var payments = Model.Payments
-        .OrderByDescending(x => x.Payment.PaidUtc);
+        .OrderByDescending(x => x.PaidUtc);
 }
 
 @await Html.PartialAsync("Admin/Members/_MemberAdminTabs", Model)
@@ -17,9 +17,9 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var dto in payments)
+            @foreach (var payment in payments)
             {
-                var (payment, currency) = (dto.Payment, dto.Currency);
+                var currency = payment.Currency;
 
                 if (payment.PaidUtc == null)
                 {
