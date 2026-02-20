@@ -1,24 +1,23 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Countries;
+using ODK.Core.Payments;
 using ODK.Data.Core.Payments;
 
 namespace ODK.Services.Users.ViewModels;
 
 public class MemberPaymentsPageViewModelPayment
 {
-    public MemberPaymentsPageViewModelPayment(PaymentDto dto)
+    public MemberPaymentsPageViewModelPayment(Payment payment)
     {
-        var payment = dto.Payment;
-
         Amount = payment.Amount;
         CreatedUtc = payment.CreatedUtc;
-        Currency = dto.Currency;
+        Currency = payment.Currency;
         PaidUtc = payment.PaidUtc;
         Reference = payment.Reference;
     }
 
     public MemberPaymentsPageViewModelPayment(PaymentChapterDto dto)
-        : this((PaymentDto)dto)
+        : this(dto.Payment)
     {
         Chapter = dto.Chapter;
     }

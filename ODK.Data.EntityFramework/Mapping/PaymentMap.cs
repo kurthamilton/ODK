@@ -24,7 +24,7 @@ public class PaymentMap : IEntityTypeConfiguration<Payment>
             .HasColumnName("PaidDate")
             .HasConversion<UtcDateTimeConverter>();
 
-        builder.HasOne<Currency>()
+        builder.HasOne(x => x.Currency)
             .WithMany()
             .HasForeignKey(x => x.CurrencyId);
     }

@@ -18,7 +18,7 @@
             <tbody>
                 @foreach (var dto in Model.Payments)
                 {
-                    var (currency, member, payment) = (dto.Currency, dto.Member, dto.Payment);
+                    var (currency, member, payment) = (dto.Payment.Currency, dto.Member, dto.Payment);
 
                     if (payment.PaidUtc == null)
                     {

@@ -1,0 +1,19 @@
+﻿@page "/my/groups/{chapterId:guid}/payments"
+@using ODK.Services.Payments
+@using ODK.Web.Razor.Models.Components
+@model IndexModel
+@inject IPaymentAdminService PaymentAdminService
+@{
+    Layout = "_GroupAdminLayout";
+    Model.Title = "Payments";
+
+    var request = Model.MemberChapterAdminServiceRequest;
+    var viewModel = await PaymentAdminService.GetPayments(request);
+}
+
+@await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
+{
+    Title = "Payments",
+    BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Payments/_PaymentsContent", viewModel)</div>,
+    MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu")
+})
