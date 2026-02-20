@@ -90,7 +90,7 @@ public class Chapter : IDatabaseEntity, ITimeZoneEntity
 
     public bool Approved() => ApprovedUtc != null;
 
-    public bool CanBeDeleted(int memberCount) => memberCount == 1;
+    public bool CanBeDeleted(int memberCount) => memberCount <= 1;
 
     public bool CanBePublished() => Approved() && !IsPublished();
 
