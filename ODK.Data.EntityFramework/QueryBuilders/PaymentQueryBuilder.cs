@@ -2,7 +2,6 @@
 using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Core.Payments;
-using ODK.Data.Core.Members;
 using ODK.Data.Core.Payments;
 using ODK.Data.Core.QueryBuilders;
 
@@ -66,6 +65,15 @@ public class PaymentQueryBuilder : DatabaseEntityQueryBuilder<Payment, IPaymentQ
     }
 
     protected override IQueryable<Payment> Set(OdkContext context)
-        => base.Set(context)
-            .Include(x => x.Currency);
+    {
+        // exclude payments for an expired checkout session by default
+        return 
+            from payment in base.Set(context)
+                .Include(x => x.Currency)
+            from paymentCheckoutSession in Set<PaymentCheckoutSession>()
+                .Where(x => x.PaymentId == payment.Id)
+                .DefaultIfEmpty()
+            where paymentCheckoutSession == null || paymentCheckoutSession.ExpiredUtc == null
+            select payment;
+    }
 }

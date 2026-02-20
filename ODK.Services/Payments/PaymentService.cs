@@ -246,7 +246,8 @@ public class PaymentService : IPaymentService
         if (paymentCheckoutSession.ExpiredUtc != null)
         {
             var message =
-                $"Not updating PaymentCheckoutSession {paymentCheckoutSession.Id} in {webhook.PaymentProviderType} webhook processing: " +
+                $"Not updating PaymentCheckoutSession {paymentCheckoutSession.Id} " +
+                $"in {webhook.PaymentProviderType} webhook processing: " +
                 $"already expired";
             await _loggingService.Warn(message);
 
