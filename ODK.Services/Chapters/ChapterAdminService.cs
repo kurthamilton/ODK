@@ -209,13 +209,10 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         _unitOfWork.ChapterRepository.Add(chapter);
 
-        var texts = new ChapterTexts
+        _unitOfWork.ChapterTextsRepository.Add(new ChapterTexts
         {
-            ChapterId = chapter.Id,
-            Description = _htmlSanitizer.Sanitize(model.Description, DefaultHtmlSantizerOptions),
-            ShortDescription = _htmlSanitizer.Sanitize(model.ShortDescription, DefaultHtmlSantizerOptions)
-        };
-        _unitOfWork.ChapterTextsRepository.Add(texts);
+            ChapterId = chapter.Id
+        });
 
         _unitOfWork.ChapterLocationRepository.Add(new ChapterLocation
         {
@@ -268,7 +265,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         await _memberEmailService.SendNewGroupEmail(
             request,
-            texts,
             siteEmailSettings);
 
         return ServiceResult<Chapter?>.Successful(chapter);

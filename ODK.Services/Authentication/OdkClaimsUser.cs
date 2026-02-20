@@ -8,26 +8,12 @@ public class OdkClaimsUser
 {
     private readonly List<string> _roles = [];
 
-    public OdkClaimsUser(
-        Member member,
-        IReadOnlyCollection<ChapterAdminMember> adminMembers)
+    public OdkClaimsUser(Member member)
     {
         MemberId = member.Id;
-
-        _roles.Add(OdkRoles.Member);
-
-        if (adminMembers.Count > 0)
-        {
-            _roles.Add(OdkRoles.Admin);
-        }
-
+        
         if (member.SiteAdmin)
         {
-            if (adminMembers.Count == 0)
-            {
-                _roles.Add(OdkRoles.Admin);
-            }
-
             _roles.Add(OdkRoles.SiteAdmin);
         }
     }

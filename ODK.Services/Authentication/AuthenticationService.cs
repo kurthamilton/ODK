@@ -182,12 +182,7 @@ public class AuthenticationService : IAuthenticationService
 
     public async Task<IReadOnlyCollection<Claim>> GetClaimsAsync(IMemberServiceRequest request)
     {
-        var (platform, currentMember) = (request.Platform, request.CurrentMember);
-
-        var adminMembers = await _unitOfWork.ChapterAdminMemberRepository
-            .GetByMemberId(platform, currentMember.Id).Run();
-
-        var claimsUser = new OdkClaimsUser(currentMember, adminMembers);
+        var claimsUser = new OdkClaimsUser(request.CurrentMember);
         return claimsUser
             .GetClaims()
             .ToArray();

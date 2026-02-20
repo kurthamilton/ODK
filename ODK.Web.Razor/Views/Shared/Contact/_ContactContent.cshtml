@@ -1,8 +1,10 @@
-﻿@using ODK.Web.Razor.Models.Contact
+﻿@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Contact
 @model ContactContentViewModel
+@inject IOdkRoutes OdkRoutes
 
 <p>
-    If the <a href="/About">About</a> page hasn't answered your questions, 
+    If the <a href="@OdkRoutes.Site.About">About</a> page hasn't answered your questions, 
     please don't hesitate to get in touch. We'll get back to you as soon as possible.
 </p>
 

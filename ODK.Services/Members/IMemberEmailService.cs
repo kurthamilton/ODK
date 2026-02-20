@@ -112,7 +112,6 @@ public interface IMemberEmailService
 
     Task SendNewGroupEmail(
         IServiceRequest request,
-        ChapterTexts texts,
         SiteEmailSettings settings);
 
     Task SendNewIssueEmail(

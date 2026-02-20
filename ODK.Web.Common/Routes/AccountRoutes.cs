@@ -35,6 +35,8 @@ public class AccountRoutes : RoutesBase
 
     public string EmailPreferences(Chapter? chapter) => AccountPath(chapter, "/emails");
 
+    public string ForgottenPassword(Chapter? chapter) => AccountPath(chapter, "/password/forgotten");
+
     public string Groups() => AccountPath(null, "/groups");
 
     public string Index(Chapter? chapter) => AccountPath(chapter, "/");
@@ -81,6 +83,9 @@ public class AccountRoutes : RoutesBase
     public string Profile(Chapter? chapter) => AccountPath(chapter, "/profile");
 
     public string Subscription(Chapter? chapter) => AccountPath(chapter, "/subscription");
+
+    public string SiteSubscriptionCheckout(Guid priceId) 
+        => AccountPath(chapter: null, $"/subscription/{priceId}/checkout");
 
     private string AccountPath(Chapter? chapter, string path)
         => GetRoute(chapter, "/account" + path);

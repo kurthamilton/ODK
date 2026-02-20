@@ -9,7 +9,7 @@
         const $pages = $wizard.querySelectorAll('[data-wizard-page]');        
 
         const $form = $wizard.closest('form');
-        $form.addEventListener('submit', e => {            
+        $form.addEventListener('submit', e => {
             const activePage = parseInt($wizard.getAttribute('data-wizard-active'));
             if (activePage < $pages.length - 1) {
                 e.preventDefault();

@@ -588,7 +588,6 @@ public class MemberEmailService : IMemberEmailService
 
     public async Task SendNewGroupEmail(
         IServiceRequest request,
-        ChapterTexts texts,
         SiteEmailSettings settings)
     {
         var urlProvider = await _urlProviderFactory.Create(request);
@@ -596,7 +595,6 @@ public class MemberEmailService : IMemberEmailService
 
         var parameters = new Dictionary<string, string>
         {
-            { "chapter.description", texts.Description ?? string.Empty },
             { "url", url }
         };
 
@@ -607,7 +605,6 @@ public class MemberEmailService : IMemberEmailService
         var body = new EmailBodyBuilder()
             .AddParagraph("A group has just been created")
             .AddParagraph("Name: {chapter.fullName}")
-            .AddParagraph("{chapter.description}")
             .AddParagraphLink("url")
             .ToString();
 

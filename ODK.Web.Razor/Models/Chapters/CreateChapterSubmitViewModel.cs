@@ -2,28 +2,18 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Web.Razor.Models.Account;
 using ODK.Web.Razor.Models.Admin.Chapters;
+using ODK.Web.Razor.Models.Components;
 
 namespace ODK.Web.Razor.Models.Chapters;
 
-public class CreateChapterSubmitViewModel : IChapterImageFormViewModel
+public class CreateChapterSubmitViewModel : LocationPickerViewModel, IChapterImageFormViewModel
 {
-    [Required]
-    [MaxLength(1024)]
-    public string? Description { get; set; }
-
     public string? ImageDataUrl { get; set; }
-
-    public LocationFormViewModel Location { get; set; } = new();
 
     [Required]
     [MaxLength(100)]
     [Remote("Available", "Groups", ErrorMessage = "That name is already taken")]
     public string? Name { get; set; }
-
-    [Required]
-    [MaxLength(255)]
-    [Display(Name = "Short description")]
-    public string? ShortDescription { get; set; }
 
     [Display(Name = "Topics")]
     public List<Guid>? TopicIds { get; set; }

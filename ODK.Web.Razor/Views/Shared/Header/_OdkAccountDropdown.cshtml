@@ -27,7 +27,6 @@
         .Where(x => x.Approved())
         .OrderBy(x => x.GetDisplayName(platform))
         .ToArray();
-
 }
 
 @if (Model.MemberChapters.Count > 0)
@@ -46,6 +45,12 @@
             Position = "end",
             ContentFunc = 
                 @<div>
+                    @if (Model.Member != null)
+                    {
+                        <div>
+                            Signed in as @Model.Member.EmailAddress
+                        </div>
+                    }
                     @if (chapters.Length == 1)
                     {
                         var chapter = chapters.First();
@@ -185,22 +190,7 @@
                         </a>
                     </div> 
                 </div>,
-            FooterFunc = 
-                @<div>
-                    <div class="list-group list-group-flush list-group-border-0">
-                        <div class="offcanvas-flush-item"><strong>Appearance</strong></div>
-
-                        <label class="list-group-item list-group-item-action d-flex align-items-center offcanvas-flush-item">
-                            <span class="me-3">Dark mode</span>
-
-                            <span class="d-flex gap-1">
-                                <span class="form-switch p-0 d-flex align-items-center">
-                                    <input class="form-check-input ms-0 mt-0" type="checkbox" role="switch" data-theme-switch />
-                                </span>                
-                            </span>
-                        </label>
-                    </div>
-                </div>
+            FooterFunc = @<div>@await Html.PartialAsync("Header/_AccountDropdownFooter")</div>
         })
     </div>
 }
