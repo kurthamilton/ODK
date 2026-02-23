@@ -164,38 +164,34 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
     {
         var platform = request.Platform;
 
-        var (sitePaymentSettings, siteSubscriptions, prices, memberSiteSubscriptions) = await GetSiteAdminRestrictedContent(request,
+        var (sitePaymentSettings, siteSubscriptionSummaries, prices) = await GetSiteAdminRestrictedContent(request,
             x => x.SitePaymentSettingsRepository.GetAll(),
-            x => x.SiteSubscriptionRepository.GetAll(platform),
-            x => x.SiteSubscriptionPriceRepository.GetAll(platform),
-            x => x.MemberSiteSubscriptionRepository.GetAllActive());
+            x => x.SiteSubscriptionRepository.GetSummaries(platform),
+            x => x.SiteSubscriptionPriceRepository.GetAll(platform));
 
         var priceDictionary = prices
             .GroupBy(x => x.SiteSubscriptionId)
             .ToDictionary(x => x.Key, x => x.ToArray());
 
+        var siteSubscriptionDictionary = siteSubscriptionSummaries
+            .ToDictionary(x => x.SiteSubscription.Id);
+
         var sitePaymentSettingsDictionary = sitePaymentSettings
             .ToDictionary(x => x.Id);
 
-        var memberSiteSubscriptionDictionary = memberSiteSubscriptions
-            .GroupBy(x => x.SiteSubscriptionId)
-            .ToDictionary(x => x.Key, x => x.Count());
-
-        return siteSubscriptions
+        return siteSubscriptionSummaries
             .Select(x => new SiteSubscriptionSiteAdminListItemViewModel
             {
-                ActiveCount = memberSiteSubscriptionDictionary.TryGetValue(x.Id, out var activeCount)
-                    ? activeCount
-                    : 0,
-                Default = x.Default,
-                Enabled = x.Enabled,
-                Features = x.Features.Select(x => x.Feature).ToArray(),
-                GroupLimit = x.GroupLimit,
-                Id = x.Id,
-                MemberLimit = x.MemberLimit,
-                Name = x.Name,
-                PaymentSettingsName = sitePaymentSettingsDictionary[x.SitePaymentSettingId].Name,
-                Prices = priceDictionary.TryGetValue(x.Id, out var prices)
+                ActiveCount = x.ActiveMemberSiteSubscriptionCount,
+                Default = x.SiteSubscription.Default,
+                Enabled = x.SiteSubscription.Enabled,
+                Features = x.SiteSubscription.Features.Select(x => x.Feature).ToArray(),
+                GroupLimit = x.SiteSubscription.GroupLimit,
+                Id = x.SiteSubscription.Id,
+                MemberLimit = x.SiteSubscription.MemberLimit,
+                Name = x.SiteSubscription.Name,
+                PaymentSettingsName = sitePaymentSettingsDictionary[x.SiteSubscription.SitePaymentSettingId].Name,
+                Prices = priceDictionary.TryGetValue(x.SiteSubscription.Id, out var prices)
                     ? prices
                         .Select(x => new SiteSubscriptionSiteAdminListItemPriceViewModel
                         {

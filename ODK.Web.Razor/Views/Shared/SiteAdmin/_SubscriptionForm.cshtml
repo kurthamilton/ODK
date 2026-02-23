@@ -9,9 +9,12 @@
 @inject ISiteSubscriptionAdminService SiteSubscriptionAdminService
 @{
     var siteSubscriptions = await SiteSubscriptionAdminService.GetAllSubscriptions(RequestStore.MemberServiceRequest);
+    var sitePaymentSettingsDictionary = Model.SitePaymentSettings
+        .ToDictionary(x => x.Id);
+
     var fallbackOptions = siteSubscriptions
         .Where(x => x.Id != Model.SiteSubscriptionId)
-        .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Name })
+        .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = $"{x.Name} [{sitePaymentSettingsDictionary[x.SitePaymentSettingId].Name}]" })
         .OrderBy(x => x.Text)
         .ToArray();
 
@@ -28,7 +31,7 @@
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.SitePaymentSettingId, new { @class = "form-label" })
     @Html.DropDownListFor(x => x.SitePaymentSettingId, sitePaymentSettingsOptions, 
-        Model.SitePaymentSettingId != null 
+        Model.SiteSubscriptionId != null
             ? new { @class = "form-select", disabled = "" }
             : new { @class = "form-select" })
     @Html.ValidationMessageFor(x => x.SitePaymentSettingId)

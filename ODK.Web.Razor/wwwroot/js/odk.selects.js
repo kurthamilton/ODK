@@ -144,7 +144,7 @@
         }
 
         const searchable = multiple || $select.hasAttribute('data-searchable');
-        const alwaysOpen = $select.hasAttribute('data-always-open');
+        const alwaysOpen = $select.hasAttribute('data-always-open') || multiple;
         const addable = $select.hasAttribute('data-addable');
 
         if (!placeholder) {

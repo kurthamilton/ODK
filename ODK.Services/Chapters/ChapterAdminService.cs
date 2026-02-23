@@ -97,7 +97,11 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapterId),
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.MemberRepository.GetById(memberId),
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapterId));
+            x => x.MemberSiteSubscriptionRepository.Query()
+                .ForChapterOwner(chapterId)
+                .Active()
+                .SiteSubscription()
+                .GetSingleOrDefault());
 
         AssertMemberIsChapterAdmin(
             request,
@@ -151,7 +155,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         var name = Chapter.CleanName(model.Name);
 
         var (
-            memberSubscription,
+            memberSubscriptionDto,
             memberChapters,
             nameExists,
             siteEmailSettings
@@ -1135,7 +1139,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
-        var owner = chapter.OwnerId == currentMember.Id 
+        var owner = chapter.OwnerId == currentMember.Id
             ? currentMember
             : await GetChapterAdminRestrictedContent(request,
                 x => x.ChapterRepository.Query(platform)
@@ -1444,8 +1448,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
-        var owner = currentMember.Id == chapter.OwnerId 
-            ? currentMember 
+        var owner = currentMember.Id == chapter.OwnerId
+            ? currentMember
             : await GetChapterAdminRestrictedContent(request,
                 x => x.ChapterRepository.Query(platform)
                     .ById(chapter.Id)

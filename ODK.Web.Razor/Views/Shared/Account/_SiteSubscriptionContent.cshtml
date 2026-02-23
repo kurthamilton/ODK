@@ -20,7 +20,6 @@
         Model.CurrentMemberExternalSubscription);
 
     subscriptions = subscriptions
-        .Where(x => x.Prices.Any(x => x.IsPaid))
         .OrderBy(x => x.Subscription.DisplayOrder)
         .ToArray();
 }
@@ -37,11 +36,11 @@
         <div class="form-group mb-3 required">
             @Html.Label("currencyId", "Choose currency", new { @class = "form-label" })
             @Html.DropDownList("currencyId", currencyOptions, "", new 
-                { 
-                    @class = "form-select", 
-                    data_val = "true", 
-                    data_val_required = "The Currency field is required" 
-                })
+            { 
+                @class = "form-select", 
+                data_val = "true", 
+                data_val_required = "The Currency field is required" 
+            })
             @Html.ValidationMessage("currencyId")
         </div>
 

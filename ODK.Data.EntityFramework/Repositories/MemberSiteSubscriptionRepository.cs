@@ -1,34 +1,36 @@
-﻿using Microsoft.EntityFrameworkCore;
-using ODK.Core.Chapters;
+﻿using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
+using ODK.Core.Subscriptions;
 using ODK.Data.Core.Deferred;
+using ODK.Data.Core.Members;
+using ODK.Data.Core.QueryBuilders;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
 using ODK.Data.EntityFramework.Queries;
+using ODK.Data.EntityFramework.QueryBuilders;
 
 namespace ODK.Data.EntityFramework.Repositories;
 
-public class MemberSiteSubscriptionRepository : ReadWriteRepositoryBase<MemberSiteSubscription>, IMemberSiteSubscriptionRepository
+public class MemberSiteSubscriptionRepository
+    : ReadWriteRepositoryBase<MemberSiteSubscription, IMemberSiteSubscriptionQueryBuilder>, IMemberSiteSubscriptionRepository
 {
     public MemberSiteSubscriptionRepository(OdkContext context)
         : base(context)
     {
     }
 
-    public IDeferredQueryMultiple<MemberSiteSubscription> GetAllActive()
-        => Set()
-            .Where(x => x.ExpiresUtc > DateTime.UtcNow)
-            .DeferredMultiple();
-
     public IDeferredQueryMultiple<MemberSiteSubscription> GetAllChapterOwnerSubscriptions(PlatformType platform)
     {
         var query =
             from chapter in Set<Chapter>()
                 .ForPlatform(platform, includeUnpublished: true)
-            from subscription in Set()
-                .Where(x => x.MemberId == chapter.OwnerId && x.SiteSubscription.Platform == platform)
-            select subscription;
+            from memberSiteSubscription in Set()
+                .Where(x => x.MemberId == chapter.OwnerId)
+            from siteSubscription in Set<SiteSubscription>()
+                .Where(x => x.Id == memberSiteSubscription.SiteSubscriptionId)
+            where siteSubscription.Platform == platform
+            select memberSiteSubscription;
         return query.DeferredMultiple();
     }
 
@@ -45,23 +47,27 @@ public class MemberSiteSubscriptionRepository : ReadWriteRepositoryBase<MemberSi
     }
 
     public IDeferredQuerySingleOrDefault<MemberSiteSubscription> GetByMemberId(Guid memberId, PlatformType platform)
-        => Set()
-            .Where(x => x.MemberId == memberId && x.SiteSubscription.Platform == platform)
-            .DeferredSingleOrDefault();
+        => Query()
+            .ForMember(memberId, platform)
+            .GetSingleOrDefault();
 
     public IDeferredQueryMultiple<MemberSiteSubscription> GetByMemberId(Guid memberId)
         => Set()
             .Where(x => x.MemberId == memberId)
             .DeferredMultiple();
 
+    public IDeferredQuerySingleOrDefault<MemberSiteSubscriptionDto> GetDtoByChapterId(Guid chapterId)
+        => Query()
+            .ForChapterOwner(chapterId)
+            .ToMemberSiteSubscriptionDto()
+            .GetSingleOrDefault();
+
     public IDeferredQueryMultiple<MemberSiteSubscription> GetExpired()
         => Set()
             .Where(x => x.ExpiresUtc <= DateTime.UtcNow)
             .DeferredMultiple();
 
-    protected override IQueryable<MemberSiteSubscription> Set()
-        => base.Set()
-            .Include(x => x.SiteSubscription)
-            .ThenInclude(x => x.Features)
-            .Include(x => x.SiteSubscriptionPrice);
+    public override IMemberSiteSubscriptionQueryBuilder Query()
+        => CreateQueryBuilder<IMemberSiteSubscriptionQueryBuilder, MemberSiteSubscription>(
+            context => new MemberSiteSubscriptionQueryBuilder(context));
 }

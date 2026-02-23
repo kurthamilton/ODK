@@ -2,6 +2,7 @@
 using ODK.Core.Events;
 using ODK.Core.Features;
 using ODK.Core.Members;
+using ODK.Core.Subscriptions;
 using ODK.Core.Venues;
 using ODK.Data.Core;
 
@@ -73,13 +74,15 @@ public class AuthorizationService : IAuthorizationService
         Chapter chapter,
         SiteFeatureType feature)
     {
-        var ownerSubscription = await _unitOfWork.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id).Run();
+        var dto = await _unitOfWork.MemberSiteSubscriptionRepository
+            .GetDtoByChapterId(chapter.Id)
+            .Run();
 
-        return ChapterHasAccess(ownerSubscription, feature);
+        return ChapterHasAccess(dto?.SiteSubscription, feature);
     }
 
     public bool ChapterHasAccess(
-        MemberSiteSubscription? ownerSubscription,
+        SiteSubscription? ownerSubscription,
         SiteFeatureType feature) => ownerSubscription?.HasFeature(feature) == true;
 
     public SubscriptionStatus GetSubscriptionStatus(
@@ -135,8 +138,10 @@ public class AuthorizationService : IAuthorizationService
             case SubscriptionStatus.Current:
             case SubscriptionStatus.Expiring:
                 return ChapterFeatureVisibilityType.ActiveMembers;
+
             case SubscriptionStatus.Expired:
                 return ChapterFeatureVisibilityType.AllMembers;
+
             default:
                 return ChapterFeatureVisibilityType.Public;
         }

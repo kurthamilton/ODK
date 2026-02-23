@@ -173,7 +173,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
                 SitePaymentSettings = sitePaymentSettings,
                 Subscription = x
             })
-            .ToArray();        
+            .ToArray();
 
         return new SiteSubscriptionsViewModel
         {
@@ -188,8 +188,6 @@ public class SiteSubscriptionService : ISiteSubscriptionService
                 .Select(x => x.First())
                 .ToArray(),
             Subscriptions = siteSubscriptionViewModels
-                .Where(x => x.Prices.Count > 0)
-                .ToArray()
         };
     }
 

@@ -1,8 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
+using ODK.Data.Core.Subscriptions;
 using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework.Repositories;
@@ -34,9 +36,26 @@ public class SiteSubscriptionRepository : ReadWriteRepositoryBase<SiteSubscripti
         return query.DeferredSingle();
     }
 
-    public IDeferredQuerySingle<SiteSubscription> GetDefault(PlatformType platform) => Set()
-        .Where(x => x.Platform == platform && x.Enabled && x.Default)
-        .DeferredSingle();
+    public IDeferredQuerySingle<SiteSubscription> GetDefault(PlatformType platform)
+        => Set()
+            .Where(x => x.Platform == platform && x.Enabled && x.Default)
+            .DeferredSingle();
+
+    public IDeferredQueryMultiple<SiteSubscriptionSummaryDto> GetSummaries(PlatformType platform)
+    {
+        var query =
+            from siteSubscription in Set()
+            where siteSubscription.Platform == platform
+            select new SiteSubscriptionSummaryDto
+            {
+                ActiveMemberSiteSubscriptionCount = Set<MemberSiteSubscription>()
+                    .Where(x => x.SiteSubscriptionId == siteSubscription.Id && x.ExpiresUtc > DateTime.UtcNow)
+                    .Count(),
+                SiteSubscription = siteSubscription
+            };
+
+        return query.DeferredMultiple();
+    }
 
     protected override IQueryable<SiteSubscription> Set()
         => base.Set()
