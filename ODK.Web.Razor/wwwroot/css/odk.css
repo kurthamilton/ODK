@@ -13055,6 +13055,22 @@ footer {
   margin-top: 0.5rem;
   margin-bottom: 0.5rem;
 }
+.offcanvas.has-footer {
+  --odk-footer-fade-height: 120px;
+}
+.offcanvas.has-footer .offcanvas-body {
+  margin-bottom: calc(-1 * var(--odk-footer-fade-height));
+}
+.offcanvas.has-footer .offcanvas-footer {
+  z-index: 1;
+}
+.offcanvas.has-footer .offcanvas-footer:before {
+  content: "";
+  display: block;
+  height: var(--odk-footer-fade-height);
+  background: linear-gradient(to bottom, transparent, var(--bs-body-bg));
+  pointer-events: none;
+}
 
 .offcanvas-flush .offcanvas-body {
   padding-left: 0;

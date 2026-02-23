@@ -16,6 +16,11 @@
     {
         customClasses.Add($"offcanvas-{Model.Position.ToLowerInvariant()}");
     }
+
+    if (Model.FooterFunc != null)
+    {
+        customClasses.Add("has-footer");
+    }
 }
 
 <div data-odk-component="_Offcanvas">
@@ -57,7 +62,9 @@
         @if (Model.FooterFunc != null)
         {
             <div class="offcanvas-footer">
-                @Model.FooterFunc.Invoke(null)
+                <div class="pt-3 border-top border-2">
+                    @Model.FooterFunc.Invoke(null)
+                </div>                
             </div>
         }        
     </div>
