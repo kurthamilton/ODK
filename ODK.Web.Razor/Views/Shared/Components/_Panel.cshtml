@@ -1,7 +1,7 @@
 ﻿@using ODK.Web.Razor.Models.Components
 @model PanelViewModel
 
-<section class="panel" data-odk-component="_Panel">
+<section class="panel @Model.Class" data-odk-component="_Panel">
     <div class="panel-header">
         
         @if (Model.TitleContentFunc != null) 

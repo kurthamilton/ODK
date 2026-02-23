@@ -6,7 +6,7 @@ namespace ODK.Services.Subscriptions;
 
 public interface ISiteSubscriptionAdminService
 {
-    Task<ServiceResult> AddSiteSubscription(IMemberServiceRequest request, SiteSubscriptionCreateModel model);
+    Task<ServiceResult<Guid>> AddSiteSubscription(IMemberServiceRequest request, SiteSubscriptionCreateModel model);
 
     Task<ServiceResult> AddSiteSubscriptionPrice(
         IMemberServiceRequest request,

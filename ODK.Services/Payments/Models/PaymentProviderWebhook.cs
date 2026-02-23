@@ -10,7 +10,7 @@ public class PaymentProviderWebhook
 
     public required string Id { get; init; }
 
-    public required IDictionary<string, string> Metadata { get; init; }
+    public required IReadOnlyDictionary<string, string> Metadata { get; init; }
 
     public required DateTime OriginatedUtc { get; init; }
 

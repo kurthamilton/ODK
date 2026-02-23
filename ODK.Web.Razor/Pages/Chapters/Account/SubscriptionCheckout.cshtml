@@ -10,13 +10,14 @@
 @using ODK.Web.Razor.Models.Payments
 @model SubscriptionCheckoutModel
 @inject IMemberService MemberService
+@inject IOdkRoutes OdkRoutes
 @{
     Layout = "_OdkChapterLayout";
     Model.Title = "Subscription checkout";
 
     var chapter = Model.Chapter;
     var request = Model.MemberChapterServiceRequest;
-    var returnPath = $"/{chapter.ShortName}/account/subscription/{Model.SubscriptionId}/confirm?sessionId={{sessionId}}";
+    var returnPath = OdkRoutes.Groups.SubscriptionConfirm(chapter);
     var viewModel = await MemberService.StartChapterSubscriptionCheckoutSession(
         request, Model.SubscriptionId, returnPath);
 }

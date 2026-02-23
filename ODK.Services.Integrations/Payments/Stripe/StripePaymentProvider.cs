@@ -31,6 +31,8 @@ public class StripePaymentProvider : IPaymentProvider
         _settings = settings;
     }
 
+    public PaymentProviderType Type => PaymentProviderType.Stripe;
+
     public async Task<ServiceResult> ActivateSubscriptionPlan(string externalId)
     {
         var service = CreatePriceService();
@@ -219,17 +221,29 @@ public class StripePaymentProvider : IPaymentProvider
 
         try
         {
-            var session = await service.GetAsync(externalId);
+            var session = await service.GetAsync(externalId, new SessionGetOptions
+            {
+                Expand = 
+                [
+                    "invoice",
+                    "payment_intent.latest_charge"
+                ]
+            });
 
-            var complete = session.Status == "complete";
+            DateTime? completedUtc = null;
+            if (session.PaymentStatus == "paid")
+            {
+                completedUtc = session.PaymentIntent?.LatestCharge?.Created
+                    ?? session.Invoice?.Created;
+            }
 
             return new ExternalCheckoutSession
             {
                 Amount = session.AmountTotal ?? 0,
                 ClientSecret = session.ClientSecret,
-                Complete = complete,
+                CompletedUtc = completedUtc,
                 Currency = session.Currency,
-                Metadata = PaymentMetadataModel.FromDictionary(session.Metadata ?? []),
+                Metadata = session.Metadata ?? [],
                 PaymentId = session.PaymentIntentId,
                 SessionId = session.Id,
                 SubscriptionId = session.SubscriptionId
@@ -402,9 +416,9 @@ public class StripePaymentProvider : IPaymentProvider
         {
             Amount = session.AmountTotal ?? 0,
             ClientSecret = session.ClientSecret,
-            Complete = false,
+            CompletedUtc = null,
             Currency = session.Currency,
-            Metadata = metadata,
+            Metadata = metadataDictionary,
             PaymentId = null,
             SessionId = session.Id,
             SubscriptionId = null

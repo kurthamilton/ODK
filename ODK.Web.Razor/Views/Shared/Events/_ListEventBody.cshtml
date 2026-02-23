@@ -24,7 +24,7 @@
 
 @if (Model.Event.ResponseSummary != null)
 {
-    <div class="mt-3">
+    <div>
         @await Html.PartialAsync("Events/_EventResponseSummary", new EventResponseSummaryViewModel
         {
             MemberResponse = Model.Event.Response,

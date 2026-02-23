@@ -260,7 +260,8 @@ public class SocialMediaService : ISocialMediaService
         {
             _backgroundTaskService.Schedule(
                 () => ScrapeLatestInstagramPosts(chapterIds, delaySeconds),
-                nextEarliestRunUtc);
+                nextEarliestRunUtc,
+                BackgroundTaskQueueType.Instagram);
         }
         else
         {
@@ -268,7 +269,8 @@ public class SocialMediaService : ISocialMediaService
 
             _backgroundTaskService.Schedule(
                 () => ScrapeLatestInstagramPosts(chapterIds, delaySeconds),
-                nextEarliestRunUtc.AddSeconds(randomDelaySeconds));
+                nextEarliestRunUtc.AddSeconds(randomDelaySeconds),
+                BackgroundTaskQueueType.Instagram);
         }
     }
 }

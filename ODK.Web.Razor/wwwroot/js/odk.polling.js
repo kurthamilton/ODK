@@ -1,9 +1,15 @@
 ﻿(function () {
     bindPolling();
 
+    let timeoutId = 0;
+
     async function bindPolling() {
         const $container = document.querySelector('[data-odk-polling-url]');
         if (!$container) return;
+
+        $container.addEventListener('odk:polling.cancel', () => {
+            if (timeoutId) window.clearTimeout(timeoutId);
+        });
 
         const interval = parseInt($container.getAttribute('data-odk-polling-interval'));
 
@@ -29,7 +35,7 @@
                 }));
             }            
         } finally {
-            window.setTimeout(() => send(options), options.interval);
+            timeoutId = window.setTimeout(() => send(options), options.interval);
         }         
     }
 })();

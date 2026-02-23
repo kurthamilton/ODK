@@ -1,0 +1,46 @@
+﻿@using ODK.Core.Payments
+@using ODK.Web.Razor.Models.Payments
+@model PaymentConfirmViewModel
+@{
+    string statusUrl;
+
+    if (!string.IsNullOrEmpty(Model.StatusUrl))
+    {
+        statusUrl = Model.StatusUrl;
+    }
+    else
+    {
+        statusUrl = $"/payments/sessions/{Model.SessionId}/status";
+        if (Model.Chapter != null)
+        {
+            statusUrl += $"?groupId={Model.Chapter.Id}";
+        }
+    }    
+}
+
+<div data-odk-component="_PaymentConfirmContent">
+    <section class="section">
+        <div data-odk-checkout data-odk-polling-url="@statusUrl">
+
+            <div class="d-none"
+                data-odk-checkout-status="@PaymentStatusType.Complete"
+                data-odk-checkout-action="reload">
+                <div class="alert alert-success">
+                    Payment completed. Redirecting...
+                </div>
+            </div>
+
+            <div class="d-none"
+                data-odk-checkout-status="@PaymentStatusType.Pending">
+                <div class="alert alert-warning">
+                    We are just waiting for confirmation of your payment...
+                </div>                            
+            </div>                        
+
+            <div class="d-none"
+                data-odk-checkout-status="@PaymentStatusType.Expired"
+                data-odk-checkout-action="reload">
+            </div>
+        </div>
+    </section>
+</div>

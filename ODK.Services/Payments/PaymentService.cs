@@ -107,10 +107,40 @@ public class PaymentService : IPaymentService
             paymentAccount);
 
         var externalSession = await paymentProvider.GetCheckoutSession(externalSessionId);
+        if (externalSession == null)
+        {
+            return PaymentStatusType.Expired;
+        }
 
-        return externalSession == null || externalSession.Metadata.ChapterId != chapterId
-            ? PaymentStatusType.Expired
-            : PaymentStatusType.Pending;
+        if (externalSession.CompletedUtc != null)
+        {
+            if (externalSession.SubscriptionId != null)
+            {
+                // Enqueue the chapter subscription processing to avoid race conditions with webhooks
+                // Payment status Completed will be returned on the next request after the subscription has been processed
+                _backgroundTaskService.Enqueue(
+                    () => ProcessCompletedChapterSubscription(
+                        externalSession.Metadata,
+                        externalSession.CompletedUtc.Value,
+                        paymentProvider.Type,
+                        externalSession.SubscriptionId),
+                    BackgroundTaskQueueType.Payments);
+            }
+            else if (externalSession.PaymentId != null)
+            {
+                // Enqueue the payment processing to avoid race conditions with webhooks
+                // Payment status Completed will be returned on the next request after the payment has been processed
+                _backgroundTaskService.Enqueue(
+                    () => ProcessCompletedPayment(
+                        externalSession.Metadata,
+                        externalSession.CompletedUtc.Value,
+                        paymentProvider.Type,
+                        externalSession.PaymentId),
+                    BackgroundTaskQueueType.Payments);
+            }
+        }
+
+        return PaymentStatusType.Pending;
     }
 
     public async Task<PaymentStatusType> GetMemberSitePaymentCheckoutSessionStatus(
@@ -132,11 +162,324 @@ public class PaymentService : IPaymentService
         var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(
             sitePaymentSettings, payment.SitePaymentSettingId);
 
-        var externalSession = await paymentProvider.GetCheckoutSession(externalSessionId);
+        var externalSession = await paymentProvider.GetCheckoutSession(externalSessionId);        
 
-        return externalSession == null
-            ? PaymentStatusType.Expired
-            : PaymentStatusType.Pending;
+        if (externalSession == null)
+        {
+            return PaymentStatusType.Expired;
+        }
+
+        if (externalSession.SubscriptionId != null &&
+            externalSession.CompletedUtc != null)
+        {
+            // Enqueue the site subscription processing to avoid race conditions with webhooks
+            // Payment status Completed will be returned on the next request after the subscription has been processed
+            _backgroundTaskService.Enqueue(
+                () => ProcessCompletedSiteSubscription(
+                    externalSession.Metadata,
+                    externalSession.CompletedUtc.Value,
+                    paymentProvider.Type,
+                    externalSession.SubscriptionId),
+                BackgroundTaskQueueType.Payments);
+        }        
+
+        return PaymentStatusType.Pending;
+    }
+
+    // Public for Hangfire
+    public async Task<PaymentWebhookProcessingResult> ProcessCompletedChapterSubscription(
+        IReadOnlyDictionary<string, string> metadataDictionary,
+        DateTime completedUtc,
+        PaymentProviderType paymentProvider,
+        string externalId)
+    {
+        var metadata = PaymentMetadataModel.FromDictionary(metadataDictionary);
+
+        if (metadata.MemberId == null ||
+            metadata.ChapterId == null ||
+            metadata.ChapterSubscriptionId == null)
+        {
+            var missingProperties = new[]
+            {
+                metadata.MemberId == null ? "MemberId" : null,
+                metadata.ChapterId == null ? "ChapterId" : null,
+                metadata.ChapterSubscriptionId == null ? "ChapterSubscriptionId" : null
+            }.Where(x => x != null);
+
+            var message =
+                $"Cannot process {paymentProvider} completed chapter subscription: " +
+                $"metadata missing properties {string.Join(", ", missingProperties)}";
+
+            await _loggingService.Error(message);
+            return PaymentWebhookProcessingResult.Failure();
+        }
+
+        // Load basic metadata objects
+        var (member, chapter, chapterSubscription, payment, paymentCheckoutSession) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(metadata.MemberId.Value),
+            x => x.ChapterSubscriptionRepository.GetByIdOrDefault(metadata.ChapterSubscriptionId.Value),
+            x => x.ChapterSubscriptionRepository.GetById(metadata.ChapterSubscriptionId.Value),
+            x => metadata.PaymentId != null
+                ? x.PaymentRepository.GetByIdOrDefault(metadata.PaymentId.Value)
+                : new DefaultDeferredQuerySingleOrDefault<Payment>(),
+            x => metadata.PaymentCheckoutSessionId != null
+                ? x.PaymentCheckoutSessionRepository.GetByIdOrDefault(metadata.PaymentCheckoutSessionId.Value)
+                : new DefaultDeferredQuerySingleOrDefault<PaymentCheckoutSession>());
+
+        if (payment == null)
+        {
+            // The first payment for a subscription will be preceded by the creation of a Payment at checkout.
+            // We will need to create a Payment here for recurring payments.
+            payment = new Payment
+            {
+                Amount = (decimal)chapterSubscription.Amount,
+                ChapterId = chapter.Id,
+                CreatedUtc = completedUtc,
+                CurrencyId = chapterSubscription.CurrencyId,
+                Id = Guid.NewGuid(),
+                MemberId = member.Id,
+                Reference = chapterSubscription.ToReference(),
+                SitePaymentSettingId = chapterSubscription.SitePaymentSettingId
+            };
+        }
+
+        // update payment
+        if (payment.PaidUtc != null)
+        {
+            var message =
+                $"Not updating Payment {payment.Id} in {paymentProvider} webhook processing: " +
+                $"already paid";
+            await _loggingService.Warn(message);
+        }
+        else
+        {
+            payment.ExternalId = externalId;
+            payment.PaidUtc = completedUtc;
+            _unitOfWork.PaymentRepository.Upsert(payment);
+        }
+
+        // update payment checkout session
+        if (paymentCheckoutSession != null)
+        {
+            if (paymentCheckoutSession.CompletedUtc != null)
+            {
+                var message =
+                    $"Not updating PaymentCheckoutSession {paymentCheckoutSession.Id} " +
+                    $"in {paymentProvider} webhook processing: " +
+                    $"already completed";
+                await _loggingService.Warn(message);
+            }
+            else
+            {
+                paymentCheckoutSession.CompletedUtc = completedUtc;
+                _unitOfWork.PaymentCheckoutSessionRepository.Update(paymentCheckoutSession);
+            }
+        }
+
+        return await UpdateMemberChapterSubscription(
+            metadata,
+            member,
+            payment,
+            externalId: externalId,
+            completedUtc);
+    }
+
+    // Public for Hangfire
+    public async Task<PaymentWebhookProcessingResult> ProcessCompletedPayment(
+        IReadOnlyDictionary<string, string> metadataDictionary,
+        DateTime completedUtc,
+        PaymentProviderType paymentProvider,
+        string externalId)
+    {
+        // Validate basic metadata
+        var metadata = PaymentMetadataModel.FromDictionary(metadataDictionary);
+
+        if (metadata.MemberId == null ||
+            metadata.PaymentId == null ||
+            metadata.PaymentCheckoutSessionId == null)
+        {
+            var missingProperties = new[]
+            {
+                metadata.MemberId == null ? "MemberId" : null,
+                metadata.PaymentId == null ? "PaymentId" : null,
+                metadata.PaymentCheckoutSessionId == null ? "PaymentCheckoutSessionId" : null
+            }.Where(x => x != null);
+
+            var message =
+                $"Cannot process {paymentProvider} payment: " +
+                $"metadata missing properties {string.Join(", ", missingProperties)}";
+
+            await _loggingService.Warn(message);
+            return PaymentWebhookProcessingResult.Failure();
+        }
+
+        // Load basic metadata objects
+        var (member, payment, paymentCheckoutSession) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(metadata.MemberId.Value),
+            x => x.PaymentRepository.GetById(metadata.PaymentId.Value),
+            x => x.PaymentCheckoutSessionRepository.GetById(metadata.PaymentCheckoutSessionId.Value));
+
+        // update payment
+        if (payment.PaidUtc != null)
+        {
+            var message =
+                $"Not updating Payment {payment.Id} in {paymentProvider} webhook processing: " +
+                $"already paid";
+            await _loggingService.Warn(message);
+        }
+        else
+        {
+            payment.ExternalId = externalId;
+            payment.PaidUtc = completedUtc;
+            _unitOfWork.PaymentRepository.Update(payment);
+        }
+
+        // update payment checkout session
+        if (paymentCheckoutSession.CompletedUtc != null)
+        {
+            var message =
+                $"Not updating PaymentCheckoutSession {paymentCheckoutSession.Id} " +
+                $"in {paymentProvider} webhook processing: " +
+                "already completed";
+            await _loggingService.Warn(message);
+        }
+        else
+        {
+            paymentCheckoutSession.CompletedUtc = completedUtc;
+            _unitOfWork.PaymentCheckoutSessionRepository.Update(paymentCheckoutSession);
+        }
+
+        if (metadata.EventTicketPaymentId != null)
+        {
+            await _unitOfWork.SaveChangesAsync();
+
+            var eventTicketPayment = await _unitOfWork.EventTicketPaymentRepository
+                .GetById(metadata.EventTicketPaymentId.Value)
+                .Run();
+
+            var @event = await _unitOfWork.EventRepository.GetById(eventTicketPayment.EventId).Run();
+
+            _backgroundTaskService.Enqueue(
+                () => _eventService.CompleteEventTicketPurchase(@event.Id, member.Id),
+                BackgroundTaskQueueType.Payments);
+
+            var (chapter, currency) = await _unitOfWork.RunAsync(
+                x => x.ChapterRepository.GetById(PlatformType.Default, @event.ChapterId),
+                x => x.CurrencyRepository.GetById(payment.CurrencyId));
+
+            return PaymentWebhookProcessingResult.Successful(
+                member, chapter, payment, currency);
+        }
+
+        return await UpdateMemberChapterSubscription(
+            metadata,
+            member,
+            payment,
+            externalId: externalId,
+            completedUtc);
+    }
+
+    // Public for Hangfire
+    public async Task<PaymentWebhookProcessingResult> ProcessCompletedSiteSubscription(
+        IReadOnlyDictionary<string, string> metadataDictionary, 
+        DateTime completedUtc, 
+        PaymentProviderType paymentProvider, 
+        string externalId)
+    {
+        var metadata = PaymentMetadataModel.FromDictionary(metadataDictionary);
+
+        if (metadata.MemberId == null ||
+            metadata.SiteSubscriptionPriceId == null)
+        {
+            var missingProperties = new[]
+            {
+                metadata.MemberId == null ? "MemberId" : null,
+                metadata.SiteSubscriptionPriceId == null ? "SiteSubscriptionPriceId" : null
+            }.Where(x => x != null);
+
+            var message =
+                $"Cannot update {paymentProvider} site subscription '{externalId}': " +
+                $"metadata missing properties {string.Join(", ", missingProperties)}";
+
+            await _loggingService.Error(message);
+            return PaymentWebhookProcessingResult.Failure();
+        }
+
+        // Load basic metadata objects
+        var (member, siteSubscription, siteSubscriptionPrice, payment, paymentCheckoutSession) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(metadata.MemberId.Value),
+            x => x.SiteSubscriptionRepository.GetByPriceId(metadata.SiteSubscriptionPriceId.Value),
+            x => x.SiteSubscriptionPriceRepository.GetById(metadata.SiteSubscriptionPriceId.Value),
+            x => metadata.PaymentId != null
+                ? x.PaymentRepository.GetByIdOrDefault(metadata.PaymentId.Value)
+                : new DefaultDeferredQuerySingleOrDefault<Payment>(),
+            x => metadata.PaymentCheckoutSessionId != null
+                ? x.PaymentCheckoutSessionRepository.GetByIdOrDefault(metadata.PaymentCheckoutSessionId.Value)
+                : new DefaultDeferredQuerySingleOrDefault<PaymentCheckoutSession>());
+
+        if (payment == null)
+        {
+            // The first payment for a subscription will be preceded by the creation of a Payment at checkout.
+            // We will need to create a Payment here for recurring payments.
+            payment = new Payment
+            {
+                Amount = siteSubscriptionPrice.Amount,
+                CreatedUtc = completedUtc,
+                CurrencyId = siteSubscriptionPrice.CurrencyId,
+                Id = Guid.NewGuid(),
+                MemberId = member.Id,
+                Reference = siteSubscription.ToReference(),
+                SitePaymentSettingId = siteSubscription.SitePaymentSettingId
+            };
+        }
+
+        // update payment
+        if (payment.PaidUtc != null)
+        {
+            var message =
+                $"Not updating Payment {payment.Id} in {paymentProvider} webhook processing: " +
+                $"already paid";
+            await _loggingService.Warn(message);
+        }
+        else
+        {
+            payment.ExternalId = externalId;
+            payment.PaidUtc = completedUtc;
+            _unitOfWork.PaymentRepository.Upsert(payment);
+        }
+
+        // update payment checkout session
+        if (paymentCheckoutSession != null)
+        {
+            if (paymentCheckoutSession.CompletedUtc != null)
+            {
+                var message =
+                    $"Not updating PaymentCheckoutSession {paymentCheckoutSession.Id} in {paymentProvider} webhook processing: " +
+                    $"already completed";
+                await _loggingService.Warn(message);
+            }
+            else
+            {
+                paymentCheckoutSession.CompletedUtc = completedUtc;
+                _unitOfWork.PaymentCheckoutSessionRepository.Update(paymentCheckoutSession);
+            }
+        }
+
+        try
+        {
+            return await UpdateMemberSiteSubscription(
+                metadata.Platform ?? PlatformType.DrunkenKnitwits,
+                member,
+                siteSubscriptionPrice,
+                payment,
+                externalId: externalId,
+                completedUtc);
+        }
+        catch (Exception ex)
+        {
+            await _loggingService.Error("Error processing site subscription webhook", ex);
+            throw;
+        }
     }
 
     public async Task ProcessWebhook(IServiceRequest request, PaymentProviderWebhook webhook)
@@ -202,7 +545,7 @@ public class PaymentService : IPaymentService
 
             await _memberEmailService.SendPaymentNotification(request, member, chapter, payment, currency, siteEmailSettings);
         }
-    }
+    }    
 
     private async Task<PaymentWebhookProcessingResult> ProcessWebhookCheckoutSessionExpired(PaymentProviderWebhook webhook)
     {
@@ -264,8 +607,6 @@ public class PaymentService : IPaymentService
 
     private async Task<PaymentWebhookProcessingResult> ProcessWebhookPayment(PaymentProviderWebhook webhook)
     {
-        var utcNow = webhook.OriginatedUtc;
-
         if (string.IsNullOrEmpty(webhook.PaymentId))
         {
             var message =
@@ -284,88 +625,11 @@ public class PaymentService : IPaymentService
             return PaymentWebhookProcessingResult.Failure();
         }
 
-        // Validate basic metadata
-        var metadata = PaymentMetadataModel.FromDictionary(webhook.Metadata);
-
-        if (metadata.MemberId == null ||
-            metadata.PaymentId == null ||
-            metadata.PaymentCheckoutSessionId == null)
-        {
-            var missingProperties = new[]
-            {
-                metadata.MemberId == null ? "MemberId" : null,
-                metadata.PaymentId == null ? "PaymentId" : null,
-                metadata.PaymentCheckoutSessionId == null ? "PaymentCheckoutSessionId" : null
-            }.Where(x => x != null);
-
-            var message =
-                $"Cannot process {webhook.PaymentProviderType} webhook '{webhook.Id}': " +
-                $"metadata missing properties {string.Join(", ", missingProperties)}";
-
-            await _loggingService.Warn(message);
-            return PaymentWebhookProcessingResult.Failure();
-        }
-
-        // Load basic metadata objects
-        var (member, payment, paymentCheckoutSession) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(metadata.MemberId.Value),
-            x => x.PaymentRepository.GetById(metadata.PaymentId.Value),
-            x => x.PaymentCheckoutSessionRepository.GetById(metadata.PaymentCheckoutSessionId.Value));
-
-        // update payment
-        if (payment.PaidUtc != null)
-        {
-            var message =
-                $"Not updating Payment {payment.Id} in {webhook.PaymentProviderType} webhook processing: " +
-                $"already paid";
-            await _loggingService.Warn(message);
-        }
-        else
-        {
-            payment.ExternalId = webhook.PaymentId;
-            payment.PaidUtc = utcNow;
-            _unitOfWork.PaymentRepository.Update(payment);
-        }
-
-        // update payment checkout session
-        if (paymentCheckoutSession.CompletedUtc != null)
-        {
-            var message =
-                $"Not updating PaymentCheckoutSession {paymentCheckoutSession.Id} " +
-                $"in {webhook.PaymentProviderType} webhook processing: " +
-                "already completed";
-            await _loggingService.Warn(message);
-        }
-        else
-        {
-            paymentCheckoutSession.CompletedUtc = utcNow;
-            _unitOfWork.PaymentCheckoutSessionRepository.Update(paymentCheckoutSession);
-        }
-
-        if (metadata.EventTicketPaymentId != null)
-        {
-            var eventTicketPayment = await _unitOfWork.EventTicketPaymentRepository
-                .GetById(metadata.EventTicketPaymentId.Value)
-                .Run();
-            
-            var @event = await _unitOfWork.EventRepository.GetById(eventTicketPayment.EventId).Run();
-
-            _backgroundTaskService.Enqueue(() => _eventService.CompleteEventTicketPurchase(@event.Id, member.Id));
-
-            var (chapter, currency) = await _unitOfWork.RunAsync(
-                x => x.ChapterRepository.GetById(PlatformType.Default, @event.ChapterId),
-                x => x.CurrencyRepository.GetById(payment.CurrencyId));
-
-            return PaymentWebhookProcessingResult.Successful(
-                member, chapter, payment, currency);
-        }
-
-        return await UpdateMemberChapterSubscription(
-            metadata,
-            member,
-            payment,
-            externalId: webhook.PaymentId,
-            utcNow);
+        return await ProcessCompletedPayment(
+            webhook.Metadata,
+            webhook.OriginatedUtc,
+            webhook.PaymentProviderType,
+            webhook.PaymentId);
     }
 
     private async Task<PaymentWebhookProcessingResult> ProcessWebhookChapterSubscription(
@@ -399,100 +663,17 @@ public class PaymentService : IPaymentService
             return PaymentWebhookProcessingResult.Successful(member: null, chapter: null, payment: null, currency: null);
         }
 
-        if (metadata.MemberId == null ||
-            metadata.ChapterId == null ||
-            metadata.ChapterSubscriptionId == null)
-        {
-            var missingProperties = new[]
-            {
-                metadata.MemberId == null ? "MemberId" : null,
-                metadata.ChapterId == null ? "ChapterId" : null,
-                metadata.ChapterSubscriptionId == null ? "ChapterSubscriptionId" : null
-            }.Where(x => x != null);
-
-            var message =
-                $"Cannot process {webhook.PaymentProviderType} webhook '{webhook.Id}': " +
-                $"metadata missing properties {string.Join(", ", missingProperties)}";
-
-            await _loggingService.Error(message);
-            return PaymentWebhookProcessingResult.Failure();
-        }
-
-        // Load basic metadata objects
-        var (member, chapter, chapterSubscription, payment, paymentCheckoutSession) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(metadata.MemberId.Value),
-            x => x.ChapterSubscriptionRepository.GetByIdOrDefault(metadata.ChapterSubscriptionId.Value),
-            x => x.ChapterSubscriptionRepository.GetById(metadata.ChapterSubscriptionId.Value),
-            x => metadata.PaymentId != null
-                ? x.PaymentRepository.GetByIdOrDefault(metadata.PaymentId.Value)
-                : new DefaultDeferredQuerySingleOrDefault<Payment>(),
-            x => metadata.PaymentCheckoutSessionId != null
-                ? x.PaymentCheckoutSessionRepository.GetByIdOrDefault(metadata.PaymentCheckoutSessionId.Value)
-                : new DefaultDeferredQuerySingleOrDefault<PaymentCheckoutSession>());
-
-        if (payment == null)
-        {
-            // The first payment for a subscription will be preceded by the creation of a Payment at checkout.
-            // We will need to create a Payment here for recurring payments.
-            payment = new Payment
-            {
-                Amount = webhook.Amount,
-                ChapterId = chapter.Id,
-                CreatedUtc = utcNow,
-                CurrencyId = chapterSubscription.CurrencyId,
-                Id = Guid.NewGuid(),
-                MemberId = member.Id,
-                Reference = chapterSubscription.ToReference(),
-                SitePaymentSettingId = chapterSubscription.SitePaymentSettingId
-            };
-        }
-
-        // update payment
-        if (payment.PaidUtc != null)
-        {
-            var message =
-                $"Not updating Payment {payment.Id} in {webhook.PaymentProviderType} webhook processing: " +
-                $"already paid";
-            await _loggingService.Warn(message);
-        }
-        else
-        {
-            payment.ExternalId = webhook.SubscriptionId;
-            payment.PaidUtc = utcNow;
-            _unitOfWork.PaymentRepository.Upsert(payment);
-        }
-
-        // update payment checkout session
-        if (paymentCheckoutSession != null)
-        {
-            if (paymentCheckoutSession.CompletedUtc != null)
-            {
-                var message =
-                    $"Not updating PaymentCheckoutSession {paymentCheckoutSession.Id} in {webhook.PaymentProviderType} webhook processing: " +
-                    $"already completed";
-                await _loggingService.Warn(message);
-            }
-            else
-            {
-                paymentCheckoutSession.CompletedUtc = utcNow;
-                _unitOfWork.PaymentCheckoutSessionRepository.Update(paymentCheckoutSession);
-            }
-        }
-
-        return await UpdateMemberChapterSubscription(
-            metadata,
-            member,
-            payment,
-            externalId: webhook.SubscriptionId,
-            utcNow);
+        return await ProcessCompletedChapterSubscription(
+            metadata.ToDictionary(),
+            webhook.OriginatedUtc,
+            webhook.PaymentProviderType,
+            webhook.SubscriptionId);
     }
 
     private async Task<PaymentWebhookProcessingResult> ProcessWebhookSiteSubscription(
         PaymentProviderWebhook webhook,
         PaymentMetadataModel metadata)
-    {
-        var utcNow = webhook.OriginatedUtc;
-
+    {        
         if (string.IsNullOrEmpty(webhook.SubscriptionId))
         {
             var message =
@@ -501,100 +682,13 @@ public class PaymentService : IPaymentService
 
             await _loggingService.Error(message);
             return PaymentWebhookProcessingResult.Failure();
-        }
+        }        
 
-        if (metadata.MemberId == null ||
-            metadata.SiteSubscriptionPriceId == null)
-        {
-            var missingProperties = new[]
-            {
-                metadata.MemberId == null ? "MemberId" : null,
-                metadata.SiteSubscriptionPriceId == null ? "SiteSubscriptionPriceId" : null
-            }.Where(x => x != null);
-
-            var message =
-                $"Cannot process {webhook.PaymentProviderType} webhook '{webhook.Id}': " +
-                $"metadata missing properties {string.Join(", ", missingProperties)}";
-
-            await _loggingService.Error(message);
-            return PaymentWebhookProcessingResult.Failure();
-        }
-
-        // Load basic metadata objects
-        var (member, siteSubscription, siteSubscriptionPrice, payment, paymentCheckoutSession) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(metadata.MemberId.Value),
-            x => x.SiteSubscriptionRepository.GetByPriceId(metadata.SiteSubscriptionPriceId.Value),
-            x => x.SiteSubscriptionPriceRepository.GetById(metadata.SiteSubscriptionPriceId.Value),
-            x => metadata.PaymentId != null
-                ? x.PaymentRepository.GetByIdOrDefault(metadata.PaymentId.Value)
-                : new DefaultDeferredQuerySingleOrDefault<Payment>(),
-            x => metadata.PaymentCheckoutSessionId != null
-                ? x.PaymentCheckoutSessionRepository.GetByIdOrDefault(metadata.PaymentCheckoutSessionId.Value)
-                : new DefaultDeferredQuerySingleOrDefault<PaymentCheckoutSession>());
-
-        if (payment == null)
-        {
-            // The first payment for a subscription will be preceded by the creation of a Payment at checkout.
-            // We will need to create a Payment here for recurring payments.
-            payment = new Payment
-            {
-                Amount = webhook.Amount,
-                CreatedUtc = utcNow,
-                CurrencyId = siteSubscriptionPrice.CurrencyId,
-                Id = Guid.NewGuid(),
-                MemberId = member.Id,
-                Reference = siteSubscription.ToReference(),
-                SitePaymentSettingId = siteSubscription.SitePaymentSettingId
-            };
-        }
-
-        // update payment
-        if (payment.PaidUtc != null)
-        {
-            var message =
-                $"Not updating Payment {payment.Id} in {webhook.PaymentProviderType} webhook processing: " +
-                $"already paid";
-            await _loggingService.Warn(message);
-        }
-        else
-        {
-            payment.ExternalId = webhook.SubscriptionId;
-            payment.PaidUtc = utcNow;
-            _unitOfWork.PaymentRepository.Upsert(payment);
-        }
-
-        // update payment checkout session
-        if (paymentCheckoutSession != null)
-        {
-            if (paymentCheckoutSession.CompletedUtc != null)
-            {
-                var message =
-                    $"Not updating PaymentCheckoutSession {paymentCheckoutSession.Id} in {webhook.PaymentProviderType} webhook processing: " +
-                    $"already completed";
-                await _loggingService.Warn(message);
-            }
-            else
-            {
-                paymentCheckoutSession.CompletedUtc = utcNow;
-                _unitOfWork.PaymentCheckoutSessionRepository.Update(paymentCheckoutSession);
-            }
-        }
-
-        try
-        {
-            return await UpdateMemberSiteSubscription(
-                metadata.Platform ?? PlatformType.DrunkenKnitwits,
-                member,
-                siteSubscriptionPrice,
-                payment,
-                externalId: webhook.SubscriptionId,
-                utcNow);
-        }
-        catch (Exception ex)
-        {
-            await _loggingService.Error("Error processing site subscription webhook", ex);
-            throw;
-        }
+        return await ProcessCompletedSiteSubscription(
+            metadata.ToDictionary(),
+            completedUtc: webhook.OriginatedUtc, 
+            webhook.PaymentProviderType,
+            webhook.SubscriptionId);
     }
 
     private async Task<PaymentWebhookProcessingResult> ProcessWebhookSubscription(
@@ -742,9 +836,18 @@ public class PaymentService : IPaymentService
     {
         var memberId = member.Id;
 
-        var memberSubscription = await _unitOfWork.MemberSiteSubscriptionRepository
-            .GetByMemberId(memberId, platform)
-            .Run();
+        var (recordExists, memberSubscription) = await _unitOfWork.RunAsync(
+            x => x.MemberSiteSubscriptionRecordRepository.Query().ForPayment(payment.Id).Any(),
+            x => x.MemberSiteSubscriptionRepository.GetByMemberId(memberId, platform));
+
+        if (recordExists)
+        {
+            await _loggingService.Warn(
+                $"Member site subscription record already exists for payment {payment.Id}: " +
+                $"not updating member site subscription");
+            return PaymentWebhookProcessingResult.Successful(
+                member, chapter: null, payment, siteSubscriptionPrice.Currency);
+        }
 
         memberSubscription ??= new MemberSiteSubscription();
 
@@ -771,6 +874,14 @@ public class PaymentService : IPaymentService
         {
             _unitOfWork.MemberSiteSubscriptionRepository.Update(memberSubscription);
         }
+
+        _unitOfWork.MemberSiteSubscriptionRecordRepository.Add(new MemberSiteSubscriptionRecord
+        {
+            CreatedUtc = utcNow,
+            PaymentId = payment.Id,
+            SiteSubscriptionId = siteSubscriptionPrice.SiteSubscriptionId,
+            SiteSubscriptionPriceId = siteSubscriptionPrice.Id
+        });
 
         await _unitOfWork.SaveChangesAsync();
 

@@ -14,20 +14,14 @@ public class SubscriptionCheckoutConfirmModel : OdkPageModel
         _paymentService = paymentService;
     }
 
-    public string RedirectUrl { get; private set; } = string.Empty;
+    public string SessionId { get; set; } = string.Empty;
 
-    public string? SessionId { get; set; }
-
-    public Guid SubscriptionId { get; set; }
-
-    public async Task<IActionResult> OnGet(Guid id, string sessionId)
+    public async Task<IActionResult> OnGet(string sessionId)
     {
-        var chapter = Chapter;
-
-        RedirectUrl = OdkRoutes.Account.Subscription(Chapter);
         SessionId = sessionId;
-        SubscriptionId = SubscriptionId;
-
+        
+        var redirectUrl = OdkRoutes.Account.Subscription(Chapter);
+        
         var request = MemberServiceRequest;
         var status = await _paymentService.GetMemberChapterPaymentCheckoutSessionStatus(
             request, Chapter.Id, sessionId);
@@ -35,13 +29,13 @@ public class SubscriptionCheckoutConfirmModel : OdkPageModel
         if (status == PaymentStatusType.Complete)
         {
             AddFeedback("Purchase complete", FeedbackType.Success);
-            return Redirect(RedirectUrl);
+            return Redirect(redirectUrl);
         }
 
         if (status == PaymentStatusType.Expired)
         {
             AddFeedback("Purchase not successful. Please try again", FeedbackType.Error);
-            return Redirect(RedirectUrl);
+            return Redirect(redirectUrl);
         }
 
         return Page();

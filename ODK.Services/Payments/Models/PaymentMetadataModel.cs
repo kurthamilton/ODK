@@ -82,7 +82,7 @@ public class PaymentMetadataModel
 
     public Guid? SiteSubscriptionPriceId { get; private set; }
 
-    public static PaymentMetadataModel FromDictionary(IDictionary<string, string> dictionary)
+    public static PaymentMetadataModel FromDictionary(IReadOnlyDictionary<string, string> dictionary)
     {
         dictionary.TryGetGuidValue("ChapterId", out var chapterId);
         dictionary.TryGetGuidValue("ChapterSubscriptionId", out var chapterSubscriptionId);
@@ -110,7 +110,7 @@ public class PaymentMetadataModel
         };
     }
 
-    public IDictionary<string, string> ToDictionary()
+    public IReadOnlyDictionary<string, string> ToDictionary()
     {
         var dictionary = new Dictionary<string, string>();
 

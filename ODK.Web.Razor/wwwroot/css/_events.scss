@@ -1,13 +1,7 @@
-.event-list {
-	display: flex;
-	flex-direction: column;
-	gap: 1rem;
-}
-
 .event-response-option {
 	font-size: 1.2em;
-  display: inline-flex;
-  align-items: center;
+	display: inline-flex;
+	align-items: center;
 }
 
 .event-response-option:not(.active) {

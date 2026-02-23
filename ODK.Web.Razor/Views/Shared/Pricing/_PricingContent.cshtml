@@ -44,7 +44,13 @@
                         }
                                                  
                         <div class="d-flex flex-column gap-3 mt-auto">
-                            @if (prices.Any(x => x.IsPaid) &&
+                            @if (subscription.Id == Model.SiteSubscriptions.CurrentMemberSubscription?.SiteSubscriptionId)
+                            {
+                                @*Site subscriptions are recurring - no need to show *@
+                                continue;    
+                            }
+
+                            @if (prices.Any(x => x.IsPaid) && 
                                 Model.SiteSubscriptions.CurrentMemberSubscription?.SiteSubscriptionPrice?.IsPaid == true)
                             {
                                 <p>

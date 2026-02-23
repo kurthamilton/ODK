@@ -66,6 +66,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IMemberPreferencesRepository> _memberPreferencesRepository;
     private readonly Lazy<IMemberPropertyRepository> _memberPropertyRepository;
     private readonly Lazy<IMemberRepository> _memberRepository;
+    private readonly Lazy<IMemberSiteSubscriptionRecordRepository> _memberSiteSubscriptionRecordRepository;
     private readonly Lazy<IMemberSiteSubscriptionRepository> _memberSiteSubscriptionRepository;
     private readonly Lazy<IMemberSubscriptionRecordRepository> _memberSubscriptionRecordRepository;
     private readonly Lazy<IMemberSubscriptionRepository> _memberSubscriptionRepository;
@@ -152,6 +153,7 @@ public class UnitOfWork : IUnitOfWork
         _memberPreferencesRepository = new(() => new MemberPreferencesRepository(_context));
         _memberPropertyRepository = new(() => new MemberPropertyRepository(_context));
         _memberRepository = new(() => new MemberRepository(_context));
+        _memberSiteSubscriptionRecordRepository = new(() => new MemberSiteSubscriptionRecordRepository(_context));
         _memberSiteSubscriptionRepository = new(() => new MemberSiteSubscriptionRepository(_context));
         _memberSubscriptionRecordRepository = new(() => new MemberSubscriptionRecordRepository(_context));
         _memberSubscriptionRepository = new(() => new MemberSubscriptionRepository(_context));
@@ -235,6 +237,7 @@ public class UnitOfWork : IUnitOfWork
     public IMemberPreferencesRepository MemberPreferencesRepository => _memberPreferencesRepository.Value;
     public IMemberPropertyRepository MemberPropertyRepository => _memberPropertyRepository.Value;
     public IMemberRepository MemberRepository => _memberRepository.Value;
+    public IMemberSiteSubscriptionRecordRepository MemberSiteSubscriptionRecordRepository => _memberSiteSubscriptionRecordRepository.Value;
     public IMemberSiteSubscriptionRepository MemberSiteSubscriptionRepository => _memberSiteSubscriptionRepository.Value;
     public IMemberSubscriptionRecordRepository MemberSubscriptionRecordRepository => _memberSubscriptionRecordRepository.Value;
     public IMemberSubscriptionRepository MemberSubscriptionRepository => _memberSubscriptionRepository.Value;

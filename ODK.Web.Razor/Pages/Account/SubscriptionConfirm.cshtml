@@ -1,4 +1,4 @@
-﻿@page "/account/subscription/{id:guid}/confirm"
+﻿@page "/account/subscription/confirm"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Core.Exceptions
@@ -7,7 +7,9 @@
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Payments
 @model SubscriptionConfirmModel
+@inject IOdkRoutes OdkRoutes
 @{
     Layout = "_AccountLayout";
     Model.Title = "Subscription confirm";
@@ -16,8 +18,6 @@
     {
         throw new OdkNotFoundException();
     }
-
-    var subscriptionUrl = Model.RedirectUrl;
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -34,34 +34,17 @@
                 {
                     Breadcrumbs = new[]
                     {
-                        new MenuItem { Text = "My subscription", Link = subscriptionUrl },
+                        new MenuItem { Text = "My subscription", Link = OdkRoutes.Account.Subscription(chapter: null) },
                         new MenuItem { Text = "Checkout" }
                     }
                 })
 
                 <section class="section">
-                    <div data-odk-checkout
-                         data-odk-polling-url="/payments/sessions/@Model.SessionId/status">
-
-                        <div data-odk-checkout-status="@PaymentStatusType.Complete"
-                             data-odk-checkout-action="reload">
-                        </div>
-
-                        <div data-odk-checkout-status="@PaymentStatusType.Pending">
-                            <div class="alert alert-warning">
-                                We are just waiting for confirmation of your payment...
-                            </div>
-                            <div>
-                                <a href="@subscriptionUrl">
-                                    Go back to my subscription
-                                </a>
-                            </div>
-                        </div>
-
-                        <div data-odk-checkout-status="@PaymentStatusType.Expired"
-                             data-odk-checkout-action="reload">
-                        </div>
-                    </div>
+                    @await Html.PartialAsync("Payments/_PaymentConfirmContent", new PaymentConfirmViewModel
+                    {
+                        Chapter = null,
+                        SessionId = Model.SessionId
+                    })
                 </section>
             </div>
     })
@@ -69,6 +52,5 @@
 
 @section scripts 
 {
-    <script src="~/js/odk.polling.js" asp-append-version="true"></script>
-    <script src="~/js/odk.checkout.js" asp-append-version="true"></script>
+    @await Html.PartialAsync("Payments/_PaymentConfirmScripts")
 }

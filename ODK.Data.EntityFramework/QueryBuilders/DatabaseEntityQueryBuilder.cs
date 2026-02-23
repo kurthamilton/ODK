@@ -9,8 +9,13 @@ public class DatabaseEntityQueryBuilder<T> :
     IDatabaseEntityQueryBuilder<T>
     where T : class, IDatabaseEntity
 {
-    public DatabaseEntityQueryBuilder(OdkContext context) 
+    internal DatabaseEntityQueryBuilder(OdkContext context)
         : base(context)
+    {
+    }
+
+    internal DatabaseEntityQueryBuilder(OdkContext context, IQueryable<T> query)
+        : base(context, query)
     {
     }
 
@@ -23,6 +28,11 @@ public abstract class DatabaseEntityQueryBuilder<T, TBuilder> : QueryBuilder<T>,
 {
     internal DatabaseEntityQueryBuilder(OdkContext context)
         : base(context)
+    {
+    }
+
+    internal DatabaseEntityQueryBuilder(OdkContext context, IQueryable<T> query)
+        : base(context, query)
     {
     }
 

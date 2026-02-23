@@ -1,21 +1,44 @@
 ﻿@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Events
 @model EventResponseIconViewModel
-
-@if (Model.CurrentResponse > 0)
-{    
-    var icon = Model.Icon;
-
-    if (!Model.ReadOnly)
+@{
+    if (Model.CurrentResponse <= 0)
     {
-        @*@Html.AntiForgeryToken()*@
-        @Html.HiddenFor(x => x.ResponseType)
+        return;
     }
 
-    <button type="@(Model.ReadOnly ? "button" : "submit")"
-            class="btn-icon                    
-                   event-response-option event-response-option--@Model.CurrentResponse.ToString()?.ToLowerInvariant() 
-                   @((Model.Active || Model.ReadOnly) ? "active" : null)">
+    var icon = Model.Icon;
+
+    var classes = new List<string>
+    {
+        "event-response-option",
+        $"event-response-option--{Model.CurrentResponse.ToString()?.ToLowerInvariant()}",
+    };
+
+    if (Model.Active || Model.ReadOnly)
+    {
+        classes.Add("active");
+    }
+}
+
+@if (Model.ReadOnly)
+{
+    @if (icon != null)
+    {
+        <span class="@string.Join(' ', classes)" data-bs-toggle="tooltip" data-bs-title="@Model.Tooltip">
+            @await Html.PartialAsync("Components/_Icon", new IconViewModel(icon.Value)
+            {
+                Class = $"icon--event-response {(Model.ReadOnly ? "icon--event-response--sm" : null)}"
+            })
+        </span>
+    }
+}
+else
+{
+    @*@Html.AntiForgeryToken()*@
+    @Html.HiddenFor(x => x.ResponseType)
+
+    <button type="submit" class="btn-icon @string.Join(' ', classes)">
         @if (icon != null)
         {
             <span data-bs-toggle="tooltip" data-bs-title="@Model.Tooltip">

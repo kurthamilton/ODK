@@ -125,6 +125,21 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return ServiceResult.Successful();
     }
 
+    public async Task<ServiceResult> CancelSiteSubscription(
+        IMemberChapterAdminServiceRequest request, Guid siteSubscriptionId)
+    {
+        var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
+
+        var owner = currentMember.Id == chapter.OwnerId
+            ? currentMember
+            : await GetChapterAdminRestrictedContent(request,
+                x => x.MemberRepository.GetChapterOwner(chapter.Id));
+
+        var chapterOwnerRequest = MemberServiceRequest.Create(owner, request);
+        return await _siteSubscriptionService.CancelMemberSiteSubscription(
+            chapterOwnerRequest, siteSubscriptionId);
+    }
+
     public async Task<ServiceResult<Chapter?>> CreateChapter(
         IMemberServiceRequest request,
         ChapterCreateModel model)
@@ -1118,19 +1133,23 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     public async Task<PaymentStatusType> GetChapterPaymentCheckoutSessionStatus(
         IMemberChapterAdminServiceRequest request, string externalSessionId)
     {
-        var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
+        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
-        var owner = await GetChapterAdminRestrictedContent(request,
-            x => x.MemberRepository.GetChapterOwner(request.Chapter.Id));
+        var owner = chapter.OwnerId == currentMember.Id 
+            ? currentMember
+            : await GetChapterAdminRestrictedContent(request,
+                x => x.ChapterRepository.Query(platform)
+                    .ById(chapter.Id)
+                    .Owner()
+                    .GetSingle());
 
-        var statusRequest = MemberChapterServiceRequest.Create(
-            request.Chapter, owner, request);
+        var ownerRequest = MemberServiceRequest.Create(owner, request);
 
         return await _paymentService.GetMemberSitePaymentCheckoutSessionStatus(
-            request, externalSessionId);
+            ownerRequest, externalSessionId);
     }
 
-    public async Task<ChapterSubscriptionAdminPageViewModel> GetChapterSubscriptionViewModel(
+    public async Task<SiteSubscriptionsViewModel> GetChapterSubscriptionViewModel(
         IMemberChapterAdminServiceRequest request)
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
@@ -1142,12 +1161,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             MemberServiceRequest.Create(owner, request),
             chapter.Id);
 
-        return new ChapterSubscriptionAdminPageViewModel
-        {
-            Chapter = chapter,
-            Platform = platform,
-            SiteSubscriptions = siteSubscriptionsViewModel
-        };
+        return siteSubscriptionsViewModel;
     }
 
     public async Task<ChapterTextsAdminPageViewModel> GetChapterTextsViewModel(
@@ -1428,14 +1442,19 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     public async Task<SiteSubscriptionCheckoutViewModel> StartSiteSubscriptionCheckout(
         IMemberChapterAdminServiceRequest request, Guid priceId, string returnPath)
     {
-        var chapter = request.Chapter;
+        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
-        var owner = await GetChapterAdminRestrictedContent(request,
-            x => x.MemberRepository.GetChapterOwner(chapter.Id));
+        var owner = currentMember.Id == chapter.OwnerId 
+            ? currentMember 
+            : await GetChapterAdminRestrictedContent(request,
+                x => x.ChapterRepository.Query(platform)
+                    .ById(chapter.Id)
+                    .Owner()
+                    .GetSingle());
 
         var chapterOwnerRequest = MemberServiceRequest.Create(owner, request);
         return await _siteSubscriptionService.StartSiteSubscriptionCheckout(
-            request, priceId, returnPath, chapter.Id);
+            chapterOwnerRequest, priceId, returnPath, chapter.Id);
     }
 
     public async Task<ServiceResult> UpdateChapterAdminMember(

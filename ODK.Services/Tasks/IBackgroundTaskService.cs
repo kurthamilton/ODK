@@ -6,7 +6,7 @@ public interface IBackgroundTaskService
 {
     void CancelJob(string jobId);
 
-    string Enqueue(Expression<Func<Task>> task);
+    string Enqueue(Expression<Func<Task>> task, BackgroundTaskQueueType queue);
 
-    string Schedule(Expression<Func<Task>> task, DateTime runAtUtc);
+    string Schedule(Expression<Func<Task>> task, DateTime runAtUtc, BackgroundTaskQueueType queue);
 }

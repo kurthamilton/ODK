@@ -8,6 +8,7 @@
     bindImages();
     bindMenuLinks();
     bindPopovers();
+    bindRedirectTimers();
     bindToasts();
     bindTooltips();
 
@@ -242,6 +243,25 @@
             if (element.hasAttribute('data-popover-show')) {
                 popover.show();
             }
+        });
+    }
+
+    function bindRedirectTimers() {
+        const $redirects = document.querySelectorAll('[data-redirect-timer-url][data-redirect-timer-seconds]');
+        $redirects.forEach($redirect => {
+            let seconds = parseInt($redirect.getAttribute('data-redirect-timer-seconds'));
+            const url = $redirect.getAttribute('data-redirect-timer-url');
+            const $remaining = $redirect.querySelector('[data-redirect-timer-remaining]');
+            const intervalId = $remaining
+                ? window.setInterval(() => {
+                    seconds--;
+                    $remaining.innerHTML = seconds;
+                }, 1000)
+                : '';
+            const timeoutId = window.setTimeout(() => {
+                if (intervalId) window.clearInterval(intervalId);
+                window.location = url;
+            }, seconds * 1000);
         });
     }
 

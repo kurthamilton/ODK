@@ -2,6 +2,7 @@
 using ODK.Core.Platforms;
 using ODK.Data.Core.Chapters;
 using ODK.Data.Core.Deferred;
+using ODK.Data.Core.QueryBuilders;
 
 namespace ODK.Data.Core.Repositories;
 
@@ -32,6 +33,10 @@ public interface IChapterRepository : IWriteRepository<Chapter>
     IDeferredQueryMultiple<ChapterDto> GetDtosByMemberId(PlatformType platform, Guid memberId);
 
     IDeferredQuery<bool> NameExists(string name);
+
+    IChapterQueryBuilder Query(PlatformType platform);
+
+    IChapterQueryBuilder Query(PlatformType platform, bool includeUnpublished);
 
     IDeferredQueryMultiple<ChapterSearchResultDto> Search(PlatformType platform, ChapterSearchCriteria criteria);
 

@@ -500,7 +500,9 @@ public class EventService : IEventService
 
         await _unitOfWork.SaveChangesAsync();
 
-        _backgroundTaskService.Enqueue(() => NotifyWaitlist(request, eventId));
+        _backgroundTaskService.Enqueue(
+            () => NotifyWaitlist(request, eventId),
+            BackgroundTaskQueueType.Events);
 
         return ServiceResult.Successful();
     }

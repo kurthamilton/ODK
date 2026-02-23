@@ -4,13 +4,15 @@
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Events
+@using ODK.Web.Razor.Models.Payments
 @model EventCheckoutConfirmModel
 @inject IEventViewModelService EventViewModelService
+@inject IOdkRoutes OdkRoutes
 @{
     Layout = "_OdkChapterLayout";
     Model.Title = "Ticket purchase pending confirmation";
 
-    var eventUrl = Model.RedirectUrl;
+    var eventUrl = OdkRoutes.Groups.Event(Model.Chapter, Model.Shortcode);
 
     var viewModel = await EventViewModelService.GetEventPageViewModel(
         Model.ChapterServiceRequest, Model.Shortcode);
@@ -37,34 +39,16 @@
                 Venue = viewModel.Venue
             })
             <section class="section">
-                <div data-odk-checkout
-                     data-odk-polling-url="/payments/sessions/@Model.SessionId/status?groupId=@viewModel.Chapter.Id">
-
-                    <div data-odk-checkout-status="@PaymentStatusType.Complete"
-                         data-odk-checkout-action="reload">
-                    </div>
-
-                    <div data-odk-checkout-status="@PaymentStatusType.Pending">
-                        <div class="alert alert-warning">
-                            We are just waiting for confirmation of your payment...
-                        </div>
-                        <div>
-                            <a href="@eventUrl">
-                                Go back to event
-                            </a>
-                        </div>
-                    </div>
-
-                    <div data-odk-checkout-status="@PaymentStatusType.Expired"
-                         data-odk-checkout-action="reload">
-                    </div>
-                </div>
+                @await Html.PartialAsync("Payments/_PaymentConfirmContent", new PaymentConfirmViewModel
+                {
+                    Chapter = viewModel.Chapter,
+                    SessionId = Model.SessionId
+                })
             </section>
         </div>
 })
 
-@section scripts
+@section scripts 
 {
-    <script src="~/js/odk.polling.js" asp-append-version="true"></script>
-    <script src="~/js/odk.checkout.js" asp-append-version="true"></script>
+    @await Html.PartialAsync("Payments/_PaymentConfirmScripts")
 }

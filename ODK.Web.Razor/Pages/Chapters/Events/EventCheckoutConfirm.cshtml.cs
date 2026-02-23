@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Payments;
 using ODK.Services.Payments;
-using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Feedback;
 
 namespace ODK.Web.Razor.Pages.Chapters.Events;
@@ -15,9 +14,7 @@ public class EventCheckoutConfirmModel : OdkPageModel
         _paymentService = paymentService;
     }
 
-    public string RedirectUrl { get; private set; } = string.Empty;
-
-    public string? SessionId { get; private set; }
+    public string SessionId { get; private set; } = string.Empty;
 
     public string Shortcode { get; private set; } = string.Empty;
 
@@ -30,18 +27,18 @@ public class EventCheckoutConfirmModel : OdkPageModel
         var status = await _paymentService.GetMemberChapterPaymentCheckoutSessionStatus(
             request, Chapter.Id, sessionId);
 
-        RedirectUrl = OdkRoutes.Groups.Event(Chapter, Shortcode);
+        var redirectUrl = OdkRoutes.Groups.Event(Chapter, Shortcode);
 
         if (status == PaymentStatusType.Complete)
         {
             AddFeedback("Purchase complete", FeedbackType.Success);
-            return Redirect(RedirectUrl);
+            return Redirect(redirectUrl);
         }
 
         if (status == PaymentStatusType.Expired)
         {
             AddFeedback("Purchase not successful. Please try again", FeedbackType.Error);
-            return Redirect(RedirectUrl);
+            return Redirect(redirectUrl);
         }
 
         return Page();

@@ -1,6 +1,7 @@
 ﻿@using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Components
 @model ChapterPaymentAccountAdminPageViewModel
 @inject IOdkRoutes OdkRoutes
 
@@ -32,6 +33,13 @@
     else if (!string.IsNullOrEmpty(Model.OnboardingUrl))
     {
         <a href="@Model.OnboardingUrl" class="btn btn-primary">Resume setup</a>
+        <span class="ms-2 small text-muted"
+            data-redirect-timer-url="@Model.OnboardingUrl" data-redirect-timer-seconds="5">
+            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.CircleNotch))
+            <span>Redirecting in </span>
+            <span data-redirect-timer-remaining>5</span>
+            <span>seconds</span>
+        </span>
     }
     else
     {

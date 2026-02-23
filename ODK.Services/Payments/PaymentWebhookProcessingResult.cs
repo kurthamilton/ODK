@@ -5,7 +5,7 @@ using ODK.Core.Payments;
 
 namespace ODK.Services.Payments;
 
-internal class PaymentWebhookProcessingResult
+public class PaymentWebhookProcessingResult
 {
     private PaymentWebhookProcessingResult()
     {

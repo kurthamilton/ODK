@@ -132,6 +132,10 @@ public class Program
             })
             .AddHangfireServer(options =>
             {
+                options.Queues = Enum.GetValues<BackgroundTaskQueueType>()
+                    .Where(x => x != BackgroundTaskQueueType.None)
+                    .Select(x => x.ToString().ToLowerInvariant())
+                    .ToArray();
                 options.WorkerCount = appSettings.Hangfire.WorkerCount;
             });
 

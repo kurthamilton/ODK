@@ -17,7 +17,10 @@
                     x.classList.remove('d-none');
 
                     const action = x.getAttribute('data-odk-checkout-action');
-                    if (action === 'reload') window.location.reload();
+                    if (action === 'reload') {
+                        $container.dispatchEvent(new Event('odk:polling.cancel'));
+                        window.location.reload();
+                    }
                 }
             });
         });

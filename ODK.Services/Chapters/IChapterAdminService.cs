@@ -11,6 +11,8 @@ public interface IChapterAdminService
 {
     Task<ServiceResult> AddChapterAdminMember(IMemberChapterAdminServiceRequest request, Guid memberId);
 
+    Task<ServiceResult> CancelSiteSubscription(IMemberChapterAdminServiceRequest request, Guid siteSubscriptionId);
+
     Task<ServiceResult<Chapter?>> CreateChapter(
         IMemberServiceRequest request,
         ChapterCreateModel model);
@@ -80,7 +82,7 @@ public interface IChapterAdminService
     Task<PaymentStatusType> GetChapterPaymentCheckoutSessionStatus(
         IMemberChapterAdminServiceRequest request, string externalSessionId);
 
-    Task<ChapterSubscriptionAdminPageViewModel> GetChapterSubscriptionViewModel(IMemberChapterAdminServiceRequest request);
+    Task<SiteSubscriptionsViewModel> GetChapterSubscriptionViewModel(IMemberChapterAdminServiceRequest request);
 
     Task<ChapterTextsAdminPageViewModel> GetChapterTextsViewModel(IMemberChapterAdminServiceRequest request);
 

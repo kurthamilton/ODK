@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Payments;
-using ODK.Services;
 using ODK.Services.Chapters;
 using ODK.Services.Security;
 using ODK.Web.Razor.Models.Feedback;
@@ -16,20 +15,15 @@ public class ChapterSubscriptionCheckoutConfirmModel : AdminPageModel
         _chapterAdminService = chapterAdminService;
     }
 
-    public string RedirectUrl { get; private set; } = string.Empty;
-
     public override ChapterAdminSecurable Securable => ChapterAdminSecurable.SiteSubscription;
 
-    public string? SessionId { get; set; }
+    public string SessionId { get; set; } = string.Empty;
 
-    public Guid SubscriptionId { get; set; }
-
-    public async Task<IActionResult> OnGet(Guid id, string sessionId)
+    public async Task<IActionResult> OnGet(string sessionId)
     {
         SessionId = sessionId;
-        SubscriptionId = id;
 
-        RedirectUrl = AdminRoutes.Subscription(Chapter).Path;
+        var redirectUrl = AdminRoutes.Subscription(Chapter).Path;
 
         var request = MemberChapterAdminServiceRequest;
         var status = await _chapterAdminService.GetChapterPaymentCheckoutSessionStatus(
@@ -38,13 +32,13 @@ public class ChapterSubscriptionCheckoutConfirmModel : AdminPageModel
         if (status == PaymentStatusType.Complete)
         {
             AddFeedback("Purchase complete", FeedbackType.Success);
-            return Redirect(RedirectUrl);
+            return Redirect(redirectUrl);
         }
 
         if (status == PaymentStatusType.Expired)
         {
             AddFeedback("Purchase not successful. Please try again", FeedbackType.Error);
-            return Redirect(RedirectUrl);
+            return Redirect(redirectUrl);
         }
 
         return Page();

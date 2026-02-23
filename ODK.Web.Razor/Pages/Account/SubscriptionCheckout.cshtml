@@ -11,6 +11,7 @@
 @using ODK.Web.Razor.Models.Payments
 @model SubscriptionCheckoutModel
 @inject ISiteSubscriptionService SiteSubscriptionService
+@inject IOdkRoutes OdkRoutes
 @{
     Layout = "_AccountLayout";
     Model.Title = "Subscription checkout";
@@ -20,7 +21,7 @@
         throw new OdkNotFoundException();
     }
 
-    var returnPath = $"/account/subscription/{Model.SubscriptionId}/confirm?sessionId={{sessionId}}";
+    var returnPath = OdkRoutes.Account.SiteSubscriptionConfirm();
     var viewModel = await SiteSubscriptionService.StartSiteSubscriptionCheckout(
         Model.MemberServiceRequest, Model.SubscriptionId, returnPath, chapterId: null);
 }

@@ -30,7 +30,8 @@
         margin-top: 1rem;
     }
     // panel children
-    .card-header {
+    .card-header,
+    .card-footer {
         background-color: var(--odk-bg-level-2-hover);
     }
 

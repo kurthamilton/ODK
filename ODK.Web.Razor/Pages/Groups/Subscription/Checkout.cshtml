@@ -2,20 +2,22 @@
 @using ODK.Core.Payments
 @using ODK.Services.Chapters
 @using ODK.Services.Members
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Groups
 @using ODK.Web.Razor.Models.Payments
 @model CheckoutModel
 @inject IChapterViewModelService ChapterViewModelService
 @inject IMemberService MemberService
+@inject IOdkRoutes OdkRoutes
 @{
     Layout = "_HomeLayout";
 
     var group = await ChapterViewModelService.GetGroupPage(Model.ChapterServiceRequest);
 
-    var returnUrl = "";
-
+    var returnPath = OdkRoutes.Groups.SubscriptionConfirm(Model.Chapter);
+    
     var viewModel = await MemberService.StartChapterSubscriptionCheckoutSession(
-        Model.MemberChapterServiceRequest, Model.ChapterSubscriptionId, returnUrl);
+        Model.MemberChapterServiceRequest, Model.ChapterSubscriptionId, returnPath);
 }
 
 @await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel
