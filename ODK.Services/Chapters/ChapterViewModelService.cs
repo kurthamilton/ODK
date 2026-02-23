@@ -573,7 +573,7 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.MemberRepository.GetCountByChapterId(chapter.Id),
             x => x.InstagramPostRepository.GetDtosByChapterId(chapter.Id, 8),
             x => x.ChapterLinksRepository.GetByChapterId(chapter.Id),
-            x => x.EventRepository.GetByChapterId(chapter.Id, after: DateTime.UtcNow),
+            x => x.EventRepository.GetUpcoming(chapter.Id, pageSize: 3),
             x => x.EventRepository.GetRecentEventsByChapterId(chapter.Id, 3),
             x => x.ChapterImageRepository.GetVersionDtoByChapterId(chapter.Id),
             x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
@@ -607,7 +607,7 @@ public class ChapterViewModelService : IChapterViewModelService
             privacySettings);
 
         var upcomingEventViewModels = ToGroupPageListEvents(
-            upcomingEvents.OrderBy(x => x.Date),
+            upcomingEvents,
             venues,
             memberResponses,
             responseSummaries,

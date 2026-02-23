@@ -10,7 +10,7 @@ namespace ODK.Data.EntityFramework.QueryBuilders;
 public class PaymentQueryBuilder : DatabaseEntityQueryBuilder<Payment, IPaymentQueryBuilder>, IPaymentQueryBuilder
 {
     public PaymentQueryBuilder(OdkContext context) 
-        : base(context)
+        : base(context, BaseQuery(context))
     {
     }
 
@@ -64,13 +64,13 @@ public class PaymentQueryBuilder : DatabaseEntityQueryBuilder<Payment, IPaymentQ
         return ProjectTo(query);
     }
 
-    protected override IQueryable<Payment> Set(OdkContext context)
+    private static IQueryable<Payment> BaseQuery(OdkContext context)
     {
         // exclude payments for an expired checkout session by default
         return 
-            from payment in base.Set(context)
+            from payment in context.Set<Payment>()
                 .Include(x => x.Currency)
-            from paymentCheckoutSession in Set<PaymentCheckoutSession>()
+            from paymentCheckoutSession in context.Set<PaymentCheckoutSession>()
                 .Where(x => x.PaymentId == payment.Id)
                 .DefaultIfEmpty()
             where paymentCheckoutSession == null || paymentCheckoutSession.ExpiredUtc == null

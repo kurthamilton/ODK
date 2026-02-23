@@ -87,6 +87,9 @@ public class AccountRoutes : RoutesBase
     public string SiteSubscriptionCheckout(Guid priceId) 
         => AccountPath(chapter: null, $"/subscription/{priceId}/checkout");
 
+    public string SiteSubscriptionConfirm()
+        => $"{Subscription(chapter: null)}/confirm?sessionId={{sessionId}}";
+
     private string AccountPath(Chapter? chapter, string path)
         => GetRoute(chapter, "/account" + path);
 }

@@ -8,19 +8,15 @@ using ODK.Data.EntityFramework.Queries;
 
 namespace ODK.Data.EntityFramework.QueryBuilders;
 
-/* This is a prototype for how repository methods might be replaced by query composition.
- * Pros: 
- *  - composable queries
- *  - fewer methods (e.g. GetByChapter, GetLatestByChapter, GetWithAvatarByChapter are all v similar
- *  - high code reuse
- * Cons:
- *  - certain filter chains that are currently encapsulated in one method would benefit from a higher-order function, which
- *    could lead to method explosion
- */
 public class MemberQueryBuilder : DatabaseEntityQueryBuilder<Member, IMemberQueryBuilder>, IMemberQueryBuilder
 {
     internal MemberQueryBuilder(OdkContext context)
-        : base(context)
+        : base(context, BaseQuery(context))
+    {
+    }
+
+    internal MemberQueryBuilder(OdkContext context, IQueryable<Member> query)
+        : base(context, query)
     {
     }
 
@@ -74,9 +70,9 @@ public class MemberQueryBuilder : DatabaseEntityQueryBuilder<Member, IMemberQuer
             };
 
         return ProjectTo(query);
-    }    
+    }
 
-    protected override IQueryable<Member> Set(OdkContext context)
-        => base.Set(context)
+    private static IQueryable<Member> BaseQuery(OdkContext context)
+        => context.Set<Member>()
             .Include(x => x.Chapters);
 }

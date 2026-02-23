@@ -158,14 +158,17 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         {
             eventEmail.JobId = _backgroundTaskService.Schedule(
                 () => SendScheduledEmails(request, eventEmail.Id),
-                eventEmail.ScheduledUtc.Value);
+                eventEmail.ScheduledUtc.Value,
+                BackgroundTaskQueueType.Emails);
             _unitOfWork.EventEmailRepository.Update(eventEmail);
             await _unitOfWork.SaveChangesAsync();
         }
 
         if (@event.Ticketed)
         {
-            _backgroundTaskService.Enqueue(() => _paymentService.EnsureProductExists(request));
+            _backgroundTaskService.Enqueue(
+                () => _paymentService.EnsureProductExists(request),
+                BackgroundTaskQueueType.General);
         }
 
         return ServiceResult.Successful();
@@ -842,12 +845,16 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         if (@event.Ticketed)
         {
-            _backgroundTaskService.Enqueue(() => _paymentService.EnsureProductExists(request));
+            _backgroundTaskService.Enqueue(
+                () => _paymentService.EnsureProductExists(request),
+                BackgroundTaskQueueType.General);
         }
 
         if (@event.AttendeeLimit > previousAttendeeLimit)
         {
-            _backgroundTaskService.Enqueue(() => _eventService.NotifyWaitlist(request, id));
+            _backgroundTaskService.Enqueue(
+                () => _eventService.NotifyWaitlist(request, id),
+                BackgroundTaskQueueType.Events);
         }
 
         return ServiceResult.Successful();
@@ -1017,7 +1024,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         eventEmail.JobId = _backgroundTaskService.Schedule(
             () => SendScheduledEmails(request, eventEmail.Id),
-            scheduledUtc.Value);
+            scheduledUtc.Value,
+            BackgroundTaskQueueType.Emails);
 
         _unitOfWork.EventEmailRepository.Update(eventEmail);
         await _unitOfWork.SaveChangesAsync();

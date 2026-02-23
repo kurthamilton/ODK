@@ -1,9 +1,12 @@
-﻿using ODK.Services.Payments.Models;
+﻿using ODK.Core.Payments;
+using ODK.Services.Payments.Models;
 
 namespace ODK.Services.Payments;
 
 public interface IPaymentProvider
 {
+    PaymentProviderType Type { get; }
+
     Task<ServiceResult> ActivateSubscriptionPlan(string externalId);
 
     Task<bool> CancelSubscription(string externalId);

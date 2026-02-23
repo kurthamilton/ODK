@@ -25,7 +25,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ServiceResult> AddSiteSubscription(
+    public async Task<ServiceResult<Guid>> AddSiteSubscription(
         IMemberServiceRequest request, SiteSubscriptionCreateModel model)
     {
         var platform = request.Platform;
@@ -39,13 +39,13 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
             x.SitePaymentSettingId == model.SitePaymentSettingId &&
             string.Equals(x.Name, model.Name, StringComparison.InvariantCultureIgnoreCase)))
         {
-            return ServiceResult.Failure($"Subscription '{model.Name}' already exists");
+            return ServiceResult<Guid>.Failure($"Subscription '{model.Name}' already exists");
         }
 
         if (model.FallbackSiteSubscriptionId != null &&
             existing.All(x => x.Id != model.FallbackSiteSubscriptionId))
         {
-            return ServiceResult.Failure($"Fallback subscription not found");
+            return ServiceResult<Guid>.Failure($"Fallback subscription not found");
         }
 
         var subscription = new SiteSubscription
@@ -65,7 +65,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
 
         await _unitOfWork.SaveChangesAsync();
 
-        return ServiceResult.Successful();
+        return ServiceResult<Guid>.Successful(subscription.Id);
     }
 
     public async Task<ServiceResult> AddSiteSubscriptionPrice(
@@ -213,7 +213,8 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
             .ToArray();
     }
 
-    public async Task<SiteSubscriptionViewModel> GetSubscriptionViewModel(IMemberServiceRequest request, Guid siteSubscriptionId)
+    public async Task<SiteSubscriptionViewModel> GetSubscriptionViewModel(
+        IMemberServiceRequest request, Guid siteSubscriptionId)
     {
         var (subscription, prices, currencies, sitePaymentSettings) = await GetSiteAdminRestrictedContent(request,
             x => x.SiteSubscriptionRepository.GetById(siteSubscriptionId),
@@ -224,6 +225,8 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         return new SiteSubscriptionViewModel
         {
             Currencies = currencies,
+            CurrentMemberExternalSubscription = null,
+            CurrentMemberSiteSubscription = null,
             Prices = prices,
             SitePaymentSettings = sitePaymentSettings,
             Subscription = subscription

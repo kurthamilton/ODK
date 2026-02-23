@@ -81,7 +81,7 @@ else
     }    
 
     <div>
-        <form action="/Chapters/@Model.Chapter.Id/Account/Subscription/Cancel" method="post">
+        <form action="/chapters/@Model.Chapter.Id/account/subscription/cancel" method="post">
             <input type="hidden" name="@nameof(CancelSubscriptionRequest.ExternalId)" value="@Model.ExternalSubscription.ExternalId" />
             <button class="btn btn-danger" onclick="return confirm('Are you sure you want to cancel your subscription?');">
                 Cancel subscription

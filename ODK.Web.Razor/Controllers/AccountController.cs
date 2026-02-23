@@ -476,15 +476,6 @@ public class AccountController : OdkControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("account/subscription/{id:guid}/cancel")]
-    public async Task<IActionResult> CancelSiteSubscription(Guid id)
-    {
-        var result = await _siteSubscriptionService.CancelMemberSiteSubscription(MemberServiceRequest, id);
-
-        AddFeedback(result, "Subscription cancelled");
-        return RedirectToReferrer();
-    }
-
     [HttpPost("account/subscription/confirm")]
     public async Task<IActionResult> ConfirmSiteSubscription(
         [FromForm] Guid siteSubscriptionPriceId,
@@ -498,7 +489,7 @@ public class AccountController : OdkControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("Chapters/{chapterId:guid}/Account/Subscription/Cancel")]
+    [HttpPost("chapters/{chapterId:guid}/account/subscription/cancel")]
     public async Task<IActionResult> CancelChapterSubscription(Guid chapterId, [FromForm] CancelSubscriptionRequest form)
     {
         var result = await _memberService.CancelChapterSubscription(CurrentMember.Id, form.ExternalId);

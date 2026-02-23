@@ -61,6 +61,7 @@ public interface IUnitOfWork
     IMemberPreferencesRepository MemberPreferencesRepository { get; }
     IMemberPropertyRepository MemberPropertyRepository { get; }
     IMemberRepository MemberRepository { get; }
+    IMemberSiteSubscriptionRecordRepository MemberSiteSubscriptionRecordRepository { get; }
     IMemberSiteSubscriptionRepository MemberSiteSubscriptionRepository { get; }
     IMemberSubscriptionRecordRepository MemberSubscriptionRecordRepository { get; }
     IMemberSubscriptionRepository MemberSubscriptionRepository { get; }

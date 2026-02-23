@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Payments;
 using ODK.Services.Payments;
-using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Feedback;
 
 namespace ODK.Web.Razor.Pages.Account;
@@ -15,16 +14,13 @@ public class SubscriptionConfirmModel : OdkSiteAccountPageModel
         _paymentService = paymentService;
     }
 
-    public string RedirectUrl => OdkRoutes.Account.Subscription(null);
+    public string SessionId { get; set; } = string.Empty;
 
-    public string? SessionId { get; set; }
-
-    public Guid SubscriptionId { get; private set; }
-
-    public async Task<IActionResult> OnGet(Guid id, string sessionId)
+    public async Task<IActionResult> OnGet(string sessionId)
     {
         SessionId = sessionId;
-        SubscriptionId = SubscriptionId;
+
+        var redirectUrl = OdkRoutes.Account.Subscription(chapter: null);
 
         var request = MemberServiceRequest;
         var status = await _paymentService.GetMemberSitePaymentCheckoutSessionStatus(request, sessionId);
@@ -32,13 +28,13 @@ public class SubscriptionConfirmModel : OdkSiteAccountPageModel
         if (status == PaymentStatusType.Complete)
         {
             AddFeedback("Purchase complete", FeedbackType.Success);
-            return Redirect(RedirectUrl);
+            return Redirect(redirectUrl);
         }
 
         if (status == PaymentStatusType.Expired)
         {
             AddFeedback("Purchase not successful. Please try again", FeedbackType.Error);
-            return Redirect(RedirectUrl);
+            return Redirect(redirectUrl);
         }
 
         return Page();

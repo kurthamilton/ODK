@@ -208,8 +208,8 @@ public class GroupAdminRoutes
     public GroupAdminRoute Subscription(Chapter chapter)
         => Group(chapter).Child("/subscription", ChapterAdminSecurable.SiteSubscription, PlatformType.DrunkenKnitwits);
 
-    public GroupAdminRoute SubscriptionCheckout(Chapter chapter, string priceIdPlaceholder)
-        => Subscription(chapter).Child($"/{priceIdPlaceholder}/checkout");
+    public GroupAdminRoute SubscriptionCheckout(Chapter chapter, Guid priceId)
+        => Subscription(chapter).Child($"/{priceId}/checkout");
 
     public GroupAdminRoute Texts(Chapter chapter)
         => Group(chapter).Child("/texts", ChapterAdminSecurable.Texts);

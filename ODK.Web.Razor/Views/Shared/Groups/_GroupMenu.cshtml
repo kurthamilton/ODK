@@ -3,6 +3,7 @@
 @using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Extensions
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Header
 @model GroupPageViewModel
@@ -77,19 +78,18 @@
             Text = "My subscription",
             Link = OdkRoutes.Groups.Subscription(Model.Chapter)
         });
-    }
-
-    if (Model.IsAdmin)
-    {
-        menuItems.Add(new MenuItem 
-        { 
-            Text = "Manage", 
-            Icon = IconType.Settings, 
-            Link = OdkRoutes.GroupAdmin.Group(Model.Chapter).Path
-        });
-    }
+    }    
 
     var id = "nav-group";
+
+    var adminMenuItems = Model.IsAdmin
+        ? new[]
+        {
+            new MenuItem { Icon = IconType.Settings, Text = "Admin", Link = OdkRoutes.GroupAdmin.Home(Model.Chapter).Path },
+            new MenuItem { Icon = IconType.CalendarPlus, Text = "Create event", Link = OdkRoutes.GroupAdmin.EventCreate(Model.Chapter).Path },
+            new MenuItem { Icon = IconType.Members, Text = "Members", Link = OdkRoutes.GroupAdmin.Members(Model.Chapter).Path }
+        }
+        : [];
 }
 
 <nav class="navbar navbar-expand-sm navbar--group">
@@ -118,6 +118,30 @@
                             @menuItem.Text
                         </a>
                     </li>
+                }
+
+                @if (adminMenuItems.Length > 0)
+                {
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Settings))
+                            <span>Manage</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            @foreach (var adminMenuItem in adminMenuItems)
+                            {
+                                <li>
+                                    <a class="dropdown-item" href="@adminMenuItem.Link">
+                                        @if (adminMenuItem.Icon != null)
+                                        {
+                                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(adminMenuItem.Icon.Value))
+                                        }
+                                        <span>@adminMenuItem.Text</span>
+                                    </a>
+                                </li>
+                            }                            
+                        </ul>
+                    </li>                   
                 }
             </ul>
         </div>

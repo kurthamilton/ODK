@@ -23,9 +23,7 @@ internal class MockBackgroundTaskService : IBackgroundTaskService
         throw new NotImplementedException();
     }
 
-    public string Enqueue(Expression<Func<Task>> task) => Enqueue(task, "");
-
-    public string Enqueue(Expression<Func<Task>> task, string queueName)
+    public string Enqueue(Expression<Func<Task>> task, BackgroundTaskQueueType queue)
     {
         if (!_run)
         {
@@ -39,10 +37,7 @@ internal class MockBackgroundTaskService : IBackgroundTaskService
         return "JobId";
     }
 
-    public string Schedule(Expression<Func<Task>> task, DateTime runAtUtc)
-        => Schedule(task, runAtUtc, "");
-
-    public string Schedule(Expression<Func<Task>> task, DateTime runAtUtc, string queueName)
+    public string Schedule(Expression<Func<Task>> task, DateTime runAtUtc, BackgroundTaskQueueType queue)
     {
         _onSchedule?.Invoke(runAtUtc);
 

@@ -1,0 +1,50 @@
+﻿@page "/groups/{slug}/events/{shortcode}/checkout/confirm"
+@using ODK.Services.Events
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Groups
+@using ODK.Web.Razor.Models.Payments
+@model CheckoutConfirmModel
+@inject IEventViewModelService EventViewModelService
+@inject IOdkRoutes OdkRoutes
+@{
+    Layout = "_HomeLayout";
+    Model.Title = "Ticket purchase pending confirmation";
+
+    var eventUrl = OdkRoutes.Groups.Event(Model.Chapter, Model.Shortcode);
+
+    var viewModel = await EventViewModelService.GetEventPageViewModel(
+        Model.ChapterServiceRequest, Model.Shortcode);
+}
+
+@await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel
+{
+    Title = "",
+    Group = viewModel,
+    Content = await Html.PartialAsync("Payments/_PaymentConfirmContent", new PaymentConfirmViewModel
+    {
+        Chapter = viewModel.Chapter,
+        SessionId = Model.SessionId
+    }),
+    Breadcrumbs = new[]
+    {
+        viewModel.Event.HasPassed
+            ? new MenuItem
+            {
+                Icon = IconType.ArrowLeft,
+                Link = Model.OdkRoutes.Groups.PastEvents(Model.Chapter),
+                Text = "Back to past events"
+            }
+            : new MenuItem
+            {
+                Icon = IconType.ArrowLeft,
+                Link = Model.OdkRoutes.Groups.Events(Model.Chapter),
+                Text = "Back to events"
+            }
+    }
+})
+
+@section scripts
+{
+    @await Html.PartialAsync("Payments/_PaymentConfirmScripts")
+}

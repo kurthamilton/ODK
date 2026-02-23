@@ -1,0 +1,43 @@
+﻿@page "/groups/{slug}/events/{shortcode}/checkout"
+@using ODK.Services.Events
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Groups
+@using ODK.Web.Razor.Models.Payments
+@model CheckoutModel
+@inject IEventViewModelService EventViewModelService
+@{
+    Layout = "_HomeLayout";
+
+    var returnPath = Model.OdkRoutes.Groups.EventCheckoutConfirm(Model.Chapter, Model.Shortcode);
+
+    var viewModel = await EventViewModelService.GetEventCheckoutPageViewModel(
+        Model.MemberChapterServiceRequest,
+        Model.Shortcode,
+        returnPath);
+
+    Model.Title = $"Checkout | {viewModel.Event.GetDisplayName()}";
+}
+
+@await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel
+{
+    Title = "Buy ticket",
+    Content = await Html.PartialAsync("Events/_EventCheckoutContent", viewModel),
+    Group = viewModel,
+    Breadcrumbs = new[]
+    {
+        new MenuItem
+        {
+            Icon = IconType.ArrowLeft,
+            Link = Model.OdkRoutes.Groups.Event(Model.Chapter, Model.Shortcode),
+            Text = "Back to event"
+        }
+    }
+})
+
+@section scripts
+{
+    @await Html.PartialAsync("Payments/_PaymentScripts", new PaymentScriptsViewModel
+    {
+        Providers = [viewModel.PaymentSettings.Provider]
+    })
+}

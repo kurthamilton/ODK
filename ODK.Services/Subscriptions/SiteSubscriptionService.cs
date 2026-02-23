@@ -160,18 +160,20 @@ public class SiteSubscriptionService : ISiteSubscriptionService
         var sitePaymentSettingsDictionary = sitePaymentSettings
             .ToDictionary(x => x.Id);
 
+        var externalSubscription = await GetExternalSubscription(sitePaymentSettings, memberSubscription);
+
         var siteSubscriptionViewModels = subscriptions
             .Where(x => x.IsEnabled(sitePaymentSettingsDictionary[x.SitePaymentSettingId]))
             .Select(x => new SiteSubscriptionViewModel
             {
                 Currencies = [],
+                CurrentMemberExternalSubscription = externalSubscription,
+                CurrentMemberSiteSubscription = memberSubscription,
                 Prices = priceDictionary.ContainsKey(x.Id) ? priceDictionary[x.Id] : [],
                 SitePaymentSettings = sitePaymentSettings,
                 Subscription = x
             })
-            .ToArray();
-
-        var externalSubscription = await GetExternalSubscription(sitePaymentSettings, memberSubscription);
+            .ToArray();        
 
         return new SiteSubscriptionsViewModel
         {

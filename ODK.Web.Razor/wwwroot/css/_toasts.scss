@@ -4,6 +4,10 @@ $toast-zindex: $zindex-modal - 1;
 /*.toasts is used instead of Bootstrap's .toast-container to take full control of layout*/
 .toasts {
     z-index: #{$toast-zindex};
+    
+    .toast:not(:last-child) {
+        margin-bottom: 1rem;
+    }
 }
 
 /*Full width toasts in xs*/

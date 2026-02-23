@@ -1,0 +1,28 @@
+﻿@page "/groups/{slug}/subscription/confirm"
+@using ODK.Services.Chapters
+@using ODK.Web.Razor.Models.Groups
+@using ODK.Web.Razor.Models.Payments
+@model ConfirmModel
+@inject IChapterViewModelService ChapterViewModelService
+@{
+    Layout = "_HomeLayout";
+    Model.Title = "Subscription pending confirmation";
+
+    var group = await ChapterViewModelService.GetGroupPage(Model.ChapterServiceRequest);
+}
+
+@await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel
+{
+    Title = "",
+    Group = group,
+    Content = await Html.PartialAsync("Payments/_PaymentConfirmContent", new PaymentConfirmViewModel
+    {
+        Chapter = Model.Chapter,
+        SessionId = Model.SessionId
+    }),
+})
+
+@section scripts
+{
+    @await Html.PartialAsync("Payments/_PaymentConfirmScripts")
+}

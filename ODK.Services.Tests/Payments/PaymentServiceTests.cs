@@ -827,7 +827,7 @@ public static class PaymentServiceTests
         bool complete = true,
         string? paymentId = null,
         string? subscriptionId = null,
-        IDictionary<string, string>? metadata = null,
+        IReadOnlyDictionary<string, string>? metadata = null,
         decimal? amount = null)
         => new PaymentProviderWebhook
         {
@@ -930,17 +930,5 @@ public static class PaymentServiceTests
         {
             Id = id ?? Guid.NewGuid(),
             Code = "GBP"
-        };
-
-    private static MemberSubscriptionRecord CreateMemberSubscriptionRecord(
-        Guid? id = null,
-        Guid? memberId = null,
-        string? externalId = null)
-        => new MemberSubscriptionRecord
-        {
-            Id = id ?? Guid.NewGuid(),
-            MemberId = memberId ?? Guid.NewGuid(),
-            ChapterSubscriptionId = Guid.NewGuid(),
-            ExternalId = externalId ?? "sub_123"
         };
 }

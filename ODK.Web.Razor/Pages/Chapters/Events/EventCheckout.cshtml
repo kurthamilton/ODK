@@ -9,8 +9,7 @@
 @{
     Layout = "_OdkChapterLayout";
 
-    var returnRoute = Model.OdkRoutes.Groups.EventCheckoutConfirm(Model.Chapter, Model.Shortcode);
-    var returnPath = $"{returnRoute}?sessionId={{sessionId}}";
+    var returnPath = Model.OdkRoutes.Groups.EventCheckoutConfirm(Model.Chapter, Model.Shortcode);
     
     var viewModel = await EventViewModelService.GetEventCheckoutPageViewModel(
         Model.MemberChapterServiceRequest,

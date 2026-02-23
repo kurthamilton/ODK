@@ -44,13 +44,7 @@
             Id = "account-menu-offcanvas",
             Position = "end",
             ContentFunc = 
-                @<div>
-                    @if (Model.Member != null)
-                    {
-                        <div>
-                            Signed in as @Model.Member.EmailAddress
-                        </div>
-                    }
+                @<div>                    
                     @if (chapters.Length == 1)
                     {
                         var chapter = chapters.First();

@@ -170,7 +170,7 @@ public class SiteAdminController : OdkControllerBase
 
         AddFeedback(result, "Subscription created");
 
-        return Redirect(OdkRoutes.SiteAdmin.Subscriptions);
+        return Redirect(OdkRoutes.SiteAdmin.Subscription(result.Value));
     }
 
     [HttpPost("siteadmin/subscriptions/{id:guid}")]

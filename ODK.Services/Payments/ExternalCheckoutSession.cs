@@ -8,11 +8,11 @@ public class ExternalCheckoutSession
 
     public required string ClientSecret { get; init; }
 
-    public required bool Complete { get; init; }
+    public required DateTime? CompletedUtc { get; init; }
 
     public required string Currency { get; init; }
 
-    public required PaymentMetadataModel Metadata { get; init; }
+    public required IReadOnlyDictionary<string, string> Metadata { get; init; }
 
     public required string? PaymentId { get; init; }
 

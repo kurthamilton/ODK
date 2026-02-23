@@ -41,7 +41,7 @@ public class GroupRoutes
         => $"{Event(chapter, shortcode)}/checkout";
 
     public string EventCheckoutConfirm(Chapter chapter, string shortcode)
-        => $"{EventCheckout(chapter, shortcode)}/confirm";
+        => $"{EventCheckout(chapter, shortcode)}/confirm?sessionId={{sessionId}}";
 
     public string Events(Chapter chapter) => GroupPath(chapter, "/events");
 
@@ -80,6 +80,9 @@ public class GroupRoutes
 
     public string SubscriptionCheckout(Chapter chapter, ChapterSubscription subscription)
         => $"{Subscription(chapter)}/{subscription.Id}/checkout";
+
+    public string SubscriptionConfirm(Chapter chapter)
+        => $"{Subscription(chapter)}/confirm?sessionId={{sessionId}}";
 
     private string GroupPath(Chapter chapter, string path) => $"{Group(chapter)}{path}";
 }

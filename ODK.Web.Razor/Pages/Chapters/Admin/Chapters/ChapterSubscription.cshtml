@@ -21,5 +21,5 @@
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
     Title = "Subscription",    
-    ContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_ChapterSubscriptionContent", viewModel)</div>
+    ContentFunc = @<div>@await Html.PartialAsync("Account/_SiteSubscriptionContent", viewModel)</div>
 })

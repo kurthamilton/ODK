@@ -382,7 +382,9 @@ public class EmailService : IEmailService
 
         await _unitOfWork.SaveChangesAsync();
 
-        _backgroundTaskService.Enqueue(() => SendQueuedEmailTask(queuedEmail.Id));
+        _backgroundTaskService.Enqueue(
+            () => SendQueuedEmailTask(queuedEmail.Id),
+            BackgroundTaskQueueType.Emails);
 
         return ServiceResult.Successful();
     }

@@ -12640,10 +12640,6 @@ footer {
   background-color: var(--odk-bg-level-1);
 }
 
-form {
-  --odk-forms-labels-font-weight: 700;
-}
-
 .form-inline {
   display: flex;
 }
@@ -12664,7 +12660,7 @@ form {
 }
 
 .form-label {
-  font-weight: var(--odk-forms-labels-font-weight);
+  font-weight: 700;
 }
 
 .form-group.required .form-label:after {
@@ -13112,7 +13108,8 @@ form {
 .panel .panel-body {
   margin-top: 1rem;
 }
-.panel .card-header {
+.panel .card-header,
+.panel .card-footer {
   background-color: var(--odk-bg-level-2-hover);
 }
 .panel .card-body,
@@ -13334,6 +13331,9 @@ th.sortable.sort-desc:after {
 .toasts {
   z-index: 1054;
 }
+.toasts .toast:not(:last-child) {
+  margin-bottom: 1rem;
+}
 
 /*Full width toasts in xs*/
 @media (max-width: 575.98px) {
@@ -13410,12 +13410,6 @@ th.sortable.sort-desc:after {
     max-width: 1320px;
   }
 }
-.event-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
 .event-response-option {
   font-size: 1.2em;
   display: inline-flex;

@@ -20,7 +20,7 @@ public class SiteSubscription : IDatabaseEntity
 
     public Guid? FallbackSiteSubscriptionId { get; set; }
 
-    public virtual ICollection<SiteSubscriptionFeature> Features { get; set; } = null!;
+    public virtual ICollection<SiteSubscriptionFeature> Features { get; set; } = [];
 
     public int? GroupLimit { get; set; }
 

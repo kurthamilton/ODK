@@ -43,16 +43,7 @@
 
 @if (Model.PastEventCount > 0)
 {
-    @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
-    {
-        MenuContentFunc = _ => Html.PartialAsync("Groups/_GroupEventsMenu", Model),
-        BodyContentFunc =
-            @<div>
-                @await Html.PartialAsync("Events/_EventList", eventListViewModel)
-            </div>
-    })
+    @await Html.PartialAsync("Groups/_GroupEventsMenu", Model)    
 }
-else
-{
-    @await Html.PartialAsync("Events/_EventList", eventListViewModel)
-}
+
+@await Html.PartialAsync("Events/_EventList", eventListViewModel)

@@ -72,6 +72,7 @@ internal class MockUnitOfWork : IUnitOfWork
     public IMemberPreferencesRepository MemberPreferencesRepository => Mock.Object.MemberPreferencesRepository;
     public IMemberPropertyRepository MemberPropertyRepository => Mock.Object.MemberPropertyRepository;
     public IMemberRepository MemberRepository => Mock.Object.MemberRepository;
+    public IMemberSiteSubscriptionRecordRepository MemberSiteSubscriptionRecordRepository => Mock.Object.MemberSiteSubscriptionRecordRepository;
     public IMemberSiteSubscriptionRepository MemberSiteSubscriptionRepository => Mock.Object.MemberSiteSubscriptionRepository;
     public IMemberSubscriptionRecordRepository MemberSubscriptionRecordRepository => Mock.Object.MemberSubscriptionRecordRepository;
     public IMemberSubscriptionRepository MemberSubscriptionRepository => Mock.Object.MemberSubscriptionRepository;

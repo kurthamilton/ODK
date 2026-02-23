@@ -6,22 +6,14 @@
 @inject IOdkRoutes OdkRoutes
 
 <div class="d-flex">
-    <div class="me-auto">
-        @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
-        {
-            ReadOnly = true,
-            CurrentResponse = Model.Event.Response
-        })
-
-        <a href="@OdkRoutes.Groups.Event(Model.Chapter, Model.Event.EventShortcode)"
-           class="@(Model.Event.Response != EventResponseType.None ? "ms-1" : null)">
-            @Model.Event.EventName
-        </a>
-    </div>
-    @if (Model.Event.Ticketed)
+    @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
     {
-        <div data-bs-toggle="tooltip" data-bs-title="Ticketed">
-            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Ticket))
-        </div>
-    }
+        ReadOnly = true,
+        CurrentResponse = Model.Event.Response
+    })
+
+    <a href="@OdkRoutes.Groups.Event(Model.Chapter, Model.Event.EventShortcode)"
+        class="@(Model.Event.Response != EventResponseType.None ? "ms-1" : null)">
+        @Model.Event.EventName
+    </a>
 </div>

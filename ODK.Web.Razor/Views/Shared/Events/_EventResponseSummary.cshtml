@@ -1,7 +1,6 @@
 ﻿@using ODK.Core.Utils
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Events
-
 @model EventResponseSummaryViewModel
 
 @if (Model.Summary == null || Model.Summary.Yes == 0)
@@ -9,7 +8,7 @@
     return;
 }
 
-<div class="d-flex align-items-center gap-2 small">
+<div class="d-flex align-items-center gap-2 @Model.Class">
     @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Members))
     <span>
         @Model.Summary.Yes

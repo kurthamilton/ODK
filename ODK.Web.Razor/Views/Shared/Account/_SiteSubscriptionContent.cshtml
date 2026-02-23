@@ -4,7 +4,7 @@
 @using ODK.Services.Subscriptions.ViewModels
 @using ODK.Web.Razor.Models.Payments
 @model SiteSubscriptionsViewModel
-@{    
+@{
     var (
         currency, 
         currentMember, 
@@ -18,6 +18,11 @@
         Model.Subscriptions, 
         Model.SitePaymentSettings,
         Model.CurrentMemberExternalSubscription);
+
+    subscriptions = subscriptions
+        .Where(x => x.Prices.Any(x => x.IsPaid))
+        .OrderBy(x => x.Subscription.DisplayOrder)
+        .ToArray();
 }
 
 @if (currency == null)
@@ -53,7 +58,7 @@
 
             @if (externalSubscription?.Status == ExternalSubscriptionStatus.Cancelled)
             {
-                <div class="badge bg-warning ms-1">
+                <div class="badge text-bg-warning ms-1">
                     Cancelled
                 </div>
             }
@@ -61,28 +66,38 @@
     </div>
 
     <div class="form-group mb-3">
-        <label class="form-label">
-            @if (externalSubscription?.Status == ExternalSubscriptionStatus.Cancelled)
-            {
-                @:Expiry date
-            }
-            else
-            {
-                @:Next payment date
-            }            
-        </label>
-        <div class="form-control-plaintext">
-            @if (memberSubscription?.ExpiresUtc != null)
-            {
-                <span>
-                    @memberSubscription.ExpiresUtc.Value.ToFriendlyDateString(null)
-                </span>                
-            }
-            else
-            {
-                <span>-</span>
-            }
-        </div>
+        @if (externalSubscription?.Status == ExternalSubscriptionStatus.Cancelled)
+        {
+            <label class="form-label">Expiry date</label>
+            <div class="form-control-plaintext">
+                @if (memberSubscription?.ExpiresUtc != null)
+                {
+                    <span>
+                        @memberSubscription.ExpiresUtc.Value.ToFriendlyDateString(null)
+                    </span>
+                }
+                else
+                {
+                    <span>-</span>
+                }
+            </div>
+        }
+        else if (externalSubscription != null)
+        {
+            <label class="form-label">Next payment date</label>
+            <div class="form-control-plaintext">
+                @if (memberSubscription?.ExpiresUtc != null)
+                {
+                    <span>
+                        @memberSubscription.ExpiresUtc.Value.ToFriendlyDateString(null)
+                    </span>
+                }
+                else
+                {
+                    <span>-</span>
+                }
+            </div>
+        }
     </div>
 
     @if (memberSubscription != null && 
@@ -101,36 +116,36 @@
         }
 
         <div class="mb-3">
-            <form action="/account/subscription/@memberSubscription.Id/cancel" method="post">
+            <form method="post">
+                <input type="hidden" name="id" value="@memberSubscription.Id" />
                 <p>
                     <button class="btn btn-danger" onclick="return confirm('Are you sure you want to cancel your subscription?');">
                         Cancel subscription
                     </button>
                 </p>       
                 <p>
-                    @await Html.PartialAsync("Components/_FormLabelSubtitle", "Your subscription will remain active until the expiry date, but payment will not be taken when due for renewal.")
+                    @await Html.PartialAsync("Components/_FormLabelSubtitle", 
+                        "Your subscription will remain active until the expiry date, " + 
+                        "but payment will not be taken when due for renewal.")
                 </p>
             </form>
         </div>
     }
 
-    <h3>Upgrade</h3>
+    @if (!subscriptions.Any(x => x.Subscription.Id != Model.CurrentMemberSubscription?.SiteSubscriptionId) && 
+        externalSubscription?.Status == ExternalSubscriptionStatus.Active)
+    {
+        @*Don't show upgrade options if there are no other subscription options than the current active subscription*@
+        return;
+    }
 
-    <div class="d-md-flex gap-3">
-        @foreach (var subscriptionDto in subscriptions.OrderBy(x => x.Subscription.DisplayOrder))
+    <h3>Purchase</h3>
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
+        @foreach (var subscription in subscriptions)
         {
-            var subscription = subscriptionDto.Subscription;
-            var prices = subscriptionDto.Prices
-            .Where(x => x.IsPaid)
-            .OrderByDescending(x => x.Amount)
-            .ToArray();
-            if (prices.Length == 0)
-            {
-                continue;
-            }
-
             <div class="mb-3 col">
-                @await Html.PartialAsync("Account/_SiteSubscriptionCard", subscriptionDto)
+                @await Html.PartialAsync("Account/_SiteSubscriptionCard", subscription)
             </div>
         }
     </div>
