@@ -1889,8 +1889,7 @@ public static class ChapterAdminServiceTests
             Id = Guid.NewGuid(),
             MemberId = Guid.NewGuid(),
             SiteSubscriptionId = siteSubscription.Id,
-            ExpiresUtc = expiresUtc,
-            SiteSubscription = siteSubscription
+            ExpiresUtc = expiresUtc
         };
     }
 }

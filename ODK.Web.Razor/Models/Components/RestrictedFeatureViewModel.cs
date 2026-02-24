@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Html;
 using ODK.Core.Chapters;
 using ODK.Core.Features;
-using ODK.Core.Members;
+using ODK.Core.Subscriptions;
 
 namespace ODK.Web.Razor.Models.Components;
 
@@ -11,7 +11,7 @@ public class RestrictedFeatureViewModel
     {
     }
 
-    public RestrictedFeatureViewModel(MemberSiteSubscription? ownerSubscription)
+    public RestrictedFeatureViewModel(SiteSubscription? ownerSubscription)
     {
         OwnerSubscription = ownerSubscription;
     }
@@ -31,7 +31,7 @@ public class RestrictedFeatureViewModel
 
     public required SiteFeatureType Feature { get; init; }
 
-    public MemberSiteSubscription? OwnerSubscription { get; }
+    public SiteSubscription? OwnerSubscription { get; }
 
     public bool? Permitted { get; }
 }

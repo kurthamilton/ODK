@@ -74,7 +74,11 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             chapterTopics,
             currency
         ) = await _unitOfWork.RunAsync(
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
+            x => x.MemberSiteSubscriptionRepository.Query()
+                .ForChapterOwner(chapter.Id)
+                .Active()
+                .SiteSubscription()
+                .GetSingleOrDefault(),
             x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => x.VenueRepository.GetById(model.VenueId),
             x => x.ChapterEventSettingsRepository.GetByChapterId(chapter.Id),
@@ -216,7 +220,11 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             chapterPrivacySettings,
             waitlist) = await GetChapterAdminRestrictedContent(
             request,
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
+            x => x.MemberSiteSubscriptionRepository.Query()
+                .ForChapterOwner(chapter.Id)
+                .Active()
+                .SiteSubscription()
+                .GetSingleOrDefault(),
             x => x.EventRepository.GetById(eventId),
             x => x.EventResponseRepository.GetByEventId(eventId),
             x => x.VenueRepository.GetByEventId(eventId),
@@ -271,7 +279,11 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.EventRepository.GetById(eventId),
             x => x.VenueRepository.GetByEventId(eventId),
             x => x.EventCommentRepository.GetDtosByEventId(eventId, includeHidden: true),
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id));
+            x => x.MemberSiteSubscriptionRepository.Query()
+                .ForChapterOwner(chapter.Id)
+                .Active()
+                .SiteSubscription()
+                .GetSingleOrDefault());
 
         OdkAssertions.BelongsToChapter(@event, chapter.Id);
 
@@ -296,7 +308,11 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => x.ChapterEventSettingsRepository.GetByChapterId(chapter.Id),
             x => x.CurrencyRepository.GetByChapterId(chapter.Id),
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id));
+            x => x.MemberSiteSubscriptionRepository.Query()
+                .ForChapterOwner(chapter.Id)
+                .Active()
+                .SiteSubscription()
+                .GetSingleOrDefault());
 
         return new EventCreateAdminPageViewModel
         {
@@ -323,7 +339,11 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             hosts,
             venues
         ) = await _unitOfWork.RunAsync(
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
+            x => x.MemberSiteSubscriptionRepository.Query()
+                .ForChapterOwner(chapter.Id)
+                .Active()
+                .SiteSubscription()
+                .GetSingleOrDefault(),
             x => x.EventRepository.GetById(eventId),
             x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => x.CurrencyRepository.GetByChapterId(chapter.Id),
@@ -356,7 +376,11 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         var (ownerSubscription, @event, eventEmail, members, invites, venue) = await GetChapterAdminRestrictedContent(
             request,
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
+            x => x.MemberSiteSubscriptionRepository.Query()
+                .ForChapterOwner(chapter.Id)
+                .Active()
+                .SiteSubscription()
+                .GetSingleOrDefault(),
             x => x.EventRepository.GetById(eventId),
             x => x.EventEmailRepository.GetByEventId(eventId),
             x => x.MemberRepository.GetByChapterId(chapter.Id),
@@ -405,7 +429,11 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         var (ownerSubscription, settings) = await GetChapterAdminRestrictedContent(
             request,
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
+            x => x.MemberSiteSubscriptionRepository.Query()
+                .ForChapterOwner(chapter.Id)
+                .Active()
+                .SiteSubscription()
+                .GetSingleOrDefault(),
             x => x.ChapterEventSettingsRepository.GetByChapterId(chapter.Id));
 
         return new EventSettingsAdminPageViewModel
@@ -429,7 +457,11 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             payments
         ) = await GetChapterAdminRestrictedContent(
             request,
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
+            x => x.MemberSiteSubscriptionRepository.Query()
+                .ForChapterOwner(chapter.Id)
+                .Active()
+                .SiteSubscription()
+                .GetSingleOrDefault(),
             x => x.MemberRepository.GetAllWithAvatarByChapterId(chapter.Id),
             x => x.EventRepository.GetById(eventId),
             x => x.VenueRepository.GetByEventId(eventId),
@@ -672,7 +704,11 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             memberEmailPreferences,
             memberSubscriptions
         ) = await _unitOfWork.RunAsync(
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(@event.ChapterId),
+            x => x.MemberSiteSubscriptionRepository.Query()
+                .ForChapterOwner(chapter.Id)
+                .Active()
+                .SiteSubscription()
+                .GetSingleOrDefault(),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(@event.ChapterId),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(@event.ChapterId),
             x => x.VenueRepository.GetById(@event.VenueId),
@@ -756,7 +792,11 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             currency,
             attendees
         ) = await _unitOfWork.RunAsync(
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
+            x => x.MemberSiteSubscriptionRepository.Query()
+                .ForChapterOwner(chapter.Id)
+                .Active()
+                .SiteSubscription()
+                .GetSingleOrDefault(),
             x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => x.EventRepository.GetById(id),
             x => x.EventHostRepository.GetByEventId(id),
@@ -894,7 +934,11 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         var (ownerSubscription, settings) = await GetChapterAdminRestrictedContent(
             request,
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
+            x => x.MemberSiteSubscriptionRepository.Query()
+                .ForChapterOwner(chapter.Id)
+                .Active()
+                .SiteSubscription()
+                .GetSingleOrDefault(),
             x => x.ChapterEventSettingsRepository.GetByChapterId(chapter.Id));
 
         settings ??= new();
@@ -964,7 +1008,11 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             request,
             x => x.EventRepository.GetById(eventId),
             x => x.EventEmailRepository.GetByEventId(eventId),
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id));
+            x => x.MemberSiteSubscriptionRepository.Query()
+                .ForChapterOwner(chapter.Id)
+                .Active()
+                .SiteSubscription()
+                .GetSingleOrDefault());
 
         OdkAssertions.BelongsToChapter(@event, chapter.Id);
 

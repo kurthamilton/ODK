@@ -1,6 +1,6 @@
 ﻿using ODK.Core.Chapters;
-using ODK.Core.Members;
 using ODK.Core.Platforms;
+using ODK.Core.Subscriptions;
 using ODK.Data.Core.Chapters;
 
 namespace ODK.Services.Members.ViewModels;
@@ -13,7 +13,7 @@ public class SubscriptionsAdminPageViewModel
 
     public required ChapterMembershipSettings MembershipSettings { get; init; }
 
-    public required MemberSiteSubscription? OwnerSubscription { get; init; }
+    public required SiteSubscription? OwnerSubscription { get; init; }
 
     public required PlatformType Platform { get; init; }
 }

@@ -22,28 +22,25 @@
     return;
 }
 
-@{
-    var eventListViewModel = new EventListViewModel
-    {
-        Chapter = Model.Chapter,
-        Events = Model.Events
-            .Select(x => new EventResponseViewModel(
-                @event: x.Event,
-                venue: x.Venue,
-                response: x.Response?.Type ?? EventResponseType.None,
-                invited: false,
-                responseSummary: x.ResponseSummary))
-            .ToArray(),
-        ForceDisplayYear = past,
-        FullWidth = true,
-        Platform = Model.Platform,
-        TimeZone = Model.Chapter.TimeZone ?? Chapter.DefaultTimeZone
-    };
-}
-
 @if (Model.PastEventCount > 0)
 {
     @await Html.PartialAsync("Groups/_GroupEventsMenu", Model)    
 }
 
-@await Html.PartialAsync("Events/_EventList", eventListViewModel)
+@await Html.PartialAsync("Events/_EventList", new EventListViewModel
+{
+    Chapter = Model.Chapter,
+    Class = "row row-cols-sm-2 row-cols-md-3 row-cols-lg-4",
+    Events = Model.Events
+        .Select(x => new EventResponseViewModel(
+            @event: x.Event,
+            venue: x.Venue,
+            response: x.Response?.Type ?? EventResponseType.None,
+            invited: false,
+            responseSummary: x.ResponseSummary))
+        .ToArray(),
+    ForceDisplayYear = past,
+    FullWidth = true,
+    Platform = Model.Platform,
+    TimeZone = Model.Chapter.TimeZone ?? Chapter.DefaultTimeZone
+})

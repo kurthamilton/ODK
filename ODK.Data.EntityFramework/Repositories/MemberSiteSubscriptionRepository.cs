@@ -20,7 +20,7 @@ public class MemberSiteSubscriptionRepository
     {
     }
 
-    public IDeferredQueryMultiple<MemberSiteSubscription> GetAllChapterOwnerSubscriptions(PlatformType platform)
+    public IDeferredQueryMultiple<MemberSiteSubscriptionDto> GetAllChapterOwnerSubscriptionDtos(PlatformType platform)
     {
         var query =
             from chapter in Set<Chapter>()
@@ -29,8 +29,16 @@ public class MemberSiteSubscriptionRepository
                 .Where(x => x.MemberId == chapter.OwnerId)
             from siteSubscription in Set<SiteSubscription>()
                 .Where(x => x.Id == memberSiteSubscription.SiteSubscriptionId)
+            from siteSubscriptionPrice in Set<SiteSubscriptionPrice>()
+                .Where(x => x.Id == memberSiteSubscription.SiteSubscriptionPriceId)
+                .DefaultIfEmpty()
             where siteSubscription.Platform == platform
-            select memberSiteSubscription;
+            select new MemberSiteSubscriptionDto
+            {
+                MemberSiteSubscription = memberSiteSubscription,
+                SiteSubscription = siteSubscription,
+                SiteSubscriptionPrice = siteSubscriptionPrice
+            };
         return query.DeferredMultiple();
     }
 
@@ -59,6 +67,12 @@ public class MemberSiteSubscriptionRepository
     public IDeferredQuerySingleOrDefault<MemberSiteSubscriptionDto> GetDtoByChapterId(Guid chapterId)
         => Query()
             .ForChapterOwner(chapterId)
+            .ToMemberSiteSubscriptionDto()
+            .GetSingleOrDefault();
+
+    public IDeferredQuerySingleOrDefault<MemberSiteSubscriptionDto> GetDtoByMemberId(Guid memberId, PlatformType platform)
+        => Query()
+            .ForMember(memberId, platform)
             .ToMemberSiteSubscriptionDto()
             .GetSingleOrDefault();
 

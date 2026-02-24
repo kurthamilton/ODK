@@ -63,21 +63,6 @@ public class ScheduledTasksController : OdkControllerBase
         }
     }
 
-    [HttpPost("subscriptions/expired/sync")]
-    public async Task SyncExpiredSubscriptions()
-    {
-        AssertAuthorised();
-
-        try
-        {
-            await _siteSubscriptionService.SyncExpiredSubscriptions(ServiceRequest);
-        }
-        catch
-        {
-            // do nothing
-        }
-    }
-
     private void AssertAuthorised()
     {
         var header = Request.Headers.GetCommaSeparatedValues("X-API-KEY")

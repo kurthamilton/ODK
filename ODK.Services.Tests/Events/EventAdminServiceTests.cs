@@ -306,9 +306,7 @@ public static class EventAdminServiceTests
     {
         return new MemberSiteSubscription
         {
-            MemberId = memberId ?? Guid.NewGuid(),
-            SiteSubscription = CreateSiteSubscription(
-                features: features)
+            MemberId = memberId ?? Guid.NewGuid()
         };
     }
 

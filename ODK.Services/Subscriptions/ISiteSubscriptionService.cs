@@ -4,8 +4,7 @@ namespace ODK.Services.Subscriptions;
 
 public interface ISiteSubscriptionService
 {
-    Task<ServiceResult> CancelMemberSiteSubscription(
-        IMemberServiceRequest request, Guid siteSubscriptionId);
+    Task<ServiceResult> CancelMemberSiteSubscription(IMemberServiceRequest request);
 
     Task<ServiceResult> ConfirmMemberSiteSubscription(
         IMemberServiceRequest request, Guid siteSubscriptionId, string externalId);
@@ -15,6 +14,4 @@ public interface ISiteSubscriptionService
 
     Task<SiteSubscriptionCheckoutViewModel> StartSiteSubscriptionCheckout(
         IMemberServiceRequest request, Guid priceId, string returnPath, Guid? chapterId);
-
-    Task SyncExpiredSubscriptions(IServiceRequest request);
 }

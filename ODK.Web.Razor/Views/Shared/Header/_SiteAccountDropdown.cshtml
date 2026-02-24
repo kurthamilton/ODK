@@ -44,11 +44,12 @@
                             </a>
                         </div>                    
 
-                        <hr/>
-
-                        <div class="offcanvas-flush-item"><strong>Groups</strong></div>
+                        <hr/>                        
 
                         <div class="list-group list-group-flush list-group-border-0">
+                            <div class="list-group-item">
+                                <strong>Groups</strong>
+                            </div>
                             @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
                             {
                                 Class = "list-group-item list-group-item-action",

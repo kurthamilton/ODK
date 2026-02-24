@@ -237,14 +237,14 @@ public class ChapterViewModelService : IChapterViewModelService
 
         var (
             current,
-            memberSubscription,
+            memberSubscriptionDto,
             countries,
             topicGroups,
             topics,
             memberTopics,
             memberLocation) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetByOwnerId(platform, currentMember.Id),
-            x => x.MemberSiteSubscriptionRepository.GetByMemberId(currentMember.Id, platform),
+            x => x.MemberSiteSubscriptionRepository.GetDtoByMemberId(currentMember.Id, platform),
             x => x.CountryRepository.GetAll(),
             x => x.TopicGroupRepository.GetAll(),
             x => x.TopicRepository.GetAll(),
@@ -254,8 +254,8 @@ public class ChapterViewModelService : IChapterViewModelService
         return new ChapterCreateViewModel
         {
             ChapterCount = current.Count,
-            ChapterLimit = memberSubscription?.SiteSubscription != null
-                ? memberSubscription.SiteSubscription.GroupLimit
+            ChapterLimit = memberSubscriptionDto?.SiteSubscription != null
+                ? memberSubscriptionDto.SiteSubscription.GroupLimit
                 : SiteSubscription.DefaultGroupLimit,
             Countries = countries,
             Member = currentMember,
@@ -566,7 +566,11 @@ public class ChapterViewModelService : IChapterViewModelService
             x => currentMember != null
                 ? x.MemberSubscriptionRepository.GetByMemberId(currentMember.Id, chapter.Id)
                 : new DefaultDeferredQuerySingleOrDefault<MemberSubscription>(),
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
+            x => x.MemberSiteSubscriptionRepository.Query()
+                .ForChapterOwner(chapter.Id)
+                .Active()
+                .SiteSubscription()
+                .GetSingleOrDefault(),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterAdminMemberRepository.GetAdminMembersWithAvatarsByChapterId(platform, chapter.Id),
@@ -816,7 +820,11 @@ public class ChapterViewModelService : IChapterViewModelService
             x => currentMember != null
                 ? x.MemberSubscriptionRepository.GetByMemberId(currentMember.Id, chapter.Id)
                 : new DefaultDeferredQuerySingleOrDefault<MemberSubscription>(),
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
+            x => x.MemberSiteSubscriptionRepository.Query()
+                .ForChapterOwner(chapter.Id)
+                .Active()
+                .SiteSubscription()
+                .GetSingleOrDefault(),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
             x => x.EventRepository.GetByChapterId(chapter.Id, today),

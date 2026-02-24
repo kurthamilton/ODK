@@ -8,7 +8,7 @@ namespace ODK.Data.Core.Repositories;
 
 public interface IMemberSiteSubscriptionRepository : IReadWriteRepository<MemberSiteSubscription, IMemberSiteSubscriptionQueryBuilder>
 {
-    IDeferredQueryMultiple<MemberSiteSubscription> GetAllChapterOwnerSubscriptions(PlatformType platform);
+    IDeferredQueryMultiple<MemberSiteSubscriptionDto> GetAllChapterOwnerSubscriptionDtos(PlatformType platform);
 
     IDeferredQuerySingleOrDefault<MemberSiteSubscription> GetByChapterId(Guid chapterId);
 
@@ -17,6 +17,8 @@ public interface IMemberSiteSubscriptionRepository : IReadWriteRepository<Member
     IDeferredQueryMultiple<MemberSiteSubscription> GetByMemberId(Guid memberId);
 
     IDeferredQuerySingleOrDefault<MemberSiteSubscriptionDto> GetDtoByChapterId(Guid chapterId);
+
+    IDeferredQuerySingleOrDefault<MemberSiteSubscriptionDto> GetDtoByMemberId(Guid memberId, PlatformType platform);
 
     IDeferredQueryMultiple<MemberSiteSubscription> GetExpired();
 }

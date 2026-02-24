@@ -11,7 +11,7 @@ public interface IChapterAdminService
 {
     Task<ServiceResult> AddChapterAdminMember(IMemberChapterAdminServiceRequest request, Guid memberId);
 
-    Task<ServiceResult> CancelSiteSubscription(IMemberChapterAdminServiceRequest request, Guid siteSubscriptionId);
+    Task<ServiceResult> CancelSiteSubscription(IMemberChapterAdminServiceRequest request);
 
     Task<ServiceResult<Chapter?>> CreateChapter(
         IMemberServiceRequest request,

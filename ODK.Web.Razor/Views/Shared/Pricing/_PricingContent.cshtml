@@ -32,7 +32,7 @@
                     <div class="card-text d-flex flex-column flex-grow-1">
                         @Html.Raw(subscription.Description)
 
-                        @if (Model.SiteSubscriptions.CurrentMemberSubscription?.SiteSubscriptionId == subscription.Id)
+                        @if (Model.SiteSubscriptions.CurrentMemberSubscription?.SiteSubscription.Id == subscription.Id)
                         {
                             <div class="mt-auto">
                                 @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Star)
@@ -44,7 +44,7 @@
                         }
                                                  
                         <div class="d-flex flex-column gap-3 mt-auto">
-                            @if (subscription.Id == Model.SiteSubscriptions.CurrentMemberSubscription?.SiteSubscriptionId)
+                            @if (subscription.Id == Model.SiteSubscriptions.CurrentMemberSubscription?.SiteSubscription.Id)
                             {
                                 @*Site subscriptions are recurring - no need to show *@
                                 continue;    
