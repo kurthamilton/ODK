@@ -1,17 +1,14 @@
-﻿using ODK.Core.Platforms;
-using ODK.Data.Core;
+﻿using ODK.Data.Core;
 
 namespace ODK.Data.EntityFramework;
 
 public class UnitOfWorkFactory : IUnitOfWorkFactory
 {
     private readonly List<OdkContext> _created = new();
-    private readonly IPlatformProvider _platformProvider;
     private readonly OdkContextSettings _settings;
 
-    public UnitOfWorkFactory(OdkContextSettings settings, IPlatformProvider platformProvider)
+    public UnitOfWorkFactory(OdkContextSettings settings)
     {
-        _platformProvider = platformProvider;
         _settings = settings;
     }
 
@@ -19,7 +16,7 @@ public class UnitOfWorkFactory : IUnitOfWorkFactory
     {
         var context = new OdkContext(_settings);
         _created.Add(context);
-        return new UnitOfWork(context, _platformProvider);
+        return new UnitOfWork(context);
     }
 
     public void Dispose()

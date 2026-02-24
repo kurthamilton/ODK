@@ -1,4 +1,5 @@
-﻿using ODK.Core.Events;
+﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Events;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
@@ -7,7 +8,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class EventWaitlistMemberRepository : ReadWriteRepositoryBase<EventWaitlistMember>, IEventWaitlistMemberRepository
 {
-    public EventWaitlistMemberRepository(OdkContext context)
+    public EventWaitlistMemberRepository(DbContext context)
         : base(context)
     {
     }

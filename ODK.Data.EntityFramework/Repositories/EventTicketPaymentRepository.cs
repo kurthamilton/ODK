@@ -8,7 +8,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class EventTicketPaymentRepository : ReadWriteRepositoryBase<EventTicketPayment>, IEventTicketPaymentRepository
 {
-    public EventTicketPaymentRepository(OdkContext context)
+    public EventTicketPaymentRepository(DbContext context)
         : base(context)
     {
     }

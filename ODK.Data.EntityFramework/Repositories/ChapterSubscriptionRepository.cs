@@ -10,7 +10,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class ChapterSubscriptionRepository : ReadWriteRepositoryBase<ChapterSubscription>, IChapterSubscriptionRepository
 {
-    public ChapterSubscriptionRepository(OdkContext context)
+    public ChapterSubscriptionRepository(DbContext context)
         : base(context)
     {
     }

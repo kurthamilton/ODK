@@ -1,20 +1,21 @@
-﻿using ODK.Core;
+﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core;
 using ODK.Data.Core.QueryBuilders;
 
 namespace ODK.Data.EntityFramework.QueryBuilders;
 
-public class DatabaseEntityQueryBuilder<T> : 
-    DatabaseEntityQueryBuilder<T, IDatabaseEntityQueryBuilder<T>>, 
+public class DatabaseEntityQueryBuilder<T> :
+    DatabaseEntityQueryBuilder<T, IDatabaseEntityQueryBuilder<T>>,
     IDatabaseEntityQueryBuilder<T, IDatabaseEntityQueryBuilder<T>>,
     IDatabaseEntityQueryBuilder<T>
     where T : class, IDatabaseEntity
 {
-    internal DatabaseEntityQueryBuilder(OdkContext context)
+    internal DatabaseEntityQueryBuilder(DbContext context)
         : base(context)
     {
     }
 
-    internal DatabaseEntityQueryBuilder(OdkContext context, IQueryable<T> query)
+    internal DatabaseEntityQueryBuilder(DbContext context, IQueryable<T> query)
         : base(context, query)
     {
     }
@@ -26,12 +27,12 @@ public abstract class DatabaseEntityQueryBuilder<T, TBuilder> : QueryBuilder<T>,
     where T : class, IDatabaseEntity
     where TBuilder : IQueryBuilder<T>
 {
-    internal DatabaseEntityQueryBuilder(OdkContext context)
+    internal DatabaseEntityQueryBuilder(DbContext context)
         : base(context)
     {
     }
 
-    internal DatabaseEntityQueryBuilder(OdkContext context, IQueryable<T> query)
+    internal DatabaseEntityQueryBuilder(DbContext context, IQueryable<T> query)
         : base(context, query)
     {
     }

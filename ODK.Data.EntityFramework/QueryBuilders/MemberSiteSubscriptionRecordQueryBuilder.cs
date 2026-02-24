@@ -1,13 +1,14 @@
-﻿using ODK.Core.Members;
+﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Members;
 using ODK.Data.Core.QueryBuilders;
 
 namespace ODK.Data.EntityFramework.QueryBuilders;
 
-public class MemberSiteSubscriptionRecordQueryBuilder : 
-    DatabaseEntityQueryBuilder<MemberSiteSubscriptionRecord, IMemberSiteSubscriptionRecordQueryBuilder>, 
+public class MemberSiteSubscriptionRecordQueryBuilder :
+    DatabaseEntityQueryBuilder<MemberSiteSubscriptionRecord, IMemberSiteSubscriptionRecordQueryBuilder>,
     IMemberSiteSubscriptionRecordQueryBuilder
 {
-    internal MemberSiteSubscriptionRecordQueryBuilder(OdkContext context) 
+    internal MemberSiteSubscriptionRecordQueryBuilder(DbContext context)
         : base(context)
     {
     }

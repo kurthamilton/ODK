@@ -1,4 +1,5 @@
-﻿using ODK.Core.Logging;
+﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Logging;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
@@ -7,7 +8,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class ErrorRepository : ReadWriteRepositoryBase<Error>, IErrorRepository
 {
-    public ErrorRepository(OdkContext context)
+    public ErrorRepository(DbContext context)
         : base(context)
     {
     }

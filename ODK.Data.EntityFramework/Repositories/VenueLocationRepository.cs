@@ -8,7 +8,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class VenueLocationRepository : WriteRepositoryBase<VenueLocation>, IVenueLocationRepository
 {
-    public VenueLocationRepository(OdkContext context)
+    public VenueLocationRepository(DbContext context)
         : base(context)
     {
     }

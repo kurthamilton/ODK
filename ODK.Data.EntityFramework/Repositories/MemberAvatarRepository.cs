@@ -1,4 +1,5 @@
-﻿using ODK.Core.Members;
+﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Members;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Members;
 using ODK.Data.Core.Repositories;
@@ -8,7 +9,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class MemberAvatarRepository : WriteRepositoryBase<MemberAvatar>, IMemberAvatarRepository
 {
-    public MemberAvatarRepository(OdkContext context)
+    public MemberAvatarRepository(DbContext context)
         : base(context)
     {
     }

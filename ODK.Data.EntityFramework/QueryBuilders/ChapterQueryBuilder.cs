@@ -1,4 +1,5 @@
-﻿using ODK.Core.Chapters;
+﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Chapters;
 using ODK.Core.Events;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
@@ -11,7 +12,7 @@ namespace ODK.Data.EntityFramework.QueryBuilders;
 
 public class ChapterQueryBuilder : DatabaseEntityQueryBuilder<Chapter, IChapterQueryBuilder>, IChapterQueryBuilder
 {
-    public ChapterQueryBuilder(OdkContext context, PlatformType platform, bool includeUnpublished) 
+    public ChapterQueryBuilder(DbContext context, PlatformType platform, bool includeUnpublished)
         : base(context, BaseQuery(context, platform, includeUnpublished))
     {
     }
@@ -48,7 +49,7 @@ public class ChapterQueryBuilder : DatabaseEntityQueryBuilder<Chapter, IChapterQ
 
     public IChapterQueryBuilder ForMember(Guid memberId)
     {
-        Query = 
+        Query =
             from chapter in Query
             from memberChapter in Set<MemberChapter>()
                 .Where(x => x.ChapterId == chapter.Id)
@@ -164,7 +165,7 @@ public class ChapterQueryBuilder : DatabaseEntityQueryBuilder<Chapter, IChapterQ
         return ProjectTo(query);
     }
 
-    private static IQueryable<Chapter> BaseQuery(OdkContext context, PlatformType platform, bool includeUnpublished)
+    private static IQueryable<Chapter> BaseQuery(DbContext context, PlatformType platform, bool includeUnpublished)
         => context
             .Set<Chapter>()
             .ForPlatform(platform, includeUnpublished);

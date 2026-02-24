@@ -1,4 +1,5 @@
-﻿using ODK.Core.Chapters;
+﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
@@ -8,7 +9,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class MemberPropertyRepository : ReadWriteRepositoryBase<MemberProperty>, IMemberPropertyRepository
 {
-    public MemberPropertyRepository(OdkContext context)
+    public MemberPropertyRepository(DbContext context)
         : base(context)
     {
     }

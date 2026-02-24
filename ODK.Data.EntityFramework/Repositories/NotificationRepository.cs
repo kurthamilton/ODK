@@ -10,7 +10,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class NotificationRepository : ReadWriteRepositoryBase<Notification>, INotificationRepository
 {
-    public NotificationRepository(OdkContext context)
+    public NotificationRepository(DbContext context)
         : base(context)
     {
     }

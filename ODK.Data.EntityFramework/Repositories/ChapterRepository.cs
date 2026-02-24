@@ -1,4 +1,5 @@
-﻿using ODK.Core.Chapters;
+﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Chapters;
 using ODK.Core.Platforms;
 using ODK.Data.Core.Chapters;
 using ODK.Data.Core.Deferred;
@@ -10,7 +11,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class ChapterRepository : WriteRepositoryBase<Chapter>, IChapterRepository
 {
-    public ChapterRepository(OdkContext context)
+    public ChapterRepository(DbContext context)
         : base(context)
     {
     }
@@ -84,7 +85,7 @@ public class ChapterRepository : WriteRepositoryBase<Chapter>, IChapterRepositor
         => Query(platform, includeUnpublished: false);
 
     public IChapterQueryBuilder Query(PlatformType platform, bool includeUnpublished)
-        => CreateQueryBuilder<IChapterQueryBuilder, Chapter>(context 
+        => CreateQueryBuilder<IChapterQueryBuilder, Chapter>(context
             => new ChapterQueryBuilder(context, platform, includeUnpublished));
 
     public IDeferredQueryMultiple<ChapterSearchResultDto> Search(PlatformType platform, ChapterSearchCriteria criteria)

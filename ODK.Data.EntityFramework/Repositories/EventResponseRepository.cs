@@ -1,4 +1,5 @@
-﻿using ODK.Core.Events;
+﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Events;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Events;
 using ODK.Data.Core.Repositories;
@@ -8,7 +9,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class EventResponseRepository : WriteRepositoryBase<EventResponse>, IEventResponseRepository
 {
-    public EventResponseRepository(OdkContext context)
+    public EventResponseRepository(DbContext context)
         : base(context)
     {
     }

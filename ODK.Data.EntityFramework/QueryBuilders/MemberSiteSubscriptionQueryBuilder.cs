@@ -1,4 +1,5 @@
-﻿using ODK.Core.Chapters;
+﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
@@ -10,7 +11,7 @@ namespace ODK.Data.EntityFramework.QueryBuilders;
 public class MemberSiteSubscriptionQueryBuilder
     : DatabaseEntityQueryBuilder<MemberSiteSubscription, IMemberSiteSubscriptionQueryBuilder>, IMemberSiteSubscriptionQueryBuilder
 {
-    public MemberSiteSubscriptionQueryBuilder(OdkContext context)
+    public MemberSiteSubscriptionQueryBuilder(DbContext context)
         : base(context)
     {
     }
@@ -19,7 +20,7 @@ public class MemberSiteSubscriptionQueryBuilder
 
     public IMemberSiteSubscriptionQueryBuilder Active()
     {
-        Query = Query.Where(x => x.ExpiresUtc > DateTime.UtcNow);
+        Query = Query.Where(x => x.ExpiresUtc == null || x.ExpiresUtc > DateTime.UtcNow);
         return this;
     }
 

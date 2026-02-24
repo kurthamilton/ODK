@@ -93,7 +93,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IVenueLocationRepository> _venueLocationRepository;
     private readonly Lazy<IVenueRepository> _venueRepository;
 
-    public UnitOfWork(OdkContext context, IPlatformProvider platformProvider)
+    public UnitOfWork(OdkContext context)
     {
         _context = context;
 

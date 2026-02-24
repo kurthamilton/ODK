@@ -10,7 +10,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class ChapterTopicRepository : WriteRepositoryBase<ChapterTopic>, IChapterTopicRepository
 {
-    public ChapterTopicRepository(OdkContext context)
+    public ChapterTopicRepository(DbContext context)
         : base(context)
     {
     }

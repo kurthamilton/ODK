@@ -1,4 +1,5 @@
-﻿using ODK.Core.Events;
+﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Events;
 using ODK.Core.Venues;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
@@ -8,7 +9,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class VenueRepository : ReadWriteRepositoryBase<Venue>, IVenueRepository
 {
-    public VenueRepository(OdkContext context)
+    public VenueRepository(DbContext context)
         : base(context)
     {
     }

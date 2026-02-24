@@ -1,4 +1,5 @@
-﻿using ODK.Core.Subscriptions;
+﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Subscriptions;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
@@ -7,7 +8,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class SiteSubscriptionFeatureRepository : ReadWriteRepositoryBase<SiteSubscriptionFeature>, ISiteSubscriptionFeatureRepository
 {
-    public SiteSubscriptionFeatureRepository(OdkContext context)
+    public SiteSubscriptionFeatureRepository(DbContext context)
         : base(context)
     {
     }

@@ -1,4 +1,5 @@
-﻿using ODK.Core.Chapters;
+﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Members;
 using ODK.Data.Core.Deferred;
@@ -9,7 +10,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class CurrencyRepository : ReadWriteRepositoryBase<Currency>, ICurrencyRepository
 {
-    public CurrencyRepository(OdkContext context)
+    public CurrencyRepository(DbContext context)
         : base(context)
     {
     }

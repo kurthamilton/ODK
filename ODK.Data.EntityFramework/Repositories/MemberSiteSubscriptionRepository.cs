@@ -1,4 +1,5 @@
-﻿using ODK.Core.Chapters;
+﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
@@ -15,7 +16,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 public class MemberSiteSubscriptionRepository
     : ReadWriteRepositoryBase<MemberSiteSubscription, IMemberSiteSubscriptionQueryBuilder>, IMemberSiteSubscriptionRepository
 {
-    public MemberSiteSubscriptionRepository(OdkContext context)
+    public MemberSiteSubscriptionRepository(DbContext context)
         : base(context)
     {
     }

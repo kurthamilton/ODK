@@ -9,7 +9,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class MemberPaymentSettingsRepository : WriteRepositoryBase<MemberPaymentSettings>, IMemberPaymentSettingsRepository
 {
-    public MemberPaymentSettingsRepository(OdkContext context)
+    public MemberPaymentSettingsRepository(DbContext context)
         : base(context)
     {
     }

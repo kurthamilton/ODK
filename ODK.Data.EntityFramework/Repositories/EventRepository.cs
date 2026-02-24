@@ -1,4 +1,5 @@
-﻿using ODK.Core.Events;
+﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Events;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Events;
 using ODK.Data.Core.QueryBuilders;
@@ -9,7 +10,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class EventRepository : ReadWriteRepositoryBase<Event, IEventQueryBuilder>, IEventRepository
 {
-    public EventRepository(OdkContext context)
+    public EventRepository(DbContext context)
         : base(context)
     {
     }
@@ -20,7 +21,7 @@ public class EventRepository : ReadWriteRepositoryBase<Event, IEventQueryBuilder
             .OrderByDescending(x => x.Date)
             .GetAll();
 
-    public IDeferredQueryMultiple<Event> GetByChapterId(Guid chapterId, DateTime after) 
+    public IDeferredQueryMultiple<Event> GetByChapterId(Guid chapterId, DateTime after)
         => Query()
             .ForChapter(chapterId)
             .After(after)

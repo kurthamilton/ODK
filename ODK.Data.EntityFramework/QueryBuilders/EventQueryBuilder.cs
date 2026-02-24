@@ -8,7 +8,7 @@ namespace ODK.Data.EntityFramework.QueryBuilders;
 
 public class EventQueryBuilder : DatabaseEntityQueryBuilder<Event, IEventQueryBuilder>, IEventQueryBuilder
 {
-    public EventQueryBuilder(OdkContext context) 
+    public EventQueryBuilder(DbContext context)
         : base(context, BaseQuery(context))
     {
     }
@@ -90,7 +90,7 @@ public class EventQueryBuilder : DatabaseEntityQueryBuilder<Event, IEventQueryBu
         return ProjectTo(query);
     }
 
-    private static IQueryable<Event> BaseQuery(OdkContext context)
+    private static IQueryable<Event> BaseQuery(DbContext context)
         => context.Set<Event>()
             .Include(x => x.TicketSettings)
             .ThenInclude(x => x!.Currency);

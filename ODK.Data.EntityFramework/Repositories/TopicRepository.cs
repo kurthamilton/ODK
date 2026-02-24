@@ -8,7 +8,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class TopicRepository : ReadWriteRepositoryBase<Topic>, ITopicRepository
 {
-    public TopicRepository(OdkContext context)
+    public TopicRepository(DbContext context)
         : base(context)
     {
     }

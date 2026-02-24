@@ -1,4 +1,5 @@
-﻿using ODK.Core.Members;
+﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Members;
 using ODK.Core.Notifications;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
@@ -9,7 +10,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class MemberNotificationSettingsRepository : WriteRepositoryBase<MemberNotificationSettings>, IMemberNotificationSettingsRepository
 {
-    public MemberNotificationSettingsRepository(OdkContext context)
+    public MemberNotificationSettingsRepository(DbContext context)
         : base(context)
     {
     }

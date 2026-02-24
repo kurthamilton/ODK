@@ -10,12 +10,12 @@ namespace ODK.Data.EntityFramework.QueryBuilders;
 
 public class MemberQueryBuilder : DatabaseEntityQueryBuilder<Member, IMemberQueryBuilder>, IMemberQueryBuilder
 {
-    internal MemberQueryBuilder(OdkContext context)
+    internal MemberQueryBuilder(DbContext context)
         : base(context, BaseQuery(context))
     {
     }
 
-    internal MemberQueryBuilder(OdkContext context, IQueryable<Member> query)
+    internal MemberQueryBuilder(DbContext context, IQueryable<Member> query)
         : base(context, query)
     {
     }
@@ -58,7 +58,7 @@ public class MemberQueryBuilder : DatabaseEntityQueryBuilder<Member, IMemberQuer
 
     public IQueryBuilder<MemberWithAvatarDto> WithAvatar()
     {
-        var query = 
+        var query =
             from member in Query
             from avatar in Set<MemberAvatar>()
                 .Where(x => x.MemberId == member.Id)
@@ -72,7 +72,7 @@ public class MemberQueryBuilder : DatabaseEntityQueryBuilder<Member, IMemberQuer
         return ProjectTo(query);
     }
 
-    private static IQueryable<Member> BaseQuery(OdkContext context)
+    private static IQueryable<Member> BaseQuery(DbContext context)
         => context.Set<Member>()
             .Include(x => x.Chapters);
 }

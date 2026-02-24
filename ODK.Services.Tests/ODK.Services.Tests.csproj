@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="FluentAssertions" Version="8.8.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.3" />
     <PackageReference Include="Moq" Version="4.20.72" />
     <PackageReference Include="nunit" Version="4.4.0" />
     <PackageReference Include="NUnit.Analyzers" Version="4.11.2">
@@ -24,6 +25,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ODK.Data.Core\ODK.Data.Core.csproj" />
+    <ProjectReference Include="..\ODK.Data.EntityFramework\ODK.Data.EntityFramework.csproj" />
     <ProjectReference Include="..\ODK.Services\ODK.Services.csproj" />
   </ItemGroup>
 

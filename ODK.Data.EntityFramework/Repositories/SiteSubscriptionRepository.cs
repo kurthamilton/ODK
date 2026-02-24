@@ -11,7 +11,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class SiteSubscriptionRepository : ReadWriteRepositoryBase<SiteSubscription>, ISiteSubscriptionRepository
 {
-    public SiteSubscriptionRepository(OdkContext context)
+    public SiteSubscriptionRepository(DbContext context)
         : base(context)
     {
     }

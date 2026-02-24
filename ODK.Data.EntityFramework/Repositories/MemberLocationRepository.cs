@@ -8,7 +8,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class MemberLocationRepository : WriteRepositoryBase<MemberLocation>, IMemberLocationRepository
 {
-    public MemberLocationRepository(OdkContext context)
+    public MemberLocationRepository(DbContext context)
         : base(context)
     {
     }
