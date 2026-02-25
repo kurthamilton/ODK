@@ -248,8 +248,7 @@ public class EmailService : IEmailService
                 SentUtc = sentUtc,
                 Subject = queuedEmail.Subject,
                 To = x.EmailAddress
-            })
-            .ToArray();
+            });
 
         _unitOfWork.SentEmailRepository.AddMany(sentEmails);
         _unitOfWork.QueuedEmailRecipientRepository.DeleteMany(recipients);

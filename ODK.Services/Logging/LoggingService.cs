@@ -101,8 +101,7 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
                 ErrorId = error.Id,
                 Name = x.Key,
                 Value = x.Value ?? string.Empty
-            })
-            .ToArray();
+            });
         unitOfWork.ErrorPropertyRepository.AddMany(errorProperties);
 
         await unitOfWork.SaveChangesAsync();
@@ -124,8 +123,7 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
                 ErrorId = error.Id,
                 Name = x.Key,
                 Value = x.Value ?? string.Empty
-            })
-            .ToArray();
+            });
 
         unitOfWork.ErrorPropertyRepository.AddMany(errorProperties);
 

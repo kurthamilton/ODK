@@ -407,8 +407,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
                     ChapterPropertyId = property.Id,
                     DisplayOrder = i + 1,
                     Value = x
-                })
-                .ToArray();
+                });
             _unitOfWork.ChapterPropertyOptionRepository.AddMany(options);
         }
 
@@ -1941,18 +1940,15 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             _unitOfWork.ChapterPropertyOptionRepository.DeleteMany(options);
 
             if (model.Options != null)
-            {
-                options = model.Options
+            {                
+                _unitOfWork.ChapterPropertyOptionRepository.AddMany(model.Options
                     .Where(x => !string.IsNullOrWhiteSpace(x))
                     .Select((x, i) => new ChapterPropertyOption
                     {
                         ChapterPropertyId = property.Id,
                         DisplayOrder = i + 1,
                         Value = x
-                    })
-                    .ToArray();
-
-                _unitOfWork.ChapterPropertyOptionRepository.AddMany(options);
+                    }));
             }
         }
 

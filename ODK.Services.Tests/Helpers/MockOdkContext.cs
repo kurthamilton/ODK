@@ -40,6 +40,11 @@ internal class MockOdkContext : OdkContext
         }
     }
 
+    public override void Dispose()
+    {
+        base.Dispose();
+    }
+
     internal MockOdkContext SetupChapter(
         Chapter chapter,
         SiteSubscription? siteSubscription = null,
@@ -49,7 +54,8 @@ internal class MockOdkContext : OdkContext
             adminMembers?.Select(x => new ChapterAdminMember
             {
                 ChapterId = chapter.Id,
-                MemberId = x.Id
+                MemberId = x.Id,
+                Role = ChapterAdminRole.Admin
             }),
             siteSubscription);
 
@@ -72,7 +78,10 @@ internal class MockOdkContext : OdkContext
 
         if (adminMembers != null)
         {
-            AddRange(adminMembers);
+            foreach (var adminMember in adminMembers)
+            {
+                Add(adminMember);
+            }
         }
 
         return this;
@@ -99,6 +108,7 @@ internal class MockOdkContext : OdkContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     {
-        options.UseInMemoryDatabase("odk");
+        // generate unique DB name per-test
+        options.UseInMemoryDatabase($"odk-{Guid.NewGuid()}");
     }
 }
