@@ -784,10 +784,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             x => x.ChapterConversationMessageRepository.GetDtosByConversationId(id),
             x => x.NotificationRepository.GetUnreadByEntityId(NotificationType.ConversationOwnerMessage, id));
 
-        var adminMemberNotifications = notifications
-            .Where(x => x.MemberId != conversation.MemberId)
-            .ToArray();
-
         OdkAssertions.BelongsToChapter(conversation, chapter.Id);
 
         var (member, otherConversations) = await _unitOfWork.RunAsync(
