@@ -13,7 +13,13 @@
     var currency = Model.SiteSubscriptions.Currency
         ?? Model.SiteSubscriptions.Currencies.FirstOrDefault()
         ?? Model.SiteSubscriptions.Subscriptions.SelectMany(x => x.Prices).Select(x => x.Currency).FirstOrDefault();
-    if (currency == null || Model.SiteSubscriptions.SitePaymentSettings.Count == 0)
+
+    if (Model.SiteSubscriptions.SitePaymentSettings.Count == 0)
+    {
+        return;
+    }
+
+    if (currency == null && Model.SiteSubscriptions.Subscriptions.Any(x => x.Prices.Count > 0))
     {
         return;
     }
@@ -23,7 +29,7 @@
     @foreach (var subscriptionViewModel in subscriptions)
     {
         var subscription = subscriptionViewModel.Subscription;
-        var prices = subscriptionViewModel.Prices.Where(x => x.CurrencyId == currency.Id);
+        var prices = currency != null ? subscriptionViewModel.Prices.Where(x => x.CurrencyId == currency.Id) : [];
 
         <div class="col mb-3">
             <div class="card h-100">
@@ -72,7 +78,7 @@
                                 {
                                     Amount = price.Amount,
                                     CheckoutUrl = Model.CheckoutUrl.Replace("{price.id}", price.Id.ToString()),
-                                    Currency = currency,
+                                    Currency = currency!,
                                     Frequency = price.Frequency,
                                     ExternalId = price.ExternalId,
                                     Provider = paymentSettings.Provider,

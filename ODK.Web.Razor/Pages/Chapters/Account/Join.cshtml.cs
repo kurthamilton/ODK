@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Images;
-using ODK.Services;
 using ODK.Services.Members;
 using ODK.Services.Members.Models;
 using ODK.Services.Users.ViewModels;
@@ -52,17 +51,8 @@ public class JoinModel : OdkPageModel
         };
 
         var result = await _memberService.CreateChapterAccount(ChapterServiceRequest, model);
-        PostJoin(result);
         return result.Success
             ? Redirect($"/{chapterName}/Account/Pending")
             : Page();
-    }
-
-    private void PostJoin(ServiceResult result)
-    {
-        string successMessage =
-            "Thank you for signing up. " +
-            "An email has been sent to your email address containing a link to activate your account.";
-        AddFeedback(result, successMessage);
     }
 }

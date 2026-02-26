@@ -51,6 +51,9 @@ public class AccountRoutes : RoutesBase
 
     public string Location() => AccountPath(null, "/location");
 
+    public string LocationDefaults(string latPlaceholder, string longPlaceholder)
+        => AccountPath(null, $"/location/defaults?lat={latPlaceholder}&long={longPlaceholder}");
+
     public string Login(Chapter? chapter) => AccountPath(Platform switch
     {
         PlatformType.DrunkenKnitwits => chapter,
@@ -84,7 +87,7 @@ public class AccountRoutes : RoutesBase
 
     public string Subscription(Chapter? chapter) => AccountPath(chapter, "/subscription");
 
-    public string SiteSubscriptionCheckout(Guid priceId) 
+    public string SiteSubscriptionCheckout(Guid priceId)
         => AccountPath(chapter: null, $"/subscription/{priceId}/checkout");
 
     public string SiteSubscriptionConfirm()

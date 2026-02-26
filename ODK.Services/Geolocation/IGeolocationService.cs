@@ -6,5 +6,7 @@ public interface IGeolocationService
 {
     Task<Country?> GetCountryFromLocation(LatLong location);
 
+    Task<Location?> GetLocationFromIpAddress(string ipAddress);
+
     Task<TimeZoneInfo?> GetTimeZoneFromLocation(LatLong location);
 }

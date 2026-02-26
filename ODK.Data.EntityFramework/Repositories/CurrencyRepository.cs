@@ -35,6 +35,7 @@ public class CurrencyRepository : ReadWriteRepositoryBase<Currency>, ICurrencyRe
             from currency in Set()
             from country in Set<Country>()
                 .Where(x => x.CurrencyId == currency.Id)
+            where country.Id == countryId
             select currency;
 
         return query.DeferredSingle();

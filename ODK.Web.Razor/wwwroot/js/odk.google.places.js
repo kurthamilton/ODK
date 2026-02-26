@@ -6,13 +6,15 @@
 
     $inputs.forEach($input => bindInput($input));
 
-    function bindInput($input) {        
+    async function bindInput($input) {
+        const $container = $input.closest('[data-location-container]');
+
         // Attempt to hide the native autocomplete - NB some browsers may ignore this
         const $form = $input.closest('form');
         $form.setAttribute('autocomplete', 'off');
         $input.setAttribute('autocomplete', 'off');
         $input.setAttribute('data-bs-toggle', 'dropdown');
-        
+
         const $dropdownContainer = $input.closest('.dropdown');
         const $options = $dropdownContainer.querySelector('[data-location-options]');
 
@@ -22,15 +24,22 @@
         const dropdown = bootstrap.Dropdown.getOrCreateInstance($input);
         let suggestions = [];
         let selectedIndex = -1;
-        
+
         // Fetch suggestions on focus and input
-        ['focus', 'input'].forEach(e => $input.addEventListener(e, loadOptions));        
+        ['focus', 'input'].forEach(e => $input.addEventListener(e, loadOptions));
 
         // Keep dropdown open if the input still has focus
         $input.addEventListener('hidden.bs.dropdown', () => {
             if (document.activeElement === $input) dropdown.show();
         });
-        
+
+        // Prevent dropdown showing if no options
+        $input.addEventListener('show.bs.dropdown', (e) => {
+            if ($options.querySelectorAll('[data-location-option]').length === 0) e.preventDefault();
+        });
+
+        await setDefaults($container);
+
         async function loadOptions() {
             const searchTerm = $input.value;
 
@@ -52,20 +61,24 @@
             }
 
             // Rebuild the dropdown
-            $options.innerHTML = '';            
+            $options.innerHTML = '';
 
             selectedIndex = -1;
 
-            suggestions.forEach(placePrediction => {                
+            suggestions.forEach(placePrediction => {
                 const $option = document.createElement('li');
                 $option.classList.add('dropdown-item');
+                $option.setAttribute('data-location-option', '');
                 $option.innerHTML = placePrediction.text.text;
                 $options.appendChild($option);
 
                 $option.addEventListener('click', async () => {
-                    await selectOption($input, placePrediction);                    
+                    await selectOption($container, $input, placePrediction);
                 });
             });
+
+            if (suggestions.length) dropdown.show();
+            else dropdown.hide();
         }
 
         $input.addEventListener('keydown', async (e) => {
@@ -75,12 +88,12 @@
             else if (key === 'ArrowDown') highlightSelectedOption(selectedIndex + 1);
             else if (key === 'Enter') {
                 e.preventDefault();
-                await selectOption($input, suggestions[selectedIndex]);
+                await selectOption($container, $input, suggestions[selectedIndex]);
                 dropdown.hide();
             };
         });
 
-        function highlightSelectedOption(index) {            
+        function highlightSelectedOption(index) {
             const dropdownItems = $options.querySelectorAll('li');
 
             const range = [0, dropdownItems.length - 1];
@@ -97,13 +110,11 @@
         }
     }
 
-    async function selectOption($input, placePrediction) {
+    async function selectOption($container, $input, placePrediction) {
         if (!placePrediction) return;
+        if (!$container) return;
 
         $input.value = placePrediction.text.text;
-
-        const $container = $input.closest('[data-location-container]');
-        if (!$container) return;
 
         const place = placePrediction.toPlace();
         await place.fetchFields({ fields: ['addressComponents', 'location'] });
@@ -112,7 +123,7 @@
         sessionToken = null;
 
         const location = parseLocation(place);
-        setLocation($container, $input, location);
+        await setLocation($container, $input, location);
 
         $input.blur();
     }
@@ -123,7 +134,7 @@
         if (place.location) {
             location.lat = place.location.lat();
             location.long = place.location.lng();
-        }        
+        }
 
         var countryComponent = place.addressComponents.find(c => c.types.includes('country'));
         if (countryComponent) location.countryCode = countryComponent.shortText;
@@ -131,12 +142,31 @@
         return location;
     }
 
-    function setLocation($container, $input, location) {
+    async function setDefaults($container) {
+        const $defaults = document.querySelector('[data-location-defaults]');
+        if (!$defaults) return;
+
+        $defaults.innerHTML = '';
+
+        const lat = $container.querySelector('[data-location-lat]').value;
+        const long = $container.querySelector('[data-location-long]').value;
+
+        if (!lat || !long) return;
+
+        const url = $defaults.getAttribute('data-location-defaults')
+            .replace('{lat}', lat)
+            .replace('{long}', long);
+        const response = await fetch(url);
+        if (!response.ok) return;
+        const html = await response.text();
+        $defaults.innerHTML = html;
+    }
+
+    async function setLocation($container, $input, location) {
         const $lat = $container.querySelector('[data-location-lat]');
         const $long = $container.querySelector('[data-location-long]');
         const $latlong = $container.querySelector('[data-location-latlong]');
         const $name = $container.querySelector('[data-location-name]');
-        const $countryCode = $container.querySelector('[data-location-countryCode]');
 
         $lat.value = location.lat;
         $long.value = location.long;
@@ -148,9 +178,6 @@
 
         if ($name) $name.value = $input.value;
 
-        if ($countryCode && location.countryCode) {
-            $countryCode.value = location.countryCode;
-            $countryCode.dispatchEvent(new Event('change'));
-        }
+        await setDefaults($container);
     }
 })();

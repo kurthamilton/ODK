@@ -1,14 +1,11 @@
 ﻿using ODK.Core.Chapters;
-using ODK.Core.Members;
-using ODK.Core.Platforms;
 using ODK.Services.Chapters.ViewModels;
 
 namespace ODK.Services.Chapters;
 
 public interface IChapterViewModelService
 {
-    Task<GroupsViewModel> FindGroups(
-        PlatformType platform, Member? currentMember, GroupFilter filter);
+    Task<GroupsViewModel> FindGroups(IServiceRequest request, GroupFilter filter);
 
     Task<AccountMenuChaptersViewModel> GetAccountMenuChaptersViewModel(IMemberServiceRequest request);
 

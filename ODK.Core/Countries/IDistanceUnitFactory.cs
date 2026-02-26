@@ -6,7 +6,5 @@ public interface IDistanceUnitFactory
 
     IReadOnlyCollection<DistanceUnit> GetAll();
 
-    DistanceUnit GetByCountry(Country country);
-
     DistanceUnit GetDefault();
 }

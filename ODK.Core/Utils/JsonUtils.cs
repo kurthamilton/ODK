@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 
 namespace ODK.Core.Utils;
@@ -29,13 +30,13 @@ public static class JsonUtils
 
     public static string Serialize<T>(T value) => JsonSerializer.Serialize(value, DefaultOptions);
 
-    public static bool TryDeserialize<T>(string json, out T? result)
+    public static bool TryDeserialize<T>(string json, [NotNullWhen(true)] out T? result)
     {
         try
         {
             var deserialized = Deserialize<T>(json);
             result = deserialized;
-            return true;
+            return result != null;
         }
         catch
         {
@@ -62,7 +63,7 @@ public static class JsonUtils
                     Node = x,
                     ParentContext = context,
                     PropertyName = null
-                });            
+                });
         }
 
         if (node is JsonObject jsonObject)

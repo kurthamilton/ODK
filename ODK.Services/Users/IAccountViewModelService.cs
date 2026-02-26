@@ -6,7 +6,7 @@ namespace ODK.Services.Users;
 
 public interface IAccountViewModelService
 {
-    Task<AccountCreatePageViewModel> GetAccountCreatePage();
+    Task<AccountCreatePageViewModel> GetAccountCreatePage(IServiceRequest request);
 
     Task<ChapterJoinPageViewModel> GetChapterJoinPage(IChapterServiceRequest request);
 

@@ -1,9 +1,11 @@
 ﻿@using ODK.Core.Members
 @using ODK.Services.Users.ViewModels
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Topics
 @model AccountCreateFormViewModel
+@inject IOdkRoutes OdkRoutes
 
 @await Html.PartialAsync("Components/_Wizard", new WizardViewModel
 {
@@ -31,7 +33,15 @@
             Title = "Location",
             ContentFunc = 
                 @<div>
-                    @await Html.PartialAsync("Account/_LocationForm", new LocationFormViewModel())
+                    @await Html.PartialAsync("Account/_LocationForm", new LocationFormViewModel
+                    {                        
+                        Lat = Model.Location?.LatLong.Lat,
+                        LocationName = Model.Location?.Name ?? string.Empty,
+                        Long = Model.Location?.LatLong.Long
+                    })
+
+                    <div data-location-defaults="@OdkRoutes.Account.LocationDefaults("{lat}", "{long}")">
+                    </div>
                 </div>
         },
         new WizardPageViewModel

@@ -59,6 +59,47 @@ public class GoogleGeolocationService : IGeolocationService
         }
     }
 
+    public async Task<Location?> GetLocationFromIpAddress(string ipAddress)
+    {
+        try
+        {
+            var client = _httpClientFactory.CreateClient();
+
+            var url = $"http://ip-api.com/json/{ipAddress}";
+            var response = await client.GetAsync(url);
+            var responseJson = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                await _loggingService.Error($"ip-api error response: {responseJson}");
+                return null;
+            }
+
+            if (!JsonUtils.TryDeserialize<IpApiResponse>(responseJson, out var ipApiResponse))
+            {
+                await _loggingService.Error($"Could not deserialize ip-api response: {responseJson}");
+                return null;
+            }
+
+            if (ipApiResponse.Latitude == null || ipApiResponse.Longitude == null)
+            {
+                await _loggingService.Error($"Lat/Long not in ip-api response: {responseJson}");
+                return null;
+            }
+
+            return new Location
+            {
+                LatLong = new LatLong(ipApiResponse.Latitude.Value, ipApiResponse.Longitude.Value),
+                Name = $"{ipApiResponse.City}, {ipApiResponse.CountryCode}"
+            };
+        }
+        catch (Exception ex)
+        {
+            await _loggingService.Error("Error calling ip-api", ex);
+            return null;
+        }
+    }
+
     public Task<TimeZoneInfo?> GetTimeZoneFromLocation(LatLong location)
     {
         var ianaId = TimeZoneLookup.GetTimeZone(location.Lat, location.Long).Result;
@@ -73,14 +114,12 @@ public class GoogleGeolocationService : IGeolocationService
     private async Task<Country> CreateCountry(CountryInfo countryInfo)
     {
         var currencyInfo = await GetCurrencyInfoFromCountryCode(countryInfo.IsoCode2);
-
         if (currencyInfo == null)
         {
             throw new OdkServiceException($"Could not get currency info for country code '{countryInfo.IsoCode2}'");
         }
 
         var currency = await _unitOfWork.CurrencyRepository.GetByCode(currencyInfo.Code).Run();
-
         if (currency == null)
         {
             currency = new Currency

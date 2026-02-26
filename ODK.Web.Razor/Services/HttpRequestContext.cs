@@ -15,6 +15,8 @@ public class HttpRequestContext : IHttpRequestContext
 
     public string BaseUrl => _baseUrl.Value;
 
+    public required string IpAddress { get; init; }
+
     public required string RequestPath { get; init; }
 
     public required string RequestUrl { get; init; }
@@ -34,8 +36,15 @@ public class HttpRequestContext : IHttpRequestContext
                 routeValues[routeValue.Key] = routeValue.Value?.ToString();
             }
         }
+
         return new HttpRequestContext
         {
+            IpAddress = request?.Headers["X-Forwarded-For"].FirstOrDefault()
+                    ?.Split(',')
+                    .FirstOrDefault()
+                    ?.Trim()
+                ?? request?.HttpContext.Connection.RemoteIpAddress?.ToString()
+                ?? string.Empty,
             RequestPath = request?.Path.Value ?? string.Empty,
             RequestUrl = request?.GetDisplayUrl() ?? string.Empty,
             RouteValues = routeValues,

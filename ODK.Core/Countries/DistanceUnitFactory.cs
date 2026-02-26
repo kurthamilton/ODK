@@ -12,11 +12,5 @@ public class DistanceUnitFactory : IDistanceUnitFactory
 
     public IReadOnlyCollection<DistanceUnit> GetAll() => _distanceUnits.Values.ToArray();
 
-    public DistanceUnit GetByCountry(Country country) => country.IsoCode2.ToUpperInvariant() switch
-    {
-        "US" or "GB" or "LR" or "MM" => _distanceUnits[DistanceUnitType.Miles],
-        _ => _distanceUnits[DistanceUnitType.Kilometres]
-    };
-
     public DistanceUnit GetDefault() => _distanceUnits[DistanceUnitType.Miles];
 }

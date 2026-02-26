@@ -8,7 +8,7 @@
     Layout = "_AccountLayout";
     Model.Title = "Create account";
 
-    var viewModel = await AccountViewModelService.GetAccountCreatePage();
+    var viewModel = await AccountViewModelService.GetAccountCreatePage(Model.ServiceRequest);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -22,6 +22,7 @@
                 @await Html.PartialAsync("Account/_AccountCreateForm", new AccountCreateFormViewModel
                 {
                     GoogleClientId = viewModel.GoogleClientId,
+                    Location = viewModel.Location,
                     TopicGroups = viewModel.TopicGroups,
                     Topics = viewModel.Topics
                 })

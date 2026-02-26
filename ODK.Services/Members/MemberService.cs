@@ -174,13 +174,13 @@ public class MemberService : IMemberService
             }
         }
 
-        var distanceUnit = country != null
-            ? _distanceUnitFactory.GetByCountry(country)
-            : _distanceUnitFactory.GetDefault();
+        var distanceUnitType = country != null
+            ? country.DistanceUnit
+            : _distanceUnitFactory.GetDefault().Type;
 
         _unitOfWork.MemberPreferencesRepository.Add(new MemberPreferences
         {
-            DistanceUnit = distanceUnit.Type,
+            DistanceUnit = distanceUnitType,
             MemberId = member.Id
         });
 
@@ -426,6 +426,27 @@ public class MemberService : IMemberService
     public async Task<Member?> FindMemberByEmailAddress(string emailAddress)
     {
         return await _unitOfWork.MemberRepository.GetByEmailAddress(emailAddress).Run();
+    }
+
+    public async Task<LocationDefaultsViewModel> GetLocationDefaults(LatLong location)
+    {
+        var country = await _geolocationService.GetCountryFromLocation(location);
+
+        var currency = country != null
+            ? await _unitOfWork.CurrencyRepository.GetByCountryId(country.Id).Run()
+            : null;
+
+        var distanceUnit = country != null
+            ? _distanceUnitFactory.Get(country.DistanceUnit)
+            : null;
+
+        return new LocationDefaultsViewModel
+        {
+            Country = country,
+            Currency = currency,
+            DistanceUnit = distanceUnit,
+            TimeZone = await _geolocationService.GetTimeZoneFromLocation(location)
+        };
     }
 
     public async Task<MemberAvatar> GetMemberAvatar(Guid memberId)

@@ -21,8 +21,7 @@
         TopicGroup = Model.TopicGroup
     };
 
-    var viewModel = await ChapterViewModelService.FindGroups(
-        Model.Platform, Model.CurrentMemberOrDefault, filter);
+    var viewModel = await ChapterViewModelService.FindGroups(Model.ServiceRequest, filter);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

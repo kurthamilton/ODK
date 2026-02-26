@@ -22,6 +22,7 @@ using ODK.Data.Core.SocialMedia;
 using ODK.Services.Authorization;
 using ODK.Services.Chapters.ViewModels;
 using ODK.Services.Events.ViewModels;
+using ODK.Services.Geolocation;
 using ODK.Services.Logging;
 using ODK.Services.Security;
 using ODK.Services.SocialMedia;
@@ -33,6 +34,7 @@ public class ChapterViewModelService : IChapterViewModelService
 {
     private readonly IAuthorizationService _authorizationService;
     private readonly IDistanceUnitFactory _distanceUnitFactory;
+    private readonly IGeolocationService _geolocationService;
     private readonly ILoggingService _loggingService;
     private readonly ISocialMediaService _socialMediaService;
     private readonly IUnitOfWork _unitOfWork;
@@ -42,18 +44,21 @@ public class ChapterViewModelService : IChapterViewModelService
         IAuthorizationService authorizationService,
         ISocialMediaService socialMediaService,
         ILoggingService loggingService,
-        IDistanceUnitFactory distanceUnitFactory)
+        IDistanceUnitFactory distanceUnitFactory,
+        IGeolocationService geolocationService)
     {
         _authorizationService = authorizationService;
         _distanceUnitFactory = distanceUnitFactory;
+        _geolocationService = geolocationService;
         _loggingService = loggingService;
         _socialMediaService = socialMediaService;
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<GroupsViewModel> FindGroups(
-        PlatformType platform, Member? currentMember, GroupFilter filter)
+    public async Task<GroupsViewModel> FindGroups(IServiceRequest request, GroupFilter filter)
     {
+        var (platform, currentMember) = (request.Platform, request.CurrentMemberOrDefault);
+
         var distance = filter.Distance ?? 30;
         var distanceUnitType = filter.DistanceUnit;
 
@@ -87,11 +92,24 @@ public class ChapterViewModelService : IChapterViewModelService
                 distanceUnitType = preferences?.DistanceUnit;
             }
         }
+        else
+        {
+            if (location == null && !string.IsNullOrEmpty(request.HttpRequestContext.IpAddress))
+            {
+                location = await _geolocationService.GetLocationFromIpAddress(request.HttpRequestContext.IpAddress);
+            }
+        }
 
         if (distanceUnitType == null)
         {
-            // TODO: determine based on the location's country
-            distanceUnitType = DistanceUnitType.Miles;
+            Country? country = null;
+
+            if (location != null)
+            {
+                country = await _geolocationService.GetCountryFromLocation(location.LatLong);
+            }
+
+            distanceUnitType = country?.DistanceUnit ?? DistanceUnitType.Miles;
         }
 
         var criteria = new ChapterSearchCriteria

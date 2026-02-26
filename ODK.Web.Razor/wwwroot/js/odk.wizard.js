@@ -1,30 +1,31 @@
 ﻿(function () {
     const $wizards = document.querySelectorAll('[data-wizard]');
     $wizards.forEach($wizard => {
-        $wizard.setAttribute('data-wizard-active', 0);        
+        $wizard.setAttribute('data-wizard-active', 0);
 
         const v = new aspnetValidation.ValidationService();
         v.bootstrap();
-        
-        const $pages = $wizard.querySelectorAll('[data-wizard-page]');        
+
+        const $pages = $wizard.querySelectorAll('[data-wizard-page]');
 
         const $form = $wizard.closest('form');
         $form.addEventListener('submit', e => {
             const activePage = parseInt($wizard.getAttribute('data-wizard-active'));
+            console.log(activePage, $pages.length);
             if (activePage < $pages.length - 1) {
                 e.preventDefault();
             }
 
-            const $nextPage = $wizard.querySelector(`[data-wizard-page="${activePage + 1}"]`);
-            if ($nextPage) {
-                const collapse = bootstrap.Collapse.getInstance($nextPage);                
-            }
+            // const $nextPage = $wizard.querySelector(`[data-wizard-page="${activePage + 1}"]`);
+            // if ($nextPage) {
+            //     const collapse = bootstrap.Collapse.getInstance($nextPage);
+            // }
         });
-        
+
         $pages.forEach($page => {
             const page = parseInt($page.getAttribute('data-wizard-page'));
-            
-            $page.addEventListener('show.bs.collapse', e => {                                                
+
+            $page.addEventListener('show.bs.collapse', e => {
                 const activePage = parseInt($wizard.getAttribute('data-wizard-active'));
 
                 if (page > activePage) {
@@ -53,8 +54,8 @@
                         e.preventDefault();
                         return;
                     }
-                }                
-                
+                }
+
                 $wizard.setAttribute('data-wizard-active', page);
             });
 
@@ -63,7 +64,7 @@
                 if (activePage !== page) {
                     return;
                 }
-                
+
                 e.preventDefault();
             });
         });

@@ -8,6 +8,7 @@
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Services
 @model LocationModel
+@inject IOdkRoutes OdkRoutes
 @inject IMemberService MemberService
 @{
     Layout = "_AccountLayout";
@@ -35,7 +36,7 @@
                             Lat = viewModel.MemberLocation?.LatLong.Lat,
                             Long = viewModel.MemberLocation?.LatLong.Long,
                             LocationName = viewModel.MemberLocation?.Name ?? string.Empty
-                        })
+                        })                        
                         <button class="btn btn-primary">Update</button>
                     </form>
                 </section>                

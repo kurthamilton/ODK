@@ -22,6 +22,8 @@ public interface IMemberService
 
     Task<Member?> FindMemberByEmailAddress(string emailAddress);
 
+    Task<LocationDefaultsViewModel> GetLocationDefaults(LatLong location);
+
     Task<MemberAvatar> GetMemberAvatar(Guid memberId);
 
     Task<MemberLocationViewModel> GetMemberLocationViewModel(IMemberServiceRequest request);

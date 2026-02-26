@@ -3,32 +3,44 @@ using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Data.Core;
+using ODK.Services.Geolocation;
 using ODK.Services.Users.ViewModels;
 
 namespace ODK.Services.Users;
 
 public class AccountViewModelService : IAccountViewModelService
 {
+    private readonly IGeolocationService _geolocationService;
     private readonly AccountViewModelServiceSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
 
     public AccountViewModelService(
         IUnitOfWork unitOfWork,
-        AccountViewModelServiceSettings settings)
+        AccountViewModelServiceSettings settings,
+        IGeolocationService geolocationService)
     {
+        _geolocationService = geolocationService;
         _settings = settings;
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<AccountCreatePageViewModel> GetAccountCreatePage()
+    public async Task<AccountCreatePageViewModel> GetAccountCreatePage(IServiceRequest request)
     {
-        var (topicGroups, topics) = await _unitOfWork.RunAsync(
+        var topicsTask = _unitOfWork.RunAsync(
             x => x.TopicGroupRepository.GetAll(),
             x => x.TopicRepository.GetAll());
+
+        var locationTask = _geolocationService.GetLocationFromIpAddress(request.HttpRequestContext.IpAddress);
+
+        await Task.WhenAll(topicsTask, locationTask);
+
+        var (topicGroups, topics) = topicsTask.Result;
+        var location = locationTask.Result;
 
         return new AccountCreatePageViewModel
         {
             GoogleClientId = _settings.GoogleClientId,
+            Location = location,
             TopicGroups = topicGroups,
             Topics = topics
         };

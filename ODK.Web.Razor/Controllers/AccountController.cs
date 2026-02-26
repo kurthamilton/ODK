@@ -129,11 +129,6 @@ public class AccountController : OdkControllerBase
             return Redirect(OdkRoutes.Account.Login(chapter: null));
         }
 
-        string successMessage =
-            "Thank you for signing up. " +
-            "An email has been sent to your email address containing a link to activate your account.";
-        AddFeedback(result, successMessage);
-
         return Redirect("/Account/Pending");
     }
 

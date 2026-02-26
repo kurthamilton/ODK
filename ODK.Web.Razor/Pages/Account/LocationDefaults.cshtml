@@ -1,0 +1,52 @@
+﻿@page "/account/location/defaults"
+@using ODK.Core.Countries
+@using ODK.Services.Members
+@model LocationDefaultsModel
+@inject IMemberService MemberService
+@{
+    Layout = null;
+
+    var viewModel = await MemberService.GetLocationDefaults(new LatLong(Model.Lat, Model.Long));
+}
+
+<div class="small d-md-flex flex-wrap">
+    @if (viewModel.Country != null)
+    {
+        <div class="col form-group mb-3">
+            <label class="form-label">Country</label>
+            <div class="form-control-plaintext">
+                <span>@viewModel.Country.Name</span>
+            </div>
+        </div>
+    }
+
+    @if (viewModel.Currency != null)
+    {
+        <div class="col form-group mb-3">
+            <label class="form-label">Currency</label>
+            <div class="form-control-plaintext">
+                <span>@viewModel.Currency.Code</span>
+            </div>
+        </div>
+    }
+
+    @if (viewModel.DistanceUnit != null)
+    {
+        <div class="col form-group mb-3">
+            <label class="form-label">Distances</label>
+            <div class="form-control-plaintext">
+                <span>@viewModel.DistanceUnit.Name</span>
+            </div>
+        </div>
+    }
+
+    @if (viewModel.TimeZone != null)
+    {
+        <div class="col form-group mb-3">
+            <label class="form-label">Time zone</label>
+            <div class="form-control-plaintext">
+                <span>@viewModel.TimeZone.DisplayName</span>
+            </div>
+        </div>
+    }
+</div>
