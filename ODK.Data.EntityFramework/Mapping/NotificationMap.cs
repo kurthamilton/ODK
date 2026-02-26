@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Core.Notifications;
 using ODK.Data.EntityFramework.Converters;
@@ -30,7 +31,7 @@ public class NotificationMap : IEntityTypeConfiguration<Notification>
             .HasColumnName("NotificationTypeId")
             .HasConversion<int>();
 
-        builder.HasOne(x => x.Chapter)
+        builder.HasOne<Chapter>()
             .WithMany()
             .HasForeignKey(x => x.ChapterId);
 

@@ -130,24 +130,15 @@ public class NotificationService : INotificationService
     {
         var (currentMember, platform) = (request.CurrentMember, request.Platform);
 
-        var (unread, totalCount, settings) = await _unitOfWork.RunAsync(
-            x => x.NotificationRepository.GetUnreadByMemberId(currentMember.Id),
-            x => x.NotificationRepository.GetCountByMemberId(currentMember.Id),
-            x => x.MemberNotificationSettingsRepository.GetByMemberId(currentMember.Id));
-
-        var excludedTypes = settings
-            .Where(x => x.Disabled)
-            .Select(x => x.NotificationType)
-            .ToArray();
+        var notifications = await _unitOfWork.NotificationRepository
+            .GetUnreadDtosByMemberId(currentMember.Id)
+            .Run();
 
         return new UnreadNotificationsViewModel
         {
             CurrentMember = currentMember,
             Platform = platform,
-            Unread = unread
-                .Where(x => !excludedTypes.Contains(x.Type))
-                .ToArray(),
-            TotalCount = totalCount
+            Unread = notifications
         };
     }
 

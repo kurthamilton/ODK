@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
 using Moq;
 using NUnit.Framework;
 using ODK.Core.Chapters;
@@ -13,11 +13,8 @@ using ODK.Core.Emails;
 using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
-using ODK.Core.Subscriptions;
-using ODK.Core.Utils;
 using ODK.Core.Web;
 using ODK.Data.Core;
-using ODK.Data.EntityFramework;
 using ODK.Resources.Resources;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.Models;
@@ -41,29 +38,23 @@ namespace ODK.Services.Tests.Chapters;
 [Parallelizable]
 public static class ChapterAdminServiceTests
 {
-    private static readonly Guid ChapterId = Guid.NewGuid();
-    private static readonly Guid CurrentMemberId = Guid.NewGuid();
-
     [Test]
     public static void AddChapterAdminMember_WhenMemberNotChapterAdmin_ThrowsException()
     {
         // Arrange
         using var context = CreateMockOdkContext();
 
-        var member = CreateMember();
-        context.AddRange(CreateMember(id: CurrentMemberId), member);
+        var (currentMember, member) = (context.CreateMember(), context.CreateMember());
 
-        var chapter = CreateChapter();
-        context.SetupChapter(
-            chapter,
-            siteSubscription: CreateSiteSubscription(feature: SiteFeatureType.AdminMembers));
+        var chapter = context.CreateChapter(
+            siteSubscription: context.CreateSiteSubscription(
+                features: [SiteFeatureType.AdminMembers]));
 
-        var unitOfWork = CreateMockUnitOfWork(context);
-
-        var service = CreateChapterAdminService(unitOfWork);
+        var service = CreateChapterAdminService(context);
 
         var request = CreateMemberChapterAdminServiceRequest(
             chapter: chapter,
+            currentMember: currentMember,
             securable: ChapterAdminSecurable.AdminMembers);
 
         // Act & Assert
@@ -77,19 +68,11 @@ public static class ChapterAdminServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
 
-        var currentMember = CreateMember(id: CurrentMemberId);
-        var member = CreateMember();
-        context.AddRange(currentMember, member);
+        var (currentMember, member) = (context.CreateMember(), context.CreateMember());
 
-        var chapter = CreateChapter();
-        context.SetupChapter(
-            chapter,
-            siteSubscription: CreateSiteSubscription(),
-            adminMembers: [currentMember]);
+        var chapter = context.CreateChapter(adminMembers: [currentMember]);
 
-        var unitOfWork = CreateMockUnitOfWork(context);
-
-        var service = CreateChapterAdminService(unitOfWork);
+        var service = CreateChapterAdminService(context);
 
         var request = CreateMemberChapterAdminServiceRequest(
             chapter: chapter,
@@ -110,19 +93,13 @@ public static class ChapterAdminServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
 
-        var currentMember = CreateMember(id: CurrentMemberId);
-        var otherMember = CreateMember();
-        context.AddRange(currentMember, otherMember);
+        var (currentMember, otherMember) = (context.CreateMember(), context.CreateMember());
 
-        var chapter = CreateChapter();
-        context.SetupChapter(
-            chapter,
-            CreateSiteSubscription(feature: SiteFeatureType.AdminMembers),
-            [currentMember, otherMember]);
+        var chapter = context.CreateChapter(
+            siteSubscription: context.CreateSiteSubscription(features: [SiteFeatureType.AdminMembers]),
+            adminMembers: [currentMember, otherMember]);
 
-        var unitOfWork = CreateMockUnitOfWork(context);
-
-        var service = CreateChapterAdminService(unitOfWork);
+        var service = CreateChapterAdminService(context);
         var request = CreateMemberChapterAdminServiceRequest(
             chapter: chapter,
             currentMember: currentMember,
@@ -143,19 +120,13 @@ public static class ChapterAdminServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
 
-        var currentMember = CreateMember(id: CurrentMemberId);
-        var otherMember = CreateMember();
-        context.AddRange(currentMember, otherMember);
+        var (currentMember, otherMember) = (context.CreateMember(), context.CreateMember());
 
-        var chapter = CreateChapter();
-        context.SetupChapter(
-            chapter,
-            siteSubscription: CreateSiteSubscription(feature: SiteFeatureType.AdminMembers),
-            adminMembers: [CreateChapterAdminMember(member: currentMember, chapterId: chapter.Id, role: role)]);
+        var chapter = context.CreateChapter(
+            siteSubscription: context.CreateSiteSubscription(features: [SiteFeatureType.AdminMembers]),
+            afterCreate: x => context.CreateChapterAdminMember(x, currentMember, role: role));
 
-        var unitOfWork = CreateMockUnitOfWork(context);
-
-        var service = CreateChapterAdminService(unitOfWork);
+        var service = CreateChapterAdminService(context);
 
         var request = CreateMemberChapterAdminServiceRequest(
             chapter: chapter,
@@ -175,21 +146,13 @@ public static class ChapterAdminServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
 
-        var currentMember = CreateMember(id: CurrentMemberId);
-        context.Add(currentMember);
+        var (currentMember, otherMember) = (context.CreateMember(), context.CreateMember());
 
-        var chapter = CreateChapter();
-        context.SetupChapter(
-            chapter,
-            siteSubscription: CreateSiteSubscription(feature: SiteFeatureType.AdminMembers),
+        var chapter = context.CreateChapter(
+            siteSubscription: context.CreateSiteSubscription(features: [SiteFeatureType.AdminMembers]),
             adminMembers: [currentMember]);
 
-        var otherMember = CreateMember();
-        context.Add(otherMember);
-
-        var unitOfWork = CreateMockUnitOfWork(context);
-
-        var service = CreateChapterAdminService(unitOfWork);
+        var service = CreateChapterAdminService(context);
 
         var request = CreateMemberChapterAdminServiceRequest(
             chapter: chapter,
@@ -215,19 +178,13 @@ public static class ChapterAdminServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
 
-        var currentMember = CreateMember(id: CurrentMemberId);
-        var otherMember = CreateMember();
-        context.AddRange(currentMember, otherMember);
+        var (currentMember, otherMember) = (context.CreateMember(), context.CreateMember());
 
-        var chapter = CreateChapter();
-        context.SetupChapter(
-            chapter,
-            siteSubscription: CreateSiteSubscription(feature: SiteFeatureType.AdminMembers),
-            adminMembers: [CreateChapterAdminMember(member: currentMember, chapterId: chapter.Id, role: role)]);
+        var chapter = context.CreateChapter(
+            siteSubscription: context.CreateSiteSubscription(features: [SiteFeatureType.AdminMembers]),
+            afterCreate: x => context.CreateChapterAdminMember(x, currentMember, role: role));
 
-        var unitOfWork = CreateMockUnitOfWork(context);
-
-        var service = CreateChapterAdminService(unitOfWork);
+        var service = CreateChapterAdminService(context);
 
         var request = CreateMemberChapterAdminServiceRequest(
             chapter: chapter,
@@ -247,19 +204,13 @@ public static class ChapterAdminServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
 
-        var currentMember = CreateMember(id: CurrentMemberId);
-        var otherMember = CreateMember();
-        context.AddRange(currentMember, otherMember);
+        var (currentMember, otherMember) = (context.CreateMember(), context.CreateMember());
 
-        var chapter = CreateChapter();
-        context.SetupChapter(
-            chapter,
-            siteSubscription: CreateSiteSubscription(feature: SiteFeatureType.AdminMembers),
+        var chapter = context.CreateChapter(
+            siteSubscription: context.CreateSiteSubscription(features: [SiteFeatureType.AdminMembers]),
             adminMembers: [currentMember]);
 
-        var unitOfWork = CreateMockUnitOfWork(context);
-
-        var service = CreateChapterAdminService(unitOfWork);
+        var service = CreateChapterAdminService(context);
 
         var request = CreateMemberChapterAdminServiceRequest(
             chapter: chapter,
@@ -279,18 +230,17 @@ public static class ChapterAdminServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
 
-        var currentMember = CreateMember(id: CurrentMemberId);
-        context.SetupMember(
-            currentMember,
-            siteSubscription: CreateSiteSubscription(groupLimit: 1));
+        var currentMember = context.CreateMember(
+            afterCreate: x => context.CreateMemberSiteSubscription(
+                x, context.CreateSiteSubscription(groupLimit: 1)));
 
-        context.Add(CreateChapter(ownerId: CurrentMemberId, name: "Existing group"));
+        context.CreateChapter(
+            owner: currentMember,
+            name: "Existing group");
 
-        var unitOfWork = CreateMockUnitOfWork(context);
+        var service = CreateChapterAdminService(context);
 
-        var service = CreateChapterAdminService(unitOfWork);
-
-        var request = CreateMemberServiceRequest();
+        var request = CreateMemberServiceRequest(currentMember);
         var model = CreateChapterCreateModel();
 
         // Act
@@ -307,22 +257,13 @@ public static class ChapterAdminServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
 
-        var currentMember = CreateMember(id: CurrentMemberId);
-        context.Add(currentMember);
+        var currentMember = context.CreateMember(
+            afterCreate: x => context.CreateMemberSiteSubscription(
+                x, expiresUtc: DateTime.UtcNow.AddDays(-1)));
 
-        var siteSubscription = CreateSiteSubscription();
-        context.Add(siteSubscription);
+        var service = CreateChapterAdminService(context);
 
-        var memberSiteSubscription = CreateMemberSiteSubscription(
-            siteSubscriptionId: siteSubscription.Id,
-            expiresUtc: DateTime.UtcNow.AddDays(-1));
-        context.Add(memberSiteSubscription);
-
-        var unitOfWork = CreateMockUnitOfWork(context);
-
-        var service = CreateChapterAdminService(unitOfWork);
-
-        var request = CreateMemberServiceRequest();
+        var request = CreateMemberServiceRequest(currentMember);
         var model = CreateChapterCreateModel();
 
         // Act
@@ -340,18 +281,14 @@ public static class ChapterAdminServiceTests
         using var context = CreateMockOdkContext();
 
         var name = "Test Chapter";
-        context.Add(CreateChapter(name: name));
+        context.CreateChapter(name: name);
 
-        var currentMember = CreateMember(id: CurrentMemberId);
-        context.SetupMember(
-            currentMember,
-            siteSubscription: CreateSiteSubscription());
+        var currentMember = context.CreateMember(
+            createSiteSubscription: true);
 
-        var unitOfWork = CreateMockUnitOfWork(context);
+        var service = CreateChapterAdminService(context);
 
-        var service = CreateChapterAdminService(unitOfWork);
-
-        var request = CreateMemberServiceRequest();
+        var request = CreateMemberServiceRequest(currentMember);
         var model = CreateChapterCreateModel(name: name);
 
         // Act
@@ -368,23 +305,21 @@ public static class ChapterAdminServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
 
+        var currentMember = context.CreateMember();
+
         var isoCode = "GB";
-
-        var country = CreateCountry(isoCode);
-        context.Add(country);
-
-        var unitOfWork = CreateMockUnitOfWork(context);
+        var country = context.CreateCountry(isoCode2: isoCode);
 
         var geolocationService = CreateMockGeolocationService(country: null);
 
         var settings = CreateChapterAdminServiceSettings(defaultCountryCode: isoCode);
 
         var service = CreateChapterAdminService(
-            unitOfWork,
+            context,
             geolocationService: geolocationService,
             settings: settings);
 
-        var request = CreateMemberServiceRequest();
+        var request = CreateMemberServiceRequest(currentMember);
         var model = CreateChapterCreateModel();
 
         // Act
@@ -401,18 +336,13 @@ public static class ChapterAdminServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
 
-        var currentMember = CreateMember(id: CurrentMemberId);
-        context.SetupMember(
-            currentMember,
-            siteSubscription: CreateSiteSubscription());
-
-        var unitOfWork = CreateMockUnitOfWork(context);
+        var currentMember = context.CreateMember();
 
         var imageService = CreateMockImageService(isValidImage: false);
 
-        var service = CreateChapterAdminService(unitOfWork, imageService: imageService);
+        var service = CreateChapterAdminService(context, imageService: imageService);
 
-        var request = CreateMemberServiceRequest();
+        var request = CreateMemberServiceRequest(currentMember);
         var model = CreateChapterCreateModel();
 
         // Act
@@ -427,11 +357,13 @@ public static class ChapterAdminServiceTests
     public static async Task CreateChapter_WhenValid_ReturnsSuccessfulChapter()
     {
         // Arrange
-        var unitOfWork = CreateMockUnitOfWork();
+        var context = CreateMockOdkContext();
 
-        var service = CreateChapterAdminService(unitOfWork);
+        var currentMember = context.CreateMember();
 
-        var request = CreateMemberServiceRequest();
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberServiceRequest(currentMember);
         var model = CreateChapterCreateModel();
 
         // Act
@@ -450,16 +382,14 @@ public static class ChapterAdminServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
 
-        context.AddRange(
-            CreateChapter(name: "Test Chapter"),
-            CreateChapter(name: "Test Chapter 2"));
+        var currentMember = context.CreateMember();
 
-        var unitOfWork = CreateMockUnitOfWork(context);
+        context.CreateChapter(name: "Test Chapter");
+        context.CreateChapter(name: "Test Chapter 2");
 
-        var service = CreateChapterAdminService(
-            unitOfWork);
+        var service = CreateChapterAdminService(context);
 
-        var request = CreateMemberServiceRequest();
+        var request = CreateMemberServiceRequest(currentMember);
         var model = CreateChapterCreateModel(name: "Test Chapter!");
 
         // Act
@@ -476,18 +406,12 @@ public static class ChapterAdminServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
 
-        var currentMember = CreateMember(id: CurrentMemberId);
-        var otherMember = CreateMember();
-        context.AddRange(currentMember, otherMember);
+        var (currentMember, otherMember) = (context.CreateMember(), context.CreateMember());
 
-        var chapter = CreateChapter();
-        context.SetupChapter(
-            chapter,
+        var chapter = context.CreateChapter(
             adminMembers: [currentMember]);
 
-        var unitOfWork = CreateMockUnitOfWork(context);
-
-        var service = CreateChapterAdminService(unitOfWork);
+        var service = CreateChapterAdminService(context);
 
         var request = CreateMemberChapterAdminServiceRequest(
             chapter: chapter,
@@ -508,18 +432,12 @@ public static class ChapterAdminServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
 
-        var currentMember = CreateMember(id: CurrentMemberId);
-        var otherMember = CreateMember(siteAdmin: true);
-        context.AddRange(currentMember, otherMember);
+        var (currentMember, otherMember) = (context.CreateMember(), context.CreateMember(siteAdmin: true));
 
-        var chapter = CreateChapter();
-        context.SetupChapter(
-            chapter,
+        var chapter = context.CreateChapter(
             adminMembers: [currentMember, otherMember]);
 
-        var unitOfWork = CreateMockUnitOfWork(context);
-
-        var service = CreateChapterAdminService(unitOfWork);
+        var service = CreateChapterAdminService(context);
         var request = CreateMemberChapterAdminServiceRequest(
             chapter: chapter,
             currentMember: currentMember,
@@ -539,23 +457,13 @@ public static class ChapterAdminServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
 
-        var currentMember = CreateMember(id: CurrentMemberId);
-        var otherMember = CreateMember();
-        context.AddRange(currentMember, otherMember);
+        var (currentMember, otherMember) = (context.CreateMember(), context.CreateMember());
 
-        var chapter = CreateChapter(ownerId: otherMember.Id);
-        context.SetupChapter(
-            chapter,
-            siteSubscription: null,
-            adminMembers:
-            [
-                CreateChapterAdminMember(member: currentMember, chapterId: chapter.Id),
-                CreateChapterAdminMember(member: otherMember, chapterId: chapter.Id, role: ChapterAdminRole.Owner)
-            ]);
+        var chapter = context.CreateChapter(
+            owner: otherMember,
+            adminMembers: [currentMember]);
 
-        var unitOfWork = CreateMockUnitOfWork(context);
-
-        var service = CreateChapterAdminService(unitOfWork);
+        var service = CreateChapterAdminService(context);
 
         var request = CreateMemberChapterAdminServiceRequest(
             chapter: chapter,
@@ -576,18 +484,12 @@ public static class ChapterAdminServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
 
-        var currentMember = CreateMember(id: CurrentMemberId);
-        var otherMember = CreateMember();
-        context.AddRange(currentMember, otherMember);
+        var (currentMember, otherMember) = (context.CreateMember(), context.CreateMember());
 
-        var chapter = CreateChapter();
-        context.SetupChapter(
-            chapter,
+        var chapter = context.CreateChapter(
             adminMembers: [currentMember, otherMember]);
 
-        var unitOfWork = CreateMockUnitOfWork(context);
-
-        var service = CreateChapterAdminService(unitOfWork);
+        var service = CreateChapterAdminService(context);
 
         var request = CreateMemberChapterAdminServiceRequest(
             chapter: chapter,
@@ -607,22 +509,14 @@ public static class ChapterAdminServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
 
-        var currentMember = CreateMember(id: CurrentMemberId);
-        context.Add(currentMember);
+        var currentMember = context.CreateMember();
 
-        var chapter = CreateChapter();
-        context.SetupChapter(
-            chapter,
+        var chapter = context.CreateChapter(
             adminMembers: [currentMember]);
 
-        var messageId = Guid.NewGuid();
+        var message = context.Create(CreateChapterContactMessage(chapter: chapter));
 
-        var message = CreateChapterContactMessage(id: messageId, chapterId: chapter.Id);
-        context.Add(message);
-
-        var unitOfWork = CreateMockUnitOfWork(context);
-
-        var service = CreateChapterAdminService(unitOfWork);
+        var service = CreateChapterAdminService(context);
 
         var request = CreateMemberChapterAdminServiceRequest(
             chapter: chapter,
@@ -630,7 +524,7 @@ public static class ChapterAdminServiceTests
             securable: ChapterAdminSecurable.ContactMessages);
 
         // Act
-        var result = await service.DeleteChapterContactMessage(request, messageId);
+        var result = await service.DeleteChapterContactMessage(request, message.Id);
 
         // Assert
         result.Success.Should().BeTrue();
@@ -642,17 +536,12 @@ public static class ChapterAdminServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
 
-        var currentMember = CreateMember(id: CurrentMemberId);
-        context.Add(currentMember);
+        var currentMember = context.CreateMember();
 
-        var chapter = CreateChapter();
-        context.SetupChapter(
-            chapter,
+        var chapter = context.CreateChapter(
             adminMembers: [currentMember]);
 
-        var unitOfWork = CreateMockUnitOfWork(context);
-
-        var service = CreateChapterAdminService(unitOfWork);
+        var service = CreateChapterAdminService(context);
 
         var request = CreateMemberChapterAdminServiceRequest(
             chapter: chapter,
@@ -673,17 +562,12 @@ public static class ChapterAdminServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
 
-        var currentMember = CreateMember(id: CurrentMemberId);
-        context.Add(currentMember);
+        var currentMember = context.CreateMember();
 
-        var chapter = CreateChapter();
-        context.SetupChapter(
-            chapter,
+        var chapter = context.CreateChapter(
             adminMembers: [currentMember]);
 
-        var unitOfWork = CreateMockUnitOfWork(context);
-
-        var service = CreateChapterAdminService(unitOfWork);
+        var service = CreateChapterAdminService(context);
 
         var request = CreateMemberChapterAdminServiceRequest(
             chapter: chapter,
@@ -706,17 +590,12 @@ public static class ChapterAdminServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
 
-        var currentMember = CreateMember(id: CurrentMemberId);
-        context.Add(currentMember);
+        var currentMember = context.CreateMember();
 
-        var chapter = CreateChapter();
-        context.SetupChapter(
-            chapter,
+        var chapter = context.CreateChapter(
             adminMembers: [currentMember]);
 
-        var unitOfWork = CreateMockUnitOfWork(context);
-
-        var service = CreateChapterAdminService(unitOfWork);
+        var service = CreateChapterAdminService(context);
 
         var request = CreateMemberChapterAdminServiceRequest(
             chapter: chapter,
@@ -738,17 +617,14 @@ public static class ChapterAdminServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
 
-        var currentMember = CreateMember(id: CurrentMemberId);
-        context.Add(currentMember);
+        var currentMember = context.CreateMember();
 
-        var chapter = CreateChapter();
-        context.SetupChapter(
-            chapter,
+        var chapter = context.CreateChapter(
             adminMembers: [currentMember]);
 
         var unitOfWork = CreateMockUnitOfWork(context);
 
-        var service = CreateChapterAdminService(unitOfWork);
+        var service = CreateChapterAdminService(context);
 
         var request = CreateMemberChapterAdminServiceRequest(
             chapter: chapter,
@@ -770,17 +646,12 @@ public static class ChapterAdminServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
 
-        var currentMember = CreateMember(id: CurrentMemberId);
-        context.Add(currentMember);
+        var currentMember = context.CreateMember();
 
-        var chapter = CreateChapter();
-        context.SetupChapter(
-            chapter,
+        var chapter = context.CreateChapter(
             adminMembers: [currentMember]);
-        
-        var unitOfWork = CreateMockUnitOfWork(context);
 
-        var service = CreateChapterAdminService(unitOfWork);
+        var service = CreateChapterAdminService(context);
 
         var request = CreateMemberChapterAdminServiceRequest(
             chapter: chapter,
@@ -802,17 +673,14 @@ public static class ChapterAdminServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
 
-        var currentMember = CreateMember(id: CurrentMemberId);
+        var currentMember = context.CreateMember();
         context.Add(currentMember);
 
-        var chapter = CreateChapter(name: "Test Chapter");
-        context.SetupChapter(
-            chapter,
+        var chapter = context.CreateChapter(
+            name: "Test Chapter",
             adminMembers: [currentMember]);
 
-        var unitOfWork = CreateMockUnitOfWork(context);
-
-        var service = CreateChapterAdminService(unitOfWork);
+        var service = CreateChapterAdminService(context);
 
         var request = CreateMemberChapterAdminServiceRequest(
             chapter: chapter,
@@ -833,21 +701,20 @@ public static class ChapterAdminServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
 
-        var currentMember = CreateMember(id: CurrentMemberId);
-        context.Add(currentMember);
+        var currentMember = context.CreateMember();
 
-        var chapter = CreateChapter();
-        context.SetupChapter(
-            chapter,
-            siteSubscription: null,
-            adminMembers: [CreateChapterAdminMember(member: currentMember, chapterId: chapter.Id, role: ChapterAdminRole.Owner)]);
-
+        var members = new List<Member>();
         var memberCount = 42;
-        context.AddRange(Enumerable.Range(1, memberCount).Select(x => CreateMember(chapters: [chapter.Id])));
+        for (var i = 1; i <= memberCount; i++)
+        {
+            members.Add(context.CreateMember());
+        }
 
-        var unitOfWork = CreateMockUnitOfWork(context);
+        var chapter = context.CreateChapter(
+            afterCreate: x => context.CreateChapterAdminMember(x, currentMember, role: ChapterAdminRole.Owner),
+            members: members);
 
-        var service = CreateChapterAdminService(unitOfWork);
+        var service = CreateChapterAdminService(context);
 
         var request = CreateMemberChapterAdminServiceRequest(
             chapter: chapter,
@@ -868,24 +735,17 @@ public static class ChapterAdminServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
 
-        var currentMember = CreateMember(id: CurrentMemberId);
-        context.Add(currentMember);
+        var currentMember = context.CreateMember();
 
-        var chapter = CreateChapter();
-        context.SetupChapter(
-            chapter,
-            siteSubscription: CreateSiteSubscription(feature: SiteFeatureType.AdminMembers),
+        var chapter = context.CreateChapter(
+            siteSubscription: context.CreateSiteSubscription(features: [SiteFeatureType.AdminMembers]),
             adminMembers: [currentMember]);
 
-        var links = CreateChapterLinks(chapterId: chapter.Id);
-        context.Add(links);
+        var links = context.Create(CreateChapterLinks(chapter: chapter));
 
-        var privacySettings = CreateChapterPrivacySettings(chapterId: chapter.Id);
-        context.Add(privacySettings);
-        
-        var unitOfWork = CreateMockUnitOfWork(context);
+        var privacySettings = context.Create(CreateChapterPrivacySettings(chapter: chapter));
 
-        var service = CreateChapterAdminService(unitOfWork);
+        var service = CreateChapterAdminService(context);
 
         var request = CreateMemberChapterAdminServiceRequest(
             chapter: chapter,
@@ -906,20 +766,14 @@ public static class ChapterAdminServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
 
-        var currentMember = CreateMember(id: CurrentMemberId);
-        context.Add(currentMember);
+        var currentMember = context.CreateMember();
 
-        var chapter = CreateChapter();
-        context.SetupChapter(
-            chapter,
+        var chapter = context.CreateChapter(
             adminMembers: [currentMember]);
 
-        var property = CreateChapterProperty(chapterId: chapter.Id, name: "prop1");
-        context.Add(property);
+        var property = context.Create(CreateChapterProperty(chapter: chapter, name: "prop1"));
 
-        var unitOfWork = CreateMockUnitOfWork(context);
-
-        var service = CreateChapterAdminService(unitOfWork);
+        var service = CreateChapterAdminService(context);
 
         var request = CreateMemberChapterAdminServiceRequest(
             chapter: chapter,
@@ -941,20 +795,14 @@ public static class ChapterAdminServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
 
-        var currentMember = CreateMember(id: CurrentMemberId);
-        context.Add(currentMember);
+        var currentMember = context.CreateMember();
 
-        var chapter = CreateChapter();
-        context.SetupChapter(
-            chapter,
+        var chapter = context.CreateChapter(
             adminMembers: [currentMember]);
 
-        var question = CreateChapterQuestion(chapterId: chapter.Id, name: "q1");
-        context.Add(question);
-    
-        var unitOfWork = CreateMockUnitOfWork(context);
+        var question = context.Create(CreateChapterQuestion(chapter: chapter, name: "q1"));
 
-        var service = CreateChapterAdminService(unitOfWork);
+        var service = CreateChapterAdminService(context);
 
         var request = CreateMemberChapterAdminServiceRequest(
             chapter: chapter,
@@ -976,18 +824,12 @@ public static class ChapterAdminServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
 
-        var currentMember = CreateMember(id: CurrentMemberId);
-        var otherMember = CreateMember();
-        context.AddRange(currentMember, otherMember);
+        var (currentMember, otherMember) = (context.CreateMember(), context.CreateMember());
 
-        var chapter = CreateChapter();
-        context.SetupChapter(
-            chapter,
+        var chapter = context.CreateChapter(
             adminMembers: [currentMember, otherMember]);
 
-        var unitOfWork = CreateMockUnitOfWork(context);
-
-        var service = CreateChapterAdminService(unitOfWork);
+        var service = CreateChapterAdminService(context);
 
         var request = CreateMemberChapterAdminServiceRequest(
             chapter: chapter,
@@ -1009,18 +851,12 @@ public static class ChapterAdminServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
 
-        var currentMember = CreateMember(id: CurrentMemberId);
-        var otherMember = CreateMember();
-        context.AddRange(currentMember, otherMember);
+        var (currentMember, otherMember) = (context.CreateMember(), context.CreateMember());
 
-        var chapter = CreateChapter();
-        context.SetupChapter(
-            chapter,
+        var chapter = context.CreateChapter(
             adminMembers: [currentMember, otherMember]);
-        
-        var unitOfWork = CreateMockUnitOfWork(context);
 
-        var service = CreateChapterAdminService(unitOfWork);
+        var service = CreateChapterAdminService(context);
 
         var request = CreateMemberChapterAdminServiceRequest(
             chapter: chapter,
@@ -1043,21 +879,13 @@ public static class ChapterAdminServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
 
-        var currentMember = CreateMember(id: CurrentMemberId);
-        var otherMember = CreateMember();
-        context.AddRange(currentMember, otherMember);
+        var (currentMember, otherMember) = (context.CreateMember(), context.CreateMember());
 
-        var chapter = CreateChapter(ownerId: otherMember.Id);
-        context.SetupChapter(
-            chapter,
-            siteSubscription: null,
-            adminMembers: [
-                CreateChapterAdminMember(member: currentMember, chapterId: chapter.Id, role: currentAdminRole),
-                CreateChapterAdminMember(member: otherMember, chapterId: chapter.Id, role: ChapterAdminRole.Owner)]);
-        
-        var unitOfWork = CreateMockUnitOfWork(context);
+        var chapter = context.CreateChapter(
+            owner: otherMember,
+            afterCreate: x => context.CreateChapterAdminMember(x, currentMember, role: currentAdminRole));
 
-        var service = CreateChapterAdminService(unitOfWork);
+        var service = CreateChapterAdminService(context);
 
         var request = CreateMemberChapterAdminServiceRequest(
             chapter: chapter,
@@ -1081,21 +909,16 @@ public static class ChapterAdminServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
 
-        var currentMember = CreateMember(id: CurrentMemberId);
-        var otherMember = CreateMember();
-        context.AddRange(currentMember, otherMember);
+        var (currentMember, otherMember) = (context.CreateMember(), context.CreateMember());
 
-        var chapter = CreateChapter();
-        context.SetupChapter(
-            chapter,
-            siteSubscription: null,
-            adminMembers: [
-                CreateChapterAdminMember(currentMember, chapter.Id, currentMemberRole),
-                CreateChapterAdminMember(otherMember, chapter.Id, updateMemberRole)]);
-        
-        var unitOfWork = CreateMockUnitOfWork(context);
+        var chapter = context.CreateChapter(
+            afterCreate: x =>
+            {
+                context.CreateChapterAdminMember(x, currentMember, currentMemberRole);
+                context.CreateChapterAdminMember(x, otherMember, updateMemberRole);
+            });
 
-        var service = CreateChapterAdminService(unitOfWork);
+        var service = CreateChapterAdminService(context);
 
         var request = CreateMemberChapterAdminServiceRequest(
             chapter: chapter,
@@ -1118,22 +941,16 @@ public static class ChapterAdminServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
 
-        var currentMember = CreateMember(id: CurrentMemberId);
-        context.Add(currentMember);
+        var currentMember = context.CreateMember();
 
-        var chapter = CreateChapter();
-        context.SetupChapter(
-            chapter,
+        var chapter = context.CreateChapter(
             adminMembers: [currentMember]);
 
-        var image = CreateChapterImage(chapterId: chapter.Id);
-        context.Add(image);
+        var image = context.Create(CreateChapterImage(chapter: chapter));
 
         var imageService = CreateMockImageService(isValidImage: false);
 
-        var unitOfWork = CreateMockUnitOfWork(context);
-
-        var service = CreateChapterAdminService(unitOfWork, imageService: imageService);
+        var service = CreateChapterAdminService(context, imageService: imageService);
 
         var request = CreateMemberChapterAdminServiceRequest(
             chapter: chapter,
@@ -1156,22 +973,16 @@ public static class ChapterAdminServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
 
-        var currentMember = CreateMember(id: CurrentMemberId);
-        context.Add(currentMember);
+        var currentMember = context.CreateMember();
 
-        var chapter = CreateChapter();
-        context.SetupChapter(
-            chapter,
+        var chapter = context.CreateChapter(
             adminMembers: [currentMember]);
 
-        var image = CreateChapterImage(chapterId: chapter.Id);
-        context.Add(image);
+        var image = context.Create(CreateChapterImage(chapter: chapter));
 
         var imageService = CreateMockImageService(isValidImage: true);
 
-        var unitOfWork = CreateMockUnitOfWork(context);
-
-        var service = CreateChapterAdminService(unitOfWork, imageService: imageService);
+        var service = CreateChapterAdminService(context, imageService: imageService);
 
         var request = CreateMemberChapterAdminServiceRequest(
             chapter: chapter,
@@ -1193,20 +1004,14 @@ public static class ChapterAdminServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
 
-        var currentMember = CreateMember(id: CurrentMemberId);
-        context.Add(currentMember);
+        var currentMember = context.CreateMember();
 
-        var chapter = CreateChapter();
-        context.SetupChapter(
-            chapter,
+        var chapter = context.CreateChapter(
             adminMembers: [currentMember]);
 
-        var texts = CreateChapterTexts(chapterId: chapter.Id);
-        context.Add(texts);
+        var texts = context.Create(CreateChapterTexts(chapter: chapter));
 
-        var unitOfWork = CreateMockUnitOfWork(context);
-
-        var service = CreateChapterAdminService(unitOfWork);
+        var service = CreateChapterAdminService(context);
 
         var request = CreateMemberChapterAdminServiceRequest(
             chapter: chapter,
@@ -1227,18 +1032,13 @@ public static class ChapterAdminServiceTests
     {
         // Arrange
         using var context = CreateMockOdkContext();
-        
-        var currentMember = CreateMember(id: CurrentMemberId);
-        context.Add(currentMember);
 
-        var chapter = CreateChapter();
-        context.SetupChapter(
-            chapter,
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(
             adminMembers: [currentMember]);
-        
-        var unitOfWork = CreateMockUnitOfWork(context);
 
-        var service = CreateChapterAdminService(unitOfWork);
+        var service = CreateChapterAdminService(context);
 
         var request = CreateMemberChapterAdminServiceRequest(
             chapter: chapter,
@@ -1259,20 +1059,13 @@ public static class ChapterAdminServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
 
-        var currentMember = CreateMember(id: CurrentMemberId);
-        context.Add(currentMember);
+        var currentMember = context.CreateMember();
 
-        var chapter = CreateChapter(approvedUtc: DateTime.UtcNow);
-        context.SetupChapter(
-            chapter,
-            siteSubscription: null,
-            adminMembers: [
-                CreateChapterAdminMember(member: currentMember, chapterId: chapter.Id, role: ChapterAdminRole.Owner)
-            ]);
-        
-        var unitOfWork = CreateMockUnitOfWork(context);
+        var chapter = context.CreateChapter(
+            approvedUtc: DateTime.UtcNow,
+            owner: currentMember);
 
-        var service = CreateChapterAdminService(unitOfWork);
+        var service = CreateChapterAdminService(context);
 
         var request = CreateMemberChapterAdminServiceRequest(
             chapter: chapter,
@@ -1285,7 +1078,7 @@ public static class ChapterAdminServiceTests
         // Assert
         result.Success.Should().BeTrue();
     }
-    
+
     private static MockOdkContext CreateMockOdkContext()
     {
         var context = new MockOdkContext();
@@ -1295,15 +1088,7 @@ public static class ChapterAdminServiceTests
         return context;
     }
 
-    private static IUnitOfWork CreateMockUnitOfWork(OdkContext? context = null)
-    {
-        if (context != null)
-        {
-            context.SaveChanges();
-        }
-
-        return new UnitOfWork(context ?? CreateMockOdkContext());
-    }
+    private static IUnitOfWork CreateMockUnitOfWork(MockOdkContext? context = null) => MockUnitOfWork.Create(context);
 
     private static IImageService CreateMockImageService(bool isValidImage, byte[]? processedData = null)
     {
@@ -1352,7 +1137,7 @@ public static class ChapterAdminServiceTests
     }
 
     private static ChapterAdminService CreateChapterAdminService(
-        IUnitOfWork unitOfWork,
+        MockOdkContext context,
         IHtmlSanitizer? htmlSanitizer = null,
         ISocialMediaService? socialMediaService = null,
         INotificationService? notificationService = null,
@@ -1368,7 +1153,7 @@ public static class ChapterAdminServiceTests
         ChapterAdminServiceSettings? settings = null)
     {
         return new ChapterAdminService(
-            unitOfWork,
+            CreateMockUnitOfWork(context),
             htmlSanitizer ?? CreateMockHtmlSanitizer(),
             socialMediaService ?? new Mock<ISocialMediaService>().Object,
             notificationService ?? new Mock<INotificationService>().Object,
@@ -1380,7 +1165,7 @@ public static class ChapterAdminServiceTests
             urlProviderFactory ?? new Mock<IUrlProviderFactory>().Object,
             paymentProviderFactory ?? new Mock<IPaymentProviderFactory>().Object,
             paymentService ?? new Mock<IPaymentService>().Object,
-            geolocationService ?? CreateMockGeolocationService(country: CreateCountry()),
+            geolocationService ?? CreateMockGeolocationService(country: context.CreateCountry()),
             loggingService ?? new Mock<ILoggingService>().Object);
     }
 
@@ -1394,17 +1179,15 @@ public static class ChapterAdminServiceTests
         };
 
     private static IMemberChapterAdminServiceRequest CreateMemberChapterAdminServiceRequest(
-        Chapter? chapter = null,
-        Member? currentMember = null,
+        Chapter chapter,
+        Member currentMember,
         PlatformType? platform = null,
         ChapterAdminSecurable? securable = null)
     {
-        currentMember ??= CreateMember(id: CurrentMemberId);
-
         var mock = new Mock<IMemberChapterAdminServiceRequest>();
 
         mock.Setup(x => x.Chapter)
-            .Returns(chapter ?? CreateChapter());
+            .Returns(chapter);
 
         mock.Setup(x => x.CurrentMember)
             .Returns(currentMember);
@@ -1425,11 +1208,9 @@ public static class ChapterAdminServiceTests
     }
 
     private static IMemberServiceRequest CreateMemberServiceRequest(
-        Guid? currentMemberId = null,
+        Member currentMember,
         PlatformType? platform = null)
     {
-        var currentMember = CreateMember(id: currentMemberId ?? CurrentMemberId);
-
         var mock = new Mock<IMemberServiceRequest>();
 
         mock.Setup(x => x.CurrentMember)
@@ -1459,7 +1240,6 @@ public static class ChapterAdminServiceTests
 
     private static ChapterCreateModel CreateChapterCreateModel(
         string? name = null,
-        string? description = null,
         string? locationName = null,
         LatLong? location = null,
         byte[]? imageData = null,
@@ -1475,7 +1255,7 @@ public static class ChapterAdminServiceTests
         };
 
     private static ChapterProperty CreateChapterProperty(
-        Guid? chapterId = null,
+        Chapter chapter,
         string? displayName = null,
         string? label = null,
         string? name = null,
@@ -1483,7 +1263,7 @@ public static class ChapterAdminServiceTests
         DataType? dataType = null)
         => new ChapterProperty
         {
-            ChapterId = chapterId ?? Guid.NewGuid(),
+            ChapterId = chapter.Id,
             DisplayName = displayName ?? "Test Property",
             Label = label ?? "test-property",
             Name = name ?? "test-property",
@@ -1509,12 +1289,12 @@ public static class ChapterAdminServiceTests
         };
 
     private static ChapterQuestion CreateChapterQuestion(
-        Guid? chapterId = null,
+        Chapter chapter,
         string? name = null,
         string? answer = null)
         => new ChapterQuestion
         {
-            ChapterId = chapterId ?? Guid.NewGuid(),
+            ChapterId = chapter.Id,
             Name = name ?? "Test Question",
             Answer = answer ?? "<p>Test Answer</p>"
         };
@@ -1555,141 +1335,38 @@ public static class ChapterAdminServiceTests
             Color = color ?? "#000000"
         };
 
-    private static Chapter CreateChapter(
-        Guid? id = null,
-        string? name = null,
-        Guid? ownerId = null,
-        DateTime? approvedUtc = null)
-    {
-        name = Chapter.CleanName(name ?? "Test Chapter");
-
-        return new Chapter
-        {
-            ApprovedUtc = approvedUtc,
-            Id = id ?? Guid.NewGuid(),
-            Name = name,
-            Slug = UrlUtils.Slugify(name),
-            OwnerId = ownerId ?? Guid.NewGuid(),
-            CreatedUtc = DateTime.UtcNow,
-            CountryId = Guid.NewGuid(),
-            Platform = PlatformType.Default
-        };
-    }
-
-    private static Member CreateMember(
-        Guid? id = null,
-        bool? siteAdmin = null,
-        IEnumerable<Guid>? chapters = null)
-    {
-        id ??= Guid.NewGuid();
-
-        return new Member
-        {
-            Id = id.Value,
-            Chapters = chapters?.Select(x => new MemberChapter
-            {
-                Approved = true,
-                ChapterId = x,
-                MemberId = id.Value
-            }).ToArray() ?? [],
-            SiteAdmin = siteAdmin ?? false
-        };
-    }
-
-    private static ChapterAdminMember CreateChapterAdminMember(
-        Member? member = null,
-        Guid? chapterId = null,
-        ChapterAdminRole? role = null)
-    {
-        member ??= CreateMember();
-
-        return new ChapterAdminMember
-        {
-            Id = Guid.NewGuid(),
-            Member = member,
-            MemberId = member.Id,
-            ChapterId = chapterId ?? Guid.NewGuid(),
-            Role = role ?? ChapterAdminRole.Admin,
-            ReceiveContactEmails = false,
-            ReceiveEventCommentEmails = false,
-            ReceiveNewMemberEmails = false
-        };
-    }
-
     private static ChapterContactMessage CreateChapterContactMessage(
-        Guid? id = null,
-        Guid? chapterId = null)
+        Chapter chapter)
         => new ChapterContactMessage
         {
             FromAddress = "",
             Message = "",
-            Id = id ?? Guid.NewGuid(),
-            ChapterId = chapterId ?? Guid.NewGuid()
+            Id = Guid.NewGuid(),
+            ChapterId = chapter.Id
         };
 
-    private static ChapterImage CreateChapterImage(Guid? chapterId = null)
-        => new ChapterImage { ChapterId = chapterId ?? Guid.NewGuid() };
+    private static ChapterImage CreateChapterImage(Chapter chapter)
+        => new ChapterImage { ChapterId = chapter.Id };
 
-    private static ChapterTexts CreateChapterTexts(Guid? chapterId = null)
+    private static ChapterTexts CreateChapterTexts(Chapter chapter)
         => new ChapterTexts
         {
-            ChapterId = chapterId ?? Guid.NewGuid(),
+            ChapterId = chapter.Id,
             Description = "Test description",
             WelcomeText = "Welcome to the test chapter",
             RegisterText = "Register here"
         };
 
-    private static ChapterLinks CreateChapterLinks(Guid? chapterId = null)
+    private static ChapterLinks CreateChapterLinks(Chapter chapter)
         => new ChapterLinks
         {
-            ChapterId = chapterId ?? Guid.NewGuid(),
+            ChapterId = chapter.Id,
             FacebookName = null,
             InstagramName = null,
             TwitterName = null,
             Version = []
         };
 
-    private static ChapterPrivacySettings CreateChapterPrivacySettings(Guid? chapterId = null)
-        => new ChapterPrivacySettings { ChapterId = chapterId ?? Guid.NewGuid() };
-
-    private static Country CreateCountry(
-        string? isoCode2 = null)
-        => new Country
-        {
-            Continent = "",
-            Id = Guid.NewGuid(),
-            IsoCode2 = isoCode2 ?? "GB",
-            IsoCode3 = "",
-            Name = ""
-        };
-
-    private static MemberSiteSubscription CreateMemberSiteSubscription(
-        Guid? memberId = null,
-        Guid? siteSubscriptionId = null,
-        DateTime? expiresUtc = null)
-         => new MemberSiteSubscription
-         {
-             Id = Guid.NewGuid(),
-             MemberId = memberId ?? Guid.NewGuid(),
-             SiteSubscriptionId = siteSubscriptionId ?? Guid.NewGuid(),
-             ExpiresUtc = expiresUtc
-         };
-
-    private static SiteSubscription CreateSiteSubscription(
-        SiteFeatureType? feature = null,
-        int? groupLimit = null)
-        => new SiteSubscription
-        {
-            Id = Guid.NewGuid(),
-            Name = "Test Subscription",
-            Description = "Test subscription for testing",
-            GroupLimit = groupLimit ?? 10,
-            Enabled = true,
-            Default = false,
-            Platform = PlatformType.Default,
-            SitePaymentSettingId = Guid.NewGuid(),
-            Features = feature.HasValue
-                ? [new SiteSubscriptionFeature { Feature = feature.Value }]
-                : []
-        };
+    private static ChapterPrivacySettings CreateChapterPrivacySettings(Chapter chapter)
+        => new ChapterPrivacySettings { ChapterId = chapter.Id };
 }

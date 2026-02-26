@@ -14,7 +14,7 @@
 
     var notifications = Model.Unread;
     var notificationGroups = notifications
-        .GroupBy(x => x.Type.Group())
+        .GroupBy(x => x.Notification.Type.Group())
         .OrderBy(x => EnumUtils.GetDisplayValue(x.Key));
 }
 

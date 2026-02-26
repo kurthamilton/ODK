@@ -782,7 +782,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
                 .GetSingleOrDefault(),
             x => x.ChapterConversationRepository.GetById(id),
             x => x.ChapterConversationMessageRepository.GetDtosByConversationId(id),
-            x => x.NotificationRepository.GetUnreadByChapterId(chapter.Id, NotificationType.ConversationOwnerMessage, id));
+            x => x.NotificationRepository.GetUnreadByEntityId(NotificationType.ConversationOwnerMessage, id));
 
         var adminMemberNotifications = notifications
             .Where(x => x.MemberId != conversation.MemberId)
@@ -1940,7 +1940,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             _unitOfWork.ChapterPropertyOptionRepository.DeleteMany(options);
 
             if (model.Options != null)
-            {                
+            {
                 _unitOfWork.ChapterPropertyOptionRepository.AddMany(model.Options
                     .Where(x => !string.IsNullOrWhiteSpace(x))
                     .Select((x, i) => new ChapterPropertyOption
