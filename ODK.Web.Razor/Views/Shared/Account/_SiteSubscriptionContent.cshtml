@@ -20,7 +20,6 @@
         Model.CurrentMemberExternalSubscription);
 
     subscriptions = subscriptions
-        .Where(x => x.Prices.Any(x => x.IsPaid))
         .OrderBy(x => x.Subscription.DisplayOrder)
         .ToArray();
 }
@@ -37,11 +36,11 @@
         <div class="form-group mb-3 required">
             @Html.Label("currencyId", "Choose currency", new { @class = "form-label" })
             @Html.DropDownList("currencyId", currencyOptions, "", new 
-                { 
-                    @class = "form-select", 
-                    data_val = "true", 
-                    data_val_required = "The Currency field is required" 
-                })
+            { 
+                @class = "form-select", 
+                data_val = "true", 
+                data_val_required = "The Currency field is required" 
+            })
             @Html.ValidationMessage("currencyId")
         </div>
 
@@ -70,10 +69,10 @@
         {
             <label class="form-label">Expiry date</label>
             <div class="form-control-plaintext">
-                @if (memberSubscription?.ExpiresUtc != null)
+                @if (memberSubscription?.MemberSiteSubscription.ExpiresUtc != null)
                 {
                     <span>
-                        @memberSubscription.ExpiresUtc.Value.ToFriendlyDateString(null)
+                        @memberSubscription?.MemberSiteSubscription.ExpiresUtc.Value.ToFriendlyDateString(null)
                     </span>
                 }
                 else
@@ -86,10 +85,10 @@
         {
             <label class="form-label">Next payment date</label>
             <div class="form-control-plaintext">
-                @if (memberSubscription?.ExpiresUtc != null)
+                @if (memberSubscription?.MemberSiteSubscription.ExpiresUtc != null)
                 {
                     <span>
-                        @memberSubscription.ExpiresUtc.Value.ToFriendlyDateString(null)
+                        @memberSubscription.MemberSiteSubscription.ExpiresUtc.Value.ToFriendlyDateString(null)
                     </span>
                 }
                 else
@@ -117,7 +116,6 @@
 
         <div class="mb-3">
             <form method="post">
-                <input type="hidden" name="id" value="@memberSubscription.Id" />
                 <p>
                     <button class="btn btn-danger" onclick="return confirm('Are you sure you want to cancel your subscription?');">
                         Cancel subscription
@@ -132,7 +130,7 @@
         </div>
     }
 
-    @if (!subscriptions.Any(x => x.Subscription.Id != Model.CurrentMemberSubscription?.SiteSubscriptionId) && 
+    @if (!subscriptions.Any(x => x.Subscription.Id != Model.CurrentMemberSubscription?.SiteSubscription.Id) && 
         externalSubscription?.Status == ExternalSubscriptionStatus.Active)
     {
         @*Don't show upgrade options if there are no other subscription options than the current active subscription*@

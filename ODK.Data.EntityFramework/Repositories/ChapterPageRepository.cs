@@ -1,4 +1,5 @@
-﻿using ODK.Core.Chapters;
+﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Chapters;
 using ODK.Core.Pages;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
@@ -8,7 +9,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class ChapterPageRepository : ReadWriteRepositoryBase<ChapterPage>, IChapterPageRepository
 {
-    public ChapterPageRepository(OdkContext context)
+    public ChapterPageRepository(DbContext context)
         : base(context)
     {
     }

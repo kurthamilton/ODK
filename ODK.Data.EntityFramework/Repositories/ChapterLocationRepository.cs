@@ -8,7 +8,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class ChapterLocationRepository : WriteRepositoryBase<ChapterLocation>, IChapterLocationRepository
 {
-    public ChapterLocationRepository(OdkContext context)
+    public ChapterLocationRepository(DbContext context)
         : base(context)
     {
     }

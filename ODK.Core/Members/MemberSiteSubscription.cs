@@ -1,7 +1,4 @@
-﻿using ODK.Core.Features;
-using ODK.Core.Subscriptions;
-
-namespace ODK.Core.Members;
+﻿namespace ODK.Core.Members;
 
 public class MemberSiteSubscription : IDatabaseEntity, IMemberEntity
 {
@@ -13,16 +10,9 @@ public class MemberSiteSubscription : IDatabaseEntity, IMemberEntity
 
     public Guid MemberId { get; set; }
 
-    public SiteSubscription SiteSubscription { get; set; } = null!;
-
     public Guid SiteSubscriptionId { get; set; }
 
-    public SiteSubscriptionPrice? SiteSubscriptionPrice { get; set; }
-
     public Guid? SiteSubscriptionPriceId { get; set; }
-
-    public bool HasFeature(SiteFeatureType feature)
-        => !IsExpired() && SiteSubscription.HasFeature(feature);
 
     public bool IsExpired()
     {

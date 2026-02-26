@@ -10,7 +10,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class ChapterConversationRepository : ReadWriteRepositoryBase<ChapterConversation>, IChapterConversationRepository
 {
-    public ChapterConversationRepository(OdkContext context)
+    public ChapterConversationRepository(DbContext context)
         : base(context)
     {
     }
@@ -25,7 +25,6 @@ public class ChapterConversationRepository : ReadWriteRepositoryBase<ChapterConv
         => ChapterConversationDtoSet()
             .Where(x => x.Conversation.MemberId == memberId)
             .DeferredMultiple();
-
 
     public IDeferredQueryMultiple<ChapterConversationDto> GetDtosByMemberId(Guid memberId, Guid chapterId)
         => ChapterConversationDtoSet()
@@ -49,7 +48,7 @@ public class ChapterConversationRepository : ReadWriteRepositoryBase<ChapterConv
             {
                 Conversation = conversation,
                 LastMessage = new ChapterConversationMessageDto
-                {                    
+                {
                     MemberFirstName = conversationMessageMember.FirstName,
                     MemberLastName = conversationMessageMember.LastName,
                     Message = conversationMessage

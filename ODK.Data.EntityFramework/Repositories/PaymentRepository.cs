@@ -1,4 +1,5 @@
-﻿using ODK.Core.Payments;
+﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Payments;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Payments;
 using ODK.Data.Core.QueryBuilders;
@@ -9,7 +10,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class PaymentRepository : ReadWriteRepositoryBase<Payment, IPaymentQueryBuilder>, IPaymentRepository
 {
-    public PaymentRepository(OdkContext context)
+    public PaymentRepository(DbContext context)
         : base(context)
     {
     }

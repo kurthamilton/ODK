@@ -12,7 +12,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class ChapterAdminMemberRepository : WriteRepositoryBase<ChapterAdminMember>, IChapterAdminMemberRepository
 {
-    public ChapterAdminMemberRepository(OdkContext context)
+    public ChapterAdminMemberRepository(DbContext context)
         : base(context)
     {
     }

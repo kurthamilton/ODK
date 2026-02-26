@@ -8,7 +8,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class MemberSubscriptionRepository : WriteRepositoryBase<MemberSubscription>, IMemberSubscriptionRepository
 {
-    public MemberSubscriptionRepository(OdkContext context)
+    public MemberSubscriptionRepository(DbContext context)
         : base(context)
     {
     }

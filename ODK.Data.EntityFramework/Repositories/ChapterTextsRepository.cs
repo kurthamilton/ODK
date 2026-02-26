@@ -1,4 +1,5 @@
-﻿using ODK.Core.Chapters;
+﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Chapters;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
@@ -7,7 +8,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class ChapterTextsRepository : WriteRepositoryBase<ChapterTexts>, IChapterTextsRepository
 {
-    public ChapterTextsRepository(OdkContext context)
+    public ChapterTextsRepository(DbContext context)
         : base(context)
     {
     }

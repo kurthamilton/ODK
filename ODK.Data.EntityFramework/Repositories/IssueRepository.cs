@@ -1,4 +1,5 @@
-﻿using ODK.Core.Issues;
+﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Issues;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
@@ -7,7 +8,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class IssueRepository : ReadWriteRepositoryBase<Issue>, IIssueRepository
 {
-    public IssueRepository(OdkContext context)
+    public IssueRepository(DbContext context)
         : base(context)
     {
     }

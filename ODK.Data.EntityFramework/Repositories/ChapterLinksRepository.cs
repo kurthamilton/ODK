@@ -1,4 +1,5 @@
-﻿using ODK.Core.Chapters;
+﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Chapters;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
@@ -9,7 +10,7 @@ public class ChapterLinksRepository : WriteRepositoryBase<ChapterLinks>, IChapte
 {
     private readonly IChapterEntityRepository<ChapterLinks> _chapterEntityRepository;
 
-    public ChapterLinksRepository(OdkContext context)
+    public ChapterLinksRepository(DbContext context)
         : base(context)
     {
         _chapterEntityRepository = new ChapterEntityRepositoryHelper<ChapterLinks>(this);

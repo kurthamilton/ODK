@@ -10,7 +10,9 @@
 @inject IRequestStore RequestStore
 @{
     var currentMember = RequestStore.CurrentMember;
-    var notification = Model.Notification;
+    var dto = Model.Notification;
+    var notification = dto.Notification;
+    var chapter = dto.Chapter;
 
     var title = notification.Type switch
     {
@@ -35,20 +37,20 @@
 
     var path = notification.Type switch
     {
-        NotificationType.ChapterContactMessage => notification.Chapter != null && notification.EntityId != null
-            ? OdkRoutes.GroupAdmin.Message(notification.Chapter, notification.EntityId.Value).Path
+        NotificationType.ChapterContactMessage => chapter != null && notification.EntityId != null
+            ? OdkRoutes.GroupAdmin.Message(chapter, notification.EntityId.Value).Path
             : null,
-        NotificationType.ConversationAdminMessage => notification.Chapter != null && notification.EntityId != null
-            ? OdkRoutes.Groups.Conversation(notification.Chapter, notification.EntityId.Value)
+        NotificationType.ConversationAdminMessage => chapter != null && notification.EntityId != null
+            ? OdkRoutes.Groups.Conversation(chapter, notification.EntityId.Value)
             : null,
-        NotificationType.ConversationOwnerMessage => notification.Chapter != null && notification.EntityId != null
-            ? OdkRoutes.GroupAdmin.Conversation(notification.Chapter, notification.EntityId.Value).Path
+        NotificationType.ConversationOwnerMessage => chapter != null && notification.EntityId != null
+            ? OdkRoutes.GroupAdmin.Conversation(chapter, notification.EntityId.Value).Path
             : null,
-        NotificationType.NewEvent => notification.Chapter != null && notification.EntityId != null
-            ? OdkRoutes.Groups.EventLegacy(notification.Chapter, notification.EntityId.Value)
+        NotificationType.NewEvent => chapter != null && notification.EntityId != null
+            ? OdkRoutes.Groups.EventLegacy(chapter, notification.EntityId.Value)
             : null,
-        NotificationType.NewMember => notification.Chapter != null && notification.EntityId != null
-            ? OdkRoutes.GroupAdmin.Member(notification.Chapter, notification.EntityId.Value).Path
+        NotificationType.NewMember => chapter != null && notification.EntityId != null
+            ? OdkRoutes.GroupAdmin.Member(chapter, notification.EntityId.Value).Path
             : null,
         _ => null
     };

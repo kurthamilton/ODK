@@ -1,4 +1,5 @@
-﻿using ODK.Core.Topics;
+﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Topics;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
@@ -7,7 +8,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class NewMemberTopicRepository : ReadWriteRepositoryBase<NewMemberTopic>, INewMemberTopicRepository
 {
-    public NewMemberTopicRepository(OdkContext context)
+    public NewMemberTopicRepository(DbContext context)
         : base(context)
     {
     }

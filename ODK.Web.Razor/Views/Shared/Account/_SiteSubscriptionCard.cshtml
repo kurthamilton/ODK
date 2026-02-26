@@ -23,52 +23,50 @@
         : null;
 }
 
-<div data-odk-component="_SiteSubscriptionCard">
-    <div class="card">
-        <div class="card-body">
-            <h5 class="card-title">@subscription.Name</h5>
-            <div class="card-text">
-                @Html.Raw(subscription.Description)
+<div class="card h-100" data-odk-component="_SiteSubscriptionCard">
+    <div class="card-body">
+        <h5 class="card-title">@subscription.Name</h5>
+        <div class="card-text">
+            @Html.Raw(subscription.Description)
 
-                @if (Model.CurrentMemberSiteSubscription?.SiteSubscriptionId == subscription.Id &&
-                    Model.CurrentMemberExternalSubscription?.Status == ExternalSubscriptionStatus.Active)
+            @if (Model.CurrentMemberSiteSubscription?.SiteSubscriptionId == subscription.Id &&
+                Model.CurrentMemberExternalSubscription?.Status == ExternalSubscriptionStatus.Active)
+            {
+                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Star)
                 {
-                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Star)
+                    Class = "text-warning"
+                })
+                <span>Current plan</span>
+            }
+            else
+            {
+                <div class="d-flex flex-column gap-3">
+                    @foreach (var price in prices)
                     {
-                        Class = "text-warning"
-                    })
-                    <span>Current plan</span>
-                }
-                else
-                {
-                    <div class="d-flex flex-column gap-3">
-                        @foreach (var price in prices)
+                        if (price.ExternalId == null)
                         {
-                            if (price.ExternalId == null)
-                            {
-                                continue;
-                            }
-
-                            var checkoutUrl = chapter != null
-                                ? OdkRoutes.GroupAdmin.SubscriptionCheckout(chapter, price.Id).Path
-                                : OdkRoutes.Account.SiteSubscriptionCheckout(price.Id);
-
-                            var modalId = $"payment-modal-upgrade-{price.Id}";
-                            var periodUnit = price.Frequency.PeriodUnit();
-
-                            <div class="d-flex align-items-center gap-1">
-                                <div class="button-container mt-3">
-                                    <a class="btn btn-primary" href="@checkoutUrl">
-                                        Buy
-                                    </a>
-
-                                    <span>@price.Currency.ToAmountString(price.Amount)/@periodUnit</span>
-                                </div>
-                            </div>
+                            continue;
                         }
-                    </div>
-                }                
-            </div>
+
+                        var checkoutUrl = chapter != null
+                            ? OdkRoutes.GroupAdmin.SubscriptionCheckout(chapter, price.Id).Path
+                            : OdkRoutes.Account.SiteSubscriptionCheckout(price.Id);
+
+                        var modalId = $"payment-modal-upgrade-{price.Id}";
+                        var periodUnit = price.Frequency.PeriodUnit();
+
+                        <div class="d-flex align-items-center gap-1">
+                            <div class="button-container mt-3">
+                                <a class="btn btn-primary" href="@checkoutUrl">
+                                    Buy
+                                </a>
+
+                                <span>@price.Currency.ToAmountString(price.Amount)/@periodUnit</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }                
         </div>
     </div>
 </div>

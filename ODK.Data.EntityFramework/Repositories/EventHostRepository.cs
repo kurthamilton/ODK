@@ -10,7 +10,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class EventHostRepository : ReadWriteRepositoryBase<EventHost>, IEventHostRepository
 {
-    public EventHostRepository(OdkContext context)
+    public EventHostRepository(DbContext context)
         : base(context)
     {
     }

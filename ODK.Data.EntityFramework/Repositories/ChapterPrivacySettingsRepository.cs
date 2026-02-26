@@ -1,4 +1,5 @@
-﻿using ODK.Core.Chapters;
+﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Chapters;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
@@ -10,7 +11,7 @@ public class ChapterPrivacySettingsRepository :
 {
     private readonly IChapterEntityRepository<ChapterPrivacySettings> _chapterEntityRepository;
 
-    public ChapterPrivacySettingsRepository(OdkContext context)
+    public ChapterPrivacySettingsRepository(DbContext context)
         : base(context)
     {
         _chapterEntityRepository = new ChapterEntityRepositoryHelper<ChapterPrivacySettings>(this);

@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.QueryBuilders;
 using ODK.Data.EntityFramework.Extensions;
@@ -8,14 +9,14 @@ namespace ODK.Data.EntityFramework.QueryBuilders;
 public class QueryBuilder<T> : IQueryBuilder<T>
     where T : class
 {
-    private readonly OdkContext _context;
+    private readonly DbContext _context;
 
-    protected QueryBuilder(OdkContext context)
+    protected QueryBuilder(DbContext context)
         : this(context, context.Set<T>())
     {
     }
 
-    protected QueryBuilder(OdkContext context, IQueryable<T> query)
+    protected QueryBuilder(DbContext context, IQueryable<T> query)
     {
         _context = context;
         Query = query;
@@ -62,14 +63,14 @@ public class QueryBuilder<T> : IQueryBuilder<T>
         return this;
     }
 
-    protected TBuilder CreateQueryBuilder<TBuilder, TNew>(Func<OdkContext, TBuilder> createBuilder)
+    protected TBuilder CreateQueryBuilder<TBuilder, TNew>(Func<DbContext, TBuilder> createBuilder)
         where TNew : class
         where TBuilder : IQueryBuilder<TNew>
         => createBuilder(_context);
 
     protected IQueryBuilder<TDto> ProjectTo<TDto>(IQueryable<TDto> query)
         where TDto : class
-        => CreateQueryBuilder<IQueryBuilder<TDto>, TDto>(context => new QueryBuilder<TDto>(context, query));    
+        => CreateQueryBuilder<IQueryBuilder<TDto>, TDto>(context => new QueryBuilder<TDto>(context, query));
 
     protected IQueryable<TEntity> Set<TEntity>()
         where TEntity : class

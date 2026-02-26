@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ODK.Core.Members;
+using ODK.Core.Subscriptions;
 using ODK.Data.EntityFramework.Converters;
 
 namespace ODK.Data.EntityFramework.Mapping;
@@ -23,11 +24,11 @@ public class MemberSiteSubscriptionMap : IEntityTypeConfiguration<MemberSiteSubs
             .WithOne()
             .HasForeignKey<MemberSiteSubscription>(x => x.MemberId);
 
-        builder.HasOne(x => x.SiteSubscription)
+        builder.HasOne<SiteSubscription>()
             .WithOne()
             .HasForeignKey<MemberSiteSubscription>(x => x.SiteSubscriptionId);
 
-        builder.HasOne(x => x.SiteSubscriptionPrice)
+        builder.HasOne<SiteSubscriptionPrice>()
             .WithOne()
             .HasForeignKey<MemberSiteSubscription>(x => x.SiteSubscriptionPriceId);
     }

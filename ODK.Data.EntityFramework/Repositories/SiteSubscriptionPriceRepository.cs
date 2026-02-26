@@ -9,7 +9,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class SiteSubscriptionPriceRepository : ReadWriteRepositoryBase<SiteSubscriptionPrice>, ISiteSubscriptionPriceRepository
 {
-    public SiteSubscriptionPriceRepository(OdkContext context)
+    public SiteSubscriptionPriceRepository(DbContext context)
         : base(context)
     {
     }

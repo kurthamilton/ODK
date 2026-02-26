@@ -1,11 +1,12 @@
-﻿using ODK.Data.Core.Repositories;
+﻿using Microsoft.EntityFrameworkCore;
+using ODK.Data.Core.Repositories;
 
 namespace ODK.Data.EntityFramework;
 
 public abstract class WriteRepositoryBase<T> : RepositoryBase, IWriteRepository<T>
     where T : class
 {
-    protected WriteRepositoryBase(OdkContext context)
+    protected WriteRepositoryBase(DbContext context)
         : base(context)
     {
     }

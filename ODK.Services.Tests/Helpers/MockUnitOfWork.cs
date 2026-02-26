@@ -4,6 +4,7 @@ using Moq;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
+using ODK.Data.EntityFramework;
 
 namespace ODK.Services.Tests.Helpers;
 
@@ -98,6 +99,13 @@ internal class MockUnitOfWork : IUnitOfWork
     public ITopicRepository TopicRepository => Mock.Object.TopicRepository;
     public IVenueLocationRepository VenueLocationRepository => Mock.Object.VenueLocationRepository;
     public IVenueRepository VenueRepository => Mock.Object.VenueRepository;
+
+    public static IUnitOfWork Create(MockOdkContext? context = null)
+    {
+        context ??= new MockOdkContext();
+        context.SaveChanges();
+        return new UnitOfWork(context);
+    }
 
     public async Task<T1> RunAsync<T1>(
         Func<IUnitOfWork, IDeferredQuery<T1>> query1)

@@ -1,4 +1,5 @@
-﻿using ODK.Core.Members;
+﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Members;
 using ODK.Data.Core.QueryBuilders;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.QueryBuilders;
@@ -9,7 +10,7 @@ public class MemberSiteSubscriptionRecordRepository :
     ReadWriteRepositoryBase<MemberSiteSubscriptionRecord, IMemberSiteSubscriptionRecordQueryBuilder>,
     IMemberSiteSubscriptionRecordRepository
 {
-    public MemberSiteSubscriptionRecordRepository(OdkContext context) 
+    public MemberSiteSubscriptionRecordRepository(DbContext context)
         : base(context)
     {
     }

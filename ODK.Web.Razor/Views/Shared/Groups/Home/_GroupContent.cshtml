@@ -50,7 +50,7 @@
                 @await Html.PartialAsync("Components/_Panel", new PanelViewModel
                 {
                     TitleContentFunc = @<h3>Upcoming events</h3>,
-                        TitleEndContentFunc = @<a href="@OdkRoutes.Groups.Events(Model.Chapter)">See all</a>,
+                    TitleEndContentFunc = @<a href="@OdkRoutes.Groups.Events(Model.Chapter)">See all</a>,
                     BodyContentFunc = 
                         @<div>
                             @await Html.PartialAsync("Events/_EventList", new EventListViewModel

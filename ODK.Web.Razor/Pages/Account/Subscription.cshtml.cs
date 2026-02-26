@@ -18,7 +18,7 @@ public class SubscriptionModel : OdkSiteAccountPageModel
 
     public async Task<IActionResult> OnPostAsync(Guid id)
     {
-        var result = await _siteSubscriptionService.CancelMemberSiteSubscription(MemberServiceRequest, id);
+        var result = await _siteSubscriptionService.CancelMemberSiteSubscription(MemberServiceRequest);
         AddFeedback(result, "Subscription cancelled");
         return RedirectToPage();
     }

@@ -10,6 +10,7 @@ using ODK.Core.Members;
 using ODK.Core.Notifications;
 using ODK.Core.Payments;
 using ODK.Core.Platforms;
+using ODK.Core.Subscriptions;
 using ODK.Data.Core;
 using ODK.Services.Authentication.OAuth;
 using ODK.Services.Authorization;
@@ -245,7 +246,11 @@ public class MemberService : IMemberService
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.MemberRepository.GetByEmailAddress(model.EmailAddress),
             x => x.SiteSubscriptionRepository.GetDefault(platform),
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
+            x => x.MemberSiteSubscriptionRepository.Query()
+                .ForChapterOwner(chapter.Id)
+                .Active()
+                .SiteSubscription()
+                .GetSingleOrDefault(),
             x => x.ChapterLocationRepository.GetByChapterId(chapter.Id));
 
         var validationResult = ValidateMemberProfile(chapterProperties, model, forApplication: true);
@@ -477,7 +482,11 @@ public class MemberService : IMemberService
             ) = await _unitOfWork.RunAsync(
             x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => x.MemberNotificationSettingsRepository.GetByChapterId(chapter.Id, NotificationType.NewMember),
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
+            x => x.MemberSiteSubscriptionRepository.Query()
+                .ForChapterOwner(chapter.Id)
+                .Active()
+                .SiteSubscription()
+                .GetSingleOrDefault(),
             x => x.MemberRepository.GetCountByChapterId(chapter.Id),
             x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPropertyOptionRepository.GetByChapterId(chapter.Id),
@@ -938,9 +947,9 @@ public class MemberService : IMemberService
     private static ServiceResult ChapterIsOpenForRegistration(
         PlatformType platform,
         int members,
-        MemberSiteSubscription? ownerSubscription)
+        SiteSubscription? ownerSubscription)
     {
-        if (ownerSubscription?.SiteSubscription.HasCapacity(members) == true)
+        if (ownerSubscription?.HasCapacity(members) == true)
         {
             return ServiceResult.Successful();
         }
@@ -988,7 +997,7 @@ public class MemberService : IMemberService
         Chapter chapter,
         IEnumerable<MemberProperty> memberProperties,
         ChapterMembershipSettings? membershipSettings,
-        MemberSiteSubscription? ownerSubscription)
+        SiteSubscription? ownerSubscription)
     {
         var memberChapter = new MemberChapter
         {

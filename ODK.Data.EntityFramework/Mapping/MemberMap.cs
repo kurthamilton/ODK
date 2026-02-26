@@ -28,9 +28,5 @@ public class MemberMap : IEntityTypeConfiguration<Member>
 
         builder.Property(x => x.Version)
             .IsRowVersion();
-
-        builder.HasMany(x => x.Chapters)
-            .WithOne()
-            .HasForeignKey(x => x.MemberId);
     }
 }

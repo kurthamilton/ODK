@@ -23,5 +23,9 @@ public class MemberChapterMap : IEntityTypeConfiguration<MemberChapter>
         builder.HasOne<Chapter>()
             .WithMany()
             .HasForeignKey(x => x.ChapterId);
+
+        builder.HasOne<Member>()
+            .WithMany(x => x.Chapters)
+            .HasForeignKey(x => x.MemberId);
     }
 }

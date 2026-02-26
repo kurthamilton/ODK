@@ -1,4 +1,5 @@
-﻿using ODK.Core.Chapters;
+﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
@@ -8,12 +9,12 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class CountryRepository : ReadWriteRepositoryBase<Country>, ICountryRepository
 {
-    public CountryRepository(OdkContext context)
+    public CountryRepository(DbContext context)
         : base(context)
     {
     }
 
-    public IDeferredQueryMultiple<Country> GetAll() 
+    public IDeferredQueryMultiple<Country> GetAll()
         => Set()
             .DeferredMultiple();
 

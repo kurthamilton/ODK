@@ -1,4 +1,5 @@
-﻿using ODK.Core.Chapters;
+﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Chapters;
 using ODK.Data.Core.Chapters;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
@@ -10,7 +11,7 @@ public class ChapterImageRepository : WriteRepositoryBase<ChapterImage>, IChapte
 {
     private readonly ChapterEntityRepositoryHelper<ChapterImage> _chapterEntityRepository;
 
-    public ChapterImageRepository(OdkContext context)
+    public ChapterImageRepository(DbContext context)
         : base(context)
     {
         _chapterEntityRepository = new ChapterEntityRepositoryHelper<ChapterImage>(this);

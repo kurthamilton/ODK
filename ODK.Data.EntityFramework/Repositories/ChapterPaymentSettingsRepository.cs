@@ -8,7 +8,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class ChapterPaymentSettingsRepository : WriteRepositoryBase<ChapterPaymentSettings>, IChapterPaymentSettingsRepository
 {
-    public ChapterPaymentSettingsRepository(OdkContext context)
+    public ChapterPaymentSettingsRepository(DbContext context)
         : base(context)
     {
     }

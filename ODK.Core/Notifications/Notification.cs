@@ -1,11 +1,7 @@
-﻿using ODK.Core.Chapters;
-
-namespace ODK.Core.Notifications;
+﻿namespace ODK.Core.Notifications;
 
 public class Notification : IDatabaseEntity
 {
-    public Chapter? Chapter { get; set; }
-
     public Guid? ChapterId { get; set; }
 
     public DateTime CreatedUtc { get; set; }
@@ -23,21 +19,4 @@ public class Notification : IDatabaseEntity
     public string Text { get; set; } = string.Empty;
 
     public NotificationType Type { get; set; }
-
-    public Notification Clone()
-    {
-        return new Notification
-        {
-            Chapter = Chapter,
-            ChapterId = ChapterId,
-            CreatedUtc = CreatedUtc,
-            EntityId = EntityId,
-            ExpiresUtc = ExpiresUtc,
-            Id = Id,
-            MemberId = MemberId,
-            Text = Text,
-            Type = Type,
-            ReadUtc = ReadUtc
-        };
-    }
 }

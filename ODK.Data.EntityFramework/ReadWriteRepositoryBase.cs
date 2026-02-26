@@ -1,4 +1,5 @@
-﻿using ODK.Core;
+﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.QueryBuilders;
 using ODK.Data.Core.Repositories;
@@ -10,7 +11,7 @@ namespace ODK.Data.EntityFramework;
 public abstract class ReadWriteRepositoryBase<T> : ReadWriteRepositoryBase<T, IDatabaseEntityQueryBuilder<T>>
     where T : class, IDatabaseEntity
 {
-    protected ReadWriteRepositoryBase(OdkContext context) 
+    protected ReadWriteRepositoryBase(DbContext context)
         : base(context)
     {
     }
@@ -30,16 +31,16 @@ public abstract class ReadWriteRepositoryBase<T> : ReadWriteRepositoryBase<T, ID
             .Where(x => ids.Contains(x.Id))
             .DeferredMultiple();
 
-    public override IDatabaseEntityQueryBuilder<T> Query() 
+    public override IDatabaseEntityQueryBuilder<T> Query()
         => CreateQueryBuilder<IDatabaseEntityQueryBuilder<T>, T>(
             context => new DatabaseEntityQueryBuilder<T>(context));
 }
 
-public abstract class ReadWriteRepositoryBase<T, TBuilder> : WriteRepositoryBase<T>, IReadWriteRepository<T, TBuilder> 
+public abstract class ReadWriteRepositoryBase<T, TBuilder> : WriteRepositoryBase<T>, IReadWriteRepository<T, TBuilder>
     where T : class, IDatabaseEntity
     where TBuilder : IDatabaseEntityQueryBuilder<T, TBuilder>
 {
-    protected ReadWriteRepositoryBase(OdkContext context)
+    protected ReadWriteRepositoryBase(DbContext context)
         : base(context)
     {
     }
@@ -61,7 +62,7 @@ public abstract class ReadWriteRepositoryBase<T, TBuilder> : WriteRepositoryBase
         base.AddMany(entities);
     }
 
-    public virtual IDeferredQuerySingle<T> GetById(Guid id) 
+    public virtual IDeferredQuerySingle<T> GetById(Guid id)
         => Query()
             .ById(id)
             .GetSingle();

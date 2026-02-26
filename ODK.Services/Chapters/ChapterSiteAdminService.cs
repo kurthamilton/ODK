@@ -1,6 +1,7 @@
 ﻿using ODK.Core;
 using ODK.Core.Members;
 using ODK.Data.Core;
+using ODK.Data.Core.Members;
 using ODK.Services.Chapters.ViewModels;
 using ODK.Services.Exceptions;
 using ODK.Services.Members;
@@ -81,10 +82,10 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
 
         var (chapters, subscriptions) = await GetSiteAdminRestrictedContent(request,
             x => x.ChapterRepository.GetAll(platform, includeUnpublished: true),
-            x => x.MemberSiteSubscriptionRepository.GetAllChapterOwnerSubscriptions(platform));
+            x => x.MemberSiteSubscriptionRepository.GetAllChapterOwnerSubscriptionDtos(platform));
 
         var subscriptionDictionary = subscriptions
-            .GroupBy(x => x.MemberId)
+            .GroupBy(x => x.MemberSiteSubscription.MemberId)
             .ToDictionary(x => x.Key, x => x.ToArray());
 
         var approved = new List<SiteAdminChaptersRowViewModel>();
@@ -92,19 +93,19 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
 
         foreach (var chapter in chapters)
         {
-            MemberSiteSubscription? chapterSubscription = null;
+            MemberSiteSubscriptionDto? chapterSubscriptionDto = null;
             if (subscriptionDictionary.TryGetValue(chapter.OwnerId, out var memberSubscriptions))
             {
-                chapterSubscription = memberSubscriptions
-                    .OrderByDescending(x => x.ExpiresUtc ?? DateTime.MaxValue)
+                chapterSubscriptionDto = memberSubscriptions
+                    .OrderByDescending(x => x.MemberSiteSubscription.ExpiresUtc ?? DateTime.MaxValue)
                     .FirstOrDefault();
             }
 
             var rowViewModel = new SiteAdminChaptersRowViewModel
             {
                 Chapter = chapter,
-                SiteSubscriptionExpiresUtc = chapterSubscription?.ExpiresUtc,
-                SiteSubscriptionName = chapterSubscription?.SiteSubscription.Name
+                SiteSubscriptionExpiresUtc = chapterSubscriptionDto?.MemberSiteSubscription.ExpiresUtc,
+                SiteSubscriptionName = chapterSubscriptionDto?.SiteSubscription.Name
             };
 
             if (chapter.Approved())
