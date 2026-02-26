@@ -38,7 +38,7 @@
             if ($options.querySelectorAll('[data-location-option]').length === 0) e.preventDefault();
         });
 
-        await setDefaults($container);
+        setDefaults($container);
 
         async function loadOptions() {
             const searchTerm = $input.value;
@@ -88,6 +88,7 @@
             else if (key === 'ArrowDown') highlightSelectedOption(selectedIndex + 1);
             else if (key === 'Enter') {
                 e.preventDefault();
+                e.stopImmediatePropagation();
                 await selectOption($container, $input, suggestions[selectedIndex]);
                 dropdown.hide();
             };
@@ -117,15 +118,15 @@
         $input.value = placePrediction.text.text;
 
         const place = placePrediction.toPlace();
-        await place.fetchFields({ fields: ['addressComponents', 'location'] });
+        await place.fetchFields({ fields: ['location'] });
 
         // session end
         sessionToken = null;
 
         const location = parseLocation(place);
-        await setLocation($container, $input, location);
-
         $input.blur();
+
+        setLocation($container, $input, location);
     }
 
     function parseLocation(place) {
@@ -135,9 +136,6 @@
             location.lat = place.location.lat();
             location.long = place.location.lng();
         }
-
-        var countryComponent = place.addressComponents.find(c => c.types.includes('country'));
-        if (countryComponent) location.countryCode = countryComponent.shortText;
 
         return location;
     }
@@ -162,7 +160,7 @@
         $defaults.innerHTML = html;
     }
 
-    async function setLocation($container, $input, location) {
+    function setLocation($container, $input, location) {
         const $lat = $container.querySelector('[data-location-lat]');
         const $long = $container.querySelector('[data-location-long]');
         const $latlong = $container.querySelector('[data-location-latlong]');
@@ -178,6 +176,6 @@
 
         if ($name) $name.value = $input.value;
 
-        await setDefaults($container);
+        setDefaults($container);
     }
 })();

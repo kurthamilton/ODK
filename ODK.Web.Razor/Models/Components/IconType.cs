@@ -31,6 +31,7 @@ public enum IconType
     Home,
     Images,
     Instagram,
+    LocationCrosshairs,
     LocationPin,
     Logout,
     MagnifyingGlass,
