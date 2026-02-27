@@ -150,6 +150,25 @@ internal class MockOdkContext : OdkContext
             Role = role ?? ChapterAdminRole.Admin
         });
 
+    internal ChapterSubscription CreateChapterSubscription(
+        Chapter? chapter = null,
+        SitePaymentSettings? sitePaymentSettings = null,
+        Currency? currency = null)
+    {
+        currency ??= CreateCurrency();
+        sitePaymentSettings ??= CreateSitePaymentSettings();
+        chapter ??= CreateChapter();
+
+        return Create(new ChapterSubscription
+        {
+            ChapterId = chapter.Id,
+            Currency = currency,
+            CurrencyId = currency.Id,
+            Id = Guid.NewGuid(),
+            SitePaymentSettingId = sitePaymentSettings.Id            
+        });
+    }
+
     internal Country CreateCountry(
         Currency? currency = null,
         string? isoCode2 = null)

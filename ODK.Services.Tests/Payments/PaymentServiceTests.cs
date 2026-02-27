@@ -86,7 +86,9 @@ public static class PaymentServiceTests
         var member = context.CreateMember();
         var chapter = context.CreateChapter(
             members: [member]);
-        var chapterSubscription = context.Create(CreateChapterSubscription(chapter));
+
+        var chapterSubscription = context.CreateChapterSubscription(chapter);
+
         var payment = context.CreatePayment(member: member);
         var paymentCheckoutSession = context.CreatePaymentCheckoutSession(payment: payment);
 
@@ -182,7 +184,7 @@ public static class PaymentServiceTests
         var paymentCheckoutSession = context.CreatePaymentCheckoutSession(
             payment: payment);
 
-        var chapterSubscription = context.Create(CreateChapterSubscription(chapter: chapter));
+        var chapterSubscription = context.CreateChapterSubscription(chapter: chapter);
 
         var webhook = CreatePaymentProviderWebhook(
             type: webhookType,
@@ -260,7 +262,7 @@ public static class PaymentServiceTests
         var chapter = context.CreateChapter(
             members: [member]);
 
-        var chapterSubscription = context.Create(CreateChapterSubscription(chapter: chapter));
+        var chapterSubscription = context.CreateChapterSubscription(chapter: chapter);
 
         var paymentCheckoutSession = context.CreatePaymentCheckoutSession();
 
@@ -606,12 +608,5 @@ public static class PaymentServiceTests
             EventId = @event.Id,
             Payment = payment,
             PaymentId = payment.Id
-        };
-
-    private static ChapterSubscription CreateChapterSubscription(Chapter chapter)
-        => new ChapterSubscription
-        {
-            ChapterId = chapter.Id,
-            Id = Guid.NewGuid()
         };
 }
