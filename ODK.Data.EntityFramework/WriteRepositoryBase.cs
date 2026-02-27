@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using ODK.Data.Core.QueryBuilders;
 using ODK.Data.Core.Repositories;
 
 namespace ODK.Data.EntityFramework;
@@ -34,6 +35,10 @@ public abstract class WriteRepositoryBase<T> : RepositoryBase, IWriteRepository<
             Update(entity);
         }
     }
+
+    protected TBuilder CreateQueryBuilder<TBuilder>(Func<DbContext, TBuilder> factory)
+        where TBuilder : IQueryBuilder<T>
+        => CreateQueryBuilder<TBuilder, T>(factory);
 
     protected virtual IQueryable<T> Set() => Set<T>();
 }

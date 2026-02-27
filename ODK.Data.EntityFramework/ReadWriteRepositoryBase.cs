@@ -91,6 +91,9 @@ public abstract class ReadWriteRepositoryBase<T, TBuilder> : WriteRepositoryBase
         }
     }
 
+    protected TBuilder CreateQueryBuilder(Func<DbContext, TBuilder> factory)
+        => CreateQueryBuilder<TBuilder, T>(factory);
+
     private static void SetId(T entity)
     {
         if (entity.Id == default)

@@ -2,5 +2,7 @@
 
 public class NotificationSettingsFormViewModel
 {
-    public required List<NotificationSettingFormViewModel> Settings { get; set; } = new();
+    public required List<ChapterNotificationSettingsFormViewModel> ChapterSettings { get; init; } = [];
+
+    public required List<NotificationSettingFormViewModel> Settings { get; init; } = [];
 }

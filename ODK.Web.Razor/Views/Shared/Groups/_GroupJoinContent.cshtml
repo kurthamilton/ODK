@@ -23,6 +23,7 @@
 {
     @await Html.PartialAsync("Components/_Panel", new PanelViewModel
     {
+        Class = "mb-3",
         TitleContentFunc = @<h3>Join us</h3>,
         BodyContentFunc = 
             @<div>
@@ -41,7 +42,7 @@
             ChapterPropertyOptions = Model.PropertyOptions
         })
         <button class="btn btn-primary" type="submit">
-            Submit
+            Join group
         </button>
     </form>
 </section>

@@ -658,11 +658,8 @@ public class ChapterViewModelService : IChapterViewModelService
                         .ToArray()
                     : []
             },
-            IsAdmin =
-                currentMember != null &&
-                adminMembers
-                    .FirstOrDefault(x => x.ChapterAdminMember.MemberId == currentMember.Id)
-                    ?.ChapterAdminMember.HasAccessTo(ChapterAdminSecurable.Any, currentMember) == true,
+            IsAdmin = _authorizationService
+                .IsAdmin(currentMember, chapter, adminMembers.Select(x => x.ChapterAdminMember)),
             IsMember = currentMember?.IsMemberOf(chapter.Id) == true,
             Links = links,
             MemberCount = memberCount,

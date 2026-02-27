@@ -56,7 +56,7 @@ public class MemberSiteSubscriptionQueryBuilder
                 .Where(x => x.Id == memberSiteSubscription.SiteSubscriptionId)
             select siteSubscription;
 
-        return ProjectTo(query);
+        return ProjectTo(query.Include(x => x.Features));
     }
 
     public IQueryBuilder<MemberSiteSubscriptionDto> ToMemberSiteSubscriptionDto()

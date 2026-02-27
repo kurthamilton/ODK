@@ -49,4 +49,9 @@ public interface IAuthorizationService
         Member? member,
         MemberSubscription? subscription,
         ChapterMembershipSettings? membershipSettings);
+
+    bool IsAdmin(
+        Member? member,
+        Chapter chapter,
+        IEnumerable<ChapterAdminMember> adminMembers);
 }

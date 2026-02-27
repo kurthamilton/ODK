@@ -114,13 +114,26 @@ public class NotificationService : INotificationService
     {
         var (platform, currentMember) = (request.Platform, request.CurrentMember);
 
-        var (settings, isAdmin) = await _unitOfWork.RunAsync(
+        var (adminChapters, settings, chapterSettings, memberChapters) = await _unitOfWork.RunAsync(
+            x => x.ChapterAdminMemberRepository.Query(platform)
+                .ForMember(currentMember.Id)
+                .ToDto()
+                .GetAll(),
             x => x.MemberNotificationSettingsRepository.GetByMemberId(currentMember.Id),
-            x => x.ChapterAdminMemberRepository.IsAdmin(platform, currentMember.Id));
+            x => x.MemberChapterNotificationSettingsRepository.Query()
+                .ForMember(currentMember.Id)
+                .GetAll(),
+            x => x.MemberChapterRepository.Query()
+                .ForMember(currentMember.Id)
+                .ToDto()
+                .GetAll());
 
         return new NotificationsPageViewModel
         {
-            IsAdmin = isAdmin,
+            AdminChapters = adminChapters,
+            ChapterSettings = chapterSettings,
+            MemberChapters = memberChapters,
+            Platform = platform,
             Settings = settings
         };
     }

@@ -85,7 +85,7 @@ public class ChapterRepository : WriteRepositoryBase<Chapter>, IChapterRepositor
         => Query(platform, includeUnpublished: false);
 
     public IChapterQueryBuilder Query(PlatformType platform, bool includeUnpublished)
-        => CreateQueryBuilder<IChapterQueryBuilder, Chapter>(context
+        => CreateQueryBuilder<IChapterQueryBuilder>(context
             => new ChapterQueryBuilder(context, platform, includeUnpublished));
 
     public IDeferredQueryMultiple<ChapterSearchResultDto> Search(PlatformType platform, ChapterSearchCriteria criteria)

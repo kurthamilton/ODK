@@ -66,6 +66,5 @@ public class MemberRepository : ReadWriteRepositoryBase<Member, IMemberQueryBuil
             .WithAvatar()
             .GetSingle();
 
-    public override IMemberQueryBuilder Query() => CreateQueryBuilder<IMemberQueryBuilder, Member>(
-        context => new MemberQueryBuilder(context));
+    public override IMemberQueryBuilder Query() => CreateQueryBuilder(context => new MemberQueryBuilder(context));
 }

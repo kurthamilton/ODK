@@ -61,6 +61,6 @@ public class NotificationRepository : ReadWriteRepositoryBase<Notification, INot
         UpdateMany(notifications);
     }
 
-    public override INotificationQueryBuilder Query() => CreateQueryBuilder<INotificationQueryBuilder, Notification>(
+    public override INotificationQueryBuilder Query() => CreateQueryBuilder(
         context => new NotificationQueryBuilder(context));
 }

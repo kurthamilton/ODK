@@ -2,10 +2,7 @@
 @using ODK.Services.Notifications.ViewModels
 @using ODK.Web.Razor.Models.Notifications
 @model NotificationsPageViewModel
-@{
-    var settingsDictionary = Model.Settings
-        .ToDictionary(x => x.NotificationType);
-
+@{    
     var types = new[] 
     { 
         NotificationType.NewEvent,
@@ -15,13 +12,39 @@
         NotificationType.ConversationAdminMessage
     };
 
-    var settingsViewModels = types
-        .Where(x => Model.IsAdmin || !x.ForAdmins())
+    var settingsDictionary = Model.Settings        
+        .ToDictionary(x => x.NotificationType);
+
+    var settingsViewModels = types        
         .Select(x => new NotificationSettingFormViewModel
         {
             Enabled = settingsDictionary.ContainsKey(x) ? !settingsDictionary[x].Disabled : true,
             Type = x
         })
+        .ToList();
+
+    var chapterSettingsDictionary = Model.ChapterSettings
+        .GroupBy(x => x.MemberChapterId)
+        .ToDictionary(x => x.Key, x => x.ToDictionary(y => y.NotificationType));
+
+    var chapterSettingsViewModels = Model.MemberChapters
+        .Select(memberChapterDto => new ChapterNotificationSettingsFormViewModel
+        {
+            ChapterName = memberChapterDto.Chapter.GetDisplayName(Model.Platform),
+            MemberChapterId = memberChapterDto.MemberChapter.Id,
+            Settings = types
+                .Select(type => new NotificationSettingFormViewModel
+                {
+                    Enabled = chapterSettingsDictionary.TryGetValue(memberChapterDto.MemberChapter.Id, out var memberChapterSettings)
+                        ? memberChapterSettings.TryGetValue(type, out var memberChapterSetting)
+                            ? !memberChapterSetting.Disabled
+                            : true
+                        : true,
+                    Type = type
+                })
+                .ToList()
+        })
+        .OrderBy(x => x.ChapterName)
         .ToList();
 }
 
@@ -30,6 +53,7 @@
     @*@Html.AntiForgeryToken()*@
     @await Html.PartialAsync("Account/_NotificationSettingsForm", new NotificationSettingsFormViewModel
     {
+        ChapterSettings = chapterSettingsViewModels,
         Settings = settingsViewModels
     })
     <button class="btn btn-primary">Update</button>

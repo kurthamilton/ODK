@@ -2,6 +2,7 @@
 using ODK.Core.Platforms;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Members;
+using ODK.Data.Core.QueryBuilders;
 
 namespace ODK.Data.Core.Repositories;
 
@@ -18,5 +19,5 @@ public interface IChapterAdminMemberRepository : IWriteRepository<ChapterAdminMe
 
     IDeferredQuery<bool> IsAdmin(PlatformType platform, Guid chapterId, Guid memberId);
 
-    IDeferredQuery<bool> IsAdmin(PlatformType platform, Guid memberId);
+    IChapterAdminMemberQueryBuilder Query(PlatformType platform);
 }

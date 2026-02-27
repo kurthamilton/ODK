@@ -55,8 +55,9 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IIssueRepository> _issueRepository;
     private readonly Lazy<IMemberActivationTokenRepository> _memberActivationTokenRepository;
     private readonly Lazy<IMemberAvatarRepository> _memberAvatarRepository;
-    private readonly Lazy<IMemberEmailAddressUpdateTokenRepository> _memberEmailAddressUpdateTokenRepository;
     private readonly Lazy<IMemberChapterRepository> _memberChapterRepository;
+    private readonly Lazy<IMemberChapterNotificationSettingsRepository> _memberChapterNotificationSettingsRepository;
+    private readonly Lazy<IMemberEmailAddressUpdateTokenRepository> _memberEmailAddressUpdateTokenRepository;
     private readonly Lazy<IMemberEmailPreferenceRepository> _memberEmailPreferenceRepository;
     private readonly Lazy<IMemberLocationRepository> _memberLocationRepository;
     private readonly Lazy<IMemberNotificationSettingsRepository> _memberNotificationSettingsRepository;
@@ -142,6 +143,7 @@ public class UnitOfWork : IUnitOfWork
         _issueRepository = new(() => new IssueRepository(_context));
         _memberActivationTokenRepository = new(() => new MemberActivationTokenRepository(_context));
         _memberAvatarRepository = new(() => new MemberAvatarRepository(_context));
+        _memberChapterNotificationSettingsRepository = new(() => new MemberChapterNotificationSettingsRepository(_context));
         _memberChapterRepository = new(() => new MemberChapterRepository(_context));
         _memberEmailAddressUpdateTokenRepository = new(() => new MemberEmailAddressUpdateTokenRepository(_context));
         _memberEmailPreferenceRepository = new(() => new MemberEmailPreferenceRepository(_context));
@@ -226,6 +228,7 @@ public class UnitOfWork : IUnitOfWork
     public IIssueRepository IssueRepository => _issueRepository.Value;
     public IMemberActivationTokenRepository MemberActivationTokenRepository => _memberActivationTokenRepository.Value;
     public IMemberAvatarRepository MemberAvatarRepository => _memberAvatarRepository.Value;
+    public IMemberChapterNotificationSettingsRepository MemberChapterNotificationSettingsRepository => _memberChapterNotificationSettingsRepository.Value;
     public IMemberChapterRepository MemberChapterRepository => _memberChapterRepository.Value;
     public IMemberEmailAddressUpdateTokenRepository MemberEmailAddressUpdateTokenRepository => _memberEmailAddressUpdateTokenRepository.Value;
     public IMemberEmailPreferenceRepository MemberEmailPreferenceRepository => _memberEmailPreferenceRepository.Value;
