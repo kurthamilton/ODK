@@ -85,7 +85,11 @@
 
         document.querySelectorAll('[data-input-change-url]').forEach($input => {
             $input.addEventListener('change', async () => {
-                const url = $input.getAttribute('data-input-change-url');
+                const value = $input.getAttribute('type') === 'checkbox'
+                    ? $input.checked
+                    : $input.value;
+                const url = $input.getAttribute('data-input-change-url')
+                    .replace('{value}', value);
                 await fetch(url, {
                     method: 'POST'
                 });

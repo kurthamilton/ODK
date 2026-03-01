@@ -51,6 +51,12 @@ public interface INotificationService
     Task MarkAsRead(Guid memberId, Guid notificationId);
 
     Task<ServiceResult> UpdateMemberNotificationSettings(
-        Guid memberId,
-        IReadOnlyCollection<NotificationType> disabledTypes);
+        IMemberServiceRequest request,
+        NotificationGroupType group,
+        bool enabled);
+
+    Task<ServiceResult> UpdateMemberChapterNotificationSettings(
+        IMemberChapterServiceRequest request,
+        NotificationGroupType group,
+        bool enabled);
 }

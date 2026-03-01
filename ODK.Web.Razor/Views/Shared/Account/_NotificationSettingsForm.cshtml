@@ -1,36 +1,61 @@
 ﻿@using ODK.Core.Notifications
+@using ODK.Core.Utils
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Notifications
 @model NotificationSettingsFormViewModel
+@{
+    var icons = new Dictionary<NotificationGroupType, IconType>
+    {
+        { NotificationGroupType.Events, IconType.Calendar },
+        { NotificationGroupType.Members, IconType.User },
+        { NotificationGroupType.Messages, IconType.Envelope }
+    };
+}
 
 @for (var i = 0; i < Model.Settings.Count; i++)
 {
     var setting = Model.Settings[i];
-    var labelText = setting.Type.SettingsLabel();
+    var label = EnumUtils.GetDisplayValue(setting.Group);
+    icons.TryGetValue(setting.Group, out var icon);
 
     <div class="form-group mb-3">
         <div class="form-check form-switch">
+            @if (icon != default)
+            {
+                @await Html.PartialAsync("Components/_Icon", new IconViewModel(icon))
+            }
+
             @Html.CheckBoxFor(x => x.Settings[i].Enabled, new 
             { 
                 @class = "form-check-input", 
                 role = "switch",
-                data_input_change_url = $"/account/notifications/{setting.Type}?enabled={!setting.Enabled}"
+                data_input_change_url = $"/account/notifications/{setting.Group}?enabled={{value}}"
             })
-            @Html.LabelFor(x => x.Settings[i].Enabled, labelText, new { @class = "form-check-label" })
+            @Html.LabelFor(x => x.Settings[i].Enabled, label, new { @class = "form-check-label" })
         </div>                
     </div>
 }
 
-@if (Model.ChapterSettings.Count > 0)
+@if (Model.ChapterSettings.Count > 1)
 {
-    <div class="table-responsive">
+    <div class="table-responsive mt-5">
         <table class="table table-striped">
             <thead>
                 <tr>
                     <th>Group</th>
-                    @for (var j = 0; j < Model.Settings.Count; j++)
+                    @for (var i = 0; i < Model.Settings.Count; i++)
                     {
-                        var label = Model.Settings[j].Type.SettingsLabel();
-                        <th>@label</th>
+                        var setting = Model.Settings[i];
+                        var label = EnumUtils.GetDisplayValue(setting.Group);
+                        icons.TryGetValue(setting.Group, out var icon);
+
+                        <th>
+                            @if (icon != default)
+                            {
+                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(icon))
+                            }
+                            <span>@label</span>
+                        </th>
                     }
                 </tr>
             </thead>
@@ -44,13 +69,21 @@
 
                         @for (var j = 0; j < chapterSettings.Settings.Count; j++)
                         {
+                            var setting = chapterSettings.Settings[j];
+                            var label = EnumUtils.GetDisplayValue(setting.Group);
+
                             <td>
-                                @if (!chapterSettings.Settings[j].Type.ForAdmins() || 
+                                @if (!setting.Group.ForAdmins() || 
                                     Model.AdminChapterIds.Contains(chapterSettings.ChapterId))
                                 {
                                     <div class="form-check form-switch">
-                                        @Html.HiddenFor(x => x.ChapterSettings[i].Settings[j].Type)
-                                        @Html.CheckBoxFor(x => x.ChapterSettings[i].Settings[j].Enabled, new { @class = "form-check-input", role = "switch" })
+                                        @Html.HiddenFor(x => x.ChapterSettings[i].Settings[j].Group)
+                                        @Html.CheckBoxFor(x => x.ChapterSettings[i].Settings[j].Enabled, new 
+                                        { 
+                                            @class = "form-check-input", 
+                                            role = "switch",
+                                            data_input_change_url = $"/groups/{chapterSettings.ChapterId}/notifications/{setting.Group}/?enabled={{value}}"
+                                        })
                                     </div>
                                 }                                
                             </td>

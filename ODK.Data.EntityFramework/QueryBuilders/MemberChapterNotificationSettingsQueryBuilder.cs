@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ODK.Core.Chapters;
 using ODK.Core.Members;
+using ODK.Core.Notifications;
 using ODK.Data.Core.Members;
 using ODK.Data.Core.QueryBuilders;
 
@@ -15,6 +16,24 @@ public class MemberChapterNotificationSettingsQueryBuilder
     }
 
     protected override IMemberChapterNotificationSettingsQueryBuilder Builder => this;
+
+    public IMemberChapterNotificationSettingsQueryBuilder ForChapter(Guid chapterId)
+    {
+        Query =
+            from memberChapterNotificationSettings in Query
+            from memberChapter in Set<MemberChapter>()
+                .Where(x => x.Id == memberChapterNotificationSettings.MemberChapterId)
+            where memberChapter.ChapterId == chapterId
+            select memberChapterNotificationSettings;
+        return this;
+    }
+
+    public IMemberChapterNotificationSettingsQueryBuilder ForGroup(NotificationGroupType group)
+    {
+        var types = group.Types();
+        Query = Query.Where(x => types.Contains(x.NotificationType));
+        return this;
+    }
 
     public IMemberChapterNotificationSettingsQueryBuilder ForMember(Guid memberId)
     {

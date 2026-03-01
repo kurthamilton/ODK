@@ -11,22 +11,25 @@
 
     var adminChapterDictionary = Model.AdminChapters.ToDictionary(x => x.Chapter.Id);
 
-    var types = new[]
+    var groups = new[]
     { 
-        NotificationType.NewEvent,
-        NotificationType.ConversationReplies,
-        NotificationType.NewMember,
-        NotificationType.ChapterContactMessage,
-        NotificationType.ConversationOwnerMessage,
+        NotificationGroupType.Events,
+        NotificationGroupType.Messages,
+        NotificationGroupType.Members,
     }
     .Where(x => isAdmin || !x.ForAdmins());
 
     var settingsDictionary = Model.Settings        
-        .ToDictionary(x => x.NotificationType);
+        .GroupBy(x => x.NotificationType.Group())
+        .ToDictionary(x => x.Key, x => x.All(y => !y.Disabled));
 
     var chapterSettingsDictionary = Model.ChapterSettings
         .GroupBy(x => x.MemberChapterId)
-        .ToDictionary(x => x.Key, x => x.ToDictionary(y => y.NotificationType));
+        .ToDictionary(
+            grouping => grouping.Key, 
+            grouping => grouping
+                .GroupBy(x => x.NotificationType.Group())
+                .ToDictionary(x => x.Key, x => x.All(y => !y.Disabled)));
 
     var formViewModel = new NotificationSettingsFormViewModel
     {
@@ -39,24 +42,24 @@
                 ChapterId = dto.Chapter.Id,
                 ChapterName = dto.Chapter.GetDisplayName(platform),
                 MemberChapterId = dto.MemberChapter.Id,
-                Settings = types
-                    .Select(type => new NotificationSettingFormViewModel
+                Settings = groups
+                    .Select(group => new NotificationSettingFormViewModel
                     {
                         Enabled = 
                             !chapterSettingsDictionary.TryGetValue(dto.MemberChapter.Id, out var memberChapterSettingsDictionary) ||
-                            !memberChapterSettingsDictionary.TryGetValue(type, out var setting) ||
-                            !setting.Disabled,
-                        Type = type
+                            !memberChapterSettingsDictionary.TryGetValue(group, out var enabled) ||
+                            enabled,
+                        Group = group
                     })
                     .ToList()
             })
             .OrderBy(x => x.ChapterName)
             .ToList(),
-        Settings = types            
+        Settings = groups            
             .Select(x => new NotificationSettingFormViewModel
             {
-                Enabled = settingsDictionary.ContainsKey(x) ? !settingsDictionary[x].Disabled : true,
-                Type = x
+                Enabled = settingsDictionary.ContainsKey(x) ? settingsDictionary[x] : true,
+                Group = x
             })
             .ToList()
     };

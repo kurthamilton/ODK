@@ -20,14 +20,4 @@ public static class NotificationTypeExtensions
         NotificationType.NewMember => NotificationGroupType.Members,
         _ => NotificationGroupType.None
     };
-
-    public static string SettingsLabel(this NotificationType type) => type switch
-    {
-        NotificationType.ChapterContactMessage => "New contact messages",
-        NotificationType.ConversationReplies => "New conversation messages",
-        NotificationType.ConversationOwnerMessage => "New conversation messages from members",
-        NotificationType.NewEvent => "New events",
-        NotificationType.NewMember => "New members",
-        _ => string.Empty
-    };
 }

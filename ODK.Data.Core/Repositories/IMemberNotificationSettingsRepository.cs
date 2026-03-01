@@ -1,10 +1,12 @@
 ﻿using ODK.Core.Members;
 using ODK.Core.Notifications;
 using ODK.Data.Core.Deferred;
+using ODK.Data.Core.QueryBuilders;
 
 namespace ODK.Data.Core.Repositories;
 
-public interface IMemberNotificationSettingsRepository : IWriteRepository<MemberNotificationSettings>
+public interface IMemberNotificationSettingsRepository
+    : IReadWriteRepository<MemberNotificationSettings, IMemberNotificationSettingsQueryBuilder>
 {
     IDeferredQueryMultiple<MemberNotificationSettings> GetByChapterId(
         Guid chapterId,

@@ -1,9 +1,14 @@
-﻿namespace ODK.Core.Notifications;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace ODK.Core.Notifications;
 
 public enum NotificationGroupType
 {
     None,
-    Events,
-    Members,
-    Messages
+    Events = 1,
+
+    [Display(Name = "New members")]
+    Members = 2,
+
+    Messages = 3
 }

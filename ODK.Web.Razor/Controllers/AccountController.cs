@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Countries;
 using ODK.Core.Images;
 using ODK.Core.Issues;
+using ODK.Core.Notifications;
 using ODK.Services.Authentication;
 using ODK.Services.Authentication.OAuth;
 using ODK.Services.Features;
@@ -326,19 +327,30 @@ public class AccountController : OdkControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("account/notifications")]
-    public async Task<IActionResult> UpdateNotificationSettings([FromForm] NotificationSettingsFormViewModel viewModel)
+    [HttpPost("account/notifications/{group}")]
+    public async Task<IActionResult> UpdateNotificationSettings(
+        NotificationGroupType group, bool enabled)
     {
-        var disabledTypes = viewModel.Settings
-            .Where(x => !x.Enabled)
-            .Select(x => x.Type)
-            .ToArray();
+        var result = await _notificationService.UpdateMemberNotificationSettings(MemberServiceRequest, group, enabled);
+        if (result.Success)
+        {
+            return NoContent();
+        }
 
-        var result = await _notificationService.UpdateMemberNotificationSettings(CurrentMember.Id, disabledTypes);
+        return StatusCode(500);
+    }
 
-        AddFeedback(result, "Notification preferences updated");
+    [HttpPost("groups/{chapterId:guid}/notifications/{group}")]
+    public async Task<IActionResult> UpdateNotificationSettings(
+        Guid chapterId, NotificationGroupType group, bool enabled)
+    {
+        var result = await _notificationService.UpdateMemberChapterNotificationSettings(MemberChapterServiceRequest, group, enabled);
+        if (result.Success)
+        {
+            return NoContent();
+        }
 
-        return RedirectToReferrer();
+        return StatusCode(500);
     }
 
     [HttpPost("account/notifications/dismiss")]

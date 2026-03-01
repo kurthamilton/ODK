@@ -2,13 +2,17 @@
 using ODK.Core.Members;
 using ODK.Core.Notifications;
 using ODK.Data.Core.Deferred;
+using ODK.Data.Core.QueryBuilders;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
 using ODK.Data.EntityFramework.Queries;
+using ODK.Data.EntityFramework.QueryBuilders;
 
 namespace ODK.Data.EntityFramework.Repositories;
 
-public class MemberNotificationSettingsRepository : WriteRepositoryBase<MemberNotificationSettings>, IMemberNotificationSettingsRepository
+public class MemberNotificationSettingsRepository
+    : ReadWriteRepositoryBase<MemberNotificationSettings, IMemberNotificationSettingsQueryBuilder>,
+    IMemberNotificationSettingsRepository
 {
     public MemberNotificationSettingsRepository(DbContext context)
         : base(context)
@@ -47,4 +51,7 @@ public class MemberNotificationSettingsRepository : WriteRepositoryBase<MemberNo
         => Set()
             .Where(x => x.MemberId == memberId && x.NotificationType == notificationType)
             .DeferredSingleOrDefault();
+
+    public override IMemberNotificationSettingsQueryBuilder Query()
+        => CreateQueryBuilder(context => new MemberNotificationSettingsQueryBuilder(context));
 }
