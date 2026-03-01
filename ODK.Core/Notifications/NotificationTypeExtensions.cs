@@ -13,11 +13,21 @@ public static class NotificationTypeExtensions
     public static NotificationGroupType Group(this NotificationType type) => type switch
     {
         NotificationType.ChapterContactMessage => NotificationGroupType.Messages,
-        NotificationType.ConversationAdminMessage => NotificationGroupType.Messages,
+        NotificationType.ConversationReplies => NotificationGroupType.Messages,
         NotificationType.ConversationOwnerMessage => NotificationGroupType.Messages,
         NotificationType.EventWaitlistPromotion => NotificationGroupType.Events,
         NotificationType.NewEvent => NotificationGroupType.Events,
         NotificationType.NewMember => NotificationGroupType.Members,
         _ => NotificationGroupType.None
+    };
+
+    public static string SettingsLabel(this NotificationType type) => type switch
+    {
+        NotificationType.ChapterContactMessage => "New contact messages",
+        NotificationType.ConversationReplies => "New conversation messages",
+        NotificationType.ConversationOwnerMessage => "New conversation messages from members",
+        NotificationType.NewEvent => "New events",
+        NotificationType.NewMember => "New members",
+        _ => string.Empty
     };
 }

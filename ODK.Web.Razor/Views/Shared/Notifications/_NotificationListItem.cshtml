@@ -18,7 +18,7 @@
     {
         NotificationType.ChapterContactMessage => "New contact message",
         NotificationType.ConversationOwnerMessage => "New conversation message",
-        NotificationType.ConversationAdminMessage => "New conversation message",
+        NotificationType.ConversationReplies => "New conversation message",
         NotificationType.EventWaitlistPromotion => "Event waiting list update",
         NotificationType.NewEvent => "New event",
         NotificationType.NewMember => "New member",
@@ -40,7 +40,7 @@
         NotificationType.ChapterContactMessage => chapter != null && notification.EntityId != null
             ? OdkRoutes.GroupAdmin.Message(chapter, notification.EntityId.Value).Path
             : null,
-        NotificationType.ConversationAdminMessage => chapter != null && notification.EntityId != null
+        NotificationType.ConversationReplies => chapter != null && notification.EntityId != null
             ? OdkRoutes.Groups.Conversation(chapter, notification.EntityId.Value)
             : null,
         NotificationType.ConversationOwnerMessage => chapter != null && notification.EntityId != null

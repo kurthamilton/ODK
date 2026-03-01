@@ -52,7 +52,7 @@ public class NotificationService : INotificationService
         IReadOnlyCollection<MemberNotificationSettings> settings)
     {
         AddNotifications(
-            NotificationType.ConversationAdminMessage,
+            NotificationType.ConversationReplies,
             _ => conversation.Subject,
             [member],
             settings,
@@ -114,26 +114,17 @@ public class NotificationService : INotificationService
     {
         var (platform, currentMember) = (request.Platform, request.CurrentMember);
 
-        var (adminChapters, settings, chapterSettings, memberChapters) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.Query(platform)
-                .ForMember(currentMember.Id)
-                .ToDto()
-                .GetAll(),
+        var (settings, chapterSettings, adminChapters, memberChapters) = await _unitOfWork.RunAsync(
             x => x.MemberNotificationSettingsRepository.GetByMemberId(currentMember.Id),
-            x => x.MemberChapterNotificationSettingsRepository.Query()
-                .ForMember(currentMember.Id)
-                .GetAll(),
-            x => x.MemberChapterRepository.Query()
-                .ForMember(currentMember.Id)
-                .ToDto()
-                .GetAll());
+            x => x.MemberChapterNotificationSettingsRepository.Query().ForMember(currentMember.Id).GetAll(),
+            x => x.ChapterAdminMemberRepository.Query(platform).ForMember(currentMember.Id).ToDto().GetAll(),
+            x => x.MemberChapterRepository.Query().ForMember(currentMember.Id).ToDto().GetAll());
 
         return new NotificationsPageViewModel
         {
             AdminChapters = adminChapters,
             ChapterSettings = chapterSettings,
             MemberChapters = memberChapters,
-            Platform = platform,
             Settings = settings
         };
     }

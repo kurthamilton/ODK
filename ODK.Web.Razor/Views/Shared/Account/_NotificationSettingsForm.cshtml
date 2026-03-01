@@ -1,50 +1,63 @@
 ﻿@using ODK.Core.Notifications
 @using ODK.Web.Razor.Models.Notifications
 @model NotificationSettingsFormViewModel
-@{
-    var labels = new Dictionary<NotificationType, string>
-    {
-        { NotificationType.ChapterContactMessage, "New contact messages" },
-        { NotificationType.ConversationAdminMessage, "New conversation messages" },
-        { NotificationType.ConversationOwnerMessage, "New conversation messages from members" },
-        { NotificationType.NewEvent, "New events" },
-        { NotificationType.NewMember, "New members" }
-    };
-}
 
 @for (var i = 0; i < Model.Settings.Count; i++)
 {
     var setting = Model.Settings[i];
-    
-    labels.TryGetValue(setting.Type, out var labelText);
+    var labelText = setting.Type.SettingsLabel();
 
     <div class="form-group mb-3">
         <div class="form-check form-switch">
-            @Html.HiddenFor(x => x.Settings[i].Type)
-            @Html.CheckBoxFor(x => x.Settings[i].Enabled, new { @class = "form-check-input", role = "switch" })
+            @Html.CheckBoxFor(x => x.Settings[i].Enabled, new 
+            { 
+                @class = "form-check-input", 
+                role = "switch",
+                data_input_change_url = $"/account/notifications/{setting.Type}?enabled={!setting.Enabled}"
+            })
             @Html.LabelFor(x => x.Settings[i].Enabled, labelText, new { @class = "form-check-label" })
         </div>                
     </div>
 }
 
-@for (var i = 0; i < Model.ChapterSettings.Count; i++)
+@if (Model.ChapterSettings.Count > 0)
 {
-    var chapterSettings = Model.ChapterSettings[i];
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Group</th>
+                    @for (var j = 0; j < Model.Settings.Count; j++)
+                    {
+                        var label = Model.Settings[j].Type.SettingsLabel();
+                        <th>@label</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @for (var i = 0; i < Model.ChapterSettings.Count; i++)
+                {
+                    var chapterSettings = Model.ChapterSettings[i];
 
-    <h3>@chapterSettings.ChapterName</h3>
+                    <tr>
+                        <td>@chapterSettings.ChapterName</td>
 
-    @for (var j = 0; j < chapterSettings.Settings.Count; j++)
-    {
-        var setting = chapterSettings.Settings[j];
-
-        labels.TryGetValue(setting.Type, out var labelText);
-
-        <div class="form-group mb-3">
-            <div class="form-check form-switch">
-                @Html.HiddenFor(x => x.ChapterSettings[i].Settings[j].Type)
-                @Html.CheckBoxFor(x => x.ChapterSettings[i].Settings[j].Enabled, new { @class = "form-check-input", role = "switch" })
-                @Html.LabelFor(x => x.ChapterSettings[i].Settings[j].Enabled, labelText, new { @class = "form-check-label" })
-            </div>
-        </div>
-    }
+                        @for (var j = 0; j < chapterSettings.Settings.Count; j++)
+                        {
+                            <td>
+                                @if (!chapterSettings.Settings[j].Type.ForAdmins() || 
+                                    Model.AdminChapterIds.Contains(chapterSettings.ChapterId))
+                                {
+                                    <div class="form-check form-switch">
+                                        @Html.HiddenFor(x => x.ChapterSettings[i].Settings[j].Type)
+                                        @Html.CheckBoxFor(x => x.ChapterSettings[i].Settings[j].Enabled, new { @class = "form-check-input", role = "switch" })
+                                    </div>
+                                }                                
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 }

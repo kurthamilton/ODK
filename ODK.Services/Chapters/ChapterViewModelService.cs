@@ -355,7 +355,7 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.ChapterConversationRepository.GetDtosByMemberId(currentMember.Id, chapter.Id),
             x => x.ChapterConversationMessageRepository.GetDtosByConversationId(conversationId),
             x => x.NotificationRepository.GetUnreadByMemberId(
-                currentMember.Id, NotificationType.ConversationAdminMessage, conversationId),
+                currentMember.Id, NotificationType.ConversationReplies, conversationId),
             x => x.ChapterPageRepository.GetByChapterId(chapter.Id));
 
         var dto = conversations

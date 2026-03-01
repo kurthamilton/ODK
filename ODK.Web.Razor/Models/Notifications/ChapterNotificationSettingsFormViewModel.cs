@@ -2,6 +2,8 @@
 
 public class ChapterNotificationSettingsFormViewModel
 {
+    public required Guid ChapterId { get; init; }
+
     public required string ChapterName { get; init; }
 
     public required Guid MemberChapterId { get; init; }

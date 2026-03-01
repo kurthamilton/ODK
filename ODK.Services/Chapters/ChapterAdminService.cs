@@ -1302,7 +1302,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         var (member, notificationSettings) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(conversation.MemberId),
-            x => x.MemberNotificationSettingsRepository.GetByMemberId(conversation.MemberId, NotificationType.ConversationAdminMessage));
+            x => x.MemberNotificationSettingsRepository.GetByMemberId(conversation.MemberId, NotificationType.ConversationReplies));
 
         var conversationMessage = new ChapterConversationMessage
         {
@@ -1420,7 +1420,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
                 .SiteSubscription()
                 .GetSingleOrDefault(),
             x => x.MemberRepository.GetById(memberId),
-            x => x.MemberNotificationSettingsRepository.GetByMemberId(memberId, NotificationType.ConversationAdminMessage));
+            x => x.MemberNotificationSettingsRepository.GetByMemberId(memberId, NotificationType.ConversationReplies));
 
         OdkAssertions.MemberOf(member, chapter.Id);
 

@@ -1,60 +1,66 @@
 ﻿@using ODK.Core.Notifications
 @using ODK.Services.Notifications.ViewModels
+@using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Notifications
 @model NotificationsPageViewModel
-@{    
-    var types = new[] 
+@inject IRequestStore RequestStore
+@{
+    var platform = RequestStore.Platform;
+
+    var isAdmin = Model.AdminChapters.Count > 0;
+
+    var adminChapterDictionary = Model.AdminChapters.ToDictionary(x => x.Chapter.Id);
+
+    var types = new[]
     { 
         NotificationType.NewEvent,
+        NotificationType.ConversationReplies,
         NotificationType.NewMember,
         NotificationType.ChapterContactMessage,
         NotificationType.ConversationOwnerMessage,
-        NotificationType.ConversationAdminMessage
-    };
+    }
+    .Where(x => isAdmin || !x.ForAdmins());
 
     var settingsDictionary = Model.Settings        
         .ToDictionary(x => x.NotificationType);
-
-    var settingsViewModels = types        
-        .Select(x => new NotificationSettingFormViewModel
-        {
-            Enabled = settingsDictionary.ContainsKey(x) ? !settingsDictionary[x].Disabled : true,
-            Type = x
-        })
-        .ToList();
 
     var chapterSettingsDictionary = Model.ChapterSettings
         .GroupBy(x => x.MemberChapterId)
         .ToDictionary(x => x.Key, x => x.ToDictionary(y => y.NotificationType));
 
-    var chapterSettingsViewModels = Model.MemberChapters
-        .Select(memberChapterDto => new ChapterNotificationSettingsFormViewModel
-        {
-            ChapterName = memberChapterDto.Chapter.GetDisplayName(Model.Platform),
-            MemberChapterId = memberChapterDto.MemberChapter.Id,
-            Settings = types
-                .Select(type => new NotificationSettingFormViewModel
-                {
-                    Enabled = chapterSettingsDictionary.TryGetValue(memberChapterDto.MemberChapter.Id, out var memberChapterSettings)
-                        ? memberChapterSettings.TryGetValue(type, out var memberChapterSetting)
-                            ? !memberChapterSetting.Disabled
-                            : true
-                        : true,
-                    Type = type
-                })
-                .ToList()
-        })
-        .OrderBy(x => x.ChapterName)
-        .ToList();
+    var formViewModel = new NotificationSettingsFormViewModel
+    {
+        AdminChapterIds = Model.AdminChapters
+            .Select(x => x.Chapter.Id)
+            .ToHashSet(),
+        ChapterSettings = Model.MemberChapters
+            .Select(dto => new ChapterNotificationSettingsFormViewModel
+            {
+                ChapterId = dto.Chapter.Id,
+                ChapterName = dto.Chapter.GetDisplayName(platform),
+                MemberChapterId = dto.MemberChapter.Id,
+                Settings = types
+                    .Select(type => new NotificationSettingFormViewModel
+                    {
+                        Enabled = 
+                            !chapterSettingsDictionary.TryGetValue(dto.MemberChapter.Id, out var memberChapterSettingsDictionary) ||
+                            !memberChapterSettingsDictionary.TryGetValue(type, out var setting) ||
+                            !setting.Disabled,
+                        Type = type
+                    })
+                    .ToList()
+            })
+            .OrderBy(x => x.ChapterName)
+            .ToList(),
+        Settings = types            
+            .Select(x => new NotificationSettingFormViewModel
+            {
+                Enabled = settingsDictionary.ContainsKey(x) ? !settingsDictionary[x].Disabled : true,
+                Type = x
+            })
+            .ToList()
+    };
 }
 
-<p>Show notifications for:</p>
-<form method="post" action="/account/notifications">
-    @*@Html.AntiForgeryToken()*@
-    @await Html.PartialAsync("Account/_NotificationSettingsForm", new NotificationSettingsFormViewModel
-    {
-        ChapterSettings = chapterSettingsViewModels,
-        Settings = settingsViewModels
-    })
-    <button class="btn btn-primary">Update</button>
-</form>
+<p>Show notifications for:</p>    
+@await Html.PartialAsync("Account/_NotificationSettingsForm", formViewModel)    
