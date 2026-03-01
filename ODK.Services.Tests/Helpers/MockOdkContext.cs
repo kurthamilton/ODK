@@ -9,6 +9,7 @@ using ODK.Core.Countries;
 using ODK.Core.Events;
 using ODK.Core.Features;
 using ODK.Core.Members;
+using ODK.Core.Payments;
 using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
 using ODK.Core.Utils;
@@ -149,6 +150,25 @@ internal class MockOdkContext : OdkContext
             Role = role ?? ChapterAdminRole.Admin
         });
 
+    internal ChapterSubscription CreateChapterSubscription(
+        Chapter? chapter = null,
+        SitePaymentSettings? sitePaymentSettings = null,
+        Currency? currency = null)
+    {
+        currency ??= CreateCurrency();
+        sitePaymentSettings ??= CreateSitePaymentSettings();
+        chapter ??= CreateChapter();
+
+        return Create(new ChapterSubscription
+        {
+            ChapterId = chapter.Id,
+            Currency = currency,
+            CurrencyId = currency.Id,
+            Id = Guid.NewGuid(),
+            SitePaymentSettingId = sitePaymentSettings.Id            
+        });
+    }
+
     internal Country CreateCountry(
         Currency? currency = null,
         string? isoCode2 = null)
@@ -171,10 +191,11 @@ internal class MockOdkContext : OdkContext
     });
 
     internal Event CreateEvent(
-        Chapter chapter,
+        Chapter? chapter = null,
         Venue? venue = null,
         DateTime? date = null)
     {
+        chapter ??= CreateChapter();
         venue ??= CreateVenue(chapter);
 
         return Create(new Event
@@ -229,6 +250,58 @@ internal class MockOdkContext : OdkContext
         });
     }
 
+    internal Payment CreatePayment(
+        Currency? currency = null,
+        Member? member = null,
+        SitePaymentSettings? sitePaymentSettings = null,
+        Chapter? chapter = null,
+        DateTime? paidUtc = null)
+    {
+        currency ??= CreateCurrency();
+        member ??= CreateMember();
+        sitePaymentSettings ??= CreateSitePaymentSettings();
+
+        return Create(new Payment
+        {
+            Id = Guid.NewGuid(),
+            Amount = 100m,
+            ChapterId = chapter?.Id,
+            CreatedUtc = DateTime.UtcNow,
+            CurrencyId = currency.Id,
+            MemberId = member.Id,
+            PaidUtc = paidUtc,
+            Reference = "REF123",
+            SitePaymentSettingId = sitePaymentSettings.Id
+        });
+    }
+
+    internal PaymentCheckoutSession CreatePaymentCheckoutSession(
+        Payment? payment = null,
+        DateTime? completedUtc = null,
+        DateTime? expiredUtc = null)
+    {
+        payment ??= CreatePayment();
+
+        return Create(new PaymentCheckoutSession
+        {
+            Id = Guid.NewGuid(),
+            MemberId = payment.MemberId,
+            PaymentId = payment.Id,
+            CompletedUtc = completedUtc,
+            ExpiredUtc = expiredUtc
+        });
+    }
+
+    internal SitePaymentSettings CreateSitePaymentSettings()
+    {
+        return Create(new SitePaymentSettings
+        {
+            Active = true,
+            Enabled = true,
+            Id = Guid.NewGuid()
+        });
+    }
+
     internal SiteSubscription CreateSiteSubscription(
         IEnumerable<SiteFeatureType>? features = null,
         int? groupLimit = null)
@@ -248,6 +321,25 @@ internal class MockOdkContext : OdkContext
                 Id = Guid.NewGuid(),
                 Feature = x
             }).ToList() ?? []
+        });
+    }
+
+    internal SiteSubscriptionPrice CreateSiteSubscriptionPrice(
+        SiteSubscription? siteSubscription = null,
+        Currency? currency = null)
+    {
+        currency ??= CreateCurrency();
+        siteSubscription ??= CreateSiteSubscription();
+
+        return Create(new SiteSubscriptionPrice
+        {
+            Amount = 100,
+            Currency = currency,
+            CurrencyId = currency.Id,
+            ExternalId = "external_id",
+            Frequency = SiteSubscriptionFrequency.Yearly,
+            Id = Guid.NewGuid(),
+            SiteSubscriptionId = siteSubscription.Id
         });
     }
 

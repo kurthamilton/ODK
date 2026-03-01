@@ -13,7 +13,7 @@ public static class NotificationTypeExtensions
     public static NotificationGroupType Group(this NotificationType type) => type switch
     {
         NotificationType.ChapterContactMessage => NotificationGroupType.Messages,
-        NotificationType.ConversationAdminMessage => NotificationGroupType.Messages,
+        NotificationType.ConversationReplies => NotificationGroupType.Messages,
         NotificationType.ConversationOwnerMessage => NotificationGroupType.Messages,
         NotificationType.EventWaitlistPromotion => NotificationGroupType.Events,
         NotificationType.NewEvent => NotificationGroupType.Events,

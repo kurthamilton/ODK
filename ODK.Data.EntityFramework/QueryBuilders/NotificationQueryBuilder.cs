@@ -33,12 +33,16 @@ public class NotificationQueryBuilder : DatabaseEntityQueryBuilder<Notification,
         Query =
             from notification in Query
             where notification.MemberId == memberId
-            join settings in Set<MemberNotificationSettings>()
-                on new { notification.MemberId, Type = notification.Type }
-                equals new { settings.MemberId, Type = settings.NotificationType }
-                into settingsGroup
-            from settings in settingsGroup.DefaultIfEmpty()
-            where settings == null || !settings.Disabled
+            from settings in Set<MemberNotificationSettings>()
+                .Where(x => x.MemberId == notification.MemberId && x.NotificationType == notification.Type)
+                .DefaultIfEmpty()
+            from memberChapter in Set<MemberChapter>()
+                .Where(x => x.MemberId == notification.MemberId && x.ChapterId == notification.ChapterId)
+                .DefaultIfEmpty()
+            from chapterSettings in Set<MemberChapterNotificationSettings>()
+                .Where(x => x.MemberChapterId == memberChapter.Id && x.NotificationType == notification.Type)
+                .DefaultIfEmpty()
+            where (settings == null || !settings.Disabled) && (chapterSettings == null || !chapterSettings.Disabled)
             select notification;
         return this;
     }

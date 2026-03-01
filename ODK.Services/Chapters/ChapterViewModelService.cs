@@ -355,7 +355,7 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.ChapterConversationRepository.GetDtosByMemberId(currentMember.Id, chapter.Id),
             x => x.ChapterConversationMessageRepository.GetDtosByConversationId(conversationId),
             x => x.NotificationRepository.GetUnreadByMemberId(
-                currentMember.Id, NotificationType.ConversationAdminMessage, conversationId),
+                currentMember.Id, NotificationType.ConversationReplies, conversationId),
             x => x.ChapterPageRepository.GetByChapterId(chapter.Id));
 
         var dto = conversations
@@ -658,11 +658,8 @@ public class ChapterViewModelService : IChapterViewModelService
                         .ToArray()
                     : []
             },
-            IsAdmin =
-                currentMember != null &&
-                adminMembers
-                    .FirstOrDefault(x => x.ChapterAdminMember.MemberId == currentMember.Id)
-                    ?.ChapterAdminMember.HasAccessTo(ChapterAdminSecurable.Any, currentMember) == true,
+            IsAdmin = _authorizationService
+                .IsAdmin(currentMember, chapter, adminMembers.Select(x => x.ChapterAdminMember)),
             IsMember = currentMember?.IsMemberOf(chapter.Id) == true,
             Links = links,
             MemberCount = memberCount,

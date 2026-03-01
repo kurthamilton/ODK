@@ -2,13 +2,13 @@
 
 namespace ODK.Core.Members;
 
-public class MemberNotificationSettings : IDatabaseEntity
+public class MemberChapterNotificationSettings : IDatabaseEntity
 {
     public bool Disabled { get; set; }
 
     public Guid Id { get; set; }
 
-    public Guid MemberId { get; set; }
+    public Guid MemberChapterId { get; set; }
 
     public NotificationType NotificationType { get; set; }
 }

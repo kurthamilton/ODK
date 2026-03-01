@@ -1,6 +1,6 @@
 ﻿namespace ODK.Web.Razor.Models.Notifications;
 
-public class NotificationSettingsFormViewModel
+public class NotificationSettingsFormViewModel : NotificationSettingsSubmitFormModel
 {
-    public required List<NotificationSettingFormViewModel> Settings { get; set; } = new();
+    public required IReadOnlyCollection<Guid> AdminChapterIds { get; init; }
 }

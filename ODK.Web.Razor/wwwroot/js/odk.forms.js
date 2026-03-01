@@ -12,7 +12,7 @@
             const $input = $container.querySelector('[data-clearable]');
             if (!$button || !$input) {
                 return;
-            }            
+            }
 
             if (!$input.value) {
                 $button.classList.add('d-none');
@@ -38,7 +38,7 @@
         v.bootstrap();
     }
 
-    function bindColorPickers() {        
+    function bindColorPickers() {
         const $inputs = document.querySelectorAll('[data-color-picker]');
         $inputs.forEach($input => {
             const required = $input.hasAttribute('data-val-required');
@@ -57,29 +57,42 @@
                 dateFormat: format,
                 enableTime,
                 time_24hr: true
-            }); 
+            });
         });
     }
 
     function bindSubmits() {
-        document.querySelectorAll('[data-submit]').forEach(button => {
-            const targetSelector = button.getAttribute('data-submit');
+        document.querySelectorAll('[data-submit]').forEach($button => {
+            const targetSelector = $button.getAttribute('data-submit');
             const target = targetSelector === 'parent'
-                ? button.closest('form')
+                ? $button.closest('form')
                 : document.querySelector(targetSelector);
-            
-            const confirmMessage = button.getAttribute('data-submit-confirm');
+
+            const confirmMessage = $button.getAttribute('data-submit-confirm');
 
             if (!target) {
                 return;
             }
 
-            button.addEventListener('click', () => {
+            $button.addEventListener('click', () => {
                 if (!!confirmMessage && !confirm(confirmMessage)) {
                     return;
                 }
 
                 target.submit();
+            });
+        });
+
+        document.querySelectorAll('[data-input-change-url]').forEach($input => {
+            $input.addEventListener('change', async () => {
+                const value = $input.getAttribute('type') === 'checkbox'
+                    ? $input.checked
+                    : $input.value;
+                const url = $input.getAttribute('data-input-change-url')
+                    .replace('{value}', value);
+                await fetch(url, {
+                    method: 'POST'
+                });
             });
         });
     }

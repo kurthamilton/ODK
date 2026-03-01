@@ -39,6 +39,5 @@ public class PaymentRepository : ReadWriteRepositoryBase<Payment, IPaymentQueryB
             .ForMember(memberId)
             .GetAll();
 
-    public override IPaymentQueryBuilder Query() => CreateQueryBuilder<IPaymentQueryBuilder, Payment>(
-        context => new PaymentQueryBuilder(context));
+    public override IPaymentQueryBuilder Query() => CreateQueryBuilder(context => new PaymentQueryBuilder(context));
 }

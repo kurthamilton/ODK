@@ -83,6 +83,5 @@ public class MemberSiteSubscriptionRepository
             .DeferredMultiple();
 
     public override IMemberSiteSubscriptionQueryBuilder Query()
-        => CreateQueryBuilder<IMemberSiteSubscriptionQueryBuilder, MemberSiteSubscription>(
-            context => new MemberSiteSubscriptionQueryBuilder(context));
+        => CreateQueryBuilder(context => new MemberSiteSubscriptionQueryBuilder(context));
 }

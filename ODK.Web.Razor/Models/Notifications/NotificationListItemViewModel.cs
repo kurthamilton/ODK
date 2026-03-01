@@ -1,5 +1,4 @@
-﻿using ODK.Core.Notifications;
-using ODK.Data.Core.Notifications;
+﻿using ODK.Data.Core.Notifications;
 
 namespace ODK.Web.Razor.Models.Notifications;
 

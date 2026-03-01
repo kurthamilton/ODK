@@ -1,36 +1,69 @@
 ﻿@using ODK.Core.Notifications
 @using ODK.Services.Notifications.ViewModels
+@using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Notifications
 @model NotificationsPageViewModel
+@inject IRequestStore RequestStore
 @{
-    var settingsDictionary = Model.Settings
-        .ToDictionary(x => x.NotificationType);
+    var platform = RequestStore.Platform;
 
-    var types = new[] 
+    var isAdmin = Model.AdminChapters.Count > 0;
+
+    var adminChapterDictionary = Model.AdminChapters.ToDictionary(x => x.Chapter.Id);
+
+    var groups = new[]
     { 
-        NotificationType.NewEvent,
-        NotificationType.NewMember,
-        NotificationType.ChapterContactMessage,
-        NotificationType.ConversationOwnerMessage,
-        NotificationType.ConversationAdminMessage
-    };
+        NotificationGroupType.Events,
+        NotificationGroupType.Messages,
+        NotificationGroupType.Members,
+    }
+    .Where(x => isAdmin || !x.ForAdmins());
 
-    var settingsViewModels = types
-        .Where(x => Model.IsAdmin || !x.ForAdmins())
-        .Select(x => new NotificationSettingFormViewModel
-        {
-            Enabled = settingsDictionary.ContainsKey(x) ? !settingsDictionary[x].Disabled : true,
-            Type = x
-        })
-        .ToList();
+    var settingsDictionary = Model.Settings        
+        .GroupBy(x => x.NotificationType.Group())
+        .ToDictionary(x => x.Key, x => x.All(y => !y.Disabled));
+
+    var chapterSettingsDictionary = Model.ChapterSettings
+        .GroupBy(x => x.MemberChapterId)
+        .ToDictionary(
+            grouping => grouping.Key, 
+            grouping => grouping
+                .GroupBy(x => x.NotificationType.Group())
+                .ToDictionary(x => x.Key, x => x.All(y => !y.Disabled)));
+
+    var formViewModel = new NotificationSettingsFormViewModel
+    {
+        AdminChapterIds = Model.AdminChapters
+            .Select(x => x.Chapter.Id)
+            .ToHashSet(),
+        ChapterSettings = Model.MemberChapters
+            .Select(dto => new ChapterNotificationSettingsFormViewModel
+            {
+                ChapterId = dto.Chapter.Id,
+                ChapterName = dto.Chapter.GetDisplayName(platform),
+                MemberChapterId = dto.MemberChapter.Id,
+                Settings = groups
+                    .Select(group => new NotificationSettingFormViewModel
+                    {
+                        Enabled = 
+                            !chapterSettingsDictionary.TryGetValue(dto.MemberChapter.Id, out var memberChapterSettingsDictionary) ||
+                            !memberChapterSettingsDictionary.TryGetValue(group, out var enabled) ||
+                            enabled,
+                        Group = group
+                    })
+                    .ToList()
+            })
+            .OrderBy(x => x.ChapterName)
+            .ToList(),
+        Settings = groups            
+            .Select(x => new NotificationSettingFormViewModel
+            {
+                Enabled = settingsDictionary.ContainsKey(x) ? settingsDictionary[x] : true,
+                Group = x
+            })
+            .ToList()
+    };
 }
 
-<p>Show notifications for:</p>
-<form method="post" action="/account/notifications">
-    @*@Html.AntiForgeryToken()*@
-    @await Html.PartialAsync("Account/_NotificationSettingsForm", new NotificationSettingsFormViewModel
-    {
-        Settings = settingsViewModels
-    })
-    <button class="btn btn-primary">Update</button>
-</form>
+<p>Show notifications for:</p>    
+@await Html.PartialAsync("Account/_NotificationSettingsForm", formViewModel)    

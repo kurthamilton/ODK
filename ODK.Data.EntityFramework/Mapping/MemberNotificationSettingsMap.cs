@@ -10,7 +10,10 @@ public class MemberNotificationSettingsMap : IEntityTypeConfiguration<MemberNoti
     {
         builder.ToTable("MemberNotificationSettings");
 
-        builder.HasKey(x => new { x.MemberId, x.NotificationType });
+        builder.HasKey(x => x.Id);
+
+        builder.Property(x => x.Id)
+            .HasColumnName("MemberNotificationSettingsId");
 
         builder.Property(x => x.NotificationType)
             .HasColumnName("NotificationTypeId")

@@ -1,4 +1,5 @@
-﻿using ODK.Core.Chapters;
+﻿using ODK.Core;
+using ODK.Core.Chapters;
 using ODK.Core.Events;
 using ODK.Core.Members;
 using ODK.Core.Notifications;
@@ -52,7 +53,7 @@ public class NotificationService : INotificationService
         IReadOnlyCollection<MemberNotificationSettings> settings)
     {
         AddNotifications(
-            NotificationType.ConversationAdminMessage,
+            NotificationType.ConversationReplies,
             _ => conversation.Subject,
             [member],
             settings,
@@ -114,13 +115,17 @@ public class NotificationService : INotificationService
     {
         var (platform, currentMember) = (request.Platform, request.CurrentMember);
 
-        var (settings, isAdmin) = await _unitOfWork.RunAsync(
+        var (settings, chapterSettings, adminChapters, memberChapters) = await _unitOfWork.RunAsync(
             x => x.MemberNotificationSettingsRepository.GetByMemberId(currentMember.Id),
-            x => x.ChapterAdminMemberRepository.IsAdmin(platform, currentMember.Id));
+            x => x.MemberChapterNotificationSettingsRepository.Query().ForMember(currentMember.Id).GetAll(),
+            x => x.ChapterAdminMemberRepository.Query(platform).ForMember(currentMember.Id).ToDto().GetAll(),
+            x => x.MemberChapterRepository.Query().ForMember(currentMember.Id).ToDto().GetAll());
 
         return new NotificationsPageViewModel
         {
-            IsAdmin = isAdmin,
+            AdminChapters = adminChapters,
+            ChapterSettings = chapterSettings,
+            MemberChapters = memberChapters,
             Settings = settings
         };
     }
@@ -175,45 +180,118 @@ public class NotificationService : INotificationService
     }
 
     public async Task<ServiceResult> UpdateMemberNotificationSettings(
-        Guid memberId,
-        IReadOnlyCollection<NotificationType> disabledTypes)
+        IMemberServiceRequest request,
+        NotificationGroupType group,
+        bool enabled)
     {
+        var currentMember = request.CurrentMember;
+
         var settings = await _unitOfWork.MemberNotificationSettingsRepository
-            .GetByMemberId(memberId)
+            .Query()
+            .ForMember(currentMember.Id)
+            .ForGroup(group)
+            .GetAll()
             .Run();
 
         var settingsDictionary = settings
             .ToDictionary(x => x.NotificationType);
 
-        foreach (var type in disabledTypes)
+        foreach (var type in group.Types())
         {
             settingsDictionary.TryGetValue(type, out var setting);
 
-            if (setting == null)
+            if (enabled)
             {
-                _unitOfWork.MemberNotificationSettingsRepository.Add(new MemberNotificationSettings
+                if (setting == null)
                 {
-                    Disabled = true,
-                    MemberId = memberId,
-                    NotificationType = type
-                });
+                    continue;
+                }
+
+                if (setting.Disabled)
+                {
+                    _unitOfWork.MemberNotificationSettingsRepository.Delete(setting);
+                }
             }
-            else if (!setting.Disabled)
+            else
             {
-                setting.Disabled = true;
-                _unitOfWork.MemberNotificationSettingsRepository.Update(setting);
+                if (setting == null)
+                {
+                    _unitOfWork.MemberNotificationSettingsRepository.Add(new MemberNotificationSettings
+                    {
+                        Disabled = true,
+                        MemberId = currentMember.Id,
+                        NotificationType = type
+                    });
+                }
+                else if (!setting.Disabled)
+                {
+                    setting.Disabled = true;
+                    _unitOfWork.MemberNotificationSettingsRepository.Update(setting);
+                }
             }
         }
 
-        foreach (var type in settingsDictionary.Keys)
-        {
-            if (disabledTypes.Contains(type))
-            {
-                continue;
-            }
+        await _unitOfWork.SaveChangesAsync();
 
-            var setting = settingsDictionary[type];
-            _unitOfWork.MemberNotificationSettingsRepository.Delete(setting);
+        return ServiceResult.Successful();
+    }
+
+    public async Task<ServiceResult> UpdateMemberChapterNotificationSettings(
+        IMemberChapterServiceRequest request,
+        NotificationGroupType group,
+        bool enabled)
+    {
+        var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
+
+        OdkAssertions.MemberOf(currentMember, chapter.Id);
+
+        var memberChapter = currentMember.MemberChapter(chapter.Id);
+        OdkAssertions.Exists(memberChapter);
+
+        var settings = await _unitOfWork.MemberChapterNotificationSettingsRepository
+            .Query()
+            .ForMember(currentMember.Id)
+            .ForChapter(chapter.Id)
+            .ForGroup(group)
+            .GetAll()
+            .Run();
+
+        var settingsDictionary = settings
+            .ToDictionary(x => x.NotificationType);
+
+        foreach (var type in group.Types())
+        {
+            settingsDictionary.TryGetValue(type, out var setting);
+
+            if (enabled)
+            {
+                if (setting == null)
+                {
+                    continue;
+                }
+
+                if (setting.Disabled)
+                {
+                    _unitOfWork.MemberChapterNotificationSettingsRepository.Delete(setting);
+                }
+            }
+            else
+            {
+                if (setting == null)
+                {
+                    _unitOfWork.MemberChapterNotificationSettingsRepository.Add(new MemberChapterNotificationSettings
+                    {
+                        Disabled = true,
+                        MemberChapterId = memberChapter.Id,
+                        NotificationType = type
+                    });
+                }
+                else if (!setting.Disabled)
+                {
+                    setting.Disabled = true;
+                    _unitOfWork.MemberChapterNotificationSettingsRepository.Update(setting);
+                }
+            }
         }
 
         await _unitOfWork.SaveChangesAsync();

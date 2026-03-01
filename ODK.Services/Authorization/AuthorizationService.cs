@@ -123,6 +123,21 @@ public class AuthorizationService : IAuthorizationService
             : SubscriptionStatus.Disabled;
     }
 
+    public bool IsAdmin(
+        Member? member,
+        Chapter chapter,
+        IEnumerable<ChapterAdminMember> adminMembers)
+    {
+        if (member == null)
+        {
+            return false;
+        }
+
+        return adminMembers
+            .FirstOrDefault(x => x.MemberId == member.Id && x.ChapterId == chapter.Id)
+            .HasAccessTo(ChapterAdminRole.Organiser, member);
+    }
+
     private ChapterFeatureVisibilityType GetMemberVisibilityType(
         Guid chapterId,
         Member? member,

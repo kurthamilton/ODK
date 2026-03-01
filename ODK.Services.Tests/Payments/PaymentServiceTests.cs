@@ -13,13 +13,11 @@ using ODK.Core.Members;
 using ODK.Core.Payments;
 using ODK.Core.Platforms;
 using ODK.Data.Core;
-using ODK.Data.Core.Repositories;
 using ODK.Services.Events;
 using ODK.Services.Logging;
 using ODK.Services.Members;
 using ODK.Services.Payments;
 using ODK.Services.Payments.Models;
-using ODK.Services.Tasks;
 using ODK.Services.Tests.Helpers;
 
 namespace ODK.Services.Tests.Payments;
@@ -31,51 +29,51 @@ public static class PaymentServiceTests
     public static async Task ProcessWebhook_WhenEventAlreadyProcessed_ReturnsWithoutProcessing()
     {
         // Arrange
+        using var context = CreateMockOdkContext();
+
         var webhook = CreatePaymentProviderWebhook();
-        var existingEvent = new PaymentProviderWebhookEvent
+
+        context.Create(new PaymentProviderWebhookEvent
         {
             ExternalId = webhook.Id,
             PaymentProviderType = webhook.PaymentProviderType,
             ReceivedUtc = DateTime.UtcNow
-        };
+        });
 
-        var webhookEventRepository = CreateMockPaymentProviderWebhookEventRepository([existingEvent]);
-
-        var unitOfWork = CreateMockUnitOfWork(
-            paymentProviderWebhookEventRepository: webhookEventRepository);
-
-        var service = CreatePaymentService(unitOfWork);
+        var service = CreatePaymentService(context);
         var request = CreateServiceRequest();
 
         // Act
         await service.ProcessWebhook(request, webhook);
 
         // Assert
-        Mock.Get(webhookEventRepository)
-            .Verify(x => x.Add(It.IsAny<PaymentProviderWebhookEvent>()), Times.Never);
+        context.Set<PaymentProviderWebhookEvent>()
+            .Select(x => x.ExternalId)
+            .ToArray()
+            .Should()
+            .BeEquivalentTo([webhook.Id]);
     }
 
     [Test]
     public static async Task ProcessWebhook_WhenEventIsNew_AddsWebhookEvent()
     {
         // Arrange
+        using var context = CreateMockOdkContext();
+
         var webhook = CreatePaymentProviderWebhook(type: PaymentProviderWebhookType.CheckoutSessionExpired);
 
-        var webhookEventRepository = CreateMockPaymentProviderWebhookEventRepository([]);
-
-        var unitOfWork = CreateMockUnitOfWork(
-            paymentProviderWebhookEventRepository: webhookEventRepository);
-
-        var service = CreatePaymentService(unitOfWork);
+        var service = CreatePaymentService(context);
         var request = CreateServiceRequest();
 
         // Act
         await service.ProcessWebhook(request, webhook);
 
         // Assert
-        Mock.Get(webhookEventRepository)
-            .Verify(x => x.Add(It.Is<PaymentProviderWebhookEvent>(
-                x => x.ExternalId == webhook.Id)), Times.Once);
+        context.Set<PaymentProviderWebhookEvent>()
+            .Select(x => x.ExternalId)
+            .ToArray()
+            .Should()
+            .BeEquivalentTo([webhook.Id]);
     }
 
     [TestCase(PaymentProviderWebhookType.CheckoutSessionCompleted)]
@@ -83,50 +81,40 @@ public static class PaymentServiceTests
     public static async Task ProcessWebhook_PaymentSucceeded_UpdatesPayment(PaymentProviderWebhookType webhookType)
     {
         // Arrange
-        var member = CreateMember();
-        var chapter = CreateChapter();
-        var currency = CreateCurrency();
-        var payment = CreatePayment();
-        var paymentCheckoutSession = CreatePaymentCheckoutSession();
+        using var context = CreateMockOdkContext();
+
+        var member = context.CreateMember();
+        var chapter = context.CreateChapter(
+            members: [member]);
+
+        var chapterSubscription = context.CreateChapterSubscription(chapter);
+
+        var payment = context.CreatePayment(member: member);
+        var paymentCheckoutSession = context.CreatePaymentCheckoutSession(payment: payment);
 
         var webhook = CreatePaymentProviderWebhook(
             type: webhookType,
-            paymentId: payment.Id.ToString(),
-            metadata: new Dictionary<string, string>
-            {
-                { "MemberId", member.Id.ToString() },
-                { "PaymentId", payment.Id.ToString() },
-                { "PaymentCheckoutSessionId", paymentCheckoutSession.Id.ToString() }
-            });
+            paymentId: paymentCheckoutSession.PaymentId.ToString(),
+            metadata: new PaymentMetadataModel(
+                PlatformType.Default,
+                PaymentReasonType.None,
+                member,
+                chapterSubscription,
+                paymentCheckoutSession.Id,
+                payment.Id));
 
-        var webhookEventRepository = CreateMockPaymentProviderWebhookEventRepository([]);
-        var memberRepository = CreateMockMemberRepository([member]);
-        var paymentRepository = CreateMockPaymentRepository([payment]);
-
-        var paymentCheckoutSessionRepository = CreateMockPaymentCheckoutSessionRepository(paymentCheckoutSession);
-        var eventTicketPaymentRepository = CreateMockEventTicketPaymentRepository(null);
-
-        var unitOfWork = CreateMockUnitOfWork(
-            paymentProviderWebhookEventRepository: webhookEventRepository,
-            memberRepository: memberRepository,
-            paymentRepository: paymentRepository,
-            paymentCheckoutSessionRepository: paymentCheckoutSessionRepository,
-            eventTicketPaymentRepository: eventTicketPaymentRepository);
-
-        var service = CreatePaymentService(unitOfWork);
+        var service = CreatePaymentService(context);
         var request = CreateServiceRequest();
 
         // Act
         await service.ProcessWebhook(request, webhook);
 
         // Assert
+        payment = context.Set<Payment>()
+            .Single(x => x.Id == paymentCheckoutSession.PaymentId);
+
         payment.PaidUtc.Should().NotBeNull();
         payment.ExternalId.Should().Be(webhook.PaymentId);
-
-        Mock.Get(paymentRepository)
-            .Verify(x => x.Update(payment), Times.Once);
-
-        unitOfWork.Mock.Verify(x => x.SaveChangesAsync(), Times.AtLeastOnce);
     }
 
     [TestCase(PaymentProviderWebhookType.CheckoutSessionCompleted)]
@@ -135,48 +123,30 @@ public static class PaymentServiceTests
         PaymentProviderWebhookType webhookType)
     {
         // Arrange
-        var member = CreateMember();
-        var chapter = CreateChapter();
-        var currency = CreateCurrency();
-        var payment = CreatePayment();
-        var paymentCheckoutSession = CreatePaymentCheckoutSession();
-        var @event = CreateEvent(
-            chapterId: chapter.Id);
-        var eventTicketPayment = CreateEventTicketPayment(
-            eventId: @event.Id);
+        using var context = CreateMockOdkContext();
+
+        var member = context.CreateMember();
+        var payment = context.CreatePayment(
+            member: member);
+        var paymentCheckoutSession = context.CreatePaymentCheckoutSession(
+            payment: payment);
+        var @event = context.CreateEvent();
+        var eventTicketPayment = context.Create(CreateEventTicketPayment(@event, payment));
 
         var webhook = CreatePaymentProviderWebhook(
             type: webhookType,
             paymentId: payment.Id.ToString(),
-            metadata: new Dictionary<string, string>
-            {
-                { "MemberId", member.Id.ToString() },
-                { "PaymentId", payment.Id.ToString() },
-                { "PaymentCheckoutSessionId", paymentCheckoutSession.Id.ToString() },
-                { "EventTicketPaymentId", eventTicketPayment.Id.ToString() }
-            });
-
-        var webhookEventRepository = CreateMockPaymentProviderWebhookEventRepository([]);
-        var memberRepository = CreateMockMemberRepository([member]);
-        var paymentRepository = CreateMockPaymentRepository([payment]);
-        var eventRepository = CreateMockEventRepository([@event]);
-        var eventTicketPaymentRepository = CreateMockEventTicketPaymentRepository(eventTicketPayment);
-        var paymentCheckoutSessionRepository = CreateMockPaymentCheckoutSessionRepository(paymentCheckoutSession);
-        var chapterRepository = CreateMockChapterRepository([chapter]);
-
-        var unitOfWork = CreateMockUnitOfWork(
-            chapterRepository: chapterRepository,
-            paymentProviderWebhookEventRepository: webhookEventRepository,
-            memberRepository: memberRepository,
-            paymentRepository: paymentRepository,
-            paymentCheckoutSessionRepository: paymentCheckoutSessionRepository,
-            eventTicketPaymentRepository: eventTicketPaymentRepository,
-            eventRepository: eventRepository);
+            metadata: new PaymentMetadataModel(
+                PlatformType.Default,
+                PaymentReasonType.EventTicket,
+                member,
+                eventTicketPayment,
+                paymentCheckoutSession.Id));
 
         var eventService = CreateMockEventService();
 
         var service = CreatePaymentService(
-            unitOfWork,
+            context,
             eventService: eventService);
         var request = CreateServiceRequest();
 
@@ -184,16 +154,14 @@ public static class PaymentServiceTests
         await service.ProcessWebhook(request, webhook);
 
         // Assert
+        payment = context.Set<Payment>()
+            .Single(x => x.Id == payment.Id);
+
         Mock.Get(eventService)
-            .Verify(x => x.CompleteEventTicketPurchase(@event.Id, member.Id), Times.Once);
+            .Verify(x => x.CompleteEventTicketPurchase(@event.Id, payment.MemberId), Times.Once);
 
         payment.PaidUtc.Should().NotBeNull();
         payment.ExternalId.Should().Be(webhook.PaymentId);
-
-        Mock.Get(paymentRepository)
-            .Verify(x => x.Update(payment), Times.Once);
-
-        unitOfWork.Mock.Verify(x => x.SaveChangesAsync(), Times.AtLeastOnce);
     }
 
     [TestCase(PaymentProviderWebhookType.CheckoutSessionCompleted)]
@@ -202,154 +170,129 @@ public static class PaymentServiceTests
         PaymentProviderWebhookType webhookType)
     {
         // Arrange
-        var chapter = CreateChapter();
-        var memberChapter = CreateMemberChapter(
-            chapterId: chapter.Id);
-        var member = CreateMember(
-            memberChapters: [memberChapter]);
-        var payment = CreatePayment();
-        var paymentCheckoutSession = CreatePaymentCheckoutSession();
-        var chapterSubscription = CreateChapterSubscription(
-            chapterId: chapter.Id);
+        using var context = CreateMockOdkContext();
+
+        var member = context.CreateMember();
+
+        var chapter = context.CreateChapter(
+            members: [member]);
+
+        var payment = context.CreatePayment(
+            member: member,
+            chapter: chapter);
+
+        var paymentCheckoutSession = context.CreatePaymentCheckoutSession(
+            payment: payment);
+
+        var chapterSubscription = context.CreateChapterSubscription(chapter: chapter);
 
         var webhook = CreatePaymentProviderWebhook(
             type: webhookType,
             paymentId: payment.Id.ToString(),
-            metadata: new Dictionary<string, string>
-            {
-                { "MemberId", member.Id.ToString() },
-                { "PaymentId", payment.Id.ToString() },
-                { "PaymentCheckoutSessionId", paymentCheckoutSession.Id.ToString() },
-                { "ChapterSubscriptionId", chapterSubscription.Id.ToString() },
-                { "ChapterId", chapter.Id.ToString()  }
-            });
+            metadata: new PaymentMetadataModel(
+                PlatformType.Default,
+                PaymentReasonType.ChapterSubscription,
+                member,
+                chapterSubscription,
+                paymentCheckoutSession.Id,
+                payment.Id));
 
-        var webhookEventRepository = CreateMockPaymentProviderWebhookEventRepository([]);
-        var memberRepository = CreateMockMemberRepository([member]);
-        var paymentRepository = CreateMockPaymentRepository([payment]);
-        var paymentCheckoutSessionRepository = CreateMockPaymentCheckoutSessionRepository(paymentCheckoutSession);
-        var chapterRepository = CreateMockChapterRepository([chapter]);
-        var chapterSubscriptionRepository = CreateMockChapterSubscriptionRepository([chapterSubscription]);
-        var memberSubscriptionRepository = CreateMockMemberSubscriptionRepository();
-        var memberSubscriptionRecordRepository = CreateMockMemberSubscriptionRecordRepository();
-
-        var unitOfWork = CreateMockUnitOfWork(
-            paymentProviderWebhookEventRepository: webhookEventRepository,
-            memberRepository: memberRepository,
-            paymentRepository: paymentRepository,
-            paymentCheckoutSessionRepository: paymentCheckoutSessionRepository,
-            chapterRepository: chapterRepository,
-            chapterSubscriptionRepository: chapterSubscriptionRepository,
-            memberSubscriptionRepository: memberSubscriptionRepository,
-            memberSubscriptionRecordRepository: memberSubscriptionRecordRepository);
-
-        var service = CreatePaymentService(
-            unitOfWork);
+        var service = CreatePaymentService(context);
         var request = CreateServiceRequest();
 
         // Act
         await service.ProcessWebhook(request, webhook);
 
         // Assert
-        Mock.Get(memberSubscriptionRepository)
-            .Verify(x => x.Add(It.Is<MemberSubscription>(
-                x => x.MemberChapterId == memberChapter.Id)), Times.Once);
+        context.Set<MemberSubscription>()
+            .Count(x => x.MemberChapterId == member.MemberChapter(chapter.Id)!.Id)
+            .Should()
+            .Be(1);
 
-        Mock.Get(memberSubscriptionRecordRepository)
-            .Verify(x => x.Add(It.Is<MemberSubscriptionRecord>(
-                x => x.ChapterSubscriptionId == chapterSubscription.Id &&
-                    x.MemberId == member.Id)), Times.Once);
+        context.Set<MemberSubscriptionRecord>()
+            .Count(x => x.MemberId == member.Id && x.ChapterSubscriptionId == chapterSubscription.Id)
+            .Should()
+            .Be(1);
     }
 
     [Test]
     public static async Task ProcessWebhook_WhenCheckoutSessionExpired_UpdatesSessionExpiry()
     {
         // Arrange
-        var payment = CreatePayment();
-        var paymentRepository = CreateMockPaymentRepository([payment]);
+        using var context = CreateMockOdkContext();
 
-        var paymentCheckoutSession = CreatePaymentCheckoutSession();
+        var member = context.CreateMember();
+        var currency = context.CreateCurrency();
+        var payment = context.CreatePayment(member: member, currency: currency);
+        var paymentCheckoutSession = context.CreatePaymentCheckoutSession(payment: payment);
+        var siteSubscriptionPrice = context.CreateSiteSubscriptionPrice(
+            currency: currency);
 
         var webhook = CreatePaymentProviderWebhook(
             type: PaymentProviderWebhookType.CheckoutSessionExpired,
-            metadata: new Dictionary<string, string>
-            {
-                { "PaymentCheckoutSessionId", paymentCheckoutSession.Id.ToString() },
-                { "PaymentId", payment.Id.ToString() }
-            });
+            metadata: new PaymentMetadataModel(
+                PlatformType.Default,
+                PaymentReasonType.SiteSubscription,
+                member,
+                siteSubscriptionPrice,
+                paymentCheckoutSession.Id,
+                payment.Id));
 
-        var webhookEventRepository = CreateMockPaymentProviderWebhookEventRepository([]);
-        var paymentCheckoutSessionRepository = CreateMockPaymentCheckoutSessionRepository(paymentCheckoutSession);
-
-        var unitOfWork = CreateMockUnitOfWork(
-            paymentProviderWebhookEventRepository: webhookEventRepository,
-            paymentCheckoutSessionRepository: paymentCheckoutSessionRepository,
-            paymentRepository: paymentRepository);
-
-        var service = CreatePaymentService(unitOfWork);
+        var service = CreatePaymentService(context);
         var request = CreateServiceRequest();
 
         // Act
         await service.ProcessWebhook(request, webhook);
 
         // Assert
-        paymentCheckoutSession.ExpiredUtc.Should().NotBeNull();
+        paymentCheckoutSession = context.Set<PaymentCheckoutSession>()
+            .Single(x => x.Id == paymentCheckoutSession.Id);
 
-        Mock.Get(paymentCheckoutSessionRepository)
-            .Verify(x => x.Update(paymentCheckoutSession), Times.Once);
+        paymentCheckoutSession.ExpiredUtc.Should().NotBeNull();
     }
 
     [TestCase(PaymentProviderWebhookType.InvoicePaymentSucceeded)]
     public static async Task ProcessWebhook_SubscriptionSucceeded_UpdatesChapterSubscription(PaymentProviderWebhookType webhookType)
     {
         // Arrange
-        var chapter = CreateChapter();
-        var memberChapter = CreateMemberChapter(chapterId: chapter.Id);
-        var member = CreateMember(
-            memberChapters: [memberChapter]);
-        var chapterSubscription = CreateChapterSubscription(
-            chapterId: chapter.Id);
+        using var context = CreateMockOdkContext();
+
+        var member = context.CreateMember();
+
+        var chapter = context.CreateChapter(
+            members: [member]);
+
+        var chapterSubscription = context.CreateChapterSubscription(chapter: chapter);
+
+        var paymentCheckoutSession = context.CreatePaymentCheckoutSession();
 
         var webhook = CreatePaymentProviderWebhook(
             type: webhookType,
             subscriptionId: "sub_123",
-            metadata: new Dictionary<string, string>
-            {
-                { "ChapterId", chapter.Id.ToString() },
-                { "ChapterSubscriptionId", chapterSubscription.Id.ToString() },
-                { "MemberId", member.Id.ToString() }
-            });
+            metadata: new PaymentMetadataModel(
+                PlatformType.Default,
+                PaymentReasonType.ChapterSubscription,
+                member,
+                chapterSubscription,
+                paymentCheckoutSession.Id,
+                paymentCheckoutSession.PaymentId));
 
-        var chapterRepository = CreateMockChapterRepository([chapter]);
-        var memberRepository = CreateMockMemberRepository([member]);
-        var chapterSubscriptionRepository = CreateMockChapterSubscriptionRepository([chapterSubscription]);
-        var memberSubscriptionRepository = CreateMockMemberSubscriptionRepository();
-        var memberSubscriptionRecordRepository = CreateMockMemberSubscriptionRecordRepository();
-
-        var unitOfWork = CreateMockUnitOfWork(
-            chapterRepository: chapterRepository,
-            memberRepository: memberRepository,
-            chapterSubscriptionRepository: chapterSubscriptionRepository,
-            memberSubscriptionRepository: memberSubscriptionRepository,
-            memberSubscriptionRecordRepository: memberSubscriptionRecordRepository);
-
-        var service = CreatePaymentService(unitOfWork);
+        var service = CreatePaymentService(context);
         var request = CreateServiceRequest();
 
         // Act
         await service.ProcessWebhook(request, webhook);
 
         // Assert
-        Mock.Get(memberSubscriptionRepository)
-            .Verify(x => x.Add(It.Is<MemberSubscription>(
-                x => x.MemberChapterId == memberChapter.Id)), Times.Once);
+        context.Set<MemberSubscription>()
+            .Count(x => x.MemberChapterId == member.MemberChapter(chapter.Id)!.Id)
+            .Should()
+            .Be(1);
 
-        Mock.Get(memberSubscriptionRecordRepository)
-            .Verify(x => x.Add(It.Is<MemberSubscriptionRecord>(
-                x => x.ChapterSubscriptionId == chapterSubscription.Id &&
-                    x.MemberId == member.Id)), Times.Once);
-
-        unitOfWork.Mock.Verify(x => x.SaveChangesAsync(), Times.AtLeastOnce);
+        context.Set<MemberSubscriptionRecord>()
+            .Count(x => x.MemberId == member.Id && x.ChapterSubscriptionId == chapterSubscription.Id)
+            .Should()
+            .Be(1);
     }
 
     [Test]
@@ -358,13 +301,9 @@ public static class PaymentServiceTests
         // Arrange
         var webhook = CreatePaymentProviderWebhook(type: PaymentProviderWebhookType.None);
 
-        var webhookEventRepository = CreateMockPaymentProviderWebhookEventRepository([]);
         var memberEmailService = CreateMockMemberEmailService();
 
-        var unitOfWork = CreateMockUnitOfWork(
-            paymentProviderWebhookEventRepository: webhookEventRepository);
-
-        var service = CreatePaymentService(unitOfWork, memberEmailService: memberEmailService);
+        var service = CreatePaymentService(memberEmailService: memberEmailService);
         var request = CreateServiceRequest();
 
         // Act
@@ -384,13 +323,9 @@ public static class PaymentServiceTests
             complete: false,
             paymentId: "pay_123");
 
-        var webhookEventRepository = CreateMockPaymentProviderWebhookEventRepository([]);
         var loggingService = CreateMockLoggingService();
 
-        var unitOfWork = CreateMockUnitOfWork(
-            paymentProviderWebhookEventRepository: webhookEventRepository);
-
-        var service = CreatePaymentService(unitOfWork, loggingService: loggingService);
+        var service = CreatePaymentService(loggingService: loggingService);
         var request = CreateServiceRequest();
 
         // Act
@@ -405,33 +340,36 @@ public static class PaymentServiceTests
     public static async Task ProcessWebhook_WhenPaymentAlreadyPaid_DoesNotUpdatePayment()
     {
         // Arrange
-        var member = CreateMember();
-        var payment = CreatePayment(paidUtc: DateTime.UtcNow.AddDays(-1));
-        var paymentCheckoutSession = CreatePaymentCheckoutSession();
+        using var context = CreateMockOdkContext();
+
+        var member = context.CreateMember();
+
+        var currency = context.CreateCurrency();
+
+        var payment = context.CreatePayment(
+            member: member,
+            currency: currency,
+            paidUtc: DateTime.UtcNow.AddDays(-1));
+
+        var paymentCheckoutSession = context.CreatePaymentCheckoutSession(
+            payment: payment);
+
+        var siteSubscriptionPrice = context.CreateSiteSubscriptionPrice(
+            currency: currency);
 
         var webhook = CreatePaymentProviderWebhook(
             type: PaymentProviderWebhookType.PaymentSucceeded,
-            paymentId: payment.Id.ToString(),
-            metadata: new Dictionary<string, string>
-            {
-                { "MemberId", member.Id.ToString() },
-                { "PaymentId", payment.Id.ToString() },
-                { "PaymentCheckoutSessionId", paymentCheckoutSession.Id.ToString() }
-            });
-
-        var webhookEventRepository = CreateMockPaymentProviderWebhookEventRepository([]);
-        var memberRepository = CreateMockMemberRepository([member]);
-        var paymentRepository = CreateMockPaymentRepository([payment]);
-        var paymentCheckoutSessionRepository = CreateMockPaymentCheckoutSessionRepository(paymentCheckoutSession);
-
-        var unitOfWork = CreateMockUnitOfWork(
-            paymentProviderWebhookEventRepository: webhookEventRepository,
-            memberRepository: memberRepository,
-            paymentRepository: paymentRepository,
-            paymentCheckoutSessionRepository: paymentCheckoutSessionRepository);
+            paymentId: paymentCheckoutSession.PaymentId.ToString(),
+            metadata: new PaymentMetadataModel(
+                PlatformType.Default,
+                PaymentReasonType.SiteSubscription,
+                member,
+                siteSubscriptionPrice,
+                paymentCheckoutSession.Id,
+                payment.Id));
 
         var loggingService = CreateMockLoggingService();
-        var service = CreatePaymentService(unitOfWork, loggingService: loggingService);
+        var service = CreatePaymentService(context, loggingService: loggingService);
         var request = CreateServiceRequest();
 
         // Act
@@ -446,33 +384,35 @@ public static class PaymentServiceTests
     public static async Task ProcessWebhook_WhenCheckoutSessionAlreadyCompleted_DoesNotUpdateSession()
     {
         // Arrange
-        var member = CreateMember();
-        var payment = CreatePayment();
-        var paymentCheckoutSession = CreatePaymentCheckoutSession(completedUtc: DateTime.UtcNow.AddDays(-1));
+        using var context = CreateMockOdkContext();
+
+        var member = context.CreateMember();
+
+        var currency = context.CreateCurrency();
+
+        var payment = context.CreatePayment(
+            member: member,
+            currency: currency);
+        var paymentCheckoutSession = context.CreatePaymentCheckoutSession(
+            payment: payment,
+            completedUtc: DateTime.UtcNow.AddDays(-1));
+
+        var siteSubscriptionPrice = context.CreateSiteSubscriptionPrice(
+            currency: currency);
 
         var webhook = CreatePaymentProviderWebhook(
             type: PaymentProviderWebhookType.PaymentSucceeded,
             paymentId: payment.Id.ToString(),
-            metadata: new Dictionary<string, string>
-            {
-                { "MemberId", member.Id.ToString() },
-                { "PaymentId", payment.Id.ToString() },
-                { "PaymentCheckoutSessionId", paymentCheckoutSession.Id.ToString() }
-            });
-
-        var webhookEventRepository = CreateMockPaymentProviderWebhookEventRepository([]);
-        var memberRepository = CreateMockMemberRepository([member]);
-        var paymentRepository = CreateMockPaymentRepository([payment]);
-        var paymentCheckoutSessionRepository = CreateMockPaymentCheckoutSessionRepository(paymentCheckoutSession);
-
-        var unitOfWork = CreateMockUnitOfWork(
-            paymentProviderWebhookEventRepository: webhookEventRepository,
-            memberRepository: memberRepository,
-            paymentRepository: paymentRepository,
-            paymentCheckoutSessionRepository: paymentCheckoutSessionRepository);
+            metadata: new PaymentMetadataModel(
+                PlatformType.Default,
+                PaymentReasonType.SiteSubscription,
+                member,
+                siteSubscriptionPrice,
+                paymentCheckoutSession.Id,
+                payment.Id));
 
         var loggingService = CreateMockLoggingService();
-        var service = CreatePaymentService(unitOfWork, loggingService: loggingService);
+        var service = CreatePaymentService(context, loggingService: loggingService);
         var request = CreateServiceRequest();
 
         // Act
@@ -490,15 +430,11 @@ public static class PaymentServiceTests
         var webhook = CreatePaymentProviderWebhook(
             type: PaymentProviderWebhookType.PaymentSucceeded,
             paymentId: "pay_123",
-            metadata: new Dictionary<string, string>());
+            metadata: null);
 
-        var webhookEventRepository = CreateMockPaymentProviderWebhookEventRepository([]);
         var loggingService = CreateMockLoggingService();
 
-        var unitOfWork = CreateMockUnitOfWork(
-            paymentProviderWebhookEventRepository: webhookEventRepository);
-
-        var service = CreatePaymentService(unitOfWork, loggingService: loggingService);
+        var service = CreatePaymentService(loggingService: loggingService);
         var request = CreateServiceRequest();
 
         // Act
@@ -515,15 +451,11 @@ public static class PaymentServiceTests
         // Arrange
         var webhook = CreatePaymentProviderWebhook(
             type: PaymentProviderWebhookType.CheckoutSessionExpired,
-            metadata: new Dictionary<string, string>());
+            metadata: null);
 
-        var webhookEventRepository = CreateMockPaymentProviderWebhookEventRepository([]);
         var loggingService = CreateMockLoggingService();
 
-        var unitOfWork = CreateMockUnitOfWork(
-            paymentProviderWebhookEventRepository: webhookEventRepository);
-
-        var service = CreatePaymentService(unitOfWork, loggingService: loggingService);
+        var service = CreatePaymentService(loggingService: loggingService);
         var request = CreateServiceRequest();
 
         // Act
@@ -538,23 +470,35 @@ public static class PaymentServiceTests
     public static async Task ProcessWebhook_WhenCheckoutSessionExpiredAlready_DoesNotUpdate()
     {
         // Arrange
-        var paymentCheckoutSession = CreatePaymentCheckoutSession(expiredUtc: DateTime.UtcNow.AddDays(-1));
+        using var context = CreateMockOdkContext();
+
+        var member = context.CreateMember();
+
+        var currency = context.CreateCurrency();
+
+        var payment = context.CreatePayment(
+            member: member,
+            currency: currency);
+        var paymentCheckoutSession = context.CreatePaymentCheckoutSession(
+            payment: payment,
+            expiredUtc: DateTime.UtcNow.AddDays(-1));
+
+        var siteSubscriptionPrice = context.CreateSiteSubscriptionPrice(
+            currency: currency);
+
         var webhook = CreatePaymentProviderWebhook(
             type: PaymentProviderWebhookType.CheckoutSessionExpired,
-            metadata: new Dictionary<string, string>
-            {
-                { "PaymentCheckoutSessionId", paymentCheckoutSession.Id.ToString() }
-            });
+            metadata: new PaymentMetadataModel(
+                PlatformType.Default,
+                PaymentReasonType.SiteSubscription,
+                member,
+                siteSubscriptionPrice,
+                paymentCheckoutSession.Id,
+                payment.Id));
 
-        var webhookEventRepository = CreateMockPaymentProviderWebhookEventRepository([]);
-        var paymentCheckoutSessionRepository = CreateMockPaymentCheckoutSessionRepository(paymentCheckoutSession);
         var loggingService = CreateMockLoggingService();
 
-        var unitOfWork = CreateMockUnitOfWork(
-            paymentProviderWebhookEventRepository: webhookEventRepository,
-            paymentCheckoutSessionRepository: paymentCheckoutSessionRepository);
-
-        var service = CreatePaymentService(unitOfWork, loggingService: loggingService);
+        var service = CreatePaymentService(context, loggingService: loggingService);
         var request = CreateServiceRequest();
 
         // Act
@@ -568,162 +512,6 @@ public static class PaymentServiceTests
     private static IEventService CreateMockEventService()
     {
         var mock = new Mock<IEventService>();
-
-        return mock.Object;
-    }
-
-    private static IPaymentProviderWebhookEventRepository CreateMockPaymentProviderWebhookEventRepository(
-        IEnumerable<PaymentProviderWebhookEvent>? events = null)
-    {
-        var mock = new Mock<IPaymentProviderWebhookEventRepository>();
-        events ??= [];
-
-        mock.Setup(x => x.GetByExternalId(It.IsAny<PaymentProviderType>(), It.IsAny<string>()))
-            .Returns((PaymentProviderType type, string externalId) =>
-                new MockDeferredQuerySingleOrDefault<PaymentProviderWebhookEvent>(
-                    events.FirstOrDefault(x => x.ExternalId == externalId && x.PaymentProviderType == type)));
-
-        mock.Setup(x => x.Add(It.IsAny<PaymentProviderWebhookEvent>()));
-
-        return mock.Object;
-    }
-
-    private static IMemberRepository CreateMockMemberRepository(IEnumerable<Member>? members = null)
-    {
-        var mock = new Mock<IMemberRepository>();
-
-        mock.Setup(x => x.GetById(It.IsAny<Guid>()))
-            .Returns((Guid id) =>
-                new MockDeferredQuerySingle<Member>(
-                    members?.FirstOrDefault(x => x.Id == id)));
-
-        mock.Setup(x => x.GetByIdOrDefault(It.IsAny<Guid>()))
-            .Returns((Guid id) =>
-                new MockDeferredQuerySingleOrDefault<Member>(
-                    members?.FirstOrDefault(x => x.Id == id)));
-
-        return mock.Object;
-    }
-
-    private static IMemberSubscriptionRecordRepository CreateMockMemberSubscriptionRecordRepository(
-        IEnumerable<MemberSubscriptionRecord>? subscriptionRecords = null)
-    {
-        var mock = new Mock<IMemberSubscriptionRecordRepository>();
-
-        mock.Setup(x => x.GetByExternalId(It.IsAny<string>()))
-            .Returns((string externalId) =>
-                new MockDeferredQuerySingle<MemberSubscriptionRecord>(
-                    subscriptionRecords?.FirstOrDefault(x => x.ExternalId == externalId)));
-
-        mock.Setup(x => x.GetByExternalIdOrDefault(It.IsAny<string>()))
-            .Returns((string externalId) =>
-                new MockDeferredQuerySingleOrDefault<MemberSubscriptionRecord>(
-                    subscriptionRecords?.FirstOrDefault(x => x.ExternalId == externalId)));
-
-        return mock.Object;
-    }
-
-    private static IMemberSubscriptionRepository CreateMockMemberSubscriptionRepository()
-    {
-        var mock = new Mock<IMemberSubscriptionRepository>();
-
-        mock.Setup(x => x.GetByMemberId(It.IsAny<Guid>(), It.IsAny<Guid>()))
-            .Returns((Guid memberId, Guid chapterId) =>
-                new MockDeferredQuerySingleOrDefault<MemberSubscription>(
-                    null));
-
-        return mock.Object;
-    }
-
-    private static IPaymentRepository CreateMockPaymentRepository(IEnumerable<Payment>? payments = null)
-    {
-        var mock = new Mock<IPaymentRepository>();
-
-        mock.Setup(x => x.GetById(It.IsAny<Guid>()))
-            .Returns((Guid id) => new MockDeferredQuerySingle<Payment>(payments?.FirstOrDefault(x => x.Id == id)));
-
-        return mock.Object;
-    }
-
-    private static IPaymentCheckoutSessionRepository CreateMockPaymentCheckoutSessionRepository(
-        PaymentCheckoutSession? session = null)
-    {
-        var mock = new Mock<IPaymentCheckoutSessionRepository>();
-
-        mock.Setup(x => x.GetById(It.IsAny<Guid>()))
-            .Returns((Guid sessionId) =>
-                new MockDeferredQuerySingle<PaymentCheckoutSession>(
-                    session ?? CreatePaymentCheckoutSession(id: sessionId)));
-
-        mock.Setup(x => x.GetByIdOrDefault(It.IsAny<Guid>()))
-            .Returns((Guid sessionId) =>
-                new MockDeferredQuerySingleOrDefault<PaymentCheckoutSession>(session));
-
-        mock.Setup(x => x.Update(It.IsAny<PaymentCheckoutSession>()));
-
-        return mock.Object;
-    }
-
-    private static IChapterRepository CreateMockChapterRepository(
-        IEnumerable<Chapter>? chapters = null)
-    {
-        var mock = new Mock<IChapterRepository>();
-
-        mock.Setup(x => x.GetById(It.IsAny<PlatformType>(), It.IsAny<Guid>()))
-            .Returns((PlatformType platform, Guid id) =>
-                new MockDeferredQuerySingle<Chapter>(
-                    chapters?.FirstOrDefault(x => x.Id == id)));
-
-        return mock.Object;
-    }
-
-    private static IChapterSubscriptionRepository CreateMockChapterSubscriptionRepository(
-        IEnumerable<ChapterSubscription>? subscriptions = null)
-    {
-        var mock = new Mock<IChapterSubscriptionRepository>();
-
-        mock.Setup(x => x.GetById(It.IsAny<Guid>()))
-            .Returns((Guid id) => new MockDeferredQuerySingle<ChapterSubscription>(
-                subscriptions?.FirstOrDefault(x => x.Id == id)));
-
-        mock.Setup(x => x.GetByIdOrDefault(It.IsAny<Guid>()))
-            .Returns((Guid id) => new MockDeferredQuerySingleOrDefault<ChapterSubscription>(
-                subscriptions?.FirstOrDefault(x => x.Id == id)));
-
-        return mock.Object;
-    }
-
-    private static ICurrencyRepository CreateMockCurrencyRepository()
-    {
-        var mock = new Mock<ICurrencyRepository>();
-        mock.Setup(x => x.GetById(It.IsAny<Guid>()))
-            .Returns((Guid id) =>
-                new MockDeferredQuerySingle<Currency>(
-                    CreateCurrency(id: id)));
-        return mock.Object;
-    }
-
-    private static IEventRepository CreateMockEventRepository(IEnumerable<Event>? events = null)
-    {
-        var mock = new Mock<IEventRepository>();
-
-        mock.Setup(x => x.GetById(It.IsAny<Guid>()))
-            .Returns((Guid id) =>
-                new MockDeferredQuerySingle<Event>(
-                    events?.FirstOrDefault(x => x.Id == id)));
-
-        return mock.Object;
-    }
-
-    private static IEventTicketPaymentRepository CreateMockEventTicketPaymentRepository(
-        EventTicketPayment? eventTicketPayment = null)
-    {
-        var mock = new Mock<IEventTicketPaymentRepository>();
-
-        mock.Setup(x => x.GetById(It.IsAny<Guid>()))
-            .Returns((Guid id) =>
-                new MockDeferredQuerySingle<EventTicketPayment>(
-                    eventTicketPayment ?? CreateEventTicketPayment()));
 
         return mock.Object;
     }
@@ -752,58 +540,26 @@ public static class PaymentServiceTests
         return mock.Object;
     }
 
-    private static MockUnitOfWork CreateMockUnitOfWork(
-        IPaymentProviderWebhookEventRepository? paymentProviderWebhookEventRepository = null,
-        IMemberRepository? memberRepository = null,
-        IPaymentRepository? paymentRepository = null,
-        IPaymentCheckoutSessionRepository? paymentCheckoutSessionRepository = null,
-        IEventTicketPaymentRepository? eventTicketPaymentRepository = null,
-        IMemberSubscriptionRecordRepository? memberSubscriptionRecordRepository = null,
-        IMemberSubscriptionRepository? memberSubscriptionRepository = null,
-        IEventRepository? eventRepository = null,
-        IChapterSubscriptionRepository? chapterSubscriptionRepository = null,
-        IChapterRepository? chapterRepository = null)
+    private static MockOdkContext CreateMockOdkContext()
     {
-        var mock = new Mock<IUnitOfWork>();
+        var context = new MockOdkContext();
 
-        mock.Setup(x => x.ChapterRepository)
-            .Returns(chapterRepository ?? CreateMockChapterRepository());
-        mock.Setup(x => x.ChapterSubscriptionRepository)
-            .Returns(chapterSubscriptionRepository ?? CreateMockChapterSubscriptionRepository());
-        mock.Setup(x => x.CurrencyRepository)
-            .Returns(CreateMockCurrencyRepository());
-        mock.Setup(x => x.EventRepository)
-            .Returns(eventRepository ?? CreateMockEventRepository());
-        mock.Setup(x => x.EventTicketPaymentRepository)
-            .Returns(eventTicketPaymentRepository ?? CreateMockEventTicketPaymentRepository());
-        mock.Setup(x => x.MemberRepository)
-            .Returns(memberRepository ?? CreateMockMemberRepository());
-        mock.Setup(x => x.MemberSubscriptionRecordRepository)
-            .Returns(memberSubscriptionRecordRepository ?? CreateMockMemberSubscriptionRecordRepository());
-        mock.Setup(x => x.MemberSubscriptionRepository)
-            .Returns(memberSubscriptionRepository ?? CreateMockMemberSubscriptionRepository());
-        mock.Setup(x => x.PaymentProviderWebhookEventRepository)
-            .Returns(paymentProviderWebhookEventRepository ?? CreateMockPaymentProviderWebhookEventRepository());
-        mock.Setup(x => x.PaymentRepository)
-            .Returns(paymentRepository ?? CreateMockPaymentRepository());
-        mock.Setup(x => x.PaymentCheckoutSessionRepository)
-            .Returns(paymentCheckoutSessionRepository ?? CreateMockPaymentCheckoutSessionRepository());
-        mock.Setup(x => x.SiteEmailSettingsRepository.Get(It.IsAny<PlatformType>()))
-            .Returns(new MockDeferredQuerySingle<SiteEmailSettings>(new SiteEmailSettings()));
-        mock.Setup(x => x.SaveChangesAsync()).Returns(Task.CompletedTask);
+        context.Add(new SiteEmailSettings { Platform = PlatformType.Default });
 
-        return new MockUnitOfWork(mock);
+        return context;
     }
 
+    private static IUnitOfWork CreateMockUnitOfWork(MockOdkContext? context = null) => MockUnitOfWork.Create(context);
+
     private static PaymentService CreatePaymentService(
-        IUnitOfWork unitOfWork,
+        MockOdkContext? context = null,
         ILoggingService? loggingService = null,
         IMemberEmailService? memberEmailService = null,
         IPaymentProviderFactory? paymentProviderFactory = null,
         IEventService? eventService = null)
     {
         return new PaymentService(
-            unitOfWork,
+            CreateMockUnitOfWork(context),
             loggingService ?? CreateMockLoggingService(),
             memberEmailService ?? CreateMockMemberEmailService(),
             paymentProviderFactory ?? new Mock<IPaymentProviderFactory>().Object,
@@ -827,7 +583,8 @@ public static class PaymentServiceTests
         bool complete = true,
         string? paymentId = null,
         string? subscriptionId = null,
-        IReadOnlyDictionary<string, string>? metadata = null,
+        PaymentMetadataModel? metadata = null,
+        IReadOnlyDictionary<string, string>? metadataDictionary = null,
         decimal? amount = null)
         => new PaymentProviderWebhook
         {
@@ -836,99 +593,20 @@ public static class PaymentServiceTests
             Complete = complete,
             PaymentId = paymentId ?? "pi_123",
             SubscriptionId = subscriptionId,
-            Metadata = metadata ?? new Dictionary<string, string>(),
+            Metadata = metadata?.ToDictionary() ?? metadataDictionary ?? new Dictionary<string, string>(),
             Amount = amount ?? 100m,
             OriginatedUtc = DateTime.UtcNow,
             PaymentProviderType = PaymentProviderType.Stripe
         };
 
-    private static Payment CreatePayment(
-        Guid? id = null,
-        DateTime? paidUtc = null)
-        => new Payment
-        {
-            Id = id ?? Guid.NewGuid(),
-            Amount = 100m,
-            CreatedUtc = DateTime.UtcNow,
-            CurrencyId = Guid.NewGuid(),
-            MemberId = Guid.NewGuid(),
-            PaidUtc = paidUtc,
-            Reference = "REF123",
-            SitePaymentSettingId = Guid.NewGuid()
-        };
-
-    private static PaymentCheckoutSession CreatePaymentCheckoutSession(
-        Guid? id = null,
-        DateTime? completedUtc = null,
-        DateTime? expiredUtc = null)
-        => new PaymentCheckoutSession
-        {
-            Id = id ?? Guid.NewGuid(),
-            MemberId = Guid.NewGuid(),
-            PaymentId = Guid.NewGuid(),
-            CompletedUtc = completedUtc,
-            ExpiredUtc = expiredUtc
-        };
-
-    private static Member CreateMember(
-        Guid? id = null,
-        IEnumerable<MemberChapter>? memberChapters = null)
-        => new Member
-        {
-            Chapters = memberChapters?.ToList() ?? [],
-            Id = id ?? Guid.NewGuid(),
-            SiteAdmin = false
-        };
-
-    private static MemberChapter CreateMemberChapter(
-        Guid? chapterId = null)
-        => new MemberChapter
-        {
-            ChapterId = chapterId ?? Guid.NewGuid(),
-            Id = Guid.NewGuid()
-        };
-
-    private static Event CreateEvent(Guid? chapterId = null)
-        => new Event
-        {
-            ChapterId = chapterId ?? Guid.NewGuid(),
-            Id = Guid.NewGuid()
-        };
-
     private static EventTicketPayment CreateEventTicketPayment(
-        Guid? id = null,
-        Guid? eventId = null)
+        Event @event,
+        Payment payment)
         => new EventTicketPayment
         {
-            Id = id ?? Guid.NewGuid(),
-            EventId = eventId ?? Guid.NewGuid(),
-            PaymentId = Guid.NewGuid()
-        };
-
-    private static Chapter CreateChapter(Guid? id = null)
-        => new Chapter
-        {
-            Id = id ?? Guid.NewGuid(),
-            Name = "Test Chapter",
-            OwnerId = Guid.NewGuid(),
-            CreatedUtc = DateTime.UtcNow,
-            CountryId = Guid.NewGuid(),
-            Platform = PlatformType.Default,
-            Slug = "test-chapter"
-        };
-
-    private static ChapterSubscription CreateChapterSubscription(
-        Guid? chapterId = null)
-        => new ChapterSubscription
-        {
-            ChapterId = chapterId ?? Guid.NewGuid(),
-            Id = Guid.NewGuid()
-        };
-
-    private static Currency CreateCurrency(Guid? id = null)
-        => new Currency
-        {
-            Id = id ?? Guid.NewGuid(),
-            Code = "GBP"
+            Id = Guid.NewGuid(),
+            EventId = @event.Id,
+            Payment = payment,
+            PaymentId = payment.Id
         };
 }

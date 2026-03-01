@@ -16,13 +16,15 @@ public class SiteSubscriptionRepository : ReadWriteRepositoryBase<SiteSubscripti
     {
     }
 
-    public IDeferredQueryMultiple<SiteSubscription> GetAll(PlatformType platform) => Set()
-        .Where(x => x.Platform == platform)
-        .DeferredMultiple();
+    public IDeferredQueryMultiple<SiteSubscription> GetAll(PlatformType platform)
+        => Set()
+            .Where(x => x.Platform == platform)
+            .DeferredMultiple();
 
-    public IDeferredQueryMultiple<SiteSubscription> GetAllEnabled(PlatformType platform) => Set()
-        .Where(x => x.Platform == platform && x.Enabled)
-        .DeferredMultiple();
+    public IDeferredQueryMultiple<SiteSubscription> GetAllEnabled(PlatformType platform)
+        => Set()
+            .Where(x => x.Platform == platform && x.Enabled)
+            .DeferredMultiple();
 
     public IDeferredQuerySingle<SiteSubscription> GetByPriceId(Guid priceId)
     {

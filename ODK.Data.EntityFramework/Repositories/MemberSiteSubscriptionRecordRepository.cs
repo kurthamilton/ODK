@@ -16,6 +16,5 @@ public class MemberSiteSubscriptionRecordRepository :
     }
 
     public override IMemberSiteSubscriptionRecordQueryBuilder Query()
-        => CreateQueryBuilder<IMemberSiteSubscriptionRecordQueryBuilder, MemberSiteSubscriptionRecord>(
-            context => new MemberSiteSubscriptionRecordQueryBuilder(context));
+        => CreateQueryBuilder(context => new MemberSiteSubscriptionRecordQueryBuilder(context));
 }

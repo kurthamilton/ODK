@@ -6,5 +6,5 @@ public class NotificationSettingFormViewModel
 {
     public bool Enabled { get; set; }
 
-    public NotificationType Type { get; set; }
+    public NotificationGroupType Group { get; set; }
 }
