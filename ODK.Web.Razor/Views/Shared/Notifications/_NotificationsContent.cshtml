@@ -20,7 +20,7 @@
         Id = "notification-content-offcanvas",
         Position = "end",
         SubtitleContent =
-            @<div>@await Html.PartialAsync("Notifications/_NotificationSubtitle")</div>,
+            @<div>@await Html.PartialAsync("Notifications/_NotificationSubtitle", Model)</div>,
         TitleContent =
             @<div>
                 <span class="icon-wrapper @showIfEmptyClass" data-notifications-show-if-empty>

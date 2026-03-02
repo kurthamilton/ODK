@@ -3,9 +3,11 @@ using ODK.Core.Chapters;
 using ODK.Core.Events;
 using ODK.Core.Members;
 using ODK.Core.Notifications;
+using ODK.Core.Platforms;
 using ODK.Core.Utils;
 using ODK.Core.Venues;
 using ODK.Data.Core;
+using ODK.Data.Core.Deferred;
 using ODK.Services.Notifications.ViewModels;
 
 namespace ODK.Services.Notifications;
@@ -119,7 +121,7 @@ public class NotificationService : INotificationService
             x => x.MemberNotificationSettingsRepository.GetByMemberId(currentMember.Id),
             x => x.MemberChapterNotificationSettingsRepository.Query().ForMember(currentMember.Id).GetAll(),
             x => x.ChapterAdminMemberRepository.Query(platform).ForMember(currentMember.Id).ToDto().GetAll(),
-            x => x.MemberChapterRepository.Query().ForMember(currentMember.Id).ToDto().GetAll());
+            x => x.MemberChapterRepository.Query(platform).ForMember(currentMember.Id).ToDto().GetAll());
 
         return new NotificationsPageViewModel
         {
@@ -133,14 +135,17 @@ public class NotificationService : INotificationService
     public async Task<UnreadNotificationsViewModel> GetUnreadNotificationsViewModel(
         IMemberServiceRequest request)
     {
-        var (currentMember, platform) = (request.CurrentMember, request.Platform);
+        var (platform, currentMember) = (request.Platform, request.CurrentMember);
 
-        var notifications = await _unitOfWork.NotificationRepository
-            .GetUnreadDtosByMemberId(currentMember.Id)
-            .Run();
+        var (notifications, chapter) = await _unitOfWork.RunAsync(
+            x => x.NotificationRepository.GetUnreadDtosByMemberId(currentMember.Id),
+            x => platform == PlatformType.DrunkenKnitwits
+                ? x.ChapterRepository.Query(platform).ForMember(currentMember.Id).GetSingleOrDefault()
+                : new DefaultDeferredQuerySingleOrDefault<Chapter>());
 
         return new UnreadNotificationsViewModel
         {
+            Chapter = chapter,
             CurrentMember = currentMember,
             Platform = platform,
             Unread = notifications

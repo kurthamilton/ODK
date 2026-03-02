@@ -1,16 +1,18 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ODK.Core.Chapters;
 using ODK.Core.Members;
+using ODK.Core.Platforms;
 using ODK.Data.Core.Members;
 using ODK.Data.Core.QueryBuilders;
+using ODK.Data.EntityFramework.Queries;
 
 namespace ODK.Data.EntityFramework.QueryBuilders;
 
 public class MemberChapterQueryBuilder
     : DatabaseEntityQueryBuilder<MemberChapter, IMemberChapterQueryBuilder>, IMemberChapterQueryBuilder
 {
-    public MemberChapterQueryBuilder(DbContext context)
-        : base(context)
+    public MemberChapterQueryBuilder(DbContext context, PlatformType platform)
+        : base(context, BaseQuery(context, platform))
     {
     }
 
@@ -35,5 +37,15 @@ public class MemberChapterQueryBuilder
             };
 
         return ProjectTo(query);
+    }
+
+    private static IQueryable<MemberChapter> BaseQuery(DbContext context, PlatformType platform)
+    {
+        return
+            from memberChapter in context.Set<MemberChapter>()
+            from chapter in context.Set<Chapter>()
+                .ForPlatform(platform, includeUnpublished: true)
+                .Where(x => x.Id == memberChapter.ChapterId)
+            select memberChapter;
     }
 }
