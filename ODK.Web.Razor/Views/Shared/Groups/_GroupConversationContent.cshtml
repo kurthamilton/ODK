@@ -51,41 +51,65 @@
             })    
         </section>
 
-        <section class="section">
+        @if (Model.Conversation.ClosedUtc == null)
+        {
+            <section class="section">
+                @await Html.PartialAsync("Components/_Panel", new PanelViewModel
+                {
+                    TitleContentFunc = @<h5>Reply</h5>,
+                    BodyContentFunc = 
+                        @<div>
+                            <form action="/groups/@Model.Chapter.Id/conversations/@Model.Conversation.Id/reply" method="post">
+                                @*@Html.AntiForgeryToken()*@
+                                @await Html.PartialAsync("Groups/_GroupConversationReplyForm", new ChapterConversationReplyFormViewModel())
+                            
+                                <div class="d-flex">
+                                    <button class="btn btn-primary" type="submit">Send</button>
+
+                                    <button class="btn btn-danger ms-auto" type="button"
+                                        onclick="return confirm('Are you sure you want to close this conversation?');"
+                                        data-submit="#close-conversation-form">
+                                        Close
+                                    </button>
+                                </div>                            
+                            </form>
+                            <form id="close-conversation-form" method="post" action="/groups/@Model.Chapter.Id/conversations/@Model.Conversation.Id/close">
+                            </form>                            
+                        </div>
+                })
+            </section>
+        }
+        else
+        {
+            <div class="alert alert-warning mt-3">
+                Closed @Model.Conversation.ClosedUtc.Value.ToFriendlyDateTimeString(Model.CurrentMember.TimeZone ?? Model.Chapter.TimeZone)
+            </div>
+        }
+    </div>
+
+    @if (Model.OtherConversations.Count > 0)
+    {
+        <div class="col-md-4 mt-section mt-md-0">
             @await Html.PartialAsync("Components/_Panel", new PanelViewModel
             {
-                TitleContentFunc = @<h5>Reply</h5>,
+                TitleContentFunc = @<h5>Other conversations</h5>,
                 BodyContentFunc = 
-                    @<div>
-                        <form action="/groups/@Model.Chapter.Id/conversations/@Model.Conversation.Id/reply" method="post">
-                            @*@Html.AntiForgeryToken()*@
-                            @await Html.PartialAsync("Groups/_GroupConversationReplyForm", new ChapterConversationReplyFormViewModel())
-                            <button class="btn btn-primary">Send</button>
-                        </form>
+                    @<div class="list-group">
+                        @foreach (var dto in Model.OtherConversations.OrderByDescending(x => x.LastMessage.Message.CreatedUtc))
+                        {
+                            <div class="list-group-item">
+                                <div>
+                                    <a href="@OdkRoutes.Groups.Conversation(Model.Chapter, dto.Conversation.Id)">
+                                        @dto.Conversation.Subject
+                                    </a>
+                                </div>
+                                <div>
+                                    @dto.LastMessage.Message.CreatedUtc.ToFriendlyDateTimeString(Model.CurrentMember.TimeZone ?? Model.Chapter.TimeZone)
+                                </div>
+                            </div>
+                        }
                     </div>
             })
-        </section>
-    </div>
-    <div class="col-md-4 mt-section mt-md-0">
-        @await Html.PartialAsync("Components/_Panel", new PanelViewModel
-        {
-            TitleContentFunc = @<h5>Other conversations</h5>,
-            BodyContentFunc = 
-                @<div class="list-group">
-                    @foreach (var dto in Model.OtherConversations.OrderByDescending(x => x.LastMessage.Message.CreatedUtc))
-                    {
-                        <div class="list-group-item">
-                            <div>
-                                <a href="@OdkRoutes.Groups.Conversation(Model.Chapter, dto.Conversation.Id)">
-                                    @dto.Conversation.Subject
-                                </a>
-                            </div>
-                            <div>
-                                @dto.LastMessage.Message.CreatedUtc.ToFriendlyDateTimeString(Model.Chapter.TimeZone)
-                            </div>
-                        </div>
-                    }
-                </div>
-        })
-    </div>
+        </div>
+    }    
 </div>

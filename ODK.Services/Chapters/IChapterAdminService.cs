@@ -1,5 +1,6 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Countries;
+using ODK.Core.Messages;
 using ODK.Core.Payments;
 using ODK.Services.Chapters.Models;
 using ODK.Services.Chapters.ViewModels;
@@ -45,7 +46,7 @@ public interface IChapterAdminService
     Task<ChapterAdminPageViewModel> GetChapterAdminPageViewModel(IMemberChapterAdminServiceRequest request);
 
     Task<ChapterConversationsAdminPageViewModel> GetChapterConversationsViewModel(
-        IMemberChapterAdminServiceRequest request, bool readByChapter);
+        IMemberChapterAdminServiceRequest request, MessageStatus status);
 
     Task<ChapterConversationAdminPageViewModel> GetChapterConversationViewModel(
         IMemberChapterAdminServiceRequest request, Guid id);

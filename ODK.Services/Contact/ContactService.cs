@@ -34,14 +34,37 @@ public class ContactService : IContactService
         _unitOfWork = unitOfWork;
     }
 
+    public async Task<ServiceResult> CloseChapterConversation(IMemberServiceRequest request, Guid conversationId)
+    {
+        var currentMember = request.CurrentMember;
+
+        var conversation = await _unitOfWork.ChapterConversationRepository
+            .GetById(conversationId)
+            .Run();
+
+        OdkAssertions.BelongsToMember(conversation, currentMember.Id);
+
+        if (conversation.ClosedUtc != null)
+        {
+            return ServiceResult.Successful();
+        }
+
+        conversation.ClosedUtc = DateTime.UtcNow;
+        _unitOfWork.ChapterConversationRepository.Update(conversation);
+
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
+    }
+
     public async Task<ServiceResult> ReplyToChapterConversation(
         IMemberServiceRequest request, Guid conversationId, string message)
     {
-        var platform = request.Platform;
+        var (platform, currentMember) = (request.Platform, request.CurrentMember);
 
         var conversation = await _unitOfWork.ChapterConversationRepository.GetById(conversationId).Run();
 
-        OdkAssertions.MeetsCondition(conversation, x => x.MemberId == request.CurrentMember.Id);
+        OdkAssertions.BelongsToMember(conversation, currentMember.Id);
 
         var (chapter, adminMembers, notificationSettings) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(platform, conversation.ChapterId),

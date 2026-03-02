@@ -2,6 +2,8 @@
 
 public interface IContactService
 {
+    Task<ServiceResult> CloseChapterConversation(IMemberServiceRequest request, Guid conversationId);
+
     Task<ServiceResult> ReplyToChapterConversation(IMemberServiceRequest request, Guid conversationId, string message);
 
     Task SendChapterContactMessage(

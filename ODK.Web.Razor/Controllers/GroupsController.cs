@@ -70,6 +70,17 @@ public class GroupsController : OdkControllerBase
     }
 
     [Authorize]
+    [HttpPost("groups/{chapterId:guid}/conversations/{conversationId:guid}/close")]
+    public async Task<IActionResult> CloseToConversation(Guid chapterId, Guid conversationId)
+    {
+        var result = await _contactService.CloseChapterConversation(MemberServiceRequest, conversationId);
+
+        AddFeedback(result, "Conversation closed");
+
+        return RedirectToReferrer();
+    }
+
+    [Authorize]
     [HttpPost("groups/{chapterId:guid}/conversations/{conversationId:guid}/reply")]
     public async Task<IActionResult> ReplyToConversation(Guid chapterId, Guid conversationId,
         [FromForm] ChapterConversationReplyFormViewModel viewModel)

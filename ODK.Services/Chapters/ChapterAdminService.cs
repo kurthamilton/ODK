@@ -5,6 +5,7 @@ using ODK.Core.DataTypes;
 using ODK.Core.Extensions;
 using ODK.Core.Features;
 using ODK.Core.Members;
+using ODK.Core.Messages;
 using ODK.Core.Notifications;
 using ODK.Core.Pages;
 using ODK.Core.Payments;
@@ -741,7 +742,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ChapterConversationsAdminPageViewModel> GetChapterConversationsViewModel(
-        IMemberChapterAdminServiceRequest request, bool readByChapter)
+        IMemberChapterAdminServiceRequest request, MessageStatus status)
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
 
