@@ -3,15 +3,16 @@
 @using ODK.Core.Platforms
 @using ODK.Core.Utils
 @using ODK.Services.Chapters
+@using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Routes
 @using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Header
 @using ODK.Web.Razor.Services
-@inject IChapterService ChapterService
 @inject IOdkRoutes OdkRoutes
 @inject IRequestStore RequestStore
+@model OdkHomeHeaderViewModel
 @{
     var platform = RequestStore.Platform;
     if (platform != PlatformType.DrunkenKnitwits)
@@ -21,7 +22,23 @@
 
     var member = RequestStore.CurrentMemberOrDefault;
 
-    var chapters = await ChapterService.GetApprovedChapters(platform);
+    var continents = Model
+        .Countries
+        .Select(x => x.Continent)
+        .Distinct()
+        .OrderBy(x => x)
+        .ToArray();
+
+    var countryContinentDictionary = Model
+        .Countries
+        .ToDictionary(x => x.Id, x => x.Continent);
+
+    var chaptersByContinent = Model
+        .Chapters
+        .GroupBy(x => countryContinentDictionary[x.CountryId])
+        .ToDictionary(x => x.Key, x => x.OrderBy(y => y.Name).ToArray());
+
+    var chapters = Model.Chapters;
     var menuItems = chapters
         .OrderBy(x => x.Name)
         .Select(c => new MenuItem
@@ -35,32 +52,31 @@
 
 @await Html.PartialAsync("Header/_Header", new HeaderViewModel()
 {   
-   ImageLink = "/",
-   ImageUrl = "/assets/img/home-banner.png",
-   Navbar = new NavbarViewModel
-   {
-       Breakpoint = "md",
-       Chapter = null,
-       Color = "dark",
-       Compact = false,
-       CssClass = "navbar--home d-md-none",
-       HideAccountMenu = false,
-       Member = member,
-       MenuItems = menuItems.Segment(5).ToArray()
-   }
-})
-
-<div class="mb-1 d-none d-md-block">
-    @await Html.PartialAsync("Header/_Navbar", new NavbarViewModel
+    ImageLink = "/",
+    ImageUrl = "/assets/img/home-banner.png",
+    Navbar = new NavbarViewModel
     {
-        Breakpoint = "md",
+        // Always collapsed
+        Breakpoint = null,
+        Chapter = null,
         Color = "dark",
-        Compact = false,
-        CssClass = null,
+        CssClass = "navbar--home",
         Member = member,
-        MenuItems =
-            [
-                [new MenuItem { Hidden = true, Text = "" }]
-            ]
-     })
-</div>
+        MenuItems = continents
+            .Select(continent => new MenuItemGroup
+            {
+                MenuItems = chaptersByContinent[continent]
+                    .Select(chapter => new MenuItem
+                    {
+                        Text = chapter.GetDisplayName(platform),
+                        Link = string.IsNullOrEmpty(chapter.RedirectUrl)
+                            ? OdkRoutes.Groups.Group(chapter)
+                            : null,
+                        ExternalLink = chapter.RedirectUrl
+                    })
+                    .ToArray(),
+                Title = continent
+            })
+            .ToArray()
+    }
+})

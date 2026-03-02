@@ -5,26 +5,24 @@ using ODK.Web.Razor.Models.Components;
 namespace ODK.Web.Razor.Models.Header;
 
 public class NavbarViewModel
-{    
-    public string? Breakpoint { get; set; }
+{
+    public string? Breakpoint { get; init; }
 
-    public Chapter? Chapter { get; set; }
+    public Chapter? Chapter { get; init; }
 
-    public string? Color { get; set; }
+    public string? Color { get; init; }
 
-    public bool Compact { get; set; }
+    public string? CssClass { get; init; }
 
-    public string? CssClass { get; set; }
+    public bool Fluid { get; init; }
 
-    public bool Fluid { get; set; }
+    public bool HideAccountMenu { get; init; }
 
-    public bool HideAccountMenu { get; set; }
+    public string? Id { get; init; }
 
-    public string? Id { get; set; }
+    public Member? Member { get; init; }
 
-    public Member? Member { get; set; }
-
-    public required MenuItem[][] MenuItems { get; set; }
+    public required IReadOnlyCollection<MenuItemGroup> MenuItems { get; init; }
 
     public bool IsDark => Color is null or "dark";
 

@@ -1,8 +1,11 @@
 ﻿@page "/Pricing"
+@using ODK.Core.Platforms
+@using ODK.Services.Chapters
 @using ODK.Services.Subscriptions
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Pricing
 @model PricingModel
+@inject IChapterService ChapterService
 @inject ISiteSubscriptionService SiteSubscriptionService
 @{
     Layout = "_HomeLayout";
@@ -11,6 +14,12 @@
 
     var siteSubscriptions = await SiteSubscriptionService
         .GetSiteSubscriptionsViewModel(Model.ServiceRequest, chapterId: null);
+}
+
+@if (Model.Platform == PlatformType.DrunkenKnitwits)
+{
+    var viewModel = await ChapterService.GetOdkHomeHeaderViewModel();
+    @await Html.PartialAsync("Header/_OdkHomeHeader", viewModel)
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

@@ -12872,33 +12872,28 @@ footer {
   }
 }
 
-.navbar-expand-sm .navbar-nav .nav-link,
-.navbar-expand-md .navbar-nav .nav-link {
-  padding-left: 0.5rem;
+.navbar,
+.navbar-nav {
+  --bs-nav-link-padding-x: 0.5rem;
+}
+@media (min-width: 576px) {
+  .navbar,
+  .navbar-nav {
+    --bs-navbar-nav-link-padding-x: 1rem;
+  }
 }
 
-@media (min-width: 576px) {
-  .navbar-expand-sm .navbar-nav .nav-link {
-    padding-top: 0.1rem;
-    padding-bottom: 0.1rem;
-  }
-  .navbar-expand-sm .navbar-nav .nav-link {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-}
-@media (min-width: 576px) and (min-width: 768px) {
-  .navbar-expand-sm:not(.navbar-compact) .navbar-nav .nav-link {
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
-  }
-}
 @media (min-width: 992px) {
   .navbar-expand-lg .navbar-nav .nav-link {
     padding-top: 0.1rem;
     padding-bottom: 0.1rem;
   }
 }
+.navbar-text {
+  padding-left: var(--bs-nav-link-padding-x);
+  padding-right: var(--bs-nav-link-padding-x);
+}
+
 .navbar--home .nav-item {
   text-transform: uppercase;
 }
@@ -12914,28 +12909,34 @@ footer {
 .navbar--home .navbar .navbar-nav .nav-item:not(:first-child) {
   border-top: 1px solid rgba(255, 255, 255, 0.5);
 }
-.navbar--home .navbar .navbar-nav .nav-link {
-  padding-left: 0.5rem;
-  padding-right: 0.5rem;
+.navbar--home .navbar-collapse .nav-item {
+  border: none;
 }
 
+@media (min-width: 768px) {
+  .home-page .navbar--home .navbar-toggler {
+    visibility: hidden;
+  }
+  .home-page .navbar--home .navbar-collapse {
+    display: none;
+  }
+}
 .navbar--group {
   background-color: var(--odk-bg-level-2);
 }
-.navbar--group .navbar-nav {
-  display: flex;
-  gap: 1rem;
-}
-.navbar--group .nav-item {
-  padding: 0;
-}
-.navbar--group .nav-item .nav-link {
-  padding: 0 !important;
-  border-bottom: 2px solid transparent;
-}
-.navbar--group .nav-item .nav-link.active, .navbar--group .nav-item .nav-link:hover {
-  background-color: transparent;
-  border-bottom-color: var(--bs-body-color);
+@media (min-width: 768px) {
+  .navbar--group .navbar-nav {
+    --bs-navbar-nav-link-padding-x: 0;
+    display: flex;
+    gap: 1rem;
+  }
+  .navbar--group .nav-item .nav-link {
+    border-bottom: 2px solid transparent;
+  }
+  .navbar--group .nav-item .nav-link.active, .navbar--group .nav-item .nav-link:hover {
+    background-color: transparent;
+    border-bottom-color: var(--bs-body-color);
+  }
 }
 
 .account-links--right {

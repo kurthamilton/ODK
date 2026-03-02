@@ -1,12 +1,21 @@
 ﻿@page "/Contact"
+@using ODK.Core.Platforms
+@using ODK.Services.Chapters
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Contact
 @model ContactModel
+@inject IChapterService ChapterService
 @{
     Layout = "_HomeLayout";
     Model.Title = "Contact";
     Model.Description = "Form for sending messages to the site owners";
     Model.Path = "/contact";
+}
+
+@if (Model.Platform == PlatformType.DrunkenKnitwits)
+{
+    var viewModel = await ChapterService.GetOdkHomeHeaderViewModel();
+    @await Html.PartialAsync("Header/_OdkHomeHeader", viewModel)
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

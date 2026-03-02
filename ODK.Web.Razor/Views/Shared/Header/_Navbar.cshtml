@@ -35,23 +35,44 @@
 
     var id = Model.Id ?? "navbar-main";
 
-    var menuGroups = Model.MenuItems;    
+    var menuGroups = Model.MenuItems;
+
+    var cssClasses = new List<string>();
+    if (!string.IsNullOrEmpty(Model.CssClass))
+    {
+        cssClasses.Add(Model.CssClass);
+    }
+
+    if (Model.IsDark)
+    {
+        cssClasses.Add("navbar-dark bg-dark");
+    }
+
+    if (Model.IsLight)
+    {
+        cssClasses.Add("navbar-light bg-light text-dark");
+    }
+
+    if (Model.Breakpoint == "sm")
+    {
+        cssClasses.Add("navbar-expand-sm");
+    }
+    else if (Model.Breakpoint == "md")
+    {
+        cssClasses.Add("navbar-expand-md");
+    }
+    else if (Model.Breakpoint == "lg")
+    {
+        cssClasses.Add("navbar-expand-lg");
+    }
 }
 
-<nav class="navbar
-            @Model.CssClass
-            @(Model.IsDark ? "navbar-dark bg-dark" : null)
-            @(Model.IsLight ? "navbar-light bg-light text-dark" : null)
-            @(Model.Breakpoint == "sm" ? "navbar-expand-sm" : null)
-            @(Model.Breakpoint == "md" ? "navbar-expand-md" : null)
-            @(Model.Breakpoint == "lg" ? "navbar-expand-lg" : null)
-            @(Model.Compact ? "navbar-compact" : null)">
-    <div class="position-relative
-                @(Model.Fluid ? "container-fluid" : "container")">
+<nav class="navbar @string.Join(' ', cssClasses)">
+    <div class="position-relative @(Model.Fluid ? "container-fluid" : "container")">
         <div class="d-flex align-items-center">
-            @if (Model.MenuItems.Any(x => x.Any(y => !y.Hidden)))    
+            @if (Model.MenuItems.Any(x => x.MenuItems.Any(y => !y.Hidden)))    
             {
-                <button class="navbar-toggler @(Model.MenuItems.Length == 0 ? "invisible" : "")"
+                <button class="navbar-toggler @(Model.MenuItems.Count == 0 ? "invisible" : "")"
                         type="button" data-bs-toggle="collapse" data-bs-target="#@id"
                         aria-controls="@id" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -75,10 +96,23 @@
         </div>
 
         <div class="collapse navbar-collapse flex-column" id="@id">
-            @foreach (var group in menuGroups)
+            @for (var i = 0; i < Model.MenuItems.Count; i++)
             {
-                <ul class="navbar-nav">
-                    @foreach (var menuItem in group)
+                var group = Model.MenuItems.ElementAt(i);
+
+                if (i > 0)
+                {
+                    <hr/>
+                }
+
+                if (!string.IsNullOrEmpty(group.Title))
+                {
+                    <div class="fw-bold navbar-text">
+                        @group.Title
+                    </div>
+                }
+                <ul class="navbar-nav">                    
+                    @foreach (var menuItem in group.MenuItems)
                     {
                         <li class="nav-item @(menuItem.Hidden ? "invisible" : null)">
                             <a class="nav-link @(Model.IsLight ? "text-dark" : "")"

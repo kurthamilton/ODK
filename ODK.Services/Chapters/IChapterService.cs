@@ -21,5 +21,5 @@ public interface IChapterService
 
     Task<Chapter?> GetDefaultChapter(IMemberServiceRequest request);
 
-    Task<OdkHomePageViewModel> GetOdkHomePageViewModel();
+    Task<OdkHomeHeaderViewModel> GetOdkHomeHeaderViewModel();
 }

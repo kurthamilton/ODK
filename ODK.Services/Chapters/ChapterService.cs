@@ -114,7 +114,7 @@ public class ChapterService : IChapterService
             .FirstOrDefault();
     }
 
-    public async Task<OdkHomePageViewModel> GetOdkHomePageViewModel()
+    public async Task<OdkHomeHeaderViewModel> GetOdkHomeHeaderViewModel()
     {
         var (chapters, countries) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetAll(PlatformType.DrunkenKnitwits, includeUnpublished: false),
@@ -128,7 +128,7 @@ public class ChapterService : IChapterService
             .Where(x => countryIds.Contains(x.Id))
             .ToArray();
 
-        return new OdkHomePageViewModel
+        return new OdkHomeHeaderViewModel
         {
             Chapters = chapters,
             Countries = countries

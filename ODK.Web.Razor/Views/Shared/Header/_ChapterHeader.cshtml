@@ -70,12 +70,8 @@
         Breakpoint = "md",
         Chapter = Model.Chapter,
         Color = "dark",
-        Compact = false,
         CssClass = null,
         Member = Model.Member,
-        MenuItems = new []
-        {
-            menuItems.ToArray()
-        }
+        MenuItems = [new MenuItemGroup { MenuItems = menuItems.ToArray() }]
     }
 })

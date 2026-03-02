@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using ODK.Core.Chapters;
+﻿using ODK.Core.Chapters;
 
 namespace ODK.Web.Razor.Models.Components;
 

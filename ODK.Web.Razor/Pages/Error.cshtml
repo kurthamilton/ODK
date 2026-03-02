@@ -1,10 +1,19 @@
 ﻿@page "/error/{statusCode:int}"
+@using ODK.Core.Platforms
+@using ODK.Services.Chapters
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Components
 @model ErrorModel
+@inject IChapterService ChapterService
 @{
     Layout = "Shared/_HomeLayout";
     Model.Title = "Error";
+}
+
+@if (Model.Platform == PlatformType.DrunkenKnitwits)
+{
+    var viewModel = await ChapterService.GetOdkHomeHeaderViewModel();
+    @await Html.PartialAsync("Header/_OdkHomeHeader", viewModel)
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

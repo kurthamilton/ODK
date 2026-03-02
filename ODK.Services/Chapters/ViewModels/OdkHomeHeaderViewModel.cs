@@ -3,7 +3,7 @@ using ODK.Core.Countries;
 
 namespace ODK.Services.Chapters.ViewModels;
 
-public class OdkHomePageViewModel
+public class OdkHomeHeaderViewModel
 {
     public required IReadOnlyCollection<Chapter> Chapters { get; set; }
 

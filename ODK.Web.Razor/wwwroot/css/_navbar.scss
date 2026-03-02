@@ -43,36 +43,12 @@ $navbar-light-separator: rgba(0, 0, 0, 0.5);
     }
 }
 
-.navbar-expand-sm,
-.navbar-expand-md {
-    .navbar-nav {
-        .nav-link {
-            padding-left: 0.5rem;
-        }
-    }
-}
+.navbar,
+.navbar-nav {
+    --bs-nav-link-padding-x: 0.5rem;
 
-@include media-breakpoint-up(sm) {
-    .navbar-expand-sm {
-        .navbar-nav {
-            @include nav-link-vertical-padding();
-
-            .nav-link {
-                padding-left: 1rem;
-                padding-right: 1rem;
-            }
-        }
-
-        &:not(.navbar-compact) {
-            .navbar-nav {
-                .nav-link {
-                    @include media-breakpoint-up(md) {
-                        padding-left: 1.5rem;
-                        padding-right: 1.5rem;
-                    }
-                }
-            }
-        }
+    @include media-breakpoint-up(sm) {
+        --bs-navbar-nav-link-padding-x: 1rem;
     }
 }
 
@@ -82,6 +58,11 @@ $navbar-light-separator: rgba(0, 0, 0, 0.5);
             @include nav-link-vertical-padding();
         }
     }
+}
+
+.navbar-text {
+    padding-left: var(--bs-nav-link-padding-x);
+    padding-right: var(--bs-nav-link-padding-x);
 }
 
 .navbar--home {
@@ -102,10 +83,26 @@ $navbar-light-separator: rgba(0, 0, 0, 0.5);
                     border-top: 1px solid $navbar-dark-separator;
                 }
             }
+        }
+    }
+    // always hide borders on the collapsed version
+    .navbar-collapse {
+        .nav-item {
+            border: none;
+        }
+    }
+}
 
-            .nav-link {
-                padding-left: 0.5rem;
-                padding-right: 0.5rem;
+// only show the collapsed menu in smaller breakpoints on the home page - the menu is displayed as a section in the bigger breakpoints
+@include media-breakpoint-up(md) {
+    .home-page {
+        .navbar--home {
+            .navbar-toggler {
+                visibility: hidden;
+            }
+
+            .navbar-collapse {
+                display: none;
             }
         }
     }
@@ -114,22 +111,22 @@ $navbar-light-separator: rgba(0, 0, 0, 0.5);
 .navbar--group {
     background-color: var(--odk-bg-level-2);
 
-    .navbar-nav {
-        display: flex;
-        gap: 1rem;
-    }
+    @include media-breakpoint-up(md) {
+        .navbar-nav {
+            --bs-navbar-nav-link-padding-x: 0;
+            display: flex;
+            gap: 1rem;
+        }
 
-    .nav-item {
-        padding: 0;
+        .nav-item {
+            .nav-link {
+                border-bottom: 2px solid transparent;
 
-        .nav-link {
-            padding: 0 !important;
-            border-bottom: 2px solid transparent;
-
-            &.active,
-            &:hover {
-                background-color: transparent;
-                border-bottom-color: var(--bs-body-color);
+                &.active,
+                &:hover {
+                    background-color: transparent;
+                    border-bottom-color: var(--bs-body-color);
+                }
             }
         }
     }

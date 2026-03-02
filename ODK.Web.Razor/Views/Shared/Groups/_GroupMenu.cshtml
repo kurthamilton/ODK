@@ -92,7 +92,7 @@
         : [];
 }
 
-<nav class="navbar navbar-expand-sm navbar--group">
+<nav class="navbar navbar-expand-md navbar--group">
     <div class="position-relative container">
         <div class="d-flex">
             <button class="navbar-toggler"
@@ -122,7 +122,7 @@
 
                 @if (adminMenuItems.Length > 0)
                 {
-                    <li class="nav-item dropdown">
+                    <li class="nav-item dropdown hide-below-md">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Settings))
                             <span>Manage</span>
@@ -141,9 +141,31 @@
                                 </li>
                             }                            
                         </ul>
-                    </li>                   
+                    </li>                    
                 }
             </ul>
+
+            @if (adminMenuItems.Length > 0)
+            {
+                <div class="d-md-none">
+                    <hr />
+                    
+                    <ul class="navbar-nav">
+                        @foreach (var adminMenuItem in adminMenuItems)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" href="@adminMenuItem.Link">
+                                    @if (adminMenuItem.Icon != null)
+                                    {
+                                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(adminMenuItem.Icon.Value))
+                                    }
+                                    <span>@adminMenuItem.Text</span>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </div>                
+            }
         </div>
 
         @if (!Model.IsMember)

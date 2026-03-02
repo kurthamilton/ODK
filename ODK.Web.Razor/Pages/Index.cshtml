@@ -10,7 +10,10 @@
 
 @if (Model.Platform == PlatformType.DrunkenKnitwits)
 {
-    var viewModel = await ChapterService.GetOdkHomePageViewModel();
+    var viewModel = await ChapterService.GetOdkHomeHeaderViewModel();    
+    <div class="home-page">
+        @await Html.PartialAsync("Header/_OdkHomeHeader", viewModel)
+    </div>
     @await Html.PartialAsync("Home/_OdkHomeContent", viewModel)
 }
 else
