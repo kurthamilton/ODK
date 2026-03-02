@@ -387,7 +387,7 @@ public class MemberEmailService : IMemberEmailService
         Issue issue,
         IssueMessage reply,
         Member? toMember,
-        SiteEmailSettings siteEmailSettings)
+        IEnumerable<Member> siteAdmins)
     {
         var subject = "Re: {issue.title} - issue updated - {title}";
 
@@ -416,7 +416,9 @@ public class MemberEmailService : IMemberEmailService
             ? urlProvider.IssueUrl(issue.Id)
             : urlProvider.IssueAdminUrl(issue.Id);
 
-        var to = toMember?.ToEmailAddressee() ?? new EmailAddressee(siteEmailSettings.ContactEmailAddress, string.Empty);
+        var to = toMember != null 
+            ? [ toMember.ToEmailAddressee() ]
+            : siteAdmins.Select(x => x.ToEmailAddressee()).ToArray();
 
         var parameters = new Dictionary<string, string>
         {
@@ -428,7 +430,7 @@ public class MemberEmailService : IMemberEmailService
         await _emailService.SendEmail(
             request,
             null,
-            [to],
+            to,
             subject,
             body,
             parameters);
@@ -588,7 +590,7 @@ public class MemberEmailService : IMemberEmailService
 
     public async Task SendNewGroupEmail(
         IServiceRequest request,
-        SiteEmailSettings settings)
+        IEnumerable<Member> siteAdmins)
     {
         var urlProvider = await _urlProviderFactory.Create(request);
         var url = urlProvider.SiteAdminGroups();
@@ -598,7 +600,9 @@ public class MemberEmailService : IMemberEmailService
             { "url", url }
         };
 
-        var to = new EmailAddressee(settings.ContactEmailAddress, string.Empty);
+        var to = siteAdmins
+            .Select(x => x.ToEmailAddressee())
+            .ToArray();
 
         var subject = "{title} - New group";
 
@@ -608,7 +612,7 @@ public class MemberEmailService : IMemberEmailService
             .AddParagraphLink("url")
             .ToString();
 
-        await _emailService.SendMemberEmail(
+        await _emailService.SendEmail(
             request,
             chapter: null,
             to,
@@ -622,7 +626,7 @@ public class MemberEmailService : IMemberEmailService
         Member member,
         Issue issue,
         IssueMessage message,
-        SiteEmailSettings settings)
+        IEnumerable<Member> siteAdmins)
     {
         var subject = "{title} - New issue";
 
@@ -634,10 +638,13 @@ public class MemberEmailService : IMemberEmailService
             .ToString();
 
         var urlProvider = await _urlProviderFactory.Create(request);
-        var to = new EmailAddressee(settings.ContactEmailAddress, string.Empty);
-        await _emailService.SendMemberEmail(
+        var to = siteAdmins
+            .Select(x => x.ToEmailAddressee())
+            .ToArray();
+
+        await _emailService.SendEmail(
             request,
-            null,
+            chapter: null,
             to,
             subject,
             body,
@@ -731,7 +738,7 @@ public class MemberEmailService : IMemberEmailService
     public async Task SendNewTopicEmail(
         IServiceRequest request,
         IReadOnlyCollection<INewTopic> newTopics,
-        SiteEmailSettings settings)
+        IEnumerable<Member> siteAdmins)
     {
         var urlProvider = await _urlProviderFactory.Create(request);
         var url = urlProvider.TopicApprovalUrl();
@@ -759,11 +766,11 @@ public class MemberEmailService : IMemberEmailService
             .AddParagraphLink("url")
             .ToString();
 
-        var to = new EmailAddressee(settings.ContactEmailAddress, string.Empty);
+        var to = siteAdmins.Select(x => x.ToEmailAddressee()).ToArray();
 
-        await _emailService.SendMemberEmail(
+        await _emailService.SendEmail(
             request,
-            null,
+            chapter: null,
             to,
             subject,
             body,
@@ -798,9 +805,9 @@ public class MemberEmailService : IMemberEmailService
         Chapter? chapter,
         Payment payment,
         Currency currency,
-        SiteEmailSettings settings)
+        IEnumerable<Member> siteAdmins)
     {
-        var to = new EmailAddressee(settings.ContactEmailAddress, string.Empty);
+        var toAdmins = siteAdmins.Select(x => x.ToEmailAddressee()).ToArray();
         var subject = "{title} - Payment Received";
         var body =
             $"<p>A payment has been received for {currency.ToAmountString(payment.Amount)}.</p>" +
@@ -809,19 +816,19 @@ public class MemberEmailService : IMemberEmailService
         await _emailService.SendEmail(
             request,
             chapter,
-            [to],
+            toAdmins,
             subject,
             body);
 
-        to = new EmailAddressee(member.EmailAddress, member.FullName);
+        var toMember = member.ToEmailAddressee();
         body =
             $"<p>Your payment of {currency.ToAmountString(payment.Amount)} has been processed.</p>" +
             $"<p>Reference: {payment.Reference}</p>";
 
         await _emailService.SendEmail(
             request,
-            null,
-            [to],
+            chapter: null,
+            [toMember],
             subject,
             body);
     }
@@ -829,7 +836,7 @@ public class MemberEmailService : IMemberEmailService
     public async Task SendSiteMessage(
         IServiceRequest request,
         SiteContactMessage message,
-        SiteEmailSettings settings)
+        IEnumerable<Member> siteAdmins)
     {
         var urlProvider = await _urlProviderFactory.Create(request);
 
@@ -840,7 +847,7 @@ public class MemberEmailService : IMemberEmailService
             { "url", urlProvider.MessageSiteAdminUrl(message.Id) }
         };
 
-        var to = new EmailAddressee(settings.ContactEmailAddress, string.Empty);
+        var to = siteAdmins.Select(x => x.ToEmailAddressee());
 
         await _emailService.SendEmail(
             request,
@@ -895,12 +902,13 @@ public class MemberEmailService : IMemberEmailService
             { "url", url }
         };
 
-        await _emailService.SendMemberEmail(
+        await _emailService.SendEmail(
             request,
             null,
-            member.ToEmailAddressee(),
+            [member.ToEmailAddressee()],
             subject,
-            body);
+            body,
+            parameters);
     }
 
     public async Task SendSiteWelcomeEmail(

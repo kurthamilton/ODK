@@ -20,12 +20,15 @@ public class TopicService : ITopicService
 
     public async Task AddNewChapterTopics(IMemberChapterServiceRequest request, IReadOnlyCollection<NewTopicModel> models)
     {
-        var (platform, chapter) = (request.Platform, request.Chapter);
+        var chapter = request.Chapter;
 
-        var (topics, chapterNewTopics, siteEmailSettings) = await _unitOfWork.RunAsync(
+        var (topics, chapterNewTopics, siteAdmins) = await _unitOfWork.RunAsync(
             x => x.TopicRepository.GetAll(),
             x => x.NewChapterTopicRepository.GetByChapterId(chapter.Id),
-            x => x.SiteEmailSettingsRepository.Get(platform));
+            x => x.MemberRepository
+                .Query()
+                .IsSiteAdmin()
+                .GetAll());
 
         var topicGroupDictionary = topics
             .GroupBy(x => x.TopicGroup.Name)
@@ -81,18 +84,21 @@ public class TopicService : ITopicService
             _unitOfWork.NewChapterTopicRepository.AddMany(newTopics);
             await _unitOfWork.SaveChangesAsync();
 
-            await _memberEmailService.SendNewTopicEmail(request, newTopics, siteEmailSettings);
+            await _memberEmailService.SendNewTopicEmail(request, newTopics, siteAdmins);
         }
     }
 
     public async Task AddNewMemberTopics(IMemberServiceRequest request, IReadOnlyCollection<NewTopicModel> models)
     {
-        var (currentMember, platform) = (request.CurrentMember, request.Platform);
+        var currentMember = request.CurrentMember;
 
-        var (topics, memberNewTopics, siteEmailSettings) = await _unitOfWork.RunAsync(
+        var (topics, memberNewTopics, siteAdmins) = await _unitOfWork.RunAsync(
             x => x.TopicRepository.GetAll(),
             x => x.NewMemberTopicRepository.GetByMemberId(currentMember.Id),
-            x => x.SiteEmailSettingsRepository.Get(platform));
+            x => x.MemberRepository
+                .Query()
+                .IsSiteAdmin()
+                .GetAll());
 
         var topicGroupDictionary = topics
             .GroupBy(x => x.TopicGroup.Name)
@@ -147,7 +153,7 @@ public class TopicService : ITopicService
             _unitOfWork.NewMemberTopicRepository.AddMany(newTopics);
             await _unitOfWork.SaveChangesAsync();
 
-            await _memberEmailService.SendNewTopicEmail(request, newTopics, siteEmailSettings);
+            await _memberEmailService.SendNewTopicEmail(request, newTopics, siteAdmins);
         }
     }
 }

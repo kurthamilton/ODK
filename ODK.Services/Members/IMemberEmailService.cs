@@ -84,7 +84,7 @@ public interface IMemberEmailService
         Issue issue,
         IssueMessage reply,
         Member? toMember,
-        SiteEmailSettings siteEmailSettings);
+        IEnumerable<Member> siteAdmins);
 
     Task SendMemberChapterSubscriptionConfirmationEmail(
         IChapterServiceRequest request,
@@ -112,14 +112,14 @@ public interface IMemberEmailService
 
     Task SendNewGroupEmail(
         IServiceRequest request,
-        SiteEmailSettings settings);
+        IEnumerable<Member> siteAdmins);
 
     Task SendNewIssueEmail(
         IServiceRequest request,
         Member member,
         Issue issue,
         IssueMessage message,
-        SiteEmailSettings settings);
+        IEnumerable<Member> siteAdmins);
 
     Task SendNewMemberAdminEmail(
         IChapterServiceRequest request,
@@ -138,7 +138,7 @@ public interface IMemberEmailService
     Task SendNewTopicEmail(
         IServiceRequest request,
         IReadOnlyCollection<INewTopic> newTopics,
-        SiteEmailSettings settings);
+        IEnumerable<Member> siteAdmins);
 
     Task SendPasswordResetEmail(
         IServiceRequest request,
@@ -152,12 +152,12 @@ public interface IMemberEmailService
         Chapter? chapter,
         Payment payment,
         Currency currency,
-        SiteEmailSettings settings);
+        IEnumerable<Member> siteAdmins);
 
     Task SendSiteMessage(
         IServiceRequest request,
         SiteContactMessage message,
-        SiteEmailSettings settings);
+        IEnumerable<Member> siteAdmins);
 
     Task<ServiceResult> SendSiteMessageReply(
         IServiceRequest request,

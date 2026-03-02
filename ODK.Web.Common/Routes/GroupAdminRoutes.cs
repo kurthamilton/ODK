@@ -1,6 +1,7 @@
 ﻿using System;
 using ODK.Core.Chapters;
 using ODK.Core.Emails;
+using ODK.Core.Messages;
 using ODK.Core.Platforms;
 using ODK.Services.Security;
 
@@ -27,8 +28,8 @@ public class GroupAdminRoutes
     public GroupAdminRoute Conversations(Chapter chapter)
         => Group(chapter).Child("/conversations", ChapterAdminSecurable.Conversations);
 
-    public GroupAdminRoute ConversationsRead(Chapter chapter)
-        => Conversations(chapter).Child("/read");
+    public GroupAdminRoute Conversations(Chapter chapter, MessageStatus status)
+        => Group(chapter).Child($"/conversations?status={status}", ChapterAdminSecurable.Conversations);
 
     public GroupAdminRoute Create() => Index().Child("/new");
 

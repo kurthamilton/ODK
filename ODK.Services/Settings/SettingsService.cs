@@ -85,7 +85,6 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
         var settings = await GetSiteAdminRestrictedContent(request,
             x => x.SiteEmailSettingsRepository.Get(request.Platform));
 
-        settings.ContactEmailAddress = model.ContactEmailAddress;
         settings.FromEmailAddress = model.FromEmailAddress;
         settings.FromName = model.FromEmailName;
         settings.PlatformTitle = model.PlatformTitle;

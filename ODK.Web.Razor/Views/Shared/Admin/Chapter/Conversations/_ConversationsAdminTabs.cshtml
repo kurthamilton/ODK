@@ -1,4 +1,5 @@
-﻿@using ODK.Services.Chapters.ViewModels
+﻿@using ODK.Core.Messages
+@using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @model ChapterConversationsAdminPageViewModel
@@ -6,8 +7,9 @@
 @{
     var menuItems = new[]
     {
-        new MenuItem { Link = OdkRoutes.GroupAdmin.Conversations(Model.Chapter).Path, Text = "Unread" },
-        new MenuItem { Link = OdkRoutes.GroupAdmin.ConversationsRead(Model.Chapter).Path, Text = "Read" }
+        new MenuItem { Link = OdkRoutes.GroupAdmin.Conversations(Model.Chapter).Path, Text = "Unread", Active = Model.Status == MessageStatus.Unread },
+        new MenuItem { Link = OdkRoutes.GroupAdmin.Conversations(Model.Chapter, MessageStatus.Read).Path, Text = "Read", Active = Model.Status == MessageStatus.Read },
+        new MenuItem { Link = OdkRoutes.GroupAdmin.Conversations(Model.Chapter, MessageStatus.Closed).Path, Text = "Closed", Active = Model.Status == MessageStatus.Closed }
     };
 }
 

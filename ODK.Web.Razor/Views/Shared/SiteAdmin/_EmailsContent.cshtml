@@ -6,7 +6,7 @@
 @inject IRequestStore RequestStore
 @inject ISettingsService SettingsService
 @{
-    var request = RequestStore.MemberChapterServiceRequest;
+    var request = RequestStore.MemberServiceRequest;
     var settings = await SettingsService.GetSiteEmailSettings(request);
 }
 
@@ -16,7 +16,6 @@
         @*@Html.AntiForgeryToken()*@
         @await Html.PartialAsync("SiteAdmin/_EmailSettingsForm", new SiteEmailSettingsViewModel
         {
-            ContactEmailAddress = settings.ContactEmailAddress,
             FromEmailAddress = settings.FromEmailAddress,
             FromEmailName = settings.FromName,
             PlatformTitle = settings.PlatformTitle,

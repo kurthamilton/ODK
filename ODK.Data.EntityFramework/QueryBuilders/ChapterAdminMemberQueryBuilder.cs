@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Core.Platforms;

@@ -160,12 +160,16 @@ public class ContactService : IContactService
     {
         ValidateRequest(fromAddress, message);
 
-        var platform = request.Platform;
-
-        var siteEmailSettings = await _unitOfWork.SiteEmailSettingsRepository.Get(platform).Run();
+        var siteAdmins = await _unitOfWork.MemberRepository
+            .Query()
+            .IsSiteAdmin()
+            .GetAll()
+            .Run();
 
         var result = await _recaptchaService.Verify(recaptchaToken);
-        if (!_recaptchaService.Success(result))
+        
+        var flagged = !_recaptchaService.Success(result);
+        if (flagged)
         {
             message = $"[FLAGGED AS SPAM: {result.Score} / 1.0] {message}";
         }
@@ -179,9 +183,13 @@ public class ContactService : IContactService
         };
 
         _unitOfWork.SiteContactMessageRepository.Add(contactMessage);
+
         await _unitOfWork.SaveChangesAsync();
 
-        await _memberEmailService.SendSiteMessage(request, contactMessage, siteEmailSettings);
+        if (!flagged)
+        {
+            await _memberEmailService.SendSiteMessage(request, contactMessage, siteAdmins);
+        }        
     }
 
     public async Task<ServiceResult> StartChapterConversation(

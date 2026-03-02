@@ -49,7 +49,7 @@ public class IssueAdminService : OdkAdminServiceBase, IIssueAdminService
 
     public async Task<ServiceResult> ReplyToIssue(IMemberServiceRequest request, Guid issueId, string message)
     {
-        var (currentMember, platform) = (request.CurrentMember, request.Platform);
+        var currentMember = request.CurrentMember;
 
         var issue = await GetSiteAdminRestrictedContent(request,
             x => x.IssueRepository.GetById(issueId));
@@ -70,16 +70,19 @@ public class IssueAdminService : OdkAdminServiceBase, IIssueAdminService
         _unitOfWork.IssueMessageRepository.Add(issueMessage);
         await _unitOfWork.SaveChangesAsync();
 
-        var (member, siteEmailSettings) = await _unitOfWork.RunAsync(
+        var (member, siteAdmins) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(issue.MemberId),
-            x => x.SiteEmailSettingsRepository.Get(platform));
+            x => x.MemberRepository
+                .Query()
+                .IsSiteAdmin()
+                .GetAll());
 
         await _memberEmailService.SendIssueReply(
             request,
             issue,
             issueMessage,
             member,
-            siteEmailSettings);
+            siteAdmins);
 
         return ServiceResult.Successful();
     }

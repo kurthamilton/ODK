@@ -48,6 +48,12 @@ public class MemberQueryBuilder : DatabaseEntityQueryBuilder<Member, IMemberQuer
         return this;
     }
 
+    public IMemberQueryBuilder IsSiteAdmin()
+    {
+        Query = Query.Where(x => x.SiteAdmin);
+        return this;
+    }
+
     public IMemberQueryBuilder Latest(int pageSize)
     {
         Query = Query

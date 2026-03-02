@@ -158,12 +158,15 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             memberSubscriptionDto,
             memberChapters,
             nameExists,
-            siteEmailSettings
+            siteAdmins
         ) = await _unitOfWork.RunAsync(
             x => x.MemberSiteSubscriptionRepository.GetDtoByMemberId(currentMember.Id, platform),
             x => x.ChapterRepository.GetByOwnerId(platform, currentMember.Id),
             x => x.ChapterRepository.NameExists(name),
-            x => x.SiteEmailSettingsRepository.Get(platform));
+            x => x.MemberRepository
+                .Query()
+                .IsSiteAdmin()
+                .GetAll());
 
         if (nameExists)
         {
@@ -284,7 +287,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         await _memberEmailService.SendNewGroupEmail(
             request,
-            siteEmailSettings);
+            siteAdmins);
 
         return ServiceResult<Chapter?>.Successful(chapter);
     }
@@ -744,12 +747,12 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     public async Task<ChapterConversationsAdminPageViewModel> GetChapterConversationsViewModel(
         IMemberChapterAdminServiceRequest request, MessageStatus status)
     {
-        var (platform, chapter) = (request.Platform, request.Chapter);
+        var chapter = request.Chapter;
 
         var (privacySettings, conversations) = await GetChapterAdminRestrictedContent(
             request,
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterConversationRepository.GetDtosByChapterId(chapter.Id, readByChapter: readByChapter));
+            x => x.ChapterConversationRepository.GetDtosByChapterId(chapter.Id, status));
 
         var repliedConversations = new List<ChapterConversationDto>();
         var unrepliedConversations = new List<ChapterConversationDto>();
@@ -758,9 +761,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         {
             Chapter = chapter,
             Conversations = conversations,
-            Platform = platform,
             PrivacySettings = privacySettings,
-            ReadByChapter = readByChapter
+            Status = status
         };
     }
 
