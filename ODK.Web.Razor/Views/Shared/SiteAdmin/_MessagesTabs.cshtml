@@ -1,0 +1,25 @@
+﻿@using ODK.Services.Chapters.ViewModels
+@using ODK.Services.Contact.ViewModels
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Components
+@model MessagesAdminPageViewModel
+@inject IOdkRoutes OdkRoutes
+
+@await Html.PartialAsync("Components/_Tabs", new TabsViewModel
+{
+    MenuItems = new[]
+    {
+        new MenuItem
+        {
+            Active = !Model.IsSpam,
+            Link = OdkRoutes.SiteAdmin.Messages,
+            Text = $"Messages ({Model.MessageCount})"
+        },
+        new MenuItem
+        {
+            Active = Model.IsSpam,
+            Link = OdkRoutes.SiteAdmin.MessagesSpam,
+            Text = $"Spam ({Model.SpamMessageCount})"
+        }
+    }
+})

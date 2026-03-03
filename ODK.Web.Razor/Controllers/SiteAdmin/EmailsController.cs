@@ -9,7 +9,6 @@ using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
 using ODK.Web.Razor.Models.Feedback;
 using ODK.Web.Razor.Models.SiteAdmin;
-using ODK.Web.Razor.Services;
 
 namespace ODK.Web.Razor.Controllers.SiteAdmin;
 
@@ -43,7 +42,6 @@ public class EmailsController : OdkControllerBase
     {
         var model = new EmailSettingsUpdateModel
         {
-            ContactEmailAddress = viewModel.ContactEmailAddress,
             FromEmailAddress = viewModel.FromEmailAddress,
             FromEmailName = viewModel.FromEmailName,
             PlatformTitle = viewModel.PlatformTitle,

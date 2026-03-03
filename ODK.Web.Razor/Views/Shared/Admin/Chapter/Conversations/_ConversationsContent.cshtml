@@ -10,32 +10,6 @@
 
 <p>Contact messages sent by logged in users</p>
 
-<p>
-    <span>Your </span>
-    @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
-    {
-        Route = OdkRoutes.GroupAdmin.Privacy(Model.Chapter),
-        Text = "privacy settings",
-        UnauthorizedBehaviour = AdminLinkUnauthorizedBehaviour.Disable
-    })
-    <span>currently allow</span>
-    @switch (Model.PrivacySettings?.Conversations)
-    {
-        case null:
-        case ChapterFeatureVisibilityType.Public:
-            @: anyone logged in
-            break;
-        case ChapterFeatureVisibilityType.ActiveMembers:
-            @: active members
-            break;
-        case ChapterFeatureVisibilityType.AllMembers:
-            @: all members
-            break;
-    }
-
-    to start conversations.
-</p>
-
 @await Html.PartialAsync("Admin/Chapter/Conversations/_ConversationsAdminTabs")
 
 @if (Model.Conversations.Count > 0)
@@ -78,10 +52,10 @@
                                 Text = conversation.Subject
                             })                            
                         </td>
-                        <td>@conversation.CreatedUtc.ToFriendlyDateTimeString(Model.Chapter.TimeZone)</td>
+                        <td>@conversation.CreatedUtc.ToRelativeTime(Model.Chapter.TimeZone)</td>
                         <td>
                             <div>
-                                @dto.LastMessage.Message.CreatedUtc.ToFriendlyDateTimeString(Model.Chapter.TimeZone)
+                                @dto.LastMessage.Message.CreatedUtc.ToRelativeTime(Model.Chapter.TimeZone)
                             </div>
                             @if (dto.LastMessage.Message.MemberId != dto.Conversation.MemberId)
                             {

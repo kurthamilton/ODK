@@ -1,5 +1,5 @@
 ﻿using ODK.Core.Chapters;
-using ODK.Core.Platforms;
+using ODK.Core.Messages;
 using ODK.Data.Core.Chapters;
 
 namespace ODK.Services.Chapters.ViewModels;
@@ -10,9 +10,5 @@ public class ChapterConversationsAdminPageViewModel
 
     public required IReadOnlyCollection<ChapterConversationDto> Conversations { get; init; }
 
-    public required PlatformType Platform { get; init; }
-
-    public required ChapterPrivacySettings? PrivacySettings { get; init; }
-
-    public required bool ReadByChapter { get; init; }
+    public required MessageStatus Status { get; init; }
 }

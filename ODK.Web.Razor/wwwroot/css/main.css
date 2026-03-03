@@ -13194,6 +13194,9 @@ footer {
 .section--admin {
   margin-bottom: 3rem;
 }
+.section--admin h2, .section--admin .h2 {
+  margin-bottom: 1rem;
+}
 
 .side-menu {
   --odk-side-menu-color: var(--bs-secondary-color);

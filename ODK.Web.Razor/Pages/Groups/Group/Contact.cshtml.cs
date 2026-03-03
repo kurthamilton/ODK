@@ -1,8 +1,16 @@
+using Microsoft.AspNetCore.Mvc;
+
 namespace ODK.Web.Razor.Pages.Groups.Group;
 
 public class ContactModel : OdkGroupPageModel
 {
-    public void OnGet()
+    public IActionResult OnGet()
     {
+        if (CurrentMemberOrDefault != null)
+        {
+            return Redirect(OdkRoutes.Groups.Conversations(Chapter));
+        }
+
+        return Page();
     }
 }

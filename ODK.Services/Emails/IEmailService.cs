@@ -62,13 +62,6 @@ public interface IEmailService
         Chapter? chapter,
         EmailAddressee to,
         string subject,
-        string body);
-
-    Task<ServiceResult> SendMemberEmail(
-        IServiceRequest request,
-        Chapter? chapter,
-        EmailAddressee to,
-        string subject,
         string body,
         IDictionary<string, string> parameters);
 }

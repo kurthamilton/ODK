@@ -16,13 +16,6 @@ public interface IAuthorizationService
         ChapterMembershipSettings? membershipSettings,
         ChapterPrivacySettings? privacySettings);
 
-    bool CanStartConversation(
-        Guid chapterId,
-        Member member,
-        MemberSubscription? subscription,
-        ChapterMembershipSettings? membershipSettings,
-        ChapterPrivacySettings? privacySettings);
-
     bool CanViewEvent(
         Event @event,
         Member? member,

@@ -1,0 +1,60 @@
+﻿@page "/account/conversations/{id:guid}"
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Services.Members
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Account
+@using ODK.Web.Razor.Models.Chapters
+@using ODK.Web.Razor.Models.Components
+@attribute [Authorize]
+@model ConversationModel
+@inject IMemberViewModelService MemberViewModelService
+@inject IOdkRoutes OdkRoutes
+@{
+    Layout = "_HomeLayout";
+
+    var viewModel = await MemberViewModelService.GetMemberConversationPage(
+        Model.MemberServiceRequest, Model.ConversationId);
+
+    Model.Title = $"{viewModel.Conversation.Subject} | My conversations";
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Title = "Account",
+    Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
+    {
+        Active = Model.OdkRoutes.Account.Conversations(null),
+        Title = "Conversation",
+        Content =
+            @<div>
+                <section class="section">
+                    @await Html.PartialAsync("Conversations/_ConversationContent", new ChapterConversationViewModel
+                    {
+                        Breadcrumbs = 
+                        [
+                            new MenuItem 
+                            { 
+                                Link = OdkRoutes.Account.Conversations(chapter: null, archived: viewModel.Conversation.ArchivedUtc != null), 
+                                Text = "My conversations" 
+                            },
+                            new MenuItem 
+                            { 
+                                Link = OdkRoutes.Groups.Group(viewModel.Chapter), 
+                                Text = viewModel.Chapter.GetDisplayName(Model.Platform) 
+                            },
+                            new MenuItem 
+                            { 
+                                Text = viewModel.Conversation.Subject 
+                            }
+                        ],
+                        Chapter = viewModel.Chapter,
+                        Conversation = viewModel.Conversation,
+                        ConversationUrlFunc = id => OdkRoutes.Account.Conversation(chapter: null, id),
+                        CurrentMember = Model.CurrentMember,
+                        Messages = viewModel.Messages,
+                        OtherConversations = viewModel.OtherConversations
+                    })
+                </section>
+            </div>
+    })
+})

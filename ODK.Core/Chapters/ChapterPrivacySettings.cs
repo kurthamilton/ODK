@@ -5,7 +5,6 @@ public class ChapterPrivacySettings : IChapterEntity
     internal static readonly IReadOnlyDictionary<ChapterFeatureType, ChapterFeatureVisibilityType> Defaults =
         new Dictionary<ChapterFeatureType, ChapterFeatureVisibilityType>
         {
-            { ChapterFeatureType.Conversations, ChapterFeatureVisibilityType.Public },
             { ChapterFeatureType.EventResponses, ChapterFeatureVisibilityType.AllMembers },
             { ChapterFeatureType.Events, ChapterFeatureVisibilityType.ActiveMembers },
             { ChapterFeatureType.Members, ChapterFeatureVisibilityType.ActiveMembers },
@@ -13,8 +12,6 @@ public class ChapterPrivacySettings : IChapterEntity
         }.AsReadOnly();
 
     public Guid ChapterId { get; set; }
-
-    public ChapterFeatureVisibilityType? Conversations { get; set; }
 
     public ChapterFeatureVisibilityType? EventResponseVisibility { get; set; }
 
@@ -24,5 +21,5 @@ public class ChapterPrivacySettings : IChapterEntity
 
     public ChapterFeatureVisibilityType? MemberVisibility { get; set; }
 
-    public ChapterFeatureVisibilityType? VenueVisibility { get; set; }    
+    public ChapterFeatureVisibilityType? VenueVisibility { get; set; }
 }

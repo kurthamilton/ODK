@@ -1,11 +1,14 @@
 ﻿@page "/{chapterName}/conversations/{id:guid}"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
+@using ODK.Core.Platforms
 @using ODK.Services.Chapters
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Chapters
 @using ODK.Web.Razor.Models.Components
 @model ConversationModel
 @inject IChapterViewModelService ChapterViewModelService
+@inject IOdkRoutes OdkRoutes
 @{
     Layout = "_OdkChapterLayout";
 
@@ -13,10 +16,36 @@
         Model.MemberChapterServiceRequest, Model.ConversationId);
 
     Model.Title = $"{viewModel.Conversation.Subject} | Conversations";
+
+    var breadcrumbs = new[]
+    {
+        Model.Platform == PlatformType.DrunkenKnitwits
+            ? new MenuItem
+            {
+                Link = OdkRoutes.Groups.Group(Model.Chapter),
+                Text = Model.Chapter.GetDisplayName(Model.Platform)
+            }
+            : new MenuItem(),
+        new MenuItem { Link = OdkRoutes.Groups.Conversations(Model.Chapter, archived: viewModel.Conversation.ArchivedUtc != null), Text = "Conversations" },
+        new MenuItem { Text = viewModel.Conversation.Subject }
+    }
+    .Where(x => !string.IsNullOrEmpty(x.Text))
+    .ToArray();
+
+    var conversationViewModel = new ChapterConversationViewModel
+    {
+        Breadcrumbs = breadcrumbs,
+        Chapter = viewModel.Chapter,
+        Conversation = viewModel.Conversation,
+        ConversationUrlFunc = id => OdkRoutes.Groups.Conversation(chapter: Model.Chapter, id),
+        CurrentMember = Model.CurrentMember,
+        Messages = viewModel.Messages,
+        OtherConversations = viewModel.OtherConversations
+    };
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Title = "Contact",
-    Content = await Html.PartialAsync("Groups/_GroupConversationContent", viewModel)
+    Title = "Conversation",
+    Content = await Html.PartialAsync("Conversations/_ConversationContent", conversationViewModel)
 })

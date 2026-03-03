@@ -21,7 +21,10 @@
 
             <form class="d-flex align-items-center" method="post" action="/account/picture/rotate">
                 <button class="btn-icon" data-bs-toggle="tooltip" data-bs-title="Rotate">
-                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Undo))
+                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Undo)
+                    {
+                        Class = "flip-horizontal"
+                    })
                 </button>
             </form>
         </div>

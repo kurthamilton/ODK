@@ -184,22 +184,6 @@ public class EmailService : IEmailService
         Chapter? chapter,
         EmailAddressee to,
         string subject,
-        string body)
-    {
-        return await SendEmail(request, new SendEmailOptions
-        {
-            Body = body,
-            Chapter = chapter,
-            Subject = subject,
-            To = [to]
-        });
-    }
-
-    public async Task<ServiceResult> SendMemberEmail(
-        IServiceRequest request,
-        Chapter? chapter,
-        EmailAddressee to,
-        string subject,
         string body,
         IDictionary<string, string> parameters)
     {

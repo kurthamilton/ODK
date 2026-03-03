@@ -2,6 +2,8 @@
 
 public interface IContactService
 {
+    Task<ServiceResult> ArchiveChapterConversation(IMemberServiceRequest request, Guid conversationId);
+
     Task<ServiceResult> ReplyToChapterConversation(IMemberServiceRequest request, Guid conversationId, string message);
 
     Task SendChapterContactMessage(
@@ -21,4 +23,6 @@ public interface IContactService
         string subject,
         string message,
         string recaptchaToken);
+
+    Task<ServiceResult> UnarchiveChapterConversation(IMemberServiceRequest request, Guid conversationId);
 }

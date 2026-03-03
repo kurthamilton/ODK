@@ -15,9 +15,16 @@ public class ContactModel : OdkPageModel
 
     public bool Sent { get; private set; }
 
-    public void OnGet(bool sent)
+    public IActionResult OnGet(bool sent)
     {
+        if (CurrentMemberOrDefault != null)
+        {
+            return Redirect(OdkRoutes.Groups.Conversations(Chapter));
+        }
+
         Sent = sent;
+
+        return Page();
     }
 
     public async Task<IActionResult> OnPostAsync(ContactFormViewModel viewModel)
@@ -33,6 +40,6 @@ public class ContactModel : OdkPageModel
             viewModel.Message ?? "",
             viewModel.Recaptcha ?? "");
 
-        return Redirect($"{OdkRoutes.Groups.Contact(Chapter)}?Sent=True");
+        return Redirect($"{OdkRoutes.Groups.Contact(Chapter)}?sent=True");
     }
 }

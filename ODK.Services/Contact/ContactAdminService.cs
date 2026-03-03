@@ -11,43 +11,54 @@ public class ContactAdminService : OdkAdminServiceBase, IContactAdminService
 {
     private readonly IHtmlSanitizer _htmlSanitizer;
     private readonly IMemberEmailService _memberEmailService;
+    private readonly ContactAdminServiceSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
 
     public ContactAdminService(
         IUnitOfWork unitOfWork,
         IHtmlSanitizer htmlSanitizer,
-        IMemberEmailService memberEmailService)
+        IMemberEmailService memberEmailService,
+        ContactAdminServiceSettings settings)
         : base(unitOfWork)
     {
         _htmlSanitizer = htmlSanitizer;
         _memberEmailService = memberEmailService;
+        _settings = settings;
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<MessagesAdminPageViewModel> GetMessagesViewModel(Guid currentMemberId)
+    public async Task<MessagesAdminPageViewModel> GetMessagesViewModel(IMemberServiceRequest request, bool spam)
     {
-        var (currentMember, messages) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(currentMemberId),
-            x => x.SiteContactMessageRepository.GetAll());
+        var spamThreshold = _settings.ContactMessageRecaptchaScoreThreshold;
 
-        AssertMemberIsSiteAdmin(currentMember);
+        var (messages, otherMessageCount) = await GetSiteAdminRestrictedContent(request,
+            x => x.SiteContactMessageRepository
+                .Query()
+                .ForSpamScore(spam, spamThreshold)
+                .GetAll(),
+            x => x.SiteContactMessageRepository
+                .Query()
+                .ForSpamScore(!spam, spamThreshold)
+                .Count());
 
         return new MessagesAdminPageViewModel
         {
-            CurrentMember = currentMember,
-            Messages = messages
+            CurrentMember = request.CurrentMember,
+            IsSpam = spam,
+            MessageCount = spam ? otherMessageCount : messages.Count,
+            Messages = messages,
+            SpamMessageCount = spam ? messages.Count : otherMessageCount
         };
     }
 
-    public async Task<MessageAdminPageViewModel> GetMessageViewModel(Guid currentMemberId, Guid messageId)
+    public async Task<MessageAdminPageViewModel> GetMessageViewModel(IMemberServiceRequest request, Guid messageId)
     {
-        var (currentMember, message, replies, notifications) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(currentMemberId),
+        var currentMember = request.CurrentMember;
+
+        var (message, replies, notifications) = await GetSiteAdminRestrictedContent(request,
             x => x.SiteContactMessageRepository.GetById(messageId),
             x => x.SiteContactMessageReplyRepository.GetBySiteContactMessageId(messageId),
-            x => x.NotificationRepository.GetUnreadByMemberId(currentMemberId, NotificationType.ChapterContactMessage, messageId));
-
-        AssertMemberIsSiteAdmin(currentMember);
+            x => x.NotificationRepository.GetUnreadByMemberId(currentMember.Id, NotificationType.ChapterContactMessage, messageId));
 
         if (notifications.Count > 0)
         {
@@ -98,10 +109,9 @@ public class ContactAdminService : OdkAdminServiceBase, IContactAdminService
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> SetMessageAsReplied(Guid currentMemberId, Guid messageId)
+    public async Task<ServiceResult> SetMessageAsReplied(IMemberServiceRequest request, Guid messageId)
     {
-        var (currentMember, originalMessage) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(currentMemberId),
+        var originalMessage = await GetSiteAdminRestrictedContent(request,
             x => x.SiteContactMessageRepository.GetById(messageId));
 
         originalMessage.RepliedUtc = DateTime.UtcNow;

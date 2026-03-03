@@ -24,7 +24,6 @@ using ODK.Services.Chapters.ViewModels;
 using ODK.Services.Events.ViewModels;
 using ODK.Services.Geolocation;
 using ODK.Services.Logging;
-using ODK.Services.Security;
 using ODK.Services.SocialMedia;
 using ODK.Services.SocialMedia.ViewModels;
 
@@ -285,15 +284,16 @@ public class ChapterViewModelService : IChapterViewModelService
         };
     }
 
-    public async Task<GroupContactPageViewModel> GetGroupContactPage(IChapterServiceRequest request)
+    public async Task<GroupConversationsPageViewModel> GetGroupConversationsPage(IMemberChapterServiceRequest request, bool archived)
     {
-        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMemberOrDefault);
+        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
         var (
             isAdmin,
             hasProperties,
             hasQuestions,
             conversations,
+            otherConversationCount,
             membershipSettings,
             privacySettings,
             memberSubscription,
@@ -305,9 +305,19 @@ public class ChapterViewModelService : IChapterViewModelService
                 : new DefaultDeferredQueryAny(false),
             x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
-            x => currentMember != null
-                ? x.ChapterConversationRepository.GetDtosByMemberId(currentMember.Id, chapter.Id)
-                : new DefaultDeferredQueryMultiple<ChapterConversationDto>(),
+            x => x.ChapterConversationRepository
+                    .Query()
+                    .ForChapter(chapter.Id)
+                    .ForMember(currentMember.Id)
+                    .Archived(archived)
+                    .ToDto()
+                    .GetAll(),
+            x => x.ChapterConversationRepository
+                .Query()
+                .ForChapter(chapter.Id)
+                .ForMember(currentMember.Id)
+                .Archived(!archived)
+                .Count(),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
             x => currentMember != null
@@ -316,13 +326,11 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.ChapterPageRepository.GetByChapterId(chapter.Id),
             x => x.SitePaymentSettingsRepository.GetActive());
 
-        var canStartConversation = currentMember != null
-            ? _authorizationService.CanStartConversation(chapter.Id, currentMember, memberSubscription, membershipSettings, privacySettings)
-            : false;
-
-        return new GroupContactPageViewModel
+        return new GroupConversationsPageViewModel
         {
-            CanStartConversation = canStartConversation,
+            ActiveConversationCount = !archived ? conversations.Count : otherConversationCount,
+            Archived = archived,
+            ArchivedConversationCount = archived ? conversations.Count : otherConversationCount,
             Chapter = chapter,
             ChapterPages = chapterPages,
             Conversations = conversations,

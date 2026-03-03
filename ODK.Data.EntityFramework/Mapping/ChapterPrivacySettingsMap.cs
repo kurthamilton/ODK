@@ -12,9 +12,6 @@ public class ChapterPrivacySettingsMap : IEntityTypeConfiguration<ChapterPrivacy
 
         builder.HasKey(x => x.ChapterId);
 
-        builder.Property(x => x.Conversations)
-            .HasConversion<int?>();
-
         builder.Property(x => x.EventResponseVisibility)
             .HasConversion<int?>();
 

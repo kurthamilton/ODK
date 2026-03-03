@@ -1,0 +1,39 @@
+﻿@page "/groups/{slug}/conversations"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Services.Chapters
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Chapters
+@using ODK.Web.Razor.Models.Groups
+@model ConversationsModel
+@inject IChapterViewModelService ChapterViewModelService
+@inject IOdkRoutes OdkRoutes
+@{
+    Layout = "_HomeLayout";
+    Model.Title = "Conversations";
+
+    var viewModel = await ChapterViewModelService.GetGroupConversationsPage(Model.MemberChapterServiceRequest, Model.Archived);
+}
+
+@await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel
+{
+    Title = "Conversations",
+    Content = await Html.PartialAsync("Conversations/_ConversationsContent", new ChapterConversationsViewModel
+    {
+        ActiveConversationCount = viewModel.ActiveConversationCount,
+        Archived = Model.Archived,
+        ArchivedConversationCount = viewModel.ArchivedConversationCount,
+        Chapter = Model.Chapter,
+        Chapters = null,
+        Conversations = viewModel.Conversations,
+        ConversationsUrlFunc = archived => OdkRoutes.Groups.Conversations(Model.Chapter, archived),
+        ConversationUrlFunc = id => OdkRoutes.Groups.Conversation(Model.Chapter, id),
+        CurrentMember = Model.CurrentMember
+    }),
+    Group = viewModel
+})
+
+@section scripts
+{
+    @await Html.PartialAsync("Components/Scripts/_Recaptcha")
+}

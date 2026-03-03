@@ -534,16 +534,15 @@ public class PaymentService : IPaymentService
             result.Currency != null &&
             result.Member != null)
         {
-            var metadata = PaymentMetadataModel.FromDictionary(webhook.Metadata);
-            var platform = metadata.Platform ?? PlatformType.DrunkenKnitwits;
-
-            var siteEmailSettings = await _unitOfWork.SiteEmailSettingsRepository
-                .Get(platform)
+            var siteAdmins = await _unitOfWork.MemberRepository
+                .Query()
+                .IsSiteAdmin()
+                .GetAll()
                 .Run();
 
             var (member, chapter, currency, payment) = (result.Member, result.Chapter, result.Currency, result.Payment);
 
-            await _memberEmailService.SendPaymentNotification(request, member, chapter, payment, currency, siteEmailSettings);
+            await _memberEmailService.SendPaymentNotification(request, member, chapter, payment, currency, siteAdmins);
         }
     }    
 

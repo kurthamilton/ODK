@@ -5,9 +5,6 @@ namespace ODK.Web.Razor.Models.Admin.Chapters;
 
 public class ChapterPrivacySettingsFormViewModel
 {
-    [DisplayName("Who can start conversations")]
-    public ChapterFeatureVisibilityType? Conversations { get; set; }
-
     [DisplayName("Who can respond to events")]
     public ChapterFeatureVisibilityType? EventResponseVisibility { get; set; }
 

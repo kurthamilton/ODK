@@ -3,6 +3,7 @@
 public enum IconType
 {
     None,
+    Archive,
     ArrowCircleDown,
     ArrowCircleUp,
     ArrowLeft,
@@ -37,6 +38,7 @@ public enum IconType
     MagnifyingGlass,
     Maximize,
     Members,
+    Message,
     Moon,
     Plus,
     QuestionCircle,

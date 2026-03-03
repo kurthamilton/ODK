@@ -26,6 +26,8 @@ public class MenuItem
 
     public IReadOnlyCollection<MenuItem>? Children { get; init; }
 
+    public bool Disabled { get; init; }
+
     public string? ExternalLink { get; init; }
 
     public bool Hidden { get; init; }

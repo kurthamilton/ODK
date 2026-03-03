@@ -10,7 +10,7 @@
     Model.Title = "Conversations | Admin";
 
     var request = Model.MemberChapterAdminServiceRequest;
-    var viewModel = await ChapterAdminService.GetChapterConversationsViewModel(request, readByChapter: false);
+    var viewModel = await ChapterAdminService.GetChapterConversationsViewModel(request, Model.Status);
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel

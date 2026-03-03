@@ -1,0 +1,102 @@
+﻿@using ODK.Core.Utils
+@using ODK.Web.Razor.Models.Chapters
+@using ODK.Web.Razor.Models.Components
+@model ChapterConversationViewModel
+
+@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+{
+    Breadcrumbs = Model.Breadcrumbs
+})
+
+<div class="row mt-section">
+    <div class="col-md-8">
+        @if (Model.Conversation.ArchivedUtc != null)
+        {
+            <div class="alert alert-info mb-3">
+                <form method="post" action="/conversations/@Model.Conversation.Id/restore">
+                    <div class="d-flex align-items-center gap-2">
+                        <span>Archived @Model.Conversation.ArchivedUtc.Value.ToRelativeTime(Model.TimeZone).</span>
+                        <button class="btn btn-link" type="submit">Restore</button>
+                    </div>
+                </form>
+            </div>
+        }
+
+        <section class="section">
+            @await Html.PartialAsync("Components/_Panel", new PanelViewModel
+            {
+                TitleContentFunc = @<h5>Messages</h5>,
+                BodyContentFunc = 
+                    @<div>
+                        @await Html.PartialAsync("Chapters/_Conversation", Model)
+                    </div>
+            })    
+        </section>
+
+        <section class="section">
+            @await Html.PartialAsync("Components/_Panel", new PanelViewModel
+            {
+                TitleContentFunc = @<h5>Reply</h5>,
+                BodyContentFunc = 
+                    @<div>
+                        <form action="/conversations/@Model.Conversation.Id/reply" method="post">
+                            @*@Html.AntiForgeryToken()*@
+                            @await Html.PartialAsync("Conversations/_ConversationReplyForm", new ChapterConversationReplyFormViewModel())
+                            
+                            <div class="d-flex">
+                                <button class="btn btn-primary" type="submit">Send</button>
+
+                                @if (Model.Conversation.ArchivedUtc == null)
+                                {
+                                    <button class="btn btn-secondary ms-auto" type="button"
+                                        data-submit="#archive-conversation-form"
+                                        data-submit-confirm="Are you sure you want to archive this conversation?">
+                                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Archive))
+                                        <span>Archive</span>
+                                    </button>
+                                }
+                            </div>                            
+                        </form>
+
+                        @if (Model.Conversation.ArchivedUtc == null)
+                        {
+                            <form id="archive-conversation-form" method="post" action="/conversations/@Model.Conversation.Id/archive">
+                            </form>
+                        }                        
+                    </div>
+            })
+        </section>        
+    </div>
+
+    <div class="col-md-4 mt-section mt-md-0">
+        @if (Model.OtherConversations.Count > 0)
+        {
+            @await Html.PartialAsync("Components/_Panel", new PanelViewModel
+            {
+                TitleContentFunc = @<h5>Other conversations</h5>,
+                BodyContentFunc = 
+                    @<div class="list-group">
+                        @foreach (var dto in Model.OtherConversations.OrderByDescending(x => x.LastMessage.Message.CreatedUtc))
+                        {
+                            <div class="list-group-item">
+                                <div>
+                                    <a href="@Model.ConversationUrlFunc(dto.Conversation.Id)">
+                                        @dto.Conversation.Subject
+                                    </a>
+                                </div>
+                                <div class="small d-flex">
+                                    <span class="me-auto">
+                                        @dto.LastMessage.Message.CreatedUtc.ToFriendlyDateTimeString(Model.CurrentMember.TimeZone ?? Model.Chapter.TimeZone)
+                                    </span>
+                                    <span>
+                                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Message))
+                                        <span>@dto.MessageCount</span>
+                                    </span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+            })
+        }
+    </div>
+</div>

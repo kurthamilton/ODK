@@ -122,6 +122,10 @@ public static class DependencyRegistrar
             .AddScoped<IChapterSiteAdminService, ChapterSiteAdminService>()
             .AddScoped<IChapterViewModelService, ChapterViewModelService>()
             .AddScoped<IContactAdminService, ContactAdminService>()
+            .AddSingleton(new ContactAdminServiceSettings
+            {
+                ContactMessageRecaptchaScoreThreshold = appSettings.Recaptcha.ScoreThreshold
+            })
             .AddScoped<IContactService, ContactService>()
             .AddScoped<ICsvService, CsvService>()
             .AddScoped<IEmailAdminService, EmailAdminService>()

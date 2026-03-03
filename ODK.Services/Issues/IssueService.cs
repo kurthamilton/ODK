@@ -27,9 +27,13 @@ public class IssueService : IIssueService
             return ServiceResult.Failure("Title and message cannot be empty");
         }
 
-        var (currentMember, platform) = (request.CurrentMember, request.Platform);
+        var currentMember = request.CurrentMember;
 
-        var siteEmailSettings = await _unitOfWork.SiteEmailSettingsRepository.Get(platform).Run();
+        var siteAdmins = await _unitOfWork.MemberRepository
+            .Query()
+            .IsSiteAdmin()
+            .GetAll()
+            .Run();
 
         var issue = new Issue
         {
@@ -59,7 +63,7 @@ public class IssueService : IIssueService
             currentMember,
             issue,
             issueMessage,
-            siteEmailSettings);
+            siteAdmins);
 
         return ServiceResult.Successful();
     }
@@ -93,11 +97,14 @@ public class IssueService : IIssueService
 
     public async Task<ServiceResult> ReplyToIssue(IMemberServiceRequest request, Guid issueId, string message)
     {
-        var (currentMember, platform) = (request.CurrentMember, request.Platform);
+        var currentMember = request.CurrentMember;
 
-        var (issue, siteEmailSettings) = await _unitOfWork.RunAsync(
+        var (issue, siteAdmins) = await _unitOfWork.RunAsync(
             x => x.IssueRepository.GetById(issueId),
-            x => x.SiteEmailSettingsRepository.Get(platform));
+            x => x.MemberRepository
+                .Query()
+                .IsSiteAdmin()
+                .GetAll());
 
         OdkAssertions.MeetsCondition(issue, x => x.MemberId == currentMember.Id);
 
@@ -122,7 +129,7 @@ public class IssueService : IIssueService
             issue,
             issueMessage,
             null,
-            siteEmailSettings);
+            siteAdmins);
 
         return ServiceResult.Successful();
     }

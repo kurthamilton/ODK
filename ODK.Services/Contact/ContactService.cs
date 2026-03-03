@@ -34,14 +34,37 @@ public class ContactService : IContactService
         _unitOfWork = unitOfWork;
     }
 
+    public async Task<ServiceResult> ArchiveChapterConversation(IMemberServiceRequest request, Guid conversationId)
+    {
+        var currentMember = request.CurrentMember;
+
+        var conversation = await _unitOfWork.ChapterConversationRepository
+            .GetById(conversationId)
+            .Run();
+
+        OdkAssertions.BelongsToMember(conversation, currentMember.Id);
+
+        if (conversation.ArchivedUtc != null)
+        {
+            return ServiceResult.Successful();
+        }
+
+        conversation.ArchivedUtc = DateTime.UtcNow;
+        _unitOfWork.ChapterConversationRepository.Update(conversation);
+
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
+    }
+
     public async Task<ServiceResult> ReplyToChapterConversation(
         IMemberServiceRequest request, Guid conversationId, string message)
     {
-        var platform = request.Platform;
+        var (platform, currentMember) = (request.Platform, request.CurrentMember);
 
         var conversation = await _unitOfWork.ChapterConversationRepository.GetById(conversationId).Run();
 
-        OdkAssertions.MeetsCondition(conversation, x => x.MemberId == request.CurrentMember.Id);
+        OdkAssertions.BelongsToMember(conversation, currentMember.Id);
 
         var (chapter, adminMembers, notificationSettings) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(platform, conversation.ChapterId),
@@ -137,12 +160,16 @@ public class ContactService : IContactService
     {
         ValidateRequest(fromAddress, message);
 
-        var platform = request.Platform;
-
-        var siteEmailSettings = await _unitOfWork.SiteEmailSettingsRepository.Get(platform).Run();
+        var siteAdmins = await _unitOfWork.MemberRepository
+            .Query()
+            .IsSiteAdmin()
+            .GetAll()
+            .Run();
 
         var result = await _recaptchaService.Verify(recaptchaToken);
-        if (!_recaptchaService.Success(result))
+
+        var flagged = !_recaptchaService.Success(result);
+        if (flagged)
         {
             message = $"[FLAGGED AS SPAM: {result.Score} / 1.0] {message}";
         }
@@ -156,9 +183,13 @@ public class ContactService : IContactService
         };
 
         _unitOfWork.SiteContactMessageRepository.Add(contactMessage);
+
         await _unitOfWork.SaveChangesAsync();
 
-        await _memberEmailService.SendSiteMessage(request, contactMessage, siteEmailSettings);
+        if (!flagged)
+        {
+            await _memberEmailService.SendSiteMessage(request, contactMessage, siteAdmins);
+        }
     }
 
     public async Task<ServiceResult> StartChapterConversation(
@@ -180,11 +211,6 @@ public class ContactService : IContactService
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => x.MemberNotificationSettingsRepository.GetByChapterId(chapter.Id, NotificationType.ConversationOwnerMessage));
-
-        if (!_authorizationService.CanStartConversation(chapter.Id, currentMember, memberSubscription, membershipSettings, privacySettings))
-        {
-            return ServiceResult.Failure("Permission denied");
-        }
 
         var result = await _recaptchaService.Verify(recaptchaToken);
 
@@ -229,6 +255,29 @@ public class ContactService : IContactService
             conversationMessage,
             emailMembers.ToArray(),
             isReply: false);
+
+        return ServiceResult.Successful();
+    }
+
+    public async Task<ServiceResult> UnarchiveChapterConversation(IMemberServiceRequest request, Guid conversationId)
+    {
+        var currentMember = request.CurrentMember;
+
+        var conversation = await _unitOfWork.ChapterConversationRepository
+            .GetById(conversationId)
+            .Run();
+
+        OdkAssertions.BelongsToMember(conversation, currentMember.Id);
+
+        if (conversation.ArchivedUtc == null)
+        {
+            return ServiceResult.Successful();
+        }
+
+        conversation.ArchivedUtc = null;
+        _unitOfWork.ChapterConversationRepository.Update(conversation);
+
+        await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();
     }

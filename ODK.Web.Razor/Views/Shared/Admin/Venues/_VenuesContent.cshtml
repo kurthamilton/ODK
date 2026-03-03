@@ -57,7 +57,7 @@
                         @if (lastEvents.TryGetValue(venue.Id, out DateTime lastEventDate))
                         {
                             <span class="d-none" data-sort-value="@lastEventDate.ToString("yyyy-MM-dd")"></span>
-                            @lastEventDate.EventDate()
+                            <span>@lastEventDate.EventDate(Model.Chapter.TimeZone)</span>
                         }
                     </td>
                 </tr>

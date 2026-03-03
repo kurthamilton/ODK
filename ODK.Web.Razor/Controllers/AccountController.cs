@@ -21,7 +21,6 @@ using ODK.Web.Common.Services;
 using ODK.Web.Razor.Models.Account;
 using ODK.Web.Razor.Models.Feedback;
 using ODK.Web.Razor.Models.Login;
-using ODK.Web.Razor.Models.Notifications;
 using ODK.Web.Razor.Models.Topics;
 
 namespace ODK.Web.Razor.Controllers;

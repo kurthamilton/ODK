@@ -14,6 +14,8 @@ public interface IMemberQueryBuilder : IDatabaseEntityQueryBuilder<Member, IMemb
 
     IMemberQueryBuilder IsChapterOwner(Guid chapterId);
 
+    IMemberQueryBuilder IsSiteAdmin();
+
     IMemberQueryBuilder Latest(int pageSize);
 
     IQueryBuilder<MemberWithAvatarDto> WithAvatar();

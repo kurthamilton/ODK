@@ -6,7 +6,10 @@ public class MessagesModel : SiteAdminPageModel
     {
     }
 
-    public void OnGet()
+    public bool Spam { get; private set; }
+
+    public void OnGet(bool spam = false)
     {
+        Spam = spam;
     }
 }

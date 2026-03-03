@@ -8,7 +8,6 @@ using ODK.Services.Users.ViewModels;
 using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
 using ODK.Web.Razor.Attributes;
-using ODK.Web.Razor.Models.Chapters;
 using ODK.Web.Razor.Models.Contact;
 using ODK.Web.Razor.Models.Feedback;
 
@@ -65,21 +64,6 @@ public class GroupsController : OdkControllerBase
             viewModel.Recaptcha ?? string.Empty);
 
         AddFeedback("Your message has been sent. Thank you for getting in touch.", FeedbackType.Success);
-
-        return RedirectToReferrer();
-    }
-
-    [Authorize]
-    [HttpPost("groups/{chapterId:guid}/conversations/{conversationId:guid}/reply")]
-    public async Task<IActionResult> ReplyToConversation(Guid chapterId, Guid conversationId,
-        [FromForm] ChapterConversationReplyFormViewModel viewModel)
-    {
-        await _contactService.ReplyToChapterConversation(
-            MemberServiceRequest,
-            conversationId,
-            viewModel.Message ?? string.Empty);
-
-        AddFeedback("Reply sent", FeedbackType.Success);
 
         return RedirectToReferrer();
     }

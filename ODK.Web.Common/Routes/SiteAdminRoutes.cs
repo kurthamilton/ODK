@@ -35,6 +35,8 @@ public class SiteAdminRoutes
 
     public string Messages => Path("/messages");
 
+    public string MessagesSpam => $"{Messages}?spam=true";
+
     public string Payment(Guid id) => $"{Payments}/{id}";
 
     public string PaymentCreate => $"{Payments}/new";

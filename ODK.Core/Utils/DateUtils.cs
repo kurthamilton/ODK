@@ -4,37 +4,22 @@ public static class DateUtils
 {
     private static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
 
-    public static long DateVersion(DateTime date)
-    {
-        return long.Parse($"{date:yyyyMMdd}");
-    }
+    public static long DateVersion(DateTime date) => long.Parse($"{date:yyyyMMdd}");
 
     public static IEnumerable<DayOfWeek> DaysOfWeek(DayOfWeek firstDayOfWeek)
-    {
-        return Enum
-            .GetValues<DayOfWeek>()
+        => Enum.GetValues<DayOfWeek>()
             .OrderBy(day => day < firstDayOfWeek);
-    }
 
-    public static string EventDate(this DateTime date, bool @long = false)
-    {
-        bool includeYear = date.Year != DateTime.UtcNow.Year;
-        string format = $"ddd {(@long ? "MMMM" : "MMM")} d";
-
-        if (includeYear)
+    public static string EventDate(this DateTime date, TimeZoneInfo? timeZone)
+        => date.ToFriendlyDateString(options: new FriendlyDateStringOptions
         {
-            format += " yyyy";
-        }
-
-        return date.ToString(format);
-    }
+            TimeZone = timeZone
+        });
 
     public static DateTime FromUnixEpochTimestamp(long unixTimestamp)
-    {
-        return UnixEpoch
+        => UnixEpoch
             .AddSeconds(unixTimestamp)
             .ToUniversalTime();
-    }
 
     public static DateTime Next(this DateTime date, DayOfWeek dayOfWeek)
     {
@@ -58,53 +43,58 @@ public static class DateUtils
         return date;
     }
 
-    public static DateTime SpecifyKind(this DateTime date, DateTimeKind kind) => DateTime.SpecifyKind(date, kind);
+    public static DateTime SpecifyKind(this DateTime date, DateTimeKind kind)
+        => DateTime.SpecifyKind(date, kind);
 
     public static DateTime? SpecifyKind(this DateTime? date, DateTimeKind kind)
         => date != null ? date.Value.SpecifyKind(kind) : new DateTime?();
 
     public static DateTime StartOfDay(this DateTime date) => date - date.TimeOfDay;
 
-    public static string ToFriendlyDateString(this DateTime dateUtc, TimeZoneInfo? timeZone, bool forceIncludeYear = false)
+    public static string ToFriendlyDateString(this DateTime dateUtc, FriendlyDateStringOptions? options)
     {
+        var timeZone = options?.TimeZone;
+
         var localDate = timeZone != null
             ? TimeZoneInfo.ConvertTimeFromUtc(dateUtc, timeZone)
             : dateUtc;
 
-        var includeYear = forceIncludeYear || dateUtc.Year != DateTime.UtcNow.Year;
+        var includeYear = options?.ForceIncludeYear == true || dateUtc.Year != DateTime.UtcNow.Year;
 
-        var format = "ddd, MMM d";
+        var format = options?.IncludeDayOfWeek == true
+            ? "ddd, "
+            : string.Empty;
+
+        format = $"{format}{(options?.FullMonthName == true ? "MMMM" : "MMM")} d";
 
         if (includeYear)
         {
             format += ", yyyy";
         }
 
-        return localDate.ToString(format);
-    }
-
-    public static string ToFriendlyDateTimeString(this DateTime dateUtc, TimeZoneInfo? timeZone)
-    {
-        var localDate = timeZone != null
-            ? TimeZoneInfo.ConvertTimeFromUtc(dateUtc, timeZone)
-            : dateUtc;
-
-        var includeYear = dateUtc.Year != DateTime.UtcNow.Year;
-
-        var format = "ddd, MMM d";
-
-        if (includeYear)
-        {
-            format += ", yyyy";
-        }
-
-        if (dateUtc.TimeOfDay.Ticks > 0)
+        if (options?.ForceIncludeTime == true || (options?.IncludeTime == true && localDate.TimeOfDay.Ticks > 0))
         {
             format += " HH:mm";
         }
 
         return localDate.ToString(format);
     }
+
+    public static string ToFriendlyDateString(this DateTime dateUtc, TimeZoneInfo? timeZone, bool forceIncludeYear = false)
+        => dateUtc.ToFriendlyDateString(new FriendlyDateStringOptions
+        {
+            ForceIncludeYear = forceIncludeYear,
+            IncludeDayOfWeek = true,
+            TimeZone = timeZone
+        });
+
+    public static string ToFriendlyDateTimeString(this DateTime dateUtc, TimeZoneInfo? timeZone)
+        => dateUtc.ToFriendlyDateString(new FriendlyDateStringOptions
+        {
+            ForceIncludeTime = true,
+            IncludeDayOfWeek = true,
+            TimeZone = timeZone
+        });
 
     /// <summary>
     /// Returns a human-readable relative time string.
@@ -117,7 +107,7 @@ public static class DateUtils
     /// The user's timezone, used to resolve calendar boundaries (yesterday, etc.).
     /// Defaults to UTC if null.
     /// </param>
-    public static string ToRelativeTime(DateTime dateUtc, TimeZoneInfo? timeZone = null)
+    public static string ToRelativeTime(this DateTime dateUtc, TimeZoneInfo? timeZone = null)
     {
         timeZone ??= TimeZoneInfo.Utc;
 

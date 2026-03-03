@@ -8,7 +8,7 @@
     Layout = "_SiteAdminLayout";
     Model.Title = "Messages";
 
-    var viewModel = await ContactAdminService.GetMessageViewModel(Model.CurrentMember.Id, Model.MessageId);
+    var viewModel = await ContactAdminService.GetMessageViewModel(Model.MemberServiceRequest, Model.MessageId);
 }
 
 @await Html.PartialAsync("SiteAdmin/_MessageContent", viewModel)

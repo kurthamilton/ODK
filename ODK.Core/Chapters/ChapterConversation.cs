@@ -1,7 +1,9 @@
 ﻿namespace ODK.Core.Chapters;
 
-public class ChapterConversation : IDatabaseEntity, IChapterEntity
+public class ChapterConversation : IDatabaseEntity, IChapterEntity, IMemberEntity
 {
+    public DateTime? ArchivedUtc { get; set; }
+
     public Guid ChapterId { get; set; }
 
     public DateTime CreatedUtc { get; set; }

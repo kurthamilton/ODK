@@ -14,6 +14,9 @@ public class ChapterConversationMap : IEntityTypeConfiguration<ChapterConversati
 
         builder.HasKey(x => x.Id);
 
+        builder.Property(x => x.ArchivedUtc)
+            .HasConversion<NullableUtcDateTimeConverter>();
+
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();
 

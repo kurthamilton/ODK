@@ -29,10 +29,13 @@
                     @<div>
                         @await Html.PartialAsync("Chapters/_Conversation", new ChapterConversationViewModel
                         {
+                            Breadcrumbs = [],
                             Chapter = Model.Chapter,
+                            Conversation = Model.Conversation,
+                            ConversationUrlFunc = id => OdkRoutes.GroupAdmin.Conversation(Model.Chapter, id).Path,
                             CurrentMember = Model.CurrentMember,
-                            MemberId = Model.Conversation.MemberId,
-                            Messages = Model.Messages        
+                            Messages = Model.Messages,
+                            OtherConversations = Model.OtherConversations
                         })
                     </div>
             })    

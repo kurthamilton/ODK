@@ -10,17 +10,6 @@
         .ToArray();
 }
 
-<div class="form-group mb-5">
-    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Envelope))
-    @Html.LabelFor(x => x.Conversations, new { @class = "form-label" })
-    @await Html.PartialAsync("Components/_FormLabelSubtitle", 
-        "Public allows logged in members from other groups to start conversations.")
-    @await Html.PartialAsync("Components/_FormLabelSubtitle",
-        "Users not able to start a conversation can still send a contact message.")
-    @Html.EnumRadioButtonListFor(x => x.Conversations)
-    @Html.ValidationMessageFor(x => x.Conversations)
-</div>
-
 <fieldset>
     <div class="form-group mb-5">
         @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Calendar))

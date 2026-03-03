@@ -50,17 +50,27 @@
 
     chapterPageDictionary.TryGetValue(PageType.Contact, out var contactPage);
 
-    if (contactPage?.Hidden != true)
+    if (Model.CurrentMember == null)
+    {
+        if (contactPage?.Hidden != true)
+        {
+            menuItems.Add(new MenuItem
+            {
+                Text = StringUtils.Coalesce(contactPage?.Title, "Contact"),
+                Link = OdkRoutes.Groups.Contact(Model.Chapter),
+                Active = Context.ForPath(OdkRoutes.Groups.Contact(Model.Chapter))
+            });
+        }
+    }
+    else
     {
         menuItems.Add(new MenuItem
         {
-            Text = StringUtils.Coalesce(contactPage?.Title, "Contact"),
-            Link = OdkRoutes.Groups.Contact(Model.Chapter),
-            Active =
-               Context.ForPath(OdkRoutes.Groups.Contact(Model.Chapter)) ||
-               Context.ForPath(OdkRoutes.Groups.Conversations(Model.Chapter))
+            Text = "Conversations",
+            Link = OdkRoutes.Groups.Conversations(Model.Chapter),
+            Active = Context.ForPath(OdkRoutes.Groups.Conversations(Model.Chapter))
         });
-    }      
+    }
 
     if (Model.IsMember)
     {

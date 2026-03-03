@@ -1,9 +1,8 @@
 ﻿using ODK.Core.Messages;
-using ODK.Data.Core.Deferred;
+using ODK.Data.Core.QueryBuilders;
 
 namespace ODK.Data.Core.Repositories;
 
-public interface ISiteContactMessageRepository : IReadWriteRepository<SiteContactMessage>
+public interface ISiteContactMessageRepository : IReadWriteRepository<SiteContactMessage, ISiteContactMessageQueryBuilder>
 {
-    IDeferredQueryMultiple<SiteContactMessage> GetAll();
 }

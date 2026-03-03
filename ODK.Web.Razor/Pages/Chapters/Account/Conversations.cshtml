@@ -1,4 +1,4 @@
-﻿@page "/{chapterName}/Account/Conversations"
+﻿@page "/{chapterName}/account/conversations"
 @using ODK.Services.Members
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
@@ -9,7 +9,7 @@
     Layout = "_OdkChapterLayout";
     Model.Title = "My conversations";
 
-    var viewModel = await MemberViewModelService.GetMemberConversationsPage(Model.MemberChapterServiceRequest);
+    var viewModel = await MemberViewModelService.GetMemberConversationsPage(Model.MemberChapterServiceRequest, Model.Archived);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

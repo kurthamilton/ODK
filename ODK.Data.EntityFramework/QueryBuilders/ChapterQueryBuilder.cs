@@ -13,7 +13,12 @@ namespace ODK.Data.EntityFramework.QueryBuilders;
 public class ChapterQueryBuilder : DatabaseEntityQueryBuilder<Chapter, IChapterQueryBuilder>, IChapterQueryBuilder
 {
     public ChapterQueryBuilder(DbContext context, PlatformType platform, bool includeUnpublished)
-        : base(context, BaseQuery(context, platform, includeUnpublished))
+        : this(context, BaseQuery(context, platform, includeUnpublished))
+    {
+    }
+
+    public ChapterQueryBuilder(DbContext context, IQueryable<Chapter> query)
+        : base(context, query)
     {
     }
 

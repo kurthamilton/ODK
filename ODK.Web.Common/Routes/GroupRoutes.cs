@@ -23,7 +23,9 @@ public class GroupRoutes
     public string Conversation(Chapter chapter, Guid conversationId)
         => $"{Conversations(chapter)}/{conversationId}";
 
-    public string Conversations(Chapter chapter) => $"{Group(chapter)}/conversations";
+    public string Conversations(Chapter chapter) => Conversations(chapter, archived: false);
+
+    public string Conversations(Chapter chapter, bool archived) => $"{GroupPath(chapter, "/conversations")}{(archived ? "?archived=true" : null)}";
 
     public string Error(Chapter chapter, int statusCode)
         => $"{Group(chapter)}/error/{statusCode}";

@@ -11,7 +11,7 @@
     Layout = "_AccountLayout";
     Model.Title = "Interests";
 
-    var viewModel = await MemberViewModelService.GetMemberInterestsPage(Model.CurrentMember.Id);
+    var viewModel = await MemberViewModelService.GetMemberInterestsPage(Model.MemberServiceRequest);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
