@@ -7,11 +7,11 @@ using ODK.Data.Core.QueryBuilders;
 
 namespace ODK.Data.EntityFramework.QueryBuilders;
 
-public class ChapterConversationDtoQueryBuilder 
+public class ChapterConversationDtoQueryBuilder
     : QueryBuilder<ChapterConversationDto>, IQueryBuilder<ChapterConversationDto>, IChapterConversationDtoQueryBuilder
 {
     public ChapterConversationDtoQueryBuilder(
-        DbContext context, IQueryable<ChapterConversation> chapterConversationQuery) 
+        DbContext context, IQueryable<ChapterConversation> chapterConversationQuery)
         : base(context, BaseQuery(context, chapterConversationQuery))
     {
     }
@@ -20,17 +20,11 @@ public class ChapterConversationDtoQueryBuilder
     {
         if (status == MessageStatus.Unread)
         {
-            Query = Query
-                .Where(x => !x.LastMessage.Message.ReadByChapter && x.Conversation.ClosedUtc == null);
+            Query = Query.Where(x => !x.LastMessage.Message.ReadByChapter);
         }
         else if (status == MessageStatus.Read)
         {
-            Query = Query
-                .Where(x => x.LastMessage.Message.ReadByChapter && x.Conversation.ClosedUtc == null);
-        }
-        else if (status == MessageStatus.Closed)
-        {
-            Query = Query.Where(x => x.Conversation.ClosedUtc != null);
+            Query = Query.Where(x => x.LastMessage.Message.ReadByChapter);
         }
 
         return this;
@@ -59,7 +53,10 @@ public class ChapterConversationDtoQueryBuilder
                     MemberLastName = conversationMessageMember.LastName,
                     Message = conversationMessage
                 },
-                Member = member
+                Member = member,
+                MessageCount = context.Set<ChapterConversationMessage>()
+                    .Where(x => x.ChapterConversationId == conversation.Id)
+                    .Count()
             };
 
         return query;

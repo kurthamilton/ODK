@@ -21,6 +21,8 @@ public class AccountRoutes : RoutesBase
         _ => AccountPath(null, "/create")
     };
 
+    public string Conversation(Chapter? chapter, Guid id) => $"{Conversations(chapter)}/{id}";
+
     public string Conversations(Chapter? chapter) => AccountPath(chapter, "/conversations");
 
     public string Delete(Chapter? chapter) => AccountPath(chapter, "/delete");

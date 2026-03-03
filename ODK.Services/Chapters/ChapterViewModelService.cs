@@ -285,7 +285,7 @@ public class ChapterViewModelService : IChapterViewModelService
         };
     }
 
-    public async Task<GroupContactPageViewModel> GetGroupContactPage(IChapterServiceRequest request)
+    public async Task<GroupConversationsPageViewModel> GetGroupConversationsPage(IChapterServiceRequest request, bool archived)
     {
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMemberOrDefault);
 
@@ -306,7 +306,13 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
             x => currentMember != null
-                ? x.ChapterConversationRepository.GetDtosByMemberId(currentMember.Id, chapter.Id)
+                ? x.ChapterConversationRepository
+                    .Query()
+                    .ForChapter(chapter.Id)
+                    .ForMember(currentMember.Id)
+                    .Archived(archived)
+                    .ToDto()
+                    .GetAll()
                 : new DefaultDeferredQueryMultiple<ChapterConversationDto>(),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
@@ -316,13 +322,9 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.ChapterPageRepository.GetByChapterId(chapter.Id),
             x => x.SitePaymentSettingsRepository.GetActive());
 
-        var canStartConversation = currentMember != null
-            ? _authorizationService.CanStartConversation(chapter.Id, currentMember, memberSubscription, membershipSettings, privacySettings)
-            : false;
-
-        return new GroupContactPageViewModel
+        return new GroupConversationsPageViewModel
         {
-            CanStartConversation = canStartConversation,
+            Archived = archived,
             Chapter = chapter,
             ChapterPages = chapterPages,
             Conversations = conversations,

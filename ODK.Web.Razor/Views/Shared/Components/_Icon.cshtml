@@ -5,6 +5,8 @@
 
 @switch (Model.Type)
 {
+    case IconType.Archive:
+        <i class="@Model.Class fa-solid fa-box-archive"></i>break;
     case IconType.ArrowCircleDown:
         <i class="@Model.Class fa-solid fa-arrow-circle-down"></i>break;
     case IconType.ArrowCircleUp:
@@ -73,6 +75,8 @@
         <i class="@Model.Class fa-solid fa-up-right-and-down-left-from-center"></i>break;
     case IconType.Members:
         <i class="@Model.Class fa-solid fa-users"></i>break;
+    case IconType.Message:
+        <i class="@Model.Class fa-solid fa-message"></i>break;
     case IconType.Moon:
         <i class="@Model.Class fa-regular fa-moon"></i>break;
     case IconType.Plus:

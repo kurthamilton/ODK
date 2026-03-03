@@ -9,9 +9,11 @@
 @model MessagesAdminPageViewModel
 @inject IOdkRoutes OdkRoutes
 
-<h2>Messages</h2>
+<section class="section section--admin">
+    <h2>Messages</h2>
 
-<section class="section">
+    @await Html.PartialAsync("SiteAdmin/_MessagesTabs", Model)
+
     <div class="table-responsive">
         <table class="table table-striped">
             <thead>

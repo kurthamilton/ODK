@@ -196,7 +196,6 @@ public class ChapterAdminController : AdminControllerBase
             ChapterAdminSecurable.PrivacySettings, MemberChapterServiceRequest);
         var result = await _chapterAdminService.UpdateChapterPrivacySettings(request, new ChapterPrivacySettingsUpdateModel
         {
-            Conversations = viewModel.Conversations,
             EventResponseVisibility = viewModel.EventResponseVisibility,
             EventVisibility = viewModel.EventVisibility,
             MemberVisibility = viewModel.MemberVisibility,

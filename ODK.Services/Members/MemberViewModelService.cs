@@ -1,5 +1,4 @@
 ﻿using ODK.Core;
-using ODK.Core.Chapters;
 using ODK.Data.Core;
 using ODK.Services.Members.ViewModels;
 
@@ -14,11 +13,53 @@ public class MemberViewModelService : IMemberViewModelService
         _unitOfWork = unitOfWork;
     }
 
+    public async Task<MemberConversationPageViewModel> GetMemberConversationPage(
+        IMemberServiceRequest request, Guid conversationId)
+    {
+        var currentMember = request.CurrentMember;
+
+        var chapter = await _unitOfWork.ChapterConversationRepository
+            .Query()
+            .ById(conversationId)
+            .Chapter()
+            .GetSingle()
+            .Run();
+
+        var (dtos, messages) = await _unitOfWork.RunAsync(
+            x => x.ChapterConversationRepository
+                .Query()
+                .ForMember(currentMember.Id)
+                .ForChapter(chapter.Id)
+                .ToDto()
+                .GetAll(),
+            x => x.ChapterConversationMessageRepository.GetDtosByConversationId(conversationId));
+
+        var conversation = dtos
+            .Where(x => x.Conversation.Id == conversationId)
+            .Select(x => x.Conversation)
+            .First();
+
+        return new MemberConversationPageViewModel
+        {
+            Chapter = chapter,
+            Conversation = conversation,
+            Messages = messages,
+            OtherConversations = dtos
+                .Where(x => x.Conversation.Id != conversationId && x.Conversation.ArchivedUtc == null)
+                .ToArray(),
+        };
+    }
+
     public async Task<MemberConversationsPageViewModel> GetMemberConversationsPage(IMemberServiceRequest request)
     {
         var (platform, currentMember) = (request.Platform, request.CurrentMember);
 
-        var conversations = await _unitOfWork.ChapterConversationRepository.GetDtosByMemberId(currentMember.Id).Run();
+        var conversations = await _unitOfWork.ChapterConversationRepository
+            .Query()
+            .ForMember(currentMember.Id)
+            .ToDto()
+            .GetAll()
+            .Run();
 
         var chapterIds = conversations
             .Select(x => x.Conversation.ChapterId)
@@ -55,13 +96,15 @@ public class MemberViewModelService : IMemberViewModelService
         };
     }
 
-    public async Task<MemberInterestsPageViewModel> GetMemberInterestsPage(Guid currentMemberId)
+    public async Task<MemberInterestsPageViewModel> GetMemberInterestsPage(IMemberServiceRequest request)
     {
+        var currentMember = request.CurrentMember;
+
         var (topicGroups, topics, memberTopics, newTopics) = await _unitOfWork.RunAsync(
             x => x.TopicGroupRepository.GetAll(),
             x => x.TopicRepository.GetAll(),
-            x => x.MemberTopicRepository.GetByMemberId(currentMemberId),
-            x => x.NewMemberTopicRepository.GetByMemberId(currentMemberId));
+            x => x.MemberTopicRepository.GetByMemberId(currentMember.Id),
+            x => x.NewMemberTopicRepository.GetByMemberId(currentMember.Id));
 
         return new MemberInterestsPageViewModel
         {

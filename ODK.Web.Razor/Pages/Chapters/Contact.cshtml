@@ -1,10 +1,9 @@
-﻿@page "/{chapterName}/Contact"
+﻿@page "/{chapterName}/contact"
 @using ODK.Core
 @using ODK.Core.Exceptions
 @using ODK.Core.Pages
 @using ODK.Core.Utils
 @using ODK.Services.Chapters
-@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Contact
 @model ContactModel
@@ -13,7 +12,7 @@
     Layout = "_OdkChapterLayout";    
     Model.Description = "Form for sending messages to the owners of this Drunken Knitwits chapter";    
 
-    var viewModel = await ChapterViewModelService.GetGroupContactPage(Model.ChapterServiceRequest);
+    var viewModel = await ChapterViewModelService.GetGroupPage(Model.ChapterServiceRequest);
 
     var chapterPage = viewModel.ChapterPages.FirstOrDefault(x => x.PageType == PageType.Contact);
     if (chapterPage?.Hidden == true)

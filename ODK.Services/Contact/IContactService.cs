@@ -2,7 +2,7 @@
 
 public interface IContactService
 {
-    Task<ServiceResult> CloseChapterConversation(IMemberServiceRequest request, Guid conversationId);
+    Task<ServiceResult> ArchiveChapterConversation(IMemberServiceRequest request, Guid conversationId);
 
     Task<ServiceResult> ReplyToChapterConversation(IMemberServiceRequest request, Guid conversationId, string message);
 
@@ -23,4 +23,6 @@ public interface IContactService
         string subject,
         string message,
         string recaptchaToken);
+
+    Task<ServiceResult> UnarchiveChapterConversation(IMemberServiceRequest request, Guid conversationId);
 }

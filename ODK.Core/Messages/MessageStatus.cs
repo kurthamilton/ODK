@@ -4,6 +4,5 @@ public enum MessageStatus
 {
     None,
     Unread,
-    Read,
-    Closed
+    Read
 }

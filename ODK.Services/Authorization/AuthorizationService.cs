@@ -29,18 +29,6 @@ public class AuthorizationService : IAuthorizationService
         return memberVisibility.CanView(chapterVisibility);
     }
 
-    public bool CanStartConversation(
-        Guid chapterId,
-        Member member,
-        MemberSubscription? subscription,
-        ChapterMembershipSettings? membershipSettings,
-        ChapterPrivacySettings? privacySettings)
-    {
-        var memberVisibility = GetMemberVisibilityType(chapterId, member, subscription, membershipSettings);
-        var chapterVisibility = privacySettings.Visibility(ChapterFeatureType.Conversations);
-        return memberVisibility.CanView(chapterVisibility);
-    }
-
     public bool CanViewEvent(
         Event @event,
         Member? member,

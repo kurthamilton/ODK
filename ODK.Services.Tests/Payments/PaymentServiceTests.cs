@@ -311,7 +311,7 @@ public static class PaymentServiceTests
 
         // Assert
         Mock.Get(memberEmailService)
-            .Verify(x => x.SendPaymentNotification(It.IsAny<IServiceRequest>(), It.IsAny<Member>(), It.IsAny<Chapter>(), It.IsAny<Payment>(), It.IsAny<Currency>(), It.IsAny<SiteEmailSettings>()), Times.Never);
+            .Verify(x => x.SendPaymentNotification(It.IsAny<IServiceRequest>(), It.IsAny<Member>(), It.IsAny<Chapter>(), It.IsAny<Payment>(), It.IsAny<Currency>(), It.IsAny<IEnumerable<Member>>()), Times.Never);
     }
 
     [Test]
@@ -535,7 +535,7 @@ public static class PaymentServiceTests
                 It.IsAny<Chapter>(),
                 It.IsAny<Payment>(),
                 It.IsAny<Currency>(),
-                It.IsAny<SiteEmailSettings>()))
+                It.IsAny<IEnumerable<Member>>()))
             .Returns(Task.CompletedTask);
         return mock.Object;
     }

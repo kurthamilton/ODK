@@ -749,10 +749,14 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         var chapter = request.Chapter;
 
-        var (privacySettings, conversations) = await GetChapterAdminRestrictedContent(
+        var conversations = await GetChapterAdminRestrictedContent(
             request,
-            x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterConversationRepository.GetDtosByChapterId(chapter.Id, status));
+            x => x.ChapterConversationRepository
+                .Query()
+                .ForChapter(chapter.Id)
+                .ToDto()
+                .ForStatus(status)
+                .GetAll());
 
         var repliedConversations = new List<ChapterConversationDto>();
         var unrepliedConversations = new List<ChapterConversationDto>();
@@ -761,7 +765,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         {
             Chapter = chapter,
             Conversations = conversations,
-            PrivacySettings = privacySettings,
             Status = status
         };
     }
@@ -916,30 +919,29 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
 
-        var allMessages = await GetChapterAdminRestrictedContent(
+        var spamThreshold = _settings.ContactMessageRecaptchaScoreThreshold;
+
+        var (messages, otherMessageCount) = await GetChapterAdminRestrictedContent(
             request,
-            x => x.ChapterContactMessageRepository.GetByChapterId(chapter.Id));
-
-        var messagesBySpaminess = new Dictionary<bool, List<ChapterContactMessage>>
-        {
-            { false, new() },
-            { true, new() }
-        };
-
-        foreach (var message in allMessages)
-        {
-            var spamMessage = message.RecaptchaScore < _settings.ContactMessageRecaptchaScoreThreshold;
-            messagesBySpaminess[spamMessage].Add(message);
-        }
+            x => x.ChapterContactMessageRepository
+                .Query()
+                .ForChapter(chapter.Id)
+                .ForSpamScore(spam, spamThreshold)
+                .GetAll(),
+            x => x.ChapterContactMessageRepository
+                .Query()
+                .ForChapter(chapter.Id)
+                .ForSpamScore(!spam, spamThreshold)
+                .Count());
 
         return new ChapterMessagesAdminPageViewModel
         {
             Chapter = chapter,
             IsSpam = spam,
-            MessageCount = messagesBySpaminess[false].Count,
-            Messages = messagesBySpaminess[spam],
+            MessageCount = spam ? otherMessageCount : messages.Count,
+            Messages = messages,
             Platform = platform,
-            SpamMessageCount = messagesBySpaminess[true].Count
+            SpamMessageCount = spam ? messages.Count : otherMessageCount
         };
     }
 
@@ -1882,7 +1884,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         settings ??= new ChapterPrivacySettings();
 
-        settings.Conversations = model.Conversations;
         settings.EventResponseVisibility = model.EventResponseVisibility == null || model.EventResponseVisibility.Value.IsMember()
             ? model.EventResponseVisibility
             : null;

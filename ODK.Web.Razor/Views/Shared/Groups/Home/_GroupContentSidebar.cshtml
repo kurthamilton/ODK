@@ -8,6 +8,11 @@
 @model GroupHomePageViewModel
 @inject IOdkRoutes OdkRoutes
 @inject ISocialMediaService SocialMediaService
+@{
+    var contactUrl = Model.CurrentMember == null
+        ? OdkRoutes.Groups.Contact(Model.Chapter)
+        : OdkRoutes.Groups.Conversations(Model.Chapter);
+}
 
 <div class="sidebar sidebar--cards">
     @await Html.PartialAsync("Groups/Home/_GroupInfo", Model)
@@ -16,7 +21,7 @@
     {
         TitleContentFunc = @<h5>Organisers</h5>,
         TitleEndContentFunc = 
-            @<a class="d-flex align-items-center gap-1" href="@OdkRoutes.Groups.Contact(Model.Chapter)">
+            @<a class="d-flex align-items-center gap-1" href="@contactUrl">
                 @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Contact))
                 <span>Contact</span>
             </a>,

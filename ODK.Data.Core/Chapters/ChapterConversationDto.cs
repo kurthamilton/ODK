@@ -10,4 +10,6 @@ public class ChapterConversationDto
     public required ChapterConversationMessageDto LastMessage { get; init; }
 
     public required Member Member { get; init; }
+
+    public required int MessageCount { get; init; }
 }

@@ -1,0 +1,23 @@
+﻿@page "/groups/{slug}/conversations"
+@using ODK.Services.Chapters
+@using ODK.Web.Razor.Models.Groups
+@model ConversationsModel
+@inject IChapterViewModelService ChapterViewModelService
+@{
+    Layout = "_HomeLayout";
+    Model.Title = "Conversations";
+
+    var viewModel = await ChapterViewModelService.GetGroupConversationsPage(Model.ChapterServiceRequest, Model.Archived);
+}
+
+@await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel
+{
+    Title = "",
+    Content = await Html.PartialAsync("Groups/_GroupConversationsContent", viewModel),
+    Group = viewModel
+})
+
+@section scripts
+{
+    @await Html.PartialAsync("Components/Scripts/_Recaptcha")
+}

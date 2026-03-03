@@ -7,7 +7,6 @@ public static class ChapterPrivacySettingsExtensions
     {
         var visibility = feature switch
         {
-            ChapterFeatureType.Conversations => settings?.Conversations,
             ChapterFeatureType.EventResponses => settings?.EventResponseVisibility,
             ChapterFeatureType.Events => settings?.EventVisibility,
             ChapterFeatureType.Members => settings?.MemberVisibility,

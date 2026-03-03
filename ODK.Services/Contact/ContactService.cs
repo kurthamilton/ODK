@@ -34,7 +34,7 @@ public class ContactService : IContactService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ServiceResult> CloseChapterConversation(IMemberServiceRequest request, Guid conversationId)
+    public async Task<ServiceResult> ArchiveChapterConversation(IMemberServiceRequest request, Guid conversationId)
     {
         var currentMember = request.CurrentMember;
 
@@ -44,12 +44,12 @@ public class ContactService : IContactService
 
         OdkAssertions.BelongsToMember(conversation, currentMember.Id);
 
-        if (conversation.ClosedUtc != null)
+        if (conversation.ArchivedUtc != null)
         {
             return ServiceResult.Successful();
         }
 
-        conversation.ClosedUtc = DateTime.UtcNow;
+        conversation.ArchivedUtc = DateTime.UtcNow;
         _unitOfWork.ChapterConversationRepository.Update(conversation);
 
         await _unitOfWork.SaveChangesAsync();
@@ -167,7 +167,7 @@ public class ContactService : IContactService
             .Run();
 
         var result = await _recaptchaService.Verify(recaptchaToken);
-        
+
         var flagged = !_recaptchaService.Success(result);
         if (flagged)
         {
@@ -189,7 +189,7 @@ public class ContactService : IContactService
         if (!flagged)
         {
             await _memberEmailService.SendSiteMessage(request, contactMessage, siteAdmins);
-        }        
+        }
     }
 
     public async Task<ServiceResult> StartChapterConversation(
@@ -211,11 +211,6 @@ public class ContactService : IContactService
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => x.MemberNotificationSettingsRepository.GetByChapterId(chapter.Id, NotificationType.ConversationOwnerMessage));
-
-        if (!_authorizationService.CanStartConversation(chapter.Id, currentMember, memberSubscription, membershipSettings, privacySettings))
-        {
-            return ServiceResult.Failure("Permission denied");
-        }
 
         var result = await _recaptchaService.Verify(recaptchaToken);
 
@@ -260,6 +255,29 @@ public class ContactService : IContactService
             conversationMessage,
             emailMembers.ToArray(),
             isReply: false);
+
+        return ServiceResult.Successful();
+    }
+
+    public async Task<ServiceResult> UnarchiveChapterConversation(IMemberServiceRequest request, Guid conversationId)
+    {
+        var currentMember = request.CurrentMember;
+
+        var conversation = await _unitOfWork.ChapterConversationRepository
+            .GetById(conversationId)
+            .Run();
+
+        OdkAssertions.BelongsToMember(conversation, currentMember.Id);
+
+        if (conversation.ArchivedUtc == null)
+        {
+            return ServiceResult.Successful();
+        }
+
+        conversation.ArchivedUtc = null;
+        _unitOfWork.ChapterConversationRepository.Update(conversation);
+
+        await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();
     }

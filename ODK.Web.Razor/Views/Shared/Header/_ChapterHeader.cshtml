@@ -39,12 +39,23 @@
 
     pages.TryGetValue(PageType.Contact, out var contactPage);
 
-    if (contactPage?.Hidden != true)
+    if (Model.Member == null)
+    {
+        if (contactPage?.Hidden != true)
+        {
+            menuItems.Add(new MenuItem
+            {
+                Text = !string.IsNullOrEmpty(contactPage?.Title) ? contactPage.Title : "Contact",
+                Link = OdkRoutes.Groups.Contact(Model.Chapter)
+            });
+        }
+    }   
+    else
     {
         menuItems.Add(new MenuItem
         {
-            Text = !string.IsNullOrEmpty(contactPage?.Title) ? contactPage.Title : "Contact",
-            Link = OdkRoutes.Groups.Contact(Model.Chapter)
+            Text = "Conversations",
+            Link = OdkRoutes.Groups.Conversations(Model.Chapter)
         });
     }
 

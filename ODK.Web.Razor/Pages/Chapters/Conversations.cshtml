@@ -1,0 +1,35 @@
+﻿@page "/{chapterName}/contact"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Services.Chapters
+@using ODK.Web.Razor.Models.Components
+@model ConversationsModel
+@inject IChapterViewModelService ChapterViewModelService
+@{
+    Layout = "_OdkChapterLayout";
+    Model.Description = "Page for viewing existing conversations with the owners of this Drunken Knitwits chapter, or starting a new conversation";
+    Model.Title = "Conversations";
+    Model.Path = Model.OdkRoutes.Groups.Conversations(Model.Chapter);
+
+    var viewModel = await ChapterViewModelService.GetGroupConversationsPage(Model.ChapterServiceRequest, Model.Archived);
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Title = "Conversations",
+    Breadcrumbs = new[]
+    {
+        new MenuItem
+        {
+            Link = Model.OdkRoutes.Groups.Group(Model.Chapter),
+            Text = Model.Chapter.GetDisplayName(Model.Platform)
+        },
+        new MenuItem { Text = "Conversations" }
+    },
+    Content = await Html.PartialAsync("Groups/_GroupConversationsContent", viewModel)
+})
+
+@section scripts
+{
+    @await Html.PartialAsync("Components/Scripts/_Recaptcha")
+}

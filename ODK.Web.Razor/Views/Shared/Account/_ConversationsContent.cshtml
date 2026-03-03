@@ -16,7 +16,7 @@
 @if (Model.Conversations.Count == 0)
 {
     var contactUrl = currentChapter != null
-        ? OdkRoutes.Groups.Contact(currentChapter)
+        ? OdkRoutes.Groups.Conversations(currentChapter)
         : OdkRoutes.Site.Contact;
 
     <p>You haven't started any conversations yet</p>
@@ -61,7 +61,7 @@
                     }
                     
                     <td>
-                        <a href="@OdkRoutes.Groups.Conversation(chapter, dto.Conversation.Id)">
+                        <a href="@OdkRoutes.Account.Conversation(chapter: null, dto.Conversation.Id)">
                             @dto.Conversation.Subject
                         </a>
                     </td>

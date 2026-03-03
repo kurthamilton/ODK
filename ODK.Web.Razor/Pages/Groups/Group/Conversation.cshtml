@@ -2,9 +2,12 @@
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Services.Chapters
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Chapters
 @using ODK.Web.Razor.Models.Groups
 @model ConversationModel
 @inject IChapterViewModelService ChapterViewModelService
+@inject IOdkRoutes OdkRoutes
 @{
     Layout = "_HomeLayout";
 
@@ -17,6 +20,15 @@
 @await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel
 {
     Title = "",
-    Content = await Html.PartialAsync("Groups/_GroupConversationContent", viewModel),
+    Content = await Html.PartialAsync("Groups/_GroupConversationContent", new ChapterConversationViewModel
+    {
+        Breadcrumbs = [],
+        Chapter = viewModel.Chapter,
+        Conversation = viewModel.Conversation,
+        ConversationUrlFunc = id => OdkRoutes.Account.Conversation(chapter: null, id),
+        CurrentMember = Model.CurrentMember,
+        Messages = viewModel.Messages,
+        OtherConversations = viewModel.OtherConversations
+    }),
     Group = viewModel
 })

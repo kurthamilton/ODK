@@ -3,7 +3,6 @@
 public enum ChapterFeatureType
 {
     None,
-    Conversations,
     EventResponses,
     Events,
     Members,
