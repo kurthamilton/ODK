@@ -23,7 +23,10 @@ public class AccountRoutes : RoutesBase
 
     public string Conversation(Chapter? chapter, Guid id) => $"{Conversations(chapter)}/{id}";
 
-    public string Conversations(Chapter? chapter) => AccountPath(chapter, "/conversations");
+    public string Conversations(Chapter? chapter) => Conversations(chapter, archived: false);
+
+    public string Conversations(Chapter? chapter, bool archived) 
+        => AccountPath(chapter, $"/conversations{(archived ? "?archived=true" : null)}");
 
     public string Delete(Chapter? chapter) => AccountPath(chapter, "/delete");
 

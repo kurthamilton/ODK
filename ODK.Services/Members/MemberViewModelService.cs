@@ -54,13 +54,18 @@ public class MemberViewModelService : IMemberViewModelService
     {
         var (platform, currentMember) = (request.Platform, request.CurrentMember);
 
-        var conversations = await _unitOfWork.ChapterConversationRepository
-            .Query()
-            .ForMember(currentMember.Id)
-            .Archived(archived)
-            .ToDto()
-            .GetAll()
-            .Run();
+        var (conversations, otherConversationCount) = await _unitOfWork.RunAsync(
+            x => x.ChapterConversationRepository
+                .Query()
+                .ForMember(currentMember.Id)
+                .Archived(archived)
+                .ToDto()
+                .GetAll(),
+            x => x.ChapterConversationRepository
+                .Query()
+                .ForMember(currentMember.Id)
+                .Archived(!archived)
+                .Count());
 
         var chapterIds = conversations
             .Select(x => x.Conversation.ChapterId)
@@ -73,7 +78,10 @@ public class MemberViewModelService : IMemberViewModelService
 
         return new MemberConversationsPageViewModel
         {
+            ActiveConversationCount = !archived ? conversations.Count : otherConversationCount,
             Archived = archived,
+            ArchivedConversationCount = archived ? conversations.Count : otherConversationCount,
+            Chapter = null,
             Chapters = chapters,
             Conversations = conversations,
             CurrentMember = currentMember,
@@ -86,18 +94,27 @@ public class MemberViewModelService : IMemberViewModelService
     {
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
-        var conversations = await _unitOfWork.ChapterConversationRepository
-            .Query()
-            .ForMember(currentMember.Id)
-            .ForChapter(chapter.Id)
-            .Archived(archived)
-            .ToDto()
-            .GetAll()
-            .Run();
+        var (conversations, otherConversationCount) = await _unitOfWork.RunAsync(
+            x => x.ChapterConversationRepository
+                .Query()
+                .ForMember(currentMember.Id)
+                .ForChapter(chapter.Id)
+                .Archived(archived)
+                .ToDto()
+                .GetAll(),
+            x => x.ChapterConversationRepository
+                .Query()
+                .ForMember(currentMember.Id)
+                .ForChapter(chapter.Id)
+                .Archived(!archived)
+                .Count());
 
         return new MemberConversationsPageViewModel
         {
+            ActiveConversationCount = !archived ? conversations.Count : otherConversationCount,
             Archived = archived,
+            ArchivedConversationCount = archived ? conversations.Count : otherConversationCount,
+            Chapter = chapter,
             Chapters = [chapter],
             Conversations = conversations,
             CurrentMember = currentMember,

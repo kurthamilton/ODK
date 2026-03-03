@@ -17,19 +17,30 @@
     {
         var active = menuItem.Link == activeMenuItem?.Link;
 
+        var classes = new List<string>();
+        if (active)
+        {
+            classes.Add("active");
+        }
+
+        if (menuItem.Disabled)
+        {
+            classes.Add("disabled");
+        }
+
         var isJsTab = menuItem.Link?.StartsWith("#") == true;
 
         <li class="nav-item">
             @if (isJsTab)
             {
-                <button class="nav-link @(active ? "active" : null)" type="button"
+                <button class="nav-link @string.Join(' ', classes)" type="button"
                         data-bs-toggle="tab" data-bs-target="@menuItem.Link">
                     @menuItem.Text
                 </button>
             }
             else
             {
-                <a class="nav-link @(active ? "active" : null)" href="@menuItem.Link">
+                <a class="nav-link @string.Join(' ', classes)" href="@menuItem.Link">
                     @menuItem.Text
                 </a>
             }            
