@@ -3,6 +3,7 @@
 @using ODK.Services.Members.ViewModels
 @using ODK.Web.Common.Routes
 @using ODK.Web.Common.Services
+@using ODK.Web.Razor.Models.Components
 @model MemberConversationsPageViewModel
 @inject IOdkRoutes OdkRoutes
 @inject IRequestStore RequestStore
@@ -26,6 +27,17 @@
     </p>
     return;
 }
+
+<div>
+    @await Html.PartialAsync("Components/_Tabs", new TabsViewModel
+    {
+        MenuItems = new[]
+        {
+            new MenuItem { Text = "Active" },
+            new MenuItem { Text = "Archived" }
+        }
+    })
+</div>
 
 <div class="table-responsive">
     <table class="table table-striped">

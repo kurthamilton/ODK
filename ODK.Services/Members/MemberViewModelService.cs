@@ -50,13 +50,14 @@ public class MemberViewModelService : IMemberViewModelService
         };
     }
 
-    public async Task<MemberConversationsPageViewModel> GetMemberConversationsPage(IMemberServiceRequest request)
+    public async Task<MemberConversationsPageViewModel> GetMemberConversationsPage(IMemberServiceRequest request, bool archived)
     {
         var (platform, currentMember) = (request.Platform, request.CurrentMember);
 
         var conversations = await _unitOfWork.ChapterConversationRepository
             .Query()
             .ForMember(currentMember.Id)
+            .Archived(archived)
             .ToDto()
             .GetAll()
             .Run();
@@ -72,6 +73,7 @@ public class MemberViewModelService : IMemberViewModelService
 
         return new MemberConversationsPageViewModel
         {
+            Archived = archived,
             Chapters = chapters,
             Conversations = conversations,
             CurrentMember = currentMember,
@@ -79,16 +81,23 @@ public class MemberViewModelService : IMemberViewModelService
         };
     }
 
-    public async Task<MemberConversationsPageViewModel> GetMemberConversationsPage(IMemberChapterServiceRequest request)
+    public async Task<MemberConversationsPageViewModel> GetMemberConversationsPage(
+        IMemberChapterServiceRequest request, bool archived)
     {
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
         var conversations = await _unitOfWork.ChapterConversationRepository
-            .GetDtosByMemberId(currentMember.Id, chapter.Id)
+            .Query()
+            .ForMember(currentMember.Id)
+            .ForChapter(chapter.Id)
+            .Archived(archived)
+            .ToDto()
+            .GetAll()
             .Run();
 
         return new MemberConversationsPageViewModel
         {
+            Archived = archived,
             Chapters = [chapter],
             Conversations = conversations,
             CurrentMember = currentMember,

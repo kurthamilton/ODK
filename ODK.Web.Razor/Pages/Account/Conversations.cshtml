@@ -11,7 +11,7 @@
     Layout = "_HomeLayout";
     Model.Title = "My conversations";
 
-    var viewModel = await MemberViewModelService.GetMemberConversationsPage(Model.MemberServiceRequest);
+    var viewModel = await MemberViewModelService.GetMemberConversationsPage(Model.MemberServiceRequest, Model.Archived);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

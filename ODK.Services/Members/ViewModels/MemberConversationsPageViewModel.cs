@@ -7,6 +7,8 @@ namespace ODK.Services.Members.ViewModels;
 
 public class MemberConversationsPageViewModel
 {
+    public required bool Archived { get; init; }
+
     public required IReadOnlyCollection<Chapter> Chapters { get; init; }
 
     public required IReadOnlyCollection<ChapterConversationDto> Conversations { get; init; }
