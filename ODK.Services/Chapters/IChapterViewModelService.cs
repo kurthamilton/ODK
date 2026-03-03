@@ -13,7 +13,7 @@ public interface IChapterViewModelService
 
     Task<ChapterCreateViewModel> GetChapterCreateViewModel(IMemberServiceRequest request);
 
-    Task<GroupConversationsPageViewModel> GetGroupConversationsPage(IChapterServiceRequest request, bool archived);
+    Task<GroupConversationsPageViewModel> GetGroupConversationsPage(IMemberChapterServiceRequest request, bool archived);
 
     Task<GroupConversationPageViewModel> GetGroupConversationPage(
         IMemberChapterServiceRequest request, Guid conversationId);

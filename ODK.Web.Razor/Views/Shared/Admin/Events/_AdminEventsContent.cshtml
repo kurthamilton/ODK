@@ -73,7 +73,7 @@
                             Text = @event.GetDisplayName()
                         })                        
                     </td>
-                    <td>@(@event.Date.EventDate())</td>
+                    <td>@(@event.Date.EventDate(Model.Chapter.TimeZone))</td>
                     <td>
                         @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
                         {

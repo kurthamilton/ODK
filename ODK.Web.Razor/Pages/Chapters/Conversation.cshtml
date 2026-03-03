@@ -37,7 +37,7 @@
         Breadcrumbs = breadcrumbs,
         Chapter = viewModel.Chapter,
         Conversation = viewModel.Conversation,
-        ConversationUrlFunc = id => OdkRoutes.Account.Conversation(chapter: null, id),
+        ConversationUrlFunc = id => OdkRoutes.Groups.Conversation(chapter: Model.Chapter, id),
         CurrentMember = Model.CurrentMember,
         Messages = viewModel.Messages,
         OtherConversations = viewModel.OtherConversations
@@ -47,5 +47,5 @@
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
     Title = "Conversation",
-    Content = await Html.PartialAsync("Groups/_GroupConversationContent", conversationViewModel)
+    Content = await Html.PartialAsync("Conversations/_ConversationContent", conversationViewModel)
 })

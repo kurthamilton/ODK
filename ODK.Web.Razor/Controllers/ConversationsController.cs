@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Contact;
 using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
+using ODK.Web.Razor.Models.Chapters;
+using ODK.Web.Razor.Models.Feedback;
 
 namespace ODK.Web.Razor.Controllers;
 
@@ -29,11 +31,26 @@ public class ConversationsController : OdkControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("conversations/{id:guid}/unarchive")]
+    [HttpPost("conversations/{id:guid}/reply")]
+    public async Task<IActionResult> ReplyToConversation(
+        Guid id,
+        [FromForm] ChapterConversationReplyFormViewModel viewModel)
+    {
+        await _contactService.ReplyToChapterConversation(
+            MemberServiceRequest,
+            id,
+            viewModel.Message ?? string.Empty);
+
+        AddFeedback("Reply sent", FeedbackType.Success);
+
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("conversations/{id:guid}/restore")]
     public async Task<IActionResult> Unarchive(Guid id)
     {
         var result = await _contactService.UnarchiveChapterConversation(MemberServiceRequest, id);
-        AddFeedback(result, "Conversation unarchived");
+        AddFeedback(result, "Conversation restored");
         return RedirectToReferrer();
     }
 }

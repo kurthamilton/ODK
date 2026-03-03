@@ -4,6 +4,7 @@
 @using ODK.Services.Chapters
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Chapters
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Groups
 @model ConversationModel
 @inject IChapterViewModelService ChapterViewModelService
@@ -20,12 +21,16 @@
 @await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel
 {
     Title = "",
-    Content = await Html.PartialAsync("Groups/_GroupConversationContent", new ChapterConversationViewModel
+    Content = await Html.PartialAsync("Conversations/_ConversationContent", new ChapterConversationViewModel
     {
-        Breadcrumbs = [],
+        Breadcrumbs =
+        [
+            new MenuItem { Text = "Conversations", Link = OdkRoutes.Groups.Conversations(Model.Chapter) },
+            new MenuItem { Text = viewModel.Conversation.Subject }
+        ],
         Chapter = viewModel.Chapter,
         Conversation = viewModel.Conversation,
-        ConversationUrlFunc = id => OdkRoutes.Account.Conversation(chapter: null, id),
+        ConversationUrlFunc = id => OdkRoutes.Groups.Conversation(chapter: Model.Chapter, id),
         CurrentMember = Model.CurrentMember,
         Messages = viewModel.Messages,
         OtherConversations = viewModel.OtherConversations

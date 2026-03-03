@@ -1,17 +1,20 @@
-﻿@page "/{chapterName}/contact"
+﻿@page "/{chapterName}/conversations"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Services.Chapters
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Chapters
 @using ODK.Web.Razor.Models.Components
 @model ConversationsModel
 @inject IChapterViewModelService ChapterViewModelService
+@inject IOdkRoutes OdkRoutes
 @{
     Layout = "_OdkChapterLayout";
     Model.Description = "Page for viewing existing conversations with the owners of this Drunken Knitwits chapter, or starting a new conversation";
     Model.Title = "Conversations";
     Model.Path = Model.OdkRoutes.Groups.Conversations(Model.Chapter);
 
-    var viewModel = await ChapterViewModelService.GetGroupConversationsPage(Model.ChapterServiceRequest, Model.Archived);
+    var viewModel = await ChapterViewModelService.GetGroupConversationsPage(Model.MemberChapterServiceRequest, Model.Archived);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -26,7 +29,18 @@
         },
         new MenuItem { Text = "Conversations" }
     },
-    Content = await Html.PartialAsync("Groups/_GroupConversationsContent", viewModel)
+    Content = await Html.PartialAsync("Conversations/_ConversationsContent", new ChapterConversationsViewModel
+    {
+        ActiveConversationCount = viewModel.ActiveConversationCount,
+        Archived = viewModel.Archived,
+        ArchivedConversationCount = viewModel.ArchivedConversationCount,
+        Chapter = Model.Chapter,
+        Chapters = null,
+        Conversations = viewModel.Conversations,
+        ConversationsUrlFunc = archived => OdkRoutes.Groups.Conversations(Model.Chapter, archived),
+        ConversationUrlFunc = id => OdkRoutes.Groups.Conversation(Model.Chapter, id),
+        CurrentMember = Model.CurrentMember
+    })
 })
 
 @section scripts

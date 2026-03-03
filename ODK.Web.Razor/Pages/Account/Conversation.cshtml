@@ -28,13 +28,24 @@
         Content =
             @<div>
                 <section class="section">
-                    @await Html.PartialAsync("Groups/_GroupConversationContent", new ChapterConversationViewModel
+                    @await Html.PartialAsync("Conversations/_ConversationContent", new ChapterConversationViewModel
                     {
                         Breadcrumbs = 
                         [
-                            new MenuItem { Link = OdkRoutes.Account.Conversations(chapter: null), Text = "My conversations" },
-                            new MenuItem { Link = OdkRoutes.Groups.Group(viewModel.Chapter), Text = viewModel.Chapter.GetDisplayName(Model.Platform) },
-                            new MenuItem { Text = viewModel.Conversation.Subject }
+                            new MenuItem 
+                            { 
+                                Link = OdkRoutes.Account.Conversations(chapter: null, archived: viewModel.Conversation.ArchivedUtc != null), 
+                                Text = "My conversations" 
+                            },
+                            new MenuItem 
+                            { 
+                                Link = OdkRoutes.Groups.Group(viewModel.Chapter), 
+                                Text = viewModel.Chapter.GetDisplayName(Model.Platform) 
+                            },
+                            new MenuItem 
+                            { 
+                                Text = viewModel.Conversation.Subject 
+                            }
                         ],
                         Chapter = viewModel.Chapter,
                         Conversation = viewModel.Conversation,
