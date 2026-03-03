@@ -52,10 +52,10 @@
                                 Text = conversation.Subject
                             })                            
                         </td>
-                        <td>@conversation.CreatedUtc.ToFriendlyDateTimeString(Model.Chapter.TimeZone)</td>
+                        <td>@conversation.CreatedUtc.ToRelativeTime(Model.Chapter.TimeZone)</td>
                         <td>
                             <div>
-                                @dto.LastMessage.Message.CreatedUtc.ToFriendlyDateTimeString(Model.Chapter.TimeZone)
+                                @dto.LastMessage.Message.CreatedUtc.ToRelativeTime(Model.Chapter.TimeZone)
                             </div>
                             @if (dto.LastMessage.Message.MemberId != dto.Conversation.MemberId)
                             {
