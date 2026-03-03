@@ -64,6 +64,7 @@ public class MemberSiteSubscriptionQueryBuilder
         var query =
             from memberSiteSubscription in Query
             from siteSubscription in Set<SiteSubscription>()
+                .Include(x => x.Features)
                 .Where(x => x.Id == memberSiteSubscription.SiteSubscriptionId)
             from siteSubsriptionPrice in Set<SiteSubscriptionPrice>()
                 .Where(x => x.Id == memberSiteSubscription.SiteSubscriptionPriceId)
