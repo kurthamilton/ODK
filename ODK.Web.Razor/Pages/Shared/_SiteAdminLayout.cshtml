@@ -1,10 +1,16 @@
-﻿@using ODK.Web.Common.Routes
+﻿@using ODK.Core.Platforms
+@using ODK.Services.Chapters
+@using ODK.Web.Common.Routes
 @using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Services
+@inject IChapterService ChapterService
 @inject IOdkRoutes OdkRoutes
+@inject IRequestStore RequestStore
 @{
     Layout = "_HomeLayout";
+
+    var platform = RequestStore.Platform;
 
     var menuItems = new[]
     {
@@ -24,6 +30,15 @@
 @section styles
 {
     @await RenderSectionAsync("styles", required: false)
+}
+
+@section header
+{
+    @if (platform == PlatformType.DrunkenKnitwits)
+    {
+        var viewModel = await ChapterService.GetOdkHomeHeaderViewModel();
+        @await Html.PartialAsync("Header/_OdkHomeHeader", viewModel)        
+    }
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
