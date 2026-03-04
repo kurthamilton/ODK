@@ -1,4 +1,4 @@
-﻿namespace ODK.Data.Core.QueryBuilders.Members;
+﻿namespace ODK.Data.Core.QueryBuilders.QueryOptions;
 
 public class MemberChapterQueryOptions
 {

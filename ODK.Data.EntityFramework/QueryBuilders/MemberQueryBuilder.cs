@@ -3,7 +3,7 @@ using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Data.Core.Members;
 using ODK.Data.Core.QueryBuilders;
-using ODK.Data.Core.QueryBuilders.Members;
+using ODK.Data.Core.QueryBuilders.QueryOptions;
 using ODK.Data.EntityFramework.Queries;
 
 namespace ODK.Data.EntityFramework.QueryBuilders;

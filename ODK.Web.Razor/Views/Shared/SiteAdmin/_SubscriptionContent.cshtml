@@ -16,7 +16,7 @@
             Description = Model.Subscription.Description,
             Enabled = Model.Subscription.Enabled,
             FallbackSiteSubscriptionId = Model.Subscription.FallbackSiteSubscriptionId,
-            Features = Model.Subscription.Features.Select(x => x.Feature).ToList(),
+            Features = Model.Features.Select(x => x.Feature).ToList(),
             GroupLimit = Model.Subscription.GroupLimit,
             MemberLimit = Model.Subscription.MemberLimit,
             Name = Model.Subscription.Name,

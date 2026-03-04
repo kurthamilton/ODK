@@ -1,4 +1,4 @@
-﻿using ODK.Core.Subscriptions;
+﻿using ODK.Core.Features;
 using ODK.Data.Core.Chapters;
 
 namespace ODK.Services.Members.ViewModels;
@@ -7,5 +7,5 @@ public class MemberConversationsAdminPageViewModel : MemberAdminPageViewModelBas
 {
     public required IReadOnlyCollection<ChapterConversationDto> Conversations { get; init; }
 
-    public required SiteSubscription? OwnerSubscription { get; init; }
+    public required IReadOnlyCollection<SiteFeatureType> OwnerSubscriptionFeatures { get; init; }
 }

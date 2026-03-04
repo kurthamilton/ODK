@@ -10,11 +10,9 @@
     var platform = RequestStore.Platform;
     var authorized = Model.Permitted != null 
         ? Model.Permitted.Value 
-        : Model.OwnerSubscription != null 
-            ? AuthorizationService.ChapterHasAccess(Model.OwnerSubscription, Model.Feature)
-            : Model.Chapter != null 
-                ? await AuthorizationService.ChapterHasAccess(Model.Chapter, Model.Feature)
-                : false;
+        : Model.OwnerSubscriptionFeatures.Count > 0
+            ? Model.OwnerSubscriptionFeatures.Contains(Model.Feature)
+            : false;
 }
 
 @if (authorized)

@@ -14,11 +14,5 @@ public interface IMemberSiteSubscriptionRepository : IReadWriteRepository<Member
 
     IDeferredQuerySingleOrDefault<MemberSiteSubscription> GetByMemberId(Guid memberId, PlatformType platform);
 
-    IDeferredQueryMultiple<MemberSiteSubscription> GetByMemberId(Guid memberId);
-
-    IDeferredQuerySingleOrDefault<MemberSiteSubscriptionDto> GetDtoByChapterId(Guid chapterId);
-
     IDeferredQuerySingleOrDefault<MemberSiteSubscriptionDto> GetDtoByMemberId(Guid memberId, PlatformType platform);
-
-    IDeferredQueryMultiple<MemberSiteSubscription> GetExpired();
 }

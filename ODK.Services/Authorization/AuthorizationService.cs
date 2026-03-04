@@ -4,19 +4,11 @@ using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Subscriptions;
 using ODK.Core.Venues;
-using ODK.Data.Core;
 
 namespace ODK.Services.Authorization;
 
 public class AuthorizationService : IAuthorizationService
 {
-    private readonly IUnitOfWork _unitOfWork;
-
-    public AuthorizationService(IUnitOfWork unitOfWork)
-    {
-        _unitOfWork = unitOfWork;
-    }
-
     public bool CanRespondToEvent(
         Event @event,
         Member? member,
@@ -58,20 +50,10 @@ public class AuthorizationService : IAuthorizationService
         return memberVisibility.CanView(chapterVisibility);
     }
 
-    public async Task<bool> ChapterHasAccess(
-        Chapter chapter,
-        SiteFeatureType feature)
-    {
-        var dto = await _unitOfWork.MemberSiteSubscriptionRepository
-            .GetDtoByChapterId(chapter.Id)
-            .Run();
-
-        return ChapterHasAccess(dto?.SiteSubscription, feature);
-    }
-
     public bool ChapterHasAccess(
-        SiteSubscription? ownerSubscription,
-        SiteFeatureType feature) => ownerSubscription?.HasFeature(feature) == true;
+        IEnumerable<SiteSubscriptionFeature> ownerSubscriptionFeatures,
+        SiteFeatureType feature)
+        => ownerSubscriptionFeatures.Any(x => x.Feature == feature);
 
     public SubscriptionStatus GetSubscriptionStatus(
         Member? member,
@@ -109,21 +91,6 @@ public class AuthorizationService : IAuthorizationService
         return subscription.ExpiresUtc >= DateTime.UtcNow.AddDays(-1 * membershipSettings.MembershipDisabledAfterDaysExpired)
             ? SubscriptionStatus.Expired
             : SubscriptionStatus.Disabled;
-    }
-
-    public bool IsAdmin(
-        Member? member,
-        Chapter chapter,
-        IEnumerable<ChapterAdminMember> adminMembers)
-    {
-        if (member == null)
-        {
-            return false;
-        }
-
-        return adminMembers
-            .FirstOrDefault(x => x.MemberId == member.Id && x.ChapterId == chapter.Id)
-            .HasAccessTo(ChapterAdminRole.Organiser, member);
     }
 
     private ChapterFeatureVisibilityType GetMemberVisibilityType(

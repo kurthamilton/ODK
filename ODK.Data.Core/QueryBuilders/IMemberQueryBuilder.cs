@@ -1,6 +1,6 @@
 ﻿using ODK.Core.Members;
 using ODK.Data.Core.Members;
-using ODK.Data.Core.QueryBuilders.Members;
+using ODK.Data.Core.QueryBuilders.QueryOptions;
 
 namespace ODK.Data.Core.QueryBuilders;
 

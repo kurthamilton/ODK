@@ -1,4 +1,5 @@
-﻿using ODK.Core.Extensions;
+﻿using ODK.Core.Chapters;
+using ODK.Core.Extensions;
 using ODK.Core.Features;
 using ODK.Core.Platforms;
 using ODK.Core.SocialMedia;
@@ -89,12 +90,10 @@ public class SocialMediaService : ISocialMediaService
 
         var chapterId = chapterIds.Dequeue();
 
-        var (ownerSubscription, links) = await _unitOfWork.RunAsync(
-            x => x.MemberSiteSubscriptionRepository.Query()
-                .ForChapterOwner(chapterId)
-                .Active()
-                .SiteSubscription()
-                .GetSingleOrDefault(),
+        var (hasAccess, links) = await _unitOfWork.RunAsync(
+            x => x.MemberSiteSubscriptionRepository
+                .Query(x => x.ForChapterOwner(chapterId).Active())
+                .HasFeature(SiteFeatureType.InstagramFeed),
             x => x.ChapterLinksRepository.GetByChapterId(chapterId));
 
         if (string.IsNullOrEmpty(links?.InstagramName))
@@ -103,8 +102,7 @@ public class SocialMediaService : ISocialMediaService
             return;
         }
 
-        var authorized = _authorizationService.ChapterHasAccess(ownerSubscription, SiteFeatureType.InstagramFeed);
-        if (!authorized)
+        if (!hasAccess)
         {
             await ScheduleNextScrape(chapterIds, runNow: true);
             return;

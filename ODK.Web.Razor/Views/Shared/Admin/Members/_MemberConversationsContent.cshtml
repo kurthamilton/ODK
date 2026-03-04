@@ -56,7 +56,7 @@
     </section>    
 
     <section class="section">
-        @await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.OwnerSubscription)
+        @await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.OwnerSubscriptionFeatures)
         {
             Chapter = Model.Chapter,
             Feature = ODK.Core.Features.SiteFeatureType.SendMemberEmails,
@@ -80,9 +80,9 @@ else
 {
     <h2>Start new conversation</h2>
     <section class="section">
-        @await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.OwnerSubscription)
+        @await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.OwnerSubscriptionFeatures)
         {
-       Chapter = Model.Chapter,
+            Chapter = Model.Chapter,
             Feature = ODK.Core.Features.SiteFeatureType.SendMemberEmails,
             ContentFunc = 
                 @<div>

@@ -1,19 +1,14 @@
 ﻿using Microsoft.AspNetCore.Html;
 using ODK.Core.Chapters;
 using ODK.Core.Features;
-using ODK.Core.Subscriptions;
 
 namespace ODK.Web.Razor.Models.Components;
 
 public class RestrictedFeatureViewModel
 {
-    public RestrictedFeatureViewModel()
+    public RestrictedFeatureViewModel(IEnumerable<SiteFeatureType> ownerSubscriptionFeatures)
     {
-    }
-
-    public RestrictedFeatureViewModel(SiteSubscription? ownerSubscription)
-    {
-        OwnerSubscription = ownerSubscription;
+        OwnerSubscriptionFeatures = ownerSubscriptionFeatures.ToArray();
     }
 
     public RestrictedFeatureViewModel(bool permitted)
@@ -31,7 +26,7 @@ public class RestrictedFeatureViewModel
 
     public required SiteFeatureType Feature { get; init; }
 
-    public SiteSubscription? OwnerSubscription { get; }
+    public IReadOnlyCollection<SiteFeatureType> OwnerSubscriptionFeatures { get; } = [];
 
     public bool? Permitted { get; }
 }

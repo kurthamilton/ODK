@@ -14,6 +14,8 @@ public class SiteSubscriptionViewModel
 
     public required MemberSiteSubscription? CurrentMemberSiteSubscription { get; init; }
 
+    public required IReadOnlyCollection<SiteSubscriptionFeature> Features { get; init; }
+
     public required IReadOnlyCollection<SiteSubscriptionPrice> Prices { get; init; }
 
     public required IReadOnlyCollection<SitePaymentSettings> SitePaymentSettings { get; init; }

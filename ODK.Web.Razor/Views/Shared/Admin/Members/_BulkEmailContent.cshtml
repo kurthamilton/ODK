@@ -8,7 +8,7 @@
 @model BulkEmailAdminPageViewModel
 @inject IOdkRoutes OdkRoutes
 
-@await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel
+@await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.OwnerSubscriptionFeatures)
 {
     Chapter = Model.Chapter,
     Feature = SiteFeatureType.SendMemberEmails,

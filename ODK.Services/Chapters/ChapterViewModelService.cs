@@ -572,7 +572,7 @@ public class ChapterViewModelService : IChapterViewModelService
 
         var (
             memberSubscription,
-            ownerSubscription,
+            hasInstagramFeed,
             membershipSettings,
             privacySettings,
             adminMembers,
@@ -587,16 +587,15 @@ public class ChapterViewModelService : IChapterViewModelService
             texts,
             chapterTopics,
             chapterPages,
-            location
+            location,
+            isAdmin
         ) = await _unitOfWork.RunAsync(
             x => currentMember != null
                 ? x.MemberSubscriptionRepository.GetByMemberId(currentMember.Id, chapter.Id)
                 : new DefaultDeferredQuerySingleOrDefault<MemberSubscription>(),
-            x => x.MemberSiteSubscriptionRepository.Query()
-                .ForChapterOwner(chapter.Id)
-                .Active()
-                .SiteSubscription()
-                .GetSingleOrDefault(),
+            x => x.MemberSiteSubscriptionRepository
+                .Query(x => x.ForChapterOwner(chapter.Id).Active())
+                .HasFeature(SiteFeatureType.InstagramFeed),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterAdminMemberRepository.GetAdminMembersWithAvatarsByChapterId(platform, chapter.Id),
@@ -611,7 +610,10 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.ChapterTextsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterTopicRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPageRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterLocationRepository.GetByChapterId(chapter.Id));
+            x => x.ChapterLocationRepository.GetByChapterId(chapter.Id),
+            x => currentMember != null
+                ? x.ChapterAdminMemberRepository.IsAdmin(platform, chapter.Id, currentMember.Id)
+                : new DefaultDeferredQueryAny(false));
 
         var eventIds = upcomingEvents
             .Concat(recentEvents)
@@ -646,8 +648,7 @@ public class ChapterViewModelService : IChapterViewModelService
             membershipSettings,
             privacySettings);
 
-        var showInstagramFeed = ownerSubscription?.HasFeature(SiteFeatureType.InstagramFeed) == true &&
-            privacySettings?.InstagramFeed != false;
+        var showInstagramFeed = hasInstagramFeed && privacySettings?.InstagramFeed != false;
 
         return new GroupHomePageViewModel
         {
@@ -666,8 +667,7 @@ public class ChapterViewModelService : IChapterViewModelService
                         .ToArray()
                     : []
             },
-            IsAdmin = _authorizationService
-                .IsAdmin(currentMember, chapter, adminMembers.Select(x => x.ChapterAdminMember)),
+            IsAdmin = isAdmin,
             IsMember = currentMember?.IsMemberOf(chapter.Id) == true,
             Links = links,
             MemberCount = memberCount,
@@ -830,7 +830,7 @@ public class ChapterViewModelService : IChapterViewModelService
 
         var (
             memberSubscription,
-            ownerSubscription,
+            hasInstagramFeed,
             membershipSettings,
             privacySettings,
             events,
@@ -843,11 +843,9 @@ public class ChapterViewModelService : IChapterViewModelService
             x => currentMember != null
                 ? x.MemberSubscriptionRepository.GetByMemberId(currentMember.Id, chapter.Id)
                 : new DefaultDeferredQuerySingleOrDefault<MemberSubscription>(),
-            x => x.MemberSiteSubscriptionRepository.Query()
-                .ForChapterOwner(chapter.Id)
-                .Active()
-                .SiteSubscription()
-                .GetSingleOrDefault(),
+            x => x.MemberSiteSubscriptionRepository
+                .Query(x => x.ForChapterOwner(chapter.Id).Active())
+                .HasFeature(SiteFeatureType.InstagramFeed),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
             x => x.EventRepository.GetByChapterId(chapter.Id, today),
@@ -895,8 +893,7 @@ public class ChapterViewModelService : IChapterViewModelService
                 responseSummary: responseSummaryDictionary.ContainsKey(x.Id) ? responseSummaryDictionary[x.Id] : null))
             .ToArray();
 
-        var showInstagramFeed = ownerSubscription?.HasFeature(SiteFeatureType.InstagramFeed) == true &&
-            privacySettings?.InstagramFeed != false;
+        var showInstagramFeed = hasInstagramFeed && privacySettings?.InstagramFeed != false;
 
         return new ChapterHomePageViewModel
         {

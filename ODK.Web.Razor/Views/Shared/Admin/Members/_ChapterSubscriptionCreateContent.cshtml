@@ -8,7 +8,7 @@
 @inject IOdkRoutes OdkRoutes
 
 <section class="section" data-odk-component="_ChapterSubscriptionCreateContent">
-    @await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.OwnerSubscription)
+    @await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.OwnerSubscriptionFeatures)
     {
         Chapter = Model.Chapter,
         Feature = SiteFeatureType.MemberSubscriptions,
@@ -33,7 +33,7 @@
                         @await Html.PartialAsync("Admin/Members/_SubscriptionForm", new SubscriptionFormViewModel
                         {
                             Currency = Model.Currency,
-                            OwnerSubscription = Model.OwnerSubscription,
+                            OwnerSubscriptionFeatures = Model.OwnerSubscriptionFeatures,
                             SupportsRecurringPayments = Model.SupportsRecurringPayments
                         })
                         <button class="btn btn-primary">Create</button>

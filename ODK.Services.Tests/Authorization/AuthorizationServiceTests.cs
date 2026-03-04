@@ -3,9 +3,7 @@ using FluentAssertions;
 using NUnit.Framework;
 using ODK.Core.Chapters;
 using ODK.Core.Members;
-using ODK.Data.EntityFramework;
 using ODK.Services.Authorization;
-using ODK.Services.Tests.Helpers;
 
 namespace ODK.Services.Tests.Authorization;
 
@@ -134,7 +132,6 @@ public static class AuthorizationServiceTests
 
     private static AuthorizationService CreateService()
     {
-        return new AuthorizationService(
-            new UnitOfWork(new MockOdkContext()));
+        return new AuthorizationService();
     }
 }

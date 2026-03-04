@@ -14,8 +14,14 @@ public interface IReadWriteRepository<T, TBuilder> : IWriteRepository<T>
     where TBuilder : IDatabaseEntityQueryBuilder<T, TBuilder>
 {
     IDeferredQuerySingle<T> GetById(Guid id);
+
     IDeferredQuerySingleOrDefault<T> GetByIdOrDefault(Guid id);
+
     IDeferredQueryMultiple<T> GetByIds(IReadOnlyCollection<Guid> ids);
+
     TBuilder Query();
+
+    TBuilder Query(Func<TBuilder, TBuilder> filter);
+
     void Upsert(T entity);
 }

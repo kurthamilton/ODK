@@ -239,18 +239,18 @@ public class MemberService : IMemberService
             membershipSettings,
             existing,
             siteSubscription,
-            ownerSubscription,
+            ownerSubscriptionFeatures,
             chapterLocation
         ) = await _unitOfWork.RunAsync(
             x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.MemberRepository.GetByEmailAddress(model.EmailAddress),
             x => x.SiteSubscriptionRepository.GetDefault(platform),
-            x => x.MemberSiteSubscriptionRepository.Query()
-                .ForChapterOwner(chapter.Id)
-                .Active()
+            x => x.MemberSiteSubscriptionRepository
+                .Query(x => x.ForChapterOwner(chapter.Id).Active())
                 .SiteSubscription()
-                .GetSingleOrDefault(),
+                .Features()
+                .GetAll(),
             x => x.ChapterLocationRepository.GetByChapterId(chapter.Id));
 
         var validationResult = ValidateMemberProfile(chapterProperties, model, forApplication: true);
@@ -303,7 +303,7 @@ public class MemberService : IMemberService
             .Select(x => x.ToMemberProperty(member.Id))
             .ToArray();
 
-        AddMemberToChapter(now, member, chapter, memberProperties, membershipSettings, ownerSubscription);
+        AddMemberToChapter(now, member, chapter, memberProperties, membershipSettings, ownerSubscriptionFeatures);
 
         if (chapterLocation != null)
         {
@@ -495,7 +495,7 @@ public class MemberService : IMemberService
 
         var (adminMembers,
             notificationSettings,
-            ownerSubscription,
+            ownerSubscriptionDto,
             members,
             chapterProperties,
             chapterPropertyOptions,
@@ -503,10 +503,10 @@ public class MemberService : IMemberService
             ) = await _unitOfWork.RunAsync(
             x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => x.MemberNotificationSettingsRepository.GetByChapterId(chapter.Id, NotificationType.NewMember),
-            x => x.MemberSiteSubscriptionRepository.Query()
-                .ForChapterOwner(chapter.Id)
-                .Active()
+            x => x.MemberSiteSubscriptionRepository
+                .Query(x => x.ForChapterOwner(chapter.Id).Active())
                 .SiteSubscription()
+                .WithFeatures()
                 .GetSingleOrDefault(),
             x => x.MemberRepository.GetCountByChapterId(chapter.Id),
             x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
@@ -518,7 +518,7 @@ public class MemberService : IMemberService
             return ServiceResult.Failure("You are already a member of this group");
         }
 
-        var registrationResult = ChapterIsOpenForRegistration(platform, members, ownerSubscription);
+        var registrationResult = ChapterIsOpenForRegistration(members, ownerSubscriptionDto?.SiteSubscription);
         if (!registrationResult.Success)
         {
             return registrationResult;
@@ -534,7 +534,13 @@ public class MemberService : IMemberService
             .Select(x => x.ToMemberProperty(currentMember.Id))
             .ToArray();
 
-        AddMemberToChapter(DateTime.UtcNow, currentMember, chapter, memberProperties, membershipSettings, ownerSubscription);
+        AddMemberToChapter(
+            DateTime.UtcNow,
+            currentMember,
+            chapter,
+            memberProperties,
+            membershipSettings,
+            ownerSubscriptionDto?.Features ?? []);
 
         _notificationService.AddNewMemberNotifications(currentMember, chapter.Id, adminMembers, notificationSettings);
 
@@ -966,7 +972,6 @@ public class MemberService : IMemberService
     }
 
     private static ServiceResult ChapterIsOpenForRegistration(
-        PlatformType platform,
         int members,
         SiteSubscription? ownerSubscription)
     {
@@ -1018,11 +1023,12 @@ public class MemberService : IMemberService
         Chapter chapter,
         IEnumerable<MemberProperty> memberProperties,
         ChapterMembershipSettings? membershipSettings,
-        SiteSubscription? ownerSubscription)
+        IReadOnlyCollection<SiteSubscriptionFeature> ownerSubscriptionFeatures)
     {
         var memberChapter = new MemberChapter
         {
-            Approved = ownerSubscription?.HasFeature(SiteFeatureType.ApproveMembers) != true ||
+            Approved =
+                !_authorizationService.ChapterHasAccess(ownerSubscriptionFeatures, SiteFeatureType.ApproveMembers) ||
                 membershipSettings?.ApproveNewMembers != true,
             CreatedUtc = now,
             MemberId = member.Id,
@@ -1032,7 +1038,7 @@ public class MemberService : IMemberService
         _unitOfWork.MemberChapterRepository.Add(memberChapter);
 
         var hasSubscriptions = _authorizationService
-            .ChapterHasAccess(ownerSubscription, SiteFeatureType.MemberSubscriptions);
+            .ChapterHasAccess(ownerSubscriptionFeatures, SiteFeatureType.MemberSubscriptions);
         if (hasSubscriptions && membershipSettings?.Enabled == true)
         {
             _unitOfWork.MemberSubscriptionRepository.Add(new MemberSubscription

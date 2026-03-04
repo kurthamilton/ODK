@@ -165,7 +165,7 @@ internal class MockOdkContext : OdkContext
             Currency = currency,
             CurrencyId = currency.Id,
             Id = Guid.NewGuid(),
-            SitePaymentSettingId = sitePaymentSettings.Id            
+            SitePaymentSettingId = sitePaymentSettings.Id
         });
     }
 
@@ -303,10 +303,10 @@ internal class MockOdkContext : OdkContext
     }
 
     internal SiteSubscription CreateSiteSubscription(
-        IEnumerable<SiteFeatureType>? features = null,
-        int? groupLimit = null)
+        int? groupLimit = null,
+        IEnumerable<SiteFeatureType>? features = null)
     {
-        return Create(new SiteSubscription
+        var siteSubscription = Create(new SiteSubscription
         {
             Id = Guid.NewGuid(),
             Name = "Test Subscription",
@@ -315,13 +315,23 @@ internal class MockOdkContext : OdkContext
             Enabled = true,
             Default = false,
             Platform = PlatformType.Default,
-            SitePaymentSettingId = Guid.NewGuid(),
-            Features = features?.Select(x => new SiteSubscriptionFeature
-            {
-                Id = Guid.NewGuid(),
-                Feature = x
-            }).ToList() ?? []
+            SitePaymentSettingId = Guid.NewGuid()
         });
+
+        if (features != null)
+        {
+            foreach (var feature in features)
+            {
+                Create(new SiteSubscriptionFeature
+                {
+                    Feature = feature,
+                    Id = Guid.NewGuid(),
+                    SiteSubscriptionId = siteSubscription.Id
+                });
+            }
+        }
+
+        return siteSubscription;
     }
 
     internal SiteSubscriptionPrice CreateSiteSubscriptionPrice(

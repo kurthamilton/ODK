@@ -46,7 +46,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             return ServiceResult.Failure("Subscription not found");
         }
 
-        OdkAssertions.BelongsToMember(memberSubscriptionDto.MemberSiteSubscription, currentMember.Id);        
+        OdkAssertions.BelongsToMember(memberSubscriptionDto.MemberSiteSubscription, currentMember.Id);
 
         if (string.IsNullOrEmpty(memberSubscriptionDto.MemberSiteSubscription.ExternalId))
         {
@@ -91,7 +91,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
         }
 
         var memberSubscription = memberSubscriptionDto.MemberSiteSubscription;
-        
+
         memberSubscription ??= new MemberSiteSubscription();
 
         memberSubscription.ExternalId = externalSubscription.ExternalId;
@@ -124,14 +124,18 @@ public class SiteSubscriptionService : ISiteSubscriptionService
         var (platform, memberId) = (request.Platform, request.CurrentMemberIdOrDefault);
 
         var (sitePaymentSettings,
-            subscriptions,
+            subscriptionDtos,
             prices,
             currentMember,
             memberSubscriptionDto,
             memberCurrency,
             chapterCurrency) = await _unitOfWork.RunAsync(
             x => x.SitePaymentSettingsRepository.GetAll(),
-            x => x.SiteSubscriptionRepository.GetAllEnabled(platform),
+            x => x.SiteSubscriptionRepository.Query()
+                .ForPlatform(platform)
+                .Enabled()
+                .WithFeatures()
+                .GetAll(),
             x => x.SiteSubscriptionPriceRepository.GetAllEnabled(platform),
             x => memberId != null
                 ? x.MemberRepository.GetByIdOrDefault(memberId.Value)
@@ -164,16 +168,17 @@ public class SiteSubscriptionService : ISiteSubscriptionService
 
         var externalSubscription = await GetExternalSubscription(sitePaymentSettings, memberSubscriptionDto);
 
-        var siteSubscriptionViewModels = subscriptions
-            .Where(x => x.IsEnabled(sitePaymentSettingsDictionary[x.SitePaymentSettingId]))
+        var siteSubscriptionViewModels = subscriptionDtos
+            .Where(x => x.SiteSubscription.IsEnabled(sitePaymentSettingsDictionary[x.SiteSubscription.SitePaymentSettingId]))
             .Select(x => new SiteSubscriptionViewModel
             {
                 Currencies = [],
                 CurrentMemberExternalSubscription = externalSubscription,
                 CurrentMemberSiteSubscription = memberSubscriptionDto?.MemberSiteSubscription,
-                Prices = priceDictionary.ContainsKey(x.Id) ? priceDictionary[x.Id] : [],
+                Features = x.Features,
+                Prices = priceDictionary.ContainsKey(x.SiteSubscription.Id) ? priceDictionary[x.SiteSubscription.Id] : [],
                 SitePaymentSettings = sitePaymentSettings,
-                Subscription = x
+                Subscription = x.SiteSubscription
             })
             .ToArray();
 
@@ -184,7 +189,8 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             CurrentMember = currentMember,
             CurrentMemberSubscription = memberSubscriptionDto,
             CurrentMemberExternalSubscription = externalSubscription,
-            SitePaymentSettings = subscriptions
+            SitePaymentSettings = subscriptionDtos
+                .Select(x => x.SiteSubscription)
                 .Select(x => sitePaymentSettingsDictionary[x.SitePaymentSettingId])
                 .GroupBy(x => x.Id)
                 .Select(x => x.First())

@@ -16,6 +16,7 @@ using ODK.Core.Platforms;
 using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Resources.Resources;
+using ODK.Services.Authorization;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.Models;
 using ODK.Services.Exceptions;
@@ -1166,7 +1167,8 @@ public static class ChapterAdminServiceTests
             paymentProviderFactory ?? new Mock<IPaymentProviderFactory>().Object,
             paymentService ?? new Mock<IPaymentService>().Object,
             geolocationService ?? CreateMockGeolocationService(country: context.CreateCountry()),
-            loggingService ?? new Mock<ILoggingService>().Object);
+            loggingService ?? new Mock<ILoggingService>().Object,
+            Mock.Of<IAuthorizationService>());
     }
 
     private static ChapterAdminServiceSettings CreateChapterAdminServiceSettings(

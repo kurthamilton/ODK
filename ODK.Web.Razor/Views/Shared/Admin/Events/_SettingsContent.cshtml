@@ -23,7 +23,7 @@
         DefaultScheduledEmailTimeOfDay = TimeSpanUtils.ToString(Model.Settings?.DefaultScheduledEmailTimeOfDay),
         DefaultStartTime = TimeSpanUtils.ToString(Model.Settings?.DefaultStartTime),
         DisableComments = Model.Settings?.DisableComments ?? false,
-        OwnerSubscription = Model.OwnerSubscription
+        ScheduledEmailsEnabled = Model.ScheduledEmailsEnabled
     })
     <button class="btn btn-primary">Update</button>
 </form>

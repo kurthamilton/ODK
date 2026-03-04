@@ -3,13 +3,16 @@ using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
 using ODK.Data.Core.Deferred;
+using ODK.Data.Core.QueryBuilders;
 using ODK.Data.Core.Repositories;
 using ODK.Data.Core.Subscriptions;
 using ODK.Data.EntityFramework.Extensions;
+using ODK.Data.EntityFramework.QueryBuilders;
 
 namespace ODK.Data.EntityFramework.Repositories;
 
-public class SiteSubscriptionRepository : ReadWriteRepositoryBase<SiteSubscription>, ISiteSubscriptionRepository
+public class SiteSubscriptionRepository
+    : ReadWriteRepositoryBase<SiteSubscription, ISiteSubscriptionQueryBuilder>, ISiteSubscriptionRepository
 {
     public SiteSubscriptionRepository(DbContext context)
         : base(context)
@@ -19,11 +22,6 @@ public class SiteSubscriptionRepository : ReadWriteRepositoryBase<SiteSubscripti
     public IDeferredQueryMultiple<SiteSubscription> GetAll(PlatformType platform)
         => Set()
             .Where(x => x.Platform == platform)
-            .DeferredMultiple();
-
-    public IDeferredQueryMultiple<SiteSubscription> GetAllEnabled(PlatformType platform)
-        => Set()
-            .Where(x => x.Platform == platform && x.Enabled)
             .DeferredMultiple();
 
     public IDeferredQuerySingle<SiteSubscription> GetByPriceId(Guid priceId)
@@ -53,13 +51,15 @@ public class SiteSubscriptionRepository : ReadWriteRepositoryBase<SiteSubscripti
                 ActiveMemberSiteSubscriptionCount = Set<MemberSiteSubscription>()
                     .Where(x => x.SiteSubscriptionId == siteSubscription.Id && x.ExpiresUtc > DateTime.UtcNow)
                     .Count(),
+                Features = Set<SiteSubscriptionFeature>()
+                    .Where(x => x.SiteSubscriptionId == siteSubscription.Id)
+                    .ToArray(),
                 SiteSubscription = siteSubscription
             };
 
         return query.DeferredMultiple();
     }
 
-    protected override IQueryable<SiteSubscription> Set()
-        => base.Set()
-            .Include(x => x.Features);
+    public override ISiteSubscriptionQueryBuilder Query()
+        => CreateQueryBuilder(context => new SiteSubscriptionQueryBuilder(context));
 }

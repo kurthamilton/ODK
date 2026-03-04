@@ -60,27 +60,11 @@ public class MemberSiteSubscriptionRepository
             .ForMember(memberId, platform)
             .GetSingleOrDefault();
 
-    public IDeferredQueryMultiple<MemberSiteSubscription> GetByMemberId(Guid memberId)
-        => Set()
-            .Where(x => x.MemberId == memberId)
-            .DeferredMultiple();
-
-    public IDeferredQuerySingleOrDefault<MemberSiteSubscriptionDto> GetDtoByChapterId(Guid chapterId)
-        => Query()
-            .ForChapterOwner(chapterId)
-            .ToMemberSiteSubscriptionDto()
-            .GetSingleOrDefault();
-
     public IDeferredQuerySingleOrDefault<MemberSiteSubscriptionDto> GetDtoByMemberId(Guid memberId, PlatformType platform)
         => Query()
             .ForMember(memberId, platform)
             .ToMemberSiteSubscriptionDto()
             .GetSingleOrDefault();
-
-    public IDeferredQueryMultiple<MemberSiteSubscription> GetExpired()
-        => Set()
-            .Where(x => x.ExpiresUtc <= DateTime.UtcNow)
-            .DeferredMultiple();
 
     public override IMemberSiteSubscriptionQueryBuilder Query()
         => CreateQueryBuilder(context => new MemberSiteSubscriptionQueryBuilder(context));

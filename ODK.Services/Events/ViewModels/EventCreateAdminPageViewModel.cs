@@ -1,7 +1,6 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Countries;
-using ODK.Core.Members;
-using ODK.Core.Subscriptions;
+using ODK.Core.Features;
 using ODK.Core.Venues;
 
 namespace ODK.Services.Events.ViewModels;
@@ -18,7 +17,7 @@ public class EventCreateAdminPageViewModel
 
     public required ChapterEventSettings? EventSettings { get; init; }
 
-    public required SiteSubscription? OwnerSubscription { get; init; }
+    public required IReadOnlyCollection<SiteFeatureType> OwnerSubscriptionFeatures { get; init; }
 
     public Guid? VenueId { get; set; }
 

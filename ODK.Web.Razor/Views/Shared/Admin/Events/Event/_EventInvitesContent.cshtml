@@ -58,7 +58,7 @@
     <div>
         <h4>Scheduled</h4>
             
-        @await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.OwnerSubscription)
+        @await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.OwnerSubscriptionFeatures)
         {
             Chapter = Model.Chapter,
             Feature = SiteFeatureType.ScheduledEventEmails,

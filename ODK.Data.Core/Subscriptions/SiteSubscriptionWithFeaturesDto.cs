@@ -2,10 +2,8 @@
 
 namespace ODK.Data.Core.Subscriptions;
 
-public class SiteSubscriptionSummaryDto
+public class SiteSubscriptionWithFeaturesDto
 {
-    public required int ActiveMemberSiteSubscriptionCount { get; init; }
-
     public required IReadOnlyCollection<SiteSubscriptionFeature> Features { get; init; }
 
     public required SiteSubscription SiteSubscription { get; init; }

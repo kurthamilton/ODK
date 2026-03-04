@@ -30,21 +30,12 @@ public interface IAuthorizationService
         ChapterMembershipSettings? membershipSettings,
         ChapterPrivacySettings? privacySettings);
 
-    Task<bool> ChapterHasAccess(
-        Chapter chapter,
-        SiteFeatureType feature);
-
     bool ChapterHasAccess(
-        SiteSubscription? ownerSubscription,
+        IEnumerable<SiteSubscriptionFeature> ownerSubscriptionFeatures,
         SiteFeatureType feature);
 
     SubscriptionStatus GetSubscriptionStatus(
         Member? member,
         MemberSubscription? subscription,
         ChapterMembershipSettings? membershipSettings);
-
-    bool IsAdmin(
-        Member? member,
-        Chapter chapter,
-        IEnumerable<ChapterAdminMember> adminMembers);
 }

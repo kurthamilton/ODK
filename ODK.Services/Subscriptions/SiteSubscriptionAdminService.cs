@@ -1,4 +1,5 @@
 ﻿using ODK.Core;
+using ODK.Core.Features;
 using ODK.Core.Subscriptions;
 using ODK.Core.Web;
 using ODK.Data.Core;
@@ -55,7 +56,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
             SitePaymentSettingId = paymentSettings.Id
         };
 
-        UpdateSiteSubscription(model, subscription);
+        UpdateSiteSubscription(model, subscription, []);
 
         var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(paymentSettings);
 
@@ -185,7 +186,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
                 ActiveCount = x.ActiveMemberSiteSubscriptionCount,
                 Default = x.SiteSubscription.Default,
                 Enabled = x.SiteSubscription.Enabled,
-                Features = x.SiteSubscription.Features.Select(x => x.Feature).ToArray(),
+                Features = x.Features.Select(x => x.Feature).ToArray(),
                 GroupLimit = x.SiteSubscription.GroupLimit,
                 Id = x.SiteSubscription.Id,
                 MemberLimit = x.SiteSubscription.MemberLimit,
@@ -212,8 +213,12 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
     public async Task<SiteSubscriptionViewModel> GetSubscriptionViewModel(
         IMemberServiceRequest request, Guid siteSubscriptionId)
     {
-        var (subscription, prices, currencies, sitePaymentSettings) = await GetSiteAdminRestrictedContent(request,
-            x => x.SiteSubscriptionRepository.GetById(siteSubscriptionId),
+        var (siteSubscriptionDto, prices, currencies, sitePaymentSettings) = await GetSiteAdminRestrictedContent(request,
+            x => x.SiteSubscriptionRepository
+                .Query()
+                .ById(siteSubscriptionId)
+                .WithFeatures()
+                .GetSingle(),
             x => x.SiteSubscriptionPriceRepository.GetBySiteSubscriptionId(siteSubscriptionId),
             x => x.CurrencyRepository.GetAll(),
             x => x.SitePaymentSettingsRepository.GetAll());
@@ -223,9 +228,10 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
             Currencies = currencies,
             CurrentMemberExternalSubscription = null,
             CurrentMemberSiteSubscription = null,
+            Features = siteSubscriptionDto.Features,
             Prices = prices,
             SitePaymentSettings = sitePaymentSettings,
-            Subscription = subscription
+            Subscription = siteSubscriptionDto.SiteSubscription
         };
     }
 
@@ -260,16 +266,25 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
     {
         var platform = request.Platform;
 
-        var existing = await GetSiteAdminRestrictedContent(request,
-            x => x.SiteSubscriptionRepository.GetAll(platform));
+        var dtos = await GetSiteAdminRestrictedContent(request,
+            x => x.SiteSubscriptionRepository
+                .Query()
+                .ForPlatform(platform)
+                .WithFeatures()
+                .GetAll());
 
-        var subscription = existing.FirstOrDefault(x => x.Id == siteSubscriptionId);
-        OdkAssertions.Exists(subscription);
+        var dto = dtos
+            .FirstOrDefault(x => x.SiteSubscription.Id == siteSubscriptionId);
+        OdkAssertions.Exists(dto);
+
+        var (subscription, features) = (dto.SiteSubscription, dto.Features);
 
         if (model.FallbackSiteSubscriptionId != subscription.FallbackSiteSubscriptionId &&
             model.FallbackSiteSubscriptionId != null)
         {
-            var fallback = existing.FirstOrDefault(x => x.Id == model.FallbackSiteSubscriptionId);
+            var fallback = dtos
+                .Select(x => x.SiteSubscription)
+                .FirstOrDefault(x => x.Id == model.FallbackSiteSubscriptionId);
             if (fallback == null)
             {
                 return ServiceResult.Failure("Fallback subscription not found");
@@ -281,7 +296,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
             }
         }
 
-        UpdateSiteSubscription(model, subscription);
+        UpdateSiteSubscription(model, subscription, features);
 
         _unitOfWork.SiteSubscriptionRepository.Update(subscription);
         await _unitOfWork.SaveChangesAsync();
@@ -303,7 +318,10 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         return ServiceResult.Successful();
     }
 
-    private void UpdateSiteSubscription(SiteSubscriptionCreateModel model, SiteSubscription subscription)
+    private void UpdateSiteSubscription(
+        SiteSubscriptionCreateModel model,
+        SiteSubscription subscription,
+        IReadOnlyCollection<SiteSubscriptionFeature> existingFeatures)
     {
         subscription.Description = _htmlSanitizer.Sanitize(model.Description, DefaultHtmlSantizerOptions);
         subscription.Enabled = model.Enabled;
@@ -312,18 +330,12 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         subscription.MemberLimit = model.MemberLimit;
         subscription.Name = model.Name;
 
-        if (subscription.Features == null)
-        {
-            subscription.Features = new List<SiteSubscriptionFeature>();
-        }
-
-        var existingFeatures = subscription.Features.Select(x => x.Feature).ToHashSet();
         var modelFeatures = model.Features.ToHashSet();
 
         // add new features
         foreach (var feature in modelFeatures)
         {
-            if (!existingFeatures.Contains(feature))
+            if (!existingFeatures.Any(x => x.Feature == feature))
             {
                 _unitOfWork.SiteSubscriptionFeatureRepository.Add(new SiteSubscriptionFeature
                 {
@@ -335,11 +347,10 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         }
 
         // remove old features
-        foreach (var feature in existingFeatures)
+        foreach (var siteSubscriptionFeature in existingFeatures)
         {
-            if (!modelFeatures.Contains(feature))
+            if (!modelFeatures.Contains(siteSubscriptionFeature.Feature))
             {
-                var siteSubscriptionFeature = subscription.Features.First(x => x.Feature == feature);
                 _unitOfWork.SiteSubscriptionFeatureRepository.Delete(siteSubscriptionFeature);
             }
         }

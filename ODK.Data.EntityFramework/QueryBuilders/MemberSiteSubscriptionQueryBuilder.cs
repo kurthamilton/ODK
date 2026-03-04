@@ -1,8 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ODK.Core.Chapters;
+using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
+using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Members;
 using ODK.Data.Core.QueryBuilders;
 
@@ -48,7 +50,10 @@ public class MemberSiteSubscriptionQueryBuilder
         return this;
     }
 
-    public IQueryBuilder<SiteSubscription> SiteSubscription()
+    public IDeferredQuery<bool> HasFeature(SiteFeatureType feature)
+        => SiteSubscription().HasFeature(feature);
+
+    public ISiteSubscriptionQueryBuilder SiteSubscription()
     {
         var query =
             from memberSiteSubscription in Query
@@ -56,7 +61,8 @@ public class MemberSiteSubscriptionQueryBuilder
                 .Where(x => x.Id == memberSiteSubscription.SiteSubscriptionId)
             select siteSubscription;
 
-        return ProjectTo(query.Include(x => x.Features));
+        return CreateQueryBuilder<ISiteSubscriptionQueryBuilder, SiteSubscription>(
+            context => new SiteSubscriptionQueryBuilder(context, query));
     }
 
     public IQueryBuilder<MemberSiteSubscriptionDto> ToMemberSiteSubscriptionDto()
@@ -64,7 +70,6 @@ public class MemberSiteSubscriptionQueryBuilder
         var query =
             from memberSiteSubscription in Query
             from siteSubscription in Set<SiteSubscription>()
-                .Include(x => x.Features)
                 .Where(x => x.Id == memberSiteSubscription.SiteSubscriptionId)
             from siteSubsriptionPrice in Set<SiteSubscriptionPrice>()
                 .Where(x => x.Id == memberSiteSubscription.SiteSubscriptionPriceId)

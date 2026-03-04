@@ -105,14 +105,14 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     {
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
-        var (adminMembers, members, ownerSubscription) = await _unitOfWork.RunAsync(
+        var (adminMembers, members, ownerSubscriptionFeatures) = await _unitOfWork.RunAsync(
             x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => x.MemberRepository.GetByChapterId(chapter.Id),
-            x => x.MemberSiteSubscriptionRepository.Query()
-                .ForChapterOwner(chapter.Id)
-                .Active()
+            x => x.MemberSiteSubscriptionRepository
+                .Query(x => x.ForChapterOwner(chapter.Id).Active())
                 .SiteSubscription()
-                .GetSingleOrDefault());
+                .Features()
+                .GetAll());
 
         AssertMemberIsChapterAdmin(
             request,
@@ -123,7 +123,9 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             AdminMembers = adminMembers,
             Chapter = chapter,
             Members = members,
-            OwnerSubscription = ownerSubscription,
+            OwnerSubscriptionFeatures = ownerSubscriptionFeatures
+                .Select(x => x.Feature)
+                .ToArray(),
             Platform = platform
         };
     }
@@ -131,14 +133,21 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     public async Task<BulkEmailAdminPageViewModel> GetBulkEmailViewModel(
         IMemberChapterAdminServiceRequest request)
     {
-        var (platform, chapter) = (request.Platform, request.Chapter);
+        var chapter = request.Chapter;
 
-        await AssertMemberIsChapterAdmin(request);
+        var ownerSubscriptionFeatures = await GetChapterAdminRestrictedContent(request,
+            x => x.MemberSiteSubscriptionRepository
+                .Query(x => x.ForChapterOwner(chapter.Id).Active())
+                .SiteSubscription()
+                .Features()
+                .GetAll());
 
         return new BulkEmailAdminPageViewModel
         {
             Chapter = chapter,
-            Platform = platform
+            OwnerSubscriptionFeatures = ownerSubscriptionFeatures
+                .Select(x => x.Feature)
+                .ToArray()
         };
     }
 
@@ -180,15 +189,15 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
 
-        var (member, conversations, ownerSubscription) = await GetChapterAdminRestrictedContent(
+        var (member, conversations, ownerSubscriptionFeatures) = await GetChapterAdminRestrictedContent(
             request,
             x => x.MemberRepository.GetById(memberId),
             x => x.ChapterConversationRepository.GetDtosByMemberId(memberId, chapter.Id),
-            x => x.MemberSiteSubscriptionRepository.Query()
-                .ForChapterOwner(chapter.Id)
-                .Active()
+            x => x.MemberSiteSubscriptionRepository
+                .Query(x => x.ForChapterOwner(chapter.Id).Active())
                 .SiteSubscription()
-                .GetSingleOrDefault());
+                .Features()
+                .GetAll());
 
         OdkAssertions.MemberOf(member, chapter.Id);
 
@@ -197,7 +206,9 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             Chapter = chapter,
             Conversations = conversations,
             Member = member,
-            OwnerSubscription = ownerSubscription,
+            OwnerSubscriptionFeatures = ownerSubscriptionFeatures
+                .Select(x => x.Feature)
+                .ToArray(),
             Platform = platform
         };
     }
@@ -361,17 +372,17 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     {
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
-        var (ownerSubscription,
+        var (ownerSubscriptionFeatures,
             chapterPaymentSettings,
             chapterPaymentAccount,
             currency,
             sitePaymentSettings) = await GetChapterAdminRestrictedContent(
             request,
-            x => x.MemberSiteSubscriptionRepository.Query()
-                .ForChapterOwner(chapter.Id)
-                .Active()
+            x => x.MemberSiteSubscriptionRepository
+                .Query(x => x.ForChapterOwner(chapter.Id).Active())
                 .SiteSubscription()
-                .GetSingleOrDefault(),
+                .Features()
+                .GetAll(),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPaymentAccountRepository.GetByChapterId(chapter.Id),
             x => x.CurrencyRepository.GetByChapterId(chapter.Id),
@@ -383,7 +394,9 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             Currency = currency,
             CurrentMember = currentMember,
             HasPaymentAccount = chapterPaymentAccount?.SetupComplete() == true,
-            OwnerSubscription = ownerSubscription,
+            OwnerSubscriptionFeatures = ownerSubscriptionFeatures
+                .Select(x => x.Feature)
+                .ToArray(),
             Platform = platform,
             SupportsRecurringPayments = sitePaymentSettings.SupportsRecurringPayments
         };
@@ -394,16 +407,16 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     {
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
-        var (ownerSubscription,
+        var (ownerSubscriptionFeatures,
             chapterSubscriptions,
             sitePaymentSettings,
             membershipSettings
         ) = await GetChapterAdminRestrictedContent(request,
-            x => x.MemberSiteSubscriptionRepository.Query()
-                .ForChapterOwner(chapter.Id)
-                .Active()
+            x => x.MemberSiteSubscriptionRepository
+                .Query(x => x.ForChapterOwner(chapter.Id).Active())
                 .SiteSubscription()
-                .GetSingleOrDefault(),
+                .Features()
+                .GetAll(),
             x => x.ChapterSubscriptionRepository.GetAdminDtosByChapterId(chapter.Id, includeDisabled: true),
             x => x.SitePaymentSettingsRepository.GetAll(),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id));
@@ -417,7 +430,9 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             Chapter = chapter,
             ChapterSubscriptions = chapterSubscriptions,
             MembershipSettings = membershipSettings ?? new(),
-            OwnerSubscription = ownerSubscription,
+            OwnerSubscriptionFeatures = ownerSubscriptionFeatures
+                .Select(x => x.Feature)
+                .ToArray(),
             Platform = platform
         };
     }
@@ -427,15 +442,15 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     {
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
-        var (ownerSubscription,
+        var (ownerSubscriptionFeatures,
             chapterPaymentAccount,
             subscription,
             defaultSitePaymentSettings) = await GetChapterAdminRestrictedContent(request,
-            x => x.MemberSiteSubscriptionRepository.Query()
-                .ForChapterOwner(chapter.Id)
-                .Active()
+            x => x.MemberSiteSubscriptionRepository
+                .Query(x => x.ForChapterOwner(chapter.Id).Active())
                 .SiteSubscription()
-                .GetSingleOrDefault(),
+                .Features()
+                .GetAll(),
             x => x.ChapterPaymentAccountRepository.GetByChapterId(chapter.Id),
             x => x.ChapterSubscriptionRepository.GetById(subscriptionId),
             x => x.SitePaymentSettingsRepository.GetActive());
@@ -452,7 +467,9 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             CurrentMember = currentMember,
             Currency = subscription.Currency,
             HasPaymentAccount = chapterPaymentAccount?.SetupComplete() == true,
-            OwnerSubscription = ownerSubscription,
+            OwnerSubscriptionFeatures = ownerSubscriptionFeatures
+                .Select(x => x.Feature)
+                .ToArray(),
             Platform = platform,
             Subscription = subscription,
             SupportsRecurringPayments = sitePaymentSettings.SupportsRecurringPayments
@@ -572,21 +589,18 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             memberEmailPreferences,
             memberSubscriptions,
             membershipSettings,
-            ownerSubscription)
+            hasAccess)
         = await GetChapterAdminRestrictedContent(
             request,
             x => x.MemberRepository.GetByChapterId(chapter.Id),
             x => x.MemberEmailPreferenceRepository.GetByChapterId(chapter.Id, MemberEmailPreferenceType.ChapterMessages),
             x => x.MemberSubscriptionRepository.GetByChapterId(chapter.Id),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
-            x => x.MemberSiteSubscriptionRepository.Query()
-                .ForChapterOwner(chapter.Id)
-                .Active()
-                .SiteSubscription()
-                .GetSingleOrDefault());
+            x => x.MemberSiteSubscriptionRepository
+                .Query(x => x.ForChapterOwner(chapter.Id).Active())
+                .HasFeature(SiteFeatureType.SendMemberEmails));
 
-        var authorized = _authorizationService.ChapterHasAccess(ownerSubscription, SiteFeatureType.SendMemberEmails);
-        if (!authorized)
+        if (!hasAccess)
         {
             return ServiceResult.Unauthorized(SiteFeatureType.SendMemberEmails);
         }

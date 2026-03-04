@@ -79,6 +79,8 @@ public abstract class ReadWriteRepositoryBase<T, TBuilder> : WriteRepositoryBase
 
     public abstract TBuilder Query();
 
+    public TBuilder Query(Func<TBuilder, TBuilder> filter) => filter(Query());
+
     public void Upsert(T entity)
     {
         if (entity.Id == default)

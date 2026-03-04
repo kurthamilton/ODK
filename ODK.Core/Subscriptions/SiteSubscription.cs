@@ -1,5 +1,4 @@
-﻿using ODK.Core.Features;
-using ODK.Core.Payments;
+﻿using ODK.Core.Payments;
 using ODK.Core.Platforms;
 
 namespace ODK.Core.Subscriptions;
@@ -20,8 +19,6 @@ public class SiteSubscription : IDatabaseEntity
 
     public Guid? FallbackSiteSubscriptionId { get; set; }
 
-    public virtual ICollection<SiteSubscriptionFeature> Features { get; set; } = [];
-
     public int? GroupLimit { get; set; }
 
     public Guid Id { get; set; }
@@ -35,8 +32,6 @@ public class SiteSubscription : IDatabaseEntity
     public Guid SitePaymentSettingId { get; set; }
 
     public bool HasCapacity(int memberCount) => MemberLimit == null || memberCount < MemberLimit;
-
-    public bool HasFeature(SiteFeatureType feature) => Features.Any(x => x.Feature == feature);
 
     public bool IsEnabled(SitePaymentSettings sitePaymentSettings) => Enabled && sitePaymentSettings.Enabled;
 
