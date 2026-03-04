@@ -19,7 +19,9 @@ public class MemberConversationsPageViewModel
 
     public required IReadOnlyCollection<ChapterConversationDto> Conversations { get; init; }
 
-    public required Member CurrentMember { get; init; }    
+    public required Member CurrentMember { get; init; }
 
     public required PlatformType Platform { get; init; }
+
+    public int TotalConversationCount => ActiveConversationCount + ArchivedConversationCount;
 }

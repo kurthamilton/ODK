@@ -89,7 +89,9 @@
                                         @dto.LastMessage.Message.CreatedUtc.ToFriendlyDateTimeString(Model.CurrentMember.TimeZone ?? Model.Chapter.TimeZone)
                                     </span>
                                     <span>
-                                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Message))
+                                        <span data-bs-toggle="tooltip" data-bs-title="Messages">
+                                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Comments))
+                                        </span>
                                         <span>@dto.MessageCount</span>
                                     </span>
                                 </div>

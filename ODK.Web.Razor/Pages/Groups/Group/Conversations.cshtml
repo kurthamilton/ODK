@@ -10,14 +10,15 @@
 @inject IOdkRoutes OdkRoutes
 @{
     Layout = "_HomeLayout";
-    Model.Title = "Conversations";
 
     var viewModel = await ChapterViewModelService.GetGroupConversationsPage(Model.MemberChapterServiceRequest, Model.Archived);
+    var title = viewModel.TotalConversationCount > 0 ? "My conversations" : "Start new conversation";
+    Model.Title = title;
 }
 
 @await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel
 {
-    Title = "Conversations",
+    Title = title,
     Content = await Html.PartialAsync("Conversations/_ConversationsContent", new ChapterConversationsViewModel
     {
         ActiveConversationCount = viewModel.ActiveConversationCount,

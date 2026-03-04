@@ -18,6 +18,8 @@ public enum IconType
     ChevronRight,
     CircleNotch,
     Clock,
+    Comment,
+    Comments,
     Contact,
     Copy,
     Dollar,

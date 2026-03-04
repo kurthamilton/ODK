@@ -41,7 +41,7 @@
     {
         <div class="mt-3">
             <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#new-conversation-modal">
-                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Message))
+                <span>@await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Message))</span>
                 <span>New conversation</span>
             </button>
         </div>
@@ -51,22 +51,21 @@
         <div class="table-responsive">
             <table class="table table-striped">
                 <thead>
-                    <tr>
+                    <tr>                        
                         <th>Subject</th>
                         @if (Model.Chapter == null)
                         {
                             <th>Group</th>
                         }
-                        <th></th>
                         <th>Started</th>
                         <th>Last message</th>
-                        <th></th>
+                        <th class="tcol-narrow"></th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var dto in Model.Conversations.OrderByDescending(x => x.LastMessage.Message.CreatedUtc))
                     {
-                        <tr>
+                        <tr>                            
                             <td>
                                 <a href="@Model.ConversationUrlFunc(dto.Conversation.Id)">
                                     @dto.Conversation.Subject
@@ -84,12 +83,7 @@
                                         </a>
                                     }
                                 </td>
-                            }                            
-
-                            <td>
-                                <span>@await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Message))</span>
-                                <span>@dto.MessageCount</span>
-                            </td>
+                            }                                                        
 
                             <td>
                                 @dto.Conversation.CreatedUtc.ToRelativeTime(Model.TimeZone)
@@ -145,7 +139,6 @@
 }
 else
 {
-    <h2>Start new conversation</h2>
     <section class="section mt-3">
         <form action="/groups/@Model.Chapter.Id/conversations" method="post">
             @*@Html.AntiForgeryToken()*@

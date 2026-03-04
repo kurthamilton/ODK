@@ -11,4 +11,6 @@ public class GroupConversationsPageViewModel : GroupPageViewModel
     public required int ArchivedConversationCount { get; init; }
 
     public required IReadOnlyCollection<ChapterConversationDto> Conversations { get; init; }
+
+    public int TotalConversationCount => ActiveConversationCount + ArchivedConversationCount;
 }

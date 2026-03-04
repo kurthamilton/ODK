@@ -11,9 +11,10 @@
 @inject IOdkRoutes OdkRoutes
 @{
     Layout = "_HomeLayout";
-    Model.Title = "My conversations";
 
     var viewModel = await MemberViewModelService.GetMemberConversationsPage(Model.MemberServiceRequest, Model.Archived);
+    var title = viewModel.TotalConversationCount > 0 ? "My conversations" : "Start new conversation";
+    Model.Title = title;
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -22,7 +23,7 @@
     Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
     {
         Active = Model.OdkRoutes.Account.Conversations(null),
-        Title = "My conversations",
+        Title = title,
         Content =
             @<div>
                 <section class="section">

@@ -15,14 +15,14 @@
     var viewModel = await ChapterViewModelService.GetGroupConversationPage(
         Model.MemberChapterServiceRequest, Model.ConversationId);
 
-    Model.Title = $"{viewModel.Conversation.Subject} | Conversations";
+    Model.Title = $"{viewModel.Conversation.Subject} | My conversations";
 
     var breadcrumbs = new[]
     {
         new MenuItem 
         { 
             Link = OdkRoutes.Account.Conversations(Model.Chapter, archived: viewModel.Conversation.ArchivedUtc != null), 
-            Text = "Conversations"
+            Text = "My conversations"
         },
         new MenuItem { Text = viewModel.Conversation.Subject }
     }
