@@ -10,7 +10,7 @@
     Model.Title = "Venues | Admin";
 
     var request = Model.MemberChapterAdminServiceRequest;
-    var viewModel = await VenueAdminService.GetVenuesViewModel(request);
+    var viewModel = await VenueAdminService.GetVenuesViewModel(request, Model.Archived);
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel

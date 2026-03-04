@@ -8,9 +8,12 @@ public class VenuesModel : AdminPageModel
     {
     }
 
+    public bool Archived { get; private set; }
+
     public override ChapterAdminSecurable Securable => ChapterAdminSecurable.Venues;
 
-    public void OnGet()
+    public void OnGet(bool archived = false)
     {
+        Archived = archived;
     }
 }

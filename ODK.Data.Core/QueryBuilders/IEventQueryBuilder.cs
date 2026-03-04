@@ -17,5 +17,11 @@ public interface IEventQueryBuilder : IDatabaseEntityQueryBuilder<Event, IEventQ
 
     IEventQueryBuilder Public();
 
+    IEventQueryBuilder Published();
+
     IQueryBuilder<EventSummaryDto> Summary();
+
+    IVenueQueryBuilder Venue();
+
+    IQueryBuilder<EventWithVenueDto> WithVenue();
 }

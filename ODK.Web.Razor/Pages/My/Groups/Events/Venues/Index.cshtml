@@ -9,7 +9,7 @@
     Model.Title = "Venues";
 
     var request = Model.MemberChapterAdminServiceRequest;
-    var viewModel = await VenueAdminService.GetVenuesViewModel(request);
+    var viewModel = await VenueAdminService.GetVenuesViewModel(request, Model.Archived);
 }
 
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel

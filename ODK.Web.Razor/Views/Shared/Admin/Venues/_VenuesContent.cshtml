@@ -1,24 +1,10 @@
-﻿@using ODK.Core.Events
-@using ODK.Core.Utils
-@using ODK.Core.Venues
-@using ODK.Services
-@using ODK.Services.Events
+﻿@using ODK.Core.Utils
 @using ODK.Services.Venues.ViewModels
-@using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Components
 @model VenuesAdminPageViewModel
 @inject IOdkRoutes OdkRoutes
-@{    
-    var (venues, events) = (Model.Venues, Model.Events);
-
-    var eventCounts = events
-        .GroupBy(x => x.VenueId)
-        .ToDictionary(x => x.Key, x => x.Count());
-    var lastEvents = events
-        .GroupBy(x => x.VenueId)
-        .ToDictionary(x => x.Key, x => x.Max(_ => _.Date));
-}
 
 <p>
     @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
@@ -29,6 +15,27 @@
     })
 </p>
 
+<div>
+    @await Html.PartialAsync("Components/_Tabs", new TabsViewModel
+    {
+        MenuItems = new[]
+        {
+            new MenuItem
+            {
+                Text = $"Active ({Model.ActiveVenueCount})",
+                Active = !Model.Archived,
+                Link = OdkRoutes.GroupAdmin.Venues(Model.Chapter, archived: false).Path
+            },
+            new MenuItem
+            {
+                Text = $"Archived ({Model.ArchivedVenueCount})",
+                Active = Model.Archived,
+                Link = OdkRoutes.GroupAdmin.Venues(Model.Chapter, archived: true).Path
+            }
+        }
+    })
+</div>
+
 <div class="table-responsive">
     <table class="table table-striped" data-sortable>
         <thead>
@@ -37,11 +44,14 @@
                 <th>Address</th>
                 <th data-sortable-sort data-sortable-dir="desc">Events</th>
                 <th data-sortable-sort data-sortable-dir="desc">Last Event</th>
+                <th class="tcol-narrow"></th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var venue in venues.OrderBy(x => x.Name))
+            @foreach (var venueDto in Model.Venues.OrderBy(x => x.Venue.Name))
             {
+                var (venue, lastEvent) = (venueDto.Venue, venueDto.LastEvent);
+
                 <tr>
                     <td>
                         <span class="d-none" data-sort-value="@venue.Name"></span>
@@ -52,12 +62,34 @@
                         })
                     </td>
                     <td>@venue.MapQuery</td>
-                    <td>@(eventCounts.ContainsKey(venue.Id) ? eventCounts[venue.Id] : 0)</td>
+                    <td>@venueDto.EventCount</td>
                     <td>
-                        @if (lastEvents.TryGetValue(venue.Id, out DateTime lastEventDate))
+                        @if (lastEvent != null)
                         {
-                            <span class="d-none" data-sort-value="@lastEventDate.ToString("yyyy-MM-dd")"></span>
-                            <span>@lastEventDate.EventDate(Model.Chapter.TimeZone)</span>
+                            <span class="d-none" data-sort-value="@lastEvent.Date.ToString("yyyy-MM-dd")"></span>
+                            <span>@lastEvent.Date.EventDate(Model.Chapter.TimeZone)</span>
+                        }
+                    </td>
+                    <td>
+                        @if (!Model.Archived)
+                        {
+                            <form method="post" action="/groups/@Model.Chapter.Id/venues/@venue.Id/archive">
+                                <button type="submit" class="btn btn-icon">
+                                    <span data-bs-toggle="tooltip" data-bs-title="Archive">
+                                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Archive))
+                                    </span>
+                                </button>                                
+                            </form>
+                        }
+                        else
+                        {
+                            <form method="post" action="/groups/@Model.Chapter.Id/venues/@venue.Id/restore">
+                                <button type="submit" class="btn btn-icon">
+                                    <span data-bs-toggle="tooltip" data-bs-title="Restore">
+                                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Undo))
+                                    </span>
+                                </button>
+                            </form>
                         }
                     </td>
                 </tr>

@@ -1,4 +1,5 @@
-﻿using ODK.Core;
+﻿using System.Reflection;
+using ODK.Core;
 using ODK.Core.Venues;
 using ODK.Data.Core;
 using ODK.Services.Venues.Models;
@@ -14,6 +15,28 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
         : base(unitOfWork)
     {
         _unitOfWork = unitOfWork;
+    }
+
+    public async Task<ServiceResult> ArchiveVenue(IMemberChapterAdminServiceRequest request, Guid venueId)
+    {
+        var chapter = request.Chapter;
+
+        var venue = await GetChapterAdminRestrictedContent(
+            request,
+            x => x.VenueRepository.GetById(venueId));
+
+        OdkAssertions.BelongsToChapter(venue, chapter.Id);
+
+        if (venue.ArchivedUtc != null)
+        {
+            return ServiceResult.Successful();
+        }
+
+        venue.ArchivedUtc = DateTime.UtcNow;
+        _unitOfWork.VenueRepository.Update(venue);
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
     }
 
     public async Task<ServiceResult> CreateVenue(
@@ -90,20 +113,26 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
     }
 
     public async Task<VenuesAdminPageViewModel> GetVenuesViewModel(
-        IMemberChapterAdminServiceRequest request)
+        IMemberChapterAdminServiceRequest request, bool archived)
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
 
-        var (venues, events) = await GetChapterAdminRestrictedContent(
+        var (venues, otherVenueCount) = await GetChapterAdminRestrictedContent(
             request,
-            x => x.VenueRepository.GetByChapterId(chapter.Id),
-            x => x.EventRepository.GetByChapterId(chapter.Id));
+            x => x.VenueRepository
+                .Query(x => x.ForChapter(chapter.Id).Archived(archived))
+                .WithEventSummary()
+                .GetAll(),
+            x => x.VenueRepository
+                .Query(x => x.ForChapter(chapter.Id).Archived(!archived))
+                .Count());
 
         return new VenuesAdminPageViewModel
         {
+            ActiveVenueCount = !archived ? venues.Count : otherVenueCount,
+            Archived = archived,
+            ArchivedVenueCount = archived ? venues.Count : otherVenueCount,
             Chapter = chapter,
-            Events = events,
-            Platform = platform,
             Venues = venues
         };
     }
@@ -127,6 +156,28 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
             Platform = platform,
             Venue = venue
         };
+    }
+
+    public async Task<ServiceResult> RestoreVenue(IMemberChapterAdminServiceRequest request, Guid venueId)
+    {
+        var chapter = request.Chapter;
+
+        var venue = await GetChapterAdminRestrictedContent(
+            request,
+            x => x.VenueRepository.GetById(venueId));
+
+        OdkAssertions.BelongsToChapter(venue, chapter.Id);
+
+        if (venue.ArchivedUtc == null)
+        {
+            return ServiceResult.Successful();
+        }
+
+        venue.ArchivedUtc = null;
+        _unitOfWork.VenueRepository.Update(venue);
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
     }
 
     public async Task<ServiceResult> UpdateVenue(
