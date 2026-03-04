@@ -51,6 +51,12 @@ public class EventQueryBuilder : DatabaseEntityQueryBuilder<Event, IEventQueryBu
         return this;
     }
 
+    public IEventQueryBuilder Published()
+    {
+        Query = Query.Where(x => x.PublishedUtc != null);
+        return this;
+    }
+
     public IQueryBuilder<EventSummaryDto> Summary()
     {
         var query =
@@ -84,6 +90,32 @@ public class EventQueryBuilder : DatabaseEntityQueryBuilder<Event, IEventQueryBu
                         .Where(x => x.EventId == @event.Id && x.Type == EventResponseType.Yes)
                         .Count()
                 },
+                Venue = venue
+            };
+
+        return ProjectTo(query);
+    }
+
+    public IVenueQueryBuilder Venue()
+    {
+        var query =
+            from @event in Query
+            from venue in Set<Venue>()
+                .Where(x => x.Id == @event.VenueId)
+            select venue;
+        return CreateQueryBuilder<IVenueQueryBuilder, Venue>(
+            context => new VenueQueryBuilder(context, query));
+    }
+
+    public IQueryBuilder<EventWithVenueDto> WithVenue()
+    {
+        var query =
+            from @event in Query
+            from venue in Set<Venue>()
+                .Where(x => x.Id == @event.VenueId)
+            select new EventWithVenueDto
+            {
+                Event = @event,
                 Venue = venue
             };
 

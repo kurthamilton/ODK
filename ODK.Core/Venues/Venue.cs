@@ -4,6 +4,8 @@ public class Venue : IVersioned, IDatabaseEntity, IChapterEntity
 {
     public string? Address { get; set; }
 
+    public DateTime? ArchivedUtc { get; set; }
+
     public Guid ChapterId { get; set; }
 
     public Guid Id { get; set; }

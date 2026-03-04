@@ -42,8 +42,7 @@ public class EventViewModelService : IEventViewModelService
 
         var (
             chapterPages,
-            @event,
-            venue,
+            eventDto,
             memberSubscription,
             chapterPaymentSettings,
             chapterPaymentAccount,
@@ -55,8 +54,7 @@ public class EventViewModelService : IEventViewModelService
             membershipSettings,
             privacySettings) = await _unitOfWork.RunAsync(
             x => x.ChapterPageRepository.GetByChapterId(chapter.Id),
-            x => x.EventRepository.GetByShortcode(shortcode),
-            x => x.VenueRepository.GetByEventShortcode(shortcode),
+            x => x.EventRepository.Query(x => x.ForShortcode(shortcode)).WithVenue().GetSingle(),
             x => x.MemberSubscriptionRepository.GetByMemberId(currentMember.Id, chapter.Id),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPaymentAccountRepository.GetByChapterId(chapter.Id),
@@ -67,6 +65,8 @@ public class EventViewModelService : IEventViewModelService
             x => x.EventTicketPaymentRepository.GetConfirmedPayments(currentMember.Id, shortcode),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id));
+
+        var (@event, venue) = (eventDto.Event, eventDto.Venue);
 
         OdkAssertions.BelongsToChapter(@event, chapter.Id);
 
@@ -201,8 +201,7 @@ public class EventViewModelService : IEventViewModelService
 
         var (
             membershipSettings,
-            @event,
-            venue,
+            eventDto,
             memberSubscription,
             hosts,
             comments,
@@ -215,8 +214,7 @@ public class EventViewModelService : IEventViewModelService
             payments,
             waitlist) = await _unitOfWork.RunAsync(
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
-            x => x.EventRepository.GetByShortcode(shortcode),
-            x => x.VenueRepository.GetByEventShortcode(shortcode),
+            x => x.EventRepository.Query(x => x.ForShortcode(shortcode)).WithVenue().GetSingle(),
             x => currentMember != null
                 ? x.MemberSubscriptionRepository.GetByMemberId(currentMember.Id, chapter.Id)
                 : new DefaultDeferredQuerySingleOrDefault<MemberSubscription>(),
@@ -234,6 +232,8 @@ public class EventViewModelService : IEventViewModelService
                 ? x.EventTicketPaymentRepository.GetConfirmedPayments(currentMember.Id, shortcode)
                 : new DefaultDeferredQueryMultiple<EventTicketPayment>(),
             x => x.EventWaitlistMemberRepository.GetByEventShortcode(shortcode));
+
+        var (@event, venue) = (eventDto.Event, eventDto.Venue);
 
         OdkAssertions.BelongsToChapter(@event, chapter.Id);
 
@@ -361,16 +361,19 @@ public class EventViewModelService : IEventViewModelService
         var currentTime = chapter.CurrentTime();
         var afterUtc = currentTime.StartOfDay();
 
-        var (chapterPrivacySettings, membershipSettings, memberSubscription, events) = await _unitOfWork.RunAsync(
+        var (chapterPrivacySettings, membershipSettings, memberSubscription, eventDtos) = await _unitOfWork.RunAsync(
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => currentMember != null
                 ? x.MemberSubscriptionRepository.GetByMemberId(currentMember.Id, chapter.Id)
                 : new DefaultDeferredQuerySingleOrDefault<MemberSubscription>(),
-            x => x.EventRepository.GetByChapterId(chapter.Id, afterUtc));
+            x => x.EventRepository
+                .Query(x => x.ForChapter(chapter.Id).After(afterUtc).Published())
+                .WithVenue()
+                .OrderBy(x => x.Event.Date)
+                .GetAll());
 
-        var eventIds = events.Select(x => x.Id).ToArray();
-        var venueIds = events.Select(x => x.VenueId).Distinct().ToArray();
+        var eventIds = eventDtos.Select(x => x.Event.Id).ToArray();
 
         IReadOnlyCollection<EventResponse> memberResponses = [];
         IReadOnlyCollection<EventInvite> invites = [];
@@ -380,8 +383,7 @@ public class EventViewModelService : IEventViewModelService
 
         if (eventIds.Length > 0 && currentMember?.IsMemberOf(chapter.Id) == true)
         {
-            (venues, memberResponses, invites, responseSummaries) = await _unitOfWork.RunAsync(
-                x => x.VenueRepository.GetByEventIds(eventIds),
+            (memberResponses, invites, responseSummaries) = await _unitOfWork.RunAsync(
                 x => x.EventResponseRepository.GetByMemberId(currentMember.Id, eventIds),
                 x => x.EventInviteRepository.GetByMemberId(currentMember.Id, eventIds),
                 x => x.EventResponseRepository.GetResponseSummaries(eventIds));
@@ -393,9 +395,9 @@ public class EventViewModelService : IEventViewModelService
         }
         else if (eventIds.Length > 0)
         {
-            (venues, responseSummaries) = await _unitOfWork.RunAsync(
-                x => x.VenueRepository.GetByEventIds(eventIds),
-                x => x.EventResponseRepository.GetResponseSummaries(eventIds));
+            responseSummaries = await _unitOfWork.EventResponseRepository
+                .GetResponseSummaries(eventIds)
+                .Run();
         }
 
         var memberResponseLookup = memberResponses
@@ -409,8 +411,10 @@ public class EventViewModelService : IEventViewModelService
             .ToDictionary(x => x.EventId);
 
         var viewModels = new List<EventResponseViewModel>();
-        foreach (var @event in events.Where(x => x.PublishedUtc != null))
+        foreach (var eventDto in eventDtos)
         {
+            var (@event, venue) = (eventDto.Event, eventDto.Venue);
+
             var canViewEvent = _authorizationService
                 .CanViewEvent(@event, currentMember, memberSubscription, membershipSettings, chapterPrivacySettings);
             if (!canViewEvent)
@@ -418,7 +422,6 @@ public class EventViewModelService : IEventViewModelService
                 continue;
             }
 
-            var venue = venueLookup[@event.VenueId];
             var canViewVenue = _authorizationService
                 .CanViewVenue(venue, currentMember, memberSubscription, membershipSettings, chapterPrivacySettings);
 

@@ -1,19 +1,12 @@
 ﻿using ODK.Core.Venues;
 using ODK.Data.Core.Deferred;
+using ODK.Data.Core.QueryBuilders;
 
 namespace ODK.Data.Core.Repositories;
 
-public interface IVenueRepository : IReadWriteRepository<Venue>
+public interface IVenueRepository : IReadWriteRepository<Venue, IVenueQueryBuilder>
 {
     IDeferredQueryMultiple<Venue> GetByChapterId(Guid chapterId);
-
-    IDeferredQueryMultiple<Venue> GetByChapterId(Guid chapterId, IEnumerable<Guid> venueIds);
-
-    IDeferredQuerySingle<Venue> GetByEventId(Guid eventId);
-
-    IDeferredQueryMultiple<Venue> GetByEventIds(IEnumerable<Guid> eventIds);
-
-    IDeferredQuerySingle<Venue> GetByEventShortcode(string shortcode);
 
     IDeferredQuerySingleOrDefault<Venue> GetByName(Guid chapterId, string name);
 }

@@ -243,8 +243,10 @@ public class GroupAdminRoutes
     public GroupAdminRoute VenueEvents(Chapter chapter, Guid venueId)
         => Venue(chapter, venueId).Child("/events");
 
-    public GroupAdminRoute Venues(Chapter chapter)
-        => Events(chapter).Child("/venues", ChapterAdminSecurable.Venues);
+    public GroupAdminRoute Venues(Chapter chapter) => Venues(chapter, archived: false);
+
+    public GroupAdminRoute Venues(Chapter chapter, bool archived)
+        => Events(chapter).Child($"/venues{(archived ? "?archived=true" : null)}", ChapterAdminSecurable.Venues);
 
     private GroupAdminRoute Base(Chapter chapter) => new()
     {

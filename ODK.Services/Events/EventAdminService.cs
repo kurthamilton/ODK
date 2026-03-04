@@ -209,9 +209,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         var chapter = request.Chapter;
 
         var (ownerSubscriptionFeatures,
-            @event,
+            eventDto,
             responses,
-            venue,
             members,
             memberSubscriptions,
             chapterMembershipSettings,
@@ -223,14 +222,15 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
                 .SiteSubscription()
                 .Features()
                 .GetAll(),
-            x => x.EventRepository.GetById(eventId),
+            x => x.EventRepository.Query().ById(eventId).WithVenue().GetSingle(),
             x => x.EventResponseRepository.GetByEventId(eventId),
-            x => x.VenueRepository.GetByEventId(eventId),
             x => x.MemberRepository.GetAllWithAvatarByChapterId(chapter.Id),
             x => x.MemberSubscriptionRepository.GetByChapterId(chapter.Id),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
             x => x.EventWaitlistMemberRepository.GetByEventId(eventId));
+
+        var (@event, venue) = (eventDto.Event, eventDto.Venue);
 
         OdkAssertions.BelongsToChapter(@event, chapter.Id);
 
@@ -275,15 +275,16 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     {
         var chapter = request.Chapter;
 
-        var (@event, venue, comments, ownerSubscriptionFeatures) = await GetChapterAdminRestrictedContent(request,
-            x => x.EventRepository.GetById(eventId),
-            x => x.VenueRepository.GetByEventId(eventId),
+        var (eventDto, comments, ownerSubscriptionFeatures) = await GetChapterAdminRestrictedContent(request,
+            x => x.EventRepository.Query(x => x.ById(eventId)).WithVenue().GetSingle(),
             x => x.EventCommentRepository.GetDtosByEventId(eventId, includeHidden: true),
             x => x.MemberSiteSubscriptionRepository
                 .Query(x => x.ForChapterOwner(chapter.Id).Active())
                 .SiteSubscription()
                 .Features()
                 .GetAll());
+
+        var (@event, venue) = (eventDto.Event, eventDto.Venue);
 
         OdkAssertions.BelongsToChapter(@event, chapter.Id);
 
@@ -311,7 +312,9 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             currency,
             ownerSubscriptionFeatures) = await GetChapterAdminRestrictedContent(
             request,
-            x => x.VenueRepository.GetByChapterId(chapter.Id),
+            x => x.VenueRepository
+                .Query(x => x.ForChapter(chapter.Id).Archived(false))
+                .GetAll(),
             x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => x.ChapterEventSettingsRepository.GetByChapterId(chapter.Id),
             x => x.CurrencyRepository.GetByChapterId(chapter.Id),
@@ -385,18 +388,19 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     {
         var chapter = request.Chapter;
 
-        var (ownerSubscriptionFeatures, @event, eventEmail, members, invites, venue) = await GetChapterAdminRestrictedContent(
+        var (ownerSubscriptionFeatures, eventDto, eventEmail, members, invites) = await GetChapterAdminRestrictedContent(
             request,
             x => x.MemberSiteSubscriptionRepository
                 .Query(x => x.ForChapterOwner(chapter.Id).Active())
                 .SiteSubscription()
                 .Features()
                 .GetAll(),
-            x => x.EventRepository.GetById(eventId),
+            x => x.EventRepository.Query(x => x.ById(eventId)).WithVenue().GetSingle(),
             x => x.EventEmailRepository.GetByEventId(eventId),
             x => x.MemberRepository.GetByChapterId(chapter.Id),
-            x => x.EventInviteRepository.GetByEventId(eventId),
-            x => x.VenueRepository.GetByEventId(eventId));
+            x => x.EventInviteRepository.GetByEventId(eventId));
+
+        var (@event, venue) = (eventDto.Event, eventDto.Venue);
 
         OdkAssertions.BelongsToChapter(@event, chapter.Id);
 
@@ -466,8 +470,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         var (
             ownerSubscriptionFeatures,
             members,
-            @event,
-            venue,
+            eventDto,
             payments
         ) = await GetChapterAdminRestrictedContent(
             request,
@@ -477,9 +480,10 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
                 .Features()
                 .GetAll(),
             x => x.MemberRepository.GetAllWithAvatarByChapterId(chapter.Id),
-            x => x.EventRepository.GetById(eventId),
-            x => x.VenueRepository.GetByEventId(eventId),
+            x => x.EventRepository.Query(x => x.ById(eventId)).WithVenue().GetSingle(),
             x => x.EventTicketPaymentRepository.GetConfirmedPayments(eventId));
+
+        var (@event, venue) = (eventDto.Event, eventDto.Venue);
 
         OdkAssertions.BelongsToChapter(@event, chapter.Id);
 
@@ -608,21 +612,21 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
 
         var (
-            venue,
             members,
             memberEmailPreferences,
-            @event,
+            eventDto,
             eventEmail,
             responses,
             invites
         ) = await GetChapterAdminRestrictedContent(request,
-            x => x.VenueRepository.GetByEventId(eventId),
             x => x.MemberRepository.GetByChapterId(chapter.Id),
             x => x.MemberEmailPreferenceRepository.GetByChapterId(chapter.Id, MemberEmailPreferenceType.Events),
-            x => x.EventRepository.GetById(eventId),
+            x => x.EventRepository.Query(x => x.ById(eventId)).WithVenue().GetSingle(),
             x => x.EventEmailRepository.GetByEventId(eventId),
             x => x.EventResponseRepository.GetByEventId(eventId),
             x => x.EventInviteRepository.GetByEventId(eventId));
+
+        var (@event, venue) = (eventDto.Event, eventDto.Venue);
 
         OdkAssertions.BelongsToChapter(@event, chapter.Id);
 
