@@ -1,4 +1,4 @@
-﻿@page "/{chapterName}/conversations/{id:guid}"
+﻿@page "/{chapterName}/account/conversations/{id:guid}"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Core.Platforms
@@ -19,14 +19,11 @@
 
     var breadcrumbs = new[]
     {
-        Model.Platform == PlatformType.DrunkenKnitwits
-            ? new MenuItem
-            {
-                Link = OdkRoutes.Groups.Group(Model.Chapter),
-                Text = Model.Chapter.GetDisplayName(Model.Platform)
-            }
-            : new MenuItem(),
-        new MenuItem { Link = OdkRoutes.Groups.Conversations(Model.Chapter, archived: viewModel.Conversation.ArchivedUtc != null), Text = "Conversations" },
+        new MenuItem 
+        { 
+            Link = OdkRoutes.Account.Conversations(Model.Chapter, archived: viewModel.Conversation.ArchivedUtc != null), 
+            Text = "Conversations"
+        },
         new MenuItem { Text = viewModel.Conversation.Subject }
     }
     .Where(x => !string.IsNullOrEmpty(x.Text))

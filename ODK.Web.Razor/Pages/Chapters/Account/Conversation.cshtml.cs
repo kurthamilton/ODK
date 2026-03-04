@@ -1,4 +1,4 @@
-namespace ODK.Web.Razor.Pages.Chapters;
+namespace ODK.Web.Razor.Pages.Chapters.Account;
 
 public class ConversationModel : OdkPageModel
 {

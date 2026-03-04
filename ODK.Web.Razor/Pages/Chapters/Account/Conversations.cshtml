@@ -35,8 +35,8 @@
                         Chapter = Model.Chapter,
                         Chapters = null,
                         Conversations = viewModel.Conversations,
-                        ConversationsUrlFunc = archived => OdkRoutes.Groups.Conversations(Model.Chapter, archived),
-                        ConversationUrlFunc = id => OdkRoutes.Groups.Conversation(Model.Chapter, id),
+                        ConversationsUrlFunc = archived => OdkRoutes.Account.Conversations(Model.Chapter, archived),
+                        ConversationUrlFunc = id => OdkRoutes.Account.Conversation(Model.Chapter, id),
                         CurrentMember = Model.CurrentMember
                     })
                 </section>
