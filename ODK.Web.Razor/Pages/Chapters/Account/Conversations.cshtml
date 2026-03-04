@@ -2,9 +2,11 @@
 @using ODK.Services.Members
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
+@using ODK.Web.Razor.Models.Chapters
 @using ODK.Web.Razor.Models.Components
 @model ConversationsModel
 @inject IMemberViewModelService MemberViewModelService
+@inject IOdkRoutes OdkRoutes
 @{
     Layout = "_OdkChapterLayout";
     Model.Title = "My conversations";
@@ -25,7 +27,18 @@
         BodyContentFunc = 
             @<div>
                 <section class="section">
-                    @await Html.PartialAsync("Account/_ConversationsContent", viewModel)
+                    @await Html.PartialAsync("Conversations/_ConversationsContent", new ChapterConversationsViewModel
+                    {
+                        ActiveConversationCount = viewModel.ActiveConversationCount,
+                        Archived = viewModel.Archived,
+                        ArchivedConversationCount = viewModel.ArchivedConversationCount,
+                        Chapter = Model.Chapter,
+                        Chapters = null,
+                        Conversations = viewModel.Conversations,
+                        ConversationsUrlFunc = archived => OdkRoutes.Groups.Conversations(Model.Chapter, archived),
+                        ConversationUrlFunc = id => OdkRoutes.Groups.Conversation(Model.Chapter, id),
+                        CurrentMember = Model.CurrentMember
+                    })
                 </section>
             </div>
     })
