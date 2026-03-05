@@ -13,22 +13,8 @@
     }
 
     &.has-footer {
-        --odk-footer-fade-height: 120px;
-        // add a faded gradient above the footer to show the body scrolling behind it
         .offcanvas-body {
-            margin-bottom: calc(-1 * var(--odk-footer-fade-height));
-        }
-
-        .offcanvas-footer {
-            z-index: 1;
-
-            &:before {
-                content: '';
-                display: block;
-                height: var(--odk-footer-fade-height);
-                background: linear-gradient(to bottom, transparent, var(--bs-body-bg));
-                pointer-events: none;
-            }
+            padding-bottom: 0;
         }
     }
 }

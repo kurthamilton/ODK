@@ -4,4 +4,9 @@
 
 .bg-level-2 {
     background-color: var(--odk-bg-level-2);
+    // children
+    .card-body,
+    .list-group-item {
+        background-color: var(--odk-bg-level-2);
+    }
 }

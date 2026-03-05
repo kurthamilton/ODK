@@ -24,7 +24,10 @@
 }
 
 <div data-odk-component="_Offcanvas">
-    <div class="offcanvas @string.Join(' ', customClasses)" tabindex="-1" id="@Model.Id" aria-labelledby="offcanvas-label">
+    <div class="offcanvas @string.Join(' ', customClasses)" 
+        tabindex="-1" 
+        id="@Model.Id" 
+        aria-labelledby="offcanvas-label">
         
         <div class="offcanvas-header">            
             <h5 class="offcanvas-title" id="offcanvas-label">
@@ -61,7 +64,7 @@
 
         @if (Model.FooterFunc != null)
         {
-            <div class="offcanvas-footer">
+            <div class="offcanvas-footer mt-3">
                 <div class="pt-3 border-top border-2">
                     @Model.FooterFunc.Invoke(null)
                 </div>                
