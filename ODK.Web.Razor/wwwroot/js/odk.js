@@ -9,6 +9,7 @@
     bindMenuLinks();
     bindPopovers();
     bindRedirectTimers();
+    bindScroll();
     bindToasts();
     bindTooltips();
 
@@ -262,6 +263,22 @@
                 if (intervalId) window.clearInterval(intervalId);
                 window.location = url;
             }, seconds * 1000);
+        });
+    }
+
+    function bindScroll() {
+        document.querySelectorAll('[data-scroll-indicator]').forEach($indicator => {
+            const $container = $indicator.closest('[data-scroll]');
+            if (!$container) return;
+
+            const update = () => {
+                const dist = $container.scrollHeight - $container.scrollTop - $container.clientHeight;
+                if (dist > 0) $indicator.classList.remove('d-none');
+                else $indicator.classList.add('d-none');
+            };
+
+            $container.addEventListener('scroll', update);
+            update();
         });
     }
 

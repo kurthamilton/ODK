@@ -3,6 +3,10 @@
 public enum IconType
 {
     None,
+    AngleDown,
+    AngleLeft,
+    AngleRight,
+    AngleUp,
     Archive,
     ArrowCircleDown,
     ArrowCircleUp,

@@ -13125,6 +13125,20 @@ footer {
   margin-bottom: 0;
 }
 
+.scroll-indicator-anchor {
+  position: sticky;
+  bottom: 0;
+  height: 0;
+}
+
+.scroll-indicator {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  text-align: center;
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
 .section {
   background: var(--bs-body-bg);
   color: var(--bs-body-color);

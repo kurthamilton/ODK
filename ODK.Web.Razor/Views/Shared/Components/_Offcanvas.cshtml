@@ -51,7 +51,7 @@
             </div>
         }
 
-        <div class="offcanvas-body @Model.BodyClass">
+        <div class="offcanvas-body @Model.BodyClass" data-scroll>
             @if (Model.Content != null)
             {
                 @Model.Content
@@ -60,6 +60,12 @@
             {
                 @Model.ContentFunc.Invoke(null)
             }
+
+            @*<div class="scroll-indicator-anchor">
+                <div class="scroll-indicator d-none" data-scroll-indicator>
+                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.AngleDown))
+                </div>
+            </div>*@
         </div>
 
         @if (Model.FooterFunc != null)

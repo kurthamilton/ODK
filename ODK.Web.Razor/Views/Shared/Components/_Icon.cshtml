@@ -5,6 +5,14 @@
 
 @switch (Model.Type)
 {
+    case IconType.AngleDown:
+        <i class="@Model.Class fa-solid fa-angle-down"></i>break;
+    case IconType.AngleLeft:
+        <i class="@Model.Class fa-solid fa-angle-left"></i>break;
+    case IconType.AngleRight:
+        <i class="@Model.Class fa-solid fa-angle-right"></i>break;
+    case IconType.AngleUp:
+        <i class="@Model.Class fa-solid fa-angle-up"></i>break;
     case IconType.Archive:
         <i class="@Model.Class fa-solid fa-box-archive"></i>break;
     case IconType.ArrowCircleDown:
@@ -120,8 +128,7 @@
     case IconType.UserOutline:
         <i class="@Model.Class fa-regular fa-user"></i>break;
     case IconType.WhatsApp:
-        <i class="@Model.Class fa-brands fa-whatsapp"></i>
-        break;
+        <i class="@Model.Class fa-brands fa-whatsapp"></i>break;
     case IconType.Wrench:
         <i class="@Model.Class fa-solid fa-wrench"></i>break;
 }
