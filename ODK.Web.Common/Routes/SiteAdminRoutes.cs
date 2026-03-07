@@ -1,5 +1,7 @@
 ﻿using System;
+using ODK.Core.Chapters;
 using ODK.Core.Emails;
+using ODK.Core.Messages;
 
 namespace ODK.Web.Common.Routes;
 
@@ -31,11 +33,11 @@ public class SiteAdminRoutes
 
     public string Issues => Path("/issues");
 
-    public string Message(Guid id) => $"{Messages}/{id}";
+    public string Message(Guid id) => $"{Messages()}/{id}";
 
-    public string Messages => Path("/messages");
+    public string Messages() => Path($"/messages");
 
-    public string MessagesSpam => $"{Messages}?spam=true";
+    public string Messages(MessageStatus status) => $"{Messages()}?status={status}";
 
     public string Payment(Guid id) => $"{Payments}/{id}";
 

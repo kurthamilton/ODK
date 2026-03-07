@@ -28,7 +28,7 @@ public class GroupAdminRoutes
     public GroupAdminRoute Conversations(Chapter chapter)
         => Group(chapter).Child("/conversations", ChapterAdminSecurable.Conversations);
 
-    public GroupAdminRoute Conversations(Chapter chapter, MessageStatus status)
+    public GroupAdminRoute Conversations(Chapter chapter, ChapterConversationStatus status)
         => Group(chapter).Child($"/conversations?status={status}", ChapterAdminSecurable.Conversations);
 
     public GroupAdminRoute Create() => Index().Child("/new");
@@ -176,8 +176,8 @@ public class GroupAdminRoutes
     public GroupAdminRoute Messages(Chapter chapter)
         => Group(chapter).Child("/messages", ChapterAdminSecurable.ContactMessages);
 
-    public GroupAdminRoute MessagesSpam(Chapter chapter)
-        => Messages(chapter).Child("/spam");
+    public GroupAdminRoute Messages(Chapter chapter, MessageStatus status)
+        => Messages(chapter).Child($"?status={status}");
 
     public GroupAdminRoute Pages(Chapter chapter)
         => Group(chapter).Child("/pages", ChapterAdminSecurable.Pages, PlatformType.Default);

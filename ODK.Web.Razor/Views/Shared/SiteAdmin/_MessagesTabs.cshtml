@@ -1,4 +1,6 @@
-﻿@using ODK.Services.Chapters.ViewModels
+﻿@using ODK.Core.Chapters
+@using ODK.Core.Messages
+@using ODK.Services.Chapters.ViewModels
 @using ODK.Services.Contact.ViewModels
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
@@ -11,15 +13,21 @@
     {
         new MenuItem
         {
-            Active = !Model.IsSpam,
-            Link = OdkRoutes.SiteAdmin.Messages,
-            Text = $"Messages ({Model.MessageCount})"
+            Active = Model.Status == MessageStatus.Unreplied,
+            Link = OdkRoutes.SiteAdmin.Messages(),
+            Text = $"Unreplied ({Model.StatusCounts[MessageStatus.Unreplied]})"
         },
         new MenuItem
         {
-            Active = Model.IsSpam,
-            Link = OdkRoutes.SiteAdmin.MessagesSpam,
-            Text = $"Spam ({Model.SpamMessageCount})"
+            Active = Model.Status == MessageStatus.Replied,
+            Link = OdkRoutes.SiteAdmin.Messages(MessageStatus.Replied),
+            Text = $"Replied ({Model.StatusCounts[MessageStatus.Replied]})"
+        },
+        new MenuItem
+        {
+            Active = Model.Status == MessageStatus.Spam,
+            Link = OdkRoutes.SiteAdmin.Messages(MessageStatus.Spam),
+            Text = $"Spam ({Model.StatusCounts[MessageStatus.Spam]})"
         }
     }
 })

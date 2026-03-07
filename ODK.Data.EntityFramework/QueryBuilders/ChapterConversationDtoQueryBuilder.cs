@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ODK.Core.Chapters;
 using ODK.Core.Members;
-using ODK.Core.Messages;
 using ODK.Data.Core.Chapters;
 using ODK.Data.Core.QueryBuilders;
 
@@ -16,13 +15,13 @@ public class ChapterConversationDtoQueryBuilder
     {
     }
 
-    public IChapterConversationDtoQueryBuilder ForStatus(MessageStatus status)
+    public IChapterConversationDtoQueryBuilder ForStatus(ChapterConversationStatus status)
     {
-        if (status == MessageStatus.Unread)
+        if (status == ChapterConversationStatus.Unread)
         {
             Query = Query.Where(x => !x.LastMessage.Message.ReadByChapter);
         }
-        else if (status == MessageStatus.Read)
+        else if (status == ChapterConversationStatus.Read)
         {
             Query = Query.Where(x => x.LastMessage.Message.ReadByChapter);
         }

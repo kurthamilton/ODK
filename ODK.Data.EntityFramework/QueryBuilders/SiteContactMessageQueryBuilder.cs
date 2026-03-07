@@ -14,12 +14,21 @@ public class SiteContactMessageQueryBuilder
 
     protected override ISiteContactMessageQueryBuilder Builder => this;
 
-    public ISiteContactMessageQueryBuilder ForSpamScore(bool isSpam, double threshold)
+    public ISiteContactMessageQueryBuilder ForStatus(MessageStatus status, double spamThreshold)
     {
-        Query = Query
-            .Where(x => isSpam
-                ? x.RecaptchaScore < threshold
-                : x.RecaptchaScore >= threshold);
+        if (status == MessageStatus.Unreplied)
+        {
+            Query = Query.Where(x => x.RecaptchaScore >= spamThreshold && x.RepliedUtc == null);
+        }
+        else if (status == MessageStatus.Replied)
+        {
+            Query = Query.Where(x => x.RecaptchaScore >= spamThreshold && x.RepliedUtc != null);
+        }
+        else if (status == MessageStatus.Spam)
+        {
+            Query = Query.Where(x => x.RecaptchaScore < spamThreshold);
+        }
+
         return this;
     }
 }

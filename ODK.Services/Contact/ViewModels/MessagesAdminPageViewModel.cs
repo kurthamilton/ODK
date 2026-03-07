@@ -7,11 +7,9 @@ public class MessagesAdminPageViewModel
 {
     public required Member CurrentMember { get; init; }
 
-    public required bool IsSpam { get; init; }
-
-    public required int MessageCount { get; init; }
-
     public required IReadOnlyCollection<SiteContactMessage> Messages { get; init; }
 
-    public required int SpamMessageCount { get; init; }
+    public required MessageStatus Status { get; init; }
+
+    public required IReadOnlyDictionary<MessageStatus, int> StatusCounts { get; init; }
 }

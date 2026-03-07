@@ -3,6 +3,7 @@
 public enum MessageStatus
 {
     None,
-    Unread,
-    Read
+    Unreplied,
+    Replied,
+    Spam
 }

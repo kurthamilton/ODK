@@ -1,4 +1,4 @@
-using ODK.Core.Messages;
+using ODK.Core.Chapters;
 using ODK.Services.Security;
 
 namespace ODK.Web.Razor.Pages.Chapters.Admin.Chapters.Conversations;
@@ -11,13 +11,13 @@ public class IndexModel : AdminPageModel
 
     public override ChapterAdminSecurable Securable => ChapterAdminSecurable.Conversations;
 
-    public MessageStatus Status { get; private set; }
+    public ChapterConversationStatus Status { get; private set; }
 
-    public void OnGet(MessageStatus? status = null)
+    public void OnGet(ChapterConversationStatus? status = null)
     {
-        if (status == null || status == MessageStatus.None || !Enum.IsDefined(status.Value))
+        if (status == null || status == ChapterConversationStatus.None || !Enum.IsDefined(status.Value))
         {
-            status = MessageStatus.Unread;
+            status = ChapterConversationStatus.Unread;
         }
 
         Status = status.Value;

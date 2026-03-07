@@ -2,6 +2,7 @@
 using ODK.Core.Notifications;
 using ODK.Core.Web;
 using ODK.Data.Core;
+using ODK.Data.Core.Deferred;
 using ODK.Services.Contact.ViewModels;
 using ODK.Services.Members;
 
@@ -27,27 +28,56 @@ public class ContactAdminService : OdkAdminServiceBase, IContactAdminService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<MessagesAdminPageViewModel> GetMessagesViewModel(IMemberServiceRequest request, bool spam)
+    public async Task<ServiceResult> DeleteSpamMessages(IMemberServiceRequest request)
     {
         var spamThreshold = _settings.ContactMessageRecaptchaScoreThreshold;
 
-        var (messages, otherMessageCount) = await GetSiteAdminRestrictedContent(request,
+        var messages = await GetSiteAdminRestrictedContent(request,
             x => x.SiteContactMessageRepository
-                .Query()
-                .ForSpamScore(spam, spamThreshold)
+                .Query(x => x.ForStatus(MessageStatus.Spam, spamThreshold))
+                .GetAll());
+
+        _unitOfWork.SiteContactMessageRepository.DeleteMany(messages);
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
+    }
+
+    public async Task<MessagesAdminPageViewModel> GetMessagesViewModel(IMemberServiceRequest request, MessageStatus status)
+    {
+        var spamThreshold = _settings.ContactMessageRecaptchaScoreThreshold;
+
+        var (messages, unrepliedCount, repliedCount, spamCount) = await GetSiteAdminRestrictedContent(request,
+            x => x.SiteContactMessageRepository
+                .Query(x => x.ForStatus(status, spamThreshold))
                 .GetAll(),
-            x => x.SiteContactMessageRepository
-                .Query()
-                .ForSpamScore(!spam, spamThreshold)
-                .Count());
+            x => status == MessageStatus.Unreplied
+                ? new DefaultDeferredQuery<int>(0)
+                : x.SiteContactMessageRepository
+                    .Query(x => x.ForStatus(MessageStatus.Unreplied, spamThreshold))
+                    .Count(),
+            x => status == MessageStatus.Replied
+                ? new DefaultDeferredQuery<int>(0)
+                : x.SiteContactMessageRepository
+                    .Query(x => x.ForStatus(MessageStatus.Replied, spamThreshold))
+                    .Count(),
+            x => status == MessageStatus.Spam
+                ? new DefaultDeferredQuery<int>(0)
+                : x.SiteContactMessageRepository
+                    .Query(x => x.ForStatus(MessageStatus.Spam, spamThreshold))
+                    .Count());
 
         return new MessagesAdminPageViewModel
         {
             CurrentMember = request.CurrentMember,
-            IsSpam = spam,
-            MessageCount = spam ? otherMessageCount : messages.Count,
             Messages = messages,
-            SpamMessageCount = spam ? messages.Count : otherMessageCount
+            Status = status,
+            StatusCounts = new Dictionary<MessageStatus, int>
+            {
+                { MessageStatus.Unreplied, status == MessageStatus.Unreplied ? messages.Count : unrepliedCount },
+                { MessageStatus.Replied, status == MessageStatus.Replied ? messages.Count : repliedCount },
+                { MessageStatus.Spam, status == MessageStatus.Spam ? messages.Count : spamCount }
+            }
         };
     }
 

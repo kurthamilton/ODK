@@ -1,9 +1,9 @@
-﻿using ODK.Core.Messages;
+﻿using ODK.Core.Chapters;
 using ODK.Data.Core.Chapters;
 
 namespace ODK.Data.Core.QueryBuilders;
 
 public interface IChapterConversationDtoQueryBuilder : IQueryBuilder<ChapterConversationDto>
 {
-    IChapterConversationDtoQueryBuilder ForStatus(MessageStatus status);
+    IChapterConversationDtoQueryBuilder ForStatus(ChapterConversationStatus status);
 }

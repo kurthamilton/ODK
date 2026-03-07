@@ -36,6 +36,8 @@ public interface IChapterAdminService
 
     Task DeleteChapterQuestion(IMemberChapterAdminServiceRequest request, Guid id);
 
+    Task<ServiceResult> DeleteChapterSpamContactMessages(IMemberChapterAdminServiceRequest request);
+
     Task<ServiceResult> DeleteChapterSubscription(IMemberChapterAdminServiceRequest request, Guid id);
 
     Task<ServiceResult<string>> GenerateChapterPaymentAccountSetupUrl(
@@ -46,7 +48,7 @@ public interface IChapterAdminService
     Task<ChapterAdminPageViewModel> GetChapterAdminPageViewModel(IMemberChapterAdminServiceRequest request);
 
     Task<ChapterConversationsAdminPageViewModel> GetChapterConversationsViewModel(
-        IMemberChapterAdminServiceRequest request, MessageStatus status);
+        IMemberChapterAdminServiceRequest request, ChapterConversationStatus status);
 
     Task<ChapterConversationAdminPageViewModel> GetChapterConversationViewModel(
         IMemberChapterAdminServiceRequest request, Guid id);
@@ -59,7 +61,8 @@ public interface IChapterAdminService
 
     Task<ChapterLocationAdminPageViewModel> GetChapterLocationViewModel(IMemberChapterAdminServiceRequest request);
 
-    Task<ChapterMessagesAdminPageViewModel> GetChapterMessagesViewModel(IMemberChapterAdminServiceRequest request, bool spam);
+    Task<ChapterMessagesAdminPageViewModel> GetChapterMessagesViewModel(
+        IMemberChapterAdminServiceRequest request, MessageStatus status);
 
     Task<ChapterMessageAdminPageViewModel> GetChapterMessageViewModel(IMemberChapterAdminServiceRequest request, Guid id);
 

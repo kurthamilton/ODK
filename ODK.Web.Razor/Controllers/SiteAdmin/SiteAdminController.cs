@@ -110,6 +110,14 @@ public class SiteAdminController : OdkControllerBase
         return RedirectToReferrer();
     }
 
+    [HttpPost("siteadmin/messages/spam/delete")]
+    public async Task<IActionResult> DeleteSpamMessages()
+    {
+        var result = await _contactAdminService.DeleteSpamMessages(MemberServiceRequest);
+        AddFeedback(result, "Spam messages deleted");
+        return RedirectToReferrer();
+    }
+
     [HttpPost("siteadmin/payments")]
     public async Task<IActionResult> CreatePaymentSettings([FromForm] SitePaymentSettingsFormViewModel viewModel)
     {

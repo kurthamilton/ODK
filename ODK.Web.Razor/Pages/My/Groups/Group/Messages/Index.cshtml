@@ -11,7 +11,7 @@
     Model.Title = "Messages";
 
     var request = Model.MemberChapterAdminServiceRequest;
-    var viewModel = await ChapterAdminService.GetChapterMessagesViewModel(request, false);
+    var viewModel = await ChapterAdminService.GetChapterMessagesViewModel(request, Model.Status);
 }
 
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel

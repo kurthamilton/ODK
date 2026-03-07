@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Chapters;
+using ODK.Core.Messages;
 
 namespace ODK.Data.Core.QueryBuilders;
 
@@ -7,5 +8,5 @@ public interface IChapterContactMessageQueryBuilder
 {
     IChapterContactMessageQueryBuilder ForChapter(Guid chapterId);
 
-    IChapterContactMessageQueryBuilder ForSpamScore(bool isSpam, double threshold);
+    IChapterContactMessageQueryBuilder ForStatus(MessageStatus status, double spamThreshold);
 }

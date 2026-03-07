@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ODK.Core.Chapters;
+using ODK.Core.Messages;
 using ODK.Data.Core.QueryBuilders;
 
 namespace ODK.Data.EntityFramework.QueryBuilders;
@@ -20,12 +21,21 @@ public class ChapterContactMessageQueryBuilder
         return this;
     }
 
-    public IChapterContactMessageQueryBuilder ForSpamScore(bool isSpam, double threshold)
+    public IChapterContactMessageQueryBuilder ForStatus(MessageStatus status, double spamThreshold)
     {
-        Query = Query
-            .Where(x => isSpam
-                ? x.RecaptchaScore < threshold
-                : x.RecaptchaScore >= threshold);
+        if (status == MessageStatus.Unreplied)
+        {
+            Query = Query.Where(x => x.RecaptchaScore >= spamThreshold && x.RepliedUtc == null);
+        }
+        else if (status == MessageStatus.Replied)
+        {
+            Query = Query.Where(x => x.RecaptchaScore >= spamThreshold && x.RepliedUtc != null);
+        }
+        else if (status == MessageStatus.Spam)
+        {
+            Query = Query.Where(x => x.RecaptchaScore < spamThreshold);
+        }
+
         return this;
     }
 }

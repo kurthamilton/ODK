@@ -15,7 +15,7 @@ using ODK.Core.Utils;
 using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Data.Core.Chapters;
-using ODK.Data.Core.QueryBuilders.QueryOptions;
+using ODK.Data.Core.Deferred;
 using ODK.Resources.Resources;
 using ODK.Services.Authorization;
 using ODK.Services.Chapters.Models;
@@ -659,6 +659,23 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         await _unitOfWork.SaveChangesAsync();
     }
 
+    public async Task<ServiceResult> DeleteChapterSpamContactMessages(IMemberChapterAdminServiceRequest request)
+    {
+        var chapter = request.Chapter;
+
+        var spamThreshold = _settings.ContactMessageRecaptchaScoreThreshold;
+
+        var messages = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterContactMessageRepository
+                .Query(x => x.ForChapter(chapter.Id).ForStatus(MessageStatus.Spam, spamThreshold))
+                .GetAll());
+
+        _unitOfWork.ChapterContactMessageRepository.DeleteMany(messages);
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
+    }
+
     public async Task<ServiceResult> DeleteChapterSubscription(IMemberChapterAdminServiceRequest request, Guid id)
     {
         var (subscription, inUse) = await GetChapterAdminRestrictedContent(
@@ -744,7 +761,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ChapterConversationsAdminPageViewModel> GetChapterConversationsViewModel(
-        IMemberChapterAdminServiceRequest request, MessageStatus status)
+        IMemberChapterAdminServiceRequest request, ChapterConversationStatus status)
     {
         var chapter = request.Chapter;
 
@@ -915,33 +932,46 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ChapterMessagesAdminPageViewModel> GetChapterMessagesViewModel(
-        IMemberChapterAdminServiceRequest request, bool spam)
+        IMemberChapterAdminServiceRequest request, MessageStatus status)
     {
-        var (platform, chapter) = (request.Platform, request.Chapter);
+        var chapter = request.Chapter;
 
         var spamThreshold = _settings.ContactMessageRecaptchaScoreThreshold;
 
-        var (messages, otherMessageCount) = await GetChapterAdminRestrictedContent(
+        var (messages, unrepliedCount, repliedCount, spamCount) = await GetChapterAdminRestrictedContent(
             request,
             x => x.ChapterContactMessageRepository
                 .Query()
                 .ForChapter(chapter.Id)
-                .ForSpamScore(spam, spamThreshold)
+                .ForStatus(status, spamThreshold)
                 .GetAll(),
-            x => x.ChapterContactMessageRepository
-                .Query()
-                .ForChapter(chapter.Id)
-                .ForSpamScore(!spam, spamThreshold)
-                .Count());
+            x => status == MessageStatus.Unreplied
+                ? new DefaultDeferredQuery<int>(0)
+                : x.ChapterContactMessageRepository
+                    .Query(x => x.ForChapter(chapter.Id).ForStatus(MessageStatus.Unreplied, spamThreshold))
+                    .Count(),
+            x => status == MessageStatus.Replied
+                ? new DefaultDeferredQuery<int>(0)
+                : x.ChapterContactMessageRepository
+                    .Query(x => x.ForChapter(chapter.Id).ForStatus(MessageStatus.Replied, spamThreshold))
+                    .Count(),
+            x => status == MessageStatus.Spam
+                ? new DefaultDeferredQuery<int>(0)
+                : x.ChapterContactMessageRepository
+                    .Query(x => x.ForChapter(chapter.Id).ForStatus(MessageStatus.Spam, spamThreshold))
+                    .Count());
 
         return new ChapterMessagesAdminPageViewModel
         {
             Chapter = chapter,
-            IsSpam = spam,
-            MessageCount = spam ? otherMessageCount : messages.Count,
             Messages = messages,
-            Platform = platform,
-            SpamMessageCount = spam ? messages.Count : otherMessageCount
+            Status = status,
+            StatusCounts = new Dictionary<MessageStatus, int>
+            {
+                { MessageStatus.Unreplied, unrepliedCount },
+                { MessageStatus.Replied, repliedCount },
+                { MessageStatus.Spam, spamCount }
+            }
         };
     }
 

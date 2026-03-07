@@ -1,3 +1,5 @@
+using ODK.Core.Messages;
+
 namespace ODK.Web.Razor.Pages.SiteAdmin;
 
 public class MessagesModel : SiteAdminPageModel
@@ -6,10 +8,10 @@ public class MessagesModel : SiteAdminPageModel
     {
     }
 
-    public bool Spam { get; private set; }
+    public MessageStatus Status { get; private set; }
 
-    public void OnGet(bool spam = false)
+    public void OnGet(MessageStatus? status = null)
     {
-        Spam = spam;
+        Status = status ?? MessageStatus.Unreplied;
     }
 }

@@ -1,5 +1,6 @@
 ﻿@using ODK.Core.Chapters
 @using ODK.Core.Extensions
+@using ODK.Core.Messages
 @using ODK.Core.Utils
 @using ODK.Services
 @using ODK.Services.Contact.ViewModels
@@ -13,6 +14,17 @@
     <h2>Messages</h2>
 
     @await Html.PartialAsync("SiteAdmin/_MessagesTabs", Model)
+
+    @if (Model.Status == MessageStatus.Spam && Model.Messages.Count > 0)
+    {
+        <div class="my-3">
+            <form action="/siteadmin/messages/spam/delete" method="post">
+                <button type="submit" class="btn btn-primary" onclick="return confirm('Are you sure you want to delete all spam messages?');">
+                    Delete all
+                </button>
+            </form>
+        </div>
+    }
 
     <div class="table-responsive">
         <table class="table table-striped">
