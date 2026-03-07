@@ -968,9 +968,9 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             Status = status,
             StatusCounts = new Dictionary<MessageStatus, int>
             {
-                { MessageStatus.Unreplied, unrepliedCount },
-                { MessageStatus.Replied, repliedCount },
-                { MessageStatus.Spam, spamCount }
+                { MessageStatus.Unreplied, status == MessageStatus.Unreplied ? messages.Count : unrepliedCount },
+                { MessageStatus.Replied, status == MessageStatus.Replied ? messages.Count : repliedCount },
+                { MessageStatus.Spam, status == MessageStatus.Spam ? messages.Count : spamCount }
             }
         };
     }
