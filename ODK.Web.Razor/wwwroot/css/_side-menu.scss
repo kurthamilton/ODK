@@ -1,17 +1,19 @@
 ﻿.side-menu {
     --odk-side-menu-color: var(--bs-secondary-color);
-
     position: sticky;
     top: 0;
     list-style: none;
     padding: 0;
+    flex-direction: column;
 
     .nav-link {
         color: var(--odk-side-menu-color);
         border-left: 0.125rem solid transparent;
 
-        padding: .125rem 0 .125rem .75rem; 
-        
+        @include media-breakpoint-up(md) {
+            padding: .125rem 0 .125rem .75rem;
+        }
+
         &.active, &:hover {
             --odk-side-menu-color: var(--bs-emphasis-color);
             border-left-color: var(--odk-side-menu-color);

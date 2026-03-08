@@ -68,7 +68,7 @@
 }
 
 <nav class="navbar @string.Join(' ', cssClasses)">
-    <div class="position-relative @(Model.Fluid ? "container-fluid" : "container")">
+    <div class="position-relative @(Model.Fluid ? "container-fluid" : "container-md")">
         <div class="d-flex align-items-center">
             @if (Model.MenuItems.Any(x => x.MenuItems.Any(y => !y.Hidden)))    
             {

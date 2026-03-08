@@ -19,7 +19,7 @@
         @Model.Menu
     }
 
-    <div class="container">
+    <div class="container-md">
         @await Html.PartialAsync("Components/_ToastAnchor", new ToastAnchorViewModel())
         <div class="row @(Model.WidthClass != null ? "justify-content-center" : null)">
             <div class="@(Model.WidthClass ?? "col-12")">                
