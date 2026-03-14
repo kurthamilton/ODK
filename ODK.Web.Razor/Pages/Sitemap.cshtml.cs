@@ -1,3 +1,4 @@
+using ODK.Core.Platforms;
 using ODK.Services.Chapters;
 using ODK.Web.Razor.Models.Sitemap;
 
@@ -56,6 +57,29 @@ public class SitemapModel : OdkPageModel
             nodes.Add(new SitemapNodeModel
             {
                 Url = GetUrl(OdkRoutes.Groups.About(chapter))
+            });
+        }
+
+        nodes.Add(new SitemapNodeModel
+        {
+            Url = GetUrl(OdkRoutes.Site.Privacy)
+        });
+
+        if (Platform == PlatformType.Default)
+        {
+            nodes.Add(new SitemapNodeModel
+            {
+                Url = GetUrl(OdkRoutes.Site.About)
+            });
+
+            nodes.Add(new SitemapNodeModel
+            {
+                Url = GetUrl(OdkRoutes.Site.Contact)
+            });
+
+            nodes.Add(new SitemapNodeModel
+            {
+                Url = GetUrl(OdkRoutes.Site.Pricing)
             });
         }
 
