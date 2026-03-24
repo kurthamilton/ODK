@@ -75,6 +75,10 @@ public interface IMemberEmailService
         IChapterServiceRequest request,
         Member owner);
 
+    Task SendGroupImportActivationEmail(
+        IMemberChapterServiceRequest request,
+        string activationToken);
+
     Task SendMemberApprovedEmail(
         IChapterServiceRequest request,
         Member member);

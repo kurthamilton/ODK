@@ -50,6 +50,8 @@ public interface IMemberAdminService
 
     Task<MemberAdminPageViewModel> GetMemberViewModel(IMemberChapterAdminServiceRequest request, Guid memberId);
 
+    Task<ServiceResult> ImportMembers(IMemberChapterAdminServiceRequest request, IReadOnlyCollection<MemberImportModel> members);
+
     Task<ServiceResult> RemoveMemberFromChapter(IMemberChapterAdminServiceRequest request, Guid memberId, string? reason);
 
     Task RotateMemberImage(IMemberChapterAdminServiceRequest request, Guid memberId);

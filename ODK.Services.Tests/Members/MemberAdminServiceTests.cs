@@ -6,6 +6,7 @@ using FluentAssertions;
 using Moq;
 using NUnit.Framework;
 using ODK.Core.Chapters;
+using ODK.Core.Countries;
 using ODK.Core.Members;
 using ODK.Core.Notifications;
 using ODK.Core.Platforms;
@@ -540,7 +541,8 @@ public static class MemberAdminServiceTests
             memberService ?? CreateMockMemberService(),
             authorizationService ?? CreateMockAuthorizationService(),
             memberImageService ?? CreateMockMemberImageService(isValid: true),
-            memberEmailService ?? CreateMockMemberEmailService());
+            memberEmailService ?? CreateMockMemberEmailService(),
+            Mock.Of<IDistanceUnitFactory>());
     }
 
     private static MockOdkContext CreateMockOdkContext() => new MockOdkContext();

@@ -1011,9 +1011,7 @@ public class MemberService : IMemberService
                 continue;
             }
 
-            yield return !string.IsNullOrEmpty(chapterProperty.DisplayName)
-                    ? chapterProperty.DisplayName
-                    : chapterProperty.Label;
+            yield return chapterProperty.GetDisplayText();
         }
     }
 

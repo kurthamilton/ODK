@@ -8,6 +8,8 @@ public interface IMemberQueryBuilder : IDatabaseEntityQueryBuilder<Member, IMemb
 {
     IMemberQueryBuilder HasEmailAddress(string emailAddress);
 
+    IMemberQueryBuilder HasEmailAddress(IEnumerable<string> emailAddresses);
+
     IMemberQueryBuilder InChapter(Guid chapterId);
 
     IMemberQueryBuilder InChapter(Guid chapterId, MemberChapterQueryOptions options);

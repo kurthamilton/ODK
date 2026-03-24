@@ -28,6 +28,12 @@ public class MemberQueryBuilder : DatabaseEntityQueryBuilder<Member, IMemberQuer
         return this;
     }
 
+    public IMemberQueryBuilder HasEmailAddress(IEnumerable<string> emailAddresses)
+    {
+        Query = Query.Where(x => emailAddresses.Contains(x.EmailAddress));
+        return this;
+    }
+
     public IMemberQueryBuilder InChapter(Guid chapterId)
         => InChapter(chapterId, new());
 

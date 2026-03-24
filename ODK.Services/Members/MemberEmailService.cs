@@ -353,6 +353,26 @@ public class MemberEmailService : IMemberEmailService
             parameters);
     }
 
+    public async Task SendGroupImportActivationEmail(
+        IMemberChapterServiceRequest request,
+        string activationToken)
+    {
+        var (platform, chapter, member) = (request.Platform, request.Chapter, request.CurrentMember);
+
+        var urlProvider = await _urlProviderFactory.Create(request);
+        var url = urlProvider.ActivateAccountUrl(chapter, activationToken);
+
+        var to = member.ToEmailAddressee();
+
+        await _emailService.SendMemberEmail(
+            request,
+            chapter,
+            to,
+            subject,
+            body,
+            parameters);
+    }
+
     public async Task SendMemberApprovedEmail(
         IChapterServiceRequest request,
         Member member)
@@ -416,8 +436,8 @@ public class MemberEmailService : IMemberEmailService
             ? urlProvider.IssueUrl(issue.Id)
             : urlProvider.IssueAdminUrl(issue.Id);
 
-        var to = toMember != null 
-            ? [ toMember.ToEmailAddressee() ]
+        var to = toMember != null
+            ? [toMember.ToEmailAddressee()]
             : siteAdmins.Select(x => x.ToEmailAddressee()).ToArray();
 
         var parameters = new Dictionary<string, string>
