@@ -25,7 +25,16 @@ public class GroupRoutes
 
     public string Conversations(Chapter chapter) => Conversations(chapter, archived: false);
 
-    public string Conversations(Chapter chapter, bool archived) => $"{GroupPath(chapter, "/conversations")}{(archived ? "?archived=true" : null)}";
+    public string Conversations(Chapter chapter, bool archived)
+    {
+        var path = Platform switch
+        {
+            PlatformType.DrunkenKnitwits => AccountRoutes.Conversations(chapter),
+            _ => GroupPath(chapter, "/conversations")
+        };
+
+        return $"{path}{(archived ? "?archived=true" : null)}";
+    }
 
     public string Error(Chapter chapter, int statusCode)
         => $"{Group(chapter)}/error/{statusCode}";
