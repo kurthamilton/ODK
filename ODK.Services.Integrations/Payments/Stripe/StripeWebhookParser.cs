@@ -36,7 +36,7 @@ public class StripeWebhookParser : IStripeWebhookParser
             {
                 EventTypes.CheckoutSessionCompleted => ToCheckoutSessionCompleted(stripeEvent),
                 EventTypes.CheckoutSessionExpired => ToCheckoutSessionExpired(stripeEvent),
-                EventTypes.InvoicePaymentSucceeded => ToInvoicePaymentSucceeded(stripeEvent),
+                EventTypes.InvoicePaymentSucceeded => ToInvoicePaymentSucceeded(stripeEvent, json),
                 EventTypes.PaymentIntentSucceeded => ToPaymentIntentSucceeded(stripeEvent),
                 EventTypes.CustomerSubscriptionDeleted => ToSubscriptionDeleted(stripeEvent),
                 _ => null
@@ -87,7 +87,7 @@ public class StripeWebhookParser : IStripeWebhookParser
         };
     }
 
-    private static PaymentProviderWebhook ToInvoicePaymentSucceeded(Event stripeEvent)
+    private static PaymentProviderWebhook ToInvoicePaymentSucceeded(Event stripeEvent, string json)
     {
         var invoice = (Invoice)stripeEvent.Data.Object;
 

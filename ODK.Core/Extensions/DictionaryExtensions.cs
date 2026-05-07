@@ -4,6 +4,23 @@ namespace ODK.Core.Extensions;
 
 public static class DictionaryExtensions
 {
+    public static IDictionary<TKey, TValue> Merge<TKey, TValue>(
+        this IDictionary<TKey, TValue> into,
+        IDictionary<TKey, TValue>? from)
+    {
+        if (from == null)
+        {
+            return into;
+        }
+
+        foreach (var key in from.Keys)
+        {
+            into[key] = from[key];
+        }
+
+        return into;
+    }
+
     public static bool TryGetEnumValue<T>(
         this IDictionary<string, string> source,
         string key,

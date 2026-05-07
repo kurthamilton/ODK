@@ -620,7 +620,7 @@ public class PaymentService : IPaymentService
             var message =
                 $"Received {webhook.PaymentProviderType} webhook '{webhook.Id}' for incomplete event; not processing";
 
-            await _loggingService.Warn(message); ;
+            await _loggingService.Warn(message);
             return PaymentWebhookProcessingResult.Failure();
         }
 
@@ -778,15 +778,6 @@ public class PaymentService : IPaymentService
             x => x.MemberSubscriptionRepository.GetByMemberId(memberId, chapterId),
             x => x.MemberSubscriptionRecordRepository.GetByExternalIdOrDefault(externalId));
 
-        if (existingMemberSubscriptionRecord != null)
-        {
-            var message =
-                $"Member subscription record already exists for externalId '{externalId}'; " +
-                $"not updating member chapter subscription";
-            await _loggingService.Warn(message);
-            return PaymentWebhookProcessingResult.Failure();
-        }
-
         memberSubscription ??= new();
 
         var expiresUtc = memberSubscription.ExpiresUtc > utcNow
@@ -806,18 +797,21 @@ public class PaymentService : IPaymentService
             _unitOfWork.MemberSubscriptionRepository.Update(memberSubscription);
         }
 
-        _unitOfWork.MemberSubscriptionRecordRepository.Add(new MemberSubscriptionRecord
+        if (existingMemberSubscriptionRecord == null)
         {
-            Amount = chapterSubscription.Amount,
-            ChapterId = chapterId,
-            ChapterSubscriptionId = chapterSubscription.Id,
-            ExternalId = externalId,
-            MemberId = memberId,
-            Months = chapterSubscription.Months,
-            PaymentId = payment.Id,
-            PurchasedUtc = utcNow,
-            Type = chapterSubscription.Type
-        });
+            _unitOfWork.MemberSubscriptionRecordRepository.Add(new MemberSubscriptionRecord
+            {
+                Amount = chapterSubscription.Amount,
+                ChapterId = chapterId,
+                ChapterSubscriptionId = chapterSubscription.Id,
+                ExternalId = externalId,
+                MemberId = memberId,
+                Months = chapterSubscription.Months,
+                PaymentId = payment.Id,
+                PurchasedUtc = utcNow,
+                Type = chapterSubscription.Type
+            });
+        }
 
         await _unitOfWork.SaveChangesAsync();
 
