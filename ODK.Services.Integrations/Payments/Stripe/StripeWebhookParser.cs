@@ -59,7 +59,7 @@ public class StripeWebhookParser : IStripeWebhookParser
                 ? (decimal)(session.AmountTotal.Value / 100.0)
                 : 0,
             Complete = session.PaymentStatus == "paid",
-            Id = session.Id,
+            Id = stripeEvent.Id,
             Metadata = session.Metadata,
             OriginatedUtc = stripeEvent.Created,
             PaymentId = session.PaymentIntentId,
@@ -77,7 +77,7 @@ public class StripeWebhookParser : IStripeWebhookParser
         {
             Amount = 0,
             Complete = session.Status == "expired",
-            Id = session.Id,
+            Id = stripeEvent.Id,
             Metadata = session.Metadata,
             OriginatedUtc = stripeEvent.Created,
             PaymentId = session.PaymentIntentId,
@@ -95,7 +95,7 @@ public class StripeWebhookParser : IStripeWebhookParser
         {
             Amount = (decimal)(invoice.AmountPaid / 100.0),
             Complete = invoice.Status == "paid",
-            Id = invoice.Id,
+            Id = stripeEvent.Id,
             Metadata = invoice.Parent.SubscriptionDetails.Metadata,
             OriginatedUtc = stripeEvent.Created,
             PaymentId = invoice.RawJObject.Value<string>("payment_intent"),
@@ -113,7 +113,7 @@ public class StripeWebhookParser : IStripeWebhookParser
         {
             Amount = (decimal)(paymentIntent.Amount / 100.0),
             Complete = paymentIntent.Status == "succeeded",
-            Id = paymentIntent.Id,
+            Id = stripeEvent.Id,
             Metadata = paymentIntent.Metadata,
             OriginatedUtc = stripeEvent.Created,
             PaymentId = paymentIntent.Id,
@@ -131,7 +131,7 @@ public class StripeWebhookParser : IStripeWebhookParser
         {
             Amount = 0,
             Complete = subscription.Status == "canceled",
-            Id = subscription.Id,
+            Id = stripeEvent.Id,
             Metadata = subscription.Metadata,
             OriginatedUtc = stripeEvent.Created,
             PaymentId = null,

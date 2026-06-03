@@ -162,7 +162,7 @@ public class PaymentService : IPaymentService
         var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(
             sitePaymentSettings, payment.SitePaymentSettingId);
 
-        var externalSession = await paymentProvider.GetCheckoutSession(externalSessionId);        
+        var externalSession = await paymentProvider.GetCheckoutSession(externalSessionId);
 
         if (externalSession == null)
         {
@@ -181,7 +181,7 @@ public class PaymentService : IPaymentService
                     paymentProvider.Type,
                     externalSession.SubscriptionId),
                 BackgroundTaskQueueType.Payments);
-        }        
+        }
 
         return PaymentStatusType.Pending;
     }
@@ -381,9 +381,9 @@ public class PaymentService : IPaymentService
 
     // Public for Hangfire
     public async Task<PaymentWebhookProcessingResult> ProcessCompletedSiteSubscription(
-        IReadOnlyDictionary<string, string> metadataDictionary, 
-        DateTime completedUtc, 
-        PaymentProviderType paymentProvider, 
+        IReadOnlyDictionary<string, string> metadataDictionary,
+        DateTime completedUtc,
+        PaymentProviderType paymentProvider,
         string externalId)
     {
         var metadata = PaymentMetadataModel.FromDictionary(metadataDictionary);
@@ -544,7 +544,7 @@ public class PaymentService : IPaymentService
 
             await _memberEmailService.SendPaymentNotification(request, member, chapter, payment, currency, siteAdmins);
         }
-    }    
+    }
 
     private async Task<PaymentWebhookProcessingResult> ProcessWebhookCheckoutSessionExpired(PaymentProviderWebhook webhook)
     {
@@ -635,8 +635,6 @@ public class PaymentService : IPaymentService
         PaymentProviderWebhook webhook,
         PaymentMetadataModel metadata)
     {
-        var utcNow = webhook.OriginatedUtc;
-
         if (string.IsNullOrEmpty(webhook.SubscriptionId))
         {
             var message =
@@ -672,7 +670,7 @@ public class PaymentService : IPaymentService
     private async Task<PaymentWebhookProcessingResult> ProcessWebhookSiteSubscription(
         PaymentProviderWebhook webhook,
         PaymentMetadataModel metadata)
-    {        
+    {
         if (string.IsNullOrEmpty(webhook.SubscriptionId))
         {
             var message =
@@ -681,11 +679,11 @@ public class PaymentService : IPaymentService
 
             await _loggingService.Error(message);
             return PaymentWebhookProcessingResult.Failure();
-        }        
+        }
 
         return await ProcessCompletedSiteSubscription(
             metadata.ToDictionary(),
-            completedUtc: webhook.OriginatedUtc, 
+            completedUtc: webhook.OriginatedUtc,
             webhook.PaymentProviderType,
             webhook.SubscriptionId);
     }
