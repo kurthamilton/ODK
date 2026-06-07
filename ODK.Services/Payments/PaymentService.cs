@@ -162,7 +162,7 @@ public class PaymentService : IPaymentService
         var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(
             sitePaymentSettings, payment.SitePaymentSettingId);
 
-        var externalSession = await paymentProvider.GetCheckoutSession(externalSessionId);        
+        var externalSession = await paymentProvider.GetCheckoutSession(externalSessionId);
 
         if (externalSession == null)
         {
@@ -181,7 +181,7 @@ public class PaymentService : IPaymentService
                     paymentProvider.Type,
                     externalSession.SubscriptionId),
                 BackgroundTaskQueueType.Payments);
-        }        
+        }
 
         return PaymentStatusType.Pending;
     }
@@ -381,9 +381,9 @@ public class PaymentService : IPaymentService
 
     // Public for Hangfire
     public async Task<PaymentWebhookProcessingResult> ProcessCompletedSiteSubscription(
-        IReadOnlyDictionary<string, string> metadataDictionary, 
-        DateTime completedUtc, 
-        PaymentProviderType paymentProvider, 
+        IReadOnlyDictionary<string, string> metadataDictionary,
+        DateTime completedUtc,
+        PaymentProviderType paymentProvider,
         string externalId)
     {
         var metadata = PaymentMetadataModel.FromDictionary(metadataDictionary);
@@ -544,7 +544,7 @@ public class PaymentService : IPaymentService
 
             await _memberEmailService.SendPaymentNotification(request, member, chapter, payment, currency, siteAdmins);
         }
-    }    
+    }
 
     private async Task<PaymentWebhookProcessingResult> ProcessWebhookCheckoutSessionExpired(PaymentProviderWebhook webhook)
     {
@@ -620,7 +620,7 @@ public class PaymentService : IPaymentService
             var message =
                 $"Received {webhook.PaymentProviderType} webhook '{webhook.Id}' for incomplete event; not processing";
 
-            await _loggingService.Warn(message); ;
+            await _loggingService.Warn(message);
             return PaymentWebhookProcessingResult.Failure();
         }
 
@@ -635,8 +635,6 @@ public class PaymentService : IPaymentService
         PaymentProviderWebhook webhook,
         PaymentMetadataModel metadata)
     {
-        var utcNow = webhook.OriginatedUtc;
-
         if (string.IsNullOrEmpty(webhook.SubscriptionId))
         {
             var message =
@@ -672,7 +670,7 @@ public class PaymentService : IPaymentService
     private async Task<PaymentWebhookProcessingResult> ProcessWebhookSiteSubscription(
         PaymentProviderWebhook webhook,
         PaymentMetadataModel metadata)
-    {        
+    {
         if (string.IsNullOrEmpty(webhook.SubscriptionId))
         {
             var message =
@@ -681,11 +679,11 @@ public class PaymentService : IPaymentService
 
             await _loggingService.Error(message);
             return PaymentWebhookProcessingResult.Failure();
-        }        
+        }
 
         return await ProcessCompletedSiteSubscription(
             metadata.ToDictionary(),
-            completedUtc: webhook.OriginatedUtc, 
+            completedUtc: webhook.OriginatedUtc,
             webhook.PaymentProviderType,
             webhook.SubscriptionId);
     }
@@ -778,15 +776,6 @@ public class PaymentService : IPaymentService
             x => x.MemberSubscriptionRepository.GetByMemberId(memberId, chapterId),
             x => x.MemberSubscriptionRecordRepository.GetByExternalIdOrDefault(externalId));
 
-        if (existingMemberSubscriptionRecord != null)
-        {
-            var message =
-                $"Member subscription record already exists for externalId '{externalId}'; " +
-                $"not updating member chapter subscription";
-            await _loggingService.Warn(message);
-            return PaymentWebhookProcessingResult.Failure();
-        }
-
         memberSubscription ??= new();
 
         var expiresUtc = memberSubscription.ExpiresUtc > utcNow
@@ -806,18 +795,21 @@ public class PaymentService : IPaymentService
             _unitOfWork.MemberSubscriptionRepository.Update(memberSubscription);
         }
 
-        _unitOfWork.MemberSubscriptionRecordRepository.Add(new MemberSubscriptionRecord
+        if (existingMemberSubscriptionRecord == null)
         {
-            Amount = chapterSubscription.Amount,
-            ChapterId = chapterId,
-            ChapterSubscriptionId = chapterSubscription.Id,
-            ExternalId = externalId,
-            MemberId = memberId,
-            Months = chapterSubscription.Months,
-            PaymentId = payment.Id,
-            PurchasedUtc = utcNow,
-            Type = chapterSubscription.Type
-        });
+            _unitOfWork.MemberSubscriptionRecordRepository.Add(new MemberSubscriptionRecord
+            {
+                Amount = chapterSubscription.Amount,
+                ChapterId = chapterId,
+                ChapterSubscriptionId = chapterSubscription.Id,
+                ExternalId = externalId,
+                MemberId = memberId,
+                Months = chapterSubscription.Months,
+                PaymentId = payment.Id,
+                PurchasedUtc = utcNow,
+                Type = chapterSubscription.Type
+            });
+        }
 
         await _unitOfWork.SaveChangesAsync();
 
