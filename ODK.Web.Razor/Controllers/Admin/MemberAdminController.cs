@@ -151,7 +151,7 @@ public class MemberAdminController : AdminControllerBase
     [HttpPost("groups/{chapterId:guid}/members/import")]
     public async Task<IActionResult> ImportMembers(Guid chapterId, IFormFile file)
     {
-        var csv = await ReadBodyText
+        var csv = await ReadBodyText();
 
         var request = MemberChapterAdminServiceRequest.Create(
             ChapterAdminSecurable.BulkEmail, MemberChapterServiceRequest);

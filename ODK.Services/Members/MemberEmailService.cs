@@ -362,7 +362,17 @@ public class MemberEmailService : IMemberEmailService
         var urlProvider = await _urlProviderFactory.Create(request);
         var url = urlProvider.ActivateAccountUrl(chapter, activationToken);
 
+        var parameters = new Dictionary<string, string>
+        {
+            { "url", url }
+        };
+
         var to = member.ToEmailAddressee();
+        var subject = "{title} - Activate your account";
+        var body = new EmailBodyBuilder()
+            .AddParagraph("You application to join {chapter.fullName} has been approved")
+            .AddParagraphLink("url")
+            .ToString();
 
         await _emailService.SendMemberEmail(
             request,
