@@ -1,3 +1,4 @@
 cd ODK.Web.Razor
-dotnet watch --urls=http://localhost:8124
+set DOTNET_WATCH_SUPPRESS_STATIC_FILE_HANDLING=true
+call npm run dev:odk
 pause

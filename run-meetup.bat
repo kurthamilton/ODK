@@ -1,3 +1,4 @@
 cd ODK.Web.Razor
-dotnet watch run --urls=http://localhost:8123 --environment=Development
+set DOTNET_WATCH_SUPPRESS_STATIC_FILE_HANDLING=true
+call npm run dev:meetup
 pause

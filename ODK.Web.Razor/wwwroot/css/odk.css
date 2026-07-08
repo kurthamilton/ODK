@@ -1,4 +1,4 @@
-﻿@charset "UTF-8";
+@charset "UTF-8";
 /* josefin-sans-300 - latin */
 @font-face {
   font-family: "Josefin Sans";
@@ -11853,6 +11853,9 @@ textarea.form-control-lg {
 .ss-main .ss-arrow {
   display: none;
 }
+.ss-main .ss-values {
+  padding: 0;
+}
 
 .ss-placeholder {
   padding: 0 !important;
@@ -11890,6 +11893,7 @@ textarea.form-control-lg {
 }
 .ss-content.form-select {
   background-image: none;
+  padding: 0;
 }
 .ss-content .ss-search input {
   background-color: var(--bs-body-bg);
@@ -11900,14 +11904,15 @@ textarea.form-control-lg {
 }
 
 /*multiselect*/
-.ss-value {
+.ss-main .ss-values .ss-value {
   background-color: var(--bs-secondary) !important;
 }
-
-.ss-value-text,
-.ss-value-delete {
+.ss-main .ss-values .ss-value .ss-value-text,
+.ss-main .ss-values .ss-value .ss-value-delete {
   line-height: 1.5 !important;
   font-size: 0.8rem !important;
+  padding-top: 3px;
+  padding-bottom: 3px;
 }
 
 .tox-tinymce {
