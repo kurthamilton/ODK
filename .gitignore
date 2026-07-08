@@ -5,6 +5,7 @@ obj
 appsettings.*.json
 /ODK.Web.Razor/Logs
 /ODK.Web.Razor/wwwroot/lib
+/ODK.Web.Razor/node_modules
 *.pubxml
 app_data
 /ODK.Web.Razor/Views/Shared/Groups/_GroupProfileMenu.cshtml

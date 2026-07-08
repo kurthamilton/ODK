@@ -23,7 +23,7 @@
     },
     {
       "provider": "cdnjs",
-      "library": "slim-select@2.13.1",
+      "library": "slim-select@4.0.1",
       "destination": "wwwroot/lib/slim-select/"
     },
     {

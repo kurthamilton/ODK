@@ -12,6 +12,10 @@
     .ss-arrow {
         display: none;
     }
+
+    .ss-values {
+        padding: 0;
+    }
 }
 
 .ss-placeholder {
@@ -46,6 +50,7 @@
     &.form-select {
         // remove bootstrap caret
         background-image: none;
+        padding: 0;
     }
 
     /*search*/
@@ -64,12 +69,18 @@
 }
 
 /*multiselect*/
-.ss-value {
-    background-color: var(--bs-secondary) !important;
-}
+.ss-main {
+    .ss-values {
+        .ss-value {
+            background-color: var(--bs-secondary) !important;
 
-.ss-value-text,
-.ss-value-delete {
-    line-height: 1.5 !important;
-    font-size: 0.8rem !important;
+            .ss-value-text,
+            .ss-value-delete {
+                line-height: 1.5 !important;
+                font-size: 0.8rem !important;
+                padding-top: 3px;
+                padding-bottom: 3px;
+            }
+        }
+    }
 }

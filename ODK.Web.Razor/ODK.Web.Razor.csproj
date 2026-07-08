@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>aspnet-ODK.Web.Razor-885db159-c982-4fde-b49e-baf69b1293fb</UserSecretsId>
+    <DefaultItemExcludes>$(DefaultItemExcludes);node_modules\**</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,10 +17,6 @@
     <EmbeddedResource Remove="wwwroot\lib\vanillajs-datepicker\**" />
     <None Remove="Pages\Groups\Admin\**" />
     <None Remove="wwwroot\lib\vanillajs-datepicker\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Remove="compilerconfig.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -47,10 +44,6 @@
   </ItemGroup>
 
   <ItemGroup>
-	  <None Include="compilerconfig.json" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\ODK.Core\ODK.Core.csproj" />
     <ProjectReference Include="..\ODK.Infrastructure\ODK.Infrastructure.csproj" />
     <ProjectReference Include="..\ODK.Web.Common\ODK.Web.Common.csproj" />
@@ -62,5 +55,4 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
   </ItemGroup>
-
 </Project>
