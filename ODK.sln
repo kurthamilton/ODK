@@ -28,6 +28,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0C91C40C-E42B-4636-B36B-021F7B7EE13A}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		README.md = README.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ODK.Resources", "ODK.Resources\ODK.Resources.csproj", "{EE395946-4ADF-488C-A9EB-EC8FFA91492E}"

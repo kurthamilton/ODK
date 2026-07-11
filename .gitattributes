@@ -1,0 +1,4 @@
+# Dart Sass emits LF line endings. Keep the generated CSS as LF so Git does not
+# rewrite it to CRLF (which caused "LF will be replaced by CRLF" warnings and
+# noisy diffs on every recompile).
+ODK.Web.Razor/wwwroot/css/*.css text eol=lf
