@@ -33,7 +33,7 @@
     },
     {
       "provider": "cdnjs",
-      "library": "tinymce@8.1.2",
+      "library": "tinymce@8.5.1",
       "destination": "wwwroot/lib/tinymce/"
     },
     {
