@@ -11,7 +11,7 @@
             : 0;
         $wizard.setAttribute('data-wizard-active', initialPage);
 
-        const $form = $wizard.closest('[data-wizard-form]');
+        const $form = $wizard.closest('[data-wizard-form]') || $wizard.closest('form');
         $form.addEventListener('submit', e => {
             const activePage = parseInt($wizard.getAttribute('data-wizard-active'));
             if (activePage < $pages.length - 1) e.preventDefault();
