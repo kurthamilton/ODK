@@ -9,6 +9,7 @@ using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
 using ODK.Web.Razor.Extensions;
 using ODK.Web.Razor.Models.Feedback;
+using ODK.Web.Razor.Services;
 
 namespace ODK.Web.Razor.Controllers;
 
@@ -93,6 +94,9 @@ public abstract class OdkControllerBase : Controller
         return text;
     }
 
+    protected ServiceResult<IReadOnlyCollection<T>> ReadCsv<T>(IFormFile file)
+        => CsvFileReader.Read<T>(file);
+
     protected IActionResult RedirectToReferrer(string? fallback = null)
     {
         var url = Request.Headers["Referer"].ToString();
@@ -105,4 +109,5 @@ public abstract class OdkControllerBase : Controller
 
         return Redirect(url);
     }
+
 }

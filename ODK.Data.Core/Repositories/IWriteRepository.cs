@@ -2,7 +2,7 @@
 
 public interface IWriteRepository<T>
 {
-    void Add(T entity);
+    T Add(T entity);
     void AddMany(IEnumerable<T> entities);
     void Delete(T entity);
     void DeleteMany(IEnumerable<T> entities);

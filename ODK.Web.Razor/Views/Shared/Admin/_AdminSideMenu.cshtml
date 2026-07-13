@@ -42,7 +42,8 @@
         .Add(adminRoutes.MemberProperties(chapter), "Profile questions")
         .Add(adminRoutes.Subscriptions(chapter), "Subscriptions")
         .Add(adminRoutes.MembersEmail(chapter), "Bulk email")
-        .Add(adminRoutes.MemberApprovals(chapter), "Approvals");
+        .Add(adminRoutes.MemberApprovals(chapter), "Approvals")
+        .Add(adminRoutes.MembersImport(chapter), "Import");
 
     var paymentsLinks = new ChapterAdminMenuItemGroup(currentMember, chapterAdminMember, platform)
         .Add(OdkRoutes.GroupAdmin.PaymentAccount(chapter), "Account");

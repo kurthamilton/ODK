@@ -1,4 +1,7 @@
-﻿(function () {
+﻿window.odk = window.odk || {};
+window.odk.forms = window.odk.forms || {};
+
+(function () {
     bindClearables();
     bindClientSideValidation();
     bindColorPickers();
@@ -10,13 +13,9 @@
         $containers.forEach($container => {
             const $button = $container.querySelector('[data-clearable-button]');
             const $input = $container.querySelector('[data-clearable]');
-            if (!$button || !$input) {
-                return;
-            }
+            if (!$button || !$input) return;
 
-            if (!$input.value) {
-                $button.classList.add('d-none');
-            }
+            if (!$input.value) $button.classList.add('d-none');
 
             $input.addEventListener('change', () => {
                 if ($input.value) {
@@ -36,6 +35,7 @@
     function bindClientSideValidation() {
         const v = new aspnetValidation.ValidationService();
         v.bootstrap();
+        window.odk.forms.validationService = v;
     }
 
     function bindColorPickers() {
@@ -64,22 +64,22 @@
     function bindSubmits() {
         document.querySelectorAll('[data-submit]').forEach($button => {
             const targetSelector = $button.getAttribute('data-submit');
-            const target = targetSelector === 'parent'
+            const $target = targetSelector === 'parent'
                 ? $button.closest('form')
                 : document.querySelector(targetSelector);
 
-            const confirmMessage = $button.getAttribute('data-submit-confirm');
+            if (!$target) return;
 
-            if (!target) {
-                return;
-            }
+            const confirmMessage = $button.getAttribute('data-submit-confirm');            
 
             $button.addEventListener('click', () => {
-                if (!!confirmMessage && !confirm(confirmMessage)) {
-                    return;
-                }
+                if (!!confirmMessage && !confirm(confirmMessage)) return;
+                if ($target.tagName !== 'FORM') return;
 
-                target.submit();
+                const v = window.odk.forms.validationService;
+                v.validateForm($target);
+                if (!v.isValid($target)) return;
+                $target.submit();
             });
         });
 

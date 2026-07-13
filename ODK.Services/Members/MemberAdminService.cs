@@ -1,5 +1,7 @@
 ﻿using ODK.Core;
 using ODK.Core.Chapters;
+using ODK.Core.Countries;
+using ODK.Core.Cryptography;
 using ODK.Core.Events;
 using ODK.Core.Features;
 using ODK.Core.Members;
@@ -16,6 +18,7 @@ namespace ODK.Services.Members;
 public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 {
     private readonly IAuthorizationService _authorizationService;
+    private readonly IDistanceUnitFactory _distanceUnitFactory;
     private readonly IMemberEmailService _memberEmailService;
     private readonly IMemberImageService _memberImageService;
     private readonly IMemberService _memberService;
@@ -26,10 +29,12 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         IMemberService memberService,
         IAuthorizationService authorizationService,
         IMemberImageService memberImageService,
-        IMemberEmailService memberEmailService)
+        IMemberEmailService memberEmailService,
+        IDistanceUnitFactory distanceUnitFactory)
         : base(unitOfWork)
     {
         _authorizationService = authorizationService;
+        _distanceUnitFactory = distanceUnitFactory;
         _memberEmailService = memberEmailService;
         _memberImageService = memberImageService;
         _memberService = memberService;
@@ -523,6 +528,186 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             Platform = platform,
             Subscription = subscription
         };
+    }
+
+    public async Task<MemberImportPreview> GetMemberImportPreview(
+        IMemberChapterAdminServiceRequest request, IReadOnlyCollection<MemberImportModel> members)
+    {
+        var chapter = request.Chapter;
+
+        var emailAddresses = members
+            .Select(x => x.EmailAddress)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        var existingMembers = await GetChapterAdminRestrictedContent(request,
+            x => x.MemberRepository
+                .Query()
+                .HasEmailAddress(emailAddresses)
+                .GetAll());
+
+        var existingMemberDictionary = existingMembers
+            .ToDictionary(x => x.EmailAddress, StringComparer.OrdinalIgnoreCase);
+
+        var rows = members
+            .Select(x =>
+            {
+                existingMemberDictionary.TryGetValue(x.EmailAddress, out var member);
+
+                var status = member == null
+                    ? MemberImportRowStatus.New
+                    : member.IsMemberOf(chapter.Id)
+                        ? MemberImportRowStatus.ExistingInGroup
+                        : MemberImportRowStatus.ExistingNotInGroup;
+
+                return new MemberImportPreviewRow
+                {
+                    Member = x,
+                    Status = status
+                };
+            })
+            .ToList();
+
+        return new MemberImportPreview
+        {
+            Rows = rows
+        };
+    }
+
+    public async Task<ServiceResult> ImportMembers(IMemberChapterAdminServiceRequest request, IReadOnlyCollection<MemberImportModel> members)
+    {
+        var (platform, chapter) = (request.Platform, request.Chapter);
+
+        var emailAddresses = members
+            .Select(x => x.EmailAddress)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        var (siteSubscription, chapterLocation, currency, country, existingMembers, membershipSettings) = await GetChapterAdminRestrictedContent(request,
+            x => x.SiteSubscriptionRepository.GetDefault(platform),
+            x => x.ChapterLocationRepository.GetByChapterId(chapter.Id),
+            x => x.CurrencyRepository.GetByChapterId(chapter.Id),
+            x => x.CountryRepository.GetByChapterId(chapter.Id),
+            x => x.MemberRepository
+                .Query()
+                .HasEmailAddress(emailAddresses)
+                .GetAll(),
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id));
+
+        var existingMemberDictionary = existingMembers
+            .ToDictionary(x => x.EmailAddress);
+
+        var utcNow = DateTime.UtcNow;
+
+        var pendingActivationMembers = new Dictionary<Member, string>();
+        var invitedMembers = new List<Member>();
+
+        foreach (var importMember in members)
+        {
+            existingMemberDictionary.TryGetValue(importMember.EmailAddress, out var member);
+
+            if (member != null && member.IsMemberOf(chapter.Id))
+            {
+                continue;
+            }
+
+            if (member == null)
+            {
+                member = _unitOfWork.MemberRepository.Add(new Member
+                {
+                    CreatedUtc = utcNow,
+                    EmailAddress = importMember.EmailAddress,
+                    FirstName = importMember.FirstName,
+                    LastName = importMember.LastName,
+                    TimeZone = chapter.TimeZone
+                });
+
+                if (chapterLocation != null)
+                {
+                    _unitOfWork.MemberLocationRepository.Add(new MemberLocation
+                    {
+                        CountryId = chapter.CountryId,
+                        Latitude = chapterLocation.Latitude,
+                        Longitude = chapterLocation.Longitude,
+                        MemberId = member.Id,
+                        Name = chapterLocation.Name
+                    });
+                }
+
+                if (currency != null)
+                {
+                    _unitOfWork.MemberPaymentSettingsRepository.Add(new MemberPaymentSettings
+                    {
+                        CurrencyId = currency.Id,
+                        MemberId = member.Id
+                    });
+                }
+
+                var distanceUnitType = country != null
+                    ? country.DistanceUnit
+                    : _distanceUnitFactory.GetDefault().Type;
+
+                _unitOfWork.MemberPreferencesRepository.Add(new MemberPreferences
+                {
+                    DistanceUnit = distanceUnitType,
+                    MemberId = member.Id
+                });
+
+                _unitOfWork.MemberSiteSubscriptionRepository.Add(new MemberSiteSubscription
+                {
+                    MemberId = member.Id,
+                    SiteSubscriptionId = siteSubscription.Id
+                });
+
+                var activationToken = TokenGenerator.GenerateBase64Token(64);
+                _unitOfWork.MemberActivationTokenRepository.Add(new MemberActivationToken
+                {
+                    ActivationToken = activationToken,
+                    MemberId = member.Id
+                });
+
+                pendingActivationMembers.Add(member, activationToken);
+            }
+            else
+            {
+                invitedMembers.Add(member);
+            }
+
+            var memberChapter = _unitOfWork.MemberChapterRepository.Add(new MemberChapter
+            {
+                Approved = true,
+                ChapterId = chapter.Id,
+                CreatedUtc = utcNow,
+                MemberId = member.Id
+            });
+
+            _unitOfWork.MemberSubscriptionRepository.Add(new MemberSubscription
+            {
+                ExpiresUtc = membershipSettings?.TrialPeriodMonths > 0 
+                    ? utcNow.AddMonths(membershipSettings.TrialPeriodMonths) 
+                    : null,
+                MemberChapterId = memberChapter.Id,
+                Type = membershipSettings?.TrialPeriodMonths > 0 
+                    ? SubscriptionType.Trial 
+                    : SubscriptionType.Free
+            });
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+
+        foreach (var kvp in pendingActivationMembers)
+        {
+            var (member, activationToken) = (kvp.Key, kvp.Value);
+
+            await _memberEmailService.SendActivationEmail(request, chapter, member, activationToken);
+        }
+
+        foreach (var member in invitedMembers)
+        {
+            await _memberEmailService.SendChapterInviteEmail(request, member);
+        }
+
+        return ServiceResult.Successful();
     }
 
     public async Task<ServiceResult> RemoveMemberFromChapter(

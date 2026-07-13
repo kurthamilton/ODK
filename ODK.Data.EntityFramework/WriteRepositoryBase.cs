@@ -12,7 +12,11 @@ public abstract class WriteRepositoryBase<T> : RepositoryBase, IWriteRepository<
     {
     }
 
-    public virtual void Add(T entity) => AddSingle(entity);
+    public virtual T Add(T entity)
+    {
+        AddSingle(entity);
+        return entity;
+    }
 
     public virtual void AddMany(IEnumerable<T> entities) => base.AddMany(entities);
 

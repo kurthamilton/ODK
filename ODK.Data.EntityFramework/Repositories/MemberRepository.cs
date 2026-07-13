@@ -3,6 +3,7 @@ using ODK.Core.Members;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Members;
 using ODK.Data.Core.QueryBuilders;
+using ODK.Data.Core.QueryBuilders.QueryOptions;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.QueryBuilders;
 
@@ -22,7 +23,10 @@ public class MemberRepository : ReadWriteRepositoryBase<Member, IMemberQueryBuil
 
     public IDeferredQueryMultiple<MemberWithAvatarDto> GetAllWithAvatarByChapterId(Guid chapterId)
         => Query()
-            .InChapter(chapterId)
+            .InChapter(chapterId, new MemberChapterQueryOptions 
+            { 
+                IncludeInactive = true
+            })
             .WithAvatar()
             .GetAll();
 

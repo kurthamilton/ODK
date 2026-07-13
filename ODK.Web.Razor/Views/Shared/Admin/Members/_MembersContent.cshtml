@@ -69,14 +69,21 @@
                     }
 
                     var selected = statuses.Length > 0
-                    ? statuses.Contains(status.ToString().ToLowerInvariant())
-                    : true;
+                        ? statuses.Contains(status.ToString().ToLowerInvariant())
+                        : true;
 
                     <option selected="@(selected ? "" : null)">@status</option>
                 }
             </select>
         </div>
         <div class="col ms-auto align-self-end">
+            @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+            {
+                Icon = IconType.Upload,
+                Route = OdkRoutes.GroupAdmin.MembersImport(Model.Chapter),
+                Text = "Import members",
+                UnauthorizedBehaviour = AdminLinkUnauthorizedBehaviour.Hide
+            })
             @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
             {
                 Icon = IconType.Excel,
@@ -117,40 +124,40 @@
                             Version = dto.AvatarVersion,
                             Width = 30,
                         })
-                </td>
-                <td>
-                    <span class="d-none" data-sort-value="@member.FullName"></span>
-                    @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
-                    {
-                        Route = OdkRoutes.GroupAdmin.Member(Model.Chapter, member.Id),
-                        Text = member.GetDisplayName(Model.Chapter.Id)
-                    })
-                </td>
-                <td>@(subscription?.Type ?? SubscriptionType.Full)</td>
-                <td>
-                    <span class="d-none" data-sort-value="@(subscription?.ExpiresUtc?.ToString("yyyy-MM-dd") ?? "")"></span>
-                    <span class="
-                        @(subscription?.ExpiresUtc < DateTime.Today ? "text-danger" : null)
-                        @(subscription?.ExpiresUtc < subscriptionWarningDate ? "text-warning" : null)">
-                        @subscription?.ExpiresUtc?.ToString("yyyy-MM-dd")
-                    </span>
-                </td>
-                <td>@status</td>
-                <td>
-                    @if (!optOutMemberIds.Contains(member.Id))
+                    </td>
+                    <td>
+                        <span class="d-none" data-sort-value="@member.FullName"></span>
+                        @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                        {
+                            Route = OdkRoutes.GroupAdmin.Member(Model.Chapter, member.Id),
+                            Text = member.GetDisplayName(Model.Chapter.Id)
+                        })
+                    </td>
+                    <td>@(subscription?.Type ?? SubscriptionType.Full)</td>
+                    <td>
+                        <span class="d-none" data-sort-value="@(subscription?.ExpiresUtc?.ToString("yyyy-MM-dd") ?? "")"></span>
+                        <span class="
+                            @(subscription?.ExpiresUtc < DateTime.Today ? "text-danger" : null)
+                            @(subscription?.ExpiresUtc < subscriptionWarningDate ? "text-warning" : null)">
+                            @subscription?.ExpiresUtc?.ToString("yyyy-MM-dd")
+                        </span>
+                    </td>
+                    <td>@status</td>
+                    <td>
+                        @if (!optOutMemberIds.Contains(member.Id))
                         {
                             @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.CheckCircle)
                             {
                                 Class = "text-success"
-                                        })
-                                        }
+                            })
+                        }
                         else
                         {
                             @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.TimesCircle)
                             {
                                 Class = "text-danger"
-                                        })
-                                        }
+                            })
+                        }
                     </td>
                     <td>
                         @if (!member.Activated)

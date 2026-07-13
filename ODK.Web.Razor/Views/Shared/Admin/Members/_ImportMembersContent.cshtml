@@ -1,0 +1,63 @@
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin.Members
+@using ODK.Web.Razor.Models.Components
+@inject IOdkRoutes OdkRoutes
+@model MemberImportViewModel
+@{
+    var preview = Model.Preview;    
+}
+
+<div data-wizard-form>
+    @await Html.PartialAsync("Components/_Wizard", new WizardViewModel
+    {
+        Id = "member-import",
+        Pages = new[]
+        {
+            new WizardPageViewModel
+            {
+                Title = "Upload",
+                ButtonSubmit = "#upload-form",
+                Selected = preview == null,
+                Url = OdkRoutes.GroupAdmin.MembersImport(Model.Chapter).Path,
+                ContentFunc = 
+                    @<div>
+                        @*Don't render the preview page if we are previewing to avoid messing up the outer form validation.
+                        This wizard page is reloaded by a navigation, so no need to persist data.*@
+                        @if (preview == null)
+                        {                 
+                            <form id="upload-form" method="post" enctype="multipart/form-data">
+                                @await Html.PartialAsync("Admin/Members/_ImportMembersUpload", new MemberImportUploadViewModel
+                                {
+                                    Chapter = Model.Chapter
+                                })
+                            </form>                        
+                        }                        
+                    </div>
+            },
+            new WizardPageViewModel
+            {
+                Title = "Review",
+                Selected = preview != null,
+                ContentFunc =
+                    @<div>
+                        @if (preview != null)
+                        {
+                            @await Html.PartialAsync("Admin/Members/_ImportMembersReview", new MemberImportReviewViewModel
+                            {
+                                Chapter = Model.Chapter,
+                                Members = preview.ImportableRows
+                                    .Select(x => new MemberImportItemViewModel
+                                    {
+                                        EmailAddress = x.Member.EmailAddress,
+                                        FirstName = x.Member.FirstName,
+                                        LastName = x.Member.LastName
+                                    })
+                                    .ToList(),
+                                Preview = preview,
+                            })
+                        }                        
+                    </div>
+            }
+        }
+    })
+</div>

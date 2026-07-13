@@ -216,7 +216,6 @@ public class EmailService : IEmailService
         };
 
         var result = await _emailClient.SendEmail(email);
-
         if (!result.Success)
         {
             throw new OdkServiceException($"Error sending queued email");

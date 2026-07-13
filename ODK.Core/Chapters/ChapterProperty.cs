@@ -4,6 +4,8 @@ namespace ODK.Core.Chapters;
 
 public class ChapterProperty : IDatabaseEntity, IChapterEntity
 {
+    public bool ApplicationOnly { get; set; }
+
     public Guid ChapterId { get; set; }
 
     public DataType DataType { get; set; }
@@ -14,8 +16,6 @@ public class ChapterProperty : IDatabaseEntity, IChapterEntity
 
     public string? HelpText { get; set; }
 
-    public bool ApplicationOnly { get; set; }
-
     public Guid Id { get; set; }
 
     public string Label { get; set; } = string.Empty;
@@ -25,4 +25,6 @@ public class ChapterProperty : IDatabaseEntity, IChapterEntity
     public bool Required { get; set; }
 
     public string? Subtitle { get; set; }
+
+    public string GetDisplayText() => !string.IsNullOrEmpty(DisplayName) ? DisplayName : Label;
 }

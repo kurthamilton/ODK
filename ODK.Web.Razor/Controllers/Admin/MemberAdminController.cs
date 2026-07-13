@@ -2,6 +2,7 @@
 using ODK.Core.Images;
 using ODK.Services;
 using ODK.Services.Chapters;
+using ODK.Services.Files;
 using ODK.Services.Members;
 using ODK.Services.Members.Models;
 using ODK.Services.Security;
@@ -42,7 +43,6 @@ public class MemberAdminController : AdminControllerBase
     public async Task<IActionResult> UpdatePicture(Guid chapterId, Guid id,
         [FromForm] string imageDataUrl)
     {
-
         if (string.IsNullOrEmpty(imageDataUrl))
         {
             AddFeedback("No image provided", FeedbackType.Warning);
@@ -136,7 +136,6 @@ public class MemberAdminController : AdminControllerBase
     public async Task<IActionResult> SendBulkEmail(Guid chapterId,
         [FromForm] SendMemberBulkEmailFormViewModel viewModel)
     {
-
         var filter = new MemberFilter
         {
             Statuses = viewModel.Status,
@@ -148,6 +147,48 @@ public class MemberAdminController : AdminControllerBase
         var result = await _memberAdminService.SendBulkEmail(request, filter, viewModel.Subject, viewModel.Body);
         AddFeedback(result);
         return RedirectToReferrer();
+    }
+
+    [HttpGet("groups/{chapterId:guid}/members/import/template")]
+    public async Task<IActionResult> DownloadMemberImportTemplate(Guid chapterId)
+    {
+        var header = MemberImportModel.GetCsvHeaderRow();
+
+        return DownloadCsv([header], "member-import.csv");
+    }
+
+    [HttpPost("groups/{chapterId:guid}/members/import")]
+    public async Task<IActionResult> ImportMembers(
+        Guid chapterId,
+        [FromForm] MemberImportSubmitViewModel viewModel)
+    {
+        var members = viewModel.Members
+            .Where(x => !string.IsNullOrWhiteSpace(x.EmailAddress))
+            .Select(x => new MemberImportModel
+            {
+                EmailAddress = x.EmailAddress,
+                FirstName = x.FirstName,
+                LastName = x.LastName
+            })
+            .ToArray();
+
+        if (members.Length == 0)
+        {
+            AddFeedback("No members to import", FeedbackType.Warning);
+            return RedirectToReferrer();
+        }
+
+        var request = MemberChapterAdminServiceRequest.Create(
+            ChapterAdminSecurable.MemberImport, MemberChapterServiceRequest);
+        var result = await _memberAdminService.ImportMembers(request, members);
+        AddFeedback(result, "Members imported");
+
+        if (!result.Success)
+        {
+            return RedirectToReferrer();
+        }
+
+        return Redirect(OdkRoutes.GroupAdmin.Members(Chapter).Path);
     }
 
     [HttpPost("groups/{chapterId:guid}/members/subscriptions/{id:guid}/delete")]

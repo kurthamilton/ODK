@@ -1,0 +1,94 @@
+﻿@using ODK.Core.Utils
+@using ODK.Services.Members.Models
+@using ODK.Web.Razor.Models.Admin.Members
+@using ODK.Web.Razor.Models.Components
+@model MemberImportReviewViewModel
+@{
+    var preview = Model.Preview;
+    var importableRows = preview.ImportableRows.ToArray();
+    var canImport = importableRows.Length > 0;
+
+    (string Label, string CssClass) StatusBadge(MemberImportRowStatus status) => status switch
+    {
+        MemberImportRowStatus.New => ("New", "bg-success"),
+        MemberImportRowStatus.ExistingNotInGroup => ("Add to group", "bg-primary"),
+        MemberImportRowStatus.ExistingInGroup => ("Already in group", "bg-secondary"),
+        _ => (status.ToString(), "bg-secondary")
+    };
+}
+
+<p>
+    <span class="badge bg-success">@preview.NewCount new</span>
+    <span class="badge bg-primary">@preview.ExistingNotInGroupCount existing to add</span>
+    <span class="badge bg-secondary">@preview.ExistingInGroupCount already in group</span>
+</p>
+
+<div class="table-responsive">
+    <table class="table" data-table-striped>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in preview.Rows)
+            {
+                var (label, cssClass) = StatusBadge(row.Status);
+                var skipped = row.Status == MemberImportRowStatus.ExistingInGroup;
+
+                <tr class="@(skipped ? "text-muted" : null)">
+                    <td>@row.Member.FirstName @row.Member.LastName</td>
+                    <td>@row.Member.EmailAddress</td>
+                    <td><span class="badge @cssClass">@label</span></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@if (canImport)
+{
+    <p>
+        <span>You're about to import </span>
+        <strong>@importableRows.Length @StringUtils.Pluralise(importableRows.Length, "member")</strong>:
+    </p>
+    <ul>
+        @if (preview.NewCount > 0)
+        {
+            <li>
+                @preview.NewCount new @StringUtils.Pluralise(preview.NewCount, "member")
+            </li>
+        }
+
+        @if (preview.ExistingNotInGroupCount > 0)
+        {
+            <li>
+                @preview.ExistingNotInGroupCount existing @StringUtils.Pluralise(preview.ExistingNotInGroupCount, "member") added to the group
+            </li>
+        }
+
+        @if (preview.ExistingInGroupCount > 0)
+        {
+            <li>
+                @preview.ExistingInGroupCount already in the group will be skipped.
+            </li>
+        }
+    </ul>
+
+    <form method="post" action="/groups/@Model.Chapter.Id/members/import">
+        @for (var i = 0; i < importableRows.Length; i++)
+        {
+            var row = importableRows[i];
+            @Html.HiddenFor(x => x.Members[i].FirstName)
+            @Html.HiddenFor(x => x.Members[i].LastName)
+            @Html.HiddenFor(x => x.Members[i].EmailAddress)
+        }
+
+        <button type="submit" class="btn btn-primary">
+            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Upload))
+            <span>Import</span>
+        </button>
+    </form>
+}

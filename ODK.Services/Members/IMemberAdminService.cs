@@ -25,6 +25,9 @@ public interface IMemberAdminService
     Task<IReadOnlyCollection<IReadOnlyCollection<string>>> GetMemberCsv(
         IMemberChapterAdminServiceRequest request);
 
+    Task<MemberImportPreview> GetMemberImportPreview(
+        IMemberChapterAdminServiceRequest request, IReadOnlyCollection<MemberImportModel> members);
+
     Task<MemberDeleteAdminPageViewModel> GetMemberDeleteViewModel(
         IMemberChapterAdminServiceRequest request, Guid memberId);
 
@@ -49,6 +52,8 @@ public interface IMemberAdminService
     Task<MembersAdminPageViewModel> GetMembersViewModel(IMemberChapterAdminServiceRequest request);
 
     Task<MemberAdminPageViewModel> GetMemberViewModel(IMemberChapterAdminServiceRequest request, Guid memberId);
+
+    Task<ServiceResult> ImportMembers(IMemberChapterAdminServiceRequest request, IReadOnlyCollection<MemberImportModel> members);
 
     Task<ServiceResult> RemoveMemberFromChapter(IMemberChapterAdminServiceRequest request, Guid memberId, string? reason);
 

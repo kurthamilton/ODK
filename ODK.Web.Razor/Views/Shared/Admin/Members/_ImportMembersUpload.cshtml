@@ -1,0 +1,46 @@
+﻿@using ODK.Services.Members.Models
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Admin.Members
+@using ODK.Web.Razor.Models.Components
+@model MemberImportUploadViewModel
+@inject IOdkRoutes OdkRoutes
+@{
+    var csvHeader = MemberImportModel.GetCsvHeaderRow();
+}
+
+<p>
+    Upload a CSV file to preview which members will be added before importing.
+</p>
+
+<p>
+    <span>The file must contain </span>
+    @for (var i = 0; i < csvHeader.Count; i++)
+    {
+        var column = csvHeader.ElementAt(i);
+        <code>@column</code>
+        @if (i < csvHeader.Count - 1)
+        {
+            <span>, </span>
+        }
+    }
+    <span>columns.</span>
+</p>
+
+<p>
+    @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+    {
+        Icon = IconType.Excel,
+        Route = OdkRoutes.GroupAdmin.MembersImportTemplateDownload(Model.Chapter),
+        Text = "Download template"
+    })
+</p>
+<div class="mb-3">
+    @Html.TextBoxFor(x => x.File, new
+    {
+        type = "file",
+        accept = ".csv",
+        @class = "form-control"
+    })
+    @Html.ValidationMessageFor(x => x.File)
+</div>

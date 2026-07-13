@@ -22,6 +22,7 @@ public static class ChapterAdminSecurableExtensions
         ChapterAdminSecurable.MemberEventResponses => ChapterAdminRole.Organiser,
         ChapterAdminSecurable.MemberExport => ChapterAdminRole.Admin,
         ChapterAdminSecurable.MemberImage => ChapterAdminRole.Admin,
+        ChapterAdminSecurable.MemberImport => ChapterAdminRole.Admin,
         ChapterAdminSecurable.Members => ChapterAdminRole.Organiser,
         ChapterAdminSecurable.MembershipSettings => ChapterAdminRole.Admin,
         ChapterAdminSecurable.Pages => ChapterAdminRole.Admin,

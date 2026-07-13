@@ -8,6 +8,11 @@
 
     var showMenu = Model.Pages
         .All(x => !string.IsNullOrEmpty(x.Title));
+
+    var selectedIndex = Model.Pages
+        .Select((x, i) => new { x.Selected, Index = i })
+        .FirstOrDefault(x => x.Selected)
+        ?.Index ?? 0;
 }
 
 <div class="accordion accordion--transition-0" id="@baseId" data-wizard>
@@ -16,7 +21,7 @@
         var page = Model.Pages.ElementAt(i);
         var id = pageIds[i];
 
-        <div id="@id" class="collapse @(i == 0 ? "show" : null)"
+        <div id="@id" class="collapse @(i == selectedIndex ? "show" : null)"
              data-bs-parent="#@baseId" data-wizard-page="@i">
             
             @if (showMenu)
@@ -29,12 +34,23 @@
 
                         var active = j == i;
                         var disabled = j > i;
+                        var url = menuPage.Url;
 
                         <li class="nav-item">
-                            <button class="nav-link @(active ? "active" : null) @(disabled ? "disabled" : null)" 
-                                    data-bs-toggle="collapse" data-bs-target="#@menuPageId" type="button">
-                                @menuPage.Title
-                            </button>
+                            @if (!string.IsNullOrEmpty(url))
+                            {
+                                <a class="nav-link @(active ? "active" : null) @(disabled ? "disabled" : null)"
+                                    href="@url">
+                                    @menuPage.Title
+                                </a>
+                            }
+                            else
+                            {
+                                <button class="nav-link @(active ? "active" : null) @(disabled ? "disabled" : null)"
+                                        data-bs-toggle="collapse" data-bs-target="#@menuPageId" type="button">
+                                    @menuPage.Title
+                                </button>
+                            }
                         </li>
                     }
                 </ul>
@@ -45,14 +61,26 @@
             @if (i < Model.Pages.Count - 1)
             {
                 var nextId = pageIds[i + 1];
+                var buttonText = !string.IsNullOrEmpty(page.ButtonText)
+                    ? page.ButtonText
+                    : "Next";
 
                 <div class="d-flex justify-content-end">
-                    <button type="button" class="btn btn-primary" 
-                        data-bs-toggle="collapse" data-bs-target="#@nextId"
-                        data-wizard-validate>
-                        <span>Next</span>
-                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.ChevronRight))
-                    </button>
+                    @if (!string.IsNullOrEmpty(page.ButtonSubmit))
+                    {
+                        <button type="submit" class="btn btn-primary" data-submit="@(page.ButtonSubmit)">
+                            <span>@buttonText</span>
+                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.ChevronRight))
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button" class="btn btn-primary"
+                                data-bs-toggle="collapse" data-bs-target="#@nextId">
+                            <span>@buttonText</span>
+                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.ChevronRight))
+                        </button>
+                    }
                 </div>
             }
 

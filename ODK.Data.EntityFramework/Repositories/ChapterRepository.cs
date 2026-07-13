@@ -66,7 +66,7 @@ public class ChapterRepository : WriteRepositoryBase<Chapter>, IChapterRepositor
             .GetAll();
 
     public IDeferredQuerySingleOrDefault<Chapter> GetBySlug(PlatformType platform, string slug)
-        => Query(platform, includeUnpublished: false)
+        => Query(platform, includeUnpublished: true)
             .ForSlug(slug)
             .GetSingleOrDefault();
 

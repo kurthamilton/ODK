@@ -1,58 +1,59 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>aspnet-ODK.Web.Razor-885db159-c982-4fde-b49e-baf69b1293fb</UserSecretsId>
-    <DefaultItemExcludes>$(DefaultItemExcludes);node_modules\**</DefaultItemExcludes>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<UserSecretsId>aspnet-ODK.Web.Razor-885db159-c982-4fde-b49e-baf69b1293fb</UserSecretsId>
+		<DefaultItemExcludes>$(DefaultItemExcludes);node_modules\**</DefaultItemExcludes>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="Pages\Groups\Admin\**" />
-    <Compile Remove="wwwroot\lib\vanillajs-datepicker\**" />
-    <Content Remove="Pages\Groups\Admin\**" />
-    <Content Remove="wwwroot\lib\vanillajs-datepicker\**" />
-    <EmbeddedResource Remove="Pages\Groups\Admin\**" />
-    <EmbeddedResource Remove="wwwroot\lib\vanillajs-datepicker\**" />
-    <None Remove="Pages\Groups\Admin\**" />
-    <None Remove="wwwroot\lib\vanillajs-datepicker\**" />
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Remove="Pages\Groups\Admin\**" />
+		<Compile Remove="wwwroot\lib\vanillajs-datepicker\**" />
+		<Content Remove="Pages\Groups\Admin\**" />
+		<Content Remove="wwwroot\lib\vanillajs-datepicker\**" />
+		<EmbeddedResource Remove="Pages\Groups\Admin\**" />
+		<EmbeddedResource Remove="wwwroot\lib\vanillajs-datepicker\**" />
+		<None Remove="Pages\Groups\Admin\**" />
+		<None Remove="wwwroot\lib\vanillajs-datepicker\**" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="BetterStack.Logs.Serilog" Version="1.2.0" />
-    <PackageReference Include="GitInfo" Version="3.6.1">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Hangfire.AspNetCore" Version="1.8.23" />
-    <PackageReference Include="Hangfire.InMemory" Version="1.0.0" />
-    <PackageReference Include="Hangfire.SqlServer" Version="1.8.23" />
-    <PackageReference Include="LigerShark.WebOptimizer.Core" Version="3.0.477" />
-    <PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="3.0.114" />
-    <PackageReference Include="Serilog" Version="4.3.1" />
-    <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
-    <PackageReference Include="Serilog.Enrichers.ClientInfo" Version="2.9.0" />
-    <PackageReference Include="Serilog.Extensions.Hosting" Version="10.0.0" />
-    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
-    <PackageReference Include="Serilog.Sinks.MSSqlServer" Version="10.0.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="BetterStack.Logs.Serilog" Version="1.2.0" />
+		<PackageReference Include="CsvHelper" Version="33.1.0" />
+		<PackageReference Include="GitInfo" Version="3.6.1">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Hangfire.AspNetCore" Version="1.8.23" />
+		<PackageReference Include="Hangfire.InMemory" Version="1.0.0" />
+		<PackageReference Include="Hangfire.SqlServer" Version="1.8.23" />
+		<PackageReference Include="LigerShark.WebOptimizer.Core" Version="3.0.477" />
+		<PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="3.0.114" />
+		<PackageReference Include="Serilog" Version="4.3.1" />
+		<PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
+		<PackageReference Include="Serilog.Enrichers.ClientInfo" Version="2.9.0" />
+		<PackageReference Include="Serilog.Extensions.Hosting" Version="10.0.0" />
+		<PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+		<PackageReference Include="Serilog.Sinks.MSSqlServer" Version="10.0.0" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="wwwroot\assets\stock\" />
-    <Folder Include="wwwroot\lib\" />
-  </ItemGroup>
+	<ItemGroup>
+		<Folder Include="wwwroot\assets\stock\" />
+		<Folder Include="wwwroot\lib\" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\ODK.Core\ODK.Core.csproj" />
-    <ProjectReference Include="..\ODK.Infrastructure\ODK.Infrastructure.csproj" />
-    <ProjectReference Include="..\ODK.Web.Common\ODK.Web.Common.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\ODK.Core\ODK.Core.csproj" />
+		<ProjectReference Include="..\ODK.Infrastructure\ODK.Infrastructure.csproj" />
+		<ProjectReference Include="..\ODK.Web.Common\ODK.Web.Common.csproj" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Content Update="Pages\Account\Pending.cshtml">
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-  </ItemGroup>
+	<ItemGroup>
+		<Content Update="Pages\Account\Pending.cshtml">
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
+	</ItemGroup>
 </Project>
