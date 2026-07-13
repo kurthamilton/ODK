@@ -1,18 +1,21 @@
 ﻿(function () {
     const $wizards = document.querySelectorAll('[data-wizard]');
     $wizards.forEach($wizard => {
-        $wizard.setAttribute('data-wizard-active', 0);
-
-        const v = new aspnetValidation.ValidationService();
-        v.bootstrap();
-
         const $pages = $wizard.querySelectorAll('[data-wizard-page]');
 
-        const $form = $wizard.closest('form');
+        // Respect the server-rendered active page (the one marked `show`) so a wizard rehydrated
+        // mid-flow (e.g. after a cross-request post) doesn't reset to page 0 and block its submit.
+        const $shownPage = $wizard.querySelector('[data-wizard-page].show');
+        const initialPage = $shownPage
+            ? parseInt($shownPage.getAttribute('data-wizard-page'))
+            : 0;
+        $wizard.setAttribute('data-wizard-active', initialPage);
+
+        const $form = $wizard.closest('[data-wizard-form]');
         $form.addEventListener('submit', e => {
             const activePage = parseInt($wizard.getAttribute('data-wizard-active'));
             if (activePage < $pages.length - 1) e.preventDefault();
-        });
+        });     
 
         // move to the next page via keyboard carriage return
         $form.addEventListener('keydown', (e) => {
@@ -49,6 +52,9 @@
         }
 
         function validateForm() {
+            if ($form.tagName !== 'FORM') return true;
+
+            const v = window.odk.forms.validationService;
             v.validateForm($form);
 
             const activePage = getActivePage();

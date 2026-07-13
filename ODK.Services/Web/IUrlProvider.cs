@@ -8,6 +8,8 @@ public interface IUrlProvider
 
     string BaseUrl();
 
+    string ChapterSubscription(Chapter chapter);
+
     string ConfirmEmailAddressUpdate(Chapter? chapter, string token);
 
     string ConversationAdminUrl(Chapter chapter, Guid conversationId);

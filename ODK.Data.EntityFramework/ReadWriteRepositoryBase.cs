@@ -45,11 +45,11 @@ public abstract class ReadWriteRepositoryBase<T, TBuilder> : WriteRepositoryBase
     {
     }
 
-    public override void Add(T entity)
+    public override T Add(T entity)
     {
         SetId(entity);
 
-        base.Add(entity);
+        return base.Add(entity);
     }
 
     public override void AddMany(IEnumerable<T> entities)

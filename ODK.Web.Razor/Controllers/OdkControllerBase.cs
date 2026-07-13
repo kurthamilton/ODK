@@ -1,7 +1,4 @@
-﻿using System.Globalization;
-using System.Text;
-using CsvHelper;
-using CsvHelper.Configuration;
+﻿using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Chapters;
 using ODK.Core.Members;
@@ -12,6 +9,7 @@ using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
 using ODK.Web.Razor.Extensions;
 using ODK.Web.Razor.Models.Feedback;
+using ODK.Web.Razor.Services;
 
 namespace ODK.Web.Razor.Controllers;
 
@@ -97,27 +95,7 @@ public abstract class OdkControllerBase : Controller
     }
 
     protected ServiceResult<IReadOnlyCollection<T>> ReadCsv<T>(IFormFile file)
-    {
-        if (!ValidateCsvFile(file, out var error))
-        {
-            return ServiceResult<IReadOnlyCollection<T>>.Failure(error);
-        }
-
-        var config = new CsvConfiguration(CultureInfo.InvariantCulture)
-        {
-            HasHeaderRecord = true,
-            TrimOptions = TrimOptions.Trim,
-            MissingFieldFound = null,
-            HeaderValidated = null
-        };
-
-        using var stream = file.OpenReadStream();
-        using var reader = new StreamReader(stream, Encoding.UTF8);
-        using var csv = new CsvReader(reader, config);
-
-        var records = csv.GetRecords<T>().ToList();
-        return ServiceResult<IReadOnlyCollection<T>>.Successful(records);
-    }
+        => CsvFileReader.Read<T>(file);
 
     protected IActionResult RedirectToReferrer(string? fallback = null)
     {
@@ -132,30 +110,4 @@ public abstract class OdkControllerBase : Controller
         return Redirect(url);
     }
 
-    private bool ValidateCsvFile(IFormFile? file, out string error)
-    {
-        error = string.Empty;
-
-        if (file is null || file.Length == 0)
-        {
-            error = "No file uploaded";
-            return false;
-        }
-
-        var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
-        if (ext != ".csv")
-        {
-            error = "Only .csv files are allowed.";
-            return false;
-        }
-
-        var allowedMimeTypes = new[] { "text/csv", "application/vnd.ms-excel", "text/plain" };
-        if (!allowedMimeTypes.Contains(file.ContentType.ToLowerInvariant()))
-        {
-            error = $"Invalid content type: {file.ContentType}";
-            return false;
-        }
-
-        return true;
-    }
 }

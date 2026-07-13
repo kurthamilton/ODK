@@ -1,0 +1,32 @@
+@page "/{chapterName}/admin/members/import"
+@using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Admin.Members
+@using ODK.Web.Razor.Models.Components
+@model ImportMembersModel
+@{
+    Layout = "_OdkChapterAdminLayout";
+    Model.Title = "Import members | Admin";
+}
+
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    Title = "Import members",
+    Breadcrumbs = new[]
+    {
+        new MenuItem
+        {
+            Link = Model.AdminRoutes.Members(Model.Chapter).Path,
+            Text = "Members"
+        },
+        new MenuItem { Text = "Import" }
+    },
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_ImportMembersContent", new MemberImportViewModel
+    {
+        Chapter = Model.Chapter,
+        Preview = Model.Preview
+    })</div>
+})
+
+@section scripts {
+    <script src="~/js/odk.wizard.js" asp-append-version="true"></script>
+}

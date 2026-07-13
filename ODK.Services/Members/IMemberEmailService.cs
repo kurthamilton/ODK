@@ -39,6 +39,10 @@ public interface IMemberEmailService
         IReadOnlyCollection<Member> to,
         bool isReply);
 
+    Task SendChapterInviteEmail(
+        IChapterServiceRequest request,
+        Member member);
+
     Task SendChapterMessage(
         IChapterServiceRequest request,
         IReadOnlyCollection<ChapterAdminMember> adminMembers,

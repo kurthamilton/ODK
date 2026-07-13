@@ -2,6 +2,7 @@
 using ODK.Core.Images;
 using ODK.Services;
 using ODK.Services.Chapters;
+using ODK.Services.Files;
 using ODK.Services.Members;
 using ODK.Services.Members.Models;
 using ODK.Services.Security;
@@ -148,16 +149,46 @@ public class MemberAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("groups/{chapterId:guid}/members/import")]
-    public async Task<IActionResult> ImportMembers(Guid chapterId, IFormFile file)
+    [HttpGet("groups/{chapterId:guid}/members/import/template")]
+    public async Task<IActionResult> DownloadMemberImportTemplate(Guid chapterId)
     {
-        var csv = await ReadBodyText();
+        var header = MemberImportModel.GetCsvHeaderRow();
+
+        return DownloadCsv([header], "member-import.csv");
+    }
+
+    [HttpPost("groups/{chapterId:guid}/members/import")]
+    public async Task<IActionResult> ImportMembers(
+        Guid chapterId,
+        [FromForm] MemberImportSubmitViewModel viewModel)
+    {
+        var members = viewModel.Members
+            .Where(x => !string.IsNullOrWhiteSpace(x.EmailAddress))
+            .Select(x => new MemberImportModel
+            {
+                EmailAddress = x.EmailAddress,
+                FirstName = x.FirstName,
+                LastName = x.LastName
+            })
+            .ToArray();
+
+        if (members.Length == 0)
+        {
+            AddFeedback("No members to import", FeedbackType.Warning);
+            return RedirectToReferrer();
+        }
 
         var request = MemberChapterAdminServiceRequest.Create(
-            ChapterAdminSecurable.BulkEmail, MemberChapterServiceRequest);
-        var result = await _memberAdminService.SendBulkEmail(request, filter, viewModel.Subject, viewModel.Body);
-        AddFeedback(result);
-        return RedirectToReferrer();
+            ChapterAdminSecurable.MemberImport, MemberChapterServiceRequest);
+        var result = await _memberAdminService.ImportMembers(request, members);
+        AddFeedback(result, "Members imported");
+
+        if (!result.Success)
+        {
+            return RedirectToReferrer();
+        }
+
+        return Redirect(OdkRoutes.GroupAdmin.Members(Chapter).Path);
     }
 
     [HttpPost("groups/{chapterId:guid}/members/subscriptions/{id:guid}/delete")]

@@ -1,0 +1,36 @@
+@page "/my/groups/{chapterId:guid}/members/import"
+@using ODK.Web.Razor.Models.Admin.Members
+@using ODK.Web.Razor.Models.Components
+@model ImportModel
+@{
+    Layout = "_GroupAdminLayout";
+    Model.Title = "Import members";
+}
+
+@await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
+{
+    Title = "Import members",
+    Breadcrumbs = new BreadcrumbsViewModel
+    {
+        Breadcrumbs = new[]
+        {
+            new MenuItem
+            {
+                Link = Model.OdkRoutes.GroupAdmin.Members(Model.Chapter).Path,
+                Text = "Back to members",
+                Icon = IconType.ArrowLeft
+            }
+        }
+    },
+    BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_ImportMembersContent", new MemberImportViewModel
+    {
+        Chapter = Model.Chapter,
+        Preview = Model.Preview
+    })</div>,
+    MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu")
+})
+
+@section scripts 
+{
+    <script src="~/js/odk.wizard.js" asp-append-version="true"></script>
+}

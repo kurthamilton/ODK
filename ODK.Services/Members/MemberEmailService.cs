@@ -136,6 +136,33 @@ public class MemberEmailService : IMemberEmailService
         await _emailService.SendEmail(request, chapter, addressees, subject, body, parameters);
     }
 
+    public async Task SendChapterInviteEmail(
+        IChapterServiceRequest request,
+        Member member)
+    {
+        var chapter = request.Chapter;
+
+        var subject = "You have been added to a group - {title}";
+
+        var body = new EmailBodyBuilder()
+            .AddParagraph("You have been added to {chapter.name}.")
+            .AddParagraph("Manage your chapter membership using the link below.")
+            .AddParagraphLink("url")
+            .ToString();
+
+        var urlProvider = await _urlProviderFactory.Create(request);
+        var url = urlProvider.ChapterSubscription(chapter);
+
+        var parameters = new Dictionary<string, string>
+        {
+            { "url", url }
+        };
+
+        var to = member.ToEmailAddressee();
+
+        await _emailService.SendEmail(request, chapter, [to], subject, body, parameters);
+    }
+
     public async Task SendChapterMessage(
         IChapterServiceRequest request,
         IReadOnlyCollection<ChapterAdminMember> adminMembers,
@@ -357,7 +384,7 @@ public class MemberEmailService : IMemberEmailService
         IMemberChapterServiceRequest request,
         string activationToken)
     {
-        var (platform, chapter, member) = (request.Platform, request.Chapter, request.CurrentMember);
+        var (chapter, member) = (request.Chapter, request.CurrentMember);
 
         var urlProvider = await _urlProviderFactory.Create(request);
         var url = urlProvider.ActivateAccountUrl(chapter, activationToken);

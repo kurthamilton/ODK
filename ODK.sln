@@ -28,6 +28,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0C91C40C-E42B-4636-B36B-021F7B7EE13A}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		CLAUDE.md = CLAUDE.md
 		README.md = README.md
 	EndProjectSection
 EndProject

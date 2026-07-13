@@ -62,7 +62,7 @@ public class AuthorizationService : IAuthorizationService
     {
         if (member == null || !member.IsCurrent())
         {
-            return SubscriptionStatus.Disabled;
+            return SubscriptionStatus.Unactivated;
         }
 
         if (membershipSettings?.Enabled != true)

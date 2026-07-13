@@ -530,6 +530,50 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         };
     }
 
+    public async Task<MemberImportPreview> GetMemberImportPreview(
+        IMemberChapterAdminServiceRequest request, IReadOnlyCollection<MemberImportModel> members)
+    {
+        var chapter = request.Chapter;
+
+        var emailAddresses = members
+            .Select(x => x.EmailAddress)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        var existingMembers = await GetChapterAdminRestrictedContent(request,
+            x => x.MemberRepository
+                .Query()
+                .HasEmailAddress(emailAddresses)
+                .GetAll());
+
+        var existingMemberDictionary = existingMembers
+            .ToDictionary(x => x.EmailAddress, StringComparer.OrdinalIgnoreCase);
+
+        var rows = members
+            .Select(x =>
+            {
+                existingMemberDictionary.TryGetValue(x.EmailAddress, out var member);
+
+                var status = member == null
+                    ? MemberImportRowStatus.New
+                    : member.IsMemberOf(chapter.Id)
+                        ? MemberImportRowStatus.ExistingInGroup
+                        : MemberImportRowStatus.ExistingNotInGroup;
+
+                return new MemberImportPreviewRow
+                {
+                    Member = x,
+                    Status = status
+                };
+            })
+            .ToList();
+
+        return new MemberImportPreview
+        {
+            Rows = rows
+        };
+    }
+
     public async Task<ServiceResult> ImportMembers(IMemberChapterAdminServiceRequest request, IReadOnlyCollection<MemberImportModel> members)
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
@@ -539,7 +583,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
-        var (siteSubscription, chapterLocation, currency, country, existingMembers) = await GetChapterAdminRestrictedContent(request,
+        var (siteSubscription, chapterLocation, currency, country, existingMembers, membershipSettings) = await GetChapterAdminRestrictedContent(request,
             x => x.SiteSubscriptionRepository.GetDefault(platform),
             x => x.ChapterLocationRepository.GetByChapterId(chapter.Id),
             x => x.CurrencyRepository.GetByChapterId(chapter.Id),
@@ -547,7 +591,8 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             x => x.MemberRepository
                 .Query()
                 .HasEmailAddress(emailAddresses)
-                .GetAll());
+                .GetAll(),
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id));
 
         var existingMemberDictionary = existingMembers
             .ToDictionary(x => x.EmailAddress);
@@ -568,14 +613,14 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
             if (member == null)
             {
-                member = new Member
+                member = _unitOfWork.MemberRepository.Add(new Member
                 {
                     CreatedUtc = utcNow,
                     EmailAddress = importMember.EmailAddress,
                     FirstName = importMember.FirstName,
                     LastName = importMember.LastName,
                     TimeZone = chapter.TimeZone
-                };
+                });
 
                 if (chapterLocation != null)
                 {
@@ -628,18 +673,27 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                 invitedMembers.Add(member);
             }
 
-            _unitOfWork.MemberChapterRepository.Add(new MemberChapter
+            var memberChapter = _unitOfWork.MemberChapterRepository.Add(new MemberChapter
             {
                 Approved = true,
                 ChapterId = chapter.Id,
                 CreatedUtc = utcNow,
                 MemberId = member.Id
             });
+
+            _unitOfWork.MemberSubscriptionRepository.Add(new MemberSubscription
+            {
+                ExpiresUtc = membershipSettings?.TrialPeriodMonths > 0 
+                    ? utcNow.AddMonths(membershipSettings.TrialPeriodMonths) 
+                    : null,
+                MemberChapterId = memberChapter.Id,
+                Type = membershipSettings?.TrialPeriodMonths > 0 
+                    ? SubscriptionType.Trial 
+                    : SubscriptionType.Free
+            });
         }
 
         await _unitOfWork.SaveChangesAsync();
-
-        var serviceRequest = ServiceRequest.Create(request);
 
         foreach (var kvp in pendingActivationMembers)
         {
@@ -648,8 +702,10 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             await _memberEmailService.SendActivationEmail(request, chapter, member, activationToken);
         }
 
-        // TODO: send activation emails to new members, but specifically for members invited by the group
-        // send different email to existing members added to the group
+        foreach (var member in invitedMembers)
+        {
+            await _memberEmailService.SendChapterInviteEmail(request, member);
+        }
 
         return ServiceResult.Successful();
     }
