@@ -12,12 +12,14 @@ using ODK.Services.Events.ViewModels;
 using ODK.Services.Exceptions;
 using ODK.Services.Members.Models;
 using ODK.Services.Members.ViewModels;
+using ODK.Services.Tasks;
 
 namespace ODK.Services.Members;
 
 public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 {
     private readonly IAuthorizationService _authorizationService;
+    private readonly IBackgroundTaskService _backgroundTaskService;
     private readonly IDistanceUnitFactory _distanceUnitFactory;
     private readonly IMemberEmailService _memberEmailService;
     private readonly IMemberImageService _memberImageService;
@@ -30,10 +32,12 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         IAuthorizationService authorizationService,
         IMemberImageService memberImageService,
         IMemberEmailService memberEmailService,
-        IDistanceUnitFactory distanceUnitFactory)
+        IDistanceUnitFactory distanceUnitFactory,
+        IBackgroundTaskService backgroundTaskService)
         : base(unitOfWork)
     {
         _authorizationService = authorizationService;
+        _backgroundTaskService = backgroundTaskService;
         _distanceUnitFactory = distanceUnitFactory;
         _memberEmailService = memberEmailService;
         _memberImageService = memberImageService;
@@ -605,7 +609,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
         var utcNow = DateTime.UtcNow;
 
-        var pendingActivationMembers = new Dictionary<Member, string>();
+        var pendingActivationMembers = new List<Member>();
         var invitedMembers = new List<Member>();
 
         foreach (var importMember in distinctMembers)
@@ -672,7 +676,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                     MemberId = member.Id
                 });
 
-                pendingActivationMembers.Add(member, activationToken);
+                pendingActivationMembers.Add(member);
             }
             else
             {
@@ -701,19 +705,56 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
         await _unitOfWork.SaveChangesAsync();
 
-        foreach (var kvp in pendingActivationMembers)
-        {
-            var (member, activationToken) = (kvp.Key, kvp.Value);
+        // Send the activation/invite emails in the background so a large import doesn't block the request,
+        // and so each email is an independently-retryable job. Only a narrowed request is passed across the
+        // Hangfire boundary; the member/chapter/token are reloaded by id inside each job.
+        var emailRequest = ServiceRequest.Create(request);
 
-            await _memberEmailService.SendActivationEmail(request, chapter, member, activationToken);
+        foreach (var member in pendingActivationMembers)
+        {
+            var memberId = member.Id;
+            _backgroundTaskService.Enqueue(
+                () => SendImportActivationEmail(emailRequest, chapter.Id, memberId),
+                BackgroundTaskQueueType.Emails);
         }
 
         foreach (var member in invitedMembers)
         {
-            await _memberEmailService.SendChapterInviteEmail(request, member);
+            var memberId = member.Id;
+            _backgroundTaskService.Enqueue(
+                () => SendImportInviteEmail(emailRequest, chapter.Id, memberId),
+                BackgroundTaskQueueType.Emails);
         }
 
         return ServiceResult.Successful();
+    }
+
+    // Public for Hangfire
+    public async Task SendImportActivationEmail(IServiceRequest request, Guid chapterId, Guid memberId)
+    {
+        var (member, chapter, activationToken) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(memberId),
+            x => x.ChapterRepository.GetById(request.Platform, chapterId),
+            x => x.MemberActivationTokenRepository.GetByMemberId(memberId));
+
+        // The token is removed once the member activates; there is nothing to send if that has happened.
+        if (activationToken == null)
+        {
+            return;
+        }
+
+        await _memberEmailService.SendActivationEmail(request, chapter, member, activationToken.ActivationToken);
+    }
+
+    // Public for Hangfire
+    public async Task SendImportInviteEmail(IServiceRequest request, Guid chapterId, Guid memberId)
+    {
+        var (member, chapter) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(memberId),
+            x => x.ChapterRepository.GetById(request.Platform, chapterId));
+
+        var chapterRequest = ChapterServiceRequest.Create(chapter, request);
+        await _memberEmailService.SendChapterInviteEmail(chapterRequest, member);
     }
 
     // Collapses import rows that share an email address (case-insensitively) to a single row, keeping
