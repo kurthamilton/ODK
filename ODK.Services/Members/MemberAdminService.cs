@@ -549,7 +549,9 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         var existingMemberDictionary = existingMembers
             .ToDictionary(x => x.EmailAddress, StringComparer.OrdinalIgnoreCase);
 
-        var rows = members
+        var distinctMembers = DistinctByEmailAddress(members);
+
+        var rows = distinctMembers
             .Select(x =>
             {
                 existingMemberDictionary.TryGetValue(x.EmailAddress, out var member);
@@ -595,14 +597,18 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id));
 
         var existingMemberDictionary = existingMembers
-            .ToDictionary(x => x.EmailAddress);
+            .ToDictionary(x => x.EmailAddress, StringComparer.OrdinalIgnoreCase);
+
+        // De-duplicate the incoming rows by email (case-insensitively) so a file that contains the
+        // same address more than once does not create multiple members for it.
+        var distinctMembers = DistinctByEmailAddress(members);
 
         var utcNow = DateTime.UtcNow;
 
         var pendingActivationMembers = new Dictionary<Member, string>();
         var invitedMembers = new List<Member>();
 
-        foreach (var importMember in members)
+        foreach (var importMember in distinctMembers)
         {
             existingMemberDictionary.TryGetValue(importMember.EmailAddress, out var member);
 
@@ -709,6 +715,15 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
         return ServiceResult.Successful();
     }
+
+    // Collapses import rows that share an email address (case-insensitively) to a single row, keeping
+    // the first occurrence. Used by both the preview and the commit so they agree on the row count.
+    private static IReadOnlyCollection<MemberImportModel> DistinctByEmailAddress(
+        IReadOnlyCollection<MemberImportModel> members)
+        => members
+            .GroupBy(x => x.EmailAddress, StringComparer.OrdinalIgnoreCase)
+            .Select(g => g.First())
+            .ToArray();
 
     public async Task<ServiceResult> RemoveMemberFromChapter(
         IMemberChapterAdminServiceRequest request,

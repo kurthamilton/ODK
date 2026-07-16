@@ -10,6 +10,7 @@ using ODK.Core.Countries;
 using ODK.Core.Members;
 using ODK.Core.Notifications;
 using ODK.Core.Platforms;
+using ODK.Core.Subscriptions;
 using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
@@ -527,6 +528,54 @@ public static class MemberAdminServiceTests
         result.Should().HaveCount(2); // Header + 1 member
         result.First().Should().Contain("ID");
         result.First().Should().Contain("FirstName");
+    }
+
+    [Test]
+    public static async Task ImportMembers_WhenFileHasDuplicateEmails_CreatesSingleMember()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(owner: currentMember);
+
+        // A default site subscription is required for the platform when new members are created.
+        context.Create(new SiteSubscription
+        {
+            Id = Guid.NewGuid(),
+            Name = "Default",
+            Description = "",
+            GroupLimit = 10,
+            Enabled = true,
+            Default = true,
+            Platform = PlatformType.Default,
+            SitePaymentSettingId = Guid.NewGuid()
+        });
+
+        var service = CreateMemberAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberImport);
+
+        // The same address twice (differing only in case) must collapse to a single member.
+        var members = new[]
+        {
+            new MemberImportModel { EmailAddress = "new@example.com", FirstName = "New", LastName = "Member" },
+            new MemberImportModel { EmailAddress = "NEW@example.com", FirstName = "Dupe", LastName = "Member" }
+        };
+
+        // Act
+        var result = await service.ImportMembers(request, members);
+
+        // Assert
+        result.Success.Should().BeTrue();
+
+        context.Set<Member>()
+            .Count(x => x.EmailAddress == "new@example.com" || x.EmailAddress == "NEW@example.com")
+            .Should()
+            .Be(1);
     }
 
     private static MemberAdminService CreateMemberAdminService(

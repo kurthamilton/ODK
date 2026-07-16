@@ -48,6 +48,13 @@ public static class CsvFileReader
             return false;
         }
 
+        const long maxBytes = 5 * 1024 * 1024;
+        if (file.Length > maxBytes)
+        {
+            error = "File is too large. The maximum allowed size is 5 MB.";
+            return false;
+        }
+
         var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
         if (ext != ".csv")
         {
