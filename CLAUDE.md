@@ -42,6 +42,14 @@ Tests: `ODK.Core.Tests`, `ODK.Services.Tests`, `ODK.Services.Integrations.Tests`
 
 Project defaults: `net10.0`, nullable enabled, implicit usings enabled.
 
+## Database migrations
+
+EF Core migrations live in `ODK.Data.EntityFramework.Migrations` and are run explicitly (never on app
+start). Add one after changing entity mappings; see that project's `README.md` for the exact commands
+and workflow. **Migration names follow `{TableName}[-{ColumnName}]-{Action}`** (e.g.
+`MemberSubscriptionLog-InitiatorId-Add`) — the naming convention and examples are documented in the
+migrations README.
+
 ## Web architecture
 
 The app is **server-rendered** with minimal client-side JavaScript (Bootstrap + small

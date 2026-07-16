@@ -1,0 +1,56 @@
+name: CI
+
+# Build and test run as separate, self-contained jobs so they surface as two independent status
+# checks. They run in parallel (Test does not need the web project, which only Build compiles), so
+# LibraryManager/CDN restore flakiness in the web build can't fail the test check. Require both as
+# status checks on master to gate merges.
+on:
+  pull_request:
+    branches: [ master ]
+  push:
+    branches: [ master ]
+
+permissions:
+  contents: read
+
+# Cancel an in-progress run for the same PR/branch when new commits are pushed.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore ODK.sln
+
+      - name: Build
+        run: dotnet build ODK.sln --configuration Release --no-restore
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore ODK.sln
+
+      - name: Test
+        run: dotnet test ODK.sln --configuration Release --no-restore --verbosity normal

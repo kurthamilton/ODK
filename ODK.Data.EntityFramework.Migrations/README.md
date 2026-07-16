@@ -32,11 +32,44 @@ initial migration must be recorded as applied **without** running it. Run
 once against each existing database. A brand-new / empty database skips this and gets the
 schema built by applying `InitialCreate` normally.
 
+## Naming convention
+
+Migration names follow:
+
+```
+{TableName}[-{ColumnName}]-{Action}
+```
+
+- **TableName** (required) — the database table affected, e.g. `MemberSubscriptionLog` (the mapped
+  table name, as it appears in the migration's `table:` argument — not the entity name).
+- **ColumnName** (optional) — the column affected. Omit it when the migration acts on the table as a
+  whole (e.g. creating a new table). When a migration adds a *group* of related columns, replace the
+  column name with the feature those columns support (e.g. `GiftSubscriptions`).
+- **Action** (required, PascalCase) — what the migration does. `Add` and `Remove` are unambiguous and
+  can be used as-is. Every other change must be **specific** — describe the actual change so the name
+  disambiguates it, since a table/column can be altered in many ways. Prefer `MakeRequired`,
+  `MakeNullable`, `Rename`, `ChangeType`, `AddDefault`, `AddUniqueIndex` over a generic verb like
+  `Alter` or `Update`, which don't say what changed (and won't stay unique across repeated tweaks to
+  the same column).
+
+Hyphens are preserved in the migration id and file name; EF strips them when forming the C# class
+name (`MemberSubscriptionLog-InitiatorId-Add` → class `MemberSubscriptionLogInitiatorIdAdd`).
+
+Examples:
+
+| Change | Migration name |
+|---|---|
+| Add the `InitiatorId` column to `MemberSubscriptionLog` | `MemberSubscriptionLog-InitiatorId-Add` |
+| Create a new `MemberReferrals` table | `MemberReferrals-Add` |
+| Add several columns to `MemberSubscriptionLog` supporting gift subscriptions | `MemberSubscriptionLog-GiftSubscriptions-Add` |
+| Drop the `LegacyToken` column from `Member` | `Member-LegacyToken-Remove` |
+| Make `Member.EmailAddress` non-nullable | `Member-EmailAddress-MakeRequired` |
+
 ## Everyday commands
 
 Run from the solution root.
 
-Add a migration after changing the entity mappings:
+Add a migration after changing the entity mappings (see the naming convention above):
 
 ```
 dotnet dotnet-ef migrations add <Name> \
