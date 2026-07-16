@@ -118,34 +118,6 @@ public static class StringUtils
 
     public static string RemoveLeading(string text, string leadingText) => text.TrimStart(leadingText).ToString();
 
-    public static string ToCsv(IReadOnlyCollection<IReadOnlyCollection<string>> data)
-    {
-        var csv = new StringBuilder();
-
-        for (var rowIndex = 0; rowIndex < data.Count; rowIndex++)
-        {
-            var row = data.ElementAt(rowIndex);
-
-            for (var i = 0; i < row.Count; i++)
-            {
-                var value = row.ElementAt(i);
-                AppendCsvValue(csv, value);
-
-                if (i < row.Count - 1)
-                {
-                    csv.Append(',');
-                }
-            }
-
-            if (rowIndex < data.Count - 1)
-            {
-                csv.Append(Environment.NewLine);
-            }
-        }
-
-        return csv.ToString();
-    }
-
     public static IEnumerable<string> Tokens(this string text)
     {
         MatchCollection matches = TokenRegex.Matches(text);
@@ -153,30 +125,5 @@ public static class StringUtils
         {
             yield return match.Groups[1].Value;
         }
-    }
-
-    private static void AppendCsvValue(StringBuilder csv, string value)
-    {
-        var mustQuote =
-            value.Contains(',') ||
-            value.Contains('"') ||
-            value.Contains('\r') ||
-            value.Contains('\n');
-        if (!mustQuote)
-        {
-            csv.Append(value);
-            return;
-        }
-
-        csv.Append('"');
-        foreach (var @char in value)
-        {
-            csv.Append(@char);
-            if (@char == '"')
-            {
-                csv.Append('"');
-            }
-        }
-        csv.Append('"');
     }
 }

@@ -1,9 +1,7 @@
-﻿using System.Text;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
-using ODK.Core.Utils;
 using ODK.Services;
 using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
@@ -78,8 +76,8 @@ public abstract class OdkControllerBase : Controller
 
     protected IActionResult DownloadCsv(IReadOnlyCollection<IReadOnlyCollection<string>> data, string fileName)
     {
-        var csv = StringUtils.ToCsv(data);
-        return File(Encoding.UTF8.GetBytes(csv), "text/csv", fileName);
+        var bytes = CsvFileWriter.Write(data);
+        return File(bytes, "text/csv", fileName);
     }
 
     protected string? GetHeader(string name)
