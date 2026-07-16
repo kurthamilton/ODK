@@ -578,6 +578,56 @@ public static class MemberAdminServiceTests
             .Be(1);
     }
 
+    [Test]
+    public static async Task ImportMembers_WhenMemberIsNew_SendsActivationEmail()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(owner: currentMember);
+
+        context.Create(new SiteSubscription
+        {
+            Id = Guid.NewGuid(),
+            Name = "Default",
+            Description = "",
+            GroupLimit = 10,
+            Enabled = true,
+            Default = true,
+            Platform = PlatformType.Default,
+            SitePaymentSettingId = Guid.NewGuid()
+        });
+
+        var emailService = new Mock<IMemberEmailService>();
+
+        var service = CreateMemberAdminService(context, memberEmailService: emailService.Object);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberImport);
+
+        var members = new[]
+        {
+            new MemberImportModel { EmailAddress = "new@example.com", FirstName = "New", LastName = "Member" }
+        };
+
+        // Act
+        var result = await service.ImportMembers(request, members);
+
+        // Assert - the (mock) background task service runs the enqueued job synchronously, which reloads
+        // the member/chapter/token and sends the activation email exactly once.
+        result.Success.Should().BeTrue();
+        emailService.Verify(
+            x => x.SendActivationEmail(
+                It.IsAny<IServiceRequest>(),
+                It.IsAny<Chapter>(),
+                It.Is<Member>(m => m.EmailAddress == "new@example.com"),
+                It.IsAny<string>()),
+            Times.Once);
+    }
+
     private static MemberAdminService CreateMemberAdminService(
         MockOdkContext context,
         IAuthorizationService? authorizationService = null,
@@ -591,7 +641,8 @@ public static class MemberAdminServiceTests
             authorizationService ?? CreateMockAuthorizationService(),
             memberImageService ?? CreateMockMemberImageService(isValid: true),
             memberEmailService ?? CreateMockMemberEmailService(),
-            Mock.Of<IDistanceUnitFactory>());
+            Mock.Of<IDistanceUnitFactory>(),
+            new MockBackgroundTaskService());
     }
 
     private static MockOdkContext CreateMockOdkContext() => new MockOdkContext();
