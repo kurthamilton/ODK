@@ -21,12 +21,19 @@ public static class MemberImportPreviewBuilder
             return ServiceResult<MemberImportPreview>.Failure(csvResult.Message ?? "The file could not be read");
         }
 
-        if (csvResult.Value.Count == 0)
+        // Drop rows without an email address (e.g. a missing/blank email column) - they can't be matched
+        // or imported, and a null email would otherwise throw when the preview is built.
+        var members = csvResult.Value
+            .Where(x => !string.IsNullOrWhiteSpace(x.EmailAddress))
+            .ToArray();
+
+        if (members.Length == 0)
         {
-            return ServiceResult<MemberImportPreview>.Failure("The uploaded file did not contain any rows");
+            return ServiceResult<MemberImportPreview>.Failure(
+                "The uploaded file did not contain any rows with an email address");
         }
 
-        var preview = await memberAdminService.GetMemberImportPreview(request, csvResult.Value);
+        var preview = await memberAdminService.GetMemberImportPreview(request, members);
         return ServiceResult<MemberImportPreview>.Successful(preview);
     }
 }

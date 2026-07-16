@@ -162,13 +162,14 @@ public class MemberAdminController : AdminControllerBase
         Guid chapterId,
         [FromForm] MemberImportSubmitViewModel viewModel)
     {
-        var members = viewModel.Members
+        // Members can bind to null when the confirm form posts no rows; guard against an NRE.
+        var members = (viewModel.Members ?? [])
             .Where(x => !string.IsNullOrWhiteSpace(x.EmailAddress))
             .Select(x => new MemberImportModel
             {
-                EmailAddress = x.EmailAddress,
-                FirstName = x.FirstName,
-                LastName = x.LastName
+                EmailAddress = x.EmailAddress!,
+                FirstName = x.FirstName ?? string.Empty,
+                LastName = x.LastName ?? string.Empty
             })
             .ToArray();
 
