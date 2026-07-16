@@ -11,4 +11,10 @@ public class MemberImportViewModel
     /// The parsed preview once a file has been uploaded; null on the initial upload screen.
     /// </summary>
     public MemberImportPreview? Preview { get; init; }
+
+    /// <summary>
+    /// Token identifying the parsed rows staged server-side; posted by the confirm step. Null on the
+    /// initial upload screen.
+    /// </summary>
+    public string? Token { get; init; }
 }

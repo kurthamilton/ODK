@@ -45,17 +45,10 @@
                             @await Html.PartialAsync("Admin/Members/_ImportMembersReview", new MemberImportReviewViewModel
                             {
                                 Chapter = Model.Chapter,
-                                Members = preview.ImportableRows
-                                    .Select(x => new MemberImportItemViewModel
-                                    {
-                                        EmailAddress = x.Member.EmailAddress,
-                                        FirstName = x.Member.FirstName,
-                                        LastName = x.Member.LastName
-                                    })
-                                    .ToList(),
                                 Preview = preview,
+                                Token = Model.Token ?? string.Empty
                             })
-                        }                        
+                        }                
                     </div>
             }
         }

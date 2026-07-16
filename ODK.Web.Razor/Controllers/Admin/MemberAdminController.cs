@@ -10,6 +10,7 @@ using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
 using ODK.Web.Razor.Models.Admin.Members;
 using ODK.Web.Razor.Models.Feedback;
+using ODK.Web.Razor.Services;
 
 namespace ODK.Web.Razor.Controllers.Admin;
 
@@ -17,16 +18,19 @@ public class MemberAdminController : AdminControllerBase
 {
     private readonly IChapterAdminService _chapterAdminService;
     private readonly IMemberAdminService _memberAdminService;
+    private readonly IMemberImportStagingService _memberImportStagingService;
 
     public MemberAdminController(
         IMemberAdminService memberAdminService,
         IChapterAdminService chapterAdminService,
+        IMemberImportStagingService memberImportStagingService,
         IRequestStore requestStore,
         IOdkRoutes odkRoutes)
         : base(requestStore, odkRoutes)
     {
         _chapterAdminService = chapterAdminService;
         _memberAdminService = memberAdminService;
+        _memberImportStagingService = memberImportStagingService;
     }
 
     [HttpPost("groups/{chapterId:guid}/members/{id:guid}/approve")]
@@ -162,26 +166,24 @@ public class MemberAdminController : AdminControllerBase
         Guid chapterId,
         [FromForm] MemberImportSubmitViewModel viewModel)
     {
-        // Members can bind to null when the confirm form posts no rows; guard against an NRE.
-        var members = (viewModel.Members ?? [])
-            .Where(x => !string.IsNullOrWhiteSpace(x.EmailAddress))
-            .Select(x => new MemberImportModel
-            {
-                EmailAddress = x.EmailAddress!,
-                FirstName = x.FirstName ?? string.Empty,
-                LastName = x.LastName ?? string.Empty
-            })
-            .ToArray();
-
-        if (members.Length == 0)
+        // The rows were staged server-side during the upload/preview step; the confirm form posts only
+        // the token. This avoids round-tripping (and the model-binding size limit on) every row.
+        var members = _memberImportStagingService.Retrieve(viewModel.Token);
+        if (members == null || members.Count == 0)
         {
-            AddFeedback("No members to import", FeedbackType.Warning);
+            AddFeedback("Your import has expired. Please upload the file again.", FeedbackType.Warning);
             return RedirectToReferrer();
         }
 
         var request = MemberChapterAdminServiceRequest.Create(
             ChapterAdminSecurable.MemberImport, MemberChapterServiceRequest);
         var result = await _memberAdminService.ImportMembers(request, members);
+
+        if (viewModel.Token != null)
+        {
+            _memberImportStagingService.Remove(viewModel.Token);
+        }
+
         AddFeedback(result, "Members imported");
 
         if (!result.Success)

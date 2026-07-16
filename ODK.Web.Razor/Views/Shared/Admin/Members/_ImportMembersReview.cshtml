@@ -78,13 +78,7 @@
     </ul>
 
     <form method="post" action="/groups/@Model.Chapter.Id/members/import">
-        @for (var i = 0; i < importableRows.Length; i++)
-        {
-            var row = importableRows[i];
-            @Html.HiddenFor(x => x.Members[i].FirstName)
-            @Html.HiddenFor(x => x.Members[i].LastName)
-            @Html.HiddenFor(x => x.Members[i].EmailAddress)
-        }
+        @Html.HiddenFor(x => x.Token)
 
         <button type="submit" class="btn btn-primary">
             @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Upload))

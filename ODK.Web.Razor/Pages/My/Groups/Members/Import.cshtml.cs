@@ -8,16 +8,18 @@ namespace ODK.Web.Razor.Pages.My.Groups.Members;
 
 public class ImportModel : OdkGroupAdminPageModel
 {
-    private readonly IMemberAdminService _memberAdminService;
+    private readonly IMemberImportPreviewBuilder _previewBuilder;
 
-    public ImportModel(IMemberAdminService memberAdminService)
+    public ImportModel(IMemberImportPreviewBuilder previewBuilder)
     {
-        _memberAdminService = memberAdminService;
+        _previewBuilder = previewBuilder;
     }
 
     public override ChapterAdminSecurable Securable => ChapterAdminSecurable.MemberImport;
 
     public MemberImportPreview? Preview { get; private set; }
+
+    public string? Token { get; private set; }
 
     public void OnGet()
     {
@@ -25,8 +27,7 @@ public class ImportModel : OdkGroupAdminPageModel
 
     public async Task<IActionResult> OnPostAsync(IFormFile? file)
     {
-        var result = await MemberImportPreviewBuilder.Build(
-            _memberAdminService, MemberChapterAdminServiceRequest, file);
+        var result = await _previewBuilder.Build(MemberChapterAdminServiceRequest, file);
 
         if (!result.Success || result.Value == null)
         {
@@ -34,7 +35,8 @@ public class ImportModel : OdkGroupAdminPageModel
             return Page();
         }
 
-        Preview = result.Value;
+        Preview = result.Value.Preview;
+        Token = result.Value.Token;
         return Page();
     }
 }

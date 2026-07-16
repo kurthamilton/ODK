@@ -185,6 +185,10 @@ public class Program
         builder.Services
             .AddScoped<IBackgroundTaskService, HangfireService>();
 
+        builder.Services
+            .AddScoped<IMemberImportStagingService, MemberImportStagingService>()
+            .AddScoped<IMemberImportPreviewBuilder, MemberImportPreviewBuilder>();
+
         builder.Services.AddLocalization();
 
         AddLogging(builder, appSettings);
