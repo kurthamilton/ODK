@@ -14,6 +14,8 @@ public class MemberSubscriptionRecord : IDatabaseEntity
 
     public Guid Id { get; set; }
 
+    public string? InitiatorId { get; set; }
+
     public Guid MemberId { get; set; }
 
     public int Months { get; set; }
@@ -22,5 +24,5 @@ public class MemberSubscriptionRecord : IDatabaseEntity
 
     public DateTime PurchasedUtc { get; set; }
 
-    public SubscriptionType Type { get; set; }
+    public SubscriptionType Type { get; set; }    
 }

@@ -18,6 +18,9 @@ public class MemberSubscriptionRecordMap : IEntityTypeConfiguration<MemberSubscr
         builder.Property(x => x.CancelledUtc)
             .HasConversion<NullableUtcDateTimeConverter>();
 
+        builder.Property(x => x.InitiatorId)
+            .HasMaxLength(255);
+
         builder.Property(x => x.PurchasedUtc)
             .HasColumnName("PurchaseDate")
             .HasConversion<UtcDateTimeConverter>();
@@ -41,5 +44,7 @@ public class MemberSubscriptionRecordMap : IEntityTypeConfiguration<MemberSubscr
         builder.HasOne<Payment>()
             .WithOne()
             .HasForeignKey<MemberSubscriptionRecord>(x => x.PaymentId);
+
+        builder.HasIndex(x => x.InitiatorId);
     }
 }
