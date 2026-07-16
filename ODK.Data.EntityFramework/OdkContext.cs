@@ -19,6 +19,7 @@ public class OdkContext : DbContext
             {
                 options.EnableRetryOnFailure();
                 options.UseNetTopologySuite();
+                options.MigrationsAssembly("ODK.Data.EntityFramework.Migrations");
             })
             .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
             .AddInterceptors(new DebugInterceptor());
