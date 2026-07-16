@@ -16,7 +16,6 @@ public class LogoutModel : OdkPageModel
     {
         await _loginHandler.Logout();
 
-        var redirectUrl = OdkRoutes.Groups.Group(Chapter);
-        return Redirect(redirectUrl);
+        return Redirect(OdkRoutes.Groups.Group(Chapter));
     }
 }

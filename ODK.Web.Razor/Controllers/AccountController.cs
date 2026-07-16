@@ -152,12 +152,7 @@ public class AccountController : OdkControllerBase
 
         if (result.Success && result.Member != null)
         {
-            if (string.IsNullOrEmpty(returnUrl))
-            {
-                return Redirect("/");
-            }
-
-            return Redirect(returnUrl);
+            return RedirectToReturnUrl(returnUrl, fallback: "/");
         }
 
         AddFeedback("Username or password incorrect", FeedbackType.Error);
@@ -175,12 +170,7 @@ public class AccountController : OdkControllerBase
             token);
         if (result.Success && result.Member != null)
         {
-            if (string.IsNullOrEmpty(returnUrl))
-            {
-                return Redirect("/");
-            }
-
-            return Redirect(returnUrl);
+            return RedirectToReturnUrl(returnUrl, fallback: "/");
         }
 
         AddFeedback("Account not registered", FeedbackType.Error);
@@ -200,13 +190,7 @@ public class AccountController : OdkControllerBase
 
         if (result.Success && result.Member != null)
         {
-            var platform = Platform;
-
-            var redirectUrl = string.IsNullOrEmpty(returnUrl)
-                ? OdkRoutes.Groups.Group(Chapter)
-                : returnUrl;
-
-            return Redirect(redirectUrl);
+            return RedirectToReturnUrl(returnUrl, fallback: OdkRoutes.Groups.Group(Chapter));
         }
 
         AddFeedback("Username or password incorrect", FeedbackType.Error);
@@ -224,12 +208,7 @@ public class AccountController : OdkControllerBase
             token);
         if (result.Success && result.Member != null)
         {
-            if (string.IsNullOrEmpty(returnUrl))
-            {
-                return Redirect(OdkRoutes.Groups.Group(Chapter));
-            }
-
-            return Redirect(returnUrl);
+            return RedirectToReturnUrl(returnUrl, fallback: OdkRoutes.Groups.Group(Chapter));
         }
 
         AddFeedback("Account not registered", FeedbackType.Error);
