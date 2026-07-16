@@ -110,4 +110,13 @@ public abstract class OdkControllerBase : Controller
         return Redirect(url);
     }
 
+    /// <summary>
+    /// Redirects to <paramref name="returnUrl"/> only when it is a local URL, otherwise to
+    /// <paramref name="fallback"/>. Centralises the open-redirect guard so callers can't forget it.
+    /// </summary>
+    protected IActionResult RedirectToReturnUrl(string? returnUrl, string fallback)
+        => !string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl)
+            ? Redirect(returnUrl)
+            : Redirect(fallback);
+
 }

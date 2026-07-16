@@ -30,8 +30,7 @@ public class PasswordResetModel : OdkPageModel
         {
             AddFeedback("Your password has been updated.", FeedbackType.Success);
 
-            var redirectUrl = OdkRoutes.Account.Login(Chapter);
-            return Redirect(redirectUrl);
+            return Redirect(OdkRoutes.Account.Login(Chapter));
         }
 
         AddFeedback(result);
