@@ -25,7 +25,8 @@
     BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_ImportMembersContent", new MemberImportViewModel
     {
         Chapter = Model.Chapter,
-        Preview = Model.Preview
+        Preview = Model.Preview,
+        Token = Model.Token
     })</div>,
     MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu")
 })

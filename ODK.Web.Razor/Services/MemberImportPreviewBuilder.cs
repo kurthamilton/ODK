@@ -1,24 +1,31 @@
 using ODK.Services;
 using ODK.Services.Members;
 using ODK.Services.Members.Models;
+using ODK.Web.Razor.Models.Admin.Members;
 
 namespace ODK.Web.Razor.Services;
 
-/// <summary>
-/// Shared logic for the member-import preview step, used by the equivalent page on each platform
-/// so that both behave identically. Reads the uploaded CSV and classifies each row.
-/// </summary>
-public static class MemberImportPreviewBuilder
+public class MemberImportPreviewBuilder : IMemberImportPreviewBuilder
 {
-    public static async Task<ServiceResult<MemberImportPreview>> Build(
+    private readonly IMemberAdminService _memberAdminService;
+    private readonly IMemberImportStagingService _stagingService;
+
+    public MemberImportPreviewBuilder(
         IMemberAdminService memberAdminService,
+        IMemberImportStagingService stagingService)
+    {
+        _memberAdminService = memberAdminService;
+        _stagingService = stagingService;
+    }
+
+    public async Task<ServiceResult<MemberImportStagedPreview>> Build(
         IMemberChapterAdminServiceRequest request,
         IFormFile? file)
     {
         var csvResult = CsvFileReader.Read<MemberImportModel>(file);
         if (!csvResult.Success || csvResult.Value == null)
         {
-            return ServiceResult<MemberImportPreview>.Failure(csvResult.Message ?? "The file could not be read");
+            return ServiceResult<MemberImportStagedPreview>.Failure(csvResult.Message ?? "The file could not be read");
         }
 
         // Drop rows without an email address (e.g. a missing/blank email column) - they can't be matched
@@ -29,11 +36,19 @@ public static class MemberImportPreviewBuilder
 
         if (members.Length == 0)
         {
-            return ServiceResult<MemberImportPreview>.Failure(
+            return ServiceResult<MemberImportStagedPreview>.Failure(
                 "The uploaded file did not contain any rows with an email address");
         }
 
-        var preview = await memberAdminService.GetMemberImportPreview(request, members);
-        return ServiceResult<MemberImportPreview>.Successful(preview);
+        var preview = await _memberAdminService.GetMemberImportPreview(request, members);
+
+        // Stage the parsed rows so the confirm step posts only the token, not every row.
+        var token = _stagingService.Stage(members);
+
+        return ServiceResult<MemberImportStagedPreview>.Successful(new MemberImportStagedPreview
+        {
+            Preview = preview,
+            Token = token
+        });
     }
 }

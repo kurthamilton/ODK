@@ -148,7 +148,14 @@ auto-hide/disable based on it (`UnauthorizedBehaviour`).
 
 - Match the style of surrounding code (tabs vs spaces varies by project — follow the file).
 - File-scoped namespaces.
+- **One top-level declaration per file**, named after the file — don't put an interface and its
+  implementation (or several types) in the same file. Give each its own file (e.g.
+  `IMemberImportStagingService.cs` and `MemberImportStagingService.cs`).
 - Prefer `required` init properties for model/view-model types.
 - Don't add client-side frameworks; reach for a partial first.
+- In Razor views, render form fields with the strongly-typed HTML helpers (`Html.HiddenFor`,
+  `Html.TextBoxFor`, `Html.LabelFor`, …) bound to view-model properties — not hand-written
+  `<input name="…">`. This keeps fields tied to the view model, so property references are findable and
+  refactors stay safe.
 - Reuse shared helpers rather than duplicating (e.g. CSV parsing lives in
   `ODK.Web.Razor/Services/CsvFileReader.cs`, used by both controllers and page models).
