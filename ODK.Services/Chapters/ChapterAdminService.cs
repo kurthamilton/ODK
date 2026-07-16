@@ -221,7 +221,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             slug = $"{baseSlug}-{i}";
         }
 
-        var chapter = new Chapter
+        var chapter = _unitOfWork.ChapterRepository.Add(new Chapter
         {
             CountryId = country.Id,
             CreatedUtc = now,
@@ -230,9 +230,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             Platform = platform,
             Slug = slug,
             TimeZone = timeZone
-        };
-
-        _unitOfWork.ChapterRepository.Add(chapter);
+        });
 
         _unitOfWork.ChapterTextsRepository.Add(new ChapterTexts
         {
@@ -354,7 +352,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             ReturnUrl = UrlUtils.Url(baseUrl, returnPath)
         });
 
-        var paymentAccount = new ChapterPaymentAccount
+        var paymentAccount = _unitOfWork.ChapterPaymentAccountRepository.Add(new ChapterPaymentAccount
         {
             ChapterId = request.Chapter.Id,
             CreatedUtc = DateTime.UtcNow,
@@ -362,8 +360,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             OnboardingUrl = onboardingUrl,
             OwnerId = owner.Id,
             SitePaymentSettingId = sitePaymentSettings.Id
-        };
-        _unitOfWork.ChapterPaymentAccountRepository.Add(paymentAccount);
+        });
 
         await _unitOfWork.SaveChangesAsync();
 

@@ -120,6 +120,7 @@ public class PaymentService : IPaymentService
                 // Payment status Completed will be returned on the next request after the subscription has been processed
                 _backgroundTaskService.Enqueue(
                     () => ProcessCompletedChapterSubscription(
+                        request.Platform,
                         externalSession.Metadata,
                         externalSession.CompletedUtc.Value,
                         paymentProvider.Type,
@@ -188,6 +189,7 @@ public class PaymentService : IPaymentService
 
     // Public for Hangfire
     public async Task<PaymentWebhookProcessingResult> ProcessCompletedChapterSubscription(
+        PlatformType platform,
         IReadOnlyDictionary<string, string> metadataDictionary,
         DateTime completedUtc,
         PaymentProviderType paymentProvider,
@@ -217,7 +219,7 @@ public class PaymentService : IPaymentService
         // Load basic metadata objects
         var (member, chapter, chapterSubscription, payment, paymentCheckoutSession) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(metadata.MemberId.Value),
-            x => x.ChapterSubscriptionRepository.GetByIdOrDefault(metadata.ChapterSubscriptionId.Value),
+            x => x.ChapterRepository.GetById(platform, metadata.ChapterId.Value),
             x => x.ChapterSubscriptionRepository.GetById(metadata.ChapterSubscriptionId.Value),
             x => metadata.PaymentId != null
                 ? x.PaymentRepository.GetByIdOrDefault(metadata.PaymentId.Value)
@@ -500,12 +502,23 @@ public class PaymentService : IPaymentService
             ReceivedUtc = DateTime.UtcNow
         });
 
+        await _unitOfWork.SaveChangesAsync();
+
+        // Run the actioning of the webhook itself in a new task so that we can persist the event as quickly as possible
+        // and make the actual processing retryable.
+        _backgroundTaskService.Enqueue(
+            () => ProcessWebhookAction(request, webhook),
+            BackgroundTaskQueueType.Payments);
+    }
+
+    // Public for Hangire
+    public async Task ProcessWebhookAction(IServiceRequest request, PaymentProviderWebhook webhook)
+    {
         PaymentWebhookProcessingResult result;
 
         switch (webhook.Type)
         {
             case PaymentProviderWebhookType.CheckoutSessionCompleted:
-            case PaymentProviderWebhookType.PaymentSucceeded:
                 result = await ProcessWebhookPayment(webhook);
                 break;
 
@@ -515,15 +528,13 @@ public class PaymentService : IPaymentService
 
             case PaymentProviderWebhookType.InvoicePaymentSucceeded:
             case PaymentProviderWebhookType.SubscriptionCancelled:
-                result = await ProcessWebhookSubscription(webhook);
+                result = await ProcessWebhookSubscription(request.Platform, webhook);
                 break;
 
             default:
                 result = PaymentWebhookProcessingResult.Failure();
                 break;
         }
-
-        await _unitOfWork.SaveChangesAsync();
 
         if (!result.Success)
         {
@@ -552,10 +563,6 @@ public class PaymentService : IPaymentService
 
         if (string.IsNullOrEmpty(webhook.PaymentId))
         {
-            var message =
-                $"Received {webhook.PaymentProviderType} webhook '{webhook.Id}' for event without PaymentId; not processing";
-
-            await _loggingService.Error(message);
             return PaymentWebhookProcessingResult.Failure();
         }
 
@@ -608,10 +615,6 @@ public class PaymentService : IPaymentService
     {
         if (string.IsNullOrEmpty(webhook.PaymentId))
         {
-            var message =
-                $"Received {webhook.PaymentProviderType} webhook '{webhook.Id}' for event without PaymentId; not processing";
-
-            await _loggingService.Error(message);
             return PaymentWebhookProcessingResult.Failure();
         }
 
@@ -632,6 +635,7 @@ public class PaymentService : IPaymentService
     }
 
     private async Task<PaymentWebhookProcessingResult> ProcessWebhookChapterSubscription(
+        PlatformType platform,
         PaymentProviderWebhook webhook,
         PaymentMetadataModel metadata)
     {
@@ -661,6 +665,7 @@ public class PaymentService : IPaymentService
         }
 
         return await ProcessCompletedChapterSubscription(
+            platform,
             metadata.ToDictionary(),
             webhook.OriginatedUtc,
             webhook.PaymentProviderType,
@@ -689,6 +694,7 @@ public class PaymentService : IPaymentService
     }
 
     private async Task<PaymentWebhookProcessingResult> ProcessWebhookSubscription(
+        PlatformType platform,
         PaymentProviderWebhook webhook)
     {
         if (string.IsNullOrEmpty(webhook.SubscriptionId))
@@ -714,7 +720,7 @@ public class PaymentService : IPaymentService
 
         if (metadata.ChapterSubscriptionId != null)
         {
-            return await ProcessWebhookChapterSubscription(webhook, metadata);
+            return await ProcessWebhookChapterSubscription(platform, webhook, metadata);
         }
 
         if (metadata.SiteSubscriptionPriceId != null)
@@ -778,10 +784,10 @@ public class PaymentService : IPaymentService
 
         memberSubscription ??= new();
 
-        var expiresUtc = memberSubscription.ExpiresUtc > utcNow
+        var originalExpiresUtc = memberSubscription.ExpiresUtc > utcNow
             ? memberSubscription.ExpiresUtc.Value
             : utcNow;
-        expiresUtc = expiresUtc.AddMonths(chapterSubscription.Months);
+        var expiresUtc = originalExpiresUtc.AddMonths(chapterSubscription.Months);
         memberSubscription.ExpiresUtc = expiresUtc;
         memberSubscription.Type = chapterSubscription.Type;
 
@@ -810,6 +816,10 @@ public class PaymentService : IPaymentService
                 Type = chapterSubscription.Type
             });
         }
+
+        await _loggingService.Info(
+            $"Updating member {member.Id} subscription for chapter {chapter.Name}. " +
+            $"Updating expiry date from {originalExpiresUtc:yyyy-MM-dd HH:mm:ss} to {expiresUtc:yyyy-MM-dd HH:mm:ss}");
 
         await _unitOfWork.SaveChangesAsync();
 

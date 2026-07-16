@@ -77,7 +77,6 @@ public static class PaymentServiceTests
     }
 
     [TestCase(PaymentProviderWebhookType.CheckoutSessionCompleted)]
-    [TestCase(PaymentProviderWebhookType.PaymentSucceeded)]
     public static async Task ProcessWebhook_PaymentSucceeded_UpdatesPayment(PaymentProviderWebhookType webhookType)
     {
         // Arrange
@@ -118,7 +117,6 @@ public static class PaymentServiceTests
     }
 
     [TestCase(PaymentProviderWebhookType.CheckoutSessionCompleted)]
-    [TestCase(PaymentProviderWebhookType.PaymentSucceeded)]
     public static async Task ProcessWebhook_EventTicketPaymentSucceeded_UpdatesEventTicketStatus(
         PaymentProviderWebhookType webhookType)
     {
@@ -165,7 +163,6 @@ public static class PaymentServiceTests
     }
 
     [TestCase(PaymentProviderWebhookType.CheckoutSessionCompleted)]
-    [TestCase(PaymentProviderWebhookType.PaymentSucceeded)]
     public static async Task ProcessWebhook_EventTicketPaymentSucceeded_UpdatesChapterSubscription(
         PaymentProviderWebhookType webhookType)
     {
@@ -296,6 +293,181 @@ public static class PaymentServiceTests
     }
 
     [Test]
+    public static async Task ProcessWebhook_CheckoutSessionCompleted_ForSubscriptionWithoutPaymentIntent_DoesNotUpdateChapterSubscription()
+    {
+        // Arrange
+        // A subscription-mode Checkout Session carries no payment_intent, so checkout.session.completed
+        // arrives with an empty PaymentId and must be a no-op for subscriptions - the subscription is
+        // extended solely by invoice.payment_succeeded. This guards against reintroducing a double extension.
+        using var context = CreateMockOdkContext();
+
+        var member = context.CreateMember();
+        var chapter = context.CreateChapter(members: [member]);
+        var chapterSubscription = context.CreateChapterSubscription(chapter: chapter);
+
+        var webhook = CreatePaymentProviderWebhook(
+            type: PaymentProviderWebhookType.CheckoutSessionCompleted,
+            paymentId: "",
+            metadata: new PaymentMetadataModel(
+                PlatformType.Default,
+                PaymentReasonType.ChapterSubscription,
+                member,
+                chapterSubscription,
+                Guid.NewGuid(),
+                Guid.NewGuid()));
+
+        var service = CreatePaymentService(context);
+        var request = CreateServiceRequest();
+
+        // Act
+        await service.ProcessWebhook(request, webhook);
+
+        // Assert
+        context.Set<MemberSubscription>().Should().BeEmpty();
+        context.Set<MemberSubscriptionRecord>().Should().BeEmpty();
+    }
+
+    [Test]
+    public static async Task ProcessWebhook_NewChapterSubscription_ProcessedByCheckoutAndInvoice_ExtendsExpiryOnce()
+    {
+        // Arrange
+        // Stripe fires both checkout.session.completed (no payment_intent) and invoice.payment_succeeded
+        // for a new subscription. Only the invoice event should extend the expiry - exactly once.
+        using var context = CreateMockOdkContext();
+
+        var member = context.CreateMember();
+        var chapter = context.CreateChapter(members: [member]);
+        var chapterSubscription = context.CreateChapterSubscription(chapter: chapter);
+        chapterSubscription.Months = 1;
+
+        var payment = context.CreatePayment(member: member, chapter: chapter);
+        var paymentCheckoutSession = context.CreatePaymentCheckoutSession(payment: payment);
+
+        var metadata = new PaymentMetadataModel(
+            PlatformType.Default,
+            PaymentReasonType.ChapterSubscription,
+            member,
+            chapterSubscription,
+            paymentCheckoutSession.Id,
+            payment.Id);
+
+        var checkoutWebhook = CreatePaymentProviderWebhook(
+            id: "wh_checkout",
+            type: PaymentProviderWebhookType.CheckoutSessionCompleted,
+            paymentId: "",
+            metadata: metadata);
+
+        var invoiceWebhook = CreatePaymentProviderWebhook(
+            id: "wh_invoice",
+            type: PaymentProviderWebhookType.InvoicePaymentSucceeded,
+            subscriptionId: "sub_123",
+            metadata: metadata);
+
+        var service = CreatePaymentService(context);
+        var request = CreateServiceRequest();
+
+        // Act
+        await service.ProcessWebhook(request, checkoutWebhook);
+        await service.ProcessWebhook(request, invoiceWebhook);
+
+        // Assert
+        var memberChapterId = member.MemberChapter(chapter.Id)!.Id;
+
+        context.Set<MemberSubscriptionRecord>()
+            .Count(x => x.MemberId == member.Id && x.ChapterSubscriptionId == chapterSubscription.Id)
+            .Should()
+            .Be(1);
+
+        var memberSubscription = context.Set<MemberSubscription>()
+            .Single(x => x.MemberChapterId == memberChapterId);
+
+        // A single extension of 1 month - not two.
+        memberSubscription.ExpiresUtc
+            .Should()
+            .BeCloseTo(DateTime.UtcNow.AddMonths(1), TimeSpan.FromMinutes(5));
+    }
+
+    [Test]
+    public static async Task ProcessWebhook_ChapterSubscriptionRenewal_ExtendsExpiryByPlanMonths()
+    {
+        // Arrange
+        // A renewal is a subsequent invoice.payment_succeeded (a distinct event) for an existing
+        // subscription. It should extend the existing expiry by the plan's months, exactly once.
+        using var context = CreateMockOdkContext();
+
+        var member = context.CreateMember();
+        var chapter = context.CreateChapter(members: [member]);
+        var chapterSubscription = context.CreateChapterSubscription(chapter: chapter);
+        chapterSubscription.Months = 1;
+
+        var payment = context.CreatePayment(
+            member: member,
+            chapter: chapter,
+            paidUtc: DateTime.UtcNow.AddMonths(-1));
+        var paymentCheckoutSession = context.CreatePaymentCheckoutSession(
+            payment: payment,
+            completedUtc: DateTime.UtcNow.AddMonths(-1));
+
+        var memberChapter = member.MemberChapter(chapter.Id)!;
+        var originalExpiry = DateTime.UtcNow.AddDays(10);
+
+        context.Create(new MemberSubscription
+        {
+            MemberChapter = memberChapter,
+            MemberChapterId = memberChapter.Id,
+            ExpiresUtc = originalExpiry,
+            Type = chapterSubscription.Type
+        });
+
+        // The record created by the initial subscription, keyed on the Stripe subscription id.
+        context.Create(new MemberSubscriptionRecord
+        {
+            Amount = chapterSubscription.Amount,
+            ChapterId = chapter.Id,
+            ChapterSubscriptionId = chapterSubscription.Id,
+            ExternalId = "sub_123",
+            Id = Guid.NewGuid(),
+            MemberId = member.Id,
+            Months = chapterSubscription.Months,
+            PaymentId = payment.Id,
+            PurchasedUtc = DateTime.UtcNow.AddMonths(-1),
+            Type = chapterSubscription.Type
+        });
+
+        var webhook = CreatePaymentProviderWebhook(
+            id: "wh_renewal",
+            type: PaymentProviderWebhookType.InvoicePaymentSucceeded,
+            subscriptionId: "sub_123",
+            metadata: new PaymentMetadataModel(
+                PlatformType.Default,
+                PaymentReasonType.ChapterSubscription,
+                member,
+                chapterSubscription,
+                paymentCheckoutSession.Id,
+                payment.Id));
+
+        var service = CreatePaymentService(context);
+        var request = CreateServiceRequest();
+
+        // Act
+        await service.ProcessWebhook(request, webhook);
+
+        // Assert
+        var memberSubscription = context.Set<MemberSubscription>()
+            .Single(x => x.MemberChapterId == memberChapter.Id);
+
+        memberSubscription.ExpiresUtc
+            .Should()
+            .BeCloseTo(originalExpiry.AddMonths(1), TimeSpan.FromMinutes(5));
+
+        // The renewal reuses the existing record (keyed on the subscription id) rather than adding one.
+        context.Set<MemberSubscriptionRecord>()
+            .Count(x => x.MemberId == member.Id && x.ChapterSubscriptionId == chapterSubscription.Id)
+            .Should()
+            .Be(1);
+    }
+
+    [Test]
     public static async Task ProcessWebhook_WhenInvalidWebhookType_DoesNotSendEmail()
     {
         // Arrange
@@ -319,7 +491,7 @@ public static class PaymentServiceTests
     {
         // Arrange
         var webhook = CreatePaymentProviderWebhook(
-            type: PaymentProviderWebhookType.PaymentSucceeded,
+            type: PaymentProviderWebhookType.CheckoutSessionCompleted,
             complete: false,
             paymentId: "pay_123");
 
@@ -358,7 +530,7 @@ public static class PaymentServiceTests
             currency: currency);
 
         var webhook = CreatePaymentProviderWebhook(
-            type: PaymentProviderWebhookType.PaymentSucceeded,
+            type: PaymentProviderWebhookType.CheckoutSessionCompleted,
             paymentId: paymentCheckoutSession.PaymentId.ToString(),
             metadata: new PaymentMetadataModel(
                 PlatformType.Default,
@@ -401,7 +573,7 @@ public static class PaymentServiceTests
             currency: currency);
 
         var webhook = CreatePaymentProviderWebhook(
-            type: PaymentProviderWebhookType.PaymentSucceeded,
+            type: PaymentProviderWebhookType.CheckoutSessionCompleted,
             paymentId: payment.Id.ToString(),
             metadata: new PaymentMetadataModel(
                 PlatformType.Default,
@@ -428,7 +600,7 @@ public static class PaymentServiceTests
     {
         // Arrange
         var webhook = CreatePaymentProviderWebhook(
-            type: PaymentProviderWebhookType.PaymentSucceeded,
+            type: PaymentProviderWebhookType.CheckoutSessionCompleted,
             paymentId: "pay_123",
             metadata: null);
 
@@ -589,7 +761,7 @@ public static class PaymentServiceTests
         => new PaymentProviderWebhook
         {
             Id = id ?? "wh_123",
-            Type = type ?? PaymentProviderWebhookType.PaymentSucceeded,
+            Type = type ?? PaymentProviderWebhookType.CheckoutSessionCompleted,
             Complete = complete,
             PaymentId = paymentId ?? "pi_123",
             SubscriptionId = subscriptionId,

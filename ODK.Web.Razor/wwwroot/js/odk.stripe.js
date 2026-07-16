@@ -9,7 +9,7 @@
 
         const fetchClientSecret = () => Promise.resolve(sessionId);
 
-        stripe.initEmbeddedCheckout({
+        stripe.createEmbeddedCheckoutPage({
             fetchClientSecret
         }).then(checkout => {
             // Mount Checkout
