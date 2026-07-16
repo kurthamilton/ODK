@@ -372,7 +372,7 @@ public class StripePaymentProvider : IPaymentProvider
 
         var session = await service.CreateAsync(new SessionCreateOptions
         {
-            UiMode = "embedded",
+            UiMode = "embedded_page",
             LineItems = new List<SessionLineItemOptions>
             {
                 new SessionLineItemOptions
@@ -425,9 +425,9 @@ public class StripePaymentProvider : IPaymentProvider
         };
     }
 
-    private static decimal FromStripeAmount(long? stripeAmount) => (stripeAmount ?? 0) / 100;
+    private static decimal FromStripeAmount(long? stripeAmount) => (stripeAmount ?? 0) / 100m;
 
-    private static long ToStripeAmount(decimal amount) => (long)(amount * 100);
+    private static long ToStripeAmount(decimal amount) => (long)Math.Round(amount * 100m, MidpointRounding.AwayFromZero);
 
     private long? CalculateCommission(long stripeAmount)
     {

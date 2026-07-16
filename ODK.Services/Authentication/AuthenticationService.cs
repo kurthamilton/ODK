@@ -212,13 +212,12 @@ public class AuthenticationService : IAuthenticationService
             var activationToken = await _unitOfWork.MemberActivationTokenRepository.GetByMemberId(member.Id).Run();
             if (activationToken == null)
             {
-                activationToken = new MemberActivationToken
+                activationToken = _unitOfWork.MemberActivationTokenRepository.Add(new MemberActivationToken
                 {
                     ActivationToken = TokenGenerator.GenerateBase64Token(64),
                     ChapterId = chapter?.Id,
                     MemberId = member.Id
-                };
-                _unitOfWork.MemberActivationTokenRepository.Add(activationToken);
+                });
                 await _unitOfWork.SaveChangesAsync();
             }
 

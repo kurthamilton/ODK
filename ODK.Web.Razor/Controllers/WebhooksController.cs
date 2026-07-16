@@ -1,10 +1,13 @@
 ﻿using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Mvc;
+using ODK.Core.Platforms;
+using ODK.Core.Utils;
 using ODK.Infrastructure.Settings;
 using ODK.Services.Emails;
 using ODK.Services.Exceptions;
 using ODK.Services.Logging;
 using ODK.Services.Payments;
+using ODK.Services.Payments.Models;
 using ODK.Services.Tasks;
 using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
@@ -83,16 +86,35 @@ public class WebhooksController : OdkControllerBase
         var signature = Request.Headers["Stripe-Signature"];
         var json = await ReadBodyText();
 
-        await _loggingService.Info($"Received Stripe webhook: {json}");
-
         var webhook = await _stripeWebhookParser.ParseWebhook(json, signature, v);
         if (webhook == null)
         {
             return;
+        }        
+
+        var metadata = PaymentMetadataModel.FromDictionary(webhook.Metadata);
+        if (metadata.Platform == null && Platform != PlatformType.DrunkenKnitwits)
+        {
+            // Only the DrunkenKnitwits platform will have subscriptions that predate the use of Platform in metadata.
+            // Only process these subscriptions on the DrunkenKnitwits platform.
+            await _loggingService.Warn(
+                $"Received Stripe webhook on platform {Platform} when no Platform was specified in the Stripe metadata. " +
+                $"Not processing");
+            return;
         }
 
-        var request = ServiceRequest;
+        if (metadata.Platform != null && metadata.Platform != Platform)
+        {
+            // Webhooks are set up for both Platforms. All events are sent out to both platforms.
+            // Logging a platform mismatch here would create redundant noise in the logs since the 
+            // event will be handled by the other platform.
+            return;
+        }
 
+        // Only log our parsed data to avoid logging any PII in the raw JSON
+        await _loggingService.Info($"Received Stripe webhook on platform {Platform}: {JsonUtils.Serialize(webhook)}");
+
+        var request = ServiceRequest;
         _backgroundTaskService.Enqueue(
             () => _paymentService.ProcessWebhook(request, webhook),
             BackgroundTaskQueueType.Payments);

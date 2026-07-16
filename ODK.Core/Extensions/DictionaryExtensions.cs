@@ -68,4 +68,16 @@ public static class DictionaryExtensions
         string key,
         [NotNullWhen(true)] out Guid? value)
         => TryGetGuidValue((IReadOnlyDictionary<string, string>)source.AsReadOnly(), key, out value);
+
+    public static IDictionary<TKey, TValue> WithComparer<TKey, TValue>(
+        this IDictionary<TKey, TValue> source,
+        IEqualityComparer<TKey> comparer)
+        where TKey : notnull
+        => new Dictionary<TKey, TValue>(source, comparer);
+
+    public static IReadOnlyDictionary<TKey, TValue> WithComparer<TKey, TValue>(
+        this IReadOnlyDictionary<TKey, TValue> source,
+        IEqualityComparer<TKey> comparer)
+        where TKey : notnull
+        => new Dictionary<TKey, TValue>(source, comparer).AsReadOnly();
 }

@@ -84,6 +84,8 @@ public class PaymentMetadataModel
 
     public static PaymentMetadataModel FromDictionary(IReadOnlyDictionary<string, string> dictionary)
     {
+        dictionary = dictionary.WithComparer(StringComparer.OrdinalIgnoreCase);
+
         dictionary.TryGetGuidValue("ChapterId", out var chapterId);
         dictionary.TryGetGuidValue("ChapterSubscriptionId", out var chapterSubscriptionId);
         dictionary.TryGetGuidValue("EventTicketPaymentId", out var eventTicketPaymentId);

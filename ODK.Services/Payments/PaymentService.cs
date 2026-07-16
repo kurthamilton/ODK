@@ -120,6 +120,7 @@ public class PaymentService : IPaymentService
                 // Payment status Completed will be returned on the next request after the subscription has been processed
                 _backgroundTaskService.Enqueue(
                     () => ProcessCompletedChapterSubscription(
+                        request.Platform,
                         externalSession.Metadata,
                         externalSession.CompletedUtc.Value,
                         paymentProvider.Type,
@@ -186,12 +187,24 @@ public class PaymentService : IPaymentService
         return PaymentStatusType.Pending;
     }
 
-    // Public for Hangfire
-    public async Task<PaymentWebhookProcessingResult> ProcessCompletedChapterSubscription(
+    // Public for Hangfire. This parameterless-initiator overload preserves the method signature for jobs
+    // that were enqueued before initiatorId was introduced, so a deployment can't orphan in-flight jobs.
+    public Task<PaymentWebhookProcessingResult> ProcessCompletedChapterSubscription(
+        PlatformType platform,
         IReadOnlyDictionary<string, string> metadataDictionary,
         DateTime completedUtc,
         PaymentProviderType paymentProvider,
         string externalId)
+        => ProcessCompletedChapterSubscription(
+            platform, metadataDictionary, completedUtc, paymentProvider, externalId, initiatorId: null);
+
+    private async Task<PaymentWebhookProcessingResult> ProcessCompletedChapterSubscription(
+        PlatformType platform,
+        IReadOnlyDictionary<string, string> metadataDictionary,
+        DateTime completedUtc,
+        PaymentProviderType paymentProvider,
+        string externalId,
+        string? initiatorId)
     {
         var metadata = PaymentMetadataModel.FromDictionary(metadataDictionary);
 
@@ -217,7 +230,7 @@ public class PaymentService : IPaymentService
         // Load basic metadata objects
         var (member, chapter, chapterSubscription, payment, paymentCheckoutSession) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(metadata.MemberId.Value),
-            x => x.ChapterSubscriptionRepository.GetByIdOrDefault(metadata.ChapterSubscriptionId.Value),
+            x => x.ChapterRepository.GetById(platform, metadata.ChapterId.Value),
             x => x.ChapterSubscriptionRepository.GetById(metadata.ChapterSubscriptionId.Value),
             x => metadata.PaymentId != null
                 ? x.PaymentRepository.GetByIdOrDefault(metadata.PaymentId.Value)
@@ -281,15 +294,26 @@ public class PaymentService : IPaymentService
             member,
             payment,
             externalId: externalId,
-            completedUtc);
+            completedUtc,
+            initiatorId);
     }
 
-    // Public for Hangfire
-    public async Task<PaymentWebhookProcessingResult> ProcessCompletedPayment(
+    // Public for Hangfire. This parameterless-initiator overload preserves the method signature for jobs
+    // that were enqueued before initiatorId was introduced, so a deployment can't orphan in-flight jobs.
+    public Task<PaymentWebhookProcessingResult> ProcessCompletedPayment(
         IReadOnlyDictionary<string, string> metadataDictionary,
         DateTime completedUtc,
         PaymentProviderType paymentProvider,
         string externalId)
+        => ProcessCompletedPayment(
+            metadataDictionary, completedUtc, paymentProvider, externalId, initiatorId: null);
+
+    private async Task<PaymentWebhookProcessingResult> ProcessCompletedPayment(
+        IReadOnlyDictionary<string, string> metadataDictionary,
+        DateTime completedUtc,
+        PaymentProviderType paymentProvider,
+        string externalId,
+        string? initiatorId)
     {
         // Validate basic metadata
         var metadata = PaymentMetadataModel.FromDictionary(metadataDictionary);
@@ -376,7 +400,8 @@ public class PaymentService : IPaymentService
             member,
             payment,
             externalId: externalId,
-            completedUtc);
+            completedUtc,
+            initiatorId);
     }
 
     // Public for Hangfire
@@ -500,12 +525,23 @@ public class PaymentService : IPaymentService
             ReceivedUtc = DateTime.UtcNow
         });
 
+        await _unitOfWork.SaveChangesAsync();
+
+        // Run the actioning of the webhook itself in a new task so that we can persist the event as quickly as possible
+        // and make the actual processing retryable.
+        _backgroundTaskService.Enqueue(
+            () => ProcessWebhookAction(request, webhook),
+            BackgroundTaskQueueType.Payments);
+    }
+
+    // Public for Hangire
+    public async Task ProcessWebhookAction(IServiceRequest request, PaymentProviderWebhook webhook)
+    {
         PaymentWebhookProcessingResult result;
 
         switch (webhook.Type)
         {
             case PaymentProviderWebhookType.CheckoutSessionCompleted:
-            case PaymentProviderWebhookType.PaymentSucceeded:
                 result = await ProcessWebhookPayment(webhook);
                 break;
 
@@ -515,15 +551,13 @@ public class PaymentService : IPaymentService
 
             case PaymentProviderWebhookType.InvoicePaymentSucceeded:
             case PaymentProviderWebhookType.SubscriptionCancelled:
-                result = await ProcessWebhookSubscription(webhook);
+                result = await ProcessWebhookSubscription(request.Platform, webhook);
                 break;
 
             default:
                 result = PaymentWebhookProcessingResult.Failure();
                 break;
         }
-
-        await _unitOfWork.SaveChangesAsync();
 
         if (!result.Success)
         {
@@ -552,10 +586,6 @@ public class PaymentService : IPaymentService
 
         if (string.IsNullOrEmpty(webhook.PaymentId))
         {
-            var message =
-                $"Received {webhook.PaymentProviderType} webhook '{webhook.Id}' for event without PaymentId; not processing";
-
-            await _loggingService.Error(message);
             return PaymentWebhookProcessingResult.Failure();
         }
 
@@ -608,10 +638,6 @@ public class PaymentService : IPaymentService
     {
         if (string.IsNullOrEmpty(webhook.PaymentId))
         {
-            var message =
-                $"Received {webhook.PaymentProviderType} webhook '{webhook.Id}' for event without PaymentId; not processing";
-
-            await _loggingService.Error(message);
             return PaymentWebhookProcessingResult.Failure();
         }
 
@@ -628,10 +654,12 @@ public class PaymentService : IPaymentService
             webhook.Metadata,
             webhook.OriginatedUtc,
             webhook.PaymentProviderType,
-            webhook.PaymentId);
+            webhook.PaymentId,
+            initiatorId: webhook.Id);
     }
 
     private async Task<PaymentWebhookProcessingResult> ProcessWebhookChapterSubscription(
+        PlatformType platform,
         PaymentProviderWebhook webhook,
         PaymentMetadataModel metadata)
     {
@@ -661,10 +689,12 @@ public class PaymentService : IPaymentService
         }
 
         return await ProcessCompletedChapterSubscription(
+            platform,
             metadata.ToDictionary(),
             webhook.OriginatedUtc,
             webhook.PaymentProviderType,
-            webhook.SubscriptionId);
+            webhook.SubscriptionId,
+            initiatorId: webhook.Id);
     }
 
     private async Task<PaymentWebhookProcessingResult> ProcessWebhookSiteSubscription(
@@ -689,6 +719,7 @@ public class PaymentService : IPaymentService
     }
 
     private async Task<PaymentWebhookProcessingResult> ProcessWebhookSubscription(
+        PlatformType platform,
         PaymentProviderWebhook webhook)
     {
         if (string.IsNullOrEmpty(webhook.SubscriptionId))
@@ -714,7 +745,7 @@ public class PaymentService : IPaymentService
 
         if (metadata.ChapterSubscriptionId != null)
         {
-            return await ProcessWebhookChapterSubscription(webhook, metadata);
+            return await ProcessWebhookChapterSubscription(platform, webhook, metadata);
         }
 
         if (metadata.SiteSubscriptionPriceId != null)
@@ -734,7 +765,8 @@ public class PaymentService : IPaymentService
         Member member,
         Payment payment,
         string externalId,
-        DateTime utcNow)
+        DateTime utcNow,
+        string? initiatorId)
     {
         if (metadata.ChapterId == null || metadata.ChapterSubscriptionId == null)
         {
@@ -772,16 +804,31 @@ public class PaymentService : IPaymentService
 
         var (chapterId, memberId) = (chapter.Id, member.Id);
 
-        var (memberSubscription, existingMemberSubscriptionRecord) = await _unitOfWork.RunAsync(
+        var (memberSubscription, existingMemberSubscriptionRecord, recordForInitiator) = await _unitOfWork.RunAsync(
             x => x.MemberSubscriptionRepository.GetByMemberId(memberId, chapterId),
-            x => x.MemberSubscriptionRecordRepository.GetByExternalIdOrDefault(externalId));
+            x => x.MemberSubscriptionRecordRepository.GetByExternalIdOrDefault(externalId),
+            x => !string.IsNullOrEmpty(initiatorId)
+                ? x.MemberSubscriptionRecordRepository.GetByInitiatorIdOrDefault(initiatorId)
+                : new DefaultDeferredQuerySingleOrDefault<MemberSubscriptionRecord>());
+
+        // Idempotency: if this initiating event (the Stripe webhook id) has already extended a subscription,
+        // do not extend again. This protects against a retry of the webhook-processing job re-applying the
+        // same event after the extension has already been committed. Renewals carry a distinct webhook id,
+        // so they are not caught here.
+        if (recordForInitiator != null)
+        {
+            await _loggingService.Info(
+                $"Chapter subscription already updated for initiator '{initiatorId}'; not updating again");
+            return PaymentWebhookProcessingResult.Successful(
+                member, chapter, payment, chapterSubscription.Currency);
+        }
 
         memberSubscription ??= new();
 
-        var expiresUtc = memberSubscription.ExpiresUtc > utcNow
+        var originalExpiresUtc = memberSubscription.ExpiresUtc > utcNow
             ? memberSubscription.ExpiresUtc.Value
             : utcNow;
-        expiresUtc = expiresUtc.AddMonths(chapterSubscription.Months);
+        var expiresUtc = originalExpiresUtc.AddMonths(chapterSubscription.Months);
         memberSubscription.ExpiresUtc = expiresUtc;
         memberSubscription.Type = chapterSubscription.Type;
 
@@ -803,6 +850,7 @@ public class PaymentService : IPaymentService
                 ChapterId = chapterId,
                 ChapterSubscriptionId = chapterSubscription.Id,
                 ExternalId = externalId,
+                InitiatorId = initiatorId,
                 MemberId = memberId,
                 Months = chapterSubscription.Months,
                 PaymentId = payment.Id,
@@ -810,6 +858,17 @@ public class PaymentService : IPaymentService
                 Type = chapterSubscription.Type
             });
         }
+        else if (!string.IsNullOrEmpty(initiatorId))
+        {
+            // Record the initiating event on the existing record so that a retry of a subsequent event
+            // (e.g. a renewal) is also caught by the idempotency check above.
+            existingMemberSubscriptionRecord.InitiatorId = initiatorId;
+            _unitOfWork.MemberSubscriptionRecordRepository.Update(existingMemberSubscriptionRecord);
+        }
+
+        await _loggingService.Info(
+            $"Updating member {member.Id} subscription for chapter {chapter.Name}. " +
+            $"Updating expiry date from {originalExpiresUtc:yyyy-MM-dd HH:mm:ss} to {expiresUtc:yyyy-MM-dd HH:mm:ss}");
 
         await _unitOfWork.SaveChangesAsync();
 

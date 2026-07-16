@@ -9,7 +9,7 @@ public interface IMemberSubscriptionRecordRepository : IReadWriteRepository<Memb
 
     IDeferredQuerySingleOrDefault<MemberSubscriptionRecord> GetByExternalIdOrDefault(string externalId);
 
-    IDeferredQueryMultiple<MemberSubscriptionRecord> GetByExternalIds(IEnumerable<string> externalIds);
+    IDeferredQuerySingleOrDefault<MemberSubscriptionRecord> GetByInitiatorIdOrDefault(string initiatorId);
 
     IDeferredQuerySingleOrDefault<MemberSubscriptionRecord> GetLatest(Guid memberId, Guid chapterId);
 }
