@@ -468,6 +468,58 @@ public static class PaymentServiceTests
     }
 
     [Test]
+    public static async Task ProcessWebhookAction_WhenSameEventProcessedTwice_ExtendsChapterSubscriptionOnce()
+    {
+        // Arrange
+        // Simulates the webhook-processing action being retried (e.g. after a transient failure that occurs
+        // once the extension has already committed). The second run must not extend the subscription again -
+        // it is guarded by the initiating event id (InitiatorId = webhook.Id).
+        using var context = CreateMockOdkContext();
+
+        var member = context.CreateMember();
+        var chapter = context.CreateChapter(members: [member]);
+        var chapterSubscription = context.CreateChapterSubscription(chapter: chapter);
+        chapterSubscription.Months = 1;
+
+        var paymentCheckoutSession = context.CreatePaymentCheckoutSession();
+
+        var webhook = CreatePaymentProviderWebhook(
+            id: "wh_invoice",
+            type: PaymentProviderWebhookType.InvoicePaymentSucceeded,
+            subscriptionId: "sub_123",
+            metadata: new PaymentMetadataModel(
+                PlatformType.Default,
+                PaymentReasonType.ChapterSubscription,
+                member,
+                chapterSubscription,
+                paymentCheckoutSession.Id,
+                paymentCheckoutSession.PaymentId));
+
+        var service = CreatePaymentService(context);
+        var request = CreateServiceRequest();
+
+        // Act - run the processing action twice, as a Hangfire retry would
+        await service.ProcessWebhookAction(request, webhook);
+        await service.ProcessWebhookAction(request, webhook);
+
+        // Assert
+        var memberChapterId = member.MemberChapter(chapter.Id)!.Id;
+
+        context.Set<MemberSubscriptionRecord>()
+            .Count(x => x.MemberId == member.Id && x.ChapterSubscriptionId == chapterSubscription.Id)
+            .Should()
+            .Be(1);
+
+        var memberSubscription = context.Set<MemberSubscription>()
+            .Single(x => x.MemberChapterId == memberChapterId);
+
+        // Extended once (one month), not twice.
+        memberSubscription.ExpiresUtc
+            .Should()
+            .BeCloseTo(DateTime.UtcNow.AddMonths(1), TimeSpan.FromMinutes(5));
+    }
+
+    [Test]
     public static async Task ProcessWebhook_WhenInvalidWebhookType_DoesNotSendEmail()
     {
         // Arrange

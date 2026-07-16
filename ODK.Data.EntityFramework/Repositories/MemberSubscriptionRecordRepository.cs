@@ -23,6 +23,11 @@ public class MemberSubscriptionRecordRepository : ReadWriteRepositoryBase<Member
             .Where(x => x.ExternalId == externalId)
             .DeferredSingleOrDefault();
 
+    public IDeferredQuerySingleOrDefault<MemberSubscriptionRecord> GetByInitiatorIdOrDefault(string initiatorId)
+        => Set()
+            .Where(x => x.InitiatorId == initiatorId)
+            .DeferredSingleOrDefault();
+
     public IDeferredQuerySingleOrDefault<MemberSubscriptionRecord> GetLatest(Guid memberId, Guid chapterId)
     {
         var query =
