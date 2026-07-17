@@ -21,7 +21,6 @@
 
 	<ItemGroup>
 		<PackageReference Include="BetterStack.Logs.Serilog" Version="1.2.0" />
-		<PackageReference Include="CsvHelper" Version="33.1.0" />
 		<PackageReference Include="GitInfo" Version="3.6.1">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

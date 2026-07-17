@@ -152,6 +152,8 @@ auto-hide/disable based on it (`UnauthorizedBehaviour`).
   implementation (or several types) in the same file. Give each its own file (e.g.
   `IMemberImportStagingService.cs` and `MemberImportStagingService.cs`).
 - Prefer `required` init properties for model/view-model types.
+- When materialising a collection to satisfy an `IReadOnlyCollection<T>` (return type, property, or
+  parameter), use `.ToArray()` rather than `.ToList()`.
 - Don't add client-side frameworks; reach for a partial first.
 - In Razor views, render form fields with the strongly-typed HTML helpers (`Html.HiddenFor`,
   `Html.TextBoxFor`, `Html.LabelFor`, …) bound to view-model properties — not hand-written

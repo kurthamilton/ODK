@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Images;
 using ODK.Services;
+using ODK.Services.Csv;
 using ODK.Services.Chapters;
-using ODK.Services.Files;
 using ODK.Services.Members;
 using ODK.Services.Members.Models;
 using ODK.Services.Security;
@@ -17,21 +17,27 @@ namespace ODK.Web.Razor.Controllers.Admin;
 public class MemberAdminController : AdminControllerBase
 {
     private readonly IChapterAdminService _chapterAdminService;
+    private readonly ICsvWriter _csvWriter;
     private readonly IMemberAdminService _memberAdminService;
     private readonly IMemberImportStagingService _memberImportStagingService;
 
     public MemberAdminController(
         IMemberAdminService memberAdminService,
         IChapterAdminService chapterAdminService,
+        ICsvWriter csvWriter,
         IMemberImportStagingService memberImportStagingService,
         IRequestStore requestStore,
         IOdkRoutes odkRoutes)
         : base(requestStore, odkRoutes)
     {
         _chapterAdminService = chapterAdminService;
+        _csvWriter = csvWriter;
         _memberAdminService = memberAdminService;
         _memberImportStagingService = memberImportStagingService;
     }
+
+    private IActionResult DownloadCsv(IReadOnlyCollection<IReadOnlyCollection<string>> data, string fileName)
+        => File(_csvWriter.Write(data), "text/csv", fileName);
 
     [HttpPost("groups/{chapterId:guid}/members/{id:guid}/approve")]
     public async Task<IActionResult> ApproveMember(Guid chapterId, Guid id)

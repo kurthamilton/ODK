@@ -10,12 +10,13 @@ using ODK.Services.Authentication.OAuth;
 using ODK.Services.Authorization;
 using ODK.Services.Chapters;
 using ODK.Services.Contact;
+using ODK.Services.Csv;
 using ODK.Services.Emails;
 using ODK.Services.Events;
 using ODK.Services.Features;
-using ODK.Services.Files;
 using ODK.Services.Geolocation;
 using ODK.Services.Imaging;
+using ODK.Services.Integrations.Csv;
 using ODK.Services.Integrations.Emails.Brevo;
 using ODK.Services.Integrations.Geolocation;
 using ODK.Services.Integrations.Imaging;
@@ -69,6 +70,8 @@ public static class DependencyRegistrar
         services
             .AddScoped<IDistanceUnitFactory, DistanceUnitFactory>()
             .AddSingleton<IHtmlSanitizer>(new HtmlSanitizer())
+            .AddSingleton<ICsvReader, CsvReader>()
+            .AddSingleton<ICsvWriter, CsvWriter>()
             .AddScoped<IUrlProviderFactory, UrlProviderFactory>();
     }
 
@@ -127,7 +130,6 @@ public static class DependencyRegistrar
                 ContactMessageRecaptchaScoreThreshold = appSettings.Recaptcha.ScoreThreshold
             })
             .AddScoped<IContactService, ContactService>()
-            .AddScoped<ICsvService, CsvService>()
             .AddScoped<IEmailAdminService, EmailAdminService>()
             .AddScoped<IEmailClient, BrevoApiEmailClient>()
             .AddSingleton(new BrevoApiEmailClientSettings
