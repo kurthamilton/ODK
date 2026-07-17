@@ -17,6 +17,10 @@ namespace ODK.Web.Razor.Middleware;
 
 public class ErrorHandlingMiddleware
 {
+    // Request headers whose values carry credentials and must not be logged.
+    private static readonly HashSet<string> SensitiveHeaders =
+        new(StringComparer.OrdinalIgnoreCase) { "Cookie", "Authorization" };
+
     private readonly RequestDelegate _next;
 
     public ErrorHandlingMiddleware(RequestDelegate next)
@@ -179,14 +183,19 @@ public class ErrorHandlingMiddleware
             }
         }
 
+        // Redact credential-bearing headers so auth cookies/tokens don't end up in logs.
         var headers = httpContext.Request.Headers
-            .ToDictionary(x => x.Key, x => x.Value.ToString());
+            .ToDictionary(
+                x => x.Key,
+                x => SensitiveHeaders.Contains(x.Key) ? "[redacted]" : x.Value.ToString());
 
         var form = new Dictionary<string, string>();
 
         try
         {
-            form = httpContext.Request.Form.ToDictionary(x => x.Key, x => x.Value.ToString());
+            // Record which fields were submitted, but not their values - form bodies routinely contain
+            // passwords and personal data.
+            form = httpContext.Request.Form.ToDictionary(x => x.Key, _ => "[redacted]");
         }
         catch
         {

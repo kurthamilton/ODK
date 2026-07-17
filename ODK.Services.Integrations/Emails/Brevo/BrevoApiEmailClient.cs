@@ -34,7 +34,7 @@ public class BrevoApiEmailClient : IEmailClient
             };
         }
 
-        await _loggingService.Info($"Sending email to {string.Join(", ", email.To)}");
+        await _loggingService.Info($"Sending email to {email.To.Count} recipient(s)");
 
         var url = UrlBuilder
             .Base("https://api.brevo.com")
@@ -74,10 +74,11 @@ public class BrevoApiEmailClient : IEmailClient
         }
         catch (Exception ex)
         {
+            // Don't log recipient addresses or the email body (PII); a count + subject is enough to
+            // diagnose a send failure.
             await _loggingService.Error(ex, new Dictionary<string, string?>
             {
-                { "MAIL.TO", string.Join(", ", email.To) },
-                { "MAIL.HTMLBODY", email.Body },
+                { "MAIL.TO.COUNT", email.To.Count.ToString() },
                 { "MAIL.SUBJECT", email.Subject }
             });
 
