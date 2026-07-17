@@ -1,13 +1,14 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using ODK.Web.Razor.Attributes;
 
 namespace ODK.Web.Razor.Models.Admin.Members;
 
 public class SubscriptionFormSubmitViewModel
 {
     [Required]
-    [Range(0, double.MaxValue)]
-    public double? Amount { get; set; }
+    [NonNegative]
+    public decimal? Amount { get; set; }
 
     [Required]
     public string Description { get; set; } = string.Empty;

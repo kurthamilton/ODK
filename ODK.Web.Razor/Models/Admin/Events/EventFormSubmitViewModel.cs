@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using ODK.Web.Common.Validation;
+using ODK.Web.Razor.Attributes;
 
 namespace ODK.Web.Razor.Models.Admin.Events;
 
@@ -40,11 +41,11 @@ public class EventFormSubmitViewModel
     public bool RsvpDisabled { get; set; }
 
     [DisplayName("Cost")]
-    [Range(0, double.MaxValue, ErrorMessage = "{0} cannot be less than 0")]
+    [NonNegative]
     public decimal? TicketCost { get; set; }
 
     [DisplayName("Deposit")]
-    [Range(0, double.MaxValue, ErrorMessage = "{1} cannot be less than 0")]
+    [NonNegative]
     public decimal? TicketDepositCost { get; set; }
 
     public string? Time { get; set; } = string.Empty;

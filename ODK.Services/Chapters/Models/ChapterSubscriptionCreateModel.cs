@@ -2,7 +2,7 @@
 
 public class ChapterSubscriptionCreateModel
 {
-    public required double Amount { get; init; }
+    public required decimal Amount { get; init; }
 
     public required string Description { get; init; }
 

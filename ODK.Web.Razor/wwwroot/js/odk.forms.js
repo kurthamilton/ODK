@@ -34,6 +34,15 @@ window.odk.forms = window.odk.forms || {};
 
     function bindClientSideValidation() {
         const v = new aspnetValidation.ValidationService();
+
+        // Custom [NonNegative] provider (must be registered before bootstrap).
+        // Empty values pass - presence is the [Required] provider's job.
+        v.addProvider('nonnegative', (value) => {
+            if (!value) return true;
+            const val = parseFloat(value);
+            return isNaN(val) || val >= 0;
+        });
+
         v.bootstrap();
         window.odk.forms.validationService = v;
     }

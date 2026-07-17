@@ -293,6 +293,45 @@ public static class PaymentServiceTests
     }
 
     [Test]
+    public static async Task ProcessWebhook_ChapterSubscription_PersistsDecimalAmountWithCents()
+    {
+        // Arrange
+        // Amount is a decimal end-to-end (previously a double, which risked binary-float artefacts when
+        // cast to the decimal Payment/record amount). A cents value must round-trip exactly.
+        using var context = CreateMockOdkContext();
+
+        var member = context.CreateMember();
+        var chapter = context.CreateChapter(members: [member]);
+        var chapterSubscription = context.CreateChapterSubscription(chapter: chapter);
+        chapterSubscription.Amount = 12.34m;
+
+        var paymentCheckoutSession = context.CreatePaymentCheckoutSession();
+
+        var webhook = CreatePaymentProviderWebhook(
+            type: PaymentProviderWebhookType.InvoicePaymentSucceeded,
+            subscriptionId: "sub_123",
+            metadata: new PaymentMetadataModel(
+                PlatformType.Default,
+                PaymentReasonType.ChapterSubscription,
+                member,
+                chapterSubscription,
+                paymentCheckoutSession.Id,
+                paymentCheckoutSession.PaymentId));
+
+        var service = CreatePaymentService(context);
+        var request = CreateServiceRequest();
+
+        // Act
+        await service.ProcessWebhook(request, webhook);
+
+        // Assert
+        var record = context.Set<MemberSubscriptionRecord>()
+            .Single(x => x.MemberId == member.Id && x.ChapterSubscriptionId == chapterSubscription.Id);
+
+        record.Amount.Should().Be(12.34m);
+    }
+
+    [Test]
     public static async Task ProcessWebhook_CheckoutSessionCompleted_ForSubscriptionWithoutPaymentIntent_DoesNotUpdateChapterSubscription()
     {
         // Arrange

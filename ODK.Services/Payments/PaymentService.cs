@@ -245,7 +245,7 @@ public class PaymentService : IPaymentService
             // We will need to create a Payment here for recurring payments.
             payment = new Payment
             {
-                Amount = (decimal)chapterSubscription.Amount,
+                Amount = chapterSubscription.Amount,
                 ChapterId = chapter.Id,
                 CreatedUtc = completedUtc,
                 CurrencyId = chapterSubscription.CurrencyId,

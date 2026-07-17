@@ -136,6 +136,15 @@ auto-hide/disable based on it (`UnauthorizedBehaviour`).
   action (e.g. `MemberImport`, not a nearby one). Admin services enforce it via
   `GetChapterAdminRestrictedContent(...)` in `OdkAdminServiceBase`.
 - Keep business logic in `ODK.Services`, not in controllers or pages.
+- **Atomicity.** A single `IUnitOfWork.SaveChangesAsync()` commits all pending changes across every
+  repository in one implicit EF transaction (they share one `DbContext`), so a multi-repository write
+  is already atomic — batch the writes and save once. There is deliberately no explicit transaction
+  API. Where a method commits, performs an external side effect (send an email, schedule/enqueue a
+  Hangfire job, call a payment provider), then commits again, **that split is intentional and must be
+  preserved**: the first commit persists state *before* the irreversible external action, so the
+  action is never taken against state that later rolls back. Do not wrap a
+  commit → external call → commit sequence in a transaction. Rely on job/webhook idempotency (see
+  `InitiatorId` in `PaymentService`) for the window between the external action and the final commit.
 
 ## Tests
 
@@ -159,5 +168,10 @@ auto-hide/disable based on it (`UnauthorizedBehaviour`).
   `Html.TextBoxFor`, `Html.LabelFor`, …) bound to view-model properties — not hand-written
   `<input name="…">`. This keeps fields tied to the view model, so property references are findable and
   refactors stay safe.
+  **Exception — display-only formatted values:** a helper binds the raw property value, so it can't show
+  a *formatted* value (e.g. a currency string via `Currency.ToAmountString`). When you need to display a
+  formatted, read-only value, a raw `<input readonly value="@…">` (or plain markup) is correct. If that
+  value must also post back, bind the real value with `Html.HiddenFor` alongside the read-only display —
+  see `_SubscriptionForm.cshtml` (hidden `Amount` + a read-only input showing the formatted amount).
 - Reuse shared helpers rather than duplicating (e.g. CSV parsing lives in
   `ODK.Web.Razor/Services/CsvFileReader.cs`, used by both controllers and page models).
