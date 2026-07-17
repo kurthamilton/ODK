@@ -44,8 +44,6 @@ public interface IEventAdminService
 
     Task<ServiceResult> SendEventInvites(IMemberChapterAdminServiceRequest request, Guid eventId, bool test = false);
 
-    Task<ServiceResult> SetMissingEventShortcodes(IMemberServiceRequest request);
-
     Task UpdateEventSettings(IMemberChapterAdminServiceRequest request, EventSettingsUpdateModel model);
 
     Task<ServiceResult> UpdateEvent(IMemberChapterAdminServiceRequest request, Guid id, EventCreateModel @event);

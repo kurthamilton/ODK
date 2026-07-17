@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Net;
 using System.Text.RegularExpressions;
 using ODK.Core.Utils;
@@ -10,28 +10,45 @@ namespace ODK.Web.Razor.Middleware;
 public class RateLimitingMiddleware
 {
     // Collection of IP addresses and the time they are blocked until
-    private static readonly ConcurrentDictionary<string, DateTime> GreyList = new(StringComparer.InvariantCultureIgnoreCase);
+    private static readonly ConcurrentDictionary<string, DateTime> GreyList = new(StringComparer.OrdinalIgnoreCase);
+
+    // Expired grey-list entries are swept periodically so the dictionary can't grow unbounded.
+    private static readonly TimeSpan CleanupInterval = TimeSpan.FromMinutes(10);
+    private static long _nextCleanupTicks;
 
     private readonly RequestDelegate _next;
+    private readonly AppSettings _appSettings;
 
-    public RateLimitingMiddleware(RequestDelegate next)
+    // BlockPatterns come from the singleton AppSettings and don't change at runtime, so the pattern is
+    // compiled once here rather than on every request.
+    private readonly Regex? _blockPatternRegex;
+
+    public RateLimitingMiddleware(RequestDelegate next, AppSettings appSettings)
     {
         _next = next;
+        _appSettings = appSettings;
+
+        var blockPatterns = appSettings.RateLimiting.BlockPatterns;
+        _blockPatternRegex = blockPatterns.Length > 0
+            ? new Regex($@"^({string.Join('|', blockPatterns)})$", RegexOptions.IgnoreCase | RegexOptions.Compiled)
+            : null;
     }
 
     public async Task InvokeAsync(
         HttpContext context,
-        ILoggingService loggingService,
-        AppSettings appSettings)
+        ILoggingService loggingService)
     {
+        var utcNow = DateTime.UtcNow;
         var ipAddress = context.Connection.RemoteIpAddress?.ToString() ?? string.Empty;
 
-        // Check black list
-        if (appSettings.RateLimiting.BlockIpAddresses.Contains(ipAddress, StringComparer.OrdinalIgnoreCase))
+        // Check black list - block immediately, don't run the rest of the pipeline.
+        if (_appSettings.RateLimiting.BlockIpAddresses.Contains(ipAddress, StringComparer.OrdinalIgnoreCase))
         {
-            // Use 403 for black-listed IP addresses
             context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+            return;
         }
+
+        CleanupExpired(utcNow);
 
         // Get previous rate limit
         var blockedUntilUtc = GreyList.TryGetValue(ipAddress, out var value)
@@ -40,9 +57,9 @@ public class RateLimitingMiddleware
 
         // Does the current request warrant rate limiting?
         var path = UrlUtils.NormalisePath(context.Request.Path);
-        var isRateLimited = IsRateLimited(path, appSettings.RateLimiting);
+        var isRateLimited = IsRateLimited(path);
 
-        var shouldBlock = isRateLimited || blockedUntilUtc > DateTime.UtcNow;
+        var shouldBlock = isRateLimited || blockedUntilUtc > utcNow;
         if (!shouldBlock)
         {
             // No reason to block - run the remaining pipeline
@@ -72,30 +89,48 @@ public class RateLimitingMiddleware
             return;
         }
 
-        if (blockedUntilUtc == null || blockedUntilUtc < DateTime.UtcNow)
+        if (blockedUntilUtc == null || blockedUntilUtc < utcNow)
         {
-            blockedUntilUtc = DateTime.UtcNow;
+            blockedUntilUtc = utcNow;
         }
 
-        blockedUntilUtc = blockedUntilUtc.Value.AddSeconds(appSettings.RateLimiting.BlockForSeconds);
+        blockedUntilUtc = blockedUntilUtc.Value.AddSeconds(_appSettings.RateLimiting.BlockForSeconds);
 
         GreyList[ipAddress] = blockedUntilUtc.Value;
     }
 
-    private static bool IsRateLimited(string requestPath, RateLimitingSettings settings)
+    private bool IsRateLimited(string requestPath)
     {
-        if (settings.BlockPatterns.Length == 0 && settings.BlockPaths.Length == 0)
-        {
-            return false;
-        }
-
-        if (settings.BlockPaths.Any(x => MatchesConfigRule(x, requestPath)))
+        if (_appSettings.RateLimiting.BlockPaths.Any(x => MatchesConfigRule(x, requestPath)))
         {
             return true;
         }
 
-        var pattern = $@"^({string.Join('|', settings.BlockPatterns)})$";
-        return Regex.IsMatch(requestPath, pattern, RegexOptions.IgnoreCase);
+        return _blockPatternRegex?.IsMatch(requestPath) == true;
+    }
+
+    private static void CleanupExpired(DateTime utcNow)
+    {
+        var next = Interlocked.Read(ref _nextCleanupTicks);
+        if (utcNow.Ticks < next)
+        {
+            return;
+        }
+
+        // Claim the next cleanup window; if another thread got there first, let it do the work.
+        var newNext = utcNow.Add(CleanupInterval).Ticks;
+        if (Interlocked.CompareExchange(ref _nextCleanupTicks, newNext, next) != next)
+        {
+            return;
+        }
+
+        foreach (var entry in GreyList)
+        {
+            if (entry.Value <= utcNow)
+            {
+                GreyList.TryRemove(entry.Key, out _);
+            }
+        }
     }
 
     private static bool MatchesConfigRule(string rule, string value)
