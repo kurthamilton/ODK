@@ -15,6 +15,12 @@ public class MemberSiteSubscriptionRecordQueryBuilder :
 
     protected override MemberSiteSubscriptionRecordQueryBuilder Builder => this;
 
+    public IMemberSiteSubscriptionRecordQueryBuilder ForInitiator(string initiatorId)
+    {
+        Query = Query.Where(x => x.InitiatorId == initiatorId);
+        return this;
+    }
+
     public IMemberSiteSubscriptionRecordQueryBuilder ForPayment(Guid paymentId)
     {
         Query = Query.Where(x => x.PaymentId == paymentId);
