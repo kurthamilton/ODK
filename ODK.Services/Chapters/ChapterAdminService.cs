@@ -530,7 +530,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         var externalId = await paymentProvider.CreateSubscriptionPlan(new ExternalSubscriptionPlan
         {
-            Amount = (decimal)subscription.Amount,
+            Amount = subscription.Amount,
             CurrencyCode = currency.Code,
             ExternalId = string.Empty,
             ExternalProductId = productId,

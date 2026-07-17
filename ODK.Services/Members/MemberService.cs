@@ -694,7 +694,7 @@ public class MemberService : IMemberService
 
         _unitOfWork.PaymentRepository.Add(new Payment
         {
-            Amount = (decimal)chapterSubscription.Amount,
+            Amount = chapterSubscription.Amount,
             ChapterId = chapterSubscription.ChapterId,
             CreatedUtc = utcNow,
             CurrencyId = chapterSubscription.Currency.Id,

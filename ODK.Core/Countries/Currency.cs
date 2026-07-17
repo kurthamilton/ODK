@@ -22,7 +22,5 @@ public class Currency : IDatabaseEntity
         return $"{Symbol}{valueString}";
     }
 
-    public string ToAmountString(double amount) => ToAmountString((decimal)amount);
-
     public override string ToString() => $"{Symbol} {Code}";
 }
