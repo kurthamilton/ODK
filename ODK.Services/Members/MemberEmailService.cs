@@ -397,7 +397,8 @@ public class MemberEmailService : IMemberEmailService
         var to = member.ToEmailAddressee();
         var subject = "{title} - Activate your account";
         var body = new EmailBodyBuilder()
-            .AddParagraph("You application to join {chapter.fullName} has been approved")
+            .AddParagraph("You application to join {chapter.fullName} has been approved.")
+            .AddParagraph("Activate your account using the link below.")
             .AddParagraphLink("url")
             .ToString();
 

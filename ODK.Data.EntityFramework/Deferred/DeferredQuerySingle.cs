@@ -6,13 +6,8 @@ namespace ODK.Data.EntityFramework.Deferred;
 
 public class DeferredQuerySingle<T> : IDeferredQuerySingle<T> where T : class
 {
-    private readonly T? _cached = null;
-    private readonly Func<T?>? _getFromCache = null;
-    private readonly Guid? _id = null;
-    private readonly Action<IEnumerable<T>>? _prefillCache = null;
-    private readonly QueryFutureValue<T>? _query = null;
-    private readonly QueryFutureEnumerable<T>? _queryAll = null;
-    private Action<T>? _updateCache = null;
+    private readonly Guid? _id;
+    private readonly QueryFutureValue<T> _query;
 
     internal DeferredQuerySingle(IQueryable<T> query, Guid? id = null)
     {
@@ -23,57 +18,9 @@ public class DeferredQuerySingle<T> : IDeferredQuerySingle<T> where T : class
             .FutureValue();
     }
 
-    internal DeferredQuerySingle(
-        IQueryable<T> query,
-        Func<T?> getFromCache,
-        Action<T> updateCache,
-        Action<IEnumerable<T>>? prefillCache = null)
-    {
-        _cached = getFromCache();
-        if (_cached != null)
-        {
-            return;
-        }
-
-        if (prefillCache != null)
-        {
-            _queryAll = query
-                .Future();
-        }
-        else
-        {
-            _query = query
-                .DeferredFirstOrDefault()
-                .FutureValue();
-        }
-
-        _getFromCache = getFromCache;
-        _prefillCache = prefillCache;
-        _updateCache = updateCache;
-    }
-
     public async Task<T> Run()
     {
-        if (_cached != null)
-        {
-            return _cached;
-        }
-
-        T? value = null;
-        if (_query != null)
-        {
-            value = await _query.ValueAsync();
-        }
-        else if (_queryAll != null && _prefillCache != null && _getFromCache != null)
-        {
-            var values = await _queryAll.ToArrayAsync();
-            _prefillCache.Invoke(values);
-            value = _getFromCache();
-        }
-        else
-        {
-            throw new Exception("Query not set");
-        }
+        var value = await _query.ValueAsync();
 
         var errorMessage = $"Database entity {typeof(T).Name} not found";
         if (_id != null)
@@ -82,8 +29,6 @@ public class DeferredQuerySingle<T> : IDeferredQuerySingle<T> where T : class
         }
 
         OdkAssertions.Exists(value, errorMessage);
-
-        _updateCache?.Invoke(value);
 
         return value;
     }

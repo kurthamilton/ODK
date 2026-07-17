@@ -534,6 +534,14 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         };
     }
 
+    public async Task<IReadOnlyCollection<IReadOnlyCollection<string>>> GetMemberImportTemplate(
+        IMemberChapterAdminServiceRequest request)
+    {
+        await AssertMemberIsChapterAdmin(request);
+
+        return [MemberImportModel.GetCsvHeaderRow()];
+    }
+
     public async Task<MemberImportPreview> GetMemberImportPreview(
         IMemberChapterAdminServiceRequest request, IReadOnlyCollection<MemberImportModel> members)
     {
@@ -743,7 +751,9 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             return;
         }
 
-        await _memberEmailService.SendActivationEmail(request, chapter, member, activationToken.ActivationToken);
+        var emailRequest = MemberChapterServiceRequest.Create(chapter, member, request);
+        await _memberEmailService.SendGroupImportActivationEmail(
+            emailRequest, activationToken.ActivationToken);
     }
 
     // Public for Hangfire

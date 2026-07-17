@@ -162,9 +162,11 @@ public class MemberAdminController : AdminControllerBase
     [HttpGet("groups/{chapterId:guid}/members/import/template")]
     public async Task<IActionResult> DownloadMemberImportTemplate(Guid chapterId)
     {
-        var header = MemberImportModel.GetCsvHeaderRow();
+        var request = MemberChapterAdminServiceRequest.Create(
+            ChapterAdminSecurable.MemberImport, MemberChapterServiceRequest);
+        var data = await _memberAdminService.GetMemberImportTemplate(request);
 
-        return DownloadCsv([header], "member-import.csv");
+        return DownloadCsv(data, "member-import.csv");
     }
 
     [HttpPost("groups/{chapterId:guid}/members/import")]
