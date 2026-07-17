@@ -1,4 +1,5 @@
 using ODK.Services;
+using ODK.Services.Csv;
 using ODK.Services.Members;
 using ODK.Services.Members.Models;
 using ODK.Web.Razor.Models.Admin.Members;
@@ -7,13 +8,21 @@ namespace ODK.Web.Razor.Services;
 
 public class MemberImportPreviewBuilder : IMemberImportPreviewBuilder
 {
+    private const long MaxBytes = 5 * 1024 * 1024;
+
+    private static readonly string[] AllowedContentTypes =
+        ["text/csv", "application/vnd.ms-excel", "text/plain"];
+
+    private readonly ICsvReader _csvReader;
     private readonly IMemberAdminService _memberAdminService;
     private readonly IMemberImportStagingService _stagingService;
 
     public MemberImportPreviewBuilder(
+        ICsvReader csvReader,
         IMemberAdminService memberAdminService,
         IMemberImportStagingService stagingService)
     {
+        _csvReader = csvReader;
         _memberAdminService = memberAdminService;
         _stagingService = stagingService;
     }
@@ -22,15 +31,20 @@ public class MemberImportPreviewBuilder : IMemberImportPreviewBuilder
         IMemberChapterAdminServiceRequest request,
         IFormFile? file)
     {
-        var csvResult = CsvFileReader.Read<MemberImportModel>(file);
-        if (!csvResult.Success || csvResult.Value == null)
+        if (!ValidateFile(file, out var error))
         {
-            return ServiceResult<MemberImportStagedPreview>.Failure(csvResult.Message ?? "The file could not be read");
+            return ServiceResult<MemberImportStagedPreview>.Failure(error);
+        }
+
+        IReadOnlyCollection<MemberImportModel> parsed;
+        using (var stream = file!.OpenReadStream())
+        {
+            parsed = _csvReader.Read<MemberImportModel>(stream);
         }
 
         // Drop rows without an email address (e.g. a missing/blank email column) - they can't be matched
         // or imported, and a null email would otherwise throw when the preview is built.
-        var members = csvResult.Value
+        var members = parsed
             .Where(x => !string.IsNullOrWhiteSpace(x.EmailAddress))
             .ToArray();
 
@@ -50,5 +64,37 @@ public class MemberImportPreviewBuilder : IMemberImportPreviewBuilder
             Preview = preview,
             Token = token
         });
+    }
+
+    private static bool ValidateFile(IFormFile? file, out string error)
+    {
+        error = string.Empty;
+
+        if (file is null || file.Length == 0)
+        {
+            error = "No file uploaded";
+            return false;
+        }
+
+        if (file.Length > MaxBytes)
+        {
+            error = "File is too large. The maximum allowed size is 5 MB.";
+            return false;
+        }
+
+        var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+        if (extension != ".csv")
+        {
+            error = "Only .csv files are allowed.";
+            return false;
+        }
+
+        if (!AllowedContentTypes.Contains(file.ContentType.ToLowerInvariant()))
+        {
+            error = $"Invalid content type: {file.ContentType}";
+            return false;
+        }
+
+        return true;
     }
 }

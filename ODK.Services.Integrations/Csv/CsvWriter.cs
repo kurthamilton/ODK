@@ -1,17 +1,13 @@
 using System.Globalization;
 using System.Text;
-using CsvHelper;
 using CsvHelper.Configuration;
+using ODK.Services.Csv;
 
-namespace ODK.Web.Razor.Services;
+namespace ODK.Services.Integrations.Csv;
 
-/// <summary>
-/// Writes CSV files using CsvHelper. Shared by controllers so that CSV generation - including
-/// CSV/formula-injection protection - behaves identically wherever a CSV is produced.
-/// </summary>
-public static class CsvFileWriter
+public class CsvWriter : ICsvWriter
 {
-    public static byte[] Write(IReadOnlyCollection<IReadOnlyCollection<string>> rows)
+    public byte[] Write(IReadOnlyCollection<IReadOnlyCollection<string>> rows)
     {
         var config = new CsvConfiguration(CultureInfo.InvariantCulture)
         {
@@ -24,10 +20,9 @@ public static class CsvFileWriter
 
         using var stream = new MemoryStream();
 
-        // No BOM, matching the previous output; StreamWriter/CsvWriter leave the stream open so it
-        // can be read after they flush on dispose.
+        // No BOM; StreamWriter/CsvWriter leave the stream open so it can be read after they flush on dispose.
         using (var writer = new StreamWriter(stream, new UTF8Encoding(false), leaveOpen: true))
-        using (var csv = new CsvWriter(writer, config, leaveOpen: true))
+        using (var csv = new CsvHelper.CsvWriter(writer, config, leaveOpen: true))
         {
             foreach (var row in rows)
             {

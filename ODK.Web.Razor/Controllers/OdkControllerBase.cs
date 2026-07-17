@@ -7,7 +7,6 @@ using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
 using ODK.Web.Razor.Extensions;
 using ODK.Web.Razor.Models.Feedback;
-using ODK.Web.Razor.Services;
 
 namespace ODK.Web.Razor.Controllers;
 
@@ -74,12 +73,6 @@ public abstract class OdkControllerBase : Controller
         return File(data, mimeType);
     }
 
-    protected IActionResult DownloadCsv(IReadOnlyCollection<IReadOnlyCollection<string>> data, string fileName)
-    {
-        var bytes = CsvFileWriter.Write(data);
-        return File(bytes, "text/csv", fileName);
-    }
-
     protected string? GetHeader(string name)
         => Request.Headers
             .GetCommaSeparatedValues(name)
@@ -91,9 +84,6 @@ public abstract class OdkControllerBase : Controller
         var text = await reader.ReadToEndAsync();
         return text;
     }
-
-    protected ServiceResult<IReadOnlyCollection<T>> ReadCsv<T>(IFormFile file)
-        => CsvFileReader.Read<T>(file);
 
     protected IActionResult RedirectToReferrer(string? fallback = null)
     {
