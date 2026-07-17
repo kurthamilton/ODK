@@ -6,6 +6,8 @@ public class MemberSiteSubscriptionRecord : IDatabaseEntity
 
     public Guid Id { get; set; }
 
+    public string? InitiatorId { get; set; }
+
     public Guid PaymentId { get; set; }
 
     public Guid? SiteSubscriptionPriceId { get; set; }

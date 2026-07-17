@@ -520,6 +520,127 @@ public static class PaymentServiceTests
     }
 
     [Test]
+    public static async Task ProcessWebhookAction_WhenSameEventProcessedTwice_ExtendsSiteSubscriptionOnce()
+    {
+        // Arrange
+        // As with chapter subscriptions, a retry of the site-subscription webhook-processing action must not
+        // extend the subscription twice. It is guarded by the initiating event id (InitiatorId = webhook.Id).
+        using var context = CreateMockOdkContext();
+
+        var member = context.CreateMember();
+        var currency = context.CreateCurrency();
+        var siteSubscription = context.CreateSiteSubscription();
+        var siteSubscriptionPrice = context.CreateSiteSubscriptionPrice(
+            siteSubscription: siteSubscription,
+            currency: currency);
+        var payment = context.CreatePayment(member: member, currency: currency);
+
+        var webhook = CreatePaymentProviderWebhook(
+            id: "wh_invoice",
+            type: PaymentProviderWebhookType.InvoicePaymentSucceeded,
+            subscriptionId: "sub_123",
+            metadata: new PaymentMetadataModel(
+                PlatformType.Default,
+                PaymentReasonType.SiteSubscription,
+                member,
+                siteSubscriptionPrice,
+                Guid.NewGuid(),
+                payment.Id));
+
+        var service = CreatePaymentService(context);
+        var request = CreateServiceRequest();
+
+        // Act - run the processing action twice, as a Hangfire retry would
+        await service.ProcessWebhookAction(request, webhook);
+        await service.ProcessWebhookAction(request, webhook);
+
+        // Assert
+        context.Set<MemberSiteSubscriptionRecord>()
+            .Count()
+            .Should()
+            .Be(1);
+
+        var memberSubscription = context.Set<MemberSiteSubscription>()
+            .Single(x => x.MemberId == member.Id);
+
+        // Extended once (a yearly plan, so 12 months), not twice.
+        memberSubscription.ExpiresUtc
+            .Should()
+            .BeCloseTo(DateTime.UtcNow.AddMonths(12), TimeSpan.FromMinutes(5));
+    }
+
+    [Test]
+    public static async Task ProcessWebhook_SiteSubscriptionRenewal_ExtendsExpiryByPlanMonths()
+    {
+        // Arrange
+        // A renewal is a subsequent invoice.payment_succeeded (a distinct event) for an existing site
+        // subscription. Recurring invoices reuse the original checkout Payment, so keying idempotency on the
+        // payment id would wrongly skip the renewal. Keyed on the event id, the renewal extends exactly once.
+        using var context = CreateMockOdkContext();
+
+        var member = context.CreateMember();
+        var currency = context.CreateCurrency();
+        var siteSubscription = context.CreateSiteSubscription();
+        var siteSubscriptionPrice = context.CreateSiteSubscriptionPrice(
+            siteSubscription: siteSubscription,
+            currency: currency);
+        var payment = context.CreatePayment(
+            member: member,
+            currency: currency,
+            paidUtc: DateTime.UtcNow.AddMonths(-12));
+
+        var originalExpiry = DateTime.UtcNow.AddDays(10);
+        context.CreateMemberSiteSubscription(
+            member,
+            siteSubscription: siteSubscription,
+            expiresUtc: originalExpiry);
+
+        // The record created by the first cycle, keyed on the original (now spent) event id.
+        context.Create(new MemberSiteSubscriptionRecord
+        {
+            CreatedUtc = DateTime.UtcNow.AddMonths(-12),
+            Id = Guid.NewGuid(),
+            InitiatorId = "wh_first",
+            PaymentId = payment.Id,
+            SiteSubscriptionId = siteSubscription.Id,
+            SiteSubscriptionPriceId = siteSubscriptionPrice.Id
+        });
+
+        var webhook = CreatePaymentProviderWebhook(
+            id: "wh_renewal",
+            type: PaymentProviderWebhookType.InvoicePaymentSucceeded,
+            subscriptionId: "sub_123",
+            metadata: new PaymentMetadataModel(
+                PlatformType.Default,
+                PaymentReasonType.SiteSubscription,
+                member,
+                siteSubscriptionPrice,
+                Guid.NewGuid(),
+                payment.Id));
+
+        var service = CreatePaymentService(context);
+        var request = CreateServiceRequest();
+
+        // Act
+        await service.ProcessWebhook(request, webhook);
+
+        // Assert
+        var memberSubscription = context.Set<MemberSiteSubscription>()
+            .Single(x => x.MemberId == member.Id);
+
+        // Extended by the plan's 12 months from the existing expiry - the renewal was not skipped.
+        memberSubscription.ExpiresUtc
+            .Should()
+            .BeCloseTo(originalExpiry.AddMonths(12), TimeSpan.FromMinutes(5));
+
+        // A new record is added for the renewal event alongside the original.
+        context.Set<MemberSiteSubscriptionRecord>()
+            .Count()
+            .Should()
+            .Be(2);
+    }
+
+    [Test]
     public static async Task ProcessWebhook_WhenInvalidWebhookType_DoesNotSendEmail()
     {
         // Arrange

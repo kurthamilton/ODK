@@ -404,12 +404,22 @@ public class PaymentService : IPaymentService
             initiatorId);
     }
 
-    // Public for Hangfire
-    public async Task<PaymentWebhookProcessingResult> ProcessCompletedSiteSubscription(
+    // Public for Hangfire. This parameterless-initiator overload preserves the method signature for jobs
+    // that were enqueued before initiatorId was introduced, so a deployment can't orphan in-flight jobs.
+    public Task<PaymentWebhookProcessingResult> ProcessCompletedSiteSubscription(
         IReadOnlyDictionary<string, string> metadataDictionary,
         DateTime completedUtc,
         PaymentProviderType paymentProvider,
         string externalId)
+        => ProcessCompletedSiteSubscription(
+            metadataDictionary, completedUtc, paymentProvider, externalId, initiatorId: null);
+
+    private async Task<PaymentWebhookProcessingResult> ProcessCompletedSiteSubscription(
+        IReadOnlyDictionary<string, string> metadataDictionary,
+        DateTime completedUtc,
+        PaymentProviderType paymentProvider,
+        string externalId,
+        string? initiatorId)
     {
         var metadata = PaymentMetadataModel.FromDictionary(metadataDictionary);
 
@@ -498,7 +508,8 @@ public class PaymentService : IPaymentService
                 siteSubscriptionPrice,
                 payment,
                 externalId: externalId,
-                completedUtc);
+                completedUtc,
+                initiatorId);
         }
         catch (Exception ex)
         {
@@ -715,7 +726,8 @@ public class PaymentService : IPaymentService
             metadata.ToDictionary(),
             completedUtc: webhook.OriginatedUtc,
             webhook.PaymentProviderType,
-            webhook.SubscriptionId);
+            webhook.SubscriptionId,
+            initiatorId: webhook.Id);
     }
 
     private async Task<PaymentWebhookProcessingResult> ProcessWebhookSubscription(
@@ -882,19 +894,26 @@ public class PaymentService : IPaymentService
         SiteSubscriptionPrice siteSubscriptionPrice,
         Payment payment,
         string externalId,
-        DateTime utcNow)
+        DateTime utcNow,
+        string? initiatorId)
     {
         var memberId = member.Id;
 
-        var (recordExists, memberSubscription) = await _unitOfWork.RunAsync(
-            x => x.MemberSiteSubscriptionRecordRepository.Query().ForPayment(payment.Id).Any(),
+        var (recordForInitiator, memberSubscription) = await _unitOfWork.RunAsync(
+            x => !string.IsNullOrEmpty(initiatorId)
+                ? x.MemberSiteSubscriptionRecordRepository.Query().ForInitiator(initiatorId).GetSingleOrDefault()
+                : new DefaultDeferredQuerySingleOrDefault<MemberSiteSubscriptionRecord>(),
             x => x.MemberSiteSubscriptionRepository.GetByMemberId(memberId, platform));
 
-        if (recordExists)
+        // Idempotency: if this initiating event (the payment provider webhook id) has already extended a
+        // subscription, do not extend again. This protects against a retry of the webhook-processing job
+        // re-applying the same event after the extension has already been committed. Renewals carry a
+        // distinct webhook id, so they are not caught here. Keying on the payment id would instead skip
+        // renewals, since recurring invoices reuse the original checkout Payment.
+        if (recordForInitiator != null)
         {
-            await _loggingService.Warn(
-                $"Member site subscription record already exists for payment {payment.Id}: " +
-                $"not updating member site subscription");
+            await _loggingService.Info(
+                $"Site subscription already updated for initiator '{initiatorId}'; not updating again");
             return PaymentWebhookProcessingResult.Successful(
                 member, chapter: null, payment, siteSubscriptionPrice.Currency);
         }
@@ -928,6 +947,7 @@ public class PaymentService : IPaymentService
         _unitOfWork.MemberSiteSubscriptionRecordRepository.Add(new MemberSiteSubscriptionRecord
         {
             CreatedUtc = utcNow,
+            InitiatorId = initiatorId,
             PaymentId = payment.Id,
             SiteSubscriptionId = siteSubscriptionPrice.SiteSubscriptionId,
             SiteSubscriptionPriceId = siteSubscriptionPrice.Id
