@@ -28,6 +28,9 @@ public interface IMemberAdminService
     Task<MemberImportPreview> GetMemberImportPreview(
         IMemberChapterAdminServiceRequest request, IReadOnlyCollection<MemberImportModel> members);
 
+    Task<IReadOnlyCollection<IReadOnlyCollection<string>>> GetMemberImportTemplate(
+        IMemberChapterAdminServiceRequest request);
+
     Task<MemberDeleteAdminPageViewModel> GetMemberDeleteViewModel(
         IMemberChapterAdminServiceRequest request, Guid memberId);
 

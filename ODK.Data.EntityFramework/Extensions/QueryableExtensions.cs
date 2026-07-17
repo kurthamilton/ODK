@@ -26,13 +26,6 @@ internal static class QueryableExtensions
         where T : class
         => new DeferredQueryMultiple<T>(query);
 
-    internal static IDeferredQueryMultiple<T> DeferredMultiple<T>(
-        this IQueryable<T> query,
-        Func<IReadOnlyCollection<T>?> getFromCache,
-        Action<IReadOnlyCollection<T>> updateCache)
-        where T : class
-        => new DeferredQueryMultiple<T>(query, getFromCache, updateCache);
-
     internal static IDeferredQuerySingle<T> DeferredSingle<T>(this IQueryable<T> query)
         where T : class
         => new DeferredQuerySingle<T>(query);
@@ -41,25 +34,9 @@ internal static class QueryableExtensions
         where T : class, IDatabaseEntity
         => new DeferredQuerySingle<T>(query.Where(x => x.Id == id), id);
 
-    internal static IDeferredQuerySingle<T> DeferredSingle<T>(
-        this IQueryable<T> query,
-        Func<T?> getFromCache,
-        Action<T> updateCache,
-        Action<IEnumerable<T>>? prefillCache = null)
-        where T : class
-        => new DeferredQuerySingle<T>(query, getFromCache, updateCache, prefillCache);
-
     internal static IDeferredQuerySingleOrDefault<T> DeferredSingleOrDefault<T>(this IQueryable<T> query)
         where T : class
         => new DeferredQuerySingleOrDefault<T>(query);
-
-    internal static IDeferredQuerySingleOrDefault<T> DeferredSingleOrDefault<T>(
-        this IQueryable<T> query,
-        Func<T?> getFromCache,
-        Action<T> updateCache,
-        Action<IEnumerable<T>>? prefillCache = null)
-        where T : class
-        => new DeferredQuerySingleOrDefault<T>(query, getFromCache, updateCache);
 
     internal static IQueryable<T> Page<T>(this IQueryable<T> query, int page, int pageSize)
     {

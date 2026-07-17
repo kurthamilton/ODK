@@ -21,8 +21,8 @@ public class OdkContext : DbContext
                 options.UseNetTopologySuite();
                 options.MigrationsAssembly("ODK.Data.EntityFramework.Migrations");
             })
-            .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
-            .AddInterceptors(new DebugInterceptor());
+            .AddInterceptors(new DebugInterceptor())
+            .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
