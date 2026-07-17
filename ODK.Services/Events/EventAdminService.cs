@@ -916,33 +916,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> SetMissingEventShortcodes(IMemberServiceRequest request)
-    {
-        var platform = request.Platform;
-
-        var chapters = await GetSiteAdminRestrictedContent(request,
-            x => x.ChapterRepository.GetAll(platform, includeUnpublished: true));
-
-        foreach (var chapter in chapters)
-        {
-            var events = await _unitOfWork.EventRepository.GetByChapterId(chapter.Id).Run();
-            foreach (var @event in @events)
-            {
-                if (!string.IsNullOrEmpty(@event.Shortcode))
-                {
-                    continue;
-                }
-
-                @event.Shortcode = GenerateShortcode();
-                _unitOfWork.EventRepository.Update(@event);
-            }
-        }
-
-        await _unitOfWork.SaveChangesAsync();
-
-        return ServiceResult.Successful();
-    }
-
     public async Task UpdateEventSettings(
         IMemberChapterAdminServiceRequest request, EventSettingsUpdateModel model)
     {
