@@ -60,7 +60,7 @@ public class MemberRepository : ReadWriteRepositoryBase<Member, IMemberQueryBuil
     public IDeferredQueryMultiple<MemberWithAvatarDto> GetLatestWithAvatarByChapterId(Guid chapterId, int pageSize)
         => Query()
             .InChapter(chapterId)
-            .Latest(8)
+            .Latest(pageSize)
             .WithAvatar()
             .GetAll();
 
