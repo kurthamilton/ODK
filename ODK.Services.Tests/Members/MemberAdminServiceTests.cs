@@ -620,10 +620,8 @@ public static class MemberAdminServiceTests
         // the member/chapter/token and sends the activation email exactly once.
         result.Success.Should().BeTrue();
         emailService.Verify(
-            x => x.SendActivationEmail(
-                It.IsAny<IServiceRequest>(),
-                It.IsAny<Chapter>(),
-                It.Is<Member>(m => m.EmailAddress == "new@example.com"),
+            x => x.SendGroupImportActivationEmail(
+                It.Is<IMemberChapterServiceRequest>(x => x.CurrentMember.EmailAddress == "new@example.com"),
                 It.IsAny<string>()),
             Times.Once);
     }
