@@ -1,4 +1,5 @@
 ﻿using ODK.Core;
+using ODK.Core.Chapters;
 using ODK.Core.Events;
 using ODK.Core.Extensions;
 using ODK.Core.Members;
@@ -78,7 +79,7 @@ public class EventViewModelService : IEventViewModelService
         var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
             sitePaymentSettings, chapterPaymentAccount);
 
-        var externalProductId = chapterPaymentSettings.ExternalProductId;
+        var externalProductId = chapterPaymentSettings?.ExternalProductId;
         if (string.IsNullOrEmpty(externalProductId))
         {
             externalProductId = await paymentProvider.CreateProduct(chapter.FullName);
@@ -88,8 +89,22 @@ public class EventViewModelService : IEventViewModelService
                 throw new OdkServiceException("Error starting event checkout");
             }
 
+            if (chapterPaymentSettings == null)
+            {
+                chapterPaymentSettings = new ChapterPaymentSettings
+                {
+                    ChapterId = chapter.Id
+                };
+
+                _unitOfWork.ChapterPaymentSettingsRepository.Add(chapterPaymentSettings);
+            }
+            else
+            {
+                _unitOfWork.ChapterPaymentSettingsRepository.Update(chapterPaymentSettings);
+            }
+
             chapterPaymentSettings.ExternalProductId = externalProductId;
-            _unitOfWork.ChapterPaymentSettingsRepository.Update(chapterPaymentSettings);
+
             await _unitOfWork.SaveChangesAsync();
         }
 

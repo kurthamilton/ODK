@@ -80,7 +80,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
 
         var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(
             sitePaymentSettings,
-            memberSubscriptionDto.SiteSubscription.SitePaymentSettingId);
+            memberSubscriptionDto?.SiteSubscription.SitePaymentSettingId);
 
         var externalSubscription = await paymentProvider.GetSubscription(externalId);
 
@@ -90,7 +90,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             return ServiceResult.Failure("Error confirming subscription");
         }
 
-        var memberSubscription = memberSubscriptionDto.MemberSiteSubscription;
+        var memberSubscription = memberSubscriptionDto?.MemberSiteSubscription;
 
         memberSubscription ??= new MemberSiteSubscription();
 

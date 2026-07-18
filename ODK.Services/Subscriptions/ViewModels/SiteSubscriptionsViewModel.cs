@@ -1,7 +1,6 @@
 ﻿using ODK.Core.Countries;
 using ODK.Core.Members;
 using ODK.Core.Payments;
-using ODK.Core.Subscriptions;
 using ODK.Data.Core.Members;
 using ODK.Services.Payments;
 
@@ -13,7 +12,7 @@ public class SiteSubscriptionsViewModel
 
     public required Currency? Currency { get; init; }
 
-    public required Member CurrentMember { get; init; }
+    public required Member? CurrentMember { get; init; }
 
     public required ExternalSubscription? CurrentMemberExternalSubscription { get; init; }
 
