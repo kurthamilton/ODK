@@ -13,13 +13,6 @@ public static class HibpBreachedPasswordCheckerTests
         "00D4F6E8FA6EECAD2A3AA415EEC418D38EC:0\r\n";
 
     [Test]
-    public static void ContainsSuffix_PresentWithNonZeroCount_ReturnsTrue()
-    {
-        HibpBreachedPasswordChecker.ContainsSuffix(Body, "1E4C9B93F3F0682250B6CF8331B7EE68FD8")
-            .Should().BeTrue();
-    }
-
-    [Test]
     public static void ContainsSuffix_CaseInsensitive_ReturnsTrue()
     {
         HibpBreachedPasswordChecker.ContainsSuffix(Body, "1e4c9b93f3f0682250b6cf8331b7ee68fd8")
@@ -39,5 +32,12 @@ public static class HibpBreachedPasswordCheckerTests
         // Padding rows have a count of 0 and must not count as a match.
         HibpBreachedPasswordChecker.ContainsSuffix(Body, "00D4F6E8FA6EECAD2A3AA415EEC418D38EC")
             .Should().BeFalse();
+    }
+
+    [Test]
+    public static void ContainsSuffix_PresentWithNonZeroCount_ReturnsTrue()
+    {
+        HibpBreachedPasswordChecker.ContainsSuffix(Body, "1E4C9B93F3F0682250B6CF8331B7EE68FD8")
+            .Should().BeTrue();
     }
 }

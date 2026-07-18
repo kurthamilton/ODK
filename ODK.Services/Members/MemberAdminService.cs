@@ -701,12 +701,12 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
             _unitOfWork.MemberSubscriptionRepository.Add(new MemberSubscription
             {
-                ExpiresUtc = membershipSettings?.TrialPeriodMonths > 0 
-                    ? utcNow.AddMonths(membershipSettings.TrialPeriodMonths) 
+                ExpiresUtc = membershipSettings?.TrialPeriodMonths > 0
+                    ? utcNow.AddMonths(membershipSettings.TrialPeriodMonths)
                     : null,
                 MemberChapterId = memberChapter.Id,
-                Type = membershipSettings?.TrialPeriodMonths > 0 
-                    ? SubscriptionType.Trial 
+                Type = membershipSettings?.TrialPeriodMonths > 0
+                    ? SubscriptionType.Trial
                     : SubscriptionType.Free
             });
         }
@@ -766,15 +766,6 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         var chapterRequest = ChapterServiceRequest.Create(chapter, request);
         await _memberEmailService.SendChapterInviteEmail(chapterRequest, member);
     }
-
-    // Collapses import rows that share an email address (case-insensitively) to a single row, keeping
-    // the first occurrence. Used by both the preview and the commit so they agree on the row count.
-    private static IReadOnlyCollection<MemberImportModel> DistinctByEmailAddress(
-        IReadOnlyCollection<MemberImportModel> members)
-        => members
-            .GroupBy(x => x.EmailAddress, StringComparer.OrdinalIgnoreCase)
-            .Select(g => g.First())
-            .ToArray();
 
     public async Task<ServiceResult> RemoveMemberFromChapter(
         IMemberChapterAdminServiceRequest request,
@@ -1071,6 +1062,15 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
     private static void AssertMemberIsInChapter(Member member, IMemberChapterServiceRequest request)
         => OdkAssertions.MeetsCondition(member, x => x.IsMemberOf(request.Chapter.Id));
+
+    // Collapses import rows that share an email address (case-insensitively) to a single row, keeping
+    // the first occurrence. Used by both the preview and the commit so they agree on the row count.
+    private static IReadOnlyCollection<MemberImportModel> DistinctByEmailAddress(
+        IReadOnlyCollection<MemberImportModel> members)
+        => members
+            .GroupBy(x => x.EmailAddress, StringComparer.OrdinalIgnoreCase)
+            .Select(g => g.First())
+            .ToArray();
 
     private IEnumerable<Member> FilterMembers(
         IEnumerable<Member> members,

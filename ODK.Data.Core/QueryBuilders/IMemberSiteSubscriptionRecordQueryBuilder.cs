@@ -2,7 +2,7 @@
 
 namespace ODK.Data.Core.QueryBuilders;
 
-public interface IMemberSiteSubscriptionRecordQueryBuilder : 
+public interface IMemberSiteSubscriptionRecordQueryBuilder :
     IDatabaseEntityQueryBuilder<MemberSiteSubscriptionRecord, IMemberSiteSubscriptionRecordQueryBuilder>
 {
     IMemberSiteSubscriptionRecordQueryBuilder ForInitiator(string initiatorId);

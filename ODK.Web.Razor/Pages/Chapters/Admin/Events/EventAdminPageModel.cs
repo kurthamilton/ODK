@@ -15,9 +15,9 @@ public abstract class EventAdminPageModel : AdminPageModel
 
     public CoreEvent Event { get; private set; } = null!;
 
-    protected IEventAdminService EventAdminService { get; }
-
     public override ChapterAdminSecurable Securable => ChapterAdminSecurable.Events;
+
+    protected IEventAdminService EventAdminService { get; }
 
     public override async Task OnPageHandlerExecutionAsync(
         PageHandlerExecutingContext context,

@@ -13,8 +13,6 @@ public abstract class RepositoryBase
         _context.SavedChanges += OnContextSavedChanges;
     }
 
-    protected void AddSingle<T>(T entity) where T : class => _context.Set<T>().Add(entity);
-
     public void AddMany<T>(IEnumerable<T> entities) where T : class => _context.Set<T>().AddRange(entities);
 
     public void DeleteSingle<T>(T entity) where T : class => _context.Set<T>().Remove(entity);
@@ -24,6 +22,8 @@ public abstract class RepositoryBase
         _context.Set<T>().Attach(entity);
         _context.Entry(entity).State = EntityState.Modified;
     }
+
+    protected void AddSingle<T>(T entity) where T : class => _context.Set<T>().Add(entity);
 
     protected virtual void OnCommit()
     {

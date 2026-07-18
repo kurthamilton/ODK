@@ -10,12 +10,12 @@ public class CreateModel : OdkGroupAdminPageModel
 {
     private readonly IChapterAdminService _chapterAdminService;
 
-    public override ChapterAdminSecurable Securable => ChapterAdminSecurable.Questions;
-
     public CreateModel(IChapterAdminService chapterAdminService)
     {
         _chapterAdminService = chapterAdminService;
     }
+
+    public override ChapterAdminSecurable Securable => ChapterAdminSecurable.Questions;
 
     public void OnGet()
     {

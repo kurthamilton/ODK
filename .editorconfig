@@ -1,3 +1,36 @@
 [*.cs]
 csharp_style_namespace_declarations = file_scoped:warning
 dotnet_diagnostic.IDE0051.severity = warning
+
+# Whitespace
+trim_trailing_whitespace = true
+
+# StyleCop: keep every category quiet by default, then opt in to the member-ordering rules we enforce.
+# (See CLAUDE.md > Conventions & style.)
+dotnet_analyzer_diagnostic.category-StyleCop.CSharp.SpecialRules.severity = none
+dotnet_diagnostic.SA0001.severity = none
+dotnet_analyzer_diagnostic.category-StyleCop.CSharp.SpacingRules.severity = none
+dotnet_analyzer_diagnostic.category-StyleCop.CSharp.ReadabilityRules.severity = none
+dotnet_analyzer_diagnostic.category-StyleCop.CSharp.OrderingRules.severity = none
+dotnet_analyzer_diagnostic.category-StyleCop.CSharp.NamingRules.severity = none
+dotnet_analyzer_diagnostic.category-StyleCop.CSharp.MaintainabilityRules.severity = none
+dotnet_analyzer_diagnostic.category-StyleCop.CSharp.LayoutRules.severity = none
+dotnet_analyzer_diagnostic.category-StyleCop.CSharp.DocumentationRules.severity = none
+
+# Member ordering (const -> field -> ctor -> property -> method; public -> protected -> private; static first)
+dotnet_diagnostic.SA1201.severity = warning
+dotnet_diagnostic.SA1202.severity = warning
+dotnet_diagnostic.SA1204.severity = warning
+# No trailing whitespace
+dotnet_diagnostic.SA1028.severity = warning
+
+# Auto-generated files are left alone - mark them generated so analyzers skip them entirely.
+[*.Designer.cs]
+generated_code = true
+
+[*.generated.cs]
+generated_code = true
+
+# EF migration scaffolding (incl. the model snapshot) is generated and not hand-maintained.
+[**/Migrations/*.cs]
+generated_code = true

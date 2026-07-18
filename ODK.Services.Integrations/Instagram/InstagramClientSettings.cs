@@ -6,7 +6,7 @@ public class InstagramClientSettings
 
     public required IReadOnlyDictionary<string, string> Cookies { get; init; }
 
-    public required string GraphQLUrl { get; init; }    
+    public required string GraphQLUrl { get; init; }
 
     public required IReadOnlyDictionary<string, string> Headers { get; init; }
 

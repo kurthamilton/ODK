@@ -24,21 +24,6 @@ public static class PasswordHasherTests
     }
 
     [Test]
-    public static void Check_WrongPassword_ReturnsFalse()
-    {
-        // Arrange
-        var hasher = CreateHasher();
-        var (hash, options) = hasher.ComputeHash("correct horse battery staple");
-        var stored = ToMemberPassword(hash, options);
-
-        // Act
-        var result = hasher.Check("wrong password", stored);
-
-        // Assert
-        result.Should().BeFalse();
-    }
-
-    [Test]
     public static void Check_MalformedStoredHash_ReturnsFalse()
     {
         // Arrange
@@ -48,6 +33,21 @@ public static class PasswordHasherTests
 
         // Act
         var result = hasher.Check("correct horse battery staple", stored);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Test]
+    public static void Check_WrongPassword_ReturnsFalse()
+    {
+        // Arrange
+        var hasher = CreateHasher();
+        var (hash, options) = hasher.ComputeHash("correct horse battery staple");
+        var stored = ToMemberPassword(hash, options);
+
+        // Act
+        var result = hasher.Check("wrong password", stored);
 
         // Assert
         result.Should().BeFalse();

@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 namespace ODK.Web.Razor.Models.SiteAdmin;
 
 public class SiteEmailSettingsViewModel
-{    
+{
     [DisplayName("From Address")]
     [EmailAddress]
     [Required]

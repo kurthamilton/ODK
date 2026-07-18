@@ -13,7 +13,7 @@ public class TopicRepository : ReadWriteRepositoryBase<Topic>, ITopicRepository
     {
     }
 
-    public IDeferredQueryMultiple<Topic> GetAll() 
+    public IDeferredQueryMultiple<Topic> GetAll()
         => Set()
             .DeferredMultiple();
 

@@ -39,7 +39,7 @@ public class EventHostRepository : ReadWriteRepositoryBase<EventHost>, IEventHos
         return query.DeferredMultiple();
     }
 
-    protected override IQueryable<EventHost> Set() 
+    protected override IQueryable<EventHost> Set()
         => base.Set()
             .Include(x => x.Member);
 }

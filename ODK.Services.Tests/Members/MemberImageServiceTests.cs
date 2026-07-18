@@ -25,8 +25,8 @@ public static class MemberImageServiceTests
     //[TestCase(100, 200, 50, 150, 50, 50, ExpectedResult = 0)]
     //[TestCase(200, 100, 0, 50, 50, 50, ExpectedResult = 0)]
     //public static int RotateMemberImage_UpdatesCropX(
-    //    int imageWidth, int imageHeight, 
-    //    int cropX, int cropY, 
+    //    int imageWidth, int imageHeight,
+    //    int cropX, int cropY,
     //    int cropWidth, int cropHeight)
     //{
     //    // Arrange

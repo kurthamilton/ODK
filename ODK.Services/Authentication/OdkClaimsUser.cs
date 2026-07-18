@@ -11,7 +11,7 @@ public class OdkClaimsUser
     public OdkClaimsUser(Member member)
     {
         MemberId = member.Id;
-        
+
         if (member.SiteAdmin)
         {
             _roles.Add(OdkRoles.SiteAdmin);

@@ -8,7 +8,7 @@ namespace ODK.Web.Common.Routes;
 public class GroupAdminRoute
 {
     public static readonly GroupAdminRoute Default = new() { IsDefault = true, Path = "/", Securable = ChapterAdminSecurable.None };
-    
+
     public bool IsDefault { get; private set; }
 
     public GroupAdminRoute? Parent { get; private set; }
@@ -17,13 +17,13 @@ public class GroupAdminRoute
 
     public PlatformType? Platform { get; init; }
 
-    public required ChapterAdminSecurable Securable { get; init; }        
+    public required ChapterAdminSecurable Securable { get; init; }
 
     public GroupAdminRoute Child(
-        string subPath, 
+        string subPath,
         ChapterAdminSecurable? securable = null,
         PlatformType? platform = null)
-    {        
+    {
         if (IsDefault)
         {
             return Default;

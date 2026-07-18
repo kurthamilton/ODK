@@ -3,7 +3,7 @@
 namespace ODK.Services.Security;
 
 public static class ChapterAdminSecurableExtensions
-{    
+{
     public static ChapterAdminRole Role(this ChapterAdminSecurable securable) => securable switch
     {
         ChapterAdminSecurable.AdminMembers => ChapterAdminRole.Admin,
@@ -13,7 +13,7 @@ public static class ChapterAdminSecurableExtensions
         ChapterAdminSecurable.ContactMessages => ChapterAdminRole.Organiser,
         ChapterAdminSecurable.Conversations => ChapterAdminRole.Organiser,
         ChapterAdminSecurable.Delete => ChapterAdminRole.Owner,
-        ChapterAdminSecurable.Emails => ChapterAdminRole.Admin,        
+        ChapterAdminSecurable.Emails => ChapterAdminRole.Admin,
         ChapterAdminSecurable.Events => ChapterAdminRole.Organiser,
         ChapterAdminSecurable.EventSettings => ChapterAdminRole.Admin,
         ChapterAdminSecurable.Location => ChapterAdminRole.Admin,

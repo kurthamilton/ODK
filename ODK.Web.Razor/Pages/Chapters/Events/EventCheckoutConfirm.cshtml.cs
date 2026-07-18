@@ -22,7 +22,7 @@ public class EventCheckoutConfirmModel : OdkPageModel
     {
         SessionId = sessionId;
         Shortcode = shortcode;
-        
+
         var request = MemberServiceRequest;
         var status = await _paymentService.GetMemberChapterPaymentCheckoutSessionStatus(
             request, Chapter.Id, sessionId);

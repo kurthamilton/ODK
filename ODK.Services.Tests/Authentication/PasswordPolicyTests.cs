@@ -9,6 +9,13 @@ public static class PasswordPolicyTests
 {
     private const int Min = 8;
 
+    [Test]
+    public static void GetValidationError_AtMinLength_ReturnsNull()
+    {
+        CreatePolicy().GetValidationError(new string('a', Min))
+            .Should().BeNull();
+    }
+
     [TestCase(null)]
     [TestCase("")]
     [TestCase("   ")]
@@ -23,13 +30,6 @@ public static class PasswordPolicyTests
     {
         CreatePolicy().GetValidationError(new string('a', Min - 1))
             .Should().Be($"Password must be at least {Min} characters");
-    }
-
-    [Test]
-    public static void GetValidationError_AtMinLength_ReturnsNull()
-    {
-        CreatePolicy().GetValidationError(new string('a', Min))
-            .Should().BeNull();
     }
 
     private static PasswordPolicy CreatePolicy()

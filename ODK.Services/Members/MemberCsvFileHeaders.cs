@@ -14,6 +14,8 @@ public class MemberCsvFileHeaders
         Properties = properties.ToArray();
     }
 
+    private IReadOnlyCollection<ChapterProperty> Properties { get; }
+
     public IEnumerable<string> ToFields()
     {
         yield return Email;
@@ -26,6 +28,4 @@ public class MemberCsvFileHeaders
             yield return property.Label;
         }
     }
-
-    private IReadOnlyCollection<ChapterProperty> Properties { get; }
 }

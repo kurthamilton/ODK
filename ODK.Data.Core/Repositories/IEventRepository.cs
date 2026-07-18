@@ -24,5 +24,5 @@ public interface IEventRepository : IReadWriteRepository<Event, IEventQueryBuild
 
     IDeferredQueryMultiple<Event> GetUpcoming(Guid chapterId, int pageSize);
 
-    IDeferredQuery<bool> ShortcodeExists(string shortcode);    
+    IDeferredQuery<bool> ShortcodeExists(string shortcode);
 }
