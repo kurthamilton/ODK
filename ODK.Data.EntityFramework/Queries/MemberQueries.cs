@@ -19,4 +19,19 @@ internal static class MemberQueries
                         memberChapter.ChapterId == chapterId &&
                         (includeHidden || !memberChapter.HideProfile)));
     }
+
+    internal static IQueryable<Member> InChapters(
+        this IQueryable<Member> query, IEnumerable<Guid> chapterIds, MemberChapterQueryOptions? options = null)
+    {
+        var includeHidden = options?.IncludeHidden == true;
+        var includeInactive = options?.IncludeInactive == true;
+
+        return query
+            .Where(member =>
+                (includeInactive || member.Activated) &&
+                member.Chapters.Any(
+                    memberChapter =>
+                        chapterIds.Contains(memberChapter.ChapterId) &&
+                        (includeHidden || !memberChapter.HideProfile)));
+    }
 }

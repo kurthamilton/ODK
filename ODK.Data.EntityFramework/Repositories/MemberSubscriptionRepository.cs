@@ -17,6 +17,10 @@ public class MemberSubscriptionRepository : WriteRepositoryBase<MemberSubscripti
         .Where(x => x.MemberChapter.ChapterId == chapterId)
         .DeferredMultiple();
 
+    public IDeferredQueryMultiple<MemberSubscription> GetByChapterIds(IEnumerable<Guid> chapterIds) => Set()
+        .Where(x => chapterIds.Contains(x.MemberChapter.ChapterId))
+        .DeferredMultiple();
+
     public IDeferredQuerySingleOrDefault<MemberSubscription> GetByMemberId(Guid memberId, Guid chapterId) => Set()
         .Where(x => x.MemberChapter.MemberId == memberId && x.MemberChapter.ChapterId == chapterId)
         .DeferredSingleOrDefault();

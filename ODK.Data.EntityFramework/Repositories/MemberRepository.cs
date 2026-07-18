@@ -42,6 +42,11 @@ public class MemberRepository : ReadWriteRepositoryBase<Member, IMemberQueryBuil
             .WithAvatar()
             .GetAll();
 
+    public IDeferredQueryMultiple<Member> GetByChapterIds(IEnumerable<Guid> chapterIds)
+        => Query()
+            .InChapters(chapterIds)
+            .GetAll();
+
     public IDeferredQuerySingleOrDefault<Member> GetByEmailAddress(string emailAddress)
         => Query()
             .HasEmailAddress(emailAddress)

@@ -16,6 +16,8 @@ public interface IMemberRepository : IReadWriteRepository<Member, IMemberQueryBu
 
     IDeferredQueryMultiple<MemberWithAvatarDto> GetByChapterId(Guid chapterId, IEnumerable<Guid> memberIds);
 
+    IDeferredQueryMultiple<Member> GetByChapterIds(IEnumerable<Guid> chapterIds);
+
     IDeferredQuerySingleOrDefault<Member> GetByEmailAddress(string emailAddress);
 
     IDeferredQuerySingle<Member> GetChapterOwner(Guid chapterId);

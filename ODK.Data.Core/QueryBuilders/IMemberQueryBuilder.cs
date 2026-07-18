@@ -14,6 +14,8 @@ public interface IMemberQueryBuilder : IDatabaseEntityQueryBuilder<Member, IMemb
 
     IMemberQueryBuilder InChapter(Guid chapterId, MemberChapterQueryOptions options);
 
+    IMemberQueryBuilder InChapters(IEnumerable<Guid> chapterIds);
+
     IMemberQueryBuilder IsChapterOwner(Guid chapterId);
 
     IMemberQueryBuilder IsSiteAdmin();

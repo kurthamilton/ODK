@@ -626,6 +626,63 @@ public static class MemberAdminServiceTests
             Times.Once);
     }
 
+    [Test]
+    public static async Task SendMemberSubscriptionReminderEmails_SendsRemindersAcrossAllChapters()
+    {
+        // Arrange - two published chapters, each with a member whose subscription expires within 7 days.
+        // The batched load must process every chapter (the fix for the per-chapter N+1), not just one.
+        using var context = CreateMockOdkContext();
+
+        var now = DateTime.UtcNow;
+        var emailService = new Mock<IMemberEmailService>();
+        var memberChapterIds = new List<Guid>();
+
+        for (var i = 0; i < 2; i++)
+        {
+            var member = context.CreateMember();
+            var chapter = context.CreateChapter(
+                members: [member],
+                afterCreate: x => x.PublishedUtc = now);
+
+            context.Create(new ChapterMembershipSettings
+            {
+                ChapterId = chapter.Id,
+                Enabled = true,
+                MembershipDisabledAfterDaysExpired = 30
+            });
+
+            var memberChapter = member.MemberChapter(chapter.Id)!;
+            context.Create(new MemberSubscription
+            {
+                ExpiresUtc = now.AddDays(3),
+                MemberChapter = memberChapter,
+                MemberChapterId = memberChapter.Id,
+                Type = SubscriptionType.Full
+            });
+            memberChapterIds.Add(memberChapter.Id);
+        }
+
+        var service = CreateMemberAdminService(context, memberEmailService: emailService.Object);
+        var request = Mock.Of<IServiceRequest>(x => x.Platform == PlatformType.Default);
+
+        // Act
+        await service.SendMemberSubscriptionReminderEmails(request);
+
+        // Assert
+        emailService.Verify(
+            x => x.SendMemberChapterSubscriptionExpiringEmail(
+                It.IsAny<IChapterServiceRequest>(),
+                It.IsAny<Member>(),
+                It.IsAny<MemberSubscription>(),
+                It.IsAny<DateTime>(),
+                It.IsAny<DateTime>()),
+            Times.Exactly(2));
+
+        context.Set<MemberSubscription>()
+            .Where(x => memberChapterIds.Contains(x.MemberChapterId))
+            .Should().OnlyContain(x => x.ReminderEmailSentUtc != null);
+    }
+
     private static MemberAdminService CreateMemberAdminService(
         MockOdkContext context,
         IAuthorizationService? authorizationService = null,
