@@ -249,8 +249,9 @@ public class StripePaymentProvider : IPaymentProvider
                 SubscriptionId = session.SubscriptionId
             };
         }
-        catch
+        catch (Exception ex)
         {
+            await _loggingService.Error($"Error retrieving Stripe checkout session '{externalId}'", ex);
             return null;
         }
     }
@@ -290,27 +291,14 @@ public class StripePaymentProvider : IPaymentProvider
         try
         {
             var subscription = await service.GetAsync(externalId);
-
-            return new ExternalSubscription
-            {
-                CancelDate = subscription.CancelAt,
-                ConnectedAccountId = subscription.TransferData?.DestinationId,
-                ExternalId = subscription.Id,
-                ExternalSubscriptionPlanId = string.Empty,
-                // TODO: get last/next payment date
-                LastPaymentDate = null,
-                Metadata = subscription.Metadata,
-                NextBillingDate = null,
-                Status = subscription.Status == "active" && subscription.CancelAt == null
-                    ? ExternalSubscriptionStatus.Active
-                    : ExternalSubscriptionStatus.Cancelled
-            };
+            return await MapSubscription(subscription);
         }
-        catch
+        catch (Exception ex)
         {
+            await _loggingService.Error($"Error retrieving Stripe subscription '{externalId}'", ex);
             return null;
         }
-    }
+    }    
 
     public async Task<ExternalSubscriptionPlan?> GetSubscriptionPlan(string externalId)
     {
@@ -345,8 +333,9 @@ public class StripePaymentProvider : IPaymentProvider
                 Recurring = price.Recurring != null
             };
         }
-        catch
+        catch (Exception ex)
         {
+            await _loggingService.Error($"Error retrieving Stripe subscription plan '{externalId}'", ex);
             return null;
         }
     }
@@ -422,6 +411,39 @@ public class StripePaymentProvider : IPaymentProvider
             PaymentId = null,
             SessionId = session.Id,
             SubscriptionId = null
+        };
+    }
+
+    // The period dates and the plan (price) id live on the subscription's item(s) rather than the
+    // top-level Subscription in current Stripe API versions. Standard single-plan subscriptions have
+    // exactly one item, so we read the first. Without an item the essential fields (plan id, billing
+    // dates) are missing, so we return null rather than a useless instance. LastPaymentDate is
+    // approximated by the current period start - kept for auditing/debugging even though nothing
+    // currently reads it.
+    internal async Task<ExternalSubscription?> MapSubscription(Subscription subscription)
+    {
+        var item = subscription.Items?.Data?.FirstOrDefault();
+        if (item == null)
+        {
+            await _loggingService.Error(
+                $"Stripe subscription '{subscription.Id}' returned no items; " +
+                $"cannot resolve plan or billing dates");
+
+            return null;
+        }
+
+        return new ExternalSubscription
+        {
+            CancelDate = subscription.CancelAt,
+            ConnectedAccountId = subscription.TransferData?.DestinationId,
+            ExternalId = subscription.Id,
+            ExternalSubscriptionPlanId = item.Price?.Id ?? string.Empty,
+            LastPaymentDate = item.CurrentPeriodStart,
+            Metadata = subscription.Metadata,
+            NextBillingDate = item.CurrentPeriodEnd,
+            Status = subscription.Status == "active" && subscription.CancelAt == null
+                ? ExternalSubscriptionStatus.Active
+                : ExternalSubscriptionStatus.Cancelled
         };
     }
 
