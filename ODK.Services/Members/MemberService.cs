@@ -119,10 +119,25 @@ public class MemberService : IMemberService
             x => x.SiteSubscriptionRepository.GetDefault(request.Platform),
             x => x.TopicRepository.GetByIds(model.TopicIds));
 
+        string? reusableActivationToken = null;
         if (existing != null)
         {
-            await _memberEmailService.SendDuplicateMemberEmail(request, null, existing);
-            return ServiceResult<Member?>.Successful(null);
+            if (existing.Activated)
+            {
+                await _memberEmailService.SendDuplicateMemberEmail(request, null, existing);
+                return ServiceResult<Member?>.Successful(null);
+            }
+
+            // Signing up again against an existing but unactivated account: discard the incomplete
+            // account so it is recreated below from the newly submitted details (latest info wins).
+            // Preserve the original activation token (before the delete cascades it away) and reuse it
+            // for the recreated account, so any activation link already emailed to them still works.
+            reusableActivationToken = (await _unitOfWork.MemberActivationTokenRepository
+                .GetByMemberId(existing.Id)
+                .Run())?.ActivationToken;
+
+            _unitOfWork.MemberRepository.Delete(existing);
+            await _unitOfWork.SaveChangesAsync();
         }
 
         var timeZone = model.Location != null
@@ -193,7 +208,7 @@ public class MemberService : IMemberService
         string? activationToken = null;
         if (!member.Activated)
         {
-            activationToken = TokenGenerator.GenerateBase64Token(64);
+            activationToken = reusableActivationToken ?? TokenGenerator.GenerateBase64Token(64);
             _unitOfWork.MemberActivationTokenRepository.Add(new MemberActivationToken
             {
                 ActivationToken = activationToken,
@@ -267,10 +282,25 @@ public class MemberService : IMemberService
             return imageValidationResult;
         }
 
+        string? reusableActivationToken = null;
         if (existing != null)
         {
-            await _memberEmailService.SendDuplicateMemberEmail(request, chapter, existing);
-            return ServiceResult.Successful();
+            if (existing.Activated)
+            {
+                await _memberEmailService.SendDuplicateMemberEmail(request, chapter, existing);
+                return ServiceResult.Successful();
+            }
+
+            // Signing up again against an existing but unactivated account: discard the incomplete
+            // account so it is recreated below from the newly submitted details (latest info wins).
+            // Preserve the original activation token (before the delete cascades it away) and reuse it
+            // for the recreated account, so any activation link already emailed to them still works.
+            reusableActivationToken = (await _unitOfWork.MemberActivationTokenRepository
+                .GetByMemberId(existing.Id)
+                .Run())?.ActivationToken;
+
+            _unitOfWork.MemberRepository.Delete(existing);
+            await _unitOfWork.SaveChangesAsync();
         }
 
         var now = DateTime.UtcNow;
@@ -326,7 +356,7 @@ public class MemberService : IMemberService
         avatar.MemberId = member.Id;
         _unitOfWork.MemberAvatarRepository.Add(avatar);
 
-        var activationToken = TokenGenerator.GenerateBase64Token(64);
+        var activationToken = reusableActivationToken ?? TokenGenerator.GenerateBase64Token(64);
         _unitOfWork.MemberActivationTokenRepository.Add(new MemberActivationToken
         {
             ActivationToken = activationToken,
