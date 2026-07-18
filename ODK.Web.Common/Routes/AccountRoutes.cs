@@ -46,7 +46,7 @@ public class AccountRoutes : RoutesBase
 
     public string Groups() => AccountPath(null, "/groups");
 
-    public string Index(Chapter? chapter) => AccountPath(chapter, "/");
+    public string Index(Chapter? chapter) => AccountPath(chapter, "");
 
     public string Interests() => AccountPath(null, "/interests");
 

@@ -28,7 +28,7 @@
     },
     {
       "provider": "cdnjs",
-      "library": "cropperjs@1.6.2",
+      "library": "cropperjs@2.1.1",
       "destination": "wwwroot/lib/cropperjs/"
     },
     {
