@@ -23,8 +23,8 @@ public class MemberRepository : ReadWriteRepositoryBase<Member, IMemberQueryBuil
 
     public IDeferredQueryMultiple<MemberWithAvatarDto> GetAllWithAvatarByChapterId(Guid chapterId)
         => Query()
-            .InChapter(chapterId, new MemberChapterQueryOptions 
-            { 
+            .InChapter(chapterId, new MemberChapterQueryOptions
+            {
                 IncludeInactive = true
             })
             .WithAvatar()

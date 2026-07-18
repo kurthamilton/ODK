@@ -19,9 +19,9 @@ public class SubscriptionCheckoutConfirmModel : OdkPageModel
     public async Task<IActionResult> OnGet(string sessionId)
     {
         SessionId = sessionId;
-        
+
         var redirectUrl = OdkRoutes.Account.Subscription(Chapter);
-        
+
         var request = MemberServiceRequest;
         var status = await _paymentService.GetMemberChapterPaymentCheckoutSessionStatus(
             request, Chapter.Id, sessionId);

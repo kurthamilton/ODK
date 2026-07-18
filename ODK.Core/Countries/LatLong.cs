@@ -20,7 +20,7 @@ public struct LatLong
 
     public double Long { get; set; }
 
-    public static LatLong? FromCoords(double? lat, double? @long) 
+    public static LatLong? FromCoords(double? lat, double? @long)
         => lat != null && @long != null
             ? new LatLong(lat.Value, @long.Value)
             : null;

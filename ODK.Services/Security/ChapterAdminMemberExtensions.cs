@@ -6,8 +6,8 @@ namespace ODK.Services.Security;
 public static class ChapterAdminMemberExtensions
 {
     public static bool HasAccessTo(
-        this ChapterAdminMember? chapterAdminMember, 
-        ChapterAdminSecurable securable, 
+        this ChapterAdminMember? chapterAdminMember,
+        ChapterAdminSecurable securable,
         Member currentMember)
     {
         if (currentMember.SiteAdmin)

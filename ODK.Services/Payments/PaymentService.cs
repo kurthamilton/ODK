@@ -198,6 +198,99 @@ public class PaymentService : IPaymentService
         => ProcessCompletedChapterSubscription(
             platform, metadataDictionary, completedUtc, paymentProvider, externalId, initiatorId: null);
 
+    // Public for Hangfire. This parameterless-initiator overload preserves the method signature for jobs
+    // that were enqueued before initiatorId was introduced, so a deployment can't orphan in-flight jobs.
+    public Task<PaymentWebhookProcessingResult> ProcessCompletedPayment(
+        IReadOnlyDictionary<string, string> metadataDictionary,
+        DateTime completedUtc,
+        PaymentProviderType paymentProvider,
+        string externalId)
+        => ProcessCompletedPayment(
+            metadataDictionary, completedUtc, paymentProvider, externalId, initiatorId: null);
+
+    // Public for Hangfire. This parameterless-initiator overload preserves the method signature for jobs
+    // that were enqueued before initiatorId was introduced, so a deployment can't orphan in-flight jobs.
+    public Task<PaymentWebhookProcessingResult> ProcessCompletedSiteSubscription(
+        IReadOnlyDictionary<string, string> metadataDictionary,
+        DateTime completedUtc,
+        PaymentProviderType paymentProvider,
+        string externalId)
+        => ProcessCompletedSiteSubscription(
+            metadataDictionary, completedUtc, paymentProvider, externalId, initiatorId: null);
+
+    public async Task ProcessWebhook(IServiceRequest request, PaymentProviderWebhook webhook)
+    {
+        var existingEvent = await _unitOfWork.PaymentProviderWebhookEventRepository
+            .GetByExternalId(webhook.PaymentProviderType, webhook.Id).Run();
+
+        if (existingEvent != null)
+        {
+            await _loggingService.Warn($"{webhook.PaymentProviderType} webhook for event {webhook.Id} already processed");
+            return;
+        }
+
+        _unitOfWork.PaymentProviderWebhookEventRepository.Add(new PaymentProviderWebhookEvent
+        {
+            ExternalId = webhook.Id,
+            PaymentProviderType = webhook.PaymentProviderType,
+            ReceivedUtc = DateTime.UtcNow
+        });
+
+        await _unitOfWork.SaveChangesAsync();
+
+        // Run the actioning of the webhook itself in a new task so that we can persist the event as quickly as possible
+        // and make the actual processing retryable.
+        _backgroundTaskService.Enqueue(
+            () => ProcessWebhookAction(request, webhook),
+            BackgroundTaskQueueType.Payments);
+    }
+
+    // Public for Hangire
+    public async Task ProcessWebhookAction(IServiceRequest request, PaymentProviderWebhook webhook)
+    {
+        PaymentWebhookProcessingResult result;
+
+        switch (webhook.Type)
+        {
+            case PaymentProviderWebhookType.CheckoutSessionCompleted:
+                result = await ProcessWebhookPayment(webhook);
+                break;
+
+            case PaymentProviderWebhookType.CheckoutSessionExpired:
+                result = await ProcessWebhookCheckoutSessionExpired(webhook);
+                break;
+
+            case PaymentProviderWebhookType.InvoicePaymentSucceeded:
+            case PaymentProviderWebhookType.SubscriptionCancelled:
+                result = await ProcessWebhookSubscription(request.Platform, webhook);
+                break;
+
+            default:
+                result = PaymentWebhookProcessingResult.Failure();
+                break;
+        }
+
+        if (!result.Success)
+        {
+            return;
+        }
+
+        if (result.Payment != null &&
+            result.Currency != null &&
+            result.Member != null)
+        {
+            var siteAdmins = await _unitOfWork.MemberRepository
+                .Query()
+                .IsSiteAdmin()
+                .GetAll()
+                .Run();
+
+            var (member, chapter, currency, payment) = (result.Member, result.Chapter, result.Currency, result.Payment);
+
+            await _memberEmailService.SendPaymentNotification(request, member, chapter, payment, currency, siteAdmins);
+        }
+    }
+
     private async Task<PaymentWebhookProcessingResult> ProcessCompletedChapterSubscription(
         PlatformType platform,
         IReadOnlyDictionary<string, string> metadataDictionary,
@@ -298,16 +391,6 @@ public class PaymentService : IPaymentService
             initiatorId);
     }
 
-    // Public for Hangfire. This parameterless-initiator overload preserves the method signature for jobs
-    // that were enqueued before initiatorId was introduced, so a deployment can't orphan in-flight jobs.
-    public Task<PaymentWebhookProcessingResult> ProcessCompletedPayment(
-        IReadOnlyDictionary<string, string> metadataDictionary,
-        DateTime completedUtc,
-        PaymentProviderType paymentProvider,
-        string externalId)
-        => ProcessCompletedPayment(
-            metadataDictionary, completedUtc, paymentProvider, externalId, initiatorId: null);
-
     private async Task<PaymentWebhookProcessingResult> ProcessCompletedPayment(
         IReadOnlyDictionary<string, string> metadataDictionary,
         DateTime completedUtc,
@@ -403,16 +486,6 @@ public class PaymentService : IPaymentService
             completedUtc,
             initiatorId);
     }
-
-    // Public for Hangfire. This parameterless-initiator overload preserves the method signature for jobs
-    // that were enqueued before initiatorId was introduced, so a deployment can't orphan in-flight jobs.
-    public Task<PaymentWebhookProcessingResult> ProcessCompletedSiteSubscription(
-        IReadOnlyDictionary<string, string> metadataDictionary,
-        DateTime completedUtc,
-        PaymentProviderType paymentProvider,
-        string externalId)
-        => ProcessCompletedSiteSubscription(
-            metadataDictionary, completedUtc, paymentProvider, externalId, initiatorId: null);
 
     private async Task<PaymentWebhookProcessingResult> ProcessCompletedSiteSubscription(
         IReadOnlyDictionary<string, string> metadataDictionary,
@@ -515,79 +588,6 @@ public class PaymentService : IPaymentService
         {
             await _loggingService.Error("Error processing site subscription webhook", ex);
             throw;
-        }
-    }
-
-    public async Task ProcessWebhook(IServiceRequest request, PaymentProviderWebhook webhook)
-    {
-        var existingEvent = await _unitOfWork.PaymentProviderWebhookEventRepository
-            .GetByExternalId(webhook.PaymentProviderType, webhook.Id).Run();
-
-        if (existingEvent != null)
-        {
-            await _loggingService.Warn($"{webhook.PaymentProviderType} webhook for event {webhook.Id} already processed");
-            return;
-        }
-
-        _unitOfWork.PaymentProviderWebhookEventRepository.Add(new PaymentProviderWebhookEvent
-        {
-            ExternalId = webhook.Id,
-            PaymentProviderType = webhook.PaymentProviderType,
-            ReceivedUtc = DateTime.UtcNow
-        });
-
-        await _unitOfWork.SaveChangesAsync();
-
-        // Run the actioning of the webhook itself in a new task so that we can persist the event as quickly as possible
-        // and make the actual processing retryable.
-        _backgroundTaskService.Enqueue(
-            () => ProcessWebhookAction(request, webhook),
-            BackgroundTaskQueueType.Payments);
-    }
-
-    // Public for Hangire
-    public async Task ProcessWebhookAction(IServiceRequest request, PaymentProviderWebhook webhook)
-    {
-        PaymentWebhookProcessingResult result;
-
-        switch (webhook.Type)
-        {
-            case PaymentProviderWebhookType.CheckoutSessionCompleted:
-                result = await ProcessWebhookPayment(webhook);
-                break;
-
-            case PaymentProviderWebhookType.CheckoutSessionExpired:
-                result = await ProcessWebhookCheckoutSessionExpired(webhook);
-                break;
-
-            case PaymentProviderWebhookType.InvoicePaymentSucceeded:
-            case PaymentProviderWebhookType.SubscriptionCancelled:
-                result = await ProcessWebhookSubscription(request.Platform, webhook);
-                break;
-
-            default:
-                result = PaymentWebhookProcessingResult.Failure();
-                break;
-        }
-
-        if (!result.Success)
-        {
-            return;
-        }
-
-        if (result.Payment != null &&
-            result.Currency != null &&
-            result.Member != null)
-        {
-            var siteAdmins = await _unitOfWork.MemberRepository
-                .Query()
-                .IsSiteAdmin()
-                .GetAll()
-                .Run();
-
-            var (member, chapter, currency, payment) = (result.Member, result.Chapter, result.Currency, result.Payment);
-
-            await _memberEmailService.SendPaymentNotification(request, member, chapter, payment, currency, siteAdmins);
         }
     }
 

@@ -61,13 +61,6 @@ public class HibpBreachedPasswordChecker : IBreachedPasswordChecker
         }
     }
 
-    private static (string prefix, string suffix) HashPrefixSuffix(string password)
-    {
-        var bytes = SHA1.HashData(Encoding.UTF8.GetBytes(password));
-        var hex = Convert.ToHexString(bytes); // uppercase
-        return (hex[..5], hex[5..]);
-    }
-
     /// <summary>
     /// Range responses are lines of "SUFFIX:count" (padding rows have a count of 0). Returns true if the
     /// given suffix appears with a non-zero count.
@@ -93,5 +86,12 @@ public class HibpBreachedPasswordChecker : IBreachedPasswordChecker
         }
 
         return false;
+    }
+
+    private static (string prefix, string suffix) HashPrefixSuffix(string password)
+    {
+        var bytes = SHA1.HashData(Encoding.UTF8.GetBytes(password));
+        var hex = Convert.ToHexString(bytes); // uppercase
+        return (hex[..5], hex[5..]);
     }
 }

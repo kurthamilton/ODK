@@ -36,9 +36,6 @@ public class MemberAdminController : AdminControllerBase
         _memberImportStagingService = memberImportStagingService;
     }
 
-    private IActionResult DownloadCsv(IReadOnlyCollection<IReadOnlyCollection<string>> data, string fileName)
-        => File(_csvWriter.Write(data), "text/csv", fileName);
-
     [HttpPost("groups/{chapterId:guid}/members/{id:guid}/approve")]
     public async Task<IActionResult> ApproveMember(Guid chapterId, Guid id)
     {
@@ -211,4 +208,7 @@ public class MemberAdminController : AdminControllerBase
         AddFeedback(result, "Subscription deleted");
         return RedirectToReferrer();
     }
+
+    private IActionResult DownloadCsv(IReadOnlyCollection<IReadOnlyCollection<string>> data, string fileName)
+        => File(_csvWriter.Write(data), "text/csv", fileName);
 }

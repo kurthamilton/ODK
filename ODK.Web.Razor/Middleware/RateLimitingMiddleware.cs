@@ -99,16 +99,6 @@ public class RateLimitingMiddleware
         GreyList[ipAddress] = blockedUntilUtc.Value;
     }
 
-    private bool IsRateLimited(string requestPath)
-    {
-        if (_appSettings.RateLimiting.BlockPaths.Any(x => MatchesConfigRule(x, requestPath)))
-        {
-            return true;
-        }
-
-        return _blockPatternRegex?.IsMatch(requestPath) == true;
-    }
-
     private static void CleanupExpired(DateTime utcNow)
     {
         var next = Interlocked.Read(ref _nextCleanupTicks);
@@ -153,5 +143,15 @@ public class RateLimitingMiddleware
         }
 
         return value.Equals(rule, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private bool IsRateLimited(string requestPath)
+    {
+        if (_appSettings.RateLimiting.BlockPaths.Any(x => MatchesConfigRule(x, requestPath)))
+        {
+            return true;
+        }
+
+        return _blockPatternRegex?.IsMatch(requestPath) == true;
     }
 }

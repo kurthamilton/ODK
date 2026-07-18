@@ -223,7 +223,7 @@ public class StripePaymentProvider : IPaymentProvider
         {
             var session = await service.GetAsync(externalId, new SessionGetOptions
             {
-                Expand = 
+                Expand =
                 [
                     "invoice",
                     "payment_intent.latest_charge"
@@ -298,7 +298,7 @@ public class StripePaymentProvider : IPaymentProvider
             await _loggingService.Error($"Error retrieving Stripe subscription '{externalId}'", ex);
             return null;
         }
-    }    
+    }
 
     public async Task<ExternalSubscriptionPlan?> GetSubscriptionPlan(string externalId)
     {

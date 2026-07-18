@@ -62,7 +62,7 @@ public static class JsonUtilsTests
 
         // Act
         var result = JsonUtils.Find(
-            node, 
+            node,
             x => x.PropertyName == propertyName && x.ParentContext?.PropertyName == parentName);
 
         // Assert

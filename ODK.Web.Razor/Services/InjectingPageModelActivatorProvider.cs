@@ -38,6 +38,25 @@ public class InjectingPageModelActivatorProvider<T> : IPageModelActivatorProvide
         return _defaultProvider!.CreateReleaser(descriptor);
     }
 
+    private static void InjectProperties(object instance, IServiceProvider scoped)
+    {
+        var props = instance
+            .GetType()
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Where(p =>
+                p.CanWrite &&
+                p.IsDefined(typeof(T), inherit: true));
+
+        foreach (var prop in props)
+        {
+            var value = scoped.GetService(prop.PropertyType);
+            if (value != null)
+            {
+                prop.SetValue(instance, value);
+            }
+        }
+    }
+
     private void EnsureDefaultProviderResolved()
     {
         if (_defaultProvider != null)
@@ -60,25 +79,6 @@ public class InjectingPageModelActivatorProvider<T> : IPageModelActivatorProvide
             if (_defaultProvider == null)
             {
                 throw new InvalidOperationException("Default IPageModelActivatorProvider not found.");
-            }
-        }
-    }
-
-    private static void InjectProperties(object instance, IServiceProvider scoped)
-    {
-        var props = instance
-            .GetType()
-            .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-            .Where(p =>
-                p.CanWrite &&
-                p.IsDefined(typeof(T), inherit: true));
-
-        foreach (var prop in props)
-        {
-            var value = scoped.GetService(prop.PropertyType);
-            if (value != null)
-            {
-                prop.SetValue(instance, value);
             }
         }
     }

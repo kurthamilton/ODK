@@ -3,7 +3,7 @@ using ODK.Data.Core.QueryBuilders;
 
 namespace ODK.Data.Core.Repositories;
 
-public interface IMemberSiteSubscriptionRecordRepository 
+public interface IMemberSiteSubscriptionRecordRepository
     : IReadWriteRepository<MemberSiteSubscriptionRecord, IMemberSiteSubscriptionRecordQueryBuilder>
 {
 }

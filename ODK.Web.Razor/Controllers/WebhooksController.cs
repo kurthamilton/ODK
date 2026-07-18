@@ -90,7 +90,7 @@ public class WebhooksController : OdkControllerBase
         if (webhook == null)
         {
             return;
-        }        
+        }
 
         var metadata = PaymentMetadataModel.FromDictionary(webhook.Metadata);
         if (metadata.Platform == null && Platform != PlatformType.DrunkenKnitwits)
@@ -106,7 +106,7 @@ public class WebhooksController : OdkControllerBase
         if (metadata.Platform != null && metadata.Platform != Platform)
         {
             // Webhooks are set up for both Platforms. All events are sent out to both platforms.
-            // Logging a platform mismatch here would create redundant noise in the logs since the 
+            // Logging a platform mismatch here would create redundant noise in the logs since the
             // event will be handled by the other platform.
             return;
         }

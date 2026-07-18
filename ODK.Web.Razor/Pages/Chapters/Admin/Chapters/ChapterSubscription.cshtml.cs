@@ -21,7 +21,7 @@ public class ChapterSubscriptionModel : AdminPageModel
 
     public async Task<IActionResult> OnPostAsync()
     {
-        var result = await _chapterAdminService.CancelSiteSubscription(MemberChapterAdminServiceRequest);        
+        var result = await _chapterAdminService.CancelSiteSubscription(MemberChapterAdminServiceRequest);
         AddFeedback(result, "Subscription cancelled");
         return RedirectToPage();
     }

@@ -7,7 +7,7 @@ public class UpdatePictureViewModel
 {
     public required int? AvatarVersion { get; init; }
 
-    public required Chapter? Chapter { get; init; }    
+    public required Chapter? Chapter { get; init; }
 
     public required Member Member { get; init; }
 }

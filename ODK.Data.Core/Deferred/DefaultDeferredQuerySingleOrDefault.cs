@@ -20,5 +20,5 @@ public class DefaultDeferredQuerySingleOrDefault<T> : IDeferredQuerySingleOrDefa
         _value = value;
     }
 
-    public Task<T?> Run() => Task.FromResult(_value);    
+    public Task<T?> Run() => Task.FromResult(_value);
 }

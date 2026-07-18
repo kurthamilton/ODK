@@ -4,7 +4,7 @@ public class IndexModel : ChapterSiteAdminPageModel
 {
     public IndexModel()
     {
-    }    
+    }
 
     public void OnGet()
     {

@@ -11,5 +11,5 @@ public interface IOdkRoutes
     SiteRoutes Site { get; }
     SiteAdminRoutes SiteAdmin { get; }
 
-    string Error(Chapter? chapter, int statusCode);    
+    string Error(Chapter? chapter, int statusCode);
 }

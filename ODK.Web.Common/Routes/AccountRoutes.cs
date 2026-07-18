@@ -14,7 +14,7 @@ public class AccountRoutes : RoutesBase
 
     public string Activate(Chapter? chapter, string token)
         => AccountPath(
-            Platform == PlatformType.DrunkenKnitwits ? chapter : null, 
+            Platform == PlatformType.DrunkenKnitwits ? chapter : null,
             $"/activate?token={HttpUtility.UrlEncode(token)}");
 
     public string Create() => Platform switch
@@ -27,7 +27,7 @@ public class AccountRoutes : RoutesBase
 
     public string Conversations(Chapter? chapter) => Conversations(chapter, archived: false);
 
-    public string Conversations(Chapter? chapter, bool archived) 
+    public string Conversations(Chapter? chapter, bool archived)
         => AccountPath(chapter, $"/conversations{(archived ? "?archived=true" : null)}");
 
     public string Delete(Chapter? chapter) => AccountPath(chapter, "/delete");

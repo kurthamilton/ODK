@@ -126,7 +126,7 @@ public class GroupAdminRoutes
         => Member(chapter, memberId).Child("/events");
 
     public GroupAdminRoute MemberImage(Chapter chapter, Guid memberId)
-        => Member(chapter, memberId).Child("/image", ChapterAdminSecurable.MemberImage, PlatformType.DrunkenKnitwits);    
+        => Member(chapter, memberId).Child("/image", ChapterAdminSecurable.MemberImage, PlatformType.DrunkenKnitwits);
 
     public GroupAdminRoute MemberPayments(Chapter chapter, Guid memberId)
         => Member(chapter, memberId).Child("/payments", ChapterAdminSecurable.Payments);
@@ -152,7 +152,7 @@ public class GroupAdminRoutes
         };
 
     public GroupAdminRoute Members(Chapter chapter)
-        => Base(chapter).Child("/members", ChapterAdminSecurable.Members);    
+        => Base(chapter).Child("/members", ChapterAdminSecurable.Members);
 
     public GroupAdminRoute MembersEmail(Chapter chapter) =>
         Members(chapter).Child("/email", ChapterAdminSecurable.BulkEmail);

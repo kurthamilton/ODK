@@ -24,5 +24,5 @@ public class MemberSubscriptionRecord : IDatabaseEntity
 
     public DateTime PurchasedUtc { get; set; }
 
-    public SubscriptionType Type { get; set; }    
+    public SubscriptionType Type { get; set; }
 }
