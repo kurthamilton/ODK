@@ -20,6 +20,8 @@ public class AppSettings
 
     public required HangfireSettings Hangfire { get; init; }
 
+    public required HibpSettings Hibp { get; init; }
+
     public required InstagramSettings Instagram { get; init; }
 
     public required LoggingSettings Logging { get; init; }

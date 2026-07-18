@@ -7,6 +7,7 @@ using ODK.Data.EntityFramework;
 using ODK.Infrastructure.Settings;
 using ODK.Services.Authentication;
 using ODK.Services.Authentication.OAuth;
+using ODK.Services.Integrations.Authentication;
 using ODK.Services.Authorization;
 using ODK.Services.Chapters;
 using ODK.Services.Contact;
@@ -204,6 +205,17 @@ public static class DependencyRegistrar
             {
                 Algorithm = appSettings.Auth.Passwords.Algorithm,
                 Iterations = appSettings.Auth.Passwords.Iterations
+            })
+            .AddScoped<IBreachedPasswordChecker, HibpBreachedPasswordChecker>()
+            .AddSingleton(new HibpBreachedPasswordCheckerSettings
+            {
+                Enabled = appSettings.Hibp.Enabled,
+                RangeApiUrl = appSettings.Hibp.RangeApiUrl
+            })
+            .AddScoped<IPasswordPolicy, PasswordPolicy>()
+            .AddSingleton(new PasswordPolicySettings
+            {
+                MinLength = appSettings.Auth.Passwords.MinLength
             })
             .AddScoped<IPaymentAdminService, PaymentAdminService>()
             .AddScoped<IPaymentService, PaymentService>()

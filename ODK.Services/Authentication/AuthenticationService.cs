@@ -7,7 +7,6 @@ using ODK.Core.Emails;
 using ODK.Core.Members;
 using ODK.Core.Notifications;
 using ODK.Data.Core;
-using ODK.Services.Exceptions;
 using ODK.Services.Members;
 using ODK.Services.Notifications;
 
@@ -15,9 +14,12 @@ namespace ODK.Services.Authentication;
 
 public class AuthenticationService : IAuthenticationService
 {
+    private readonly IBreachedPasswordChecker _breachedPasswordChecker;
+    private readonly Lazy<IHashedPassword> _dummyPassword;
     private readonly IMemberEmailService _memberEmailService;
     private readonly INotificationService _notificationService;
     private readonly IPasswordHasher _passwordHasher;
+    private readonly IPasswordPolicy _passwordPolicy;
     private readonly AuthenticationServiceSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -26,13 +28,31 @@ public class AuthenticationService : IAuthenticationService
         IUnitOfWork unitOfWork,
         IMemberEmailService memberEmailService,
         INotificationService notificationService,
-        IPasswordHasher passwordHasher)
+        IPasswordHasher passwordHasher,
+        IPasswordPolicy passwordPolicy,
+        IBreachedPasswordChecker breachedPasswordChecker)
     {
+        _breachedPasswordChecker = breachedPasswordChecker;
         _memberEmailService = memberEmailService;
         _notificationService = notificationService;
         _passwordHasher = passwordHasher;
+        _passwordPolicy = passwordPolicy;
         _settings = settings;
         _unitOfWork = unitOfWork;
+
+        // A throwaway hash used to equalise timing on the login "no such user / no password" path so it
+        // costs the same PBKDF2 work as a real check, preventing user enumeration via response time.
+        _dummyPassword = new Lazy<IHashedPassword>(() =>
+        {
+            var (hash, options) = _passwordHasher.ComputeHash("not-a-real-password");
+            return new MemberPassword
+            {
+                Algorithm = options.Algorithm,
+                Hash = hash,
+                Iterations = options.Iterations,
+                Salt = options.Salt
+            };
+        });
     }
 
     public async Task<ServiceResult> ActivateChapterAccountAsync(
@@ -60,7 +80,13 @@ public class AuthenticationService : IAuthenticationService
 
         OdkAssertions.MeetsCondition(token, x => x.ChapterId == chapter.Id);
 
-        memberPassword = UpdatePassword(memberPassword, password);
+        var validationResult = await ValidatePasswordAsync(password);
+        if (!validationResult.Success)
+        {
+            return validationResult;
+        }
+
+        memberPassword = UpdateValidatedPassword(memberPassword, password);
         member.Activated = true;
 
         _unitOfWork.MemberRepository.Update(member);
@@ -108,7 +134,13 @@ public class AuthenticationService : IAuthenticationService
             x => x.MemberRepository.GetById(token.MemberId),
             x => x.MemberPasswordRepository.GetByMemberId(token.MemberId));
 
-        memberPassword = UpdatePassword(memberPassword, password);
+        var validationResult = await ValidatePasswordAsync(password);
+        if (!validationResult.Success)
+        {
+            return validationResult;
+        }
+
+        memberPassword = UpdateValidatedPassword(memberPassword, password);
         member.Activated = true;
 
         _unitOfWork.MemberRepository.Update(member);
@@ -143,7 +175,13 @@ public class AuthenticationService : IAuthenticationService
             return ServiceResult.Failure("Current password is incorrect");
         }
 
-        memberPassword = UpdatePassword(memberPassword, newPassword);
+        var validationResult = await ValidatePasswordAsync(newPassword);
+        if (!validationResult.Success)
+        {
+            return validationResult;
+        }
+
+        memberPassword = UpdateValidatedPassword(memberPassword, newPassword);
         _unitOfWork.MemberPasswordRepository.Update(memberPassword);
 
         await _unitOfWork.SaveChangesAsync();
@@ -158,6 +196,9 @@ public class AuthenticationService : IAuthenticationService
             .Run();
         if (member == null || !member.IsCurrent())
         {
+            // Equalise timing with the valid-user path so login response time can't reveal whether an
+            // account exists (user enumeration).
+            _passwordHasher.Check(password, _dummyPassword.Value);
             return null;
         }
 
@@ -167,6 +208,12 @@ public class AuthenticationService : IAuthenticationService
 
         if (!CheckPassword(memberPassword, password))
         {
+            if (memberPassword == null)
+            {
+                // Member exists but has no password set - still perform a hash so timing matches.
+                _passwordHasher.Check(password, _dummyPassword.Value);
+            }
+
             return null;
         }
 
@@ -257,9 +304,10 @@ public class AuthenticationService : IAuthenticationService
 
     public async Task<ServiceResult> ResetPasswordAsync(string token, string password)
     {
-        if (string.IsNullOrWhiteSpace(password))
+        var validationResult = await ValidatePasswordAsync(password);
+        if (!validationResult.Success)
         {
-            return ServiceResult.Failure("Password cannot be blank");
+            return validationResult;
         }
 
         const string message = "Link is invalid or has expired. Please request a new link using the password reset form.";
@@ -284,7 +332,7 @@ public class AuthenticationService : IAuthenticationService
             .GetByMemberId(request.MemberId)
             .Run();
 
-        memberPassword = UpdatePassword(memberPassword, password);
+        memberPassword = UpdateValidatedPassword(memberPassword, password);
 
         if (memberPassword.MemberId == default)
         {
@@ -301,12 +349,21 @@ public class AuthenticationService : IAuthenticationService
         return ServiceResult.Successful();
     }
 
-    private static void ValidatePassword(string password)
+    private async Task<ServiceResult> ValidatePasswordAsync(string password)
     {
-        if (string.IsNullOrWhiteSpace(password))
+        var error = _passwordPolicy.GetValidationError(password);
+        if (error != null)
         {
-            throw new OdkServiceException("Password cannot be blank");
+            return ServiceResult.Failure(error);
         }
+
+        if (await _breachedPasswordChecker.IsBreachedAsync(password))
+        {
+            return ServiceResult.Failure(
+                "This password has appeared in a known data breach. Please choose a different password.");
+        }
+
+        return ServiceResult.Successful();
     }
 
     private bool CheckPassword([NotNullWhen(true)] MemberPassword? memberPassword, string password)
@@ -314,13 +371,6 @@ public class AuthenticationService : IAuthenticationService
         return memberPassword != null
             ? _passwordHasher.Check(password, memberPassword)
             : false;
-    }
-
-    private MemberPassword UpdatePassword(MemberPassword? memberPassword, string password)
-    {
-        ValidatePassword(password);
-
-        return UpdateValidatedPassword(memberPassword, password);
     }
 
     private MemberPassword UpdateValidatedPassword(MemberPassword? memberPassword, string password)
