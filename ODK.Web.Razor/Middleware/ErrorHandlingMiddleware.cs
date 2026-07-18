@@ -66,6 +66,12 @@ public class ErrorHandlingMiddleware
         }
     }
 
+    // Credential-bearing header values are replaced with "[redacted]"; everything else is kept as-is.
+    internal static Dictionary<string, string> RedactSensitiveHeaders(IHeaderDictionary headers)
+        => headers.ToDictionary(
+            x => x.Key,
+            x => SensitiveHeaders.Contains(x.Key) ? "[redacted]" : x.Value.ToString());
+
     private async Task<Chapter?> FindChapter(
         HttpContext httpContext, IRequestStore requestStore, IUnitOfWork unitOfWork)
     {
@@ -184,10 +190,7 @@ public class ErrorHandlingMiddleware
         }
 
         // Redact credential-bearing headers so auth cookies/tokens don't end up in logs.
-        var headers = httpContext.Request.Headers
-            .ToDictionary(
-                x => x.Key,
-                x => SensitiveHeaders.Contains(x.Key) ? "[redacted]" : x.Value.ToString());
+        var headers = RedactSensitiveHeaders(httpContext.Request.Headers);
 
         var form = new Dictionary<string, string>();
 
