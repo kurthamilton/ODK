@@ -17,9 +17,21 @@ public class PasswordHasher : IPasswordHasher
 
     public bool Check(string plainText, IHashedPassword hashed)
     {
-        var hashBytes = ComputeHashBytes(plainText, hashed);
-        var hash = Convert.ToBase64String(hashBytes);
-        return string.Equals(hash, hashed.Hash, StringComparison.Ordinal);
+        byte[] expected;
+        try
+        {
+            expected = Convert.FromBase64String(hashed.Hash);
+        }
+        catch (FormatException)
+        {
+            // Stored hash is malformed - treat as a non-match rather than throwing.
+            return false;
+        }
+
+        var actual = ComputeHashBytes(plainText, hashed);
+
+        // Constant-time comparison to avoid leaking information via timing.
+        return CryptographicOperations.FixedTimeEquals(actual, expected);
     }
 
     public (string hash, IHashedPasswordOptions options) ComputeHash(string plainText)

@@ -10,5 +10,10 @@
         @Html.PasswordFor(x => x.Password, new { @class = "form-control" })
         @Html.ValidationMessageFor(x => x.Password)
     </div>
+    <div class="form-group mb-3 required">
+        @Html.LabelFor(x => x.ConfirmPassword, new { @class = "form-label" })
+        @Html.PasswordFor(x => x.ConfirmPassword, new { @class = "form-control" })
+        @Html.ValidationMessageFor(x => x.ConfirmPassword)
+    </div>
     <button class="btn btn-primary">Activate account</button>
 </form>

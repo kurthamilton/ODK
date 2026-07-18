@@ -5,4 +5,6 @@ public class AuthPasswordsSettings
     public required string Algorithm { get; init; }
 
     public required int Iterations { get; init; }
+
+    public required int MinLength { get; init; }
 }

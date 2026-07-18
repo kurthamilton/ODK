@@ -149,6 +149,7 @@ auto-hide/disable based on it (`UnauthorizedBehaviour`).
 ## Tests
 
 - NUnit + FluentAssertions + Moq; EF Core InMemory for data.
+- Decorate test classes with `[Parallelizable]`.
 - Arrange / Act / Assert with `// Arrange` etc. comments.
 - Test method names: `Method_Scenario_ExpectedResult`.
 - Assert with FluentAssertions (`result.Should().Be(...)`).
@@ -160,6 +161,8 @@ auto-hide/disable based on it (`UnauthorizedBehaviour`).
 - **One top-level declaration per file**, named after the file — don't put an interface and its
   implementation (or several types) in the same file. Give each its own file (e.g.
   `IMemberImportStagingService.cs` and `MemberImportStagingService.cs`).
+- **Member ordering: `private` members come after `public` ones** (e.g. private helper methods below the
+  public API). Applies everywhere, including test classes.
 - Prefer `required` init properties for model/view-model types.
 - When materialising a collection to satisfy an `IReadOnlyCollection<T>` (return type, property, or
   parameter), use `.ToArray()` rather than `.ToList()`.
