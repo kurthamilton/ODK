@@ -37,7 +37,7 @@
             @<div>
                 <section class="section">
                     <form method="post" action="/groups/@viewModel.Chapter.Id/profile">
-                        @*@Html.AntiForgeryToken()*@
+                        @Html.AntiForgeryToken()
 
                         @await Html.PartialAsync("Account/_ChapterProfileForm", viewModel.ChapterProfile)
 

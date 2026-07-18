@@ -10,7 +10,7 @@
                 const $notification = $button.closest('[data-notification]');
 
                 const url = $button.getAttribute('data-notification-dismiss');
-                fetch(url, { method: 'POST' })
+                fetch(url, { method: 'POST', headers: window.odk.antiforgeryHeaders() })
                     .then(() => {
                         const tooltip = bootstrap.Tooltip.getOrCreateInstance($button);
                         tooltip.dispose();
@@ -28,7 +28,7 @@
                 e.preventDefault();
 
                 const url = $button.getAttribute('data-url');
-                fetch(url, { method: 'POST' })
+                fetch(url, { method: 'POST', headers: window.odk.antiforgeryHeaders() })
                     .then(() => {
                         const $notifications = $container.querySelectorAll('[data-notification]');
                         $notifications.forEach($notification => $notification.remove());

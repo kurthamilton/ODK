@@ -35,7 +35,7 @@
 }
 else
 {
-    @*@Html.AntiForgeryToken()*@
+    @Html.AntiForgeryToken()
     @Html.HiddenFor(x => x.ResponseType)
 
     <button type="submit" class="btn-icon @string.Join(' ', classes)">

@@ -28,7 +28,7 @@
             @<div>
                 <section class="section">
                     <form action="/account/location" method="post">
-                        @*@Html.AntiForgeryToken()*@
+                        @Html.AntiForgeryToken()
                         @await Html.PartialAsync("Account/_LocationForm", new LocationFormViewModel
                         {
                             DistanceUnit = viewModel.MemberPreferences?.DistanceUnit,

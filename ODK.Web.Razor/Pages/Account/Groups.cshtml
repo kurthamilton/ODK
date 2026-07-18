@@ -66,6 +66,7 @@
                                         else
                                         {
                                             <form method="post" action="/groups/@chapter.Chapter.Id/leave">
+                                                @Html.AntiForgeryToken()
                                                 <button class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to leave this group?');">
                                                     Leave
                                                 </button>

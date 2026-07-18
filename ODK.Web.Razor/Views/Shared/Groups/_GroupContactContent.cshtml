@@ -14,7 +14,7 @@
     </p>
 
     <form action="/groups/@Model.Chapter.Id/contact" method="post">
-        @*@Html.AntiForgeryToken()*@
+        @Html.AntiForgeryToken()
         @await Html.PartialAsync("Contact/_ContactForm", new ContactFormViewModel())
         <button class="btn btn-primary">Send</button>
     </form>

@@ -4,7 +4,7 @@
 <form method="post" action="@(Model.ChapterId != null ? $"/groups/{Model.ChapterId}" : "")/account/activate">
     @Html.HiddenFor(x => x.Token)
 
-    @*@Html.AntiForgeryToken()*@
+    @Html.AntiForgeryToken()
     <div class="form-group mb-3 required">
         @Html.LabelFor(x => x.Password, new { @class = "form-label" })
         @Html.PasswordFor(x => x.Password, new { @class = "form-control" })

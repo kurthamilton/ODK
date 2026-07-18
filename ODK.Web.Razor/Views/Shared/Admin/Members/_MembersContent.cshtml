@@ -163,6 +163,7 @@
                         @if (!member.Activated)
                         {
                             <form method="post" action="/groups/@Model.Chapter.Id/members/@member.Id/emails/activation/send">
+                                @Html.AntiForgeryToken()
                                 <button data-bs-toggle="tooltip" data-bs-title="Re-send activation email"
                                         class="btn-icon text-primary">
                                     @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.EnvelopeSquare))

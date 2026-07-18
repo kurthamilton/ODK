@@ -15,6 +15,7 @@ using ODK.Web.Common.Services;
 namespace ODK.Web.Razor.Controllers;
 
 [ApiController]
+[IgnoreAntiforgeryToken] // external POSTs from Stripe/Brevo; authenticated by signature/secret, not a token
 public class WebhooksController : OdkControllerBase
 {
     private readonly AppSettings _appSettings;

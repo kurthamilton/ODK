@@ -10,7 +10,7 @@
 
 <section class="section--admin">        
     <form action="/groups/@Model.Chapter.Id/location" method="post">        
-        @*@Html.AntiForgeryToken()*@                
+        @Html.AntiForgeryToken()                
         @if (Model.Country != null)
         {
             <div class="form-group mb-3">

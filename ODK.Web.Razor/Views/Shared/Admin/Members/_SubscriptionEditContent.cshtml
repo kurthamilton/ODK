@@ -5,7 +5,6 @@
 @model SubscriptionAdminPageViewModel
 
 <form method="post">
-    @*@Html.AntiForgeryToken()*@
     @await Html.PartialAsync("Admin/Members/_SubscriptionForm", new SubscriptionFormViewModel
     {
         Amount = Model.Subscription.Amount,

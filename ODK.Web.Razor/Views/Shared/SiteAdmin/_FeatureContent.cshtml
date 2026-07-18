@@ -4,7 +4,6 @@
 @model ODK.Web.Razor.Models.SiteAdmin.FeatureContentViewModel
 
 <form method="post">
-    @*@Html.AntiForgeryToken()*@
     @await Html.PartialAsync("SiteAdmin/_FeatureForm", new FeatureFormViewModel
     {
         Description = Model.Feature.Description,

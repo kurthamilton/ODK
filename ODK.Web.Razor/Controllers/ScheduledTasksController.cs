@@ -11,6 +11,7 @@ namespace ODK.Web.Razor.Controllers;
 
 [Route("[controller]")]
 [ApiController]
+[IgnoreAntiforgeryToken] // external cron POSTs; authenticated by the ScheduledTasks API key, not a token
 public class ScheduledTasksController : OdkControllerBase
 {
     private readonly IMemberAdminService _memberAdminService;

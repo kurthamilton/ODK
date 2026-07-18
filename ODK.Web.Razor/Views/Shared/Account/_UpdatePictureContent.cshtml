@@ -20,6 +20,7 @@
             </button>
 
             <form class="d-flex align-items-center" method="post" action="/account/picture/rotate">
+                @Html.AntiForgeryToken()
                 <button class="btn-icon" data-bs-toggle="tooltip" data-bs-title="Rotate">
                     @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Undo)
                     {
@@ -39,7 +40,7 @@
     Body =
     @<div>
         <form method="post" action="/account/picture/change">
-            @*@Html.AntiForgeryToken()*@
+            @Html.AntiForgeryToken()
             
             @await Html.PartialAsync("Account/_PictureUpload", new PictureUploadViewModel())
 

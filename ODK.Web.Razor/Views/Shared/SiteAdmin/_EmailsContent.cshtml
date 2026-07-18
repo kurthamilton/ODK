@@ -13,7 +13,7 @@
 <section class="section--admin">
     <h2>Settings</h2>
     <form action="/siteadmin/emails/settings" method="post">
-        @*@Html.AntiForgeryToken()*@
+        @Html.AntiForgeryToken()
         @await Html.PartialAsync("SiteAdmin/_EmailSettingsForm", new SiteEmailSettingsViewModel
         {
             FromEmailAddress = settings.FromEmailAddress,

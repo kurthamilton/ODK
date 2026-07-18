@@ -74,6 +74,7 @@
                         @if (!Model.Archived)
                         {
                             <form method="post" action="/groups/@Model.Chapter.Id/venues/@venue.Id/archive">
+                                @Html.AntiForgeryToken()
                                 <button type="submit" class="btn btn-icon">
                                     <span data-bs-toggle="tooltip" data-bs-title="Archive">
                                         @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Archive))
@@ -84,6 +85,7 @@
                         else
                         {
                             <form method="post" action="/groups/@Model.Chapter.Id/venues/@venue.Id/restore">
+                                @Html.AntiForgeryToken()
                                 <button type="submit" class="btn btn-icon">
                                     <span data-bs-toggle="tooltip" data-bs-title="Restore">
                                         @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Undo))

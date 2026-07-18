@@ -5,7 +5,7 @@
 <h2 class="d-none d-md-block">Instagram</h2>
 
 <form method="post" action="/groups/@Model.Id/siteadmin/instagram/scrape">
-    @*@Html.AntiForgeryToken()*@
+    @Html.AntiForgeryToken()
     <button class="btn btn-secondary">Scrape</button>
 </form>
 <p class="text-muted mt-3">

@@ -3,7 +3,7 @@
 @model Chapter
 
 <form method="post" action="/groups/@Model.Id/theme">
-    @*@Html.AntiForgeryToken()*@
+    @Html.AntiForgeryToken()
 
     @await Html.PartialAsync("Admin/Chapter/_ThemeForm", new ThemeFormViewModel
     {

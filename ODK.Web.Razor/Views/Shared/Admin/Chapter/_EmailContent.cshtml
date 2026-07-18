@@ -17,7 +17,6 @@ else
 }
 
 <form method="post">
-    @*@Html.AntiForgeryToken()*@
     @await Html.PartialAsync("Admin/Chapter/_EmailForm", new ChapterEmailFormViewModel
     {
         Content = Model.Email.HtmlContent,
@@ -41,8 +40,10 @@ else
 
 <form method="post" action="/groups/@Model.Chapter.Id/emails/@Model.Email.Type/test"
       id="send-test-form">
+    @Html.AntiForgeryToken()
 </form>
 
 <form method="post" action="/groups/@Model.Chapter.Id/emails/@Model.Email.Type/restoreDefault"
       id="restore-default-form">
+    @Html.AntiForgeryToken()
 </form>

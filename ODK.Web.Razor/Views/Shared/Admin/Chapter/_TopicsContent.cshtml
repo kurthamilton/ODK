@@ -4,6 +4,7 @@
 @model ChapterTopicsAdminPageViewModel
 
 <form action="/admin/groups/@Model.Chapter.Id/topics" method="post">
+    @Html.AntiForgeryToken()
     <div class="form-group mb-3">
         @await Html.PartialAsync("Topics/_TopicPicker", new TopicPickerViewModel
         {
