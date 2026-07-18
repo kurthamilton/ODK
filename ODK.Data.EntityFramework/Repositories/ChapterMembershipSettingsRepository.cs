@@ -16,4 +16,8 @@ public class ChapterMembershipSettingsRepository : WriteRepositoryBase<ChapterMe
     public IDeferredQuerySingleOrDefault<ChapterMembershipSettings> GetByChapterId(Guid chapterId) => Set()
         .Where(x => x.ChapterId == chapterId)
         .DeferredSingleOrDefault();
+
+    public IDeferredQueryMultiple<ChapterMembershipSettings> GetByChapterIds(IEnumerable<Guid> chapterIds) => Set()
+        .Where(x => chapterIds.Contains(x.ChapterId))
+        .DeferredMultiple();
 }

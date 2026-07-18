@@ -876,21 +876,45 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             .GetAll(platform, includeUnpublished: false)
             .Run();
 
+        var chapterIds = chapters.Select(x => x.Id).ToArray();
+
+        // Load members, subscriptions and settings for every chapter in a single round-trip rather than
+        // querying per chapter (which was N round-trips - an N+1).
+        var (members, memberSubscriptions, allMembershipSettings) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetByChapterIds(chapterIds),
+            x => x.MemberSubscriptionRepository.GetByChapterIds(chapterIds),
+            x => x.ChapterMembershipSettingsRepository.GetByChapterIds(chapterIds));
+
+        var membershipSettingsByChapterId = allMembershipSettings.ToDictionary(x => x.ChapterId);
+
+        var memberSubscriptionsByMemberChapter = memberSubscriptions
+            .ToDictionary(x => (x.MemberChapter.ChapterId, x.MemberChapter.MemberId));
+
+        // Group members by each (non-hidden) chapter they belong to - mirrors the per-chapter
+        // GetByChapterId filter that was previously applied in the loop.
+        var chapterIdSet = chapterIds.ToHashSet();
+        var membersByChapterId = members
+            .SelectMany(member => member.Chapters
+                .Where(memberChapter =>
+                    !memberChapter.HideProfile && chapterIdSet.Contains(memberChapter.ChapterId))
+                .Select(memberChapter => (memberChapter.ChapterId, Member: member)))
+            .GroupBy(x => x.ChapterId)
+            .ToDictionary(x => x.Key, x => x.Select(m => m.Member).ToArray());
+
         foreach (var chapter in chapters)
         {
-            var (members, memberSubscriptions, membershipSettings) = await _unitOfWork.RunAsync(
-                x => x.MemberRepository.GetByChapterId(chapter.Id),
-                x => x.MemberSubscriptionRepository.GetByChapterId(chapter.Id),
-                x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id));
-
-            if (membershipSettings == null || !membershipSettings.Enabled)
+            if (!membershipSettingsByChapterId.TryGetValue(chapter.Id, out var membershipSettings) ||
+                !membershipSettings.Enabled)
             {
                 continue;
             }
 
-            var memberSubscriptionDictionary = memberSubscriptions
-                .ToDictionary(x => x.MemberChapter.MemberId);
-            foreach (var member in members)
+            if (!membersByChapterId.TryGetValue(chapter.Id, out var chapterMembers))
+            {
+                continue;
+            }
+
+            foreach (var member in chapterMembers)
             {
                 var memberChapter = member.MemberChapter(chapter.Id);
                 if (memberChapter == null)
@@ -898,7 +922,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                     continue;
                 }
 
-                if (!memberSubscriptionDictionary.TryGetValue(member.Id, out var memberSubscription))
+                if (!memberSubscriptionsByMemberChapter.TryGetValue((chapter.Id, member.Id), out var memberSubscription))
                 {
                     memberSubscription = new MemberSubscription
                     {

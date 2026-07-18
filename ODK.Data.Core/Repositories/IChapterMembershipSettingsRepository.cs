@@ -6,4 +6,5 @@ namespace ODK.Data.Core.Repositories;
 public interface IChapterMembershipSettingsRepository : IWriteRepository<ChapterMembershipSettings>
 {
     IDeferredQuerySingleOrDefault<ChapterMembershipSettings> GetByChapterId(Guid chapterId);
+    IDeferredQueryMultiple<ChapterMembershipSettings> GetByChapterIds(IEnumerable<Guid> chapterIds);
 }

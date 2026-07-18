@@ -43,6 +43,12 @@ public class MemberQueryBuilder : DatabaseEntityQueryBuilder<Member, IMemberQuer
         return this;
     }
 
+    public IMemberQueryBuilder InChapters(IEnumerable<Guid> chapterIds)
+    {
+        Query = Query.InChapters(chapterIds);
+        return this;
+    }
+
     public IMemberQueryBuilder IsChapterOwner(Guid chapterId)
     {
         Query =

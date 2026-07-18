@@ -50,6 +50,25 @@ and workflow. **Migration names follow `{TableName}[-{ColumnName}]-{Action}`** (
 `MemberSubscriptionLog-InitiatorId-Add`) — the naming convention and examples are documented in the
 migrations README.
 
+## Data access
+
+Repositories are the **EF boundary**: never leak `IQueryable` out of a repository — it has to be
+materialised carefully to work with EF, so composition stays behind the repository. Query results are
+returned as deferred queries (`IDeferredQuery*`), and `IUnitOfWork.RunAsync(...)` batches several into
+one round-trip (watch for the per-entity N+1 — prefer a batched `...ByChapterIds`-style query over a
+loop of single-id calls).
+
+Two styles coexist for composing those queries:
+
+- **Query builders (`XQueryBuilder`) — preferred for new work.** A repo exposes `Query()` returning a
+  fluent builder; chain filters (`.InChapter(id)`, `.Active()`, …) then terminate (`.GetAll()`,
+  `.GetSingleOrDefault()`, `.Any()`, …). This keeps `IQueryable` encapsulated while avoiding a
+  proliferation of near-identical repository methods. Add a filter to the builder rather than a new
+  bespoke repository method where a builder already exists.
+- **Bespoke repository methods — legacy.** Older repositories expose one method per query. Not all
+  repositories have been converted (the builder pattern is verbose to set up), so this style remains;
+  it's fine to extend a repo that already uses it, but reach for a query builder for anything new.
+
 ## Web architecture
 
 The app is **server-rendered** with minimal client-side JavaScript (Bootstrap + small
@@ -187,3 +206,10 @@ auto-hide/disable based on it (`UnauthorizedBehaviour`).
   see `_SubscriptionForm.cshtml` (hidden `Amount` + a read-only input showing the formatted amount).
 - Reuse shared helpers rather than duplicating (e.g. CSV parsing lives in
   `ODK.Web.Razor/Services/CsvFileReader.cs`, used by both controllers and page models).
+
+## Domain notes
+
+- **Hidden members (`MemberChapter.HideProfile`).** This exists solely so a site admin can join a group
+  — usually to test it — without appearing to the group's real members. It is *not* a general
+  privacy/visibility feature. Member-listing queries filter these out by default (e.g. `InChapter`'s
+  `!HideProfile` predicate); include them only where a site-admin view genuinely needs to.

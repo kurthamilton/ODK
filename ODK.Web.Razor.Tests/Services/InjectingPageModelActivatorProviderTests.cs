@@ -14,7 +14,7 @@ public static class InjectingPageModelActivatorProviderTests
     {
         var service = new Service();
         var provider = new ServiceCollection()
-            .AddSingleton<IService>(service)
+            .AddSingleton(service)
             .BuildServiceProvider();
         var target = new Target();
 
@@ -24,19 +24,15 @@ public static class InjectingPageModelActivatorProviderTests
         target.NotInjected.Should().BeNull();
     }
 
-    private interface IService
-    {
-    }
-
-    private sealed class Service : IService
+    private sealed class Service
     {
     }
 
     private sealed class Target
     {
         [OdkInject]
-        public IService? Injected { get; set; }
+        public Service? Injected { get; set; }
 
-        public IService? NotInjected { get; set; }
+        public Service? NotInjected { get; set; }
     }
 }
