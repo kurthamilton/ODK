@@ -1,5 +1,8 @@
 using FluentAssertions;
+using Moq;
+using ODK.Core.Payments;
 using ODK.Services.Integrations.Payments.Stripe;
+using ODK.Services.Logging;
 using ODK.Services.Payments;
 using Stripe;
 
@@ -9,7 +12,7 @@ namespace ODK.Services.Integrations.Tests.Payments.Stripe;
 public static class StripePaymentProviderTests
 {
     [Test]
-    public static void MapSubscription_PopulatesDatesAndPlanFromItem()
+    public static async Task MapSubscription_PopulatesDatesAndPlanFromItem()
     {
         // Arrange
         var periodStart = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
@@ -35,7 +38,7 @@ public static class StripePaymentProviderTests
         };
 
         // Act
-        var result = StripePaymentProvider.MapSubscription(subscription);
+        var result = await CreateProvider().MapSubscription(subscription);
 
         // Assert
         result.Should().NotBeNull();
@@ -46,9 +49,11 @@ public static class StripePaymentProviderTests
     }
 
     [Test]
-    public static void MapSubscription_NoItems_ReturnsNull()
+    public static async Task MapSubscription_NoItems_ReturnsNullAndLogsError()
     {
         // Arrange - a subscription with no item cannot carry the plan or billing dates, so it is useless.
+        var loggingService = new Mock<ILoggingService>();
+
         var subscription = new Subscription
         {
             Id = "sub_123",
@@ -58,14 +63,15 @@ public static class StripePaymentProviderTests
         };
 
         // Act
-        var result = StripePaymentProvider.MapSubscription(subscription);
+        var result = await CreateProvider(loggingService.Object).MapSubscription(subscription);
 
         // Assert
         result.Should().BeNull();
+        loggingService.Verify(x => x.Error(It.Is<string>(m => m.Contains("sub_123"))), Times.Once);
     }
 
     [Test]
-    public static void MapSubscription_CancelAtSet_StatusCancelled()
+    public static async Task MapSubscription_CancelAtSet_StatusCancelled()
     {
         // Arrange
         var subscription = new Subscription
@@ -81,10 +87,23 @@ public static class StripePaymentProviderTests
         };
 
         // Act
-        var result = StripePaymentProvider.MapSubscription(subscription);
+        var result = await CreateProvider().MapSubscription(subscription);
 
         // Assert
         result!.Status.Should().Be(ExternalSubscriptionStatus.Cancelled);
         result.CancelDate.Should().Be(subscription.CancelAt);
     }
+
+    private static StripePaymentProvider CreateProvider(ILoggingService? loggingService = null)
+        => new StripePaymentProvider(
+            new SitePaymentSettings { ApiSecretKey = "sk_test_dummy" },
+            loggingService ?? new Mock<ILoggingService>().Object,
+            connectedAccountId: null,
+            new StripePaymentProviderSettings
+            {
+                ConnectedAccountBaseUrl = string.Empty,
+                ConnectedAccountCommissionPercentage = 0,
+                ConnectedAccountMcc = string.Empty,
+                ConnectedAccountProductDescription = string.Empty
+            });
 }
