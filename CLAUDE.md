@@ -177,6 +177,12 @@ auto-hide/disable based on it (`UnauthorizedBehaviour`).
 
 - Match the style of surrounding code (tabs vs spaces varies by project — follow the file).
 - File-scoped namespaces.
+- **Prefer `using` directives over fully-qualified type names.** Import the namespace and use the short
+  type name rather than inlining a namespace path at the use site. Applies to Razor too — add a
+  `@using` and shorten `@inject`/type references (e.g. `@using Microsoft.AspNetCore.Antiforgery` +
+  `@inject IAntiforgery Antiforgery`, not `@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery …`).
+- **Remove unused `using`s in any file you edit.** When you finish working in a file, drop imports your
+  changes left unused — don't leave orphaned usings behind.
 - **One top-level declaration per file**, named after the file — don't put an interface and its
   implementation (or several types) in the same file. Give each its own file (e.g.
   `IMemberImportStagingService.cs` and `MemberImportStagingService.cs`).

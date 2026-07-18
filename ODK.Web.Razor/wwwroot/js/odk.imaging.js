@@ -1,170 +1,131 @@
-﻿(function (Cropper) {
-    const containers = document.querySelectorAll('[data-img-container]');
-    containers.forEach(container => bindContainer(container));
+// Cropper.js v2 (ES module). v2 is a web-component rewrite: `new Cropper(img)` replaces the
+// <img> with a <cropper-canvas> template, and the crop result is read from the <cropper-selection>
+// via $toCanvas(). The only value posted back is the cropped PNG data URL ([data-img-dataurl]).
+// NOTE: the cropping UX (aspect ratio, initial selection, canvas sizing) needs in-browser
+// verification on the picture pages - it can't be exercised from unit tests.
+import Cropper from 'cropperjs';
 
-    function bindContainer(container) {
-        const context = {
-            container: container,
-            dataUrl: container.querySelector('[data-img-dataurl]'),
-            resize: container.querySelector('[data-img-resize]')
-        };
+const containers = document.querySelectorAll('[data-img-container]');
+containers.forEach(container => bindContainer(container));
 
-        bindFileUpload(context);
-        bindForm(context);
-        bindCropper(context);
+function bindContainer(container) {
+    const context = {
+        container: container,
+        dataUrl: container.querySelector('[data-img-dataurl]'),
+        resize: container.querySelector('[data-img-resize]')
+    };
+
+    bindFileUpload(context);
+    bindCropper(context);
+}
+
+function bindFileUpload(context) {
+    context.fileUpload = context.container.querySelector('[data-img-input]');
+    if (!context.fileUpload) {
+        return;
     }
 
-    function bindFileUpload(context) {
-        context.fileUpload = context.container.querySelector('[data-img-input]');
-        if (!context.fileUpload) {
-            return;
-        }
-
-        context.preview = context.container.querySelector('[data-img-preview]');
-        if (!context.preview) {
-            return;
-        }
-
-        context.previewContainer = context.preview.closest('[data-img-preview-container]');
-
-        context.preview.addEventListener('load', () => {
-            bindCropper(context);
-            context.previewContainer.classList.remove('d-none');
-        });
-
-        if (context.preview.getAttribute('src') && context.preview.complete) {
-            context.previewContainer.classList.remove('d-none');
-        }
-
-        context.fileUpload.addEventListener('change', e => {
-            const [file] = context.fileUpload.files
-            if (!file) {
-                return;
-            }
-
-            context.preview.src = URL.createObjectURL(file);
-            context.preview.classList.remove('d-none');
-
-            setCropData(context, {});
-            bindCropper(context);
-        });
+    context.preview = context.container.querySelector('[data-img-preview]');
+    if (!context.preview) {
+        return;
     }
 
-    function bindCropper(context) {
-        if (context.cropper) {
-            context.cropper.destroy();
-            context.cropper = null;
-        }
+    context.previewContainer = context.preview.closest('[data-img-preview-container]');
 
-        if (!context.resize || !context.preview.getAttribute('src')) {
-            return;
-        }
-
-        const options = {
-            aspectRatio: context.resize.hasAttribute('data-img-ratio')
-                ? context.resize.getAttribute('data-img-ratio') || NaN
-                : 1,
-            autoCrop: true,
-            autoCropArea: 1, // percentage of default crop area, 0 <= x <= 1
-            data: getCropData(context),
-            guides: true,
-            center: true,
-            viewMode: 0
-        };
-
-        context.cropper = new Cropper(context.resize, options);
-
-        handleModals(context);
+    if (context.preview.getAttribute('src') && context.preview.complete) {
+        context.previewContainer.classList.remove('d-none');
     }
 
-    function bindForm(context) {
-        const form = context.container.closest('form');
-        if (!form) {
+    context.fileUpload.addEventListener('change', () => {
+        const [file] = context.fileUpload.files;
+        if (!file) {
             return;
         }
 
-        context.cropXInput = context.container.querySelector('[data-img-crop-x]');
-        context.cropYInput = context.container.querySelector('[data-img-crop-y]');
-        context.cropWidthInput = context.container.querySelector('[data-img-crop-width]');
-        context.cropHeightInput = context.container.querySelector('[data-img-crop-height]');
-        context.mimeType = context.container.querySelector('[data-img-type]');
+        context.previewContainer.classList.remove('d-none');
+        setImageSource(context, URL.createObjectURL(file));
+    });
+}
 
-        const setData = () => {
-            if (!context.cropper) {
-                return;
-            }
+function bindCropper(context) {
+    if (context.cropper) {
+        context.cropper.destroy();
+        context.cropper = null;
+    }
 
-            const data = context.cropper.getData(true);
+    if (!context.resize || !context.preview || !context.preview.getAttribute('src')) {
+        return;
+    }
 
-            if (context.dataUrl) {
-                const [file] = context.fileUpload.files;
-                context.dataUrl.value = context.cropper.getCroppedCanvas().toDataURL('image/png');
-            }
+    // Constructing the cropper defines the custom elements and copies the <img> src across.
+    const cropper = new Cropper(context.resize);
+    context.cropper = cropper;
 
-            setCropData(context, data);
-        };
+    const selection = cropper.getCropperSelection();
+    if (selection) {
+        selection.aspectRatio = getAspectRatio(context);
+        selection.initialCoverage = 1;
+        selection.addEventListener('change', () => exportSelection(context));
+    }
 
-        context.preview.addEventListener('ready', () => {
-            setData();
-        });
-        context.preview.addEventListener('cropend', () => {
-            setData();
-        });
-        context.preview.addEventListener('zoom', () => {
-            setData();
+    const image = cropper.getCropperImage();
+    if (image) {
+        image.$ready(() => {
+            selection?.$reset();
+            exportSelection(context);
         });
     }
 
-    function getCropData(context) {
-        return {
-            x: getValue(context.cropXInput),
-            y: getValue(context.cropYInput),
-            width: getValue(context.cropWidthInput),
-            height: getValue(context.cropHeightInput)
-        };
+    handleModals(context);
+}
+
+function exportSelection(context) {
+    if (!context.dataUrl || !context.cropper) {
+        return;
     }
 
-    function getValue(el) {
-        if (!el) {
-            return;
-        }
-
-        var value = parseInt(el.value);
-        if (isNaN(value)) {
-            return;
-        }
-
-        return value;
+    const selection = context.cropper.getCropperSelection();
+    if (!selection) {
+        return;
     }
 
-    function handleModals(context) {
-        if (context.modalChecked) {
-            return;
-        }
+    selection.$toCanvas().then(canvas => {
+        context.dataUrl.value = canvas.toDataURL('image/png');
+    });
+}
 
-        context.modalChecked = true;
-
-        context.modal = context.resize.closest('.modal');
-        if (!context.modal) {
-            return;
-        }
-
-        // force cropper to re-bind on modal open to fix layout issues
-        context.modal.addEventListener('shown.bs.modal', () => bindCropper(context));
+function getAspectRatio(context) {
+    if (!context.resize.hasAttribute('data-img-ratio')) {
+        return 1;
     }
 
-    function setCropData(context, data) {
-        setValue(context.cropXInput, data.x);
-        setValue(context.cropYInput, data.y);
-        setValue(context.cropWidthInput, data.width);
-        setValue(context.cropHeightInput, data.height);
+    const ratio = parseFloat(context.resize.getAttribute('data-img-ratio'));
+    return isNaN(ratio) ? NaN : ratio;
+}
+
+function handleModals(context) {
+    if (context.modalChecked) {
+        return;
     }
 
-    function setValue(el, value) {
-        if (!el) {
-            return;
-        }
+    context.modalChecked = true;
 
-        el.value = value;
+    context.modal = context.resize.closest('.modal');
+    if (!context.modal) {
+        return;
     }
-})(Cropper);
+
+    // force cropper to re-bind on modal open to fix layout issues
+    context.modal.addEventListener('shown.bs.modal', () => bindCropper(context));
+}
+
+function setImageSource(context, src) {
+    // Destroy first so the cropper restores the original <img>, then update its src and rebind.
+    if (context.cropper) {
+        context.cropper.destroy();
+        context.cropper = null;
+    }
+
+    context.preview.src = src;
+    bindCropper(context);
+}

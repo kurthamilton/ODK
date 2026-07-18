@@ -1,14 +1,15 @@
-﻿@using Microsoft.AspNetCore.Http.Extensions
+﻿@using Microsoft.AspNetCore.Antiforgery
+@using Microsoft.AspNetCore.Http.Extensions
+@using Microsoft.AspNetCore.Mvc.ViewFeatures
 @using ODK.Core.Countries
 @using ODK.Core.Platforms
 @using ODK.Core.Utils
 @using ODK.Web.Common.Routes
 @using ODK.Web.Common.Services
-@using ODK.Web.Razor.Pages.Chapters
-@using ODK.Web.Razor.Services
 @inject IOdkRoutes OdkRoutes
 @inject IRequestStore RequestStore
-@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@inject IAntiforgery Antiforgery
+@inject IFileVersionProvider FileVersionProvider
 @{
     var (platform, chapter, currentMember) = 
         (RequestStore.Platform, RequestStore.ChapterOrDefault, RequestStore.CurrentMemberOrDefault);
@@ -41,6 +42,9 @@
     var keywords = ViewData["Keywords"] as IReadOnlyCollection<string>;
 
     var location = ViewData["Location"] as ILocation;
+
+    var cropperModulePath = FileVersionProvider.AddFileVersionToPath(
+        Context.Request.PathBase, "/lib/cropperjs/cropper.esm.min.js");
 
     var keywordDescription = "";
     if (keywords != null && keywords.Count > 0)
@@ -76,6 +80,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     @* Antiforgery request token for AJAX POSTs - read by odk.forms.js and sent as the RequestVerificationToken header. *@
     <meta name="request-verification-token" content="@Antiforgery.GetAndStoreTokens(Context).RequestToken" />
+    @* Resolves the bare `cropperjs` module specifier for ES module scripts (e.g. odk.imaging.js). The
+       content-hashed URL busts the browser cache automatically on upgrade, since asp-append-version
+       does not rewrite `import` URLs. *@
+    @* <!script> opts out of the WebOptimizer/ASP.NET script tag helper, which otherwise strips
+       type="importmap" (a .NET script-tag-helper regression). *@
+    <!script type="importmap">
+    { "imports": { "cropperjs": "@cropperModulePath" } }
+    </!script>
     <title>@title</title>    
     @if (!string.IsNullOrEmpty(description))
     {
