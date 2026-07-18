@@ -99,6 +99,28 @@ public class RateLimitingMiddleware
         GreyList[ipAddress] = blockedUntilUtc.Value;
     }
 
+    internal static bool MatchesConfigRule(string rule, string value)
+    {
+        var (wildStart, wildEnd) = (rule.StartsWith('*'), rule.EndsWith('*'));
+
+        if (wildStart && wildEnd)
+        {
+            return value.Contains(rule[1..^1], StringComparison.OrdinalIgnoreCase);
+        }
+
+        if (wildStart)
+        {
+            return value.EndsWith(rule[1..], StringComparison.OrdinalIgnoreCase);
+        }
+
+        if (wildEnd)
+        {
+            return value.StartsWith(rule[..^1], StringComparison.OrdinalIgnoreCase);
+        }
+
+        return value.Equals(rule, StringComparison.OrdinalIgnoreCase);
+    }
+
     private static void CleanupExpired(DateTime utcNow)
     {
         var next = Interlocked.Read(ref _nextCleanupTicks);
@@ -121,28 +143,6 @@ public class RateLimitingMiddleware
                 GreyList.TryRemove(entry.Key, out _);
             }
         }
-    }
-
-    private static bool MatchesConfigRule(string rule, string value)
-    {
-        var (wildStart, wildEnd) = (rule.StartsWith('*'), rule.EndsWith('*'));
-
-        if (wildStart && wildEnd)
-        {
-            return value.Contains(rule[1..^1], StringComparison.OrdinalIgnoreCase);
-        }
-
-        if (wildStart)
-        {
-            return value.EndsWith(rule[1..], StringComparison.OrdinalIgnoreCase);
-        }
-
-        if (wildEnd)
-        {
-            return value.StartsWith(rule[..^1], StringComparison.OrdinalIgnoreCase);
-        }
-
-        return value.Equals(rule, StringComparison.OrdinalIgnoreCase);
     }
 
     private bool IsRateLimited(string requestPath)

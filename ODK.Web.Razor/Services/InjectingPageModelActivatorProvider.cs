@@ -38,7 +38,7 @@ public class InjectingPageModelActivatorProvider<T> : IPageModelActivatorProvide
         return _defaultProvider!.CreateReleaser(descriptor);
     }
 
-    private static void InjectProperties(object instance, IServiceProvider scoped)
+    internal static void InjectProperties(object instance, IServiceProvider scoped)
     {
         var props = instance
             .GetType()

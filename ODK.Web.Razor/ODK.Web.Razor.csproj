@@ -9,6 +9,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<InternalsVisibleTo Include="ODK.Web.Razor.Tests" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<Compile Remove="Pages\Groups\Admin\**" />
 		<Compile Remove="wwwroot\lib\vanillajs-datepicker\**" />
 		<Content Remove="Pages\Groups\Admin\**" />
