@@ -78,6 +78,7 @@
     </ul>
 
     <form method="post" action="/groups/@Model.Chapter.Id/members/import">
+        @Html.AntiForgeryToken()
         @Html.HiddenFor(x => x.Token)
 
         <button type="submit" class="btn btn-primary">

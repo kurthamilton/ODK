@@ -50,6 +50,7 @@
                                 else
                                 {
                                     <form action="/siteadmin/payments/@paymentSetting.Id/activate" method="post">
+                                        @Html.AntiForgeryToken()
                                         <button class="btn btn-primary">Activate</button>
                                     </form>
                                 }

@@ -22,7 +22,7 @@
 
 <section class="section">
     <form action="/siteadmin/topics/@Model.Topic.Id" method="post">
-        @*@Html.AntiForgeryToken()*@
+        @Html.AntiForgeryToken()
         
         @await Html.PartialAsync("SiteAdmin/_SiteAdminTopicForm", new TopicFormViewModel
         {

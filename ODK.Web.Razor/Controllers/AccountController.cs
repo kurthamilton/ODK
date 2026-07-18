@@ -161,6 +161,7 @@ public class AccountController : OdkControllerBase
     }
 
     [AllowAnonymous]
+    [IgnoreAntiforgeryToken] // token posted by Google Identity JS, not a first-party form; exempt for now
     [HttpPost("account/login/google")]
     public async Task<IActionResult> GoogleSiteLogin([FromForm] string token, string? returnUrl)
     {
@@ -199,6 +200,7 @@ public class AccountController : OdkControllerBase
     }
 
     [AllowAnonymous]
+    [IgnoreAntiforgeryToken] // token posted by Google Identity JS, not a first-party form; exempt for now (#3)
     [HttpPost("{chapterName}/account/login/google")]
     public async Task<IActionResult> GoogleChapterLogin(string chapterName, [FromForm] string token, string? returnUrl)
     {

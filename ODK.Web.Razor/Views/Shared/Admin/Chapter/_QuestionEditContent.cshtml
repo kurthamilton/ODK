@@ -7,7 +7,7 @@
 @model ChapterQuestionAdminPageViewModel
 
 <form method="post" action="/admin/groups/@Model.Chapter.Id/questions/@Model.Question.Id">
-    @*@Html.AntiForgeryToken()*@
+    @Html.AntiForgeryToken()
     @await Html.PartialAsync("Admin/Chapter/_QuestionForm", new ChapterQuestionFormViewModel
     {
         Answer = Model.Question.Answer,

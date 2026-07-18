@@ -8,6 +8,7 @@
 @using ODK.Web.Razor.Services
 @inject IOdkRoutes OdkRoutes
 @inject IRequestStore RequestStore
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
 @{
     var (platform, chapter, currentMember) = 
         (RequestStore.Platform, RequestStore.ChapterOrDefault, RequestStore.CurrentMemberOrDefault);
@@ -73,6 +74,8 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    @* Antiforgery request token for AJAX POSTs - read by odk.forms.js and sent as the RequestVerificationToken header. *@
+    <meta name="request-verification-token" content="@Antiforgery.GetAndStoreTokens(Context).RequestToken" />
     <title>@title</title>    
     @if (!string.IsNullOrEmpty(description))
     {

@@ -17,7 +17,7 @@
     <h2>New topics</h2>
     <section class="section section--admin">
         <form action="/siteadmin/topics/approve" method="post">
-            @*@Html.AntiForgeryToken()*@
+            @Html.AntiForgeryToken()
             @await Html.PartialAsync("SiteAdmin/_NewTopicsForm", new NewTopicsFormViewModel
             {
                 Chapters = Model.NewChapterTopics
@@ -68,7 +68,7 @@
                         }
 
                         <form action="/siteadmin/topics" method="post">
-                            @*@Html.AntiForgeryToken()*@
+                            @Html.AntiForgeryToken()
                             @Html.Hidden("TopicGroupId", topicGroup.Id.ToString())
 
                             <div class="input-group mt-3">
@@ -84,7 +84,7 @@
 <section class="mt-3">
     <h3>Add topic group</h3>
     <form action="/siteadmin/topic-groups" method="post">
-        @*@Html.AntiForgeryToken()*@
+        @Html.AntiForgeryToken()
         
         <div class="form-group mb-3">
             <input type="text" class="form-control" name="Name" />            

@@ -22,7 +22,6 @@
 @if (Model.Venues.Count > 0)
 {
     <form method="post">
-        @*@Html.AntiForgeryToken()*@
 
         @await Html.PartialAsync("Admin/Events/Event/_EventForm", new EventFormViewModel
         {

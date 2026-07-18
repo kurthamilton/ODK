@@ -163,10 +163,7 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        builder.Services.AddRazorPages().AddRazorPagesOptions(o =>
-        {
-            o.Conventions.ConfigureFilter(new IgnoreAntiforgeryTokenAttribute());
-        });
+        builder.Services.AddRazorPages();
 
         builder.Services.AddControllers();
 
@@ -292,9 +289,15 @@ public class Program
 
     private static AppSettings ConfigureServices(IConfiguration config, IServiceCollection services)
     {
+        // Validate an antiforgery token on every unsafe request (POST/PUT/PATCH/DELETE), for both MVC
+        // controllers and Razor Page handlers. The header name lets AJAX POSTs send the token via header
+        // (see the request-verification-token meta tag in the layout). Endpoints that receive external
+        // POSTs (webhooks, scheduled-task cron, OAuth callbacks) opt out with [IgnoreAntiforgeryToken].
+        services.AddAntiforgery(options => options.HeaderName = "RequestVerificationToken");
+
         services
             .AddMemoryCache()
-            .AddControllers()
+            .AddControllers(options => options.Filters.Add<AutoValidateAntiforgeryTokenAttribute>())
             .AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;

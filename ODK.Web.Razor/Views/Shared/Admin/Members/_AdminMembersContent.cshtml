@@ -43,7 +43,7 @@
             @<div>
                 <form method="post" action="/groups/@Model.Chapter.Id/members/admins"
                       class="row g-3 mb-3">
-                    @*@Html.AntiForgeryToken()*@
+                    @Html.AntiForgeryToken()
                     <div class="col-lg-6 col-12 d-flex gap-1">
                         <div class="flex-grow-1">
                             @await Html.PartialAsync("Admin/Members/_AdminMemberAddForm", new AdminMemberAddFormViewModel
@@ -110,6 +110,7 @@
                                     @if (Model.Chapter.OwnerId != adminMember.MemberId)
                                     {
                                         <form method="post" action="/groups/@Model.Chapter.Id/members/admins/@member.Id/delete">
+                                            @Html.AntiForgeryToken()
                                             <button data-bs-toggle="tooltip" data-bs-title="Remove"
                                                     class="btn-icon text-danger"
                                                     onclick="return confirm('Are you sure you want to remove admin access for this member?');">

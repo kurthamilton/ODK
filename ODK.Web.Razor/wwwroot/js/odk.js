@@ -17,6 +17,12 @@
     window.odk.utils = window.odk.utils || {};
     window.odk.utils.bindTooltips = bindTooltips;
 
+    // Headers for AJAX POSTs so they carry the antiforgery token (from the layout meta tag).
+    window.odk.antiforgeryHeaders = function () {
+        const token = document.querySelector('meta[name="request-verification-token"]')?.content;
+        return token ? { 'RequestVerificationToken': token } : {};
+    };
+
     function bindAttachTo() {
         const $elements = document.querySelectorAll('[data-attach-to]');
         $elements.forEach($element => {
@@ -102,7 +108,8 @@
             const url = `/Account/FeatureTips/${encodeURIComponent(name)}/Hide`;
 
             fetch(url, {
-                method: 'POST'
+                method: 'POST',
+                headers: window.odk.antiforgeryHeaders()
             }).then(() => {
                 target.removeAttribute('data-feature-hidetip');
 

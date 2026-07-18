@@ -12,7 +12,7 @@
 
 <section class="section">
     <form action="/siteadmin/subscriptions" method="post">
-        @*@Html.AntiForgeryToken()*@
+        @Html.AntiForgeryToken()
         @await Html.PartialAsync("SiteAdmin/_SubscriptionForm", new SiteSubscriptionFormViewModel
         {
             SitePaymentSettingId = sitePaymentSettings.FirstOrDefault(x => x.Active)?.Id,

@@ -35,7 +35,7 @@
                         </td>
                         <td>
                             <form method="post" action="/siteadmin/Errors/@error.Id/Delete">
-                                @*@Html.AntiForgeryToken()*@
+                                @Html.AntiForgeryToken()
                                 <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger">
                                     @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Times))
                                 </button>

@@ -8,7 +8,7 @@
 @model ChapterTextsAdminPageViewModel
 
 <form method="post" action="/groups/@Model.Chapter.Id/texts">
-    @*@Html.AntiForgeryToken()*@
+    @Html.AntiForgeryToken()
 
     @await Html.PartialAsync("Admin/Chapter/_TextForm", new ChapterTextsFormViewModel
     {

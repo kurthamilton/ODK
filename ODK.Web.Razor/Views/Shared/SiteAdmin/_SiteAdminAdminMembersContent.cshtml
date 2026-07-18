@@ -29,6 +29,7 @@
                         else
                         {
                             <form action="/groups/@Model.Chapter.Id/owner" method="post">
+                                @Html.AntiForgeryToken()
                                 @Html.Hidden("memberId", adminMember.MemberId)
                                 <button class="btn btn-icon" data-bs-toggle="tooltip" data-bs-title="Set as owner">
                                     @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.StarOutline)
@@ -41,6 +42,7 @@
                     </td>
                     <td>
                         <form action="/groups/@Model.Chapter.Id/members/@adminMember.MemberId/visibility" method="post">
+                            @Html.AntiForgeryToken()
                             @if (adminMember.Member.Visible(Model.Chapter.Id))
                             {
                                 @Html.Hidden("visible", false)

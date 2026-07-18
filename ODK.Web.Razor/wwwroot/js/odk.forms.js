@@ -100,7 +100,8 @@ window.odk.forms = window.odk.forms || {};
                 const url = $input.getAttribute('data-input-change-url')
                     .replace('{value}', value);
                 await fetch(url, {
-                    method: 'POST'
+                    method: 'POST',
+                    headers: window.odk.antiforgeryHeaders()
                 });
             });
         });

@@ -53,6 +53,7 @@
                                 @if (subscription.Enabled)
                                 {
                                     <form action="/siteadmin/subscriptions/@subscription.Id/disable" method="post">
+                                        @Html.AntiForgeryToken()
                                         <button class="btn btn-icon" 
                                                 data-bs-toggle="tooltip" data-bs-title="Disable">
                                             @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.CheckCircle)
@@ -65,6 +66,7 @@
                                 else
                                 {
                                     <form action="/siteadmin/subscriptions/@subscription.Id/enable" method="post">
+                                        @Html.AntiForgeryToken()
                                         <button class="btn btn-icon"
                                                 data-bs-toggle="tooltip" data-bs-title="Enable">
                                             @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.TimesCircleOutline)
@@ -120,7 +122,7 @@
                                 else
                                 {
                                     <form action="/siteadmin/subscriptions/@subscription.Id/default" method="post">
-                                        @*@Html.AntiForgeryToken()*@
+                                        @Html.AntiForgeryToken()
                                         <button class="btn btn-primary btn-sm">Set default</button>
                                     </form>
                                 }

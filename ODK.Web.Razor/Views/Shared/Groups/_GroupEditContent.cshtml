@@ -21,6 +21,7 @@ else if (!Model.Chapter.IsPublished())
 {
     <section class="section--admin">
         <form action="/groups/@Model.Chapter.Id/publish" method="post">
+            @Html.AntiForgeryToken()
             <button class="btn btn-success">Publish</button>
         </form>
     </section>

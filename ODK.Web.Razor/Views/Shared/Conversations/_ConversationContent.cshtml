@@ -14,6 +14,7 @@
         {
             <div class="alert alert-info mb-3">
                 <form method="post" action="/conversations/@Model.Conversation.Id/restore">
+                    @Html.AntiForgeryToken()
                     <div class="d-flex align-items-center gap-2">
                         <span>Archived @Model.Conversation.ArchivedUtc.Value.ToRelativeTime(Model.TimeZone).</span>
                         <button class="btn btn-link" type="submit">Restore</button>
@@ -40,7 +41,7 @@
                 BodyContentFunc = 
                     @<div>
                         <form action="/conversations/@Model.Conversation.Id/reply" method="post">
-                            @*@Html.AntiForgeryToken()*@
+                            @Html.AntiForgeryToken()
                             @await Html.PartialAsync("Conversations/_ConversationReplyForm", new ChapterConversationReplyFormViewModel())
                             
                             <div class="d-flex">
@@ -61,6 +62,7 @@
                         @if (Model.Conversation.ArchivedUtc == null)
                         {
                             <form id="archive-conversation-form" method="post" action="/conversations/@Model.Conversation.Id/archive">
+                                @Html.AntiForgeryToken()
                             </form>
                         }                        
                     </div>

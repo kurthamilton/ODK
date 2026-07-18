@@ -11,7 +11,6 @@
 <h2 class="d-none d-md-block">Payment settings</h2>
 
 <form method="post">
-    @*@Html.AntiForgeryToken()*@
     @await Html.PartialAsync("Chapters/siteadmin/_PaymentSettingsForm", new PaymentSettingsFormViewModel
     {
         CurrencyOptions = Model.Currencies,
