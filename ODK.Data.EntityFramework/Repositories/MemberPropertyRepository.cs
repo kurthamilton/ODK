@@ -14,6 +14,11 @@ public class MemberPropertyRepository : ReadWriteRepositoryBase<MemberProperty>,
     {
     }
 
+    public IDeferredQueryMultiple<MemberProperty> GetByMemberId(Guid memberId)
+        => Set()
+            .Where(x => x.MemberId == memberId)
+            .DeferredMultiple();
+
     public IDeferredQueryMultiple<MemberProperty> GetByMemberId(Guid memberId, Guid chapterId)
     {
         var query =

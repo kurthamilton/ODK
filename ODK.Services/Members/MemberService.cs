@@ -1018,31 +1018,12 @@ public class MemberService : IMemberService
         IEnumerable<MemberPropertyUpdateModel> memberProperties,
         bool forApplication)
     {
-        var memberPropertyDictionary = memberProperties
-            .ToDictionary(x => x.ChapterPropertyId, x => x.Value);
-        foreach (var chapterProperty in chapterProperties.Where(x => x.Required))
-        {
-            memberPropertyDictionary.TryGetValue(chapterProperty.Id, out string? value);
+        var valuesByPropertyId = memberProperties
+            .ToDictionary(x => x.ChapterPropertyId, x => (string?)x.Value);
 
-            if (chapterProperty.DataType == DataType.Checkbox)
-            {
-                if (string.Equals(value, "true", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    continue;
-                }
-            }
-            else if (!string.IsNullOrWhiteSpace(value))
-            {
-                continue;
-            }
-
-            if (chapterProperty.ApplicationOnly && !forApplication)
-            {
-                continue;
-            }
-
-            yield return chapterProperty.GetDisplayText();
-        }
+        return chapterProperties
+            .GetMissingRequired(valuesByPropertyId, forApplication)
+            .Select(x => x.GetDisplayText());
     }
 
     private MemberChapter AddMemberToChapter(
