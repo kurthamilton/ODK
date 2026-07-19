@@ -5,5 +5,7 @@ namespace ODK.Data.Core.Repositories;
 
 public interface IMemberPropertyRepository : IReadWriteRepository<MemberProperty>
 {
+    IDeferredQueryMultiple<MemberProperty> GetByMemberId(Guid memberId);
+
     IDeferredQueryMultiple<MemberProperty> GetByMemberId(Guid memberId, Guid chapterId);
 }

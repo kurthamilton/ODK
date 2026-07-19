@@ -8,4 +8,6 @@ public interface IChapterPropertyRepository : IReadWriteRepository<ChapterProper
     IDeferredQuery<bool> ChapterHasProperties(Guid chapterId);
 
     IDeferredQueryMultiple<ChapterProperty> GetByChapterId(Guid chapterId);
+
+    IDeferredQueryMultiple<ChapterProperty> GetByChapterIds(IEnumerable<Guid> chapterIds);
 }

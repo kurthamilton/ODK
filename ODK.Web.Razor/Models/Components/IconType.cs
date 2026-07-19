@@ -36,6 +36,7 @@ public enum IconType
     Google,
     Groups,
     Home,
+    Image,
     Images,
     Instagram,
     LocationCrosshairs,

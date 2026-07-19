@@ -30,6 +30,8 @@ using ODK.Services.Integrations.Recaptcha;
 using ODK.Services.Issues;
 using ODK.Services.Logging;
 using ODK.Services.Members;
+using ODK.Services.Members.Tasks;
+using ODK.Services.Members.Tasks.Providers;
 using ODK.Services.Notifications;
 using ODK.Services.Payments;
 using ODK.Services.Recaptcha;
@@ -195,6 +197,9 @@ public static class DependencyRegistrar
                 MemberAvatarSize = appSettings.Members.AvatarSize
             })
             .AddScoped<IMemberService, MemberService>()
+            .AddScoped<IMemberTaskService, MemberTaskService>()
+            .AddScoped<IMemberTaskProvider, CompleteChapterProfileTaskProvider>()
+            .AddScoped<IMemberTaskProvider, UploadImageTaskProvider>()
             .AddScoped<IMemberViewModelService, MemberViewModelService>()
             .AddScoped<INotificationService, NotificationService>()
             .AddScoped<IOAuthProviderFactory, OAuthProviderFactory>()

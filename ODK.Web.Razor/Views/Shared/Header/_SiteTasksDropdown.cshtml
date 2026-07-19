@@ -1,54 +1,95 @@
-﻿@using ODK.Services.Chapters
+@using ODK.Core.Members
+@using ODK.Core.Platforms
+@using ODK.Services.Chapters
+@using ODK.Services.Members.Tasks
 @using ODK.Web.Common.Routes
 @using ODK.Web.Common.Services
-@using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Components
-@using ODK.Web.Razor.Services
 @inject IChapterService ChapterService
+@inject IMemberTaskService MemberTaskService
 @inject IOdkRoutes OdkRoutes
 @inject IRequestStore RequestStore
 @{
     var platform = RequestStore.Platform;
     var member = RequestStore.CurrentMemberOrDefault;
+    var currentChapter = RequestStore.ChapterOrDefault;
 
     var ownedChapters = member != null
         ? await ChapterService.GetChaptersByOwnerId(RequestStore.ServiceRequest, member.Id)
         : [];
 
-    var notificationCount = 0;
-
     var chaptersPendingPublication = ownedChapters
         .Where(x => x.CanBePublished())
         .ToArray();
 
-    notificationCount += chaptersPendingPublication.Length;    
-}
+    var memberTasks = member != null
+        ? await MemberTaskService.GetOutstandingTasks(RequestStore.MemberServiceRequest)
+        : [];    
 
-@if (notificationCount > 0)
-{
-    <div class="dropdown position-relative" role="button">
-        <span class="position-absolute top-0 start-100 translate-middle badge badge-sm rounded-pill bg-danger">
-            <span>@(notificationCount > 9 ? "9+" : notificationCount.ToString())</span>
-            <span class="visually-hidden">pending tasks</span>
-        </span>
+    var taskCount = chaptersPendingPublication.Length + memberTasks.Count;
+    if (taskCount == 0)
+    {
+        return;
+    }
 
-        <div class="text-light account-links__user dropdown-toggle"
-             data-bs-toggle="dropdown" data-bs-auto-close="outside">
-            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.TodoList))
-        </div>
-        <div class="dropdown-menu dropdown-menu-end p-0">
-            <div class="dropdown-header">
-                <h5 class="m-0">Pending tasks</h5>
-            </div>
-            @if (chaptersPendingPublication.Length > 0)
+    var memberTaskLinks = new List<TaskLinkViewModel>();
+
+    foreach (var task in memberTasks)
+    {
+        if (task.Type == MemberTaskType.CompleteChapterProfile && task.Chapter != null)
+        {
+            memberTaskLinks.Add(new TaskLinkViewModel
             {
-                @foreach (var chapter in chaptersPendingPublication)
-                {
-                    <a class="dropdown-item border-top p-3" href="@OdkRoutes.GroupAdmin.Group(chapter).Path">
-                        <strong>@chapter.GetDisplayName(platform)</strong> is waiting to be published
-                    </a>
-                }                
-            }
-        </div>
-    </div>
+                Icon = IconType.User,
+                Path = platform == PlatformType.DrunkenKnitwits
+                    ? OdkRoutes.Account.Profile(task.Chapter)
+                    : OdkRoutes.Groups.Profile(task.Chapter),
+                Text = $"Complete your profile for {task.Chapter.GetDisplayName(platform)}"
+            });
+        }
+        else if (task.Type == MemberTaskType.UploadImage)
+        {
+            memberTaskLinks.Add(new TaskLinkViewModel
+            {
+                Icon = IconType.Image,
+                Path = OdkRoutes.Account.Picture(task.Chapter),
+                Text = "Upload a profile picture"
+            });
+        }
+    }    
 }
+
+<div class="dropdown position-relative" role="button">
+    <span class="position-absolute top-0 start-100 translate-middle badge badge-sm rounded-pill bg-danger">
+        <span>@(taskCount > 9 ? "9+" : taskCount.ToString())</span>
+        <span class="visually-hidden">pending tasks</span>
+    </span>
+
+    <div class="text-light account-links__user dropdown-toggle"
+            data-bs-toggle="dropdown" data-bs-auto-close="outside">
+        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.TodoList))
+    </div>
+    <div class="dropdown-menu dropdown-menu-end p-0">
+        <div class="dropdown-header">
+            <h5 class="m-0">Pending tasks</h5>
+        </div>
+                        
+        @foreach (var chapter in chaptersPendingPublication)
+        {
+            <a class="dropdown-item border-top p-3" href="@OdkRoutes.GroupAdmin.Group(chapter).Path">
+                <strong>@chapter.GetDisplayName(platform)</strong> is waiting to be published
+            </a>
+        }
+        @foreach (var taskLink in memberTaskLinks)
+        {
+            <a class="dropdown-item border-top p-3" href="@taskLink.Path">
+                @if (taskLink.Icon != null)
+                {
+                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(taskLink.Icon.Value))
+                }
+
+                <span>@taskLink.Text</span>
+            </a>
+        }
+    </div>
+</div>

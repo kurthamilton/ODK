@@ -22,4 +22,9 @@ public class ChapterPropertyRepository : ReadWriteRepositoryBase<ChapterProperty
         => Set()
             .Where(x => x.ChapterId == chapterId)
             .DeferredMultiple();
+
+    public IDeferredQueryMultiple<ChapterProperty> GetByChapterIds(IEnumerable<Guid> chapterIds)
+        => Set()
+            .Where(x => chapterIds.Contains(x.ChapterId))
+            .DeferredMultiple();
 }
