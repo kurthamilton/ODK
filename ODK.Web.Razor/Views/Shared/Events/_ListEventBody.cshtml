@@ -10,7 +10,7 @@
 <div class="d-flex align-items-center gap-2">
     @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Calendar))
     <span>
-        <span>@localTime.ToFriendlyDateString(Model.Chapter.TimeZone, forceIncludeYear: Model.ForceDisplayYear)</span>
+        <span>@localTime.ToFriendlyDateString(new FriendlyDateStringOptions { ForceIncludeYear = Model.ForceDisplayYear, IncludeDayOfWeek = true, TimeZone = Model.Chapter.TimeZone })</span>
         <span>@Event.ToLocalTimeString(Model.Event.Date, Model.Event.EndTime, Model.Chapter.TimeZone)</span>
     </span>
 </div>

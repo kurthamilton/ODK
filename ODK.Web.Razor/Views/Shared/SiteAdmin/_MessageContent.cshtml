@@ -26,7 +26,7 @@
     <div class="form-group mb-3">
         <label class="form-label" for="sent">Sent</label>
         <input type="text" readonly class="form-control-plaintext" id="sent" 
-            value="@Model.Message.CreatedUtc.ToFriendlyDateTimeString(Model.CurrentMember.TimeZone)">
+            value="@Model.Message.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions { IncludeDayOfWeek = true, TimeZone = Model.CurrentMember.TimeZone })">
     </div>
 
     <div class="form-group mb-3">
@@ -41,7 +41,7 @@
         <div class="form-group mb-3">
             <label class="form-label">Replied</label>
             <p>
-                @Model.Message.RepliedUtc.Value.ToFriendlyDateTimeString(Model.CurrentMember.TimeZone)
+                @Model.Message.RepliedUtc.Value.ToFriendlyDateTimeString(new FriendlyDateStringOptions { IncludeDayOfWeek = true, TimeZone = Model.CurrentMember.TimeZone })
             </p>
         </div>
     }
@@ -64,7 +64,7 @@
                     @foreach (var reply in Model.Replies.OrderBy(x => x.CreatedUtc))
                     {
                         <tr>
-                            <td>@reply.CreatedUtc.ToFriendlyDateTimeString(Model.CurrentMember.TimeZone)</td>
+                            <td>@reply.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions { IncludeDayOfWeek = true, TimeZone = Model.CurrentMember.TimeZone })</td>
                             <td>@reply.Member?.FullName</td>
                             <td>@Html.Raw(reply.Message)</td>
                         </tr>

@@ -88,7 +88,11 @@ public class NotificationService : INotificationService
             NotificationType.NewEvent,
             x => string.Join(Environment.NewLine,
                 @event.Name,
-                @event.Date.ToFriendlyDateTimeString(chapter.TimeZone ?? x.TimeZone),
+                @event.Date.ToFriendlyDateTimeString(new FriendlyDateStringOptions
+                {
+                    IncludeDayOfWeek = true,
+                    TimeZone = chapter.TimeZone ?? x.TimeZone
+                }),
                 venue.Name),
             members.Where(x => x.IsCurrent()),
             settings,

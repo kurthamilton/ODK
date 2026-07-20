@@ -3,7 +3,6 @@
 @using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
-@using ODK.Web.Razor.Models.Admin.Chapters
 @using ODK.Web.Razor.Models.Chapters
 @using ODK.Web.Razor.Models.Components
 @model ChapterConversationAdminPageViewModel
@@ -88,7 +87,7 @@
                                 })                                
                             </div>
                             <div>
-                                @dto.LastMessage.Message.CreatedUtc.ToFriendlyDateTimeString(Model.Chapter.TimeZone)
+                                @dto.LastMessage.Message.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions { IncludeDayOfWeek = true, TimeZone = Model.Chapter.TimeZone })
                             </div>
                         </div>
                     }
