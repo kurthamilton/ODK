@@ -1,10 +1,6 @@
-﻿@using ODK.Core.Chapters
-@using ODK.Core.Extensions
-@using ODK.Core.Messages
+﻿@using ODK.Core.Messages
 @using ODK.Core.Utils
-@using ODK.Services
 @using ODK.Services.Contact.ViewModels
-@using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @model MessagesAdminPageViewModel
@@ -43,7 +39,7 @@
             @foreach (var message in Model.Messages.OrderByDescending(x => x.CreatedUtc))
             {
                 <tr>
-                    <td>@message.CreatedUtc.ToFriendlyDateTimeString(Model.CurrentMember.TimeZone)</td>
+                    <td>@message.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions { IncludeDayOfWeek = true, TimeZone = Model.CurrentMember.TimeZone })</td>
                     <td>@message.FromAddress</td>
                     <td>@message.Message</td>
                     <td>

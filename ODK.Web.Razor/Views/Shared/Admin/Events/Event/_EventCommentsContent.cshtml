@@ -1,14 +1,7 @@
-﻿@using ODK.Core.Events
-@using ODK.Core.Extensions
-@using ODK.Core.Features
-@using ODK.Core.Utils
-@using ODK.Services
+﻿@using ODK.Core.Utils
 @using ODK.Services.Events.ViewModels
-@using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
-@using ODK.Web.Razor.Models.Admin.Events
-@using ODK.Web.Razor.Models.Components
 @model EventCommentsAdminPageViewModel
 @inject IOdkRoutes OdkRoutes
 
@@ -48,7 +41,7 @@
                         </a>
                     </td>
                     <td class="@(comment.Hidden ? "text-muted" : null)">
-                        @comment.CreatedUtc.ToFriendlyDateTimeString(Model.Chapter.TimeZone)
+                        @comment.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions { IncludeDayOfWeek = true, TimeZone = Model.Chapter.TimeZone })
                     </td>
                     <td class="@(comment.Hidden ? "text-muted" : null)">
                         @comment.Text

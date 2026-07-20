@@ -43,13 +43,13 @@
                     <td>
                         @if (payment.CreatedUtc != null)
                         {
-                            @payment.CreatedUtc.Value.ToFriendlyDateTimeString(Model.CurrentMember.TimeZone ?? payment.Chapter?.TimeZone ?? Chapter.DefaultTimeZone)
+                            @payment.CreatedUtc.Value.ToFriendlyDateTimeString(new FriendlyDateStringOptions { IncludeDayOfWeek = true, TimeZone = Model.CurrentMember.TimeZone ?? payment.Chapter?.TimeZone ?? Chapter.DefaultTimeZone })
                         }                        
                     </td>
                     <td>
                         @if (payment.PaidUtc != null)
                         {
-                            @payment.PaidUtc.Value.ToFriendlyDateTimeString(Model.CurrentMember.TimeZone ?? payment.Chapter?.TimeZone ?? Chapter.DefaultTimeZone)
+                            @payment.PaidUtc.Value.ToFriendlyDateTimeString(new FriendlyDateStringOptions { IncludeDayOfWeek = true, TimeZone = Model.CurrentMember.TimeZone ?? payment.Chapter?.TimeZone ?? Chapter.DefaultTimeZone })
                         }
                         else
                         {

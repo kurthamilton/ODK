@@ -1,6 +1,6 @@
 ﻿namespace ODK.Core.Utils;
 
-public class FriendlyDateStringOptions
+public record FriendlyDateStringOptions
 {
     public bool ForceIncludeTime { get; init; }
 

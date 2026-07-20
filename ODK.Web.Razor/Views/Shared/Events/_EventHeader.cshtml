@@ -1,5 +1,4 @@
 ﻿@using ODK.Core.Utils
-@using ODK.Services.Events.ViewModels
 @using ODK.Web.Razor.Models.Events
 @model EventHeaderViewModel
 @{
@@ -12,7 +11,7 @@
 }
 
 <h6>
-    @localTime.ToFriendlyDateString(Model.Chapter.TimeZone)
+    @localTime.ToFriendlyDateString(new FriendlyDateStringOptions { IncludeDayOfWeek = true, TimeZone = Model.Chapter.TimeZone })
 
     @if (localTime.TimeOfDay.TotalSeconds > 0)
     {

@@ -532,8 +532,16 @@ public class MemberEmailService : IMemberEmailService
         var properties = new Dictionary<string, string>
         {
             { "member.firstName", member.FirstName },
-            { "subscription.expiryDate", expires.ToFriendlyDateString(chapter.TimeZone) },
-            { "subscription.disabledDate", disabledDate.ToFriendlyDateString(chapter.TimeZone) }
+            { "subscription.expiryDate", expires.ToFriendlyDateString(new FriendlyDateStringOptions
+            {
+                IncludeDayOfWeek = true,
+                TimeZone = chapter.TimeZone
+            }) },
+            { "subscription.disabledDate", disabledDate.ToFriendlyDateString(new FriendlyDateStringOptions
+            {
+                IncludeDayOfWeek = true,
+                TimeZone = chapter.TimeZone
+            }) }
         };
 
         var emailType = expiring
@@ -633,7 +641,11 @@ public class MemberEmailService : IMemberEmailService
         var parameters = new Dictionary<string, string>
         {
             { "member.name", member.FullName },
-            { "joined", memberChapter?.CreatedUtc.ToFriendlyDateString(chapter.TimeZone) ?? "-" },
+            { "joined", memberChapter?.CreatedUtc.ToFriendlyDateString(new FriendlyDateStringOptions
+            {
+                IncludeDayOfWeek = true,
+                TimeZone = chapter.TimeZone
+            }) ?? "-" },
             { "reason", reason ?? string.Empty }
         };
 

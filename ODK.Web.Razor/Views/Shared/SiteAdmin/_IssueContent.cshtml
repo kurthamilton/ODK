@@ -1,5 +1,4 @@
 ﻿@using ODK.Core.Utils
-@using ODK.Services.Issues.Models
 @using ODK.Services.Issues.ViewModels
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
@@ -26,7 +25,7 @@
     <div class="form-group mb-3">
         <label class="form-label" for="created">Created</label>
         <input type="text" readonly class="form-control-plaintext" id="created"
-               value="@Model.Issue.CreatedUtc.ToFriendlyDateTimeString(Model.CurrentMember.TimeZone)">
+               value="@Model.Issue.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions { IncludeDayOfWeek = true, TimeZone = Model.CurrentMember.TimeZone })">
     </div>
 
     @await Html.PartialAsync("SiteAdmin/_IssueFormViewModel", new IssueFormViewModel

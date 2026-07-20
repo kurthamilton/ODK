@@ -88,7 +88,7 @@
                                 </div>
                                 <div class="small d-flex">
                                     <span class="me-auto">
-                                        @dto.LastMessage.Message.CreatedUtc.ToFriendlyDateTimeString(Model.CurrentMember.TimeZone ?? Model.Chapter.TimeZone)
+                                        @dto.LastMessage.Message.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions { IncludeDayOfWeek = true, TimeZone = Model.CurrentMember.TimeZone ?? Model.Chapter.TimeZone })
                                     </span>
                                     <span>
                                         <span data-bs-toggle="tooltip" data-bs-title="Messages">

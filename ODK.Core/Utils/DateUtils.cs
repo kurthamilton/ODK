@@ -80,20 +80,10 @@ public static class DateUtils
         return localDate.ToString(format);
     }
 
-    public static string ToFriendlyDateString(this DateTime dateUtc, TimeZoneInfo? timeZone, bool forceIncludeYear = false)
-        => dateUtc.ToFriendlyDateString(new FriendlyDateStringOptions
+    public static string ToFriendlyDateTimeString(this DateTime dateUtc, FriendlyDateStringOptions? options)
+        => dateUtc.ToFriendlyDateString((options ?? new FriendlyDateStringOptions()) with
         {
-            ForceIncludeYear = forceIncludeYear,
-            IncludeDayOfWeek = true,
-            TimeZone = timeZone
-        });
-
-    public static string ToFriendlyDateTimeString(this DateTime dateUtc, TimeZoneInfo? timeZone)
-        => dateUtc.ToFriendlyDateString(new FriendlyDateStringOptions
-        {
-            ForceIncludeTime = true,
-            IncludeDayOfWeek = true,
-            TimeZone = timeZone
+            ForceIncludeTime = true
         });
 
     /// <summary>

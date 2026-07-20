@@ -23,7 +23,7 @@
             }
 
             <div class="d-flex justify-content-end text-end">
-                Going since @Model.Chapter.CreatedUtc.ToFriendlyDateString(Model.TimeZone)
+                Going since @Model.Chapter.CreatedUtc.ToFriendlyDateString(new FriendlyDateStringOptions { IncludeDayOfWeek = true, TimeZone = Model.TimeZone })
             </div>
             <div class="d-flex justify-content-end text-end align-items-center gap-2">
                 @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Members))

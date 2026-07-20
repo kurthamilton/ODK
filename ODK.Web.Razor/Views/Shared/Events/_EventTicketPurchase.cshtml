@@ -1,7 +1,6 @@
 ﻿@using ODK.Core.Utils
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Events
-@using ODK.Web.Razor.Models.Payments
 @model EventTicketPurchaseViewModel
 @inject IOdkRoutes OdkRoutes
 @{
@@ -28,7 +27,7 @@
             else if (Model.Event.RsvpDeadlineUtc != null)
             {
                 <div class="badge text-bg-secondary w-100">
-                    Deadline: @Model.Event.RsvpDeadlineUtc.Value.ToFriendlyDateTimeString(Model.Chapter.TimeZone)
+                    Deadline: @Model.Event.RsvpDeadlineUtc.Value.ToFriendlyDateTimeString(new FriendlyDateStringOptions { IncludeDayOfWeek = true, TimeZone = Model.Chapter.TimeZone })
                 </div>
             }
 
