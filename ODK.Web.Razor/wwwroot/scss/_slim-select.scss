@@ -1,6 +1,9 @@
 ﻿/*Style SlimSelect like Bootstrap 5*/
 .ss-main {
     --ss-border-radius: 0;
+    /*unset the variable that sets the min-height to 40px*/
+    --ss-main-height: 0;
+
     // for positioning the deselect icon
     display: flex;
 
@@ -83,4 +86,10 @@
             }
         }
     }
+}
+
+/*Re-enable native <select> element to force slim-select to match width*/
+select[data-select] {
+    width: 100% !important;
+    position: relative !important;
 }

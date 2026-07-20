@@ -1,12 +1,10 @@
 ﻿(function () {
-    bindExpandedSelects();    
+    bindExpandedSelects();
 
     function bindExpandedSelect($select) {
         const id = $select.getAttribute('data-expandable-select');
         const $container = document.querySelector(`[data-expanded-select-for="${id}"]`);
-        if (!$container) {
-            return;
-        }
+        if (!$container) return;
 
         const $items = $container.querySelectorAll('[data-expanded-select-option-for]');
         const $groups = $container.querySelectorAll('[data-expanded-select-group]');

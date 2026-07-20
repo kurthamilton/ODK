@@ -7,11 +7,15 @@ public interface IEventQueryBuilder : IDatabaseEntityQueryBuilder<Event, IEventQ
 {
     IEventQueryBuilder After(DateTime date);
 
+    IEventQueryBuilder Before(DateTime date);
+
     IEventQueryBuilder ForChapter(Guid chapterId);
 
     IEventQueryBuilder ForShortcode(string shortcode);
 
     IEventQueryBuilder ForVenue(Guid venueId);
+
+    IEventQueryBuilder OnOrAfter(DateTime date);
 
     IEventQueryBuilder Past();
 

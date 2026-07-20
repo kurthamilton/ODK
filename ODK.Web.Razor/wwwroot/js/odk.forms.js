@@ -2,11 +2,24 @@
 window.odk.forms = window.odk.forms || {};
 
 (function () {
+    bindAutoSubmits();
     bindClearables();
     bindClientSideValidation();
     bindColorPickers();
     bindDatePickers();
     bindSubmits();
+
+    function bindAutoSubmits() {
+        // auto-submit forms on dropdown list and checkbox change
+        const $triggers = document.querySelectorAll('[data-autosubmit]');
+        $triggers.forEach($trigger => {
+            const $form = $trigger.closest('form');
+            if (!$form) return;
+            // bind selects to odk:changed, which is emitted by the slim-select integration since change events don't bubble
+            const eventName = $trigger.tagName === 'SELECT' ? 'odk:changed' : 'change';
+            $trigger.addEventListener(eventName, () => $form.submit());
+        });
+    }
 
     function bindClearables() {
         const $containers = document.querySelectorAll('[data-clearable-container]');
