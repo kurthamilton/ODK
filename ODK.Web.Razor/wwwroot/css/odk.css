@@ -11851,6 +11851,9 @@ cropper-canvas {
 /*Style SlimSelect like Bootstrap 5*/
 .ss-main {
   --ss-border-radius: 0;
+  /*unset the variable that sets the min height by default to 40px
+  */
+  --ss-main-height: 0;
   display: flex;
 }
 .ss-main.ss-disabled {
@@ -11919,6 +11922,12 @@ cropper-canvas {
   font-size: 0.8rem !important;
   padding-top: 3px;
   padding-bottom: 3px;
+}
+
+/*Re-enable native <select> element to force slim-select to match width*/
+select[data-select] {
+  width: 100% !important;
+  position: relative !important;
 }
 
 .tox-tinymce {

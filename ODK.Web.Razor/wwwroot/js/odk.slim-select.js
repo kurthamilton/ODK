@@ -45,18 +45,19 @@
                         return value;
                     } : null,
                     afterChange: (newValue) => {
-                        if (!addable) {
-                            return;
-                        }
-                        const newValues = newValue.filter(x => !originalValues.includes(x.text));
-                        if (newValues.length === 0) {
-                            return;
-                        }
+                        if (addable) {
+                            const newValues = newValue.filter(x => !originalValues.includes(x.text));
+                            if (newValues.length === 0) {
+                                return;
+                            }
 
-                        Array.from($options)
-                            .sort((a, b) => a.innerText.localeCompare(b.innerText))
-                            .forEach(node => $select.appendChild(node));
-                        $select.dispatchEvent(new Event('rebuild'));
+                            Array.from($options)
+                                .sort((a, b) => a.innerText.localeCompare(b.innerText))
+                                .forEach(node => $select.appendChild(node));
+                            $select.dispatchEvent(new Event('rebuild'));
+                        }
+                        
+                        $select.dispatchEvent(new Event('odk:changed'));
                     },
                     search: (search, currentData) => {
                         const searchFilter = slimSelect.events.searchFilter;

@@ -15,12 +15,14 @@ public interface IEventRepository : IReadWriteRepository<Event, IEventQueryBuild
 
     IDeferredQueryMultiple<Event> GetByVenueId(Guid venueId);
 
+    IDeferredQuery<int> GetCountByChapterId(Guid chapterId, Guid? venueId, DateTime? fromUtc, DateTime? toUtcExclusive);
+
     IDeferredQuery<int> GetPastEventCountByChapterId(Guid chapterId);
 
     IDeferredQueryMultiple<Event> GetRecentEventsByChapterId(Guid chapterId, int pageSize);
 
     IDeferredQueryMultiple<EventSummaryDto> GetSummariesByChapterId(
-        Guid chapterId, int page, int pageSize);
+        Guid chapterId, Guid? venueId, DateTime? fromUtc, DateTime? toUtcExclusive, int page, int pageSize);
 
     IDeferredQueryMultiple<Event> GetUpcoming(Guid chapterId, int pageSize);
 

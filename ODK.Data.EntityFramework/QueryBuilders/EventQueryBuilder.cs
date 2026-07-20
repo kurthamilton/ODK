@@ -21,6 +21,12 @@ public class EventQueryBuilder : DatabaseEntityQueryBuilder<Event, IEventQueryBu
         return this;
     }
 
+    public IEventQueryBuilder Before(DateTime date)
+    {
+        Query = Query.Where(x => x.Date < date);
+        return this;
+    }
+
     public IEventQueryBuilder ForChapter(Guid chapterId)
     {
         Query = Query.Where(x => x.ChapterId == chapterId);
@@ -36,6 +42,12 @@ public class EventQueryBuilder : DatabaseEntityQueryBuilder<Event, IEventQueryBu
     public IEventQueryBuilder ForVenue(Guid venueId)
     {
         Query = Query.Where(x => x.VenueId == venueId);
+        return this;
+    }
+
+    public IEventQueryBuilder OnOrAfter(DateTime date)
+    {
+        Query = Query.Where(x => x.Date >= date);
         return this;
     }
 

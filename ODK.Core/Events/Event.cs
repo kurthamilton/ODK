@@ -54,37 +54,24 @@ public class Event : IDatabaseEntity, IChapterEntity, ICloneable<Event>
     public bool WaitlistDisabled { get; set; }
 
     public static DateTime FromLocalTime(DateTime local, TimeZoneInfo? timeZone)
-    {
-        if (local.TimeOfDay.TotalSeconds == 0)
-        {
-            return local;
-        }
-
-        return timeZone != null
+        => timeZone != null
             ? TimeZoneInfo.ConvertTimeToUtc(local, timeZone)
             : local.SpecifyKind(DateTimeKind.Utc);
-    }
 
     public static DateTime ToLocalTime(DateTime utc, TimeZoneInfo? timeZone)
-    {
-        if (utc.TimeOfDay.TotalSeconds == 0)
-        {
-            return utc;
-        }
-
-        return timeZone != null
+        => timeZone != null
             ? TimeZoneInfo.ConvertTimeFromUtc(utc, timeZone)
             : utc;
-    }
 
     public static string ToLocalTimeString(DateTime utc, TimeSpan? endTime, TimeZoneInfo? timeZone)
     {
-        if (utc.TimeOfDay.TotalSeconds == 0)
+        var localTime = ToLocalTime(utc, timeZone);
+        if (localTime.TimeOfDay.TotalSeconds == 0)
         {
+            // Assume event dates with no time component denote just a date
             return string.Empty;
         }
 
-        var localTime = ToLocalTime(utc, timeZone);
         var time = TimeSpanUtils.ToString(localTime.TimeOfDay);
         return endTime != null
             ? $"{time} - {TimeSpanUtils.ToString(endTime)}"

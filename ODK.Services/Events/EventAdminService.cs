@@ -9,6 +9,7 @@ using ODK.Core.Utils;
 using ODK.Core.Venues;
 using ODK.Core.Web;
 using ODK.Data.Core;
+using ODK.Data.Core.Events;
 using ODK.Services.Authorization;
 using ODK.Services.Events.Models;
 using ODK.Services.Events.ViewModels;
@@ -424,18 +425,35 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     }
 
     public async Task<EventsAdminPageViewModel> GetEventsAdminPageViewModel(
-        IMemberChapterAdminServiceRequest request, Chapter chapter, int page, int pageSize)
+        IMemberChapterAdminServiceRequest request, Chapter chapter, EventAdminFilter filter, int page, int pageSize)
     {
-        var platform = request.Platform;
+        // The filter's dates are calendar dates in the chapter's local timezone. Resolve them to UTC
+        // instants (start of the From day, start of the day after the To day) so an event matches when
+        // its local date is on or after From and on or before To.
+        var timeZone = chapter.TimeZone ?? Chapter.DefaultTimeZone;
+        var fromUtc = filter.FromDate?.Date.ToUtc(timeZone);
+        var toUtcExclusive = filter.ToDate?.Date.AddDays(1).ToUtc(timeZone);
 
-        var eventSummaries = await GetChapterAdminRestrictedContent(
+        var (eventSummaries, totalCount, venues) = await GetChapterAdminRestrictedContent(
             request,
-            x => x.EventRepository.GetSummariesByChapterId(chapter.Id, page, pageSize));
+            x => x.EventRepository.GetSummariesByChapterId(chapter.Id, filter.VenueId, fromUtc, toUtcExclusive, page, pageSize),
+            x => x.EventRepository.GetCountByChapterId(chapter.Id, filter.VenueId, fromUtc, toUtcExclusive),
+            x => x.VenueRepository.GetByChapterId(chapter.Id));
 
         return new EventsAdminPageViewModel
         {
             Chapter = chapter,
-            Events = eventSummaries
+            Events = new PagedResult<EventSummaryDto>
+            {
+                Items = eventSummaries,
+                Page = page,
+                PageSize = pageSize,
+                TotalCount = totalCount
+            },
+            Filter = filter,
+            Venues = venues
+                .OrderBy(x => x.Name)
+                .ToArray()
         };
     }
 

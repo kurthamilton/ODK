@@ -1,25 +1,79 @@
-﻿@using ODK.Core.Events
 @using ODK.Core.Utils
-@using ODK.Core.Venues
-@using ODK.Services
-@using ODK.Services.Events
 @using ODK.Services.Events.ViewModels
-@using ODK.Services.Venues
-@using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model EventsAdminPageViewModel
 @inject IOdkRoutes OdkRoutes
+@{
+    var eventsPath = OdkRoutes.GroupAdmin.Events(Model.Chapter).Path;
+    var page = Model.Events.Page;
+    var totalPages = Model.Events.TotalPages;
+    var hasFilter = Model.Filter.VenueId != null || Model.Filter.FromDate != null || Model.Filter.ToDate != null;
+
+    string PageUrl(int targetPage)
+    {
+        var query = new List<string>();
+        if (Model.Filter.VenueId != null)
+        {
+            query.Add($"venueId={Model.Filter.VenueId}");
+        }
+        if (Model.Filter.FromDate != null)
+        {
+            query.Add($"fromDate={Model.Filter.FromDate:yyyy-MM-dd}");
+        }
+        if (Model.Filter.ToDate != null)
+        {
+            query.Add($"toDate={Model.Filter.ToDate:yyyy-MM-dd}");
+        }
+        query.Add($"page={targetPage}");
+        return $"{eventsPath}?{string.Join("&", query)}";
+    }
+}
 
 <p>
     @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
     {
         Class = "btn btn-primary",
+        Icon = IconType.Plus,
         Route = OdkRoutes.GroupAdmin.EventCreate(Model.Chapter),
-        Text = "Create"
+        Text = "Create"        
     })
 </p>
+
+@* Filters are applied server-side across all events. Submitting has no page value, so it resets to page 1. *@
+<form method="get" action="@eventsPath" class="row g-2 mb-3 align-items-end">
+    <div class="col-12 col-md-auto">
+        <label class="form-label" for="filter-venue">Venue</label>
+        <select class="form-select" id="filter-venue" name="venueId" 
+            data-select data-searchable data-clearable data-placeholder="All venues"
+            data-autosubmit>
+            <option value=""></option>
+            @foreach (var venue in Model.Venues)
+            {
+                <option value="@venue.Id" selected="@(venue.Id == Model.Filter.VenueId)">@venue.Name</option>
+            }
+        </select>
+    </div>
+    <div class="col-6 col-md-auto">
+        <label class="form-label" for="filter-from">From</label>
+        <input type="date" class="form-control" id="filter-from" name="fromDate"
+               data-autosubmit
+               value="@(Model.Filter.FromDate?.ToString("yyyy-MM-dd"))" />
+    </div>
+    <div class="col-6 col-md-auto">
+        <label class="form-label" for="filter-to">To</label>
+        <input type="date" class="form-control" id="filter-to" name="toDate"
+               data-autosubmit
+               value="@(Model.Filter.ToDate?.ToString("yyyy-MM-dd"))" />
+    </div>
+    <div class="col-12 col-md-auto d-flex gap-3">
+        @if (hasFilter)
+        {
+            <a class="btn btn-link" href="@eventsPath">Clear</a>
+        }
+    </div>
+</form>
 
 <div class="table-responsive">
     <table class="table table-striped">
@@ -51,7 +105,13 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var dto in Model.Events)
+            @if (Model.Events.Items.Count == 0)
+            {
+                <tr>
+                    <td colspan="8" class="text-muted">No events match the current filters.</td>
+                </tr>
+            }
+            @foreach (var dto in Model.Events.Items)
             {
                 var @event = dto.Event;
                 var venue = dto.Venue;
@@ -71,7 +131,7 @@
                         {
                             Route = OdkRoutes.GroupAdmin.Event(Model.Chapter, @event.Id),
                             Text = @event.GetDisplayName()
-                        })                        
+                        })
                     </td>
                     <td>@(@event.Date.EventDate(Model.Chapter.TimeZone))</td>
                     <td>
@@ -79,7 +139,7 @@
                         {
                             Route = OdkRoutes.GroupAdmin.Venue(Model.Chapter, venue.Id),
                             Text = venue.Name
-                        })                        
+                        })
                     </td>
                     <td>
                         @if (email?.SentUtc == null)
@@ -103,3 +163,26 @@
         </tbody>
     </table>
 </div>
+
+@if (totalPages > 1)
+{
+    var firstPage = Math.Max(1, page - 2);
+    var lastPage = Math.Min(totalPages, page + 2);
+
+    <nav aria-label="Events pages">
+        <ul class="pagination">
+            <li class="page-item @(page <= 1 ? "disabled" : null)">
+                <a class="page-link" href="@PageUrl(page - 1)">Previous</a>
+            </li>
+            @for (var p = firstPage; p <= lastPage; p++)
+            {
+                <li class="page-item @(p == page ? "active" : null)">
+                    <a class="page-link" href="@PageUrl(p)">@p</a>
+                </li>
+            }
+            <li class="page-item @(page >= totalPages ? "disabled" : null)">
+                <a class="page-link" href="@PageUrl(page + 1)">Next</a>
+            </li>
+        </ul>
+    </nav>
+}

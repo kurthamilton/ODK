@@ -1,8 +1,7 @@
 ﻿@page "/{chapterName}/Admin/Events"
-@using ODK.Services
+@using ODK.Data.Core.Events
 @using ODK.Services.Events
 @using ODK.Web.Razor.Models.Admin
-@using ODK.Web.Razor.Models.Components
 @model EventsModel
 @inject IEventAdminService EventAdminService
 @{
@@ -10,7 +9,13 @@
     Model.Title = "Events | Admin";
 
     var request = Model.MemberChapterAdminServiceRequest;
-    var viewModel = await EventAdminService.GetEventsAdminPageViewModel(request, Model.Chapter, 1, 1000);
+    var filter = new EventAdminFilter
+    {
+        FromDate = Model.FromDate,
+        ToDate = Model.ToDate,
+        VenueId = Model.VenueId
+    };
+    var viewModel = await EventAdminService.GetEventsAdminPageViewModel(request, Model.Chapter, filter, Model.Page, Model.PageSize);
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
