@@ -53,7 +53,11 @@
             <div>
                 <strong>@member.FullName</strong>
                 <span>
-                    @comment.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions { IncludeDayOfWeek = true, TimeZone = Model.Chapter.TimeZone })
+                    @comment.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions 
+                    { 
+                        IncludeDayOfWeek = true, 
+                        TimeZone = Model.Chapter.TimeZone 
+                    })
                 </span>
                 <span>
                     <a data-bs-toggle="collapse" href="#comment-reply-@comment.Id" role="button" aria-expanded="false" aria-controls="collapseExample">

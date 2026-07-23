@@ -9,13 +9,8 @@
     Model.Title = "Events | Admin";
 
     var request = Model.MemberChapterAdminServiceRequest;
-    var filter = new EventAdminFilter
-    {
-        FromDate = Model.FromDate,
-        ToDate = Model.ToDate,
-        VenueId = Model.VenueId
-    };
-    var viewModel = await EventAdminService.GetEventsAdminPageViewModel(request, Model.Chapter, filter, Model.Page, Model.PageSize);
+    var viewModel = await EventAdminService.GetEventsAdminPageViewModel(
+        request, Model.Chapter, Model.Filter, Model.PageFilter);
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel

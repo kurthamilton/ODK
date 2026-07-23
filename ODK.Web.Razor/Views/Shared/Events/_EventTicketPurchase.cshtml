@@ -26,8 +26,14 @@
             }
             else if (Model.Event.RsvpDeadlineUtc != null)
             {
+                var deadline = Model.Event.RsvpDeadlineUtc.Value.ToFriendlyDateTimeString(new FriendlyDateStringOptions 
+                { 
+                    IncludeDayOfWeek = true, 
+                    TimeZone = Model.Chapter.TimeZone 
+                });
+
                 <div class="badge text-bg-secondary w-100">
-                    Deadline: @Model.Event.RsvpDeadlineUtc.Value.ToFriendlyDateTimeString(new FriendlyDateStringOptions { IncludeDayOfWeek = true, TimeZone = Model.Chapter.TimeZone })
+                    Deadline: @deadline
                 </div>
             }
 

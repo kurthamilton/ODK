@@ -83,7 +83,7 @@
             </div>
             <div class="small text-muted me-3">
                 <span>@await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Clock))</span>
-                <span>@DateUtils.ToRelativeTime(notification.CreatedUtc, currentMember.TimeZone)</span>
+                <span>@notification.CreatedUtc.ToRelativeTime(currentMember.TimeZone)</span>
             </div>
         </div>
         <div class="notification-col-icon">

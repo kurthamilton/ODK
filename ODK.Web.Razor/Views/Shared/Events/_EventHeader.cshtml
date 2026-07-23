@@ -11,7 +11,11 @@
 }
 
 <h6>
-    @localTime.ToFriendlyDateString(new FriendlyDateStringOptions { IncludeDayOfWeek = true, TimeZone = Model.Chapter.TimeZone })
+    @localTime.ToFriendlyDateString(new FriendlyDateStringOptions 
+    { 
+        IncludeDayOfWeek = true, 
+        TimeZone = Model.Chapter.TimeZone 
+    })
 
     @if (localTime.TimeOfDay.TotalSeconds > 0)
     {

@@ -1,5 +1,6 @@
 ﻿using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
+using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.QueryBuilders;
 using ODK.Data.EntityFramework.Extensions;
@@ -50,6 +51,8 @@ public class QueryBuilder<T> : IQueryBuilder<T>
         Query = Query.OrderByDescending(orderBy);
         return this;
     }
+
+    public IQueryBuilder<T> Page(PageFilter pageFilter) => Page(pageFilter.Page, pageFilter.PageSize);
 
     public IQueryBuilder<T> Page(int page, int pageSize)
     {

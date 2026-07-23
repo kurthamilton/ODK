@@ -20,8 +20,14 @@
 
 @if (Model.Event.RsvpDeadlineUtc != null)
 {
+    var rsvpDeadline = Model.Event.RsvpDeadlineUtc.Value.ToFriendlyDateTimeString(new FriendlyDateStringOptions 
+    { 
+        IncludeDayOfWeek = true, 
+        TimeZone = Model.Chapter.TimeZone 
+    });
+
     <div class="badge text-bg-secondary w-100">
-        RSVP deadline: @Model.Event.RsvpDeadlineUtc.Value.ToFriendlyDateTimeString(new FriendlyDateStringOptions { IncludeDayOfWeek = true, TimeZone = Model.Chapter.TimeZone })
+        RSVP deadline: @rsvpDeadline
     </div>
 }
 

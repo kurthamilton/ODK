@@ -195,6 +195,12 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         }
 
         var timeZone = await _geolocationService.GetTimeZoneFromLocation(model.Location);
+        if (timeZone == null)
+        {
+            await _loggingService.Error($"Error getting time zone from location {model.Location.Lat}, {model.Location.Long}");
+            timeZone = Chapter.DefaultTimeZone;
+        }
+
         var country = await _geolocationService.GetCountryFromLocation(model.Location);
 
         var image = new ChapterImage();

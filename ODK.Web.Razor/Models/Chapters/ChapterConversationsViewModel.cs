@@ -24,7 +24,7 @@ public class ChapterConversationsViewModel
 
     public required Member CurrentMember { get; init; }
 
-    public TimeZoneInfo? TimeZone => CurrentMember.TimeZone ?? Chapter?.TimeZone;
+    public TimeZoneInfo TimeZone => CurrentMember.TimeZone;
 
     public int TotalConversationCount => ActiveConversationCount + ArchivedConversationCount;
 }

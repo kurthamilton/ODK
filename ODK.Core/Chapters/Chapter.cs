@@ -42,7 +42,13 @@ public class Chapter : IDatabaseEntity, ITimeZoneEntity
 
     public string? ThemeColor { get; set; }
 
-    public TimeZoneInfo? TimeZone { get; set; }
+    public TimeZoneInfo TimeZone
+    {
+        get => TimeZoneInfo.FindSystemTimeZoneById(TimeZoneId);
+        set => TimeZoneId = value.Id;
+    }
+
+    public string TimeZoneId { get; set; } = DefaultTimeZoneId;
 
     public static string CleanName(string name) => name.Trim();
 
@@ -101,9 +107,7 @@ public class Chapter : IDatabaseEntity, ITimeZoneEntity
 
     public bool IsPublished() => PublishedUtc != null;
 
-    public DateTime ToChapterTime(DateTime utc) => TimeZone != null
-        ? TimeZoneInfo.ConvertTimeFromUtc(utc, TimeZone)
-        : utc;
+    public DateTime ToChapterTime(DateTime utc) => TimeZoneInfo.ConvertTimeFromUtc(utc, TimeZone);
 
     public DateTime? ToChapterTime(DateTime? utc) => utc != null ? ToChapterTime(utc.Value) : null;
 }

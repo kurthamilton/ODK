@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Chapters;
 using ODK.Core.Events;
+using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Events;
 using ODK.Data.Core.QueryBuilders;
@@ -57,11 +59,11 @@ public class EventRepository : ReadWriteRepositoryBase<Event, IEventQueryBuilder
             .GetAll();
 
     public IDeferredQueryMultiple<EventSummaryDto> GetSummariesByChapterId(
-        Guid chapterId, Guid? venueId, DateTime? fromUtc, DateTime? toUtcExclusive, int page, int pageSize)
+        Guid chapterId, Guid? venueId, DateTime? fromUtc, DateTime? toUtcExclusive, PageFilter pageFilter)
         => ApplyFilter(Query().ForChapter(chapterId), venueId, fromUtc, toUtcExclusive)
             .Summary()
             .OrderByDescending(x => x.Event.Date)
-            .Page(page, pageSize)
+            .Page(pageFilter)
             .GetAll();
 
     public IDeferredQueryMultiple<Event> GetUpcoming(Guid chapterId, int pageSize)

@@ -22,5 +22,5 @@ public class GroupPageViewModel
 
     public required PlatformType Platform { get; init; }
 
-    public TimeZoneInfo? TimeZone => CurrentMember?.TimeZone ?? Chapter.TimeZone;
+    public TimeZoneInfo TimeZone => CurrentMember?.TimeZone ?? Chapter.TimeZone;
 }

@@ -22,7 +22,7 @@ public interface IEventRepository : IReadWriteRepository<Event, IEventQueryBuild
     IDeferredQueryMultiple<Event> GetRecentEventsByChapterId(Guid chapterId, int pageSize);
 
     IDeferredQueryMultiple<EventSummaryDto> GetSummariesByChapterId(
-        Guid chapterId, Guid? venueId, DateTime? fromUtc, DateTime? toUtcExclusive, int page, int pageSize);
+        Guid chapterId, Guid? venueId, DateTime? fromUtc, DateTime? toUtcExclusive, PageFilter pageFilter);
 
     IDeferredQueryMultiple<Event> GetUpcoming(Guid chapterId, int pageSize);
 
