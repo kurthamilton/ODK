@@ -427,10 +427,18 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     public async Task<EventsAdminPageViewModel> GetEventsAdminPageViewModel(
         IMemberChapterAdminServiceRequest request, Chapter chapter, EventAdminFilter filter, PageFilter pageFilter)
     {
+        // Resolve the local from/to dates to UTC instants (start of the From day, start of the day
+        // after the To day) so an event matches when its local date is on/after From and on/before To.
+        // Converting the two boundaries (rather than each row) keeps the query a plain, index-friendly
+        // UTC range - no per-row DB timezone conversion needed.
+        var timeZone = chapter.TimeZone;
+        var fromUtc = filter.FromDateLocal?.Date.ToUtc(timeZone);
+        var toUtcExclusive = filter.ToDateLocal?.Date.AddDays(1).ToUtc(timeZone);
+
         var (eventSummaries, totalCount, venues) = await GetChapterAdminRestrictedContent(
             request,
-            x => x.EventRepository.GetSummariesByChapterId(chapter.Id, filter, pageFilter),
-            x => x.EventRepository.GetCountByChapterId(chapter.Id, filter),
+            x => x.EventRepository.GetSummariesByChapterId(chapter.Id, filter.VenueId, fromUtc, toUtcExclusive, pageFilter),
+            x => x.EventRepository.GetCountByChapterId(chapter.Id, filter.VenueId, fromUtc, toUtcExclusive),
             x => x.VenueRepository.GetByChapterId(chapter.Id));
 
         return new EventsAdminPageViewModel

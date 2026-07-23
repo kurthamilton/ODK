@@ -9,8 +9,6 @@ public interface IEventQueryBuilder : IDatabaseEntityQueryBuilder<Event, IEventQ
 
     IEventQueryBuilder Before(DateTime date);
 
-    IEventQueryBuilder Filter(EventAdminFilter filter);
-
     IEventQueryBuilder ForChapter(Guid chapterId);
 
     IEventQueryBuilder ForShortcode(string shortcode);
@@ -28,8 +26,6 @@ public interface IEventQueryBuilder : IDatabaseEntityQueryBuilder<Event, IEventQ
     IQueryBuilder<EventSummaryDto> Summary();
 
     IVenueQueryBuilder Venue();
-
-    IEventWithLocalDateQueryBuilder WithLocalDate();
 
     IQueryBuilder<EventWithVenueDto> WithVenue();
 }
