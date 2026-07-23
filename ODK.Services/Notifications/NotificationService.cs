@@ -78,7 +78,6 @@ public class NotificationService : INotificationService
     }
 
     public void AddNewEventNotifications(
-        Chapter chapter,
         Event @event,
         Venue venue,
         IReadOnlyCollection<Member> members,
@@ -91,7 +90,7 @@ public class NotificationService : INotificationService
                 @event.Date.ToFriendlyDateTimeString(new FriendlyDateStringOptions
                 {
                     IncludeDayOfWeek = true,
-                    TimeZone = chapter.TimeZone ?? x.TimeZone
+                    TimeZone = x.TimeZone
                 }),
                 venue.Name),
             members.Where(x => x.IsCurrent()),

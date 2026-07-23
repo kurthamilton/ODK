@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Chapters;
 using ODK.Core.Events;
+using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Events;
 using ODK.Data.Core.QueryBuilders;
@@ -38,8 +40,10 @@ public class EventRepository : ReadWriteRepositoryBase<Event, IEventQueryBuilder
             .ForVenue(venueId)
             .GetAll();
 
-    public IDeferredQuery<int> GetCountByChapterId(Guid chapterId, Guid? venueId, DateTime? fromUtc, DateTime? toUtcExclusive)
-        => ApplyFilter(Query().ForChapter(chapterId), venueId, fromUtc, toUtcExclusive)
+    public IDeferredQuery<int> GetCountByChapterId(Guid chapterId, EventAdminFilter filter)
+        => Query()
+            .ForChapter(chapterId)
+            .Filter(filter)
             .Count();
 
     public IDeferredQuery<int> GetPastEventCountByChapterId(Guid chapterId)
@@ -57,11 +61,13 @@ public class EventRepository : ReadWriteRepositoryBase<Event, IEventQueryBuilder
             .GetAll();
 
     public IDeferredQueryMultiple<EventSummaryDto> GetSummariesByChapterId(
-        Guid chapterId, Guid? venueId, DateTime? fromUtc, DateTime? toUtcExclusive, int page, int pageSize)
-        => ApplyFilter(Query().ForChapter(chapterId), venueId, fromUtc, toUtcExclusive)
+        Guid chapterId, EventAdminFilter filter, PageFilter pageFillter)
+        => Query()
+            .ForChapter(chapterId)
+            .Filter(filter)
             .Summary()
             .OrderByDescending(x => x.Event.Date)
-            .Page(page, pageSize)
+            .Page(pageFillter)
             .GetAll();
 
     public IDeferredQueryMultiple<Event> GetUpcoming(Guid chapterId, int pageSize)
@@ -87,28 +93,5 @@ public class EventRepository : ReadWriteRepositoryBase<Event, IEventQueryBuilder
         clone.TicketSettings?.Currency = null!;
 
         base.Update(entity);
-    }
-
-    // Date bounds are UTC instants resolved from the chapter's timezone by the service; the query
-    // stays a simple (index-friendly) UTC range.
-    private static IEventQueryBuilder ApplyFilter(
-        IEventQueryBuilder query, Guid? venueId, DateTime? fromUtc, DateTime? toUtcExclusive)
-    {
-        if (venueId != null)
-        {
-            query = query.ForVenue(venueId.Value);
-        }
-
-        if (fromUtc != null)
-        {
-            query = query.OnOrAfter(fromUtc.Value);
-        }
-
-        if (toUtcExclusive != null)
-        {
-            query = query.Before(toUtcExclusive.Value);
-        }
-
-        return query;
     }
 }

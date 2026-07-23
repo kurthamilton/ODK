@@ -185,7 +185,7 @@ public static class DateUtilsTests
         var dateUtc = utcNow.AddSeconds(-1 * secondsAgo);
 
         // Act
-        var result = DateUtils.ToRelativeTime(dateUtc);
+        var result = DateUtils.ToRelativeTime(dateUtc, TimeZoneInfo.Utc);
 
         // Assert
         return result;

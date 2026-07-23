@@ -35,7 +35,13 @@
                                     Text = conversation.Subject
                                 })                                
                             </td>
-                            <td>@conversation.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions { IncludeDayOfWeek = true, TimeZone = Model.Chapter.TimeZone })</td>
+                            <td>
+                                @conversation.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions 
+                                { 
+                                    IncludeDayOfWeek = true, 
+                                    TimeZone = Model.Chapter.TimeZone 
+                                })
+                            </td>
                             <td>
                                 <div>
                                     @lastMessage.Message.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions { IncludeDayOfWeek = true, TimeZone = Model.Chapter.TimeZone })

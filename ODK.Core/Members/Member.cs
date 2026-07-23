@@ -25,7 +25,13 @@ public class Member : IVersioned, IDatabaseEntity, ITimeZoneEntity
 
     public bool SiteAdmin { get; set; }
 
-    public TimeZoneInfo? TimeZone { get; set; }
+    public TimeZoneInfo TimeZone
+    {
+        get => TimeZoneInfo.FindSystemTimeZoneById(TimeZoneId);
+        set => TimeZoneId = value.Id;
+    }
+
+    public string TimeZoneId { get; set; } = DefaultTimeZoneId;
 
     public byte[] Version { get; set; } = [];
 

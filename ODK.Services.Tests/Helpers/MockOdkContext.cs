@@ -211,7 +211,8 @@ internal class MockOdkContext : OdkContext
         bool activated = true,
         bool siteAdmin = false,
         bool createSiteSubscription = false,
-        Action<Member>? afterCreate = null)
+        Action<Member>? afterCreate = null,
+        TimeZoneInfo? timeZone = null)
     {
         var id = Guid.NewGuid();
 
@@ -220,7 +221,8 @@ internal class MockOdkContext : OdkContext
             Activated = activated,
             Id = id,
             Chapters = [],
-            SiteAdmin = siteAdmin
+            SiteAdmin = siteAdmin,
+            TimeZone = timeZone ?? TimeZoneInfo.Utc
         });
 
         if (createSiteSubscription)

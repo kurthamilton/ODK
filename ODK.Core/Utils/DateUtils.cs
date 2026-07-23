@@ -10,7 +10,7 @@ public static class DateUtils
         => Enum.GetValues<DayOfWeek>()
             .OrderBy(day => day < firstDayOfWeek);
 
-    public static string EventDate(this DateTime date, TimeZoneInfo? timeZone)
+    public static string EventDate(this DateTime date, TimeZoneInfo timeZone)
         => date.ToFriendlyDateString(options: new FriendlyDateStringOptions
         {
             TimeZone = timeZone
@@ -95,12 +95,9 @@ public static class DateUtils
     /// <param name="dateUtc">The UTC timestamp to describe.</param>
     /// <param name="timeZone">
     /// The user's timezone, used to resolve calendar boundaries (yesterday, etc.).
-    /// Defaults to UTC if null.
     /// </param>
-    public static string ToRelativeTime(this DateTime dateUtc, TimeZoneInfo? timeZone = null)
+    public static string ToRelativeTime(this DateTime dateUtc, TimeZoneInfo timeZone)
     {
-        timeZone ??= TimeZoneInfo.Utc;
-
         var utcNow = DateTime.UtcNow;
         var elapsed = utcNow - dateUtc;
 

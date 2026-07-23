@@ -11851,8 +11851,7 @@ cropper-canvas {
 /*Style SlimSelect like Bootstrap 5*/
 .ss-main {
   --ss-border-radius: 0;
-  /*unset the variable that sets the min height by default to 40px
-  */
+  /*unset the variable that sets the min-height to 40px*/
   --ss-main-height: 0;
   display: flex;
 }
@@ -11868,8 +11867,13 @@ cropper-canvas {
 
 .ss-placeholder {
   padding: 0 !important;
-  line-height: 1.5 !important;
   color: var(--odk-color-placeholder) !important;
+}
+
+/*match bootstrap line-height*/
+.ss-placeholder,
+.ss-main .ss-values .ss-single {
+  line-height: 1.5 !important;
 }
 
 .placeholder-hidden .ss-placeholder {

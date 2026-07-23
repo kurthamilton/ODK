@@ -66,7 +66,8 @@ public static class CompleteChapterProfileTaskProviderTests
     {
         Id = Guid.NewGuid(),
         Name = "Test",
-        Slug = "test"
+        Slug = "test",
+        TimeZone = Chapter.DefaultTimeZone
     };
 
     private static MemberTaskContext CreateContext(
@@ -77,7 +78,7 @@ public static class CompleteChapterProfileTaskProviderTests
         Chapters = [chapter],
         ChapterProperties = chapterProperties,
         HasAvatar = true,
-        Member = new Member { Id = Guid.NewGuid() },
+        Member = new Member { Id = Guid.NewGuid(), TimeZone = chapter.TimeZone },
         MemberProperties = memberProperties,
         Platform = PlatformType.Default
     };

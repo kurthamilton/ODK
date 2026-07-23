@@ -46,7 +46,11 @@
                                 })
                             </td>
                             <td>
-                                @member.MemberChapter(Model.Chapter.Id)?.CreatedUtc.ToFriendlyDateString(new FriendlyDateStringOptions { IncludeDayOfWeek = true, TimeZone = Model.Chapter.TimeZone })
+                                @member.MemberChapter(Model.Chapter.Id)?.CreatedUtc.ToFriendlyDateString(new FriendlyDateStringOptions 
+                                { 
+                                    IncludeDayOfWeek = true, 
+                                    TimeZone = Model.Chapter.TimeZone 
+                                })
                             </td>
                             <td>
                                 <form action="/groups/@Model.Chapter.Id/members/@member.Id/approve" method="post">

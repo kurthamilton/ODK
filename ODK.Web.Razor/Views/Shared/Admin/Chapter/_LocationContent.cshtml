@@ -19,13 +19,11 @@
             </div>
         }
 
-        @if (Model.Chapter.TimeZone != null)
-        {
-            <div class="form-group mb-3">
-                <label for="TimeZone" class="form-label">Time zone</label>
-                <input id="TimeZone" type="text" readonly class="form-control-plaintext" value="@Model.Chapter.TimeZone.DisplayName" />
-            </div>
-        }
+        <div class="form-group mb-3">
+            <label for="TimeZone" class="form-label">Time zone</label>
+            <input id="TimeZone" type="text" readonly class="form-control-plaintext" value="@Model.Chapter.TimeZone.DisplayName" />
+        </div>
+      
 
         @await Html.PartialAsync("Admin/Chapter/_LocationForm", new ChapterLocationFormViewModel
         {

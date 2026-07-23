@@ -30,7 +30,6 @@ public interface INotificationService
         IReadOnlyCollection<MemberNotificationSettings> settings);
 
     void AddNewEventNotifications(
-        Chapter chapter,
         Event @event,
         Venue venue,
         IReadOnlyCollection<Member> members,

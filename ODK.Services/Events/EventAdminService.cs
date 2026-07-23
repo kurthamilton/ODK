@@ -138,7 +138,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         if (@event.PublishedUtc != null)
         {
-            _notificationService.AddNewEventNotifications(chapter, @event, venue, members, notificationSettings);
+            _notificationService.AddNewEventNotifications(@event, venue, members, notificationSettings);
         }
 
         _unitOfWork.EventTopicRepository.AddMany(chapterTopics.Select(x => new EventTopic
@@ -425,19 +425,12 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     }
 
     public async Task<EventsAdminPageViewModel> GetEventsAdminPageViewModel(
-        IMemberChapterAdminServiceRequest request, Chapter chapter, EventAdminFilter filter, int page, int pageSize)
+        IMemberChapterAdminServiceRequest request, Chapter chapter, EventAdminFilter filter, PageFilter pageFilter)
     {
-        // The filter's dates are calendar dates in the chapter's local timezone. Resolve them to UTC
-        // instants (start of the From day, start of the day after the To day) so an event matches when
-        // its local date is on or after From and on or before To.
-        var timeZone = chapter.TimeZone ?? Chapter.DefaultTimeZone;
-        var fromUtc = filter.FromDate?.Date.ToUtc(timeZone);
-        var toUtcExclusive = filter.ToDate?.Date.AddDays(1).ToUtc(timeZone);
-
         var (eventSummaries, totalCount, venues) = await GetChapterAdminRestrictedContent(
             request,
-            x => x.EventRepository.GetSummariesByChapterId(chapter.Id, filter.VenueId, fromUtc, toUtcExclusive, page, pageSize),
-            x => x.EventRepository.GetCountByChapterId(chapter.Id, filter.VenueId, fromUtc, toUtcExclusive),
+            x => x.EventRepository.GetSummariesByChapterId(chapter.Id, filter, pageFilter),
+            x => x.EventRepository.GetCountByChapterId(chapter.Id, filter),
             x => x.VenueRepository.GetByChapterId(chapter.Id));
 
         return new EventsAdminPageViewModel
@@ -446,8 +439,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             Events = new PagedResult<EventSummaryDto>
             {
                 Items = eventSummaries,
-                Page = page,
-                PageSize = pageSize,
+                Page = pageFilter.Page,
+                PageSize = pageFilter.PageSize,
                 TotalCount = totalCount
             },
             Filter = filter,
@@ -568,7 +561,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         @event.PublishedUtc = DateTime.UtcNow;
         _unitOfWork.EventRepository.Update(@event);
 
-        _notificationService.AddNewEventNotifications(chapter, @event, venue, members, notificationSettings);
+        _notificationService.AddNewEventNotifications(@event, venue, members, notificationSettings);
 
         await _unitOfWork.SaveChangesAsync();
     }
@@ -1227,9 +1220,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             return null;
         }
 
-        var scheduledDateTimeUtc = chapter.TimeZone != null
-            ? scheduledDateTimeLocal.Value.ToUtc(chapter.TimeZone)
-            : scheduledDateTimeLocal.SpecifyKind(DateTimeKind.Utc);
+        var scheduledDateTimeUtc = scheduledDateTimeLocal.Value.ToUtc(chapter.TimeZone);
 
         var eventEmail = new EventEmail
         {

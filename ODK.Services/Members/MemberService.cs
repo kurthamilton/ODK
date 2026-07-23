@@ -144,6 +144,15 @@ public class MemberService : IMemberService
             ? await _geolocationService.GetTimeZoneFromLocation(model.Location.Value)
             : null;
 
+        if (timeZone == null)
+        {
+            await _loggingService.Error(
+                $"Error getting member time zone for location {model.Location?.Lat}, {model.Location?.Long}. " +
+                $"Falling back to default");
+
+            timeZone = Chapter.DefaultTimeZone;
+        }
+
         var member = new Member
         {
             CreatedUtc = DateTime.UtcNow,

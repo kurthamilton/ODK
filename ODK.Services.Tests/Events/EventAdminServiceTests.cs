@@ -171,12 +171,14 @@ public static class EventAdminServiceTests
             currentMember: currentMember, chapter: chapter, securable: ChapterAdminSecurable.Events);
         var filter = new EventAdminFilter
         {
-            FromDate = new DateTime(2024, 1, 1),
-            ToDate = new DateTime(2024, 1, 15)
+            FromDateLocal = new DateTime(2024, 1, 1),
+            ToDateLocal = new DateTime(2024, 1, 15)
         };
 
+        var pageFilter = new PageFilter { Page = 1, PageSize = 20 };
+
         // Act
-        var result = await service.GetEventsAdminPageViewModel(request, chapter, filter, 1, 20);
+        var result = await service.GetEventsAdminPageViewModel(request, chapter, filter, pageFilter);
 
         // Assert
         result.Events.TotalCount.Should().Be(1);
@@ -203,10 +205,11 @@ public static class EventAdminServiceTests
         var service = CreateService(context);
         var request = CreateMockMemberChapterAdminServiceRequest(
             currentMember: currentMember, chapter: chapter, securable: ChapterAdminSecurable.Events);
-        var filter = new EventAdminFilter { ToDate = new DateTime(2024, 1, 10) };
+        var filter = new EventAdminFilter { ToDateLocal = new DateTime(2024, 1, 10) };
+        var pageFilter = new PageFilter { Page = 1, PageSize = 20 };
 
         // Act
-        var result = await service.GetEventsAdminPageViewModel(request, chapter, filter, 1, 20);
+        var result = await service.GetEventsAdminPageViewModel(request, chapter, filter, pageFilter);
 
         // Assert
         result.Events.TotalCount.Should().Be(1);
@@ -230,9 +233,12 @@ public static class EventAdminServiceTests
         var request = CreateMockMemberChapterAdminServiceRequest(
             currentMember: currentMember, chapter: chapter, securable: ChapterAdminSecurable.Events);
 
+        var page1Filter = new PageFilter { Page = 1, PageSize = 2 };
+        var page2Filter = new PageFilter { Page = 2, PageSize = 2 };
+
         // Act
-        var page1 = await service.GetEventsAdminPageViewModel(request, chapter, new EventAdminFilter(), 1, 2);
-        var page2 = await service.GetEventsAdminPageViewModel(request, chapter, new EventAdminFilter(), 2, 2);
+        var page1 = await service.GetEventsAdminPageViewModel(request, chapter, new EventAdminFilter(), page1Filter);
+        var page2 = await service.GetEventsAdminPageViewModel(request, chapter, new EventAdminFilter(), page2Filter);
 
         // Assert
         page1.Events.TotalCount.Should().Be(3);
@@ -258,9 +264,10 @@ public static class EventAdminServiceTests
         var request = CreateMockMemberChapterAdminServiceRequest(
             currentMember: currentMember, chapter: chapter, securable: ChapterAdminSecurable.Events);
         var filter = new EventAdminFilter { VenueId = venue1.Id };
+        var pageFilter = new PageFilter { Page = 1, PageSize = 20 };
 
         // Act
-        var result = await service.GetEventsAdminPageViewModel(request, chapter, filter, 1, 20);
+        var result = await service.GetEventsAdminPageViewModel(request, chapter, filter, pageFilter);
 
         // Assert
         result.Events.TotalCount.Should().Be(2);

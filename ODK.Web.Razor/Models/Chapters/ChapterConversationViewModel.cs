@@ -21,5 +21,5 @@ public class ChapterConversationViewModel
 
     public required IReadOnlyCollection<ChapterConversationDto> OtherConversations { get; init; }
 
-    public TimeZoneInfo? TimeZone => CurrentMember.TimeZone ?? Chapter.TimeZone;
+    public TimeZoneInfo TimeZone => CurrentMember.TimeZone;
 }

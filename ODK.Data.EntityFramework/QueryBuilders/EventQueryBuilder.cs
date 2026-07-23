@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Chapters;
 using ODK.Core.Events;
 using ODK.Core.Venues;
 using ODK.Data.Core.Events;
@@ -10,6 +11,11 @@ public class EventQueryBuilder : DatabaseEntityQueryBuilder<Event, IEventQueryBu
 {
     public EventQueryBuilder(DbContext context)
         : base(context, BaseQuery(context))
+    {
+    }
+
+    public EventQueryBuilder(DbContext context, IQueryable<Event> query)
+        : base(context, query)
     {
     }
 
@@ -25,6 +31,13 @@ public class EventQueryBuilder : DatabaseEntityQueryBuilder<Event, IEventQueryBu
     {
         Query = Query.Where(x => x.Date < date);
         return this;
+    }
+
+    public IEventQueryBuilder Filter(EventAdminFilter filter)
+    {
+        return WithLocalDate()
+            .Filter(filter)
+            .Event();
     }
 
     public IEventQueryBuilder ForChapter(Guid chapterId)
@@ -117,6 +130,22 @@ public class EventQueryBuilder : DatabaseEntityQueryBuilder<Event, IEventQueryBu
             select venue;
         return CreateQueryBuilder<IVenueQueryBuilder, Venue>(
             context => new VenueQueryBuilder(context, query));
+    }
+
+    public IEventWithLocalDateQueryBuilder WithLocalDate()
+    {
+        var query =
+            from @event in Query
+            from chapter in Set<Chapter>()
+                .Where(x => x.Id == @event.ChapterId)
+            select new EventWithLocalDateDto
+            {
+                DateLocal = EF.Functions.AtTimeZone(@event.Date, chapter.TimeZoneId).LocalDateTime,
+                Event = @event,
+            };
+
+        return CreateQueryBuilder<IEventWithLocalDateQueryBuilder, EventWithLocalDateDto>(
+            context => new EventWithLocalDateQueryBuilder(context, query));
     }
 
     public IQueryBuilder<EventWithVenueDto> WithVenue()
