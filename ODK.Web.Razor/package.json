@@ -14,7 +14,7 @@
     "dev:odk": "concurrently -k -n dotnet,css,min -c magenta,green,cyan \"dotnet watch --urls=http://localhost:8124\" \"npm:watch:css\" \"npm:watch:min\""
   },
   "devDependencies": {
-    "concurrently": "^9.1.2",
+    "concurrently": "^9.2.4",
     "sass": "1.80.0"
   }
 }
