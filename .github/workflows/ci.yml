@@ -32,10 +32,10 @@ jobs:
           dotnet-version: '10.0.x'
 
       - name: Restore
-        run: dotnet restore ODK.sln
+        run: dotnet restore ODK.slnx
 
       - name: Build
-        run: dotnet build ODK.sln --configuration Release --no-restore
+        run: dotnet build ODK.slnx --configuration Release --no-restore
 
   test:
     name: Test
@@ -50,7 +50,7 @@ jobs:
           dotnet-version: '10.0.x'
 
       - name: Restore
-        run: dotnet restore ODK.sln
+        run: dotnet restore ODK.slnx
 
       - name: Test
-        run: dotnet test ODK.sln --configuration Release --no-restore --verbosity normal
+        run: dotnet test ODK.slnx --configuration Release --no-restore --verbosity normal

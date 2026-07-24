@@ -1,0 +1,15 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/SolutionItems/">
+    <File Path="README.md" />
+    <File Path="script.run.app.gs.bat" />
+    <File Path="script.run.tests.gs.bat" />
+  </Folder>
+  <Project Path="ODK.E2E.Core/ODK.E2E.Core.csproj" Id="39e3c220-5a29-4e57-a691-f8238a57e3e2" />
+  <Project Path="ODK.E2E.Data/ODK.E2E.Data.csproj" Id="a3242759-0bef-4b4f-8ddb-cdb4423a6ece" />
+  <Project Path="ODK.E2E.Tests/ODK.E2E.Tests.csproj" />
+</Solution>

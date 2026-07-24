@@ -40,7 +40,7 @@ namespace ODK.Services.Tests.Chapters;
 public static class ChapterAdminServiceTests
 {
     [Test]
-    public static void AddChapterAdminMember_WhenMemberNotChapterAdmin_ThrowsException()
+    public static async Task AddChapterAdminMember_WhenMemberNotChapterAdmin_ThrowsException()
     {
         // Arrange
         using var context = CreateMockOdkContext();
@@ -58,9 +58,11 @@ public static class ChapterAdminServiceTests
             currentMember: currentMember,
             securable: ChapterAdminSecurable.AdminMembers);
 
-        // Act & Assert
-        Assert.ThrowsAsync<OdkNotAuthorizedException>(
-            async () => await service.AddChapterAdminMember(request, member.Id));
+        // Act
+        Func<Task> act = () => service.AddChapterAdminMember(request, member.Id);
+
+        // Assert
+        await act.Should().ThrowAsync<OdkNotAuthorizedException>();
     }
 
     [Test]

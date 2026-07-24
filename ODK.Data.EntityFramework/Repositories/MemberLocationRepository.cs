@@ -13,8 +13,8 @@ public class MemberLocationRepository : WriteRepositoryBase<MemberLocation>, IMe
     {
     }
 
-    public IDeferredQuerySingle<MemberLocation> GetByMemberId(Guid memberId)
+    public IDeferredQuerySingleOrDefault<MemberLocation> GetByMemberIdOrDefault(Guid memberId)
         => Set()
             .Where(x => x.MemberId == memberId)
-            .DeferredSingle();
+            .DeferredSingleOrDefault();
 }

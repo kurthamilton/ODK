@@ -501,7 +501,7 @@ public class MemberService : IMemberService
 
         var (memberPreferences, memberLocation) = await _unitOfWork.RunAsync(
             x => x.MemberPreferencesRepository.GetByMemberId(currentMember.Id),
-            x => x.MemberLocationRepository.GetByMemberId(currentMember.Id));
+            x => x.MemberLocationRepository.GetByMemberIdOrDefault(currentMember.Id));
 
         var distanceUnits = _distanceUnitFactory.GetAll();
 
@@ -917,7 +917,7 @@ public class MemberService : IMemberService
     public async Task<ServiceResult> UpdateMemberLocation(Guid id, LatLong? location, string? name, DistanceUnitType? distanceUnit)
     {
         var (memberLocation, memberPreferences) = await _unitOfWork.RunAsync(
-            x => x.MemberLocationRepository.GetByMemberId(id),
+            x => x.MemberLocationRepository.GetByMemberIdOrDefault(id),
             x => x.MemberPreferencesRepository.GetByMemberId(id));
 
         if (location != null && !string.IsNullOrEmpty(name))
