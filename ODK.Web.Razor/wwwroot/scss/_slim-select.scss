@@ -23,8 +23,13 @@
 
 .ss-placeholder {
     padding: 0 !important;
-    line-height: 1.5 !important;
     color: var(--odk-color-placeholder) !important;
+}
+
+/*match bootstrap line-height*/
+.ss-placeholder,
+.ss-main .ss-values .ss-single {
+    line-height: 1.5 !important;
 }
 
 .placeholder-hidden {

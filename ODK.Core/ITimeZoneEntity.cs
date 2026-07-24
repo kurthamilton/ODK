@@ -2,5 +2,5 @@
 
 public interface ITimeZoneEntity
 {
-    TimeZoneInfo? TimeZone { get; }
+    TimeZoneInfo TimeZone { get; }
 }

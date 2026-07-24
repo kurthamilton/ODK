@@ -41,7 +41,11 @@
                         </a>
                     </td>
                     <td class="@(comment.Hidden ? "text-muted" : null)">
-                        @comment.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions { IncludeDayOfWeek = true, TimeZone = Model.Chapter.TimeZone })
+                        @comment.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions 
+                        { 
+                            IncludeDayOfWeek = true, 
+                            TimeZone = Model.Chapter.TimeZone 
+                        })
                     </td>
                     <td class="@(comment.Hidden ? "text-muted" : null)">
                         @comment.Text

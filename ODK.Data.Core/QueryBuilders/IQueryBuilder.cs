@@ -19,6 +19,8 @@ public interface IQueryBuilder<T>
 
     IQueryBuilder<T> OrderByDescending<TOrderBy>(Expression<Func<T, TOrderBy>> orderBy);
 
+    IQueryBuilder<T> Page(PageFilter pageFilter);
+
     IQueryBuilder<T> Page(int page, int pageSize);
 
     IQueryBuilder<T> Take(int count);

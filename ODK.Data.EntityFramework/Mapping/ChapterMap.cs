@@ -32,7 +32,10 @@ public class ChapterMap : IEntityTypeConfiguration<Chapter>
         builder.Property(x => x.Id)
             .HasColumnName("ChapterId");
 
-        builder.Property(x => x.TimeZone)
-            .HasConversion<TimeZoneConverter>();
+        builder.Ignore(x => x.TimeZone);
+
+        builder.Property(x => x.TimeZoneId)
+            .HasMaxLength(255)
+            .HasColumnName("TimeZone");
     }
 }

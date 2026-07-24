@@ -5,5 +5,5 @@ namespace ODK.Data.Core.Repositories;
 
 public interface IMemberLocationRepository : IWriteRepository<MemberLocation>
 {
-    IDeferredQuerySingle<MemberLocation> GetByMemberId(Guid memberId);
+    IDeferredQuerySingleOrDefault<MemberLocation> GetByMemberIdOrDefault(Guid memberId);
 }

@@ -25,8 +25,14 @@
         <tbody>
             @foreach (var message in Model.Messages.OrderByDescending(x => x.CreatedUtc))
             {
+                var created = message.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions 
+                { 
+                    IncludeDayOfWeek = true, 
+                    TimeZone = Model.Chapter.TimeZone 
+                });
+
                 <tr>
-                    <td>@message.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions { IncludeDayOfWeek = true, TimeZone = Model.Chapter.TimeZone })</td>
+                    <td>@created</td>
                     <td>@message.FromAddress</td>
                     <td>@message.Message</td>
                     <td>

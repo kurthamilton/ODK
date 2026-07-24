@@ -114,7 +114,8 @@ public static class AuthorizationServiceTests
     {
         return new Member
         {
-            Activated = true
+            Activated = true,
+            TimeZone = TimeZoneInfo.Utc
         };
     }
 

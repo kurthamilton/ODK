@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System;
+using FluentAssertions;
 using NUnit.Framework;
 using ODK.Core.Chapters;
 using ODK.Core.Members;
@@ -62,13 +63,14 @@ public static class ChapterAdminMemberExtensionsTests
         return result;
     }
 
-    private static ChapterAdminMember CreateAdminMember(ChapterAdminRole role) => new()
+    private static ChapterAdminMember CreateAdminMember(ChapterAdminRole role) => new ChapterAdminMember
     {
         Role = role
     };
 
-    private static Member CreateMember(bool siteAdmin = false) => new()
+    private static Member CreateMember(bool siteAdmin = false) => new Member
     {
-        SiteAdmin = siteAdmin
+        SiteAdmin = siteAdmin,
+        TimeZone = TimeZoneInfo.Utc
     };
 }

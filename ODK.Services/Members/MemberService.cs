@@ -144,6 +144,15 @@ public class MemberService : IMemberService
             ? await _geolocationService.GetTimeZoneFromLocation(model.Location.Value)
             : null;
 
+        if (timeZone == null)
+        {
+            await _loggingService.Error(
+                $"Error getting member time zone for location {model.Location?.Lat}, {model.Location?.Long}. " +
+                $"Falling back to default");
+
+            timeZone = Chapter.DefaultTimeZone;
+        }
+
         var member = new Member
         {
             CreatedUtc = DateTime.UtcNow,
@@ -492,7 +501,7 @@ public class MemberService : IMemberService
 
         var (memberPreferences, memberLocation) = await _unitOfWork.RunAsync(
             x => x.MemberPreferencesRepository.GetByMemberId(currentMember.Id),
-            x => x.MemberLocationRepository.GetByMemberId(currentMember.Id));
+            x => x.MemberLocationRepository.GetByMemberIdOrDefault(currentMember.Id));
 
         var distanceUnits = _distanceUnitFactory.GetAll();
 
@@ -908,7 +917,7 @@ public class MemberService : IMemberService
     public async Task<ServiceResult> UpdateMemberLocation(Guid id, LatLong? location, string? name, DistanceUnitType? distanceUnit)
     {
         var (memberLocation, memberPreferences) = await _unitOfWork.RunAsync(
-            x => x.MemberLocationRepository.GetByMemberId(id),
+            x => x.MemberLocationRepository.GetByMemberIdOrDefault(id),
             x => x.MemberPreferencesRepository.GetByMemberId(id));
 
         if (location != null && !string.IsNullOrEmpty(name))

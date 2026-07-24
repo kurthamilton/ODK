@@ -6,13 +6,13 @@ public static class TimeZoneEntityExtensions
         => entity.ToLocalTime(DateTime.UtcNow);
 
     public static DateTime FromLocalTime(this ITimeZoneEntity entity, DateTime local)
-        => entity.TimeZone != null ? TimeZoneInfo.ConvertTimeToUtc(local, entity.TimeZone) : local;
+        => TimeZoneInfo.ConvertTimeToUtc(local, entity.TimeZone);
 
     public static DateTime? FromLocalTime(this ITimeZoneEntity entity, DateTime? local)
         => local != null ? entity.FromLocalTime(local.Value) : null;
 
     public static DateTime ToLocalTime(this ITimeZoneEntity entity, DateTime utc)
-        => entity.TimeZone != null ? TimeZoneInfo.ConvertTimeFromUtc(utc, entity.TimeZone) : utc;
+        => TimeZoneInfo.ConvertTimeFromUtc(utc, entity.TimeZone);
 
     public static DateTime? ToLocalTime(this ITimeZoneEntity entity, DateTime? utc)
         => utc != null ? entity.ToLocalTime(utc.Value) : null;

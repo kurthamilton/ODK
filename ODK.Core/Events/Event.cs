@@ -53,17 +53,13 @@ public class Event : IDatabaseEntity, IChapterEntity, ICloneable<Event>
 
     public bool WaitlistDisabled { get; set; }
 
-    public static DateTime FromLocalTime(DateTime local, TimeZoneInfo? timeZone)
-        => timeZone != null
-            ? TimeZoneInfo.ConvertTimeToUtc(local, timeZone)
-            : local.SpecifyKind(DateTimeKind.Utc);
+    public static DateTime FromLocalTime(DateTime local, TimeZoneInfo timeZone)
+        => TimeZoneInfo.ConvertTimeToUtc(local, timeZone);
 
-    public static DateTime ToLocalTime(DateTime utc, TimeZoneInfo? timeZone)
-        => timeZone != null
-            ? TimeZoneInfo.ConvertTimeFromUtc(utc, timeZone)
-            : utc;
+    public static DateTime ToLocalTime(DateTime utc, TimeZoneInfo timeZone)
+        => TimeZoneInfo.ConvertTimeFromUtc(utc, timeZone);
 
-    public static string ToLocalTimeString(DateTime utc, TimeSpan? endTime, TimeZoneInfo? timeZone)
+    public static string ToLocalTimeString(DateTime utc, TimeSpan? endTime, TimeZoneInfo timeZone)
     {
         var localTime = ToLocalTime(utc, timeZone);
         if (localTime.TimeOfDay.TotalSeconds == 0)
@@ -135,7 +131,7 @@ public class Event : IDatabaseEntity, IChapterEntity, ICloneable<Event>
             : null;
     }
 
-    public DateTime ToLocalTime(TimeZoneInfo? timeZone) => ToLocalTime(Date, timeZone);
+    public DateTime ToLocalTime(TimeZoneInfo timeZone) => ToLocalTime(Date, timeZone);
 
-    public string ToLocalTimeString(TimeZoneInfo? timeZone) => ToLocalTimeString(Date, EndTime, timeZone);
+    public string ToLocalTimeString(TimeZoneInfo timeZone) => ToLocalTimeString(Date, EndTime, timeZone);
 }

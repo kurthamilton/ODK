@@ -77,6 +77,11 @@
                     @foreach (var dto in Model.OtherConversations.OrderByDescending(x => x.LastMessage.Message.CreatedUtc))
                     {
                         var conversation = dto.Conversation;
+                        var created = dto.LastMessage.Message.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions 
+                        { 
+                            IncludeDayOfWeek = true, 
+                            TimeZone = Model.Chapter.TimeZone 
+                        });
 
                         <div class="list-group-item">
                             <div>
@@ -87,7 +92,7 @@
                                 })                                
                             </div>
                             <div>
-                                @dto.LastMessage.Message.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions { IncludeDayOfWeek = true, TimeZone = Model.Chapter.TimeZone })
+                                @created
                             </div>
                         </div>
                     }

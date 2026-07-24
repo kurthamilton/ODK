@@ -1,4 +1,4 @@
-/.vs
+.vs
 *.user
 bin
 obj
@@ -9,3 +9,6 @@ appsettings.*.json
 *.pubxml
 app_data
 /ODK.Web.Razor/Views/Shared/Groups/_GroupProfileMenu.cshtml
+
+# E2E test local overrides
+ODK.E2ETests/appsettings.local.json

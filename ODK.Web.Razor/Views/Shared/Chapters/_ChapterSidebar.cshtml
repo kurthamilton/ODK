@@ -17,10 +17,7 @@
                     Chapter = Model.Chapter,
                     Event = @event,
                     Platform = Model.Platform,
-                    TimeZone = 
-                        Model.CurrentMember?.TimeZone ?? 
-                        Model.Chapter.TimeZone ?? 
-                        Chapter.DefaultTimeZone
+                    TimeZone = Model.CurrentMember?.TimeZone ?? Model.Chapter.TimeZone
                 };
 
                 <div class="card-body card-body-sm">

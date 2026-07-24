@@ -8,5 +8,5 @@ public class MessagesViewModel
 
     public required IReadOnlyCollection<MessageViewModel> Messages { get; init; }
 
-    public required TimeZoneInfo? TimeZone { get; init; }
+    public required TimeZoneInfo TimeZone { get; init; }
 }

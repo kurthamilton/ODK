@@ -74,7 +74,9 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("TimeZone")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.HasKey("Id");
 
@@ -1408,7 +1410,9 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                         .HasColumnName("SuperAdmin");
 
                     b.Property<string>("TimeZone")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<byte[]>("Version")
                         .IsConcurrencyToken()

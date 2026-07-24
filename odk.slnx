@@ -1,0 +1,37 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="CLAUDE.md" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/Solution Items/Migrations/">
+    <File Path="Scripts/ef-add-migration.bat" />
+    <File Path="Scripts/ef-remove-migration.bat" />
+    <File Path="Scripts/ef-update-database-version.bat" />
+    <File Path="Scripts/ef-update-database.bat" />
+  </Folder>
+  <Folder Name="/Solution Items/Scripts/">
+    <File Path="Scripts/dotnet-tool-restore.bat" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="ODK.Core.Tests/ODK.Core.Tests.csproj" />
+    <Project Path="ODK.Services.Integrations.Tests/ODK.Services.Integrations.Tests.csproj" />
+    <Project Path="ODK.Services.Tests/ODK.Services.Tests.csproj" />
+    <Project Path="ODK.Web.Razor.Tests/ODK.Web.Razor.Tests.csproj" />
+  </Folder>
+  <Project Path="ODK.Core/ODK.Core.csproj" />
+  <Project Path="ODK.Data.Core/ODK.Data.Core.csproj" />
+  <Project Path="ODK.Data.EntityFramework.Migrations/ODK.Data.EntityFramework.Migrations.csproj" />
+  <Project Path="ODK.Data.EntityFramework/ODK.Data.EntityFramework.csproj" />
+  <Project Path="ODK.Infrastructure/ODK.Infrastructure.csproj" />
+  <Project Path="ODK.Resources/ODK.Resources.csproj" />
+  <Project Path="ODK.Services.Integrations/ODK.Services.Integrations.csproj" />
+  <Project Path="ODK.Services/ODK.Services.csproj" />
+  <Project Path="ODK.Web.Common/ODK.Web.Common.csproj" />
+  <Project Path="ODK.Web.Razor/ODK.Web.Razor.csproj" />
+</Solution>

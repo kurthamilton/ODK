@@ -13,6 +13,11 @@ public class EventQueryBuilder : DatabaseEntityQueryBuilder<Event, IEventQueryBu
     {
     }
 
+    public EventQueryBuilder(DbContext context, IQueryable<Event> query)
+        : base(context, query)
+    {
+    }
+
     protected override IEventQueryBuilder Builder => this;
 
     public IEventQueryBuilder After(DateTime date)
