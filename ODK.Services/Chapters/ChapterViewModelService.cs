@@ -77,7 +77,7 @@ public class ChapterViewModelService : IChapterViewModelService
             if (location == null)
             {
                 (location, preferences) = await _unitOfWork.RunAsync(
-                    x => x.MemberLocationRepository.GetByMemberId(currentMember.Id),
+                    x => x.MemberLocationRepository.GetByMemberIdOrDefault(currentMember.Id),
                     x => x.MemberPreferencesRepository.GetByMemberId(currentMember.Id));
             }
             else if (distanceUnitType == null)
@@ -267,7 +267,7 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.TopicGroupRepository.GetAll(),
             x => x.TopicRepository.GetAll(),
             x => x.MemberTopicRepository.GetByMemberId(currentMember.Id),
-            x => x.MemberLocationRepository.GetByMemberId(currentMember.Id));
+            x => x.MemberLocationRepository.GetByMemberIdOrDefault(currentMember.Id));
 
         return new ChapterCreateViewModel
         {

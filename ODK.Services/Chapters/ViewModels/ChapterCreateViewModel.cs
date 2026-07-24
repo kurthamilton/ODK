@@ -15,7 +15,7 @@ public class ChapterCreateViewModel
 
     public required Member Member { get; init; }
 
-    public required MemberLocation MemberLocation { get; init; }
+    public required MemberLocation? MemberLocation { get; init; }
 
     public required IReadOnlyCollection<MemberTopic> MemberTopics { get; init; }
 

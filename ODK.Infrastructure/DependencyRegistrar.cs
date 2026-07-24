@@ -134,7 +134,11 @@ public static class DependencyRegistrar
             })
             .AddScoped<IContactService, ContactService>()
             .AddScoped<IEmailAdminService, EmailAdminService>()
-            .AddScoped<IEmailClient, BrevoApiEmailClient>()
+            .AddScoped<BrevoApiEmailClient>()
+            .AddScoped<ConsoleEmailClient>()
+            .AddScoped<IEmailClient>(serviceProvider => appSettings.Emails.UseConsoleClient
+                ? serviceProvider.GetRequiredService<ConsoleEmailClient>()
+                : serviceProvider.GetRequiredService<BrevoApiEmailClient>())
             .AddSingleton(new BrevoApiEmailClientSettings
             {
                 ApiKey = appSettings.Brevo.ApiKey,

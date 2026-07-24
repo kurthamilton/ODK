@@ -129,7 +129,7 @@ public class AccountController : OdkControllerBase
             return Redirect(OdkRoutes.Account.Login(chapter: null));
         }
 
-        return Redirect("/Account/Pending");
+        return Redirect("/account/pending");
     }
 
     [HttpPost("account/currency")]
@@ -180,7 +180,7 @@ public class AccountController : OdkControllerBase
     }
 
     [AllowAnonymous]
-    [HttpPost("{chapterName}/Account/Login")]
+    [HttpPost("{chapterName}/account/login")]
     public async Task<IActionResult> Login(string chapterName, [FromForm] LoginViewModel viewModel, string? returnUrl)
     {
         var result = await _loginHandler.Login(
@@ -270,7 +270,7 @@ public class AccountController : OdkControllerBase
         return Redirect("/account");
     }
 
-    [HttpGet("{chapterName}/Account/Email/Change/Confirm")]
+    [HttpGet("{chapterName}/account/email/change/confirm")]
     public async Task<IActionResult> ChangeEmailConfirm(string chapterName, string token)
     {
         var result = await _memberService.ConfirmEmailAddressUpdate(CurrentMember.Id, token);
@@ -364,7 +364,7 @@ public class AccountController : OdkControllerBase
             : View();
     }
 
-    [HttpPost("Account/FeatureTips/{name}/Hide")]
+    [HttpPost("account/FeatureTips/{name}/Hide")]
     public async Task<IActionResult> HideFeatureTip(string name)
     {
         await _featureService.MarkAsSeen(MemberServiceRequest, name);
@@ -419,7 +419,7 @@ public class AccountController : OdkControllerBase
     }
 
     [AllowAnonymous]
-    [HttpPost("/{chapterId:guid}/Account/Password/Forgotten")]
+    [HttpPost("/{chapterId:guid}/account/password/forgotten")]
     public async Task<IActionResult> ForgottenPassword(Guid chapterId, [FromForm] ForgottenPasswordFormViewModel viewModel)
     {
         var chapter = Chapter;

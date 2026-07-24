@@ -215,8 +215,16 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         {
             country = await _unitOfWork.CountryRepository.GetByIsoCode(_settings.DefaultCountryCode).Run();
 
+            if (country == null)
+            {
+                await _loggingService.Error(
+                    $"Error setting country for group '{model.Name}': could not resolve it from the location " +
+                    $"and no valid default country ('{_settings.DefaultCountryCode}') is configured");
+                return ServiceResult<Chapter?>.Failure("Could not determine a country for the group");
+            }
+
             await _loggingService.Error(
-                $"Error setting country for group '{model.Name}', choosing '{country!.Name}' as default");
+                $"Error setting country for group '{model.Name}', choosing '{country.Name}' as default");
         }
 
         var baseSlug = UrlUtils.Slugify(name);
