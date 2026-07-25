@@ -33,7 +33,9 @@ goto waitloop
 
 :ready
 echo App is ready. Running E2E tests (TestCategory=%CATEGORY%) ...
-dotnet test "%TEST_PROJECT%" --filter "TestCategory=%CATEGORY%"
+rem console logger streams per-test results; the fixtures also print live START/PASS/FAIL + timing lines
+rem via TestContext.Progress. Fixtures run in parallel (see AssemblyInfo.cs).
+dotnet test "%TEST_PROJECT%" --filter "TestCategory=%CATEGORY%" --logger "console;verbosity=normal"
 set TEST_EXIT=%errorlevel%
 
 :teardown

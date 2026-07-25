@@ -19,6 +19,44 @@ internal class DrunkenKnitwitsJoinPage
         _page = page;
     }
 
+    /// <summary>
+    /// Signs up (= joins) filling the personal details and the given chapter-property answers, then
+    /// submits. Returns true if it reached the "check your email" page, false if it was blocked
+    /// client-side (e.g. a required property was left unanswered).
+    /// </summary>
+    public async Task<bool> TryJoinWithProperties(
+        string chapterShortName, string firstName, string lastName, string email,
+        IReadOnlyDictionary<Guid, string> propertyAnswers)
+    {
+        await _page.Navigate($"/{chapterShortName}/account/join");
+
+        await _page.FillAsync("[data-firstname]", firstName);
+        await _page.FillAsync("[data-lastname]", lastName);
+        await _page.FillAsync("[data-email]", email);
+
+        await FillLocationIfPresent();
+        await CheckPrivacyPolicyIfPresent();
+        await UploadImageIfPresent();
+
+        foreach (var (chapterPropertyId, value) in propertyAnswers)
+        {
+            await _page.FillChapterProperty(chapterPropertyId, value);
+        }
+
+        await _page.ClickAsync("button:has-text('Create')");
+
+        try
+        {
+            await _page.WaitForURLAsync(
+                new Regex("/account/pending", RegexOptions.IgnoreCase), new() { Timeout = 10000 });
+            return true;
+        }
+        catch (TimeoutException)
+        {
+            return false;
+        }
+    }
+
     public async Task Join(string chapterShortName, string firstName, string lastName, string email)
     {
         await _page.Navigate($"/{chapterShortName}/account/join");

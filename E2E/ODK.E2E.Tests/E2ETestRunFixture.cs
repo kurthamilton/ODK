@@ -32,6 +32,8 @@ public class E2ETestRunFixture
     [OneTimeTearDown]
     public async Task CleanUp()
     {
+        await Provisioning.DisposeSharedBrowser();
+
         var deleted = await new TestDataCleaner(E2ESettings.ConnectionString)
             .DeleteTestData();
         TestContext.Progress.WriteLine($"E2E cleanup: removed {deleted} test row(s) (members, groups, sent emails).");

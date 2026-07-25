@@ -14,10 +14,36 @@ namespace ODK.E2E.Tests.Helpers;
 /// </summary>
 internal static class Provisioning
 {
+    // Set up the DrunkenKnitwits Stripe product / default subscription exactly once per run, even when
+    // parallel DrunkenKnitwits fixtures race to seed it (Lazy runs the factory a single time).
+    private static readonly Lazy<Task> DrunkenKnitwitsSubscription = new(EnsureDrunkenKnitwitsSubscriptionOnce);
+
+    // One shared Playwright driver + browser for ALL provisioning, launched once. Each provisioning call
+    // gets a fresh, isolated context (its own cookies/login), which is cheap - so we avoid re-spawning the
+    // driver and re-launching a browser on every account/group/member we set up. Disposed at the end of
+    // the run via DisposeSharedBrowser. (The tests' own browsers are separate, pooled by Playwright.NUnit.)
+    private static readonly Lazy<Task<IBrowser>> SharedBrowser = new(LaunchSharedBrowser);
+
+    private static IPlaywright? _playwright;
+
     public static async Task ApproveGroup(Guid chapterId)
     {
         var admin = await SharedAccounts.Get(SharedAccounts.SiteAdmin);
         await RunAs(admin, page => new SiteAdminGroupsPage(page).Approve(chapterId));
+    }
+
+    /// <summary>
+    /// Disposes the shared provisioning browser and Playwright driver. Call once after the whole run.
+    /// </summary>
+    public static async Task DisposeSharedBrowser()
+    {
+        if (SharedBrowser.IsValueCreated)
+        {
+            var browser = await SharedBrowser.Value;
+            await browser.DisposeAsync();
+        }
+
+        _playwright?.Dispose();
     }
 
     public static async Task<TestGroup> CreateGroup(TestAccount owner, string name)
@@ -93,6 +119,83 @@ internal static class Provisioning
         return new TestAccount(SharedAccounts.GroupMember, email, password);
     }
 
+    /// <summary>
+    /// Creates a chapter member-profile property (question) through the admin UI, as the group owner, and
+    /// returns its id. Pass <paramref name="required"/> / <paramref name="applicationOnly"/> to set those
+    /// flags.
+    /// </summary>
+    public static async Task<Guid> CreateChapterProperty(
+        TestAccount owner, PlatformRoutes routes, Guid chapterId, string baseUrl,
+        string label, bool required = false, bool applicationOnly = false)
+    {
+        await RunAs(owner, page => new ChapterPropertyAdminPage(page)
+            .CreateProperty(routes.PropertyCreate, label, required, applicationOnly), baseUrl);
+
+        return await new ChapterPropertyDataHelper(E2ESettings.ConnectionString).GetPropertyId(chapterId, label)
+            ?? throw new InvalidOperationException($"Chapter property '{label}' was not created.");
+    }
+
+    /// <summary>
+    /// Provisions a fresh member of a DrunkenKnitwits chapter who answers the given chapter properties as
+    /// part of sign-up (= join), then activates. Throws if the join is blocked.
+    /// </summary>
+    public static async Task<TestAccount> JoinDrunkenKnitwitsMemberWithProperties(
+        TestGroup group, IReadOnlyDictionary<Guid, string> answers)
+    {
+        var email = TestAccounts.NewEmailAddress(SharedAccounts.GroupMember);
+        var password = TestAccounts.Password;
+        var shortName = group.Name.ToLowerInvariant();
+
+        var joined = false;
+        await RunOnBrowser(async page =>
+        {
+            joined = await new DrunkenKnitwitsJoinPage(page)
+                .TryJoinWithProperties(shortName, "E2E", "Test", email, answers);
+            if (!joined)
+            {
+                return;
+            }
+
+            var token = await new ActivationTokenDataHelper(E2ESettings.ConnectionString)
+                .GetActivationToken(email);
+            await new DrunkenKnitwitsActivatePage(page).Activate(shortName, token, password);
+        }, E2ESettings.DrunkenKnitwitsBaseUrl);
+
+        if (!joined)
+        {
+            throw new InvalidOperationException($"Member '{email}' could not sign up with the given properties.");
+        }
+
+        return new TestAccount(SharedAccounts.GroupMember, email, password);
+    }
+
+    /// <summary>
+    /// Provisions a fresh member of a Default group who answers the given chapter properties when joining.
+    /// Throws if the join is blocked.
+    /// </summary>
+    public static async Task<TestAccount> JoinGroupMemberWithProperties(
+        TestGroup group, IReadOnlyDictionary<Guid, string> answers)
+    {
+        var member = await NewAccount(SharedAccounts.GroupMember);
+
+        var joined = false;
+        await RunAs(member, async page =>
+            joined = await new JoinGroupPage(page).TryJoinWithProperties(group.Slug, answers));
+
+        if (!joined)
+        {
+            throw new InvalidOperationException($"Member '{member.Email}' could not join with the given properties.");
+        }
+
+        return member;
+    }
+
+    /// <summary>Moves a chapter property one place down (later) in display order, via the admin UI.</summary>
+    public static Task MoveChapterPropertyDown(
+        TestAccount owner, PlatformRoutes routes, Guid propertyId, string baseUrl)
+        => RunAs(owner, page => new ChapterPropertyAdminPage(page)
+            .MovePropertyDown(routes.PropertiesList, propertyId), baseUrl);
+
     public static async Task<TestAccount> NewAccount(string role)
     {
         var email = TestAccounts.NewEmailAddress(role);
@@ -101,6 +204,41 @@ internal static class Provisioning
         await RunOnBrowser(page => AccountProvisioner.RegisterAndActivate(page, email, password));
 
         return new TestAccount(role, email, password);
+    }
+
+    /// <summary>
+    /// Attempts a DrunkenKnitwits sign-up answering only the given (partial) properties; returns whether
+    /// it succeeded. Used to assert a join is blocked when a required property is left blank.
+    /// </summary>
+    public static async Task<bool> TryJoinDrunkenKnitwitsWithoutRequired(
+        TestGroup group, IReadOnlyDictionary<Guid, string> answers)
+    {
+        var email = TestAccounts.NewEmailAddress(SharedAccounts.GroupMember);
+        var shortName = group.Name.ToLowerInvariant();
+
+        var joined = false;
+        await RunOnBrowser(async page =>
+            joined = await new DrunkenKnitwitsJoinPage(page)
+                .TryJoinWithProperties(shortName, "E2E", "Test", email, answers),
+            E2ESettings.DrunkenKnitwitsBaseUrl);
+
+        return joined;
+    }
+
+    /// <summary>
+    /// Attempts a Default group join answering only the given (partial) properties; returns whether it
+    /// succeeded. Used to assert a join is blocked when a required property is left blank.
+    /// </summary>
+    public static async Task<bool> TryJoinGroupWithoutRequired(
+        TestGroup group, IReadOnlyDictionary<Guid, string> answers)
+    {
+        var member = await NewAccount(SharedAccounts.GroupMember);
+
+        var joined = false;
+        await RunAs(member, async page =>
+            joined = await new JoinGroupPage(page).TryJoinWithProperties(group.Slug, answers));
+
+        return joined;
     }
 
     public static async Task PublishGroup(TestAccount owner, Guid chapterId)
@@ -159,7 +297,9 @@ internal static class Provisioning
         return new TestEvent(eventId, eventName, shortcode);
     }
 
-    private static async Task EnsureDrunkenKnitwitsSubscription()
+    private static Task EnsureDrunkenKnitwitsSubscription() => DrunkenKnitwitsSubscription.Value;
+
+    private static async Task EnsureDrunkenKnitwitsSubscriptionOnce()
     {
         var payments = new SitePaymentSettingsDataHelper(E2ESettings.ConnectionString);
         var paymentSettingId = await payments.EnsureStripeSettings(
@@ -192,16 +332,22 @@ internal static class Provisioning
 
     private static async Task RunOnBrowser(Func<IPage, Task> action, string? baseUrl = null)
     {
-        // Default to the Default platform (account sign-up and group creation are Default-only); callers
-        // that drive a platform-specific flow pass that platform's base URL. Page objects then navigate
-        // with relative paths, matching how the tests' own contexts are configured.
-        using var playwright = await Playwright.CreateAsync();
-        await using var browser = await playwright.Chromium.LaunchAsync();
+        // Fresh, isolated context off the shared browser. Default to the Default platform (account
+        // sign-up and group creation are Default-only); callers driving a platform-specific flow pass that
+        // platform's base URL. Page objects then navigate with relative paths, matching the tests' own
+        // contexts.
+        var browser = await SharedBrowser.Value;
         await using var context = await browser.NewContextAsync(new BrowserNewContextOptions
         {
             BaseURL = baseUrl ?? E2ESettings.DefaultBaseUrl
         });
         var page = await context.NewPageAsync();
         await action(page);
+    }
+
+    private static async Task<IBrowser> LaunchSharedBrowser()
+    {
+        _playwright = await Playwright.CreateAsync();
+        return await _playwright.Chromium.LaunchAsync();
     }
 }

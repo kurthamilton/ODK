@@ -33,6 +33,39 @@ internal static class PageExtensions
     }
 
     /// <summary>
+    /// Fills a chapter-property answer on a form built from <c>_ChapterProfileForm</c> (the join and
+    /// profile-update forms). Those forms render property fields indexed by position
+    /// (<c>Properties[i].Value</c>) with a sibling hidden <c>Properties[i].ChapterPropertyId</c>, so this
+    /// finds the index whose hidden id matches and fills that row's value. Works for text properties.
+    /// </summary>
+    internal static async Task FillChapterProperty(this IPage page, Guid chapterPropertyId, string value)
+    {
+        var prefix = await page.EvaluateAsync<string?>(
+            """
+            guid => {
+                const hidden = document.querySelector(`input[name$='.ChapterPropertyId'][value='${guid}']`);
+                return hidden ? hidden.name.slice(0, hidden.name.lastIndexOf('.')) : null;
+            }
+            """,
+            chapterPropertyId.ToString());
+
+        if (prefix == null)
+        {
+            throw new InvalidOperationException(
+                $"No chapter-property field found for property '{chapterPropertyId}' on the form.");
+        }
+
+        await page.FillAsync($"[name='{prefix}.Value']", value);
+    }
+
+    /// <summary>
+    /// Whether a chapter-property field for the given property is present on a <c>_ChapterProfileForm</c>
+    /// form (detected by its hidden <c>ChapterPropertyId</c> input).
+    /// </summary>
+    internal static async Task<bool> HasChapterProperty(this IPage page, Guid chapterPropertyId)
+        => await page.Locator($"input[name$='.ChapterPropertyId'][value='{chapterPropertyId}']").CountAsync() > 0;
+
+    /// <summary>
     /// Selects a single value on a SlimSelect-enhanced <c>&lt;select&gt;</c> (<c>[data-select]</c>/
     /// <c>[data-searchable]</c>). SlimSelect hides the native control, so Playwright's SelectOption can't
     /// see it - set the native value (what actually posts) and raise the events SlimSelect and the

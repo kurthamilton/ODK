@@ -14,5 +14,10 @@ public class ChapterPropertyOptionMap : IEntityTypeConfiguration<ChapterProperty
 
         builder.Property(x => x.Id)
             .HasColumnName("ChapterPropertyOptionId");
+
+        builder.HasOne<ChapterProperty>()
+            .WithMany()
+            .HasForeignKey(x => x.ChapterPropertyId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
