@@ -38,6 +38,61 @@ internal static class Provisioning
         return group;
     }
 
+    /// <summary>
+    /// Creates a draft (unpublished) event (with its own venue) as the group owner, through the
+    /// platform's admin UI, and returns its id + shortcode. Used by tests that check draft visibility.
+    /// </summary>
+    public static Task<TestEvent> CreateDraftEvent(
+        TestAccount owner, PlatformRoutes routes, Guid chapterId, string baseUrl)
+        => CreateEvent(owner, routes, chapterId, baseUrl, draft: true);
+
+    /// <summary>
+    /// Creates a published event (with its own venue) as the group owner, through the platform's admin
+    /// UI, and returns its id + shortcode. Used by RSVP/listing tests that need an event. Drives the
+    /// owner on a throwaway browser against <paramref name="baseUrl"/> (the platform's port), with
+    /// <paramref name="routes"/> supplying the platform-correct admin URLs. Pass
+    /// <paramref name="attendeeLimit"/> to cap the number of attendees.
+    /// </summary>
+    public static Task<TestEvent> CreatePublishedEvent(
+        TestAccount owner, PlatformRoutes routes, Guid chapterId, string baseUrl, int? attendeeLimit = null)
+        => CreateEvent(owner, routes, chapterId, baseUrl, draft: false, attendeeLimit);
+
+    /// <summary>
+    /// Provisions a fresh member of a Default group: a new account joins through the UI. The member is
+    /// approved automatically by the platform (the chapter's subscription has no ApproveMembers feature),
+    /// so this doesn't touch the approval state itself.
+    /// </summary>
+    public static async Task<TestAccount> JoinGroupAsMember(TestGroup group)
+    {
+        var member = await NewAccount(SharedAccounts.GroupMember);
+        await RunAs(member, page => new JoinGroupPage(page).Join(group.Slug));
+        return member;
+    }
+
+    /// <summary>
+    /// Provisions a fresh member of a DrunkenKnitwits chapter. On DrunkenKnitwits joining the chapter IS
+    /// the sign-up, so this runs the join (= register) + activate flow against the chapter. The member is
+    /// approved automatically by the platform (the chapter's subscription has no ApproveMembers feature).
+    /// </summary>
+    public static async Task<TestAccount> JoinDrunkenKnitwitsChapterAsMember(TestGroup group)
+    {
+        var email = TestAccounts.NewEmailAddress(SharedAccounts.GroupMember);
+        var password = TestAccounts.Password;
+        var shortName = group.Name.ToLowerInvariant();
+
+        await RunOnBrowser(async page =>
+        {
+            await new DrunkenKnitwitsJoinPage(page).Join(shortName, "E2E", "Test", email);
+
+            var token = await new ActivationTokenDataHelper(E2ESettings.ConnectionString)
+                .GetActivationToken(email);
+
+            await new DrunkenKnitwitsActivatePage(page).Activate(shortName, token, password);
+        }, E2ESettings.DrunkenKnitwitsBaseUrl);
+
+        return new TestAccount(SharedAccounts.GroupMember, email, password);
+    }
+
     public static async Task<TestAccount> NewAccount(string role)
     {
         var email = TestAccounts.NewEmailAddress(role);
@@ -79,6 +134,31 @@ internal static class Provisioning
     /// payment-integration tests); the subscription is created through the site-admin UI (which also
     /// creates the Stripe product) and then made the platform default so <c>GetDefault</c> returns it.
     /// </summary>
+    private static async Task<TestEvent> CreateEvent(
+        TestAccount owner, PlatformRoutes routes, Guid chapterId, string baseUrl, bool draft, int? attendeeLimit = null)
+    {
+        var venueName = $"E2E Venue {Guid.NewGuid():N}";
+        var eventName = $"E2E Event {Guid.NewGuid():N}";
+        var date = $"{DateTime.Today.AddDays(14):dd/MM/yyyy} 19:00";
+
+        await RunAs(owner, async page =>
+        {
+            await new VenueAdminPage(page).CreateVenue(routes.VenueCreate, venueName);
+
+            var venueId = await new VenueDataHelper(E2ESettings.ConnectionString).GetVenueId(chapterId, venueName)
+                ?? throw new InvalidOperationException($"Venue '{venueName}' was not created.");
+
+            await new EventAdminPage(page).CreateEvent(routes.EventCreate, eventName, venueId, date, draft, attendeeLimit);
+        }, baseUrl);
+
+        var events = new EventDataHelper(E2ESettings.ConnectionString);
+        var eventId = await events.GetEventId(chapterId, eventName)
+            ?? throw new InvalidOperationException($"Event '{eventName}' was not created.");
+        var shortcode = await events.GetShortcode(eventId);
+
+        return new TestEvent(eventId, eventName, shortcode);
+    }
+
     private static async Task EnsureDrunkenKnitwitsSubscription()
     {
         var payments = new SitePaymentSettingsDataHelper(E2ESettings.ConnectionString);

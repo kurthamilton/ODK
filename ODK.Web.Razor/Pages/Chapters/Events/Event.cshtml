@@ -1,12 +1,6 @@
-﻿@page "/{chapterName}/Events/{shortcode}"
-@using Microsoft.AspNetCore.Authorization
-@using ODK.Core.Venues
+﻿@page "/{chapterName}/events/{shortcode}"
 @using ODK.Services.Events
-@using ODK.Services.Venues
-@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
-@using ODK.Web.Razor.Models.Events
-@using ODK.Web.Razor.Models.Payments
 @model EventModel
 @inject IEventViewModelService EventViewModelService
 @{

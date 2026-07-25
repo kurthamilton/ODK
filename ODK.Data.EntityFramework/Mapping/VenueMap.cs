@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using ODK.Core.Chapters;
 using ODK.Core.Venues;
 using ODK.Data.EntityFramework.Converters;
 
@@ -21,5 +22,10 @@ public class VenueMap : IEntityTypeConfiguration<Venue>
 
         builder.Property(x => x.Version)
             .IsRowVersion();
+
+        builder.HasOne<Chapter>()
+            .WithMany()
+            .HasForeignKey(x => x.ChapterId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

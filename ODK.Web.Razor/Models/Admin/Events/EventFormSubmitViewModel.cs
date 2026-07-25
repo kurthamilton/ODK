@@ -24,7 +24,7 @@ public class EventFormSubmitViewModel
 
     public IReadOnlyCollection<SelectListItem> HostOptions { get; set; } = [];
 
-    public List<Guid> Hosts { get; set; } = new();
+    public List<Guid>? Hosts { get; set; }
 
     [DisplayName("Image URL")]
     public string? ImageUrl { get; set; } = string.Empty;

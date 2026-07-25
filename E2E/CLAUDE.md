@@ -66,6 +66,29 @@ is the generic wait-for-ready → run → kill-port runner.
 - **Page objects** (`Pages/**`): one class per page/flow, constructor takes `IPage`, methods drive one
   journey. Navigate with `page.Navigate(relativePath)` (the `PageExtensions` helper — relative, resolves
   against the context `BaseURL`). Prefer stable selectors: `data-*` hooks, ids, or `button:has-text(...)`.
+  A page object shared across both platforms takes the platform-correct relative URL(s) as method
+  parameters (it stays platform-agnostic) — build them with `PlatformRoutes` (see below), don't hard-code
+  a platform's tree inside the page object.
+- **JS-enhanced form controls.** Some fields are enhanced by client JS that hides the native control, so
+  Playwright's `FillAsync`/`SelectOptionAsync` can't see them. Drive them via the `PageExtensions` helpers
+  instead: `SetEnhancedSelect(selector, value)` for a SlimSelect `<select>` (`[data-select]`/
+  `[data-searchable]` — it sets the native value that posts and raises the `change`/`odk:change` events),
+  and `SetDatePicker(selector, value)` for a flatpickr date input (`[data-datepicker]`, read-only — sets
+  via the flatpickr instance in `dd/MM/yyyy HH:mm`). A TinyMCE textarea (`[data-html-editor]`) is filled
+  via `tinymce.get(id).setContent(v); save()` after waiting for init (see `SiteAdminSubscriptionsPage`).
+- **Same scenario on both platforms → one abstract base fixture + a thin concrete per platform.** When a
+  feature exists on both platforms with identical forms but different route trees/provisioning, write the
+  scenario bodies **once** in an `abstract XxxTestsBase : OdkPageTest` (NUnit runs `[Test]` methods from
+  the base in each concrete subclass). Each concrete fixture (`XxxTests` `[Category("Default")]`,
+  `DrunkenKnitwitsXxxTests` `[Category("DrunkenKnitwits")]`) supplies only `PlatformBaseUrl` and the
+  platform-varying bits via `private protected abstract` hooks — provisioning (owner+chapter, member) and
+  a `PlatformRoutes` factory. See `EventTestsBase` + `EventTests`/`DrunkenKnitwitsEventTests`. This is the
+  way to honour "test cases do the duplication, not multiple methods" when a single fixture can't (the
+  fixture's `BaseURL` is fixed per platform, so one method can't target both).
+- **`PlatformRoutes`** (`Pages/PlatformRoutes.cs`): builds the platform-correct **relative** admin and
+  member-facing URLs (Default `/my/groups/{chapterId}/...` vs DrunkenKnitwits `/{chapterName}/admin/...`,
+  whose leaf segments even differ — `/new` vs `/create`). Add a route here rather than composing paths in
+  a page object or test. Mirrors the app's `GroupAdminRoutes`/`GroupRoutes`.
 - **Data helpers** (`ODK.E2E.Data/*DataHelper.cs`): all DB access goes through `E2EQueryBuilder`
   (`Create(sql).AddParameter(...).ExecuteScalar<T>()/ReadMany(...)/ExecuteNonQuery()`), never inline
   `SqlConnection`. **`ExecuteScalar<T>()` gotcha:** for a value-type column that can be null, call it with

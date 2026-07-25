@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 using ODK.Data.EntityFramework;
@@ -12,9 +13,11 @@ using ODK.Data.EntityFramework;
 namespace ODK.Data.EntityFramework.Migrations.Migrations
 {
     [DbContext(typeof(OdkContext))]
-    partial class OdkContextModelSnapshot : ModelSnapshot
+    [Migration("20260725110701_Event-ForeignKeys-Add")]
+    partial class EventForeignKeysAdd
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2476,8 +2479,6 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ChapterId");
-
                     b.ToTable("Venues", (string)null);
                 });
 
@@ -3251,15 +3252,6 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                         .IsRequired();
 
                     b.Navigation("TopicGroup");
-                });
-
-            modelBuilder.Entity("ODK.Core.Venues.Venue", b =>
-                {
-                    b.HasOne("ODK.Core.Chapters.Chapter", null)
-                        .WithMany()
-                        .HasForeignKey("ChapterId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("ODK.Core.Venues.VenueLocation", b =>

@@ -1,6 +1,7 @@
 ﻿using ODK.Core;
 using ODK.Core.Chapters;
 using ODK.Core.Events;
+using ODK.Core.Exceptions;
 using ODK.Core.Extensions;
 using ODK.Core.Members;
 using ODK.Core.Notifications;
@@ -261,51 +262,51 @@ public class EventViewModelService : IEventViewModelService
         }
 
         var canViewEvent = _authorizationService.CanViewEvent(@event, currentMember, memberSubscription, membershipSettings, privacySettings);
+        if (!canViewEvent)
+        {
+            // Members-only events must not leak their existence. Anyone not permitted to view the event
+            // (anonymous, non-members, expired members) gets a not-found rather than a rendered "you are
+            // not permitted" page. Owners/admins are approved members, so CanViewEvent is true for them.
+            throw new OdkNotFoundException($"Event not found: {shortcode}");
+        }
+
         var canViewVenue = _authorizationService.CanViewVenue(venue, currentMember, memberSubscription, membershipSettings, privacySettings);
         var canRespond = _authorizationService.CanRespondToEvent(@event, currentMember, memberSubscription, membershipSettings, privacySettings);
 
         IReadOnlyCollection<MemberWithAvatarDto> commentMembers = [];
         IReadOnlyCollection<MemberWithAvatarDto> responseMembers = [];
 
-        if (!canViewEvent)
+        var commentMemberIds = comments
+            .Select(x => x.MemberId)
+            .Distinct()
+            .ToArray();
+
+        var responseMemberIds = responses
+            .Select(x => x.MemberId)
+            .Distinct()
+            .ToArray();
+
+        var memberIds = commentMemberIds
+            .Concat(responseMemberIds)
+            .ToHashSet();
+
+        if (memberIds.Count > 0)
         {
-            comments = [];
-            responses = [];
-        }
-        else
-        {
-            var commentMemberIds = comments
-                .Select(x => x.MemberId)
-                .Distinct()
+            var members = await _unitOfWork.MemberRepository
+                .GetByChapterId(chapter.Id, memberIds)
+                .Run();
+
+            var memberDictionary = members.ToDictionary(x => x.Member.Id);
+
+            commentMembers = commentMemberIds
+                .Where(memberDictionary.ContainsKey)
+                .Select(x => memberDictionary[x])
                 .ToArray();
 
-            var responseMemberIds = responses
-                .Select(x => x.MemberId)
-                .Distinct()
+            responseMembers = responseMemberIds
+                .Where(memberDictionary.ContainsKey)
+                .Select(x => memberDictionary[x])
                 .ToArray();
-
-            var memberIds = commentMemberIds
-                .Concat(responseMemberIds)
-                .ToHashSet();
-
-            if (memberIds.Count > 0)
-            {
-                var members = await _unitOfWork.MemberRepository
-                    .GetByChapterId(chapter.Id, memberIds)
-                    .Run();
-
-                var memberDictionary = members.ToDictionary(x => x.Member.Id);
-
-                commentMembers = commentMemberIds
-                    .Where(memberDictionary.ContainsKey)
-                    .Select(x => memberDictionary[x])
-                    .ToArray();
-
-                responseMembers = responseMemberIds
-                    .Where(memberDictionary.ContainsKey)
-                    .Select(x => memberDictionary[x])
-                    .ToArray();
-            }
         }
 
         var responseMemberDictionary = responseMembers.ToDictionary(x => x.Member.Id);

@@ -9,5 +9,6 @@ public class ErrorModel : OdkPageModel
     public void OnGet(HttpStatusCode statusCode)
     {
         ErrorStatusCode = statusCode;
+        Response.StatusCode = (int)statusCode;
     }
 }
