@@ -15,6 +15,35 @@ internal class JoinGroupPage
         _page = page;
     }
 
+    /// <summary>
+    /// Fills the given chapter-property answers on the join form and submits. Returns true if the join
+    /// succeeded (redirected off the join page), false if it was blocked client-side (e.g. a required
+    /// property was left unanswered) - so callers can assert either outcome without a thrown timeout.
+    /// </summary>
+    public async Task<bool> TryJoinWithProperties(string slug, IReadOnlyDictionary<Guid, string> propertyAnswers)
+    {
+        await _page.Navigate($"/groups/{slug}/join");
+
+        foreach (var (chapterPropertyId, value) in propertyAnswers)
+        {
+            await _page.FillChapterProperty(chapterPropertyId, value);
+        }
+
+        await _page.ClickAsync("button:has-text('Join group')");
+
+        try
+        {
+            await _page.WaitForURLAsync(
+                url => url.Contains($"/groups/{slug}") && !url.Contains("/join"),
+                new() { Timeout = 10000 });
+            return true;
+        }
+        catch (TimeoutException)
+        {
+            return false;
+        }
+    }
+
     public async Task Join(string slug)
     {
         await _page.Navigate($"/groups/{slug}/join");

@@ -21,5 +21,10 @@ public class ChapterPropertyMap : IEntityTypeConfiguration<ChapterProperty>
         builder.Property(x => x.DataType)
             .HasColumnName("DataTypeId")
             .HasConversion<int>();
+
+        builder.HasOne<Chapter>()
+            .WithMany()
+            .HasForeignKey(x => x.ChapterId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

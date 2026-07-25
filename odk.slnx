@@ -8,6 +8,7 @@
     <File Path=".editorconfig" />
     <File Path="CLAUDE.md" />
     <File Path="README.md" />
+    <File Path="run.app.bat" />
   </Folder>
   <Folder Name="/Solution Items/Migrations/">
     <File Path="Scripts/ef-add-migration.bat" />

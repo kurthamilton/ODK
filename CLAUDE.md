@@ -155,6 +155,15 @@ auto-hide/disable based on it (`UnauthorizedBehaviour`).
   action (e.g. `MemberImport`, not a nearby one). Admin services enforce it via
   `GetChapterAdminRestrictedContent(...)` in `OdkAdminServiceBase`.
 - Keep business logic in `ODK.Services`, not in controllers or pages.
+- **Centralise shared guards in the service, not the callers.** An access/visibility check a view-model
+  service can enforce (e.g. "only members may view this", "hidden pages 404") belongs inside the
+  `Get...ViewModel` method — `throw` the appropriate `Odk*Exception` (or return a failure) there — rather
+  than each page/controller repeating an `if (!vm.X) throw`. A guard the service owns can't be forgotten
+  by a new caller, and the two-platform pages stay thin (the same service backs both). This applies
+  generally: when the same rule is duplicated across the Drunken Knitwits and Group Squirrel copies of a
+  page, push it down into the shared service. See `MemberViewModelService.GetMemberPage` — it asserts the
+  viewed member **and** the viewer belong to the chapter and that the Members page isn't hidden, so both
+  member pages just call it and render.
 - **Atomicity.** A single `IUnitOfWork.SaveChangesAsync()` commits all pending changes across every
   repository in one implicit EF transaction (they share one `DbContext`), so a multi-repository write
   is already atomic — batch the writes and save once. There is deliberately no explicit transaction

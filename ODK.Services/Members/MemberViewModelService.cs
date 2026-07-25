@@ -1,4 +1,6 @@
 ﻿using ODK.Core;
+using ODK.Core.Exceptions;
+using ODK.Core.Pages;
 using ODK.Data.Core;
 using ODK.Services.Members.ViewModels;
 
@@ -159,8 +161,16 @@ public class MemberViewModelService : IMemberViewModelService
             x => x.ChapterAdminMemberRepository.IsAdmin(platform, chapter.Id, currentMember.Id),
             x => x.ChapterPageRepository.GetByChapterId(chapter.Id));
 
+        // A member's profile is only visible to fellow members: both the viewed member and the viewer
+        // must belong to the chapter.
         var member = memberDto.Member;
         OdkAssertions.MemberOf(member, chapter.Id);
+        OdkAssertions.MemberOf(currentMember, chapter.Id);
+
+        if (chapterPages.FirstOrDefault(x => x.PageType == PageType.Members)?.Hidden == true)
+        {
+            throw new OdkNotFoundException();
+        }
 
         return new MemberPageViewModel
         {

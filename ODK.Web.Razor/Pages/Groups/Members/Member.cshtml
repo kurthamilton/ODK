@@ -1,10 +1,8 @@
 ﻿@page "/groups/{slug}/members/{id:guid}"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
-@using ODK.Core.Exceptions
 @using ODK.Core.Pages
 @using ODK.Services.Members
-@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Groups
 @inject IMemberViewModelService MemberViewModelService
@@ -13,16 +11,8 @@
     Layout = "_HomeLayout";
 
     var viewModel = await MemberViewModelService.GetMemberPage(Model.MemberChapterServiceRequest, Model.MemberId);
-    if (!viewModel.IsMember)
-    {
-        Response.Redirect(Model.OdkRoutes.Groups.Join(Model.Chapter));
-    }
 
     var chapterPage = viewModel.ChapterPages.FirstOrDefault(x => x.PageType == PageType.Members);
-    if (chapterPage?.Hidden == true)
-    {
-        throw new OdkNotFoundException();
-    }
 
     Model.Title = viewModel.Member.GetDisplayName(viewModel.Chapter.Id);
 }
