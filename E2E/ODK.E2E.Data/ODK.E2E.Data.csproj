@@ -10,8 +10,4 @@
     <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.2" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\ODK.E2E.Core\ODK.E2E.Core.csproj" />
-  </ItemGroup>
-
 </Project>

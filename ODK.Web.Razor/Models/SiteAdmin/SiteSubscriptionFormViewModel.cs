@@ -15,7 +15,7 @@ public class SiteSubscriptionFormViewModel
     [DisplayName("Fallback")]
     public Guid? FallbackSiteSubscriptionId { get; set; }
 
-    public List<SiteFeatureType> Features { get; set; } = new();
+    public List<SiteFeatureType>? Features { get; set; }
 
     [DisplayName("Group limit")]
     public int? GroupLimit { get; set; }

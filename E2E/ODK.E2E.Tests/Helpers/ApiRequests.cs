@@ -1,5 +1,5 @@
 using Microsoft.Playwright;
-using ODK.E2E.Core;
+using ODK.E2E.Tests.Config;
 using ODK.E2E.Tests.Pages;
 
 namespace ODK.E2E.Tests.Helpers;
@@ -12,14 +12,14 @@ namespace ODK.E2E.Tests.Helpers;
 /// </summary>
 internal static class ApiRequests
 {
-    public static async Task<int> PostAsync(IPage loggedInPage, string path, string formPath)
+    public static async Task<int> Post(IPage loggedInPage, string path, string formPath)
     {
         await loggedInPage.Navigate(formPath);
         var token = await loggedInPage.GetAttributeAsync("input[name='__RequestVerificationToken']", "value")
             ?? throw new InvalidOperationException($"No antiforgery token found on '{formPath}'.");
 
         var response = await loggedInPage.Context.APIRequest.PostAsync(
-            $"{E2ESettings.BaseUrl}{path}",
+            $"{E2ESettings.DefaultBaseUrl}{path}",
             new APIRequestContextOptions
             {
                 Headers = new Dictionary<string, string> { ["RequestVerificationToken"] = token },

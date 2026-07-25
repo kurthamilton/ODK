@@ -15,7 +15,7 @@ internal class ActivatePage
         _page = page;
     }
 
-    public async Task ActivateAsync(string token, string password)
+    public async Task Activate(string token, string password)
     {
         await _page.Navigate($"/account/activate?token={Uri.EscapeDataString(token)}");
 

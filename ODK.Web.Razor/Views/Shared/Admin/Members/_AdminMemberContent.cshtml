@@ -8,6 +8,7 @@
 @model AdminMemberAdminPageViewModel
 
 <form method="post">
+    @Html.AntiForgeryToken()
     <fieldset disabled="@(Model.ReadOnly ? "" : null)">
         @await Html.PartialAsync("Admin/Members/_AdminMemberForm", new AdminMemberFormViewModel
         {

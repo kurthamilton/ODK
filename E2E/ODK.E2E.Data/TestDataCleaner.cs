@@ -8,9 +8,14 @@ namespace ODK.E2E.Data;
 /// rows (activation token, password, preferences, site subscription, etc.). SentEmails has no foreign
 /// key to Members, so its test rows (identified by recipient address) are removed explicitly.
 /// </summary>
-public static class TestDataCleaner
+public class TestDataCleaner : DataHelperBase
 {
-    public static async Task<int> DeleteTestData()
+    public TestDataCleaner(string connectionString)
+        : base(connectionString)
+    {
+    }
+
+    public async Task<int> DeleteTestData()
     {
         const string sql =
             """
@@ -19,8 +24,7 @@ public static class TestDataCleaner
             DELETE FROM Members WHERE EmailAddress LIKE @pattern;
             """;
 
-        await using var builder = E2EQueryBuilder
-            .Create(sql)
+        await using var builder = Builder(sql)
             .AddParameter("@pattern", $"%@{TestAccounts.EmailDomain}");
 
         return await builder.ExecuteNonQuery();

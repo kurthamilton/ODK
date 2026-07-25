@@ -18,7 +18,7 @@ internal class CreateGroupPage
         _page = page;
     }
 
-    public async Task<Guid> CreateGroupAsync(string name)
+    public async Task<Guid> CreateGroup(string name)
     {
         await _page.Navigate("/my/groups/new");
 

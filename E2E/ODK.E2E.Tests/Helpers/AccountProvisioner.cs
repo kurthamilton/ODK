@@ -1,5 +1,6 @@
 using Microsoft.Playwright;
 using ODK.E2E.Data;
+using ODK.E2E.Tests.Config;
 using ODK.E2E.Tests.Pages;
 
 namespace ODK.E2E.Tests.Helpers;
@@ -11,17 +12,18 @@ namespace ODK.E2E.Tests.Helpers;
 /// </summary>
 internal static class AccountProvisioner
 {
-    public static async Task RegisterAndActivateAsync(
+    public static async Task RegisterAndActivate(
         IPage page,
         string email,
         string password,
         string firstName = "E2E",
         string lastName = "Test")
     {
-        await new SignUpPage(page).SignUpAsync(firstName, lastName, email);
+        await new SignUpPage(page).SignUp(firstName, lastName, email);
 
-        var token = await ActivationTokenDataHelper.GetActivationToken(email);
+        var token = await new ActivationTokenDataHelper(E2ESettings.ConnectionString)
+            .GetActivationToken(email);
 
-        await new ActivatePage(page).ActivateAsync(token, password);
+        await new ActivatePage(page).Activate(token, password);
     }
 }

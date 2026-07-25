@@ -2,18 +2,21 @@
 rem Generic E2E test runner: waits for an already-starting app to be ready on a port, runs its E2E
 rem tests, then stops the app (kills whatever is listening on the port). Exits with the test exit code.
 rem
-rem Usage: run.e2e.tests.bat <port> <path-to-test-csproj>
-rem   e.g. run.e2e.tests.bat 8125 ODK.E2ETests\ODK.E2ETests.csproj
+rem Usage: script.e2e.bat <port> <path-to-test-csproj> [category]
+rem   category defaults to E2E (all platforms). Use Default or DrunkenKnitwits to target one platform.
+rem   e.g. script.e2e.bat 8125 ODK.E2E.Tests\ODK.E2E.Tests.csproj Default
 rem
-rem One-time prerequisite: install the Playwright browsers (see ODK.E2ETests/README.md):
-rem   powershell -File ODK.E2ETests\bin\Debug\net10.0\playwright.ps1 install
+rem One-time prerequisite: install the Playwright browsers (see E2E/README.md):
+rem   powershell -File ODK.E2E.Tests\bin\Debug\net10.0\playwright.ps1 install
 setlocal
 
 set PORT=%~1
 set TEST_PROJECT=%~2
+set CATEGORY=%~3
+if "%CATEGORY%"=="" set CATEGORY=E2E
 
-if "%PORT%"=="" (echo Usage: script.run.tests.gs.bat ^<port^> ^<test-csproj^> & exit /b 2)
-if "%TEST_PROJECT%"=="" (echo Usage: script.run.tests.gs.bat ^<port^> ^<test-csproj^> & exit /b 2)
+if "%PORT%"=="" (echo Usage: script.e2e.bat ^<port^> ^<test-csproj^> [category] & exit /b 2)
+if "%TEST_PROJECT%"=="" (echo Usage: script.e2e.bat ^<port^> ^<test-csproj^> [category] & exit /b 2)
 
 echo Waiting for the app to be ready on http://localhost:%PORT% ...
 set /a TRIES=0
@@ -29,8 +32,8 @@ timeout /t 2 >nul
 goto waitloop
 
 :ready
-echo App is ready. Running E2E tests ...
-dotnet test "%TEST_PROJECT%" --filter "TestCategory=E2E"
+echo App is ready. Running E2E tests (TestCategory=%CATEGORY%) ...
+dotnet test "%TEST_PROJECT%" --filter "TestCategory=%CATEGORY%"
 set TEST_EXIT=%errorlevel%
 
 :teardown

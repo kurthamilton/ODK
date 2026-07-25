@@ -6,9 +6,14 @@ namespace ODK.E2E.Data;
 /// written to <c>SentEmails</c> immediately after a successful send, so this is a faithful record of
 /// what the client "sent" without needing to scrape the app's console output.
 /// </summary>
-public static class SentEmailDataHelper
+public class SentEmailDataHelper : DataHelperBase
 {
-    public static async Task<IReadOnlyCollection<string>> GetSubjects(string emailAddress, int expectedCount)
+    public SentEmailDataHelper(string connectionString)
+        : base(connectionString)
+    {
+    }
+
+    public async Task<IReadOnlyCollection<string>> GetSubjects(string emailAddress, int expectedCount)
     {
         const string sql =
             """
@@ -18,8 +23,7 @@ public static class SentEmailDataHelper
             ORDER BY SentDate
             """;
 
-        await using var builder = E2EQueryBuilder
-            .Create(sql)
+        await using var builder = Builder(sql)
             .AddParameter("@email", emailAddress);
 
         // Emails are sent by a background (Hangfire) job that runs after the request commits, so poll

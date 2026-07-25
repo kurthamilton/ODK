@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using ODK.E2E.Data;
+using ODK.E2E.Tests.Config;
 using ODK.E2E.Tests.Helpers;
 
 namespace ODK.E2E.Tests;
@@ -21,16 +22,22 @@ namespace ODK.E2E.Tests;
 public class E2ETestRunFixture
 {
     [OneTimeSetUp]
-    public async Task SetUpAsync()
+    public async Task SetUp()
     {
-        var admin = await SharedAccounts.GetAsync(SharedAccounts.SiteAdmin);
-        await MemberAdminDataHelper.SetSiteAdmin(admin.Email);
+        var admin = await SharedAccounts.Get(SharedAccounts.SiteAdmin);
+        await new MemberAdminDataHelper(E2ESettings.ConnectionString)
+            .SetSiteAdmin(admin.Email);
     }
 
     [OneTimeTearDown]
-    public async Task CleanUpAsync()
+    public async Task CleanUp()
     {
-        var deleted = await TestDataCleaner.DeleteTestData();
+        var deleted = await new TestDataCleaner(E2ESettings.ConnectionString)
+            .DeleteTestData();
         TestContext.Progress.WriteLine($"E2E cleanup: removed {deleted} test row(s) (members, groups, sent emails).");
+
+        // Leave the seeded Stripe payment settings in place but deactivated (Active = 0) so they don't
+        // affect normal app behaviour between runs.
+        await new SitePaymentSettingsDataHelper(E2ESettings.ConnectionString).Deactivate();
     }
 }

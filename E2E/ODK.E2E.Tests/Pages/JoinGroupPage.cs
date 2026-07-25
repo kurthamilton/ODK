@@ -15,7 +15,7 @@ internal class JoinGroupPage
         _page = page;
     }
 
-    public async Task JoinAsync(string slug)
+    public async Task Join(string slug)
     {
         await _page.Navigate($"/groups/{slug}/join");
 

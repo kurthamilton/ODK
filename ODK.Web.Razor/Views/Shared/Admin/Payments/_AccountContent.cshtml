@@ -44,6 +44,7 @@
     else
     {
         <form method="post">
+            @Html.AntiForgeryToken()
             <button class="btn btn-primary">Create</button>
         </form>
     }

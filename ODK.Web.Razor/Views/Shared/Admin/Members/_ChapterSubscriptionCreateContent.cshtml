@@ -29,6 +29,7 @@
                 else
                 {
                     <form method="post">
+                        @Html.AntiForgeryToken()
                         @await Html.PartialAsync("Admin/Members/_SubscriptionForm", new SubscriptionFormViewModel
                         {
                             Currency = Model.Currency,

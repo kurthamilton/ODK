@@ -15,7 +15,7 @@ internal class SiteAdminGroupsPage
         _page = page;
     }
 
-    public async Task ApproveAsync(Guid chapterId)
+    public async Task Approve(Guid chapterId)
     {
         await _page.Navigate("/siteadmin/groups");
 

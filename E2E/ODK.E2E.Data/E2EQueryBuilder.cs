@@ -1,5 +1,4 @@
 ﻿using Microsoft.Data.SqlClient;
-using ODK.E2E.Core;
 
 namespace ODK.E2E.Data;
 
@@ -21,9 +20,9 @@ public class E2EQueryBuilder : IAsyncDisposable
         await _connection.DisposeAsync();
     }
 
-    internal static E2EQueryBuilder Create(string sql)
+    internal static E2EQueryBuilder Create(string connectionString, string sql)
     {
-        var connection = new SqlConnection(E2ESettings.ConnectionString);
+        var connection = new SqlConnection(connectionString);
         var command = new SqlCommand(sql, connection);
         return new E2EQueryBuilder(connection, command);
     }

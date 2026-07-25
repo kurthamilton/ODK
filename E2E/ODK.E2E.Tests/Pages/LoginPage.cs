@@ -15,7 +15,7 @@ internal class LoginPage
         _page = page;
     }
 
-    public async Task LogInAsync(string emailAddress, string password)
+    public async Task LogIn(string emailAddress, string password)
     {
         await _page.Navigate("/account/login");
 
