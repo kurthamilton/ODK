@@ -27,7 +27,7 @@ public class IndexModel : EventAdminPageModel
             Date = viewModel.Date,
             Description = viewModel.Description,
             EndTime = TimeSpanUtils.FromString(viewModel.EndTime),
-            Hosts = viewModel.Hosts,
+            Hosts = viewModel.Hosts ?? [],
             ImageUrl = viewModel.ImageUrl,
             IsPublic = viewModel.Public,
             Name = viewModel.Name,

@@ -35,7 +35,8 @@
 }
 else
 {
-    @Html.AntiForgeryToken()
+    @* The wrapping form supplies the antiforgery token - a second one here would put two
+       __RequestVerificationToken fields in the same form, which fails antiforgery validation. *@
     @Html.HiddenFor(x => x.ResponseType)
 
     <button type="submit" class="btn-icon @string.Join(' ', classes)">

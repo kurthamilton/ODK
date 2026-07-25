@@ -8,6 +8,8 @@
     <File Path="README.md" />
     <File Path="script.run.app.e2e.bat" />
     <File Path="script.run.tests.bat" />
+    <File Path="script.run.tests.default.bat" />
+    <File Path="script.run.tests.dk.bat" />
   </Folder>
   <Project Path="ODK.E2E.Data/ODK.E2E.Data.csproj" Id="a3242759-0bef-4b4f-8ddb-cdb4423a6ece" />
   <Project Path="ODK.E2E.Tests/ODK.E2E.Tests.csproj" />
