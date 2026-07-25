@@ -22,6 +22,7 @@
 <h2>@chapterName</h2>
 
 <form method="post">
+    @Html.AntiForgeryToken()
 
     @await Html.PartialAsync("SiteAdmin/_SiteAdminGroupContentForm", new SiteAdminChapterFormViewModel
     {

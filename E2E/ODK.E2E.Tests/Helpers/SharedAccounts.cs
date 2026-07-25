@@ -11,7 +11,7 @@ namespace ODK.E2E.Tests.Helpers;
 /// <remarks>
 /// Use this for accounts <em>shared</em> across tests by role. A test that needs a genuinely fresh,
 /// one-off account (e.g. a member that will consume a one-time join) should mint one via
-/// <see cref="Provisioning.NewAccountAsync"/> instead, so per-test state never leaks into a shared key.
+/// <see cref="Provisioning.NewAccount"/> instead, so per-test state never leaks into a shared key.
 /// </remarks>
 internal static class SharedAccounts
 {
@@ -25,6 +25,6 @@ internal static class SharedAccounts
     // [Parallelizable] tests race to request the same key (plain GetOrAdd could run it twice).
     private static readonly ConcurrentDictionary<string, Lazy<Task<TestAccount>>> Accounts = new();
 
-    public static Task<TestAccount> GetAsync(string role) =>
-        Accounts.GetOrAdd(role, r => new Lazy<Task<TestAccount>>(() => Provisioning.NewAccountAsync(r))).Value;
+    public static Task<TestAccount> Get(string role) =>
+        Accounts.GetOrAdd(role, r => new Lazy<Task<TestAccount>>(() => Provisioning.NewAccount(r))).Value;
 }

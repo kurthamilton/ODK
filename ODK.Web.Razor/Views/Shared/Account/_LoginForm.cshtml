@@ -3,7 +3,7 @@
 @model LoginViewModel
 @inject IOdkRoutes OdkRoutes
 
-<form method="post" action="@(Model.Chapter != null ? $"/{Model.Chapter.ShortName}" : "")/Account/Login?ReturnUrl=@Model.ReturnUrl">
+<form method="post" action="@(Model.Chapter != null ? $"/{Model.Chapter.ShortName}" : "")/account/login?ReturnUrl=@Model.ReturnUrl">
     @Html.AntiForgeryToken()
 
     <div class="form-group required mb-3">

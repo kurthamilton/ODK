@@ -8,8 +8,7 @@ using ODK.E2E.Tests.Pages;
 namespace ODK.E2E.Tests;
 
 [TestFixture]
-[Explicit("Requires a running Group Squirrel instance, its database, and installed Playwright browsers.")]
-public class AccountFlowTests : OdkPageTest
+public class AccountFlowTests : DefaultPageTest
 {
     [Test]
     public async Task CreateAccount_ActivateAndLogIn_Succeeds()
@@ -20,9 +19,9 @@ public class AccountFlowTests : OdkPageTest
         var password = $"E2e!{Guid.NewGuid():N}Zz9";
 
         // Act - full journey: sign up -> activate (via the token read from the DB) -> log in.
-        await AccountProvisioner.RegisterAndActivateAsync(Page, email, password);
+        await AccountProvisioner.RegisterAndActivate(Page, email, password);
 
-        await new LoginPage(Page).LogInAsync(email, password);
+        await new LoginPage(Page).LogIn(email, password);
 
         // Assert - the authenticated account area is reachable without being bounced back to login.
         await Page.Navigate("/account");

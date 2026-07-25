@@ -52,7 +52,7 @@ public class JoinModel : OdkPageModel
 
         var result = await _memberService.CreateChapterAccount(ChapterServiceRequest, model);
         return result.Success
-            ? Redirect($"/{chapterName}/Account/Pending")
+            ? Redirect($"/{chapterName}/account/pending")
             : Page();
     }
 }

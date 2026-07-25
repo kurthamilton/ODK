@@ -12,6 +12,7 @@
 @await Html.PartialAsync("Admin/Members/_MemberAdminTabs", Model)
 
 <form method="post">
+    @Html.AntiForgeryToken()
     @await Html.PartialAsync("Admin/Members/_MemberForm", new MemberFormViewModel
     {
         SubscriptionExpiryDate = Model.Subscription?.ExpiresUtc,

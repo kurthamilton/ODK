@@ -42,7 +42,7 @@ public static class HtmlExtensions
 
     public static IHtmlContent OdkEnumListBoxFor<TModel, TEnum>(
         this IHtmlHelper<TModel> htmlHelper,
-        Expression<Func<TModel, List<TEnum>>> expression,
+        Expression<Func<TModel, List<TEnum>?>> expression,
         object htmlAttributes)
         where TEnum : struct, Enum
         => htmlHelper.EnumListBoxFor(expression, htmlAttributes, excludeOptions: null);
@@ -113,7 +113,7 @@ public static class HtmlExtensions
 
     private static IHtmlContent EnumListBoxFor<TModel, TEnum>(
         this IHtmlHelper<TModel> htmlHelper,
-        Expression<Func<TModel, List<TEnum>>> expression,
+        Expression<Func<TModel, List<TEnum>?>> expression,
         object htmlAttributes,
         IEnumerable<TEnum>? excludeOptions = null)
         where TEnum : struct, Enum

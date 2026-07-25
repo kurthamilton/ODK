@@ -159,7 +159,7 @@ public class SiteAdminController : OdkControllerBase
             Name = viewModel.Name,
             Enabled = viewModel.Enabled,
             FallbackSiteSubscriptionId = viewModel.FallbackSiteSubscriptionId,
-            Features = viewModel.Features,
+            Features = viewModel.Features ?? [],
             GroupLimit = viewModel.GroupLimit,
             MemberLimit = viewModel.MemberLimit,
             SitePaymentSettingId = viewModel.SitePaymentSettingId ?? Guid.Empty
@@ -179,7 +179,7 @@ public class SiteAdminController : OdkControllerBase
             Name = viewModel.Name,
             Enabled = viewModel.Enabled,
             FallbackSiteSubscriptionId = viewModel.FallbackSiteSubscriptionId,
-            Features = viewModel.Features,
+            Features = viewModel.Features ?? [],
             GroupLimit = viewModel.GroupLimit,
             MemberLimit = viewModel.MemberLimit,
             SitePaymentSettingId = viewModel.SitePaymentSettingId ?? Guid.Empty

@@ -26,6 +26,7 @@
                         @if (preview == null)
                         {                 
                             <form id="upload-form" method="post" enctype="multipart/form-data">
+                                @Html.AntiForgeryToken()
                                 @await Html.PartialAsync("Admin/Members/_ImportMembersUpload", new MemberImportUploadViewModel
                                 {
                                     Chapter = Model.Chapter

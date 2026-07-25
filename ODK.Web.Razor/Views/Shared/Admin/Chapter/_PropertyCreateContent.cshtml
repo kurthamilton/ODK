@@ -2,6 +2,7 @@
 @using ODK.Web.Razor.Models.Admin.Chapters
 
 <form method="post">
+    @Html.AntiForgeryToken()
     @await Html.PartialAsync("Admin/Chapter/_PropertyForm", new ChapterPropertyFormViewModel
     {
         DataType = DataType.Text,

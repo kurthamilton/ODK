@@ -6,14 +6,18 @@ namespace ODK.E2E.Data;
 /// here after the account is created and activated through the UI; the flag is read into the login
 /// claims, so it must be set before the site admin logs in.
 /// </summary>
-public static class MemberAdminDataHelper
+public class MemberAdminDataHelper : DataHelperBase
 {
-    public static async Task SetSiteAdmin(string emailAddress)
+    public MemberAdminDataHelper(string connectionString)
+        : base(connectionString)
+    {
+    }
+
+    public async Task SetSiteAdmin(string emailAddress)
     {
         const string sql = "UPDATE Members SET SuperAdmin = 1 WHERE EmailAddress = @email";
 
-        await using var builder = E2EQueryBuilder
-            .Create(sql)
+        await using var builder = Builder(sql)
             .AddParameter("@email", emailAddress);
 
         var affected = await builder.ExecuteNonQuery();

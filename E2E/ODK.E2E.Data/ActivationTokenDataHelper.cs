@@ -4,9 +4,14 @@ namespace ODK.E2E.Data;
 /// Reads a member's pending activation token directly from the database - an end-to-end test can't
 /// open the activation email, and there is no test email sink.
 /// </summary>
-public static class ActivationTokenDataHelper
+public class ActivationTokenDataHelper : DataHelperBase
 {
-    public static async Task<string> GetActivationToken(string emailAddress)
+    public ActivationTokenDataHelper(string connectionString)
+        : base(connectionString)
+    {
+    }
+
+    public async Task<string> GetActivationToken(string emailAddress)
     {
         const string sql =
             """
@@ -16,8 +21,7 @@ public static class ActivationTokenDataHelper
             WHERE m.EmailAddress = @email
             """;
 
-        await using var builder = E2EQueryBuilder
-            .Create(sql)
+        await using var builder = Builder(sql)
             .AddParameter("@email", emailAddress);
 
         // The token is written before the "check your email" redirect, but retry briefly in case the

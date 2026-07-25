@@ -16,7 +16,7 @@ internal class SignUpPage
         _page = page;
     }
 
-    public async Task SignUpAsync(string firstName, string lastName, string emailAddress)
+    public async Task SignUp(string firstName, string lastName, string emailAddress)
     {
         await _page.Navigate("/account/create");
 

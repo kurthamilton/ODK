@@ -15,7 +15,7 @@ internal class GroupAdminPage
         _page = page;
     }
 
-    public async Task PublishAsync(Guid chapterId)
+    public async Task Publish(Guid chapterId)
     {
         await _page.Navigate($"/my/groups/{chapterId}");
 
