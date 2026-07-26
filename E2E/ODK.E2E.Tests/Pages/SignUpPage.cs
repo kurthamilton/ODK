@@ -44,7 +44,23 @@ internal class SignUpPage
         // The final "Sign up" button is JS-driven (data-submit="parent").
         await _page.ClickAsync("[data-submit='parent']");
 
-        // Non-activated sign-ups land on the "check your email" page.
-        await _page.WaitForURLAsync("**/account/pending");
+        // Non-activated sign-ups land on the "check your email" page. If it doesn't get there, the submit
+        // was either blocked client-side or the server re-rendered with an error (e.g. CreateAccount
+        // failing because the platform's default site subscription is missing/ambiguous) - surface why
+        // rather than a bare 30s timeout.
+        try
+        {
+            await _page.WaitForURLAsync("**/account/pending", new() { Timeout = 20000 });
+        }
+        catch (TimeoutException)
+        {
+            var errors = await _page.Locator(
+                ".field-validation-error, .text-danger, .validation-summary-errors, .alert, .toast").AllInnerTextsAsync();
+            var body = await _page.InnerTextAsync("body");
+            throw new InvalidOperationException(
+                $"Sign-up did not reach /account/pending. URL='{_page.Url}'. " +
+                $"Validation/alerts=[{string.Join(" | ", errors.Where(x => !string.IsNullOrWhiteSpace(x)))}]. " +
+                $"Body: {body[..Math.Min(600, body.Length)]}");
+        }
     }
 }

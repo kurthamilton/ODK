@@ -33,6 +33,12 @@ public class GoogleGeolocationService : IGeolocationService
 
     public async Task<Country?> GetCountryFromLocation(LatLong location)
     {
+        if (_settings.Disabled)
+        {
+            await _loggingService.Warn("Skipping Google country location: disabled");
+            return null;
+        }
+
         var countryInfo = await GetCountryInfoFromLocation(location);
         if (countryInfo == null)
         {
@@ -61,6 +67,12 @@ public class GoogleGeolocationService : IGeolocationService
 
     public async Task<Location?> GetLocationFromIpAddress(string ipAddress)
     {
+        if (_settings.Disabled)
+        {
+            await _loggingService.Warn("Skipping Google IP location: disabled");
+            return null;
+        }
+
         try
         {
             var client = _httpClientFactory.CreateClient();

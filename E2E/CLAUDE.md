@@ -63,6 +63,11 @@ is the generic wait-for-ready → run → kill-port runner.
 
 ## Conventions
 
+- **Repo-wide C# style applies here too.** The "Conventions & style" section of the root
+  [`CLAUDE.md`](../CLAUDE.md) governs this solution as well — file-scoped namespaces, `using` directives
+  over fully-qualified names, one top-level type per file, **member ordering within a type** (by kind,
+  then access/static, then alphabetical), no trailing whitespace, `required` init props, and the rest.
+  The points below are E2E-specific *additions*, not a replacement.
 - **Page objects** (`Pages/**`): one class per page/flow, constructor takes `IPage`, methods drive one
   journey. Navigate with `page.Navigate(relativePath)` (the `PageExtensions` helper — relative, resolves
   against the context `BaseURL`). Prefer stable selectors: `data-*` hooks, ids, or `button:has-text(...)`.
@@ -110,6 +115,56 @@ is the generic wait-for-ready → run → kill-port runner.
   (`x.Should()...`); one top-level type per file; `required` init props for models.
 - **Config:** `ODK.E2E.Tests/appsettings.json` holds `DefaultBaseUrl`, `DrunkenKnitwitsBaseUrl`,
   `ConnectionString`; override per-machine via git-ignored `appsettings.local.json` or `ODK_E2E_*` env vars.
+
+## Test isolation: shared vs local provisioning
+
+Provisioning (accounts, chapters, members — each driving the real UI on a browser) dominates run time, so
+reusing records provisioned **once** cuts it. But **integrity comes first — never trade correctness for
+speed.** A suite that silently false-passes or flakes is far worse than a slow one. **When in any doubt,
+provision locally (fresh per test).** Fixtures run in parallel (`[assembly: Parallelizable(ParallelScope.Fixtures)]`
+in `AssemblyInfo.cs`; tests within a fixture stay sequential), which makes leaked shared state especially
+corrosive — so bias hard toward caution. The static-vs-dynamic-state boundary is genuinely hard to pin down
+and **shifts as features are added**: re-check these rules whenever a shared record is touched by new
+behaviour, and downgrade to local at the first hint of doubt.
+
+**Local is the default.** Provision fresh per test unless a record clearly qualifies as *shareable
+context* under every rule below. The goal is not to share everything — it's to stop re-creating a
+plain "chapter of type X" (e.g. free-subscription, published) every single test when the test only needs
+it as a backdrop.
+
+**A record may be shared only if ALL hold:**
+
+- **Pure context/actor, never mutated in a test-observable way.** "Mutated" = any change a test could
+  assert: name, email, subscription/features, membership approval, profile answers, event settings,
+  property set/order. Incidental writes (login timestamp, last-seen) are fine. Any test that changes such
+  state works with a **locally-scoped** record.
+- **Members: isolate by (platform, chapter, role); never cross platforms** (site admin is the only
+  cross-cutting shared account). A shared member has one role in one chapter and is never mutated.
+- **Shared parents back only presence assertions on a specific, uniquely-keyed child** — never *count*,
+  *order*, *emptiness*, or *absence* of their children (that's whole-state, which other tests' additions
+  break). Anything a test adds to a shared parent must be **uniquely keyed (GUID)** to avoid collisions
+  under parallelism.
+- **Order-independent.** The test must pass under *any* interleaving — never assume a "clean" shared
+  record or rely on what ran before. If it can't, it's local.
+- **Dynamic / multi-user behaviour is always local.** Anything exercising a record's aggregate or
+  dynamic state — attendance/capacity limits, waitlists, "email already in use", reordering, approval
+  flows — is scoped per test. Sharing is for static backdrops only.
+
+**Mechanics when you do share:**
+
+- Create **exactly once**, thread-safe, run-scoped — the `SharedAccounts` `Lazy<Task<T>>` pattern.
+  Cleaned only by the namespace `[OneTimeTearDown]` (`TestDataCleaner`), **never** per-test/per-fixture,
+  or a parallel fixture loses its context mid-run.
+- **Share the record, never the browser session** — always a fresh Playwright context per test.
+- Route sharing through a **dedicated, obviously-named surface** (`SharedAccounts` today; a
+  `SharedChapters`-style registry keyed by (platform, subscription type) for "give me a free-subscription
+  published chapter" needs). Sharing is an explicit opt-in; ordinary `Provisioning.*` stays fresh.
+- A shared owner (if introduced) needs an **immutable, high-`GroupLimit`** subscription: its owned-chapter
+  count only grows, and its features gate real behaviour, so no test may change them.
+
+**Remember the blast radius:** a shared record's provisioning failure fails *every* dependent test at
+once, and a single leaked mutation cascades into false results elsewhere. That asymmetry is exactly why
+the bar for sharing is high and the default is local.
 
 ## DrunkenKnitwits specifics
 

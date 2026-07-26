@@ -11,6 +11,17 @@ public class MemberDataHelper : DataHelperBase
     {
     }
 
+    public async Task<string> GetEmailAddress(Guid memberId)
+    {
+        const string sql = "SELECT EmailAddress FROM Members WHERE MemberId = @id";
+
+        await using var builder = Builder(sql)
+            .AddParameter("@id", memberId);
+
+        return await builder.ExecuteScalar<string>()
+            ?? throw new InvalidOperationException($"No member found with id '{memberId}'.");
+    }
+
     public async Task<Guid> GetMemberId(string emailAddress)
     {
         const string sql = "SELECT MemberId FROM Members WHERE EmailAddress = @email";
@@ -21,5 +32,18 @@ public class MemberDataHelper : DataHelperBase
         var memberId = await builder.ExecuteScalar<Guid?>();
         return memberId
             ?? throw new InvalidOperationException($"No member found with email '{emailAddress}'.");
+    }
+
+    public async Task<(string FirstName, string LastName)> GetName(Guid memberId)
+    {
+        const string sql = "SELECT FirstName, LastName FROM Members WHERE MemberId = @id";
+
+        await using var builder = Builder(sql)
+            .AddParameter("@id", memberId);
+
+        var rows = await builder.ReadMany(x => (x.GetString(0), x.GetString(1)));
+        return rows.Count > 0
+            ? rows.First()
+            : throw new InvalidOperationException($"No member found with id '{memberId}'.");
     }
 }
