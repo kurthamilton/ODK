@@ -177,7 +177,8 @@ public static class DependencyRegistrar
             .AddScoped<IGeolocationService, GoogleGeolocationService>()
             .AddSingleton(new GoogleGeolocationServiceSettings
             {
-                ApiKey = appSettings.Google.Geolocation.ApiKey
+                ApiKey = appSettings.Google.Geolocation.ApiKey,
+                Disabled = appSettings.Google.Geolocation.Disabled
             })
             .AddScoped<IInstagramClient, InstagramClient>()
             .AddSingleton(new InstagramClientSettings

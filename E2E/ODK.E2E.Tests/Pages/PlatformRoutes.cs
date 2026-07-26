@@ -11,10 +11,6 @@ namespace ODK.E2E.Tests.Pages;
 /// </summary>
 internal abstract class PlatformRoutes
 {
-    public static PlatformRoutes Default(TestGroup group) => new DefaultPlatformRoutes(group);
-
-    public static PlatformRoutes DrunkenKnitwits(TestGroup group) => new DrunkenKnitwitsPlatformRoutes(group);
-
     /// <summary>Admin: create-event page (also the POST target - it posts back to itself).</summary>
     public abstract string EventCreate { get; }
 
@@ -27,12 +23,6 @@ internal abstract class PlatformRoutes
     /// <summary>Member-facing: the upcoming-events listing page.</summary>
     public abstract string EventsList { get; }
 
-    /// <summary>Member-facing: the event detail page (carries the on-page RSVP control).</summary>
-    public abstract string EventPage(string shortcode);
-
-    /// <summary>Member-facing: the "RSVP yes" link an event invite email would contain.</summary>
-    public abstract string EventRsvp(string shortcode);
-
     /// <summary>Admin: create member-profile-property page (also the POST target - posts back to itself).</summary>
     public abstract string PropertyCreate { get; }
 
@@ -41,6 +31,16 @@ internal abstract class PlatformRoutes
 
     /// <summary>Member-facing: the current member's own profile-update form for this chapter.</summary>
     public abstract string ProfileUpdate { get; }
+
+    public static PlatformRoutes Default(TestGroup group) => new DefaultPlatformRoutes(group);
+
+    public static PlatformRoutes DrunkenKnitwits(TestGroup group) => new DrunkenKnitwitsPlatformRoutes(group);
+
+    /// <summary>Member-facing: the event detail page (carries the on-page RSVP control).</summary>
+    public abstract string EventPage(string shortcode);
+
+    /// <summary>Member-facing: the "RSVP yes" link an event invite email would contain.</summary>
+    public abstract string EventRsvp(string shortcode);
 
     /// <summary>Member-facing: a member's profile page (their answers, shown to fellow members).</summary>
     public abstract string MemberPage(Guid memberId);
@@ -64,15 +64,15 @@ internal abstract class PlatformRoutes
 
         public override string EventsList => $"/groups/{_slug}/events";
 
-        public override string EventPage(string shortcode) => $"/groups/{_slug}/events/{shortcode}";
-
-        public override string EventRsvp(string shortcode) => $"/groups/{_slug}/events/{shortcode}/rsvp";
-
         public override string PropertyCreate => $"/my/groups/{_chapterId}/members/properties/new";
 
         public override string PropertiesList => $"/my/groups/{_chapterId}/members/properties";
 
         public override string ProfileUpdate => $"/groups/{_slug}/profile";
+
+        public override string EventPage(string shortcode) => $"/groups/{_slug}/events/{shortcode}";
+
+        public override string EventRsvp(string shortcode) => $"/groups/{_slug}/events/{shortcode}/rsvp";
 
         public override string MemberPage(Guid memberId) => $"/groups/{_slug}/members/{memberId}";
     }
@@ -96,15 +96,15 @@ internal abstract class PlatformRoutes
 
         public override string EventsList => $"/{_shortName}/events";
 
-        public override string EventPage(string shortcode) => $"/{_shortName}/events/{shortcode}";
-
-        public override string EventRsvp(string shortcode) => $"/{_shortName}/events/{shortcode}/rsvp";
-
         public override string PropertyCreate => $"/{_shortName}/admin/members/properties/create";
 
         public override string PropertiesList => $"/{_shortName}/admin/members/properties";
 
         public override string ProfileUpdate => $"/{_shortName}/account/profile";
+
+        public override string EventPage(string shortcode) => $"/{_shortName}/events/{shortcode}";
+
+        public override string EventRsvp(string shortcode) => $"/{_shortName}/events/{shortcode}/rsvp";
 
         public override string MemberPage(Guid memberId) => $"/{_shortName}/members/{memberId}";
     }
