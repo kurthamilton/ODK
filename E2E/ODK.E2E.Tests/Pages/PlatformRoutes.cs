@@ -32,6 +32,12 @@ internal abstract class PlatformRoutes
     /// <summary>Member-facing: the current member's own profile-update form for this chapter.</summary>
     public abstract string ProfileUpdate { get; }
 
+    /// <summary>Admin: create chapter-subscription page (also the POST target - it posts back to itself).</summary>
+    public abstract string SubscriptionCreate { get; }
+
+    /// <summary>Admin: chapter-subscriptions list page (the create-success redirect target).</summary>
+    public abstract string SubscriptionsList { get; }
+
     public static PlatformRoutes Default(TestGroup group) => new DefaultPlatformRoutes(group);
 
     public static PlatformRoutes DrunkenKnitwits(TestGroup group) => new DrunkenKnitwitsPlatformRoutes(group);
@@ -44,6 +50,9 @@ internal abstract class PlatformRoutes
 
     /// <summary>Member-facing: a member's profile page (their answers, shown to fellow members).</summary>
     public abstract string MemberPage(Guid memberId);
+
+    /// <summary>Member-facing: the checkout page for purchasing the given chapter subscription.</summary>
+    public abstract string SubscriptionCheckout(Guid chapterSubscriptionId);
 
     private sealed class DefaultPlatformRoutes : PlatformRoutes
     {
@@ -70,11 +79,18 @@ internal abstract class PlatformRoutes
 
         public override string ProfileUpdate => $"/groups/{_slug}/profile";
 
+        public override string SubscriptionCreate => $"/my/groups/{_chapterId}/members/subscriptions/new";
+
+        public override string SubscriptionsList => $"/my/groups/{_chapterId}/members/subscriptions";
+
         public override string EventPage(string shortcode) => $"/groups/{_slug}/events/{shortcode}";
 
         public override string EventRsvp(string shortcode) => $"/groups/{_slug}/events/{shortcode}/rsvp";
 
         public override string MemberPage(Guid memberId) => $"/groups/{_slug}/members/{memberId}";
+
+        public override string SubscriptionCheckout(Guid chapterSubscriptionId) =>
+            $"/groups/{_slug}/subscription/{chapterSubscriptionId}/checkout";
     }
 
     private sealed class DrunkenKnitwitsPlatformRoutes : PlatformRoutes
@@ -102,10 +118,17 @@ internal abstract class PlatformRoutes
 
         public override string ProfileUpdate => $"/{_shortName}/account/profile";
 
+        public override string SubscriptionCreate => $"/{_shortName}/admin/members/subscriptions/create";
+
+        public override string SubscriptionsList => $"/{_shortName}/admin/members/subscriptions";
+
         public override string EventPage(string shortcode) => $"/{_shortName}/events/{shortcode}";
 
         public override string EventRsvp(string shortcode) => $"/{_shortName}/events/{shortcode}/rsvp";
 
         public override string MemberPage(Guid memberId) => $"/{_shortName}/members/{memberId}";
+
+        public override string SubscriptionCheckout(Guid chapterSubscriptionId) =>
+            $"/{_shortName}/account/subscription/{chapterSubscriptionId}/checkout";
     }
 }

@@ -27,10 +27,25 @@ public static class E2ESettings
     public static string DrunkenKnitwitsBaseUrl => GetRequired("DrunkenKnitwitsBaseUrl").TrimEnd('/');
 
     /// <summary>Stripe publishable key for the live payment settings the tests seed.</summary>
-    public static string StripeApiPublicKey => GetRequired("Stripe.ApiPublicKey");
+    public static string StripeApiPublicKey => GetRequired("Stripe:ApiPublicKey");
 
     /// <summary>Stripe secret key for the live payment settings the tests seed.</summary>
-    public static string StripeApiSecretKey => GetRequired("Stripe.ApiSecretKey");
+    public static string StripeApiSecretKey => GetRequired("Stripe:ApiSecretKey");
+
+    /// <summary>
+    /// A pre-onboarded Stripe sandbox connected account id (<c>acct_...</c>) used as the transfer
+    /// destination for chapter-subscription purchases. Blank until a sandbox account has been onboarded;
+    /// tests that seed a <c>ChapterPaymentAccount</c> for a real purchase require it.
+    /// </summary>
+    public static string StripeConnectedAccountId => GetOptional("Stripe:ConnectedAccountId");
+
+    /// <summary>
+    /// Base URL (an ngrok tunnel) Stripe delivers webhooks to. Blank when no
+    /// tunnel is configured; webhook-dependent tests preflight it via <c>StripeWebhookTunnel</c>.
+    /// </summary>
+    public static string StripeWebhookBaseUrl => GetOptional("Stripe:WebhookBaseUrl").TrimEnd('/');
+
+    private static string GetOptional(string key) => Configuration[key] ?? string.Empty;
 
     private static string GetRequired(string key)
         => Configuration[key]

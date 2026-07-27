@@ -62,17 +62,25 @@ public class CurrencyRepository : ReadWriteRepositoryBase<Currency>, ICurrencyRe
 
     private IQueryable<Currency> MemberQuery(Guid memberId)
         =>
-            from memberLocation in Set<MemberLocation>()
+            // Anchor on the member and left-join everything else: the member's chosen currency
+            // (MemberPaymentSettings.CurrencyId) must be returned even when they have no location/country,
+            // falling back to the location country's currency when they haven't chosen one.
+            from member in Set<Member>()
+                .Where(x => x.Id == memberId)
             from memberPaymentSettings in Set<MemberPaymentSettings>()
-                .Where(x => x.MemberId == memberLocation.MemberId)
+                .Where(x => x.MemberId == memberId)
                 .DefaultIfEmpty()
             from memberPaymentSettingsCurrency in Set()
                 .Where(x => x.Id == memberPaymentSettings.CurrencyId)
                 .DefaultIfEmpty()
+            from memberLocation in Set<MemberLocation>()
+                .Where(x => x.MemberId == memberId)
+                .DefaultIfEmpty()
             from country in Set<Country>()
                 .Where(x => x.Id == memberLocation.CountryId)
+                .DefaultIfEmpty()
             from countryCurrency in Set()
                 .Where(x => x.Id == country.CurrencyId)
-            where memberLocation.MemberId == memberId
+                .DefaultIfEmpty()
             select memberPaymentSettingsCurrency ?? countryCurrency;
 }

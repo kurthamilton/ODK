@@ -6,8 +6,6 @@ using ODK.Core.Payments;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Members;
-using ODK.Services.Logging;
-using ODK.Services.Members;
 using ODK.Services.Payments;
 using ODK.Services.Payments.Models;
 using ODK.Services.Subscriptions.ViewModels;
@@ -16,19 +14,13 @@ namespace ODK.Services.Subscriptions;
 
 public class SiteSubscriptionService : ISiteSubscriptionService
 {
-    private readonly ILoggingService _loggingService;
-    private readonly IMemberEmailService _memberEmailService;
     private readonly IPaymentProviderFactory _paymentProviderFactory;
     private readonly IUnitOfWork _unitOfWork;
 
     public SiteSubscriptionService(
         IUnitOfWork unitOfWork,
-        IMemberEmailService memberEmailService,
-        ILoggingService loggingService,
         IPaymentProviderFactory paymentProviderFactory)
     {
-        _loggingService = loggingService;
-        _memberEmailService = memberEmailService;
         _paymentProviderFactory = paymentProviderFactory;
         _unitOfWork = unitOfWork;
     }

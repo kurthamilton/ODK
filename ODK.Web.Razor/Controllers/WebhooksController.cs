@@ -11,11 +11,12 @@ using ODK.Services.Payments.Models;
 using ODK.Services.Tasks;
 using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
+using ServiceRequestImpl = ODK.Services.ServiceRequest;
 
 namespace ODK.Web.Razor.Controllers;
 
 [ApiController]
-[IgnoreAntiforgeryToken] // external POSTs from Stripe/Brevo; authenticated by signature/secret, not a token
+[IgnoreAntiforgeryToken] // external POSTs; authenticated by signature/secret, not a token
 public class WebhooksController : OdkControllerBase
 {
     private readonly AppSettings _appSettings;
@@ -81,6 +82,10 @@ public class WebhooksController : OdkControllerBase
         await _emailService.AddEvent(externalId, eventName);
     }
 
+    /// <summary>
+    /// v = 1 for site webhooks.
+    /// v = 2 for connected account webhooks.
+    /// </summary>
     [HttpPost("webhooks/stripe")]
     public async Task Stripe(int v)
     {
@@ -94,28 +99,14 @@ public class WebhooksController : OdkControllerBase
         }
 
         var metadata = PaymentMetadataModel.FromDictionary(webhook.Metadata);
-        if (metadata.Platform == null && Platform != PlatformType.DrunkenKnitwits)
-        {
-            // Only the DrunkenKnitwits platform will have subscriptions that predate the use of Platform in metadata.
-            // Only process these subscriptions on the DrunkenKnitwits platform.
-            await _loggingService.Warn(
-                $"Received Stripe webhook on platform {Platform} when no Platform was specified in the Stripe metadata. " +
-                $"Not processing");
-            return;
-        }
-
-        if (metadata.Platform != null && metadata.Platform != Platform)
-        {
-            // Webhooks are set up for both Platforms. All events are sent out to both platforms.
-            // Logging a platform mismatch here would create redundant noise in the logs since the
-            // event will be handled by the other platform.
-            return;
-        }
 
         // Only log our parsed data to avoid logging any PII in the raw JSON
-        await _loggingService.Info($"Received Stripe webhook on platform {Platform}: {JsonUtils.Serialize(webhook)}");
+        await _loggingService.Info($"Received Stripe webhook: {JsonUtils.Serialize(webhook)}");
 
-        var request = ServiceRequest;
+        // Webhooks are only set up for one platform to avoid sending redundant webhooks to all.
+        // Webhooks without platforms are for older DrunkenKnitwits subscriptions.
+        var request = ServiceRequestImpl.Create(ServiceRequest, metadata.Platform ?? PlatformType.DrunkenKnitwits);
+
         _backgroundTaskService.Enqueue(
             () => _paymentService.ProcessWebhook(request, webhook),
             BackgroundTaskQueueType.Payments);
