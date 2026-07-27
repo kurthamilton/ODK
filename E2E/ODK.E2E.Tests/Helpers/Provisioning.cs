@@ -18,6 +18,12 @@ internal static class Provisioning
     // parallel DrunkenKnitwits fixtures race to seed it (Lazy runs the factory a single time).
     private static readonly Lazy<Task> DrunkenKnitwitsSubscription = new(EnsureDrunkenKnitwitsSubscriptionOnce);
 
+    // A single purchasable Default site subscription, created once per run and reused as read-only context
+    // by purchase tests (each buyer creates their own MemberSiteSubscription, so the subscription itself is
+    // never mutated). Lazy so parallel purchase fixtures share one creation.
+    private static readonly Lazy<Task<TestSiteSubscription>> PurchasableSiteSubscription =
+        new(CreatePurchasableSiteSubscriptionOnce);
+
     // One shared Playwright driver + browser for ALL provisioning, launched once. Each provisioning call
     // gets a fresh, isolated context (its own cookies/login), which is cheap - so we avoid re-spawning the
     // driver and re-launching a browser on every account/group/member we set up. Disposed at the end of
@@ -45,6 +51,25 @@ internal static class Provisioning
 
         _playwright?.Dispose();
     }
+
+    /// <summary>
+    /// A run-once, purchasable Default site subscription (the MemberSubscriptions "Paid subscriptions"
+    /// feature + a paid monthly price), created through the site-admin UI so the Stripe product/plan exist.
+    /// Shared read-only context: each buyer gets their own MemberSiteSubscription, so purchasing it never
+    /// mutates the subscription.
+    /// </summary>
+    public static Task<TestSiteSubscription> EnsurePurchasableSiteSubscription() => PurchasableSiteSubscription.Value;
+
+    /// <summary>
+    /// Creates a chapter subscription as the chapter owner on a throwaway browser, so a purchase test keeps
+    /// its own browser for the buyer. The prerequisites - the owner's MemberSubscriptions site feature and a
+    /// set-up ChapterPaymentAccount - must be seeded first. Default platform.
+    /// </summary>
+    public static Task CreateChapterSubscription(
+        TestGroup group, TestAccount owner, string name, decimal amount, int durationMonths, bool recurring)
+        => RunAs(owner, page => new ChapterSubscriptionAdminPage(page).CreateSubscription(
+            PlatformRoutes.Default(group).SubscriptionCreate, name, title: name, description: name,
+            amount, durationMonths, recurring));
 
     public static async Task<TestGroup> CreateGroup(TestAccount owner, string name)
     {
@@ -319,6 +344,33 @@ internal static class Provisioning
 
         await new SiteSubscriptionDataHelper(E2ESettings.ConnectionString)
             .SetDrunkenKnitwitsDefault("ODK E2E Free");
+    }
+
+    private static async Task<TestSiteSubscription> CreatePurchasableSiteSubscriptionOnce()
+    {
+        var payments = new SitePaymentSettingsDataHelper(E2ESettings.ConnectionString);
+        await payments.EnsureStripeSettings(E2ESettings.StripeApiPublicKey, E2ESettings.StripeApiSecretKey);
+
+        var admin = await SharedAccounts.Get(SharedAccounts.SiteAdmin);
+        var name = $"{SiteSubscriptionDataHelper.TestNamePrefix}{Guid.NewGuid():N}";
+
+        // Created on the Default context (the default base URL), so the subscription's platform is Default.
+        await RunAs(admin, async page =>
+        {
+            var subscriptions = new SiteAdminSubscriptionsPage(page);
+            await subscriptions.CreateSubscription(
+                SitePaymentSettingsDataHelper.Name, name, "E2E purchasable subscription",
+                groupLimit: 1, memberLimit: 10, featureIds: new[] { 5 }); // 5 = MemberSubscriptions
+            await subscriptions.AddPrice("GBP", "Monthly", 5m);
+        });
+
+        var subscriptionData = new SiteSubscriptionDataHelper(E2ESettings.ConnectionString);
+        var id = await subscriptionData.GetId(name, platformTypeId: 1)
+            ?? throw new InvalidOperationException($"Site subscription '{name}' was not created.");
+        var priceId = await subscriptionData.GetPriceId(id)
+            ?? throw new InvalidOperationException($"Site subscription '{name}' has no price.");
+
+        return new TestSiteSubscription(id, priceId, name);
     }
 
     private static async Task RunAs(TestAccount account, Func<IPage, Task> action, string? baseUrl = null)

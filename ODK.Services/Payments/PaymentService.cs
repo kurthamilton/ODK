@@ -100,45 +100,16 @@ public class PaymentService : IPaymentService
             return PaymentStatusType.Complete;
         }
 
-        var payment = await _unitOfWork.PaymentRepository.GetById(checkoutSession.PaymentId).Run();
-
         var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
             sitePaymentSettings,
             paymentAccount);
 
+        // Completion is driven solely by the payment provider webhook; this status check only reports
+        // progress. An expired remote session is surfaced so the UI can stop polling.
         var externalSession = await paymentProvider.GetCheckoutSession(externalSessionId);
         if (externalSession == null)
         {
             return PaymentStatusType.Expired;
-        }
-
-        if (externalSession.CompletedUtc != null)
-        {
-            if (externalSession.SubscriptionId != null)
-            {
-                // Enqueue the chapter subscription processing to avoid race conditions with webhooks
-                // Payment status Completed will be returned on the next request after the subscription has been processed
-                _backgroundTaskService.Enqueue(
-                    () => ProcessCompletedChapterSubscription(
-                        request.Platform,
-                        externalSession.Metadata,
-                        externalSession.CompletedUtc.Value,
-                        paymentProvider.Type,
-                        externalSession.SubscriptionId),
-                    BackgroundTaskQueueType.Payments);
-            }
-            else if (externalSession.PaymentId != null)
-            {
-                // Enqueue the payment processing to avoid race conditions with webhooks
-                // Payment status Completed will be returned on the next request after the payment has been processed
-                _backgroundTaskService.Enqueue(
-                    () => ProcessCompletedPayment(
-                        externalSession.Metadata,
-                        externalSession.CompletedUtc.Value,
-                        paymentProvider.Type,
-                        externalSession.PaymentId),
-                    BackgroundTaskQueueType.Payments);
-            }
         }
 
         return PaymentStatusType.Pending;
@@ -163,25 +134,12 @@ public class PaymentService : IPaymentService
         var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(
             sitePaymentSettings, payment.SitePaymentSettingId);
 
+        // Completion is driven solely by the payment provider webhook; this status check only reports
+        // progress. An expired remote session is surfaced so the UI can stop polling.
         var externalSession = await paymentProvider.GetCheckoutSession(externalSessionId);
-
         if (externalSession == null)
         {
             return PaymentStatusType.Expired;
-        }
-
-        if (externalSession.SubscriptionId != null &&
-            externalSession.CompletedUtc != null)
-        {
-            // Enqueue the site subscription processing to avoid race conditions with webhooks
-            // Payment status Completed will be returned on the next request after the subscription has been processed
-            _backgroundTaskService.Enqueue(
-                () => ProcessCompletedSiteSubscription(
-                    externalSession.Metadata,
-                    externalSession.CompletedUtc.Value,
-                    paymentProvider.Type,
-                    externalSession.SubscriptionId),
-                BackgroundTaskQueueType.Payments);
         }
 
         return PaymentStatusType.Pending;
@@ -332,36 +290,33 @@ public class PaymentService : IPaymentService
                 ? x.PaymentCheckoutSessionRepository.GetByIdOrDefault(metadata.PaymentCheckoutSessionId.Value)
                 : new DefaultDeferredQuerySingleOrDefault<PaymentCheckoutSession>());
 
+        // A renewal has no checkout Payment: create one (already paid) and add it
         if (payment == null)
         {
-            // The first payment for a subscription will be preceded by the creation of a Payment at checkout.
-            // We will need to create a Payment here for recurring payments.
-            payment = new Payment
+            payment = _unitOfWork.PaymentRepository.Add(new Payment
             {
                 Amount = chapterSubscription.Amount,
                 ChapterId = chapter.Id,
                 CreatedUtc = completedUtc,
                 CurrencyId = chapterSubscription.CurrencyId,
+                ExternalId = externalId,
                 Id = Guid.NewGuid(),
                 MemberId = member.Id,
+                PaidUtc = completedUtc,
                 Reference = chapterSubscription.ToReference(),
                 SitePaymentSettingId = chapterSubscription.SitePaymentSettingId
-            };
+            });
         }
-
-        // update payment
-        if (payment.PaidUtc != null)
+        else if (payment.PaidUtc != null)
         {
-            var message =
-                $"Not updating Payment {payment.Id} in {paymentProvider} webhook processing: " +
-                $"already paid";
-            await _loggingService.Warn(message);
+            await _loggingService.Warn(
+                $"Not updating Payment {payment.Id} in {paymentProvider} webhook processing: already paid");
         }
         else
         {
             payment.ExternalId = externalId;
             payment.PaidUtc = completedUtc;
-            _unitOfWork.PaymentRepository.Upsert(payment);
+            _unitOfWork.PaymentRepository.Update(payment);
         }
 
         // update payment checkout session
@@ -525,35 +480,34 @@ public class PaymentService : IPaymentService
                 ? x.PaymentCheckoutSessionRepository.GetByIdOrDefault(metadata.PaymentCheckoutSessionId.Value)
                 : new DefaultDeferredQuerySingleOrDefault<PaymentCheckoutSession>());
 
+        // A renewal has no checkout Payment: create one (already paid) and Add it once. Adding then also
+        // Upserting would break - Upsert Updates once the Id is set, downgrading the Added state to
+        // Modified, so the row is never inserted and the subscription-record FK to it fails.
         if (payment == null)
         {
-            // The first payment for a subscription will be preceded by the creation of a Payment at checkout.
-            // We will need to create a Payment here for recurring payments.
-            payment = new Payment
+            payment = _unitOfWork.PaymentRepository.Add(new Payment
             {
                 Amount = siteSubscriptionPrice.Amount,
                 CreatedUtc = completedUtc,
                 CurrencyId = siteSubscriptionPrice.CurrencyId,
+                ExternalId = externalId,
                 Id = Guid.NewGuid(),
                 MemberId = member.Id,
+                PaidUtc = completedUtc,
                 Reference = siteSubscription.ToReference(),
                 SitePaymentSettingId = siteSubscription.SitePaymentSettingId
-            };
+            });
         }
-
-        // update payment
-        if (payment.PaidUtc != null)
+        else if (payment.PaidUtc != null)
         {
-            var message =
-                $"Not updating Payment {payment.Id} in {paymentProvider} webhook processing: " +
-                $"already paid";
-            await _loggingService.Warn(message);
+            await _loggingService.Warn(
+                $"Not updating Payment {payment.Id} in {paymentProvider} webhook processing: already paid");
         }
         else
         {
             payment.ExternalId = externalId;
             payment.PaidUtc = completedUtc;
-            _unitOfWork.PaymentRepository.Upsert(payment);
+            _unitOfWork.PaymentRepository.Update(payment);
         }
 
         // update payment checkout session

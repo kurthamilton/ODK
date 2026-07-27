@@ -1,13 +1,15 @@
+using System.Globalization;
 using Microsoft.Playwright;
 
 namespace ODK.E2E.Tests.Pages;
 
 /// <summary>
-/// The site-admin create-subscription page (<c>/siteadmin/subscriptions/new</c>). Creating a
-/// subscription also creates the Stripe product (via the selected live payment settings), so this needs
+/// The site-admin create-subscription page (<c>/siteadmin/subscriptions/new</c>) and the price form on
+/// the created subscription's detail page. Creating a subscription also creates the Stripe product, and
+/// adding a paid price creates the Stripe plan (via the selected live payment settings), so this needs
 /// real Stripe keys. Site admin is a global role and the site-admin area is platform-agnostic, but the
 /// new subscription's platform comes from the request - so run this against the platform whose default
-/// subscription you're setting up (the caller drives it on a DrunkenKnitwits-context browser).
+/// subscription you're setting up (the caller drives it on the matching platform's browser context).
 /// </summary>
 internal class SiteAdminSubscriptionsPage
 {
@@ -18,8 +20,47 @@ internal class SiteAdminSubscriptionsPage
         _page = page;
     }
 
+    /// <summary>
+    /// Adds a price to the subscription currently shown on the detail page (call after
+    /// <see cref="CreateSubscription"/>, which lands there). A paid price triggers a Stripe plan creation
+    /// during the POST, so the row - once it appears - carries the external plan id.
+    /// </summary>
+    public async Task AddPrice(string currencyCode, string frequency, decimal amount)
+    {
+        await _page.SelectOptionAsync("#CurrencyId", new SelectOptionValue { Label = currencyCode });
+        await _page.SelectOptionAsync("#Frequency", new SelectOptionValue { Label = frequency });
+        await _page.FillAsync("#Amount", amount.ToString(CultureInfo.InvariantCulture));
+
+        // The add-price form posts to /siteadmin/Subscriptions/{id}/Prices; the delete forms end in
+        // /Delete, so this matches only the add form.
+        await _page.ClickAsync("form[action$='/Prices'] button.btn-primary");
+
+        // PRG back to the detail page with the new price row. If the submit was blocked (a required field)
+        // or the server errored (e.g. Stripe), the row never appears - surface why rather than time out bare.
+        try
+        {
+            await _page.Locator($"tbody tr:has-text(\"{frequency}\")").First.WaitForAsync(new() { Timeout = 20000 });
+        }
+        catch (TimeoutException)
+        {
+            var errors = await _page.Locator(
+                ".field-validation-error, .text-danger, .validation-summary-errors, .alert").AllInnerTextsAsync();
+            var body = await _page.InnerTextAsync("body");
+            throw new InvalidOperationException(
+                $"Add price did not appear. URL='{_page.Url}'. " +
+                $"Validation/alerts=[{string.Join(" | ", errors.Where(x => !string.IsNullOrWhiteSpace(x)))}]. " +
+                $"Body: {body[..Math.Min(500, body.Length)]}");
+        }
+    }
+
+    /// <summary>
+    /// Creates a site subscription. <paramref name="featureIds"/> are the numeric
+    /// <c>SiteFeatureType</c> values to select (e.g. 5 = MemberSubscriptions / "Paid subscriptions");
+    /// null/empty selects none. Lands on the created subscription's detail page on success.
+    /// </summary>
     public async Task CreateSubscription(
-        string paymentSettingName, string name, string description, int groupLimit, int memberLimit)
+        string paymentSettingName, string name, string description, int groupLimit, int memberLimit,
+        int[]? featureIds = null)
     {
         await _page.Navigate("/siteadmin/subscriptions/new");
 
@@ -42,6 +83,14 @@ internal class SiteAdminSubscriptionsPage
 
         await _page.FillAsync("#GroupLimit", groupLimit.ToString());
         await _page.FillAsync("#MemberLimit", memberLimit.ToString());
+
+        // Features is a native multi-select; select the requested enum values by their option value.
+        if (featureIds is { Length: > 0 })
+        {
+            await _page.SelectOptionAsync(
+                "#Features",
+                featureIds.Select(id => new SelectOptionValue { Value = id.ToString() }).ToArray());
+        }
 
         await _page.ClickAsync("button:has-text('Create')");
 

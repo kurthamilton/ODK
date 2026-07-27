@@ -14,10 +14,12 @@ public class ServiceRequest : IServiceRequest
 
     public required PlatformType Platform { get; init; }
 
-    public static ServiceRequest Create(IServiceRequest other) => new()
+    public static ServiceRequest Create(IServiceRequest other) => Create(other, other.Platform);
+
+    public static ServiceRequest Create(IServiceRequest other, PlatformType platform) => new()
     {
         CurrentMemberOrDefault = other.CurrentMemberOrDefault,
         HttpRequestContext = other.HttpRequestContext,
-        Platform = other.Platform
+        Platform = platform
     };
 }
