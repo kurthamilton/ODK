@@ -39,8 +39,14 @@ window.odk.forms = window.odk.forms || {};
             });
 
             $button.addEventListener('click', () => {
-                $input.value = '';
-                $input.dispatchEvent(new Event('change'));
+                // Clear through flatpickr when present so the localised alt-input display clears too;
+                // flatpickr fires 'change' on the original input, which hides the button.
+                if ($input._flatpickr) {
+                    $input._flatpickr.clear();
+                } else {
+                    $input.value = '';
+                    $input.dispatchEvent(new Event('change'));
+                }
             });
         });
     }
@@ -69,14 +75,19 @@ window.odk.forms = window.odk.forms || {};
     }
 
     function bindDatePickers() {
+        const config = (window.odk && window.odk.config) || {};
+        const displayDateFormat = config.datePickerFormat || 'd/m/Y';
         const $dateInputs = document.querySelectorAll('input[data-datepicker]');
         $dateInputs.forEach($input => {
             const enableTime = $input.hasAttribute('data-datepicker-time');
-            const format = enableTime
-                ? 'd/m/Y H:i'
-                : 'd/m/Y';
+            // The posted/parsed value stays a fixed format; only the visible (altInput) display is
+            // localised to the viewer's locale via altFormat.
+            const postFormat = enableTime ? 'd/m/Y H:i' : 'd/m/Y';
+            const altFormat = enableTime ? displayDateFormat + ' H:i' : displayDateFormat;
             flatpickr($input, {
-                dateFormat: format,
+                altFormat,
+                altInput: true,
+                dateFormat: postFormat,
                 enableTime,
                 time_24hr: true
             });

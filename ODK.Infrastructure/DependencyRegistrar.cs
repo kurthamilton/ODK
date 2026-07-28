@@ -28,6 +28,7 @@ using ODK.Services.Integrations.Payments.PayPal;
 using ODK.Services.Integrations.Payments.Stripe;
 using ODK.Services.Integrations.Recaptcha;
 using ODK.Services.Issues;
+using ODK.Services.Localization;
 using ODK.Services.Logging;
 using ODK.Services.Members;
 using ODK.Services.Members.Tasks;
@@ -241,6 +242,7 @@ public static class DependencyRegistrar
                     .Select(x => x.BaseUrl)
                     .ToArray()
             })
+            .AddScoped<ILocaleService, LocaleService>()
             .AddScoped<IRecaptchaService, RecaptchaService>()
             .AddScoped<IRequestStore, RequestStore>()
             .AddScoped<IRequestStoreFactory, RequestStoreFactory>()
@@ -276,6 +278,13 @@ public static class DependencyRegistrar
         services.AddSingleton(new AuthenticationServiceSettings
         {
             PasswordResetTokenLifetimeMinutes = auth.PasswordResetTokenLifetimeMinutes,
+        });
+
+        // App-level fallback locale, used when a member has neither a preference nor a resolvable
+        // country. Effectively today's behaviour (UK-style dd/MM/yyyy).
+        services.AddSingleton(new LocaleServiceSettings
+        {
+            DefaultLocale = "en-GB"
         });
 
         services.AddSingleton(new RecaptchaServiceSettings

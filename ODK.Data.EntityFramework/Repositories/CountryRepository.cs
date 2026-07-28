@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ODK.Core.Chapters;
 using ODK.Core.Countries;
+using ODK.Core.Members;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
@@ -55,4 +56,16 @@ public class CountryRepository : ReadWriteRepositoryBase<Country>, ICountryRepos
         => Set()
             .Where(x => x.IsoCode2 == isoCode2)
             .DeferredSingleOrDefault();
+
+    public IDeferredQuerySingleOrDefault<Country> GetByMemberIdOrDefault(Guid memberId)
+    {
+        var query =
+            from location in Set<MemberLocation>()
+                .Where(x => x.MemberId == memberId)
+            from country in Set()
+                .Where(x => x.Id == location.CountryId)
+            select country;
+
+        return query.DeferredSingleOrDefault();
+    }
 }

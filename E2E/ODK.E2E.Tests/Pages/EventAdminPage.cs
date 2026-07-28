@@ -65,4 +65,20 @@ internal class EventAdminPage
         await _page.Navigate(createUrl);
         return await _page.InputValueAsync("#Date");
     }
+
+    /// <summary>
+    /// Opens the create-event page, sets the Date to <paramref name="dateInPostFormat"/> (dd/MM/yyyy HH:mm)
+    /// and returns both the underlying posted value (<c>#Date</c>, always the fixed format) and the visible
+    /// localised display (flatpickr's altInput). Used to verify locale-based date-picker display.
+    /// </summary>
+    public async Task<(string Value, string Display)> SetDateAndReadPicker(string createUrl, string dateInPostFormat)
+    {
+        await _page.Navigate(createUrl);
+        await _page.SetDatePicker("#Date", dateInPostFormat);
+
+        var value = await _page.InputValueAsync("#Date");
+        var display = await _page.EvaluateAsync<string>(
+            "() => document.querySelector('#Date')._flatpickr.altInput.value");
+        return (value, display);
+    }
 }

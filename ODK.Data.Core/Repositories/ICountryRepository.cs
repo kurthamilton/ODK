@@ -12,4 +12,6 @@ public interface ICountryRepository : IReadWriteRepository<Country>
     IDeferredQuerySingleOrDefault<Country> GetByIsoCode(string isoCode);
 
     IDeferredQuerySingleOrDefault<Country> GetByIsoCode2(string isoCode2);
+
+    IDeferredQuerySingleOrDefault<Country> GetByMemberIdOrDefault(Guid memberId);
 }
