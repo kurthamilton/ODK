@@ -16,5 +16,10 @@ public class ErrorMap : IEntityTypeConfiguration<Error>
         builder.Property(x => x.CreatedUtc)
             .HasColumnName("CreatedDate")
             .HasConversion<UtcDateTimeConverter>();
+
+        // Transition shadow for the UTC column-name standardisation (CreatedDate -> CreatedUtc).
+        builder.Property<DateTime?>("CreatedUtcColumn")
+            .HasColumnName("CreatedUtc")
+            .HasConversion<NullableUtcDateTimeConverter>();
     }
 }

@@ -35,6 +35,11 @@ public class MemberSubscriptionRecordMap : IEntityTypeConfiguration<MemberSubscr
             .HasColumnName("PurchaseDate")
             .HasConversion<UtcDateTimeConverter>();
 
+        // Transition shadow for the UTC column-name standardisation (PurchaseDate -> PurchasedUtc).
+        builder.Property<DateTime?>("PurchasedUtcColumn")
+            .HasColumnName("PurchasedUtc")
+            .HasConversion<NullableUtcDateTimeConverter>();
+
         builder.Property(x => x.Type)
             .HasColumnName("SubscriptionTypeId")
             .HasConversion<int>();
