@@ -19,5 +19,10 @@ public class SentEmailMap : IEntityTypeConfiguration<SentEmail>
         builder.Property(x => x.SentUtc)
             .HasColumnName("SentDate")
             .HasConversion<UtcDateTimeConverter>();
+
+        // Transition shadow for the UTC column-name standardisation (SentDate -> SentUtc).
+        builder.Property<DateTime?>("SentUtcColumn")
+            .HasColumnName("SentUtc")
+            .HasConversion<NullableUtcDateTimeConverter>();
     }
 }

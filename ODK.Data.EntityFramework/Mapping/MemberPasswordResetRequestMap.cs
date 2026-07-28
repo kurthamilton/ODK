@@ -21,6 +21,16 @@ public class MemberPasswordResetRequestMap : IEntityTypeConfiguration<MemberPass
             .HasColumnName("Expires")
             .HasConversion<UtcDateTimeConverter>();
 
+        // Transition shadows for the UTC column-name standardisation (Created -> CreatedUtc,
+        // Expires -> ExpiresUtc).
+        builder.Property<DateTime?>("CreatedUtcColumn")
+            .HasColumnName("CreatedUtc")
+            .HasConversion<NullableUtcDateTimeConverter>();
+
+        builder.Property<DateTime?>("ExpiresUtcColumn")
+            .HasColumnName("ExpiresUtc")
+            .HasConversion<NullableUtcDateTimeConverter>();
+
         builder.Property(x => x.Id)
             .HasColumnName("MemberPasswordResetRequestId");
 

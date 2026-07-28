@@ -18,6 +18,11 @@ public class EventInviteMap : IEntityTypeConfiguration<EventInvite>
             .HasColumnName("SentDate")
             .HasConversion<UtcDateTimeConverter>();
 
+        // Transition shadow for the UTC column-name standardisation (SentDate -> SentUtc).
+        builder.Property<DateTime?>("SentUtcColumn")
+            .HasColumnName("SentUtc")
+            .HasConversion<NullableUtcDateTimeConverter>();
+
         builder.HasOne<Event>()
             .WithMany()
             .HasForeignKey(x => x.EventId)

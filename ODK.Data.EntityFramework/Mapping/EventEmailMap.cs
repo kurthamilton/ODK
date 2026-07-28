@@ -24,6 +24,16 @@ public class EventEmailMap : IEntityTypeConfiguration<EventEmail>
             .HasColumnName("SentDate")
             .HasConversion<UtcDateTimeConverter>();
 
+        // Transition shadows for the UTC column-name standardisation (ScheduledDate -> ScheduledUtc,
+        // SentDate -> SentUtc).
+        builder.Property<DateTime?>("ScheduledUtcColumn")
+            .HasColumnName("ScheduledUtc")
+            .HasConversion<NullableUtcDateTimeConverter>();
+
+        builder.Property<DateTime?>("SentUtcColumn")
+            .HasColumnName("SentUtc")
+            .HasConversion<NullableUtcDateTimeConverter>();
+
         builder.HasOne<Event>()
             .WithOne()
             .HasForeignKey<EventEmail>(x => x.EventId);

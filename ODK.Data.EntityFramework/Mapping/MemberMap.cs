@@ -17,6 +17,11 @@ public class MemberMap : IEntityTypeConfiguration<Member>
             .HasColumnName("CreatedDate")
             .HasConversion<UtcDateTimeConverter>();
 
+        // Transition shadow for the UTC column-name standardisation (CreatedDate -> CreatedUtc).
+        builder.Property<DateTime?>("CreatedUtcColumn")
+            .HasColumnName("CreatedUtc")
+            .HasConversion<NullableUtcDateTimeConverter>();
+
         builder.Property(x => x.Id)
             .HasColumnName("MemberId");
 

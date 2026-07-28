@@ -17,6 +17,12 @@ public class MemberSubscriptionMap : IEntityTypeConfiguration<MemberSubscription
             .HasColumnName("ExpiryDate")
             .HasConversion<NullableUtcDateTimeConverter>();
 
+        // Transition shadow for the UTC column-name standardisation (ExpiryDate -> ExpiresUtc). Added and
+        // backfilled now; the real property moves onto it in a later staggered step, then ExpiryDate is dropped.
+        builder.Property<DateTime?>("ExpiresUtcColumn")
+            .HasColumnName("ExpiresUtc")
+            .HasConversion<NullableUtcDateTimeConverter>();
+
         builder.Property(x => x.ReminderEmailSentUtc)
             .HasConversion<NullableUtcDateTimeConverter>();
 

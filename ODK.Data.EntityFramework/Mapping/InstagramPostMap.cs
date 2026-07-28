@@ -11,5 +11,10 @@ public class InstagramPostMap : IEntityTypeConfiguration<InstagramPost>
         builder.ToTable("InstagramPosts");
 
         builder.HasKey(x => x.Id);
+
+        // Transition shadow for the UTC column-name standardisation (Date -> PostedUtc). The Date property
+        // also renames in a later step; this adds and backfills the column now.
+        builder.Property<DateTime?>("PostedUtcColumn")
+            .HasColumnName("PostedUtc");
     }
 }
