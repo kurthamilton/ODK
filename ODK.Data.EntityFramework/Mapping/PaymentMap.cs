@@ -22,12 +22,6 @@ public class PaymentMap : IEntityTypeConfiguration<Payment>
 
         builder.Property(x => x.PaidUtc)
             .HasConversion<UtcDateTimeConverter>();
-
-        // Transition shadow keeps the legacy PaidDate column populated until it is dropped.
-        builder.Property<DateTime?>("PaidUtcColumn")
-            .HasColumnName("PaidDate")
-            .HasConversion<NullableUtcDateTimeConverter>();
-
         builder.HasOne(x => x.Currency)
             .WithMany()
             .HasForeignKey(x => x.CurrencyId);

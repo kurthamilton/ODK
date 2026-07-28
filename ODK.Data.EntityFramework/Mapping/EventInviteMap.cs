@@ -17,11 +17,6 @@ public class EventInviteMap : IEntityTypeConfiguration<EventInvite>
         builder.Property(x => x.SentUtc)
             .HasConversion<UtcDateTimeConverter>();
 
-        // Transition shadow keeps the legacy SentDate column populated until it is dropped.
-        builder.Property<DateTime?>("SentUtcColumn")
-            .HasColumnName("SentDate")
-            .HasConversion<NullableUtcDateTimeConverter>();
-
         builder.HasOne<Event>()
             .WithMany()
             .HasForeignKey(x => x.EventId)

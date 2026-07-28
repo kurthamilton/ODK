@@ -33,12 +33,6 @@ public class MemberSubscriptionRecordMap : IEntityTypeConfiguration<MemberSubscr
 
         builder.Property(x => x.PurchasedUtc)
             .HasConversion<UtcDateTimeConverter>();
-
-        // Transition shadow keeps the legacy PurchaseDate column populated until it is dropped.
-        builder.Property<DateTime?>("PurchasedUtcColumn")
-            .HasColumnName("PurchaseDate")
-            .HasConversion<NullableUtcDateTimeConverter>();
-
         builder.Property(x => x.Type)
             .HasColumnName("SubscriptionTypeId")
             .HasConversion<int>();
