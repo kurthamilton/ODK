@@ -10,6 +10,7 @@ using ODK.Services.Authentication.OAuth;
 using ODK.Services.Integrations.Authentication;
 using ODK.Services.Authorization;
 using ODK.Services.Chapters;
+using ODK.Services.Countries;
 using ODK.Services.Contact;
 using ODK.Services.Csv;
 using ODK.Services.Emails;
@@ -242,6 +243,7 @@ public static class DependencyRegistrar
                     .Select(x => x.BaseUrl)
                     .ToArray()
             })
+            .AddScoped<ICountryAdminService, CountryAdminService>()
             .AddScoped<ILocaleService, LocaleService>()
             .AddScoped<IRecaptchaService, RecaptchaService>()
             .AddScoped<IRequestStore, RequestStore>()

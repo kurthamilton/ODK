@@ -1,0 +1,20 @@
+﻿@page "/siteadmin/countries/{id:guid}"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Web.Razor.Models.Components
+@model CountryModel
+@{
+    Layout = "_SiteAdminLayout";
+    Model.Title = "Country | SiteAdmin";
+}
+
+@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+{
+    Breadcrumbs = new[]
+    {
+        new MenuItem { Link = Model.OdkRoutes.SiteAdmin.Countries, Text = "Countries" },
+        new MenuItem { Text = Model.Country.Name }
+    }
+})
+
+@await Html.PartialAsync("SiteAdmin/_CountryContent", Model.ContentViewModel)

@@ -1,3 +1,4 @@
+using System.Linq;
 using FluentAssertions;
 using NUnit.Framework;
 using ODK.Core.Utils;
@@ -27,6 +28,24 @@ public static class LocaleUtilsTests
 
         // Assert
         result.Should().BeNull();
+    }
+
+    [Test]
+    public static void GetLocalesForCountry_UnknownIsoCode_ReturnsEmpty()
+    {
+        // Act / Assert
+        LocaleUtils.GetLocalesForCountry("ZZ").Should().BeEmpty();
+    }
+
+    [Test]
+    public static void GetLocalesForCountry_UsCode_IncludesEnUsAndLeadsWithTheDefault()
+    {
+        // Act
+        var locales = LocaleUtils.GetLocalesForCountry("US");
+
+        // Assert - the full set for the region, led by the derived default.
+        locales.Should().Contain("en-US");
+        locales.First().Should().Be(LocaleUtils.GetDefaultLocale("US"));
     }
 
     [Test]
@@ -71,5 +90,22 @@ public static class LocaleUtilsTests
 
         // Assert
         result.Should().BeNull();
+    }
+
+    [TestCase("en-GB")]
+    [TestCase("en-US")]
+    public static void IsValidLocale_KnownCulture_ReturnsTrue(string localeName)
+    {
+        // Act / Assert
+        LocaleUtils.IsValidLocale(localeName).Should().BeTrue();
+    }
+
+    [TestCase(null)]
+    [TestCase("")]
+    [TestCase("not-a-locale")]
+    public static void IsValidLocale_UnknownOrBlank_ReturnsFalse(string? localeName)
+    {
+        // Act / Assert
+        LocaleUtils.IsValidLocale(localeName).Should().BeFalse();
     }
 }

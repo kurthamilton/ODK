@@ -1,0 +1,10 @@
+﻿@page "/siteadmin/countries"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@model CountriesModel
+@{
+    Layout = "_SiteAdminLayout";
+    Model.Title = "Countries | SiteAdmin";
+}
+
+@await Html.PartialAsync("SiteAdmin/_CountriesContent")
