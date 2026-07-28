@@ -20,8 +20,17 @@ internal abstract class PlatformRoutes
     /// <summary>Admin: create-venue page (also the POST target - it posts back to itself).</summary>
     public abstract string VenueCreate { get; }
 
+    /// <summary>Member-facing: the chapter/group contact page.</summary>
+    public abstract string Contact { get; }
+
     /// <summary>Member-facing: the upcoming-events listing page.</summary>
     public abstract string EventsList { get; }
+
+    /// <summary>Member-facing: the chapter/group landing (home) page.</summary>
+    public abstract string Home { get; }
+
+    /// <summary>Member-facing: the members-list page.</summary>
+    public abstract string MembersList { get; }
 
     /// <summary>Admin: create member-profile-property page (also the POST target - posts back to itself).</summary>
     public abstract string PropertyCreate { get; }
@@ -71,7 +80,13 @@ internal abstract class PlatformRoutes
 
         public override string VenueCreate => $"/my/groups/{_chapterId}/events/venues/new";
 
+        public override string Contact => $"/groups/{_slug}/contact";
+
         public override string EventsList => $"/groups/{_slug}/events";
+
+        public override string Home => $"/groups/{_slug}";
+
+        public override string MembersList => $"/groups/{_slug}/members";
 
         public override string PropertyCreate => $"/my/groups/{_chapterId}/members/properties/new";
 
@@ -110,7 +125,13 @@ internal abstract class PlatformRoutes
 
         public override string VenueCreate => $"/{_shortName}/admin/events/venues/create";
 
+        public override string Contact => $"/{_shortName}/contact";
+
         public override string EventsList => $"/{_shortName}/events";
+
+        public override string Home => $"/{_shortName}";
+
+        public override string MembersList => $"/{_shortName}/members";
 
         public override string PropertyCreate => $"/{_shortName}/admin/members/properties/create";
 
