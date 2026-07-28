@@ -4,9 +4,6 @@
 @using ODK.Services.Members
 @using ODK.Web.Common.Routes
 @using ODK.Web.Common.Services
-@using ODK.Web.Razor.Models.Members
-@using ODK.Web.Razor.Pages.Chapters
-@using ODK.Web.Razor.Services
 @inject IAuthorizationService AuthorizationService
 @inject IMemberService MemberService
 @inject IOdkRoutes OdkRoutes
@@ -45,7 +42,8 @@
         Your @type has expired <a href="@OdkRoutes.Groups.Subscription(chapter)">@action</a>
     </div>
 }
-else if (status == SubscriptionStatus.Expiring && memberSubscription.ExpiresUtc != null)
+else if (status == SubscriptionStatus.Expiring && memberSubscription.ExpiresUtc != null &&
+    !viewModel.HasActiveRecurringSubscription)
 {
     var expiresOn = TimeZoneEntityExtensions.ToLocalTime(chapter, memberSubscription.ExpiresUtc.Value).ToString("d MMMM");
     <div class="page-alert alert alert-warning">

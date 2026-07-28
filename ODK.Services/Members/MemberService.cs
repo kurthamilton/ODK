@@ -516,13 +516,15 @@ public class MemberService : IMemberService
     public async Task<MemberSubscriptionAlertViewModel> GetMemberSubscriptionAlertViewModel(
         Guid memberId, Guid chapterId)
     {
-        var (memberSubscription, chapterMembershipSettings) = await _unitOfWork.RunAsync(
+        var (memberSubscription, chapterMembershipSettings, hasActiveRecurringSubscription) = await _unitOfWork.RunAsync(
             x => x.MemberSubscriptionRepository.GetByMemberId(memberId, chapterId),
-            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId));
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId),
+            x => x.MemberSubscriptionRecordRepository.HasActiveRecurringSubscription(memberId, chapterId));
 
         return new MemberSubscriptionAlertViewModel
         {
             ChapterMembershipSettings = chapterMembershipSettings,
+            HasActiveRecurringSubscription = hasActiveRecurringSubscription,
             MemberSubscription = memberSubscription
         };
     }

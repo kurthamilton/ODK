@@ -1,0 +1,13 @@
+﻿@using ODK.Web.Common.Services
+@inject IRequestStore RequestStore
+@{
+    var member = RequestStore.CurrentMemberOrDefault;
+    var chapter = RequestStore.ChapterOrDefault;
+}
+
+@* The alert's subscription lookup runs a query, so load it via AJAX (odk.load.js) after the page renders
+   rather than inline - keeping the main document non-blocking. Only emitted for a member in a chapter. *@
+@if (member != null && chapter != null)
+{
+    <div data-load="/groups/@chapter.Id/subscription-alert"></div>
+}

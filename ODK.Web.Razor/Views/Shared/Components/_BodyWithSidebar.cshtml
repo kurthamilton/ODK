@@ -1,8 +1,5 @@
-﻿@using ODK.Services.Authorization
-@using ODK.Web.Common.Extensions
-@using ODK.Web.Razor.Models.Components
-@using ODK.Web.Razor.Pages.Chapters
-@model ODK.Web.Razor.Models.Components.BodyWithSidebarViewModel
+﻿@using ODK.Web.Razor.Models.Components
+@model BodyWithSidebarViewModel
 
 <main id="main" class="@Model.Class">
     @await Html.PartialAsync("Components/_PageTitle", new PageTitleViewModel
@@ -24,8 +21,8 @@
                 <div class="page-alerts">
                     @if (!Model.HideSubscriptionAlert)
                     {
-                        @await Html.PartialAsync("Members/_SubscriptionAlert")
-                    }                    
+                        @await Html.PartialAsync("Members/_SubscriptionAlertPlaceholder")
+                    }
                 </div>
 
                 <section class="section--main">

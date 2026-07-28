@@ -1,0 +1,9 @@
+﻿@page "/groups/{chapterId:guid}/subscription-alert"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@model SubscriptionAlertModel
+@{
+    Layout = null;
+}
+
+@await Html.PartialAsync("Members/_SubscriptionAlert")
