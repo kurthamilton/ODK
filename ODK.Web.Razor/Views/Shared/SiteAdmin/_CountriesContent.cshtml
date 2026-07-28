@@ -1,0 +1,54 @@
+﻿@using ODK.Core.Utils
+@using ODK.Services.Countries
+@using ODK.Web.Common.Routes
+@using ODK.Web.Common.Services
+@inject ICountryAdminService CountryAdminService
+@inject IOdkRoutes OdkRoutes
+@inject IRequestStore RequestStore
+@{
+    var countries = (await CountryAdminService.GetCountries(RequestStore.MemberServiceRequest))
+        .OrderBy(x => x.Name)
+        .ToArray();
+}
+
+<h2>Countries</h2>
+
+<section class="section">
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>ISO</th>
+                <th>Continent</th>
+                <th>Locale</th>
+                <th>Date format</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var country in countries)
+            {
+                var resolved = CountryAdminService.ResolveDefaultLocale(country);
+                <tr>
+                    <td>
+                        <a href="@OdkRoutes.SiteAdmin.Country(country.Id)">@country.Name</a>
+                    </td>
+                    <td>@country.IsoCode2</td>
+                    <td>@country.Continent</td>
+                    <td>
+                        @if (!string.IsNullOrEmpty(country.DefaultLocale))
+                        {
+                            @country.DefaultLocale
+                        }
+                        else
+                        {
+                            <span class="text-muted">&mdash; (derived: @resolved)</span>
+                        }
+                    </td>
+                    <td>@LocaleUtils.GetShortDatePattern(resolved)</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</section>

@@ -7,6 +7,8 @@ namespace ODK.Web.Common.Routes;
 
 public class SiteAdminRoutes
 {
+    public string Countries => Path("/countries");
+
     public string Emails => Path("/emails");
 
     public string Errors => Path("/errors");
@@ -32,6 +34,8 @@ public class SiteAdminRoutes
     public string Subscriptions => Path("/subscriptions");
 
     public string Topics => Path("/topics");
+
+    public string Country(Guid id) => $"{Countries}/{id}";
 
     public string Email(EmailType type) => $"{Emails}/{type}";
 
