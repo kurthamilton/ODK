@@ -4,7 +4,7 @@ namespace ODK.E2E.Data;
 /// Reads a member's chapter-subscription state - the rows the purchase-completion webhook writes. A
 /// completed purchase adds a <c>MemberSubscriptionLog</c> row (binding member -> the specific chapter
 /// subscription -> payment) and upserts a <c>MemberSubscriptions</c> row (keyed by MemberChapter) whose
-/// <c>ExpiryDate</c> is the active signal. Tests poll these after driving checkout (completion is
+/// <c>ExpiresUtc</c> is the active signal. Tests poll these after driving checkout (completion is
 /// webhook-driven, so asynchronous).
 /// </summary>
 public class MemberChapterSubscriptionDataHelper : DataHelperBase
@@ -19,7 +19,7 @@ public class MemberChapterSubscriptionDataHelper : DataHelperBase
     {
         const string sql =
             """
-            SELECT s.ExpiryDate
+            SELECT s.ExpiresUtc
             FROM MemberSubscriptions s
             INNER JOIN MemberChapters mc ON mc.MemberChapterId = s.MemberChapterId
             WHERE mc.MemberId = @memberId AND mc.ChapterId = @chapterId
