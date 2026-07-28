@@ -14,12 +14,11 @@ public class FeatureMap : IEntityTypeConfiguration<Feature>
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.CreatedUtc)
-            .HasColumnName("Created")
             .HasConversion<UtcDateTimeConverter>();
 
-        // Transition shadow for the UTC column-name standardisation (Created -> CreatedUtc).
+        // Transition shadow keeps the legacy Created column populated until it is dropped.
         builder.Property<DateTime?>("CreatedUtcColumn")
-            .HasColumnName("CreatedUtc")
+            .HasColumnName("Created")
             .HasConversion<NullableUtcDateTimeConverter>();
 
         builder.Property(x => x.Id)

@@ -13,7 +13,7 @@ public class EventResponseViewModel
         bool invited,
         EventResponseSummaryDto? responseSummary)
     {
-        Date = @event.Date;
+        Date = @event.DateUtc;
         EndTime = @event.EndTime;
         EventId = @event.Id;
         EventName = @event.GetDisplayName();

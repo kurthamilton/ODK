@@ -461,7 +461,7 @@ public class ChapterViewModelService : IChapterViewModelService
             IsAdmin = isAdmin,
             IsMember = currentMember?.IsMemberOf(chapter.Id) == true,
             Events = ToGroupPageListEvents(
-                upcomingEventDtos.OrderBy(x => x.Event.Date),
+                upcomingEventDtos.OrderBy(x => x.Event.DateUtc),
                 memberResponses,
                 responseSummaries,
                 currentMember,
@@ -527,7 +527,7 @@ public class ChapterViewModelService : IChapterViewModelService
                 : new DefaultDeferredQueryAny(false),
             x => x.EventRepository.Query(x => x.ForChapter(chapter.Id).Past())
                 .WithVenue()
-                .OrderByDescending(x => x.Event.Date)
+                .OrderByDescending(x => x.Event.DateUtc)
                 .Take(1000)
                 .GetAll(),
             x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
@@ -606,13 +606,13 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.EventRepository
                 .Query(x => x.ForChapter(chapter.Id).After(DateTime.UtcNow))
                 .WithVenue()
-                .OrderBy(x => x.Event.Date)
+                .OrderBy(x => x.Event.DateUtc)
                 .Page(1, 3)
                 .GetAll(),
             x => x.EventRepository
                 .Query(x => x.ForChapter(chapter.Id).Past())
                 .WithVenue()
-                .OrderByDescending(x => x.Event.Date)
+                .OrderByDescending(x => x.Event.DateUtc)
                 .Page(1, 3)
                 .GetAll(),
             x => x.ChapterImageRepository.GetVersionDtoByChapterId(chapter.Id),
@@ -859,7 +859,7 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.EventRepository
                 .Query(x => x.ForChapter(chapter.Id).After(today))
                 .WithVenue()
-                .OrderBy(x => x.Event.Date)
+                .OrderBy(x => x.Event.DateUtc)
                 .GetAll(),
             x => x.ChapterLinksRepository.GetByChapterId(chapter.Id),
             x => x.ChapterTextsRepository.GetByChapterId(chapter.Id),

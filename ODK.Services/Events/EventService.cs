@@ -379,7 +379,7 @@ public class EventService : IEventService
         ChapterPrivacySettings? privacySettings,
         bool isForAdmin)
     {
-        if (@event.Date < DateTime.Today)
+        if (@event.DateUtc < DateTime.Today)
         {
             return ServiceResult.Failure("Past events cannot be responded to");
         }

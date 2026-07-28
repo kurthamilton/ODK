@@ -22,13 +22,13 @@ public class EventQueryBuilder : DatabaseEntityQueryBuilder<Event, IEventQueryBu
 
     public IEventQueryBuilder After(DateTime date)
     {
-        Query = Query.Where(x => x.Date > date);
+        Query = Query.Where(x => x.DateUtc > date);
         return this;
     }
 
     public IEventQueryBuilder Before(DateTime date)
     {
-        Query = Query.Where(x => x.Date < date);
+        Query = Query.Where(x => x.DateUtc < date);
         return this;
     }
 
@@ -52,13 +52,13 @@ public class EventQueryBuilder : DatabaseEntityQueryBuilder<Event, IEventQueryBu
 
     public IEventQueryBuilder OnOrAfter(DateTime date)
     {
-        Query = Query.Where(x => x.Date >= date);
+        Query = Query.Where(x => x.DateUtc >= date);
         return this;
     }
 
     public IEventQueryBuilder Past()
     {
-        Query = Query.Where(x => x.Date < DateTime.UtcNow);
+        Query = Query.Where(x => x.DateUtc < DateTime.UtcNow);
         return this;
     }
 

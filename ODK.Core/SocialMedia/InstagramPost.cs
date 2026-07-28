@@ -6,7 +6,7 @@ public class InstagramPost : IDatabaseEntity
 
     public Guid ChapterId { get; set; }
 
-    public DateTime Date { get; set; }
+    public DateTime PostedUtc { get; set; }
 
     public string ExternalId { get; set; } = string.Empty;
 

@@ -200,7 +200,7 @@ internal class MockOdkContext : OdkContext
         return Create(new Event
         {
             ChapterId = chapter.Id,
-            Date = date ?? DateTime.UtcNow.AddDays(5),
+            DateUtc = date ?? DateTime.UtcNow.AddDays(5),
             Id = Guid.NewGuid(),
             PublishedUtc = DateTime.UtcNow,
             VenueId = venue.Id

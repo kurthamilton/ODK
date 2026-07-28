@@ -20,14 +20,14 @@ public class EventRepository : ReadWriteRepositoryBase<Event, IEventQueryBuilder
     public IDeferredQueryMultiple<Event> GetByChapterId(Guid chapterId)
         => Query()
             .ForChapter(chapterId)
-            .OrderByDescending(x => x.Date)
+            .OrderByDescending(x => x.DateUtc)
             .GetAll();
 
     public IDeferredQueryMultiple<Event> GetByChapterId(Guid chapterId, DateTime after)
         => Query()
             .ForChapter(chapterId)
             .After(after)
-            .OrderByDescending(x => x.Date)
+            .OrderByDescending(x => x.DateUtc)
             .GetAll();
 
     public IDeferredQuerySingle<Event> GetByShortcode(string shortcode)
@@ -54,7 +54,7 @@ public class EventRepository : ReadWriteRepositoryBase<Event, IEventQueryBuilder
         => Query()
             .ForChapter(chapterId)
             .Past()
-            .OrderByDescending(x => x.Date)
+            .OrderByDescending(x => x.DateUtc)
             .Take(pageSize)
             .GetAll();
 
@@ -62,7 +62,7 @@ public class EventRepository : ReadWriteRepositoryBase<Event, IEventQueryBuilder
         Guid chapterId, Guid? venueId, DateTime? fromUtc, DateTime? toUtcExclusive, PageFilter pageFilter)
         => ApplyFilter(Query().ForChapter(chapterId), venueId, fromUtc, toUtcExclusive)
             .Summary()
-            .OrderByDescending(x => x.Event.Date)
+            .OrderByDescending(x => x.Event.DateUtc)
             .Page(pageFilter)
             .GetAll();
 
@@ -70,7 +70,7 @@ public class EventRepository : ReadWriteRepositoryBase<Event, IEventQueryBuilder
         => Query()
             .ForChapter(chapterId)
             .After(DateTime.UtcNow)
-            .OrderBy(x => x.Date)
+            .OrderBy(x => x.DateUtc)
             .Page(1, pageSize)
             .GetAll();
 

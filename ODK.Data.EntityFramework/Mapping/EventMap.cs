@@ -25,11 +25,9 @@ public class EventMap : IEntityTypeConfiguration<Event>
         builder.Property(x => x.RsvpDeadlineUtc)
             .HasConversion<NullableUtcDateTimeConverter>();
 
-        // Transition shadow for the UTC column-name standardisation (Date -> DateUtc). The Date property
-        // also renames in a later step; this adds and backfills the column now.
+        // Transition shadow keeps the legacy Date column populated until it is dropped.
         builder.Property<DateTime?>("DateUtcColumn")
-            .HasColumnName("DateUtc")
-            .HasConversion<NullableUtcDateTimeConverter>();
+            .HasColumnName("Date");
 
         builder.HasOne(x => x.TicketSettings)
             .WithOne()

@@ -37,7 +37,7 @@
         </tr>
         </thead>
         <tbody>
-        @foreach (var @event in Model.Events.OrderByDescending(x => x.Date))
+        @foreach (var @event in Model.Events.OrderByDescending(x => x.DateUtc))
         {
             <tr>
                 <td>
@@ -48,7 +48,7 @@
                     })
                 </td>
                 <td>
-                    @(@event.Date.EventDate(Model.Chapter.TimeZone))
+                    @(@event.DateUtc.EventDate(Model.Chapter.TimeZone))
                 </td>
             </tr>
         }

@@ -386,7 +386,7 @@ public class EventViewModelService : IEventViewModelService
             x => x.EventRepository
                 .Query(x => x.ForChapter(chapter.Id).After(afterUtc).Published())
                 .WithVenue()
-                .OrderBy(x => x.Event.Date)
+                .OrderBy(x => x.Event.DateUtc)
                 .GetAll());
 
         var eventIds = eventDtos.Select(x => x.Event.Id).ToArray();
