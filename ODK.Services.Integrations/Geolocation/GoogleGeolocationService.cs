@@ -134,25 +134,24 @@ public class GoogleGeolocationService : IGeolocationService
         var currency = await _unitOfWork.CurrencyRepository.GetByCode(currencyInfo.Code).Run();
         if (currency == null)
         {
-            currency = new Currency
+            currency = _unitOfWork.CurrencyRepository.Add(new Currency
             {
                 Code = currencyInfo.Code,
                 Symbol = currencyInfo.Symbol,
-            };
-
-            _unitOfWork.CurrencyRepository.Add(currency);
+            });
         }
 
-        var country = new Country
+        var locales = LocaleUtils.GetLocalesForCountry(countryInfo.IsoCode2);
+
+        var country = _unitOfWork.CountryRepository.Add(new Country
         {
             Continent = "UNKNOWN",
             CurrencyId = currency.Id,
+            DefaultLocale = locales.Count == 1 ? locales.ElementAt(0) : null,
             IsoCode2 = countryInfo.IsoCode2,
             IsoCode3 = countryInfo.IsoCode3,
             Name = countryInfo.Name
-        };
-
-        _unitOfWork.CountryRepository.Add(country);
+        });
         await _unitOfWork.SaveChangesAsync();
 
         return country;

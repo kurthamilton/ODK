@@ -20,7 +20,7 @@ public static class LocaleUtils
     public static string? GetDefaultLocale(string? isoCode2) => GetLocalesForCountry(isoCode2).FirstOrDefault();
 
     /// <summary>All culture names available for a country's ISO alpha-2 code (empty if .NET has none).</summary>
-    public static IReadOnlyList<string> GetLocalesForCountry(string? isoCode2)
+    public static IReadOnlyCollection<string> GetLocalesForCountry(string? isoCode2)
         => !string.IsNullOrWhiteSpace(isoCode2) && LocalesByCountry.Value.TryGetValue(isoCode2, out var locales)
             ? locales
             : [];
