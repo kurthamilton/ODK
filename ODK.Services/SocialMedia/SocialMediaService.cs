@@ -173,7 +173,7 @@ public class SocialMediaService : ISocialMediaService
             {
                 Caption = post.Caption,
                 ChapterId = chapterId,
-                Date = post.Date,
+                PostedUtc = post.Date,
                 ExternalId = post.ExternalId,
                 Id = postId
             });

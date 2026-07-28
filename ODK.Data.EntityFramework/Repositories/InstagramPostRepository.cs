@@ -23,7 +23,7 @@ public class InstagramPostRepository : ReadWriteRepositoryBase<InstagramPost>, I
     public IDeferredQueryMultiple<InstagramPostDto> GetDtosByChapterId(Guid chapterId, int pageSize)
         => GetDtoQuery()
             .Where(x => x.Post.ChapterId == chapterId)
-            .OrderByDescending(x => x.Post.Date)
+            .OrderByDescending(x => x.Post.PostedUtc)
             .Take(pageSize)
             .DeferredMultiple();
 

@@ -293,7 +293,7 @@ public class MemberEmailService : IMemberEmailService
 
         var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            { "event.date", @event.Date.ToString("dddd dd MMMM, yyyy") },
+            { "event.date", @event.DateUtc.ToString("dddd dd MMMM, yyyy") },
             { "event.id", @event.Id.ToString() },
             { "event.location", venue.Name },
             { "event.name", @event.GetDisplayName() },
@@ -331,7 +331,7 @@ public class MemberEmailService : IMemberEmailService
         var parameters = new Dictionary<string, string>
         {
             { "url", url },
-            { "event.date", @event.Date.ToString("dddd dd MMMM, yyyy") },
+            { "event.date", @event.DateUtc.ToString("dddd dd MMMM, yyyy") },
             { "event.name", @event.GetDisplayName() }
         };
 

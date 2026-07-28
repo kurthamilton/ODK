@@ -21,12 +21,11 @@ public class PaymentMap : IEntityTypeConfiguration<Payment>
             .HasColumnName("PaymentId");
 
         builder.Property(x => x.PaidUtc)
-            .HasColumnName("PaidDate")
             .HasConversion<UtcDateTimeConverter>();
 
-        // Transition shadow for the UTC column-name standardisation (PaidDate -> PaidUtc).
+        // Transition shadow keeps the legacy PaidDate column populated until it is dropped.
         builder.Property<DateTime?>("PaidUtcColumn")
-            .HasColumnName("PaidUtc")
+            .HasColumnName("PaidDate")
             .HasConversion<NullableUtcDateTimeConverter>();
 
         builder.HasOne(x => x.Currency)

@@ -44,7 +44,7 @@ public class VenueQueryBuilder
                     .Count(),
                 LastEvent = Set<Event>()
                     .Where(x => x.VenueId == venue.Id)
-                    .OrderByDescending(x => x.Date)
+                    .OrderByDescending(x => x.DateUtc)
                     .FirstOrDefault(),
                 Venue = venue
             };

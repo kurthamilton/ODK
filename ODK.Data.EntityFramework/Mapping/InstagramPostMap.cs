@@ -12,9 +12,8 @@ public class InstagramPostMap : IEntityTypeConfiguration<InstagramPost>
 
         builder.HasKey(x => x.Id);
 
-        // Transition shadow for the UTC column-name standardisation (Date -> PostedUtc). The Date property
-        // also renames in a later step; this adds and backfills the column now.
+        // Transition shadow keeps the legacy Date column populated until it is dropped.
         builder.Property<DateTime?>("PostedUtcColumn")
-            .HasColumnName("PostedUtc");
+            .HasColumnName("Date");
     }
 }

@@ -66,8 +66,8 @@
                     <td>
                         @if (lastEvent != null)
                         {
-                            <span class="d-none" data-sort-value="@lastEvent.Date.ToString("yyyy-MM-dd")"></span>
-                            <span>@lastEvent.Date.EventDate(Model.Chapter.TimeZone)</span>
+                            <span class="d-none" data-sort-value="@lastEvent.DateUtc.ToString("yyyy-MM-dd")"></span>
+                            <span>@lastEvent.DateUtc.EventDate(Model.Chapter.TimeZone)</span>
                         }
                     </td>
                     <td>

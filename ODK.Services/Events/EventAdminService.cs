@@ -97,7 +97,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             ChapterId = chapter.Id,
             CreatedBy = currentMember.FullName,
             CreatedUtc = DateTime.UtcNow,
-            Date = date,
+            DateUtc = date,
             Description = model.Description != null
                 ? _htmlSanitizer.Sanitize(model.Description, DefaultHtmlSantizerOptions)
                 : null,
@@ -722,7 +722,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         var chapter = await _unitOfWork.ChapterRepository.GetById(platform, @event.ChapterId).Run();
 
-        if (@event.Date < chapter.CurrentTime().StartOfDay())
+        if (@event.DateUtc < chapter.CurrentTime().StartOfDay())
         {
             await _loggingService.Info($"Not sending event email {eventEmailId}: event is in the past");
 
@@ -865,7 +865,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         var previousAttendeeLimit = @event.AttendeeLimit;
 
         @event.AttendeeLimit = model.AttendeeLimit;
-        @event.Date = date;
+        @event.DateUtc = date;
         @event.Description = model.Description != null
             ? _htmlSanitizer.Sanitize(model.Description, DefaultHtmlSantizerOptions)
             : null;
@@ -1055,7 +1055,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             return ServiceResult.Failure("Scheduled date not set");
         }
 
-        if (scheduledUtc > @event.Date)
+        if (scheduledUtc > @event.DateUtc)
         {
             return ServiceResult.Failure("Scheduled date cannot be after event");
         }
@@ -1087,7 +1087,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
     private static ServiceResult ValidateEventEmailCanBeSent(Event @event)
     {
-        if (@event.Date < DateTime.UtcNow.Date)
+        if (@event.DateUtc < DateTime.UtcNow.Date)
         {
             return ServiceResult.Failure("Invites cannot be sent to past events");
         }
@@ -1126,7 +1126,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         }
 
         var eventDatesLocal = events
-            .Select(x => chapter.ToChapterTime(x.Date).Date)
+            .Select(x => chapter.ToChapterTime(x.DateUtc).Date)
             .ToArray();
         var lastEventDate = eventDatesLocal.Max();
 
@@ -1159,12 +1159,12 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             messages.Add("Attendee limit cannot be less than 1");
         }
 
-        if (@event.Date == DateTime.MinValue)
+        if (@event.DateUtc == DateTime.MinValue)
         {
             messages.Add("Date is required");
         }
 
-        if (@event.RsvpDeadlineUtc >= @event.Date)
+        if (@event.RsvpDeadlineUtc >= @event.DateUtc)
         {
             messages.Add("RSVP Deadline must be before event date");
         }
@@ -1220,7 +1220,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             return null;
         }
 
-        var localEventDate = chapter.ToChapterTime(@event.Date).Date;
+        var localEventDate = chapter.ToChapterTime(@event.DateUtc).Date;
         var scheduledDate = localEventDate.Previous(settings.DefaultScheduledEmailDayOfWeek.Value);
         var scheduledDateTimeLocal = settings.GetScheduledDateTime(scheduledDate);
         if (scheduledDateTimeLocal == null)

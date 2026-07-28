@@ -32,12 +32,11 @@ public class MemberSubscriptionRecordMap : IEntityTypeConfiguration<MemberSubscr
             .HasFilter("[InitiatorId] IS NOT NULL");
 
         builder.Property(x => x.PurchasedUtc)
-            .HasColumnName("PurchaseDate")
             .HasConversion<UtcDateTimeConverter>();
 
-        // Transition shadow for the UTC column-name standardisation (PurchaseDate -> PurchasedUtc).
+        // Transition shadow keeps the legacy PurchaseDate column populated until it is dropped.
         builder.Property<DateTime?>("PurchasedUtcColumn")
-            .HasColumnName("PurchasedUtc")
+            .HasColumnName("PurchaseDate")
             .HasConversion<NullableUtcDateTimeConverter>();
 
         builder.Property(x => x.Type)

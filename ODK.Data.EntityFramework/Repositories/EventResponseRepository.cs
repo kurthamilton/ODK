@@ -62,7 +62,7 @@ public class EventResponseRepository : WriteRepositoryBase<EventResponse>, IEven
             from eventResponse in Set()
             where eventResponse.MemberId == memberId
                 && eventResponse.EventId == @event.Id
-                && (afterUtc == null || @event.Date >= afterUtc)
+                && (afterUtc == null || @event.DateUtc >= afterUtc)
             select eventResponse;
         return query.DeferredMultiple();
     }

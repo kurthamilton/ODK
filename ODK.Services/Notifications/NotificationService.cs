@@ -87,7 +87,7 @@ public class NotificationService : INotificationService
             NotificationType.NewEvent,
             x => string.Join(Environment.NewLine,
                 @event.Name,
-                @event.Date.ToFriendlyDateTimeString(new FriendlyDateStringOptions
+                @event.DateUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions
                 {
                     IncludeDayOfWeek = true,
                     TimeZone = x.TimeZone
@@ -97,7 +97,7 @@ public class NotificationService : INotificationService
             settings,
             entityId: @event.Id,
             chapterId: @event.ChapterId,
-            expiresUtc: @event.Date);
+            expiresUtc: @event.DateUtc);
     }
 
     public void AddNewMemberNotifications(

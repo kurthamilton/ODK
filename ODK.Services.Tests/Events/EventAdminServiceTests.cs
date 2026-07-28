@@ -183,7 +183,7 @@ public static class EventAdminServiceTests
         // Assert
         result.Events.TotalCount.Should().Be(1);
         result.Events.Items.Should().ContainSingle()
-            .Which.Event.Date.Should().Be(new DateTime(2024, 1, 10, 12, 0, 0, DateTimeKind.Utc));
+            .Which.Event.DateUtc.Should().Be(new DateTime(2024, 1, 10, 12, 0, 0, DateTimeKind.Utc));
     }
 
     [Test]

@@ -15,13 +15,13 @@ public class Event : IDatabaseEntity, IChapterEntity, ICloneable<Event>
 
     public DateTime CreatedUtc { get; set; }
 
-    public DateTime Date { get; set; }
+    public DateTime DateUtc { get; set; }
 
     public string? Description { get; set; }
 
     public TimeSpan? EndTime { get; set; }
 
-    public bool HasPassed => Date < DateTime.UtcNow;
+    public bool HasPassed => DateUtc < DateTime.UtcNow;
 
     public Guid Id { get; set; }
 
@@ -80,7 +80,7 @@ public class Event : IDatabaseEntity, IChapterEntity, ICloneable<Event>
         ChapterId = ChapterId,
         CreatedBy = CreatedBy,
         CreatedUtc = CreatedUtc,
-        Date = Date,
+        DateUtc = DateUtc,
         Description = Description,
         EndTime = EndTime,
         Id = Id,
@@ -131,7 +131,7 @@ public class Event : IDatabaseEntity, IChapterEntity, ICloneable<Event>
             : null;
     }
 
-    public DateTime ToLocalTime(TimeZoneInfo timeZone) => ToLocalTime(Date, timeZone);
+    public DateTime ToLocalTime(TimeZoneInfo timeZone) => ToLocalTime(DateUtc, timeZone);
 
-    public string ToLocalTimeString(TimeZoneInfo timeZone) => ToLocalTimeString(Date, EndTime, timeZone);
+    public string ToLocalTimeString(TimeZoneInfo timeZone) => ToLocalTimeString(DateUtc, EndTime, timeZone);
 }
