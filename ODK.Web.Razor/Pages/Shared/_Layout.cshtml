@@ -4,15 +4,21 @@
 @using ODK.Core.Countries
 @using ODK.Core.Platforms
 @using ODK.Core.Utils
+@using ODK.Services.Localization
 @using ODK.Web.Common.Routes
 @using ODK.Web.Common.Services
+@using ODK.Web.Razor.Helpers
 @inject IOdkRoutes OdkRoutes
 @inject IRequestStore RequestStore
 @inject IAntiforgery Antiforgery
 @inject IFileVersionProvider FileVersionProvider
+@inject ILocaleService LocaleService
 @{
-    var (platform, chapter, currentMember) = 
+    var (platform, chapter, currentMember) =
         (RequestStore.Platform, RequestStore.ChapterOrDefault, RequestStore.CurrentMemberOrDefault);
+
+    var datePickerFormat = FlatpickrDateFormat.FromShortDatePattern(
+        LocaleService.GetShortDatePattern(RequestStore.CurrentMemberPreferences, RequestStore.CurrentMemberCountry));
 
     var title = platform switch
     {
@@ -74,7 +80,7 @@
 }
 
 <!DOCTYPE html>
-<html lang="en" data-theme-root data-platform="@(platform == PlatformType.DrunkenKnitwits ? "odk" : null)">
+<html lang="en" data-theme-root data-date-format="@datePickerFormat" data-platform="@(platform == PlatformType.DrunkenKnitwits ? "odk" : null)">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />

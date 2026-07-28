@@ -14,6 +14,9 @@ public class MemberPreferencesMap : IEntityTypeConfiguration<MemberPreferences>
             .HasColumnName("DistanceUnitTypeId")
             .HasConversion<int>();
 
+        builder.Property(x => x.Locale)
+            .HasMaxLength(20);
+
         builder.HasKey(x => x.MemberId);
 
         builder.HasOne<Member>()
