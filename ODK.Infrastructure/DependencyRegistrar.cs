@@ -280,11 +280,11 @@ public static class DependencyRegistrar
             PasswordResetTokenLifetimeMinutes = auth.PasswordResetTokenLifetimeMinutes,
         });
 
-        // App-level fallback locale, used when a member has neither a preference nor a resolvable
-        // country. Effectively today's behaviour (UK-style dd/MM/yyyy).
+        // App-level fallback locale (Localisation:DefaultLocale), used when a member has neither a
+        // preference nor a resolvable country.
         services.AddSingleton(new LocaleServiceSettings
         {
-            DefaultLocale = "en-GB"
+            DefaultLocale = appSettings.Localisation.DefaultLocale
         });
 
         services.AddSingleton(new RecaptchaServiceSettings

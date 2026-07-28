@@ -2,12 +2,21 @@
 window.odk.forms = window.odk.forms || {};
 
 (function () {
+    initConfig();
     bindAutoSubmits();
     bindClearables();
     bindClientSideValidation();
     bindColorPickers();
     bindDatePickers();
     bindSubmits();
+
+    // Hydrate window.odk.config from server-rendered data attributes on <html>, so the JS reads
+    // server-side values from the DOM rather than the server writing to window.odk inline.
+    function initConfig() {
+        window.odk.config = window.odk.config || {};
+        window.odk.config.datePickerFormat =
+            document.documentElement.getAttribute('data-date-format') || window.odk.config.datePickerFormat;
+    }
 
     function bindAutoSubmits() {
         // auto-submit forms on dropdown list and checkbox change

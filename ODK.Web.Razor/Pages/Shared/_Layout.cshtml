@@ -18,7 +18,7 @@
         (RequestStore.Platform, RequestStore.ChapterOrDefault, RequestStore.CurrentMemberOrDefault);
 
     var datePickerFormat = FlatpickrDateFormat.FromShortDatePattern(
-        await LocaleService.GetShortDatePattern(currentMember?.Id));
+        LocaleService.GetShortDatePattern(RequestStore.CurrentMemberPreferences, RequestStore.CurrentMemberCountry));
 
     var title = platform switch
     {
@@ -80,7 +80,7 @@
 }
 
 <!DOCTYPE html>
-<html lang="en" data-theme-root data-platform="@(platform == PlatformType.DrunkenKnitwits ? "odk" : null)">
+<html lang="en" data-theme-root data-date-format="@datePickerFormat" data-platform="@(platform == PlatformType.DrunkenKnitwits ? "odk" : null)">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -181,13 +181,6 @@
     @await Html.PartialAsync("Components/_Feedback")
 
     <script src="~/lib/tinymce/tinymce.min.js" asp-append-version="true"></script>
-    @* Resolved once per request from the viewer's locale; read by odk.forms.js to localise the date picker
-       display (the posted value stays a fixed format). *@
-    <script>
-        window.odk = window.odk || {};
-        window.odk.config = window.odk.config || {};
-        window.odk.config.datePickerFormat = '@datePickerFormat';
-    </script>
     <script src="~/js/odk.bundle.js" asp-append-version="true"></script>
     @await RenderSectionAsync("scripts", required: false)
 </body>

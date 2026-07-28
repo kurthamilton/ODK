@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ODK.Core.Chapters;
+using ODK.Core.Countries;
 using ODK.Core.Exceptions;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
@@ -26,6 +27,8 @@ public class RequestStore : IRequestStore
     private Chapter? _chapter;
     private ChapterAdminMember? _currentChapterAdminMember;
     private bool _currentChapterAdminMemberLoaded;
+    private Country? _currentMemberCountry;
+    private MemberPreferences? _currentMemberPreferences;
     private readonly ILoggingService _loggingService;
     private readonly IPlatformProvider _platformProvider;
     private IServiceRequest? _serviceRequest;
@@ -57,7 +60,11 @@ public class RequestStore : IRequestStore
 
     public Member CurrentMember => ServiceRequest.CurrentMemberOrDefault ?? throw new OdkNotAuthenticatedException();
 
+    public Country? CurrentMemberCountry => _currentMemberCountry;
+
     public Member? CurrentMemberOrDefault => ServiceRequest.CurrentMemberOrDefault;
+
+    public MemberPreferences? CurrentMemberPreferences => _currentMemberPreferences;
 
     public bool Loaded { get; private set; }
 
@@ -92,6 +99,8 @@ public class RequestStore : IRequestStore
     {
         _chapter = null;
         _currentChapterAdminMember = null;
+        _currentMemberCountry = null;
+        _currentMemberPreferences = null;
         _serviceRequest = null;
         Loaded = false;
     }
@@ -178,13 +187,23 @@ public class RequestStore : IRequestStore
         // Set the platform directly to persist when resetting other state
         Platform = _platformProvider.GetPlatform(context.RequestUrl);
 
-        var (chapter, currentMember) = await _unitOfWork.RunAsync(
+        // Load the member's formatting context (preferences + country) in the same round-trip as the
+        // member, so resolving the locale later needs no extra query.
+        var (chapter, currentMember, preferences, country) = await _unitOfWork.RunAsync(
             x => GetChapterQuery(context, x, verbose),
             x => currentMemberIdOrDefault != null
                 ? x.MemberRepository.GetByIdOrDefault(currentMemberIdOrDefault.Value)
-                : new DefaultDeferredQuerySingleOrDefault<Member>());
+                : new DefaultDeferredQuerySingleOrDefault<Member>(),
+            x => currentMemberIdOrDefault != null
+                ? x.MemberPreferencesRepository.GetByMemberId(currentMemberIdOrDefault.Value)
+                : new DefaultDeferredQuerySingleOrDefault<MemberPreferences>(),
+            x => currentMemberIdOrDefault != null
+                ? x.CountryRepository.GetByMemberIdOrDefault(currentMemberIdOrDefault.Value)
+                : new DefaultDeferredQuerySingleOrDefault<Country>());
 
         _chapter = chapter;
+        _currentMemberCountry = country;
+        _currentMemberPreferences = preferences;
         _serviceRequest = new ServiceRequest
         {
             CurrentMemberOrDefault = currentMember,

@@ -24,6 +24,8 @@ public class AppSettings
 
     public required InstagramSettings Instagram { get; init; }
 
+    public required LocalisationSettings Localisation { get; init; }
+
     public required LoggingSettings Logging { get; init; }
 
     public required MembersSettings Members { get; init; }
