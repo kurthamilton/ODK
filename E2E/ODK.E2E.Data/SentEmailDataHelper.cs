@@ -20,7 +20,7 @@ public class SentEmailDataHelper : DataHelperBase
             SELECT Subject
             FROM SentEmails
             WHERE [To] = @email
-            ORDER BY SentDate
+            ORDER BY SentUtc
             """;
 
         await using var builder = Builder(sql)
