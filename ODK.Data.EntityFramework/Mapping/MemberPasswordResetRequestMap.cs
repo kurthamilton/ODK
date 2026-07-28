@@ -18,16 +18,6 @@ public class MemberPasswordResetRequestMap : IEntityTypeConfiguration<MemberPass
 
         builder.Property(x => x.ExpiresUtc)
             .HasConversion<UtcDateTimeConverter>();
-
-        // Transition shadows keep the legacy Created/Expires columns populated until they are dropped.
-        builder.Property<DateTime?>("CreatedUtcColumn")
-            .HasColumnName("Created")
-            .HasConversion<NullableUtcDateTimeConverter>();
-
-        builder.Property<DateTime?>("ExpiresUtcColumn")
-            .HasColumnName("Expires")
-            .HasConversion<NullableUtcDateTimeConverter>();
-
         builder.Property(x => x.Id)
             .HasColumnName("MemberPasswordResetRequestId");
 

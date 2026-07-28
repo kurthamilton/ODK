@@ -21,16 +21,6 @@ public class EventEmailMap : IEntityTypeConfiguration<EventEmail>
 
         builder.Property(x => x.SentUtc)
             .HasConversion<UtcDateTimeConverter>();
-
-        // Transition shadows keep the legacy ScheduledDate/SentDate columns populated until they are dropped.
-        builder.Property<DateTime?>("ScheduledUtcColumn")
-            .HasColumnName("ScheduledDate")
-            .HasConversion<NullableUtcDateTimeConverter>();
-
-        builder.Property<DateTime?>("SentUtcColumn")
-            .HasColumnName("SentDate")
-            .HasConversion<NullableUtcDateTimeConverter>();
-
         builder.HasOne<Event>()
             .WithOne()
             .HasForeignKey<EventEmail>(x => x.EventId);

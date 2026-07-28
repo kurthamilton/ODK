@@ -15,12 +15,6 @@ public class MemberSubscriptionMap : IEntityTypeConfiguration<MemberSubscription
 
         builder.Property(x => x.ExpiresUtc)
             .HasConversion<NullableUtcDateTimeConverter>();
-
-        // Transition shadow keeps the legacy ExpiryDate column populated until it is dropped.
-        builder.Property<DateTime?>("ExpiresUtcColumn")
-            .HasColumnName("ExpiryDate")
-            .HasConversion<NullableUtcDateTimeConverter>();
-
         builder.Property(x => x.ReminderEmailSentUtc)
             .HasConversion<NullableUtcDateTimeConverter>();
 

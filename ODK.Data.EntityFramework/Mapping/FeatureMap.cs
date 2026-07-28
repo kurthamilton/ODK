@@ -15,12 +15,6 @@ public class FeatureMap : IEntityTypeConfiguration<Feature>
 
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();
-
-        // Transition shadow keeps the legacy Created column populated until it is dropped.
-        builder.Property<DateTime?>("CreatedUtcColumn")
-            .HasColumnName("Created")
-            .HasConversion<NullableUtcDateTimeConverter>();
-
         builder.Property(x => x.Id)
             .HasColumnName("FeatureId");
     }

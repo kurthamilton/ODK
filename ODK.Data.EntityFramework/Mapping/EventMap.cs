@@ -24,11 +24,6 @@ public class EventMap : IEntityTypeConfiguration<Event>
 
         builder.Property(x => x.RsvpDeadlineUtc)
             .HasConversion<NullableUtcDateTimeConverter>();
-
-        // Transition shadow keeps the legacy Date column populated until it is dropped.
-        builder.Property<DateTime?>("DateUtcColumn")
-            .HasColumnName("Date");
-
         builder.HasOne(x => x.TicketSettings)
             .WithOne()
             .HasForeignKey<EventTicketSettings>(x => x.EventId);

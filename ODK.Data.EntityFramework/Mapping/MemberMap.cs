@@ -15,12 +15,6 @@ public class MemberMap : IEntityTypeConfiguration<Member>
 
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();
-
-        // Transition shadow keeps the legacy CreatedDate column populated until it is dropped.
-        builder.Property<DateTime?>("CreatedUtcColumn")
-            .HasColumnName("CreatedDate")
-            .HasConversion<NullableUtcDateTimeConverter>();
-
         builder.Property(x => x.Id)
             .HasColumnName("MemberId");
 
