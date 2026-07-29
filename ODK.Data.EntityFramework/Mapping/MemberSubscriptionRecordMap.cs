@@ -21,8 +21,21 @@ public class MemberSubscriptionRecordMap : IEntityTypeConfiguration<MemberSubscr
         builder.Property(x => x.CancelledUtc)
             .HasConversion<NullableUtcDateTimeConverter>();
 
+        builder.Property(x => x.ExpiresUtc)
+            .HasConversion<NullableUtcDateTimeConverter>();
+
         builder.Property(x => x.InitiatorId)
             .HasMaxLength(255);
+
+        // The current record per member+chapter, denormalised via IsCurrent so the members list can read
+        // current state with a single filtered seek. Non-unique (soft flag): "current" is definitionally
+        // the latest record, so this is a performance cache, not an integrity constraint.
+        builder.HasIndex(x => new { x.ChapterId, x.MemberId })
+            .HasFilter("[IsCurrent] = 1");
+
+        // Keep a plain ChapterId index for the FK: the filtered composite above leads with ChapterId, so
+        // without this EF would treat it as covering the FK and drop the FK's own (unfiltered) index.
+        builder.HasIndex(x => x.ChapterId);
 
         // Enforce uniqueness only where a value is present: historic records have a null InitiatorId,
         // but any populated value (the initiating webhook event id) must be unique so a retried event
