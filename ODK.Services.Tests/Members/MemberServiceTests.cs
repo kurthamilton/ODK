@@ -18,6 +18,7 @@ using ODK.Services.Members;
 using ODK.Services.Members.Models;
 using ODK.Services.Notifications;
 using ODK.Services.Payments;
+using ODK.Services.Subscriptions;
 using ODK.Services.Topics;
 using ODK.Services.Tests.Helpers;
 
@@ -226,8 +227,9 @@ public static class MemberServiceTests
             .Setup(x => x.UpdateMemberImage(It.IsAny<MemberAvatar>(), It.IsAny<byte[]>()))
             .Returns(ServiceResult.Successful());
 
+        var unitOfWork = MockUnitOfWork.Create(context);
         return new MemberService(
-            MockUnitOfWork.Create(context),
+            unitOfWork,
             Mock.Of<IAuthorizationService>(),
             memberImageService.Object,
             memberEmailService,
@@ -237,7 +239,8 @@ public static class MemberServiceTests
             Mock.Of<IPaymentProviderFactory>(),
             Mock.Of<IGeolocationService>(),
             Mock.Of<ILoggingService>(),
-            new DistanceUnitFactory());
+            new DistanceUnitFactory(),
+            new MemberChapterSubscriptionWriter(unitOfWork));
     }
 
     private static MockOdkContext CreateMockOdkContext() => new MockOdkContext();

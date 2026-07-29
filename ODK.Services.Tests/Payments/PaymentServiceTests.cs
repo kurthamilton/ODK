@@ -18,6 +18,7 @@ using ODK.Services.Logging;
 using ODK.Services.Members;
 using ODK.Services.Payments;
 using ODK.Services.Payments.Models;
+using ODK.Services.Subscriptions;
 using ODK.Services.Tests.Helpers;
 
 namespace ODK.Services.Tests.Payments;
@@ -458,20 +459,24 @@ public static class PaymentServiceTests
             Type = chapterSubscription.Type
         });
 
-        // The record created by the initial subscription, keyed on the Stripe subscription id.
-        context.Create(new MemberSubscriptionRecord
+        // The record created by the initial subscription, keyed on the Stripe subscription id - currently the
+        // member's current record.
+        var initialRecord = new MemberSubscriptionRecord
         {
             Amount = chapterSubscription.Amount,
             ChapterId = chapter.Id,
             ChapterSubscriptionId = chapterSubscription.Id,
+            ExpiresUtc = originalExpiry,
             ExternalId = "sub_123",
             Id = Guid.NewGuid(),
+            IsCurrent = true,
             MemberId = member.Id,
             Months = chapterSubscription.Months,
             PaymentId = payment.Id,
             PurchasedUtc = DateTime.UtcNow.AddMonths(-1),
             Type = chapterSubscription.Type
-        });
+        };
+        context.Create(initialRecord);
 
         var webhook = CreatePaymentProviderWebhook(
             id: "wh_renewal",
@@ -499,11 +504,19 @@ public static class PaymentServiceTests
             .Should()
             .BeCloseTo(originalExpiry.AddMonths(1), TimeSpan.FromMinutes(5));
 
-        // The renewal reuses the existing record (keyed on the subscription id) rather than adding one.
-        context.Set<MemberSubscriptionRecord>()
-            .Count(x => x.MemberId == member.Id && x.ChapterSubscriptionId == chapterSubscription.Id)
+        // The renewal appends a new record (keeping the subscription's payment history) rather than mutating
+        // the existing one, so there are now two records for the subscription.
+        var records = context.Set<MemberSubscriptionRecord>()
+            .Where(x => x.MemberId == member.Id && x.ChapterSubscriptionId == chapterSubscription.Id)
+            .ToArray();
+        records.Length.Should().Be(2);
+
+        // Exactly one is current: the new record, carrying the rolled-forward expiry. The original is not.
+        var currentRecord = records.Should().ContainSingle(x => x.IsCurrent).Subject;
+        currentRecord.Id.Should().NotBe(initialRecord.Id);
+        currentRecord.ExpiresUtc
             .Should()
-            .Be(1);
+            .BeCloseTo(originalExpiry.AddMonths(1), TimeSpan.FromMinutes(5));
     }
 
     [Test]
@@ -942,13 +955,15 @@ public static class PaymentServiceTests
         IPaymentProviderFactory? paymentProviderFactory = null,
         IEventService? eventService = null)
     {
+        var unitOfWork = CreateMockUnitOfWork(context);
         return new PaymentService(
-            CreateMockUnitOfWork(context),
+            unitOfWork,
             loggingService ?? CreateMockLoggingService(),
             memberEmailService ?? CreateMockMemberEmailService(),
             paymentProviderFactory ?? new Mock<IPaymentProviderFactory>().Object,
             eventService ?? CreateMockEventService(),
-            new MockBackgroundTaskService());
+            new MockBackgroundTaskService(),
+            new MemberChapterSubscriptionWriter(unitOfWork));
     }
 
     private static IServiceRequest CreateServiceRequest(PlatformType? platform = null)

@@ -14,19 +14,14 @@ public class MemberSubscriptionRecordRepository : ReadWriteRepositoryBase<Member
     {
     }
 
-    public IDeferredQuerySingle<MemberSubscriptionRecord> GetByExternalId(string externalId)
-        => Set()
-            .Where(x => x.ExternalId == externalId)
-            .DeferredSingle();
-
-    public IDeferredQuerySingleOrDefault<MemberSubscriptionRecord> GetByExternalIdOrDefault(string externalId)
-        => Set()
-            .Where(x => x.ExternalId == externalId)
-            .DeferredSingleOrDefault();
-
     public IDeferredQuerySingleOrDefault<MemberSubscriptionRecord> GetByInitiatorIdOrDefault(string initiatorId)
         => Set()
             .Where(x => x.InitiatorId == initiatorId)
+            .DeferredSingleOrDefault();
+
+    public IDeferredQuerySingleOrDefault<MemberSubscriptionRecord> GetCurrentOrDefault(Guid memberId, Guid chapterId)
+        => Set()
+            .Where(x => x.MemberId == memberId && x.ChapterId == chapterId && x.IsCurrent)
             .DeferredSingleOrDefault();
 
     public IDeferredQuerySingleOrDefault<MemberSubscriptionRecord> GetLatest(Guid memberId, Guid chapterId)
@@ -40,6 +35,12 @@ public class MemberSubscriptionRecordRepository : ReadWriteRepositoryBase<Member
             .OrderByDescending(x => x.PurchasedUtc)
             .DeferredSingleOrDefault();
     }
+
+    public IDeferredQuerySingleOrDefault<MemberSubscriptionRecord> GetLatestByExternalIdOrDefault(string externalId)
+        => Set()
+            .Where(x => x.ExternalId == externalId)
+            .OrderByDescending(x => x.PurchasedUtc)
+            .DeferredSingleOrDefault();
 
     public IDeferredQuery<bool> HasActiveRecurringSubscription(Guid memberId, Guid chapterId)
     {
