@@ -10,6 +10,7 @@ using ODK.Services.Events;
 using ODK.Services.Logging;
 using ODK.Services.Members;
 using ODK.Services.Payments.Models;
+using ODK.Services.Subscriptions;
 using ODK.Services.Tasks;
 
 namespace ODK.Services.Payments;
@@ -19,6 +20,7 @@ public class PaymentService : IPaymentService
     private readonly IBackgroundTaskService _backgroundTaskService;
     private readonly IEventService _eventService;
     private readonly ILoggingService _loggingService;
+    private readonly IMemberChapterSubscriptionWriter _memberChapterSubscriptionWriter;
     private readonly IMemberEmailService _memberEmailService;
     private readonly IPaymentProviderFactory _paymentProviderFactory;
     private readonly IUnitOfWork _unitOfWork;
@@ -29,11 +31,13 @@ public class PaymentService : IPaymentService
         IMemberEmailService memberEmailService,
         IPaymentProviderFactory paymentProviderFactory,
         IEventService eventService,
-        IBackgroundTaskService backgroundTaskService)
+        IBackgroundTaskService backgroundTaskService,
+        IMemberChapterSubscriptionWriter memberChapterSubscriptionWriter)
     {
         _backgroundTaskService = backgroundTaskService;
         _eventService = eventService;
         _loggingService = loggingService;
+        _memberChapterSubscriptionWriter = memberChapterSubscriptionWriter;
         _memberEmailService = memberEmailService;
         _paymentProviderFactory = paymentProviderFactory;
         _unitOfWork = unitOfWork;
@@ -645,7 +649,13 @@ public class PaymentService : IPaymentService
                 $"cancelling member subscription record with external id '{webhook.SubscriptionId}'");
 
             var memberSubscriptionRecord = await _unitOfWork.MemberSubscriptionRecordRepository
-                .GetByExternalId(webhook.SubscriptionId).Run();
+                .GetLatestByExternalIdOrDefault(webhook.SubscriptionId).Run();
+            if (memberSubscriptionRecord == null)
+            {
+                await _loggingService.Warn(
+                    $"No member subscription record found for external id '{webhook.SubscriptionId}'; not cancelling");
+                return PaymentWebhookProcessingResult.Failure();
+            }
 
             memberSubscriptionRecord.CancelledUtc = webhook.OriginatedUtc;
             _unitOfWork.MemberSubscriptionRecordRepository.Update(memberSubscriptionRecord);
@@ -770,17 +780,17 @@ public class PaymentService : IPaymentService
 
         var (chapterId, memberId) = (chapter.Id, member.Id);
 
-        var (memberSubscription, existingMemberSubscriptionRecord, recordForInitiator) = await _unitOfWork.RunAsync(
+        var (memberSubscription, currentRecord, recordForInitiator) = await _unitOfWork.RunAsync(
             x => x.MemberSubscriptionRepository.GetByMemberId(memberId, chapterId),
-            x => x.MemberSubscriptionRecordRepository.GetByExternalIdOrDefault(externalId),
+            x => x.MemberSubscriptionRecordRepository.GetCurrentOrDefault(memberId, chapterId),
             x => !string.IsNullOrEmpty(initiatorId)
                 ? x.MemberSubscriptionRecordRepository.GetByInitiatorIdOrDefault(initiatorId)
                 : new DefaultDeferredQuerySingleOrDefault<MemberSubscriptionRecord>());
 
-        // Idempotency: if this initiating event (the Stripe webhook id) has already extended a subscription,
-        // do not extend again. This protects against a retry of the webhook-processing job re-applying the
-        // same event after the extension has already been committed. Renewals carry a distinct webhook id,
-        // so they are not caught here.
+        // Idempotency: if this initiating event (the payment provider webhook id) has already recorded a
+        // subscription, do not record it again. This protects against a retry of the webhook-processing job
+        // re-applying the same event. A genuine renewal carries a distinct webhook id, so it is not caught
+        // here - it appends a new current record below (the unique InitiatorId index is the final backstop).
         if (recordForInitiator != null)
         {
             await _loggingService.Info(
@@ -789,32 +799,24 @@ public class PaymentService : IPaymentService
                 member, chapter, payment, chapterSubscription.Currency);
         }
 
-        memberSubscription ??= new();
-
-        var originalExpiresUtc = memberSubscription.ExpiresUtc > utcNow
+        // Roll the expiry forward: a first purchase starts from now, a renewal/extension adds onto the
+        // subscription's existing (future) expiry. Computed from the snapshot, which stays authoritative
+        // until the read switch; the value is fixed on the new record at insert.
+        var originalExpiresUtc = memberSubscription?.ExpiresUtc > utcNow
             ? memberSubscription.ExpiresUtc.Value
             : utcNow;
         var expiresUtc = originalExpiresUtc.AddMonths(chapterSubscription.Months);
-        memberSubscription.ExpiresUtc = expiresUtc;
-        memberSubscription.Type = chapterSubscription.Type;
 
-        if (memberSubscription.MemberChapterId == default)
-        {
-            memberSubscription.MemberChapterId = memberChapter.Id;
-            _unitOfWork.MemberSubscriptionRepository.Add(memberSubscription);
-        }
-        else
-        {
-            _unitOfWork.MemberSubscriptionRepository.Update(memberSubscription);
-        }
-
-        if (existingMemberSubscriptionRecord == null)
-        {
-            _unitOfWork.MemberSubscriptionRecordRepository.Add(new MemberSubscriptionRecord
+        // Append a new current record for this payment (renewals keep the subscription's history) and mirror
+        // the current state onto the snapshot.
+        _memberChapterSubscriptionWriter.MakeRecordCurrent(
+            memberChapter,
+            newRecord: new MemberSubscriptionRecord
             {
                 Amount = chapterSubscription.Amount,
                 ChapterId = chapterId,
                 ChapterSubscriptionId = chapterSubscription.Id,
+                ExpiresUtc = expiresUtc,
                 ExternalId = externalId,
                 InitiatorId = initiatorId,
                 MemberId = memberId,
@@ -822,15 +824,9 @@ public class PaymentService : IPaymentService
                 PaymentId = payment.Id,
                 PurchasedUtc = utcNow,
                 Type = chapterSubscription.Type
-            });
-        }
-        else if (!string.IsNullOrEmpty(initiatorId))
-        {
-            // Record the initiating event on the existing record so that a retry of a subsequent event
-            // (e.g. a renewal) is also caught by the idempotency check above.
-            existingMemberSubscriptionRecord.InitiatorId = initiatorId;
-            _unitOfWork.MemberSubscriptionRecordRepository.Update(existingMemberSubscriptionRecord);
-        }
+            },
+            existingCurrent: currentRecord,
+            existingSnapshot: memberSubscription);
 
         await _loggingService.Info(
             $"Updating member {member.Id} subscription for chapter {chapter.Name}. " +

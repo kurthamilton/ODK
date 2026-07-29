@@ -17,6 +17,7 @@ using ODK.Services.Authorization;
 using ODK.Services.Members;
 using ODK.Services.Members.Models;
 using ODK.Services.Security;
+using ODK.Services.Subscriptions;
 using ODK.Services.Tests.Helpers;
 
 namespace ODK.Services.Tests.Members;
@@ -690,14 +691,16 @@ public static class MemberAdminServiceTests
         IMemberImageService? memberImageService = null,
         IMemberService? memberService = null)
     {
+        var unitOfWork = CreateMockUnitOfWork(context);
         return new MemberAdminService(
-            CreateMockUnitOfWork(context),
+            unitOfWork,
             memberService ?? CreateMockMemberService(),
             authorizationService ?? CreateMockAuthorizationService(),
             memberImageService ?? CreateMockMemberImageService(isValid: true),
             memberEmailService ?? CreateMockMemberEmailService(),
             Mock.Of<IDistanceUnitFactory>(),
-            new MockBackgroundTaskService());
+            new MockBackgroundTaskService(),
+            new MemberChapterSubscriptionWriter(unitOfWork));
     }
 
     private static MockOdkContext CreateMockOdkContext() => new MockOdkContext();

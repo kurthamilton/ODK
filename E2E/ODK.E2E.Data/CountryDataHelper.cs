@@ -21,14 +21,14 @@ public class CountryDataHelper : DataHelperBase
         return await builder.ExecuteScalar<string?>();
     }
 
-    public async Task<Guid> GetFirstCountryId()
+    public async Task<IReadOnlyCollection<Guid>> GetCountryIdsByName(int take)
     {
-        const string sql = "SELECT TOP 1 CountryId FROM Countries ORDER BY Name";
+        const string sql = "SELECT TOP (@take) CountryId FROM Countries ORDER BY Name";
 
-        await using var builder = Builder(sql);
+        await using var builder = Builder(sql)
+            .AddParameter("@take", take);
 
-        var id = await builder.ExecuteScalar<Guid?>();
-        return id ?? throw new InvalidOperationException("No countries are seeded.");
+        return await builder.ReadMany(x => x.GetGuid(0));
     }
 
     public async Task SetDefaultLocale(Guid countryId, string? locale)

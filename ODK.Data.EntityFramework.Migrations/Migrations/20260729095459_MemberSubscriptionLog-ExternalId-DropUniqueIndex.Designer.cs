@@ -13,8 +13,8 @@ using ODK.Data.EntityFramework;
 namespace ODK.Data.EntityFramework.Migrations.Migrations
 {
     [DbContext(typeof(OdkContext))]
-    [Migration("20260729063834_MemberSubscriptionLog-Current-Backfill")]
-    partial class MemberSubscriptionLogCurrentBackfill
+    [Migration("20260729095459_MemberSubscriptionLog-ExternalId-DropUniqueIndex")]
+    partial class MemberSubscriptionLogExternalIdDropUniqueIndex
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

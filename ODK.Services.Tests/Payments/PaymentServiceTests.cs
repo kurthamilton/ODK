@@ -18,6 +18,7 @@ using ODK.Services.Logging;
 using ODK.Services.Members;
 using ODK.Services.Payments;
 using ODK.Services.Payments.Models;
+using ODK.Services.Subscriptions;
 using ODK.Services.Tests.Helpers;
 
 namespace ODK.Services.Tests.Payments;
@@ -458,20 +459,24 @@ public static class PaymentServiceTests
             Type = chapterSubscription.Type
         });
 
-        // The record created by the initial subscription, keyed on the Stripe subscription id.
-        context.Create(new MemberSubscriptionRecord
+        // The record created by the initial subscription, keyed on the Stripe subscription id - currently the
+        // member's current record.
+        var initialRecord = new MemberSubscriptionRecord
         {
             Amount = chapterSubscription.Amount,
             ChapterId = chapter.Id,
             ChapterSubscriptionId = chapterSubscription.Id,
+            ExpiresUtc = originalExpiry,
             ExternalId = "sub_123",
             Id = Guid.NewGuid(),
+            IsCurrent = true,
             MemberId = member.Id,
             Months = chapterSubscription.Months,
             PaymentId = payment.Id,
             PurchasedUtc = DateTime.UtcNow.AddMonths(-1),
             Type = chapterSubscription.Type
-        });
+        };
+        context.Create(initialRecord);
 
         var webhook = CreatePaymentProviderWebhook(
             id: "wh_renewal",
@@ -499,9 +504,89 @@ public static class PaymentServiceTests
             .Should()
             .BeCloseTo(originalExpiry.AddMonths(1), TimeSpan.FromMinutes(5));
 
-        // The renewal reuses the existing record (keyed on the subscription id) rather than adding one.
+        // The renewal appends a new record (keeping the subscription's payment history) rather than mutating
+        // the existing one, so there are now two records for the subscription.
+        var records = context.Set<MemberSubscriptionRecord>()
+            .Where(x => x.MemberId == member.Id && x.ChapterSubscriptionId == chapterSubscription.Id)
+            .ToArray();
+        records.Length.Should().Be(2);
+
+        // Exactly one is current: the new record, carrying the rolled-forward expiry. The original is not.
+        var currentRecord = records.Should().ContainSingle(x => x.IsCurrent).Subject;
+        currentRecord.Id.Should().NotBe(initialRecord.Id);
+        currentRecord.ExpiresUtc
+            .Should()
+            .BeCloseTo(originalExpiry.AddMonths(1), TimeSpan.FromMinutes(5));
+    }
+
+    [Test]
+    public static async Task ProcessWebhook_ChapterSubscriptionFirstInvoiceThenRenewal_ExtendsExpiryOncePerPeriod()
+    {
+        // Arrange - mirror the E2E test-clock flow driven end to end: a recurring subscription's first
+        // invoice then a renewal invoice (both invoice.payment_succeeded on the same subscription id, with
+        // distinct event ids and neither carrying a checkout payment). Each should extend by the plan's
+        // months, leaving expiry ~2 months out and exactly one current record.
+        using var context = CreateMockOdkContext();
+
+        var member = context.CreateMember();
+        var chapter = context.CreateChapter(members: [member]);
+        var chapterSubscription = context.CreateChapterSubscription(chapter: chapter);
+        chapterSubscription.Months = 1;
+
+        // Joining the chapter already created a current 'Free' record + snapshot (AddMemberToChapter).
+        var memberChapter = member.MemberChapter(chapter.Id)!;
+        context.Create(new MemberSubscription
+        {
+            MemberChapter = memberChapter,
+            MemberChapterId = memberChapter.Id,
+            Type = SubscriptionType.Free
+        });
+        context.Create(new MemberSubscriptionRecord
+        {
+            ChapterId = chapter.Id,
+            Id = Guid.NewGuid(),
+            IsCurrent = true,
+            MemberId = member.Id,
+            PurchasedUtc = DateTime.UtcNow.AddMinutes(-5),
+            Type = SubscriptionType.Free
+        });
+
+        var metadata = new PaymentMetadataModel(
+            PlatformType.Default,
+            PaymentReasonType.ChapterSubscription,
+            member,
+            chapterSubscription,
+            Guid.NewGuid(),
+            Guid.NewGuid());
+
+        var firstInvoice = CreatePaymentProviderWebhook(
+            id: "wh_inv1",
+            type: PaymentProviderWebhookType.InvoicePaymentSucceeded,
+            subscriptionId: "sub_123",
+            metadata: metadata);
+        var renewalInvoice = CreatePaymentProviderWebhook(
+            id: "wh_inv2",
+            type: PaymentProviderWebhookType.InvoicePaymentSucceeded,
+            subscriptionId: "sub_123",
+            metadata: metadata);
+
+        var service = CreatePaymentService(context);
+        var request = CreateServiceRequest();
+
+        // Act
+        await service.ProcessWebhook(request, firstInvoice);
+        await service.ProcessWebhook(request, renewalInvoice);
+
+        // Assert
+        var memberChapterId = member.MemberChapter(chapter.Id)!.Id;
+        var memberSubscription = context.Set<MemberSubscription>()
+            .Single(x => x.MemberChapterId == memberChapterId);
+        memberSubscription.ExpiresUtc
+            .Should()
+            .BeCloseTo(DateTime.UtcNow.AddMonths(2), TimeSpan.FromDays(2));
+
         context.Set<MemberSubscriptionRecord>()
-            .Count(x => x.MemberId == member.Id && x.ChapterSubscriptionId == chapterSubscription.Id)
+            .Count(x => x.MemberId == member.Id && x.IsCurrent)
             .Should()
             .Be(1);
     }
@@ -942,13 +1027,15 @@ public static class PaymentServiceTests
         IPaymentProviderFactory? paymentProviderFactory = null,
         IEventService? eventService = null)
     {
+        var unitOfWork = CreateMockUnitOfWork(context);
         return new PaymentService(
-            CreateMockUnitOfWork(context),
+            unitOfWork,
             loggingService ?? CreateMockLoggingService(),
             memberEmailService ?? CreateMockMemberEmailService(),
             paymentProviderFactory ?? new Mock<IPaymentProviderFactory>().Object,
             eventService ?? CreateMockEventService(),
-            new MockBackgroundTaskService());
+            new MockBackgroundTaskService(),
+            new MemberChapterSubscriptionWriter(unitOfWork));
     }
 
     private static IServiceRequest CreateServiceRequest(PlatformType? platform = null)

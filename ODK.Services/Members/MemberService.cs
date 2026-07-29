@@ -21,6 +21,7 @@ using ODK.Services.Members.ViewModels;
 using ODK.Services.Notifications;
 using ODK.Services.Payments;
 using ODK.Services.Payments.Models;
+using ODK.Services.Subscriptions;
 using ODK.Services.Topics;
 using ODK.Services.Topics.Models;
 
@@ -32,6 +33,7 @@ public class MemberService : IMemberService
     private readonly IDistanceUnitFactory _distanceUnitFactory;
     private readonly IGeolocationService _geolocationService;
     private readonly ILoggingService _loggingService;
+    private readonly IMemberChapterSubscriptionWriter _memberChapterSubscriptionWriter;
     private readonly IMemberEmailService _memberEmailService;
     private readonly IMemberImageService _memberImageService;
     private readonly INotificationService _notificationService;
@@ -51,12 +53,14 @@ public class MemberService : IMemberService
         IPaymentProviderFactory paymentProviderFactory,
         IGeolocationService geolocationService,
         ILoggingService loggingService,
-        IDistanceUnitFactory distanceUnitFactory)
+        IDistanceUnitFactory distanceUnitFactory,
+        IMemberChapterSubscriptionWriter memberChapterSubscriptionWriter)
     {
         _authorizationService = authorizationService;
         _distanceUnitFactory = distanceUnitFactory;
         _geolocationService = geolocationService;
         _loggingService = loggingService;
+        _memberChapterSubscriptionWriter = memberChapterSubscriptionWriter;
         _memberEmailService = memberEmailService;
         _memberImageService = memberImageService;
         _notificationService = notificationService;
@@ -70,9 +74,9 @@ public class MemberService : IMemberService
     {
         var (member, memberSubscriptionRecord) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(memberId),
-            x => x.MemberSubscriptionRecordRepository.GetByExternalId(externalId));
+            x => x.MemberSubscriptionRecordRepository.GetLatestByExternalIdOrDefault(externalId));
 
-        if (memberSubscriptionRecord.MemberId != member.Id)
+        if (memberSubscriptionRecord == null || memberSubscriptionRecord.MemberId != member.Id)
         {
             throw new OdkNotFoundException();
         }
@@ -1061,12 +1065,19 @@ public class MemberService : IMemberService
             .ChapterHasAccess(ownerSubscriptionFeatures, SiteFeatureType.MemberSubscriptions);
         if (hasSubscriptions && membershipSettings?.Enabled == true)
         {
-            _unitOfWork.MemberSubscriptionRepository.Add(new MemberSubscription
-            {
-                ExpiresUtc = membershipSettings?.TrialPeriodMonths > 0 ? now.AddMonths(membershipSettings.TrialPeriodMonths) : null,
-                MemberChapterId = memberChapter.Id,
-                Type = membershipSettings?.TrialPeriodMonths > 0 ? SubscriptionType.Trial : SubscriptionType.Free
-            });
+            var trial = membershipSettings.TrialPeriodMonths > 0;
+            _memberChapterSubscriptionWriter.MakeRecordCurrent(
+                memberChapter,
+                newRecord: new MemberSubscriptionRecord
+                {
+                    ChapterId = chapter.Id,
+                    ExpiresUtc = trial ? now.AddMonths(membershipSettings.TrialPeriodMonths) : null,
+                    MemberId = member.Id,
+                    PurchasedUtc = now,
+                    Type = trial ? SubscriptionType.Trial : SubscriptionType.Free
+                },
+                existingCurrent: null,
+                existingSnapshot: null);
         }
 
         _unitOfWork.MemberPropertyRepository.AddMany(memberProperties);

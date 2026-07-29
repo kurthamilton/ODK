@@ -12,6 +12,7 @@ using ODK.Services.Events.ViewModels;
 using ODK.Services.Exceptions;
 using ODK.Services.Members.Models;
 using ODK.Services.Members.ViewModels;
+using ODK.Services.Subscriptions;
 using ODK.Services.Tasks;
 
 namespace ODK.Services.Members;
@@ -21,6 +22,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     private readonly IAuthorizationService _authorizationService;
     private readonly IBackgroundTaskService _backgroundTaskService;
     private readonly IDistanceUnitFactory _distanceUnitFactory;
+    private readonly IMemberChapterSubscriptionWriter _memberChapterSubscriptionWriter;
     private readonly IMemberEmailService _memberEmailService;
     private readonly IMemberImageService _memberImageService;
     private readonly IMemberService _memberService;
@@ -33,12 +35,14 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         IMemberImageService memberImageService,
         IMemberEmailService memberEmailService,
         IDistanceUnitFactory distanceUnitFactory,
-        IBackgroundTaskService backgroundTaskService)
+        IBackgroundTaskService backgroundTaskService,
+        IMemberChapterSubscriptionWriter memberChapterSubscriptionWriter)
         : base(unitOfWork)
     {
         _authorizationService = authorizationService;
         _backgroundTaskService = backgroundTaskService;
         _distanceUnitFactory = distanceUnitFactory;
+        _memberChapterSubscriptionWriter = memberChapterSubscriptionWriter;
         _memberEmailService = memberEmailService;
         _memberImageService = memberImageService;
         _memberService = memberService;
@@ -699,16 +703,19 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                 MemberId = member.Id
             });
 
-            _unitOfWork.MemberSubscriptionRepository.Add(new MemberSubscription
-            {
-                ExpiresUtc = membershipSettings?.TrialPeriodMonths > 0
-                    ? utcNow.AddMonths(membershipSettings.TrialPeriodMonths)
-                    : null,
-                MemberChapterId = memberChapter.Id,
-                Type = membershipSettings?.TrialPeriodMonths > 0
-                    ? SubscriptionType.Trial
-                    : SubscriptionType.Free
-            });
+            var trial = membershipSettings?.TrialPeriodMonths > 0;
+            _memberChapterSubscriptionWriter.MakeRecordCurrent(
+                memberChapter,
+                newRecord: new MemberSubscriptionRecord
+                {
+                    ChapterId = chapter.Id,
+                    ExpiresUtc = trial ? utcNow.AddMonths(membershipSettings!.TrialPeriodMonths) : null,
+                    MemberId = member.Id,
+                    PurchasedUtc = utcNow,
+                    Type = trial ? SubscriptionType.Trial : SubscriptionType.Free
+                },
+                existingCurrent: null,
+                existingSnapshot: null);
         }
 
         await _unitOfWork.SaveChangesAsync();
@@ -924,12 +931,17 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
                 if (!memberSubscriptionsByMemberChapter.TryGetValue((chapter.Id, member.Id), out var memberSubscription))
                 {
-                    memberSubscription = new MemberSubscription
-                    {
-                        MemberChapterId = memberChapter.Id,
-                        Type = SubscriptionType.Trial
-                    };
-                    _unitOfWork.MemberSubscriptionRepository.Add(memberSubscription);
+                    _memberChapterSubscriptionWriter.MakeRecordCurrent(
+                        memberChapter,
+                        newRecord: new MemberSubscriptionRecord
+                        {
+                            ChapterId = chapter.Id,
+                            MemberId = member.Id,
+                            PurchasedUtc = DateTime.UtcNow,
+                            Type = SubscriptionType.Trial
+                        },
+                        existingCurrent: null,
+                        existingSnapshot: null);
                     continue;
                 }
 
@@ -1047,10 +1059,16 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     {
         var chapter = request.Chapter;
 
-        var (member, memberSubscription) = await GetChapterAdminRestrictedContent(
+        if (!Enum.IsDefined(model.Type) || model.Type == SubscriptionType.None)
+        {
+            return ServiceResult.Failure("Invalid type");
+        }
+
+        var (member, memberSubscription, currentRecord) = await GetChapterAdminRestrictedContent(
             request,
             x => x.MemberRepository.GetById(memberId),
-            x => x.MemberSubscriptionRepository.GetByMemberId(memberId, chapter.Id));
+            x => x.MemberSubscriptionRepository.GetByMemberId(memberId, chapter.Id),
+            x => x.MemberSubscriptionRecordRepository.GetCurrentOrDefault(memberId, chapter.Id));
 
         var memberChapter = member.MemberChapter(chapter.Id);
         if (memberChapter == null)
@@ -1058,26 +1076,18 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             return ServiceResult.Failure("Member chapter not found");
         }
 
-        memberSubscription ??= new MemberSubscription();
-
-        memberSubscription.ExpiresUtc = model.ExpiryDate;
-        memberSubscription.Type = model.Type;
-
-        var validationResult = ValidateMemberSubscription(memberSubscription);
-        if (!validationResult.Success)
-        {
-            return validationResult;
-        }
-
-        if (memberSubscription.MemberChapterId == default)
-        {
-            memberSubscription.MemberChapterId = memberChapter.Id;
-            _unitOfWork.MemberSubscriptionRepository.Add(memberSubscription);
-        }
-        else
-        {
-            _unitOfWork.MemberSubscriptionRepository.Update(memberSubscription);
-        }
+        _memberChapterSubscriptionWriter.MakeRecordCurrent(
+            memberChapter,
+            newRecord: new MemberSubscriptionRecord
+            {
+                ChapterId = chapter.Id,
+                ExpiresUtc = model.ExpiryDate,
+                MemberId = memberId,
+                PurchasedUtc = DateTime.UtcNow,
+                Type = model.Type
+            },
+            existingCurrent: currentRecord,
+            existingSnapshot: memberSubscription);
 
         await _unitOfWork.SaveChangesAsync();
 
@@ -1121,13 +1131,4 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         }
     }
 
-    private ServiceResult ValidateMemberSubscription(MemberSubscription subscription)
-    {
-        if (!Enum.IsDefined(subscription.Type) || subscription.Type == SubscriptionType.None)
-        {
-            return ServiceResult.Failure("Invalid type");
-        }
-
-        return ServiceResult.Successful();
-    }
 }
