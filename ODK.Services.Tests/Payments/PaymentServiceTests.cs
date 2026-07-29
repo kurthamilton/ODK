@@ -520,6 +520,78 @@ public static class PaymentServiceTests
     }
 
     [Test]
+    public static async Task ProcessWebhook_ChapterSubscriptionFirstInvoiceThenRenewal_ExtendsExpiryOncePerPeriod()
+    {
+        // Arrange - mirror the E2E test-clock flow driven end to end: a recurring subscription's first
+        // invoice then a renewal invoice (both invoice.payment_succeeded on the same subscription id, with
+        // distinct event ids and neither carrying a checkout payment). Each should extend by the plan's
+        // months, leaving expiry ~2 months out and exactly one current record.
+        using var context = CreateMockOdkContext();
+
+        var member = context.CreateMember();
+        var chapter = context.CreateChapter(members: [member]);
+        var chapterSubscription = context.CreateChapterSubscription(chapter: chapter);
+        chapterSubscription.Months = 1;
+
+        // Joining the chapter already created a current 'Free' record + snapshot (AddMemberToChapter).
+        var memberChapter = member.MemberChapter(chapter.Id)!;
+        context.Create(new MemberSubscription
+        {
+            MemberChapter = memberChapter,
+            MemberChapterId = memberChapter.Id,
+            Type = SubscriptionType.Free
+        });
+        context.Create(new MemberSubscriptionRecord
+        {
+            ChapterId = chapter.Id,
+            Id = Guid.NewGuid(),
+            IsCurrent = true,
+            MemberId = member.Id,
+            PurchasedUtc = DateTime.UtcNow.AddMinutes(-5),
+            Type = SubscriptionType.Free
+        });
+
+        var metadata = new PaymentMetadataModel(
+            PlatformType.Default,
+            PaymentReasonType.ChapterSubscription,
+            member,
+            chapterSubscription,
+            Guid.NewGuid(),
+            Guid.NewGuid());
+
+        var firstInvoice = CreatePaymentProviderWebhook(
+            id: "wh_inv1",
+            type: PaymentProviderWebhookType.InvoicePaymentSucceeded,
+            subscriptionId: "sub_123",
+            metadata: metadata);
+        var renewalInvoice = CreatePaymentProviderWebhook(
+            id: "wh_inv2",
+            type: PaymentProviderWebhookType.InvoicePaymentSucceeded,
+            subscriptionId: "sub_123",
+            metadata: metadata);
+
+        var service = CreatePaymentService(context);
+        var request = CreateServiceRequest();
+
+        // Act
+        await service.ProcessWebhook(request, firstInvoice);
+        await service.ProcessWebhook(request, renewalInvoice);
+
+        // Assert
+        var memberChapterId = member.MemberChapter(chapter.Id)!.Id;
+        var memberSubscription = context.Set<MemberSubscription>()
+            .Single(x => x.MemberChapterId == memberChapterId);
+        memberSubscription.ExpiresUtc
+            .Should()
+            .BeCloseTo(DateTime.UtcNow.AddMonths(2), TimeSpan.FromDays(2));
+
+        context.Set<MemberSubscriptionRecord>()
+            .Count(x => x.MemberId == member.Id && x.IsCurrent)
+            .Should()
+            .Be(1);
+    }
+
+    [Test]
     public static async Task ProcessWebhookAction_WhenSameEventProcessedTwice_ExtendsChapterSubscriptionOnce()
     {
         // Arrange

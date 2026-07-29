@@ -17,25 +17,28 @@ internal class SiteAdminCountryPage
     }
 
     /// <summary>
-    /// Sets the first settable locale (the first row offering "Set as default") as the country's default,
-    /// and returns the locale set so the caller can assert it persisted.
+    /// The first settable locale on the country's page (the first row offering "Set as default"), or null if
+    /// the country has none - not every country maps to more than one .NET culture, so callers scan for one
+    /// that does rather than assuming a given country offers a choice.
     /// </summary>
-    public async Task<string> SetFirstAvailableLocale(Guid countryId)
+    public async Task<string?> GetFirstSettableLocale(Guid countryId)
     {
         await _page.Navigate($"/siteadmin/countries/{countryId}");
 
-        var locale = await _page.EvaluateAsync<string>(
+        var locale = await _page.EvaluateAsync<string?>(
             "() => { const b = document.querySelector('[data-set-default]'); " +
-            "return b ? b.closest('tr').getAttribute('data-locale') : ''; }");
-        if (string.IsNullOrEmpty(locale))
-        {
-            throw new InvalidOperationException($"Country '{countryId}' has no settable locales.");
-        }
+            "return b ? b.closest('tr').getAttribute('data-locale') : null; }");
+        return string.IsNullOrEmpty(locale) ? null : locale;
+    }
 
-        await _page.Locator("[data-set-default]").First.ClickAsync();
+    /// <summary>Sets the given locale as the country's default by clicking that row's "Set as default".</summary>
+    public async Task SetLocaleAsDefault(Guid countryId, string locale)
+    {
+        await _page.Navigate($"/siteadmin/countries/{countryId}");
+
+        await _page.Locator($"tr[data-locale='{locale}'] [data-set-default]").ClickAsync();
 
         // Success redirects back to the same page (PRG); wait for that reload to settle.
         await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-        return locale;
     }
 }
