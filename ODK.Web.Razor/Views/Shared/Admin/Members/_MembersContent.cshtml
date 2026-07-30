@@ -12,7 +12,7 @@
     var (members, subscriptions) = (Model.Members, Model.Subscriptions);
 
     var subscriptionDictionary = subscriptions
-        .ToDictionary(x => x.MemberChapter.MemberId);
+        .ToDictionary(x => x.MemberId);
 
     var subscriptionWarningDate = DateTime.Today.AddDays(7);
 

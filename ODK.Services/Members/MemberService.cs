@@ -74,7 +74,11 @@ public class MemberService : IMemberService
     {
         var (member, memberSubscriptionRecord) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(memberId),
-            x => x.MemberSubscriptionRecordRepository.GetLatestByExternalIdOrDefault(externalId));
+            x => x.MemberSubscriptionRecordRepository
+                .Query()
+                .ForExternalId(externalId)
+                .OrderByDescending(x => x.PurchasedUtc)
+                .GetSingleOrDefault());
 
         if (memberSubscriptionRecord == null || memberSubscriptionRecord.MemberId != member.Id)
         {
@@ -520,15 +524,20 @@ public class MemberService : IMemberService
     public async Task<MemberSubscriptionAlertViewModel> GetMemberSubscriptionAlertViewModel(
         Guid memberId, Guid chapterId)
     {
-        var (memberSubscription, chapterMembershipSettings, hasActiveRecurringSubscription) = await _unitOfWork.RunAsync(
-            x => x.MemberSubscriptionRepository.GetByMemberId(memberId, chapterId),
-            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId),
-            x => x.MemberSubscriptionRecordRepository.HasActiveRecurringSubscription(memberId, chapterId));
+        var (memberSubscription, chapterMembershipSettings) = await _unitOfWork.RunAsync(
+            x => x.MemberSubscriptionRecordRepository
+                .Query()
+                .Current()
+                .ForMember(memberId)
+                .ForChapter(chapterId)
+                .ToChapterSubscription()
+                .GetSingleOrDefault(),
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId));
 
         return new MemberSubscriptionAlertViewModel
         {
             ChapterMembershipSettings = chapterMembershipSettings,
-            HasActiveRecurringSubscription = hasActiveRecurringSubscription,
+            HasActiveRecurringSubscription = memberSubscription?.IsActiveRecurring() == true,
             MemberSubscription = memberSubscription
         };
     }
@@ -607,7 +616,12 @@ public class MemberService : IMemberService
 
         var (adminMembers, subscription) = await _unitOfWork.RunAsync(
             x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
-            x => x.MemberSubscriptionRecordRepository.GetLatest(currentMember.Id, chapter.Id));
+            x => x.MemberSubscriptionRecordRepository
+                .Query()
+                .ForMember(currentMember.Id)
+                .ForChapter(chapter.Id)
+                .OrderByDescending(x => x.PurchasedUtc)
+                .GetSingleOrDefault());
 
         var result = await DeleteMemberChapterData(request);
         if (!result.Success)
@@ -1067,7 +1081,6 @@ public class MemberService : IMemberService
         {
             var trial = membershipSettings.TrialPeriodMonths > 0;
             _memberChapterSubscriptionWriter.MakeRecordCurrent(
-                memberChapter,
                 newRecord: new MemberSubscriptionRecord
                 {
                     ChapterId = chapter.Id,
@@ -1076,8 +1089,7 @@ public class MemberService : IMemberService
                     PurchasedUtc = now,
                     Type = trial ? SubscriptionType.Trial : SubscriptionType.Free
                 },
-                existingCurrent: null,
-                existingSnapshot: null);
+                existingCurrent: null);
         }
 
         _unitOfWork.MemberPropertyRepository.AddMany(memberProperties);

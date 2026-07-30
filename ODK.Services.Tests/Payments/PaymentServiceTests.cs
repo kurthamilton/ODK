@@ -202,8 +202,8 @@ public static class PaymentServiceTests
         await service.ProcessWebhook(request, webhook);
 
         // Assert
-        context.Set<MemberSubscription>()
-            .Count(x => x.MemberChapterId == member.MemberChapter(chapter.Id)!.Id)
+        context.Set<MemberSubscriptionRecord>()
+            .Count(x => x.MemberId == member.Id && x.ChapterId == chapter.Id && x.IsCurrent)
             .Should()
             .Be(1);
 
@@ -282,8 +282,8 @@ public static class PaymentServiceTests
         await service.ProcessWebhook(request, webhook);
 
         // Assert
-        context.Set<MemberSubscription>()
-            .Count(x => x.MemberChapterId == member.MemberChapter(chapter.Id)!.Id)
+        context.Set<MemberSubscriptionRecord>()
+            .Count(x => x.MemberId == member.Id && x.ChapterId == chapter.Id && x.IsCurrent)
             .Should()
             .Be(1);
 
@@ -363,7 +363,6 @@ public static class PaymentServiceTests
         await service.ProcessWebhook(request, webhook);
 
         // Assert
-        context.Set<MemberSubscription>().Should().BeEmpty();
         context.Set<MemberSubscriptionRecord>().Should().BeEmpty();
     }
 
@@ -411,15 +410,13 @@ public static class PaymentServiceTests
         await service.ProcessWebhook(request, invoiceWebhook);
 
         // Assert
-        var memberChapterId = member.MemberChapter(chapter.Id)!.Id;
-
         context.Set<MemberSubscriptionRecord>()
             .Count(x => x.MemberId == member.Id && x.ChapterSubscriptionId == chapterSubscription.Id)
             .Should()
             .Be(1);
 
-        var memberSubscription = context.Set<MemberSubscription>()
-            .Single(x => x.MemberChapterId == memberChapterId);
+        var memberSubscription = context.Set<MemberSubscriptionRecord>()
+            .Single(x => x.MemberId == member.Id && x.ChapterId == chapter.Id && x.IsCurrent);
 
         // A single extension of 1 month - not two.
         memberSubscription.ExpiresUtc
@@ -497,8 +494,8 @@ public static class PaymentServiceTests
         await service.ProcessWebhook(request, webhook);
 
         // Assert
-        var memberSubscription = context.Set<MemberSubscription>()
-            .Single(x => x.MemberChapterId == memberChapter.Id);
+        var memberSubscription = context.Set<MemberSubscriptionRecord>()
+            .Single(x => x.MemberId == member.Id && x.ChapterId == chapter.Id && x.IsCurrent);
 
         memberSubscription.ExpiresUtc
             .Should()
@@ -578,9 +575,8 @@ public static class PaymentServiceTests
         await service.ProcessWebhook(request, renewalInvoice);
 
         // Assert
-        var memberChapterId = member.MemberChapter(chapter.Id)!.Id;
-        var memberSubscription = context.Set<MemberSubscription>()
-            .Single(x => x.MemberChapterId == memberChapterId);
+        var memberSubscription = context.Set<MemberSubscriptionRecord>()
+            .Single(x => x.MemberId == member.Id && x.ChapterId == chapter.Id && x.IsCurrent);
         memberSubscription.ExpiresUtc
             .Should()
             .BeCloseTo(DateTime.UtcNow.AddMonths(2), TimeSpan.FromDays(2));
@@ -589,6 +585,47 @@ public static class PaymentServiceTests
             .Count(x => x.MemberId == member.Id && x.IsCurrent)
             .Should()
             .Be(1);
+    }
+
+    [Test]
+    public static async Task ProcessWebhook_ChapterSubscription_PersistsExternalIdOnlyWhenRecurring(
+        [Values(true, false)] bool recurring)
+    {
+        // Arrange - a chapter-subscription invoice webhook carrying an external id. Only a recurring
+        // subscription should keep it (the Stripe subscription id); a one-off must leave it null so no
+        // "no such subscription" lookup is later attempted against a payment-intent id.
+        using var context = CreateMockOdkContext();
+
+        var member = context.CreateMember();
+        var chapter = context.CreateChapter(members: [member]);
+        var chapterSubscription = context.CreateChapterSubscription(chapter: chapter);
+        chapterSubscription.Months = 1;
+        chapterSubscription.Recurring = recurring;
+
+        var metadata = new PaymentMetadataModel(
+            PlatformType.Default,
+            PaymentReasonType.ChapterSubscription,
+            member,
+            chapterSubscription,
+            Guid.NewGuid(),
+            Guid.NewGuid());
+
+        var webhook = CreatePaymentProviderWebhook(
+            id: "wh_inv",
+            type: PaymentProviderWebhookType.InvoicePaymentSucceeded,
+            subscriptionId: "sub_123",
+            metadata: metadata);
+
+        var service = CreatePaymentService(context);
+        var request = CreateServiceRequest();
+
+        // Act
+        await service.ProcessWebhook(request, webhook);
+
+        // Assert
+        var current = context.Set<MemberSubscriptionRecord>()
+            .Single(x => x.MemberId == member.Id && x.ChapterId == chapter.Id && x.IsCurrent);
+        current.ExternalId.Should().Be(recurring ? "sub_123" : null);
     }
 
     [Test]
@@ -627,15 +664,13 @@ public static class PaymentServiceTests
         await service.ProcessWebhookAction(request, webhook);
 
         // Assert
-        var memberChapterId = member.MemberChapter(chapter.Id)!.Id;
-
         context.Set<MemberSubscriptionRecord>()
             .Count(x => x.MemberId == member.Id && x.ChapterSubscriptionId == chapterSubscription.Id)
             .Should()
             .Be(1);
 
-        var memberSubscription = context.Set<MemberSubscription>()
-            .Single(x => x.MemberChapterId == memberChapterId);
+        var memberSubscription = context.Set<MemberSubscriptionRecord>()
+            .Single(x => x.MemberId == member.Id && x.ChapterId == chapter.Id && x.IsCurrent);
 
         // Extended once (one month), not twice.
         memberSubscription.ExpiresUtc

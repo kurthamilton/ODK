@@ -319,10 +319,17 @@ public static class MemberAdminServiceTests
             owner: currentMember,
             members: [member]);
 
-        context.Create(CreateMemberSubscription(
-            member.MemberChapter(chapter.Id),
-            type: SubscriptionType.Full,
-            expiresUtc: DateTime.UtcNow.AddDays(10)));
+        // The removal guard reads the member's current subscription from the log (source of truth).
+        context.Create(new MemberSubscriptionRecord
+        {
+            ChapterId = chapter.Id,
+            ExpiresUtc = DateTime.UtcNow.AddDays(10),
+            Id = Guid.NewGuid(),
+            IsCurrent = true,
+            MemberId = member.Id,
+            PurchasedUtc = DateTime.UtcNow,
+            Type = SubscriptionType.Full
+        });
 
         var service = CreateMemberAdminService(context);
 
@@ -397,8 +404,8 @@ public static class MemberAdminServiceTests
         // Assert
         result.Success.Should().BeTrue();
 
-        var subscription = context.Set<MemberSubscription>()
-            .Single(x => x.MemberChapter.MemberId == member.Id && x.MemberChapter.ChapterId == chapter.Id);
+        var subscription = context.Set<MemberSubscriptionRecord>()
+            .Single(x => x.MemberId == member.Id && x.ChapterId == chapter.Id && x.IsCurrent);
         subscription.ExpiresUtc.Should().Be(expiryDate);
     }
 
@@ -636,7 +643,6 @@ public static class MemberAdminServiceTests
 
         var now = DateTime.UtcNow;
         var emailService = new Mock<IMemberEmailService>();
-        var memberChapterIds = new List<Guid>();
 
         for (var i = 0; i < 2; i++)
         {
@@ -652,15 +658,17 @@ public static class MemberAdminServiceTests
                 MembershipDisabledAfterDaysExpired = 30
             });
 
-            var memberChapter = member.MemberChapter(chapter.Id)!;
-            context.Create(new MemberSubscription
+            // The reminder job reads the member's current subscription from the log (source of truth).
+            context.Create(new MemberSubscriptionRecord
             {
+                ChapterId = chapter.Id,
                 ExpiresUtc = now.AddDays(3),
-                MemberChapter = memberChapter,
-                MemberChapterId = memberChapter.Id,
+                Id = Guid.NewGuid(),
+                IsCurrent = true,
+                MemberId = member.Id,
+                PurchasedUtc = now,
                 Type = SubscriptionType.Full
             });
-            memberChapterIds.Add(memberChapter.Id);
         }
 
         var service = CreateMemberAdminService(context, memberEmailService: emailService.Object);
@@ -669,19 +677,15 @@ public static class MemberAdminServiceTests
         // Act
         await service.SendMemberSubscriptionReminderEmails(request);
 
-        // Assert
+        // Assert - a reminder is sent for the expiring member in each chapter (batched across all chapters).
         emailService.Verify(
             x => x.SendMemberChapterSubscriptionExpiringEmail(
                 It.IsAny<IChapterServiceRequest>(),
                 It.IsAny<Member>(),
-                It.IsAny<MemberSubscription>(),
+                It.IsAny<MemberChapterSubscription>(),
                 It.IsAny<DateTime>(),
                 It.IsAny<DateTime>()),
             Times.Exactly(2));
-
-        context.Set<MemberSubscription>()
-            .Where(x => memberChapterIds.Contains(x.MemberChapterId))
-            .Should().OnlyContain(x => x.ReminderEmailSentUtc != null);
     }
 
     private static MemberAdminService CreateMemberAdminService(

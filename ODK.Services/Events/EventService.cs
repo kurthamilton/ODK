@@ -374,7 +374,7 @@ public class EventService : IEventService
         Event @event,
         Member? member,
         EventResponse? memberResponse,
-        MemberSubscription? subscription,
+        MemberChapterSubscription? subscription,
         ChapterMembershipSettings? membershipSettings,
         ChapterPrivacySettings? privacySettings,
         bool isForAdmin)
@@ -427,7 +427,13 @@ public class EventService : IEventService
         var (membershipSettings, privacySettings, memberSubscription, numberOfAttendees) = await _unitOfWork.RunAsync(
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(@event.ChapterId),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(@event.ChapterId),
-            x => x.MemberSubscriptionRepository.GetByMemberId(member.Id, @event.ChapterId),
+            x => x.MemberSubscriptionRecordRepository
+                .Query()
+                .Current()
+                .ForMember(member.Id)
+                .ForChapter(@event.ChapterId)
+                .ToChapterSubscription()
+                .GetSingleOrDefault(),
             x => x.EventResponseRepository.GetNumberOfAttendees(eventId));
 
         var validationResult = MemberCanAttendEvent(

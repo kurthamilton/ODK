@@ -58,10 +58,21 @@ public class ChapterService : IChapterService
             memberSubscriptionRecord,
             membershipSettings
         ) = await _unitOfWork.RunAsync(
-            x => x.MemberSubscriptionRepository.GetByMemberId(currentMember.Id, chapter.Id),
+            x => x.MemberSubscriptionRecordRepository
+                .Query()
+                .Current()
+                .ForMember(currentMember.Id)
+                .ForChapter(chapter.Id)
+                .ToChapterSubscription()
+                .GetSingleOrDefault(),
             x => x.ChapterSubscriptionRepository.GetByChapterId(chapter.Id, includeDisabled: true),
             x => x.SitePaymentSettingsRepository.GetAll(),
-            x => x.MemberSubscriptionRecordRepository.GetLatest(currentMember.Id, chapter.Id),
+            x => x.MemberSubscriptionRecordRepository
+                .Query()
+                .ForMember(currentMember.Id)
+                .ForChapter(chapter.Id)
+                .OrderByDescending(x => x.PurchasedUtc)
+                .GetSingleOrDefault(),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id));
 
         OdkAssertions.MemberOf(currentMember, chapter.Id);
@@ -140,7 +151,7 @@ public class ChapterService : IChapterService
         MemberSubscriptionRecord? memberSubscriptionRecord,
         IReadOnlyCollection<ChapterSubscription> chapterSubscriptions)
     {
-        if (memberSubscriptionRecord?.ExternalId == null ||
+        if (string.IsNullOrEmpty(memberSubscriptionRecord?.ExternalId) ||
             memberSubscriptionRecord.ChapterSubscriptionId == null)
         {
             return null;

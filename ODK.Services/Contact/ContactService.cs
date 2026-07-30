@@ -201,12 +201,10 @@ public class ContactService : IContactService
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
         var (
-            memberSubscription,
             privacySettings,
             membershipSettings,
             adminMembers,
             notificationSettings) = await _unitOfWork.RunAsync(
-            x => x.MemberSubscriptionRepository.GetByMemberId(currentMember.Id, chapter.Id),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),

@@ -12,7 +12,7 @@ public class AuthorizationService : IAuthorizationService
     public bool CanRespondToEvent(
         Event @event,
         Member? member,
-        MemberSubscription? subscription,
+        MemberChapterSubscription? subscription,
         ChapterMembershipSettings? membershipSettings,
         ChapterPrivacySettings? privacySettings)
     {
@@ -24,7 +24,7 @@ public class AuthorizationService : IAuthorizationService
     public bool CanViewEvent(
         Event @event,
         Member? member,
-        MemberSubscription? subscription,
+        MemberChapterSubscription? subscription,
         ChapterMembershipSettings? membershipSettings,
         ChapterPrivacySettings? privacySettings)
     {
@@ -41,7 +41,7 @@ public class AuthorizationService : IAuthorizationService
     public bool CanViewVenue(
         Venue venue,
         Member? member,
-        MemberSubscription? subscription,
+        MemberChapterSubscription? subscription,
         ChapterMembershipSettings? membershipSettings,
         ChapterPrivacySettings? privacySettings)
     {
@@ -57,7 +57,7 @@ public class AuthorizationService : IAuthorizationService
 
     public SubscriptionStatus GetSubscriptionStatus(
         Member? member,
-        MemberSubscription? subscription,
+        MemberChapterSubscription? subscription,
         ChapterMembershipSettings? membershipSettings)
     {
         if (member == null || !member.IsCurrent())
@@ -96,7 +96,7 @@ public class AuthorizationService : IAuthorizationService
     private ChapterFeatureVisibilityType GetMemberVisibilityType(
         Guid chapterId,
         Member? member,
-        MemberSubscription? subscription,
+        MemberChapterSubscription? subscription,
         ChapterMembershipSettings? membershipSettings)
     {
         var subscriptionStatus = member?.IsApprovedMemberOf(chapterId) == true

@@ -297,7 +297,6 @@ public class ChapterViewModelService : IChapterViewModelService
             otherConversationCount,
             membershipSettings,
             privacySettings,
-            memberSubscription,
             chapterPages,
             sitePaymentSettings
         ) = await _unitOfWork.RunAsync(
@@ -321,9 +320,6 @@ public class ChapterViewModelService : IChapterViewModelService
                 .Count(),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
-            x => currentMember != null
-                ? x.MemberSubscriptionRepository.GetByMemberId(currentMember.Id, chapter.Id)
-                : new DefaultDeferredQuerySingleOrDefault<MemberSubscription>(),
             x => x.ChapterPageRepository.GetByChapterId(chapter.Id),
             x => x.SitePaymentSettingsRepository.GetActive());
 
@@ -427,8 +423,13 @@ public class ChapterViewModelService : IChapterViewModelService
             chapterPages
         ) = await _unitOfWork.RunAsync(
             x => currentMember != null
-                ? x.MemberSubscriptionRepository.GetByMemberId(currentMember.Id, chapter.Id)
-                : new DefaultDeferredQuerySingleOrDefault<MemberSubscription>(),
+                ? x.MemberSubscriptionRecordRepository.Query()
+                    .Current()
+                    .ForMember(currentMember.Id)
+                    .ForChapter(chapter.Id)
+                    .ToChapterSubscription()
+                    .GetSingleOrDefault()
+                : new DefaultDeferredQuerySingleOrDefault<MemberChapterSubscription>(),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
             x => currentMember != null
@@ -518,8 +519,14 @@ public class ChapterViewModelService : IChapterViewModelService
             chapterPages
         ) = await _unitOfWork.RunAsync(
             x => currentMember != null
-                ? x.MemberSubscriptionRepository.GetByMemberId(currentMember.Id, chapter.Id)
-                : new DefaultDeferredQuerySingleOrDefault<MemberSubscription>(),
+                ? x.MemberSubscriptionRecordRepository
+                    .Query()
+                    .Current()
+                    .ForMember(currentMember.Id)
+                    .ForChapter(chapter.Id)
+                    .ToChapterSubscription()
+                    .GetSingleOrDefault()
+                : new DefaultDeferredQuerySingleOrDefault<MemberChapterSubscription>(),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
             x => currentMember != null
@@ -592,8 +599,14 @@ public class ChapterViewModelService : IChapterViewModelService
             isAdmin
         ) = await _unitOfWork.RunAsync(
             x => currentMember != null
-                ? x.MemberSubscriptionRepository.GetByMemberId(currentMember.Id, chapter.Id)
-                : new DefaultDeferredQuerySingleOrDefault<MemberSubscription>(),
+                ? x.MemberSubscriptionRecordRepository
+                    .Query()
+                    .Current()
+                    .ForMember(currentMember.Id)
+                    .ForChapter(chapter.Id)
+                    .ToChapterSubscription()
+                    .GetSingleOrDefault()
+                : new DefaultDeferredQuerySingleOrDefault<MemberChapterSubscription>(),
             x => x.MemberSiteSubscriptionRepository
                 .Query(x => x.ForChapterOwner(chapter.Id).Active())
                 .HasFeature(SiteFeatureType.InstagramFeed),
@@ -849,8 +862,14 @@ public class ChapterViewModelService : IChapterViewModelService
             chapterTopics,
             chapterLocation) = await _unitOfWork.RunAsync(
             x => currentMember != null
-                ? x.MemberSubscriptionRepository.GetByMemberId(currentMember.Id, chapter.Id)
-                : new DefaultDeferredQuerySingleOrDefault<MemberSubscription>(),
+                ? x.MemberSubscriptionRecordRepository
+                    .Query()
+                    .Current()
+                    .ForMember(currentMember.Id)
+                    .ForChapter(chapter.Id)
+                    .ToChapterSubscription()
+                    .GetSingleOrDefault()
+                : new DefaultDeferredQuerySingleOrDefault<MemberChapterSubscription>(),
             x => x.MemberSiteSubscriptionRepository
                 .Query(x => x.ForChapterOwner(chapter.Id).Active())
                 .HasFeature(SiteFeatureType.InstagramFeed),
@@ -990,7 +1009,7 @@ public class ChapterViewModelService : IChapterViewModelService
         IEnumerable<EventResponse> memberResponses,
         IEnumerable<EventResponseSummaryDto> responseSummaries,
         Member? currentMember,
-        MemberSubscription? memberSubscription,
+        MemberChapterSubscription? memberSubscription,
         ChapterMembershipSettings? membershipSettings,
         ChapterPrivacySettings? privacySettings)
     {

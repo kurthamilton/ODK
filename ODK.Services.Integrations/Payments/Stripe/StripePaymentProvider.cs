@@ -286,6 +286,11 @@ public class StripePaymentProvider : IPaymentProvider
 
     public async Task<ExternalSubscription?> GetSubscription(string externalId)
     {
+        if (!externalId.StartsWith("sub_"))
+        {
+            return null;
+        }
+
         var service = CreateSubscriptionService();
 
         try
@@ -293,9 +298,9 @@ public class StripePaymentProvider : IPaymentProvider
             var subscription = await service.GetAsync(externalId);
             return await MapSubscription(subscription);
         }
-        catch (Exception ex)
+        catch
         {
-            await _loggingService.Error($"Error retrieving Stripe subscription '{externalId}'", ex);
+            await _loggingService.Warn($"Error retrieving Stripe subscription '{externalId}'");
             return null;
         }
     }
@@ -333,9 +338,9 @@ public class StripePaymentProvider : IPaymentProvider
                 Recurring = price.Recurring != null
             };
         }
-        catch (Exception ex)
+        catch
         {
-            await _loggingService.Error($"Error retrieving Stripe subscription plan '{externalId}'", ex);
+            await _loggingService.Warn($"Error retrieving Stripe subscription plan '{externalId}'");
             return null;
         }
     }

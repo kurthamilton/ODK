@@ -119,14 +119,14 @@ public static class AuthorizationServiceTests
         };
     }
 
-    private static MemberSubscription CreateMemberSubscription(
+    private static MemberChapterSubscription CreateMemberSubscription(
         Guid? memberId = null,
         DateTime? expiryDate = null)
     {
-        return new MemberSubscription
+        return new MemberChapterSubscription
         {
             ExpiresUtc = expiryDate,
-            MemberChapter = new MemberChapter { MemberId = memberId ?? Guid.NewGuid() },
+            MemberId = memberId ?? Guid.NewGuid(),
             Type = SubscriptionType.Full
         };
     }

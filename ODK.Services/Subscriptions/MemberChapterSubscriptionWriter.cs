@@ -13,10 +13,8 @@ public class MemberChapterSubscriptionWriter : IMemberChapterSubscriptionWriter
     }
 
     public void MakeRecordCurrent(
-        MemberChapter memberChapter,
         MemberSubscriptionRecord newRecord,
-        MemberSubscriptionRecord? existingCurrent,
-        MemberSubscription? existingSnapshot)
+        MemberSubscriptionRecord? existingCurrent)
     {
         newRecord.IsCurrent = true;
         _unitOfWork.MemberSubscriptionRecordRepository.Add(newRecord);
@@ -25,22 +23,6 @@ public class MemberChapterSubscriptionWriter : IMemberChapterSubscriptionWriter
         {
             existingCurrent.IsCurrent = false;
             _unitOfWork.MemberSubscriptionRecordRepository.Update(existingCurrent);
-        }
-
-        var snapshot = existingSnapshot ?? new MemberSubscription
-        {
-            MemberChapterId = memberChapter.Id
-        };
-        snapshot.ExpiresUtc = newRecord.ExpiresUtc;
-        snapshot.Type = newRecord.Type;
-
-        if (existingSnapshot == null)
-        {
-            _unitOfWork.MemberSubscriptionRepository.Add(snapshot);
-        }
-        else
-        {
-            _unitOfWork.MemberSubscriptionRepository.Update(snapshot);
         }
     }
 }
