@@ -71,7 +71,7 @@
                 @if (memberSubscription?.MemberSiteSubscription.ExpiresUtc != null)
                 {
                     <span>
-                        @memberSubscription?.MemberSiteSubscription.ExpiresUtc.Value.ToFriendlyDateString(null)
+                        @memberSubscription.MemberSiteSubscription.ExpiresUtc.Value.ToFriendlyDateString(null)
                     </span>
                 }
                 else
@@ -80,14 +80,17 @@
                 }
             </div>
         }
-        else if (externalSubscription != null)
+        else if (externalSubscription?.Status == ExternalSubscriptionStatus.Active)
         {
+            @* The next payment date is Stripe's NextBillingDate, which supersedes the locally stored expiry:
+               thanks to the rolling expiry, NextBillingDate is never later than ExpiresUtc, so ExpiresUtc
+               would show a misleadingly-later date. (Previously both were rendered, showing two dates.) *@
             <label class="form-label">Next payment date</label>
             <div class="form-control-plaintext">
-                @if (memberSubscription?.MemberSiteSubscription.ExpiresUtc != null)
+                @if (externalSubscription.NextBillingDate != null && currentMember != null)
                 {
                     <span>
-                        @memberSubscription.MemberSiteSubscription.ExpiresUtc.Value.ToFriendlyDateString(null)
+                        @currentMember.ToLocalTime(externalSubscription.NextBillingDate.Value).ToString("d MMMM yyyy")
                     </span>
                 }
                 else
@@ -102,18 +105,6 @@
          memberSubscription != null && 
          externalSubscription?.Status == ExternalSubscriptionStatus.Active)
     {
-        @if (externalSubscription.NextBillingDate != null)
-        {
-            <div class="form-group mb-3">
-                <label class="form-label">Next payment date</label>
-                <div class="form-control-plaintext">
-                    <span>
-                        @currentMember.ToLocalTime(externalSubscription.NextBillingDate.Value).ToString("d MMMM yyyy")
-                    </span>
-                </div>
-            </div>
-        }
-
         <div class="mb-3">
             <form method="post">
                 <p>
