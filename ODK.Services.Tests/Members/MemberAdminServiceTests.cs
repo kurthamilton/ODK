@@ -519,8 +519,6 @@ public static class MemberAdminServiceTests
             owner: currentMember,
             members: [member]);
 
-        context.Create(CreateMemberSubscription(member.MemberChapter(chapter.Id)));
-
         var service = CreateMemberAdminService(context);
 
         var request = CreateMemberChapterAdminServiceRequest(
@@ -784,20 +782,6 @@ public static class MemberAdminServiceTests
         mock.Setup(m => m.BaseUrl)
             .Returns(baseUrl ?? "https://test.local");
         return mock.Object;
-    }
-
-    private static MemberSubscription CreateMemberSubscription(
-        MemberChapter? memberChapter,
-        SubscriptionType? type = null,
-        DateTime? expiresUtc = null)
-    {
-        return new MemberSubscription
-        {
-            MemberChapter = memberChapter!,
-            MemberChapterId = memberChapter!.Id,
-            Type = type ?? SubscriptionType.Full,
-            ExpiresUtc = expiresUtc
-        };
     }
 
     private static ChapterMembershipSettings CreateChapterMembershipSettings(

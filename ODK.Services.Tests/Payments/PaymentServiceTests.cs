@@ -445,16 +445,7 @@ public static class PaymentServiceTests
             payment: payment,
             completedUtc: DateTime.UtcNow.AddMonths(-1));
 
-        var memberChapter = member.MemberChapter(chapter.Id)!;
         var originalExpiry = DateTime.UtcNow.AddDays(10);
-
-        context.Create(new MemberSubscription
-        {
-            MemberChapter = memberChapter,
-            MemberChapterId = memberChapter.Id,
-            ExpiresUtc = originalExpiry,
-            Type = chapterSubscription.Type
-        });
 
         // The record created by the initial subscription, keyed on the Stripe subscription id - currently the
         // member's current record.
@@ -530,14 +521,7 @@ public static class PaymentServiceTests
         var chapterSubscription = context.CreateChapterSubscription(chapter: chapter);
         chapterSubscription.Months = 1;
 
-        // Joining the chapter already created a current 'Free' record + snapshot (AddMemberToChapter).
-        var memberChapter = member.MemberChapter(chapter.Id)!;
-        context.Create(new MemberSubscription
-        {
-            MemberChapter = memberChapter,
-            MemberChapterId = memberChapter.Id,
-            Type = SubscriptionType.Free
-        });
+        // Joining the chapter already created a current 'Free' record (AddMemberToChapter).
         context.Create(new MemberSubscriptionRecord
         {
             ChapterId = chapter.Id,
