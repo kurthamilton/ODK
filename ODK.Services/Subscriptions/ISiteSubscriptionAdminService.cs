@@ -17,6 +17,8 @@ public interface ISiteSubscriptionAdminService
 
     Task<IReadOnlyCollection<SiteSubscription>> GetAllSubscriptions(IMemberServiceRequest request);
 
+    Task<SiteAdminMembersViewModel> GetSiteAdminMembersViewModel(IMemberServiceRequest request);
+
     Task<IReadOnlyCollection<SiteSubscriptionSiteAdminListItemViewModel>> GetSiteSubscriptionSiteAdminListItems(
         IMemberServiceRequest request);
 

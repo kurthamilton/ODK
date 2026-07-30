@@ -160,6 +160,78 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
             x => x.SiteSubscriptionRepository.GetAll(platform));
     }
 
+    public async Task<SiteAdminMembersViewModel> GetSiteAdminMembersViewModel(
+        IMemberServiceRequest request)
+    {
+        var platform = request.Platform;
+
+        var (subscriptionDtos, chapters, currencies) = await GetSiteAdminRestrictedContent(request,
+            x => x.MemberSiteSubscriptionRepository.GetAllChapterOwnerSubscriptionDtos(platform),
+            x => x.ChapterRepository.GetAll(platform, includeUnpublished: true),
+            x => x.CurrencyRepository.GetAll());
+
+        // Only owners whose subscription has an expiry date - placeholder subscriptions (null expiry) are
+        // ignored. A member repeats once per owned chapter, so collapse to one subscription per member.
+        var subscriptionsByMember = subscriptionDtos
+            .Where(x => x.MemberSiteSubscription.ExpiresUtc != null)
+            .GroupBy(x => x.MemberSiteSubscription.MemberId)
+            .ToDictionary(x => x.Key, x => x.First());
+
+        if (subscriptionsByMember.Count == 0)
+        {
+            return new SiteAdminMembersViewModel
+            {
+                Platform = platform,
+                Rows = []
+            };
+        }
+
+        var members = await GetSiteAdminRestrictedContent(request,
+            x => x.MemberRepository.GetByIds(subscriptionsByMember.Keys.ToArray()));
+
+        var membersById = members.ToDictionary(x => x.Id);
+        var currenciesById = currencies.ToDictionary(x => x.Id);
+        var chapterNamesByOwner = chapters
+            .GroupBy(x => x.OwnerId)
+            .ToDictionary(x => x.Key, x => x.OrderBy(c => c.Name).Select(c => c.Name).ToArray());
+
+        var now = DateTime.UtcNow;
+
+        var rows = subscriptionsByMember
+            .Where(x => membersById.ContainsKey(x.Key))
+            .Select(x =>
+            {
+                var (memberId, dto) = (x.Key, x.Value);
+                var price = dto.SiteSubscriptionPrice;
+                var currency = price != null && currenciesById.TryGetValue(price.CurrencyId, out var found)
+                    ? found
+                    : null;
+                var expiresUtc = dto.MemberSiteSubscription.ExpiresUtc!.Value;
+
+                return new SiteAdminMemberRowViewModel
+                {
+                    Amount = price?.Amount,
+                    ChapterNames = chapterNamesByOwner.TryGetValue(memberId, out var names) ? names : [],
+                    Currency = currency,
+                    ExpiresUtc = expiresUtc,
+                    Frequency = price?.Frequency ?? SiteSubscriptionFrequency.None,
+                    FullName = membersById[memberId].FullName,
+                    IsActive = expiresUtc >= now,
+                    SubscriptionName = dto.SiteSubscription.Name
+                };
+            })
+            .OrderByDescending(x => x.IsActive)
+            .ThenBy(x => x.ExpiresUtc)
+            .ThenBy(x => x.FullName)
+            .ToArray();
+
+        return new SiteAdminMembersViewModel
+        {
+            Platform = platform,
+            Rows = rows
+        };
+    }
+
     public async Task<IReadOnlyCollection<SiteSubscriptionSiteAdminListItemViewModel>> GetSiteSubscriptionSiteAdminListItems(
         IMemberServiceRequest request)
     {
