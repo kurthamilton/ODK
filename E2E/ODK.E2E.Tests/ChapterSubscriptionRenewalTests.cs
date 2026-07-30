@@ -77,6 +77,11 @@ public class ChapterSubscriptionRenewalTests : DefaultPageTest
         afterFirst.Should().NotBeNull("the first invoice webhook should activate the chapter subscription");
         afterFirst!.Value.Should().BeCloseTo(DateTime.UtcNow.AddMonths(1), TimeSpan.FromDays(4));
 
+        // A recurring subscription persists the Stripe subscription id as the record's ExternalId (used to
+        // manage/cancel the subscription) - unlike a one-off purchase, which stores none.
+        (await MemberChapterSubscriptions.GetCurrentExternalId(memberId, group.ChapterId))
+            .Should().StartWith("sub_", "a recurring subscription should store its Stripe subscription id");
+
         // Act - advance the clock past the billing period to trigger a renewal.
         await clock.AdvanceOneMonth();
 

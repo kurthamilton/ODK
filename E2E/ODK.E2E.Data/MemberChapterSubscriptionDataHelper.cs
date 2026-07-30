@@ -1,11 +1,10 @@
 namespace ODK.E2E.Data;
 
 /// <summary>
-/// Reads a member's chapter-subscription state - the rows the purchase-completion webhook writes. A
-/// completed purchase adds a <c>MemberSubscriptionLog</c> row (binding member -> the specific chapter
-/// subscription -> payment) and upserts a <c>MemberSubscriptions</c> row (keyed by MemberChapter) whose
-/// <c>ExpiresUtc</c> is the active signal. Tests poll these after driving checkout (completion is
-/// webhook-driven, so asynchronous).
+/// Reads a member's chapter-subscription state from <c>MemberSubscriptionLog</c> (the source of truth). A
+/// completed purchase appends a log row (binding member -> the specific chapter subscription -> payment) and
+/// flags it current; its <c>ExpiresUtc</c> is the active signal. Tests poll these after driving checkout
+/// (completion is webhook-driven, so asynchronous).
 /// </summary>
 public class MemberChapterSubscriptionDataHelper : DataHelperBase
 {
@@ -19,10 +18,9 @@ public class MemberChapterSubscriptionDataHelper : DataHelperBase
     {
         const string sql =
             """
-            SELECT s.ExpiresUtc
-            FROM MemberSubscriptions s
-            INNER JOIN MemberChapters mc ON mc.MemberChapterId = s.MemberChapterId
-            WHERE mc.MemberId = @memberId AND mc.ChapterId = @chapterId
+            SELECT l.ExpiresUtc
+            FROM MemberSubscriptionLog l
+            WHERE l.MemberId = @memberId AND l.ChapterId = @chapterId AND l.IsCurrent = 1
             """;
 
         await using var builder = Builder(sql)
@@ -30,6 +28,27 @@ public class MemberChapterSubscriptionDataHelper : DataHelperBase
             .AddParameter("@chapterId", chapterId);
 
         return await builder.ExecuteScalar<DateTime?>();
+    }
+
+    /// <summary>
+    /// The external (payment provider) id stored on the member's current subscription record for the chapter,
+    /// or null if none. Only recurring subscriptions persist one (the Stripe subscription id); one-off
+    /// purchases leave it null so no lookup is attempted against a payment-intent id.
+    /// </summary>
+    public async Task<string?> GetCurrentExternalId(Guid memberId, Guid chapterId)
+    {
+        const string sql =
+            """
+            SELECT l.ExternalId
+            FROM MemberSubscriptionLog l
+            WHERE l.MemberId = @memberId AND l.ChapterId = @chapterId AND l.IsCurrent = 1
+            """;
+
+        await using var builder = Builder(sql)
+            .AddParameter("@memberId", memberId)
+            .AddParameter("@chapterId", chapterId);
+
+        return await builder.ExecuteScalar<string?>();
     }
 
     /// <summary>Whether a completed-purchase record binds the member to the given chapter subscription.</summary>

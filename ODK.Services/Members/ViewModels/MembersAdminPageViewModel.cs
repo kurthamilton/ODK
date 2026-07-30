@@ -17,5 +17,5 @@ public class MembersAdminPageViewModel
 
     public required PlatformType Platform { get; init; }
 
-    public required IReadOnlyCollection<MemberSubscription> Subscriptions { get; init; }
+    public required IReadOnlyCollection<MemberChapterSubscription> Subscriptions { get; init; }
 }

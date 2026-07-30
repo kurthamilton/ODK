@@ -521,7 +521,7 @@ public class MemberEmailService : IMemberEmailService
     public async Task SendMemberChapterSubscriptionExpiringEmail(
         IChapterServiceRequest request,
         Member member,
-        MemberSubscription memberSubscription,
+        MemberChapterSubscription memberSubscription,
         DateTime expires,
         DateTime disabledDate)
     {

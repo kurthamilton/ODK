@@ -4,5 +4,5 @@ namespace ODK.Services.Members.ViewModels;
 
 public class MemberAdminPageViewModel : MemberAdminPageViewModelBase
 {
-    public required MemberSubscription? Subscription { get; init; }
+    public required MemberChapterSubscription? Subscription { get; init; }
 }

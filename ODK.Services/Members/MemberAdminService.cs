@@ -234,7 +234,12 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         var (members, subscriptions) = await GetChapterAdminRestrictedContent(
             request,
             x => x.MemberRepository.GetByChapterId(chapter.Id),
-            x => x.MemberSubscriptionRepository.GetByChapterId(chapter.Id));
+            x => x.MemberSubscriptionRecordRepository
+                .Query()
+                .Current()
+                .ForChapter(chapter.Id)
+                .ToChapterSubscription()
+                .GetAll());
 
         var csv = new List<IReadOnlyCollection<string>>
         {
@@ -251,7 +256,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         };
 
         var subscriptionDictionary = subscriptions
-            .ToDictionary(x => x.MemberChapter.MemberId);
+            .ToDictionary(x => x.MemberId);
 
         foreach (var member in members.OrderBy(x => x.FullName))
         {
@@ -280,7 +285,13 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         var (member, subscription) = await GetChapterAdminRestrictedContent(
             request,
             x => x.MemberRepository.GetById(memberId),
-            x => x.MemberSubscriptionRepository.GetByMemberId(memberId, chapter.Id));
+            x => x.MemberSubscriptionRecordRepository
+                .Query()
+                .Current()
+                .ForMember(memberId)
+                .ForChapter(chapter.Id)
+                .ToChapterSubscription()
+                .GetSingleOrDefault());
 
         return new MemberDeleteAdminPageViewModel
         {
@@ -498,7 +509,12 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.MemberRepository.GetAllWithAvatarByChapterId(chapter.Id),
             x => x.MemberEmailPreferenceRepository.GetByChapterId(chapter.Id, MemberEmailPreferenceType.Events),
-            x => x.MemberSubscriptionRepository.GetByChapterId(chapter.Id));
+            x => x.MemberSubscriptionRecordRepository
+                .Query()
+                .Current()
+                .ForChapter(chapter.Id)
+                .ToChapterSubscription()
+                .GetAll());
 
         return new MembersAdminPageViewModel
         {
@@ -518,7 +534,13 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         var (member, subscription, notifications) = await GetChapterAdminRestrictedContent(
             request,
             x => x.MemberRepository.GetById(memberId),
-            x => x.MemberSubscriptionRepository.GetByMemberId(memberId, chapter.Id),
+            x => x.MemberSubscriptionRecordRepository
+                .Query()
+                .Current()
+                .ForMember(memberId)
+                .ForChapter(chapter.Id)
+                .ToChapterSubscription()
+                .GetSingleOrDefault(),
             x => x.NotificationRepository.GetUnreadByMemberId(request.CurrentMember.Id, NotificationType.NewMember, memberId));
 
         OdkAssertions.MemberOf(member, chapter.Id);
@@ -705,7 +727,6 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
             var trial = membershipSettings?.TrialPeriodMonths > 0;
             _memberChapterSubscriptionWriter.MakeRecordCurrent(
-                memberChapter,
                 newRecord: new MemberSubscriptionRecord
                 {
                     ChapterId = chapter.Id,
@@ -714,8 +735,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                     PurchasedUtc = utcNow,
                     Type = trial ? SubscriptionType.Trial : SubscriptionType.Free
                 },
-                existingCurrent: null,
-                existingSnapshot: null);
+                existingCurrent: null);
         }
 
         await _unitOfWork.SaveChangesAsync();
@@ -784,7 +804,13 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         var (member, subscription) = await GetChapterAdminRestrictedContent(
             request,
             x => x.MemberRepository.GetById(memberId),
-            x => x.MemberSubscriptionRepository.GetByMemberId(memberId, chapter.Id));
+            x => x.MemberSubscriptionRecordRepository
+                .Query()
+                .Current()
+                .ForMember(memberId)
+                .ForChapter(chapter.Id)
+                .ToChapterSubscription()
+                .GetSingleOrDefault());
 
         if (subscription?.Type.IsPaid() == true && subscription?.IsExpired() == false)
         {
@@ -843,7 +869,12 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             request,
             x => x.MemberRepository.GetByChapterId(chapter.Id),
             x => x.MemberEmailPreferenceRepository.GetByChapterId(chapter.Id, MemberEmailPreferenceType.ChapterMessages),
-            x => x.MemberSubscriptionRepository.GetByChapterId(chapter.Id),
+            x => x.MemberSubscriptionRecordRepository
+                .Query()
+                .Current()
+                .ForChapter(chapter.Id)
+                .ToChapterSubscription()
+                .GetAll(),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.MemberSiteSubscriptionRepository
                 .Query(x => x.ForChapterOwner(chapter.Id).Active())
@@ -889,13 +920,18 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         // querying per chapter (which was N round-trips - an N+1).
         var (members, memberSubscriptions, allMembershipSettings) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetByChapterIds(chapterIds),
-            x => x.MemberSubscriptionRepository.GetByChapterIds(chapterIds),
+            x => x.MemberSubscriptionRecordRepository
+                .Query()
+                .Current()
+                .InChapters(chapterIds)
+                .ToChapterSubscription()
+                .GetAll(),
             x => x.ChapterMembershipSettingsRepository.GetByChapterIds(chapterIds));
 
         var membershipSettingsByChapterId = allMembershipSettings.ToDictionary(x => x.ChapterId);
 
         var memberSubscriptionsByMemberChapter = memberSubscriptions
-            .ToDictionary(x => (x.MemberChapter.ChapterId, x.MemberChapter.MemberId));
+            .ToDictionary(x => (x.ChapterId, x.MemberId));
 
         // Group members by each (non-hidden) chapter they belong to - mirrors the per-chapter
         // GetByChapterId filter that was previously applied in the loop.
@@ -932,7 +968,6 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                 if (!memberSubscriptionsByMemberChapter.TryGetValue((chapter.Id, member.Id), out var memberSubscription))
                 {
                     _memberChapterSubscriptionWriter.MakeRecordCurrent(
-                        memberChapter,
                         newRecord: new MemberSubscriptionRecord
                         {
                             ChapterId = chapter.Id,
@@ -940,8 +975,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                             PurchasedUtc = DateTime.UtcNow,
                             Type = SubscriptionType.Trial
                         },
-                        existingCurrent: null,
-                        existingSnapshot: null);
+                        existingCurrent: null);
                     continue;
                 }
 
@@ -950,31 +984,12 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                     continue;
                 }
 
+                // Send within a window around expiry - from 7 days before to 7 days after. There is no
+                // sent-state tracking, so a member may receive a reminder on each scheduled run in the window.
                 var now = DateTime.UtcNow;
                 var expires = memberSubscription.ExpiresUtc.Value;
-                if (expires > now.AddDays(7))
+                if (expires > now.AddDays(7) || expires < now.AddDays(-7))
                 {
-                    // no need for reminder
-                    continue;
-                }
-
-                var expiring = expires > now;
-                var expired = !expiring;
-                if (expiring && memberSubscription.ReminderEmailSentUtc != null)
-                {
-                    // membership expiring - reminder already sent
-                    continue;
-                }
-
-                if (expired && memberSubscription.ReminderEmailSentUtc > memberSubscription.ExpiresUtc)
-                {
-                    // membership expired - reminder already sent
-                    continue;
-                }
-
-                if (expired && expires < now.AddDays(-7))
-                {
-                    // membership expired more than 7 days ago - no need for reminder
                     continue;
                 }
 
@@ -987,12 +1002,11 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                     memberSubscription,
                     expires: expires,
                     disabledDate: disabledDate);
-
-                memberSubscription.ReminderEmailSentUtc = now;
-                _unitOfWork.MemberSubscriptionRepository.Update(memberSubscription);
-                await _unitOfWork.SaveChangesAsync();
             }
         }
+
+        // Persist any trial records created above for members that had none.
+        await _unitOfWork.SaveChangesAsync();
     }
 
     public async Task SetMemberVisibility(
@@ -1064,20 +1078,22 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             return ServiceResult.Failure("Invalid type");
         }
 
-        var (member, memberSubscription, currentRecord) = await GetChapterAdminRestrictedContent(
+        var (member, currentRecord) = await GetChapterAdminRestrictedContent(
             request,
             x => x.MemberRepository.GetById(memberId),
-            x => x.MemberSubscriptionRepository.GetByMemberId(memberId, chapter.Id),
-            x => x.MemberSubscriptionRecordRepository.GetCurrentOrDefault(memberId, chapter.Id));
+            x => x.MemberSubscriptionRecordRepository
+                .Query()
+                .Current()
+                .ForMember(memberId)
+                .ForChapter(chapter.Id)
+                .GetSingleOrDefault());
 
-        var memberChapter = member.MemberChapter(chapter.Id);
-        if (memberChapter == null)
+        if (member.MemberChapter(chapter.Id) == null)
         {
             return ServiceResult.Failure("Member chapter not found");
         }
 
         _memberChapterSubscriptionWriter.MakeRecordCurrent(
-            memberChapter,
             newRecord: new MemberSubscriptionRecord
             {
                 ChapterId = chapter.Id,
@@ -1086,8 +1102,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                 PurchasedUtc = DateTime.UtcNow,
                 Type = model.Type
             },
-            existingCurrent: currentRecord,
-            existingSnapshot: memberSubscription);
+            existingCurrent: currentRecord);
 
         await _unitOfWork.SaveChangesAsync();
 
@@ -1108,12 +1123,12 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
     private IEnumerable<Member> FilterMembers(
         IEnumerable<Member> members,
-        IEnumerable<MemberSubscription> memberSubscriptions,
+        IEnumerable<MemberChapterSubscription> memberSubscriptions,
         ChapterMembershipSettings? membershipSettings,
         MemberFilter filter)
     {
         var memberSubscriptionsDictionary = memberSubscriptions
-            .ToDictionary(x => x.MemberChapter.MemberId);
+            .ToDictionary(x => x.MemberId);
 
         foreach (var member in members)
         {

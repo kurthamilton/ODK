@@ -83,6 +83,11 @@ public class ChapterSubscriptionPurchaseTests : DefaultPageTest
         // Asserting it's close to one month (not ~two) guards against a completion-idempotency regression
         // double-extending the subscription.
         expiryUtc!.Value.Should().BeCloseTo(DateTime.UtcNow.AddMonths(1), TimeSpan.FromDays(3));
+
+        // A one-off (non-recurring) purchase must NOT persist an ExternalId - the payment-intent id is not a
+        // subscription, so storing it only produces "no such subscription" noise on later Stripe lookups.
+        (await MemberChapterSubscriptions.GetCurrentExternalId(memberId, group.ChapterId))
+            .Should().BeNull("a non-recurring purchase should not store an external subscription id");
     }
 
     private static async Task<bool> PollForPurchaseRecord(Guid memberId, Guid chapterSubscriptionId)

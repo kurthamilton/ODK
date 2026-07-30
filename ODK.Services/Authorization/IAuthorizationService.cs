@@ -12,21 +12,21 @@ public interface IAuthorizationService
     bool CanRespondToEvent(
         Event @event,
         Member? member,
-        MemberSubscription? subscription,
+        MemberChapterSubscription? subscription,
         ChapterMembershipSettings? membershipSettings,
         ChapterPrivacySettings? privacySettings);
 
     bool CanViewEvent(
         Event @event,
         Member? member,
-        MemberSubscription? subscription,
+        MemberChapterSubscription? subscription,
         ChapterMembershipSettings? membershipSettings,
         ChapterPrivacySettings? privacySettings);
 
     bool CanViewVenue(
         Venue venue,
         Member? member,
-        MemberSubscription? subscription,
+        MemberChapterSubscription? subscription,
         ChapterMembershipSettings? membershipSettings,
         ChapterPrivacySettings? privacySettings);
 
@@ -36,6 +36,6 @@ public interface IAuthorizationService
 
     SubscriptionStatus GetSubscriptionStatus(
         Member? member,
-        MemberSubscription? subscription,
+        MemberChapterSubscription? subscription,
         ChapterMembershipSettings? membershipSettings);
 }

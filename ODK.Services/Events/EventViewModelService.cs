@@ -57,7 +57,13 @@ public class EventViewModelService : IEventViewModelService
             privacySettings) = await _unitOfWork.RunAsync(
             x => x.ChapterPageRepository.GetByChapterId(chapter.Id),
             x => x.EventRepository.Query(x => x.ForShortcode(shortcode)).WithVenue().GetSingle(),
-            x => x.MemberSubscriptionRepository.GetByMemberId(currentMember.Id, chapter.Id),
+            x => x.MemberSubscriptionRecordRepository
+                .Query()
+                .Current()
+                .ForMember(currentMember.Id)
+                .ForChapter(chapter.Id)
+                .ToChapterSubscription()
+                .GetSingleOrDefault(),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPaymentAccountRepository.GetByChapterId(chapter.Id),
             x => x.SitePaymentSettingsRepository.GetActive(),
@@ -232,8 +238,14 @@ public class EventViewModelService : IEventViewModelService
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.EventRepository.Query(x => x.ForShortcode(shortcode)).WithVenue().GetSingle(),
             x => currentMember != null
-                ? x.MemberSubscriptionRepository.GetByMemberId(currentMember.Id, chapter.Id)
-                : new DefaultDeferredQuerySingleOrDefault<MemberSubscription>(),
+                ? x.MemberSubscriptionRecordRepository
+                    .Query()
+                    .Current()
+                    .ForMember(currentMember.Id)
+                    .ForChapter(chapter.Id)
+                    .ToChapterSubscription()
+                    .GetSingleOrDefault()
+                : new DefaultDeferredQuerySingleOrDefault<MemberChapterSubscription>(),
             x => x.EventHostRepository.GetByEventShortcode(shortcode),
             x => x.EventCommentRepository.GetByEventShortcode(shortcode),
             x => x.EventResponseRepository.GetByEventShortcode(shortcode),
@@ -381,8 +393,14 @@ public class EventViewModelService : IEventViewModelService
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => currentMember != null
-                ? x.MemberSubscriptionRepository.GetByMemberId(currentMember.Id, chapter.Id)
-                : new DefaultDeferredQuerySingleOrDefault<MemberSubscription>(),
+                ? x.MemberSubscriptionRecordRepository
+                    .Query()
+                    .Current()
+                    .ForMember(currentMember.Id)
+                    .ForChapter(chapter.Id)
+                    .ToChapterSubscription()
+                    .GetSingleOrDefault()
+                : new DefaultDeferredQuerySingleOrDefault<MemberChapterSubscription>(),
             x => x.EventRepository
                 .Query(x => x.ForChapter(chapter.Id).After(afterUtc).Published())
                 .WithVenue()

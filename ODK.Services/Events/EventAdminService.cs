@@ -226,7 +226,12 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.EventRepository.Query().ById(eventId).WithVenue().GetSingle(),
             x => x.EventResponseRepository.GetByEventId(eventId),
             x => x.MemberRepository.GetAllWithAvatarByChapterId(chapter.Id),
-            x => x.MemberSubscriptionRepository.GetByChapterId(chapter.Id),
+            x => x.MemberSubscriptionRecordRepository
+                .Query()
+                .Current()
+                .ForChapter(chapter.Id)
+                .ToChapterSubscription()
+                .GetAll(),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
             x => x.EventWaitlistMemberRepository.GetByEventId(eventId));
@@ -243,7 +248,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             .ToHashSet();
 
         var memberSubscriptionDictionary = memberSubscriptions
-            .ToDictionary(x => x.MemberChapter.MemberId);
+            .ToDictionary(x => x.MemberId);
 
         return new EventAttendeesAdminPageViewModel
         {
@@ -673,7 +678,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         var (membershipSettings, privacySettings, memberSubscriptions) = await _unitOfWork.RunAsync(
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
-            x => x.MemberSubscriptionRepository.GetByChapterId(chapter.Id));
+            x => x.MemberSubscriptionRecordRepository.Query().Current().ForChapter(chapter.Id).ToChapterSubscription().GetAll());
 
         var result = await SendEventInvites(
             request,
@@ -753,7 +758,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.EventInviteRepository.GetByEventId(@event.Id),
             x => x.MemberRepository.GetByChapterId(@event.ChapterId),
             x => x.MemberEmailPreferenceRepository.GetByChapterId(@event.ChapterId, MemberEmailPreferenceType.Events),
-            x => x.MemberSubscriptionRepository.GetByChapterId(@event.ChapterId));
+            x => x.MemberSubscriptionRecordRepository.Query().Current().ForChapter(@event.ChapterId).ToChapterSubscription().GetAll());
 
         if (!hasAccess)
         {
@@ -1252,14 +1257,14 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         IReadOnlyCollection<EventInvite> invites,
         IReadOnlyCollection<Member> members,
         IReadOnlyCollection<MemberEmailPreference> memberEmailPreferences,
-        IReadOnlyCollection<MemberSubscription> memberSubscriptions)
+        IReadOnlyCollection<MemberChapterSubscription> memberSubscriptions)
     {
         var memberResponses = responses
             .ToDictionary(x => x.MemberId, x => x);
         var inviteDictionary = invites
             .ToDictionary(x => x.MemberId, x => x);
         var memberSubscriptionDictionary = memberSubscriptions
-            .ToDictionary(x => x.MemberChapter.MemberId);
+            .ToDictionary(x => x.MemberId);
 
         var optOutMemberIds = memberEmailPreferences
             .Where(x => x.Type == MemberEmailPreferenceType.Events && x.Disabled)

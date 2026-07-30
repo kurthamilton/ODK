@@ -103,7 +103,7 @@ public interface IMemberEmailService
     Task SendMemberChapterSubscriptionExpiringEmail(
         IChapterServiceRequest request,
         Member member,
-        MemberSubscription memberSubscription,
+        MemberChapterSubscription memberSubscription,
         DateTime expires,
         DateTime disabledDate);
 

@@ -649,7 +649,11 @@ public class PaymentService : IPaymentService
                 $"cancelling member subscription record with external id '{webhook.SubscriptionId}'");
 
             var memberSubscriptionRecord = await _unitOfWork.MemberSubscriptionRecordRepository
-                .GetLatestByExternalIdOrDefault(webhook.SubscriptionId).Run();
+                .Query()
+                .ForExternalId(webhook.SubscriptionId)
+                .OrderByDescending(x => x.PurchasedUtc)
+                .GetSingleOrDefault()
+                .Run();
             if (memberSubscriptionRecord == null)
             {
                 await _loggingService.Warn(
@@ -780,11 +784,13 @@ public class PaymentService : IPaymentService
 
         var (chapterId, memberId) = (chapter.Id, member.Id);
 
-        var (memberSubscription, currentRecord, recordForInitiator) = await _unitOfWork.RunAsync(
-            x => x.MemberSubscriptionRepository.GetByMemberId(memberId, chapterId),
-            x => x.MemberSubscriptionRecordRepository.GetCurrentOrDefault(memberId, chapterId),
+        var (currentRecord, recordForInitiator) = await _unitOfWork.RunAsync(
+            x => x.MemberSubscriptionRecordRepository.Query().Current().ForMember(memberId).ForChapter(chapterId).GetSingleOrDefault(),
             x => !string.IsNullOrEmpty(initiatorId)
-                ? x.MemberSubscriptionRecordRepository.GetByInitiatorIdOrDefault(initiatorId)
+                ? x.MemberSubscriptionRecordRepository
+                    .Query()
+                    .ForInitiator(initiatorId)
+                    .GetSingleOrDefault()
                 : new DefaultDeferredQuerySingleOrDefault<MemberSubscriptionRecord>());
 
         // Idempotency: if this initiating event (the payment provider webhook id) has already recorded a
@@ -800,24 +806,23 @@ public class PaymentService : IPaymentService
         }
 
         // Roll the expiry forward: a first purchase starts from now, a renewal/extension adds onto the
-        // subscription's existing (future) expiry. Computed from the snapshot, which stays authoritative
-        // until the read switch; the value is fixed on the new record at insert.
-        var originalExpiresUtc = memberSubscription?.ExpiresUtc > utcNow
-            ? memberSubscription.ExpiresUtc.Value
+        // subscription's existing (future) expiry - read from the current log record (the source of truth);
+        // the value is fixed on the new record at insert.
+        var originalExpiresUtc = currentRecord?.ExpiresUtc > utcNow
+            ? currentRecord.ExpiresUtc.Value
             : utcNow;
         var expiresUtc = originalExpiresUtc.AddMonths(chapterSubscription.Months);
 
-        // Append a new current record for this payment (renewals keep the subscription's history) and mirror
-        // the current state onto the snapshot.
+        // Append a new current record for this payment (renewals keep the subscription's history).
         _memberChapterSubscriptionWriter.MakeRecordCurrent(
-            memberChapter,
             newRecord: new MemberSubscriptionRecord
             {
                 Amount = chapterSubscription.Amount,
                 ChapterId = chapterId,
                 ChapterSubscriptionId = chapterSubscription.Id,
                 ExpiresUtc = expiresUtc,
-                ExternalId = externalId,
+                // no need to store external id for one-off purchases
+                ExternalId = chapterSubscription.Recurring ? externalId : null,
                 InitiatorId = initiatorId,
                 MemberId = memberId,
                 Months = chapterSubscription.Months,
@@ -825,8 +830,7 @@ public class PaymentService : IPaymentService
                 PurchasedUtc = utcNow,
                 Type = chapterSubscription.Type
             },
-            existingCurrent: currentRecord,
-            existingSnapshot: memberSubscription);
+            existingCurrent: currentRecord);
 
         await _loggingService.Info(
             $"Updating member {member.Id} subscription for chapter {chapter.Name}. " +

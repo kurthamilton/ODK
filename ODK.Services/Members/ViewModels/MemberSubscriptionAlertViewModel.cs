@@ -13,5 +13,5 @@ public class MemberSubscriptionAlertViewModel
     /// </summary>
     public required bool HasActiveRecurringSubscription { get; init; }
 
-    public required MemberSubscription? MemberSubscription { get; init; }
+    public required MemberChapterSubscription? MemberSubscription { get; init; }
 }
