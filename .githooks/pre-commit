@@ -1,0 +1,17 @@
+#!/bin/sh
+# Block direct commits to the mainline branch. Work lands via a feature branch + PR (see CLAUDE.md).
+# Enable per clone with: git config core.hooksPath .githooks
+
+branch="$(git symbolic-ref --short HEAD 2>/dev/null)"
+
+case "$branch" in
+    master|main)
+        echo "✖ Direct commits to '$branch' are blocked." >&2
+        echo "  Create a feature branch first:" >&2
+        echo "      git switch -c my-branch" >&2
+        echo "  then commit there. (Override with 'git commit --no-verify' only if you truly mean to.)" >&2
+        exit 1
+        ;;
+esac
+
+exit 0
