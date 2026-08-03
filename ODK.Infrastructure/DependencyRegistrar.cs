@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using ODK.Core.Countries;
+using ODK.Core.Exceptions;
 using ODK.Core.Platforms;
 using ODK.Core.Web;
 using ODK.Data.Core;
@@ -7,17 +8,17 @@ using ODK.Data.EntityFramework;
 using ODK.Infrastructure.Settings;
 using ODK.Services.Authentication;
 using ODK.Services.Authentication.OAuth;
-using ODK.Services.Integrations.Authentication;
 using ODK.Services.Authorization;
 using ODK.Services.Chapters;
-using ODK.Services.Countries;
 using ODK.Services.Contact;
+using ODK.Services.Countries;
 using ODK.Services.Csv;
 using ODK.Services.Emails;
 using ODK.Services.Events;
 using ODK.Services.Features;
 using ODK.Services.Geolocation;
 using ODK.Services.Imaging;
+using ODK.Services.Integrations.Authentication;
 using ODK.Services.Integrations.Csv;
 using ODK.Services.Integrations.Emails.Brevo;
 using ODK.Services.Integrations.Geolocation;
@@ -160,13 +161,18 @@ public static class DependencyRegistrar
             .AddScoped<ILoggingService, LoggingService>()
             .AddSingleton(new LoggingServiceSettings
             {
-                IgnoreUnknownPathPatterns = appSettings.Logging.IgnorePatterns
-                    .Concat(appSettings.RateLimiting.BlockPatterns)
-                    .ToArray(),
-                IgnoreUnknownPaths = appSettings.Logging.IgnorePaths
-                    .Concat(appSettings.RateLimiting.BlockPaths)
-                    .ToArray(),
-                IgnoreUnknownPathUserAgents = appSettings.Logging.IgnoreUserAgents
+                IgnoreExceptions = appSettings.Logging.IgnoreExceptions
+                    .Append(new IgnoreExceptionRule
+                    {
+                        Exceptions = [nameof(OdkNotFoundException)],
+                        PathPatterns = appSettings.RateLimiting.BlockPatterns.ToArray()
+                    })
+                    .Append(new IgnoreExceptionRule
+                    {
+                        Exceptions = [nameof(OdkNotFoundException)],
+                        Paths = appSettings.RateLimiting.BlockPaths.ToArray()
+                    })
+                    .ToArray()
             })
             .AddScoped<IEmailService, EmailService>()
             .AddSingleton(new EmailServiceSettings

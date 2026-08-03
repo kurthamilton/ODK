@@ -25,6 +25,12 @@ public abstract class AdminPageModel : OdkPageModel
     public override async Task OnPageHandlerExecutionAsync(
         PageHandlerExecutingContext context, PageHandlerExecutionDelegate next)
     {
+        if (CurrentMemberOrDefault == null)
+        {
+            RedirectToLogin();
+            return;
+        }
+
         var adminMember = await RequestStore.GetCurrentChapterAdminMember();
         if (!adminMember.HasAccessTo(Securable, CurrentMember))
         {
@@ -42,5 +48,11 @@ public abstract class AdminPageModel : OdkPageModel
             route.GetPermitted(adminMember, CurrentMember) ??
             AdminRoutes.Events(Chapter);
         Response.Redirect(permittedRoute.Path);
+    }
+
+    protected void RedirectToLogin()
+    {
+        var returnUrl = $"{Request.Path}{Request.QueryString}";
+        Response.Redirect(OdkRoutes.Account.Login(RequestStore.ChapterOrDefault, returnUrl));
     }
 }

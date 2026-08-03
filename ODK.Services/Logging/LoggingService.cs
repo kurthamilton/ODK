@@ -149,15 +149,18 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
             x => x.ErrorRepository.GetErrors(page, pageSize));
     }
 
-    public bool IgnoreUnknownRequestPath(IHttpRequestContext httpRequestContext)
+    public bool IgnoreException(Exception exception, IHttpRequestContext httpRequestContext)
     {
         var path = UrlUtils.NormalisePath(httpRequestContext.RequestPath);
         var userAgent = httpRequestContext.UserAgent;
+        var exceptionName = exception.GetType().Name;
 
-        return
-            _settings.IgnoreUnknownPaths.Any(x => MatchesConfigRule(x, path)) ||
-            _settings.IgnoreUnknownPathPatterns.Any(x => Regex.IsMatch(path, x)) ||
-            _settings.IgnoreUnknownPathUserAgents.Any(x => MatchesConfigRule(x, userAgent));
+        return _settings.IgnoreExceptions
+            .Where(rule => rule.Exceptions.Any(x => x.Equals(exceptionName, StringComparison.OrdinalIgnoreCase)))
+            .Any(rule =>
+                rule.Paths.Any(x => MatchesConfigRule(x, path)) ||
+                rule.PathPatterns.Any(x => Regex.IsMatch(path, x)) ||
+                rule.UserAgents.Any(x => MatchesConfigRule(x, userAgent)));
     }
 
     public Task Info(string message)

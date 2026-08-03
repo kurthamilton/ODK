@@ -2,9 +2,5 @@
 
 public class LoggingServiceSettings
 {
-    public required IReadOnlyCollection<string> IgnoreUnknownPathPatterns { get; init; }
-
-    public required IReadOnlyCollection<string> IgnoreUnknownPaths { get; init; }
-
-    public required IReadOnlyCollection<string> IgnoreUnknownPathUserAgents { get; init; }
+    public required IReadOnlyCollection<IgnoreExceptionRule> IgnoreExceptions { get; init; } = [];
 }

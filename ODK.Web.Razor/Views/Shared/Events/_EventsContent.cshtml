@@ -1,6 +1,4 @@
-﻿@using ODK.Core.Chapters
-@using ODK.Services.Events
-@using ODK.Services.Events.ViewModels
+﻿@using ODK.Services.Events.ViewModels
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Events
@@ -40,7 +38,7 @@ else
             
             @if (Model.CurrentMember == null)
             {
-                var loginUrl = $"{OdkRoutes.Account.Login(Model.Chapter)}?returnUrl={OdkRoutes.Groups.Events(Model.Chapter)}";
+                var loginUrl = OdkRoutes.Account.Login(Model.Chapter, OdkRoutes.Groups.Events(Model.Chapter));
                 <a href="@loginUrl">
                     Sign in
                 </a>

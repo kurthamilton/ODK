@@ -181,12 +181,11 @@ public class ErrorHandlingMiddleware
         Exception ex,
         ILoggingService loggingService)
     {
-        if (ex is OdkNotFoundException)
+        var requestContext = HttpRequestContext.Create(httpContext.Request);
+
+        if (loggingService.IgnoreException(ex, requestContext))
         {
-            if (loggingService.IgnoreUnknownRequestPath(HttpRequestContext.Create(httpContext.Request)))
-            {
-                return;
-            }
+            return;
         }
 
         // Redact credential-bearing headers so auth cookies/tokens don't end up in logs.
