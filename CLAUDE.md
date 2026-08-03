@@ -42,6 +42,20 @@ Tests: `ODK.Core.Tests`, `ODK.Services.Tests`, `ODK.Services.Integrations.Tests`
 
 Project defaults: `net10.0`, nullable enabled, implicit usings enabled.
 
+## Git workflow
+
+**Never make changes or commit while `master` is the active branch.** `master` is the mainline that
+deploys to prod — all work lands via a branch and PR. Before editing anything, check the current branch;
+if it's `master`, create a feature branch first (`git switch -c <branch>`) and do the work there. This
+applies to every change, however small (a one-line fix, a doc tweak, a migration).
+
+A `pre-commit` hook enforces this — it rejects commits made on `master`. It lives in the tracked
+`.githooks/` directory; enable it once per clone with:
+
+```
+git config core.hooksPath .githooks
+```
+
 ## Database migrations
 
 EF Core migrations live in `ODK.Data.EntityFramework.Migrations` and are run explicitly (never on app

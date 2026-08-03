@@ -2,3 +2,7 @@
 # rewrite it to CRLF (which caused "LF will be replaced by CRLF" warnings and
 # noisy diffs on every recompile).
 ODK.Web.Razor/wwwroot/css/*.css text eol=lf
+
+# Git hooks are shell scripts run via /bin/sh - keep them LF so the shebang isn't
+# broken by CRLF on Windows checkouts.
+.githooks/** text eol=lf
