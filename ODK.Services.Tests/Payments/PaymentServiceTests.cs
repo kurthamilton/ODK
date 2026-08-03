@@ -703,11 +703,11 @@ public static class PaymentServiceTests
             .Should()
             .Be(1);
 
-        var memberSubscription = context.Set<MemberSiteSubscription>()
-            .Single(x => x.MemberId == member.Id);
+        var currentRecord = context.Set<MemberSiteSubscriptionRecord>()
+            .Single(x => x.MemberId == member.Id && x.IsCurrent);
 
         // Extended once (a yearly plan, so 12 months), not twice.
-        memberSubscription.ExpiresUtc
+        currentRecord.ExpiresUtc
             .Should()
             .BeCloseTo(DateTime.UtcNow.AddMonths(12), TimeSpan.FromMinutes(5));
     }
@@ -759,11 +759,11 @@ public static class PaymentServiceTests
         await service.ProcessWebhook(request, webhook);
 
         // Assert
-        var memberSubscription = context.Set<MemberSiteSubscription>()
-            .Single(x => x.MemberId == member.Id);
+        var currentRecord = context.Set<MemberSiteSubscriptionRecord>()
+            .Single(x => x.MemberId == member.Id && x.IsCurrent);
 
         // Extended by the plan's 12 months from the existing expiry - the renewal was not skipped.
-        memberSubscription.ExpiresUtc
+        currentRecord.ExpiresUtc
             .Should()
             .BeCloseTo(originalExpiry.AddMonths(12), TimeSpan.FromMinutes(5));
 

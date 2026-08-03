@@ -537,7 +537,6 @@ public class PaymentService : IPaymentService
         try
         {
             return await UpdateMemberSiteSubscription(
-                metadata.Platform ?? PlatformType.DrunkenKnitwits,
                 member,
                 siteSubscriptionPrice,
                 payment,
@@ -846,7 +845,6 @@ public class PaymentService : IPaymentService
     }
 
     private async Task<PaymentWebhookProcessingResult> UpdateMemberSiteSubscription(
-        PlatformType platform,
         Member member,
         SiteSubscriptionPrice siteSubscriptionPrice,
         Payment payment,
@@ -856,11 +854,10 @@ public class PaymentService : IPaymentService
     {
         var memberId = member.Id;
 
-        var (recordForInitiator, memberSubscription, currentRecord) = await _unitOfWork.RunAsync(
+        var (recordForInitiator, currentRecord) = await _unitOfWork.RunAsync(
             x => !string.IsNullOrEmpty(initiatorId)
                 ? x.MemberSiteSubscriptionRecordRepository.Query().ForInitiator(initiatorId).GetSingleOrDefault()
                 : new DefaultDeferredQuerySingleOrDefault<MemberSiteSubscriptionRecord>(),
-            x => x.MemberSiteSubscriptionRepository.GetByMemberId(memberId, platform),
             x => x.MemberSiteSubscriptionRecordRepository.Query().Current().ForMember(memberId).GetSingleOrDefault());
 
         // Idempotency: if this initiating event (the payment provider webhook id) has already extended a
@@ -899,8 +896,7 @@ public class PaymentService : IPaymentService
                 SiteSubscriptionId = siteSubscriptionPrice.SiteSubscriptionId,
                 SiteSubscriptionPriceId = siteSubscriptionPrice.Id
             },
-            existingCurrent: currentRecord,
-            existingSnapshot: memberSubscription);
+            existingCurrent: currentRecord);
 
         await _unitOfWork.SaveChangesAsync();
 

@@ -159,10 +159,9 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
         IMemberChapterServiceRequest request,
         SiteAdminChapterUpdateViewModel viewModel)
     {
-        var (platform, chapter) = (request.Platform, request.Chapter);
+        var chapter = request.Chapter;
 
-        var (subscription, currentRecord) = await GetSiteAdminRestrictedContent(request,
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
+        var currentRecord = await GetSiteAdminRestrictedContent(request,
             x => x.MemberSiteSubscriptionRecordRepository.Query().Current().ForMember(chapter.OwnerId).GetSingleOrDefault());
 
         if (viewModel.SiteSubscriptionId == null)
@@ -182,8 +181,7 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
                 SiteSubscriptionId = currentRecord?.SiteSubscriptionId ?? viewModel.SiteSubscriptionId.Value,
                 SiteSubscriptionPriceId = currentRecord?.SiteSubscriptionPriceId
             },
-            existingCurrent: currentRecord,
-            existingSnapshot: subscription);
+            existingCurrent: currentRecord);
 
         await _unitOfWork.SaveChangesAsync();
         return ServiceResult.Successful();

@@ -64,7 +64,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
         Guid siteSubscriptionPriceId,
         string externalId)
     {
-        var (platform, currentMember) = (request.Platform, request.CurrentMember);
+        var currentMember = request.CurrentMember;
 
         var (sitePaymentSettings, memberSubscriptionDto, siteSubscriptionPrice) = await _unitOfWork.RunAsync(
             x => x.SitePaymentSettingsRepository.GetAll(),
@@ -94,8 +94,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
                 MemberId = currentMember.Id,
                 SiteSubscriptionId = siteSubscription.Id,
                 SiteSubscriptionPriceId = siteSubscriptionPrice.Id
-            },
-            platform);
+            });
 
         await _unitOfWork.SaveChangesAsync();
 
