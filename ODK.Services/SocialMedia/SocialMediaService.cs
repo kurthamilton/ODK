@@ -91,8 +91,8 @@ public class SocialMediaService : ISocialMediaService
         var chapterId = chapterIds.Dequeue();
 
         var (hasAccess, links) = await _unitOfWork.RunAsync(
-            x => x.MemberSiteSubscriptionRepository
-                .Query(x => x.ForChapterOwner(chapterId).Active())
+            x => x.MemberSiteSubscriptionRecordRepository
+                .Query(x => x.Current().ForChapterOwner(chapterId).Active())
                 .HasFeature(SiteFeatureType.InstagramFeed),
             x => x.ChapterLinksRepository.GetByChapterId(chapterId));
 

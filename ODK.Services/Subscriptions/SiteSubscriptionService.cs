@@ -30,10 +30,10 @@ public class SiteSubscriptionService : ISiteSubscriptionService
 
     public async Task<ServiceResult> CancelMemberSiteSubscription(IMemberServiceRequest request)
     {
-        var (platform, currentMember) = (request.Platform, request.CurrentMember);
+        var currentMember = request.CurrentMember;
 
         var (memberSubscriptionDto, sitePaymentSettings) = await _unitOfWork.RunAsync(
-            x => x.MemberSiteSubscriptionRepository.GetDtoByMemberId(currentMember.Id, platform),
+            x => x.MemberSiteSubscriptionRecordRepository.GetDtoByMemberId(currentMember.Id),
             x => x.SitePaymentSettingsRepository.GetAll());
 
         if (memberSubscriptionDto == null)
@@ -68,7 +68,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
 
         var (sitePaymentSettings, memberSubscriptionDto, siteSubscriptionPrice) = await _unitOfWork.RunAsync(
             x => x.SitePaymentSettingsRepository.GetAll(),
-            x => x.MemberSiteSubscriptionRepository.GetDtoByMemberId(currentMember.Id, platform),
+            x => x.MemberSiteSubscriptionRecordRepository.GetDtoByMemberId(currentMember.Id),
             x => x.SiteSubscriptionPriceRepository.GetById(siteSubscriptionPriceId));
 
         var siteSubscription = await _unitOfWork.SiteSubscriptionRepository.GetById(siteSubscriptionPrice.SiteSubscriptionId).Run();
@@ -125,7 +125,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
                 ? x.MemberRepository.GetByIdOrDefault(memberId.Value)
                 : new DefaultDeferredQuerySingleOrDefault<Member>(),
             x => memberId != null
-                ? x.MemberSiteSubscriptionRepository.GetDtoByMemberId(memberId.Value, platform)
+                ? x.MemberSiteSubscriptionRecordRepository.GetDtoByMemberId(memberId.Value)
                 : new DefaultDeferredQuerySingleOrDefault<MemberSiteSubscriptionDto>(),
             x => memberId != null
                 ? x.CurrencyRepository.GetByMemberIdOrDefault(memberId.Value)

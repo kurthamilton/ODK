@@ -166,7 +166,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         var platform = request.Platform;
 
         var (subscriptionDtos, chapters, currencies) = await GetSiteAdminRestrictedContent(request,
-            x => x.MemberSiteSubscriptionRepository.GetAllChapterOwnerSubscriptionDtos(platform),
+            x => x.MemberSiteSubscriptionRecordRepository.GetAllChapterOwnerSubscriptionDtos(platform),
             x => x.ChapterRepository.GetAll(platform, includeUnpublished: true),
             x => x.CurrencyRepository.GetAll());
 

@@ -242,6 +242,18 @@ internal class MockOdkContext : OdkContext
     {
         siteSubscription ??= CreateSiteSubscription();
 
+        // The log's current record is the read source (post Phase 3 read-switch); the snapshot is still
+        // dual-written. Seed both so feature-gate/DTO reads and the writer paths both resolve.
+        Create(new MemberSiteSubscriptionRecord
+        {
+            CreatedUtc = DateTime.UtcNow,
+            ExpiresUtc = expiresUtc,
+            Id = Guid.NewGuid(),
+            IsCurrent = true,
+            MemberId = member.Id,
+            SiteSubscriptionId = siteSubscription.Id
+        });
+
         return Create(new MemberSiteSubscription
         {
             ExpiresUtc = expiresUtc,

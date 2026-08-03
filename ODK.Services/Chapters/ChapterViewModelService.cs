@@ -262,7 +262,7 @@ public class ChapterViewModelService : IChapterViewModelService
             memberTopics,
             memberLocation) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetByOwnerId(platform, currentMember.Id),
-            x => x.MemberSiteSubscriptionRepository.GetDtoByMemberId(currentMember.Id, platform),
+            x => x.MemberSiteSubscriptionRecordRepository.GetDtoByMemberId(currentMember.Id),
             x => x.CountryRepository.GetAll(),
             x => x.TopicGroupRepository.GetAll(),
             x => x.TopicRepository.GetAll(),
@@ -607,8 +607,8 @@ public class ChapterViewModelService : IChapterViewModelService
                     .ToChapterSubscription()
                     .GetSingleOrDefault()
                 : new DefaultDeferredQuerySingleOrDefault<MemberChapterSubscription>(),
-            x => x.MemberSiteSubscriptionRepository
-                .Query(x => x.ForChapterOwner(chapter.Id).Active())
+            x => x.MemberSiteSubscriptionRecordRepository
+                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active())
                 .HasFeature(SiteFeatureType.InstagramFeed),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
@@ -870,8 +870,8 @@ public class ChapterViewModelService : IChapterViewModelService
                     .ToChapterSubscription()
                     .GetSingleOrDefault()
                 : new DefaultDeferredQuerySingleOrDefault<MemberChapterSubscription>(),
-            x => x.MemberSiteSubscriptionRepository
-                .Query(x => x.ForChapterOwner(chapter.Id).Active())
+            x => x.MemberSiteSubscriptionRecordRepository
+                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active())
                 .HasFeature(SiteFeatureType.InstagramFeed),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
