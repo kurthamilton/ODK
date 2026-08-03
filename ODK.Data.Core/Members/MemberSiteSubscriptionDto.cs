@@ -5,7 +5,7 @@ namespace ODK.Data.Core.Members;
 
 public class MemberSiteSubscriptionDto
 {
-    public required MemberSiteSubscription MemberSiteSubscription { get; init; }
+    public required MemberSiteSubscriptionState MemberSiteSubscription { get; init; }
 
     public required SiteSubscription SiteSubscription { get; init; }
 

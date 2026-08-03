@@ -41,7 +41,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             return ServiceResult.Failure("Subscription not found");
         }
 
-        OdkAssertions.BelongsToMember(memberSubscriptionDto.MemberSiteSubscription, currentMember.Id);
+        OdkAssertions.MeetsCondition(memberSubscriptionDto.MemberSiteSubscription, x => x.MemberId == currentMember.Id);
 
         if (string.IsNullOrEmpty(memberSubscriptionDto.MemberSiteSubscription.ExternalId))
         {
@@ -66,11 +66,10 @@ public class SiteSubscriptionService : ISiteSubscriptionService
     {
         var (platform, currentMember) = (request.Platform, request.CurrentMember);
 
-        var (sitePaymentSettings, memberSubscriptionDto, siteSubscriptionPrice, currentRecord) = await _unitOfWork.RunAsync(
+        var (sitePaymentSettings, memberSubscriptionDto, siteSubscriptionPrice) = await _unitOfWork.RunAsync(
             x => x.SitePaymentSettingsRepository.GetAll(),
             x => x.MemberSiteSubscriptionRepository.GetDtoByMemberId(currentMember.Id, platform),
-            x => x.SiteSubscriptionPriceRepository.GetById(siteSubscriptionPriceId),
-            x => x.MemberSiteSubscriptionRecordRepository.Query().Current().ForMember(currentMember.Id).GetSingleOrDefault());
+            x => x.SiteSubscriptionPriceRepository.GetById(siteSubscriptionPriceId));
 
         var siteSubscription = await _unitOfWork.SiteSubscriptionRepository.GetById(siteSubscriptionPrice.SiteSubscriptionId).Run();
 
@@ -86,8 +85,8 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             return ServiceResult.Failure("Error confirming subscription");
         }
 
-        _memberSiteSubscriptionWriter.MakeRecordCurrent(
-            newRecord: new MemberSiteSubscriptionRecord
+        await _memberSiteSubscriptionWriter.MakeRecordCurrent(
+            new MemberSiteSubscriptionRecord
             {
                 CreatedUtc = DateTime.UtcNow,
                 ExpiresUtc = externalSubscription.NextBillingDate,
@@ -96,8 +95,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
                 SiteSubscriptionId = siteSubscription.Id,
                 SiteSubscriptionPriceId = siteSubscriptionPrice.Id
             },
-            existingCurrent: currentRecord,
-            existingSnapshot: memberSubscriptionDto?.MemberSiteSubscription);
+            platform);
 
         await _unitOfWork.SaveChangesAsync();
 

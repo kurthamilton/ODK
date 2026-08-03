@@ -36,7 +36,14 @@ public class MemberSiteSubscriptionRepository
             where siteSubscription.Platform == platform
             select new MemberSiteSubscriptionDto
             {
-                MemberSiteSubscription = memberSiteSubscription,
+                MemberSiteSubscription = new MemberSiteSubscriptionState
+                {
+                    ExpiresUtc = memberSiteSubscription.ExpiresUtc,
+                    ExternalId = memberSiteSubscription.ExternalId,
+                    MemberId = memberSiteSubscription.MemberId,
+                    SiteSubscriptionId = memberSiteSubscription.SiteSubscriptionId,
+                    SiteSubscriptionPriceId = memberSiteSubscription.SiteSubscriptionPriceId
+                },
                 SiteSubscription = siteSubscription,
                 SiteSubscriptionPrice = siteSubscriptionPrice
             };

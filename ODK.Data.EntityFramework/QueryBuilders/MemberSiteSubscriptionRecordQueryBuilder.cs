@@ -4,6 +4,7 @@ using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Subscriptions;
 using ODK.Data.Core.Deferred;
+using ODK.Data.Core.Members;
 using ODK.Data.Core.QueryBuilders;
 
 namespace ODK.Data.EntityFramework.QueryBuilders;
@@ -80,6 +81,33 @@ public class MemberSiteSubscriptionRecordQueryBuilder :
 
         return CreateQueryBuilder<ISiteSubscriptionQueryBuilder, SiteSubscription>(
             context => new SiteSubscriptionQueryBuilder(context, query));
+    }
+
+    public IQueryBuilder<MemberSiteSubscriptionDto> ToDto()
+    {
+        var query =
+            from record in Query
+            from siteSubscription in Set<SiteSubscription>()
+                .Where(x => x.Id == record.SiteSubscriptionId)
+            from siteSubscriptionPrice in Set<SiteSubscriptionPrice>()
+                .Where(x => x.Id == record.SiteSubscriptionPriceId)
+                .DefaultIfEmpty()
+            select new MemberSiteSubscriptionDto
+            {
+                MemberSiteSubscription = new MemberSiteSubscriptionState
+                {
+                    CancelledUtc = record.CancelledUtc,
+                    ExpiresUtc = record.ExpiresUtc,
+                    ExternalId = record.ExternalId,
+                    MemberId = record.MemberId!.Value,
+                    SiteSubscriptionId = record.SiteSubscriptionId,
+                    SiteSubscriptionPriceId = record.SiteSubscriptionPriceId
+                },
+                SiteSubscription = siteSubscription,
+                SiteSubscriptionPrice = siteSubscriptionPrice
+            };
+
+        return ProjectTo(query);
     }
 
     public IQueryBuilder<MemberSiteSubscriptionState> ToState()

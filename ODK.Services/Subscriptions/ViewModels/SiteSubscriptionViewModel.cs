@@ -12,7 +12,7 @@ public class SiteSubscriptionViewModel
 
     public required ExternalSubscription? CurrentMemberExternalSubscription { get; init; }
 
-    public required MemberSiteSubscription? CurrentMemberSiteSubscription { get; init; }
+    public required MemberSiteSubscriptionState? CurrentMemberSiteSubscription { get; init; }
 
     public required IReadOnlyCollection<SiteSubscriptionFeature> Features { get; init; }
 
