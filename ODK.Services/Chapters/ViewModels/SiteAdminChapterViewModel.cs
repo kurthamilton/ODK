@@ -16,5 +16,5 @@ public class SiteAdminChapterViewModel
 
     public required IReadOnlyCollection<SiteSubscription> SiteSubscriptions { get; init; }
 
-    public required MemberSiteSubscription? Subscription { get; init; }
+    public required MemberSiteSubscriptionState? Subscription { get; init; }
 }

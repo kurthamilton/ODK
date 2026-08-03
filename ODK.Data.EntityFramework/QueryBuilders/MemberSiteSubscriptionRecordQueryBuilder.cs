@@ -1,5 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using ODK.Core.Chapters;
+using ODK.Core.Features;
 using ODK.Core.Members;
+using ODK.Core.Subscriptions;
+using ODK.Data.Core.Deferred;
+using ODK.Data.Core.Members;
 using ODK.Data.Core.QueryBuilders;
 
 namespace ODK.Data.EntityFramework.QueryBuilders;
@@ -15,9 +20,33 @@ public class MemberSiteSubscriptionRecordQueryBuilder :
 
     protected override MemberSiteSubscriptionRecordQueryBuilder Builder => this;
 
+    public IMemberSiteSubscriptionRecordQueryBuilder Active()
+    {
+        Query = Query.Where(x => x.ExpiresUtc == null || x.ExpiresUtc > DateTime.UtcNow);
+        return this;
+    }
+
     public IMemberSiteSubscriptionRecordQueryBuilder Current()
     {
         Query = Query.Where(x => x.IsCurrent);
+        return this;
+    }
+
+    public IMemberSiteSubscriptionRecordQueryBuilder ForChapterOwner(Guid chapterId)
+    {
+        Query =
+            from record in Query
+            from chapter in Set<Chapter>()
+                .Where(x => x.OwnerId == record.MemberId)
+            where chapter.Id == chapterId
+            select record;
+
+        return this;
+    }
+
+    public IMemberSiteSubscriptionRecordQueryBuilder ForExternalId(string externalId)
+    {
+        Query = Query.Where(x => x.ExternalId == externalId);
         return this;
     }
 
@@ -37,5 +66,62 @@ public class MemberSiteSubscriptionRecordQueryBuilder :
     {
         Query = Query.Where(x => x.PaymentId == paymentId);
         return this;
+    }
+
+    public IDeferredQuery<bool> HasFeature(SiteFeatureType feature)
+        => SiteSubscription().HasFeature(feature);
+
+    public ISiteSubscriptionQueryBuilder SiteSubscription()
+    {
+        var query =
+            from record in Query
+            from siteSubscription in Set<SiteSubscription>()
+                .Where(x => x.Id == record.SiteSubscriptionId)
+            select siteSubscription;
+
+        return CreateQueryBuilder<ISiteSubscriptionQueryBuilder, SiteSubscription>(
+            context => new SiteSubscriptionQueryBuilder(context, query));
+    }
+
+    public IQueryBuilder<MemberSiteSubscriptionDto> ToDto()
+    {
+        var query =
+            from record in Query
+            from siteSubscription in Set<SiteSubscription>()
+                .Where(x => x.Id == record.SiteSubscriptionId)
+            from siteSubscriptionPrice in Set<SiteSubscriptionPrice>()
+                .Where(x => x.Id == record.SiteSubscriptionPriceId)
+                .DefaultIfEmpty()
+            select new MemberSiteSubscriptionDto
+            {
+                MemberSiteSubscription = new MemberSiteSubscriptionState
+                {
+                    CancelledUtc = record.CancelledUtc,
+                    ExpiresUtc = record.ExpiresUtc,
+                    ExternalId = record.ExternalId,
+                    MemberId = record.MemberId!.Value,
+                    SiteSubscriptionId = record.SiteSubscriptionId,
+                    SiteSubscriptionPriceId = record.SiteSubscriptionPriceId
+                },
+                SiteSubscription = siteSubscription,
+                SiteSubscriptionPrice = siteSubscriptionPrice
+            };
+
+        return ProjectTo(query);
+    }
+
+    public IQueryBuilder<MemberSiteSubscriptionState> ToState()
+    {
+        var query = Query.Select(x => new MemberSiteSubscriptionState
+        {
+            CancelledUtc = x.CancelledUtc,
+            ExpiresUtc = x.ExpiresUtc,
+            ExternalId = x.ExternalId,
+            MemberId = x.MemberId!.Value,
+            SiteSubscriptionId = x.SiteSubscriptionId,
+            SiteSubscriptionPriceId = x.SiteSubscriptionPriceId
+        });
+
+        return ProjectTo(query);
     }
 }

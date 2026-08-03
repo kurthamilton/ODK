@@ -284,8 +284,8 @@ public class MemberService : IMemberService
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.MemberRepository.GetByEmailAddress(model.EmailAddress),
             x => x.SiteSubscriptionRepository.GetDefault(platform),
-            x => x.MemberSiteSubscriptionRepository
-                .Query(x => x.ForChapterOwner(chapter.Id).Active())
+            x => x.MemberSiteSubscriptionRecordRepository
+                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active())
                 .SiteSubscription()
                 .Features()
                 .GetAll(),
@@ -566,8 +566,8 @@ public class MemberService : IMemberService
             ) = await _unitOfWork.RunAsync(
             x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => x.MemberNotificationSettingsRepository.GetByChapterId(chapter.Id, NotificationType.NewMember),
-            x => x.MemberSiteSubscriptionRepository
-                .Query(x => x.ForChapterOwner(chapter.Id).Active())
+            x => x.MemberSiteSubscriptionRecordRepository
+                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active())
                 .SiteSubscription()
                 .WithFeatures()
                 .GetSingleOrDefault(),

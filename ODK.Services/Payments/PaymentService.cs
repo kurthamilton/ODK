@@ -880,10 +880,10 @@ public class PaymentService : IPaymentService
             ? 12
             : 1;
 
-        // Roll the expiry forward from the current expiry - read from the snapshot, which stays authoritative
-        // until the read switch; the value is fixed on the new record at insert.
-        var expiresUtc = memberSubscription?.ExpiresUtc > utcNow
-            ? memberSubscription.ExpiresUtc.Value.AddMonths(months)
+        // Roll the expiry forward from the current record's expiry (the log is the source of truth); the
+        // value is fixed on the new record at insert.
+        var expiresUtc = currentRecord?.ExpiresUtc > utcNow
+            ? currentRecord.ExpiresUtc.Value.AddMonths(months)
             : utcNow.AddMonths(months);
 
         // Append a new current record for this payment (renewals keep the subscription's history).

@@ -85,7 +85,7 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
 
         var (chapters, subscriptions) = await GetSiteAdminRestrictedContent(request,
             x => x.ChapterRepository.GetAll(platform, includeUnpublished: true),
-            x => x.MemberSiteSubscriptionRepository.GetAllChapterOwnerSubscriptionDtos(platform));
+            x => x.MemberSiteSubscriptionRecordRepository.GetAllChapterOwnerSubscriptionDtos(platform));
 
         var subscriptionDictionary = subscriptions
             .GroupBy(x => x.MemberSiteSubscription.MemberId)
@@ -139,7 +139,7 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
         var (platform, chapter) = (request.Platform, request.Chapter);
 
         var (subscription, siteSubscriptions, sitePaymentSettings) = await GetSiteAdminRestrictedContent(request,
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
+            x => x.MemberSiteSubscriptionRecordRepository.Query().Current().ForChapterOwner(chapter.Id).ToState().GetSingleOrDefault(),
             x => x.SiteSubscriptionRepository.GetAll(platform),
             x => x.SitePaymentSettingsRepository.GetAll());
 
@@ -170,17 +170,17 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
             throw new OdkServiceException($"Error updating group '{chapter.Id}': subscription not provided");
         }
 
-        // Only the expiry is edited here; the plan/price/external id carry over from the existing subscription
+        // Only the expiry is edited here; the plan/price/external id carry over from the current record
         // (or default for a member who has none yet).
         _memberSiteSubscriptionWriter.MakeRecordCurrent(
             newRecord: new MemberSiteSubscriptionRecord
             {
                 CreatedUtc = DateTime.UtcNow,
                 ExpiresUtc = viewModel.SubscriptionExpiresUtc,
-                ExternalId = subscription?.ExternalId,
+                ExternalId = currentRecord?.ExternalId,
                 MemberId = chapter.OwnerId,
-                SiteSubscriptionId = subscription?.SiteSubscriptionId ?? viewModel.SiteSubscriptionId.Value,
-                SiteSubscriptionPriceId = subscription?.SiteSubscriptionPriceId
+                SiteSubscriptionId = currentRecord?.SiteSubscriptionId ?? viewModel.SiteSubscriptionId.Value,
+                SiteSubscriptionPriceId = currentRecord?.SiteSubscriptionPriceId
             },
             existingCurrent: currentRecord,
             existingSnapshot: subscription);

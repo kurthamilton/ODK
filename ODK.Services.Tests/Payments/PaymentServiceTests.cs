@@ -732,22 +732,13 @@ public static class PaymentServiceTests
             currency: currency,
             paidUtc: DateTime.UtcNow.AddMonths(-12));
 
+        // The member's current subscription from the first cycle - a current log record (the read source)
+        // expiring at originalExpiry, plus the dual-written snapshot - seeded by the helper.
         var originalExpiry = DateTime.UtcNow.AddDays(10);
         context.CreateMemberSiteSubscription(
             member,
             siteSubscription: siteSubscription,
             expiresUtc: originalExpiry);
-
-        // The record created by the first cycle, keyed on the original (now spent) event id.
-        context.Create(new MemberSiteSubscriptionRecord
-        {
-            CreatedUtc = DateTime.UtcNow.AddMonths(-12),
-            Id = Guid.NewGuid(),
-            InitiatorId = "wh_first",
-            PaymentId = payment.Id,
-            SiteSubscriptionId = siteSubscription.Id,
-            SiteSubscriptionPriceId = siteSubscriptionPrice.Id
-        });
 
         var webhook = CreatePaymentProviderWebhook(
             id: "wh_renewal",
