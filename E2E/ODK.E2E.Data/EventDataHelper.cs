@@ -28,6 +28,16 @@ public class EventDataHelper : DataHelperBase
         return await builder.ExecuteScalar<Guid?>();
     }
 
+    public async Task<string?> GetName(Guid eventId)
+    {
+        const string sql = "SELECT Name FROM Events WHERE EventId = @id";
+
+        await using var builder = Builder(sql)
+            .AddParameter("@id", eventId);
+
+        return await builder.ExecuteScalar<string>();
+    }
+
     public async Task<string> GetShortcode(Guid eventId)
     {
         const string sql = "SELECT Shortcode FROM Events WHERE EventId = @id";
