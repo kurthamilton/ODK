@@ -15,7 +15,9 @@ public class MemberSiteSubscriptionDataHelper : DataHelperBase
     /// <summary>
     /// Upserts an active site subscription for the member (expiring a year out), pointing at the given
     /// subscription + price - so the member (e.g. a chapter owner) gains that subscription's features
-    /// without a real purchase. One row per member (the entity is one-to-one with Member).
+    /// without a real purchase. Writes both the current MemberSiteSubscriptionLog record (the read source
+    /// for feature gating) and the dual-written MemberSiteSubscriptions snapshot. The member already has a
+    /// current log record (a free placeholder from account creation), so that is upgraded in place.
     /// </summary>
     public async Task EnsureActive(Guid memberId, Guid siteSubscriptionId, Guid siteSubscriptionPriceId)
     {
@@ -29,6 +31,15 @@ public class MemberSiteSubscriptionDataHelper : DataHelperBase
                 UPDATE MemberSiteSubscriptions
                 SET SiteSubscriptionId = @subId, SiteSubscriptionPriceId = @priceId, ExpiresUtc = @expires
                 WHERE MemberId = @memberId;
+
+            IF NOT EXISTS (SELECT 1 FROM MemberSiteSubscriptionLog WHERE MemberId = @memberId AND IsCurrent = 1)
+                INSERT INTO MemberSiteSubscriptionLog
+                    (Id, MemberId, SiteSubscriptionId, SiteSubscriptionPriceId, ExpiresUtc, CreatedUtc, IsCurrent)
+                VALUES (NEWID(), @memberId, @subId, @priceId, @expires, GETUTCDATE(), 1);
+            ELSE
+                UPDATE MemberSiteSubscriptionLog
+                SET SiteSubscriptionId = @subId, SiteSubscriptionPriceId = @priceId, ExpiresUtc = @expires
+                WHERE MemberId = @memberId AND IsCurrent = 1;
             """;
 
         await using var builder = Builder(sql)
