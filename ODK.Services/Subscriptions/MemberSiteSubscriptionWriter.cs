@@ -1,5 +1,4 @@
 using ODK.Core.Members;
-using ODK.Core.Platforms;
 using ODK.Data.Core;
 
 namespace ODK.Services.Subscriptions;
@@ -13,21 +12,19 @@ public class MemberSiteSubscriptionWriter : IMemberSiteSubscriptionWriter
         _unitOfWork = unitOfWork;
     }
 
-    public async Task MakeRecordCurrent(MemberSiteSubscriptionRecord newRecord, PlatformType platform)
+    public async Task MakeRecordCurrent(MemberSiteSubscriptionRecord newRecord)
     {
-        var memberId = newRecord.MemberId!.Value;
+        var existingCurrent = await _unitOfWork.MemberSiteSubscriptionRecordRepository
+            .Query()
+            .Current()
+            .ForMember(newRecord.MemberId!.Value)
+            .GetSingleOrDefault()
+            .Run();
 
-        var (existingCurrent, existingSnapshot) = await _unitOfWork.RunAsync(
-            x => x.MemberSiteSubscriptionRecordRepository.Query().Current().ForMember(memberId).GetSingleOrDefault(),
-            x => x.MemberSiteSubscriptionRepository.GetByMemberId(memberId, platform));
-
-        MakeRecordCurrent(newRecord, existingCurrent, existingSnapshot);
+        MakeRecordCurrent(newRecord, existingCurrent);
     }
 
-    public void MakeRecordCurrent(
-        MemberSiteSubscriptionRecord newRecord,
-        MemberSiteSubscriptionRecord? existingCurrent,
-        MemberSiteSubscription? existingSnapshot)
+    public void MakeRecordCurrent(MemberSiteSubscriptionRecord newRecord, MemberSiteSubscriptionRecord? existingCurrent)
     {
         newRecord.IsCurrent = true;
         _unitOfWork.MemberSiteSubscriptionRecordRepository.Add(newRecord);
@@ -36,24 +33,6 @@ public class MemberSiteSubscriptionWriter : IMemberSiteSubscriptionWriter
         {
             existingCurrent.IsCurrent = false;
             _unitOfWork.MemberSiteSubscriptionRecordRepository.Update(existingCurrent);
-        }
-
-        var snapshot = existingSnapshot ?? new MemberSiteSubscription
-        {
-            MemberId = newRecord.MemberId!.Value
-        };
-        snapshot.ExpiresUtc = newRecord.ExpiresUtc;
-        snapshot.ExternalId = newRecord.ExternalId;
-        snapshot.SiteSubscriptionId = newRecord.SiteSubscriptionId;
-        snapshot.SiteSubscriptionPriceId = newRecord.SiteSubscriptionPriceId;
-
-        if (existingSnapshot == null)
-        {
-            _unitOfWork.MemberSiteSubscriptionRepository.Add(snapshot);
-        }
-        else
-        {
-            _unitOfWork.MemberSiteSubscriptionRepository.Update(snapshot);
         }
     }
 }

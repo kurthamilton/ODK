@@ -707,8 +707,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                         MemberId = member.Id,
                         SiteSubscriptionId = siteSubscription.Id
                     },
-                    existingCurrent: null,
-                    existingSnapshot: null);
+                    existingCurrent: null);
 
                 var activationToken = TokenGenerator.GenerateBase64Token(64);
                 _unitOfWork.MemberActivationTokenRepository.Add(new MemberActivationToken

@@ -225,8 +225,7 @@ public class MemberService : IMemberService
                 CreatedUtc = DateTime.UtcNow,
                 MemberId = member.Id,
                 SiteSubscriptionId = siteSubscription.Id
-            },
-            request.Platform);
+            });
 
         string? activationToken = null;
         if (!member.Activated)
@@ -376,8 +375,7 @@ public class MemberService : IMemberService
                 CreatedUtc = DateTime.UtcNow,
                 MemberId = member.Id,
                 SiteSubscriptionId = siteSubscription.Id
-            },
-            platform);
+            });
 
         avatar.MemberId = member.Id;
         _unitOfWork.MemberAvatarRepository.Add(avatar);
