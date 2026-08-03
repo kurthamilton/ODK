@@ -702,7 +702,8 @@ public static class MemberAdminServiceTests
             memberEmailService ?? CreateMockMemberEmailService(),
             Mock.Of<IDistanceUnitFactory>(),
             new MockBackgroundTaskService(),
-            new MemberChapterSubscriptionWriter(unitOfWork));
+            new MemberChapterSubscriptionWriter(unitOfWork),
+            new MemberSiteSubscriptionWriter(unitOfWork));
     }
 
     private static MockOdkContext CreateMockOdkContext() => new MockOdkContext();

@@ -1054,7 +1054,8 @@ public static class PaymentServiceTests
             paymentProviderFactory ?? new Mock<IPaymentProviderFactory>().Object,
             eventService ?? CreateMockEventService(),
             new MockBackgroundTaskService(),
-            new MemberChapterSubscriptionWriter(unitOfWork));
+            new MemberChapterSubscriptionWriter(unitOfWork),
+            new MemberSiteSubscriptionWriter(unitOfWork));
     }
 
     private static IServiceRequest CreateServiceRequest(PlatformType? platform = null)

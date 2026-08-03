@@ -22,6 +22,7 @@ public class PaymentService : IPaymentService
     private readonly ILoggingService _loggingService;
     private readonly IMemberChapterSubscriptionWriter _memberChapterSubscriptionWriter;
     private readonly IMemberEmailService _memberEmailService;
+    private readonly IMemberSiteSubscriptionWriter _memberSiteSubscriptionWriter;
     private readonly IPaymentProviderFactory _paymentProviderFactory;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -32,13 +33,15 @@ public class PaymentService : IPaymentService
         IPaymentProviderFactory paymentProviderFactory,
         IEventService eventService,
         IBackgroundTaskService backgroundTaskService,
-        IMemberChapterSubscriptionWriter memberChapterSubscriptionWriter)
+        IMemberChapterSubscriptionWriter memberChapterSubscriptionWriter,
+        IMemberSiteSubscriptionWriter memberSiteSubscriptionWriter)
     {
         _backgroundTaskService = backgroundTaskService;
         _eventService = eventService;
         _loggingService = loggingService;
         _memberChapterSubscriptionWriter = memberChapterSubscriptionWriter;
         _memberEmailService = memberEmailService;
+        _memberSiteSubscriptionWriter = memberSiteSubscriptionWriter;
         _paymentProviderFactory = paymentProviderFactory;
         _unitOfWork = unitOfWork;
     }
@@ -853,11 +856,12 @@ public class PaymentService : IPaymentService
     {
         var memberId = member.Id;
 
-        var (recordForInitiator, memberSubscription) = await _unitOfWork.RunAsync(
+        var (recordForInitiator, memberSubscription, currentRecord) = await _unitOfWork.RunAsync(
             x => !string.IsNullOrEmpty(initiatorId)
                 ? x.MemberSiteSubscriptionRecordRepository.Query().ForInitiator(initiatorId).GetSingleOrDefault()
                 : new DefaultDeferredQuerySingleOrDefault<MemberSiteSubscriptionRecord>(),
-            x => x.MemberSiteSubscriptionRepository.GetByMemberId(memberId, platform));
+            x => x.MemberSiteSubscriptionRepository.GetByMemberId(memberId, platform),
+            x => x.MemberSiteSubscriptionRecordRepository.Query().Current().ForMember(memberId).GetSingleOrDefault());
 
         // Idempotency: if this initiating event (the payment provider webhook id) has already extended a
         // subscription, do not extend again. This protects against a retry of the webhook-processing job
@@ -872,40 +876,31 @@ public class PaymentService : IPaymentService
                 member, chapter: null, payment, siteSubscriptionPrice.Currency);
         }
 
-        memberSubscription ??= new MemberSiteSubscription();
-
         var months = siteSubscriptionPrice.Frequency == SiteSubscriptionFrequency.Yearly
             ? 12
             : 1;
 
-        var expiresUtc = memberSubscription.ExpiresUtc > utcNow
+        // Roll the expiry forward from the current expiry - read from the snapshot, which stays authoritative
+        // until the read switch; the value is fixed on the new record at insert.
+        var expiresUtc = memberSubscription?.ExpiresUtc > utcNow
             ? memberSubscription.ExpiresUtc.Value.AddMonths(months)
             : utcNow.AddMonths(months);
 
-        memberSubscription.ExpiresUtc = expiresUtc;
-        memberSubscription.ExternalId = externalId;
-        memberSubscription.SiteSubscriptionPriceId = siteSubscriptionPrice.Id;
-        memberSubscription.SiteSubscriptionId = siteSubscriptionPrice.SiteSubscriptionId;
-
-        if (memberSubscription.Id == default)
-        {
-            memberSubscription.Id = Guid.NewGuid();
-            memberSubscription.MemberId = memberId;
-            _unitOfWork.MemberSiteSubscriptionRepository.Add(memberSubscription);
-        }
-        else
-        {
-            _unitOfWork.MemberSiteSubscriptionRepository.Update(memberSubscription);
-        }
-
-        _unitOfWork.MemberSiteSubscriptionRecordRepository.Add(new MemberSiteSubscriptionRecord
-        {
-            CreatedUtc = utcNow,
-            InitiatorId = initiatorId,
-            PaymentId = payment.Id,
-            SiteSubscriptionId = siteSubscriptionPrice.SiteSubscriptionId,
-            SiteSubscriptionPriceId = siteSubscriptionPrice.Id
-        });
+        // Append a new current record for this payment (renewals keep the subscription's history).
+        _memberSiteSubscriptionWriter.MakeRecordCurrent(
+            newRecord: new MemberSiteSubscriptionRecord
+            {
+                CreatedUtc = utcNow,
+                ExpiresUtc = expiresUtc,
+                ExternalId = externalId,
+                InitiatorId = initiatorId,
+                MemberId = memberId,
+                PaymentId = payment.Id,
+                SiteSubscriptionId = siteSubscriptionPrice.SiteSubscriptionId,
+                SiteSubscriptionPriceId = siteSubscriptionPrice.Id
+            },
+            existingCurrent: currentRecord,
+            existingSnapshot: memberSubscription);
 
         await _unitOfWork.SaveChangesAsync();
 

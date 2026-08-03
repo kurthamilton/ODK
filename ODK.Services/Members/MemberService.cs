@@ -36,6 +36,7 @@ public class MemberService : IMemberService
     private readonly IMemberChapterSubscriptionWriter _memberChapterSubscriptionWriter;
     private readonly IMemberEmailService _memberEmailService;
     private readonly IMemberImageService _memberImageService;
+    private readonly IMemberSiteSubscriptionWriter _memberSiteSubscriptionWriter;
     private readonly INotificationService _notificationService;
     private readonly IOAuthProviderFactory _oauthProviderFactory;
     private readonly IPaymentProviderFactory _paymentProviderFactory;
@@ -54,7 +55,8 @@ public class MemberService : IMemberService
         IGeolocationService geolocationService,
         ILoggingService loggingService,
         IDistanceUnitFactory distanceUnitFactory,
-        IMemberChapterSubscriptionWriter memberChapterSubscriptionWriter)
+        IMemberChapterSubscriptionWriter memberChapterSubscriptionWriter,
+        IMemberSiteSubscriptionWriter memberSiteSubscriptionWriter)
     {
         _authorizationService = authorizationService;
         _distanceUnitFactory = distanceUnitFactory;
@@ -63,6 +65,7 @@ public class MemberService : IMemberService
         _memberChapterSubscriptionWriter = memberChapterSubscriptionWriter;
         _memberEmailService = memberEmailService;
         _memberImageService = memberImageService;
+        _memberSiteSubscriptionWriter = memberSiteSubscriptionWriter;
         _notificationService = notificationService;
         _oauthProviderFactory = oauthProviderFactory;
         _paymentProviderFactory = paymentProviderFactory;
@@ -216,11 +219,14 @@ public class MemberService : IMemberService
             MemberId = member.Id
         });
 
-        _unitOfWork.MemberSiteSubscriptionRepository.Add(new MemberSiteSubscription
-        {
-            MemberId = member.Id,
-            SiteSubscriptionId = siteSubscription.Id
-        });
+        await _memberSiteSubscriptionWriter.MakeRecordCurrent(
+            new MemberSiteSubscriptionRecord
+            {
+                CreatedUtc = DateTime.UtcNow,
+                MemberId = member.Id,
+                SiteSubscriptionId = siteSubscription.Id
+            },
+            request.Platform);
 
         string? activationToken = null;
         if (!member.Activated)
@@ -364,11 +370,14 @@ public class MemberService : IMemberService
             });
         }
 
-        _unitOfWork.MemberSiteSubscriptionRepository.Add(new MemberSiteSubscription
-        {
-            MemberId = member.Id,
-            SiteSubscriptionId = siteSubscription.Id
-        });
+        await _memberSiteSubscriptionWriter.MakeRecordCurrent(
+            new MemberSiteSubscriptionRecord
+            {
+                CreatedUtc = DateTime.UtcNow,
+                MemberId = member.Id,
+                SiteSubscriptionId = siteSubscription.Id
+            },
+            platform);
 
         avatar.MemberId = member.Id;
         _unitOfWork.MemberAvatarRepository.Add(avatar);
