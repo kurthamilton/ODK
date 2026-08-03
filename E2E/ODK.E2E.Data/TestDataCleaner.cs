@@ -53,7 +53,6 @@ public class TestDataCleaner : DataHelperBase
             DELETE FROM Chapters WHERE OwnerId IN ({memberIdSql});
             DELETE FROM MemberSiteSubscriptionLog WHERE MemberId IN ({memberIdSql});
             DELETE FROM Payments WHERE MemberId IN ({memberIdSql});
-            DELETE FROM MemberSiteSubscriptions WHERE MemberId IN ({memberIdSql});
             DELETE FROM Members WHERE MemberId IN ({memberIdSql});
 
             DELETE FROM SiteSubscriptionFeatures WHERE SiteSubscriptionId IN ({siteSubIdSql});

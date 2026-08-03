@@ -68,7 +68,6 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IMemberPropertyRepository> _memberPropertyRepository;
     private readonly Lazy<IMemberRepository> _memberRepository;
     private readonly Lazy<IMemberSiteSubscriptionRecordRepository> _memberSiteSubscriptionRecordRepository;
-    private readonly Lazy<IMemberSiteSubscriptionRepository> _memberSiteSubscriptionRepository;
     private readonly Lazy<IMemberSubscriptionRecordRepository> _memberSubscriptionRecordRepository;
     private readonly Lazy<IMemberTopicRepository> _memberTopicRepository;
     private readonly Lazy<INewChapterTopicRepository> _newChapterTopicRepository;
@@ -155,7 +154,6 @@ public class UnitOfWork : IUnitOfWork
         _memberPropertyRepository = new(() => new MemberPropertyRepository(_context));
         _memberRepository = new(() => new MemberRepository(_context));
         _memberSiteSubscriptionRecordRepository = new(() => new MemberSiteSubscriptionRecordRepository(_context));
-        _memberSiteSubscriptionRepository = new(() => new MemberSiteSubscriptionRepository(_context));
         _memberSubscriptionRecordRepository = new(() => new MemberSubscriptionRecordRepository(_context));
         _memberTopicRepository = new(() => new MemberTopicRepository(_context));
         _newChapterTopicRepository = new(() => new NewChapterTopicRepository(_context));
@@ -239,7 +237,6 @@ public class UnitOfWork : IUnitOfWork
     public IMemberPropertyRepository MemberPropertyRepository => _memberPropertyRepository.Value;
     public IMemberRepository MemberRepository => _memberRepository.Value;
     public IMemberSiteSubscriptionRecordRepository MemberSiteSubscriptionRecordRepository => _memberSiteSubscriptionRecordRepository.Value;
-    public IMemberSiteSubscriptionRepository MemberSiteSubscriptionRepository => _memberSiteSubscriptionRepository.Value;
     public IMemberSubscriptionRecordRepository MemberSubscriptionRecordRepository => _memberSubscriptionRecordRepository.Value;
     public IMemberTopicRepository MemberTopicRepository => _memberTopicRepository.Value;
     public INewChapterTopicRepository NewChapterTopicRepository => _newChapterTopicRepository.Value;

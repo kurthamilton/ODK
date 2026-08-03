@@ -48,8 +48,8 @@ public class SiteSubscriptionRepository
             where siteSubscription.Platform == platform
             select new SiteSubscriptionSummaryDto
             {
-                ActiveMemberSiteSubscriptionCount = Set<MemberSiteSubscription>()
-                    .Where(x => x.SiteSubscriptionId == siteSubscription.Id && x.ExpiresUtc > DateTime.UtcNow)
+                ActiveMemberSiteSubscriptionCount = Set<MemberSiteSubscriptionRecord>()
+                    .Where(x => x.IsCurrent && x.SiteSubscriptionId == siteSubscription.Id && x.ExpiresUtc > DateTime.UtcNow)
                     .Count(),
                 Features = Set<SiteSubscriptionFeature>()
                     .Where(x => x.SiteSubscriptionId == siteSubscription.Id)

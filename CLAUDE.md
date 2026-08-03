@@ -44,13 +44,19 @@ Project defaults: `net10.0`, nullable enabled, implicit usings enabled.
 
 ## Git workflow
 
-**Never make changes or commit while `master` is the active branch.** `master` is the mainline that
-deploys to prod — all work lands via a branch and PR. Before editing anything, check the current branch;
-if it's `master`, create a feature branch first (`git switch -c <branch>`) and do the work there. This
+**Don't perform git actions unless explicitly asked.** The user manages branches, commits, pushes, and
+PRs. Make code changes on whatever branch is already checked out and leave them uncommitted for the user
+to review and commit — don't `git commit`, `git branch`/`switch`, `git push`, merge, rebase, or reset on
+your own initiative. When a change is ready, say so and stop; act on git only on an explicit request
+("commit this", "create a branch", …).
+
+**Never make changes while `master` is the active branch.** `master` is the mainline that deploys to
+prod — all work lands via a branch and PR. Before editing anything, check the current branch; if it's
+`master`, stop and ask the user to switch to a feature branch rather than creating one yourself. This
 applies to every change, however small (a one-line fix, a doc tweak, a migration).
 
-A `pre-commit` hook enforces this — it rejects commits made on `master`. It lives in the tracked
-`.githooks/` directory; enable it once per clone with:
+A `pre-commit` hook enforces the no-commit-on-`master` rule. It lives in the tracked `.githooks/`
+directory; enable it once per clone with:
 
 ```
 git config core.hooksPath .githooks
