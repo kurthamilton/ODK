@@ -2,6 +2,7 @@
 using System.Linq;
 using Moq;
 using NUnit.Framework;
+using ODK.Core.Exceptions;
 using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Services.Logging;
@@ -30,7 +31,7 @@ public static class LoggingServiceTests
         var request = CreateMockHttpRequestContext(path: path);
 
         // Act
-        var result = service.IgnoreUnknownRequestPath(request);
+        var result = service.IgnoreException(new OdkNotFoundException(), request);
 
         // Assert
         return result;
@@ -50,7 +51,7 @@ public static class LoggingServiceTests
         var request = CreateMockHttpRequestContext(userAgent: userAgent);
 
         // Act
-        var result = service.IgnoreUnknownRequestPath(request);
+        var result = service.IgnoreException(new OdkNotFoundException(), request);
 
         // Assert
         return result;
@@ -86,11 +87,38 @@ public static class LoggingServiceTests
         IEnumerable<string>? ignoreUnknownPatterns = null,
         IEnumerable<string>? ignoreUnkownPathUserAgents = null)
     {
+        var ignoreExceptions = new List<IgnoreExceptionRule>();
+
+        if (ignoreUnknownPaths != null)
+        {
+            ignoreExceptions.AddRange(ignoreUnknownPaths.Select(x => new IgnoreExceptionRule
+            {
+                Exceptions = new[] { nameof(OdkNotFoundException) },
+                Paths = ignoreUnknownPaths.ToArray()
+            }));
+        }
+
+        if (ignoreUnknownPatterns != null)
+        {
+            ignoreExceptions.AddRange(ignoreUnknownPatterns.Select(x => new IgnoreExceptionRule
+            {
+                Exceptions = new[] { nameof(OdkNotFoundException) },
+                PathPatterns = ignoreUnknownPatterns.ToArray()
+            }));
+        }
+
+        if (ignoreUnkownPathUserAgents != null)
+        {
+            ignoreExceptions.AddRange(ignoreUnkownPathUserAgents.Select(x => new IgnoreExceptionRule
+            {
+                Exceptions = new[] { nameof(OdkNotFoundException) },
+                UserAgents = ignoreUnkownPathUserAgents.ToArray()
+            }));
+        }
+
         return new LoggingServiceSettings
         {
-            IgnoreUnknownPaths = ignoreUnknownPaths?.ToArray() ?? [],
-            IgnoreUnknownPathPatterns = ignoreUnknownPatterns?.ToArray() ?? [],
-            IgnoreUnknownPathUserAgents = ignoreUnkownPathUserAgents?.ToArray() ?? []
+            IgnoreExceptions = ignoreExceptions
         };
     }
 }

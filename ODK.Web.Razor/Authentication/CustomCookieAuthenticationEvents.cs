@@ -1,5 +1,4 @@
-﻿using System.Web;
-using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
@@ -21,18 +20,8 @@ public class CustomCookieAuthenticationEvents : CookieAuthenticationEvents
 
     public override Task RedirectToLogin(RedirectContext<CookieAuthenticationOptions> context)
     {
-        string? redirectUri = context.Request.Path.Value;
-        if (!string.IsNullOrEmpty(context.Request.QueryString.Value))
-        {
-            redirectUri += "?" + context.Request.QueryString.Value;
-        }
-
-        context.RedirectUri = _odkRoutes.Account.Login(_requestStore.ChapterOrDefault);
-        if (!string.IsNullOrEmpty(redirectUri))
-        {
-            context.RedirectUri += $"?{context.Options.ReturnUrlParameter}={HttpUtility.UrlEncode(redirectUri)}";
-        }
-
+        var returnUrl = $"{context.Request.Path}{context.Request.QueryString}";
+        context.RedirectUri = _odkRoutes.Account.Login(_requestStore.ChapterOrDefault, returnUrl);
         return base.RedirectToLogin(context);
     }
 }

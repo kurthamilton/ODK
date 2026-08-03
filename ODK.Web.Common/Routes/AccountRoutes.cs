@@ -67,6 +67,14 @@ public class AccountRoutes : RoutesBase
         _ => null
     }, "/login");
 
+    public string Login(Chapter? chapter, string? returnUrl)
+    {
+        var url = Login(chapter);
+        return string.IsNullOrEmpty(returnUrl)
+            ? url
+            : $"{url}?ReturnUrl={HttpUtility.UrlEncode(returnUrl)}";
+    }
+
     public string Logout(Chapter? chapter) => AccountPath(Platform switch
     {
         PlatformType.DrunkenKnitwits => chapter,

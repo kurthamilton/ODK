@@ -21,7 +21,7 @@ public interface ILoggingService
 
     Task<IReadOnlyCollection<Error>> GetErrors(IMemberServiceRequest request, int page, int pageSize);
 
-    bool IgnoreUnknownRequestPath(IHttpRequestContext httpRequestContext);
+    bool IgnoreException(Exception exception, IHttpRequestContext httpRequestContext);
 
     Task Info(string message);
 

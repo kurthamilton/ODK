@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Antiforgery;
+using ODK.Services.Logging;
+using ODK.Web.Razor.Services;
 
 namespace ODK.Web.Razor.Authentication;
 
@@ -42,13 +44,19 @@ public class LoggingAntiforgery : IAntiforgery
         }
         catch (AntiforgeryValidationException exception)
         {
-            var request = httpContext.Request;
-            _logger.LogError(
-                exception,
-                "Antiforgery (CSRF) validation failed for {Method} {Path}. User={User}",
-                request.Method,
-                request.Path,
-                httpContext.User.Identity?.Name ?? "(anonymous)");
+            // Resolved per-request: this decorator is a singleton, ILoggingService is scoped.
+            var loggingService = httpContext.RequestServices.GetRequiredService<ILoggingService>();
+            if (!loggingService.IgnoreException(exception, HttpRequestContext.Create(httpContext.Request)))
+            {
+                var request = httpContext.Request;
+                _logger.LogError(
+                    exception,
+                    "Antiforgery (CSRF) validation failed for {Method} {Path}. User={User}",
+                    request.Method,
+                    request.Path,
+                    httpContext.User.Identity?.Name ?? "(anonymous)");
+            }
+
             throw;
         }
     }

@@ -45,7 +45,8 @@ public class MemberSiteSubscriptionRecordMap : IEntityTypeConfiguration<MemberSi
 
         builder.HasOne<Member>()
             .WithMany()
-            .HasForeignKey(x => x.MemberId);
+            .HasForeignKey(x => x.MemberId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne<Payment>()
             .WithMany()
