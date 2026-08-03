@@ -1,24 +1,27 @@
-﻿using ODK.Core;
-using ODK.Core.Members;
+﻿using ODK.Core.Members;
 using ODK.Data.Core;
 using ODK.Data.Core.Members;
 using ODK.Services.Chapters.ViewModels;
 using ODK.Services.Exceptions;
 using ODK.Services.Members;
+using ODK.Services.Subscriptions;
 
 namespace ODK.Services.Chapters;
 
 public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminService
 {
     private readonly IMemberEmailService _memberEmailService;
+    private readonly IMemberSiteSubscriptionWriter _memberSiteSubscriptionWriter;
     private readonly IUnitOfWork _unitOfWork;
 
     public ChapterSiteAdminService(
         IUnitOfWork unitOfWork,
-        IMemberEmailService memberEmailService)
+        IMemberEmailService memberEmailService,
+        IMemberSiteSubscriptionWriter memberSiteSubscriptionWriter)
         : base(unitOfWork)
     {
         _memberEmailService = memberEmailService;
+        _memberSiteSubscriptionWriter = memberSiteSubscriptionWriter;
         _unitOfWork = unitOfWork;
     }
 
@@ -158,31 +161,29 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
 
-        var subscription = await GetSiteAdminRestrictedContent(request,
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id));
+        var (subscription, currentRecord) = await GetSiteAdminRestrictedContent(request,
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
+            x => x.MemberSiteSubscriptionRecordRepository.Query().Current().ForMember(chapter.OwnerId).GetSingleOrDefault());
 
         if (viewModel.SiteSubscriptionId == null)
         {
             throw new OdkServiceException($"Error updating group '{chapter.Id}': subscription not provided");
         }
 
-        subscription ??= new MemberSiteSubscription
-        {
-            MemberId = chapter.OwnerId,
-            SiteSubscriptionId = viewModel.SiteSubscriptionId.Value
-        };
-
-        subscription.ExpiresUtc = viewModel.SubscriptionExpiresUtc;
-
-        if (subscription.Id == default)
-        {
-            subscription.Id = Guid.NewGuid();
-            _unitOfWork.MemberSiteSubscriptionRepository.Add(subscription);
-        }
-        else
-        {
-            _unitOfWork.MemberSiteSubscriptionRepository.Update(subscription);
-        }
+        // Only the expiry is edited here; the plan/price/external id carry over from the existing subscription
+        // (or default for a member who has none yet).
+        _memberSiteSubscriptionWriter.MakeRecordCurrent(
+            newRecord: new MemberSiteSubscriptionRecord
+            {
+                CreatedUtc = DateTime.UtcNow,
+                ExpiresUtc = viewModel.SubscriptionExpiresUtc,
+                ExternalId = subscription?.ExternalId,
+                MemberId = chapter.OwnerId,
+                SiteSubscriptionId = subscription?.SiteSubscriptionId ?? viewModel.SiteSubscriptionId.Value,
+                SiteSubscriptionPriceId = subscription?.SiteSubscriptionPriceId
+            },
+            existingCurrent: currentRecord,
+            existingSnapshot: subscription);
 
         await _unitOfWork.SaveChangesAsync();
         return ServiceResult.Successful();

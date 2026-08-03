@@ -26,6 +26,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     private readonly IMemberEmailService _memberEmailService;
     private readonly IMemberImageService _memberImageService;
     private readonly IMemberService _memberService;
+    private readonly IMemberSiteSubscriptionWriter _memberSiteSubscriptionWriter;
     private readonly IUnitOfWork _unitOfWork;
 
     public MemberAdminService(
@@ -36,7 +37,8 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         IMemberEmailService memberEmailService,
         IDistanceUnitFactory distanceUnitFactory,
         IBackgroundTaskService backgroundTaskService,
-        IMemberChapterSubscriptionWriter memberChapterSubscriptionWriter)
+        IMemberChapterSubscriptionWriter memberChapterSubscriptionWriter,
+        IMemberSiteSubscriptionWriter memberSiteSubscriptionWriter)
         : base(unitOfWork)
     {
         _authorizationService = authorizationService;
@@ -46,6 +48,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         _memberEmailService = memberEmailService;
         _memberImageService = memberImageService;
         _memberService = memberService;
+        _memberSiteSubscriptionWriter = memberSiteSubscriptionWriter;
         _unitOfWork = unitOfWork;
     }
 
@@ -697,11 +700,15 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                     MemberId = member.Id
                 });
 
-                _unitOfWork.MemberSiteSubscriptionRepository.Add(new MemberSiteSubscription
-                {
-                    MemberId = member.Id,
-                    SiteSubscriptionId = siteSubscription.Id
-                });
+                _memberSiteSubscriptionWriter.MakeRecordCurrent(
+                    newRecord: new MemberSiteSubscriptionRecord
+                    {
+                        CreatedUtc = DateTime.UtcNow,
+                        MemberId = member.Id,
+                        SiteSubscriptionId = siteSubscription.Id
+                    },
+                    existingCurrent: null,
+                    existingSnapshot: null);
 
                 var activationToken = TokenGenerator.GenerateBase64Token(64);
                 _unitOfWork.MemberActivationTokenRepository.Add(new MemberActivationToken

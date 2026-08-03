@@ -240,7 +240,8 @@ public static class MemberServiceTests
             Mock.Of<IGeolocationService>(),
             Mock.Of<ILoggingService>(),
             new DistanceUnitFactory(),
-            new MemberChapterSubscriptionWriter(unitOfWork));
+            new MemberChapterSubscriptionWriter(unitOfWork),
+            new MemberSiteSubscriptionWriter(unitOfWork));
     }
 
     private static MockOdkContext CreateMockOdkContext() => new MockOdkContext();

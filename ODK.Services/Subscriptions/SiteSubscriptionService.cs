@@ -14,13 +14,16 @@ namespace ODK.Services.Subscriptions;
 
 public class SiteSubscriptionService : ISiteSubscriptionService
 {
+    private readonly IMemberSiteSubscriptionWriter _memberSiteSubscriptionWriter;
     private readonly IPaymentProviderFactory _paymentProviderFactory;
     private readonly IUnitOfWork _unitOfWork;
 
     public SiteSubscriptionService(
         IUnitOfWork unitOfWork,
-        IPaymentProviderFactory paymentProviderFactory)
+        IPaymentProviderFactory paymentProviderFactory,
+        IMemberSiteSubscriptionWriter memberSiteSubscriptionWriter)
     {
+        _memberSiteSubscriptionWriter = memberSiteSubscriptionWriter;
         _paymentProviderFactory = paymentProviderFactory;
         _unitOfWork = unitOfWork;
     }
@@ -63,10 +66,11 @@ public class SiteSubscriptionService : ISiteSubscriptionService
     {
         var (platform, currentMember) = (request.Platform, request.CurrentMember);
 
-        var (sitePaymentSettings, memberSubscriptionDto, siteSubscriptionPrice) = await _unitOfWork.RunAsync(
+        var (sitePaymentSettings, memberSubscriptionDto, siteSubscriptionPrice, currentRecord) = await _unitOfWork.RunAsync(
             x => x.SitePaymentSettingsRepository.GetAll(),
             x => x.MemberSiteSubscriptionRepository.GetDtoByMemberId(currentMember.Id, platform),
-            x => x.SiteSubscriptionPriceRepository.GetById(siteSubscriptionPriceId));
+            x => x.SiteSubscriptionPriceRepository.GetById(siteSubscriptionPriceId),
+            x => x.MemberSiteSubscriptionRecordRepository.Query().Current().ForMember(currentMember.Id).GetSingleOrDefault());
 
         var siteSubscription = await _unitOfWork.SiteSubscriptionRepository.GetById(siteSubscriptionPrice.SiteSubscriptionId).Run();
 
@@ -82,28 +86,18 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             return ServiceResult.Failure("Error confirming subscription");
         }
 
-        var memberSubscription = memberSubscriptionDto?.MemberSiteSubscription;
-
-        memberSubscription ??= new MemberSiteSubscription();
-
-        memberSubscription.ExternalId = externalSubscription.ExternalId;
-        memberSubscription.ExpiresUtc = externalSubscription.NextBillingDate;
-
-        if (memberSubscription.SiteSubscriptionId != siteSubscriptionPrice.SiteSubscriptionId)
-        {
-            memberSubscription.SiteSubscriptionId = siteSubscription.Id;
-            memberSubscription.SiteSubscriptionPriceId = siteSubscriptionPrice.Id;
-        }
-
-        if (memberSubscription.MemberId == default)
-        {
-            memberSubscription.MemberId = currentMember.Id;
-            _unitOfWork.MemberSiteSubscriptionRepository.Add(memberSubscription);
-        }
-        else
-        {
-            _unitOfWork.MemberSiteSubscriptionRepository.Update(memberSubscription);
-        }
+        _memberSiteSubscriptionWriter.MakeRecordCurrent(
+            newRecord: new MemberSiteSubscriptionRecord
+            {
+                CreatedUtc = DateTime.UtcNow,
+                ExpiresUtc = externalSubscription.NextBillingDate,
+                ExternalId = externalSubscription.ExternalId,
+                MemberId = currentMember.Id,
+                SiteSubscriptionId = siteSubscription.Id,
+                SiteSubscriptionPriceId = siteSubscriptionPrice.Id
+            },
+            existingCurrent: currentRecord,
+            existingSnapshot: memberSubscriptionDto?.MemberSiteSubscription);
 
         await _unitOfWork.SaveChangesAsync();
 

@@ -197,6 +197,7 @@ public static class DependencyRegistrar
                 MemberAvatarSize = appSettings.Members.AvatarSize
             })
             .AddScoped<IMemberChapterSubscriptionWriter, MemberChapterSubscriptionWriter>()
+            .AddScoped<IMemberSiteSubscriptionWriter, MemberSiteSubscriptionWriter>()
             .AddScoped<IMemberEmailService, MemberEmailService>()
             .AddScoped<IMemberImageService, MemberImageService>()
             .AddSingleton(new MemberImageServiceSettings
