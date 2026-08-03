@@ -56,6 +56,35 @@ internal class EventAdminPage
     }
 
     /// <summary>
+    /// Opens an existing event's edit page (which posts back to itself), changes the Name, and submits the
+    /// update. The other required fields (Venue, Date) are already pre-populated from the event. Captures
+    /// the POST response so a failure that doesn't re-render - notably an antiforgery 400 - surfaces
+    /// clearly instead of looking like a silent no-op.
+    /// </summary>
+    public async Task UpdateEventName(string editUrl, string newName)
+    {
+        await _page.Navigate(editUrl);
+
+        await _page.FillAsync("#Name", newName);
+
+        var responseTask = _page.WaitForResponseAsync(
+            r => r.Request.Method == "POST" && r.Request.IsNavigationRequest,
+            new() { Timeout = 15000 });
+        await _page.ClickAsync("button:has-text('Update')");
+        var response = await responseTask;
+
+        if (response.Status >= 400)
+        {
+            var body = await _page.InnerTextAsync("body");
+            throw new InvalidOperationException(
+                $"Update event POST failed with HTTP {response.Status}. URL='{response.Url}'. " +
+                $"Body: {body[..Math.Min(500, body.Length)]}");
+        }
+
+        await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+    }
+
+    /// <summary>
     /// Opens the create-event page and returns the value the Date field is pre-populated with (in the
     /// display format <c>dd/MM/yyyy HH:mm</c>). The app defaults this to the next instance of the
     /// chapter's default event day/time.

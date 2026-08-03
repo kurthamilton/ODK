@@ -51,6 +51,9 @@ internal abstract class PlatformRoutes
 
     public static PlatformRoutes DrunkenKnitwits(TestGroup group) => new DrunkenKnitwitsPlatformRoutes(group);
 
+    /// <summary>Admin: edit-event page (also the POST target - it posts back to itself).</summary>
+    public abstract string EventEdit(Guid eventId);
+
     /// <summary>Member-facing: the event detail page (carries the on-page RSVP control).</summary>
     public abstract string EventPage(string shortcode);
 
@@ -98,6 +101,8 @@ internal abstract class PlatformRoutes
 
         public override string SubscriptionsList => $"/my/groups/{_chapterId}/members/subscriptions";
 
+        public override string EventEdit(Guid eventId) => $"/my/groups/{_chapterId}/events/{eventId}";
+
         public override string EventPage(string shortcode) => $"/groups/{_slug}/events/{shortcode}";
 
         public override string EventRsvp(string shortcode) => $"/groups/{_slug}/events/{shortcode}/rsvp";
@@ -142,6 +147,8 @@ internal abstract class PlatformRoutes
         public override string SubscriptionCreate => $"/{_shortName}/admin/members/subscriptions/create";
 
         public override string SubscriptionsList => $"/{_shortName}/admin/members/subscriptions";
+
+        public override string EventEdit(Guid eventId) => $"/{_shortName}/admin/events/{eventId}";
 
         public override string EventPage(string shortcode) => $"/{_shortName}/events/{shortcode}";
 

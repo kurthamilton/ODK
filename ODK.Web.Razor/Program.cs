@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Hangfire;
 using Hangfire.SqlServer;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Localization;
@@ -295,6 +296,18 @@ public class Program
         // (see the request-verification-token meta tag in the layout). Endpoints that receive external
         // POSTs (webhooks, scheduled-task cron, OAuth callbacks) opt out with [IgnoreAntiforgeryToken].
         services.AddAntiforgery(options => options.HeaderName = "RequestVerificationToken");
+
+        // Decorate IAntiforgery so CSRF validation failures are logged (the filter otherwise swallows them
+        // into a bare 400 that never reaches middleware, and the framework only logs at Information).
+        var antiforgeryDescriptor = services.Last(x => x.ServiceType == typeof(IAntiforgery));
+        services.Remove(antiforgeryDescriptor);
+        services.AddSingleton<IAntiforgery>(sp =>
+        {
+            var inner = (IAntiforgery)(antiforgeryDescriptor.ImplementationInstance
+                ?? antiforgeryDescriptor.ImplementationFactory?.Invoke(sp)
+                ?? ActivatorUtilities.CreateInstance(sp, antiforgeryDescriptor.ImplementationType!));
+            return new LoggingAntiforgery(inner, sp.GetRequiredService<ILogger<LoggingAntiforgery>>());
+        });
 
         services
             .AddMemoryCache()

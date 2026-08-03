@@ -257,6 +257,24 @@ public abstract class EventTestsBase : OdkPageTest
     }
 
     [Test]
+    public async Task UpdateEvent_ChangeName_PersistsChange()
+    {
+        // Arrange - an owner with a published chapter and an existing event to edit.
+        var (owner, group) = await ProvisionOwnerChapter(GroupName());
+        var routes = RoutesFor(group);
+        var @event = await Provisioning.CreatePublishedEvent(owner, routes, group.ChapterId, PlatformBaseUrl);
+        await new LoginPage(Page).LogIn(owner.Email, owner.Password);
+
+        // Act - open the event's edit page, change its name, and submit the update. The edit form posts
+        // back to itself and must carry an antiforgery token; without it the POST is a 400.
+        var newName = $"E2E Event Updated {Guid.NewGuid():N}";
+        await new EventAdminPage(Page).UpdateEventName(routes.EventEdit(@event.EventId), newName);
+
+        // Assert - the new name is persisted (a CSRF/antiforgery failure would leave it unchanged).
+        (await Events.GetName(@event.EventId)).Should().Be(newName);
+    }
+
+    [Test]
     public async Task UpdateEventSettings_SetDefaultDayAndTime_PersistsSettings()
     {
         // Arrange - an owner with a published chapter on this platform.
