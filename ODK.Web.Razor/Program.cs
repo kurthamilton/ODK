@@ -19,6 +19,7 @@ using ODK.Web.Razor.Middleware;
 using ODK.Web.Razor.Mvc;
 using ODK.Web.Razor.Services;
 using Serilog;
+using Serilog.Debugging;
 using Serilog.Events;
 using Serilog.Filters;
 using Serilog.Sinks.MSSqlServer;
@@ -246,6 +247,10 @@ public class Program
     {
         const string IP = "IP";
         const string Name = "Name";
+
+        // Serilog swallows sink failures (e.g. an unwritable log directory) by default; route them to stderr
+        // so a misconfigured Logging:Path surfaces in the host stdout log instead of vanishing.
+        SelfLog.Enable(Console.Error);
 
         // required in order for app.UseSerilogRequestLogging to work,
         // which uses more condensed request logging instead of asp.net's "spammy" version

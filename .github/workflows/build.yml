@@ -2,7 +2,7 @@ name: Build
 
 on:
   push:
-    branches: [ master, secrets ]   # TEMP: 'secrets' included to build that branch for a deploy-pipeline test; revert to [ master ]
+    branches: [ master ]
   workflow_dispatch:            # lets you produce a fresh artifact on demand (e.g. after one expires)
 
 jobs:

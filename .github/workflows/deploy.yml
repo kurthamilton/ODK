@@ -1,16 +1,12 @@
 name: Deploy
 
 on:
-  workflow_dispatch:            # manual only - deploys the latest successful build of the chosen branch
+  workflow_dispatch:            # manual only - deploys the latest successful master build
     inputs:
       target:
         description: Platform / site to deploy to
         type: environment       # renders a dropdown of your environments (prod-odk / prod-gs) when you click Run
         required: true
-      source_branch:            # TEMP: lets us deploy a non-master build (the 'secrets' branch) to verify the pipeline; revert to hardcoded master after
-        description: Branch whose latest successful Build to deploy
-        default: master
-        required: false
 
 jobs:
   deploy:
@@ -21,17 +17,16 @@ jobs:
       # comes from the build artifact, not a rebuild.
       - uses: actions/checkout@v4
 
-      # 1) Grab the artifact from the most recent successful Build run on the chosen source_branch (no rebuild).
-      #    The same artifact ships to either platform - the app is platform-agnostic (platform inferred from the URL).
+      # 1) Grab the artifact from the most recent successful Build run on master (no rebuild). The same
+      #    artifact ships to either platform - the app is platform-agnostic (platform inferred from the URL).
       - name: Download latest build
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $branch = "${{ inputs.source_branch }}"
-          $runId = gh run list --workflow build.yml --branch $branch --status success --limit 1 `
+          $runId = gh run list --workflow build.yml --branch master --status success --limit 1 `
             --json databaseId --jq '.[0].databaseId'
-          if (-not $runId) { throw "No successful Build run found on '$branch' to deploy." }
+          if (-not $runId) { throw "No successful Build run found on master to deploy." }
           Write-Host "Deploying artifact from Build run $runId"
           gh run download $runId --name app --dir publish
 
