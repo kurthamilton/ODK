@@ -19,15 +19,18 @@ namespace ODK.Services.Members;
 public class MemberEmailService : IMemberEmailService
 {
     private readonly IEmailService _emailService;
+    private readonly IMemberLocaleService _memberLocaleService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUrlProviderFactory _urlProviderFactory;
 
     public MemberEmailService(
         IEmailService emailService,
         IUrlProviderFactory urlProviderFactory,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IMemberLocaleService memberLocaleService)
     {
         _emailService = emailService;
+        _memberLocaleService = memberLocaleService;
         _unitOfWork = unitOfWork;
         _urlProviderFactory = urlProviderFactory;
     }
@@ -291,23 +294,27 @@ public class MemberEmailService : IMemberEmailService
             : urlProvider.EventRsvpUrl(chapter, @event.Shortcode);
         var unsubscribeUrl = urlProvider.EmailPreferences(chapter);
 
-        var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-        {
-            { "event.date", @event.DateUtc.ToString("dddd dd MMMM, yyyy", LocaleUtils.DefaultCulture) },
-            { "event.id", @event.Id.ToString() },
-            { "event.location", venue.Name },
-            { "event.name", @event.GetDisplayName() },
-            { "event.time", time },
-            { "event.rsvpurl", rsvpUrl },
-            { "event.url", eventUrl },
-            { "unsubscribeUrl", unsubscribeUrl }
-        };
+        // Each recipient's date is formatted in their own locale (default fallback), so group recipients by
+        // culture and send one bulk email per group.
+        var memberList = members.ToArray();
+        var cultures = await _memberLocaleService.GetCultures(memberList.Select(x => x.Id).ToArray());
 
-        await _emailService.SendBulkEmail(
-            request,
-            members,
-            EmailType.EventInvite,
-            parameters);
+        foreach (var group in memberList.GroupBy(x => cultures[x.Id]))
+        {
+            var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "event.date", @event.DateUtc.ToString("dddd dd MMMM, yyyy", group.Key) },
+                { "event.id", @event.Id.ToString() },
+                { "event.location", venue.Name },
+                { "event.name", @event.GetDisplayName() },
+                { "event.time", time },
+                { "event.rsvpurl", rsvpUrl },
+                { "event.url", eventUrl },
+                { "unsubscribeUrl", unsubscribeUrl }
+            };
+
+            await _emailService.SendBulkEmail(request, group, EmailType.EventInvite, parameters);
+        }
     }
 
     public async Task SendEventWaitlistPromotionNotification(
@@ -328,24 +335,24 @@ public class MemberEmailService : IMemberEmailService
             .AddParagraphLink("url")
             .ToString();
 
-        var parameters = new Dictionary<string, string>
+        // Each recipient's date is formatted in their own locale (default fallback), so group recipients by
+        // culture and send one email per group.
+        var memberList = members.ToArray();
+        var cultures = await _memberLocaleService.GetCultures(memberList.Select(x => x.Id).ToArray());
+
+        foreach (var group in memberList.GroupBy(x => cultures[x.Id]))
         {
-            { "url", url },
-            { "event.date", @event.DateUtc.ToString("dddd dd MMMM, yyyy", LocaleUtils.DefaultCulture) },
-            { "event.name", @event.GetDisplayName() }
-        };
+            var parameters = new Dictionary<string, string>
+            {
+                { "url", url },
+                { "event.date", @event.DateUtc.ToString("dddd dd MMMM, yyyy", group.Key) },
+                { "event.name", @event.GetDisplayName() }
+            };
 
-        var to = members
-            .Select(x => x.ToEmailAddressee())
-            .ToArray();
+            var to = group.Select(x => x.ToEmailAddressee()).ToArray();
 
-        await _emailService.SendEmail(
-            request,
-            chapter,
-            to,
-            subject,
-            body,
-            parameters);
+            await _emailService.SendEmail(request, chapter, to, subject, body, parameters);
+        }
     }
 
     public async Task SendGroupApprovedEmail(
@@ -503,11 +510,12 @@ public class MemberEmailService : IMemberEmailService
         var chapter = request.Chapter;
 
         var currency = chapterSubscription.Currency;
+        var culture = await _memberLocaleService.GetCulture(member.Id);
 
         var parameters = new Dictionary<string, string>
         {
             { "subscription.amount", currency.ToAmountString(chapterSubscription.Amount) },
-            { "subscription.end", chapter.ToChapterTime(expiresUtc).ToString("d MMMM yyyy", LocaleUtils.DefaultCulture) }
+            { "subscription.end", chapter.ToChapterTime(expiresUtc).ToString("d MMMM yyyy", culture) }
         };
 
         await _emailService.SendEmail(
@@ -528,6 +536,7 @@ public class MemberEmailService : IMemberEmailService
         var chapter = request.Chapter;
 
         var expiring = expires > DateTime.UtcNow;
+        var culture = await _memberLocaleService.GetCulture(member.Id);
 
         var properties = new Dictionary<string, string>
         {
@@ -536,13 +545,13 @@ public class MemberEmailService : IMemberEmailService
             {
                 IncludeDayOfWeek = true,
                 TimeZone = chapter.TimeZone,
-                Culture = LocaleUtils.DefaultCulture
+                Culture = culture
             }) },
             { "subscription.disabledDate", disabledDate.ToFriendlyDateString(new FriendlyDateStringOptions
             {
                 IncludeDayOfWeek = true,
                 TimeZone = chapter.TimeZone,
-                Culture = LocaleUtils.DefaultCulture
+                Culture = culture
             }) }
         };
 
@@ -609,12 +618,11 @@ public class MemberEmailService : IMemberEmailService
     {
         var chapter = request.Chapter;
 
-        var emailRecipients = adminMembers
+        var recipients = adminMembers
             .Where(x => x.MemberId != member.Id && x.ReceiveNewMemberEmails)
-            .Select(x => x.ToEmailAddressee())
             .ToArray();
 
-        if (emailRecipients.Length == 0)
+        if (recipients.Length == 0)
         {
             return;
         }
@@ -640,25 +648,28 @@ public class MemberEmailService : IMemberEmailService
 
         var memberChapter = member.MemberChapter(chapter.Id);
 
-        var parameters = new Dictionary<string, string>
-        {
-            { "member.name", member.FullName },
-            { "joined", memberChapter?.CreatedUtc.ToFriendlyDateString(new FriendlyDateStringOptions
-            {
-                IncludeDayOfWeek = true,
-                TimeZone = chapter.TimeZone,
-                Culture = LocaleUtils.DefaultCulture
-            }) ?? "-" },
-            { "reason", reason ?? string.Empty }
-        };
+        // Each recipient admin's "joined" date is formatted in their own locale (default fallback), so
+        // group recipients by culture and send one email per group.
+        var cultures = await _memberLocaleService.GetCultures(recipients.Select(x => x.MemberId).ToArray());
 
-        await _emailService.SendEmail(
-            request,
-            chapter,
-            emailRecipients,
-            subject: subject,
-            body: body,
-            parameters: parameters);
+        foreach (var group in recipients.GroupBy(x => cultures[x.MemberId]))
+        {
+            var parameters = new Dictionary<string, string>
+            {
+                { "member.name", member.FullName },
+                { "joined", memberChapter?.CreatedUtc.ToFriendlyDateString(new FriendlyDateStringOptions
+                {
+                    IncludeDayOfWeek = true,
+                    TimeZone = chapter.TimeZone,
+                    Culture = group.Key
+                }) ?? "-" },
+                { "reason", reason ?? string.Empty }
+            };
+
+            var to = group.Select(x => x.ToEmailAddressee()).ToArray();
+
+            await _emailService.SendEmail(request, chapter, to, subject: subject, body: body, parameters: parameters);
+        }
     }
 
     public async Task SendNewGroupEmail(

@@ -17,6 +17,28 @@ public static class LocaleUtils
     public static readonly CultureInfo DefaultCulture = CultureInfo.GetCultureInfo("en-GB");
 
     /// <summary>
+    /// The <see cref="CultureInfo"/> for <paramref name="localeName"/>, or <see cref="DefaultCulture"/> when
+    /// it is null/blank or not a recognised culture. Used to format request-independent output (emails,
+    /// notifications) in a member's stored locale, falling back to the default.
+    /// </summary>
+    public static CultureInfo GetCultureOrDefault(string? localeName)
+    {
+        if (string.IsNullOrWhiteSpace(localeName))
+        {
+            return DefaultCulture;
+        }
+
+        try
+        {
+            return CultureInfo.GetCultureInfo(localeName);
+        }
+        catch (CultureNotFoundException)
+        {
+            return DefaultCulture;
+        }
+    }
+
+    /// <summary>
     /// The first specific culture name (e.g. "en-GB") from the ordered <paramref name="candidates"/> - such
     /// as Accept-Language values - that the runtime recognises, canonicalised; or null if none qualifies.
     /// Neutral cultures (e.g. "en") are skipped so a region-less hint falls through to the default locale.

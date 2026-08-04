@@ -18,6 +18,11 @@ public class MemberPreferencesRepository : WriteRepositoryBase<MemberPreferences
             .Where(x => x.MemberId == memberId)
             .DeferredSingleOrDefault();
 
+    public IDeferredQueryMultiple<MemberPreferences> GetByMemberIds(IEnumerable<Guid> memberIds)
+        => Set()
+            .Where(x => memberIds.Contains(x.MemberId))
+            .DeferredMultiple();
+
     public void Upsert(MemberPreferences memberPreferences, Guid memberId)
     {
         if (memberPreferences.MemberId == default)

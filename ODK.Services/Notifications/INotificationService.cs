@@ -29,7 +29,7 @@ public interface INotificationService
         IReadOnlyCollection<ChapterAdminMember> adminMembers,
         IReadOnlyCollection<MemberNotificationSettings> settings);
 
-    void AddNewEventNotifications(
+    Task AddNewEventNotifications(
         Event @event,
         Venue venue,
         IReadOnlyCollection<Member> members,

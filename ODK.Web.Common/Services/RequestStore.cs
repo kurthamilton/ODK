@@ -11,6 +11,8 @@ using ODK.Data.Core.Deferred;
 using ODK.Services;
 using ODK.Services.Exceptions;
 using ODK.Services.Logging;
+using ODK.Services.Members;
+using ODK.Services.Tasks;
 using ChapterServiceRequestImpl = ODK.Services.ChapterServiceRequest;
 using MemberChapterServiceRequestImpl = ODK.Services.MemberChapterServiceRequest;
 using MemberServiceRequestImpl = ODK.Services.MemberServiceRequest;
@@ -23,10 +25,12 @@ namespace ODK.Web.Common.Services;
 /// </summary>
 public class RequestStore : IRequestStore
 {
+    private readonly IBackgroundTaskService _backgroundTaskService;
     private Chapter? _chapter;
     private ChapterAdminMember? _currentChapterAdminMember;
     private bool _currentChapterAdminMemberLoaded;
     private readonly ILoggingService _loggingService;
+    private readonly IMemberLocaleService _memberLocaleService;
     private readonly IPlatformProvider _platformProvider;
     private IServiceRequest? _serviceRequest;
     private readonly IUnitOfWork _unitOfWork;
@@ -38,9 +42,13 @@ public class RequestStore : IRequestStore
     public RequestStore(
         IUnitOfWork unitOfWork,
         ILoggingService loggingService,
-        IPlatformProvider platformProvider)
+        IPlatformProvider platformProvider,
+        IBackgroundTaskService backgroundTaskService,
+        IMemberLocaleService memberLocaleService)
     {
+        _backgroundTaskService = backgroundTaskService;
         _loggingService = loggingService;
+        _memberLocaleService = memberLocaleService;
         _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
 
@@ -178,11 +186,14 @@ public class RequestStore : IRequestStore
         // Set the platform directly to persist when resetting other state
         Platform = _platformProvider.GetPlatform(context.RequestUrl);
 
-        var (chapter, currentMember) = await _unitOfWork.RunAsync(
+        var (chapter, currentMember, memberPreferences) = await _unitOfWork.RunAsync(
             x => GetChapterQuery(context, x, verbose),
             x => currentMemberIdOrDefault != null
                 ? x.MemberRepository.GetByIdOrDefault(currentMemberIdOrDefault.Value)
-                : new DefaultDeferredQuerySingleOrDefault<Member>());
+                : new DefaultDeferredQuerySingleOrDefault<Member>(),
+            x => currentMemberIdOrDefault != null
+                ? x.MemberPreferencesRepository.GetByMemberIdOrDefault(currentMemberIdOrDefault.Value)
+                : new DefaultDeferredQuerySingleOrDefault<MemberPreferences>());
 
         _chapter = chapter;
         _serviceRequest = new ServiceRequest
@@ -193,6 +204,23 @@ public class RequestStore : IRequestStore
         };
         Loaded = true;
 
+        RefreshMemberLocale(currentMember, memberPreferences, context.Locale);
+
         return this;
+    }
+
+    // If the member's stored locale differs from the request locale, persist the request locale in the
+    // background (idempotent). The stored locale formats request-independent output (emails, notifications).
+    private void RefreshMemberLocale(Member? currentMember, MemberPreferences? memberPreferences, string? requestLocale)
+    {
+        if (currentMember == null || requestLocale == null || memberPreferences?.Locale == requestLocale)
+        {
+            return;
+        }
+
+        var memberId = currentMember.Id;
+        _backgroundTaskService.Enqueue(
+            () => _memberLocaleService.UpdateLocale(memberId, requestLocale),
+            BackgroundTaskQueueType.General);
     }
 }
