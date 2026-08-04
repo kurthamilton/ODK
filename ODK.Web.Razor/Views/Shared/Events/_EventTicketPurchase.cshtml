@@ -1,6 +1,7 @@
 ﻿@using ODK.Core.Utils
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Events
+@using ODK.Web.Razor.Mvc
 @model EventTicketPurchaseViewModel
 @inject IOdkRoutes OdkRoutes
 @{
@@ -28,8 +29,8 @@
             {
                 var deadline = Model.Event.RsvpDeadlineUtc.Value.ToFriendlyDateTimeString(new FriendlyDateStringOptions 
                 { 
-                    IncludeDayOfWeek = true, 
-                    TimeZone = Model.Chapter.TimeZone 
+                    IncludeDayOfWeek = true,
+                    TimeZone = Html.DisplayTimeZone(Model.Chapter.TimeZone)
                 });
 
                 <div class="badge text-bg-secondary w-100">

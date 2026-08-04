@@ -1,8 +1,8 @@
 ﻿@using ODK.Core.Chapters
 @using ODK.Core.Countries
-@using ODK.Core.Extensions
 @using ODK.Core.Members
 @using ODK.Core.Payments
+@using ODK.Core.Utils
 @using ODK.Services.Chapters
 @using ODK.Services.Members
 @using ODK.Services.Members.ViewModels
@@ -55,7 +55,12 @@ else
             @if (Model.MemberSubscription?.ExpiresUtc != null)
             {
                 <span>
-                    @Model.Chapter.ToLocalTime(Model.MemberSubscription.ExpiresUtc.Value).ToString("d MMMM yyyy")
+                    @Model.MemberSubscription.ExpiresUtc.Value.ToFriendlyDateString(new FriendlyDateStringOptions 
+                    { 
+                        FullMonthName = true, 
+                        ForceIncludeYear = true, 
+                        TimeZone = Model.CurrentMember.TimeZone 
+                    })
                 </span>
             }
             else
@@ -74,7 +79,12 @@ else
             <label class="form-label">Next payment date</label>
             <div class="form-control-plaintext">
                 <span>
-                    @Model.Chapter.ToLocalTime(Model.ExternalSubscription.NextBillingDate.Value).ToString("d MMMM yyyy")
+                    @Model.ExternalSubscription.NextBillingDate.Value.ToFriendlyDateString(new FriendlyDateStringOptions 
+                    { 
+                        FullMonthName = true, 
+                        ForceIncludeYear = true, 
+                        TimeZone = Model.CurrentMember.TimeZone 
+                    })
                 </span>
             </div>
         </div>

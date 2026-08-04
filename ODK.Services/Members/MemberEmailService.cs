@@ -293,7 +293,7 @@ public class MemberEmailService : IMemberEmailService
 
         var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            { "event.date", @event.DateUtc.ToString("dddd dd MMMM, yyyy") },
+            { "event.date", @event.DateUtc.ToString("dddd dd MMMM, yyyy", LocaleUtils.DefaultCulture) },
             { "event.id", @event.Id.ToString() },
             { "event.location", venue.Name },
             { "event.name", @event.GetDisplayName() },
@@ -331,7 +331,7 @@ public class MemberEmailService : IMemberEmailService
         var parameters = new Dictionary<string, string>
         {
             { "url", url },
-            { "event.date", @event.DateUtc.ToString("dddd dd MMMM, yyyy") },
+            { "event.date", @event.DateUtc.ToString("dddd dd MMMM, yyyy", LocaleUtils.DefaultCulture) },
             { "event.name", @event.GetDisplayName() }
         };
 
@@ -507,7 +507,7 @@ public class MemberEmailService : IMemberEmailService
         var parameters = new Dictionary<string, string>
         {
             { "subscription.amount", currency.ToAmountString(chapterSubscription.Amount) },
-            { "subscription.end", chapter.ToChapterTime(expiresUtc).ToString("d MMMM yyyy") }
+            { "subscription.end", chapter.ToChapterTime(expiresUtc).ToString("d MMMM yyyy", LocaleUtils.DefaultCulture) }
         };
 
         await _emailService.SendEmail(
@@ -535,12 +535,14 @@ public class MemberEmailService : IMemberEmailService
             { "subscription.expiryDate", expires.ToFriendlyDateString(new FriendlyDateStringOptions
             {
                 IncludeDayOfWeek = true,
-                TimeZone = chapter.TimeZone
+                TimeZone = chapter.TimeZone,
+                Culture = LocaleUtils.DefaultCulture
             }) },
             { "subscription.disabledDate", disabledDate.ToFriendlyDateString(new FriendlyDateStringOptions
             {
                 IncludeDayOfWeek = true,
-                TimeZone = chapter.TimeZone
+                TimeZone = chapter.TimeZone,
+                Culture = LocaleUtils.DefaultCulture
             }) }
         };
 
@@ -644,7 +646,8 @@ public class MemberEmailService : IMemberEmailService
             { "joined", memberChapter?.CreatedUtc.ToFriendlyDateString(new FriendlyDateStringOptions
             {
                 IncludeDayOfWeek = true,
-                TimeZone = chapter.TimeZone
+                TimeZone = chapter.TimeZone,
+                Culture = LocaleUtils.DefaultCulture
             }) ?? "-" },
             { "reason", reason ?? string.Empty }
         };

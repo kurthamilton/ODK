@@ -1,9 +1,5 @@
-﻿@using ODK.Core.Chapters
-@using ODK.Core.Extensions
-@using ODK.Core.Members
-@using ODK.Services.Members
+﻿@using ODK.Core.Utils
 @using ODK.Services.Members.ViewModels
-@using ODK.Web.Common.Extensions
 @model MemberPageViewModel
 @{
     var chapterPropertyDictionary = Model.ChapterProperties.ToDictionary(x => x.Id);
@@ -58,7 +54,14 @@
     <div class="form-group mb-3">
         <label class="form-label">Date joined</label>
         <div class="form-control-plaintext">
-            <span>@TimeZoneEntityExtensions.ToLocalTime(Model.Chapter, joined).ToString("d MMMM yyyy")</span>
+            <span>
+                @joined.ToFriendlyDateString(new FriendlyDateStringOptions 
+                { 
+                    FullMonthName = true, 
+                    ForceIncludeYear = true, 
+                    TimeZone = Model.CurrentMember?.TimeZone ?? Model.Chapter.TimeZone
+                })
+            </span>
         </div>
     </div>
 </form>

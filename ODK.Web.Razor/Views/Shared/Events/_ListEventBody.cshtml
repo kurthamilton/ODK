@@ -2,6 +2,7 @@
 @using ODK.Core.Utils
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Events
+@using ODK.Web.Razor.Mvc
 @model ListEventViewModel
 @{
     var localTime = Event.ToLocalTime(Model.Event.Date, Model.Chapter.TimeZone);
@@ -12,6 +13,10 @@
     <span>
         <span>@localTime.ToFriendlyDateString(new FriendlyDateStringOptions { ForceIncludeYear = Model.ForceDisplayYear, IncludeDayOfWeek = true, TimeZone = Model.Chapter.TimeZone })</span>
         <span>@Event.ToLocalTimeString(Model.Event.Date, Model.Event.EndTime, Model.Chapter.TimeZone)</span>
+        @if (localTime.TimeOfDay.TotalSeconds > 0)
+        {
+            <span>@Html.ChapterTimeZoneLabel(Model.Chapter.TimeZone, Model.Event.Date)</span>
+        }
     </span>
 </div>
 

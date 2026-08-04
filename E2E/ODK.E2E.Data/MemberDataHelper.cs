@@ -46,4 +46,20 @@ public class MemberDataHelper : DataHelperBase
             ? rows.First()
             : throw new InvalidOperationException($"No member found with id '{memberId}'.");
     }
+
+    /// <summary>
+    /// Sets a member's timezone directly. The app only sets a member's timezone by geocoding their
+    /// location (via the geolocation integration), which isn't wired up in the e2e environment - so there's
+    /// no UI path to drive. The <c>TimeZoneId</c> property maps to the <c>TimeZone</c> column.
+    /// </summary>
+    public async Task SetTimeZone(Guid memberId, string timeZoneId)
+    {
+        const string sql = "UPDATE Members SET TimeZone = @timeZone WHERE MemberId = @id";
+
+        await using var builder = Builder(sql)
+            .AddParameter("@id", memberId)
+            .AddParameter("@timeZone", timeZoneId);
+
+        await builder.ExecuteNonQuery();
+    }
 }

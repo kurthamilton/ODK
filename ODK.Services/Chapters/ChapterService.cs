@@ -93,6 +93,7 @@ public class ChapterService : IChapterService
         {
             Chapter = chapter,
             ChapterSubscriptions = chapterSubscriptions,
+            CurrentMember = currentMember,
             CurrentSubscription = currentSubscription,
             ExternalSubscription = externalSubscription,
             MembershipSettings = membershipSettings,

@@ -2,6 +2,7 @@
 @using ODK.Services.Events.ViewModels
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Mvc
 @model EventCommentsAdminPageViewModel
 @inject IOdkRoutes OdkRoutes
 
@@ -44,7 +45,7 @@
                         @comment.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions 
                         { 
                             IncludeDayOfWeek = true, 
-                            TimeZone = Model.Chapter.TimeZone 
+                            TimeZone = Html.DisplayTimeZone(Model.Chapter.TimeZone) 
                         })
                     </td>
                     <td class="@(comment.Hidden ? "text-muted" : null)">

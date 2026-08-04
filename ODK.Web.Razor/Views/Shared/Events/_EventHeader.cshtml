@@ -1,5 +1,6 @@
 ﻿@using ODK.Core.Utils
 @using ODK.Web.Razor.Models.Events
+@using ODK.Web.Razor.Mvc
 @model EventHeaderViewModel
 @{
     var localTime = Model.Event.ToLocalTime(Model.Chapter.TimeZone);
@@ -32,6 +33,8 @@
                 <span>-</span>
                 <span>@TimeSpanUtils.ToString(Model.Event.EndTime)</span>
             }
+
+            <span>@Html.ChapterTimeZoneLabel(Model.Chapter.TimeZone, Model.Event.DateUtc)</span>
         </span>
     }
     else if (!string.IsNullOrEmpty(Model.Event.Time))

@@ -13,6 +13,45 @@ public static class DateUtilsTests
     private const int OneHourInSeconds = OneMinuteInSeconds * 60;
     private const int OneDayInSeconds = OneHourInSeconds * 24;
 
+    [Test]
+    public static void ChapterTimeZoneLabel_MemberTimeZoneNull_ReturnsEmpty()
+    {
+        // Arrange - an anonymous / unknown viewer: there's nothing to compare against.
+        var chapter = TimeZoneInfo.FindSystemTimeZoneById("GMT Standard Time");
+
+        // Act / Assert
+        DateUtils.ChapterTimeZoneLabel(chapter, null, new DateTime(2024, 7, 1)).Should().BeEmpty();
+    }
+
+    [Test]
+    public static void ChapterTimeZoneLabel_SameTimeZone_ReturnsEmpty()
+    {
+        // Arrange - the viewer is in the chapter's own timezone, so no label is needed.
+        var chapter = TimeZoneInfo.FindSystemTimeZoneById("GMT Standard Time");
+        var member = TimeZoneInfo.FindSystemTimeZoneById("GMT Standard Time");
+
+        // Act / Assert
+        DateUtils.ChapterTimeZoneLabel(chapter, member, new DateTime(2024, 7, 1)).Should().BeEmpty();
+    }
+
+    // The member is in UTC (a different zone id from every chapter zone below), so a label is always shown;
+    // the offset is the chapter zone's, computed for the date so DST is reflected.
+    [TestCase("GMT Standard Time", "2024-07-01", ExpectedResult = "(UTC+1)")]
+    [TestCase("GMT Standard Time", "2024-01-01", ExpectedResult = "(UTC+0)")]
+    [TestCase("India Standard Time", "2024-07-01", ExpectedResult = "(UTC+5:30)")]
+    [TestCase("Pacific Standard Time", "2024-01-01", ExpectedResult = "(UTC-8)")]
+    public static string ChapterTimeZoneLabel_MemberInDifferentZone_ReturnsChapterOffset(
+        string chapterTimeZoneId, string dateString)
+    {
+        // Arrange
+        var chapter = TimeZoneInfo.FindSystemTimeZoneById(chapterTimeZoneId);
+        var member = TimeZoneInfo.Utc;
+        var dateUtc = DateTime.ParseExact(dateString, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        // Act
+        return DateUtils.ChapterTimeZoneLabel(chapter, member, dateUtc);
+    }
+
     [TestCase(DayOfWeek.Sunday, ExpectedResult = 1)]
     [TestCase(DayOfWeek.Monday, ExpectedResult = 2)]
     [TestCase(DayOfWeek.Tuesday, ExpectedResult = 3)]
@@ -53,6 +92,34 @@ public static class DateUtilsTests
         return (result - date).Days;
     }
 
+    [TestCase("en-GB", ExpectedResult = "5 Jun")]
+    [TestCase("en-US", ExpectedResult = "Jun 5")]
+    public static string ToFriendlyDateString_CurrentYear_OmitsYearInCultureOrder(string culture)
+    {
+        // Arrange - a current-year date omits the year; the day/month order follows the culture.
+        var date = new DateTime(DateTime.UtcNow.Year, 6, 5, 0, 0, 0, DateTimeKind.Utc);
+
+        // Act
+        return date.ToFriendlyDateString(new FriendlyDateStringOptions
+        {
+            Culture = CultureInfo.GetCultureInfo(culture)
+        });
+    }
+
+    [TestCase("en-GB", ExpectedResult = "5 Jun 2020")]
+    [TestCase("en-US", ExpectedResult = "Jun 5, 2020")]
+    public static string ToFriendlyDateString_PastYear_IncludesYearInCultureOrder(string culture)
+    {
+        // Arrange - 5 June 2020 is not the current year, so the year is included.
+        var date = new DateTime(2020, 6, 5, 0, 0, 0, DateTimeKind.Utc);
+
+        // Act
+        return date.ToFriendlyDateString(new FriendlyDateStringOptions
+        {
+            Culture = CultureInfo.GetCultureInfo(culture)
+        });
+    }
+
     [Test]
     public static void ToFriendlyDateString_ForceIncludeYear_IncludesCurrentYear()
     {
@@ -61,36 +128,44 @@ public static class DateUtilsTests
         var date = new DateTime(year, 6, 5, 0, 0, 0, DateTimeKind.Utc);
 
         // Act
-        var result = date.ToFriendlyDateString(new FriendlyDateStringOptions { ForceIncludeYear = true });
+        var result = date.ToFriendlyDateString(new FriendlyDateStringOptions
+        {
+            ForceIncludeYear = true,
+            Culture = CultureInfo.GetCultureInfo("en-GB")
+        });
 
         // Assert
-        result.Should().Be($"Jun 5, {year}");
+        result.Should().Be($"5 Jun {year}");
     }
 
-    [Test]
-    public static void ToFriendlyDateString_FullMonthName_UsesFullMonthName()
+    [TestCase("en-GB", ExpectedResult = "5 June")]
+    [TestCase("en-US", ExpectedResult = "June 5")]
+    public static string ToFriendlyDateString_FullMonthName_UsesFullMonthNameInCultureOrder(string culture)
     {
         // Arrange
         var date = new DateTime(DateTime.UtcNow.Year, 6, 5, 0, 0, 0, DateTimeKind.Utc);
 
         // Act
-        var result = date.ToFriendlyDateString(new FriendlyDateStringOptions { FullMonthName = true });
-
-        // Assert
-        result.Should().Be("June 5");
+        return date.ToFriendlyDateString(new FriendlyDateStringOptions
+        {
+            FullMonthName = true,
+            Culture = CultureInfo.GetCultureInfo(culture)
+        });
     }
 
-    [Test]
-    public static void ToFriendlyDateString_IncludeDayOfWeekAndPastYear_IncludesDayNameAndYear()
+    [TestCase("en-GB", ExpectedResult = "Fri, 5 Jun 2020")]
+    [TestCase("en-US", ExpectedResult = "Fri, Jun 5, 2020")]
+    public static string ToFriendlyDateString_IncludeDayOfWeekAndPastYear_PrefixesDayNameInCultureOrder(string culture)
     {
         // Arrange - 5 June 2020 was a Friday; the year is included because it isn't the current year.
         var date = new DateTime(2020, 6, 5, 0, 0, 0, DateTimeKind.Utc);
 
         // Act
-        var result = date.ToFriendlyDateString(new FriendlyDateStringOptions { IncludeDayOfWeek = true });
-
-        // Assert
-        result.Should().Be("Fri, Jun 5, 2020");
+        return date.ToFriendlyDateString(new FriendlyDateStringOptions
+        {
+            IncludeDayOfWeek = true,
+            Culture = CultureInfo.GetCultureInfo(culture)
+        });
     }
 
     [Test]
@@ -100,36 +175,46 @@ public static class DateUtilsTests
         var date = new DateTime(DateTime.UtcNow.Year, 6, 5, 0, 0, 0, DateTimeKind.Utc);
 
         // Act - IncludeTime only shows the time when there is a time-of-day.
-        var result = date.ToFriendlyDateString(new FriendlyDateStringOptions { IncludeTime = true });
+        var result = date.ToFriendlyDateString(new FriendlyDateStringOptions
+        {
+            IncludeTime = true,
+            Culture = CultureInfo.GetCultureInfo("en-GB")
+        });
 
         // Assert
-        result.Should().Be("Jun 5");
+        result.Should().Be("5 Jun");
     }
 
     [Test]
     public static void ToFriendlyDateString_IncludeTimeWithTimeOfDay_IncludesTime()
     {
-        // Arrange
+        // Arrange - the time is always 24-hour, independent of the culture.
         var date = new DateTime(DateTime.UtcNow.Year, 6, 5, 14, 30, 0, DateTimeKind.Utc);
 
         // Act
-        var result = date.ToFriendlyDateString(new FriendlyDateStringOptions { IncludeTime = true });
+        var result = date.ToFriendlyDateString(new FriendlyDateStringOptions
+        {
+            IncludeTime = true,
+            Culture = CultureInfo.GetCultureInfo("en-GB")
+        });
 
         // Assert
-        result.Should().Be("Jun 5 14:30");
+        result.Should().Be("5 Jun 14:30");
     }
 
     [Test]
-    public static void ToFriendlyDateString_NullOptions_ReturnsMonthAndDayOnly()
+    public static void ToFriendlyDateString_NullOptions_OmitsYearAndTime()
     {
-        // Arrange - a current-year date with a time-of-day; with no options neither year nor time show.
-        var date = new DateTime(DateTime.UtcNow.Year, 6, 5, 14, 30, 0, DateTimeKind.Utc);
+        // Arrange - a current-year date with a time-of-day; with no options neither year nor time show, and
+        // the ambient CurrentCulture supplies the order (asserted structurally so the runner's culture doesn't matter).
+        var year = DateTime.UtcNow.Year;
+        var date = new DateTime(year, 6, 5, 14, 30, 0, DateTimeKind.Utc);
 
         // Act
         var result = date.ToFriendlyDateString(null);
 
         // Assert
-        result.Should().Be("Jun 5");
+        result.Should().NotContain(year.ToString()).And.NotContain("14:30");
     }
 
     [Test]
@@ -139,10 +224,13 @@ public static class DateUtilsTests
         var date = new DateTime(DateTime.UtcNow.Year, 6, 5, 0, 0, 0, DateTimeKind.Utc);
 
         // Act
-        var result = date.ToFriendlyDateTimeString(null);
+        var result = date.ToFriendlyDateTimeString(new FriendlyDateStringOptions
+        {
+            Culture = CultureInfo.GetCultureInfo("en-GB")
+        });
 
         // Assert
-        result.Should().Be("Jun 5 00:00");
+        result.Should().Be("5 Jun 00:00");
     }
 
     [Test]
@@ -152,10 +240,14 @@ public static class DateUtilsTests
         var date = new DateTime(2020, 6, 5, 14, 30, 0, DateTimeKind.Utc);
 
         // Act
-        var result = date.ToFriendlyDateTimeString(new FriendlyDateStringOptions { IncludeDayOfWeek = true });
+        var result = date.ToFriendlyDateTimeString(new FriendlyDateStringOptions
+        {
+            IncludeDayOfWeek = true,
+            Culture = CultureInfo.GetCultureInfo("en-GB")
+        });
 
         // Assert
-        result.Should().Be("Fri, Jun 5, 2020 14:30");
+        result.Should().Be("Fri, 5 Jun 2020 14:30");
     }
 
     [Test]
@@ -166,10 +258,14 @@ public static class DateUtilsTests
         var date = new DateTime(2020, 6, 5, 20, 0, 0, DateTimeKind.Utc);
 
         // Act
-        var result = date.ToFriendlyDateTimeString(new FriendlyDateStringOptions { TimeZone = timeZone });
+        var result = date.ToFriendlyDateTimeString(new FriendlyDateStringOptions
+        {
+            TimeZone = timeZone,
+            Culture = CultureInfo.GetCultureInfo("en-GB")
+        });
 
         // Assert
-        result.Should().Be("Jun 6, 2020 01:00");
+        result.Should().Be("6 Jun 2020 01:00");
     }
 
     [TestCase(0, ExpectedResult = "just now")]

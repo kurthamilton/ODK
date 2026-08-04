@@ -1,11 +1,6 @@
-﻿@using ODK.Core.Events
-@using ODK.Core.Extensions
-@using ODK.Core.Features
+﻿@using ODK.Core.Features
 @using ODK.Core.Utils
-@using ODK.Services
 @using ODK.Services.Events.ViewModels
-@using ODK.Web.Common.Extensions
-@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin.Events
 @using ODK.Web.Razor.Models.Components
 @model EventInvitesAdminPageViewModel
@@ -15,8 +10,16 @@
 
 @if (Model.Invites.SentUtc != null)
 {
+    var sent = @Model.Invites.SentUtc.Value.ToFriendlyDateString(new FriendlyDateStringOptions 
+    { 
+        IncludeDayOfWeek = true, 
+        FullMonthName = true, 
+        ForceIncludeYear = true, 
+        TimeZone = Model.CurrentMember.TimeZone 
+    });
+
     <p>
-        @Model.Invites.Sent invites were sent on @TimeZoneEntityExtensions.ToLocalTime(Model.Chapter, Model.Invites.SentUtc.Value).ToString("dddd, MMMM d, yyyy")
+        @Model.Invites.Sent invites were sent on @sent
     </p>
 
     <section class="section">

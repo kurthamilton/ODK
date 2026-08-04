@@ -42,6 +42,18 @@ public class ChapterDataHelper : DataHelperBase
             ?? throw new InvalidOperationException($"No group found with id '{chapterId}'.");
     }
 
+    public async Task<string> GetTimeZoneId(Guid chapterId)
+    {
+        // The TimeZoneId property maps to the "TimeZone" column.
+        const string sql = "SELECT TimeZone FROM Chapters WHERE ChapterId = @id";
+
+        await using var builder = Builder(sql)
+            .AddParameter("@id", chapterId);
+
+        return await builder.ExecuteScalar<string>()
+            ?? throw new InvalidOperationException($"No group found with id '{chapterId}'.");
+    }
+
     /// <summary>
     /// Re-platforms an existing chapter to DrunkenKnitwits and sets its approval/publish state. There
     /// is no self-service DrunkenKnitwits chapter creation, so tests create a valid chapter through the

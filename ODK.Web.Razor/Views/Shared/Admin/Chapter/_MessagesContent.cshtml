@@ -3,6 +3,7 @@
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Mvc
 @model ChapterMessagesAdminPageViewModel
 @inject IOdkRoutes OdkRoutes
 
@@ -28,7 +29,7 @@
                 var created = message.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions 
                 { 
                     IncludeDayOfWeek = true, 
-                    TimeZone = Model.Chapter.TimeZone 
+                    TimeZone = Html.DisplayTimeZone(Model.Chapter.TimeZone) 
                 });
 
                 <tr>

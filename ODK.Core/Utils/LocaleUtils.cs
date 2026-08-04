@@ -9,6 +9,14 @@ namespace ODK.Core.Utils;
 public static class LocaleUtils
 {
     /// <summary>
+    /// The app-level fallback formatting culture (mirrors config <c>Localisation:DefaultLocale</c>). Used to
+    /// format request-independent text - emails, notifications, exports - so it never inherits the ambient
+    /// request culture. Request-driven UI formatting uses <see cref="CultureInfo.CurrentCulture"/> instead,
+    /// which the request-localisation middleware sets from the same <see cref="GetPreferredLocale"/> parse.
+    /// </summary>
+    public static readonly CultureInfo DefaultCulture = CultureInfo.GetCultureInfo("en-GB");
+
+    /// <summary>
     /// The first specific culture name (e.g. "en-GB") from the ordered <paramref name="candidates"/> - such
     /// as Accept-Language values - that the runtime recognises, canonicalised; or null if none qualifies.
     /// Neutral cultures (e.g. "en") are skipped so a region-less hint falls through to the default locale.

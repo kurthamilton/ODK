@@ -1,5 +1,4 @@
-﻿@using ODK.Core.Extensions
-@using ODK.Core.Utils
+﻿@using ODK.Core.Utils
 @using ODK.Services.Payments
 @using ODK.Services.Subscriptions.ViewModels
 @model SiteSubscriptionsViewModel
@@ -71,7 +70,7 @@
                 @if (memberSubscription?.MemberSiteSubscription.ExpiresUtc != null)
                 {
                     <span>
-                        @memberSubscription.MemberSiteSubscription.ExpiresUtc.Value.ToFriendlyDateString(null)
+                        @memberSubscription.MemberSiteSubscription.ExpiresUtc.Value.ToFriendlyDateString(new FriendlyDateStringOptions { TimeZone = currentMember?.TimeZone })
                     </span>
                 }
                 else
@@ -90,7 +89,12 @@
                 @if (externalSubscription.NextBillingDate != null && currentMember != null)
                 {
                     <span>
-                        @currentMember.ToLocalTime(externalSubscription.NextBillingDate.Value).ToString("d MMMM yyyy")
+                        @externalSubscription.NextBillingDate.Value.ToFriendlyDateString(new FriendlyDateStringOptions
+                        { 
+                            FullMonthName = true, 
+                            ForceIncludeYear = true, 
+                            TimeZone = currentMember.TimeZone 
+                        })
                     </span>
                 }
                 else

@@ -53,10 +53,10 @@
             <div>
                 <strong>@member.FullName</strong>
                 <span>
-                    @comment.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions 
-                    { 
-                        IncludeDayOfWeek = true, 
-                        TimeZone = Model.Chapter.TimeZone 
+                    @comment.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions
+                    {
+                        IncludeDayOfWeek = true,
+                        TimeZone = Model.TimeZone
                     })
                 </span>
                 <span>

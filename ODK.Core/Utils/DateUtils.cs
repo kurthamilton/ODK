@@ -1,8 +1,34 @@
-﻿namespace ODK.Core.Utils;
+﻿using System.Globalization;
+
+namespace ODK.Core.Utils;
 
 public static class DateUtils
 {
     private static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+
+    /// <summary>
+    /// A short UTC-offset label (e.g. "(UTC+1)") for <paramref name="chapterTimeZone"/> at
+    /// <paramref name="dateUtc"/> - DST-aware - shown to a viewer in a different timezone so an event's
+    /// wall-clock time isn't misread as their own local time. Empty when the viewer's timezone is unknown
+    /// (<paramref name="memberTimeZone"/> is null) or the same as the chapter's.
+    /// </summary>
+    public static string ChapterTimeZoneLabel(
+        TimeZoneInfo chapterTimeZone, TimeZoneInfo? memberTimeZone, DateTime dateUtc)
+    {
+        if (memberTimeZone == null || memberTimeZone.Id == chapterTimeZone.Id)
+        {
+            return string.Empty;
+        }
+
+        var offset = chapterTimeZone.GetUtcOffset(DateTime.SpecifyKind(dateUtc, DateTimeKind.Utc));
+        var sign = offset < TimeSpan.Zero ? "-" : "+";
+        var magnitude = offset.Duration();
+        var hoursMinutes = magnitude.Minutes == 0
+            ? magnitude.Hours.ToString(CultureInfo.InvariantCulture)
+            : $"{magnitude.Hours}:{magnitude.Minutes:D2}";
+
+        return $"(UTC{sign}{hoursMinutes})";
+    }
 
     public static long DateVersion(DateTime date) => long.Parse($"{date:yyyyMMdd}");
 
@@ -54,30 +80,31 @@ public static class DateUtils
     public static string ToFriendlyDateString(this DateTime dateUtc, FriendlyDateStringOptions? options)
     {
         var timeZone = options?.TimeZone;
+        var culture = options?.Culture ?? CultureInfo.CurrentCulture;
 
         var localDate = timeZone != null
             ? TimeZoneInfo.ConvertTimeFromUtc(dateUtc, timeZone)
             : dateUtc;
 
         var includeYear = options?.ForceIncludeYear == true || dateUtc.Year != DateTime.UtcNow.Year;
+        var monthToken = options?.FullMonthName == true ? "MMMM" : "MMM";
 
         var format = options?.IncludeDayOfWeek == true
             ? "ddd, "
             : string.Empty;
 
-        format = $"{format}{(options?.FullMonthName == true ? "MMMM" : "MMM")} d";
-
-        if (includeYear)
-        {
-            format += ", yyyy";
-        }
+        // The day/month order follows the culture ("5 Jun" for en-GB, "Jun 5" for en-US); the year, when
+        // shown, is appended at the end. Year-first orderings (e.g. CJK cultures) are out of scope.
+        format += DayBeforeMonth(culture)
+            ? $"d {monthToken}{(includeYear ? " yyyy" : "")}"
+            : $"{monthToken} d{(includeYear ? ", yyyy" : "")}";
 
         if (options?.ForceIncludeTime == true || (options?.IncludeTime == true && localDate.TimeOfDay.Ticks > 0))
         {
             format += " HH:mm";
         }
 
-        return localDate.ToString(format);
+        return localDate.ToString(format, culture);
     }
 
     public static string ToFriendlyDateTimeString(this DateTime dateUtc, FriendlyDateStringOptions? options)
@@ -182,4 +209,14 @@ public static class DateUtils
 
     public static DateTime ToUtc(this DateTime local, TimeZoneInfo timeZone)
         => TimeZoneInfo.ConvertTimeToUtc(local.SpecifyKind(DateTimeKind.Unspecified), timeZone);
+
+    // Whether the culture writes the day before the month (e.g. en-GB "d MMMM") rather than the month
+    // before the day (e.g. en-US "MMMM d"), inferred from its month/day pattern.
+    private static bool DayBeforeMonth(CultureInfo culture)
+    {
+        var pattern = culture.DateTimeFormat.MonthDayPattern;
+        var dayIndex = pattern.IndexOf('d');
+        var monthIndex = pattern.IndexOf('M');
+        return dayIndex >= 0 && (monthIndex < 0 || dayIndex < monthIndex);
+    }
 }

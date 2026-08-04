@@ -194,6 +194,46 @@ auto-hide/disable based on it (`UnauthorizedBehaviour`).
   commit → external call → commit sequence in a transaction. Rely on job/webhook idempotency (see
   `InitiatorId` in `PaymentService`) for the window between the external action and the final commit.
 
+## Localisation (date/number formatting)
+
+Date and number **formatting** follows the request's locale; the sitewide default is
+`Localisation:DefaultLocale` (config, currently `en-GB`). This is about *formatting* only — the UI copy is
+authored in the default language, so `CurrentUICulture` (resource lookups) is always the default; only
+`CurrentCulture` (formatting) varies.
+
+**How the request locale is determined.** `LocaleUtils.GetPreferredLocale` parses the `Accept-Language`
+header (quality-ordered) and returns the first entry that is a valid **specific** culture (`CultureInfo`),
+canonicalised; neutral cultures (e.g. `en`) are skipped so a region-less hint falls through to the default,
+and an unusable header yields the default. That single parse feeds **two** consumers:
+
+- **`CultureInfo.CurrentCulture`** — set to the request locale **for rendering only**, by
+  `RequestCultureResultFilter` (a global result filter, runs after model binding, before the view renders).
+  This drives *all* .NET formatting during rendering: direct `@date` renders, standard specifiers (`"d"`,
+  `"D"`, `"t"`), and `DateUtils.ToFriendlyDateString`. **Model binding is deliberately *not* affected** —
+  the app-wide default culture is pinned in `Program.cs` (`CultureInfo.DefaultThreadCurrentCulture`), so
+  posted values (flatpickr dates are posted as a fixed `dd/MM/yyyy`, decimals, etc.) always *parse* under
+  the default culture regardless of the request locale. Formatting follows the locale; parsing never does.
+- **`HttpRequestContext.Locale`** → `LocaleService.GetShortDatePattern(request)` — supplies the
+  short-date pattern string the flatpickr date-picker uses for its display (`_Layout`).
+
+Both derive from the same `GetPreferredLocale` call, so they never disagree.
+
+**Formatting rules for new work:**
+
+- **Human-facing dates** — use `DateUtils.ToFriendlyDateString` / `ToFriendlyDateTimeString` (or standard
+  specifiers). They follow `CurrentCulture`, so day/month order and month names localise automatically —
+  never hardcode an order like `"d MMMM yyyy"` for display. The friendly helper takes a UTC value and a
+  `TimeZone` and converts internally.
+- **Times stay 24-hour** — the app's house style (see `TimeSpanUtils`, event headers). The friendly helper
+  localises the *date* order/names but keeps `HH:mm`; don't introduce AM/PM.
+- **Request-independent text** (emails, notifications, CSV/exports — anything created off a background job
+  or persisted for another reader) — pass an explicit culture so it never inherits the ambient request
+  culture: `LocaleUtils.DefaultCulture` for display text (via `FriendlyDateStringOptions.Culture`), or
+  `CultureInfo.InvariantCulture` for machine/interchange values (`<input type="date">` values, sort keys,
+  ISO timestamps). This guard matters because the friendly helper defaults to `CurrentCulture`.
+
+(Timezone conversion is a separate concern — see the timezone-aware bullet under *Conventions & style*.)
+
 ## Tests
 
 - NUnit + FluentAssertions + Moq; EF Core InMemory for data.
@@ -235,6 +275,15 @@ auto-hide/disable based on it (`UnauthorizedBehaviour`).
   so an event matches when its *local* date is on/after From and on/before To. Don't apply a fixed
   offset per row (DST makes it wrong); convert the two boundaries instead. See
   `EventAdminService.GetEventsAdminPageViewModel`.
+- **Display timezone: prefer the viewing member's, fall back to the chapter's.** A user-facing datetime
+  is rendered in the current member's `TimeZone` where one is known, otherwise the chapter's. In views,
+  use `Html.DisplayTimeZone(Model.Chapter.TimeZone)` (resolves the current member via `IRequestStore`, no
+  need for the VM to carry it) for **point-in-time** values (created/sent/joined/expires/paid/…). **Event
+  start/end times are the exception** — they stay in the chapter (venue) timezone so the wall-clock time
+  isn't misread. When the viewer's zone differs, append `Html.ChapterTimeZoneLabel(Model.Chapter.TimeZone,
+  utc)` — a DST-aware `"(UTC+1)"` indicator (empty when the viewer is in the chapter's zone or unknown);
+  see `_EventHeader` / `_ListEventBody`. A VM that already exposes a member-preferred `TimeZone` (the
+  `GroupPageViewModel` base does: `CurrentMember?.TimeZone ?? Chapter.TimeZone`) can be used directly.
 - When materialising a collection to satisfy an `IReadOnlyCollection<T>` (return type, property, or
   parameter), use `.ToArray()` rather than `.ToList()`.
 - Don't add client-side frameworks; reach for a partial first.
