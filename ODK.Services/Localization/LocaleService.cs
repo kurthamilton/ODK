@@ -1,5 +1,3 @@
-using ODK.Core.Countries;
-using ODK.Core.Members;
 using ODK.Core.Utils;
 
 namespace ODK.Services.Localization;
@@ -8,17 +6,15 @@ public class LocaleService : ILocaleService
 {
     private readonly LocaleServiceSettings _settings;
 
-    public LocaleService(LocaleServiceSettings settings)
+    public LocaleService(
+        LocaleServiceSettings settings)
     {
         _settings = settings;
     }
 
-    public string GetShortDatePattern(MemberPreferences? preferences, Country? country)
+    public string GetShortDatePattern(IServiceRequest request)
     {
-        var locale = preferences?.Locale
-            ?? country?.DefaultLocale
-            ?? (country != null ? LocaleUtils.GetDefaultLocale(country.IsoCode2) : null)
-            ?? _settings.DefaultLocale;
+        var locale = request.HttpRequestContext.Locale;
 
         return LocaleUtils.GetShortDatePattern(locale)
             ?? LocaleUtils.GetShortDatePattern(_settings.DefaultLocale)

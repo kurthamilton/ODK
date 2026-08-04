@@ -78,12 +78,12 @@ public class ChapterViewModelService : IChapterViewModelService
             {
                 (location, preferences) = await _unitOfWork.RunAsync(
                     x => x.MemberLocationRepository.GetByMemberIdOrDefault(currentMember.Id),
-                    x => x.MemberPreferencesRepository.GetByMemberId(currentMember.Id));
+                    x => x.MemberPreferencesRepository.GetByMemberIdOrDefault(currentMember.Id));
             }
             else if (distanceUnitType == null)
             {
                 preferences = await _unitOfWork.MemberPreferencesRepository
-                    .GetByMemberId(currentMember.Id)
+                    .GetByMemberIdOrDefault(currentMember.Id)
                     .Run();
             }
 
@@ -133,7 +133,7 @@ public class ChapterViewModelService : IChapterViewModelService
         (chapters, preferences, adminMembers, topicGroups) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.Search(platform, criteria),
             x => currentMember != null && preferences == null
-                ? x.MemberPreferencesRepository.GetByMemberId(currentMember.Id)
+                ? x.MemberPreferencesRepository.GetByMemberIdOrDefault(currentMember.Id)
                 : DefaultDeferredQuerySingleOrDefault.For(preferences),
             x => currentMember != null
                 ? x.ChapterAdminMemberRepository.GetByMemberId(platform, currentMember.Id)
@@ -146,15 +146,7 @@ public class ChapterViewModelService : IChapterViewModelService
 
             preferences.DistanceUnit = distanceUnitType;
 
-            if (preferences.MemberId == default)
-            {
-                preferences.MemberId = currentMember.Id;
-                _unitOfWork.MemberPreferencesRepository.Add(preferences);
-            }
-            else
-            {
-                _unitOfWork.MemberPreferencesRepository.Update(preferences);
-            }
+            _unitOfWork.MemberPreferencesRepository.Upsert(preferences, currentMember.Id);
 
             await _unitOfWork.SaveChangesAsync();
         }

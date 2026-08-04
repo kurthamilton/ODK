@@ -9,7 +9,7 @@ using ODK.Core.Countries;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
-using ODK.Services;
+using ODK.Core.Web;
 using ODK.Services.Authentication.OAuth;
 using ODK.Services.Authorization;
 using ODK.Services.Geolocation;
@@ -19,8 +19,8 @@ using ODK.Services.Members.Models;
 using ODK.Services.Notifications;
 using ODK.Services.Payments;
 using ODK.Services.Subscriptions;
-using ODK.Services.Topics;
 using ODK.Services.Tests.Helpers;
+using ODK.Services.Topics;
 
 namespace ODK.Services.Tests.Members;
 
@@ -38,7 +38,9 @@ public static class MemberServiceTests
 
         var emailService = new Mock<IMemberEmailService>();
         var service = CreateMemberService(context, emailService.Object);
-        var request = Mock.Of<IServiceRequest>(x => x.Platform == PlatformType.Default);
+        var request = Mock.Of<IServiceRequest>(x =>
+            x.Platform == PlatformType.Default &&
+            x.HttpRequestContext == Mock.Of<IHttpRequestContext>());
 
         // Act
         var result = await service.CreateAccount(request, CreateModel("existing@example.com", firstName: "New"));
@@ -73,7 +75,9 @@ public static class MemberServiceTests
 
         var emailService = new Mock<IMemberEmailService>();
         var service = CreateMemberService(context, emailService.Object);
-        var request = Mock.Of<IServiceRequest>(x => x.Platform == PlatformType.Default);
+        var request = Mock.Of<IServiceRequest>(x =>
+            x.Platform == PlatformType.Default &&
+            x.HttpRequestContext == Mock.Of<IHttpRequestContext>());
 
         // Act
         var result = await service.CreateAccount(request, CreateModel("existing@example.com", firstName: "New"));
@@ -110,7 +114,9 @@ public static class MemberServiceTests
 
         var emailService = new Mock<IMemberEmailService>();
         var service = CreateMemberService(context, emailService.Object);
-        var request = Mock.Of<IServiceRequest>(x => x.Platform == PlatformType.Default);
+        var request = Mock.Of<IServiceRequest>(x =>
+            x.Platform == PlatformType.Default &&
+            x.HttpRequestContext == Mock.Of<IHttpRequestContext>());
 
         // Act
         var result = await service.CreateAccount(request, CreateModel("existing@example.com", firstName: "New"));
@@ -197,7 +203,8 @@ public static class MemberServiceTests
     private static IChapterServiceRequest CreateChapterRequest(Chapter chapter) =>
         Mock.Of<IChapterServiceRequest>(x =>
             x.Platform == PlatformType.DrunkenKnitwits &&
-            x.Chapter == chapter);
+            x.Chapter == chapter &&
+            x.HttpRequestContext == Mock.Of<IHttpRequestContext>());
 
     private static MemberCreateProfile CreateChapterProfile(string emailAddress, string firstName) => new MemberCreateProfile
     {
