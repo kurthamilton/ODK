@@ -8,17 +8,17 @@
 @using ODK.Web.Common.Routes
 @using ODK.Web.Common.Services
 @using ODK.Web.Razor.Helpers
-@inject IOdkRoutes OdkRoutes
-@inject IRequestStore RequestStore
 @inject IAntiforgery Antiforgery
 @inject IFileVersionProvider FileVersionProvider
 @inject ILocaleService LocaleService
+@inject IOdkRoutes OdkRoutes
+@inject IRequestStore RequestStore
 @{
     var (platform, chapter, currentMember) =
         (RequestStore.Platform, RequestStore.ChapterOrDefault, RequestStore.CurrentMemberOrDefault);
 
     var datePickerFormat = FlatpickrDateFormat.FromShortDatePattern(
-        LocaleService.GetShortDatePattern(RequestStore.CurrentMemberPreferences, RequestStore.CurrentMemberCountry));
+        LocaleService.GetShortDatePattern(RequestStore.ServiceRequest));
 
     var title = platform switch
     {

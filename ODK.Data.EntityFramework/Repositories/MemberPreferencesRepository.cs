@@ -13,8 +13,21 @@ public class MemberPreferencesRepository : WriteRepositoryBase<MemberPreferences
     {
     }
 
-    public IDeferredQuerySingleOrDefault<MemberPreferences> GetByMemberId(Guid memberId)
+    public IDeferredQuerySingleOrDefault<MemberPreferences> GetByMemberIdOrDefault(Guid memberId)
         => Set()
             .Where(x => x.MemberId == memberId)
             .DeferredSingleOrDefault();
+
+    public void Upsert(MemberPreferences memberPreferences, Guid memberId)
+    {
+        if (memberPreferences.MemberId == default)
+        {
+            memberPreferences.MemberId = memberId;
+            Add(memberPreferences);
+        }
+        else
+        {
+            Update(memberPreferences);
+        }
+    }
 }

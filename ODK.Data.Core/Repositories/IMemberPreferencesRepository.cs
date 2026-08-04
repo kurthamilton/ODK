@@ -5,5 +5,7 @@ namespace ODK.Data.Core.Repositories;
 
 public interface IMemberPreferencesRepository : IWriteRepository<MemberPreferences>
 {
-    IDeferredQuerySingleOrDefault<MemberPreferences> GetByMemberId(Guid memberId);
+    IDeferredQuerySingleOrDefault<MemberPreferences> GetByMemberIdOrDefault(Guid memberId);
+
+    void Upsert(MemberPreferences memberPreferences, Guid memberId);
 }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using ODK.Core.Chapters;
-using ODK.Core.Countries;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Core.Web;
@@ -19,11 +18,7 @@ public interface IRequestStore
 
     Member CurrentMember { get; }
 
-    Country? CurrentMemberCountry { get; }
-
     Member? CurrentMemberOrDefault { get; }
-
-    MemberPreferences? CurrentMemberPreferences { get; }
 
     bool Loaded { get; }
 

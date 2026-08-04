@@ -17,6 +17,8 @@ public class HttpRequestContext : IHttpRequestContext
 
     public required string IpAddress { get; init; }
 
+    public required string? Locale { get; init; }
+
     public required string RequestPath { get; init; }
 
     public required string RequestUrl { get; init; }
@@ -45,10 +47,18 @@ public class HttpRequestContext : IHttpRequestContext
                     ?.Trim()
                 ?? request?.HttpContext.Connection.RemoteIpAddress?.ToString()
                 ?? string.Empty,
+            Locale = LocaleUtils.GetPreferredLocale(GetAcceptLanguages(request)),
             RequestPath = request?.Path.Value ?? string.Empty,
             RequestUrl = request?.GetDisplayUrl() ?? string.Empty,
             RouteValues = routeValues,
             UserAgent = request?.Headers.UserAgent.ToString() ?? string.Empty
         };
     }
+
+    // Accept-Language values, highest quality first (an omitted quality defaults to 1.0 - highest).
+    private static IEnumerable<string?> GetAcceptLanguages(HttpRequest? request)
+        => request?.GetTypedHeaders().AcceptLanguage
+            .OrderByDescending(x => x.Quality ?? 1)
+            .Select(x => x.Value.Value)
+        ?? [];
 }

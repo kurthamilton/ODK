@@ -2,14 +2,12 @@
 using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Cryptography;
-using ODK.Core.DataTypes;
 using ODK.Core.Emails;
 using ODK.Core.Exceptions;
 using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Notifications;
 using ODK.Core.Payments;
-using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
 using ODK.Data.Core;
 using ODK.Services.Authentication.OAuth;
@@ -164,14 +162,14 @@ public class MemberService : IMemberService
             timeZone = Chapter.DefaultTimeZone;
         }
 
-        var member = new Member
+        var member = _unitOfWork.MemberRepository.Add(new Member
         {
             CreatedUtc = DateTime.UtcNow,
             EmailAddress = model.EmailAddress,
             FirstName = model.FirstName,
             LastName = model.LastName,
             TimeZone = timeZone
-        };
+        });
 
         if (model.OAuthProviderType != null && !string.IsNullOrEmpty(model.OAuthToken))
         {
@@ -182,8 +180,6 @@ public class MemberService : IMemberService
                 member.Activated = true;
             }
         }
-
-        _unitOfWork.MemberRepository.Add(member);
 
         Country? country = null;
         if (model.Location != null)
@@ -327,7 +323,7 @@ public class MemberService : IMemberService
 
         var now = DateTime.UtcNow;
 
-        var member = new Member
+        var member = _unitOfWork.MemberRepository.Add(new Member
         {
             Activated = false,
             CreatedUtc = now,
@@ -336,9 +332,7 @@ public class MemberService : IMemberService
             LastName = model.LastName,
             SiteAdmin = false,
             TimeZone = chapter.TimeZone
-        };
-
-        _unitOfWork.MemberRepository.Add(member);
+        });
 
         if (model.EmailOptIn != true)
         {
@@ -515,7 +509,7 @@ public class MemberService : IMemberService
         var currentMember = request.CurrentMember;
 
         var (memberPreferences, memberLocation) = await _unitOfWork.RunAsync(
-            x => x.MemberPreferencesRepository.GetByMemberId(currentMember.Id),
+            x => x.MemberPreferencesRepository.GetByMemberIdOrDefault(currentMember.Id),
             x => x.MemberLocationRepository.GetByMemberIdOrDefault(currentMember.Id));
 
         var distanceUnits = _distanceUnitFactory.GetAll();
@@ -945,7 +939,7 @@ public class MemberService : IMemberService
     {
         var (memberLocation, memberPreferences) = await _unitOfWork.RunAsync(
             x => x.MemberLocationRepository.GetByMemberIdOrDefault(id),
-            x => x.MemberPreferencesRepository.GetByMemberId(id));
+            x => x.MemberPreferencesRepository.GetByMemberIdOrDefault(id));
 
         if (location != null && !string.IsNullOrEmpty(name))
         {
@@ -986,15 +980,7 @@ public class MemberService : IMemberService
 
             memberPreferences.DistanceUnit = distanceUnit;
 
-            if (memberPreferences.MemberId == default)
-            {
-                memberPreferences.MemberId = id;
-                _unitOfWork.MemberPreferencesRepository.Add(memberPreferences);
-            }
-            else
-            {
-                _unitOfWork.MemberPreferencesRepository.Update(memberPreferences);
-            }
+            _unitOfWork.MemberPreferencesRepository.Upsert(memberPreferences, id);
         }
 
         await _unitOfWork.SaveChangesAsync();

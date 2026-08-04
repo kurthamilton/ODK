@@ -1,9 +1,5 @@
-﻿@using ODK.Core.Utils
-@using ODK.Web.Razor.Models.SiteAdmin
+﻿@using ODK.Web.Razor.Models.SiteAdmin
 @model CountryContentViewModel
-@{
-    var current = Model.Country.DefaultLocale;
-}
 
 <section class="section">
     <dl class="row">
@@ -16,58 +12,4 @@
         <dt class="col-sm-3">Continent</dt>
         <dd class="col-sm-9">@Model.Country.Continent</dd>
     </dl>
-
-    <h3>Default locale</h3>
-
-    @if (string.IsNullOrEmpty(current))
-    {
-        <p class="form-text">
-            No default set &mdash; dates currently use the derived default (<strong>@Model.DerivedLocale</strong>).
-        </p>
-    }
-
-    @if (Model.Locales.Count == 0)
-    {
-        <p>No locales are available for this country.</p>
-    }
-    else
-    {
-        <div class="table-responsive">
-            <table class="table table-striped">
-                <thead>
-                <tr>
-                    <th>Locale</th>
-                    <th>Date format</th>
-                    <th></th>
-                </tr>
-                </thead>
-                <tbody>
-                @foreach (var locale in Model.Locales)
-                {
-                    var isCurrent = string.Equals(locale, current, StringComparison.OrdinalIgnoreCase);
-                    <tr data-locale="@locale" class="@(isCurrent ? "table-active" : null)">
-                        <td>@locale</td>
-                        <td>@LocaleUtils.GetShortDatePattern(locale)</td>
-                        <td>
-                            @if (isCurrent)
-                            {
-                                <span>Default</span>
-                            }
-                            else
-                            {
-                                <form method="post">
-                                    @Html.AntiForgeryToken()
-                                    @* Per-row value, so a raw hidden input rather than HiddenFor. The name
-                                       matches CountryFormViewModel.DefaultLocale. *@
-                                    <input type="hidden" name="DefaultLocale" value="@locale" />
-                                    <button class="btn btn-sm btn-primary" data-set-default>Set default</button>
-                                </form>
-                            }
-                        </td>
-                    </tr>
-                }
-                </tbody>
-            </table>
-        </div>
-    }
 </section>

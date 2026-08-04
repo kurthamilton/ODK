@@ -1,4 +1,3 @@
-using System.Linq;
 using FluentAssertions;
 using NUnit.Framework;
 using ODK.Core.Utils;
@@ -9,55 +8,53 @@ namespace ODK.Core.Tests.Utils;
 public static class LocaleUtilsTests
 {
     [Test]
-    public static void GetDefaultLocale_GbCode_ResolvesToADayFirstCulture()
+    public static void GetPreferredLocale_FirstValidSpecificCulture_IsReturned()
     {
-        // Act - a region can map to several cultures, so assert the resulting date order, not the name.
-        var locale = LocaleUtils.GetDefaultLocale("GB");
-        var pattern = LocaleUtils.GetShortDatePattern(locale);
-
-        // Assert - UK date order is day before month.
-        pattern.Should().NotBeNull();
-        pattern!.IndexOf('d').Should().BeLessThan(pattern.IndexOf('M'));
+        // Act / Assert - highest-priority candidate that is a specific culture wins.
+        LocaleUtils.GetPreferredLocale(["fr-FR", "en-GB"]).Should().Be("fr-FR");
     }
 
     [Test]
-    public static void GetDefaultLocale_UnknownIsoCode_ReturnsNull()
+    public static void GetPreferredLocale_SkipsNeutralCulture_PicksNextSpecific()
     {
-        // Act
-        var result = LocaleUtils.GetDefaultLocale("ZZ");
-
-        // Assert
-        result.Should().BeNull();
+        // Act / Assert - a region-less "en" is skipped so the default locale can supply the region.
+        LocaleUtils.GetPreferredLocale(["en", "en-GB"]).Should().Be("en-GB");
     }
 
     [Test]
-    public static void GetLocalesForCountry_UnknownIsoCode_ReturnsEmpty()
+    public static void GetPreferredLocale_SkipsWildcardAndUnknown()
     {
         // Act / Assert
-        LocaleUtils.GetLocalesForCountry("ZZ").Should().BeEmpty();
+        LocaleUtils.GetPreferredLocale(["*", "not-a-locale", "en-US"]).Should().Be("en-US");
     }
 
     [Test]
-    public static void GetLocalesForCountry_UsCode_IncludesEnUsAndLeadsWithTheDefault()
+    public static void GetPreferredLocale_CanonicalisesName()
     {
-        // Act
-        var locales = LocaleUtils.GetLocalesForCountry("US");
-
-        // Assert - the full set for the region, led by the derived default.
-        locales.Should().Contain("en-US");
-        locales.First().Should().Be(LocaleUtils.GetDefaultLocale("US"));
+        // Act / Assert - the returned name is the runtime's canonical form.
+        LocaleUtils.GetPreferredLocale(["EN-gb"]).Should().Be("en-GB");
     }
 
     [Test]
-    public static void GetDefaultLocale_UsCode_ResolvesToAMonthFirstCulture()
+    public static void GetPreferredLocale_NoValidSpecificCulture_ReturnsNull()
     {
-        // Act
-        var locale = LocaleUtils.GetDefaultLocale("US");
-        var pattern = LocaleUtils.GetShortDatePattern(locale);
+        // Act / Assert - neutral, unknown and wildcard candidates all fall through.
+        LocaleUtils.GetPreferredLocale(["en", "fr", "not-a-locale", "*"]).Should().BeNull();
+    }
 
-        // Assert - US date order is month before day.
-        pattern.Should().NotBeNull();
-        pattern!.IndexOf('M').Should().BeLessThan(pattern.IndexOf('d'));
+    [Test]
+    public static void GetPreferredLocale_Empty_ReturnsNull()
+    {
+        // Act / Assert
+        LocaleUtils.GetPreferredLocale([]).Should().BeNull();
+    }
+
+    [Test]
+    public static void GetPreferredLocale_Result_IsAcceptedByShortDatePattern()
+    {
+        // Consistency guard: anything returned is a culture LocaleService (via GetShortDatePattern) accepts.
+        var locale = LocaleUtils.GetPreferredLocale(["fr-FR", "en-GB"]);
+        LocaleUtils.GetShortDatePattern(locale).Should().NotBeNull();
     }
 
     [Test]
@@ -90,22 +87,5 @@ public static class LocaleUtilsTests
 
         // Assert
         result.Should().BeNull();
-    }
-
-    [TestCase("en-GB")]
-    [TestCase("en-US")]
-    public static void IsValidLocale_KnownCulture_ReturnsTrue(string localeName)
-    {
-        // Act / Assert
-        LocaleUtils.IsValidLocale(localeName).Should().BeTrue();
-    }
-
-    [TestCase(null)]
-    [TestCase("")]
-    [TestCase("not-a-locale")]
-    public static void IsValidLocale_UnknownOrBlank_ReturnsFalse(string? localeName)
-    {
-        // Act / Assert
-        LocaleUtils.IsValidLocale(localeName).Should().BeFalse();
     }
 }

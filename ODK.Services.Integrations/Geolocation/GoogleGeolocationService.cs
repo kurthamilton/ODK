@@ -141,13 +141,10 @@ public class GoogleGeolocationService : IGeolocationService
             });
         }
 
-        var locales = LocaleUtils.GetLocalesForCountry(countryInfo.IsoCode2);
-
         var country = _unitOfWork.CountryRepository.Add(new Country
         {
             Continent = "UNKNOWN",
             CurrencyId = currency.Id,
-            DefaultLocale = locales.Count == 1 ? locales.ElementAt(0) : null,
             IsoCode2 = countryInfo.IsoCode2,
             IsoCode3 = countryInfo.IsoCode3,
             Name = countryInfo.Name
