@@ -1,5 +1,5 @@
-﻿@using ODK.Core.Extensions
-@using ODK.Core.Members
+﻿@using ODK.Core.Members
+@using ODK.Core.Utils
 @using ODK.Services.Authorization
 @using ODK.Services.Members
 @using ODK.Web.Common.Routes
@@ -45,7 +45,11 @@
 else if (status == SubscriptionStatus.Expiring && memberSubscription.ExpiresUtc != null &&
     !viewModel.HasActiveRecurringSubscription)
 {
-    var expiresOn = TimeZoneEntityExtensions.ToLocalTime(chapter, memberSubscription.ExpiresUtc.Value).ToString("d MMMM");
+    var expiresOn = memberSubscription.ExpiresUtc.Value.ToFriendlyDateString(new FriendlyDateStringOptions 
+    { 
+        FullMonthName = true, 
+        TimeZone = member.TimeZone 
+    });
     <div class="page-alert alert alert-warning">
         Your @type expires @expiresOn <a href="@OdkRoutes.Groups.Subscription(chapter)">@action</a>
     </div>

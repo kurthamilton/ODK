@@ -1,5 +1,6 @@
 ﻿@using ODK.Core.Utils
 @using ODK.Web.Razor.Models.Events
+@using ODK.Web.Razor.Mvc
 @model EventStatusViewModel
 
 @if (Model.Event.RsvpDisabled)
@@ -22,8 +23,8 @@
 {
     var rsvpDeadline = Model.Event.RsvpDeadlineUtc.Value.ToFriendlyDateTimeString(new FriendlyDateStringOptions 
     { 
-        IncludeDayOfWeek = true, 
-        TimeZone = Model.Chapter.TimeZone 
+        IncludeDayOfWeek = true,
+        TimeZone = Html.DisplayTimeZone(Model.Chapter.TimeZone)
     });
 
     <div class="badge text-bg-secondary w-100">

@@ -392,9 +392,9 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     public async Task<EventInvitesAdminPageViewModel> GetEventInvitesViewModel(
         IMemberChapterAdminServiceRequest request, Guid eventId)
     {
-        var chapter = request.Chapter;
+        var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
 
-        var (ownerSubscriptionFeatures, eventDto, eventEmail, members, invites) = await GetChapterAdminRestrictedContent(
+        var (ownerSubscriptionFeatures, eventDto, eventEmail, invites) = await GetChapterAdminRestrictedContent(
             request,
             x => x.MemberSiteSubscriptionRecordRepository
                 .Query(x => x.Current().ForChapterOwner(chapter.Id).Active())
@@ -403,7 +403,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
                 .GetAll(),
             x => x.EventRepository.Query(x => x.ById(eventId)).WithVenue().GetSingle(),
             x => x.EventEmailRepository.GetByEventId(eventId),
-            x => x.MemberRepository.GetByChapterId(chapter.Id),
             x => x.EventInviteRepository.GetByEventId(eventId));
 
         var (@event, venue) = (eventDto.Event, eventDto.Venue);
@@ -413,6 +412,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         return new EventInvitesAdminPageViewModel
         {
             Chapter = chapter,
+            CurrentMember = currentMember,
             Event = @event,
             Invites = new EventInvitesDto
             {
@@ -421,7 +421,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
                 Sent = invites.Count,
                 SentUtc = eventEmail?.SentUtc
             },
-            Members = members,
             OwnerSubscriptionFeatures = ownerSubscriptionFeatures
                 .Select(x => x.Feature)
                 .ToArray(),

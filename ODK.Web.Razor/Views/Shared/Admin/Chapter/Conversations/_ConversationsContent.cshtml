@@ -5,6 +5,7 @@
 @using ODK.Web.Common.Routes
 @using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Mvc
 @model ChapterConversationsAdminPageViewModel
 @inject IOdkRoutes OdkRoutes
 
@@ -52,10 +53,10 @@
                                 Text = conversation.Subject
                             })                            
                         </td>
-                        <td>@conversation.CreatedUtc.ToRelativeTime(Model.Chapter.TimeZone)</td>
+                        <td>@conversation.CreatedUtc.ToRelativeTime(Html.DisplayTimeZone(Model.Chapter.TimeZone))</td>
                         <td>
                             <div>
-                                @dto.LastMessage.Message.CreatedUtc.ToRelativeTime(Model.Chapter.TimeZone)
+                                @dto.LastMessage.Message.CreatedUtc.ToRelativeTime(Html.DisplayTimeZone(Model.Chapter.TimeZone))
                             </div>
                             @if (dto.LastMessage.Message.MemberId != dto.Conversation.MemberId)
                             {

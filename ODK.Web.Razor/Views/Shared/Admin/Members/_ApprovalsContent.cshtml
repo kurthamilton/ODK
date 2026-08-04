@@ -2,6 +2,7 @@
 @using ODK.Services.Members.ViewModels
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Mvc
 @model MemberApprovalsAdminPageViewModel
 @inject IOdkRoutes OdkRoutes
 
@@ -49,7 +50,7 @@
                                 @member.MemberChapter(Model.Chapter.Id)?.CreatedUtc.ToFriendlyDateString(new FriendlyDateStringOptions 
                                 { 
                                     IncludeDayOfWeek = true, 
-                                    TimeZone = Model.Chapter.TimeZone 
+                                    TimeZone = Html.DisplayTimeZone(Model.Chapter.TimeZone) 
                                 })
                             </td>
                             <td>

@@ -6,7 +6,6 @@ using Hangfire.SqlServer;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -17,6 +16,7 @@ using ODK.Services.Tasks;
 using ODK.Web.Razor.Attributes;
 using ODK.Web.Razor.Authentication;
 using ODK.Web.Razor.Middleware;
+using ODK.Web.Razor.Mvc;
 using ODK.Web.Razor.Services;
 using Serilog;
 using Serilog.Events;
@@ -30,6 +30,13 @@ public class Program
     public static void Main(string[] args)
     {
         var (app, appSettings) = BuildApp(args);
+
+        // Pin the app-wide default culture so model binding parses posted values (dates, decimals) under a
+        // fixed culture regardless of host. The request locale is applied for *rendering only* by
+        // RequestCultureResultFilter, so display formatting follows the request without affecting parsing.
+        var defaultCulture = new CultureInfo(appSettings.Localisation.DefaultLocale);
+        CultureInfo.DefaultThreadCurrentCulture = defaultCulture;
+        CultureInfo.DefaultThreadCurrentUICulture = defaultCulture;
 
         // Configure the HTTP request pipeline.
         app
@@ -78,19 +85,6 @@ public class Program
 
         app.MapRazorPages();
         app.MapControllers();
-
-        var defaultCulture = new CultureInfo("en-GB");
-        var supportedCultures = new[]
-        {
-            defaultCulture
-        };
-
-        app.UseRequestLocalization(new RequestLocalizationOptions
-        {
-            DefaultRequestCulture = new RequestCulture(defaultCulture.Name),
-            SupportedCultures = supportedCultures,
-            SupportedUICultures = supportedCultures
-        });
 
         app.MapGet("/favicon.ico", async (HttpContext ctx, IPlatformProvider platformProvider) =>
         {
@@ -311,7 +305,11 @@ public class Program
 
         services
             .AddMemoryCache()
-            .AddControllers(options => options.Filters.Add<AutoValidateAntiforgeryTokenAttribute>())
+            .AddControllers(options =>
+            {
+                options.Filters.Add<AutoValidateAntiforgeryTokenAttribute>();
+                options.Filters.Add<RequestCultureResultFilter>();
+            })
             .AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;

@@ -90,7 +90,8 @@ public class NotificationService : INotificationService
                 @event.DateUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions
                 {
                     IncludeDayOfWeek = true,
-                    TimeZone = x.TimeZone
+                    TimeZone = x.TimeZone,
+                    Culture = LocaleUtils.DefaultCulture
                 }),
                 venue.Name),
             members.Where(x => x.IsCurrent()),

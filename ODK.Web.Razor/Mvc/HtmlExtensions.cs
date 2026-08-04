@@ -2,12 +2,31 @@
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.Extensions.DependencyInjection;
 using ODK.Core.Utils;
+using ODK.Web.Common.Services;
 
 namespace ODK.Web.Razor.Mvc;
 
 public static class HtmlExtensions
 {
+    /// <summary>
+    /// The UTC-offset label (e.g. "(UTC+1)") for the chapter timezone at <paramref name="dateUtc"/>, shown
+    /// when the current member views an event whose timezone differs from theirs; empty otherwise. Use this
+    /// on event start/end times, which stay in the chapter (venue) timezone. See
+    /// <see cref="DateUtils.ChapterTimeZoneLabel"/>.
+    /// </summary>
+    public static string ChapterTimeZoneLabel(
+        this IHtmlHelper htmlHelper, TimeZoneInfo chapterTimeZone, DateTime dateUtc)
+        => DateUtils.ChapterTimeZoneLabel(chapterTimeZone, CurrentMemberTimeZone(htmlHelper), dateUtc);
+
+    /// <summary>
+    /// The timezone to format a point-in-time value in: the current member's, falling back to
+    /// <paramref name="chapterTimeZone"/> when there's no current member (e.g. an anonymous request).
+    /// </summary>
+    public static TimeZoneInfo DisplayTimeZone(this IHtmlHelper htmlHelper, TimeZoneInfo chapterTimeZone)
+        => CurrentMemberTimeZone(htmlHelper) ?? chapterTimeZone;
+
     public static IHtmlContent OdkCheckBoxFor<TModel>(this IHtmlHelper<TModel> htmlHelper,
         Expression<Func<TModel, bool>> expression, object htmlAttributes)
     {
@@ -89,6 +108,13 @@ public static class HtmlExtensions
     public static IHtmlContent OdkTimeZoneDropDownFor<TModel>(this IHtmlHelper<TModel> htmlHelper,
         Expression<Func<TModel, string?>> expression, string optionLabel, object htmlAttributes)
         => htmlHelper.TimeZoneDropDownFor(expression, optionLabel, htmlAttributes);
+
+    private static TimeZoneInfo? CurrentMemberTimeZone(IHtmlHelper htmlHelper)
+    {
+        var member = htmlHelper.ViewContext.HttpContext.RequestServices
+            .GetService<IRequestStore>()?.CurrentMemberOrDefault;
+        return member?.TimeZone;
+    }
 
     private static IHtmlContent EnumDropDownFor<TModel, TEnum>(
         this IHtmlHelper<TModel> htmlHelper,

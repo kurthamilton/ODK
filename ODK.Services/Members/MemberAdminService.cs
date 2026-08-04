@@ -1,4 +1,5 @@
-﻿using ODK.Core;
+﻿using System.Globalization;
+using ODK.Core;
 using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Cryptography;
@@ -270,9 +271,9 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                 member.Id.ToString(),
                 member.FirstName,
                 member.LastName,
-                member.MemberChapter(chapter.Id)?.CreatedUtc.ToString("yyyy-MM-dd") ?? string.Empty,
+                member.MemberChapter(chapter.Id)?.CreatedUtc.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? string.Empty,
                 member.Activated ? "Y" : string.Empty,
-                subscription?.ExpiresUtc?.ToString("yyyy-MM-dd") ?? string.Empty,
+                subscription?.ExpiresUtc?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? string.Empty,
                 subscription?.Type.ToString() ?? string.Empty
             ]);
         }

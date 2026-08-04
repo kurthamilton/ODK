@@ -5,6 +5,7 @@
 @using ODK.Web.Razor.Models.Admin.Chapters
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Contact
+@using ODK.Web.Razor.Mvc
 @model MemberConversationsAdminPageViewModel
 @inject IOdkRoutes OdkRoutes
 
@@ -39,12 +40,12 @@
                                 @conversation.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions 
                                 { 
                                     IncludeDayOfWeek = true, 
-                                    TimeZone = Model.Chapter.TimeZone 
+                                    TimeZone = Html.DisplayTimeZone(Model.Chapter.TimeZone) 
                                 })
                             </td>
                             <td>
                                 <div>
-                                    @lastMessage.Message.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions { IncludeDayOfWeek = true, TimeZone = Model.Chapter.TimeZone })
+                                    @lastMessage.Message.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions { IncludeDayOfWeek = true, TimeZone = Html.DisplayTimeZone(Model.Chapter.TimeZone) })
                                 </div>
                                 @if (lastMessage.Message.MemberId != conversation.MemberId)
                                 {

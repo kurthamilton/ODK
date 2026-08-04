@@ -5,6 +5,7 @@
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Chapters
 @using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Mvc
 @model ChapterConversationAdminPageViewModel
 @inject IOdkRoutes OdkRoutes
 
@@ -80,7 +81,7 @@
                         var created = dto.LastMessage.Message.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions 
                         { 
                             IncludeDayOfWeek = true, 
-                            TimeZone = Model.Chapter.TimeZone 
+                            TimeZone = Html.DisplayTimeZone(Model.Chapter.TimeZone) 
                         });
 
                         <div class="list-group-item">

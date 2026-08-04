@@ -49,7 +49,11 @@ public abstract class OdkPageTest : PageTest
     protected SentEmailDataHelper SentEmailDataHelper
         => new SentEmailDataHelper(E2ESettings.ConnectionString);
 
-    public override BrowserNewContextOptions ContextOptions() => new() { BaseURL = PlatformBaseUrl };
+    // Pin the locale to the default so rendered date/number formatting is deterministic regardless of the
+    // host's locale (the app applies the request locale to rendering). Parsing of posted values is
+    // unaffected - the app binds under a fixed default culture. Locale-specific tests set their own Locale.
+    public override BrowserNewContextOptions ContextOptions() =>
+        new() { BaseURL = PlatformBaseUrl, Locale = "en-GB" };
 
     // Progress + per-test timing streamed live (dotnet test buffers normal test output; Progress does
     // not), so a long run shows which test is running now, how long each took, and a running count of
