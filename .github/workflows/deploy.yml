@@ -99,10 +99,9 @@ jobs:
           PASSWORD: ${{ secrets.HOSTING_PASSWORD }}
         run: |
           $msdeploy = "$env:ProgramFiles\IIS\Microsoft Web Deploy V3\msdeploy.exe"
-          & $msdeploy `
-            -verb:sync `
-            -source:contentPath="$(Resolve-Path publish)" `
-            -dest:contentPath="$env:SITE",computerName="$env:MSDEPLOY_URL",userName="$env:USER",password="$env:PASSWORD",authtype="Basic" `
-            -allowUntrusted `
-            -enableRule:DoNotDeleteRule `
-            -enableRule:AppOffline
+          $env:SRC = (Resolve-Path publish).Path
+          # Call via the stop-parsing token (--%) so PowerShell hands the quoted -dest: provider string to
+          # msdeploy verbatim instead of mangling the embedded quotes (that mangling is what produced the
+          # "Unrecognized argument ... All arguments must begin with -" failure). After --% everything is
+          # literal and must stay on one line; %VAR% tokens are expanded cmd-style from this step's env.
+          & $msdeploy --% -verb:sync -source:contentPath="%SRC%" -dest:contentPath="%SITE%",computerName="%MSDEPLOY_URL%",userName="%USER%",password="%PASSWORD%",authtype="Basic" -allowUntrusted -enableRule:DoNotDeleteRule -enableRule:AppOffline
