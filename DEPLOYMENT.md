@@ -224,14 +224,12 @@ DLL lock, then removes it).
   silently falls back to a string.
 - **`msdeploy` auth / certificate errors.** Check the `HOSTING_*` values against the site's current publish
   settings; the workflow already passes `-allowUntrusted` for the hosting provider's certificate.
-- **`msdeploy`: "Unrecognized argument … All arguments must begin with -".** PowerShell mangled the quoted
-  `-dest:` provider string before msdeploy saw it. The Web Deploy step avoids this by calling msdeploy through
-  the stop-parsing token `--%`, which passes everything after it verbatim. Two consequences to preserve if you
-  edit that step: (1) after `--%` the line **can't** use `$env:X` or backtick continuations — variables are
-  expanded cmd-style as `%VAR%` from the step `env`, and the whole invocation stays on **one line**; (2) `--%`
-  does cmd-style `%…%` expansion, so a **`HOSTING_PASSWORD` containing a literal `%`** would be misread. If a
-  password ever contains `%`, drop `--%` and build the arguments as a PowerShell array instead (each `-key:value`
-  as its own quoted string element), which passes them without cmd expansion.
+- **`msdeploy`: "Unrecognized argument … All arguments must begin with -".** msdeploy re-parses the raw command
+  line and expects the quoted `-dest:key="value",key2="value2"` provider syntax; PowerShell rewrites those
+  embedded quotes and msdeploy rejects the result. That's why the Web Deploy step runs under **`shell: cmd`**,
+  not pwsh — cmd passes the quotes through verbatim (pwsh fails this even via the `--%` stop-parsing token).
+  Keep that step in `cmd`. One caveat: cmd expands `%…%`, so a **`HOSTING_PASSWORD` containing a literal `%`**
+  would be misread — if a password ever contains `%`, rotate it or escape it as `%%` in the value.
 - **Target dropdown is empty when running Deploy.** The environment doesn't exist yet — create `prod-<platform>`
   (§4 step 3).
 ```
