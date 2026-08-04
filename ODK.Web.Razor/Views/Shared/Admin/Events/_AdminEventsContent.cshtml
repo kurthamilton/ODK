@@ -43,7 +43,7 @@
 
 @* Filters are applied server-side across all events. Submitting has no page value, so it resets to page 1. *@
 <form method="get" action="@eventsPath" class="row g-2 mb-3 align-items-end">
-    <div class="col-12 col-md-auto">
+    <div class="col-12 col-lg-auto">
         <label class="form-label" for="filter-venue">Venue</label>
         <select class="form-select" id="filter-venue" name="venueId" 
             data-select data-searchable data-clearable data-placeholder="All venues"
@@ -55,28 +55,29 @@
             }
         </select>
     </div>
-    <div class="col-6 col-md-auto">
-        <label class="form-label" for="filter-from">From</label>
-        <input type="date" class="form-control" id="filter-from" name="fromDate"
-               data-autosubmit
-               value="@(Model.Filter.FromDateLocal?.ToString("yyyy-MM-dd"))" />
-    </div>
-    <div class="col-6 col-md-auto">
-        <label class="form-label" for="filter-to">To</label>
-        <input type="date" class="form-control" id="filter-to" name="toDate"
-               data-autosubmit
-               value="@(Model.Filter.ToDateLocal?.ToString("yyyy-MM-dd"))" />
+    <div class="col-12 col-lg-auto">
+        <div class="d-flex gap-3">
+            <div class="flex-fill">
+                <label class="form-label" for="filter-from">From</label>
+                <input type="date" class="form-control" id="filter-from" name="fromDate"
+                       data-autosubmit
+                       value="@(Model.Filter.FromDateLocal?.ToString("yyyy-MM-dd"))" />
+            </div>
+            <div class="flex-fill">
+                <label class="form-label" for="filter-to">To</label>
+                <input type="date" class="form-control" id="filter-to" name="toDate"
+                       data-autosubmit
+                       value="@(Model.Filter.ToDateLocal?.ToString("yyyy-MM-dd"))" />
+            </div>
+        </div>
     </div>
     
-    @* TODO: reinstate once .btn-link styling is fixed
     @if (hasFilter)
     {
         <div class="col-12 col-md-auto">
-            <label class="form-label invisible">Clear</label>
-            <a class="btn btn-link" href="@eventsPath">Clear</a>
+            <a class="btn btn-link px-0" href="@eventsPath">Clear</a>
         </div>
     } 
-    *@
 </form>
 
 <div class="table-responsive">

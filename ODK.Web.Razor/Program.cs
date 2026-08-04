@@ -158,7 +158,15 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        builder.Services.AddRazorPages();
+        var mvcBuilder = builder.Services.AddRazorPages();
+
+        // In Development, recompile Razor views at runtime so a .cshtml edit shows on the next request (a
+        // browser refresh) without a rebuild or restart. dotnet watch's Razor hot reload is unreliable under
+        // the concurrently dev setup, so this is the dependable path for view changes. Not enabled elsewhere.
+        if (builder.Environment.IsDevelopment())
+        {
+            mvcBuilder.AddRazorRuntimeCompilation();
+        }
 
         builder.Services.AddControllers();
 
