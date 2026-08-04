@@ -228,9 +228,18 @@ Both derive from the same `GetPreferredLocale` call, so they never disagree.
   localises the *date* order/names but keeps `HH:mm`; don't introduce AM/PM.
 - **Request-independent text** (emails, notifications, CSV/exports — anything created off a background job
   or persisted for another reader) — pass an explicit culture so it never inherits the ambient request
-  culture: `LocaleUtils.DefaultCulture` for display text (via `FriendlyDateStringOptions.Culture`), or
-  `CultureInfo.InvariantCulture` for machine/interchange values (`<input type="date">` values, sort keys,
-  ISO timestamps). This guard matters because the friendly helper defaults to `CurrentCulture`.
+  culture. For **member-facing** output (emails, notifications) use the *recipient's* stored locale via
+  `IMemberLocaleService.GetCulture(memberId)` (or `GetCultures(memberIds)` to batch), passed as
+  `FriendlyDateStringOptions.Culture`; it falls back to `LocaleUtils.DefaultCulture` when the member has no
+  stored locale. A **multi-recipient** email whose body carries a formatted date must group recipients by
+  culture and send one copy per group (see `MemberEmailService.SendEventInvites`) — the email pipeline
+  builds one body per send. For **machine/interchange** values (`<input type="date">` values, sort keys, ISO
+  timestamps, CSV) use `CultureInfo.InvariantCulture`.
+
+**Member locale.** `MemberPreferences.Locale` stores a member's formatting locale, captured from the request
+locale at account creation and refreshed on every request: `RequestStore` compares the stored locale with
+the request locale and enqueues a background `IMemberLocaleService.UpdateLocale` job when they differ. Null
+(not yet captured) falls back to the default — the gap shrinks as members make requests.
 
 (Timezone conversion is a separate concern — see the timezone-aware bullet under *Conventions & style*.)
 

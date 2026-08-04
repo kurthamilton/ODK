@@ -138,7 +138,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         if (@event.PublishedUtc != null)
         {
-            _notificationService.AddNewEventNotifications(@event, venue, members, notificationSettings);
+            await _notificationService.AddNewEventNotifications(@event, venue, members, notificationSettings);
         }
 
         _unitOfWork.EventTopicRepository.AddMany(chapterTopics.Select(x => new EventTopic
@@ -573,7 +573,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         @event.PublishedUtc = DateTime.UtcNow;
         _unitOfWork.EventRepository.Update(@event);
 
-        _notificationService.AddNewEventNotifications(@event, venue, members, notificationSettings);
+        await _notificationService.AddNewEventNotifications(@event, venue, members, notificationSettings);
 
         await _unitOfWork.SaveChangesAsync();
     }

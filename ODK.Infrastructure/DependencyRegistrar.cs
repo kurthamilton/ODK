@@ -206,6 +206,7 @@ public static class DependencyRegistrar
             .AddScoped<IMemberSiteSubscriptionWriter, MemberSiteSubscriptionWriter>()
             .AddScoped<IMemberEmailService, MemberEmailService>()
             .AddScoped<IMemberImageService, MemberImageService>()
+            .AddScoped<IMemberLocaleService, MemberLocaleService>()
             .AddSingleton(new MemberImageServiceSettings
             {
                 MaxImageSize = appSettings.Members.MaxImageSize,

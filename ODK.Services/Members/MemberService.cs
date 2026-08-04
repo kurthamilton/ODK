@@ -212,6 +212,7 @@ public class MemberService : IMemberService
         _unitOfWork.MemberPreferencesRepository.Add(new MemberPreferences
         {
             DistanceUnit = distanceUnitType,
+            Locale = request.HttpRequestContext.Locale,
             MemberId = member.Id
         });
 
@@ -343,6 +344,12 @@ public class MemberService : IMemberService
                 Type = MemberEmailPreferenceType.Events
             });
         }
+
+        _unitOfWork.MemberPreferencesRepository.Add(new MemberPreferences
+        {
+            Locale = request.HttpRequestContext.Locale,
+            MemberId = member.Id
+        });
 
         var memberProperties = model
             .Properties

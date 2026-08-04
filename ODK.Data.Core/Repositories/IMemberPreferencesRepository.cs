@@ -7,5 +7,7 @@ public interface IMemberPreferencesRepository : IWriteRepository<MemberPreferenc
 {
     IDeferredQuerySingleOrDefault<MemberPreferences> GetByMemberIdOrDefault(Guid memberId);
 
+    IDeferredQueryMultiple<MemberPreferences> GetByMemberIds(IEnumerable<Guid> memberIds);
+
     void Upsert(MemberPreferences memberPreferences, Guid memberId);
 }

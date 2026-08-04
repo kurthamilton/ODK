@@ -8,16 +8,19 @@ using ODK.Core.Utils;
 using ODK.Core.Venues;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
+using ODK.Services.Members;
 using ODK.Services.Notifications.ViewModels;
 
 namespace ODK.Services.Notifications;
 
 public class NotificationService : INotificationService
 {
+    private readonly IMemberLocaleService _memberLocaleService;
     private readonly IUnitOfWork _unitOfWork;
 
-    public NotificationService(IUnitOfWork unitOfWork)
+    public NotificationService(IUnitOfWork unitOfWork, IMemberLocaleService memberLocaleService)
     {
+        _memberLocaleService = memberLocaleService;
         _unitOfWork = unitOfWork;
     }
 
@@ -77,12 +80,17 @@ public class NotificationService : INotificationService
             chapterId: conversation.ChapterId);
     }
 
-    public void AddNewEventNotifications(
+    public async Task AddNewEventNotifications(
         Event @event,
         Venue venue,
         IReadOnlyCollection<Member> members,
         IReadOnlyCollection<MemberNotificationSettings> settings)
     {
+        // The notification text is persisted per member, so format each member's event date in their own
+        // locale (default fallback).
+        var currentMembers = members.Where(x => x.IsCurrent()).ToArray();
+        var cultures = await _memberLocaleService.GetCultures(currentMembers.Select(x => x.Id).ToArray());
+
         AddNotifications(
             NotificationType.NewEvent,
             x => string.Join(Environment.NewLine,
@@ -91,10 +99,10 @@ public class NotificationService : INotificationService
                 {
                     IncludeDayOfWeek = true,
                     TimeZone = x.TimeZone,
-                    Culture = LocaleUtils.DefaultCulture
+                    Culture = cultures[x.Id]
                 }),
                 venue.Name),
-            members.Where(x => x.IsCurrent()),
+            currentMembers,
             settings,
             entityId: @event.Id,
             chapterId: @event.ChapterId,

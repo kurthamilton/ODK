@@ -131,6 +131,27 @@ public static class MemberServiceTests
     }
 
     [Test]
+    public static async Task CreateAccount_NewMember_SavesTheRequestLocale()
+    {
+        // Arrange - a brand new sign-up whose request resolves to the fr-FR locale.
+        using var context = CreateMockOdkContext();
+        SeedDefaultSiteSubscription(context);
+
+        var service = CreateMemberService(context, new Mock<IMemberEmailService>().Object);
+        var request = Mock.Of<IServiceRequest>(x =>
+            x.Platform == PlatformType.Default &&
+            x.HttpRequestContext == Mock.Of<IHttpRequestContext>(c => c.Locale == "fr-FR"));
+
+        // Act
+        var result = await service.CreateAccount(request, CreateModel("new@example.com", firstName: "New"));
+
+        // Assert - the request locale is stored on the member's preferences at creation.
+        result.Success.Should().BeTrue();
+        var member = context.Set<Member>().Single(x => x.EmailAddress == "new@example.com");
+        context.Set<MemberPreferences>().Single(x => x.MemberId == member.Id).Locale.Should().Be("fr-FR");
+    }
+
+    [Test]
     public static async Task CreateChapterAccount_ExistingActivatedMember_SendsDuplicateEmail()
     {
         // Arrange

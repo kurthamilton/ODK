@@ -22,6 +22,18 @@ public class MemberDataHelper : DataHelperBase
             ?? throw new InvalidOperationException($"No member found with id '{memberId}'.");
     }
 
+    public async Task<string?> GetLocale(Guid memberId)
+    {
+        // MemberPreferences.Locale, mapped to the "Locale" column. Null when the member has no preferences
+        // row or no stored locale.
+        const string sql = "SELECT Locale FROM MemberPreferences WHERE MemberId = @id";
+
+        await using var builder = Builder(sql)
+            .AddParameter("@id", memberId);
+
+        return await builder.ExecuteScalar<string>();
+    }
+
     public async Task<Guid> GetMemberId(string emailAddress)
     {
         const string sql = "SELECT MemberId FROM Members WHERE EmailAddress = @email";
