@@ -17,7 +17,7 @@
                     @Html.AntiForgeryToken()
                     <div class="d-flex align-items-center gap-2">
                         <span>Archived @Model.Conversation.ArchivedUtc.Value.ToRelativeTime(Model.TimeZone).</span>
-                        <button class="btn btn-link" type="submit">Restore</button>
+                        <button class="btn btn-link px-0" type="submit">Restore</button>
                     </div>
                 </form>
             </div>

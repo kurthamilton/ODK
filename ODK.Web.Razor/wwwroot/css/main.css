@@ -12079,16 +12079,6 @@ html[data-platform=odk] {
   padding: 0;
 }
 
-.btn-link {
-  align-content: center;
-  padding: 0;
-}
-
-.accordion .btn-link {
-  padding: 0;
-  text-align: left;
-}
-
 .btn-overlay {
   position: absolute;
 }

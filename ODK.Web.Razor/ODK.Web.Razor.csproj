@@ -13,6 +13,17 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<!-- The npm "dev" script's sass watcher owns the whole scss→css pipeline, so keep dotnet watch out of
+		     both the scss source and the generated css. Editing a .scss makes the sass watchers rewrite the
+		     four css outputs (main/odk × normal/min) in a burst; dotnet watch reacting to those tears the app
+		     down (under `concurrently -k` the whole window closes). Excluding them means the sass watcher
+		     compiles on save and you refresh the browser to see css changes; .cs/.cshtml hot-reload is
+		     unaffected. -->
+		<Content Update="wwwroot\scss\**" Watch="false" />
+		<Content Update="wwwroot\css\**" Watch="false" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<Compile Remove="Pages\Groups\Admin\**" />
 		<Compile Remove="wwwroot\lib\vanillajs-datepicker\**" />
 		<Content Remove="Pages\Groups\Admin\**" />
@@ -30,6 +41,7 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="Hangfire.AspNetCore" Version="1.8.24" />
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="10.0.10" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.10">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
