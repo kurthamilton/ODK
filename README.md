@@ -24,6 +24,10 @@ The batch file spawns two tabs: the `dotnet` process in the main tab and a sass 
 
 To compile, run `npm run build:css`. The compilation script also runs when the app is run from one of the batch files.
 
+## Deployment
+See [DEPLOYMENT.md](DEPLOYMENT.md) for how the app is built and deployed via GitHub Actions, how config
+and secrets are managed, and how to add a new platform deployment.
+
 ## Antiforgery (CSRF)
 
 Antiforgery validation is enabled globally: Razor Page POST handlers validate by default, and MVC

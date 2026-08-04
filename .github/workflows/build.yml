@@ -1,0 +1,31 @@
+name: Build
+
+on:
+  push:
+    branches: [ master, secrets ]   # TEMP: 'secrets' included to build that branch for a deploy-pipeline test; revert to [ master ]
+  workflow_dispatch:            # lets you produce a fresh artifact on demand (e.g. after one expires)
+
+jobs:
+  build:
+    runs-on: windows-latest     # match the deploy runner (Web Deploy is Windows-only)
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      # Unit tests only - the E2E suite is [Explicit] and lives in a separate solution, so it's skipped here.
+      - name: Test
+        run: dotnet test ODK.slnx -c Release
+
+      # Publish WITHOUT secrets - they're injected at deploy time, so nothing sensitive is stored in the
+      # artifact.
+      - name: Publish
+        run: dotnet publish ODK.Web.Razor/ODK.Web.Razor.csproj -c Release -o publish
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app
+          path: publish
+          retention-days: 7
