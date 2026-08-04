@@ -1,0 +1,107 @@
+name: Deploy
+
+on:
+  workflow_dispatch:            # manual only - deploys the latest successful master build
+    inputs:
+      target:
+        description: Platform / site to deploy to
+        type: environment       # renders a dropdown of your environments (prod-odk / prod-gs) when you click Run
+        required: true
+
+jobs:
+  deploy:
+    runs-on: windows-latest     # Web Deploy (msdeploy) is a Windows tool; the runner has it pre-installed
+    environment: ${{ inputs.target }}   # scopes HOSTING_* below to the chosen environment's values
+    steps:
+      # Checkout is only for the committed non-secret prod config (config.production.json); the app itself
+      # comes from the build artifact, not a rebuild.
+      - uses: actions/checkout@v4
+
+      # 1) Grab the artifact from the most recent successful Build run on master (no rebuild). The same
+      #    artifact ships to either platform - the app is platform-agnostic (platform inferred from the URL).
+      - name: Download latest build
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $runId = gh run list --workflow build.yml --branch master --status success --limit 1 `
+            --json databaseId --jq '.[0].databaseId'
+          if (-not $runId) { throw "No successful Build run found on master to deploy." }
+          Write-Host "Deploying artifact from Build run $runId"
+          gh run download $runId --name app --dir publish
+
+      - uses: dopplerhq/cli-action@v3
+
+      # 2) Build appsettings.Production.json = committed PUBLIC config (config.production.json - e.g. Platforms)
+      #    + everything from Doppler (credentials AND sensitive config you don't want in a public repo, e.g.
+      #    RateLimiting:BlockPatterns). Doppler's JSON import delimits config levels with "_" (e.g.
+      #    PAYMENTS_STRIPE_WEBHOOKSECRETV1) which we convert to ":" - unambiguous because no config-key segment
+      #    contains an underscore. .NET matches keys case-insensitively, so a flat "ConnectionStrings:Default"
+      #    key overrides the nested one from the base appsettings.json.
+      #    Arrays come from Doppler two ways: a value that is JSON ([...]/{...}) is parsed and injected as real
+      #    structure (needed for arrays of objects like Logging:IgnoreExceptions); a small set of string-array
+      #    keys ($stringListKeys below, e.g. RateLimiting:BlockPatterns) is instead a newline-delimited plain-text
+      #    list so the raw regexes can be edited without JSON escaping. Either way a sensitive list binds to a
+      #    string[], not a single string. config.production.json must NOT contain any key that also comes from
+      #    Doppler, or the merged file would have a duplicate key. DOPPLER_TOKEN is a read-only service token
+      #    scoped to the prod config - the app never calls Doppler; this step is the only caller.
+      - name: Build appsettings.Production.json (config + Doppler secrets)
+        shell: pwsh
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
+          LOGGING_PATH: ${{ vars.LOGGING_PATH }}   # optional per-environment, non-sensitive override
+        run: |
+          $config = Get-Content "ODK.Web.Razor/config.production.json" -Raw | ConvertFrom-Json
+          $flat = doppler secrets download --no-file --format json | ConvertFrom-Json
+
+          # Keys whose Doppler value is a newline-delimited plain-text list - one entry per line, NO JSON
+          # escaping - so string arrays (e.g. regex blocklists) can be edited as raw text in Doppler. Handled
+          # BEFORE the JSON auto-detect so an entry that happens to start with '[' isn't mistaken for JSON.
+          $stringListKeys = @('RateLimiting:BlockPatterns', 'RateLimiting:BlockIpAddresses', 'RateLimiting:BlockPaths')
+
+          foreach ($prop in $flat.PSObject.Properties) {
+            if ($prop.Name.StartsWith('DOPPLER_')) { continue }   # skip Doppler's own metadata entries
+            $key = $prop.Name -replace '_', ':'
+            $value = $prop.Value
+            if ($stringListKeys -contains $key) {                 # -contains is case-insensitive
+              # Split on CRLF/LF into an array; trim each entry and drop blank lines.
+              $value = @("$value" -split '\r?\n' | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne '' })
+            }
+            else {
+              $trimmed = "$value".Trim()
+              if ($trimmed.StartsWith('[') -or $trimmed.StartsWith('{')) {
+                try { $value = $trimmed | ConvertFrom-Json } catch { }   # leave as string if not valid JSON
+              }
+            }
+            $config | Add-Member -NotePropertyName $key -NotePropertyValue $value -Force
+          }
+          # Per-environment non-sensitive overrides come from GitHub environment Variables (viewable, not secrets).
+          # Only inject when set, so it stays optional; the key must NOT also live in config.production.json/Doppler.
+          if ($env:LOGGING_PATH) {
+            $config | Add-Member -NotePropertyName 'Logging:Path' -NotePropertyValue $env:LOGGING_PATH -Force
+          }
+          $config | ConvertTo-Json -Depth 20 | Set-Content "publish/appsettings.Production.json" -Encoding utf8
+
+      # 3) Push to the chosen site over Web Deploy. HOSTING_* resolve to the selected environment's values.
+      #    Run under cmd, NOT pwsh: msdeploy re-parses the raw command line and expects the quoted
+      #    -dest:key="value",key2="value2" provider syntax that VS/MSBuild emit. PowerShell rewrites those
+      #    embedded quotes (even via the --% stop-parsing token), so msdeploy rejects the result with
+      #    "Unrecognized argument ... All arguments must begin with -". cmd passes the quotes through verbatim.
+      #    %VAR% come from this step's env; the password must not contain a literal % (cmd variable delimiter).
+      #    DoNotDeleteRule: don't delete server files missing from the publish (logs, uploads, App_Data).
+      #    AppOffline: drop app_offline.htm during the copy so IIS releases the dll lock, then remove it.
+      - name: Web Deploy
+        shell: cmd
+        env:
+          MSDEPLOY_URL: ${{ secrets.HOSTING_MSDEPLOY_URL }}
+          SITE: ${{ secrets.HOSTING_SITE }}
+          USER: ${{ secrets.HOSTING_USER }}
+          PASSWORD: ${{ secrets.HOSTING_PASSWORD }}
+        run: >
+          "%ProgramFiles%\IIS\Microsoft Web Deploy V3\msdeploy.exe"
+          -verb:sync
+          -source:contentPath="%GITHUB_WORKSPACE%\publish"
+          -dest:contentPath="%SITE%",computerName="%MSDEPLOY_URL%",userName="%USER%",password="%PASSWORD%",authtype="Basic"
+          -allowUntrusted
+          -enableRule:DoNotDeleteRule
+          -enableRule:AppOffline

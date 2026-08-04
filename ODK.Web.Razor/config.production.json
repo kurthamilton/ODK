@@ -1,0 +1,12 @@
+{
+  "Platforms": [
+    {
+      "Type": "DrunkenKnitwits",
+      "BaseUrl": "https://drunkenknitwits.com"
+    },
+    {
+      "Type": "DrunkenKnitwits",
+      "BaseUrl": "https://www.drunkenknitwits.com"
+    }
+  ]
+}

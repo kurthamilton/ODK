@@ -159,7 +159,7 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
             .Where(rule => rule.Exceptions.Any(x => x.Equals(exceptionName, StringComparison.OrdinalIgnoreCase)))
             .Any(rule =>
                 rule.Paths.Any(x => MatchesConfigRule(x, path)) ||
-                rule.PathPatterns.Any(x => Regex.IsMatch(path, x)) ||
+                rule.PathPatterns.Any(x => Regex.IsMatch(path, x, RegexOptions.IgnoreCase)) ||
                 rule.UserAgents.Any(x => MatchesConfigRule(x, userAgent)));
     }
 
