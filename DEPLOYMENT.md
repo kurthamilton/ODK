@@ -15,19 +15,28 @@ Two GitHub Actions workflows:
 
 | Workflow | Trigger | What it does |
 |---|---|---|
-| `.github/workflows/build.yml` | automatic, on push to `master` (or manual) | runs unit tests, publishes the app, uploads a secret-free artifact called `app` |
-| `.github/workflows/deploy.yml` | manual (`Run workflow`) | takes the latest successful build, injects config + secrets, Web Deploys to the chosen site |
+| `.github/workflows/build.yml` | automatic, on push to `master` (or manual) | runs unit tests, publishes the app (artifact `app`), and creates a self-contained EF migration bundle (artifact `efbundle`) |
+| `.github/workflows/deploy.yml` | automatic, when a `master` Build **succeeds** (or manual `Run workflow`) | applies migrations once, then deploys the same build to **both** sites |
 
 ```
-push to master ──▶ Build (test + publish) ──▶ artifact "app"
-                                                   │
-   you click Run workflow, pick a target env       ▼
-                          Deploy ──▶ merge config + Doppler secrets ──▶ Web Deploy ──▶ hosting provider site
+push to master ──▶ Build (test + publish + migration bundle) ──▶ artifacts "app" + "efbundle"
+                                                                         │  Build succeeded on master
+                                                                         ▼
+                    Deploy:  migrate (efbundle → prod DB, once)  ──▶  deploy matrix ──▶  prod-odk site
+                                                                                   └──▶  prod-gs  site
+                             (each site: merge config + Doppler secrets → Web Deploy)
 ```
 
-Build and deploy are **separate on purpose**: every push is validated automatically, and deploys are a
-deliberate manual click that ships the already-built artifact (no rebuild). Both run on `windows-latest`
-because Web Deploy (`msdeploy`) is Windows-only.
+The pipeline is **fully automatic**: a push to `master` builds, and a successful build deploys — migrating the
+shared prod database once, then shipping the identical artifact to both sites in parallel. `Run workflow` on
+Deploy re-runs the same flow manually against the latest successful `master` build. Everything except the
+artifact-resolution step runs on `windows-latest` because Web Deploy (`msdeploy`) and the migration bundle are
+Windows binaries.
+
+> **Migration safety.** Migrations run *before* the app deploys, so during that window the still-running old
+> code sees the new schema — only ever apply **backward-compatible (expand-then-contract)** migrations. The
+> migrate step runs in its own `prod-migrate` environment; add a required reviewer there (Settings →
+> Environments) if you later want a manual approval gate before prod migrations, with no YAML change.
 
 ## 2. Where each value lives
 
@@ -100,7 +109,12 @@ Do this once (it already exists today; documented here for completeness / disast
    > expected. The real secret values live in Doppler where they're viewable/auditable; `DOPPLER_TOKEN` is the
    > only value you can't see, and you can regenerate it from Doppler at any time.
 4. **Doppler** — create a project (e.g. `odk`), use its `prd` config, and add the secrets (see §5). Generate a
-   read-only service token for `prd` and store it as `DOPPLER_TOKEN` above.
+   read-only service token for `prd` and store it as `DOPPLER_TOKEN` above. The `prd` config must include
+   `CONNECTIONSTRINGS_DEFAULT` (the migrate job reads it to apply migrations).
+5. **Environments** (Settings → *Environments*): `prod-odk` and `prod-gs` (one per site, holding that site's
+   `HOSTING_MSDEPLOY_URL` / `HOSTING_SITE` — see §4), plus **`prod-migrate`** for the migration job. `prod-migrate`
+   needs no secrets of its own (it uses the repo `DOPPLER_TOKEN`); it exists so the prod-DB migration is isolated
+   and can be gated with a required reviewer later without a YAML change.
 
 ## 4. Adding a platform (new deployment target)
 
@@ -118,9 +132,11 @@ profile), note:
 - **Site name** — `DeployIisAppPath`
 - **Username / password** (only if this site uses different credentials from the shared repo secrets)
 
-**Step 3 — Create the GitHub environment.** Settings → *Environments* → **New environment**. Name it
-`prod-<platform>` (existing ones are `prod-odk`, `prod-gs`). Using environments purely to scope secrets is
-free on private and public repos.
+**Step 3 — Create the GitHub environment and register it in the matrix.** Settings → *Environments* → **New
+environment**, named `prod-<platform>` (existing ones are `prod-odk`, `prod-gs`, plus `prod-migrate`). Using
+environments purely to scope secrets is free on private and public repos. Then add the new environment to the
+deploy matrix so the pipeline ships to it: in `deploy.yml`, add `prod-<platform>` to
+`jobs.deploy.strategy.matrix.environment`.
 
 **Step 4 — Add the environment's deploy secrets** (inside that environment, *Add secret*):
 - `HOSTING_MSDEPLOY_URL` — the Service URL from step 2.
@@ -159,7 +175,9 @@ the others:
 Nothing else in the workflows changes. If the platform shares config (the default today), skip this — it uses
 the shared `config.production.json`, the shared `prd` Doppler config, and the repo `DOPPLER_TOKEN`.
 
-**Step 7 — Deploy.** Actions → **Deploy** → **Run workflow** → pick `prod-<platform>` (see §6).
+**Step 7 — Ship it.** Merge to `master`. Build runs, and on success Deploy automatically migrates the shared DB
+once and deploys every site in the matrix — including the new one. (Or trigger Deploy manually via **Run
+workflow**; see §6.)
 
 ## 5. Managing configuration & secrets
 
@@ -200,15 +218,19 @@ override them.
 
 ## 6. Deploying (routine)
 
-1. Merge your change to `master`. **Build** runs automatically: tests, publish, uploads the `app` artifact.
-2. Actions → **Deploy** → **Run workflow** → choose the target environment (`prod-odk` / `prod-gs` / …) → Run.
-3. Deploy downloads the latest successful `master` build, builds `appsettings.Production.json` (public config +
-   Doppler), and Web Deploys to that site. Repeat step 2 for each site you want to update — the same artifact
-   ships to all.
+**Normal flow is hands-off:** merge to `master` → **Build** runs (tests, publish, migration bundle) → on
+success, **Deploy** fires automatically: it migrates the shared DB once, then deploys the same build to every
+site in the matrix. Nothing to click.
 
-Web Deploy uses `-enableRule:DoNotDeleteRule` (won't delete server files missing from the publish — logs,
-uploads, `App_Data`) and `-enableRule:AppOffline` (drops `app_offline.htm` during the copy so IIS releases the
-DLL lock, then removes it).
+**Manual deploy** (redeploy the latest build without a new commit): Actions → **Deploy** → **Run workflow**. It
+resolves the latest successful `master` Build and runs the identical migrate + deploy-both flow. There's no
+per-site picker — it always does both; adjust the `deploy` matrix in `deploy.yml` if you ever need to scope it.
+
+Under the hood, each site's deploy builds its own `appsettings.Production.json` (public config + Doppler, plus
+any env `LOGGING_PATH`) and Web Deploys with `-enableRule:DoNotDeleteRule` (won't delete server files missing
+from the publish — logs, uploads, `App_Data`) and `-enableRule:AppOffline` (drops `app_offline.htm` during the
+copy so IIS releases the DLL lock, then removes it). The two sites deploy in parallel (`fail-fast: false`), so
+one failing doesn't abort the other.
 
 ## 7. Troubleshooting
 
@@ -230,6 +252,13 @@ DLL lock, then removes it).
   not pwsh — cmd passes the quotes through verbatim (pwsh fails this even via the `--%` stop-parsing token).
   Keep that step in `cmd`. One caveat: cmd expands `%…%`, so a **`HOSTING_PASSWORD` containing a literal `%`**
   would be misread — if a password ever contains `%`, rotate it or escape it as `%%` in the value.
-- **Target dropdown is empty when running Deploy.** The environment doesn't exist yet — create `prod-<platform>`
-  (§4 step 3).
-```
+- **Deploy didn't fire after a push to `master`.** Deploy triggers on `workflow_run` when **Build** *succeeds*
+  on `master` — check Build went green. `workflow_run` also only fires for a `deploy.yml` that's on the default
+  branch. A failed Build correctly skips deploy (the `setup` job's `if` guards on `workflow_run.conclusion`).
+- **The `migrate` job failed.** The migration bundle threw — read its log. Because `deploy` `needs: migrate`,
+  a failed migration **blocks the site deploys** (by design). Common causes: the migration itself errored
+  against prod, or `CONNECTIONSTRINGS_DEFAULT` is missing/wrong in the Doppler `prd` config. Fix forward and
+  re-run, or (if you added a reviewer) reject and investigate.
+- **A site deployed but the schema looks stale, or vice-versa.** Migrate runs once *before* both deploys, so a
+  green `migrate` + green `deploy` means both applied. If one site's `deploy` leg failed, only that site is
+  behind — re-run Deploy (the same artifact ships) once the cause is fixed.
