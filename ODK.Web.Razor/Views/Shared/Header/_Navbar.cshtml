@@ -1,4 +1,5 @@
-﻿@using ODK.Core.Chapters
+﻿@using Microsoft.AspNetCore.Html
+@using ODK.Core.Chapters
 @using ODK.Services.Chapters
 @using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Services
@@ -65,6 +66,46 @@
     {
         cssClasses.Add("navbar-expand-lg");
     }
+
+    Func<object?, IHtmlContent> renderMenuGroups = @<text>
+        @for (var i = 0; i < Model.MenuItems.Count; i++)
+        {
+            var group = Model.MenuItems.ElementAt(i);
+
+            if (i > 0)
+            {
+                <hr />
+            }
+
+            if (!string.IsNullOrEmpty(group.Title))
+            {
+                <div class="fw-bold navbar-text">
+                    @group.Title
+                </div>
+            }
+            <ul class="navbar-nav">
+                @foreach (var menuItem in group.MenuItems)
+                {
+                    <li class="nav-item @(menuItem.Hidden ? "invisible" : null)">
+                        <a class="nav-link @(Model.IsLight ? "text-dark" : "")"
+                           data-menu-link="@(menuItem.ActiveIsExactMatch ? "exact" : null)"
+                           href="@(menuItem.Link ?? menuItem.ExternalLink)"
+                           target="@(!string.IsNullOrEmpty(menuItem.ExternalLink) ? "_blank" : null)">
+                            @if (!string.IsNullOrEmpty(menuItem.Text))
+                            {
+                                <span>@menuItem.Text</span>
+                            }
+
+                            @if (menuItem.Icon != null)
+                            {
+                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(menuItem.Icon.Value))
+                            }
+                        </a>
+                    </li>
+                }
+            </ul>
+        }
+    </text>;
 }
 
 <nav class="navbar @string.Join(' ', cssClasses)">
@@ -73,7 +114,7 @@
             @if (Model.MenuItems.Any(x => x.MenuItems.Any(y => !y.Hidden)))    
             {
                 <button class="navbar-toggler @(Model.MenuItems.Count == 0 ? "invisible" : "")"
-                        type="button" data-bs-toggle="collapse" data-bs-target="#@id"
+                        type="button" data-bs-toggle="@(Model.UseOffcanvas ? "offcanvas" : "collapse")" data-bs-target="#@id"
                         aria-controls="@id" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -96,44 +137,21 @@
             }
         </div>
 
-        <div class="collapse navbar-collapse flex-column" id="@id">
-            @for (var i = 0; i < Model.MenuItems.Count; i++)
+        @if (Model.UseOffcanvas)
+        {
+            @await Html.PartialAsync("Components/_Offcanvas", new OffcanvasViewModel
             {
-                var group = Model.MenuItems.ElementAt(i);
-
-                if (i > 0)
-                {
-                    <hr/>
-                }
-
-                if (!string.IsNullOrEmpty(group.Title))
-                {
-                    <div class="fw-bold navbar-text">
-                        @group.Title
-                    </div>
-                }
-                <ul class="navbar-nav">                    
-                    @foreach (var menuItem in group.MenuItems)
-                    {
-                        <li class="nav-item @(menuItem.Hidden ? "invisible" : null)">
-                            <a class="nav-link @(Model.IsLight ? "text-dark" : "")"
-                               data-menu-link="@(menuItem.ActiveIsExactMatch ? "exact" : null)"
-                               href="@(menuItem.Link ?? menuItem.ExternalLink)"
-                               target="@(!string.IsNullOrEmpty(menuItem.ExternalLink) ? "_blank" : null)">
-                                @if (!string.IsNullOrEmpty(menuItem.Text))
-                                {
-                                    <span>@menuItem.Text</span>
-                                }
-
-                                @if (menuItem.Icon != null)
-                                {
-                                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(menuItem.Icon.Value))
-                                }
-                            </a>
-                        </li>
-                    }
-                </ul>
-            }
-        </div>
+                Id = id,
+                Breakpoint = Model.Breakpoint,
+                Position = "end",
+                ContentFunc = renderMenuGroups
+            })
+        }
+        else
+        {
+            <div class="collapse navbar-collapse flex-column" id="@id">
+                @renderMenuGroups(null)
+            </div>
+        }
     </div>
 </nav>
