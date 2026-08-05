@@ -26,7 +26,12 @@ jobs:
 
       # Self-contained EF migration bundle - a standalone exe the deploy's migrate job runs with just a
       # connection string (no SDK/source on the target). dotnet-ef is a local tool, so restore it first.
+      # Bundling instantiates OdkContext at design time (to read the model), which builds the app host and
+      # needs a connection string present - it never connects here, so a placeholder is enough. The REAL
+      # connection string is supplied at apply time via `efbundle --connection`.
       - name: Create migration bundle
+        env:
+          ConnectionStrings__Default: Server=placeholder;Database=placeholder;
         run: |
           dotnet tool restore
           dotnet ef migrations bundle --configuration Release --self-contained -r win-x64 --output efbundle.exe --force `
