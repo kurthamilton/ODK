@@ -1,51 +1,117 @@
 name: Deploy
-run-name: Deploy to ${{ inputs.target }}   # so each run in the Actions history shows its target environment
+run-name: Deploy to prod (migrate + both sites)
 
 on:
-  workflow_dispatch:            # manual only - deploys the latest successful master build
-    inputs:
-      target:
-        description: Platform / site to deploy to
-        type: environment       # renders a dropdown of your environments (prod-odk / prod-gs) when you click Run
-        required: true
+  # Auto: fire when a Build completes on master (the `if` on the setup job restricts to successful ones).
+  workflow_run:
+    workflows: [ Build ]
+    types: [ completed ]
+    branches: [ master ]
+  # Manual: re-run the full migrate + deploy-both flow against the latest successful master Build.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read           # gh run download needs to read artifacts from the Build run
+
+# Serialise deploys so two runs can't touch prod at once; don't cancel an in-flight deploy.
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
 
 jobs:
-  deploy:
-    runs-on: windows-latest     # Web Deploy (msdeploy) is a Windows tool; the runner has it pre-installed
-    environment: ${{ inputs.target }}   # scopes HOSTING_* below to the chosen environment's values
+  # Resolve which Build run's artifacts to ship, so migrate and deploy use the SAME build.
+  setup:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    outputs:
+      run_id: ${{ steps.resolve.outputs.run_id }}
     steps:
-      # Checkout is only for the committed non-secret prod config (config.production.json); the app itself
-      # comes from the build artifact, not a rebuild.
-      - uses: actions/checkout@v4
+      - name: Resolve Build run to deploy
+        id: resolve
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_run" ]; then
+            run_id="${{ github.event.workflow_run.id }}"        # the exact Build that triggered us
+          else
+            run_id=$(gh run list --workflow build.yml --branch master --status success --limit 1 \
+              --json databaseId --jq '.[0].databaseId')          # manual: latest green master Build
+          fi
+          if [ -z "$run_id" ]; then echo "No successful Build run found on master." >&2; exit 1; fi
+          echo "Deploying artifacts from Build run $run_id"
+          echo "run_id=$run_id" >> "$GITHUB_OUTPUT"
 
-      # 1) Grab the artifact from the most recent successful Build run on master (no rebuild). The same
-      #    artifact ships to either platform - the app is platform-agnostic (platform inferred from the URL).
-      - name: Download latest build
+  # Apply EF migrations to the shared prod DB ONCE, before any site deploys. Runs in its own environment so a
+  # required reviewer can be added later (Settings -> Environments -> prod-migrate) to gate it without any YAML
+  # change. NOTE: migrate-before-deploy is only safe for backward-compatible (expand-then-contract) migrations.
+  migrate:
+    needs: setup
+    runs-on: windows-latest
+    environment: prod-migrate
+    steps:
+      - name: Download migration bundle
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          $runId = gh run list --workflow build.yml --branch master --status success --limit 1 `
-            --json databaseId --jq '.[0].databaseId'
-          if (-not $runId) { throw "No successful Build run found on master to deploy." }
-          Write-Host "Deploying artifact from Build run $runId"
-          gh run download $runId --name app --dir publish
+        run: gh run download ${{ needs.setup.outputs.run_id }} --name efbundle --dir bundle
 
       - uses: dopplerhq/cli-action@v3
 
-      # 2) Build appsettings.Production.json = committed PUBLIC config (config.production.json - e.g. Platforms)
-      #    + everything from Doppler (credentials AND sensitive config you don't want in a public repo, e.g.
-      #    RateLimiting:BlockPatterns). Doppler's JSON import delimits config levels with "_" (e.g.
-      #    PAYMENTS_STRIPE_WEBHOOKSECRETV1) which we convert to ":" - unambiguous because no config-key segment
-      #    contains an underscore. .NET matches keys case-insensitively, so a flat "ConnectionStrings:Default"
-      #    key overrides the nested one from the base appsettings.json.
-      #    Arrays come from Doppler two ways: a value that is JSON ([...]/{...}) is parsed and injected as real
-      #    structure (needed for arrays of objects like Logging:IgnoreExceptions); a small set of string-array
-      #    keys ($stringListKeys below, e.g. RateLimiting:BlockPatterns) is instead a newline-delimited plain-text
-      #    list so the raw regexes can be edited without JSON escaping. Either way a sensitive list binds to a
-      #    string[], not a single string. config.production.json must NOT contain any key that also comes from
-      #    Doppler, or the merged file would have a duplicate key. DOPPLER_TOKEN is a read-only service token
-      #    scoped to the prod config - the app never calls Doppler; this step is the only caller.
+      # efbundle is self-contained, so it needs only the connection string (pulled from Doppler; the service
+      # token scopes the project/config). A migration failure fails this job and blocks deploy (needs: migrate).
+      - name: Apply migrations
+        shell: pwsh
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
+        run: |
+          $conn = (doppler secrets get CONNECTIONSTRINGS_DEFAULT --plain | Out-String).Trim()
+          if (-not $conn) { throw "Could not read CONNECTIONSTRINGS_DEFAULT from Doppler." }
+          & "bundle/efbundle.exe" --connection "$conn"
+          if ($LASTEXITCODE -ne 0) { throw "Migration failed with exit code $LASTEXITCODE." }
+
+  # Deploy the SAME artifact to both sites in parallel. Each matrix leg runs in its own environment, so the
+  # env-scoped HOSTING_* secrets (and any LOGGING_PATH variable) resolve to that site's values.
+  deploy:
+    needs: [ setup, migrate ]
+    runs-on: windows-latest     # Web Deploy (msdeploy) is a Windows tool; the runner has it pre-installed
+    strategy:
+      fail-fast: false          # if one site fails, still attempt the other
+      matrix:
+        environment: [ prod-odk, prod-gs ]
+    environment: ${{ matrix.environment }}   # scopes HOSTING_* below to this site's values
+    steps:
+      # Checkout is only for the committed non-secret prod config (config.production.json); the app itself
+      # comes from the build artifact, not a rebuild. Pin to the Build's commit so the config matches the
+      # artifact (falls back to the triggering ref for a manual dispatch).
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      # Grab the app artifact from the resolved Build run (no rebuild). The same artifact ships to both
+      # platforms - the app is platform-agnostic (platform inferred from the URL).
+      - name: Download build artifact
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh run download ${{ needs.setup.outputs.run_id }} --name app --dir publish
+
+      - uses: dopplerhq/cli-action@v3
+
+      # Build appsettings.Production.json = committed PUBLIC config (config.production.json - e.g. Platforms)
+      # + everything from Doppler (credentials AND sensitive config you don't want in a public repo, e.g.
+      # RateLimiting:BlockPatterns). Doppler's JSON import delimits config levels with "_" (e.g.
+      # PAYMENTS_STRIPE_WEBHOOKSECRETV1) which we convert to ":" - unambiguous because no config-key segment
+      # contains an underscore. .NET matches keys case-insensitively, so a flat "ConnectionStrings:Default"
+      # key overrides the nested one from the base appsettings.json.
+      # Arrays come from Doppler two ways: a value that is JSON ([...]/{...}) is parsed and injected as real
+      # structure (needed for arrays of objects like Logging:IgnoreExceptions); a small set of string-array
+      # keys ($stringListKeys below, e.g. RateLimiting:BlockPatterns) is instead a newline-delimited plain-text
+      # list so the raw regexes can be edited without JSON escaping. Either way a sensitive list binds to a
+      # string[], not a single string. config.production.json must NOT contain any key that also comes from
+      # Doppler, or the merged file would have a duplicate key. DOPPLER_TOKEN is a read-only service token
+      # scoped to the prod config - the app never calls Doppler; this step is the only caller.
       - name: Build appsettings.Production.json (config + Doppler secrets)
         shell: pwsh
         env:
@@ -83,14 +149,14 @@ jobs:
           }
           $config | ConvertTo-Json -Depth 20 | Set-Content "publish/appsettings.Production.json" -Encoding utf8
 
-      # 3) Push to the chosen site over Web Deploy. HOSTING_* resolve to the selected environment's values.
-      #    Run under cmd, NOT pwsh: msdeploy re-parses the raw command line and expects the quoted
-      #    -dest:key="value",key2="value2" provider syntax that VS/MSBuild emit. PowerShell rewrites those
-      #    embedded quotes (even via the --% stop-parsing token), so msdeploy rejects the result with
-      #    "Unrecognized argument ... All arguments must begin with -". cmd passes the quotes through verbatim.
-      #    %VAR% come from this step's env; the password must not contain a literal % (cmd variable delimiter).
-      #    DoNotDeleteRule: don't delete server files missing from the publish (logs, uploads, App_Data).
-      #    AppOffline: drop app_offline.htm during the copy so IIS releases the dll lock, then remove it.
+      # Push to this site over Web Deploy. HOSTING_* resolve to the matrix environment's values.
+      # Run under cmd, NOT pwsh: msdeploy re-parses the raw command line and expects the quoted
+      # -dest:key="value",key2="value2" provider syntax that VS/MSBuild emit. PowerShell rewrites those
+      # embedded quotes (even via the --% stop-parsing token), so msdeploy rejects the result with
+      # "Unrecognized argument ... All arguments must begin with -". cmd passes the quotes through verbatim.
+      # %VAR% come from this step's env; the password must not contain a literal % (cmd variable delimiter).
+      # DoNotDeleteRule: don't delete server files missing from the publish (logs, uploads, App_Data).
+      # AppOffline: drop app_offline.htm during the copy so IIS releases the dll lock, then remove it.
       - name: Web Deploy
         shell: cmd
         env:
