@@ -52,10 +52,12 @@ jobs:
     environment: prod-migrate
     steps:
       - name: Download migration bundle
-        shell: pwsh
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh run download ${{ needs.setup.outputs.run_id }} --name efbundle --dir bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: efbundle
+          path: bundle
+          run-id: ${{ needs.setup.outputs.run_id }}
+          github-token: ${{ github.token }}
 
       - uses: dopplerhq/cli-action@v3
 
@@ -92,10 +94,12 @@ jobs:
       # Grab the app artifact from the resolved Build run (no rebuild). The same artifact ships to both
       # platforms - the app is platform-agnostic (platform inferred from the URL).
       - name: Download build artifact
-        shell: pwsh
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh run download ${{ needs.setup.outputs.run_id }} --name app --dir publish
+        uses: actions/download-artifact@v4
+        with:
+          name: app
+          path: publish
+          run-id: ${{ needs.setup.outputs.run_id }}
+          github-token: ${{ github.token }}
 
       - uses: dopplerhq/cli-action@v3
 
