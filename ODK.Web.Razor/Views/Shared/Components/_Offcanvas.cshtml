@@ -61,11 +61,16 @@
                 @Model.ContentFunc.Invoke(null)
             }
 
-            @*<div class="scroll-indicator-anchor">
-                <div class="scroll-indicator d-none" data-scroll-indicator>
+            @* Bottom fade + scroll-down chevron: bindScroll toggles data-scroll-indicator's d-none, so this shows
+               only while there's more to scroll below. It's sticky to the bottom edge of the scroll area, so
+               content dissolves into the footer as it scrolls (the "scrolling behind the footer" effect) and the
+               chevron cues that there's more. Pinning to the visible bottom edge (not the content end) is what the
+               earlier attempt was missing. *@
+            <div class="offcanvas-scroll-fade d-none" data-scroll-indicator aria-hidden="true">
+                <span class="offcanvas-scroll-fade__icon">
                     @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.AngleDown))
-                </div>
-            </div>*@
+                </span>
+            </div>
         </div>
 
         @if (Model.FooterFunc != null)

@@ -280,11 +280,35 @@
 
             const update = () => {
                 const dist = $container.scrollHeight - $container.scrollTop - $container.clientHeight;
-                if (dist > 0) $indicator.classList.remove('d-none');
-                else $indicator.classList.add('d-none');
+                // Hysteresis: show only when there's clearly more below, hide only at the very bottom. A single
+                // threshold flickers when a hover or sub-pixel reflow nudges the measurement by a pixel or two.
+                if ($indicator.classList.contains('d-none')) {
+                    if (dist > 4) $indicator.classList.remove('d-none');
+                } else if (dist <= 1) {
+                    $indicator.classList.add('d-none');
+                }
             };
 
-            $container.addEventListener('scroll', update);
+            $container.addEventListener('scroll', update, { passive: true });
+            window.addEventListener('resize', update);
+
+            // Recompute when the offcanvas opens - it may have been measured while hidden (zero size), which
+            // is what made the indicator flaky on first show.
+            const $offcanvas = $container.closest('.offcanvas');
+            if ($offcanvas) $offcanvas.addEventListener('shown.bs.offcanvas', update);
+
+            // Accordions inside the content reshape it; Bootstrap collapse events bubble to the container, so
+            // they update the indicator precisely - unlike observing content children, which also fires on the
+            // micro-reflows a hover triggers and made the indicator flicker.
+            $container.addEventListener('shown.bs.collapse', update);
+            $container.addEventListener('hidden.bs.collapse', update);
+
+            // Recompute when the container itself resizes (viewport change, becoming visible). Observe ONLY the
+            // container - not its children - so hovering a menu item can't toggle the indicator.
+            if (window.ResizeObserver) {
+                new ResizeObserver(update).observe($container);
+            }
+
             update();
         });
     }

@@ -7,9 +7,49 @@
     --bs-offcanvas-width: 500px;
     --bs-offcanvas-zindex: #{$zindex-toast + 1};
 
+    .offcanvas-body {
+        // Trap scroll momentum inside the drawer - stops page scroll-chaining and pull-to-refresh on touch
+        // when you reach the top/bottom of the drawer's content.
+        overscroll-behavior: contain;
+    }
+
+    .offcanvas-footer {
+        // Keep footer content clear of the home indicator / gesture area on notched phones. Only has effect
+        // when the page opts into edge-to-edge layout via <meta viewport-fit=cover>; a no-op otherwise
+        // (env() resolves to 0), so it's harmless future-proofing.
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+
     hr {
         margin-top: 0.5rem;
         margin-bottom: 0.5rem;
+    }
+
+    // Bottom scroll fade, shown by bindScroll (via [data-scroll-indicator]) only while more content is below.
+    // Sticky to the bottom edge of the scroll area with a negative margin so it overlays the content above
+    // rather than adding scrollable height; content dissolves into the offcanvas/footer background as it
+    // scrolls up (the "scrolling behind the footer" effect) and it doubles as the "more below" cue.
+    .offcanvas-scroll-fade {
+        position: sticky;
+        bottom: 0;
+        // Paint above hovered list-group items, which Bootstrap raises to z-index: 1 on hover - otherwise the
+        // hovered item covers the indicator. pointer-events stays none, so hover/click still reach the item.
+        z-index: 2;
+        height: 2.5rem;
+        margin-top: -2.5rem;
+        pointer-events: none;
+        background: linear-gradient(to top, var(--bs-offcanvas-bg), transparent);
+
+        // centre the scroll-down chevron on the bottom edge
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+
+        &__icon {
+            color: var(--bs-secondary-color);
+            line-height: 1;
+            animation: offcanvas-scroll-hint 1.6s ease-in-out infinite;
+        }
     }
 
     &.has-footer {
@@ -29,5 +69,16 @@
     .offcanvas-flush-item {
         padding-left: var(--bs-offcanvas-padding-x);
         padding-right: var(--bs-offcanvas-padding-x);
+    }
+}
+
+@keyframes offcanvas-scroll-hint {
+    0%, 100% { transform: translateY(0); opacity: 0.55; }
+    50% { transform: translateY(0.2rem); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .offcanvas-scroll-fade__icon {
+        animation: none;
     }
 }
