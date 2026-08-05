@@ -106,6 +106,17 @@ dotnet dotnet-ef database update \
 current environment. Set `ASPNETCORE_ENVIRONMENT` (and provide the matching config / user
 secrets) to target a specific database.
 
+To migrate **production**, use `Scripts/ef-update-database-prod.bat` — it passes
+`--environment Production`, so it reads the prod connection string from a local, gitignored
+`ODK.Web.Razor/appsettings.Production.json`. That file only needs the connection string:
+
+```json
+{ "ConnectionStrings": { "Default": "<prod connection string>" } }
+```
+
+(Doppler is used for *deploy-time* secrets only — the app and this local script don't depend on
+it. See `DEPLOYMENT.md`.)
+
 Build a self-contained migration bundle (useful in CI/CD — no SDK needed on the target):
 
 ```
