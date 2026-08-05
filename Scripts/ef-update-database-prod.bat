@@ -12,6 +12,8 @@ if /i not "%confirm%"=="YES" (
 echo.
 echo Running migration...
 cd ..
-rem Reads the prod connection string from the local (gitignored) ODK.Web.Razor/appsettings.Production.json.
-dotnet ef database update -p ODK.Data.EntityFramework.Migrations -s ODK.Web.Razor -- --environment Production
+rem OdkContextFactory reads the prod connection string from the local (gitignored)
+rem ODK.Web.Razor/appsettings.Production.json, selected by ASPNETCORE_ENVIRONMENT.
+set ASPNETCORE_ENVIRONMENT=Production
+dotnet ef database update -p ODK.Data.EntityFramework.Migrations -s ODK.Web.Razor
 pause
