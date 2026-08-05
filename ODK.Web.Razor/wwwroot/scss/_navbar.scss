@@ -85,15 +85,9 @@ $navbar-light-separator: rgba(0, 0, 0, 0.5);
             }
         }
     }
-    // always hide borders on the collapsed version
-    .navbar-collapse {
-        .nav-item {
-            border: none;
-        }
-    }
 }
 
-// only show the collapsed menu in smaller breakpoints on the home page - the menu is displayed as a section in the bigger breakpoints
+// only show the offcanvas menu in smaller breakpoints on the home page - the menu is displayed as a section in the bigger breakpoints
 @include media-breakpoint-up(md) {
     .home-page {
         .navbar--home {
@@ -101,7 +95,7 @@ $navbar-light-separator: rgba(0, 0, 0, 0.5);
                 visibility: hidden;
             }
 
-            .navbar-collapse {
+            .offcanvas-md {
                 display: none;
             }
         }

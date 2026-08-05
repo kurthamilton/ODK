@@ -29,7 +29,7 @@
                 : [];
 
             <li>
-                <a class="nav-link text-nowrap @(menuItem == active ? "active" : "")" href="@menuItem.Link">
+                <a class="nav-link text-nowrap @(menuItem == active ? "active" : "") @(children.Length > 0 ? "current" : "")" href="@menuItem.Link">
                     @menuItem.Text
                 </a>
 

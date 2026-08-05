@@ -12916,15 +12916,12 @@ footer {
 .navbar--home .navbar .navbar-nav .nav-item:not(:first-child) {
   border-top: 1px solid rgba(255, 255, 255, 0.5);
 }
-.navbar--home .navbar-collapse .nav-item {
-  border: none;
-}
 
 @media (min-width: 768px) {
   .home-page .navbar--home .navbar-toggler {
     visibility: hidden;
   }
-  .home-page .navbar--home .navbar-collapse {
+  .home-page .navbar--home .offcanvas-md {
     display: none;
   }
 }
@@ -13227,12 +13224,22 @@ footer {
 }
 @media (min-width: 768px) {
   .side-menu .nav-link {
-    padding: 0.125rem 0 0.125rem 0.75rem;
+    padding: 0.375rem 0.75rem;
   }
 }
-.side-menu .nav-link.active, .side-menu .nav-link:hover {
+.side-menu .nav-link:hover {
+  --odk-side-menu-color: var(--bs-emphasis-color);
+  background-color: var(--bs-tertiary-bg);
+}
+.side-menu .nav-link.current {
+  --odk-side-menu-color: var(--bs-emphasis-color);
+  font-weight: 600;
+}
+.side-menu .nav-link.active {
   --odk-side-menu-color: var(--bs-emphasis-color);
   border-left-color: var(--odk-side-menu-color);
+  background-color: var(--bs-secondary-bg);
+  font-weight: 600;
 }
 .side-menu .side-menu {
   padding-left: 1rem;

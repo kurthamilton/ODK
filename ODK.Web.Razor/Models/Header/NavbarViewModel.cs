@@ -24,6 +24,8 @@ public class NavbarViewModel
 
     public required IReadOnlyCollection<MenuItemGroup> MenuItems { get; init; }
 
+    public bool UseOffcanvas { get; init; }
+
     public bool IsDark => Color is null or "dark";
 
     public bool IsLight => Color == "light";

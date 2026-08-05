@@ -56,12 +56,13 @@
     ImageUrl = "/assets/img/home-banner.png",
     Navbar = new NavbarViewModel
     {
-        // Always collapsed
-        Breakpoint = null,
+        // Drawer (offcanvas) below md; hidden at md+, where chapters render as a page section instead
+        Breakpoint = "md",
         Chapter = null,
         Color = "dark",
         CssClass = "navbar--home",
         Member = member,
+        UseOffcanvas = true,
         MenuItems = continents
             .Select(continent => new MenuItemGroup
             {

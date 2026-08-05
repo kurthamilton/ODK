@@ -11,12 +11,27 @@
         border-left: 0.125rem solid transparent;
 
         @include media-breakpoint-up(md) {
-            padding: .125rem 0 .125rem .75rem;
+            // roomier rows than the old .125rem, for more native tap/hover targets
+            padding: .375rem .75rem;
         }
 
-        &.active, &:hover {
+        // flat full-width highlight (no radius - .nav-link has none by default); theme-aware
+        &:hover {
+            --odk-side-menu-color: var(--bs-emphasis-color);
+            background-color: var(--bs-tertiary-bg);
+        }
+
+        // the current area's header when a child is selected - emphasised but not filled
+        &.current {
+            --odk-side-menu-color: var(--bs-emphasis-color);
+            font-weight: 600;
+        }
+
+        &.active {
             --odk-side-menu-color: var(--bs-emphasis-color);
             border-left-color: var(--odk-side-menu-color);
+            background-color: var(--bs-secondary-bg);
+            font-weight: 600;
         }
     }
 
