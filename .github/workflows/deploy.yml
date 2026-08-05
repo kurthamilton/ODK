@@ -70,9 +70,8 @@ jobs:
         run: |
           $conn = (doppler secrets get CONNECTIONSTRINGS_DEFAULT --plain | Out-String).Trim()
           if (-not $conn) { throw "Could not read CONNECTIONSTRINGS_DEFAULT from Doppler." }
-          # efbundle rebuilds the app host to construct OdkContext, which needs a connection string in config
-          # (to resolve OdkContextSettings) - the same reason the Build's bundle step sets this. Provide it via
-          # env; --connection then names the actual migration target (same value here).
+          # efbundle constructs OdkContext via the design-time factory (OdkContextFactory), which reads the
+          # connection string from ConnectionStrings__Default; --connection names the migration target too.
           $env:ConnectionStrings__Default = $conn
           & "bundle/efbundle.exe" --connection "$conn"
           if ($LASTEXITCODE -ne 0) { throw "Migration failed with exit code $LASTEXITCODE." }
