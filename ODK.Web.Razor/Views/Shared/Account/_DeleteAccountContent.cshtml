@@ -1,7 +1,6 @@
 ﻿@using ODK.Services.Chapters
-@using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Services
-@using ODK.Web.Razor.Services
+@using ODK.Web.Razor.Models.Components
 @inject IChapterService ChapterService
 @inject IRequestStore RequestStore
 @{
@@ -31,7 +30,12 @@ else
 
     <form method="post" action="/account/delete">
         @Html.AntiForgeryToken()
-        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete your account?');">
+        @await Html.PartialAsync("Components/_Confirm", new ConfirmViewModel
+        {
+            Message = "Are you sure you want to delete your account?",
+            Title = "Delete account"
+        })
+        <button type="submit" class="btn btn-danger">
             Delete my account
         </button>
     </form>

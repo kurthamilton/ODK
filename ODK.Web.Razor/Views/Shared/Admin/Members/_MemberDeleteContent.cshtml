@@ -1,6 +1,6 @@
 ﻿@using ODK.Core.Members
 @using ODK.Services.Members.ViewModels
-@using ODK.Web.Razor.Models.Admin.Members
+@using ODK.Web.Razor.Models.Components
 @model MemberDeleteAdminPageViewModel
 
 @await Html.PartialAsync("Admin/Members/_MemberAdminTabs", Model)
@@ -20,7 +20,12 @@
             <textarea class="form-control" name="reason" id="reason" rows="5"></textarea>
         </div>
 
-        <button class="btn btn-danger" onclick="return confirm('Are you sure you want to remove this member from your group?');">
+        @await Html.PartialAsync("Components/_Confirm", new ConfirmViewModel
+        {
+            Message = "Are you sure you want to remove this member from your group?",
+            Title = "Remove member"
+        })
+        <button class="btn btn-danger">
             Delete
         </button>
     }    

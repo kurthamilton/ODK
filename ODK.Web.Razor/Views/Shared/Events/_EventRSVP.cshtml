@@ -1,6 +1,6 @@
 ﻿@using ODK.Core.Events
-@using ODK.Core.Utils
 @using ODK.Services.Events.ViewModels
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Events
 @model EventPageViewModel
 
@@ -24,7 +24,12 @@
                     <form action="/events/@Model.Event.Id/rsvp" method="post">
                         @Html.AntiForgeryToken()
                         <input type="hidden" name="responseType" value="@EventResponseType.No" />
-                        <button class="btn btn-danger" onclick="return confirm('Are you sure you want to cancel your RSVP? This action cannot be undone');">
+                        @await Html.PartialAsync("Components/_Confirm", new ConfirmViewModel
+                        {
+                            Message = "Are you sure you want to cancel your RSVP? This action cannot be undone",
+                            Title = "Cancel RSVP"
+                        })
+                        <button class="btn btn-danger">
                             Cancel RSVP
                         </button>
                     </form>
@@ -65,7 +70,12 @@
                     <div>You're on the waiting list</div>
                     <form action="/events/@Model.Event.Id/wait-list/leave" method="post">
                         @Html.AntiForgeryToken()
-                        <button class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to leave the waiting list?');">
+                        @await Html.PartialAsync("Components/_Confirm", new ConfirmViewModel
+                        {
+                            Message = "Are you sure you want to leave the waiting list?",
+                            Title = "Leave waiting list"
+                        })
+                        <button class="btn btn-danger btn-sm">
                             Leave
                         </button>
                     </form>

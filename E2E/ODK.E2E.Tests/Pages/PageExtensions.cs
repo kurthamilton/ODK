@@ -5,6 +5,16 @@ namespace ODK.E2E.Tests.Pages;
 internal static class PageExtensions
 {
     /// <summary>
+    /// Accepts the shared confirmation dialog - the _Confirm component plus _ConfirmModal, which replaced
+    /// the native <c>window.confirm</c>. A form rendering _Confirm does not submit when its button is
+    /// clicked: the submit is intercepted and replayed only once this is accepted, so any test driving such
+    /// a form must call this after the click. Playwright waits for the dialog to be actionable, which
+    /// covers the fade-in.
+    /// </summary>
+    internal static Task AcceptConfirm(this IPage page)
+        => page.ClickAsync("#confirm-modal [data-odk-confirm-accept]");
+
+    /// <summary>
     /// Navigates to a relative path. The absolute host comes from the browser context's
     /// <c>BaseURL</c> (set per platform by the test's base class / by provisioning), so the same page
     /// objects work against whichever platform the fixture targets.
