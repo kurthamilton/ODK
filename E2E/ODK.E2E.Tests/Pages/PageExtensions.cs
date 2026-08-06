@@ -66,6 +66,22 @@ internal static class PageExtensions
         => await page.Locator($"input[name$='.ChapterPropertyId'][value='{chapterPropertyId}']").CountAsync() > 0;
 
     /// <summary>
+    /// The <c>src</c> of every script on the page, as authored rather than resolved - so a cache-busting
+    /// version query is visible.
+    /// </summary>
+    internal static async Task<string[]> GetScriptSources(this IPage page)
+        => await page.EvaluateAsync<string[]>(
+            "() => Array.from(document.querySelectorAll('script[src]')).map(x => x.getAttribute('src'))");
+
+    /// <summary>
+    /// Whether any element still carries the given <c>asp-*</c> attribute. A tag helper that ran consumes
+    /// its attribute; one that was never registered for that view's directory leaves it behind in the HTML,
+    /// inert.
+    /// </summary>
+    internal static async Task<bool> HasUnprocessedTagHelperAttribute(this IPage page, string name)
+        => await page.Locator($"[{name}]").CountAsync() > 0;
+
+    /// <summary>
     /// Selects a single value on a SlimSelect-enhanced <c>&lt;select&gt;</c> (<c>[data-select]</c>/
     /// <c>[data-searchable]</c>). SlimSelect hides the native control, so Playwright's SelectOption can't
     /// see it - set the native value (what actually posts) and raise the events SlimSelect and the

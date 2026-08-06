@@ -1,0 +1,12 @@
+@* Deliberately narrow: register only the cache-busting tag helpers, NOT `*`.
+
+   Registering all of Microsoft.AspNetCore.Mvc.TagHelpers here would switch on FormTagHelper across every
+   `<form method="post">` in Views/**. Each of those carries an explicit @Html.AntiForgeryToken(), so any form
+   without a literal `action` would then emit a second token - and two tokens fail antiforgery validation, so
+   the form would start returning 400. FormTagHelper would also start generating those forms' `action`
+   attributes, which is unreliable for the custom absolute @page routes these partials are nested in.
+
+   ScriptTagHelper and LinkTagHelper bind only to elements carrying their own asp-* attributes, so they
+   cannot affect anything else. *@
+@addTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.ScriptTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
+@addTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.LinkTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
