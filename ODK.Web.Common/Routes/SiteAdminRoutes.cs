@@ -27,6 +27,8 @@ public class SiteAdminRoutes
 
     public string Members => Path("/members");
 
+    public string MembersFlagged => $"{Members}/flagged";
+
     public string PaymentCreate => $"{Payments}/new";
 
     public string Payments => Path("/payments");

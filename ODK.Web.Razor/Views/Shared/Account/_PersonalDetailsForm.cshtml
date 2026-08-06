@@ -11,6 +11,13 @@
     var chapter = RequestStore.ChapterOrDefault;
 }
 
+@if (member == null)
+{
+    @* Account creation only - odk.recaptcha.js fills this before submit (see the _Recaptcha script partial on
+       the create/join pages). Not rendered when editing an existing member. *@
+    @Html.HiddenFor(x => x.Recaptcha, new { data_recaptcha_token = "" })
+}
+
 <div class="form-group mb-3 @(member == null ? "required" : null)">
     @Html.LabelFor(x => x.EmailAddress, new { @class = "form-label" })
 

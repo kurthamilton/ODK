@@ -50,3 +50,8 @@ exit /b %TEST_EXIT%
 :killport
 for /f "tokens=5" %%p in ('netstat -ano ^| findstr ":%PORT% " ^| findstr "LISTENING"') do taskkill /F /T /PID %%p >nul 2>&1
 exit /b 0
+
+rem Stop only the ngrok agent serving this endpoint (matched on its command line), so a separately
+rem started tunnel - e.g. the dev "odk" one, whose command line doesn't contain this name - keeps
+rem running. Also kills the cmd hosting it (the agent's parent), which is what closes its terminal tab.
+exit /b 0

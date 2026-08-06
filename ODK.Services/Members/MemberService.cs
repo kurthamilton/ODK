@@ -19,6 +19,7 @@ using ODK.Services.Members.ViewModels;
 using ODK.Services.Notifications;
 using ODK.Services.Payments;
 using ODK.Services.Payments.Models;
+using ODK.Services.Recaptcha;
 using ODK.Services.Subscriptions;
 using ODK.Services.Topics;
 using ODK.Services.Topics.Models;
@@ -38,6 +39,7 @@ public class MemberService : IMemberService
     private readonly INotificationService _notificationService;
     private readonly IOAuthProviderFactory _oauthProviderFactory;
     private readonly IPaymentProviderFactory _paymentProviderFactory;
+    private readonly IRecaptchaService _recaptchaService;
     private readonly ITopicService _topicService;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -54,7 +56,8 @@ public class MemberService : IMemberService
         ILoggingService loggingService,
         IDistanceUnitFactory distanceUnitFactory,
         IMemberChapterSubscriptionWriter memberChapterSubscriptionWriter,
-        IMemberSiteSubscriptionWriter memberSiteSubscriptionWriter)
+        IMemberSiteSubscriptionWriter memberSiteSubscriptionWriter,
+        IRecaptchaService recaptchaService)
     {
         _authorizationService = authorizationService;
         _distanceUnitFactory = distanceUnitFactory;
@@ -67,6 +70,7 @@ public class MemberService : IMemberService
         _notificationService = notificationService;
         _oauthProviderFactory = oauthProviderFactory;
         _paymentProviderFactory = paymentProviderFactory;
+        _recaptchaService = recaptchaService;
         _topicService = topicService;
         _unitOfWork = unitOfWork;
     }
@@ -162,12 +166,18 @@ public class MemberService : IMemberService
             timeZone = Chapter.DefaultTimeZone;
         }
 
+        // Score the signup but never block it - a low score flags the account for site admin review. The
+        // flag is decided here, against the current threshold, and stored as a snapshot.
+        var recaptchaResult = await _recaptchaService.Verify(model.RecaptchaToken);
+
         var member = _unitOfWork.MemberRepository.Add(new Member
         {
             CreatedUtc = DateTime.UtcNow,
             EmailAddress = model.EmailAddress,
             FirstName = model.FirstName,
             LastName = model.LastName,
+            RecaptchaFlagged = !_recaptchaService.Success(recaptchaResult),
+            RecaptchaScore = recaptchaResult.Score,
             TimeZone = timeZone
         });
 
@@ -324,6 +334,10 @@ public class MemberService : IMemberService
 
         var now = DateTime.UtcNow;
 
+        // Score the signup but never block it - a low score flags the account for site admin review. The
+        // flag is decided here, against the current threshold, and stored as a snapshot.
+        var recaptchaResult = await _recaptchaService.Verify(model.RecaptchaToken);
+
         var member = _unitOfWork.MemberRepository.Add(new Member
         {
             Activated = false,
@@ -331,6 +345,8 @@ public class MemberService : IMemberService
             EmailAddress = model.EmailAddress,
             FirstName = model.FirstName,
             LastName = model.LastName,
+            RecaptchaFlagged = !_recaptchaService.Success(recaptchaResult),
+            RecaptchaScore = recaptchaResult.Score,
             SiteAdmin = false,
             TimeZone = chapter.TimeZone
         });

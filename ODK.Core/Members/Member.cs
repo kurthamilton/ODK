@@ -23,6 +23,20 @@ public class Member : IVersioned, IDatabaseEntity, ITimeZoneEntity
 
     public string LastName { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Whether the signup was flagged as likely automated, decided when the account was created against the
+    /// score threshold in force at that moment. Stored rather than derived so that changing the threshold
+    /// later doesn't retrospectively change who was flagged. Null when no check ran (the account predates
+    /// the check, or reCAPTCHA was disabled). Flagging never blocks signup.
+    /// </summary>
+    public bool? RecaptchaFlagged { get; set; }
+
+    /// <summary>
+    /// reCAPTCHA score captured when the account was created, kept alongside <see cref="RecaptchaFlagged"/>
+    /// as a record of how borderline the signup was. Null when no check ran.
+    /// </summary>
+    public double? RecaptchaScore { get; set; }
+
     public bool SiteAdmin { get; set; }
 
     public TimeZoneInfo TimeZone

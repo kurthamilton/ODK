@@ -17,6 +17,8 @@ public class RecaptchaService : IRecaptchaService
         _settings = settings;
     }
 
+    public bool Enabled => _settings.Enabled;
+
     public string GetSiteKey() => _settings.SiteKey;
 
     public bool Success(RecaptchaResult response)
@@ -24,6 +26,17 @@ public class RecaptchaService : IRecaptchaService
 
     public async Task<RecaptchaResult> Verify(string token)
     {
+        // Switched off for this environment (e2e): pass without calling Google, which has no keys configured
+        // and would fail verification. Guarded here so no caller can forget to check.
+        if (!_settings.Enabled)
+        {
+            return new RecaptchaResult
+            {
+                Score = 1,
+                Success = true
+            };
+        }
+
         var postContent = new FormUrlEncodedContent(new Dictionary<string, string>
         {
             { "secret", _settings.SecretKey },

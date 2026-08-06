@@ -618,6 +618,31 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         };
     }
 
+    public async Task<SiteAdminFlaggedMembersViewModel> GetSiteAdminFlaggedMembersViewModel(
+        IMemberServiceRequest request)
+    {
+        var members = await GetSiteAdminRestrictedContent(request,
+            x => x.MemberRepository
+                .Query(x => x.Flagged())
+                .GetAll());
+
+        return new SiteAdminFlaggedMembersViewModel
+        {
+            Rows = members
+                .OrderByDescending(x => x.CreatedUtc)
+                .Select(x => new SiteAdminFlaggedMembersRowViewModel
+                {
+                    Activated = x.Activated,
+                    CreatedUtc = x.CreatedUtc,
+                    EmailAddress = x.EmailAddress,
+                    FullName = x.FullName,
+                    MemberId = x.Id,
+                    RecaptchaScore = x.RecaptchaScore ?? 0
+                })
+                .ToArray()
+        };
+    }
+
     public async Task<ServiceResult> ImportMembers(IMemberChapterAdminServiceRequest request, IReadOnlyCollection<MemberImportModel> members)
     {
         var (platform, chapter) = (request.Platform, request.Chapter);

@@ -300,6 +300,7 @@ public static class DependencyRegistrar
 
         services.AddSingleton(new RecaptchaServiceSettings
         {
+            Enabled = recaptcha.Enabled,
             ScoreThreshold = recaptcha.ScoreThreshold,
             SecretKey = recaptcha.SecretKey,
             SiteKey = recaptcha.SiteKey,

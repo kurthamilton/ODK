@@ -12932,6 +12932,11 @@ footer {
     display: none;
   }
 }
+.navbar--no-menu .account-links--right {
+  position: static;
+  margin-left: auto;
+}
+
 .navbar--group {
   background-color: var(--odk-bg-level-2);
 }

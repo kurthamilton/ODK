@@ -1,0 +1,10 @@
+﻿@page "/siteadmin/members/flagged"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@model MembersFlaggedModel
+@{
+    Layout = "_SiteAdminLayout";
+    Model.Title = "Flagged members | SiteAdmin";
+}
+
+@await Html.PartialAsync("SiteAdmin/_FlaggedMembersContent")

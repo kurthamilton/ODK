@@ -11,4 +11,6 @@ public class MemberCreateProfile : MemberChapterProfileUpdateModel
     public required byte[] ImageData { get; set; }
 
     public required string LastName { get; set; }
+
+    public string RecaptchaToken { get; set; } = string.Empty;
 }
