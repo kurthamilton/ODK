@@ -1,12 +1,11 @@
 ﻿@using ODK.Services.Subscriptions.ViewModels
-@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @model SiteSubscriptionCheckoutViewModel
-    
+
 <section class="section" data-odk-component="_ChapterSubscriptionCheckoutContent">
-    <div id="checkout"
-            data-stripe="@Model.PaymentSettings.ApiPublicKey"
-            data-stripe-checkout="@Model.ClientSecret">
-        <!-- Checkout will insert the payment form here -->
-    </div>
+    @await Html.PartialAsync("Components/_StripeCheckout", new StripeCheckoutViewModel
+    {
+        ApiPublicKey = Model.PaymentSettings.ApiPublicKey,
+        ClientSecret = Model.ClientSecret
+    })    
 </section>

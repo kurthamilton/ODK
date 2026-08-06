@@ -1,0 +1,10 @@
+﻿@using ODK.Web.Razor.Models.Components
+@model StripeCheckoutViewModel
+
+<div data-odk-component="_StripeCheckout">
+    <div id="checkout"
+         data-stripe="@Model.ApiPublicKey"
+         data-stripe-checkout="@Model.ClientSecret">
+        <!-- Checkout will insert the payment form here -->
+    </div>
+</div>
