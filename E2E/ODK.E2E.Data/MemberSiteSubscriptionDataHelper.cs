@@ -50,4 +50,18 @@ public class MemberSiteSubscriptionDataHelper : DataHelperBase
         await using var builder = Builder(sql).AddParameter("@memberId", memberId);
         return await builder.ExecuteScalar<DateTime?>();
     }
+
+    /// <summary>
+    /// The payment provider's subscription id on the member's current record, or null if they have no
+    /// current record or it was not created by a purchase. Cancellation is driven entirely through the
+    /// provider using this id, so a test polls for it rather than for the expiry.
+    /// </summary>
+    public async Task<string?> GetExternalId(Guid memberId)
+    {
+        const string sql =
+            "SELECT ExternalId FROM MemberSiteSubscriptionLog WHERE MemberId = @memberId AND IsCurrent = 1";
+
+        await using var builder = Builder(sql).AddParameter("@memberId", memberId);
+        return await builder.ExecuteScalar<string?>();
+    }
 }

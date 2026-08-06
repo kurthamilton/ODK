@@ -2,7 +2,8 @@
 @model ODK.Web.Razor.Models.SiteAdmin.EmailContentViewModel
 
 <form method="post">
-    
+    @Html.AntiForgeryToken()
+
     <div class="form-check mb-3">
         @Html.CheckBox("overridable", Model.Email.Overridable, new { @class = "form-check-input" })
         <label class="form-check-label" for="overridable">

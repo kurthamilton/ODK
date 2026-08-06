@@ -111,6 +111,8 @@
     {
         <div class="mb-3">
             <form method="post">
+                @Html.AntiForgeryToken()
+
                 <p>
                     <button class="btn btn-danger" onclick="return confirm('Are you sure you want to cancel your subscription?');">
                         Cancel subscription
