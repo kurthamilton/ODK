@@ -50,6 +50,13 @@ Rule of thumb: **a literal `action` attribute suppresses the auto-token, so thos
 need an explicit `@Html.AntiForgeryToken()`.** This project posts most mutating forms to controller
 endpoints via a literal `action` (the Post/Redirect/Get split), so most forms carry an explicit token.
 
+**The table above applies to `Pages/**` only.** `Views/_ViewImports.cshtml` deliberately registers just
+`ScriptTagHelper` and `LinkTagHelper` (for `asp-append-version`), *not* `Microsoft.AspNetCore.Mvc.TagHelpers`
+wholesale, so the Form Tag Helper never runs in the shared partials under `Views/**`. Nothing auto-emits a
+token there: **every** `<form method="post">` in a `Views/**` partial needs its own
+`@Html.AntiForgeryToken()`, literal `action` or not. Do not widen that file to `@addTagHelper *` — it would
+add a second token to every no-`action` form in `Views/**` and 400 them all.
+
 ### AJAX POSTs
 
 A `fetch(..., { method: 'POST' })` has no form field, so it must send the token as a header. The layout
