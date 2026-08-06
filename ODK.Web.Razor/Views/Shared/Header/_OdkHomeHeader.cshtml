@@ -38,16 +38,10 @@
         .GroupBy(x => countryContinentDictionary[x.CountryId])
         .ToDictionary(x => x.Key, x => x.OrderBy(y => y.Name).ToArray());
 
-    var chapters = Model.Chapters;
-    var menuItems = chapters
-        .OrderBy(x => x.Name)
-        .Select(c => new MenuItem
-        {
-            ExternalLink = !string.IsNullOrEmpty(c.RedirectUrl) ? c.RedirectUrl : null,
-            Link = string.IsNullOrEmpty(c.RedirectUrl) ? OdkRoutes.Groups.Group(c) : null,
-            Text = c.GetDisplayName(platform)
-        })
-        .ToArray();
+    // The chapter list is the home page's hero-style nav - the continents are columnated there (see
+    // _OdkHomeContent and the .home-page styles). Every other page that uses this header - contact,
+    // pricing, site admin - wants the banner only, so the nav is left off entirely.
+    var isHomePage = Context.Request.Path == "/";
 }
 
 @await Html.PartialAsync("Header/_Header", new HeaderViewModel()
@@ -63,7 +57,7 @@
         CssClass = "navbar--home",
         Member = member,
         UseOffcanvas = true,
-        MenuItems = continents
+        MenuItems = !isHomePage ? [] : continents
             .Select(continent => new MenuItemGroup
             {
                 MenuItems = chaptersByContinent[continent]

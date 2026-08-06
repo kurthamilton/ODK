@@ -4,6 +4,7 @@
 1. Install the latest version of .NET
 2. Install the latest version of SQL Server
 3. Take a backup of the prod DB and restore locally
+4. Install [ngrok](https://ngrok.com/download) and create `ngrok.yml` in the repo root (see [ngrok](#ngrok))
 
 ## Apps
 The project runs two different platforms based on the base URL.
@@ -18,6 +19,41 @@ A Meetup-style platform currently under development.
 Run `run-odk.bat` to run the ODK platform or `run-gs.bat` to run the Group Squirrel platform.
 
 The batch file spawns two tabs: the `dotnet` process in the main tab and a sass builder in the other.
+
+## ngrok
+[ngrok](https://ngrok.com) exposes a local app on a public URL, so third parties can reach it — needed for
+anything that calls back in (payment/email webhooks) or that validates the request origin (reCAPTCHA).
+
+Two tunnels are defined, one per local app:
+
+| Tunnel | Local app | Started by |
+|---|---|---|
+| `odk` | `http://localhost:8123` (dev) | `run.ngrok.odk.bat` (repo root) |
+| `odk-e2e` | `http://localhost:8125` (e2e) | `E2E/script.run.ngrok.e2e.bat`, also opened as a third tab by `E2E/script.run.tests.bat` |
+
+Both read `ngrok.yml` in the **repo root**. That file is gitignored (it holds your auth token), so create it
+yourself with this structure, substituting your ngrok auth token and the reserved URL for each endpoint:
+
+```yaml
+version: 3
+
+agent:
+  authtoken: <AUTH_TOKEN>
+
+endpoints:
+  - name: odk
+    url: <NGROK_URL>
+    upstream:
+      url: http://localhost:8123
+
+  - name: odk-e2e
+    url: <NGROK_URL>
+    upstream:
+      url: http://localhost:8125
+```
+
+YAML is indentation-sensitive: within each endpoint, `name`, `url` and `upstream` must line up in the same
+column, and `upstream`'s own `url` is indented one level further.
 
 ## CSS
 `.css` files are compiled into `wwwroot/css` from the `.scss` files in `wwwroot/scss`.

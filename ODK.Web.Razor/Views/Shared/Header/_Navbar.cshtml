@@ -67,6 +67,14 @@
         cssClasses.Add("navbar-expand-lg");
     }
 
+    var hasMenuItems = Model.MenuItems.Any(x => x.MenuItems.Any(y => !y.Hidden));
+    if (!hasMenuItems)
+    {
+        // Nothing in flow to give the navbar height (the account links are absolutely positioned), so the
+        // page content would ride up under them - see .navbar--no-menu.
+        cssClasses.Add("navbar--no-menu");
+    }
+
     Func<object?, IHtmlContent> renderMenuGroups = @<text>
         @for (var i = 0; i < Model.MenuItems.Count; i++)
         {
@@ -110,8 +118,10 @@
 
 <nav class="navbar @string.Join(' ', cssClasses)">
     <div class="position-relative @(Model.Fluid ? "container-fluid" : "container-md")">
-        <div class="d-flex align-items-center">
-            @if (Model.MenuItems.Any(x => x.MenuItems.Any(y => !y.Hidden)))    
+        @* With no menu items this row holds only the account links, and as a flex item it would shrink to
+           their width - leaving nothing for the auto margin to push against. Grow it so they stay right. *@
+        <div class="d-flex align-items-center @(!hasMenuItems ? "flex-grow-1" : null)">
+            @if (hasMenuItems)
             {
                 <button class="navbar-toggler @(Model.MenuItems.Count == 0 ? "invisible" : "")"
                         type="button" data-bs-toggle="@(Model.UseOffcanvas ? "offcanvas" : "collapse")" data-bs-target="#@id"
@@ -137,21 +147,26 @@
             }
         </div>
 
-        @if (Model.UseOffcanvas)
+        @* With no menu items (e.g. the DK header off the home page) neither container is rendered, so no
+           empty offcanvas/collapse is left in the DOM. The account links above still render. *@
+        @if (hasMenuItems)
         {
-            @await Html.PartialAsync("Components/_Offcanvas", new OffcanvasViewModel
+            if (Model.UseOffcanvas)
             {
-                Id = id,
-                Breakpoint = Model.Breakpoint,
-                Position = "end",
-                ContentFunc = renderMenuGroups
-            })
-        }
-        else
-        {
-            <div class="collapse navbar-collapse flex-column" id="@id">
-                @renderMenuGroups(null)
-            </div>
+                @await Html.PartialAsync("Components/_Offcanvas", new OffcanvasViewModel
+                {
+                    Id = id,
+                    Breakpoint = Model.Breakpoint,
+                    Position = "end",
+                    ContentFunc = renderMenuGroups
+                })
+            }
+            else
+            {
+                <div class="collapse navbar-collapse flex-column" id="@id">
+                    @renderMenuGroups(null)
+                </div>
+            }
         }
     </div>
 </nav>

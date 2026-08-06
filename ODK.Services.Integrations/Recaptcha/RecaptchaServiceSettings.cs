@@ -2,6 +2,8 @@
 
 public class RecaptchaServiceSettings
 {
+    public bool Enabled { get; init; } = true;
+
     public required double ScoreThreshold { get; init; }
 
     public required string SecretKey { get; init; }

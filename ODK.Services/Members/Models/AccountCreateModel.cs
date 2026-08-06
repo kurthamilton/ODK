@@ -22,5 +22,7 @@ public class AccountCreateModel
 
     public required string? OAuthToken { get; init; }
 
+    public required string RecaptchaToken { get; init; }
+
     public required IReadOnlyCollection<Guid> TopicIds { get; init; }
 }

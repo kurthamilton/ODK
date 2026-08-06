@@ -76,6 +76,11 @@ public interface IMemberAdminService
         Guid id,
         MemberImageUpdateModel model);
 
+    /// <summary>
+    /// Site-admin only: members whose signup scored below the reCAPTCHA threshold, newest first.
+    /// </summary>
+    Task<SiteAdminFlaggedMembersViewModel> GetSiteAdminFlaggedMembersViewModel(IMemberServiceRequest request);
+
     Task<ServiceResult> UpdateMemberSubscription(
         IMemberChapterAdminServiceRequest request,
         Guid memberId,

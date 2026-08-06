@@ -102,6 +102,16 @@ $navbar-light-separator: rgba(0, 0, 0, 0.5);
     }
 }
 
+// A navbar with no menu items has no in-flow content - the toggler and menu container aren't rendered, and
+// the account links are absolutely positioned - so it would collapse and let the page content ride up under
+// them. Put the account links back in flow (kept right by the auto margin) so they size the navbar.
+.navbar--no-menu {
+    .account-links--right {
+        position: static;
+        margin-left: auto;
+    }
+}
+
 .navbar--group {
     background-color: var(--odk-bg-level-2);
 

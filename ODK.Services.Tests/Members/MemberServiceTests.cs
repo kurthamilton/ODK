@@ -18,6 +18,7 @@ using ODK.Services.Members;
 using ODK.Services.Members.Models;
 using ODK.Services.Notifications;
 using ODK.Services.Payments;
+using ODK.Services.Recaptcha;
 using ODK.Services.Subscriptions;
 using ODK.Services.Tests.Helpers;
 using ODK.Services.Topics;
@@ -245,6 +246,7 @@ public static class MemberServiceTests
         NewTopics = [],
         OAuthProviderType = null,
         OAuthToken = null,
+        RecaptchaToken = string.Empty,
         TopicIds = []
     };
 
@@ -269,7 +271,17 @@ public static class MemberServiceTests
             Mock.Of<ILoggingService>(),
             new DistanceUnitFactory(),
             new MemberChapterSubscriptionWriter(unitOfWork),
-            new MemberSiteSubscriptionWriter(unitOfWork));
+            new MemberSiteSubscriptionWriter(unitOfWork),
+            CreateMockRecaptchaService());
+    }
+
+    private static IRecaptchaService CreateMockRecaptchaService()
+    {
+        var recaptchaService = new Mock<IRecaptchaService>();
+        recaptchaService
+            .Setup(x => x.Verify(It.IsAny<string>()))
+            .ReturnsAsync(new RecaptchaResult { Score = 1, Success = true });
+        return recaptchaService.Object;
     }
 
     private static MockOdkContext CreateMockOdkContext() => new MockOdkContext();

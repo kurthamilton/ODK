@@ -22,6 +22,12 @@ public class MemberQueryBuilder : DatabaseEntityQueryBuilder<Member, IMemberQuer
 
     protected override IMemberQueryBuilder Builder => this;
 
+    public IMemberQueryBuilder Flagged()
+    {
+        Query = Query.Where(x => x.RecaptchaFlagged == true);
+        return this;
+    }
+
     public IMemberQueryBuilder HasEmailAddress(string emailAddress)
     {
         Query = Query.Where(x => x.EmailAddress == emailAddress);

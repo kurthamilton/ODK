@@ -40,14 +40,16 @@ powershell -File ODK.E2E.Tests\bin\Debug\net10.0\playwright.ps1 install
 
 ## Running the tests
 
-Scripts open a Windows Terminal with two tabs (app + tests) and tear the app down after:
+Scripts open a Windows Terminal with three tabs (app + tests + ngrok) and tear the app down after:
 
 - `script.run.tests.default.bat` — Default platform only
 - `script.run.tests.dk.bat` — DrunkenKnitwits only
 - `script.run.tests.bat [Default|DrunkenKnitwits|E2E]` — generic (default `E2E` = both)
 
 Under the hood: `dotnet test --filter "TestCategory=<platform>"`. `script.e2e.bat <port> <csproj> [category]`
-is the generic wait-for-ready → run → kill-port runner.
+is the generic wait-for-ready → run → kill-port runner. The ngrok tab is left running — ngrok owns its
+console, so tearing it down from another tab just garbles the output; close the terminal window when
+done. Its tunnel config lives in the gitignored root `ngrok.yml` (see the root README).
 
 ## Targeting a platform
 

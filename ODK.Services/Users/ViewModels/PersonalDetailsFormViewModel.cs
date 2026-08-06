@@ -26,4 +26,12 @@ public class PersonalDetailsFormViewModel
     [Required]
     [DisplayName("Privacy policy")]
     public bool PrivacyPolicy { get; set; }
+
+    /// <summary>
+    /// reCAPTCHA token, populated client-side by odk.recaptcha.js. Deliberately nullable and NOT [Required]:
+    /// a non-nullable string is implicitly required by model validation, which would block signup whenever
+    /// no token is posted - i.e. always in the e2e environment, where reCAPTCHA is disabled. A missing token
+    /// is handled server-side instead (verification fails and the member is flagged, never blocked).
+    /// </summary>
+    public string? Recaptcha { get; set; }
 }

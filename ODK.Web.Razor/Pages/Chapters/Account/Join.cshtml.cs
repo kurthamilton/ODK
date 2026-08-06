@@ -40,6 +40,7 @@ public class JoinModel : OdkPageModel
             FirstName = personalDetailsViewModel.FirstName,
             ImageData = imageData,
             LastName = personalDetailsViewModel.LastName,
+            RecaptchaToken = personalDetailsViewModel.Recaptcha ?? string.Empty,
             Properties = profileViewModel.Properties.Select(x => new MemberPropertyUpdateModel
             {
                 ChapterPropertyId = x.ChapterPropertyId,

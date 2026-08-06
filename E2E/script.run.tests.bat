@@ -1,7 +1,9 @@
 @echo off
-rem Runs an E2E suite for one platform (or all). Opens a single Windows Terminal window with two tabs:
+rem Runs an E2E suite for one platform (or all). Opens a single Windows Terminal window with three tabs:
 rem   - "e2e app"   : the app in the "e2e" environment on both ports (script.run.app.e2e.bat)
 rem   - "e2e tests" : waits for the app, runs the tests for the given category, then stops the app.
+rem   - "e2e ngrok" : public tunnel to the e2e app, for testing integrations that call back in
+rem                   (see the ngrok section in the root README for the gitignored ngrok.yml).
 rem
 rem Usage: script.run.tests.bat [category]   (category: Default | DrunkenKnitwits | E2E; default E2E)
 setlocal
@@ -21,4 +23,12 @@ rem Free both ports in case a previous run left the app behind (before the app t
 for /f "tokens=5" %%p in ('netstat -ano ^| findstr ":8125 " ^| findstr "LISTENING"') do taskkill /F /T /PID %%p >nul 2>&1
 for /f "tokens=5" %%p in ('netstat -ano ^| findstr ":8126 " ^| findstr "LISTENING"') do taskkill /F /T /PID %%p >nul 2>&1
 
-wt new-tab --title "e2e app" -d "%ROOT%" cmd /k "script.run.app.e2e.bat" ; new-tab --title "e2e tests (%CATEGORY%)" -d "%ROOT%" cmd /k "script.e2e.bat %PORT% ODK.E2E.Tests\ODK.E2E.Tests.csproj %CATEGORY%"
+wt new-tab --title "e2e app" -d "%ROOT%" cmd /k "script.run.app.e2e.bat" ; new-tab --title "e2e tests (%CATEGORY%)" -d "%ROOT%" cmd /k "script.e2e.bat %PORT% ODK.E2E.Tests\ODK.E2E.Tests.csproj %CATEGORY%" ; new-tab --title "e2e ngrok" -d "%ROOT%" cmd /k "script.run.ngrok.e2e.bat"
+
+rem This launcher window closing immediately is normal - it just hands off to Windows Terminal. If the
+rem terminal never appears, wt itself failed, so surface that instead of vanishing silently.
+if errorlevel 1 (
+    echo.
+    echo Failed to launch Windows Terminal ^(wt exit code %errorlevel%^).
+    pause
+)

@@ -12,3 +12,4 @@ app_data
 
 # E2E test local overrides
 ODK.E2ETests/appsettings.local.json
+/ngrok.yml
