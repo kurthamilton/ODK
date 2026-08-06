@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.Net.Http.Headers;
 using ODK.Services.Logging;
 using ODK.Web.Razor.Services;
 
@@ -10,11 +11,13 @@ namespace ODK.Web.Razor.Authentication;
 /// <see cref="IAntiforgery.ValidateRequestAsync"/>; the antiforgery filter catches the resulting
 /// <see cref="AntiforgeryValidationException"/> and turns it into a bare 400 before it reaches any
 /// middleware, and the framework itself only logs it at Information - so a failed CSRF check is otherwise
-/// invisible ("400 with nothing logged"). This logs the failure with request context at Warning, then
+/// invisible ("400 with nothing logged"). This logs the failure with request context at Error, then
 /// rethrows so the 400 response is unchanged.
 /// </summary>
 public class LoggingAntiforgery : IAntiforgery
 {
+    private const string SecFetchSiteHeaderName = "Sec-Fetch-Site";
+
     private readonly IAntiforgery _inner;
     private readonly ILogger<LoggingAntiforgery> _logger;
 
@@ -48,16 +51,31 @@ public class LoggingAntiforgery : IAntiforgery
             var loggingService = httpContext.RequestServices.GetRequiredService<ILoggingService>();
             if (!loggingService.IgnoreException(exception, HttpRequestContext.Create(httpContext.Request)))
             {
+                // A browser always sends Origin on a POST navigation and Sec-Fetch-Site on a same-site
+                // submit; a scripted POST typically sends neither, whatever its user agent claims. Referer
+                // names the page whose form failed. Together with the exception message (which distinguishes
+                // a missing request token from a missing cookie) these separate a form rendered without a
+                // token from a bot posting blind.
                 var request = httpContext.Request;
                 _logger.LogError(
                     exception,
-                    "Antiforgery (CSRF) validation failed for {Method} {Path}. User={User}",
+                    "Antiforgery (CSRF) validation failed for {Method} {Path}. User={User}, Origin={Origin}, " +
+                    "SecFetchSite={SecFetchSite}, Referer={Referer}",
                     request.Method,
                     request.Path,
-                    httpContext.User.Identity?.Name ?? "(anonymous)");
+                    httpContext.User.Identity?.Name ?? "(anonymous)",
+                    GetHeader(request.Headers, HeaderNames.Origin),
+                    GetHeader(request.Headers, SecFetchSiteHeaderName),
+                    GetHeader(request.Headers, HeaderNames.Referer));
             }
 
             throw;
         }
+    }
+
+    private static string GetHeader(IHeaderDictionary headers, string name)
+    {
+        var value = headers[name].ToString();
+        return !string.IsNullOrEmpty(value) ? value : "(none)";
     }
 }

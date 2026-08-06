@@ -13056,32 +13056,9 @@ footer {
   --bs-offcanvas-width: 500px;
   --bs-offcanvas-zindex: 1091;
 }
-.offcanvas .offcanvas-body {
-  overscroll-behavior: contain;
-}
-.offcanvas .offcanvas-footer {
-  padding-bottom: env(safe-area-inset-bottom);
-}
 .offcanvas hr {
   margin-top: 0.5rem;
   margin-bottom: 0.5rem;
-}
-.offcanvas .offcanvas-scroll-fade {
-  position: sticky;
-  bottom: 0;
-  z-index: 2;
-  height: 2.5rem;
-  margin-top: -2.5rem;
-  pointer-events: none;
-  background: linear-gradient(to top, var(--bs-offcanvas-bg), transparent);
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-}
-.offcanvas .offcanvas-scroll-fade__icon {
-  color: var(--bs-secondary-color);
-  line-height: 1;
-  animation: offcanvas-scroll-hint 1.6s ease-in-out infinite;
 }
 .offcanvas.has-footer .offcanvas-body {
   padding-bottom: 0;
@@ -13096,21 +13073,6 @@ footer {
   padding-right: var(--bs-offcanvas-padding-x);
 }
 
-@keyframes offcanvas-scroll-hint {
-  0%, 100% {
-    transform: translateY(0);
-    opacity: 0.55;
-  }
-  50% {
-    transform: translateY(0.2rem);
-    opacity: 1;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .offcanvas-scroll-fade__icon {
-    animation: none;
-  }
-}
 .overlay {
   background-color: #fff;
   height: 100%;
