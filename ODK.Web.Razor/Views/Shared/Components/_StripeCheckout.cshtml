@@ -1,0 +1,24 @@
+﻿@using ODK.Web.Razor.Models.Components
+@model StripeCheckoutViewModel
+
+@* Stripe Elements against a Checkout Session (ui_mode "elements"). Unlike the embedded checkout page this
+   replaced, the payment form renders inside our own markup, so the surrounding layout and the submit button
+   are ours to style - only the fields inside [data-odk-stripe-payment-element] are Stripe's, themed via the
+   Appearance API in odk.stripe.js. Stripe redirects to the session's return_url on success; the submit
+   handler only ever sees immediate errors. *@
+<div data-odk-component="_StripeCheckout">
+    <form data-odk-stripe-checkout="@Model.ClientSecret"
+          data-odk-stripe-key="@Model.ApiPublicKey">
+
+        <div data-odk-stripe-payment-element></div>
+
+        <div class="alert alert-danger mt-3 d-none" role="alert" data-odk-stripe-error></div>
+
+        @* Enabled by the session 'change' event once Stripe reports the form can be confirmed. *@
+        <button type="submit" class="btn btn-primary mt-3" data-odk-stripe-submit disabled>
+            <span class="spinner-border spinner-border-sm me-1 d-none" aria-hidden="true"
+                  data-odk-stripe-spinner></span>
+            Pay now
+        </button>
+    </form>
+</div>

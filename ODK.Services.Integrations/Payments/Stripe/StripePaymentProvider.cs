@@ -366,7 +366,10 @@ public class StripePaymentProvider : IPaymentProvider
 
         var session = await service.CreateAsync(new SessionCreateOptions
         {
-            UiMode = "embedded_page",
+            // "elements" renders the payment fields as Stripe Elements inside our own page (see the
+            // _StripeCheckout component), rather than Stripe's own embedded checkout page. The session is
+            // otherwise identical - same line items, mode, return_url and Connect settings.
+            UiMode = "elements",
             LineItems = new List<SessionLineItemOptions>
             {
                 new SessionLineItemOptions

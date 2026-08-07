@@ -1,4 +1,5 @@
 ﻿@using ODK.Services.Events.ViewModels
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Events
 @model EventCheckoutPageViewModel
 
@@ -10,9 +11,9 @@
 })
 
 <section class="section">
-    <div id="checkout"
-         data-stripe="@Model.PaymentSettings.ApiPublicKey"
-         data-stripe-checkout="@Model.ClientSecret">
-        <!-- Checkout will insert the payment form here -->
-    </div>
+    @await Html.PartialAsync("Components/_StripeCheckout", new StripeCheckoutViewModel
+    {
+        ApiPublicKey = Model.PaymentSettings.ApiPublicKey,
+        ClientSecret = Model.ClientSecret
+    })    
 </section>

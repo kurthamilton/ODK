@@ -1,8 +1,6 @@
 ﻿@page "/{chapterName}/account/subscription/{id:guid}/checkout"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
-@using ODK.Core
-@using ODK.Core.Payments
 @using ODK.Services.Members
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
@@ -48,11 +46,11 @@
         BodyContentFunc = 
             @<div>
                 <section class="section">
-                    <div id="checkout"
-                         data-stripe="@viewModel.PaymentSettings.ApiPublicKey"
-                         data-stripe-checkout="@viewModel.ClientSecret">
-                        <!-- Checkout will insert the payment form here -->
-                    </div>
+                    @await Html.PartialAsync("Components/_StripeCheckout", new StripeCheckoutViewModel
+                    {
+                        ApiPublicKey = viewModel.PaymentSettings.ApiPublicKey,
+                        ClientSecret = viewModel.ClientSecret
+                    })                    
                 </section>
             </div>
     })
