@@ -22,6 +22,7 @@
     @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
     {
         Class = "btn btn-primary",
+        Icon = IconType.Plus,
         QueryString = $"venueId={Model.Venue.Id}",
         Route = OdkRoutes.GroupAdmin.EventCreate(Model.Chapter),
         Text = "Create event"

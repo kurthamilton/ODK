@@ -17,6 +17,7 @@
     @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
     {
         Class = "btn btn-primary",
+        Icon = IconType.Plus,
         Route = OdkRoutes.GroupAdmin.MemberPropertyCreate(Model.Chapter),
         Text = "Create question"
     })

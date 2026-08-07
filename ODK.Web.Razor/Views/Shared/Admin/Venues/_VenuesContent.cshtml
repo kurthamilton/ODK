@@ -10,6 +10,7 @@
     @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
     {
         Class = "btn btn-primary",
+        Icon = IconType.Plus,
         Route = OdkRoutes.GroupAdmin.VenueCreate(Model.Chapter),
         Text = "Create"
     })

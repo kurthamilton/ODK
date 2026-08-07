@@ -1,5 +1,6 @@
 ﻿@using ODK.Core.Payments
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Components
 @model IReadOnlyCollection<SitePaymentSettings>
 @inject IOdkRoutes OdkRoutes
 
@@ -9,7 +10,8 @@
     <section class="section">
         <p>
             <a class="btn btn-primary" href="@OdkRoutes.SiteAdmin.PaymentCreate">
-                Create
+                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Plus))
+                <span>Create</span>
             </a>
         </p>
         <div class="table-responsive">
