@@ -39,7 +39,28 @@ public class GroupAdminRoute
     }
 
     public GroupAdminRoute? GetPermitted(ChapterAdminMember? chapterAdminMember, Member currentMember)
-        => chapterAdminMember.HasAccessTo(Securable, currentMember)
+    {
+        // Default is the "route does not exist on this platform" sentinel — it is never a
+        // destination, and its None securable has no role to compare against.
+        if (IsDefault)
+        {
+            return null;
+        }
+
+        return chapterAdminMember.HasAccessTo(Securable, currentMember)
             ? this
             : Parent?.GetPermitted(chapterAdminMember, currentMember);
+    }
+
+    public bool IsPermitted(ChapterAdminMember? chapterAdminMember, Member currentMember, PlatformType platform)
+        => !IsDefault
+            && (Platform == null || Platform == platform)
+            && chapterAdminMember.HasAccessTo(Securable, currentMember);
+
+    /// <summary>
+    /// Renders the path, so a route written straight into markup as <c>@route</c> emits the URL rather
+    /// than the type name. Every string-typed use is a compile error without <see cref="Path"/> — this
+    /// closes the one context where the compiler cannot help.
+    /// </summary>
+    public override string ToString() => Path;
 }

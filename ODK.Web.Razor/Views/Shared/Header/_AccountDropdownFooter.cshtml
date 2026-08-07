@@ -1,4 +1,7 @@
-﻿@using ODK.Web.Common.Services
+﻿@using ODK.Web.Common.Routes
+@using ODK.Web.Common.Services
+@using ODK.Web.Razor.Models.Components
+@inject IOdkRoutes OdkRoutes
 @inject IRequestStore RequestStore
 @{
     var currentMember = RequestStore.CurrentMemberOrDefault;
@@ -19,11 +22,21 @@
 
     @if (currentMember != null)
     {
+        var currentChapter = RequestStore.ChapterOrDefault;
+
         <hr />
         <div class="list-group list-group-flush list-group-border-0">
             <div class="list-group-item">
                 Signed in as @currentMember.EmailAddress
             </div>
+        </div>
+        <div class="list-group list-group-flush list-group-border-0">
+            <a class="list-group-item list-group-item-action" href="@OdkRoutes.Account.Logout(currentChapter)">
+                <span class="icon">
+                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Logout))
+                </span>
+                <span>Sign Out</span>
+            </a>
         </div>
     }    
 </div>

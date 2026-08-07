@@ -160,7 +160,27 @@ identically. Add a matching `GroupAdminRoutes` helper — it resolves the platfo
 URLs are built through **`IOdkRoutes`** (inject it), not hard-coded strings. Group-admin routes
 live in `ODK.Web.Common/Routes/GroupAdminRoutes.cs`; add a helper there rather than composing paths
 inline. Route helpers carry the `ChapterAdminSecurable` they require, and `_AdminLink` can
-auto-hide/disable based on it (`UnauthorizedBehaviour`).
+auto-hide/disable based on it (`UnauthorizedBehaviour`). Site-admin routes live in
+`SiteAdminRoutes.cs` and return `SiteAdminRoute` — site-admin access is binary, so unlike
+`GroupAdminRoute` there is no securable to carry.
+
+**Admin routes are both strongly typed and enumerable.** The typed accessors (`Events(chapter)`,
+`Venue(chapter, id)`, …) stay the way you build a *specific* URL. On top of them,
+`GroupAdminRoutes.Navigation(chapter)` defines the admin menu tree — the single registry of what the
+admin area contains — and everything that needs to *iterate* admin routes derives from it:
+
+- `PermittedNavigation(chapter, adminMember, currentMember)` filters that tree by securable and
+  platform. `_AdminSideMenu` renders it; a section with no surviving items drops out.
+- `LandingRoute(...)` picks where to send a member with no specific destination — the admin landing
+  page, and `AdminPageModel`'s fallback when bouncing a member off a page. It prefers the events page:
+  both platforms are events platforms, so any role with elevated group privileges can reach it by
+  definition. Otherwise it takes the first permitted page in menu order. **Never fall back to a fixed route** — a member who lacks access
+  to that route is redirected to it, bounced again, and loops. It returns null when no admin page is
+  permitted; that's a 403, not a redirect.
+
+So **adding an admin page means registering it in `Navigation`**, not just adding an accessor —
+otherwise it exists but is unreachable from the menu and invisible to the redirect logic.
+`SiteAdminRoutes.Navigation()` does the same for the site-admin menu (no filtering needed).
 
 ## Services conventions
 

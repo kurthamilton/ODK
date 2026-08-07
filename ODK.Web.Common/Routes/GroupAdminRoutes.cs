@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using ODK.Core.Chapters;
 using ODK.Core.Emails;
+using ODK.Core.Members;
 using ODK.Core.Messages;
 using ODK.Core.Platforms;
 using ODK.Services.Security;
@@ -104,6 +107,43 @@ public class GroupAdminRoutes
         }
     };
 
+    /// <summary>
+    /// Where to send a member who has no specific destination — the admin landing page, and the
+    /// fallback when a member is bounced off a page they cannot see. Prefers the events page: both
+    /// platforms are events platforms, so anyone with elevated group privileges can reach it by
+    /// definition. The menu-order fallback below is for the site admin with no chapter role, and for
+    /// safety if that ever stops holding.
+    /// </summary>
+    /// <remarks>
+    /// A fixed fallback route cannot be used here: a member who lacks access to it is redirected to
+    /// it, bounced again, and loops. Returns null when the member may open no admin page at all —
+    /// callers should treat that as not authorised rather than redirecting anywhere.
+    /// </remarks>
+    public GroupAdminRoute? LandingRoute(
+        Chapter chapter, ChapterAdminMember? adminMember, Member currentMember)
+    {
+        var events = Events(chapter);
+        if (events.IsPermitted(adminMember, currentMember, Platform))
+        {
+            return events;
+        }
+
+        foreach (var section in PermittedNavigation(chapter, adminMember, currentMember))
+        {
+            if (section.Route.IsPermitted(adminMember, currentMember, Platform))
+            {
+                return section.Route;
+            }
+
+            if (section.Items.Count > 0)
+            {
+                return section.Items.First().Route;
+            }
+        }
+
+        return null;
+    }
+
     public GroupAdminRoute Location(Chapter chapter) => Platform switch
     {
         PlatformType.DrunkenKnitwits => GroupAdminRoute.Default,
@@ -189,6 +229,86 @@ public class GroupAdminRoutes
     public GroupAdminRoute Messages(Chapter chapter, MessageStatus status)
         => Messages(chapter).Child($"?status={status}");
 
+    /// <summary>
+    /// The full group admin menu tree, before any permission or platform filtering. This is the single
+    /// definition of what the admin area contains; the side menu and the admin landing redirect both
+    /// derive from it, so a new admin page is registered once here rather than in each consumer.
+    /// </summary>
+    public IReadOnlyCollection<GroupAdminNavSection> Navigation(Chapter chapter) =>
+    [
+        new GroupAdminNavSection
+        {
+            Route = Group(chapter),
+            Text = "Group",
+            Items =
+            [
+                new(Conversations(chapter), "Conversations"),
+                new(Emails(chapter), "Emails"),
+                new(Questions(chapter), "FAQ"),
+                new(Location(chapter), "Location"),
+                new(Messages(chapter), "Messages"),
+                new(Image(chapter), "Picture"),
+                new(Pages(chapter), "Pages"),
+                new(Privacy(chapter), "Privacy"),
+                new(SocialMedia(chapter), "Social media"),
+                new(Subscription(chapter), "Subscription"),
+                new(Texts(chapter), "Texts"),
+                new(Theme(chapter), "Theme"),
+                new(Topics(chapter), "Topics"),
+                new(Delete(chapter), "Delete")
+            ]
+        },
+        new GroupAdminNavSection
+        {
+            Route = Events(chapter),
+            Text = "Events",
+            Items =
+            [
+                new(Venues(chapter), "Venues"),
+                new(EventSettings(chapter), "Settings")
+            ]
+        },
+        new GroupAdminNavSection
+        {
+            Route = Members(chapter),
+            Text = "Members",
+            Items =
+            [
+                new(AdminMembers(chapter), "Admins"),
+                new(MembershipSettings(chapter), "Membership"),
+                new(MemberProperties(chapter), "Profile questions"),
+                new(Subscriptions(chapter), "Subscriptions"),
+                new(MembersEmail(chapter), "Bulk email"),
+                new(MemberApprovals(chapter), "Approvals"),
+                new(MembersImport(chapter), "Import")
+            ]
+        },
+        new GroupAdminNavSection
+        {
+            Route = Payments(chapter),
+            Text = "Payments",
+            Items =
+            [
+                new(PaymentAccount(chapter), "Account")
+            ]
+        },
+        new GroupAdminNavSection
+        {
+            RequiresSiteAdmin = true,
+            Route = SiteAdmin(chapter),
+            Text = "SiteAdmin",
+            Items =
+            [
+                new(SiteAdminMembers(chapter), "Members"),
+                new(SiteAdminPayments(chapter), "Payments"),
+                new(SiteAdminLocation(chapter), "Location"),
+                new(SiteAdminInstagram(chapter), "Instagram"),
+                new(SiteAdminRedirect(chapter), "Redirect"),
+                new(SiteAdminTheme(chapter), "Theme")
+            ]
+        }
+    ];
+
     public GroupAdminRoute Pages(Chapter chapter)
         => Group(chapter).Child("/pages", ChapterAdminSecurable.Pages, PlatformType.Default);
 
@@ -197,6 +317,45 @@ public class GroupAdminRoutes
 
     public GroupAdminRoute Payments(Chapter chapter)
         => Base(chapter).Child("/payments", ChapterAdminSecurable.Payments);
+
+    /// <summary>
+    /// <see cref="Navigation"/> reduced to what this member may open on this platform. A section is
+    /// dropped when neither it nor any of its items survives, so the result is safe to render directly
+    /// and safe to pick a redirect target from.
+    /// </summary>
+    public IReadOnlyCollection<GroupAdminNavSection> PermittedNavigation(
+        Chapter chapter, ChapterAdminMember? adminMember, Member currentMember)
+    {
+        var permitted = new List<GroupAdminNavSection>();
+
+        foreach (var section in Navigation(chapter))
+        {
+            if (section.RequiresSiteAdmin && !currentMember.SiteAdmin)
+            {
+                continue;
+            }
+
+            var items = section.Items
+                .Where(x => x.Route.IsPermitted(adminMember, currentMember, Platform))
+                .ToArray();
+
+            var sectionPermitted = section.Route.IsPermitted(adminMember, currentMember, Platform);
+            if (!sectionPermitted && items.Length == 0)
+            {
+                continue;
+            }
+
+            permitted.Add(new GroupAdminNavSection
+            {
+                Items = items,
+                RequiresSiteAdmin = section.RequiresSiteAdmin,
+                Route = section.Route,
+                Text = section.Text
+            });
+        }
+
+        return permitted;
+    }
 
     public GroupAdminRoute Privacy(Chapter chapter)
         => Group(chapter).Child("/privacy", ChapterAdminSecurable.PrivacySettings);
@@ -212,6 +371,24 @@ public class GroupAdminRoutes
 
     public GroupAdminRoute SiteAdmin(Chapter chapter)
         => Base(chapter).Child("/siteadmin");
+
+    public GroupAdminRoute SiteAdminInstagram(Chapter chapter)
+        => SiteAdmin(chapter).Child("/instagram", platform: PlatformType.DrunkenKnitwits);
+
+    public GroupAdminRoute SiteAdminLocation(Chapter chapter)
+        => SiteAdmin(chapter).Child("/location", platform: PlatformType.DrunkenKnitwits);
+
+    public GroupAdminRoute SiteAdminMembers(Chapter chapter)
+        => SiteAdmin(chapter).Child("/members", platform: PlatformType.DrunkenKnitwits);
+
+    public GroupAdminRoute SiteAdminPayments(Chapter chapter)
+        => SiteAdmin(chapter).Child("/payments", platform: PlatformType.DrunkenKnitwits);
+
+    public GroupAdminRoute SiteAdminRedirect(Chapter chapter)
+        => SiteAdmin(chapter).Child("/redirect", platform: PlatformType.DrunkenKnitwits);
+
+    public GroupAdminRoute SiteAdminTheme(Chapter chapter)
+        => SiteAdmin(chapter).Child("/theme", platform: PlatformType.DrunkenKnitwits);
 
     public GroupAdminRoute SocialMedia(Chapter chapter)
         => Group(chapter).Child("/social-media", ChapterAdminSecurable.SocialMedia);

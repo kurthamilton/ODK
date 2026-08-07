@@ -1,8 +1,5 @@
 ﻿@page "/{chapterName}/admin"
-@using ODK.Web.Common.Routes
 @model IndexModel
 @{
     Layout = "_OdkChapterAdminLayout";
-
-    Response.Redirect(Model.AdminRoutes.Events(Model.Chapter).Path);
 }

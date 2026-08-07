@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
-using ODK.Core.Chapters;
+﻿using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
-using ODK.Services.Security;
 using ODK.Web.Common.Routes;
 
 namespace ODK.Web.Razor.Models.Components;
@@ -24,9 +22,7 @@ public class ChapterAdminMenuItemGroup : List<MenuItem>
     public ChapterAdminMenuItemGroup Add(
         GroupAdminRoute route, string text)
     {
-        if (route.IsDefault ||
-            route.Platform != null && route.Platform != _platform ||
-            !_adminMember.HasAccessTo(route.Securable, _currentMember))
+        if (!route.IsPermitted(_adminMember, _currentMember, _platform))
         {
             return this;
         }

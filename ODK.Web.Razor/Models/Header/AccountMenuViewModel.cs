@@ -7,8 +7,6 @@ public class AccountMenuViewModel
 {
     public required IReadOnlyCollection<Chapter> AdminChapters { get; init; }
 
-    public Chapter? CurrentChapter { get; init; }
-
     public Member? Member { get; init; }
 
     public required IReadOnlyCollection<Chapter> MemberChapters { get; init; }

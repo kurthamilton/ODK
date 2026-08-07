@@ -9,10 +9,6 @@
 @{
     var platform = RequestStore.Platform;
 
-    var defaultChapter = Model.CurrentChapter != null && Model.Member != null && Model.Member.IsMemberOf(Model.CurrentChapter.Id)
-        ? Model.CurrentChapter
-        : Model.MemberChapters.FirstOrDefault();
-
     var adminChapterDictionary = Model.AdminChapters
         .ToDictionary(x => x.Id);
 
@@ -172,17 +168,6 @@
                             </a>
                         </div>                                
                     }                            
-
-                    @*Sign out*@
-                    <hr/>
-                    <div class="list-group list-group-flush list-group-border-0">
-                        <a class="list-group-item list-group-item-action" href="@OdkRoutes.Account.Logout(defaultChapter)">
-                            <span class="icon">
-                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Logout))
-                            </span>
-                            <span>Sign Out</span>
-                        </a>
-                    </div> 
                 </div>,
             FooterFunc = @<div>@await Html.PartialAsync("Header/_AccountDropdownFooter")</div>
         })

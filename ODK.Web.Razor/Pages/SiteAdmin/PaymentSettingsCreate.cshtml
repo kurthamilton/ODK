@@ -1,5 +1,4 @@
 ﻿@page "/siteadmin/payments/new"
-@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.SiteAdmin
 @model PaymentSettingsCreateModel
@@ -12,7 +11,7 @@
 {
     Breadcrumbs = new[]
     {
-        new MenuItem { Link = Model.OdkRoutes.SiteAdmin.Payments, Text = "Payments" },
+        new MenuItem { Link = Model.OdkRoutes.SiteAdmin.Payments.Path, Text = "Payments" },
         new MenuItem { Text = "New" }
     }
 })
