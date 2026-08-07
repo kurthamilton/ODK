@@ -1,6 +1,7 @@
 ﻿@using ODK.Core.Utils
 @using ODK.Services.Payments
 @using ODK.Services.Subscriptions.ViewModels
+@using ODK.Web.Razor.Models.Components
 @model SiteSubscriptionsViewModel
 @{
     var (
@@ -113,8 +114,13 @@
             <form method="post">
                 @Html.AntiForgeryToken()
 
+                @await Html.PartialAsync("Components/_Confirm", new ConfirmViewModel
+                {
+                    Message = "Are you sure you want to cancel your subscription?",
+                    Title = "Cancel subscription"
+                })
                 <p>
-                    <button class="btn btn-danger" onclick="return confirm('Are you sure you want to cancel your subscription?');">
+                    <button class="btn btn-danger">
                         Cancel subscription
                     </button>
                 </p>       

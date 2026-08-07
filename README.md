@@ -16,9 +16,16 @@ The Drunken Knitwits platform, specifically for Drunken Knitwits groups around t
 A Meetup-style platform currently under development.
 
 ## Running locally
-Run `run-odk.bat` to run the ODK platform or `run-gs.bat` to run the Group Squirrel platform.
+Run `run.app.bat`. One process serves **both** platforms — Group Squirrel on
+[localhost:8123](http://localhost:8123) and ODK on [localhost:8124](http://localhost:8124) — with the
+platform resolved from the request URL (the `Platforms` config in `appsettings.Development.json`).
 
-The batch file spawns two tabs: the `dotnet` process in the main tab and a sass builder in the other.
+It opens a Windows Terminal window with two tabs: `app` (`dotnet watch`, hot reload) and `sass` (the SCSS
+watchers). They're separate tabs rather than one `concurrently` process because `concurrently` redirects
+stdin, which silently disables `dotnet watch`'s keyboard shortcuts — in its own tab you keep **Ctrl+R** to
+force a restart when a change isn't picked up or the app doesn't recover from an error.
+
+Use `run.app.simple.bat` for a plain run with no hot reload and no watchers (compiles the SCSS once first).
 
 ## ngrok
 [ngrok](https://ngrok.com) exposes a local app on a public URL, so third parties can reach it — needed for

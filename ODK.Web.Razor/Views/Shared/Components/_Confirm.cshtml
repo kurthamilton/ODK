@@ -1,0 +1,10 @@
+﻿@using ODK.Web.Razor.Models.Components
+@model ConfirmViewModel
+
+@* Marker only - no visible output. bindConfirms (odk.js) intercepts the submit of the containing form and
+   shows the shared _ConfirmModal dialog, submitting only once the user accepts. Razor omits attributes with
+   a null value, so the optional ones fall back to the dialog's defaults. *@
+<div data-odk-confirm="@Model.Message"
+     data-odk-confirm-title="@Model.Title"
+     data-odk-confirm-ok="@Model.OkText"
+     data-odk-confirm-variant="@Model.Variant"></div>

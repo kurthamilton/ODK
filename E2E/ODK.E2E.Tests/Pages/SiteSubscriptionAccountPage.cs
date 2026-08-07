@@ -21,25 +21,14 @@ internal class SiteSubscriptionAccountPage
     }
 
     /// <summary>
-    /// Cancels the current subscription, waiting for the redirect back to settle. The button guards itself
-    /// with <c>window.confirm</c>, which Playwright dismisses unless a handler accepts it - a dismissal
-    /// returns false from the inline handler and silently blocks the submit.
+    /// Cancels the current subscription, waiting for the redirect back to settle. The form is guarded by the
+    /// shared confirmation dialog, so the click alone doesn't submit - it has to be accepted.
     /// </summary>
     public async Task CancelSubscription()
     {
-        void Accept(object? sender, IDialog dialog) => _ = dialog.AcceptAsync();
-
-        _page.Dialog += Accept;
-
-        try
-        {
-            await _page.ClickAsync(CancelButtonSelector);
-            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-        }
-        finally
-        {
-            _page.Dialog -= Accept;
-        }
+        await _page.ClickAsync(CancelButtonSelector);
+        await _page.AcceptConfirm();
+        await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
     }
 
     /// <summary>Selects the first available currency and submits, waiting for the redirect back to settle.</summary>

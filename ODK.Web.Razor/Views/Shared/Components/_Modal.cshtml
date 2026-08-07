@@ -9,7 +9,7 @@
         _ => null
     };
 
-    var hasTitle = !string.IsNullOrEmpty(Model.Title);
+    var hasTitle = !string.IsNullOrEmpty(Model.Title) || Model.ForceShowTitle;
 }
 
 <div class="modal @Model.Class" tabindex="-1" id="@Model.Id">

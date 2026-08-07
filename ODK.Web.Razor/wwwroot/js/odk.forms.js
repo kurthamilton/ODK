@@ -112,16 +112,20 @@ window.odk.forms = window.odk.forms || {};
 
             if (!$target) return;
 
-            const confirmMessage = $button.getAttribute('data-submit-confirm');            
-
             $button.addEventListener('click', () => {
-                if (!!confirmMessage && !confirm(confirmMessage)) return;
                 if ($target.tagName !== 'FORM') return;
 
-                const v = window.odk.forms.validationService;
-                v.validateForm($target);
-                if (!v.isValid($target)) return;
-                $target.submit();
+                const submit = () => {
+                    const v = window.odk.forms.validationService;
+                    v.validateForm($target);
+                    if (!v.isValid($target)) return;
+                    $target.submit();
+                };
+
+                // submit() fires no submit event, so the confirm interception in odk.js can't see it - ask
+                // here instead. Returns false when the form has no _Confirm, in which case just submit.
+                if (window.odk.confirm?.($target, submit)) return;
+                submit();
             });
         });
 

@@ -50,8 +50,7 @@
                                 @if (Model.Conversation.ArchivedUtc == null)
                                 {
                                     <button class="btn btn-secondary ms-auto" type="button"
-                                        data-submit="#archive-conversation-form"
-                                        data-submit-confirm="Are you sure you want to archive this conversation?">
+                                        data-submit="#archive-conversation-form">
                                         @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Archive))
                                         <span>Archive</span>
                                     </button>
@@ -63,6 +62,11 @@
                         {
                             <form id="archive-conversation-form" method="post" action="/conversations/@Model.Conversation.Id/archive">
                                 @Html.AntiForgeryToken()
+                                @await Html.PartialAsync("Components/_Confirm", new ConfirmViewModel
+                                {
+                                    Message = "Are you sure you want to archive this conversation?",
+                                    Title = "Archive conversation"
+                                })
                             </form>
                         }                        
                     </div>

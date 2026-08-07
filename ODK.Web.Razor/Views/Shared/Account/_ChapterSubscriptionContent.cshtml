@@ -1,17 +1,10 @@
-﻿@using ODK.Core.Chapters
-@using ODK.Core.Countries
-@using ODK.Core.Members
-@using ODK.Core.Payments
+﻿@using ODK.Core.Members
 @using ODK.Core.Utils
-@using ODK.Services.Chapters
-@using ODK.Services.Members
 @using ODK.Services.Members.ViewModels
 @using ODK.Services.Payments
 @using ODK.Web.Common.Routes
-@using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
-@using ODK.Web.Razor.Models.Payments
 @model SubscriptionsPageViewModel
 @inject IOdkRoutes OdkRoutes
 @{
@@ -94,7 +87,12 @@ else
         <form action="/chapters/@Model.Chapter.Id/account/subscription/cancel" method="post">
             @Html.AntiForgeryToken()
             <input type="hidden" name="@nameof(CancelSubscriptionRequest.ExternalId)" value="@Model.ExternalSubscription.ExternalId" />
-            <button class="btn btn-danger" onclick="return confirm('Are you sure you want to cancel your subscription?');">
+            @await Html.PartialAsync("Components/_Confirm", new ConfirmViewModel
+            {
+                Message = "Are you sure you want to cancel your subscription?",
+                Title = "Cancel subscription"
+            })
+            <button class="btn btn-danger">
                 Cancel subscription
             </button>
         </form>

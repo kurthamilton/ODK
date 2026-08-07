@@ -38,8 +38,13 @@
         <div class="d-flex gap-3">
             <form method="post" action="/groups/@Model.Chapter.Id/events/@Model.Event.Id/invites/send">
                 @Html.AntiForgeryToken()
-                <button type="submit" class="btn btn-success"
-                        onclick="return confirm('Are you sure you want to send invite emails for this event?');">
+                @await Html.PartialAsync("Components/_Confirm", new ConfirmViewModel
+                {
+                    Message = "Are you sure you want to send invite emails for this event?",
+                    Title = "Send invites",
+                    Variant = "success"
+                })
+                <button type="submit" class="btn btn-success">
                     Send invites
                 </button>
             </form>

@@ -10,6 +10,8 @@ public class ModalViewModel
 
     public Func<object?, IHtmlContent>? Footer { get; init; }
 
+    public bool ForceShowTitle { get; init; }
+
     public required string Id { get; init; }
 
     public bool HideFooter { get; init; }

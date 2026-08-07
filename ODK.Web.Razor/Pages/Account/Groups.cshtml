@@ -2,7 +2,6 @@
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Services.Chapters
-@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
@@ -67,7 +66,12 @@
                                         {
                                             <form method="post" action="/groups/@chapter.Chapter.Id/leave">
                                                 @Html.AntiForgeryToken()
-                                                <button class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to leave this group?');">
+                                                @await Html.PartialAsync("Components/_Confirm", new ConfirmViewModel
+                                                {
+                                                    Message = $"Are you sure you want to leave '{chapter.Chapter.GetDisplayName(Model.Platform)}'?",
+                                                    Title = "Leave group"
+                                                })
+                                                <button class="btn btn-danger btn-sm">
                                                     Leave
                                                 </button>
                                             </form>

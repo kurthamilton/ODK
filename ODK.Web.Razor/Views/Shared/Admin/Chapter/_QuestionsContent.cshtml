@@ -1,9 +1,5 @@
-﻿@using ODK.Core.Chapters
-@using ODK.Core.Platforms
-@using ODK.Services
-@using ODK.Services.Chapters
+﻿@using ODK.Core.Platforms
 @using ODK.Services.Chapters.ViewModels
-@using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
@@ -73,8 +69,12 @@ else
                         <td>
                             <form method="post" action="/groups/@Model.Chapter.Id/questions/@question.Id/delete">
                                 @Html.AntiForgeryToken()
-                                <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger"
-                                        onclick="return confirm('Are you sure you want to delete this question?');">
+                                @await Html.PartialAsync("Components/_Confirm", new ConfirmViewModel
+                                {
+                                    Message = "Are you sure you want to delete this question?",
+                                    Title = "Delete question"
+                                })
+                                <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger">
                                     @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Times))
                                 </button>
                             </form>
