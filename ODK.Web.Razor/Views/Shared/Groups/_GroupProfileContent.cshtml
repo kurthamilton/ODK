@@ -1,9 +1,5 @@
 ﻿@using ODK.Services.Chapters.ViewModels
 @using ODK.Services.Users.ViewModels
-@using ODK.Web.Common.Routes
-@using ODK.Web.Razor.Models.Account
-@using ODK.Web.Razor.Models.Components
-@using ODK.Web.Razor.Models.Groups.Profile
 @model GroupProfilePageViewModel
 @{
     var memberPropertyDictionary = Model.MemberProperties
@@ -14,7 +10,7 @@
     @*TODO: Group bio here*@
     @if (Model.ChapterProperties.Count > 0)
     {
-        <h3>My profile</h3>
+        <h2 class="content-heading">My profile</h2>
         <section class="section">
             <form action="/groups/@Model.Chapter.Id/profile" method="post">
                 @Html.AntiForgeryToken()

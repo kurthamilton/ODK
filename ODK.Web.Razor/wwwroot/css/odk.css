@@ -12763,6 +12763,10 @@ footer {
   height: 40px;
 }
 
+.content-heading {
+  margin-bottom: 1rem;
+}
+
 .section--header,
 .section--footer {
   padding: 1rem 0;
@@ -13255,9 +13259,6 @@ footer {
 
 .section--admin {
   margin-bottom: 3rem;
-}
-.section--admin h2, .section--admin .h2 {
-  margin-bottom: 1rem;
 }
 
 .side-menu {

@@ -1,8 +1,7 @@
-﻿@using ODK.Services.Chapters.ViewModels
-@using ODK.Services.Members.ViewModels
+﻿@using ODK.Services.Members.ViewModels
 @model SubscriptionsPageViewModel
 
 <section class="section">
-    <h3>My subscription</h3>
+    <h2 class="content-heading">My subscription</h2>
     @await Html.PartialAsync("Account/_ChapterSubscriptionContent", Model)
 </section>

@@ -1,16 +1,10 @@
-﻿@using ODK.Core.Chapters
-@using ODK.Core.Payments
-@using ODK.Services
-@using ODK.Services.Chapters
-@using ODK.Services.Payments
-@using ODK.Web.Common.Extensions
+﻿@using ODK.Core.Payments
 @using ODK.Web.Common.Routes
-@using ODK.Web.Razor.Models.SiteAdmin
 @model IReadOnlyCollection<SitePaymentSettings>
 @inject IOdkRoutes OdkRoutes
 
 <div data-odk-component="_SiteAdmin/_PaymentsContent">
-    <h2 class="d-none d-md-block">Payment settings</h2>
+    <h2 class="content-heading d-none d-md-block">Payment settings</h2>
 
     <section class="section">
         <p>
