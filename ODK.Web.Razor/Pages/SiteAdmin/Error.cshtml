@@ -1,7 +1,6 @@
 ﻿@page "/siteadmin/errors/{id:guid}"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
-@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.SiteAdmin
 @model ErrorModel
@@ -14,7 +13,7 @@
 {
     Breadcrumbs = new []
     {
-        new MenuItem { Link = Model.OdkRoutes.SiteAdmin.Errors, Text = "Error log" },
+        new MenuItem { Link = Model.OdkRoutes.SiteAdmin.Errors.Path, Text = "Error log" },
         new MenuItem { Text = "Error" }
     }
 })

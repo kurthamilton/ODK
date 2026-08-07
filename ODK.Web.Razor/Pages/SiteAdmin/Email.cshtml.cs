@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Emails;
 using ODK.Services.Emails;
 using ODK.Services.Emails.Models;
-using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Admin.Chapters;
 using ODK.Web.Razor.Models.Feedback;
 
@@ -43,6 +42,6 @@ public class EmailModel : SiteAdminPageModel
         }
 
         AddFeedback("Email updated", FeedbackType.Success);
-        return Redirect(OdkRoutes.SiteAdmin.Emails);
+        return Redirect(OdkRoutes.SiteAdmin.Emails.Path);
     }
 }

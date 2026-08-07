@@ -75,4 +75,6 @@ public class UrlProvider : IUrlProvider
         => $"{_httpRequestContext.BaseUrl}{path}";
 
     private string GetUrl(GroupAdminRoute adminRoute) => GetUrl(adminRoute.Path);
+
+    private string GetUrl(SiteAdminRoute adminRoute) => GetUrl(adminRoute.Path);
 }

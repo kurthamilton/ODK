@@ -1,7 +1,6 @@
 ﻿@page "/siteadmin/features/{id:guid}"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
-@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.SiteAdmin
 @model FeatureModel
@@ -14,7 +13,7 @@
 {
     Breadcrumbs = new[]
     {
-        new MenuItem { Link = Model.OdkRoutes.SiteAdmin.Features, Text = "Features" },
+        new MenuItem { Link = Model.OdkRoutes.SiteAdmin.Features.Path, Text = "Features" },
         new MenuItem { Text = Model.Feature.Name }
     }
 })

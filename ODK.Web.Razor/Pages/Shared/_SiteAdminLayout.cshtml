@@ -11,29 +11,16 @@
 
     var platform = RequestStore.Platform;
 
-    var menuItems = new[]
-    {
-        new MenuItem { Link = OdkRoutes.SiteAdmin.Countries, Text = "Countries" },
-        new MenuItem { Link = OdkRoutes.SiteAdmin.Emails, Text = "Emails" },
-        new MenuItem { Link = OdkRoutes.SiteAdmin.Errors, Text = "Error log" },
-        new MenuItem { Link = OdkRoutes.SiteAdmin.Features, Text = "Features" },
-        new MenuItem { Link = OdkRoutes.SiteAdmin.Groups, Text = "Groups" },
-        new MenuItem { Link = OdkRoutes.SiteAdmin.Impersonate, Text = "Impersonate" },
-        new MenuItem { Link = OdkRoutes.SiteAdmin.Issues, Text = "Issues" },
-        new MenuItem
+    var menuItems = OdkRoutes.SiteAdmin.Navigation()
+        .Select(x => new MenuItem
         {
-            Link = OdkRoutes.SiteAdmin.Members,
-            Text = "Members",
-            Children =
-            [
-                new MenuItem { Link = OdkRoutes.SiteAdmin.MembersFlagged, Text = "Flagged" }
-            ]
-        },
-        new MenuItem { Link = OdkRoutes.SiteAdmin.Messages(), Text = "Messages" },
-        new MenuItem { Link = OdkRoutes.SiteAdmin.Payments, Text = "Payments" },
-        new MenuItem { Link = OdkRoutes.SiteAdmin.Subscriptions, Text = "Subscriptions" },
-        new MenuItem { Link = OdkRoutes.SiteAdmin.Topics, Text = "Topics" }
-    };
+            Link = x.Route.Path,
+            Text = x.Text,
+            Children = x.Children
+                .Select(child => new MenuItem { Link = child.Route.Path, Text = child.Text })
+                .ToArray()
+        })
+        .ToArray();
 }
 
 @section styles

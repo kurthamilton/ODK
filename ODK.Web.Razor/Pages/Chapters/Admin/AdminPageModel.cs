@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
 using ODK.Services;
+using ODK.Services.Exceptions;
 using ODK.Services.Security;
 using ODK.Web.Common.Routes;
 using MemberChapterAdminServiceRequestImpl = ODK.Services.MemberChapterAdminServiceRequest;
@@ -34,7 +35,7 @@ public abstract class AdminPageModel : OdkPageModel
         var adminMember = await RequestStore.GetCurrentChapterAdminMember();
         if (!adminMember.HasAccessTo(Securable, CurrentMember))
         {
-            await Redirect(AdminRoutes.Events(Chapter));
+            await RedirectToLanding();
             return;
         }
 
@@ -44,15 +45,35 @@ public abstract class AdminPageModel : OdkPageModel
     public async Task Redirect(GroupAdminRoute route)
     {
         var adminMember = await RequestStore.GetCurrentChapterAdminMember();
-        var permittedRoute =
-            route.GetPermitted(adminMember, CurrentMember) ??
-            AdminRoutes.Events(Chapter);
-        Response.Redirect(permittedRoute.Path);
+        var permittedRoute = route.GetPermitted(adminMember, CurrentMember);
+        if (permittedRoute != null)
+        {
+            Response.Redirect(permittedRoute.Path);
+            return;
+        }
+
+        await RedirectToLanding();
     }
 
     protected void RedirectToLogin()
     {
         var returnUrl = $"{Request.Path}{Request.QueryString}";
         Response.Redirect(OdkRoutes.Account.Login(RequestStore.ChapterOrDefault, returnUrl));
+    }
+
+    /// <summary>
+    /// Sends the member to an admin page they can actually open. A fixed fallback route cannot work
+    /// here: a member who lacks access to that route is redirected to it, bounced again, and loops.
+    /// </summary>
+    private async Task RedirectToLanding()
+    {
+        var adminMember = await RequestStore.GetCurrentChapterAdminMember();
+        var route = AdminRoutes.LandingRoute(Chapter, adminMember, CurrentMember);
+        if (route == null)
+        {
+            throw new OdkNotAuthorizedException();
+        }
+
+        Response.Redirect(route.Path);
     }
 }

@@ -2,7 +2,6 @@
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Services.Subscriptions
-@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @model SubscriptionModel
 @inject ISiteSubscriptionAdminService SiteSubscriptionAdminService
@@ -17,7 +16,7 @@
 {
     Breadcrumbs = new[]
     {
-        new MenuItem { Link = Model.OdkRoutes.SiteAdmin.Subscriptions, Text = "Subscriptions" },
+        new MenuItem { Link = Model.OdkRoutes.SiteAdmin.Subscriptions.Path, Text = "Subscriptions" },
         new MenuItem { Text = viewModel.Subscription.Name }
     }
 })

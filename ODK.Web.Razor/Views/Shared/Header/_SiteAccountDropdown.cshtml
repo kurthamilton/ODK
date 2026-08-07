@@ -1,10 +1,7 @@
-﻿@using ODK.Services.Authentication
-@using ODK.Web.Common.Routes
+﻿@using ODK.Web.Common.Routes
 @using ODK.Web.Common.Services
-@using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
-@using ODK.Web.Razor.Services
 @inject IOdkRoutes OdkRoutes
 @inject IRequestStore RequestStore
 @{
@@ -79,16 +76,6 @@
                                 </a>
                             </div>                        
                         }
-
-                        <hr/>
-                        <div class="list-group list-group-flush list-group-border-0">
-                            <a class="list-group-item list-group-item-action" href="@OdkRoutes.Account.Logout(chapter: null)">
-                                <span class="icon">
-                                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Logout))
-                                </span>
-                                <span>Sign Out</span>
-                            </a>
-                        </div>                    
                     </div>,
                 FooterFunc = @<div>@await Html.PartialAsync("Header/_AccountDropdownFooter")</div>
             })  

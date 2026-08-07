@@ -56,7 +56,7 @@ public class SiteAdminController : OdkControllerBase
     [HttpGet("siteadmin")]
     public IActionResult Index()
     {
-        return Redirect(OdkRoutes.SiteAdmin.Groups);
+        return Redirect(OdkRoutes.SiteAdmin.Groups.Path);
     }
 
     [HttpPost("siteadmin/errors/{id:guid}/delete")]
@@ -64,7 +64,7 @@ public class SiteAdminController : OdkControllerBase
     {
         await _loggingService.DeleteError(MemberServiceRequest, id);
 
-        return Redirect(OdkRoutes.SiteAdmin.Errors);
+        return Redirect(OdkRoutes.SiteAdmin.Errors.Path);
     }
 
     [HttpPost("siteadmin/errors/{id:Guid}/deleteall")]
@@ -72,14 +72,14 @@ public class SiteAdminController : OdkControllerBase
     {
         await _loggingService.DeleteAllErrors(MemberServiceRequest, id);
 
-        return Redirect(OdkRoutes.SiteAdmin.Errors);
+        return Redirect(OdkRoutes.SiteAdmin.Errors.Path);
     }
 
     [HttpPost("siteadmin/features/{id:guid}/delete")]
     public async Task<IActionResult> DeleteFeature(Guid id)
     {
         await _featureService.DeleteFeature(MemberServiceRequest, id);
-        return Redirect(OdkRoutes.SiteAdmin.Features);
+        return Redirect(OdkRoutes.SiteAdmin.Features.Path);
     }
 
     [HttpPost("siteadmin/messages/{id:guid}/replied")]
@@ -120,7 +120,7 @@ public class SiteAdminController : OdkControllerBase
 
         AddFeedback(result, "Payment settings created");
 
-        return Redirect(OdkRoutes.SiteAdmin.Payments);
+        return Redirect(OdkRoutes.SiteAdmin.Payments.Path);
     }
 
     [HttpPost("siteadmin/payments/{id:guid}")]
@@ -167,7 +167,7 @@ public class SiteAdminController : OdkControllerBase
 
         AddFeedback(result, "Subscription created");
 
-        return Redirect(OdkRoutes.SiteAdmin.Subscription(result.Value));
+        return Redirect(OdkRoutes.SiteAdmin.Subscription(result.Value).Path);
     }
 
     [HttpPost("siteadmin/subscriptions/{id:guid}")]
@@ -188,7 +188,7 @@ public class SiteAdminController : OdkControllerBase
         if (result.Success)
         {
             AddFeedback("Subscription updated", FeedbackType.Success);
-            return Redirect(OdkRoutes.SiteAdmin.Subscriptions);
+            return Redirect(OdkRoutes.SiteAdmin.Subscriptions.Path);
         }
 
         return RedirectToReferrer();
@@ -329,7 +329,7 @@ public class SiteAdminController : OdkControllerBase
 
         AddFeedback(result, "Topic updated");
 
-        return Redirect(OdkRoutes.SiteAdmin.Topics);
+        return Redirect(OdkRoutes.SiteAdmin.Topics.Path);
     }
 
     [HttpGet("{chapterName}/Admin/siteadmin")]

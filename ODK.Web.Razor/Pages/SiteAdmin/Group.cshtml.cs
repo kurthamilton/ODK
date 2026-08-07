@@ -32,6 +32,6 @@ public class GroupModel : SiteAdminPageModel
         }
 
         AddFeedback("Group updated", FeedbackType.Success);
-        return Redirect(OdkRoutes.SiteAdmin.Groups);
+        return Redirect(OdkRoutes.SiteAdmin.Groups.Path);
     }
 }

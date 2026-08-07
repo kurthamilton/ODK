@@ -26,6 +26,10 @@ public static class ChapterAdminMemberExtensions
             return false;
         }
 
-        return _roleLevels[adminMember.Role] <= _roleLevels[role];
+        // ChapterAdminRole.None is deliberately absent from _roleLevels: it grants nothing and
+        // ranks against nothing, so an indexer lookup would throw rather than deny.
+        return _roleLevels.TryGetValue(adminMember.Role, out var memberLevel)
+            && _roleLevels.TryGetValue(role, out var requiredLevel)
+            && memberLevel <= requiredLevel;
     }
 }
