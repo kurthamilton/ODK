@@ -40,9 +40,11 @@
                     Breadcrumbs = new[]
                     {
                         new MenuItem { Text = "My subscription", Link = Model.OdkRoutes.Account.Subscription(null) },
+                        new MenuItem { Text = viewModel.SiteSubscription.Name },
                         new MenuItem { Text = "Checkout" }
                     }
                 })
+                <h2>Checkout</h2>
                 <section class="section">
                     @await Html.PartialAsync("Components/_StripeCheckout", new StripeCheckoutViewModel
                     {

@@ -63,6 +63,36 @@ done. Its tunnel config lives in the gitignored root `ngrok.yml` (see the root R
 - Because the base class sets the browser context `BaseURL`, **page objects navigate with relative paths**
   (`page.Navigate("/account/login")`) and automatically hit the correct platform.
 
+## Categories
+
+Two axes, composed by the filter:
+
+- **Platform** — `Default` / `DrunkenKnitwits`, from the base class (plus `E2E` on everything).
+- **Capability** — added per fixture where a subset is worth running on its own. Currently just **`Stripe`**
+  (the four payment fixtures: site/chapter purchase, recurring renewal, cancellation). These are the slow
+  ones — real Stripe calls, webhook round-trips via the ngrok tunnel, test clocks — so being able to run or
+  skip them separately matters.
+
+```
+script.run.tests.bat            # prompts for a category
+script.run.tests.bat Stripe     # just the payment tests
+script.run.tests.bat Default    # one platform
+script.run.tests.bat NoStripe   # everything except payments - skips the slow ones
+```
+
+A bare name is wrapped as `TestCategory=<name>`; anything mentioning `TestCategory` is used verbatim.
+`NoStripe` is an alias for `TestCategory!=Stripe`, expanded inside `script.e2e.bat` - it can't be passed as
+a raw filter because **cmd treats `=` as an argument delimiter**, so `TestCategory!=Stripe` arrives split
+into two arguments. Same reason a filter using `&` (AND) can't go through the scripts. For either, call
+`dotnet test` directly:
+
+```
+dotnet test ODK.E2E.Tests\ODK.E2E.Tests.csproj --filter "TestCategory=Stripe&TestCategory=Default"
+```
+
+Add a capability category when a group of tests is slow, needs extra setup, or is worth isolating while
+iterating - not for every feature, or filtering stops meaning anything.
+
 ## Conventions
 
 - **Repo-wide C# style applies here too.** The "Conventions & style" section of the root

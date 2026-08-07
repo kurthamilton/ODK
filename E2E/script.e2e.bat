@@ -15,6 +15,17 @@ set TEST_PROJECT=%~2
 set CATEGORY=%~3
 if "%CATEGORY%"=="" set CATEGORY=E2E
 
+rem A bare category name (E2E, Default, DrunkenKnitwits, Stripe, ...) is wrapped as TestCategory=<name>.
+rem Anything already mentioning TestCategory is used verbatim, so sets can be composed - most usefully
+rem "TestCategory!=Stripe" to skip the slow payment tests. Quote it when passing one. A filter using & (AND)
+rem has to go to dotnet test directly: & is a command separator, so it can't survive this command line.
+set "FILTER=TestCategory=%CATEGORY%"
+if not "%CATEGORY:TestCategory=%"=="%CATEGORY%" set "FILTER=%CATEGORY%"
+
+rem Alias for the inverse filter. It has to be an alias rather than the filter itself, because cmd treats =
+rem as an argument delimiter: "TestCategory!=Stripe" passed as an argument arrives split in two.
+if /i "%CATEGORY%"=="NoStripe" set "FILTER=TestCategory!=Stripe"
+
 if "%PORT%"=="" (echo Usage: script.e2e.bat ^<port^> ^<test-csproj^> [category] & exit /b 2)
 if "%TEST_PROJECT%"=="" (echo Usage: script.e2e.bat ^<port^> ^<test-csproj^> [category] & exit /b 2)
 
@@ -32,10 +43,10 @@ timeout /t 2 >nul
 goto waitloop
 
 :ready
-echo App is ready. Running E2E tests (TestCategory=%CATEGORY%) ...
+echo App is ready. Running E2E tests (%FILTER%) ...
 rem console logger streams per-test results; the fixtures also print live START/PASS/FAIL + timing lines
 rem via TestContext.Progress. Fixtures run in parallel (see AssemblyInfo.cs).
-dotnet test "%TEST_PROJECT%" --filter "TestCategory=%CATEGORY%" --logger "console;verbosity=normal"
+dotnet test "%TEST_PROJECT%" --filter "%FILTER%" --logger "console;verbosity=normal"
 set TEST_EXIT=%errorlevel%
 
 :teardown

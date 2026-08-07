@@ -1,8 +1,10 @@
 ﻿@using ODK.Core.Subscriptions
 @using ODK.Services.Subscriptions.ViewModels
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Pricing
 @model PricingContentViewModel
+@inject IOdkRoutes OdkRoutes
 @{
     var subscriptions = Model
         .SiteSubscriptions
@@ -77,7 +79,7 @@
                                 @await Html.PartialAsync("Pricing/_SubscriptionPrice", new SiteSubscriptionPriceViewModel
                                 {
                                     Amount = price.Amount,
-                                    CheckoutUrl = Model.CheckoutUrl.Replace("{price.id}", price.Id.ToString()),
+                                    CheckoutUrl = OdkRoutes.Account.SiteSubscriptionCheckout(price.Id),
                                     Currency = currency!,
                                     Frequency = price.Frequency,
                                     ExternalId = price.ExternalId,
