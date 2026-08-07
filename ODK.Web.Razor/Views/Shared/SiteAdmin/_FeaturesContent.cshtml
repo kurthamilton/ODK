@@ -14,7 +14,8 @@
 <section class="section">
     <p>
         <a class="btn btn-primary" href="@OdkRoutes.SiteAdmin.FeatureCreate">
-            Create
+            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Plus))
+            <span>Create</span>
         </a>
     </p>
 
