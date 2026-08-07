@@ -6,7 +6,10 @@
 {
     @if (provider == PaymentProviderType.Stripe)
     {
-        <script src="https://js.stripe.com/v3"></script>
+        @* A pinned release channel, not /v3: initCheckoutElementsSdk (odk.stripe.js) needs the Basil release
+           or higher, and /v3 resolves to an older one, failing at runtime with "You must upgrade to the Basil
+           release or higher to use initCheckout". https://docs.stripe.com/sdks/stripejs-versioning *@
+        <script src="https://js.stripe.com/dahlia/stripe.js"></script>
         <script src="~/js/odk.stripe.js" asp-append-version="true"></script>
     }
 }

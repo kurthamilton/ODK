@@ -5,7 +5,7 @@ namespace ODK.E2E.Tests.Pages;
 /// <summary>
 /// The member-facing chapter-subscription checkout page (Default
 /// <c>/groups/{slug}/subscription/{id}/checkout</c>). Navigates to the given checkout URL and pays via
-/// <see cref="StripeEmbeddedCheckout"/>. The purchase transfers to the chapter's Stripe connected account,
+/// <see cref="StripeElementsCheckout"/>. The purchase transfers to the chapter's Stripe connected account,
 /// so the seeded ChapterPaymentAccount must carry a real onboarded sandbox <c>acct_</c>.
 /// </summary>
 internal class ChapterSubscriptionCheckoutPage
@@ -24,6 +24,6 @@ internal class ChapterSubscriptionCheckoutPage
     public async Task PayWithTestCard(string checkoutUrl)
     {
         await _page.Navigate(checkoutUrl);
-        await StripeEmbeddedCheckout.PayWithTestCard(_page);
+        await StripeElementsCheckout.PayWithTestCard(_page);
     }
 }

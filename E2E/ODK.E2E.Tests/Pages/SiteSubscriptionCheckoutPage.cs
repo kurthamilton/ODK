@@ -4,7 +4,7 @@ namespace ODK.E2E.Tests.Pages;
 
 /// <summary>
 /// The site-subscription checkout page (<c>/account/subscription/{priceId}/checkout</c>). Navigates there
-/// and pays via <see cref="StripeEmbeddedCheckout"/> (the shared embedded-Checkout iframe driver).
+/// and pays via <see cref="StripeElementsCheckout"/> (the shared Payment Element driver).
 /// </summary>
 internal class SiteSubscriptionCheckoutPage
 {
@@ -22,6 +22,6 @@ internal class SiteSubscriptionCheckoutPage
     public async Task PayWithTestCard(Guid priceId)
     {
         await _page.Navigate($"/account/subscription/{priceId}/checkout");
-        await StripeEmbeddedCheckout.PayWithTestCard(_page);
+        await StripeElementsCheckout.PayWithTestCard(_page);
     }
 }
