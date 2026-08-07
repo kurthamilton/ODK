@@ -1,6 +1,4 @@
-﻿@using ODK.Core.Logging
-@using ODK.Services.Logging
-@using ODK.Web.Common.Extensions
+﻿@using ODK.Services.Logging
 @using ODK.Web.Common.Routes
 @using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Components
@@ -11,7 +9,7 @@
     var errors = await LoggingService.GetErrors(RequestStore.MemberServiceRequest, 1, 1000);
 }
 
-<h2>Error log</h2>
+<h2 class="content-heading">Error log</h2>
 
 <section class="section">
     <div class="table-responsive">

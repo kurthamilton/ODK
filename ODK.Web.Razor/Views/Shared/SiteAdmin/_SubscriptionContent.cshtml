@@ -7,7 +7,7 @@
 }
 
 <section class="section--admin">
-    <h2>@Model.Subscription.Name</h2>
+    <h2 class="content-heading">@Model.Subscription.Name</h2>
     <form action="/siteadmin/Subscriptions/@Model.Subscription.Id" method="post">
         @Html.AntiForgeryToken()
         @await Html.PartialAsync("SiteAdmin/_SubscriptionForm", new SiteSubscriptionFormViewModel
@@ -28,7 +28,7 @@
 </section>
 
 <section class="section--admin">
-    <h2>Prices</h2>
+    <h2 class="content-heading">Prices</h2>
     <div class="table-responsive">
         <table class="table table--striped">
             <thead>

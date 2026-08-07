@@ -4,7 +4,6 @@
 @using ODK.Web.Common.Routes
 @using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Components
-@using ODK.Web.Razor.Services
 @inject IOdkRoutes OdkRoutes
 @inject IRequestStore RequestStore
 @inject ISiteSubscriptionAdminService SiteSubscriptionAdminService
@@ -14,7 +13,7 @@
 }
 
 <div data-odk-component="SiteAdmin/_SiteSubscriptionsContent">
-    <h2>Subscriptions</h2>
+    <h2 class="content-heading">Subscriptions</h2>
 
     <section class="section">
         <p>

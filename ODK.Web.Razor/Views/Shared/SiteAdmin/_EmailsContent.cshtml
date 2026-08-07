@@ -1,8 +1,6 @@
 ﻿@using ODK.Services.Settings
 @using ODK.Web.Common.Services
-@using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.SiteAdmin
-@using ODK.Web.Razor.Services
 @inject IRequestStore RequestStore
 @inject ISettingsService SettingsService
 @{
@@ -11,7 +9,7 @@
 }
 
 <section class="section--admin">
-    <h2>Settings</h2>
+    <h2 class="content-heading">Settings</h2>
     <form action="/siteadmin/emails/settings" method="post">
         @Html.AntiForgeryToken()
         @await Html.PartialAsync("SiteAdmin/_EmailSettingsForm", new SiteEmailSettingsViewModel
@@ -26,6 +24,6 @@
 </section>
 
 <section class="section--admin">
-    <h2>Emails</h2>
+    <h2 class="content-heading">Emails</h2>
     @await Html.PartialAsync("SiteAdmin/_EmailsTable")
 </section>

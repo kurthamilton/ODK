@@ -1,8 +1,24 @@
-﻿@using ODK.Web.Razor.Models.Components
+﻿@using Microsoft.AspNetCore.Html
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Groups
 @model GroupBodyViewModel
 @{
     var memberChapter = Model.Group.CurrentMember?.MemberChapter(Model.Group.Chapter.Id);
+
+    // Identical for both layouts below - only the component wrapping it differs (sidebar or not).
+    Func<object?, IHtmlContent> content = @<div>
+        @if (memberChapter != null)
+        {
+            @await Html.PartialAsync("Chapters/_ApprovalWarning", memberChapter)
+        }
+
+        @if (!string.IsNullOrEmpty(Model.Title))
+        {
+            <h2 class="content-heading">@Model.Title</h2>
+        }
+
+        @Model.Content
+    </div>;
 }
 
 @if (Model.SidebarContent != null)
@@ -13,20 +29,7 @@
         Menu = await Html.PartialAsync("Groups/_GroupMenu", Model.Group),
         SidebarContent = Model.SidebarContent,
         TitleContent = await Html.PartialAsync("Groups/_GroupTitle", Model.Group.Chapter),
-        ContentFunc =
-            @<div>
-                @if (memberChapter != null)
-                {
-                    @await Html.PartialAsync("Chapters/_ApprovalWarning", memberChapter)
-                }
-
-                @if (!string.IsNullOrEmpty(Model.Title))
-                {
-                    <h2>@Model.Title</h2>
-                }
-
-                @Model.Content
-            </div>
+        ContentFunc = content
     })
 }
 else
@@ -36,19 +39,6 @@ else
         Breadcrumbs = Model.Breadcrumbs,
         Menu = await Html.PartialAsync("Groups/_GroupMenu", Model.Group),
         TitleContent = await Html.PartialAsync("Groups/_GroupTitle", Model.Group.Chapter),
-        ContentFunc =
-            @<div>   
-                @if (memberChapter != null)
-                {
-                    @await Html.PartialAsync("Chapters/_ApprovalWarning", memberChapter)
-                }
-
-                @if (!string.IsNullOrEmpty(Model.Title))
-                {
-                    <h2>@Model.Title</h2>
-                }
-
-                @Model.Content
-            </div>
+        ContentFunc = content
     })
 }

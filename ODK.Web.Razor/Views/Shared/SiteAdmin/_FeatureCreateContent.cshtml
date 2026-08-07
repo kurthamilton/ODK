@@ -1,6 +1,6 @@
 ﻿@using ODK.Web.Razor.Models.SiteAdmin
 
-<h2>Create feature notification</h2>
+<h2 class="content-heading">Create feature notification</h2>
 <form method="post">
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("SiteAdmin/_FeatureForm", new FeatureFormViewModel())
