@@ -1,6 +1,7 @@
 ﻿@using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Components
 @model ChapterDeleteAdminPageViewModel
 @inject IOdkRoutes OdkRoutes
 
@@ -12,7 +13,12 @@
 
     <form action="/groups/@Model.Chapter.Id/delete" method="post">
         @Html.AntiForgeryToken()
-        <button class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this group?');">Delete</button>
+        @await Html.PartialAsync("Components/_Confirm", new ConfirmViewModel
+        {
+            Message = "Are you sure you want to delete this group?",
+            Title = "Delete group"
+        })
+        <button class="btn btn-danger">Delete</button>
     </form>
 }
 else

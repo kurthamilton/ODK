@@ -2,6 +2,7 @@
     bindAttachTo();
     bindCollapseToggle();
     bindConditionals();
+    bindConfirms();
     bindCopyToClipboard();
     bindFeaturePopovers();
     bindForms();
@@ -85,6 +86,92 @@
             $source.addEventListener('change', () => setDisplay());
             setDisplay();
         });
+    }
+
+    // Replaces the native, blocking confirm() with the shared dialog in _Layout. A form opts in by rendering
+    // the _Confirm component, which emits a [data-odk-confirm] marker carrying the message (plus optional
+    // -title, -ok and -variant). Intercepting the form's submit rather than a button's click covers every
+    // route to submitting - any button, the enter key, requestSubmit - so one confirm guards the whole form.
+    // A modal is async, so the submit is cancelled and replayed only once the user accepts.
+    function bindConfirms() {
+        const $modal = document.getElementById('confirm-modal');
+        if (!$modal) return;
+
+        const confirmModal = new bootstrap.Modal($modal);
+        const $title = $modal.querySelector('.modal-title');
+        const $message = $modal.querySelector('[data-odk-confirm-message]');
+        const $accept = $modal.querySelector('[data-odk-confirm-accept]');
+        const defaults = {
+            title: $title.textContent,
+            accept: $accept.textContent,
+            variant: 'danger'
+        };
+
+        // Forms whose confirmation has been accepted, so the replayed submit passes straight through.
+        // One-shot: consumed by that submit, so a later one asks again.
+        const accepted = new WeakSet();
+
+        let onAccept = null;
+
+        // Shows the dialog for a form's _Confirm marker, running accept() if the user confirms. Returns
+        // false when the form has no marker, so callers can carry on; true means the caller must stop and
+        // wait. Exposed as window.odk.confirm for code that submits a form itself (see odk.forms.js), so
+        // every confirmation goes through this one dialog.
+        // Declared as a const arrow, NOT a function declaration: the minifier rewrites the early return
+        // above into an if block, and a hoisted function would then be lifted out of that block and bind
+        // its references to whatever shares the mangled name in the enclosing scope.
+        const request = ($form, accept) => {
+            const $confirm = $form.querySelector('[data-odk-confirm]');
+            if (!$confirm) return false;
+
+            onAccept = accept;
+
+            $message.textContent = $confirm.getAttribute('data-odk-confirm');
+            $title.textContent = $confirm.getAttribute('data-odk-confirm-title') || defaults.title;
+            $accept.textContent = $confirm.getAttribute('data-odk-confirm-ok') || defaults.accept;
+
+            $accept.classList.length = 0;
+            $accept.classList.add('btn');
+            $accept.className = 'btn btn-'
+                + ($confirm.getAttribute('data-odk-confirm-variant') || defaults.variant);
+
+            confirmModal.show();
+            return true;
+        };
+
+        $modal.addEventListener('hidden.bs.modal', () => onAccept = null);
+
+        $accept.addEventListener('click', () => {
+            const accept = onAccept;
+            onAccept = null;
+            confirmModal.hide();
+            if (accept) accept();
+        });
+
+        // Delegated (submit bubbles), so forms rendered after load are covered too.
+        document.addEventListener('submit', e => {
+            const $form = e.target;
+
+            if (accepted.has($form)) {
+                accepted.delete($form);
+                return;
+            }
+
+            if (!$form.querySelector('[data-odk-confirm]')) return;
+
+            e.preventDefault();
+            request($form, () => {
+                accepted.add($form);
+                // requestSubmit (not submit) so validation and submit handlers still run.
+                $form.requestSubmit();
+                // Still flagged means the submit never fired - validation blocked it - so clear the flag,
+                // otherwise the next attempt would skip the confirmation.
+                accepted.delete($form);
+            });
+        });
+
+        window.odk = window.odk || {};
+        window.odk.confirm = request;
     }
 
     function bindCopyToClipboard() {

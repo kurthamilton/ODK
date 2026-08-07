@@ -1,11 +1,5 @@
-﻿@using ODK.Core.Chapters
-@using ODK.Core.Features
-@using ODK.Core.Members
-@using ODK.Services
-@using ODK.Services.Chapters
-@using ODK.Services.Members
+﻿@using ODK.Core.Features
 @using ODK.Services.Members.ViewModels
-@using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Admin.Members
@@ -111,9 +105,13 @@
                                     {
                                         <form method="post" action="/groups/@Model.Chapter.Id/members/admins/@member.Id/delete">
                                             @Html.AntiForgeryToken()
+                                            @await Html.PartialAsync("Components/_Confirm", new ConfirmViewModel
+                                            {
+                                                Message = "Are you sure you want to remove admin access for this member?",
+                                                Title = "Remove admin access"
+                                            })
                                             <button data-bs-toggle="tooltip" data-bs-title="Remove"
-                                                    class="btn-icon text-danger"
-                                                    onclick="return confirm('Are you sure you want to remove admin access for this member?');">
+                                                    class="btn-icon text-danger">
                                                 @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Times))
                                             </button>
                                         </form>

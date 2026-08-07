@@ -1,8 +1,4 @@
-﻿@using System.Web
-@using ODK.Core.Emails
-@using ODK.Services.Emails
-@using ODK.Services.Features
-@using ODK.Web.Common.Extensions
+﻿@using ODK.Services.Features
 @using ODK.Web.Common.Routes
 @using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Components
@@ -42,7 +38,12 @@
                     <td>
                         <form action="/siteadmin/features/@feature.Id/delete" method="post">
                             @Html.AntiForgeryToken()
-                            <button class="btn-icon text-danger" onclick="return confirm('Are you sure you want to delete this feature?');">
+                            @await Html.PartialAsync("Components/_Confirm", new ConfirmViewModel
+                            {
+                                Message = $"Are you sure you want to delete the '{feature.Name}' feature?",
+                                Title = "Delete feature"
+                            })
+                            <button class="btn-icon text-danger">
                                 @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Times))
                             </button>
                         </form>
