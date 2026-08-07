@@ -257,7 +257,8 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             Chapter = chapter,
             ClientSecret = externalCheckoutSession.ClientSecret,
             PaymentSettings = sitePaymentSettings,
-            Platform = platform
+            Platform = platform,
+            SiteSubscription = siteSubscription
         };
     }
 

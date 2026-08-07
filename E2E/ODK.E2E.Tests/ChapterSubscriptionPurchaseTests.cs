@@ -18,6 +18,7 @@ namespace ODK.E2E.Tests;
 /// (<c>checkout.session.completed</c>) completion path, distinct from the recurring site-subscription test.
 /// </summary>
 [TestFixture]
+[Category("Stripe")]
 public class ChapterSubscriptionPurchaseTests : DefaultPageTest
 {
     private static ChapterPaymentAccountDataHelper ChapterPaymentAccounts => new(E2ESettings.ConnectionString);

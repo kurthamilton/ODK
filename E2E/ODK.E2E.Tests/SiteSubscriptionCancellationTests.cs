@@ -18,6 +18,7 @@ namespace ODK.E2E.Tests;
 /// so the assertions are the page's own state rather than the database.
 /// </summary>
 [TestFixture]
+[Category("Stripe")]
 public class SiteSubscriptionCancellationTests : DefaultPageTest
 {
     private static MemberDataHelper Members => new(E2ESettings.ConnectionString);

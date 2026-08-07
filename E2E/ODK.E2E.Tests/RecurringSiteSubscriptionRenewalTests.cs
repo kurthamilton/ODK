@@ -16,6 +16,7 @@ namespace ODK.E2E.Tests;
 /// exercise the purchase UI (test clocks require an SDK-created subscription); #2 covers real Checkout.
 /// </summary>
 [TestFixture]
+[Category("Stripe")]
 public class RecurringSiteSubscriptionRenewalTests : DefaultPageTest
 {
     private static MemberDataHelper Members => new(E2ESettings.ConnectionString);

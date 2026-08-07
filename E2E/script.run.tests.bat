@@ -5,10 +5,26 @@ rem   - "e2e tests" : waits for the app, runs the tests for the given category, 
 rem   - "e2e ngrok" : public tunnel to the e2e app, for testing integrations that call back in
 rem                   (see the ngrok section in the root README for the gitignored ngrok.yml).
 rem
-rem Usage: script.run.tests.bat [category]   (category: Default | DrunkenKnitwits | E2E; default E2E)
+rem Usage: script.run.tests.bat [category]
+rem   Pass a category to skip the prompt; run with no argument (or double-click) to be asked.
 setlocal
 
 set CATEGORY=%~1
+
+rem Prompt when nothing was passed, so the useful subsets don't have to be memorised - double-clicking the
+rem file then works too, which it didn't when the only way in was an argument.
+if "%CATEGORY%"=="" (
+    echo Which tests?
+    echo.
+    echo   E2E                  - everything [default]
+    echo   Default              - Group Squirrel only
+    echo   DrunkenKnitwits      - Drunken Knitwits only
+    echo   Stripe               - payments only; slow, needs the ngrok tunnel up
+    echo   NoStripe             - everything except payments
+    echo.
+    set /p "CATEGORY=Category [E2E]: "
+)
+
 if "%CATEGORY%"=="" set CATEGORY=E2E
 
 rem The two platform ports bind together in one process, so waiting on 8125 is enough.

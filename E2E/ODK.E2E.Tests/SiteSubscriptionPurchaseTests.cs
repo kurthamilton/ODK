@@ -15,6 +15,7 @@ namespace ODK.E2E.Tests;
 /// <see cref="StripeWebhookTunnel"/>, so a missing tunnel fails fast rather than hanging.
 /// </summary>
 [TestFixture]
+[Category("Stripe")]
 public class SiteSubscriptionPurchaseTests : DefaultPageTest
 {
     private static MemberDataHelper Members => new(E2ESettings.ConnectionString);
