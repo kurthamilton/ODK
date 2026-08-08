@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using ODK.Core.Chapters;
 using ODK.Core.Exceptions;
 using ODK.Core.Members;
+using ODK.Core.Referrals;
 using ODK.Core.Platforms;
 using ODK.Core.Web;
 using ODK.Data.Core;
@@ -64,6 +65,8 @@ public class RequestStore : IRequestStore
     public IChapterServiceRequest ChapterServiceRequest => _chapterServiceRequest.Value;
 
     public Member CurrentMember => ServiceRequest.CurrentMemberOrDefault ?? throw new OdkNotAuthenticatedException();
+
+    public ReferralCampaign? ActiveReferralCampaign { get; private set; }
 
     public Member? CurrentMemberOrDefault => ServiceRequest.CurrentMemberOrDefault;
 
@@ -186,15 +189,21 @@ public class RequestStore : IRequestStore
         // Set the platform directly to persist when resetting other state
         Platform = _platformProvider.GetPlatform(context.RequestUrl);
 
-        var (chapter, currentMember, memberPreferences) = await _unitOfWork.RunAsync(
+        var (chapter, currentMember, memberPreferences, activeReferralCampaign) = await _unitOfWork.RunAsync(
             x => GetChapterQuery(context, x, verbose),
             x => currentMemberIdOrDefault != null
                 ? x.MemberRepository.GetByIdOrDefault(currentMemberIdOrDefault.Value)
                 : new DefaultDeferredQuerySingleOrDefault<Member>(),
             x => currentMemberIdOrDefault != null
                 ? x.MemberPreferencesRepository.GetByMemberIdOrDefault(currentMemberIdOrDefault.Value)
-                : new DefaultDeferredQuerySingleOrDefault<MemberPreferences>());
+                : new DefaultDeferredQuerySingleOrDefault<MemberPreferences>(),
+            // Only signed-in members on a platform that offers referrals can act on a campaign, so
+            // everyone else costs no query at all.
+            x => currentMemberIdOrDefault != null && Platform != PlatformType.DrunkenKnitwits
+                ? x.ReferralCampaignRepository.GetMostRecentActive(DateTime.UtcNow)
+                : new DefaultDeferredQuerySingleOrDefault<ReferralCampaign>());
 
+        ActiveReferralCampaign = activeReferralCampaign;
         _chapter = chapter;
         _serviceRequest = new ServiceRequest
         {

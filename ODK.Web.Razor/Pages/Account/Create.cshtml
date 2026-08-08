@@ -41,5 +41,7 @@
     @await Html.PartialAsync("Components/Scripts/_GoogleLocation")    
     @await Html.PartialAsync("Components/Scripts/_OAuth");
     @await Html.PartialAsync("Components/Scripts/_Recaptcha")
+    @* Only page that needs it: the referral link lands here, and the sign-up form it fills is here too. *@
+    <script src="~/js/odk.referrer.js" asp-append-version="true"></script>
     <script src="~/js/odk.wizard.js" asp-append-version="true"></script>
 }

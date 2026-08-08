@@ -32,6 +32,9 @@ public interface IUrlProvider
 
     string IssueUrl(Guid issueId);
 
+    /// <summary>The public join page, used as the destination in a referral email.</summary>
+    string JoinUrl();
+
     string LoginUrl(Chapter? chapter);
 
     string MemberAdminUrl(Chapter chapter, Guid memberId);

@@ -3,10 +3,10 @@ using System.Security.Claims;
 using ODK.Core;
 using ODK.Core.Chapters;
 using ODK.Core.Cryptography;
-using ODK.Core.Emails;
 using ODK.Core.Members;
 using ODK.Core.Notifications;
 using ODK.Data.Core;
+using ODK.Services.Emails;
 using ODK.Services.Members;
 using ODK.Services.Notifications;
 
@@ -15,6 +15,7 @@ namespace ODK.Services.Authentication;
 public class AuthenticationService : IAuthenticationService
 {
     private readonly IBreachedPasswordChecker _breachedPasswordChecker;
+    private readonly IEmailValidationService _emailValidationService;
     private readonly Lazy<IHashedPassword> _dummyPassword;
     private readonly IMemberEmailService _memberEmailService;
     private readonly INotificationService _notificationService;
@@ -30,9 +31,11 @@ public class AuthenticationService : IAuthenticationService
         INotificationService notificationService,
         IPasswordHasher passwordHasher,
         IPasswordPolicy passwordPolicy,
-        IBreachedPasswordChecker breachedPasswordChecker)
+        IBreachedPasswordChecker breachedPasswordChecker,
+        IEmailValidationService emailValidationService)
     {
         _breachedPasswordChecker = breachedPasswordChecker;
+        _emailValidationService = emailValidationService;
         _memberEmailService = memberEmailService;
         _notificationService = notificationService;
         _passwordHasher = passwordHasher;
@@ -224,6 +227,8 @@ public class AuthenticationService : IAuthenticationService
             await _unitOfWork.SaveChangesAsync();
         }
 
+        await CompleteReferral(member);
+
         return member;
     }
 
@@ -240,9 +245,10 @@ public class AuthenticationService : IAuthenticationService
         Chapter? chapter,
         string emailAddress)
     {
-        if (!MailUtils.ValidEmailAddress(emailAddress))
+        var emailValidationResult = await _emailValidationService.Validate(emailAddress);
+        if (!emailValidationResult.Success)
         {
-            return ServiceResult.Failure("Invalid email address format");
+            return emailValidationResult;
         }
 
         var member = await _unitOfWork.MemberRepository
@@ -364,6 +370,31 @@ public class AuthenticationService : IAuthenticationService
         }
 
         return ServiceResult.Successful();
+    }
+
+    /// <summary>
+    /// Marks the referral this member signed up from as complete, on their first successful login.
+    /// Idempotent by the CompletedUtc check rather than by counting logins, so later logins are a no-op
+    /// and the timestamp always records the first one.
+    /// </summary>
+    private async Task CompleteReferral(Member member)
+    {
+        if (member.ReferralId == null)
+        {
+            return;
+        }
+
+        var referral = await _unitOfWork.ReferralRepository
+            .GetByIdOrDefault(member.ReferralId.Value)
+            .Run();
+        if (referral == null || referral.CompletedUtc != null)
+        {
+            return;
+        }
+
+        referral.CompletedUtc = DateTime.UtcNow;
+        _unitOfWork.ReferralRepository.Update(referral);
+        await _unitOfWork.SaveChangesAsync();
     }
 
     private bool CheckPassword([NotNullWhen(true)] MemberPassword? memberPassword, string password)

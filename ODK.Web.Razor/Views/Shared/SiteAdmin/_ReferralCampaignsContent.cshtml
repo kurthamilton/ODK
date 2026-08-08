@@ -1,0 +1,75 @@
+﻿@using ODK.Core.Chapters
+@using ODK.Core.Utils
+@using ODK.Services.Referrals
+@using ODK.Web.Common.Routes
+@using ODK.Web.Common.Services
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Mvc
+@inject IOdkRoutes OdkRoutes
+@inject IReferralAdminService ReferralAdminService
+@inject IRequestStore RequestStore
+@{
+    var viewModel = await ReferralAdminService.GetCampaignsViewModel(RequestStore.MemberServiceRequest);
+    var campaigns = viewModel.Campaigns;
+
+    // Site-wide page, so there's no chapter zone to fall back to - use the app default.
+    var timeZone = Html.DisplayTimeZone(Chapter.DefaultTimeZone);
+    var options = new FriendlyDateStringOptions { TimeZone = timeZone };
+}
+
+<h2 class="content-heading">Referral campaigns</h2>
+
+<section class="section">
+    <p>
+        <a class="btn btn-primary" href="@OdkRoutes.SiteAdmin.ReferralCampaignCreate">
+            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Plus))
+            <span>Create</span>
+        </a>
+    </p>
+
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Created</th>
+                    <th>Expires</th>
+                    <th>Sent</th>
+                    <th>Completed</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (campaigns.Count == 0)
+                {
+                    <tr>
+                        <td colspan="5" class="text-muted">No referral campaigns yet.</td>
+                    </tr>
+                }
+                @foreach (var dto in campaigns)
+                {
+                    var campaign = dto.Campaign;
+
+                    <tr>
+                        <td>
+                            <a href="@OdkRoutes.SiteAdmin.ReferralCampaign(campaign.Id)">@campaign.Name</a>
+                        </td>
+                        <td>@campaign.CreatedUtc.ToFriendlyDateString(options)</td>
+                        <td>
+                            @if (campaign.ExpiresUtc != null)
+                            {
+                                @* Stored as the instant the expiry day ends, so step back to name that day. *@
+                                @campaign.ExpiresUtc.Value.AddDays(-1).ToFriendlyDateString(options)
+                            }
+                            else
+                            {
+                                <span class="text-muted">Never</span>
+                            }
+                        </td>
+                        <td>@dto.SentCount</td>
+                        <td>@dto.CompletedCount</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>

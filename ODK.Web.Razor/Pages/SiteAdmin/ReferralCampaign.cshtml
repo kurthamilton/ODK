@@ -1,0 +1,20 @@
+﻿@page "/siteadmin/referrals/{id:guid}"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Web.Razor.Models.Components
+@model ReferralCampaignModel
+@{
+    Layout = "_SiteAdminLayout";
+    Model.Title = "Referral campaign | SiteAdmin";
+}
+
+@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+{
+    Breadcrumbs = new[]
+    {
+        new MenuItem { Link = Model.OdkRoutes.SiteAdmin.Referrals.Path, Text = "Referrals" },
+        new MenuItem { Text = Model.ViewModel.Campaign.Name }
+    }
+})
+
+@await Html.PartialAsync("SiteAdmin/_ReferralCampaignContent", Model.ViewModel)

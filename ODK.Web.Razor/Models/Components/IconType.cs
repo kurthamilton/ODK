@@ -65,6 +65,7 @@ public enum IconType
     Upload,
     User,
     UserOutline,
+    UserPlus,
     WhatsApp,
     Wrench
 }

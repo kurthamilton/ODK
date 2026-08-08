@@ -1,0 +1,18 @@
+﻿@page "/refer"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Web.Razor.Models.Components
+@model ReferModel
+@{
+    Layout = "_HomeLayout";
+    Model.Title = "Refer a friend";
+    Model.Path = "/refer";
+}
+
+@* _HomeLayout renders no page structure of its own, so the content goes through _Body - the same way
+   /privacy and /pricing do. Never reached on DrunkenKnitwits, so there's no platform header branch. *@
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Content = await Html.PartialAsync("Account/_ReferContent", Model.Campaign),
+    Title = "Refer a friend"
+})

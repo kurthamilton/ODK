@@ -1,0 +1,10 @@
+﻿@page "/siteadmin/referrals"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@model ReferralsModel
+@{
+    Layout = "_SiteAdminLayout";
+    Model.Title = "Referrals | SiteAdmin";
+}
+
+@await Html.PartialAsync("SiteAdmin/_ReferralCampaignsContent")

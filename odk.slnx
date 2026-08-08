@@ -10,6 +10,7 @@
     <File Path="DEPLOYMENT.md" />
     <File Path="README.md" />
     <File Path="run.app.bat" />
+    <File Path="run.ngrok.odk.bat" />
   </Folder>
   <Folder Name="/Solution Items/Github/" />
   <Folder Name="/Solution Items/Github/Workflows/">

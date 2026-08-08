@@ -119,6 +119,7 @@ public class AccountController : OdkControllerBase
             OAuthProviderType = oauth.Provider,
             OAuthToken = oauth.Token,
             RecaptchaToken = personalDetails.Recaptcha ?? string.Empty,
+            ReferralId = personalDetails.ReferralId,
             TopicIds = topics.TopicIds ?? []
         };
 

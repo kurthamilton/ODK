@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -8,10 +8,12 @@ using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
+using ODK.Core.Referrals;
 using ODK.Core.Subscriptions;
 using ODK.Core.Web;
 using ODK.Services.Authentication.OAuth;
 using ODK.Services.Authorization;
+using ODK.Services.Emails;
 using ODK.Services.Geolocation;
 using ODK.Services.Logging;
 using ODK.Services.Members;
@@ -132,6 +134,70 @@ public static class MemberServiceTests
     }
 
     [Test]
+    public static async Task CreateAccount_KnownReferralId_AttributesTheSignup()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+        SeedDefaultSiteSubscription(context);
+        var referral = CreateReferral(context);
+
+        var service = CreateMemberService(context, new Mock<IMemberEmailService>().Object);
+        var request = CreateSiteRequest();
+
+        // Act
+        var result = await service.CreateAccount(
+            request, CreateModel("new@example.com", firstName: "New", referralId: referral.Id));
+
+        // Assert
+        result.Success.Should().BeTrue();
+        context.Set<Member>().Single(x => x.EmailAddress == "new@example.com")
+            .ReferralId.Should().Be(referral.Id);
+    }
+
+    [Test]
+    public static async Task CreateAccount_AlreadyCompletedReferralId_SignsUpUnattributed()
+    {
+        // Arrange - the referral already brought in a member, so it cannot bring in another. Without this
+        // an id left in local storage from an earlier signup would attribute a later one too.
+        using var context = CreateMockOdkContext();
+        SeedDefaultSiteSubscription(context);
+        var referral = CreateReferral(context, completed: true);
+
+        var service = CreateMemberService(context, new Mock<IMemberEmailService>().Object);
+        var request = CreateSiteRequest();
+
+        // Act
+        var result = await service.CreateAccount(
+            request, CreateModel("new@example.com", firstName: "New", referralId: referral.Id));
+
+        // Assert
+        result.Success.Should().BeTrue();
+        context.Set<Member>().Single(x => x.EmailAddress == "new@example.com")
+            .ReferralId.Should().BeNull();
+    }
+
+    [Test]
+    public static async Task CreateAccount_UnknownReferralId_SignsUpUnattributedRatherThanFailing()
+    {
+        // Arrange - the id reaches the server from a hidden form field, so a stale or tampered value must
+        // be discarded. Storing it blindly would fail the signup on a foreign key violation.
+        using var context = CreateMockOdkContext();
+        SeedDefaultSiteSubscription(context);
+
+        var service = CreateMemberService(context, new Mock<IMemberEmailService>().Object);
+        var request = CreateSiteRequest();
+
+        // Act
+        var result = await service.CreateAccount(
+            request, CreateModel("new@example.com", firstName: "New", referralId: Guid.NewGuid()));
+
+        // Assert
+        result.Success.Should().BeTrue();
+        context.Set<Member>().Single(x => x.EmailAddress == "new@example.com")
+            .ReferralId.Should().BeNull();
+    }
+
+    [Test]
     public static async Task CreateAccount_NewMember_SavesTheRequestLocale()
     {
         // Arrange - a brand new sign-up whose request resolves to the fr-FR locale.
@@ -236,9 +302,36 @@ public static class MemberServiceTests
         ImageData = [1, 2, 3]
     };
 
-    private static AccountCreateModel CreateModel(string emailAddress, string firstName) => new AccountCreateModel
+    private static Referral CreateReferral(MockOdkContext context, bool completed = false)
+    {
+        var referrer = context.CreateMember(afterCreate: x => x.EmailAddress = "referrer@example.com");
+        var campaign = context.Create(new ReferralCampaign
+        {
+            CreatedUtc = DateTime.UtcNow.AddDays(-1),
+            Id = Guid.NewGuid(),
+            Name = "Spring drive"
+        });
+
+        return context.Create(new Referral
+        {
+            CompletedUtc = completed ? DateTime.UtcNow : null,
+            CreatedUtc = DateTime.UtcNow,
+            EmailAddress = "new@example.com",
+            Id = Guid.NewGuid(),
+            MemberId = referrer.Id,
+            ReferralCampaignId = campaign.Id
+        });
+    }
+
+    private static IServiceRequest CreateSiteRequest() => Mock.Of<IServiceRequest>(x =>
+        x.Platform == PlatformType.Default &&
+        x.HttpRequestContext == Mock.Of<IHttpRequestContext>());
+
+    private static AccountCreateModel CreateModel(
+        string emailAddress, string firstName, Guid? referralId = null) => new AccountCreateModel
     {
         EmailAddress = emailAddress,
+        ReferralId = referralId,
         FirstName = firstName,
         LastName = "Member",
         Location = null,
@@ -272,7 +365,8 @@ public static class MemberServiceTests
             new DistanceUnitFactory(),
             new MemberChapterSubscriptionWriter(unitOfWork),
             new MemberSiteSubscriptionWriter(unitOfWork),
-            CreateMockRecaptchaService());
+            CreateMockRecaptchaService(),
+            new EmailValidationService());
     }
 
     private static IRecaptchaService CreateMockRecaptchaService()

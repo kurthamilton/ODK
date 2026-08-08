@@ -8,6 +8,9 @@ public class AccountCreateModel
 {
     public required string EmailAddress { get; init; }
 
+    /// <summary>The referral the member signed up from, when they arrived via a referral link.</summary>
+    public Guid? ReferralId { get; init; }
+
     public required string FirstName { get; init; }
 
     public required string LastName { get; init; }

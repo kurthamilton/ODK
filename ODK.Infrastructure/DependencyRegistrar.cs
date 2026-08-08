@@ -37,6 +37,7 @@ using ODK.Services.Members.Tasks;
 using ODK.Services.Members.Tasks.Providers;
 using ODK.Services.Notifications;
 using ODK.Services.Payments;
+using ODK.Services.Referrals;
 using ODK.Services.Recaptcha;
 using ODK.Services.Settings;
 using ODK.Services.SocialMedia;
@@ -155,6 +156,9 @@ public static class DependencyRegistrar
             .AddScoped<IEventService, EventService>()
             .AddScoped<IEventViewModelService, EventViewModelService>()
             .AddScoped<IFeatureService, FeatureService>()
+            .AddScoped<IEmailValidationService, EmailValidationService>()
+            .AddScoped<IReferralAdminService, ReferralAdminService>()
+            .AddScoped<IReferralService, ReferralService>()
             .AddScoped<IImageService, ImageService>()
             .AddScoped<IIssueAdminService, IssueAdminService>()
             .AddScoped<IIssueService, IssueService>()

@@ -1,10 +1,9 @@
 ﻿using ODK.Core;
 using ODK.Core.Chapters;
-using ODK.Core.Emails;
 using ODK.Core.Messages;
 using ODK.Core.Notifications;
 using ODK.Data.Core;
-using ODK.Services.Authorization;
+using ODK.Services.Emails;
 using ODK.Services.Exceptions;
 using ODK.Services.Members;
 using ODK.Services.Notifications;
@@ -14,7 +13,7 @@ namespace ODK.Services.Contact;
 
 public class ContactService : IContactService
 {
-    private readonly IAuthorizationService _authorizationService;
+    private readonly IEmailValidationService _emailValidationService;
     private readonly IMemberEmailService _memberEmailService;
     private readonly INotificationService _notificationService;
     private readonly IRecaptchaService _recaptchaService;
@@ -23,11 +22,11 @@ public class ContactService : IContactService
     public ContactService(
         IRecaptchaService recaptchaService,
         IUnitOfWork unitOfWork,
-        IAuthorizationService authorizationService,
         INotificationService notificationService,
-        IMemberEmailService memberEmailService)
+        IMemberEmailService memberEmailService,
+        IEmailValidationService emailValidationService)
     {
-        _authorizationService = authorizationService;
+        _emailValidationService = emailValidationService;
         _memberEmailService = memberEmailService;
         _notificationService = notificationService;
         _recaptchaService = recaptchaService;
@@ -112,7 +111,7 @@ public class ContactService : IContactService
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
 
-        ValidateRequest(fromAddress, message);
+        await ValidateRequest(fromAddress, message);
 
         var result = await _recaptchaService.Verify(recaptchaToken);
         var flagged = !_recaptchaService.Success(result);
@@ -158,7 +157,7 @@ public class ContactService : IContactService
         string message,
         string recaptchaToken)
     {
-        ValidateRequest(fromAddress, message);
+        await ValidateRequest(fromAddress, message);
 
         var siteAdmins = await _unitOfWork.MemberRepository
             .Query()
@@ -280,16 +279,17 @@ public class ContactService : IContactService
         return ServiceResult.Successful();
     }
 
-    private static void ValidateRequest(string fromAddress, string message)
+    private async Task ValidateRequest(string fromAddress, string message)
     {
         if (string.IsNullOrWhiteSpace(fromAddress) || string.IsNullOrWhiteSpace(message))
         {
             throw new OdkServiceException("Email address and message must be provided");
         }
 
-        if (!MailUtils.ValidEmailAddress(fromAddress))
+        var emailValidationResult = await _emailValidationService.Validate(fromAddress);
+        if (!emailValidationResult.Success)
         {
-            throw new OdkServiceException("Invalid email address format");
+            throw new OdkServiceException(emailValidationResult.Message ?? string.Empty);
         }
     }
 }

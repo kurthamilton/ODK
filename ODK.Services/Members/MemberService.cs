@@ -2,16 +2,18 @@
 using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Cryptography;
-using ODK.Core.Emails;
 using ODK.Core.Exceptions;
 using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Notifications;
 using ODK.Core.Payments;
+using ODK.Core.Referrals;
 using ODK.Core.Subscriptions;
 using ODK.Data.Core;
+using ODK.Data.Core.Deferred;
 using ODK.Services.Authentication.OAuth;
 using ODK.Services.Authorization;
+using ODK.Services.Emails;
 using ODK.Services.Geolocation;
 using ODK.Services.Logging;
 using ODK.Services.Members.Models;
@@ -29,6 +31,7 @@ namespace ODK.Services.Members;
 public class MemberService : IMemberService
 {
     private readonly IAuthorizationService _authorizationService;
+    private readonly IEmailValidationService _emailValidationService;
     private readonly IDistanceUnitFactory _distanceUnitFactory;
     private readonly IGeolocationService _geolocationService;
     private readonly ILoggingService _loggingService;
@@ -57,9 +60,11 @@ public class MemberService : IMemberService
         IDistanceUnitFactory distanceUnitFactory,
         IMemberChapterSubscriptionWriter memberChapterSubscriptionWriter,
         IMemberSiteSubscriptionWriter memberSiteSubscriptionWriter,
-        IRecaptchaService recaptchaService)
+        IRecaptchaService recaptchaService,
+        IEmailValidationService emailValidationService)
     {
         _authorizationService = authorizationService;
+        _emailValidationService = emailValidationService;
         _distanceUnitFactory = distanceUnitFactory;
         _geolocationService = geolocationService;
         _loggingService = loggingService;
@@ -127,10 +132,13 @@ public class MemberService : IMemberService
 
     public async Task<ServiceResult<Member?>> CreateAccount(IServiceRequest request, AccountCreateModel model)
     {
-        var (existing, siteSubscription, topics) = await _unitOfWork.RunAsync(
+        var (existing, siteSubscription, topics, referral) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetByEmailAddress(model.EmailAddress),
             x => x.SiteSubscriptionRepository.GetDefault(request.Platform),
-            x => x.TopicRepository.GetByIds(model.TopicIds));
+            x => x.TopicRepository.GetByIds(model.TopicIds),
+            x => model.ReferralId != null
+                ? x.ReferralRepository.GetByIdOrDefault(model.ReferralId.Value)
+                : new DefaultDeferredQuerySingleOrDefault<Referral>());
 
         string? reusableActivationToken = null;
         if (existing != null)
@@ -178,6 +186,11 @@ public class MemberService : IMemberService
             LastName = model.LastName,
             RecaptchaFlagged = !_recaptchaService.Success(recaptchaResult),
             RecaptchaScore = recaptchaResult.Score,
+            // The resolved referral, not the posted id: the id comes from the browser, so one that matches
+            // nothing is discarded rather than failing the signup on a foreign key violation. An already
+            // completed referral is discarded too, so one referral can only ever bring in one member -
+            // without it, a stored id left over from an earlier signup would attribute a later one as well.
+            ReferralId = referral?.CompletedUtc == null ? referral?.Id : null,
             TimeZone = timeZone
         });
 
@@ -297,7 +310,7 @@ public class MemberService : IMemberService
                 .GetAll(),
             x => x.ChapterLocationRepository.GetByChapterId(chapter.Id));
 
-        var validationResult = ValidateMemberProfile(chapterProperties, model, forApplication: true);
+        var validationResult = await ValidateMemberProfile(chapterProperties, model, forApplication: true);
         if (!validationResult.Success)
         {
             return validationResult;
@@ -1155,9 +1168,10 @@ public class MemberService : IMemberService
             return ServiceResult.Successful("New email address matches old email address");
         }
 
-        if (!MailUtils.ValidEmailAddress(newEmailAddress))
+        var emailValidationResult = await _emailValidationService.Validate(newEmailAddress);
+        if (!emailValidationResult.Success)
         {
-            return ServiceResult.Failure("Invalid email address format");
+            return emailValidationResult;
         }
 
         if (existingToken != null)
@@ -1198,16 +1212,17 @@ public class MemberService : IMemberService
         return ServiceResult.Successful();
     }
 
-    private ServiceResult ValidateMemberProfile(
+    private async Task<ServiceResult> ValidateMemberProfile(
         IReadOnlyCollection<ChapterProperty> chapterProperties,
         MemberCreateProfile profile,
         bool forApplication)
     {
         var propertyResult = ValidateMemberProperties(chapterProperties, profile.Properties, forApplication);
 
-        if (!MailUtils.ValidEmailAddress(profile.EmailAddress))
+        var emailValidationResult = await _emailValidationService.Validate(profile.EmailAddress);
+        if (!emailValidationResult.Success)
         {
-            return ServiceResult.Failure("Invalid email address format");
+            return emailValidationResult;
         }
 
         return ServiceResult.Successful();

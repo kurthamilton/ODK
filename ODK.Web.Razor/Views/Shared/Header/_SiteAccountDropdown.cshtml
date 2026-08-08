@@ -39,6 +39,17 @@
                                 </span>
                                 <span>My account</span>
                             </a>
+                            @* Loaded with the current member, so this costs no query of its own. Null
+                               when no campaign is running or the platform doesn't offer referrals. *@
+                            @if (RequestStore.ActiveReferralCampaign != null)
+                            {
+                                <a class="list-group-item list-group-item-action" href="@OdkRoutes.Site.Refer">
+                                    <span class="icon">
+                                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.UserPlus))
+                                    </span>
+                                    <span>Refer a friend</span>
+                                </a>
+                            }
                         </div>                    
 
                         <hr/>                        

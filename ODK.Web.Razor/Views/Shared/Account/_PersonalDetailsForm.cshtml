@@ -16,6 +16,9 @@
     @* Account creation only - odk.recaptcha.js fills this before submit (see the _Recaptcha script partial on
        the create/join pages). Not rendered when editing an existing member. *@
     @Html.HiddenFor(x => x.Recaptcha, new { data_recaptcha_token = "" })
+
+    @* odk.referrer.js fills this from local storage, where the join page put the utm_source value. *@
+    @Html.HiddenFor(x => x.ReferralId, new { data_odk_referrer = "" })
 }
 
 <div class="form-group mb-3 @(member == null ? "required" : null)">
@@ -31,7 +34,7 @@
     }
     else
     {        
-        @Html.TextBoxFor(x => x.EmailAddress, new { @class = "form-control", type = "Email", data_email = "" })
+        @Html.TextBoxFor(x => x.EmailAddress, new { @class = "form-control", type = "email", data_email = "" })
         @await Html.PartialAsync("Components/_FormLabelSubtitle", "You will need access to this email to verify your account")
         @Html.ValidationMessageFor(x => x.EmailAddress)
     }

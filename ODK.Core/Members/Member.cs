@@ -24,6 +24,12 @@ public class Member : IVersioned, IDatabaseEntity, ITimeZoneEntity
     public string LastName { get; set; } = string.Empty;
 
     /// <summary>
+    /// The referral this member signed up from, when they arrived via a referral link. Null for every
+    /// other member, which is the overwhelming majority.
+    /// </summary>
+    public Guid? ReferralId { get; set; }
+
+    /// <summary>
     /// Whether the signup was flagged as likely automated, decided when the account was created against the
     /// score threshold in force at that moment. Stored rather than derived so that changing the threshold
     /// later doesn't retrospectively change who was flagged. Null when no check ran (the account predates
