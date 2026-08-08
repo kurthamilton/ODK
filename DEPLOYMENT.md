@@ -50,6 +50,7 @@ committed base `appsettings.json`:
 | Credentials | Doppler (leaf secret) | `ConnectionStrings:Default`, `Payments:Stripe:WebhookSecretV1` |
 | Sensitive **string list** you don't want public | Doppler (secret whose value is a **newline-delimited list**) | `RateLimiting:BlockPatterns` |
 | Sensitive **structured** config (array of objects) | Doppler (secret whose **value is JSON**) | `Logging:IgnoreExceptions` |
+| Sensitive **dictionary** (keys are data, not a config path) | Doppler (**one** secret for the whole dictionary, **value is a JSON object**) | `Instagram:Client:Cookies` |
 
 **Decision rule for any value:** would I mind it being on public GitHub? **Yes → Doppler.** No → is it the
 same on every site? **Same everywhere → `config.production.json`; differs per site → a GitHub environment
@@ -73,9 +74,13 @@ Key points:
 
 - Doppler stores flat keys. Its JSON import delimits config levels with a single underscore, so
   `Payments:Stripe:WebhookSecretV1` becomes `PAYMENTS_STRIPE_WEBHOOKSECRETV1`. The pipeline converts `_` → `:`.
-  This is safe because no .NET config-key segment contains an underscore. Case doesn't matter — .NET matches
-  config keys case-insensitively, so `PAYMENTS:STRIPE:WEBHOOKSECRETV1` overrides the nested key from the base
-  `appsettings.json`.
+  Case doesn't matter for a *settings* key — .NET matches config keys case-insensitively, so
+  `PAYMENTS:STRIPE:WEBHOOKSECRETV1` overrides the nested key from the base `appsettings.json`.
+- **A Doppler key name cannot carry a literal underscore, hyphen, or lower-case letter into a config segment.**
+  The `_` → `:` conversion is unconditional, so an underscore *within* a name splits it into another level, and
+  Doppler names are upper-snake-case, so nothing lower-case survives. That's invisible for ordinary settings
+  keys — they have no underscores and are matched case-insensitively — but it silently corrupts a
+  **dictionary-shaped** setting, where the key is *data* rather than a path. See the JSON rule below.
 - Doppler supplies **arrays** two ways:
   - **String lists** (`RateLimiting:BlockPatterns`, `RateLimiting:BlockIpAddresses`, `RateLimiting:BlockPaths`)
     are stored as a **newline-delimited plain-text** value — one entry per line, **no JSON escaping**. The
@@ -86,6 +91,14 @@ Key points:
   - **Structured values** (arrays of objects like `Logging:IgnoreExceptions`) are stored as **JSON** — a value
     starting with `[` or `{` is parsed and injected as real structure. JSON strings must be validly escaped
     (backslashes doubled) since plain text can't represent nested objects.
+  - **Dictionaries must use the JSON form too** — one secret for the whole dictionary, not one per entry. A
+    dictionary's keys are *values* (`Instagram:Client:Cookies` binds to `IReadOnlyDictionary<string, string>`
+    whose keys are the cookie names actually sent), so they have to survive verbatim, and a Doppler key name
+    can't do that. `INSTAGRAM_CLIENT_COOKIES_DS_USER_ID` arrives as
+    `Instagram:Client:Cookies:DS:USER:ID` — nested objects instead of a cookie named `ds_user_id` — and even
+    `SESSIONID` is the wrong name for a case-sensitive cookie. One secret holding
+    `{"ds_user_id":"…","sessionid":"…"}` binds to the exact names. Same for `Instagram:Client:Headers`, whose
+    names contain hyphens that a Doppler key can't hold at all.
   - Either way the config binds to a real array, not a single string. To make a *new* key a newline list, add it
     to `$stringListKeys` in `deploy.yml`'s build step.
 - Finally, any per-environment GitHub Variable the step reads (currently `LOGGING_PATH` → `Logging:Path`) is
@@ -195,6 +208,15 @@ workflow**; see §6.)
   ```
 - For **structured** sensitive config (an array of objects, e.g. `Logging:IgnoreExceptions`), set the value to
   **JSON** (`[…]`/`{…}`). JSON strings must be validly escaped — every backslash doubled.
+- For a **dictionary** (`Instagram:Client:Cookies`, `Instagram:Client:Headers`), use **one secret for the whole
+  dictionary**, with a JSON object as its value — never one secret per entry:
+  ```
+  INSTAGRAM_CLIENT_COOKIES = {"ds_user_id":"…","sessionid":"…","csrftoken":"…"}
+  ```
+  A dictionary's keys are data, not a config path, so they must arrive character-for-character. A per-entry
+  secret can't manage that: `_` becomes `:` (so `ds_user_id` splits into three levels) and Doppler names are
+  upper-case (so a case-sensitive cookie or a hyphenated header name is unreachable). The failure is silent —
+  the config loads fine and the request just goes out with the wrong names.
 - Changes take effect on the **next deploy** (the app doesn't read Doppler live). Re-run Deploy to apply.
 
 ### Adding / changing public config
