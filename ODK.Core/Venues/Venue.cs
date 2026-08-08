@@ -10,6 +10,13 @@ public class Venue : IVersioned, IDatabaseEntity, IChapterEntity
     /// </summary>
     public const int SlugMaxLength = 255;
 
+    /// <summary>
+    /// Used when a name has nothing sluggable at all (no letters or digits in any script). The slug is
+    /// required, so there has to be something to fall back to; the usual version suffix keeps it unique
+    /// within the chapter.
+    /// </summary>
+    public const string SlugFallback = "venue";
+
     public string? Address { get; set; }
 
     public DateTime? ArchivedUtc { get; set; }
@@ -23,11 +30,10 @@ public class Venue : IVersioned, IDatabaseEntity, IChapterEntity
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
-    /// URL-safe form of <see cref="Name"/>, unique within the chapter. Nullable while it is being
-    /// rolled out. Not a stable identifier — it changes when the venue is renamed; <see cref="Id"/>
-    /// is canonical.
+    /// URL-safe form of <see cref="Name"/>, unique within the chapter. Not a stable identifier — it
+    /// changes when the venue is renamed; <see cref="Id"/> is canonical.
     /// </summary>
-    public string? Slug { get; set; }
+    public string Slug { get; set; } = string.Empty;
 
     public byte[] Version { get; set; } = [];
 }

@@ -72,10 +72,11 @@ Two axes, composed by the filter:
   - **`Stripe`** — the four payment fixtures (site/chapter purchase, recurring renewal, cancellation),
     applied at *fixture* level. These are the slow ones — real Stripe calls, webhook round-trips via the
     ngrok tunnel, test clocks — so being able to run or skip them separately matters.
-  - **`Venues`** — the venue-admin scenarios (creation, name normalising, slug collisions), applied at
-    *method* level because they live in `EventTestsBase` alongside the event tests. Deliberately only the
-    venue-focused tests: most event and RSVP tests create a venue while arranging, so including everything
-    that touches one would cover most of the suite and the filter would stop meaning anything.
+  - **`Venues`** — the venue-admin scenarios (creation, name normalising, slug collisions) plus the
+    events-list venue filter, which drives the slug through the query string. Applied at *method* level
+    because they live in `EventTestsBase` alongside the event tests. Deliberately only the venue-focused
+    tests: most event and RSVP tests create a venue while arranging, so including everything that touches
+    one would cover most of the suite and the filter would stop meaning anything.
 
 ```
 script.run.tests.bat            # prompts for a category

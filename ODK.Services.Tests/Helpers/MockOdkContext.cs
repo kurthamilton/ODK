@@ -357,7 +357,7 @@ internal class MockOdkContext : OdkContext
         });
     }
 
-    internal Venue CreateVenue(Chapter chapter, string name = "", string? slug = null) => Create(new Venue
+    internal Venue CreateVenue(Chapter chapter, string name = "", string slug = "") => Create(new Venue
     {
         ChapterId = chapter.Id,
         Id = Guid.NewGuid(),

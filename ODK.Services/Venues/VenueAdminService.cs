@@ -39,58 +39,6 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
         return ServiceResult.Successful();
     }
 
-    /// <summary>
-    /// Gives every venue that has no slug one, for the rollout of the column. Site admin only, and
-    /// temporary — delete this once Venue.Slug is required.
-    /// </summary>
-    /// <remarks>
-    /// Idempotent: venues that already have a slug are left alone, and their slugs count as taken, so
-    /// this can never take one the app has already handed out. It reuses <see cref="CreateSlug"/>
-    /// rather than reimplementing the rules, so a backfilled slug is identical to one the create form
-    /// would have produced.
-    /// </remarks>
-    public async Task<ServiceResult> BackfillSlugs(IMemberServiceRequest request)
-    {
-        var venues = await GetSiteAdminRestrictedContent(
-            request,
-            x => x.VenueRepository.Query().GetAll());
-
-        var updated = 0;
-
-        foreach (var group in venues.GroupBy(x => x.ChapterId))
-        {
-            var chapterVenues = group.ToArray();
-
-            // Ordered so that a rerun, or a run against a different database, versions collisions the
-            // same way rather than depending on the order rows came back in.
-            var missing = chapterVenues
-                .Where(x => string.IsNullOrEmpty(x.Slug))
-                .OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
-                .ThenBy(x => x.Id);
-
-            foreach (var venue in missing)
-            {
-                // CreateSlug reads the slugs off chapterVenues, and those are the same instances being
-                // assigned here — so each slug is visible to the next venue in the loop, exactly as it
-                // would be for consecutive creates through the admin form.
-                var slug = CreateSlug(venue.Name, chapterVenues, venue.Id);
-                if (slug == null)
-                {
-                    continue;
-                }
-
-                venue.Slug = slug;
-                _unitOfWork.VenueRepository.Update(venue);
-                updated++;
-            }
-        }
-
-        await _unitOfWork.SaveChangesAsync();
-
-        return ServiceResult.Successful(
-            $"{updated} {StringUtils.Pluralise(updated, "venue")} updated");
-    }
-
     public async Task<ServiceResult> CreateVenue(
         IMemberChapterAdminServiceRequest request, VenueCreateModel model)
     {
@@ -306,15 +254,18 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
     /// under the unique index this is building towards. Archived venues keep their slugs and are
     /// counted, so restoring one can never introduce a duplicate.
     /// </remarks>
-    private static string? CreateSlug(string name, IReadOnlyCollection<Venue> chapterVenues, Guid? venueId)
+    private static string CreateSlug(string name, IReadOnlyCollection<Venue> chapterVenues, Guid? venueId)
     {
         var taken = chapterVenues
             .Where(x => x.Id != venueId)
             .Select(x => x.Slug)
-            .OfType<string>()
+            .Where(x => !string.IsNullOrEmpty(x))
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-        return UrlUtils.SlugifyUnique(name, taken, Venue.SlugMaxLength);
+        // A name with no letters or digits at all slugs to nothing, and the column is required, so it
+        // falls back to a generic slug that the versioning then keeps unique.
+        return UrlUtils.SlugifyUnique(name, taken, Venue.SlugMaxLength)
+            ?? UrlUtils.SlugifyUnique(Venue.SlugFallback, taken, Venue.SlugMaxLength)!;
     }
 
     /// <summary>

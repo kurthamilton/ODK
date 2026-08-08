@@ -1,4 +1,4 @@
-@using ODK.Core.Utils
+﻿@using ODK.Core.Utils
 @using ODK.Services.Events.ViewModels
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
@@ -9,14 +9,14 @@
     var eventsPath = OdkRoutes.GroupAdmin.Events(Model.Chapter).Path;
     var page = Model.Events.Page;
     var totalPages = Model.Events.TotalPages;
-    var hasFilter = Model.Filter.VenueId != null || Model.Filter.FromDateLocal != null || Model.Filter.ToDateLocal != null;
+    var hasFilter = !string.IsNullOrEmpty(Model.Filter.VenueSlug) || Model.Filter.FromDateLocal != null || Model.Filter.ToDateLocal != null;
 
     string PageUrl(int targetPage)
     {
         var query = new List<string>();
-        if (Model.Filter.VenueId != null)
+        if (!string.IsNullOrEmpty(Model.Filter.VenueSlug))
         {
-            query.Add($"venueId={Model.Filter.VenueId}");
+            query.Add($"venue={Model.Filter.VenueSlug}");
         }
         if (Model.Filter.FromDateLocal != null)
         {
@@ -45,13 +45,13 @@
 <form method="get" action="@eventsPath" class="row g-2 mb-3 align-items-end">
     <div class="col-12 col-lg-auto">
         <label class="form-label" for="filter-venue">Venue</label>
-        <select class="form-select" id="filter-venue" name="venueId" 
+        <select class="form-select" id="filter-venue" name="venue" 
             data-select data-searchable data-clearable data-placeholder="All venues"
             data-autosubmit>
             <option value=""></option>
             @foreach (var venue in Model.Venues)
             {
-                <option value="@venue.Id" selected="@(venue.Id == Model.Filter.VenueId)">@venue.Name</option>
+                <option value="@venue.Slug" selected="@(venue.Slug == Model.Filter.VenueSlug)">@venue.Name</option>
             }
         </select>
     </div>

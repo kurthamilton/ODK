@@ -17,17 +17,6 @@
 
 <h2 class="content-heading">Groups</h2>
 
-@*Temporary, for the Venue.Slug rollout - remove this block once the column is required.*@
-<form method="post" action="/siteadmin/venues/backfill-slugs" class="mb-3">
-    @Html.AntiForgeryToken()
-    @await Html.PartialAsync("Components/_Confirm", new ConfirmViewModel
-    {
-        Message = "Give every venue without a slug one? Existing slugs are left untouched.",
-        Title = "Backfill venue slugs"
-    })
-    <button type="submit" class="btn btn-outline-secondary btn-sm">Backfill venue slugs</button>
-</form>
-
 @await Html.PartialAsync("Components/_Tabs", tabs)
 
 <div class="tab-content">

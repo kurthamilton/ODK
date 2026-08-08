@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using ODK.Data.Core;
 using ODK.Data.Core.Events;
 using ODK.Services.Security;
@@ -21,8 +21,9 @@ public class EventsModel : AdminPageModel
 
     // Bind from the query string explicitly: `page` is a reserved Razor Pages route value (the page
     // path), so a plain `int page` parameter would bind that instead of the ?page= query value.
+    // "venue" carries the venue's slug, so a filtered URL reads as ?venue=the-oak-tree.
     public void OnGet(
-        [FromQuery] Guid? venueId,
+        [FromQuery] string? venue,
         [FromQuery] DateTime? fromDate,
         [FromQuery] DateTime? toDate,
         [FromQuery] int page = 1)
@@ -31,7 +32,7 @@ public class EventsModel : AdminPageModel
         {
             FromDateLocal = fromDate,
             ToDateLocal = toDate,
-            VenueId = venueId
+            VenueSlug = venue
         };
 
         PageFilter = new PageFilter
