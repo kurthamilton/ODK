@@ -278,6 +278,55 @@ public static class ChapterAdminServiceTests
     }
 
     [Test]
+    public static async Task CreateChapter_WhenNameHasStrayWhitespace_StoresItNormalised()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberServiceRequest(currentMember);
+        var model = CreateChapterCreateModel(name: "  Test   Chapter  ");
+
+        // Act
+        var result = await service.CreateChapter(request, model);
+
+        // Assert
+        result.Value.Should().NotBeNull();
+        result.Value.Name.Should().Be("Test Chapter");
+        result.Value.Slug.Should().Be("test-chapter");
+    }
+
+    [Test]
+    public static async Task CreateChapter_WhenNameTakenDifferingOnlyByWhitespace_ReturnsFailure()
+    {
+        // Arrange
+        // Pins the ordering, not just the normalising: the name has to be normalised *before* the
+        // uniqueness check, or "Test  Chapter" is looked up verbatim, found to be free, and created
+        // alongside "Test Chapter" - two names competing for one slug.
+        using var context = CreateMockOdkContext();
+
+        context.CreateChapter(name: "Test Chapter");
+
+        var currentMember = context.CreateMember(
+            createSiteSubscription: true);
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberServiceRequest(currentMember);
+        var model = CreateChapterCreateModel(name: "  Test  Chapter ");
+
+        // Act
+        var result = await service.CreateChapter(request, model);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.Message.Should().Be(ErrorMessagesResource.NameTaken.Replace("{name}", "Test Chapter"));
+    }
+
+    [Test]
     public static async Task CreateChapter_WhenNameTaken_ReturnsFailure()
     {
         // Arrange
@@ -819,6 +868,31 @@ public static class ChapterAdminServiceTests
         result.Should().NotBeNull();
         result.Questions.Should().HaveCount(1);
         result.Questions.First().Name.Should().Be("q1");
+    }
+
+    // Has to agree with CreateChapter, which normalises before its own uniqueness check - if this one
+    // did not, it would report a name as free and the submit that follows would reject it as taken.
+    [TestCase("Test Chapter Two", ExpectedResult = true)]
+    [TestCase("Test Chapter", ExpectedResult = false)]
+    [TestCase("  Test  Chapter ", ExpectedResult = false)]
+    public static async Task<bool> NameIsAvailable_NormalisesNameBeforeChecking(string name)
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        context.CreateChapter(name: "Test Chapter");
+
+        var currentMember = context.CreateMember();
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberServiceRequest(currentMember);
+
+        // Act
+        var result = await service.NameIsAvailable(request, name);
+
+        // Assert
+        return result;
     }
 
     [Test]

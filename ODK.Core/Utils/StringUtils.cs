@@ -12,6 +12,7 @@ public static class StringUtils
     private static readonly Regex AlphaNumericRegex = new("[^a-zA-Z0-9]", RegexOptions.Compiled);
     private static readonly string HashtagRegexPattern = "#[a-zA-Z0-9]+";
     private static readonly Regex TokenRegex = new(@"\{(.+?)\}", RegexOptions.Compiled);
+    private static readonly Regex WhitespaceRunRegex = new(@"\s+", RegexOptions.Compiled);
 
     public static string AlphaNumeric(this string text) => AlphaNumericRegex.Replace(text, string.Empty);
 
@@ -85,6 +86,14 @@ public static class StringUtils
 
     public static IReadOnlyCollection<string> IsolateHashtags(string text)
         => Regex.Split(text, $"({HashtagRegexPattern})");
+
+    /// <summary>
+    /// Trims the text and collapses every internal run of whitespace to a single space, so whitespace
+    /// can never be what distinguishes one value from another. <c>\s</c> covers tabs and Unicode
+    /// separators such as the non-breaking space, not just the plain space.
+    /// </summary>
+    public static string NormaliseWhitespace(this string text)
+        => WhitespaceRunRegex.Replace(text, " ").Trim();
 
     public static string Pluralise(int count, string single, string? plural = null)
     {

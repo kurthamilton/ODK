@@ -20,11 +20,6 @@ public class VenueRepository : ReadWriteRepositoryBase<Venue, IVenueQueryBuilder
             .ForChapter(chapterId)
             .GetAll();
 
-    public IDeferredQuerySingleOrDefault<Venue> GetByName(Guid chapterId, string name)
-        => Set()
-            .Where(x => x.ChapterId == chapterId && x.Name == name)
-            .DeferredSingleOrDefault();
-
     public override IVenueQueryBuilder Query()
         => CreateQueryBuilder(context => new VenueQueryBuilder(context));
 }

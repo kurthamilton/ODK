@@ -74,6 +74,16 @@ public static class StringUtilsTests
         tokens.Should().BeEquivalentTo("a", "b", "c");
     }
 
+    [TestCase("The Oak", ExpectedResult = "The Oak")]
+    [TestCase("  The Oak  ", ExpectedResult = "The Oak")]
+    [TestCase("The  Oak", ExpectedResult = "The Oak")]
+    [TestCase("The\tOak", ExpectedResult = "The Oak")]
+    [TestCase("The \t\n Oak", ExpectedResult = "The Oak")]
+    [TestCase("The Oak", ExpectedResult = "The Oak")]
+    [TestCase("   ", ExpectedResult = "")]
+    [TestCase("", ExpectedResult = "")]
+    public static string NormaliseWhitespace(string text) => text.NormaliseWhitespace();
+
     [TestCase("#a", ExpectedResult = true)]
     [TestCase("#a1", ExpectedResult = true)]
     [TestCase("#a1-no-special-chars", ExpectedResult = false)]

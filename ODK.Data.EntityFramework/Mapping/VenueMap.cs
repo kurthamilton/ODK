@@ -20,6 +20,12 @@ public class VenueMap : IEntityTypeConfiguration<Venue>
         builder.Property(x => x.Id)
             .HasColumnName("VenueId");
 
+        builder.Property(x => x.Name)
+            .HasMaxLength(255);
+
+        builder.Property(x => x.Slug)
+            .HasMaxLength(Venue.SlugMaxLength);
+
         builder.Property(x => x.Version)
             .IsRowVersion();
 
@@ -27,5 +33,8 @@ public class VenueMap : IEntityTypeConfiguration<Venue>
             .WithMany()
             .HasForeignKey(x => x.ChapterId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasIndex(x => new { x.ChapterId, x.Name })
+            .IsUnique();
     }
 }
