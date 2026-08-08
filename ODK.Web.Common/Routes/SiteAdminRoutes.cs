@@ -33,6 +33,10 @@ public class SiteAdminRoutes
 
     public SiteAdminRoute Payments => Path("/payments");
 
+    public SiteAdminRoute ReferralCampaignCreate => Referrals.Child("/new");
+
+    public SiteAdminRoute Referrals => Path("/referrals");
+
     public SiteAdminRoute SubscriptionCreate => Subscriptions.Child("/new");
 
     public SiteAdminRoute Subscriptions => Path("/subscriptions");
@@ -77,11 +81,14 @@ public class SiteAdminRoutes
         },
         new(Messages(), "Messages"),
         new(Payments, "Payments"),
+        new(Referrals, "Referrals"),
         new(Subscriptions, "Subscriptions"),
         new(Topics, "Topics")
     ];
 
     public SiteAdminRoute Payment(Guid id) => Payments.Child($"/{id}");
+
+    public SiteAdminRoute ReferralCampaign(Guid id) => Referrals.Child($"/{id}");
 
     public SiteAdminRoute Subscription(Guid id) => Subscriptions.Child($"/{id}");
 

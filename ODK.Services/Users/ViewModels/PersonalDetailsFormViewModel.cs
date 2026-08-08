@@ -28,6 +28,13 @@ public class PersonalDetailsFormViewModel
     public bool PrivacyPolicy { get; set; }
 
     /// <summary>
+    /// The referral the visitor arrived from, populated client-side by odk.referrer.js from local
+    /// storage. Nullable and unvalidated: the overwhelming majority of signups have no referral, and a
+    /// tampered value simply fails to resolve to a referral server-side.
+    /// </summary>
+    public Guid? ReferralId { get; set; }
+
+    /// <summary>
     /// reCAPTCHA token, populated client-side by odk.recaptcha.js. Deliberately nullable and NOT [Required]:
     /// a non-nullable string is implicitly required by model validation, which would block signup whenever
     /// no token is posted - i.e. always in the e2e environment, where reCAPTCHA is disabled. A missing token

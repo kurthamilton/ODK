@@ -9,4 +9,7 @@ public class SiteRoutes
     public string Pricing => "/pricing";
 
     public string Privacy => "/privacy";
+
+    /// <summary>The refer-a-friend page. Not available on the DrunkenKnitwits platform.</summary>
+    public string Refer => "/refer";
 }

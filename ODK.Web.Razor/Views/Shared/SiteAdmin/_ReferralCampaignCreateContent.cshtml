@@ -1,0 +1,9 @@
+﻿@using ODK.Web.Razor.Models.SiteAdmin
+
+<h2 class="content-heading">Create referral campaign</h2>
+
+<form method="post">
+    @Html.AntiForgeryToken()
+    @await Html.PartialAsync("SiteAdmin/_ReferralCampaignForm", new ReferralCampaignFormViewModel())
+    <button class="btn btn-primary">Create</button>
+</form>

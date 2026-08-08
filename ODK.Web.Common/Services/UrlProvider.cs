@@ -53,6 +53,10 @@ public class UrlProvider : IUrlProvider
 
     public string IssueUrl(Guid issueId) => GetUrl(_odkRoutes.Account.Issue(issueId));
 
+    // Account.Create, not Account.Join: Join is chapter-scoped (/{chapter}/account/join), and a referral
+    // is site-wide, so it points at the platform's own sign-up page.
+    public string JoinUrl() => GetUrl(_odkRoutes.Account.Create());
+
     public string LoginUrl(Chapter? chapter) => GetUrl(_odkRoutes.Account.Login(chapter));
 
     public string MemberAdminUrl(Chapter chapter, Guid memberId)

@@ -1,0 +1,35 @@
+﻿@using ODK.Web.Razor.Models.SiteAdmin
+@model ReferralCampaignFormViewModel
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.Name, new { @class = "form-label" })
+    @Html.TextBoxFor(x => x.Name, new { @class = "form-control" })
+    @Html.ValidationMessageFor(x => x.Name)
+</div>
+
+<div class="form-group mb-3">
+    @Html.LabelFor(x => x.Description, new { @class = "form-label" })
+    @Html.TextAreaFor(x => x.Description, new { @class = "form-control", data_html_editor = "" })
+    @Html.ValidationMessageFor(x => x.Description)
+</div>
+
+<div class="form-group mb-3">
+    @Html.LabelFor(x => x.EmailSubject, new { @class = "form-label" })
+    @Html.TextBoxFor(x => x.EmailSubject, new { @class = "form-control" })
+    @Html.ValidationMessageFor(x => x.EmailSubject)
+</div>
+
+<div class="form-group mb-3">
+    @Html.LabelFor(x => x.EmailText, new { @class = "form-label" })
+    @Html.TextAreaFor(x => x.EmailText, new { @class = "form-control", data_html_editor = "" })
+    <div class="form-text">Tokens: {member.fullName}, {url}, {referral.id}.</div>
+    @Html.ValidationMessageFor(x => x.EmailText)
+</div>
+
+<div class="form-group mb-3">
+    @Html.LabelFor(x => x.ExpiresLocalDate, new { @class = "form-label" })
+    @* A native date input, so the value is the invariant yyyy-MM-dd rather than a locale-dependent one. *@
+    @Html.TextBoxFor(x => x.ExpiresLocalDate, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+    <div class="form-text">Leave blank for a campaign that never expires.</div>
+    @Html.ValidationMessageFor(x => x.ExpiresLocalDate)
+</div>

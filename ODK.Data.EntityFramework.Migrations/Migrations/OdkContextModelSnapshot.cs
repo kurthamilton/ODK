@@ -1421,6 +1421,9 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                     b.Property<double?>("RecaptchaScore")
                         .HasColumnType("float");
 
+                    b.Property<Guid?>("ReferralId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<bool>("SiteAdmin")
                         .HasColumnType("bit")
                         .HasColumnName("SuperAdmin");
@@ -1438,6 +1441,8 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                         .HasColumnType("rowversion");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ReferralId");
 
                     b.ToTable("Members", (string)null);
                 });
@@ -2123,6 +2128,74 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("SitePaymentSettings", (string)null);
+                });
+
+            modelBuilder.Entity("ODK.Core.Referrals.Referral", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("ReferralId");
+
+                    b.Property<DateTime?>("CompletedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("EmailAddress")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<Guid>("MemberId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ReferralCampaignId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MemberId");
+
+                    b.HasIndex("ReferralCampaignId");
+
+                    b.ToTable("Referrals", (string)null);
+                });
+
+            modelBuilder.Entity("ODK.Core.Referrals.ReferralCampaign", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("ReferralCampaignId");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EmailSubject")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EmailText")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ExpiresUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ReferralCampaigns", (string)null);
                 });
 
             modelBuilder.Entity("ODK.Core.SocialMedia.InstagramFetchLogEntry", b =>
@@ -2910,6 +2983,14 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("ODK.Core.Members.Member", b =>
+                {
+                    b.HasOne("ODK.Core.Referrals.Referral", null)
+                        .WithMany()
+                        .HasForeignKey("ReferralId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
             modelBuilder.Entity("ODK.Core.Members.MemberActivationToken", b =>
                 {
                     b.HasOne("ODK.Core.Members.Member", null)
@@ -3157,6 +3238,21 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                     b.HasOne("ODK.Core.Members.Member", null)
                         .WithMany()
                         .HasForeignKey("MemberId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ODK.Core.Referrals.Referral", b =>
+                {
+                    b.HasOne("ODK.Core.Members.Member", null)
+                        .WithMany()
+                        .HasForeignKey("MemberId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ODK.Core.Referrals.ReferralCampaign", null)
+                        .WithMany()
+                        .HasForeignKey("ReferralCampaignId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

@@ -1,0 +1,11 @@
+﻿@using ODK.Core.Referrals
+@using ODK.Web.Razor.Models.Account
+@model ReferralCampaign
+
+@Html.Raw(Model.Description)
+
+<form method="post">
+    @Html.AntiForgeryToken()
+    @await Html.PartialAsync("Account/_ReferForm", new ReferFormViewModel())
+    <button class="btn btn-primary">Send</button>
+</form>
