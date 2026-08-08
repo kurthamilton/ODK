@@ -47,35 +47,57 @@ public class LoggingAntiforgery : IAntiforgery
         }
         catch (AntiforgeryValidationException exception)
         {
-            // Resolved per-request: this decorator is a singleton, ILoggingService is scoped.
-            var loggingService = httpContext.RequestServices.GetRequiredService<ILoggingService>();
-            if (!loggingService.IgnoreException(exception, HttpRequestContext.Create(httpContext.Request)))
-            {
-                // A browser always sends Origin on a POST navigation and Sec-Fetch-Site on a same-site
-                // submit; a scripted POST typically sends neither, whatever its user agent claims. Referer
-                // names the page whose form failed. Together with the exception message (which distinguishes
-                // a missing request token from a missing cookie) these separate a form rendered without a
-                // token from a bot posting blind.
-                var request = httpContext.Request;
-                _logger.LogError(
-                    exception,
-                    "Antiforgery (CSRF) validation failed for {Method} {Path}. User={User}, Origin={Origin}, " +
-                    "SecFetchSite={SecFetchSite}, Referer={Referer}",
-                    request.Method,
-                    request.Path,
-                    httpContext.User.Identity?.Name ?? "(anonymous)",
-                    GetHeader(request.Headers, HeaderNames.Origin),
-                    GetHeader(request.Headers, SecFetchSiteHeaderName),
-                    GetHeader(request.Headers, HeaderNames.Referer));
-            }
-
+            LogFailure(httpContext, exception);
             throw;
         }
     }
 
-    private static string GetHeader(IHeaderDictionary headers, string name)
+    private static string Display(string? value) => value ?? "(none)";
+
+    private static string? GetHeaderOrDefault(IHeaderDictionary headers, string name)
     {
         var value = headers[name].ToString();
-        return !string.IsNullOrEmpty(value) ? value : "(none)";
+        return !string.IsNullOrEmpty(value) ? value : null;
+    }
+
+    private void LogFailure(HttpContext httpContext, AntiforgeryValidationException exception)
+    {
+        // A browser always sends Origin on a POST navigation and Sec-Fetch-Site on a same-site submit;
+        // a scripted POST typically sends neither, whatever its user agent claims. Referer names the page
+        // whose form failed. Together with the exception message (which distinguishes a missing request
+        // token from a missing cookie) these separate a form rendered without a token from a bot posting
+        // blind.
+        var request = httpContext.Request;
+        var origin = GetHeaderOrDefault(request.Headers, HeaderNames.Origin);
+        var secFetchSite = GetHeaderOrDefault(request.Headers, SecFetchSiteHeaderName);
+
+        // Neither header present means no browser sent this, so it is a bot posting blind rather than a
+        // real failure worth an error. Both are required: Origin survives any Referrer-Policy, and
+        // Sec-Fetch-Site is a forbidden header name that page script cannot forge - so a client missing
+        // both is not a browser. Referer is deliberately not part of this test; privacy tooling and
+        // corporate proxies strip it from genuine requests, and adding a Referrer-Policy header to the
+        // app would remove it from every request. The framework still logs the failure at Information.
+        if (origin == null && secFetchSite == null)
+        {
+            return;
+        }
+
+        // Resolved per-request: this decorator is a singleton, ILoggingService is scoped.
+        var loggingService = httpContext.RequestServices.GetRequiredService<ILoggingService>();
+        if (loggingService.IgnoreException(exception, HttpRequestContext.Create(request)))
+        {
+            return;
+        }
+
+        _logger.LogError(
+            exception,
+            "Antiforgery (CSRF) validation failed for {Method} {Path}. User={User}, Origin={Origin}, " +
+            "SecFetchSite={SecFetchSite}, Referer={Referer}",
+            request.Method,
+            request.Path,
+            httpContext.User.Identity?.Name ?? "(anonymous)",
+            Display(origin),
+            Display(secFetchSite),
+            Display(GetHeaderOrDefault(request.Headers, HeaderNames.Referer)));
     }
 }
