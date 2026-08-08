@@ -50,8 +50,6 @@ public class Chapter : IDatabaseEntity, ITimeZoneEntity
 
     public string TimeZoneId { get; set; } = DefaultTimeZoneId;
 
-    public static string CleanName(string name) => name.Trim();
-
     public static string GetDisplayName(
         PlatformType currentPlatform, PlatformType platform, string name)
     {

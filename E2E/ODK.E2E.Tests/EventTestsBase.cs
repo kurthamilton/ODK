@@ -82,6 +82,7 @@ public abstract class EventTestsBase : OdkPageTest
     }
 
     [Test]
+    [Category("Venues")]
     public async Task CreateVenue_AsOwner_CreatesVenue()
     {
         // Arrange - an owner with a published chapter on this platform.
@@ -90,12 +91,72 @@ public abstract class EventTestsBase : OdkPageTest
         await new LoginPage(Page).LogIn(owner.Email, owner.Password);
 
         // Act - the owner creates a venue.
-        var venueName = $"E2E Venue {Guid.NewGuid():N}";
+        var suffix = Guid.NewGuid().ToString("N");
+        var venueName = $"E2E Venue {suffix}";
         await new VenueAdminPage(Page).CreateVenue(routes.VenueCreate, venueName);
 
-        // Assert - the venue now exists for the chapter.
+        // Assert - the venue now exists for the chapter, slugged from its name.
         var exists = await Venues.VenueExists(group.ChapterId, venueName);
         exists.Should().BeTrue();
+
+        // The expected slug is spelled out rather than derived, so the test pins the real rules
+        // (lowercased, spaces to hyphens) instead of restating the app's implementation of them.
+        var slug = await Venues.GetVenueSlug(group.ChapterId, venueName);
+        slug.Should().Be($"e2e-venue-{suffix}");
+    }
+
+    [Test]
+    [Category("Venues")]
+    public async Task CreateVenue_NameHasStrayWhitespace_StoresItNormalised()
+    {
+        // Arrange - an owner with a published chapter on this platform.
+        var (owner, group) = await ProvisionOwnerChapter(GroupName());
+        var routes = RoutesFor(group);
+        await new LoginPage(Page).LogIn(owner.Email, owner.Password);
+
+        // Act - the owner types a name with stray whitespace both around it and inside it.
+        var suffix = Guid.NewGuid().ToString("N");
+        var venueName = $"E2E Venue {suffix}";
+        await new VenueAdminPage(Page).CreateVenue(routes.VenueCreate, $"  E2E   Venue  {suffix}  ");
+
+        // Assert - the venue is stored under the normalised name. Looking it up by that name is itself
+        // the assertion: any surviving stray whitespace would make it a different name and find nothing.
+        var exists = await Venues.VenueExists(group.ChapterId, venueName);
+        exists.Should().BeTrue();
+
+        var slug = await Venues.GetVenueSlug(group.ChapterId, venueName);
+        slug.Should().Be($"e2e-venue-{suffix}");
+    }
+
+    [Test]
+    [Category("Venues")]
+    public async Task CreateVenue_NameSlugsToAnExistingSlug_VersionsTheSlugAndStillCreates()
+    {
+        // Arrange - an owner with a published chapter on this platform.
+        var (owner, group) = await ProvisionOwnerChapter(GroupName());
+        var routes = RoutesFor(group);
+        await new LoginPage(Page).LogIn(owner.Email, owner.Password);
+
+        // A venue name is unique within a chapter, so two venues can never share one - the collision
+        // has to come from two *different* names that slug to the same value. Trailing punctuation is
+        // dropped by the slug rules, so these two names differ (satisfying the unique index) while both
+        // slugging to "e2e-venue-{suffix}".
+        var suffix = Guid.NewGuid().ToString("N");
+        var firstName = $"E2E Venue {suffix}";
+        var secondName = $"E2E Venue {suffix}!";
+        var venueAdminPage = new VenueAdminPage(Page);
+
+        // Act - create both. CreateVenue throws if the form fails to redirect, so the second call
+        // reaching the venues list is itself the assertion that a collision doesn't block creation.
+        await venueAdminPage.CreateVenue(routes.VenueCreate, firstName);
+        await venueAdminPage.CreateVenue(routes.VenueCreate, secondName);
+
+        // Assert - both exist, the first keeps the unversioned slug, and the second is versioned.
+        var firstSlug = await Venues.GetVenueSlug(group.ChapterId, firstName);
+        var secondSlug = await Venues.GetVenueSlug(group.ChapterId, secondName);
+
+        firstSlug.Should().Be($"e2e-venue-{suffix}");
+        secondSlug.Should().Be($"e2e-venue-{suffix}-2");
     }
 
     [Test]

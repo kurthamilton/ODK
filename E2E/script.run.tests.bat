@@ -21,6 +21,7 @@ if "%CATEGORY%"=="" (
     echo   DrunkenKnitwits      - Drunken Knitwits only
     echo   Stripe               - payments only; slow, needs the ngrok tunnel up
     echo   NoStripe             - everything except payments
+    echo   Venues               - venue admin only; creation, name normalising, slug collisions
     echo.
     set /p "CATEGORY=Category [E2E]: "
 )

@@ -17,10 +17,17 @@ public class ChapterMap : IEntityTypeConfiguration<Chapter>
             .HasConversion<NullableUtcDateTimeConverter>();
 
         // Column not being implicitly included for some reason
-        builder.Property(x => x.BannerImageUrl).HasColumnName("BannerImageUrl");
+        builder.Property(x => x.BannerImageUrl)
+            .HasColumnName("BannerImageUrl");
 
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();
+
+        builder.Property(x => x.Id)
+            .HasColumnName("ChapterId");
+
+        builder.Property(x => x.Name)
+            .HasMaxLength(255);
 
         builder.Property(x => x.Platform)
             .HasColumnName("PlatformTypeId")
@@ -29,13 +36,19 @@ public class ChapterMap : IEntityTypeConfiguration<Chapter>
         builder.Property(x => x.PublishedUtc)
             .HasConversion<NullableUtcDateTimeConverter>();
 
-        builder.Property(x => x.Id)
-            .HasColumnName("ChapterId");
+        builder.Property(x => x.Slug)
+            .HasMaxLength(255);
 
         builder.Ignore(x => x.TimeZone);
 
         builder.Property(x => x.TimeZoneId)
             .HasMaxLength(255)
             .HasColumnName("TimeZone");
+
+        builder.HasIndex(x => x.Name)
+            .IsUnique();
+
+        builder.HasIndex(x => x.Slug)
+            .IsUnique();
     }
 }

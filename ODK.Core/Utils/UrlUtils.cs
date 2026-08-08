@@ -70,6 +70,37 @@ public static class UrlUtils
             .Trim('-');
     }
 
+    /// <summary>
+    /// Slugifies <paramref name="input"/>, appending a numeric suffix until the result is not in
+    /// <paramref name="taken"/>, and keeping the result within <paramref name="maxLength"/>.
+    /// Returns null when the input contains nothing sluggable (e.g. a name that is entirely
+    /// punctuation or non-Latin script) — callers should store no slug rather than an empty one.
+    /// </summary>
+    public static string? SlugifyUnique(string input, IReadOnlySet<string> taken, int maxLength)
+    {
+        var baseSlug = TruncateSlug(Slugify(input), maxLength);
+        if (string.IsNullOrEmpty(baseSlug))
+        {
+            return null;
+        }
+
+        if (!taken.Contains(baseSlug))
+        {
+            return baseSlug;
+        }
+
+        // taken is finite, so a free suffix always exists.
+        for (var version = 2; ; version++)
+        {
+            var suffix = $"-{version}";
+            var candidate = TruncateSlug(baseSlug, maxLength - suffix.Length) + suffix;
+            if (!taken.Contains(candidate))
+            {
+                return candidate;
+            }
+        }
+    }
+
     public static string Url(string baseUrl, string path)
         => UrlBuilder.Base(baseUrl).Path(path).Build();
 
@@ -107,4 +138,9 @@ public static class UrlUtils
 
         return slug;
     }
+
+    private static string TruncateSlug(string slug, int maxLength)
+        => slug.Length <= maxLength
+            ? slug
+            : slug[..maxLength].TrimEnd('-');
 }

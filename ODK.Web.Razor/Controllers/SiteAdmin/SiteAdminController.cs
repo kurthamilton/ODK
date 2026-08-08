@@ -12,6 +12,7 @@ using ODK.Services.Subscriptions;
 using ODK.Services.Subscriptions.Models;
 using ODK.Services.Topics;
 using ODK.Services.Topics.Models;
+using ODK.Services.Venues;
 using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
 using ODK.Web.Razor.Models.Admin.Chapters;
@@ -30,6 +31,7 @@ public class SiteAdminController : OdkControllerBase
     private readonly ISiteSubscriptionAdminService _siteSubscriptionAdminService;
     private readonly ISocialMediaService _socialMediaService;
     private readonly ITopicAdminService _topicAdminService;
+    private readonly IVenueAdminService _venueAdminService;
 
     public SiteAdminController(
         ILoggingService loggingService,
@@ -40,10 +42,12 @@ public class SiteAdminController : OdkControllerBase
         IContactAdminService contactAdminService,
         ITopicAdminService topicAdminService,
         IPaymentAdminService paymentAdminService,
+        IVenueAdminService venueAdminService,
         IRequestStore requestStore,
         IOdkRoutes odkRoutes)
         : base(requestStore, odkRoutes)
     {
+        _venueAdminService = venueAdminService;
         _contactAdminService = contactAdminService;
         _featureService = featureService;
         _loggingService = loggingService;
@@ -57,6 +61,15 @@ public class SiteAdminController : OdkControllerBase
     public IActionResult Index()
     {
         return Redirect(OdkRoutes.SiteAdmin.Groups.Path);
+    }
+
+    // Temporary, for the Venue.Slug rollout - remove along with the button once the column is required.
+    [HttpPost("siteadmin/venues/backfill-slugs")]
+    public async Task<IActionResult> BackfillVenueSlugs()
+    {
+        var result = await _venueAdminService.BackfillSlugs(MemberServiceRequest);
+        AddFeedback(result, "Venue slugs backfilled");
+        return RedirectToReferrer();
     }
 
     [HttpPost("siteadmin/errors/{id:guid}/delete")]

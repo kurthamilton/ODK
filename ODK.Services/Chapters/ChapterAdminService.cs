@@ -155,7 +155,9 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         var (platform, currentMember) = (request.Platform, request.CurrentMember);
 
-        var name = Chapter.CleanName(model.Name);
+        // Normalised before the uniqueness check and the slug are derived from it, so "The  Oak"
+        // cannot pass NameExists as a distinct name and then compete with "The Oak" for one slug.
+        var name = model.Name.NormaliseWhitespace();
 
         var (
             memberSubscriptionDto,
@@ -176,7 +178,9 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             return ServiceResult<Chapter?>.Failure(
                 StringUtils.Interpolate(ErrorMessagesResource.NameTaken, new Dictionary<string, string>
                 {
-                    { "name", model.Name }
+                    // The normalised name, since that is the one that was found to be taken - echoing
+                    // the raw input back would show the member their own stray whitespace.
+                    { "name", name }
                 }));
         }
 
@@ -1288,7 +1292,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<bool> NameIsAvailable(IServiceRequest request, string name)
     {
-        name = Chapter.CleanName(name);
+        // Normalised the same way CreateChapter does, so this answer matches what creation will do.
+        name = name.NormaliseWhitespace();
 
         var nameExists = await _unitOfWork.ChapterRepository
             .NameExists(name)

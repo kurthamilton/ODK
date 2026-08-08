@@ -68,14 +68,19 @@ done. Its tunnel config lives in the gitignored root `ngrok.yml` (see the root R
 Two axes, composed by the filter:
 
 - **Platform** — `Default` / `DrunkenKnitwits`, from the base class (plus `E2E` on everything).
-- **Capability** — added per fixture where a subset is worth running on its own. Currently just **`Stripe`**
-  (the four payment fixtures: site/chapter purchase, recurring renewal, cancellation). These are the slow
-  ones — real Stripe calls, webhook round-trips via the ngrok tunnel, test clocks — so being able to run or
-  skip them separately matters.
+- **Capability** — added where a subset is worth running on its own:
+  - **`Stripe`** — the four payment fixtures (site/chapter purchase, recurring renewal, cancellation),
+    applied at *fixture* level. These are the slow ones — real Stripe calls, webhook round-trips via the
+    ngrok tunnel, test clocks — so being able to run or skip them separately matters.
+  - **`Venues`** — the venue-admin scenarios (creation, name normalising, slug collisions), applied at
+    *method* level because they live in `EventTestsBase` alongside the event tests. Deliberately only the
+    venue-focused tests: most event and RSVP tests create a venue while arranging, so including everything
+    that touches one would cover most of the suite and the filter would stop meaning anything.
 
 ```
 script.run.tests.bat            # prompts for a category
 script.run.tests.bat Stripe     # just the payment tests
+script.run.tests.bat Venues     # just the venue admin tests
 script.run.tests.bat Default    # one platform
 script.run.tests.bat NoStripe   # everything except payments - skips the slow ones
 ```
