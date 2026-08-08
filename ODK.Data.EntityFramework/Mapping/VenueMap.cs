@@ -36,5 +36,8 @@ public class VenueMap : IEntityTypeConfiguration<Venue>
 
         builder.HasIndex(x => new { x.ChapterId, x.Name })
             .IsUnique();
+
+        builder.HasIndex(x => new { x.ChapterId, x.Slug })
+            .IsUnique();
     }
 }

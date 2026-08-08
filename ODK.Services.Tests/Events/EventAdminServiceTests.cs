@@ -254,8 +254,8 @@ public static class EventAdminServiceTests
         var context = CreateMockOdkContext();
         var currentMember = context.CreateMember();
         var chapter = context.CreateChapter(adminMembers: [currentMember]);
-        var venue1 = context.CreateVenue(chapter);
-        var venue2 = context.CreateVenue(chapter);
+        var venue1 = context.CreateVenue(chapter, "Venue One", "venue-one");
+        var venue2 = context.CreateVenue(chapter, "Venue Two", "venue-two");
         context.CreateEvent(chapter, venue1);
         context.CreateEvent(chapter, venue1);
         context.CreateEvent(chapter, venue2);
@@ -263,7 +263,7 @@ public static class EventAdminServiceTests
         var service = CreateService(context);
         var request = CreateMockMemberChapterAdminServiceRequest(
             currentMember: currentMember, chapter: chapter, securable: ChapterAdminSecurable.Events);
-        var filter = new EventAdminFilter { VenueId = venue1.Id };
+        var filter = new EventAdminFilter { VenueSlug = venue1.Slug };
         var pageFilter = new PageFilter { Page = 1, PageSize = 20 };
 
         // Act

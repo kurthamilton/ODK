@@ -7,7 +7,6 @@ using NUnit.Framework;
 using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Exceptions;
-using ODK.Services.Exceptions;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Core.Venues;
@@ -22,96 +21,6 @@ namespace ODK.Services.Tests.Venues;
 [Parallelizable]
 public static class VenueAdminServiceTests
 {
-    [Test]
-    public static async Task BackfillSlugs_LeavesExistingSlugsAloneAndAvoidsThem()
-    {
-        // Arrange
-        // The case the deferred backfill creates: a venue created after the column shipped already
-        // holds "the-oak", so the legacy venue whose name also slugs to "the-oak" must be versioned
-        // around it rather than duplicating it.
-        var (context, currentMember, chapter) = CreateChapterWithOwner(siteAdmin: true);
-        context.CreateVenue(chapter, "The Oak!", "the-oak");
-        context.CreateVenue(chapter, "The Oak");
-        var service = CreateService(context);
-
-        // Act
-        var result = await service.BackfillSlugs(CreateMemberServiceRequest(currentMember));
-
-        // Assert
-        result.Success.Should().BeTrue();
-        VenueNamed(context, "The Oak!").Slug.Should().Be("the-oak");
-        VenueNamed(context, "The Oak").Slug.Should().Be("the-oak-2");
-    }
-
-    [Test]
-    public static async Task BackfillSlugs_NotSiteAdmin_Throws()
-    {
-        // Arrange
-        var (context, currentMember, chapter) = CreateChapterWithOwner();
-        context.CreateVenue(chapter, "The Oak");
-        var service = CreateService(context);
-
-        // Act
-        var act = async () => await service.BackfillSlugs(CreateMemberServiceRequest(currentMember));
-
-        // Assert
-        await act.Should().ThrowAsync<OdkNotAuthorizedException>();
-    }
-
-    [Test]
-    public static async Task BackfillSlugs_RunTwice_ChangesNothingTheSecondTime()
-    {
-        // Arrange - the button is expected to be pressed more than once.
-        var (context, currentMember, chapter) = CreateChapterWithOwner(siteAdmin: true);
-        context.CreateVenue(chapter, "The Oak");
-        context.CreateVenue(chapter, "The Oak!");
-        var service = CreateService(context);
-
-        // Act
-        await service.BackfillSlugs(CreateMemberServiceRequest(currentMember));
-        var first = context.Set<Venue>().ToDictionary(x => x.Name, x => x.Slug);
-        var result = await service.BackfillSlugs(CreateMemberServiceRequest(currentMember));
-
-        // Assert
-        result.Success.Should().BeTrue();
-        context.Set<Venue>().ToDictionary(x => x.Name, x => x.Slug).Should().BeEquivalentTo(first);
-    }
-
-    [Test]
-    public static async Task BackfillSlugs_SlugsAreScopedPerChapter()
-    {
-        // Arrange - the same venue name in two chapters keeps the same slug in each.
-        var (context, currentMember, _) = CreateChapterWithOwner(siteAdmin: true);
-        context.CreateVenue(context.CreateChapter(), "The Oak");
-        context.CreateVenue(context.CreateChapter(), "The Oak");
-        var service = CreateService(context);
-
-        // Act
-        await service.BackfillSlugs(CreateMemberServiceRequest(currentMember));
-
-        // Assert
-        context.Set<Venue>()
-            .Where(x => x.Name == "The Oak")
-            .Select(x => x.Slug)
-            .Should().AllBe("the-oak");
-    }
-
-    [Test]
-    public static async Task BackfillSlugs_UnsluggableName_LeavesSlugNull()
-    {
-        // Arrange - nothing sluggable, so there is no slug to give it; the column stays nullable.
-        var (context, currentMember, chapter) = CreateChapterWithOwner(siteAdmin: true);
-        context.CreateVenue(chapter, "!!!");
-        var service = CreateService(context);
-
-        // Act
-        var result = await service.BackfillSlugs(CreateMemberServiceRequest(currentMember));
-
-        // Assert
-        result.Success.Should().BeTrue();
-        VenueNamed(context, "!!!").Slug.Should().BeNull();
-    }
-
     [Test]
     public static async Task CreateVenue_DuplicateName_Fails()
     {
@@ -162,6 +71,37 @@ public static class VenueAdminServiceTests
         var venue = SingleVenue(context, chapter);
         venue.Name.Should().Be("The Oak");
         venue.Slug.Should().Be("the-oak");
+    }
+
+    [Test]
+    public static async Task CreateVenue_NothingSluggableInName_UsesTheFallbackSlug()
+    {
+        // Arrange - the slug is required, so a name with no letters or digits still needs one.
+        var (context, currentMember, chapter) = CreateChapterWithOwner();
+        var (service, request) = CreateService(context, currentMember, chapter);
+
+        // Act
+        var result = await service.CreateVenue(request, CreateModel("!!!"));
+
+        // Assert
+        result.Success.Should().BeTrue();
+        SingleVenue(context, chapter).Slug.Should().Be(Venue.SlugFallback);
+    }
+
+    [Test]
+    public static async Task CreateVenue_NothingSluggableAndFallbackTaken_VersionsTheFallback()
+    {
+        // Arrange
+        var (context, currentMember, chapter) = CreateChapterWithOwner();
+        context.CreateVenue(chapter, "Venue", Venue.SlugFallback);
+        var (service, request) = CreateService(context, currentMember, chapter);
+
+        // Act
+        var result = await service.CreateVenue(request, CreateModel("???"));
+
+        // Assert
+        result.Success.Should().BeTrue();
+        VenueNamed(context, "???").Slug.Should().Be($"{Venue.SlugFallback}-2");
     }
 
     [Test]
@@ -261,22 +201,12 @@ public static class VenueAdminServiceTests
         VenueNamed(context, "The Elm").Slug.Should().Be("the-elm");
     }
 
-    private static (MockOdkContext Context, Member CurrentMember, Chapter Chapter) CreateChapterWithOwner(
-        bool siteAdmin = false)
+    private static (MockOdkContext Context, Member CurrentMember, Chapter Chapter) CreateChapterWithOwner()
     {
         var context = new MockOdkContext();
-        var currentMember = context.CreateMember(siteAdmin: siteAdmin);
+        var currentMember = context.CreateMember();
         var chapter = context.CreateChapter(adminMembers: [currentMember]);
         return (context, currentMember, chapter);
-    }
-
-    private static IMemberServiceRequest CreateMemberServiceRequest(Member currentMember)
-    {
-        var request = new Mock<IMemberServiceRequest>();
-        request.Setup(x => x.CurrentMember).Returns(currentMember);
-        request.Setup(x => x.CurrentMemberOrDefault).Returns(currentMember);
-        request.Setup(x => x.Platform).Returns(PlatformType.Default);
-        return request.Object;
     }
 
     private static VenueCreateModel CreateModel(string name) => new()
@@ -286,9 +216,6 @@ public static class VenueAdminServiceTests
         LocationName = "London",
         Name = name
     };
-
-    private static IVenueAdminService CreateService(MockOdkContext context)
-        => new VenueAdminService(MockUnitOfWork.Create(context));
 
     private static (IVenueAdminService Service, IMemberChapterAdminServiceRequest Request) CreateService(
         MockOdkContext context, Member currentMember, Chapter chapter)

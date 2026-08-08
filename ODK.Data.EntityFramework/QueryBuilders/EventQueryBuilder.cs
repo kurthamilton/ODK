@@ -50,6 +50,12 @@ public class EventQueryBuilder : DatabaseEntityQueryBuilder<Event, IEventQueryBu
         return this;
     }
 
+    public IEventQueryBuilder ForVenueSlug(string slug)
+    {
+        Query = Query.Where(x => Set<Venue>().Any(v => v.Id == x.VenueId && v.Slug == slug));
+        return this;
+    }
+
     public IEventQueryBuilder OnOrAfter(DateTime date)
     {
         Query = Query.Where(x => x.DateUtc >= date);

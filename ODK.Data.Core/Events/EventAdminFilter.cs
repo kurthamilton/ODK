@@ -6,5 +6,8 @@ public class EventAdminFilter
 
     public DateTime? ToDateLocal { get; init; }
 
-    public Guid? VenueId { get; init; }
+    /// <summary>
+    /// The venue's slug, so the filtered URL stays readable
+    /// </summary>
+    public string? VenueSlug { get; init; }
 }

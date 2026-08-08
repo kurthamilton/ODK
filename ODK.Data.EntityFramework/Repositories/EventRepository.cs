@@ -40,8 +40,8 @@ public class EventRepository : ReadWriteRepositoryBase<Event, IEventQueryBuilder
             .ForVenue(venueId)
             .GetAll();
 
-    public IDeferredQuery<int> GetCountByChapterId(Guid chapterId, Guid? venueId, DateTime? fromUtc, DateTime? toUtcExclusive)
-        => ApplyFilter(Query().ForChapter(chapterId), venueId, fromUtc, toUtcExclusive)
+    public IDeferredQuery<int> GetCountByChapterId(Guid chapterId, string? venueSlug, DateTime? fromUtc, DateTime? toUtcExclusive)
+        => ApplyFilter(Query().ForChapter(chapterId), venueSlug, fromUtc, toUtcExclusive)
             .Count();
 
     public IDeferredQuery<int> GetPastEventCountByChapterId(Guid chapterId)
@@ -59,8 +59,8 @@ public class EventRepository : ReadWriteRepositoryBase<Event, IEventQueryBuilder
             .GetAll();
 
     public IDeferredQueryMultiple<EventSummaryDto> GetSummariesByChapterId(
-        Guid chapterId, Guid? venueId, DateTime? fromUtc, DateTime? toUtcExclusive, PageFilter pageFilter)
-        => ApplyFilter(Query().ForChapter(chapterId), venueId, fromUtc, toUtcExclusive)
+        Guid chapterId, string? venueSlug, DateTime? fromUtc, DateTime? toUtcExclusive, PageFilter pageFilter)
+        => ApplyFilter(Query().ForChapter(chapterId), venueSlug, fromUtc, toUtcExclusive)
             .Summary()
             .OrderByDescending(x => x.Event.DateUtc)
             .Page(pageFilter)
@@ -94,11 +94,11 @@ public class EventRepository : ReadWriteRepositoryBase<Event, IEventQueryBuilder
     // Date bounds are UTC instants resolved from the chapter's timezone by the service; the query
     // stays a simple (index-friendly) UTC range.
     private static IEventQueryBuilder ApplyFilter(
-        IEventQueryBuilder query, Guid? venueId, DateTime? fromUtc, DateTime? toUtcExclusive)
+        IEventQueryBuilder query, string? venueSlug, DateTime? fromUtc, DateTime? toUtcExclusive)
     {
-        if (venueId != null)
+        if (!string.IsNullOrEmpty(venueSlug))
         {
-            query = query.ForVenue(venueId.Value);
+            query = query.ForVenueSlug(venueSlug);
         }
 
         if (fromUtc != null)

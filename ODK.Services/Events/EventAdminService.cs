@@ -441,8 +441,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         var (eventSummaries, totalCount, venues) = await GetChapterAdminRestrictedContent(
             request,
-            x => x.EventRepository.GetSummariesByChapterId(chapter.Id, filter.VenueId, fromUtc, toUtcExclusive, pageFilter),
-            x => x.EventRepository.GetCountByChapterId(chapter.Id, filter.VenueId, fromUtc, toUtcExclusive),
+            x => x.EventRepository.GetSummariesByChapterId(chapter.Id, filter.VenueSlug, fromUtc, toUtcExclusive, pageFilter),
+            x => x.EventRepository.GetCountByChapterId(chapter.Id, filter.VenueSlug, fromUtc, toUtcExclusive),
             x => x.VenueRepository.GetByChapterId(chapter.Id));
 
         return new EventsAdminPageViewModel

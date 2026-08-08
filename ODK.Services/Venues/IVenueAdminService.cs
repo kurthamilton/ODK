@@ -8,11 +8,6 @@ public interface IVenueAdminService
 {
     Task<ServiceResult> ArchiveVenue(IMemberChapterAdminServiceRequest request, Guid venueId);
 
-    /// <summary>
-    /// Temporary, for the Venue.Slug rollout — remove once the column is required.
-    /// </summary>
-    Task<ServiceResult> BackfillSlugs(IMemberServiceRequest request);
-
     Task<ServiceResult> CreateVenue(IMemberChapterAdminServiceRequest request, VenueCreateModel venue);
 
     Task<Venue> GetVenue(IMemberChapterAdminServiceRequest request, Guid venueId);

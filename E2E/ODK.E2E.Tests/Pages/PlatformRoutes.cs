@@ -1,4 +1,4 @@
-using ODK.E2E.Data.Models;
+﻿using ODK.E2E.Data.Models;
 
 namespace ODK.E2E.Tests.Pages;
 
@@ -13,6 +13,9 @@ internal abstract class PlatformRoutes
 {
     /// <summary>Admin: create-event page (also the POST target - it posts back to itself).</summary>
     public abstract string EventCreate { get; }
+
+    /// <summary>Admin: the events list page, which carries the venue/date filters.</summary>
+    public abstract string EventsAdmin { get; }
 
     /// <summary>Admin: event settings page (default day of week, start time, etc.).</summary>
     public abstract string EventSettings { get; }
@@ -79,6 +82,8 @@ internal abstract class PlatformRoutes
 
         public override string EventCreate => $"/my/groups/{_chapterId}/events/new";
 
+        public override string EventsAdmin => $"/my/groups/{_chapterId}/events";
+
         public override string EventSettings => $"/my/groups/{_chapterId}/events/settings";
 
         public override string VenueCreate => $"/my/groups/{_chapterId}/events/venues/new";
@@ -125,6 +130,8 @@ internal abstract class PlatformRoutes
         }
 
         public override string EventCreate => $"/{_shortName}/admin/events/create";
+
+        public override string EventsAdmin => $"/{_shortName}/admin/events";
 
         public override string EventSettings => $"/{_shortName}/admin/events/settings";
 

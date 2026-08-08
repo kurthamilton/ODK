@@ -83,6 +83,46 @@ public abstract class EventTestsBase : OdkPageTest
 
     [Test]
     [Category("Venues")]
+    public async Task EventsAdmin_FilteredByVenueSlug_ShowsOnlyThatVenuesEvents()
+    {
+        // Arrange - two venues in the same chapter, one event at each.
+        var (owner, group) = await ProvisionOwnerChapter(GroupName());
+        var routes = RoutesFor(group);
+        await new LoginPage(Page).LogIn(owner.Email, owner.Password);
+
+        var suffix = Guid.NewGuid().ToString("N");
+        var (oakVenue, elmVenue) = ($"E2E Oak {suffix}", $"E2E Elm {suffix}");
+
+        var venueAdminPage = new VenueAdminPage(Page);
+        await venueAdminPage.CreateVenue(routes.VenueCreate, oakVenue);
+        await venueAdminPage.CreateVenue(routes.VenueCreate, elmVenue);
+
+        var oakVenueId = await Venues.GetVenueId(group.ChapterId, oakVenue);
+        var elmVenueId = await Venues.GetVenueId(group.ChapterId, elmVenue);
+        oakVenueId.Should().NotBeNull();
+        elmVenueId.Should().NotBeNull();
+
+        var (oakEvent, elmEvent) = ($"E2E Oak Event {suffix}", $"E2E Elm Event {suffix}");
+        var date = $"{DateTime.Today.AddDays(14):dd/MM/yyyy} 19:00";
+
+        var eventAdminPage = new EventAdminPage(Page);
+        await eventAdminPage.CreateEvent(routes.EventCreate, oakEvent, oakVenueId!.Value, date);
+        await eventAdminPage.CreateEvent(routes.EventCreate, elmEvent, elmVenueId!.Value, date);
+
+        // Act - filter by the venue's slug, which is what the query string now carries.
+        var eventsAdminPage = new EventsAdminPage(Page);
+        var unfiltered = await eventsAdminPage.GetEventsTableText(routes.EventsAdmin);
+        var filtered = await eventsAdminPage.GetEventsTableText(routes.EventsAdmin, $"e2e-oak-{suffix}");
+
+        // Assert - unfiltered lists both; filtering by the Oak's slug drops the Elm's event. Checking
+        // the unfiltered list first means a filtered miss can't be explained by the events not existing.
+        unfiltered.Should().Contain(oakEvent).And.Contain(elmEvent);
+        filtered.Should().Contain(oakEvent);
+        filtered.Should().NotContain(elmEvent);
+    }
+
+    [Test]
+    [Category("Venues")]
     public async Task CreateVenue_AsOwner_CreatesVenue()
     {
         // Arrange - an owner with a published chapter on this platform.

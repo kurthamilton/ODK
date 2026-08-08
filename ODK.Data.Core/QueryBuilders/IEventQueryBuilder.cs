@@ -15,6 +15,8 @@ public interface IEventQueryBuilder : IDatabaseEntityQueryBuilder<Event, IEventQ
 
     IEventQueryBuilder ForVenue(Guid venueId);
 
+    IEventQueryBuilder ForVenueSlug(string slug);
+
     IEventQueryBuilder OnOrAfter(DateTime date);
 
     IEventQueryBuilder Past();
