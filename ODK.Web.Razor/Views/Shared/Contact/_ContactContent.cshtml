@@ -1,24 +1,26 @@
-﻿@using ODK.Web.Common.Routes
+﻿@using ODK.Services.Contact.ViewModels
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Contact
-@model ContactContentViewModel
+@model ContactPageViewModel
 @inject IOdkRoutes OdkRoutes
 
-<p>
-    If the <a href="@OdkRoutes.Site.About">About</a> page hasn't answered your questions, 
-    please don't hesitate to get in touch. We'll get back to you as soon as possible.
-</p>
-
-@if (!Model.Sent)
+@if (Model.HasQuestions)
 {
-    <form action="/Contact" method="post">
-        @Html.AntiForgeryToken()
-        @await Html.PartialAsync("Contact/_ContactForm", new ContactFormViewModel())
-        <button class="btn btn-primary">Send</button>
-    </form>
+    <p>
+        If the <a href="@OdkRoutes.Site.About">About</a> page hasn't answered your questions,
+        please don't hesitate to get in touch. We'll get back to you as soon as possible.
+    </p>
 }
 else
 {
-    <div class="alert alert-success" role="alert">
-        Your message has been sent. Thank you for getting in touch.
-    </div>
+    <p>
+        If you have any questions, please don't hesitate to get in touch. We'll get back to you as soon
+        as possible.
+    </p>
 }
+
+<form action="/contact" method="post">
+    @Html.AntiForgeryToken()
+    @await Html.PartialAsync("Contact/_ContactForm", new ContactFormViewModel())
+    <button class="btn btn-primary">Send</button>
+</form>

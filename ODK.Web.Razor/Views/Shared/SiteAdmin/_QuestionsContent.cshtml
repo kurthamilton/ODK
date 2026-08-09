@@ -1,0 +1,78 @@
+﻿@using ODK.Services.Questions
+@using ODK.Web.Common.Routes
+@using ODK.Web.Common.Services
+@using ODK.Web.Razor.Models.Components
+@inject IOdkRoutes OdkRoutes
+@inject ISiteQuestionAdminService SiteQuestionAdminService
+@inject IRequestStore RequestStore
+@{
+    var viewModel = await SiteQuestionAdminService.GetQuestionsViewModel(RequestStore.MemberServiceRequest);
+    var questions = viewModel.Questions;
+}
+
+<h2 class="content-heading">FAQ</h2>
+
+<p>
+    The questions below are shown on the About page for this platform. Each platform keeps its own set.
+</p>
+
+<p>
+    <a class="btn btn-primary" href="@OdkRoutes.SiteAdmin.QuestionCreate.Path">
+        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Plus))
+        <span>New</span>
+    </a>
+</p>
+
+@if (questions.Count > 0)
+{
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Question</th>
+                    <th class="tcol-narrow"></th>
+                    <th class="tcol-narrow"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var question in questions.OrderBy(x => x.DisplayOrder))
+                {
+                    <tr>
+                        <td>
+                            <a href="@OdkRoutes.SiteAdmin.Question(question.Id).Path">@question.Name</a>
+                        </td>
+                        <td>
+                            <div class="d-flex">
+                                <form method="post" action="/siteadmin/questions/@question.Id/move/up">
+                                    @Html.AntiForgeryToken()
+                                    <button data-bs-toggle="tooltip" data-bs-title="Move up" class="btn btn-icon text-secondary">
+                                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.ArrowCircleUp))
+                                    </button>
+                                </form>
+                                <form method="post" action="/siteadmin/questions/@question.Id/move/down">
+                                    @Html.AntiForgeryToken()
+                                    <button data-bs-toggle="tooltip" data-bs-title="Move down" class="btn btn-icon text-secondary">
+                                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.ArrowCircleDown))
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                        <td>
+                            <form method="post" action="/siteadmin/questions/@question.Id/delete">
+                                @Html.AntiForgeryToken()
+                                @await Html.PartialAsync("Components/_Confirm", new ConfirmViewModel
+                                {
+                                    Message = "Are you sure you want to delete this question?",
+                                    Title = "Delete question"
+                                })
+                                <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger">
+                                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Times))
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

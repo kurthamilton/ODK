@@ -86,6 +86,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<ISiteContactMessageRepository> _siteContactMessageRepository;
     private readonly Lazy<ISiteEmailSettingsRepository> _siteEmailSettingsRepository;
     private readonly Lazy<ISitePaymentSettingsRepository> _sitePaymentSettingsRepository;
+    private readonly Lazy<ISiteQuestionRepository> _siteQuestionRepository;
     private readonly Lazy<ISiteSubscriptionFeatureRepository> _siteSubscriptionFeatureRepository;
     private readonly Lazy<ISiteSubscriptionPriceRepository> _siteSubscriptionPriceRepository;
     private readonly Lazy<ISiteSubscriptionRepository> _siteSubscriptionRepository;
@@ -174,6 +175,7 @@ public class UnitOfWork : IUnitOfWork
         _siteContactMessageRepository = new(() => new SiteContactMessageRepository(_context));
         _siteEmailSettingsRepository = new(() => new SiteEmailSettingsRepository(_context));
         _sitePaymentSettingsRepository = new(() => new SitePaymentSettingsRepository(_context));
+        _siteQuestionRepository = new(() => new SiteQuestionRepository(_context));
         _siteSubscriptionFeatureRepository = new(() => new SiteSubscriptionFeatureRepository(_context));
         _siteSubscriptionPriceRepository = new(() => new SiteSubscriptionPriceRepository(_context));
         _siteSubscriptionRepository = new(() => new SiteSubscriptionRepository(_context));
@@ -259,6 +261,7 @@ public class UnitOfWork : IUnitOfWork
     public ISiteContactMessageRepository SiteContactMessageRepository => _siteContactMessageRepository.Value;
     public ISiteEmailSettingsRepository SiteEmailSettingsRepository => _siteEmailSettingsRepository.Value;
     public ISitePaymentSettingsRepository SitePaymentSettingsRepository => _sitePaymentSettingsRepository.Value;
+    public ISiteQuestionRepository SiteQuestionRepository => _siteQuestionRepository.Value;
     public ISiteSubscriptionFeatureRepository SiteSubscriptionFeatureRepository => _siteSubscriptionFeatureRepository.Value;
     public ISiteSubscriptionPriceRepository SiteSubscriptionPriceRepository => _siteSubscriptionPriceRepository.Value;
     public ISiteSubscriptionRepository SiteSubscriptionRepository => _siteSubscriptionRepository.Value;

@@ -2,6 +2,9 @@
 rem Generic E2E test runner: waits for an already-starting app to be ready on a port, runs its E2E
 rem tests, then stops the app (kills whatever is listening on the port). Exits with the test exit code.
 rem
+rem Writes an html run report to <test project>\TestResults\e2e.html and opens it when anything failed.
+rem Failure traces and screenshots land alongside it in TestResults\artifacts (written by OdkPageTest).
+rem
 rem Usage: script.e2e.bat <port> <path-to-test-csproj> [category]
 rem   category defaults to E2E (all platforms). Use Default or DrunkenKnitwits to target one platform.
 rem   e.g. script.e2e.bat 8125 ODK.E2E.Tests\ODK.E2E.Tests.csproj Default
@@ -46,8 +49,27 @@ goto waitloop
 echo App is ready. Running E2E tests (%FILTER%) ...
 rem console logger streams per-test results; the fixtures also print live START/PASS/FAIL + timing lines
 rem via TestContext.Progress. Fixtures run in parallel (see AssemblyInfo.cs).
-dotnet test "%TEST_PROJECT%" --filter "%FILTER%" --logger "console;verbosity=normal"
+rem The html logger writes a run summary to review afterwards - it ships with Microsoft.NET.Test.Sdk, so
+rem no extra package. A fixed LogFileName keeps the path predictable (the default is timestamped).
+dotnet test "%TEST_PROJECT%" --filter "%FILTER%" --logger "console;verbosity=normal" --logger "html;LogFileName=e2e.html"
 set TEST_EXIT=%errorlevel%
+
+rem Report paths, so a failed run says where to look rather than leaving them to be hunted for. Failure
+rem traces and screenshots are written per-test by OdkPageTest.
+for %%d in ("%TEST_PROJECT%") do set "TEST_DIR=%%~dpd"
+set "REPORT=%TEST_DIR%TestResults\e2e.html"
+echo.
+echo Report:    %REPORT%
+echo Artifacts: %TEST_DIR%TestResults\artifacts  ^(traces + screenshots, failures only^)
+
+rem Open the report when something failed - that's when it's worth reading, and a passing run shouldn't
+rem steal focus. Flat gotos rather than a parenthesised if block: a stray ) or & inside one closes it early
+rem and the script dies with a parse error. `start` returns immediately, so teardown still runs below.
+if "%TEST_EXIT%"=="0" goto reported
+if not exist "%REPORT%" goto reported
+echo Opening the report ...
+start "" "%REPORT%"
+:reported
 
 :teardown
 echo Stopping the app ...

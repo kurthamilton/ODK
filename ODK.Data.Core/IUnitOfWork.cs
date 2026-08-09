@@ -81,6 +81,7 @@ public interface IUnitOfWork
     ISiteContactMessageRepository SiteContactMessageRepository { get; }
     ISiteEmailSettingsRepository SiteEmailSettingsRepository { get; }
     ISitePaymentSettingsRepository SitePaymentSettingsRepository { get; }
+    ISiteQuestionRepository SiteQuestionRepository { get; }
     ISiteSubscriptionFeatureRepository SiteSubscriptionFeatureRepository { get; }
     ISiteSubscriptionPriceRepository SiteSubscriptionPriceRepository { get; }
     ISiteSubscriptionRepository SiteSubscriptionRepository { get; }

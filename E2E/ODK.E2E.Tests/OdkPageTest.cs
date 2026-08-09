@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Microsoft.Playwright;
 using Microsoft.Playwright.NUnit;
 using NUnit.Framework;
@@ -34,6 +34,11 @@ public abstract class OdkPageTest : PageTest
         string.IsNullOrEmpty(Environment.GetEnvironmentVariable("NO_COLOR"))
         && !Console.IsOutputRedirected;
 
+    // Tracing every test so a failure can be replayed costs time and memory on a suite this size, so it
+    // can be turned off for a run where speed matters more than diagnosing a failure.
+    private static readonly bool ArtifactsEnabled =
+        string.IsNullOrEmpty(Environment.GetEnvironmentVariable("E2E_NO_ARTIFACTS"));
+
     private static int _completed;
 
     private readonly Stopwatch _stopwatch = new();
@@ -49,6 +54,9 @@ public abstract class OdkPageTest : PageTest
     protected SentEmailDataHelper SentEmailDataHelper
         => new SentEmailDataHelper(E2ESettings.ConnectionString);
 
+    protected SiteQuestionDataHelper SiteQuestionDataHelper
+        => new SiteQuestionDataHelper(E2ESettings.ConnectionString);
+
     // Pin the locale to the default so rendered date/number formatting is deterministic regardless of the
     // host's locale (the app applies the request locale to rendering). Parsing of posted values is
     // unaffected - the app binds under a fixed default culture. Locale-specific tests set their own Locale.
@@ -61,16 +69,25 @@ public abstract class OdkPageTest : PageTest
     // fixtures interleave - each names its test. These run alongside Playwright's own [SetUp]/[TearDown];
     // the timing brackets the whole test including provisioning.
     [SetUp]
-    public void LogTestStarting()
+    public async Task LogTestStarting()
     {
         _stopwatch.Restart();
         TestContext.Progress.WriteLine(Paint($"  ··   {Describe()}", Dim));
+
+        await StartTracing();
     }
 
+    // Runs before Playwright's own [TearDown] - NUnit tears down derived-first - so Context and Page are
+    // still open here, which is what lets the trace be stopped and the screenshot taken.
     [TearDown]
-    public void LogTestFinished()
+    public async Task LogTestFinished()
     {
         _stopwatch.Stop();
+
+        var failed = TestContext.CurrentContext.Result.Outcome.Status
+            is not TestStatus.Passed and not TestStatus.Skipped;
+
+        var artifacts = await CaptureArtifacts(failed);
 
         var (label, colour) = TestContext.CurrentContext.Result.Outcome.Status switch
         {
@@ -82,9 +99,49 @@ public abstract class OdkPageTest : PageTest
         var count = Interlocked.Increment(ref _completed);
         TestContext.Progress.WriteLine(
             $"{Paint(label, colour)} {_stopwatch.Elapsed.TotalSeconds,6:0.0}s  {Paint($"[{count}]", Cyan)}  {Describe()}");
+
+        foreach (var artifact in artifacts)
+        {
+            TestContext.Progress.WriteLine(Paint($"       {artifact}", Dim));
+        }
     }
 
     private static string Ansi(string code) => $"{(char)27}[{code}m";
+
+    /// <summary>
+    /// Where failure artifacts are written: the project's <c>TestResults</c>, alongside the html report,
+    /// so a run's output is in one place and script.e2e.bat can name the path. Found by walking up from
+    /// the assembly (which lives in bin/Debug/net10.0) to the directory holding the csproj - WorkDirectory
+    /// is the bin folder under `dotnet test`, which would scatter the artifacts away from the report.
+    /// </summary>
+    private static string ArtifactDirectory()
+    {
+        var directory = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
+        while (directory != null && directory.GetFiles("*.csproj").Length == 0)
+        {
+            directory = directory.Parent;
+        }
+
+        var root = directory?.FullName ?? TestContext.CurrentContext.WorkDirectory;
+        var artifacts = Path.Combine(root, "TestResults", "artifacts");
+        Directory.CreateDirectory(artifacts);
+        return artifacts;
+    }
+
+    /// <summary>
+    /// A test name reduced to something safe for a filename - <c>[TestCase]</c> arguments bring quotes,
+    /// commas and parentheses with them.
+    /// </summary>
+    private static string ArtifactName()
+    {
+        var name = Describe();
+        foreach (var invalid in Path.GetInvalidFileNameChars())
+        {
+            name = name.Replace(invalid, '-');
+        }
+
+        return name.Replace(' ', '-').Replace(",", string.Empty);
+    }
 
     private static string Describe()
     {
@@ -94,4 +151,82 @@ public abstract class OdkPageTest : PageTest
     }
 
     private static string Paint(string text, string colour) => Colour ? $"{colour}{text}{Reset}" : text;
+
+    /// <summary>
+    /// Stops tracing, keeping the trace and a screenshot only when the test failed. Tracing has to be
+    /// started for every test - it cannot be turned on retrospectively once something has gone wrong - so
+    /// a passing test stops it without a path, which discards it.
+    ///
+    /// Never throws: a failure to capture an artifact must not replace the real test failure with a
+    /// confusing one, and must not turn a passing test red.
+    /// </summary>
+    private async Task<IReadOnlyList<string>> CaptureArtifacts(bool failed)
+    {
+        if (!ArtifactsEnabled)
+        {
+            return [];
+        }
+
+        var artifacts = new List<string>();
+
+        try
+        {
+            var path = failed ? Path.Combine(ArtifactDirectory(), $"{ArtifactName()}.zip") : null;
+            await Context.Tracing.StopAsync(new() { Path = path });
+            if (path != null)
+            {
+                artifacts.Add($"trace: {path}");
+            }
+        }
+        catch (Exception ex)
+        {
+            TestContext.Progress.WriteLine(Paint($"       trace not saved: {ex.Message}", Yellow));
+        }
+
+        if (!failed)
+        {
+            return artifacts;
+        }
+
+        try
+        {
+            var path = Path.Combine(ArtifactDirectory(), $"{ArtifactName()}.png");
+            await Page.ScreenshotAsync(new() { Path = path, FullPage = true });
+            artifacts.Add($"screenshot: {path}");
+        }
+        catch (Exception ex)
+        {
+            TestContext.Progress.WriteLine(Paint($"       screenshot not saved: {ex.Message}", Yellow));
+        }
+
+        return artifacts;
+    }
+
+    /// <summary>
+    /// Records actions, DOM snapshots and sources for the whole test. Only kept when the test fails (see
+    /// <see cref="CaptureArtifacts"/>), but it has to run for every test because a trace cannot be
+    /// started after the fact - set <c>E2E_NO_ARTIFACTS</c> to skip it when the overhead isn't worth it.
+    /// </summary>
+    private async Task StartTracing()
+    {
+        if (!ArtifactsEnabled)
+        {
+            return;
+        }
+
+        try
+        {
+            await Context.Tracing.StartAsync(new()
+            {
+                Screenshots = true,
+                Snapshots = true,
+                Sources = true,
+                Title = Describe()
+            });
+        }
+        catch (Exception ex)
+        {
+            TestContext.Progress.WriteLine(Paint($"       tracing not started: {ex.Message}", Yellow));
+        }
+    }
 }

@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using Microsoft.Playwright;
 
 namespace ODK.E2E.Tests.Pages;
@@ -67,14 +67,7 @@ internal class SiteAdminSubscriptionsPage
         await _page.SelectOptionAsync("#SitePaymentSettingId", new SelectOptionValue { Label = paymentSettingName });
         await _page.FillAsync("#Name", name);
 
-        // Description is a TinyMCE editor over a hidden textarea, so it can't be filled directly. Use the
-        // TinyMCE API to set the content and save() it back to the textarea (so client validation sees a
-        // value and the form submits it). Wait for the editor to finish initialising first.
-        await _page.WaitForFunctionAsync(
-            "() => { const ed = window.tinymce && window.tinymce.get('Description'); return !!ed && ed.initialized === true; }");
-        await _page.EvaluateAsync(
-            "value => { const ed = window.tinymce.get('Description'); ed.setContent(value); ed.save(); }",
-            description);
+        await _page.SetHtmlEditor("Description", description);
 
         if (!await _page.IsCheckedAsync("#Enabled"))
         {

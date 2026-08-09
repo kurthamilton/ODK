@@ -77,13 +77,17 @@ Two axes, composed by the filter:
     because they live in `EventTestsBase` alongside the event tests. Deliberately only the venue-focused
     tests: most event and RSVP tests create a venue while arranging, so including everything that touches
     one would cover most of the suite and the filter would stop meaning anything.
+  - **`SiteQuestions`** — site FAQ admin (create, reorder, edit, delete) and the About page that displays
+    it, applied at *fixture* level. Group Squirrel only: site questions are per-platform and Drunken
+    Knitwits has none, which is exactly why its About page 404s.
 
 ```
-script.run.tests.bat            # prompts for a category
-script.run.tests.bat Stripe     # just the payment tests
-script.run.tests.bat Venues     # just the venue admin tests
-script.run.tests.bat Default    # one platform
-script.run.tests.bat NoStripe   # everything except payments - skips the slow ones
+script.run.tests.bat                 # prompts for a category
+script.run.tests.bat Stripe          # just the payment tests
+script.run.tests.bat Venues          # just the venue admin tests
+script.run.tests.bat SiteQuestions   # just the site FAQ tests
+script.run.tests.bat Default         # one platform
+script.run.tests.bat NoStripe        # everything except payments - skips the slow ones
 ```
 
 A bare name is wrapped as `TestCategory=<name>`; anything mentioning `TestCategory` is used verbatim.

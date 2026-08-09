@@ -1,0 +1,27 @@
+﻿@page "/about"
+@using ODK.Core.Platforms
+@using ODK.Services.Chapters
+@using ODK.Services.Questions
+@using ODK.Web.Razor.Models.Components
+@model AboutModel
+@inject IChapterService ChapterService
+@inject ISiteQuestionViewModelService SiteViewModelService
+@{
+    Layout = "_HomeLayout";
+    Model.Title = "About";
+    Model.Path = "/about";
+
+    var viewModel = await SiteViewModelService.GetAboutPage(Model.ServiceRequest);
+}
+
+@if (Model.Platform == PlatformType.DrunkenKnitwits)
+{
+    var headerViewModel = await ChapterService.GetOdkHomeHeaderViewModel();
+    @await Html.PartialAsync("Header/_OdkHomeHeader", headerViewModel)
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Content = await Html.PartialAsync("Site/_AboutContent", viewModel),
+    Title = "About"
+})
