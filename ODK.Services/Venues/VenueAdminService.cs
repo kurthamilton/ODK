@@ -88,6 +88,28 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
         return ServiceResult.Successful();
     }
 
+    public async Task<ServiceResult> DeleteVenue(IMemberChapterAdminServiceRequest request, Guid venueId)
+    {
+        var chapter = request.Chapter;
+
+        var (venue, hasEvents) = await GetChapterAdminRestrictedContent(
+            request,
+            x => x.VenueRepository.GetById(venueId),
+            x => x.EventRepository.Query().ForVenue(venueId).Any());
+
+        OdkAssertions.BelongsToChapter(venue, chapter.Id);
+
+        if (hasEvents)
+        {
+            return ServiceResult.Failure("Cannot delete a venue with events");
+        }
+
+        _unitOfWork.VenueRepository.Delete(venue);
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
+    }
+
     public async Task<Venue> GetVenue(
         IMemberChapterAdminServiceRequest request, Guid venueId)
     {

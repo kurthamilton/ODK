@@ -31,6 +31,17 @@ public class VenueAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
+    [HttpPost("groups/{chapterId:guid}/venues/{id:guid}/delete")]
+    public async Task<IActionResult> DeleteVenue(Guid chapterId, Guid id)
+    {
+        var request = MemberChapterAdminServiceRequest.Create(
+            ChapterAdminSecurable.Venues,
+            MemberChapterServiceRequest);
+        var result = await _venueAdminService.DeleteVenue(request, id);
+        AddFeedback(result, "Venue deleted");
+        return RedirectToReferrer();
+    }
+
     [HttpPost("groups/{chapterId:guid}/venues/{id:guid}/restore")]
     public async Task<IActionResult> RestoreVenue(Guid chapterId, Guid id)
     {
