@@ -3,6 +3,7 @@ using ODK.Core.Chapters;
 using ODK.Core.Messages;
 using ODK.Core.Notifications;
 using ODK.Data.Core;
+using ODK.Services.Contact.ViewModels;
 using ODK.Services.Emails;
 using ODK.Services.Emails.Validation;
 using ODK.Services.Exceptions;
@@ -55,6 +56,18 @@ public class ContactService : IContactService
         await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();
+    }
+
+    public async Task<ContactPageViewModel> GetContactPageViewModel(IServiceRequest request)
+    {
+        var hasQuestions = await _unitOfWork.SiteQuestionRepository
+            .HasQuestions(request.Platform)
+            .Run();
+
+        return new ContactPageViewModel
+        {
+            HasQuestions = hasQuestions
+        };
     }
 
     public async Task<ServiceResult> ReplyToChapterConversation(

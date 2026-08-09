@@ -52,6 +52,7 @@ using ODK.Web.Common.Account;
 using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
 using ODK.Services.Integrations.Emails.Reoon;
+using ODK.Services.Questions;
 
 namespace ODK.Infrastructure;
 
@@ -163,6 +164,8 @@ public static class DependencyRegistrar
             .AddScoped<IEmailVerifier, ReoonEmailVerifier>()
             .AddScoped<IReferralAdminService, ReferralAdminService>()
             .AddScoped<IReferralService, ReferralService>()
+            .AddScoped<ISiteQuestionAdminService, SiteQuestionAdminService>()
+            .AddScoped<ISiteQuestionViewModelService, SiteQuestionViewModelService>()
             .AddScoped<IImageService, ImageService>()
             .AddScoped<IIssueAdminService, IssueAdminService>()
             .AddScoped<IIssueService, IssueService>()

@@ -1,8 +1,12 @@
-﻿namespace ODK.Services.Contact;
+﻿using ODK.Services.Contact.ViewModels;
+
+namespace ODK.Services.Contact;
 
 public interface IContactService
 {
     Task<ServiceResult> ArchiveChapterConversation(IMemberServiceRequest request, Guid conversationId);
+
+    Task<ContactPageViewModel> GetContactPageViewModel(IServiceRequest request);
 
     Task<ServiceResult> ReplyToChapterConversation(IMemberServiceRequest request, Guid conversationId, string message);
 

@@ -1,0 +1,13 @@
+﻿@using ODK.Web.Razor.Models.SiteAdmin
+@{
+    var formViewModel = new SiteQuestionFormViewModel();
+}
+
+<h2 class="content-heading">Create question</h2>
+
+<form method="post" action="/siteadmin/questions/new">
+    @Html.AntiForgeryToken()
+    @await Html.PartialAsync("SiteAdmin/_QuestionForm", formViewModel)
+
+    <button type="submit" class="btn btn-primary">Create</button>
+</form>

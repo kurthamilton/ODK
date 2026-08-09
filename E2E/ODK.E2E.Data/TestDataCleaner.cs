@@ -19,6 +19,9 @@ namespace ODK.E2E.Data;
 /// are not member-scoped, so they're removed explicitly - children (features, prices) first, then the
 /// subscription - after the members, so any member subscription referencing one has already cascaded away.
 /// The shared, reused default subscriptions (e.g. "ODK E2E Free") don't carry the prefix and are left alone.
+///
+/// Site questions are likewise not member-scoped - they belong to a platform - so test rows (name prefixed
+/// <see cref="SiteQuestionDataHelper.TestNamePrefix"/>) are removed explicitly. They have no children.
 /// </summary>
 public class TestDataCleaner : DataHelperBase
 {
@@ -58,11 +61,14 @@ public class TestDataCleaner : DataHelperBase
             DELETE FROM SiteSubscriptionFeatures WHERE SiteSubscriptionId IN ({siteSubIdSql});
             DELETE FROM SiteSubscriptionPrices WHERE SiteSubscriptionId IN ({siteSubIdSql});
             DELETE FROM SiteSubscriptions WHERE SiteSubscriptionId IN ({siteSubIdSql});
+
+            DELETE FROM SiteQuestions WHERE Name LIKE @questionPattern;
             """;
 
         await using var builder = Builder(sql)
             .AddParameter("@pattern", $"%@{TestAccounts.EmailDomain}")
-            .AddParameter("@subPattern", $"{SiteSubscriptionDataHelper.TestNamePrefix}%");
+            .AddParameter("@subPattern", $"{SiteSubscriptionDataHelper.TestNamePrefix}%")
+            .AddParameter("@questionPattern", $"{SiteQuestionDataHelper.TestNamePrefix}%");
 
         return await builder.ExecuteNonQuery();
     }

@@ -1,0 +1,10 @@
+﻿@page "/siteadmin/questions"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@model QuestionsModel
+@{
+    Layout = "_SiteAdminLayout";
+    Model.Title = "FAQ | SiteAdmin";
+}
+
+@await Html.PartialAsync("SiteAdmin/_QuestionsContent")

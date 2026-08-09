@@ -13,3 +13,6 @@ app_data
 # E2E test local overrides
 ODK.E2ETests/appsettings.local.json
 /ngrok.yml
+
+# Test run output: the html report, plus the traces and screenshots OdkPageTest writes for failures
+TestResults/

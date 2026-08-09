@@ -22,6 +22,7 @@ if "%CATEGORY%"=="" (
     echo   Stripe               - payments only; slow, needs the ngrok tunnel up
     echo   NoStripe             - everything except payments
     echo   Venues               - venue admin; creation, name normalising, slugs, events filter
+    echo   SiteQuestions        - site FAQ admin and the About page; Group Squirrel only
     echo.
     set /p "CATEGORY=Category [E2E]: "
 )

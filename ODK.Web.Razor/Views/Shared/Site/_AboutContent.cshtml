@@ -1,0 +1,18 @@
+﻿@using ODK.Services.Questions.ViewModels
+@using ODK.Web.Razor.Models.Components
+@model AboutPageViewModel
+
+<div class="columns columns-1 columns-md-2">
+    @foreach (var question in Model.Questions)
+    {
+        <div class="column-item mb-3">
+            @await Html.PartialAsync("Components/_Card", new CardViewModel
+            {
+                HeaderContentFunc =
+                    @<div>@question.Name</div>,
+                BodyContentFunc =
+                    @<div>@Html.Raw(question.Answer)</div>
+            })
+        </div>
+    }
+</div>

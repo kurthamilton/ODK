@@ -1,4 +1,4 @@
-using Microsoft.Playwright;
+﻿using Microsoft.Playwright;
 
 namespace ODK.E2E.Tests.Pages;
 
@@ -17,9 +17,11 @@ internal static class PageExtensions
     /// <summary>
     /// Navigates to a relative path. The absolute host comes from the browser context's
     /// <c>BaseURL</c> (set per platform by the test's base class / by provisioning), so the same page
-    /// objects work against whichever platform the fixture targets.
+    /// objects work against whichever platform the fixture targets. Returns the response so a caller can
+    /// assert the status - a page that legitimately 404s needs to tell the difference between "not found"
+    /// and "found but empty"; callers that don't care can ignore it.
     /// </summary>
-    internal static Task Navigate(this IPage page, string path)
+    internal static Task<IResponse?> Navigate(this IPage page, string path)
         => page.GotoAsync(path);
 
     /// <summary>
@@ -27,6 +29,31 @@ internal static class PageExtensions
     /// read-only, so it can't be typed into - drive the flatpickr instance directly. Waits for flatpickr
     /// to attach first. <paramref name="value"/> is in the input's display format (<c>dd/MM/yyyy HH:mm</c>).
     /// </summary>
+    /// <summary>
+    /// Sets the content of a TinyMCE-enhanced textarea (<c>[data-html-editor]</c>, initialised globally
+    /// from the layout). The editor hides the original textarea and edits inside an iframe, so it can't be
+    /// filled directly - set the content through the editor's API and <c>save()</c> it back to the
+    /// textarea, which is what client validation reads and the form posts. Waits for initialisation first,
+    /// since the editor is created asynchronously after load.
+    /// </summary>
+    /// <param name="elementId">The id of the underlying textarea, which is also the editor's id.</param>
+    internal static async Task SetHtmlEditor(this IPage page, string elementId, string value)
+    {
+        await page.WaitForFunctionAsync(
+            "id => { const ed = window.tinymce && window.tinymce.get(id); return !!ed && ed.initialized === true; }",
+            elementId);
+
+        await page.EvaluateAsync(
+            """
+            ({ id, value }) => {
+                const editor = window.tinymce.get(id);
+                editor.setContent(value);
+                editor.save();
+            }
+            """,
+            new { id = elementId, value });
+    }
+
     internal static async Task SetDatePicker(this IPage page, string selector, string value)
     {
         await page.WaitForFunctionAsync(

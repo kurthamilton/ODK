@@ -1,26 +1,29 @@
 ﻿@page "/contact"
 @using ODK.Core.Platforms
 @using ODK.Services.Chapters
+@using ODK.Services.Contact
 @using ODK.Web.Razor.Models.Components
-@using ODK.Web.Razor.Models.Contact
 @model ContactModel
 @inject IChapterService ChapterService
+@inject IContactService ContactService
 @{
     Layout = "_HomeLayout";
     Model.Title = "Contact";
     Model.Description = "Form for sending messages to the site owners";
     Model.Path = "/contact";
+
+    var viewModel = await ContactService.GetContactPageViewModel(Model.ServiceRequest);
 }
 
 @if (Model.Platform == PlatformType.DrunkenKnitwits)
 {
-    var viewModel = await ChapterService.GetOdkHomeHeaderViewModel();
-    @await Html.PartialAsync("Header/_OdkHomeHeader", viewModel)
+    var headerViewModel = await ChapterService.GetOdkHomeHeaderViewModel();
+    @await Html.PartialAsync("Header/_OdkHomeHeader", headerViewModel)
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Content = await Html.PartialAsync("Contact/_ContactContent", new ContactContentViewModel()),
+    Content = await Html.PartialAsync("Contact/_ContactContent", viewModel),
     Title = "Contact us"
 })
 

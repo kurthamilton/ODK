@@ -33,6 +33,10 @@ public class SiteAdminRoutes
 
     public SiteAdminRoute Payments => Path("/payments");
 
+    public SiteAdminRoute QuestionCreate => Questions.Child("/new");
+
+    public SiteAdminRoute Questions => Path("/questions");
+
     public SiteAdminRoute ReferralCampaignCreate => Referrals.Child("/new");
 
     public SiteAdminRoute Referrals => Path("/referrals");
@@ -71,6 +75,7 @@ public class SiteAdminRoutes
         new(Countries, "Countries"),
         new(Emails, "Emails"),
         new(Errors, "Error log"),
+        new(Questions, "FAQ"),
         new(Features, "Features"),
         new(Groups, "Groups"),
         new(Impersonate, "Impersonate"),
@@ -87,6 +92,8 @@ public class SiteAdminRoutes
     ];
 
     public SiteAdminRoute Payment(Guid id) => Payments.Child($"/{id}");
+
+    public SiteAdminRoute Question(Guid id) => Questions.Child($"/{id}");
 
     public SiteAdminRoute ReferralCampaign(Guid id) => Referrals.Child($"/{id}");
 

@@ -1,0 +1,10 @@
+﻿@page "/siteadmin/questions/new"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@model QuestionCreateModel
+@{
+    Layout = "_SiteAdminLayout";
+    Model.Title = "Create question | SiteAdmin";
+}
+
+@await Html.PartialAsync("SiteAdmin/_QuestionCreateContent")
