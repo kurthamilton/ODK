@@ -20,6 +20,8 @@ using ODK.Resources.Resources;
 using ODK.Services.Authorization;
 using ODK.Services.Chapters.Models;
 using ODK.Services.Chapters.ViewModels;
+using ODK.Services.Emails;
+using ODK.Services.Emails.Validation;
 using ODK.Services.Geolocation;
 using ODK.Services.Imaging;
 using ODK.Services.Logging;
@@ -57,11 +59,13 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     private readonly ISiteSubscriptionService _siteSubscriptionService;
     private readonly ISocialMediaService _socialMediaService;
     private readonly ITopicService _topicService;
+    private readonly IEmailValidationService _emailValidationService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUrlProviderFactory _urlProviderFactory;
 
     public ChapterAdminService(
         IUnitOfWork unitOfWork,
+        IEmailValidationService emailValidationService,
         IHtmlSanitizer htmlSanitizer,
         ISocialMediaService socialMediaService,
         INotificationService notificationService,
@@ -91,6 +95,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         _siteSubscriptionService = siteSubscriptionService;
         _socialMediaService = socialMediaService;
         _topicService = topicService;
+        _emailValidationService = emailValidationService;
         _unitOfWork = unitOfWork;
         _urlProviderFactory = urlProviderFactory;
     }
@@ -1567,6 +1572,17 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             if (existing.Role == ChapterAdminRole.Owner)
             {
                 return ServiceResult.Failure("Owner role cannot be changed");
+            }
+        }
+
+        // Optional: only validated when one was actually supplied, since blank means "use their own".
+        if (!string.IsNullOrWhiteSpace(model.AdminEmailAddress))
+        {
+            var emailValidationResult = await _emailValidationService.Validate(
+                model.AdminEmailAddress, EmailValidationLevel.Full);
+            if (!emailValidationResult.Success)
+            {
+                return emailValidationResult;
             }
         }
 

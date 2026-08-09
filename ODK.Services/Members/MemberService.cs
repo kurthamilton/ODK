@@ -14,6 +14,7 @@ using ODK.Data.Core.Deferred;
 using ODK.Services.Authentication.OAuth;
 using ODK.Services.Authorization;
 using ODK.Services.Emails;
+using ODK.Services.Emails.Validation;
 using ODK.Services.Geolocation;
 using ODK.Services.Logging;
 using ODK.Services.Members.Models;
@@ -132,6 +133,15 @@ public class MemberService : IMemberService
 
     public async Task<ServiceResult<Member?>> CreateAccount(IServiceRequest request, AccountCreateModel model)
     {
+        // Before any query: the address is about to receive an activation email, and an unusable one
+        // leaves an account nobody can ever activate.
+        var emailValidationResult = await _emailValidationService.Validate(
+            model.EmailAddress, EmailValidationLevel.Full);
+        if (!emailValidationResult.Success)
+        {
+            return ServiceResult<Member?>.Failure(emailValidationResult.Message ?? string.Empty);
+        }
+
         var (existing, siteSubscription, topics, referral) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetByEmailAddress(model.EmailAddress),
             x => x.SiteSubscriptionRepository.GetDefault(request.Platform),
@@ -1168,7 +1178,7 @@ public class MemberService : IMemberService
             return ServiceResult.Successful("New email address matches old email address");
         }
 
-        var emailValidationResult = await _emailValidationService.Validate(newEmailAddress);
+        var emailValidationResult = await _emailValidationService.Validate(newEmailAddress, EmailValidationLevel.Full);
         if (!emailValidationResult.Success)
         {
             return emailValidationResult;
@@ -1219,7 +1229,7 @@ public class MemberService : IMemberService
     {
         var propertyResult = ValidateMemberProperties(chapterProperties, profile.Properties, forApplication);
 
-        var emailValidationResult = await _emailValidationService.Validate(profile.EmailAddress);
+        var emailValidationResult = await _emailValidationService.Validate(profile.EmailAddress, EmailValidationLevel.Full);
         if (!emailValidationResult.Success)
         {
             return emailValidationResult;

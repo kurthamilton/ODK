@@ -2,6 +2,7 @@
 using ODK.Core.Referrals;
 using ODK.Data.Core;
 using ODK.Services.Emails;
+using ODK.Services.Emails.Validation;
 using ODK.Services.Web;
 
 namespace ODK.Services.Referrals;
@@ -30,7 +31,7 @@ public class ReferralService : IReferralService
         var currentMember = request.CurrentMember;
         emailAddress = emailAddress.Trim();
 
-        var validationResult = await _emailValidationService.Validate(emailAddress);
+        var validationResult = await _emailValidationService.Validate(emailAddress, EmailValidationLevel.Full);
         if (!validationResult.Success)
         {
             return validationResult;

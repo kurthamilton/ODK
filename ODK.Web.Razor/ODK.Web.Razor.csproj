@@ -69,11 +69,4 @@
 		<ProjectReference Include="..\ODK.Infrastructure\ODK.Infrastructure.csproj" />
 		<ProjectReference Include="..\ODK.Web.Common\ODK.Web.Common.csproj" />
 	</ItemGroup>
-
-	<ItemGroup>
-		<Content Update="Pages\Account\Pending.cshtml">
-			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-		</Content>
-	</ItemGroup>
 </Project>

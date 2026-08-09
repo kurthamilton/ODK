@@ -216,7 +216,7 @@ public static class ReferralServiceTests
         var service = new ReferralService(
             MockUnitOfWork.Create(context),
             emailService.Object,
-            new EmailValidationService(),
+            new EmailValidationService(new InconclusiveEmailVerifier()),
             urlProviderFactory.Object);
 
         return (service, request.Object, emailService);

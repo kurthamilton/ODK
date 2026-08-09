@@ -17,12 +17,16 @@
     WidthClass = "col-12 col-lg-8 col-xl-6",
     ContentFunc = 
         @<div>
-            <form method="post" action="/account/create" enctype="multipart/form-data">
+            <form method="post" enctype="multipart/form-data">
                 @Html.AntiForgeryToken()
                 @await Html.PartialAsync("Account/_AccountCreateForm", new AccountCreateFormViewModel
                 {
                     GoogleClientId = viewModel.GoogleClientId,
                     Location = viewModel.Location,
+                    PostedLocation = Model.PostedLocation,
+                    PostedOAuth = Model.PostedOAuth,
+                    PostedPersonalDetails = Model.PostedPersonalDetails,
+                    PostedTopics = Model.PostedTopics,
                     TopicGroups = viewModel.TopicGroups,
                     Topics = viewModel.Topics
                 })
@@ -39,7 +43,7 @@
 {
     @await Html.PartialAsync("Components/Scripts/_Imaging")
     @await Html.PartialAsync("Components/Scripts/_GoogleLocation")    
-    @await Html.PartialAsync("Components/Scripts/_OAuth");
+    @await Html.PartialAsync("Components/Scripts/_OAuth")
     @await Html.PartialAsync("Components/Scripts/_Recaptcha")
     @* Only page that needs it: the referral link lands here, and the sign-up form it fills is here too. *@
     <script src="~/js/odk.referrer.js" asp-append-version="true"></script>

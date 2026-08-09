@@ -4,6 +4,7 @@ using ODK.Core.Messages;
 using ODK.Core.Notifications;
 using ODK.Data.Core;
 using ODK.Services.Emails;
+using ODK.Services.Emails.Validation;
 using ODK.Services.Exceptions;
 using ODK.Services.Members;
 using ODK.Services.Notifications;
@@ -286,7 +287,7 @@ public class ContactService : IContactService
             throw new OdkServiceException("Email address and message must be provided");
         }
 
-        var emailValidationResult = await _emailValidationService.Validate(fromAddress);
+        var emailValidationResult = await _emailValidationService.Validate(fromAddress, EmailValidationLevel.Soft);
         if (!emailValidationResult.Success)
         {
             throw new OdkServiceException(emailValidationResult.Message ?? string.Empty);

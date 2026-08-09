@@ -6,7 +6,7 @@ public class RecaptchaSettings
     /// Set to false to skip reCAPTCHA entirely (no widget, no verification). Used by the e2e environment,
     /// which has no keys and drives the forms with an automation browser.
     /// </summary>
-    public bool Enabled { get; init; } = true;
+    public bool Enabled { get; init; }
 
     public required double ScoreThreshold { get; init; }
 

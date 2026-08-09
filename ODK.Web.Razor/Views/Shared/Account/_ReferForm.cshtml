@@ -1,10 +1,11 @@
 ﻿@using ODK.Web.Razor.Models.Account
+@using ODK.Web.Razor.Mvc
 @model ReferFormViewModel
 
 @* The model here must be the form view model itself: the helpers name fields from the lambda's root, so
    binding them to anything else (a local, or a wrapper model) emits a prefixed name the POST won't bind. *@
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.EmailAddress, new { @class = "form-label" })
-    @Html.TextBoxFor(x => x.EmailAddress, new { @class = "form-control", type = "email" })
+    @Html.OdkEmailBoxFor(x => x.EmailAddress, new { @class = "form-control" })
     @Html.ValidationMessageFor(x => x.EmailAddress)
 </div>

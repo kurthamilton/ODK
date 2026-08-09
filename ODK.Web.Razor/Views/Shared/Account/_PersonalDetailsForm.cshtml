@@ -2,6 +2,7 @@
 @using ODK.Services.Users.ViewModels
 @using ODK.Web.Common.Routes
 @using ODK.Web.Common.Services
+@using ODK.Web.Razor.Mvc
 @model PersonalDetailsFormViewModel
 @inject IOdkRoutes OdkRoutes
 @inject IRequestStore RequestStore
@@ -34,7 +35,7 @@
     }
     else
     {        
-        @Html.TextBoxFor(x => x.EmailAddress, new { @class = "form-control", type = "email", data_email = "" })
+        @Html.OdkEmailBoxFor(x => x.EmailAddress, new { @class = "form-control", data_email = "" })
         @await Html.PartialAsync("Components/_FormLabelSubtitle", "You will need access to this email to verify your account")
         @Html.ValidationMessageFor(x => x.EmailAddress)
     }

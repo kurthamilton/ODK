@@ -1,16 +1,38 @@
 ﻿using System.Text.RegularExpressions;
+using ODK.Services.Emails.Validation;
 
 namespace ODK.Services.Emails;
 
 public class EmailValidationService : IEmailValidationService
 {
-    // Deliberately permissive: a format check only, catching typos rather than proving deliverability.
-    // Anything stricter belongs in the live check this service exists to make room for.
-    private static readonly Regex EmailAddressRegex = new(
-        "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", RegexOptions.Compiled);
+    private static readonly Regex EmailAddressRegex = new(EmailAddressPattern.Value, RegexOptions.Compiled);
 
-    public Task<ServiceResult> Validate(string emailAddress)
-        => Task.FromResult(EmailAddressRegex.IsMatch(emailAddress)
-            ? ServiceResult.Successful()
-            : ServiceResult.Failure("Invalid email address format"));
+    private readonly IEmailVerifier _emailVerifier;
+
+    public EmailValidationService(IEmailVerifier emailVerifier)
+    {
+        _emailVerifier = emailVerifier;
+    }
+
+    public async Task<ServiceResult> Validate(string emailAddress, EmailValidationLevel level)
+    {
+        if (string.IsNullOrWhiteSpace(emailAddress) || !EmailAddressRegex.IsMatch(emailAddress))
+        {
+            return ServiceResult.Failure("Invalid email address format");
+        }
+
+        // Tested for Full rather than against Soft, so an unset level costs no credit. Only a caller that
+        // explicitly asks for the external check gets it.
+        if (level != EmailValidationLevel.Full)
+        {
+            return ServiceResult.Successful();
+        }
+
+        // Only a positive rejection blocks. Inconclusive covers an outage, an exhausted quota, or no
+        // configured provider, and must behave exactly like a pass - see IEmailVerifier.
+        var verificationResult = await _emailVerifier.Verify(emailAddress);
+        return verificationResult == EmailVerificationResult.Invalid
+            ? ServiceResult.Failure("Email address could not be verified")
+            : ServiceResult.Successful();
+    }
 }

@@ -14,6 +14,8 @@ using ODK.Services.Contact;
 using ODK.Services.Countries;
 using ODK.Services.Csv;
 using ODK.Services.Emails;
+using ODK.Services.Emails.Validation;
+using ODK.Services.Integrations.Emails;
 using ODK.Services.Events;
 using ODK.Services.Features;
 using ODK.Services.Geolocation;
@@ -49,6 +51,7 @@ using ODK.Services.Web;
 using ODK.Web.Common.Account;
 using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
+using ODK.Services.Integrations.Emails.Reoon;
 
 namespace ODK.Infrastructure;
 
@@ -157,6 +160,7 @@ public static class DependencyRegistrar
             .AddScoped<IEventViewModelService, EventViewModelService>()
             .AddScoped<IFeatureService, FeatureService>()
             .AddScoped<IEmailValidationService, EmailValidationService>()
+            .AddScoped<IEmailVerifier, ReoonEmailVerifier>()
             .AddScoped<IReferralAdminService, ReferralAdminService>()
             .AddScoped<IReferralService, ReferralService>()
             .AddScoped<IImageService, ImageService>()
@@ -300,6 +304,13 @@ public static class DependencyRegistrar
         services.AddSingleton(new LocaleServiceSettings
         {
             DefaultLocale = appSettings.Localisation.DefaultLocale
+        });
+
+        services.AddSingleton(new ReoonEmailVerifierSettings
+        {
+            ApiKey = appSettings.Reoon.ApiKey,
+            Mode = appSettings.Reoon.Mode,
+            VerifyUrl = appSettings.Reoon.VerifyUrl
         });
 
         services.AddSingleton(new RecaptchaServiceSettings

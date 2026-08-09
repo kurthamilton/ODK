@@ -7,6 +7,7 @@ using ODK.Core.Members;
 using ODK.Core.Notifications;
 using ODK.Data.Core;
 using ODK.Services.Emails;
+using ODK.Services.Emails.Validation;
 using ODK.Services.Members;
 using ODK.Services.Notifications;
 
@@ -245,7 +246,7 @@ public class AuthenticationService : IAuthenticationService
         Chapter? chapter,
         string emailAddress)
     {
-        var emailValidationResult = await _emailValidationService.Validate(emailAddress);
+        var emailValidationResult = await _emailValidationService.Validate(emailAddress, EmailValidationLevel.Full);
         if (!emailValidationResult.Success)
         {
             return emailValidationResult;

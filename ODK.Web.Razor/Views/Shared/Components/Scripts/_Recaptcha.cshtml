@@ -1,5 +1,5 @@
 ﻿@using ODK.Services.Recaptcha
-@inject IRecaptchaService RecaptchaService;
+@inject IRecaptchaService RecaptchaService
 @{
     // Switched off for this environment (e2e): render nothing, so odk.recaptcha.js never loads and can't
     // block form submits waiting on grecaptcha with no site key. Verification passes server-side too.
