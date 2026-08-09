@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Net.Http.Headers;
 using ODK.Services.Logging;
 using ODK.Web.Razor.Services;
@@ -60,6 +61,27 @@ public class LoggingAntiforgery : IAntiforgery
         return !string.IsNullOrEmpty(value) ? value : null;
     }
 
+    /// <summary>
+    /// Whether the matched Razor Page declares a handler for the request's method. False means the page
+    /// could not have served this request even with a valid token, so the failure is not a real form
+    /// losing its token.
+    /// </summary>
+    private static bool HasHandlerForMethod(HttpContext httpContext)
+    {
+        // Null for an MVC controller action, or if the page loader hasn't swapped the compiled descriptor
+        // into the endpoint. Neither says the request is illegitimate, so fall through and log.
+        var descriptor = httpContext.GetEndpoint()?.Metadata.GetMetadata<CompiledPageActionDescriptor>();
+        if (descriptor == null)
+        {
+            return true;
+        }
+
+        // A null HttpMethod is a handler that answers any method, so it counts for every request.
+        return descriptor.HandlerMethods.Any(x =>
+            x.HttpMethod == null ||
+            string.Equals(x.HttpMethod, httpContext.Request.Method, StringComparison.OrdinalIgnoreCase));
+    }
+
     private void LogFailure(HttpContext httpContext, AntiforgeryValidationException exception)
     {
         // A browser always sends Origin on a POST navigation and Sec-Fetch-Site on a same-site submit;
@@ -78,6 +100,17 @@ public class LoggingAntiforgery : IAntiforgery
         // corporate proxies strip it from genuine requests, and adding a Referrer-Policy header to the
         // app would remove it from every request. The framework still logs the failure at Information.
         if (origin == null && secFetchSite == null)
+        {
+            return;
+        }
+
+        // Scanners probe paths like /graphql, which match the single-segment chapter route
+        // ("/{chapterName:regex(^[A-Za-z-]+$)}") and so resolve to an endpoint instead of 404ing. The
+        // antiforgery filter runs before any handler, so the failure is logged before the page gets to
+        // decide the chapter doesn't exist. A page with no handler for the method never rendered a form
+        // that posts here, so there is no token to have lost - unlike the header test above this catches
+        // a scanner that does send an Origin.
+        if (!HasHandlerForMethod(httpContext))
         {
             return;
         }
