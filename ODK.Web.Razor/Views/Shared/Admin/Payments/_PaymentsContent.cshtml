@@ -16,6 +16,13 @@
                 </tr>
             </thead>
             <tbody>
+                @if (Model.Payments.Count == 0)
+                {
+                    <tr>
+                        <td colspan="5" class="text-muted">No payments received yet.</td>
+                    </tr>
+                }
+
                 @foreach (var dto in Model.Payments)
                 {
                     var (currency, member, payment) = (dto.Payment.Currency, dto.Member, dto.Payment);

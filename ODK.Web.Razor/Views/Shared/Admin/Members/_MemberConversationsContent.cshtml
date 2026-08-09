@@ -1,4 +1,5 @@
-﻿@using ODK.Core.Utils
+﻿@using ODK.Core.Features
+@using ODK.Core.Utils
 @using ODK.Services.Members.ViewModels
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
@@ -65,7 +66,7 @@
         @await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.OwnerSubscriptionFeatures)
         {
             Chapter = Model.Chapter,
-            Feature = ODK.Core.Features.SiteFeatureType.SendMemberEmails,
+            Feature = SiteFeatureType.SendMemberEmails,
             Content = await Html.PartialAsync("Components/_Panel", new PanelViewModel
             {
                 TitleContentFunc = @<h5>New conversation</h5>,
@@ -89,7 +90,7 @@ else
         @await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.OwnerSubscriptionFeatures)
         {
             Chapter = Model.Chapter,
-            Feature = ODK.Core.Features.SiteFeatureType.SendMemberEmails,
+            Feature = SiteFeatureType.SendMemberEmails,
             ContentFunc = 
                 @<div>
                     <form action="/admin/groups/@Model.Chapter.Id/conversations" method="post">

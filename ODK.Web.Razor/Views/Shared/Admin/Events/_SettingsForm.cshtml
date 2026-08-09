@@ -1,5 +1,9 @@
-﻿@using ODK.Core.Utils
+﻿@using ODK.Core.Features
+@using ODK.Core.Utils
+@using ODK.Web.Common.Services
+@using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Models.Admin.Events.EventSettingsFormViewModel
+@inject IRequestStore RequestStore
 @{
     var dayOfWeekOptions = DateUtils
         .DaysOfWeek(DayOfWeek.Monday)
@@ -40,19 +44,30 @@
     @Html.ValidationMessageFor(x => x.DefaultDescription)
 </div>
 
-<fieldset disabled="@(Model.ScheduledEmailsEnabled ? null : "")">
+<fieldset>
     <legend>Scheduled emails</legend>
 
-    <div class="form-group mb-3">
-        @Html.LabelFor(x => x.DefaultScheduledEmailDayOfWeek, new { @class = "form-label" })
-        @Html.DropDownListFor(x => x.DefaultScheduledEmailDayOfWeek, dayOfWeekOptions, "", 
-            new { @class = "form-select", data_select = "", data_clearable = "" })
-    </div>
+    @* Paid feature. Gated through _RestrictedFeature like the rest, so an owner without it gets the
+       upgrade prompt rather than a silently disabled section. *@
+    @await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.ScheduledEmailsEnabled)
+    {
+        Chapter = RequestStore.ChapterOrDefault,        
+        Class = "mb-3",
+        Feature = SiteFeatureType.ScheduledEventEmails,
+        ContentFunc =
+            @<div>
+                <div class="form-group mb-3">
+                    @Html.LabelFor(x => x.DefaultScheduledEmailDayOfWeek, new { @class = "form-label" })
+                    @Html.DropDownListFor(x => x.DefaultScheduledEmailDayOfWeek, dayOfWeekOptions, "", 
+                        new { @class = "form-select", data_select = "", data_clearable = "" })
+                </div>
 
-    <div class="form-group mb-3">
-        @Html.LabelFor(x => x.DefaultScheduledEmailTimeOfDay, new { @class = "form-label" })
-        @await Html.PartialAsync("Components/_Tooltip", "Default scheduled email time when creating new events (24 hour clock, HH:MM)")
-        @Html.TextBoxFor(x => x.DefaultScheduledEmailTimeOfDay, new { @class = "form-control" })
-        @Html.ValidationMessageFor(x => x.DefaultScheduledEmailTimeOfDay)
-    </div>
+                <div class="form-group mb-3">
+                    @Html.LabelFor(x => x.DefaultScheduledEmailTimeOfDay, new { @class = "form-label" })
+                    @await Html.PartialAsync("Components/_Tooltip", "Default scheduled email time when creating new events (24 hour clock, HH:MM)")
+                    @Html.TextBoxFor(x => x.DefaultScheduledEmailTimeOfDay, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(x => x.DefaultScheduledEmailTimeOfDay)
+                </div>
+            </div>
+    })
 </fieldset>

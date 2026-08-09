@@ -1,21 +1,5 @@
-﻿@using ODK.Core.Chapters
-@using ODK.Services.Chapters.ViewModels
-@using ODK.Web.Common.Routes
-@using ODK.Web.Razor.Models.Components
+﻿@using ODK.Services.Chapters.ViewModels
 @model ChapterAdminPageViewModel
-
-@if (!Model.Chapter.Approved())
-{
-    <div class="alert alert-danger">
-        This group is still pending approval. You can continue to make changes but you won't be able to publish it until after approval.
-    </div>
-}
-else if (!Model.Chapter.IsPublished())
-{
-    <div class="alert alert-danger">
-        This group is not published
-    </div>
-}
 
 @if (Model.Chapter.CanBePublished())
 {

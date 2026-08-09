@@ -1,9 +1,12 @@
-﻿@using ODK.Web.Common.Routes
+﻿@using ODK.Core.Features
+@using ODK.Web.Common.Routes
+@using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Admin.Events
 @using ODK.Web.Razor.Models.Components
 @model EventFormViewModel
 @inject IOdkRoutes OdkRoutes
+@inject IRequestStore RequestStore
 @{
     var venueOptions = Model.Venues
         .OrderBy(x => x.Name)
@@ -120,32 +123,40 @@
     @Html.ValidationMessageFor(x => x.AttendeeLimit)
 </div>
 
-<fieldset disabled="@(Model.TicketsEnabled ? null : "")">
+<fieldset>
     <legend>
         Tickets
     </legend>
 
-    <div class="form-group mb-3">
-        @Html.LabelFor(x => x.TicketCost, new { @class = "form-label" })
-        @await Html.PartialAsync("Components/_FormLabelSubtitle", "The total ticket cost for this event. Set the max number of attendees above to set the number of tickets.")
-        <div class="input-group">
-            <span class="input-group-text">
-                @Model.Currency.Symbol
-            </span>
-            @Html.TextBoxFor(x => x.TicketCost, format: "{0:0.00}", new { @class = "form-control", Type = "number" })
-        </div>
-        @Html.ValidationMessageFor(x => x.TicketCost)
-    </div>
+    @await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.OwnerSubscriptionFeatures)
+    {
+        Chapter = RequestStore.ChapterOrDefault,
+        Feature = SiteFeatureType.EventTickets,
+        ContentFunc =
+            @<div>
+                <div class="form-group mb-3">
+                    @Html.LabelFor(x => x.TicketCost, new { @class = "form-label" })
+                    @await Html.PartialAsync("Components/_FormLabelSubtitle", "The total ticket cost for this event. Set the max number of attendees above to set the number of tickets.")
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            @Model.Currency.Symbol
+                        </span>
+                        @Html.TextBoxFor(x => x.TicketCost, format: "{0:0.00}", new { @class = "form-control", Type = "number" })
+                    </div>
+                    @Html.ValidationMessageFor(x => x.TicketCost)
+                </div>
 
-    <div class="form-group mb-3">
-        @Html.LabelFor(x => x.TicketDepositCost, new { @class = "form-label" })
-        @await Html.PartialAsync("Components/_FormLabelSubtitle", "The deposit cost for this event. Members who pay a deposit will then only need to pay the remainder of the total cost.")
-        <div class="input-group">
-            <span class="input-group-text">
-                @Model.Currency.Symbol
-            </span>
-            @Html.TextBoxFor(x => x.TicketDepositCost, format: "{0:0.00}", new { @class = "form-control", type = "number", step = 0.5 })
-        </div>
-        @Html.ValidationMessageFor(x => x.TicketDepositCost)
-    </div>
+                <div class="form-group mb-3">
+                    @Html.LabelFor(x => x.TicketDepositCost, new { @class = "form-label" })
+                    @await Html.PartialAsync("Components/_FormLabelSubtitle", "The deposit cost for this event. Members who pay a deposit will then only need to pay the remainder of the total cost.")
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            @Model.Currency.Symbol
+                        </span>
+                        @Html.TextBoxFor(x => x.TicketDepositCost, format: "{0:0.00}", new { @class = "form-control", type = "number", step = 0.5 })
+                    </div>
+                    @Html.ValidationMessageFor(x => x.TicketDepositCost)
+                </div>
+            </div>
+    })
 </fieldset>

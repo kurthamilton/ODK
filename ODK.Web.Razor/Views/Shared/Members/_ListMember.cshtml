@@ -21,7 +21,7 @@
             })
         </div>
             
-        @if (!Model.HideName)
+        @if (!Model.HideName || Model.AvatarVersion == null)
         {
             <div>@Model.Member.FullName</div>
         }
