@@ -1,0 +1,98 @@
+﻿@using ODK.Core.Members
+@using ODK.Core.Platforms
+@using ODK.Services.Members.Tasks
+@using ODK.Web.Common.Routes
+@using ODK.Web.Common.Services
+@using ODK.Web.Razor.Models.Components
+@model IReadOnlyCollection<MemberTask>
+@inject IOdkRoutes OdkRoutes
+@inject IRequestStore RequestStore
+@{
+    var platform = RequestStore.Platform;
+
+    // Every task is rendered from this one list - group-owner tasks included - so the count and the list
+    // can't disagree. A task type with no mapping here is skipped rather than rendered blank.
+    var taskLinks = new List<TaskLinkViewModel>();
+
+    foreach (var task in Model)
+    {
+        switch (task.Type)
+        {
+            case MemberTaskType.CompleteChapterProfile when task.Chapter != null:
+                taskLinks.Add(new TaskLinkViewModel
+                {
+                    Icon = IconType.User,
+                    Path = platform == PlatformType.DrunkenKnitwits
+                        ? OdkRoutes.Account.Profile(task.Chapter)
+                        : OdkRoutes.Groups.Profile(task.Chapter),
+                    Text = $"Complete your profile for {task.Chapter.GetDisplayName(platform)}"
+                });
+                break;
+
+            case MemberTaskType.UploadImage:
+                taskLinks.Add(new TaskLinkViewModel
+                {
+                    Icon = IconType.Image,
+                    Path = OdkRoutes.Account.Picture(task.Chapter),
+                    Text = "Upload a profile picture"
+                });
+                break;
+
+            case MemberTaskType.PublishChapter when task.Chapter != null:
+                taskLinks.Add(new TaskLinkViewModel
+                {
+                    Icon = IconType.TodoList,
+                    Path = OdkRoutes.GroupAdmin.Group(task.Chapter).Path,
+                    Text = $"{task.Chapter.GetDisplayName(platform)} is waiting to be published"
+                });
+                break;
+
+            case MemberTaskType.UploadChapterImage when task.Chapter != null:
+                taskLinks.Add(new TaskLinkViewModel
+                {
+                    Icon = IconType.Image,
+                    Path = OdkRoutes.GroupAdmin.Image(task.Chapter).Path,
+                    Text = $"Upload a picture for {task.Chapter.GetDisplayName(platform)}"
+                });
+                break;
+        }
+    }
+}
+
+@* Renders the whole control, not just its contents: with nothing outstanding this is empty, so the icon
+   never appears at all. Bootstrap binds dropdowns through a delegated handler on document, so this works
+   when injected after load. *@
+@if (taskLinks.Count == 0)
+{
+    return;
+}
+
+<div class="dropdown position-relative" role="button">
+    <span class="position-absolute top-0 start-100 translate-middle badge badge-sm rounded-pill bg-danger">
+        <span>@(taskLinks.Count > 9 ? "9+" : taskLinks.Count.ToString())</span>
+        <span class="visually-hidden">pending tasks</span>
+    </span>
+
+    <div class="text-light account-links__user dropdown-toggle"
+         data-bs-toggle="dropdown" data-bs-auto-close="outside">
+        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.TodoList))
+    </div>
+
+    <div class="dropdown-menu dropdown-menu-end p-0">
+        <div class="dropdown-header">
+            <h5 class="m-0">Pending tasks</h5>
+        </div>
+
+        @foreach (var taskLink in taskLinks)
+        {
+            <a class="dropdown-item border-top p-3" href="@taskLink.Path">
+                @if (taskLink.Icon != null)
+                {
+                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(taskLink.Icon.Value))
+                }
+
+                <span>@taskLink.Text</span>
+            </a>
+        }
+    </div>
+</div>

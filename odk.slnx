@@ -8,7 +8,6 @@
     <File Path=".editorconfig" />
     <File Path="CLAUDE.md" />
     <File Path="DEPLOYMENT.md" />
-    <File Path="E2E/script.run.tests.bat" />
     <File Path="README.md" />
     <File Path="run.app.bat" />
     <File Path="run.ngrok.odk.bat" />

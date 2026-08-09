@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using FluentAssertions;
 using NUnit.Framework;
@@ -77,9 +77,11 @@ public static class CompleteChapterProfileTaskProviderTests
     {
         Chapters = [chapter],
         ChapterProperties = chapterProperties,
+        ChaptersWithImage = [],
         HasAvatar = true,
         Member = new Member { Id = Guid.NewGuid(), TimeZone = chapter.TimeZone },
         MemberProperties = memberProperties,
+        OwnedChapters = [],
         Platform = PlatformType.Default
     };
 

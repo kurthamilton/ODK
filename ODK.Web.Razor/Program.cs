@@ -223,6 +223,7 @@ public class Program
                 "js/odk.slim-select.js",
                 "js/odk.selects.js",
                 "js/odk.tabs.js",
+                "js/odk.tasks.js",
                 "js/odk.topics.js",
                 "js/odk.html-editor.js");
             pipeline.AddJavaScriptBundle(

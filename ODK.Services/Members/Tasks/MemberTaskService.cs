@@ -17,23 +17,28 @@ public class MemberTaskService : IMemberTaskService
     {
         var (platform, member) = (request.Platform, request.CurrentMember);
 
-        var (chapters, avatarVersion) = await _unitOfWork.RunAsync(
+        var (chapters, ownedChapters, avatarVersion) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetByMemberId(platform, member.Id),
+            x => x.ChapterRepository.GetByOwnerId(platform, member.Id),
             x => x.MemberAvatarRepository.GetVersionDtoByMemberId(member.Id));
 
         var chapterIds = chapters.Select(x => x.Id).ToArray();
+        var ownedChapterIds = ownedChapters.Select(x => x.Id).ToArray();
 
-        var (chapterProperties, memberProperties) = await _unitOfWork.RunAsync(
+        var (chapterProperties, memberProperties, chapterImages) = await _unitOfWork.RunAsync(
             x => x.ChapterPropertyRepository.GetByChapterIds(chapterIds),
-            x => x.MemberPropertyRepository.GetByMemberId(member.Id));
+            x => x.MemberPropertyRepository.GetByMemberId(member.Id),
+            x => x.ChapterImageRepository.GetVersionDtosByChapterIds(ownedChapterIds));
 
         var context = new MemberTaskContext
         {
             Chapters = chapters,
             ChapterProperties = chapterProperties,
+            ChaptersWithImage = chapterImages.Select(x => x.ChapterId).ToArray(),
             HasAvatar = avatarVersion != null,
             Member = member,
             MemberProperties = memberProperties,
+            OwnedChapters = ownedChapters,
             Platform = platform
         };
 

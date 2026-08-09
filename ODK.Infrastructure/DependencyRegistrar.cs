@@ -226,6 +226,8 @@ public static class DependencyRegistrar
             .AddScoped<IMemberService, MemberService>()
             .AddScoped<IMemberTaskService, MemberTaskService>()
             .AddScoped<IMemberTaskProvider, CompleteChapterProfileTaskProvider>()
+            .AddScoped<IMemberTaskProvider, PublishChapterTaskProvider>()
+            .AddScoped<IMemberTaskProvider, UploadChapterImageTaskProvider>()
             .AddScoped<IMemberTaskProvider, UploadImageTaskProvider>()
             .AddScoped<IMemberViewModelService, MemberViewModelService>()
             .AddScoped<INotificationService, NotificationService>()
