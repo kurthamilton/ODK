@@ -96,44 +96,6 @@ public class AccountController : OdkControllerBase
         return Redirect(OdkRoutes.Account.Login(Chapter));
     }
 
-    [AllowAnonymous]
-    [HttpPost("account/create")]
-    public async Task<IActionResult> Create(
-        [FromForm] PersonalDetailsFormViewModel personalDetails,
-        [FromForm] LocationFormViewModel location,
-        [FromForm] OAuthDetailsFormViewModel oauth,
-        [FromForm] TopicPickerFormSubmitViewModel topics)
-    {
-        var newTopics = NewTopicModel.Build(topics.NewTopicGroups, topics.NewTopics);
-
-        var model = new AccountCreateModel
-        {
-            EmailAddress = personalDetails.EmailAddress,
-            FirstName = personalDetails.FirstName,
-            LastName = personalDetails.LastName,
-            Location = location.Lat != null && location.Long != null
-                ? new LatLong(location.Lat.Value, location.Long.Value)
-                : default(LatLong?),
-            LocationName = location.LocationName,
-            NewTopics = newTopics,
-            OAuthProviderType = oauth.Provider,
-            OAuthToken = oauth.Token,
-            RecaptchaToken = personalDetails.Recaptcha ?? string.Empty,
-            ReferralId = personalDetails.ReferralId,
-            TopicIds = topics.TopicIds ?? []
-        };
-
-        var result = await _memberService.CreateAccount(ServiceRequest, model);
-
-        if (result.Value?.Activated == true)
-        {
-            AddFeedback(result, "Your account has been created and is now ready to use");
-            return Redirect(OdkRoutes.Account.Login(chapter: null));
-        }
-
-        return Redirect("/account/pending");
-    }
-
     [HttpPost("account/currency")]
     public async Task<IActionResult> UpdateCurrency([FromForm] Guid currencyId)
     {

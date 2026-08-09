@@ -17,7 +17,6 @@ public class JoinModel : OdkPageModel
     }
 
     public async Task<IActionResult> OnPost(
-        string chapterName,
         [FromForm] ChapterProfileFormSubmitViewModel profileViewModel,
         [FromForm] PersonalDetailsFormViewModel personalDetailsViewModel)
     {
@@ -53,7 +52,7 @@ public class JoinModel : OdkPageModel
 
         var result = await _memberService.CreateChapterAccount(ChapterServiceRequest, model);
         return result.Success
-            ? Redirect($"/{chapterName}/account/pending")
+            ? Redirect(OdkRoutes.Account.Pending(Chapter))
             : Page();
     }
 }

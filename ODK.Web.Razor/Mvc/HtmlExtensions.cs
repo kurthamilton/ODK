@@ -2,8 +2,8 @@
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.Extensions.DependencyInjection;
 using ODK.Core.Utils;
+using ODK.Services.Emails.Validation;
 using ODK.Web.Common.Services;
 
 namespace ODK.Web.Razor.Mvc;
@@ -33,6 +33,30 @@ public static class HtmlExtensions
         var htmlAttributeDictionary = HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes);
         htmlAttributeDictionary["data-val"] = "false";
         return htmlHelper.CheckBoxFor(expression, htmlAttributeDictionary);
+    }
+
+    /// <summary>
+    /// A text box bound to an email address, carrying the server's own address pattern so the client-side
+    /// check enforces exactly the rule the server will apply. Use this for every email input rather than a
+    /// bare TextBoxFor: [EmailAddress] alone accepts addresses the server rejects ("a@localhost",
+    /// "a..b@x.com"), so a field that misses this lets a typo survive to the submit.
+    ///
+    /// Sets data-val itself so the check applies whether or not the bound property carries a validation
+    /// attribute.
+    /// </summary>
+    public static IHtmlContent OdkEmailBoxFor<TModel>(this IHtmlHelper<TModel> htmlHelper,
+        Expression<Func<TModel, string?>> expression, object? htmlAttributes = null)
+    {
+        var htmlAttributeDictionary = htmlAttributes != null
+            ? HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes)
+            : new Dictionary<string, object>();
+
+        htmlAttributeDictionary["type"] = "email";
+        htmlAttributeDictionary["data-val"] = "true";
+        htmlAttributeDictionary["data-val-emailaddressformat"] = "Enter a valid email address";
+        htmlAttributeDictionary["data-val-emailaddressformat-pattern"] = EmailAddressPattern.Value;
+
+        return htmlHelper.TextBoxFor(expression, htmlAttributeDictionary);
     }
 
     public static IHtmlContent OdkEnumDropDownFor<TModel, TEnum>(

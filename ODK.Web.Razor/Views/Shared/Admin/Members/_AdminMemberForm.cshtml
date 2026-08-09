@@ -21,7 +21,7 @@
 
 <div class="form-group mb-3">
     @Html.LabelFor(x => x.AdminEmailAddress, new { @class = "form-label" })
-    @Html.TextBoxFor(x => x.AdminEmailAddress, new { @class = "form-control" })
+    @Html.OdkEmailBoxFor(x => x.AdminEmailAddress, new { @class = "form-control" })
     @Html.ValidationMessageFor(x => x.AdminEmailAddress)
 </div>
 

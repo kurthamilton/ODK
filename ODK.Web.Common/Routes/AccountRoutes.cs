@@ -90,6 +90,10 @@ public class AccountRoutes : RoutesBase
 
     public string Payments(Chapter? chapter) => AccountPath(chapter, "/payments");
 
+    public string Pending(Chapter? chapter) => AccountPath(
+        Platform == PlatformType.DrunkenKnitwits ? chapter : null,
+        "/pending");
+
     public string PersonalDetails(Chapter? chapter) => AccountPath(chapter, string.Empty);
 
     public string Picture(Chapter? chapter) => AccountPath(chapter, "/picture");

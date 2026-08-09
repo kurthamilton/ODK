@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,6 +14,7 @@ using ODK.Core.Subscriptions;
 using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
+using ODK.Services.Emails;
 using ODK.Services.Members;
 using ODK.Services.Members.Models;
 using ODK.Services.Security;
@@ -585,6 +586,82 @@ public static class MemberAdminServiceTests
     }
 
     [Test]
+    public static async Task ImportMembers_MalformedEmailAddress_SkipsThatRowAndImportsTheRest()
+    {
+        // Arrange - a CSV is typed by hand, so a broken address is the likeliest thing in it. One bad row
+        // must not create a member nobody can email, and must not stop the good rows importing either.
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(owner: currentMember);
+
+        context.Create(new SiteSubscription
+        {
+            Id = Guid.NewGuid(),
+            Name = "Default",
+            Description = "",
+            GroupLimit = 10,
+            Enabled = true,
+            Default = true,
+            Platform = PlatformType.Default,
+            SitePaymentSettingId = Guid.NewGuid()
+        });
+
+        var service = CreateMemberAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberImport);
+
+        var members = new[]
+        {
+            new MemberImportModel { EmailAddress = "good@example.com", FirstName = "Good", LastName = "Member" },
+            new MemberImportModel { EmailAddress = "not an email", FirstName = "Bad", LastName = "Member" }
+        };
+
+        // Act
+        var result = await service.ImportMembers(request, members);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        context.Set<Member>().Should().Contain(x => x.EmailAddress == "good@example.com");
+        context.Set<Member>().Should().NotContain(x => x.EmailAddress == "not an email");
+    }
+
+    [Test]
+    public static async Task GetMemberImportPreview_MalformedEmailAddress_FlagsTheRowAsInvalid()
+    {
+        // Arrange - the preview is where the admin gets to see the problem, before committing.
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(owner: currentMember);
+
+        var service = CreateMemberAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberImport);
+
+        var members = new[]
+        {
+            new MemberImportModel { EmailAddress = "good@example.com", FirstName = "Good", LastName = "Member" },
+            new MemberImportModel { EmailAddress = "not an email", FirstName = "Bad", LastName = "Member" }
+        };
+
+        // Act
+        var result = await service.GetMemberImportPreview(request, members);
+
+        // Assert - and the good row keeps its real status rather than everything being flagged.
+        result.Rows.Single(x => x.Member.EmailAddress == "not an email")
+            .Status.Should().Be(MemberImportRowStatus.Invalid);
+        result.Rows.Single(x => x.Member.EmailAddress == "good@example.com")
+            .Status.Should().Be(MemberImportRowStatus.New);
+    }
+
+    [Test]
     public static async Task ImportMembers_WhenMemberIsNew_SendsActivationEmail()
     {
         // Arrange
@@ -703,7 +780,8 @@ public static class MemberAdminServiceTests
             Mock.Of<IDistanceUnitFactory>(),
             new MockBackgroundTaskService(),
             new MemberChapterSubscriptionWriter(unitOfWork),
-            new MemberSiteSubscriptionWriter(unitOfWork));
+            new MemberSiteSubscriptionWriter(unitOfWork),
+            new EmailValidationService(new InconclusiveEmailVerifier()));
     }
 
     private static MockOdkContext CreateMockOdkContext() => new MockOdkContext();

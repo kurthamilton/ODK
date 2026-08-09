@@ -71,6 +71,20 @@ window.odk.forms = window.odk.forms || {};
             return isNaN(val) || val >= 0;
         });
 
+        // Custom [EmailAddressFormat] provider. [EmailAddress] alone is far looser than the server's
+        // rule - it accepts "a@localhost", "a..b@x.com", "a.@x.com" - so without this a well-formed-
+        // looking typo survives to the submit and the whole form comes back rejected. The pattern is
+        // rendered by the server rather than written here, so the two checks can't drift apart.
+        // Empty values pass - presence is the [Required] provider's job.
+        v.addProvider('emailaddressformat', (value, element) => {
+            if (!value) return true;
+
+            const pattern = element.getAttribute('data-val-emailaddressformat-pattern');
+            if (!pattern) return true;
+
+            return new RegExp(pattern).test(value);
+        });
+
         v.bootstrap();
         window.odk.forms.validationService = v;
     }

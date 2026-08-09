@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -20,6 +20,7 @@ using ODK.Services.Authorization;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.Models;
 using ODK.Services.Exceptions;
+using ODK.Services.Emails;
 using ODK.Services.Geolocation;
 using ODK.Services.Imaging;
 using ODK.Services.Logging;
@@ -1231,6 +1232,7 @@ public static class ChapterAdminServiceTests
     {
         return new ChapterAdminService(
             CreateMockUnitOfWork(context),
+            new EmailValidationService(new InconclusiveEmailVerifier()),
             htmlSanitizer ?? CreateMockHtmlSanitizer(),
             socialMediaService ?? new Mock<ISocialMediaService>().Object,
             notificationService ?? new Mock<INotificationService>().Object,

@@ -11,6 +11,8 @@ using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Events.ViewModels;
 using ODK.Services.Exceptions;
+using ODK.Services.Emails;
+using ODK.Services.Emails.Validation;
 using ODK.Services.Members.Models;
 using ODK.Services.Members.ViewModels;
 using ODK.Services.Subscriptions;
@@ -23,6 +25,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     private readonly IAuthorizationService _authorizationService;
     private readonly IBackgroundTaskService _backgroundTaskService;
     private readonly IDistanceUnitFactory _distanceUnitFactory;
+    private readonly IEmailValidationService _emailValidationService;
     private readonly IMemberChapterSubscriptionWriter _memberChapterSubscriptionWriter;
     private readonly IMemberEmailService _memberEmailService;
     private readonly IMemberImageService _memberImageService;
@@ -39,7 +42,8 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         IDistanceUnitFactory distanceUnitFactory,
         IBackgroundTaskService backgroundTaskService,
         IMemberChapterSubscriptionWriter memberChapterSubscriptionWriter,
-        IMemberSiteSubscriptionWriter memberSiteSubscriptionWriter)
+        IMemberSiteSubscriptionWriter memberSiteSubscriptionWriter,
+        IEmailValidationService emailValidationService)
         : base(unitOfWork)
     {
         _authorizationService = authorizationService;
@@ -50,6 +54,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         _memberImageService = memberImageService;
         _memberService = memberService;
         _memberSiteSubscriptionWriter = memberSiteSubscriptionWriter;
+        _emailValidationService = emailValidationService;
         _unitOfWork = unitOfWork;
     }
 
@@ -593,16 +598,22 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
         var distinctMembers = DistinctByEmailAddress(members);
 
+        // Soft only: a file can hold hundreds of rows, and a deliverability check per row would spend
+        // the daily quota on a single import. Format alone still catches the typos that matter.
+        var validity = await ValidateImportEmailAddresses(distinctMembers);
+
         var rows = distinctMembers
             .Select(x =>
             {
                 existingMemberDictionary.TryGetValue(x.EmailAddress, out var member);
 
-                var status = member == null
-                    ? MemberImportRowStatus.New
-                    : member.IsMemberOf(chapter.Id)
-                        ? MemberImportRowStatus.ExistingInGroup
-                        : MemberImportRowStatus.ExistingNotInGroup;
+                var status = !validity[x.EmailAddress]
+                    ? MemberImportRowStatus.Invalid
+                    : member == null
+                        ? MemberImportRowStatus.New
+                        : member.IsMemberOf(chapter.Id)
+                            ? MemberImportRowStatus.ExistingInGroup
+                            : MemberImportRowStatus.ExistingNotInGroup;
 
                 return new MemberImportPreviewRow
                 {
@@ -672,11 +683,19 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
         var utcNow = DateTime.UtcNow;
 
+        // The same check the preview showed, so what gets imported matches what was displayed.
+        var validity = await ValidateImportEmailAddresses(distinctMembers);
+
         var pendingActivationMembers = new List<Member>();
         var invitedMembers = new List<Member>();
 
         foreach (var importMember in distinctMembers)
         {
+            if (!validity[importMember.EmailAddress])
+            {
+                continue;
+            }
+
             existingMemberDictionary.TryGetValue(importMember.EmailAddress, out var member);
 
             if (member != null && member.IsMemberOf(chapter.Id))
@@ -1178,4 +1197,21 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         }
     }
 
+    /// <summary>
+    /// Whether each row's address is a usable format, keyed by the address. Soft only - see the callers.
+    /// </summary>
+    private async Task<IReadOnlyDictionary<string, bool>> ValidateImportEmailAddresses(
+        IReadOnlyCollection<MemberImportModel> members)
+    {
+        var validity = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var member in members)
+        {
+            var result = await _emailValidationService.Validate(
+                member.EmailAddress, EmailValidationLevel.Soft);
+            validity[member.EmailAddress] = result.Success;
+        }
+
+        return validity;
+    }
 }

@@ -21,7 +21,6 @@
   <Folder Name="/Solution Items/Migrations/">
     <File Path="Scripts/ef-add-migration.bat" />
     <File Path="Scripts/ef-remove-migration.bat" />
-    <File Path="Scripts/ef-update-database-prod.bat" />
     <File Path="Scripts/ef-update-database-version.bat" />
     <File Path="Scripts/ef-update-database.bat" />
   </Folder>

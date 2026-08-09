@@ -14,6 +14,7 @@ using ODK.Core.Web;
 using ODK.Services.Authentication.OAuth;
 using ODK.Services.Authorization;
 using ODK.Services.Emails;
+using ODK.Services.Emails.Validation;
 using ODK.Services.Geolocation;
 using ODK.Services.Logging;
 using ODK.Services.Members;
@@ -53,6 +54,35 @@ public static class MemberServiceTests
         emailService.Verify(
             x => x.SendDuplicateMemberEmail(request, null, existing),
             Times.Once);
+        emailService.Verify(
+            x => x.SendActivationEmail(It.IsAny<IServiceRequest>(), It.IsAny<Chapter?>(), It.IsAny<Member>(), It.IsAny<string>()),
+            Times.Never);
+    }
+
+    [Test]
+    public static async Task CreateAccount_RejectedEmailAddress_FailsWithTheReasonRatherThanReportingSuccess()
+    {
+        // Arrange - the pair to the test above, and the distinction the web layer keys off. An address
+        // that already holds an account reports success so it can't be probed for; an address rejected on
+        // its own merits has to report failure, or the member is sent to wait on an email nobody sent.
+        using var context = CreateMockOdkContext();
+        SeedDefaultSiteSubscription(context);
+
+        var verifier = new Mock<IEmailVerifier>();
+        verifier.Setup(x => x.Verify(It.IsAny<string>())).ReturnsAsync(EmailVerificationResult.Invalid);
+
+        var emailService = new Mock<IMemberEmailService>();
+        var service = CreateMemberService(context, emailService.Object, verifier.Object);
+        var request = Mock.Of<IServiceRequest>(x =>
+            x.Platform == PlatformType.Default &&
+            x.HttpRequestContext == Mock.Of<IHttpRequestContext>());
+
+        // Act
+        var result = await service.CreateAccount(request, CreateModel("rejected@example.com", firstName: "New"));
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.Message.Should().Be("Email address could not be verified");
         emailService.Verify(
             x => x.SendActivationEmail(It.IsAny<IServiceRequest>(), It.IsAny<Chapter?>(), It.IsAny<Member>(), It.IsAny<string>()),
             Times.Never);
@@ -343,7 +373,10 @@ public static class MemberServiceTests
         TopicIds = []
     };
 
-    private static MemberService CreateMemberService(MockOdkContext context, IMemberEmailService memberEmailService)
+    private static MemberService CreateMemberService(
+        MockOdkContext context,
+        IMemberEmailService memberEmailService,
+        IEmailVerifier? emailVerifier = null)
     {
         var memberImageService = new Mock<IMemberImageService>();
         memberImageService
@@ -366,7 +399,7 @@ public static class MemberServiceTests
             new MemberChapterSubscriptionWriter(unitOfWork),
             new MemberSiteSubscriptionWriter(unitOfWork),
             CreateMockRecaptchaService(),
-            new EmailValidationService());
+            new EmailValidationService(emailVerifier ?? new InconclusiveEmailVerifier()));
     }
 
     private static IRecaptchaService CreateMockRecaptchaService()
