@@ -10,6 +10,8 @@ public interface IVenueAdminService
 
     Task<ServiceResult> CreateVenue(IMemberChapterAdminServiceRequest request, VenueCreateModel venue);
 
+    Task<ServiceResult> DeleteVenue(IMemberChapterAdminServiceRequest request, Guid venueId);
+
     Task<Venue> GetVenue(IMemberChapterAdminServiceRequest request, Guid venueId);
 
     Task<VenueEventsAdminPageViewModel> GetVenueEventsViewModel(IMemberChapterAdminServiceRequest request, Guid venueId);

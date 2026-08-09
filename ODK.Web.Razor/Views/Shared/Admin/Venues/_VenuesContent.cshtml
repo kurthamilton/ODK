@@ -72,28 +72,45 @@
                         }
                     </td>
                     <td>
-                        @if (!Model.Archived)
-                        {
-                            <form method="post" action="/groups/@Model.Chapter.Id/venues/@venue.Id/archive">
-                                @Html.AntiForgeryToken()
-                                <button type="submit" class="btn btn-icon">
-                                    <span data-bs-toggle="tooltip" data-bs-title="Archive">
-                                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Archive))
-                                    </span>
-                                </button>                                
-                            </form>
-                        }
-                        else
-                        {
-                            <form method="post" action="/groups/@Model.Chapter.Id/venues/@venue.Id/restore">
-                                @Html.AntiForgeryToken()
-                                <button type="submit" class="btn btn-icon">
-                                    <span data-bs-toggle="tooltip" data-bs-title="Restore">
-                                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Undo))
-                                    </span>
-                                </button>
-                            </form>
-                        }
+                        <div class="button-container">
+                            @if (!Model.Archived)
+                            {
+                                <form method="post" action="/groups/@Model.Chapter.Id/venues/@venue.Id/archive">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-icon">
+                                        <span data-bs-toggle="tooltip" data-bs-title="Archive">
+                                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Archive))
+                                        </span>
+                                    </button>                                
+                                </form>
+                            }
+                            else
+                            {
+                                <form method="post" action="/groups/@Model.Chapter.Id/venues/@venue.Id/restore">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-icon">
+                                        <span data-bs-toggle="tooltip" data-bs-title="Restore">
+                                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Undo))
+                                        </span>
+                                    </button>
+                                </form>
+                            }
+
+                            @if (venueDto.EventCount == 0)
+                            {
+                                <form method="post" action="/groups/@Model.Chapter.Id/venues/@venue.Id/delete">
+                                    @Html.AntiForgeryToken()
+                                    @await Html.PartialAsync("Components/_Confirm", new ConfirmViewModel
+                                    {
+                                        Message = $"Are you sure you want to delete '{venue.Name}'?",
+                                        Title = "Delete venue"
+                                    })
+                                    <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger">
+                                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Times))
+                                    </button>
+                                </form>
+                            }
+                        </div>
                     </td>
                 </tr>
             }
