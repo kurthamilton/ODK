@@ -11902,6 +11902,7 @@ cropper-canvas {
 .ss-content {
   overflow-y: auto;
   /*search*/
+  /*fix search border for drop-ups*/
   /*options*/
 }
 .ss-content.form-select {
@@ -11911,6 +11912,10 @@ cropper-canvas {
 .ss-content .ss-search input {
   background-color: var(--bs-body-bg);
   color: var(--bs-body-color);
+}
+.ss-content.ss-dir-above .ss-search {
+  border-top: 0;
+  border-bottom: 1px solid var(--ss-border-color);
 }
 .ss-content .ss-list .ss-option {
   color: var(--bs-body-color);
