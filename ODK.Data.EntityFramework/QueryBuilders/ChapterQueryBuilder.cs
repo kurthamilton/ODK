@@ -121,6 +121,7 @@ public class ChapterQueryBuilder : DatabaseEntityQueryBuilder<Chapter, IChapterQ
                 .DefaultIfEmpty()
                 .Select(x => x != null ? new ChapterImageVersionDto
                 {
+                    ChapterId = x.ChapterId,
                     Version = x.VersionInt
                 } : null)
             from texts in Set<ChapterTexts>()
@@ -155,6 +156,7 @@ public class ChapterQueryBuilder : DatabaseEntityQueryBuilder<Chapter, IChapterQ
                 .DefaultIfEmpty()
                 .Select(x => x != null ? new ChapterImageVersionDto
                 {
+                    ChapterId = x.ChapterId,
                     Version = x.VersionInt
                 } : null)
             from texts in Set<ChapterTexts>()

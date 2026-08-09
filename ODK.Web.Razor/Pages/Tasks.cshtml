@@ -1,0 +1,13 @@
+﻿@page "/tasks"
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Services.Members.Tasks
+@attribute [Authorize]
+@model TasksModel
+@inject IMemberTaskService MemberTaskService
+@{
+    Layout = null;
+
+    var tasks = await MemberTaskService.GetOutstandingTasks(Model.MemberServiceRequest);
+}
+
+@await Html.PartialAsync("Header/_TasksContent", tasks)

@@ -22,11 +22,23 @@ public class ChapterImageRepository : WriteRepositoryBase<ChapterImage>, IChapte
             .Where(x => x.ChapterId == chapterId)
             .DeferredSingleOrDefault();
 
+    public IDeferredQueryMultiple<ChapterImageVersionDto> GetVersionDtosByChapterIds(
+        IReadOnlyCollection<Guid> chapterIds)
+        => Set()
+            .Where(x => chapterIds.Contains(x.ChapterId))
+            .Select(x => new ChapterImageVersionDto
+            {
+                ChapterId = x.ChapterId,
+                Version = x.VersionInt
+            })
+            .DeferredMultiple();
+
     public IDeferredQuerySingleOrDefault<ChapterImageVersionDto> GetVersionDtoByChapterId(Guid chapterId)
         => Set()
             .Where(x => x.ChapterId == chapterId)
             .Select(x => new ChapterImageVersionDto
             {
+                ChapterId = x.ChapterId,
                 Version = x.VersionInt
             })
             .DeferredSingleOrDefault();

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using FluentAssertions;
 using NUnit.Framework;
 using ODK.Core.Members;
@@ -41,9 +41,11 @@ public static class UploadImageTaskProviderTests
     {
         Chapters = [],
         ChapterProperties = [],
+        ChaptersWithImage = [],
         HasAvatar = hasAvatar,
         Member = new Member { Id = Guid.NewGuid(), TimeZone = TimeZoneInfo.Utc },
         MemberProperties = [],
+        OwnedChapters = [],
         Platform = PlatformType.Default
     };
 }
