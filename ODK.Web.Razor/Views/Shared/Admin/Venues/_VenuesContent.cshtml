@@ -49,6 +49,13 @@
             </tr>
         </thead>
         <tbody>
+            @if (Model.Venues.Count == 0)
+            {
+                <tr>
+                    <td colspan="5" class="text-muted">No venues created yet.</td>
+                </tr>
+            }
+
             @foreach (var venueDto in Model.Venues.OrderBy(x => x.Venue.Name))
             {
                 var (venue, lastEvent) = (venueDto.Venue, venueDto.LastEvent);

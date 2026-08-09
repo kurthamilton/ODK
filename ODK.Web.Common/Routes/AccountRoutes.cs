@@ -104,7 +104,9 @@ public class AccountRoutes : RoutesBase
 
     public string Profile(Chapter? chapter) => AccountPath(chapter, "/profile");
 
-    public string Subscription(Chapter? chapter) => AccountPath(chapter, "/subscription");
+    public string Subscription(Chapter? chapter) => AccountPath(
+        Platform == PlatformType.DrunkenKnitwits ? chapter : null,
+        "/subscription");
 
     public string SiteSubscriptionCheckout(Guid priceId)
         => AccountPath(chapter: null, $"/subscription/{priceId}/checkout");

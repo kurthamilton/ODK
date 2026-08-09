@@ -1,0 +1,15 @@
+﻿@using ODK.Core.Chapters
+@model Chapter
+
+@if (!Model.Approved())
+{
+    <div class="alert alert-warning">
+        This group is still pending approval. You can continue to make changes but you won't be able to publish it until after approval.
+    </div>
+}
+else if (!Model.IsPublished())
+{
+    <div class="alert alert-danger">
+        This group is not published
+    </div>
+}

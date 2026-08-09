@@ -18,6 +18,7 @@
                 @await Html.PartialAsync("Admin/Members/_MembershipSettingsForm", new MembershipSettingsFormViewModel
                 {
                     ApproveNewMembers = membershipSettings?.ApproveNewMembers ?? false,
+                    CanApproveMembers = Model.OwnerSubscriptionFeatures.Contains(SiteFeatureType.ApproveMembers),
                     Enabled = membershipSettings?.Enabled ?? false,
                     MembershipDisabledAfter = membershipSettings?.MembershipDisabledAfterDaysExpired ?? 0,
                     MembershipExpiringWarningDays = membershipSettings?.MembershipExpiringWarningDays ?? 0,

@@ -1,7 +1,5 @@
 ﻿@using ODK.Web.Common.Services
-@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
-@using ODK.Web.Razor.Services
 @inject IRequestStore RequestStore
 @{
     Layout = "_HomeLayout";
@@ -20,6 +18,12 @@
     {
         customTheme += $"--theme-color: {chapter.ThemeColor};";
     }
+
+    // Rendered here rather than inside ContentFunc: a Razor template containing @await compiles to a
+    // deferred async write, and _Body invokes ContentFunc synchronously - so RenderBody() would run after
+    // the layout has already checked that it was called, and the request fails. _Body writes Content
+    // before ContentFunc, so the alert still lands above the page body.
+    var statusAlert = await Html.PartialAsync("Admin/Groups/_GroupStatusAlert", chapter);
 }
 
 @section styles
@@ -31,6 +35,7 @@
     @await Html.PartialAsync("Components/_Body", new BodyViewModel
     {
         Title = chapter.GetDisplayName(platform),
+        Content = statusAlert,
         ContentFunc = _ => RenderBody()
     })
 </div>

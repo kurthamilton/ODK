@@ -13,7 +13,5 @@ public class EventFormViewModel : EventFormSubmitViewModel
 
     public required IReadOnlyCollection<SiteFeatureType> OwnerSubscriptionFeatures { get; init; }
 
-    public bool TicketsEnabled => OwnerSubscriptionFeatures.Contains(SiteFeatureType.EventTickets);
-
     public required IReadOnlyCollection<Venue> Venues { get; init; }
 }

@@ -113,9 +113,19 @@
             @if (Model.Events.Items.Count == 0)
             {
                 <tr>
-                    <td colspan="8" class="text-muted">No events match the current filters.</td>
+                    <td colspan="8" class="text-muted">
+                        @if (hasFilter)
+                        {
+                            <span>No events match the current filters.</span>
+                        }
+                        else
+                        {
+                            <span>No events created yet.</span>
+                        }
+                    </td>
                 </tr>
             }
+
             @foreach (var dto in Model.Events.Items)
             {
                 var @event = dto.Event;

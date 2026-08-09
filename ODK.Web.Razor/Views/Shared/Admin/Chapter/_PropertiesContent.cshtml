@@ -1,8 +1,4 @@
-﻿@using ODK.Core.Chapters
-@using ODK.Services
-@using ODK.Services.Chapters
-@using ODK.Services.Chapters.ViewModels
-@using ODK.Web.Common.Extensions
+﻿@using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
@@ -34,6 +30,13 @@
             </tr>
         </thead>
         <tbody>
+            @if (Model.Properties.Count == 0)
+            {
+                <tr>
+                    <td colspan="4" class="text-muted">No questions created yet.</td>
+                </tr>
+            }
+
             @foreach (var property in Model.Properties.OrderBy(x => x.DisplayOrder))
             {
                 <tr>

@@ -18,6 +18,8 @@ public class RestrictedFeatureViewModel
 
     public required Chapter? Chapter { get; init; }
 
+    public string? Class { get; init; }
+
     public IHtmlContent? Content { get; init; }
 
     public Func<object?, IHtmlContent>? ContentFunc { get; init; }

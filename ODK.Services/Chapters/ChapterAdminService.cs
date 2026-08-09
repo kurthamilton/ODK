@@ -1789,7 +1789,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         settings ??= new ChapterMembershipSettings();
 
-        if (!_authorizationService.ChapterHasAccess(ownerSubscriptionFeatures, SiteFeatureType.ApproveMembers))
+        if (_authorizationService.ChapterHasAccess(ownerSubscriptionFeatures, SiteFeatureType.ApproveMembers))
         {
             settings.ApproveNewMembers = model.ApproveNewMembers;
         }
