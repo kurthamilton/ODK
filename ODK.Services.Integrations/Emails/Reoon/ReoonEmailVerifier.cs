@@ -1,5 +1,5 @@
 ﻿using System.Net.Http.Json;
-using System.Web;
+using ODK.Core.Web;
 using ODK.Services.Emails.Validation;
 using ODK.Services.Integrations.Emails.Models;
 using ODK.Services.Logging;
@@ -53,10 +53,12 @@ public class ReoonEmailVerifier : IEmailVerifier
 
         try
         {
-            var url =
-                $"{_settings.VerifyUrl}?email={HttpUtility.UrlEncode(emailAddress)}" +
-                $"&key={HttpUtility.UrlEncode(_settings.ApiKey)}" +
-                $"&mode={HttpUtility.UrlEncode(_settings.Mode)}";
+            var url = UrlBuilder
+                .Base(_settings.VerifyUrl)
+                .Query("email", emailAddress)
+                .Query("key", _settings.ApiKey)
+                .Query("mode", _settings.Mode)
+                .Build();
 
             var httpClient = _httpClientFactory.CreateClient();
             var response = await httpClient.GetAsync(url);

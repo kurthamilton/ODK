@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-using System.Web;
 using GeoTimeZone;
 using ODK.Core.Countries;
 using ODK.Core.Utils;
@@ -183,14 +182,18 @@ public class GoogleGeolocationService : IGeolocationService
     {
         try
         {
-            var client = _httpClientFactory.CreateClient();
+            var apiKey = _settings.ApiKey;
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                return null;
+            }
 
-            var apiKey = HttpUtility.UrlEncode(_settings.ApiKey);
+            var client = _httpClientFactory.CreateClient();
 
             var url = UrlBuilder
                 .Base("https://maps.googleapis.com")
                 .Path("/maps/api/geocode/json")
-                .Query("key", _settings.ApiKey)
+                .Query("key", apiKey)
                 .Query("latlng", $"{location.Lat},{location.Long}")
                 .Build();
 
