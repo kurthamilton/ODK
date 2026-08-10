@@ -1,0 +1,93 @@
+﻿@using ODK.Core.Utils
+@using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Common.Routes
+@using ODK.Web.Common.Services
+@using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Mvc
+@model GroupDashboardViewModel
+@inject IOdkRoutes OdkRoutes
+@inject IRequestStore RequestStore
+
+@if (!Model.HasAnything)
+{
+    <p class="text-muted">
+        Nothing needs your attention right now.
+    </p>
+    return;
+}
+
+@if (Model.CanPublish)
+{
+    <div class="alert alert-success d-flex justify-content-between align-items-center">
+        <span>This group is approved and ready to publish.</span>
+        <form action="/groups/@Model.Chapter.Id/publish" method="post" class="ms-3">
+            @Html.AntiForgeryToken()
+            <button class="btn btn-success">Publish</button>
+        </form>
+    </div>
+}
+
+<div class="list-group mb-3">
+    @if (Model.MembersAwaitingApproval > 0)
+    {
+        <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+           href="@OdkRoutes.GroupAdmin.MemberApprovals(Model.Chapter).Path">
+            <span>
+                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.User))
+                <span class="ms-2">Members waiting for approval</span>
+            </span>
+            <span class="badge bg-danger rounded-pill">@Model.MembersAwaitingApproval</span>
+        </a>
+    }
+
+    @if (Model.UnrepliedContactMessages > 0)
+    {
+        <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+           href="@OdkRoutes.GroupAdmin.Messages(Model.Chapter).Path">
+            <span>
+                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Envelope))
+                <span class="ms-2">Unanswered messages</span>
+            </span>
+            <span class="badge bg-danger rounded-pill">@Model.UnrepliedContactMessages</span>
+        </a>
+    }
+</div>
+
+@if (Model.NextEvent != null)
+{
+    var nextEvent = Model.NextEvent;
+    var responses = nextEvent.Responses;
+
+    @* Event times stay in the chapter's timezone so the wall-clock time isn't misread - see the timezone
+       note in CLAUDE.md. The label appears only when the viewer is somewhere else. *@
+    var timeZone = Model.Chapter.TimeZone;
+
+    @await Html.PartialAsync("Components/_Card", new CardViewModel
+    {
+        HeaderContentFunc = @<div>Next event</div>,
+        BodyContentFunc =
+            @<div>
+                <div class="mb-2">
+                    <a href="@OdkRoutes.GroupAdmin.Event(Model.Chapter, nextEvent.Event.Id).Path">
+                        <strong>@nextEvent.Event.GetDisplayName()</strong>
+                    </a>
+                </div>
+
+                <div class="mb-2 text-muted">
+                    <span>@nextEvent.Event.DateUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions { TimeZone = timeZone })</span>
+                    @Html.ChapterTimeZoneLabel(timeZone, nextEvent.Event.DateUtc)
+                    @if (nextEvent.Venue != null)
+                    {
+                        <span> &middot; @nextEvent.Venue.Name</span>
+                    }
+                </div>
+
+                <div>
+                    <span class="badge bg-success">@responses.Yes going</span>
+                    <span class="badge bg-warning text-dark">@responses.Maybe maybe</span>
+                    <span class="badge bg-secondary">@responses.No can't</span>
+                </div>
+            </div>
+    })
+}

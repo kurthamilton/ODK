@@ -721,34 +721,6 @@ public static class ChapterAdminServiceTests
     }
 
     [Test]
-    public static async Task GetChapterAdminPageViewModel_ReturnsViewModel()
-    {
-        // Arrange
-        using var context = CreateMockOdkContext();
-
-        var currentMember = context.CreateMember();
-        context.Add(currentMember);
-
-        var chapter = context.CreateChapter(
-            name: "Test Chapter",
-            adminMembers: [currentMember]);
-
-        var service = CreateChapterAdminService(context);
-
-        var request = CreateMemberChapterAdminServiceRequest(
-            chapter: chapter,
-            currentMember: currentMember,
-            securable: ChapterAdminSecurable.Any);
-
-        // Act
-        var result = await service.GetChapterAdminPageViewModel(request);
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Chapter.Should().Be(chapter);
-    }
-
-    [Test]
     public static async Task GetChapterDeleteViewModel_ReturnsViewModelWithMemberCount()
     {
         // Arrange

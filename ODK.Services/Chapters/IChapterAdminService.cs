@@ -45,7 +45,11 @@ public interface IChapterAdminService
 
     Task<IReadOnlyCollection<ChapterAdminMember>> GetChapterAdminMembers(IMemberChapterAdminServiceRequest request);
 
-    Task<ChapterAdminPageViewModel> GetChapterAdminPageViewModel(IMemberChapterAdminServiceRequest request);
+    /// <summary>
+    /// The admin landing page: outstanding actions for this group, each omitted when the admin lacks
+    /// the securable for the page that would action it.
+    /// </summary>
+    Task<GroupDashboardViewModel> GetGroupDashboardViewModel(IMemberChapterAdminServiceRequest request);
 
     Task<ChapterConversationsAdminPageViewModel> GetChapterConversationsViewModel(
         IMemberChapterAdminServiceRequest request, ChapterConversationStatus status);

@@ -18,6 +18,18 @@ public class MemberChapterQueryBuilder
 
     protected override IMemberChapterQueryBuilder Builder => this;
 
+    public IMemberChapterQueryBuilder Approved(bool value)
+    {
+        Query = Query.Where(x => x.Approved == value);
+        return this;
+    }
+
+    public IMemberChapterQueryBuilder ForChapter(Guid chapterId)
+    {
+        Query = Query.Where(x => x.ChapterId == chapterId);
+        return this;
+    }
+
     public IMemberChapterQueryBuilder ForMember(Guid memberId)
     {
         Query = Query.Where(x => x.MemberId == memberId);
