@@ -4,6 +4,9 @@
 @using ODK.Web.Razor.Models.Components
 @model SubscriptionAdminPageViewModel
 
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "Change this membership tier. Members already on it keep what they paid for.")
+
 <form method="post">
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("Admin/Members/_SubscriptionForm", new SubscriptionFormViewModel

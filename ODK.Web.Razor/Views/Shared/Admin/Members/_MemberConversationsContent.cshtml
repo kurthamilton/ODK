@@ -10,6 +10,9 @@
 @model MemberConversationsAdminPageViewModel
 @inject IOdkRoutes OdkRoutes
 
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "Conversations you have had with this member.")
+
 @await Html.PartialAsync("Admin/Members/_MemberAdminTabs", Model)
 
 @if (Model.Conversations.Count > 0)

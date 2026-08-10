@@ -3,6 +3,9 @@
 @using ODK.Web.Razor.Models.Components
 @model MemberDeleteAdminPageViewModel
 
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "Remove this member from your group. Their account is not deleted, and members with an active paid subscription cannot be removed.")
+
 @await Html.PartialAsync("Admin/Members/_MemberAdminTabs", Model)
 
 <form method="post" action="/groups/@Model.Chapter.Id/members/@Model.Member.Id/delete">

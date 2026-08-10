@@ -8,6 +8,9 @@
 @using ODK.Services.Events.ViewModels
 @model MemberEventsAdminPageViewModel
 @inject IOdkRoutes OdkRoutes
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "Events this member was invited to, where they were held, and how they responded.")
+
 @{
     var responses = Model.Responses
         .OrderByDescending(x => x.Date);

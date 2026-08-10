@@ -6,6 +6,9 @@
 @using ODK.Web.Razor.Models.Admin.Venues
 @using ODK.Web.Razor.Models.Components
 
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "A new venue you can then pick when creating an event.")
+
 <section class="section">
     <form method="post">
         @Html.AntiForgeryToken()

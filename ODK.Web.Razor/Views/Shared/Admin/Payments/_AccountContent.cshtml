@@ -7,9 +7,8 @@
 @inject IOdkRoutes OdkRoutes
 
 <div data-odk-component="Admin/Payments/_AccountContent">
-    <p>
-        Set up a payment account to take payments from your members.
-    </p>
+    @await Html.PartialAsync("Components/_AdminPageDescription",
+        "Connect a payment account so your group can take money for memberships and tickets.")
 
     @* Payments is gated on the owner's subscription like every other paid feature. Uses the Permitted
        overload because access is already resolved into the view model rather than exposed as a feature

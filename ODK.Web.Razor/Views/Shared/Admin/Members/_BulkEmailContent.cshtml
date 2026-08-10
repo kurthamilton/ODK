@@ -8,6 +8,9 @@
 @model BulkEmailAdminPageViewModel
 @inject IOdkRoutes OdkRoutes
 
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "Send one email to many members at once, choosing who receives it by membership status.")
+
 @await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.OwnerSubscriptionFeatures)
 {
     Chapter = Model.Chapter,

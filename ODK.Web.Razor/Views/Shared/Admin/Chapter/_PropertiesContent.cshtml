@@ -5,10 +5,8 @@
 @model ChapterPropertiesAdminPageViewModel
 @inject IOdkRoutes OdkRoutes
 
-<p>
-    Answers to profile questions form a member's profile for this group.
-    Answers are visible to other members.
-</p>
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "Questions members answer about themselves when they join. Their answers make up their profile for this group, and are visible to other members.")
 <p>
     @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
     {

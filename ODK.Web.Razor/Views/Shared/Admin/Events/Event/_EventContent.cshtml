@@ -3,6 +3,9 @@
 @using ODK.Web.Razor.Models.Admin.Events
 @using ODK.Web.Razor.Models.Components
 @model EventEditAdminPageViewModel
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "The details of this event, as members see them.")
+
 @{
     var hostOptions = Model.ChapterAdminMembers
         ?.Select(x => new SelectListItem

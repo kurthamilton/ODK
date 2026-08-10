@@ -1,4 +1,4 @@
-@using ODK.Web.Common.Routes
+﻿@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin.Members
 @using ODK.Web.Razor.Models.Components
 @inject IOdkRoutes OdkRoutes
@@ -6,6 +6,9 @@
 @{
     var preview = Model.Preview;    
 }
+
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "Bring existing members in from a CSV file. You can review what will happen before anything is created.")
 
 <div data-wizard-form>
     @await Html.PartialAsync("Components/_Wizard", new WizardViewModel

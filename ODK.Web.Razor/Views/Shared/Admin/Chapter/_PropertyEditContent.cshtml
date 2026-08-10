@@ -5,6 +5,9 @@
 @using ODK.Web.Razor.Models.Components
 @model ChapterPropertyAdminPageViewModel
 
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "Change this profile question. Existing answers are kept.")
+
 <form method="post">
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("Admin/Chapter/_PropertyForm", new ChapterPropertyFormViewModel

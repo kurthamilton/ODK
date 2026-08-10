@@ -3,6 +3,9 @@
 @using ODK.Web.Razor.Models.Admin.Chapters
 @using ODK.Web.Razor.Mvc
 @model ChapterMessageAdminPageViewModel
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "A message sent through your contact form, and your reply.")
+
 @{
     var created = Model.Message.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions
     {

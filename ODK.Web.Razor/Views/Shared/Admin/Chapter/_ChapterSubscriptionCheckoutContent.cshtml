@@ -2,6 +2,9 @@
 @using ODK.Web.Razor.Models.Components
 @model SiteSubscriptionCheckoutViewModel
 
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "Complete payment for this membership tier.")
+
 <section class="section" data-odk-component="_ChapterSubscriptionCheckoutContent">
     @await Html.PartialAsync("Components/_StripeCheckout", new StripeCheckoutViewModel
     {

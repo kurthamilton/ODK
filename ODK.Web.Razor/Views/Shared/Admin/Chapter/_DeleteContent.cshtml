@@ -5,6 +5,9 @@
 @model ChapterDeleteAdminPageViewModel
 @inject IOdkRoutes OdkRoutes
 
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "Permanently delete this group and everything in it. This cannot be undone.")
+
 @if (Model.Chapter.CanBeDeleted(Model.MemberCount))
 {
     <p>

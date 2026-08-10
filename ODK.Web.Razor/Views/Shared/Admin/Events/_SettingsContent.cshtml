@@ -3,6 +3,9 @@
 @using ODK.Web.Razor.Models.Admin.Events
 @model EventSettingsAdminPageViewModel
 
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "Defaults applied when you create an event, so you are not filling in the same day, time and description every time.")
+
 <form action="/groups/@Model.Chapter.Id/events/settings" method="post">
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("Admin/Events/_SettingsForm", new EventSettingsFormViewModel

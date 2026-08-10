@@ -7,6 +7,9 @@
     var membershipSettings = Model.MembershipSettings;
 }
 
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "How membership works for this group: whether it is enforced, whether new members need approval, and when subscriptions lapse.")
+
 <section class="section">
     @await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.OwnerSubscriptionFeatures)
     {

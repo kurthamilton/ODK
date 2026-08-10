@@ -149,7 +149,7 @@ public class MemberEmailService : IMemberEmailService
 
         var body = new EmailBodyBuilder()
             .AddParagraph("You have been added to {chapter.name}.")
-            .AddParagraph("Manage your chapter membership using the link below.")
+            .AddParagraph("Manage your group membership using the link below.")
             .AddParagraphLink("url")
             .ToString();
 

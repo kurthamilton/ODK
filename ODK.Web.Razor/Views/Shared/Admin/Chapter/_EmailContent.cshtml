@@ -4,8 +4,11 @@
 
 @if (Model.Email.IsDefault())
 {
-    <p>
-        Chapter emails use the standard emails by default. Update the email below to customise the email for this chapter.
+    @await Html.PartialAsync("Components/_AdminPageDescription",
+    "Your own version of this email. Leave it blank to keep using the standard one.")
+
+<p>
+        Group emails use the standard emails by default. Update the email below to customise the email for this group.
     </p>
 }
 else

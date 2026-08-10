@@ -10,6 +10,9 @@
         (Model.ChapterSubscriptions, Model.MembershipSettings);
 }
 
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "Membership tiers members can buy, and how long each one lasts.")
+
 <section class="section">
     @if (subscriptions.Count == 0)
     {

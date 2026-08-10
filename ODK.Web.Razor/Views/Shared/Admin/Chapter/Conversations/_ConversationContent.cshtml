@@ -9,6 +9,9 @@
 @model ChapterConversationAdminPageViewModel
 @inject IOdkRoutes OdkRoutes
 
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "A conversation with a member. Replies are emailed to them and kept here.")
+
 <h5>@Model.Conversation.Subject</h5>
 
 <p>

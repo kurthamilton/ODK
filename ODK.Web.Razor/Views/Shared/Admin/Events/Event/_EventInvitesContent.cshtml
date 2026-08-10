@@ -5,6 +5,9 @@
 @using ODK.Web.Razor.Models.Components
 @model EventInvitesAdminPageViewModel
 
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "Invitations for this event: how many have gone out, when the next batch is scheduled, and sending them now.")
+
 @await Html.PartialAsync("Admin/Events/Event/_EventHeader")
 @await Html.PartialAsync("Admin/Events/Event/_EventAdminTabs")
 

@@ -8,6 +8,9 @@
 @using ODK.Web.Razor.Models.Members
 @model EventAttendeesAdminPageViewModel
 @inject IOdkRoutes OdkRoutes
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "Who is coming, who declined, and anyone waiting for a place.")
+
 @{
     var memberDictionary = Model.Members
         .ToDictionary(x => x.Member.Id);

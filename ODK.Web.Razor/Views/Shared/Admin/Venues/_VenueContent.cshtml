@@ -6,6 +6,9 @@
 @using ODK.Web.Razor.Models.Components
 @model VenueAdminPageViewModel
 
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "Change this venue. Events already using it pick up the change.")
+
 @await Html.PartialAsync("Admin/Venues/_VenueAdminTabs", new VenueAdminTabsViewModel
 {
     Chapter = Model.Chapter,

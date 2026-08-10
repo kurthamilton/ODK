@@ -1,0 +1,10 @@
+﻿@model string
+@* What this admin page is for, in a sentence or two. The page-level sibling of _FormLabelSubtitle: it
+   renders first inside the content partial, so it sits directly under the page title on both platforms
+   without either page shell needing to know about it.
+
+   Belongs in the shared content partial rather than the two platform pages, so the wording is written once
+   and cannot drift between Drunken Knitwits and Group Squirrel. Where the two platforms genuinely differ,
+   the caller picks the string. *@
+
+<p class="text-muted">@Model</p>
