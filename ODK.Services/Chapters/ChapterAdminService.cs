@@ -16,6 +16,7 @@ using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Data.Core.Chapters;
 using ODK.Data.Core.Deferred;
+using ODK.Data.Core.Events;
 using ODK.Resources.Resources;
 using ODK.Services.Authorization;
 using ODK.Services.Chapters.Models;
@@ -28,6 +29,7 @@ using ODK.Services.Logging;
 using ODK.Services.Members;
 using ODK.Services.Notifications;
 using ODK.Services.Payments;
+using ODK.Services.Security;
 using ODK.Services.Payments.Models;
 using ODK.Services.SocialMedia;
 using ODK.Services.Subscriptions;
@@ -769,14 +771,50 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return chapterAdminMembers;
     }
 
-    public async Task<ChapterAdminPageViewModel> GetChapterAdminPageViewModel(
+    public async Task<GroupDashboardViewModel> GetGroupDashboardViewModel(
         IMemberChapterAdminServiceRequest request)
     {
-        await AssertMemberIsChapterAdmin(request);
+        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
-        return new ChapterAdminPageViewModel
+        var adminMember = await _unitOfWork.ChapterAdminMemberRepository
+            .GetByMemberId(platform, currentMember.Id, chapter.Id)
+            .Run();
+        AssertMemberIsChapterAdmin(request, adminMember);
+
+        // Each row is gated on the securable for the page it links to, so nothing is counted that the
+        // admin couldn't act on. Skipped counts use DefaultDeferredQuery so an unpermitted row costs no
+        // query at all, and the rest still batch into a single round-trip.
+        var canSeeApprovals = adminMember.HasAccessTo(ChapterAdminSecurable.MemberApprovals, currentMember);
+        var canSeeMessages = adminMember.HasAccessTo(ChapterAdminSecurable.ContactMessages, currentMember);
+        var canSeeEvents = adminMember.HasAccessTo(ChapterAdminSecurable.Events, currentMember);
+
+        var (awaitingApproval, unrepliedMessages, nextEvents) = await _unitOfWork.RunAsync(
+            x => canSeeApprovals
+                ? x.MemberChapterRepository.Query(platform).ForChapter(chapter.Id).Approved(false).Count()
+                : new DefaultDeferredQuery<int>(0),
+            x => canSeeMessages
+                ? x.ChapterContactMessageRepository
+                    .Query(q => q.ForChapter(chapter.Id).ForStatus(
+                        MessageStatus.Unreplied, _settings.ContactMessageRecaptchaScoreThreshold))
+                    .Count()
+                : new DefaultDeferredQuery<int>(0),
+            x => canSeeEvents
+                ? x.EventRepository
+                    .Query(q => q.ForChapter(chapter.Id).OnOrAfter(DateTime.UtcNow))
+                    .Summary()
+                    .OrderBy(e => e.Event.DateUtc)
+                    .Take(1)
+                    .GetAll()
+                : new DefaultDeferredQueryMultiple<EventSummaryDto>());
+
+        return new GroupDashboardViewModel
         {
-            Chapter = request.Chapter
+            Chapter = chapter,
+            CanPublish = chapter.CanBePublished()
+                && adminMember.HasAccessTo(ChapterAdminSecurable.Publish, currentMember),
+            MembersAwaitingApproval = canSeeApprovals ? awaitingApproval : null,
+            NextEvent = nextEvents.FirstOrDefault(),
+            UnrepliedContactMessages = canSeeMessages ? unrepliedMessages : null
         };
     }
 

@@ -7,12 +7,12 @@
     Layout = "_GroupAdminLayout";
 
     var request = Model.MemberChapterAdminServiceRequest;
-    var viewModel = await ChapterAdminService.GetChapterAdminPageViewModel(request);
+    var viewModel = await ChapterAdminService.GetGroupDashboardViewModel(request);
 }
 
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
 {
     Title = "Admin",
-    BodyContentFunc = @<div>@await Html.PartialAsync("Groups/_GroupEditContent", viewModel)</div>,
+    BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Groups/_GroupDashboardContent", viewModel)</div>,
     MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu")
 })

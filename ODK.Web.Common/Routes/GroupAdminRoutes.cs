@@ -85,7 +85,7 @@ public class GroupAdminRoutes
         _ => ""
     });
 
-    public GroupAdminRoute Home(Chapter chapter) => Base(chapter);
+    public GroupAdminRoute Home(Chapter chapter) => Events(chapter);
 
     public GroupAdminRoute Image(Chapter chapter) => Platform switch
     {
