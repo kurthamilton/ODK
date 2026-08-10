@@ -152,6 +152,13 @@ identically. Add a matching `GroupAdminRoutes` helper — it resolves the platfo
   (`Get...ViewModel(request)`). Pages inject the service and call these.
 - **Web-layer form view models** live in `ODK.Web.Razor/Models/**` and bind incoming form posts
   (`[FromForm]`). Name them `...FormViewModel` / `...SubmitViewModel`.
+- **Split the POST surface from the GET surface: `...FormSubmitViewModel` holds exactly the properties the
+  form posts, and `...FormViewModel` inherits it and adds what only the render needs** (a `ReadOnly` flag, a
+  "can this member edit" bool, options for a dropdown). Controllers bind the *submit* model, so a
+  render-only property is unreachable from a post rather than merely undeclared — which lets it be
+  `required` instead of an optional field with a comment explaining why it can be ignored. The form partial
+  keeps `@model ...FormViewModel`, and because that derives from the submit model the field names are
+  unchanged, so the POST still binds. See `ThemeFormSubmitViewModel` / `ThemeFormViewModel`.
 - Partials live in `Views/Shared/**` (e.g. `Admin/Members/_MembersContent`) and are rendered with
   `Html.PartialAsync`. Reusable page chrome goes through `Admin/_AdminBody` and `Admin/_AdminLink`.
 
