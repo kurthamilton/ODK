@@ -1,0 +1,42 @@
+// A 45-degree corner ribbon marking an unpublished group as a preview, shown to whoever can still see it
+// before publication.
+//
+// The clipping box is the ribbon's own wrapper rather than the content it sits in: putting overflow:hidden
+// on the page body would clip dropdowns and tooltips that legitimately overflow it. The wrapper is a fixed
+// square in the corner, so the rotated band is cut off cleanly at both ends without the container knowing
+// anything about it beyond being a positioning context.
+.preview-label {
+    height: 8rem;
+    overflow: hidden;
+    pointer-events: none;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 8rem;
+    z-index: 1;
+
+    span {
+        background-color: var(--bs-danger);
+        color: #fff;
+        display: block;
+        font-size: .8rem;
+        font-weight: 700;
+        letter-spacing: .1em;
+        padding: .25rem 0;
+        position: absolute;
+        right: -3rem;
+        text-align: center;
+        text-transform: uppercase;
+        top: 1.75rem;
+        transform: rotate(45deg);
+        width: 12rem;
+    }
+}
+
+// The positioning context, wrapped around the page container by _Body / _BodyWithSidebar. A plain block
+// element, so it spans the full width and begins below the title - which puts the ribbon on the page edge
+// rather than inset by the content column, and below the title rather than beside it. Applied
+// unconditionally: it does nothing until a page puts an absolutely positioned child inside it.
+.preview-label-container {
+    position: relative;
+}

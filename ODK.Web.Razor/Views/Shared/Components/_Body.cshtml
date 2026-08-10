@@ -14,33 +14,39 @@
         @Model.Menu
     }
 
-    <div class="container-md">
-        @await Html.PartialAsync("Components/_ToastAnchor", new ToastAnchorViewModel())
-        <div class="row @(Model.WidthClass != null ? "justify-content-center" : null)">
-            <div class="@(Model.WidthClass ?? "col-12")">                
-                <div class="page-alerts">
-                    @if (!Model.HideSubscriptionAlert)
-                    {
-                        @await Html.PartialAsync("Members/_SubscriptionAlertPlaceholder")
-                    }
-                </div>
-
-                <section class="section--main">
-                    @if (Model.Breadcrumbs != null)
-                    {
-                        @await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+    @* Positioning context for a corner ribbon (see _preview-label.scss). Full width and starts
+       below the title, so an absolutely positioned child lands on the page edge rather than
+       inset by the content column. Inert without such a child. *@
+    <div class="preview-label-container">
+        <div class="container-md">
+            @await Html.PartialAsync("Components/_ToastAnchor", new ToastAnchorViewModel())
+            <div class="row @(Model.WidthClass != null ? "justify-content-center" : null)">
+                <div class="@(Model.WidthClass ?? "col-12")">                
+                    <div class="page-alerts">
+                        @if (!Model.HideSubscriptionAlert)
                         {
-                            Breadcrumbs = Model.Breadcrumbs
-                        })
-                    }                    
+                            @await Html.PartialAsync("Members/_SubscriptionAlertPlaceholder")
+                        }
+                    </div>
 
-                    @BodyContent
+                    <section class="section--main">
+                        @if (Model.Breadcrumbs != null)
+                        {
+                            @await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+                            {
+                                Breadcrumbs = Model.Breadcrumbs
+                            })
+                        }                    
 
-                    @Model.Content
+                        @BodyContent
 
-                    @Model.ContentFunc?.Invoke(null)
-                </section>
+                        @Model.Content
+
+                        @Model.ContentFunc?.Invoke(null)
+                    </section>
+                </div>
             </div>
+    
         </div>
-    </div>        
+    </div>
 </main>

@@ -13195,6 +13195,37 @@ footer {
   margin-bottom: 0;
 }
 
+.preview-label {
+  height: 8rem;
+  overflow: hidden;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 8rem;
+  z-index: 1;
+}
+.preview-label span {
+  background-color: var(--bs-danger);
+  color: #fff;
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 0.25rem 0;
+  position: absolute;
+  right: -3rem;
+  text-align: center;
+  text-transform: uppercase;
+  top: 1.75rem;
+  transform: rotate(45deg);
+  width: 12rem;
+}
+
+.preview-label-container {
+  position: relative;
+}
+
 .scroll-indicator-anchor {
   position: sticky;
   bottom: 0;
