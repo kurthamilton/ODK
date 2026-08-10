@@ -14,44 +14,50 @@
         @Model.Menu
     }
 
-    <div class="container-md">
-        @await Html.PartialAsync("Components/_ToastAnchor", new ToastAnchorViewModel())
-        <div class="row @(Model.WidthClass != null ? "justify-content-center" : null)">
-            <div class="@(Model.WidthClass ?? "col-12")">                
-                <div class="page-alerts">
-                    @if (!Model.HideSubscriptionAlert)
-                    {
-                        @await Html.PartialAsync("Members/_SubscriptionAlertPlaceholder")
-                    }
-                </div>
-
-                <section class="section--main">
-                    @if (Model.Breadcrumbs != null)
-                    {
-                        @await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+    @* Positioning context for a corner ribbon (see _preview-label.scss). Full width and starts
+       below the title, so an absolutely positioned child lands on the page edge rather than
+       inset by the content column. Inert without such a child. *@
+    <div class="preview-label-container">
+        <div class="container-md">
+            @await Html.PartialAsync("Components/_ToastAnchor", new ToastAnchorViewModel())
+            <div class="row @(Model.WidthClass != null ? "justify-content-center" : null)">
+                <div class="@(Model.WidthClass ?? "col-12")">                
+                    <div class="page-alerts">
+                        @if (!Model.HideSubscriptionAlert)
                         {
-                            Breadcrumbs = Model.Breadcrumbs
-                        })
-                    }
-            
-                    <div class="row">
-                        <div class="col-xl-9 col-md-8 order-2 order-md-1">
-                            @if (Model.Content != null)
-                            {
-                                @Model.Content
-                            }
-
-                            @Model.ContentFunc?.Invoke(null)
-                        </div>
-                        <div class="col-xl-3 col-md-4 order-1 order-md-2">
-                            @if (Model.SidebarContent != null)
-                            {
-                                @Model.SidebarContent
-                            }
-                        </div>
+                            @await Html.PartialAsync("Members/_SubscriptionAlertPlaceholder")
+                        }
                     </div>
-                </section>
-            </div>        
-        </div>    
+
+                    <section class="section--main">
+                        @if (Model.Breadcrumbs != null)
+                        {
+                            @await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+                            {
+                                Breadcrumbs = Model.Breadcrumbs
+                            })
+                        }
+            
+                        <div class="row">
+                            <div class="col-xl-9 col-md-8 order-2 order-md-1">
+                                @if (Model.Content != null)
+                                {
+                                    @Model.Content
+                                }
+
+                                @Model.ContentFunc?.Invoke(null)
+                            </div>
+                            <div class="col-xl-3 col-md-4 order-1 order-md-2">
+                                @if (Model.SidebarContent != null)
+                                {
+                                    @Model.SidebarContent
+                                }
+                            </div>
+                        </div>
+                    </section>
+                </div>        
+            </div>    
+    
+        </div>
     </div>
 </main>

@@ -7,6 +7,17 @@
 
     // Identical for both layouts below - only the component wrapping it differs (sidebar or not).
     Func<object?, IHtmlContent> content = @<div>
+        @* Only whoever can still reach an unpublished group sees this, so the check is the published state
+           itself rather than a role. Positioned against the .preview-label-container wrapper that _Body /
+           _BodyWithSidebar put around the page container, so it lands on the page edge below the title
+           rather than inset by this column. *@
+        @if (!Model.Group.Chapter.IsPublished())
+        {
+            <div class="preview-label">
+                <span>Preview</span>
+            </div>
+        }
+
         @if (memberChapter != null)
         {
             @await Html.PartialAsync("Chapters/_ApprovalWarning", memberChapter)
