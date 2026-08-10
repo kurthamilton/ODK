@@ -1086,7 +1086,8 @@ public static class ChapterAdminServiceTests
         var currentMember = context.CreateMember();
 
         var chapter = context.CreateChapter(
-            adminMembers: [currentMember]);
+            adminMembers: [currentMember],
+            siteSubscription: context.CreateSiteSubscription(features: [SiteFeatureType.Theme]));
 
         var service = CreateChapterAdminService(context);
 
@@ -1101,6 +1102,168 @@ public static class ChapterAdminServiceTests
 
         // Assert
         result.Success.Should().BeTrue();
+    }
+
+    [Test]
+    public static async Task UpdateChapterMembershipSettings_OwnerHasApproveMembers_AppliesTheSetting()
+    {
+        // Arrange - the owner pays for member approval, so turning it on has to stick. This condition was
+        // once inverted: it applied the setting only to owners *without* the feature, so a paying owner's
+        // choice was discarded while a free owner's was stored and then ignored at join time.
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(
+            adminMembers: [currentMember],
+            siteSubscription: context.CreateSiteSubscription(
+                features: [SiteFeatureType.MemberSubscriptions, SiteFeatureType.ApproveMembers]));
+
+        var service = CreateChapterAdminService(context);
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MembershipSettings);
+
+        // Act
+        var result = await service.UpdateChapterMembershipSettings(
+            request, CreateMembershipSettingsUpdateModel(approveNewMembers: true));
+
+        // Assert
+        result.Success.Should().BeTrue();
+        var settings = context.Set<ChapterMembershipSettings>().Single(x => x.ChapterId == chapter.Id);
+        settings.ApproveNewMembers.Should().BeTrue();
+    }
+
+    [Test]
+    public static async Task UpdateChapterMembershipSettings_OwnerLacksApproveMembers_IgnoresTheSetting()
+    {
+        // Arrange - without the feature the setting must not be stored, so it can't quietly take effect if
+        // the subscription later changes. MemberSubscriptions is still needed to pass the outer guard.
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(
+            adminMembers: [currentMember],
+            siteSubscription: context.CreateSiteSubscription(
+                features: [SiteFeatureType.MemberSubscriptions]));
+
+        var service = CreateChapterAdminService(context);
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MembershipSettings);
+
+        // Act
+        var result = await service.UpdateChapterMembershipSettings(
+            request, CreateMembershipSettingsUpdateModel(approveNewMembers: true));
+
+        // Assert
+        result.Success.Should().BeTrue();
+        var settings = context.Set<ChapterMembershipSettings>().Single(x => x.ChapterId == chapter.Id);
+        settings.ApproveNewMembers.Should().BeFalse();
+    }
+
+    [Test]
+    public static async Task UpdateChapterTheme_WithoutThemeFeature_ReturnsFailure()
+    {
+        // Arrange - the admin page renders read-only without the feature, but that is presentation only.
+        // This is what actually withholds the change, so a hand-crafted post can't get round it.
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(adminMembers: [currentMember]);
+
+        var service = CreateChapterAdminService(context);
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.Branding);
+
+        // Act
+        var result = await service.UpdateChapterTheme(request, CreateChapterThemeUpdateModel());
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.Message.Should().Be("Not permitted");
+    }
+
+    [Test]
+    public static async Task UpdateChapterTheme_WithoutThemeFeature_LeavesTheExistingThemeAlone()
+    {
+        // Arrange - losing the feature must not strip a theme the group already has; it keeps rendering,
+        // only editing is withheld.
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(
+            adminMembers: [currentMember],
+            afterCreate: x =>
+            {
+                x.ThemeBackground = "#111111";
+                x.ThemeColor = "#222222";
+            });
+
+        var service = CreateChapterAdminService(context);
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.Branding);
+
+        // Act
+        await service.UpdateChapterTheme(request, CreateChapterThemeUpdateModel());
+
+        // Assert
+        chapter.ThemeBackground.Should().Be("#111111");
+        chapter.ThemeColor.Should().Be("#222222");
+    }
+
+    [Test]
+    public static async Task GetChapterThemeViewModel_WithThemeFeature_CanEdit()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(
+            adminMembers: [currentMember],
+            siteSubscription: context.CreateSiteSubscription(features: [SiteFeatureType.Theme]));
+
+        var service = CreateChapterAdminService(context);
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.Branding);
+
+        // Act
+        var result = await service.GetChapterThemeViewModel(request);
+
+        // Assert
+        result.CanEdit.Should().BeTrue();
+    }
+
+    [Test]
+    public static async Task GetChapterThemeViewModel_WithoutThemeFeature_CannotEdit()
+    {
+        // Arrange - a different feature, so this proves the check is for Theme specifically rather than
+        // for holding any subscription at all.
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(
+            adminMembers: [currentMember],
+            siteSubscription: context.CreateSiteSubscription(features: [SiteFeatureType.AdminMembers]));
+
+        var service = CreateChapterAdminService(context);
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.Branding);
+
+        // Act
+        var result = await service.GetChapterThemeViewModel(request);
+
+        // Assert
+        result.CanEdit.Should().BeFalse();
     }
 
     [Test]
@@ -1218,7 +1381,10 @@ public static class ChapterAdminServiceTests
             paymentService ?? new Mock<IPaymentService>().Object,
             geolocationService ?? CreateMockGeolocationService(country: context.CreateCountry()),
             loggingService ?? new Mock<ILoggingService>().Object,
-            Mock.Of<IAuthorizationService>());
+            // The real one, not a mock: it has no dependencies and is a pure function over the arranged
+            // subscription features. A bare mock returns false from every check, which silently turns any
+            // feature-gated path into "not permitted" and makes the arrangement look broken instead.
+            new AuthorizationService());
     }
 
     private static ChapterAdminServiceSettings CreateChapterAdminServiceSettings(
@@ -1377,6 +1543,16 @@ public static class ChapterAdminServiceTests
 
     private static ChapterImageUpdateModel CreateChapterImageUpdateModel(byte[]? imageData = null)
         => new ChapterImageUpdateModel { ImageData = imageData ?? [1, 2, 3] };
+
+    private static ChapterMembershipSettingsUpdateModel CreateMembershipSettingsUpdateModel(
+        bool approveNewMembers) => new()
+    {
+        ApproveNewMembers = approveNewMembers,
+        Enabled = true,
+        MembershipDisabledAfterDaysExpired = 0,
+        MembershipExpiringWarningDays = 0,
+        TrialPeriodMonths = 0
+    };
 
     private static ChapterThemeUpdateModel CreateChapterThemeUpdateModel(
         string? background = null,

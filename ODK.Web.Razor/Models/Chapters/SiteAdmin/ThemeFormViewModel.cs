@@ -1,8 +1,10 @@
 ﻿namespace ODK.Web.Razor.Models.Chapters.SiteAdmin;
 
-public class ThemeFormViewModel
+public class ThemeFormViewModel : ThemeFormSubmitViewModel
 {
-    public string? Background { get; set; }
-
-    public string? Color { get; set; }
+    /// <summary>
+    /// Renders the current theme without letting it be changed, for an owner whose subscription doesn't
+    /// include the feature.
+    /// </summary>
+    public required bool ReadOnly { get; init; }
 }

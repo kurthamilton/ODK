@@ -771,6 +771,26 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return chapterAdminMembers;
     }
 
+    public async Task<ChapterThemeAdminPageViewModel> GetChapterThemeViewModel(
+        IMemberChapterAdminServiceRequest request)
+    {
+        var chapter = request.Chapter;
+
+        var ownerSubscriptionFeatures = await GetChapterAdminRestrictedContent(
+            request,
+            x => x.MemberSiteSubscriptionRecordRepository
+                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active())
+                .SiteSubscription()
+                .Features()
+                .GetAll());
+
+        return new ChapterThemeAdminPageViewModel
+        {
+            Chapter = chapter,
+            CanEdit = _authorizationService.ChapterHasAccess(ownerSubscriptionFeatures, SiteFeatureType.Theme)
+        };
+    }
+
     public async Task<GroupDashboardViewModel> GetGroupDashboardViewModel(
         IMemberChapterAdminServiceRequest request)
     {
@@ -2288,7 +2308,20 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         var chapter = request.Chapter;
 
-        await AssertMemberIsChapterAdmin(request);
+        // The page renders read-only without the feature, but that's presentation - this is what actually
+        // withholds it. An existing theme is left alone and keeps rendering; only changing it is blocked.
+        var ownerSubscriptionFeatures = await GetChapterAdminRestrictedContent(
+            request,
+            x => x.MemberSiteSubscriptionRecordRepository
+                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active())
+                .SiteSubscription()
+                .Features()
+                .GetAll());
+
+        if (!_authorizationService.ChapterHasAccess(ownerSubscriptionFeatures, SiteFeatureType.Theme))
+        {
+            return ServiceResult.Failure("Not permitted");
+        }
 
         chapter.ThemeBackground = model.Background;
         chapter.ThemeColor = model.Color;

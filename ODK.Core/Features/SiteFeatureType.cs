@@ -27,5 +27,8 @@ public enum SiteFeatureType
     ScheduledEventEmails = 7,
 
     [Display(Name = "Send emails to members")]
-    SendMemberEmails = 8
+    SendMemberEmails = 8,
+
+    [Display(Name = "Custom theme")]
+    Theme = 9
 }
