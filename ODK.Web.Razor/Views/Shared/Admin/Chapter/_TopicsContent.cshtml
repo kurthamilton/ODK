@@ -3,6 +3,9 @@
 @using ODK.Web.Razor.Models.Topics
 @model ChapterTopicsAdminPageViewModel
 
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "Topics describing what your group is about. They help the right people find you when browsing.")
+
 <form action="/admin/groups/@Model.Chapter.Id/topics" method="post">
     @Html.AntiForgeryToken()
     <div class="form-group mb-3">

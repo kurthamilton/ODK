@@ -13,10 +13,8 @@
 @model ChapterEmailsViewModel
 @inject IOdkRoutes OdkRoutes
 
-<p>
-    The emails sent by the site use the templates below.
-    Default templates already exist and can be overridden if you want to include chapter-specific content.
-</p>
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "Templates for the emails your group sends. Each has a default you can override to add your own wording.")
 <div class="alert alert-warning">
     CAUTION: it is best not to update these templates unless you know what you are doing!
 </div>

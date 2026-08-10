@@ -6,6 +6,9 @@
 @using ODK.Web.Razor.Models.Admin.Chapters
 @model ChapterPagesAdminPageViewModel
 
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "The standard pages on your group page. Hide any you don't use, and rename the ones you keep.")
+
 <form action="/groups/@Model.Chapter.Id/pages" method="post">
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("Admin/Chapter/_PagesForm", new ChapterPagesFormViewModel

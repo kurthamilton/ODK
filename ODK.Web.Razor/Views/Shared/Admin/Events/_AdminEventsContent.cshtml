@@ -5,6 +5,9 @@
 @using ODK.Web.Razor.Models.Components
 @model EventsAdminPageViewModel
 @inject IOdkRoutes OdkRoutes
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "Every event you have created. Filter by date or venue to find one, or create the next one.")
+
 @{
     var eventsPath = OdkRoutes.GroupAdmin.Events(Model.Chapter).Path;
     var page = Model.Events.Page;

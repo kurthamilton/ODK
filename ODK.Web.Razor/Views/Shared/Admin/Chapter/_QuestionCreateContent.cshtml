@@ -1,5 +1,8 @@
 ﻿@using ODK.Web.Razor.Models.Admin.Chapters
 
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "A new question and answer for your FAQ.")
+
 <form method="post">
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("Admin/Chapter/_QuestionForm", new ChapterQuestionFormViewModel())

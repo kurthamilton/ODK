@@ -7,6 +7,9 @@
 @using ODK.Web.Razor.Models.Admin.Chapters
 @model ChapterTextsAdminPageViewModel
 
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "Wording specific to your group: its description, and the messages new members see.")
+
 <form method="post" action="/groups/@Model.Chapter.Id/texts">
     @Html.AntiForgeryToken()
 

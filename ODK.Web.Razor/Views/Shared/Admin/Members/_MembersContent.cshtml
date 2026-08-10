@@ -34,6 +34,9 @@
         .ToHashSet();
 }
 
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "Everyone who has joined this group. Filter by status to find members whose subscription is active, due to expire or lapsed.")
+
 <p>
     <div class="row row-cols-lg-auto g-3 align-items-center">
         <div class="col-12">

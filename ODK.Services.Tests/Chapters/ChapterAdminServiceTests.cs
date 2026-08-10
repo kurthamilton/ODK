@@ -114,7 +114,7 @@ public static class ChapterAdminServiceTests
 
         // Assert
         result.Success.Should().BeFalse();
-        result.Message.Should().Be("Member is already a chapter admin");
+        result.Message.Should().Be("Member is already a group admin");
     }
 
     [TestCase(ChapterAdminRole.Owner)]

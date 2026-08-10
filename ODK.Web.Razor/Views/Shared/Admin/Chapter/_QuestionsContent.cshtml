@@ -6,18 +6,9 @@
 @model ChapterQuestionsAdminPageViewModel
 @inject IOdkRoutes OdkRoutes
 
-@if (Model.Platform == PlatformType.DrunkenKnitwits)
-{
-    <p>
-        The questions below are shown on the About page.
-    </p>
-}
-else
-{
-    <p>
-        Add useful questions and answers to your group page.
-    </p>
-}
+@await Html.PartialAsync("Components/_AdminPageDescription", Model.Platform == PlatformType.DrunkenKnitwits
+    ? "Questions and answers shown on your group's About page."
+    : "Questions and answers shown on your group page, so members can find answers without asking.")
 
 <p>
     @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel

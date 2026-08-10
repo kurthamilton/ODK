@@ -11,6 +11,9 @@
 @model VenueEventsAdminPageViewModel
 @inject IOdkRoutes OdkRoutes
 
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "Events that have been held at this venue, or are coming up.")
+
 @await Html.PartialAsync("Admin/Venues/_VenueAdminTabs", new VenueAdminTabsViewModel
 {
     Chapter = Model.Chapter,

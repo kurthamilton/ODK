@@ -3,6 +3,9 @@
 @using ODK.Web.Razor.Models.Admin.Chapters
 @model ChapterImageAdminPageViewModel
 
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "The picture shown on your group page and wherever your group is listed.")
+
 <form action="/groups/@Model.Chapter.Id/image" method="post">
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("Admin/Chapter/_ImageForm", new ChapterImageFormViewModel

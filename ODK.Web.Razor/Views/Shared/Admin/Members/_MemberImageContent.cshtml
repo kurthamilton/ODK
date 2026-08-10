@@ -3,6 +3,9 @@
 @using ODK.Web.Razor.Models.Members
 @model MemberImageAdminPageViewModel
 
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "This member's profile picture. You can remove it if it isn't suitable.")
+
 @await Html.PartialAsync("Admin/Members/_MemberAdminTabs", Model)
 
 <section class="section--admin">

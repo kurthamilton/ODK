@@ -7,6 +7,9 @@
 @using ODK.Web.Razor.Models.Components
 @model AdminMemberAdminPageViewModel
 
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "This admin's role, the address group email is sent to, and which notifications they receive.")
+
 <form method="post">
     @Html.AntiForgeryToken()
     <fieldset disabled="@(Model.ReadOnly ? "" : null)">

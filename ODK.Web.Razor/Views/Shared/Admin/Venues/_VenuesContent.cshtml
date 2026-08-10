@@ -6,6 +6,9 @@
 @model VenuesAdminPageViewModel
 @inject IOdkRoutes OdkRoutes
 
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "Places your events happen. Add a venue once and reuse it whenever you create an event.")
+
 <p>
     @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
     {

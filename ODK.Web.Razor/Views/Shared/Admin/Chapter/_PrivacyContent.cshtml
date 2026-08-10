@@ -7,6 +7,9 @@
 @using ODK.Web.Razor.Models.Admin.Chapters
 @model ChapterPrivacyAdminPageViewModel
 
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "Who can see each part of your group. Tighten these to keep events, members or venues from non-members.")
+
 <form action="/groups/@Model.Chapter.Id/privacy" method="post">
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("Admin/Chapter/_PrivacyForm", new ChapterPrivacySettingsFormViewModel

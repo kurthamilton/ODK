@@ -9,6 +9,9 @@
 @using ODK.Web.Razor.Models.Components
 @model EventCreateAdminPageViewModel
 @inject IOdkRoutes OdkRoutes
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "Create an event. Anything you leave blank falls back to the defaults in event settings.")
+
 @{
     var hostOptions = Model.AdminMembers
         .Select(x => new SelectListItem

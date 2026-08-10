@@ -3,6 +3,9 @@
 @using ODK.Web.Razor.Models.Admin.Chapters
 @model ChapterLinksAdminPageViewModel
 
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "Links to your group on other sites. These appear on your group page for members to follow.")
+
 <form action="/groups/@Model.Chapter.Id/links" method="post">
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("Admin/Chapter/_LinksForm", new ChapterLinksFormViewModel

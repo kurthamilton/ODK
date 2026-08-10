@@ -9,6 +9,9 @@
 @model MemberAdminPageViewModel
 @inject IOdkRoutes OdkRoutes
 
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "This member as they appear to your group, including the answers they gave to your profile questions.")
+
 @await Html.PartialAsync("Admin/Members/_MemberAdminTabs", Model)
 
 <form method="post">

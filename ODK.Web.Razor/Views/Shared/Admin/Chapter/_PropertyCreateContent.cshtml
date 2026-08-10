@@ -1,6 +1,9 @@
 ﻿@using ODK.Core.DataTypes
 @using ODK.Web.Razor.Models.Admin.Chapters
 
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "A new question for members to answer about themselves when they join.")
+
 <form method="post">
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("Admin/Chapter/_PropertyForm", new ChapterPropertyFormViewModel

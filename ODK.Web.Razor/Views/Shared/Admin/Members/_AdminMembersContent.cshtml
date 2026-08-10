@@ -20,6 +20,9 @@
         .ToArray();
 }
 
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "Members who can administer this group, and how much each of them can do.")
+
 <section class="section">
     @if (Model.AdminMembers.Count == 1)
     {

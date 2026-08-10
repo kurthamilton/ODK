@@ -126,7 +126,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         var existing = chapterAdminMembers.FirstOrDefault(x => x.MemberId == memberId);
         if (existing != null)
         {
-            return ServiceResult.Failure("Member is already a chapter admin");
+            return ServiceResult.Failure("Member is already a group admin");
         }
 
         _unitOfWork.ChapterAdminMemberRepository.Add(new ChapterAdminMember

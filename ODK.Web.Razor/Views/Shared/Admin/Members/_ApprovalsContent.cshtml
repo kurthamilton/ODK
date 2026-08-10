@@ -6,6 +6,9 @@
 @model MemberApprovalsAdminPageViewModel
 @inject IOdkRoutes OdkRoutes
 
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "People who have asked to join and are waiting to be let in. Only used when new members require approval.")
+
 @if (Model.MembershipSettings?.ApproveNewMembers != true)
 {
     <p>

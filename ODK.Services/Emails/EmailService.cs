@@ -288,6 +288,9 @@ public class EmailService : IEmailService
             parameters["chapter.baseurl"] = urlProvider.GroupUrl(options.Chapter);
         }
 
+        // Before any interpolation, so a body written with group.* resolves too.
+        EmailParameters.MirrorPrefix(parameters, "chapter", "group");
+
         if (!parameters.ContainsKey("platform.baseurl"))
         {
             parameters["platform.baseurl"] = urlProvider.BaseUrl();
@@ -338,7 +341,7 @@ public class EmailService : IEmailService
 
         parameters["body"] = body;
 
-        var queuedEmail = new QueuedEmail
+        var queuedEmail = _unitOfWork.QueuedEmailRepository.Add(new QueuedEmail
         {
             Body = layoutEmail.HtmlContent.Interpolate(parameters.AsReadOnly()),
             ChapterId = chapterId,
@@ -347,9 +350,7 @@ public class EmailService : IEmailService
             FromName = siteSettings.FromName.Interpolate(parameters.AsReadOnly()),
             Id = Guid.NewGuid(),
             Subject = subject.Interpolate(parameters.AsReadOnly())
-        };
-
-        _unitOfWork.QueuedEmailRepository.Add(queuedEmail);
+        });
 
         foreach (var recipient in options.To)
         {

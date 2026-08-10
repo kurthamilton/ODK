@@ -1,5 +1,8 @@
 ﻿@using ODK.Services.Members.ViewModels
 @model MemberPaymentsAdminPageViewModel
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "What this member has paid your group.")
+
 @{
     var payments = Model.Payments
         .OrderByDescending(x => x.PaidUtc);
