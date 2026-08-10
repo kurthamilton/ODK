@@ -46,6 +46,12 @@ public interface IChapterAdminService
     Task<IReadOnlyCollection<ChapterAdminMember>> GetChapterAdminMembers(IMemberChapterAdminServiceRequest request);
 
     /// <summary>
+    /// The theme admin page. CanEdit is false when the owner's subscription lacks the theme feature -
+    /// the page then shows the current theme read-only rather than hiding it.
+    /// </summary>
+    Task<ChapterThemeAdminPageViewModel> GetChapterThemeViewModel(IMemberChapterAdminServiceRequest request);
+
+    /// <summary>
     /// The admin landing page: outstanding actions for this group, each omitted when the admin lacks
     /// the securable for the page that would action it.
     /// </summary>

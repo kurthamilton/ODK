@@ -1,14 +1,30 @@
 ﻿@using ODK.Web.Razor.Models.Chapters.SiteAdmin
 @model ThemeFormViewModel
+@{
+    var inputAttributes = new Dictionary<string, object>
+    {
+        ["class"] = "form-control",
+        ["placeholder"] = "Not set"
+    };
 
-<div class="form-group mb-3">
-    @Html.LabelFor(x => x.Background, new { @class = "form-label" })
-    @Html.TextBoxFor(x => x.Background, new { @class = "form-control", data_color_picker = "", placeholder = "Not set" })
-    @Html.ValidationMessageFor(x => x.Background)
-</div>
+    // The colour picker is a JS enhancement over the input, so it is left off when read-only - a disabled
+    // fieldset blocks typing, but the picker would still attach and offer a colour to choose.
+    if (!Model.ReadOnly)
+    {
+        inputAttributes["data-color-picker"] = string.Empty;
+    }
+}
 
-<div class="form-group mb-3">
-    @Html.LabelFor(x => x.Color, new { @class = "form-label" })
-    @Html.TextBoxFor(x => x.Color, new { @class = "form-control", data_color_picker = "", placeholder = "Not set" })
-    @Html.ValidationMessageFor(x => x.Color)
-</div>
+<fieldset disabled="@(Model.ReadOnly ? "" : null)">
+    <div class="form-group mb-3">
+        @Html.LabelFor(x => x.Background, new { @class = "form-label" })
+        @Html.TextBoxFor(x => x.Background, inputAttributes)
+        @Html.ValidationMessageFor(x => x.Background)
+    </div>
+
+    <div class="form-group mb-3">
+        @Html.LabelFor(x => x.Color, new { @class = "form-label" })
+        @Html.TextBoxFor(x => x.Color, inputAttributes)
+        @Html.ValidationMessageFor(x => x.Color)
+    </div>
+</fieldset>

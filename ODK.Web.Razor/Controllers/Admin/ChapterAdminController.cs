@@ -275,7 +275,7 @@ public class ChapterAdminController : AdminControllerBase
     }
 
     [HttpPost("groups/{chapterId:guid}/theme")]
-    public async Task<IActionResult> UpdateTheme(Guid chapterId, ThemeFormViewModel viewModel)
+    public async Task<IActionResult> UpdateTheme(Guid chapterId, ThemeFormSubmitViewModel viewModel)
     {
         var request = MemberChapterAdminServiceRequest.Create(
             ChapterAdminSecurable.Branding, MemberChapterServiceRequest);

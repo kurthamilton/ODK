@@ -1,16 +1,19 @@
 ﻿@page "/my/groups/{chapterId:guid}/theme"
+@using ODK.Services.Chapters
 @using ODK.Web.Razor.Models.Components
 @model ThemeModel
+@inject IChapterAdminService ChapterAdminService
 @{
     Layout = "_GroupAdminLayout";
     Model.Title = "Theme";
 
-    var chapter = Model.Chapter;
+    var viewModel = await ChapterAdminService.GetChapterThemeViewModel(
+        Model.MemberChapterAdminServiceRequest);
 }
 
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
 {
     Title = "Theme",
-    BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_ThemeContent", chapter)</div>,
+    BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_ThemeContent", viewModel)</div>,
     MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu")
 })
