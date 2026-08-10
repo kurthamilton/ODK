@@ -117,7 +117,7 @@ public class ChapterAdminController : AdminControllerBase
 
     [HttpPost("groups/{chapterId:guid}/membership")]
     public async Task<IActionResult> UpdateMembershipSettings(Guid chapterId,
-        [FromForm] MembershipSettingsFormViewModel viewModel)
+        [FromForm] MembershipSettingsFormSubmitViewModel viewModel)
     {
         var request = MemberChapterAdminServiceRequest.Create(
             ChapterAdminSecurable.MembershipSettings, MemberChapterServiceRequest);
