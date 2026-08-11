@@ -139,33 +139,6 @@ public class MemberEmailService : IMemberEmailService
         await _emailService.SendEmail(request, chapter, addressees, subject, body, parameters);
     }
 
-    public async Task SendChapterInviteEmail(
-        IChapterServiceRequest request,
-        Member member)
-    {
-        var chapter = request.Chapter;
-
-        var subject = "You have been added to a group - {title}";
-
-        var body = new EmailBodyBuilder()
-            .AddParagraph("You have been added to {chapter.name}.")
-            .AddParagraph("Manage your group membership using the link below.")
-            .AddParagraphLink("url")
-            .ToString();
-
-        var urlProvider = await _urlProviderFactory.Create(request);
-        var url = urlProvider.ChapterSubscription(chapter);
-
-        var parameters = new Dictionary<string, string>
-        {
-            { "url", url }
-        };
-
-        var to = member.ToEmailAddressee();
-
-        await _emailService.SendEmail(request, chapter, [to], subject, body, parameters);
-    }
-
     public async Task SendChapterMessage(
         IChapterServiceRequest request,
         IReadOnlyCollection<ChapterAdminMember> adminMembers,
@@ -387,37 +360,6 @@ public class MemberEmailService : IMemberEmailService
             parameters);
     }
 
-    public async Task SendGroupImportActivationEmail(
-        IMemberChapterServiceRequest request,
-        string activationToken)
-    {
-        var (chapter, member) = (request.Chapter, request.CurrentMember);
-
-        var urlProvider = await _urlProviderFactory.Create(request);
-        var url = urlProvider.ActivateAccountUrl(chapter, activationToken);
-
-        var parameters = new Dictionary<string, string>
-        {
-            { "url", url }
-        };
-
-        var to = member.ToEmailAddressee();
-        var subject = "{title} - Activate your account";
-        var body = new EmailBodyBuilder()
-            .AddParagraph("You application to join {chapter.fullName} has been approved.")
-            .AddParagraph("Activate your account using the link below.")
-            .AddParagraphLink("url")
-            .ToString();
-
-        await _emailService.SendMemberEmail(
-            request,
-            chapter,
-            to,
-            subject,
-            body,
-            parameters);
-    }
-
     public async Task SendMemberApprovedEmail(
         IChapterServiceRequest request,
         Member member)
@@ -607,6 +549,50 @@ public class MemberEmailService : IMemberEmailService
             [member.ToEmailAddressee()],
             subject,
             body,
+            parameters);
+    }
+
+    public async Task SendMemberImportActivationEmail(
+        IMemberChapterServiceRequest request,
+        string activationToken)
+    {
+        var (chapter, member) = (request.Chapter, request.CurrentMember);
+
+        var urlProvider = await _urlProviderFactory.Create(request);
+        var url = urlProvider.ActivateAccountUrl(chapter, activationToken);
+
+        var parameters = new Dictionary<string, string>
+        {
+            { "url", url }
+        };
+
+        await _emailService.SendEmail(
+            request,
+            chapter,
+            member.ToEmailAddressee(),
+            EmailType.MemberImportActivation,
+            parameters);
+    }
+
+    public async Task SendMemberImportInviteEmail(
+        IChapterServiceRequest request,
+        Member member)
+    {
+        var chapter = request.Chapter;
+
+        var urlProvider = await _urlProviderFactory.Create(request);
+        var url = urlProvider.ChapterSubscription(chapter);
+
+        var parameters = new Dictionary<string, string>
+        {
+            { "url", url }
+        };
+
+        await _emailService.SendEmail(
+            request,
+            chapter,
+            member.ToEmailAddressee(),
+            EmailType.MemberImportInvite,
             parameters);
     }
 

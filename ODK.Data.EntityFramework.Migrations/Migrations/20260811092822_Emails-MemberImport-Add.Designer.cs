@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 using ODK.Data.EntityFramework;
@@ -12,9 +13,11 @@ using ODK.Data.EntityFramework;
 namespace ODK.Data.EntityFramework.Migrations.Migrations
 {
     [DbContext(typeof(OdkContext))]
-    partial class OdkContextModelSnapshot : ModelSnapshot
+    [Migration("20260811092822_Emails-MemberImport-Add")]
+    partial class EmailsMemberImportAdd
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -790,25 +793,13 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
 
                     b.Property<string>("Subject")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Type")
                         .HasColumnType("int")
                         .HasColumnName("EmailTypeId");
 
                     b.HasKey("Id");
-
-                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
-
-                    b.HasIndex("ChapterId");
-
-                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("ChapterId"));
-
-                    b.HasIndex("Type");
-
-                    b.HasIndex("ChapterId", "Type")
-                        .IsUnique();
 
                     b.ToTable("ChapterEmails", (string)null);
                 });
@@ -2810,21 +2801,6 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                     b.HasOne("ODK.Core.Countries.Currency", null)
                         .WithMany()
                         .HasForeignKey("CurrencyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ODK.Core.Emails.ChapterEmail", b =>
-                {
-                    b.HasOne("ODK.Core.Chapters.Chapter", null)
-                        .WithMany()
-                        .HasForeignKey("ChapterId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ODK.Core.Emails.Email", null)
-                        .WithMany()
-                        .HasForeignKey("Type")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

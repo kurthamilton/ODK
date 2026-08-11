@@ -17,5 +17,7 @@ public enum EmailType
     SubscriptionExpiring = 12,
     SubscriptionExpired = 13,
     TrialExpiring = 14,
-    TrialExpired = 15
+    TrialExpired = 15,
+    MemberImportActivation = 16,
+    MemberImportInvite = 17
 }
