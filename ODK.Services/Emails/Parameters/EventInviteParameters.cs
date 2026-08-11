@@ -19,7 +19,7 @@ public sealed class EventInviteParameters : EmailTypeParameters
 
     private const string TimeName = "event.time";
 
-    private const string UnsubscribeUrlName = "unsubscribe.url";
+    private const string UnsubscribeUrlName = "account.urls.unsubscribe";
 
     private const string UrlName = "event.url";
 

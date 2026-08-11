@@ -5,7 +5,7 @@
 /// </summary>
 public sealed class ActivateAccountParameters : EmailTypeParameters
 {
-    private const string UrlName = "group.urls.activateAccount";
+    private const string UrlName = "account.urls.activate";
 
     public static IReadOnlyCollection<string> Names { get; } = [UrlName];
 

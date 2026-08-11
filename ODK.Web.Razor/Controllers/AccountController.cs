@@ -74,7 +74,7 @@ public class AccountController : OdkControllerBase
         }
 
         AddFeedback("Your account has been activated. You can now login.", FeedbackType.Success);
-        return Redirect("/account/login");
+        return Redirect(OdkRoutes.Account.Login(chapter: null));
     }
 
     [AllowAnonymous]
