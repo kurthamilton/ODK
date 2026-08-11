@@ -16,7 +16,6 @@ public static class EnumTables
     {
         [typeof(SiteFeatureType)] = new EnumTable
         {
-            IdColumnName = "SiteFeatureId",
             Name = "SiteFeatures"
         }
     };

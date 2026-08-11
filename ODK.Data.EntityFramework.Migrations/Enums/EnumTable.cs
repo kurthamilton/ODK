@@ -5,12 +5,7 @@
 /// </summary>
 public sealed record EnumTable
 {
-    /// <summary>
-    /// The primary key column, holding the enum's numeric value. Named separately rather than
-    /// derived by singularising <see cref="Name"/>, which only works for tables whose plural is
-    /// a trailing "s".
-    /// </summary>
-    public required string IdColumnName { get; init; }
+    public string IdColumnName { get; init; } = "Id";
 
     public required string Name { get; init; }
 }
