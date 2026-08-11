@@ -11,12 +11,6 @@
 /// </remarks>
 public abstract class EmailTypeParameters : IEmailParameters
 {
-    /// <summary>
-    /// The original name for an email's link, from before they were named per email. Still supplied by
-    /// the types that used it, never offered.
-    /// </summary>
-    protected const string LegacyUrlName = "url";
-
     public IReadOnlyDictionary<string, string> ToDictionary()
     {
         var values = new Dictionary<string, string>(EmailParameterComparer.Default);

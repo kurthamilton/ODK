@@ -83,11 +83,11 @@ public static class EmailServiceTests
         // answer, so the merge overwrites rather than filling gaps.
         var sent = await SendTemplate(
             subject: "{group.name} subject",
-            body: "<p>{url}</p>",
+            body: "<p>{test.url}</p>",
             parameters: new CustomEmailParameters
             {
                 { "group.name", "Overridden" },
-                { "url", "https://test.local/somewhere" }
+                { "test.url", "https://test.local/somewhere" }
             });
 
         // Assert

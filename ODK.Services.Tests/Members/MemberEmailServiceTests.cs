@@ -52,7 +52,7 @@ public static class MemberEmailServiceTests
                 chapter,
                 It.Is<EmailAddressee>(x => x.Address == member.EmailAddress),
                 EmailType.MemberImportActivation,
-                It.Is<IEmailParameters>(x => x.ToDictionary()["url"] == "https://test.local/activate/token-123")),
+                It.Is<IEmailParameters>(x => x.ToDictionary()["account.urls.activate"] == "https://test.local/activate/token-123")),
             Times.Once);
     }
 
@@ -89,7 +89,7 @@ public static class MemberEmailServiceTests
                 chapter,
                 It.Is<EmailAddressee>(x => x.Address == member.EmailAddress),
                 EmailType.MemberImportInvite,
-                It.Is<IEmailParameters>(x => x.ToDictionary()["url"] == "https://test.local/group/subscription")),
+                It.Is<IEmailParameters>(x => x.ToDictionary()["group.urls.join"] == "https://test.local/group/subscription")),
             Times.Once);
     }
 

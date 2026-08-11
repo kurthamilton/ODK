@@ -9,8 +9,6 @@ public sealed class NewMemberParameters : EmailTypeParameters
 
     private const string FirstNameName = "member.firstName";
 
-    private const string LegacyEventsUrlName = "eventsUrl";
-
     public static IReadOnlyCollection<string> Names { get; } = [EventsUrlName, FirstNameName];
 
     public string? EventsUrl { get; set; }
@@ -20,7 +18,6 @@ public sealed class NewMemberParameters : EmailTypeParameters
     protected override void AddParameters(IDictionary<string, string> values)
     {
         Add(values, EventsUrlName, EventsUrl);
-        Add(values, LegacyEventsUrlName, EventsUrl);
         Add(values, FirstNameName, FirstName);
     }
 }

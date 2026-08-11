@@ -5,7 +5,7 @@
 /// </summary>
 public sealed class NewMemberAdminParameters : EmailTypeParameters
 {
-    private const string AdminUrlName = "member.urls.admin";
+    private const string AdminUrlName = "admin.urls.member";
 
     /// <summary>
     /// Supplied under the HTML prefix, which is how EmailService knows to interpolate it without
@@ -22,7 +22,6 @@ public sealed class NewMemberAdminParameters : EmailTypeParameters
     protected override void AddParameters(IDictionary<string, string> values)
     {
         Add(values, AdminUrlName, AdminUrl);
-        Add(values, LegacyUrlName, AdminUrl);
         Add(values, EmailParameters.HtmlPrefix + PropertiesName, Properties);
     }
 }

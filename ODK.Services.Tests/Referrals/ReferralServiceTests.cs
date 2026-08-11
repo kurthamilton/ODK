@@ -162,7 +162,7 @@ public static class ReferralServiceTests
                 It.Is<IEmailParameters>(p =>
                     p.ToDictionary()["member.fullName"] == "Ada Lovelace" &&
                     p.ToDictionary()["referral.id"] == referral.Id.ToString() &&
-                    p.ToDictionary()["url"] == JoinUrl)),
+                    p.ToDictionary()["group.urls.join"] == JoinUrl)),
             Times.Once);
     }
 
