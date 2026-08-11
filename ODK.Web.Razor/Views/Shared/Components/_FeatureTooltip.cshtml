@@ -1,8 +1,6 @@
 ﻿@using ODK.Services.Features
 @using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Components
-@using ODK.Web.Razor.Pages.Chapters
-@using ODK.Web.Razor.Services
 @model FeatureTooltipViewModel
 @inject IFeatureService FeatureService
 @inject IRequestStore RequestStore
@@ -16,7 +14,7 @@
 
     var chapter = RequestStore.ChapterOrDefault;
     var description = feature.Description
-        .Replace("{chapter.name}", chapter?.GetDisplayName(platform) ?? string.Empty);
+        .Replace("{group.name}", chapter?.GetDisplayName(platform) ?? string.Empty);
 }
 
 <div class="ms-1 d-inline"

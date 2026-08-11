@@ -46,7 +46,7 @@ public class MemberEmailService : IMemberEmailService
 
         var to = member.ToEmailAddressee();
 
-        var parameters = new Dictionary<string, string>
+        var parameters = new CustomEmailParameters
         {
             { "url", url }
         };
@@ -66,7 +66,7 @@ public class MemberEmailService : IMemberEmailService
 
         var to = new EmailAddressee(newEmailAddress, member.FullName);
 
-        var parameters = new Dictionary<string, string>
+        var parameters = new CustomEmailParameters
         {
             { "url", url }
         };
@@ -129,7 +129,7 @@ public class MemberEmailService : IMemberEmailService
 
         var addressees = to.Select(x => x.ToEmailAddressee());
 
-        var parameters = new Dictionary<string, string>
+        var parameters = new CustomEmailParameters
         {
             { "conversation.subject", conversation.Subject },
             { "conversation.message", message.Text },
@@ -149,7 +149,7 @@ public class MemberEmailService : IMemberEmailService
         var urlProvider = await _urlProviderFactory.Create(request);
         var url = urlProvider.MessageAdminUrl(chapter, message.Id);
 
-        var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        var parameters = new CustomEmailParameters
         {
             { "message.from", message.FromAddress },
             { "message.text", message.Message },
@@ -191,7 +191,7 @@ public class MemberEmailService : IMemberEmailService
             .AddParagraphLink("url")
             .ToString();
 
-        var parameters = new Dictionary<string, string>
+        var parameters = new CustomEmailParameters
         {
             { "url", url }
         };
@@ -219,7 +219,7 @@ public class MemberEmailService : IMemberEmailService
             chapter,
             member.ToEmailAddressee(),
             EmailType.DuplicateEmail,
-            new Dictionary<string, string>
+            new CustomEmailParameters
             {
                 { "loginUrl", url  }
             });
@@ -236,7 +236,7 @@ public class MemberEmailService : IMemberEmailService
         var urlProvider = await _urlProviderFactory.Create(request);
         var url = urlProvider.EventUrl(chapter, @event.Shortcode);
 
-        var parameters = new Dictionary<string, string>
+        var parameters = new CustomEmailParameters
         {
             { "comment.text", eventComment.Text },
             { "event.id", @event.Id.ToString() },
@@ -274,7 +274,7 @@ public class MemberEmailService : IMemberEmailService
 
         foreach (var group in memberList.GroupBy(x => cultures[x.Id]))
         {
-            var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            var parameters = new CustomEmailParameters
             {
                 { "event.date", @event.DateUtc.ToString("dddd dd MMMM, yyyy", group.Key) },
                 { "event.id", @event.Id.ToString() },
@@ -315,7 +315,7 @@ public class MemberEmailService : IMemberEmailService
 
         foreach (var group in memberList.GroupBy(x => cultures[x.Id]))
         {
-            var parameters = new Dictionary<string, string>
+            var parameters = new CustomEmailParameters
             {
                 { "url", url },
                 { "event.date", @event.DateUtc.ToString("dddd dd MMMM, yyyy", group.Key) },
@@ -340,13 +340,13 @@ public class MemberEmailService : IMemberEmailService
         var subject = "{title} - Your group has been approved 🚀";
 
         var body = new EmailBodyBuilder()
-            .AddParagraph("Your group <strong>{chapter.fullName}</strong> has been approved and you are ready to go!")
+            .AddParagraph("Your group <strong>{group.fullname}</strong> has been approved and you are ready to go!")
             .AddParagraphLink("url")
             .ToString();
 
         var to = owner.ToEmailAddressee();
 
-        var parameters = new Dictionary<string, string>
+        var parameters = new CustomEmailParameters
         {
             { "url", url }
         };
@@ -369,14 +369,14 @@ public class MemberEmailService : IMemberEmailService
         var urlProvider = await _urlProviderFactory.Create(request);
         var url = urlProvider.GroupUrl(chapter);
 
-        var parameters = new Dictionary<string, string>
+        var parameters = new CustomEmailParameters
         {
             { "url", url }
         };
 
-        var subject = "{title} - You have been approved by {chapter.fullName}";
+        var subject = "{title} - You have been approved by {group.fullname}";
         var body = new EmailBodyBuilder()
-            .AddParagraph("Your application to join {chapter.fullName} has been approved")
+            .AddParagraph("Your application to join {group.fullname} has been approved")
             .AddParagraphLink("url")
             .ToString();
 
@@ -427,7 +427,7 @@ public class MemberEmailService : IMemberEmailService
             ? [toMember.ToEmailAddressee()]
             : siteAdmins.Select(x => x.ToEmailAddressee()).ToArray();
 
-        var parameters = new Dictionary<string, string>
+        var parameters = new CustomEmailParameters
         {
             { "issue.title", issue.Title },
             { "issue.message", reply.Text },
@@ -454,7 +454,7 @@ public class MemberEmailService : IMemberEmailService
         var currency = chapterSubscription.Currency;
         var culture = await _memberLocaleService.GetCulture(member.Id);
 
-        var parameters = new Dictionary<string, string>
+        var parameters = new CustomEmailParameters
         {
             { "subscription.amount", currency.ToAmountString(chapterSubscription.Amount) },
             { "subscription.end", chapter.ToChapterTime(expiresUtc).ToString("d MMMM yyyy", culture) }
@@ -480,7 +480,7 @@ public class MemberEmailService : IMemberEmailService
         var expiring = expires > DateTime.UtcNow;
         var culture = await _memberLocaleService.GetCulture(member.Id);
 
-        var properties = new Dictionary<string, string>
+        var properties = new CustomEmailParameters
         {
             { "member.firstName", member.FirstName },
             { "subscription.expiryDate", expires.ToFriendlyDateString(new FriendlyDateStringOptions
@@ -527,7 +527,7 @@ public class MemberEmailService : IMemberEmailService
         var subject = "{title} - you have been removed from a group";
 
         var bodyBuilder = new EmailBodyBuilder()
-            .AddParagraph("You have been removed from the {chapter.fullName} group");
+            .AddParagraph("You have been removed from the {group.fullname} group");
 
         if (!string.IsNullOrEmpty(reason))
         {
@@ -538,7 +538,7 @@ public class MemberEmailService : IMemberEmailService
 
         var body = bodyBuilder.ToString();
 
-        var parameters = new Dictionary<string, string>
+        var parameters = new CustomEmailParameters
         {
             { "reason", reason ?? string.Empty }
         };
@@ -561,7 +561,7 @@ public class MemberEmailService : IMemberEmailService
         var urlProvider = await _urlProviderFactory.Create(request);
         var url = urlProvider.ActivateAccountUrl(chapter, activationToken);
 
-        var parameters = new Dictionary<string, string>
+        var parameters = new CustomEmailParameters
         {
             { "url", url }
         };
@@ -583,7 +583,7 @@ public class MemberEmailService : IMemberEmailService
         var urlProvider = await _urlProviderFactory.Create(request);
         var url = urlProvider.ChapterSubscription(chapter);
 
-        var parameters = new Dictionary<string, string>
+        var parameters = new CustomEmailParameters
         {
             { "url", url }
         };
@@ -613,10 +613,10 @@ public class MemberEmailService : IMemberEmailService
             return;
         }
 
-        var subject = "{title} - {member.name} has left {chapter.fullName}";
+        var subject = "{title} - {member.name} has left {group.fullname}";
 
         var bodyBuilder = new EmailBodyBuilder()
-            .AddParagraph("{member.name} has left {chapter.fullName}")
+            .AddParagraph("{member.name} has left {group.fullname}")
             .AddParagraph("They had been a member since {joined}");
 
         if (!string.IsNullOrEmpty(reason))
@@ -640,7 +640,7 @@ public class MemberEmailService : IMemberEmailService
 
         foreach (var group in recipients.GroupBy(x => cultures[x.MemberId]))
         {
-            var parameters = new Dictionary<string, string>
+            var parameters = new CustomEmailParameters
             {
                 { "member.name", member.FullName },
                 { "joined", memberChapter?.CreatedUtc.ToFriendlyDateString(new FriendlyDateStringOptions
@@ -665,7 +665,7 @@ public class MemberEmailService : IMemberEmailService
         var urlProvider = await _urlProviderFactory.Create(request);
         var url = urlProvider.SiteAdminGroups();
 
-        var parameters = new Dictionary<string, string>
+        var parameters = new CustomEmailParameters
         {
             { "url", url }
         };
@@ -678,7 +678,7 @@ public class MemberEmailService : IMemberEmailService
 
         var body = new EmailBodyBuilder()
             .AddParagraph("A group has just been created")
-            .AddParagraph("Name: {chapter.fullName}")
+            .AddParagraph("Name: {group.fullname}")
             .AddParagraphLink("url")
             .ToString();
 
@@ -718,7 +718,7 @@ public class MemberEmailService : IMemberEmailService
             to,
             subject,
             body,
-            new Dictionary<string, string>
+            new CustomEmailParameters
             {
                 { "issue.title", issue.Title },
                 { "member.name", member.FullName },
@@ -753,7 +753,7 @@ public class MemberEmailService : IMemberEmailService
         var urlProvider = await _urlProviderFactory.Create(request);
         var url = urlProvider.MemberAdminUrl(chapter, member.Id);
 
-        var parameters = new Dictionary<string, string>
+        var parameters = new CustomEmailParameters
         {
             { "html:member.properties", memberPropertiesBuilder.ToString() },
             { "url", url }
@@ -784,7 +784,7 @@ public class MemberEmailService : IMemberEmailService
         var urlProvider = await _urlProviderFactory.Create(request);
         var eventsUrl = urlProvider.EventsUrl(chapter);
 
-        var parameters = new Dictionary<string, string>
+        var parameters = new CustomEmailParameters
         {
             { "eventsUrl", eventsUrl },
             { "member.firstName", HttpUtility.HtmlEncode(member.FirstName) }
@@ -813,7 +813,7 @@ public class MemberEmailService : IMemberEmailService
         var urlProvider = await _urlProviderFactory.Create(request);
         var url = urlProvider.TopicApprovalUrl();
 
-        var parameters = new Dictionary<string, string>
+        var parameters = new CustomEmailParameters
         {
             { "url", url }
         };
@@ -856,7 +856,7 @@ public class MemberEmailService : IMemberEmailService
         var urlProvider = await _urlProviderFactory.Create(request);
         var url = urlProvider.PasswordReset(chapter, token);
 
-        var parameters = new Dictionary<string, string>
+        var parameters = new CustomEmailParameters
         {
             { "url", url }
         };
@@ -910,7 +910,7 @@ public class MemberEmailService : IMemberEmailService
     {
         var urlProvider = await _urlProviderFactory.Create(request);
 
-        var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        var parameters = new CustomEmailParameters
         {
             { "message.from", message.FromAddress },
             { "message.text", message.Message },
@@ -967,7 +967,7 @@ public class MemberEmailService : IMemberEmailService
             .AddParagraphLink("url")
             .ToString();
 
-        var parameters = new Dictionary<string, string>
+        var parameters = new CustomEmailParameters
         {
             { "url", url }
         };
@@ -996,7 +996,7 @@ public class MemberEmailService : IMemberEmailService
             .AddParagraphLink("url")
             .ToString();
 
-        var parameters = new Dictionary<string, string>
+        var parameters = new CustomEmailParameters
         {
             { "member.firstName", member.FirstName },
             { "url", url }
@@ -1017,7 +1017,7 @@ public class MemberEmailService : IMemberEmailService
         Member to,
         EmailType type)
     {
-        var parameters = new Dictionary<string, string>
+        var parameters = new CustomEmailParameters
         {
             { "member.emailAddress", to.FirstName },
             { "member.firstName", to.FirstName },
@@ -1059,7 +1059,7 @@ public class MemberEmailService : IMemberEmailService
 
             var subject = $"{{title}} - {StringUtils.Pluralise(memberTopics.Length, "Topic")} approved";
 
-            var parameters = new Dictionary<string, string>();
+            var parameters = new CustomEmailParameters();
 
             var topicTableBuilder = new EmailTableBuilder();
             for (var i = 0; i < memberTopics.Length; i++)
@@ -1120,7 +1120,7 @@ public class MemberEmailService : IMemberEmailService
 
             var subject = $"{{title}} - {StringUtils.Pluralise(memberTopics.Length, "Topic")} rejected";
 
-            var parameters = new Dictionary<string, string>();
+            var parameters = new CustomEmailParameters();
 
             var topicTableBuilder = new EmailTableBuilder();
             for (var i = 0; i < memberTopics.Length; i++)

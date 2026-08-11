@@ -14,8 +14,8 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
            carried over unchanged apart from a "You application" typo, so imported members see what
            they saw before - but the rows are Overridable, so a group admin can now customise them.
 
-           New templates use the {group.*} parameters rather than {chapter.*}. Both resolve (see
-           EmailParameters.MirrorPrefix), and group is the wording being migrated to. */
+           These templates were written with the {group.*} parameters from the start. At the time
+           {chapter.*} also resolved; Emails-ChapterParameters-Rename later dropped that. */
 
         private const string ActivationBody =
             """

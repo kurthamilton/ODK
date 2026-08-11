@@ -1,12 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿namespace ODK.Web.Razor.Models.Admin.Chapters;
 
-namespace ODK.Web.Razor.Models.Admin.Chapters;
-
-public class ChapterEmailFormViewModel
+public class ChapterEmailFormViewModel : ChapterEmailFormSubmitViewModel
 {
-    [Required]
-    public string Content { get; set; } = string.Empty;
-
-    [Required]
-    public string Subject { get; set; } = string.Empty;
+    /// <summary>
+    /// The placeholders this template may use, offered as insertable buttons. Render-only, so it sits
+    /// here rather than on the submit model - the form posts the content, not the list it was built from.
+    /// </summary>
+    public required IReadOnlyCollection<string> Placeholders { get; init; }
 }

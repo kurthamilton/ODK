@@ -8,6 +8,33 @@
 
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.Content, new { @class = "form-label" })
-    @Html.TextAreaFor(x => x.Content, new { @class = "form-control", rows = 15 })
+
+    @* The toggle is positioned against this wrapper rather than the textarea, which cannot hold children. *@
+    <div class="placeholders">
+        @Html.TextAreaFor(x => x.Content, new { @class = "form-control", rows = 15, id = "email-content" })
+
+        @* data-bs-toggle is taken by the collapse, so the hint is a plain title rather than a Bootstrap tooltip. *@
+        <button type="button" class="btn btn-sm btn-light font-monospace placeholders-toggle collapsed"
+                data-bs-toggle="collapse" data-bs-target="#email-placeholders"
+                data-placeholder-toggle="#email-content"
+                aria-expanded="false" aria-controls="email-placeholders"
+                aria-label="Insert a placeholder" title="Insert a placeholder">{}</button>
+    </div>
+
     @Html.ValidationMessageFor(x => x.Content)
+</div>
+
+@* Inserts at the caret in the textarea named by data-placeholder-target - see odk.placeholders.js. *@
+<div class="collapse mb-3" id="email-placeholders" data-placeholder-target="#email-content">
+    <div class="placeholders-list small">
+        <p class="text-muted mb-2">
+            Click to insert. Anything else in braces is left as written.
+        </p>
+        @foreach (var placeholder in Model.Placeholders)
+        {
+            var token = $"{{{placeholder}}}";
+            <button type="button" class="btn btn-sm btn-outline-secondary mb-1 me-1 font-monospace"
+                    data-placeholder-insert="@token">@token</button>
+        }
+    </div>
 </div>

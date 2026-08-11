@@ -1,4 +1,5 @@
-﻿@using ODK.Web.Razor.Models.Admin.Chapters
+﻿@using ODK.Services.Emails
+@using ODK.Web.Razor.Models.Admin.Chapters
 @model ODK.Web.Razor.Models.SiteAdmin.EmailContentViewModel
 
 <form method="post">
@@ -14,6 +15,7 @@
     @await Html.PartialAsync("Admin/Chapter/_EmailForm", new ChapterEmailFormViewModel
     {
         Content = Model.Email.HtmlContent,
+        Placeholders = EmailParameters.Names,
         Subject = Model.Email.Subject
     })
     <button class="btn btn-primary">Update</button>

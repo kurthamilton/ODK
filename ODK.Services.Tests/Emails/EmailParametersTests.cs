@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System.Linq;
 using FluentAssertions;
 using NUnit.Framework;
 using ODK.Services.Emails;
@@ -9,115 +9,72 @@ namespace ODK.Services.Tests.Emails;
 public static class EmailParametersTests
 {
     [Test]
-    public static void MirrorPrefix_MirrorsUnderTheTranslatedKey()
+    public static void Names_IncludesTheTitle()
     {
-        // Arrange - the exact key matters: a template references it by name, so "group..name" or
-        // "groupname" would silently render as literal text in a sent email.
-        var parameters = new Dictionary<string, string> { ["chapter.name"] = "Bristol" };
-
-        // Act
-        EmailParameters.MirrorPrefix(parameters, "chapter", "group");
-
-        // Assert
-        parameters.Should().ContainKey("group.name").WhoseValue.Should().Be("Bristol");
+        // Arrange - the title is the one parameter with no property, because EmailService resolves it
+        // after merging. It is easily lost when the others are refactored.
+        // Act / Assert
+        EmailParameters.Names.Should().Contain(EmailParameters.TitleName);
     }
 
     [Test]
-    public static void MirrorPrefix_SeveralMatchingKeys_MirrorsAllOfThem()
+    public static void GroupNames_IsASubsetOfNames()
     {
-        // Arrange - more than one match, because mirroring writes into the dictionary it is reading and
-        // a single-key case would not notice an enumerator being invalidated.
-        var parameters = new Dictionary<string, string>
-        {
-            ["chapter.baseurl"] = "https://example.com/bristol",
-            ["chapter.fullName"] = "Bristol Drunken Knitwits",
-            ["chapter.name"] = "Bristol"
-        };
-
-        // Act
-        var act = () => EmailParameters.MirrorPrefix(parameters, "chapter", "group");
-
-        // Assert
-        act.Should().NotThrow();
-        parameters["group.name"].Should().Be("Bristol");
-        parameters["group.fullName"].Should().Be("Bristol Drunken Knitwits");
-        parameters["group.baseurl"].Should().Be("https://example.com/bristol");
+        // Arrange - what a group admin is offered has to be a narrowing of what the app supplies, not a
+        // separate list. Only then does the "every offered placeholder resolves" guarantee cover it too.
+        // Act / Assert
+        EmailParameters.GroupNames.Should().BeSubsetOf(EmailParameters.Names);
     }
 
     [Test]
-    public static void MirrorPrefix_LeavesTheOriginalKeysInPlace()
+    public static void GroupNames_IsTheGroupParametersAndTheTitle()
     {
-        // Arrange - templates still using the old name have to keep working; this is a copy, not a rename.
-        var parameters = new Dictionary<string, string> { ["chapter.name"] = "Bristol" };
-
         // Act
-        EmailParameters.MirrorPrefix(parameters, "chapter", "group");
+        var result = EmailParameters.GroupNames;
 
-        // Assert
-        parameters["chapter.name"].Should().Be("Bristol");
+        // Assert - platform and theme values are the site's to set, so a group is not offered them.
+        result.Should().Contain(EmailParameters.TitleName);
+        result.Should().OnlyContain(x => x.StartsWith("group.") || x == EmailParameters.TitleName);
+        result.Should().NotContain("platform.baseurl");
     }
 
     [Test]
-    public static void MirrorPrefix_TargetAlreadySupplied_DoesNotOverwriteIt()
+    public static void ToDictionary_PropertyNotSet_OmitsIt()
     {
-        // Arrange - a caller that has moved to group.* should win over the mirrored legacy value.
-        var parameters = new Dictionary<string, string>
-        {
-            ["chapter.name"] = "Legacy",
-            ["group.name"] = "Supplied"
-        };
+        // Arrange - a chapterless email has no group url. Omitted rather than empty, so a template
+        // referencing it shows the token instead of silently rendering a blank.
+        var parameters = new EmailParameters { GroupName = "Bristol" };
 
         // Act
-        EmailParameters.MirrorPrefix(parameters, "chapter", "group");
+        var result = parameters.ToDictionary();
 
         // Assert
-        parameters["group.name"].Should().Be("Supplied");
+        result.Should().ContainKey("group.name");
+        result.Should().NotContainKey("group.baseurl");
     }
 
     [Test]
-    public static void MirrorPrefix_NonMatchingKeys_AreLeftAlone()
+    public static void ToDictionary_EveryPropertySet_ProducesEveryNameExceptTheTitle()
     {
         // Arrange
-        var parameters = new Dictionary<string, string>
+        var parameters = new EmailParameters
         {
-            ["chapter.name"] = "Bristol",
-            ["platform.baseurl"] = "https://example.com",
-            ["title"] = "Hello"
+            GroupBaseUrl = "https://example.com/bristol",
+            GroupFullName = "Bristol Drunken Knitwits",
+            GroupName = "Bristol",
+            PlatformBaseUrl = "https://example.com",
+            ThemeBodyBackground = "#fff",
+            ThemeBodyColor = "#000",
+            ThemeHeaderBackground = "#eee",
+            ThemeHeaderColor = "#111"
         };
 
         // Act
-        EmailParameters.MirrorPrefix(parameters, "chapter", "group");
+        var result = parameters.ToDictionary();
 
-        // Assert
-        parameters.Should().NotContainKey("group.baseurl");
-        parameters.Should().NotContainKey("group.title");
-        parameters.Count.Should().Be(4);
-    }
-
-    [Test]
-    public static void MirrorPrefix_KeyMatchingThePrefixWithoutASeparator_IsNotMirrored()
-    {
-        // Arrange - "chapters" starts with "chapter" but is not a chapter.* parameter, so translating it
-        // would invent a key nothing asked for.
-        var parameters = new Dictionary<string, string> { ["chapters"] = "3" };
-
-        // Act
-        EmailParameters.MirrorPrefix(parameters, "chapter", "group");
-
-        // Assert
-        parameters.Should().ContainSingle();
-    }
-
-    [Test]
-    public static void MirrorPrefix_NothingToMirror_DoesNothing()
-    {
-        // Arrange - a chapterless email has no chapter.* parameters at all.
-        var parameters = new Dictionary<string, string> { ["platform.baseurl"] = "https://example.com" };
-
-        // Act
-        EmailParameters.MirrorPrefix(parameters, "chapter", "group");
-
-        // Assert
-        parameters.Should().ContainSingle();
+        // Assert - a property added without a matching name would go unnoticed otherwise: it would
+        // simply never appear in a sent email, and never be offered to an admin.
+        result.Keys.Should().BeEquivalentTo(
+            EmailParameters.Names.Where(x => x != EmailParameters.TitleName));
     }
 }

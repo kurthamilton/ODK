@@ -159,10 +159,10 @@ public static class ReferralServiceTests
                 It.Is<IEnumerable<EmailAddressee>>(to => to.Single().Address == "friend@example.com"),
                 campaign.EmailSubject,
                 campaign.EmailText,
-                It.Is<IDictionary<string, string>>(p =>
-                    p["member.fullName"] == "Ada Lovelace" &&
-                    p["referral.id"] == referral.Id.ToString() &&
-                    p["url"] == JoinUrl)),
+                It.Is<IEmailParameters>(p =>
+                    p.ToDictionary()["member.fullName"] == "Ada Lovelace" &&
+                    p.ToDictionary()["referral.id"] == referral.Id.ToString() &&
+                    p.ToDictionary()["url"] == JoinUrl)),
             Times.Once);
     }
 
@@ -230,6 +230,6 @@ public static class ReferralServiceTests
                 It.IsAny<IEnumerable<EmailAddressee>>(),
                 It.IsAny<string>(),
                 It.IsAny<string>(),
-                It.IsAny<IDictionary<string, string>>()),
+                It.IsAny<IEmailParameters>()),
             Times.Never);
 }

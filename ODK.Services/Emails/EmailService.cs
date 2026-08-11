@@ -3,6 +3,7 @@ using ODK.Core.Chapters;
 using ODK.Core.Emails;
 using ODK.Core.Events;
 using ODK.Core.Members;
+using ODK.Core.Platforms;
 using ODK.Core.Utils;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
@@ -61,7 +62,7 @@ public class EmailService : IEmailService
         IChapterServiceRequest request,
         IEnumerable<Member> to,
         EmailType type,
-        IDictionary<string, string> parameters)
+        IEmailParameters? parameters)
     {
         var chapter = request.Chapter;
 
@@ -98,7 +99,7 @@ public class EmailService : IEmailService
         Chapter chapter,
         Member? replyToMember,
         EventComment comment,
-        IDictionary<string, string> parameters)
+        IEmailParameters? parameters)
     {
         var platform = request.Platform;
 
@@ -130,7 +131,7 @@ public class EmailService : IEmailService
         Chapter? chapter,
         EmailAddressee to,
         EmailType type,
-        IDictionary<string, string> parameters)
+        IEmailParameters? parameters)
         => SendEmail(request, chapter, [to], type, parameters);
 
     public async Task<ServiceResult> SendEmail(
@@ -138,7 +139,7 @@ public class EmailService : IEmailService
         Chapter? chapter,
         IEnumerable<EmailAddressee> to,
         EmailType type,
-        IDictionary<string, string> parameters)
+        IEmailParameters? parameters)
     {
         return await SendEmail(request, new SendEmailOptions
         {
@@ -158,7 +159,7 @@ public class EmailService : IEmailService
         string subject,
         string body)
     {
-        return await SendEmail(request, chapter, to, subject, body, new Dictionary<string, string>());
+        return await SendEmail(request, chapter, to, subject, body, parameters: null);
     }
 
     public async Task<ServiceResult> SendEmail(
@@ -167,7 +168,7 @@ public class EmailService : IEmailService
         IEnumerable<EmailAddressee> to,
         string subject,
         string body,
-        IDictionary<string, string> parameters)
+        IEmailParameters? parameters)
     {
         return await SendEmail(request, new SendEmailOptions
         {
@@ -185,7 +186,7 @@ public class EmailService : IEmailService
         EmailAddressee to,
         string subject,
         string body,
-        IDictionary<string, string> parameters)
+        IEmailParameters? parameters)
     {
         return await SendEmail(request, new SendEmailOptions
         {
@@ -248,8 +249,65 @@ public class EmailService : IEmailService
         }
     }
 
-    private async Task<ServiceResult> SendEmail(
-        IServiceRequest request, SendEmailOptions options)
+    private async Task<IReadOnlyDictionary<string, string>> BuildParameters(
+        IServiceRequest request,
+        SendEmailOptions options,
+        SiteEmailSettings siteSettings,
+        Email? bodyEmail)
+    {
+        var urlProvider = await _urlProviderFactory.Create(request);
+
+        var core = new EmailParameters
+        {
+            GroupBaseUrl = options.Chapter != null ? urlProvider.GroupUrl(options.Chapter) : null,
+            GroupFullName = StringUtils.Coalesce(options.Chapter?.FullName, siteSettings.PlatformTitle),
+            GroupName = StringUtils.Coalesce(
+                options.Chapter?.GetDisplayName(request.Platform), siteSettings.PlatformTitle),
+            PlatformBaseUrl = urlProvider.BaseUrl(),
+            ThemeBodyBackground = _settings.DefaultBodyBackground,
+            ThemeBodyColor = _settings.DefaultBodyColor,
+            ThemeHeaderBackground = StringUtils.Coalesce(
+                options.Chapter?.ThemeBackground, _settings.DefaultHeaderBackground),
+            ThemeHeaderColor = StringUtils.Coalesce(
+                options.Chapter?.ThemeColor, _settings.DefaultHeaderColor)
+        };
+
+        var parameters = new Dictionary<string, string>(
+            core.ToDictionary(), EmailParameterComparer.Default);
+
+        // Merged over the core values rather than filling gaps in them: an email that supplies a
+        // parameter of its own is the more specific answer and wins.
+        var supplied = options.Parameters?.ToDictionary();
+        if (supplied != null)
+        {
+            foreach (var (name, value) in supplied)
+            {
+                parameters[name] = value;
+            }
+        }
+
+        parameters[EmailParameters.TitleName] = siteSettings.Title.Interpolate(parameters.AsReadOnly(), HttpUtility.HtmlEncode);
+
+        var body = !string.IsNullOrEmpty(options.Body)
+            ? options.Body
+            : bodyEmail?.HtmlContent ?? string.Empty;
+        body = body.Interpolate(parameters.AsReadOnly(), HttpUtility.HtmlEncode);
+
+        foreach (var htmlParameter in parameters.Where(x => x.Key.StartsWith("html:")))
+        {
+            var parameterName = htmlParameter.Key.Substring("html:".Length);
+            body = body.Interpolate(new Dictionary<string, string>
+            {
+                { parameterName, parameters[htmlParameter.Key] }
+            });
+        }
+
+        parameters["body"] = body;
+
+        return parameters.AsReadOnly();
+    }
+
+    private async Task<ServiceResult> SendEmail(IServiceRequest request, SendEmailOptions options)
     {
         var platform = request.Platform;
         var chapterId = options.Chapter?.Id;
@@ -268,88 +326,21 @@ public class EmailService : IEmailService
             chapterEmails.FirstOrDefault(x => x.Type == options.Type)?.ToEmail() ?? emails.First(x => x.Type == options.Type)
             : null;
 
-        var parameters = options.Parameters ?? new Dictionary<string, string>();
-        if (!parameters.ContainsKey("chapter.name"))
-        {
-            parameters["chapter.name"] = StringUtils.Coalesce(
-                options.Chapter?.GetDisplayName(platform), siteSettings.PlatformTitle);
-        }
-
-        if (!parameters.ContainsKey("chapter.fullName"))
-        {
-            parameters["chapter.fullName"] = StringUtils.Coalesce(
-                options.Chapter?.FullName, siteSettings.PlatformTitle);
-        }
-
-        var urlProvider = await _urlProviderFactory.Create(request);
-
-        if (options.Chapter != null)
-        {
-            parameters["chapter.baseurl"] = urlProvider.GroupUrl(options.Chapter);
-        }
-
-        // Before any interpolation, so a body written with group.* resolves too.
-        EmailParameters.MirrorPrefix(parameters, "chapter", "group");
-
-        if (!parameters.ContainsKey("platform.baseurl"))
-        {
-            parameters["platform.baseurl"] = urlProvider.BaseUrl();
-        }
-
-        if (!parameters.ContainsKey("theme.body.background"))
-        {
-            parameters["theme.body.background"] = _settings.DefaultBodyBackground;
-        }
-
-        if (!parameters.ContainsKey("theme.body.color"))
-        {
-            parameters["theme.body.color"] = _settings.DefaultBodyColor;
-        }
-
-        if (!parameters.ContainsKey("theme.header.background"))
-        {
-            parameters["theme.header.background"] = StringUtils.Coalesce(
-                options.Chapter?.ThemeBackground, _settings.DefaultHeaderBackground);
-        }
-
-        if (!parameters.ContainsKey("theme.header.color"))
-        {
-            parameters["theme.header.color"] = StringUtils.Coalesce(
-                options.Chapter?.ThemeColor, _settings.DefaultHeaderColor);
-        }
-
-        var title = siteSettings.Title.Interpolate(parameters.AsReadOnly(), HttpUtility.HtmlEncode);
-        parameters["title"] = title;
+        var parameters = await BuildParameters(request, options, siteSettings, bodyEmail);
 
         var subject = !string.IsNullOrEmpty(options.Subject)
             ? options.Subject
             : bodyEmail?.Subject ?? string.Empty;
 
-        var body = !string.IsNullOrEmpty(options.Body)
-            ? options.Body
-            : bodyEmail?.HtmlContent ?? string.Empty;
-        body = body.Interpolate(parameters.AsReadOnly(), HttpUtility.HtmlEncode);
-
-        foreach (var htmlParameter in parameters.Where(x => x.Key.StartsWith("html:")))
-        {
-            var parameterName = htmlParameter.Key.Substring("html:".Length);
-            body = body.Interpolate(new Dictionary<string, string>
-            {
-                { parameterName, parameters[htmlParameter.Key] }
-            });
-        }
-
-        parameters["body"] = body;
-
         var queuedEmail = _unitOfWork.QueuedEmailRepository.Add(new QueuedEmail
         {
-            Body = layoutEmail.HtmlContent.Interpolate(parameters.AsReadOnly()),
+            Body = layoutEmail.HtmlContent.Interpolate(parameters),
             ChapterId = chapterId,
             CreatedUtc = DateTime.UtcNow,
             FromEmailAddress = siteSettings.FromEmailAddress,
-            FromName = siteSettings.FromName.Interpolate(parameters.AsReadOnly()),
+            FromName = siteSettings.FromName.Interpolate(parameters),
             Id = Guid.NewGuid(),
-            Subject = subject.Interpolate(parameters.AsReadOnly())
+            Subject = subject.Interpolate(parameters)
         });
 
         foreach (var recipient in options.To)

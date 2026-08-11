@@ -13,7 +13,7 @@ public interface IEmailService
         IChapterServiceRequest request,
         IEnumerable<Member> to,
         EmailType type,
-        IDictionary<string, string> parameters);
+        IEmailParameters? parameters);
 
     Task SendBulkEmail(
         IChapterServiceRequest request,
@@ -26,21 +26,21 @@ public interface IEmailService
         Chapter chapter,
         Member? replyToMember,
         EventComment comment,
-        IDictionary<string, string> parameters);
+        IEmailParameters? parameters);
 
     Task<ServiceResult> SendEmail(
         IServiceRequest request,
         Chapter? chapter,
         EmailAddressee to,
         EmailType type,
-        IDictionary<string, string> parameters);
+        IEmailParameters? parameters);
 
     Task<ServiceResult> SendEmail(
         IServiceRequest request,
         Chapter? chapter,
         IEnumerable<EmailAddressee> to,
         EmailType type,
-        IDictionary<string, string> parameters);
+        IEmailParameters? parameters);
 
     Task<ServiceResult> SendEmail(
         IServiceRequest request,
@@ -55,7 +55,7 @@ public interface IEmailService
         IEnumerable<EmailAddressee> to,
         string subject,
         string body,
-        IDictionary<string, string> parameters);
+        IEmailParameters? parameters);
 
     Task<ServiceResult> SendMemberEmail(
         IServiceRequest request,
@@ -63,5 +63,5 @@ public interface IEmailService
         EmailAddressee to,
         string subject,
         string body,
-        IDictionary<string, string> parameters);
+        IEmailParameters? parameters);
 }

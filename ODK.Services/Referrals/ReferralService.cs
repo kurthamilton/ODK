@@ -80,7 +80,7 @@ public class ReferralService : IReferralService
             to: [new EmailAddressee(emailAddress, string.Empty)],
             subject: campaign.EmailSubject,
             body: campaign.EmailText,
-            parameters: new Dictionary<string, string>
+            parameters: new CustomEmailParameters
             {
                 { "member.fullName", currentMember.FullName },
                 { "referral.id", referral.Id.ToString() },

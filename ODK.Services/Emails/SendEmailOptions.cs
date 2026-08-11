@@ -9,7 +9,7 @@ public class SendEmailOptions
 
     public Chapter? Chapter { get; init; }
 
-    public IDictionary<string, string>? Parameters { get; init; }
+    public IEmailParameters? Parameters { get; init; }
 
     public required string Subject { get; init; }
 

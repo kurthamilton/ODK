@@ -17,7 +17,7 @@
     Breadcrumbs = new[]
     {
         new MenuItem { Link = Model.AdminRoutes.Emails(chapter).Path, Text = "Emails" },
-        new MenuItem { Text = Model.Email.Type.ToString() }
+        new MenuItem { Text = Model.Email.Name }
     },
     ContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_EmailContent", viewModel)</div>
 })
