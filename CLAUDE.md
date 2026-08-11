@@ -70,6 +70,12 @@ and workflow. **Migration names follow `{TableName}[-{ColumnName}]-{Action}`** (
 `MemberSubscriptionLog-InitiatorId-Add`) — the naming convention and examples are documented in the
 migrations README.
 
+**Some enums are mirrored by a lookup table that EF doesn't know about** (`SiteFeatureType` →
+`SiteFeatures`, foreign-keyed from `SiteSubscriptionFeatures`). Adding a member to one of those enums
+needs a migration inserting the row, or every write of the new value fails the foreign key at runtime
+— nothing at build or scaffold time catches it. `Enums/EnumTables.cs` in the migrations project lists
+which enums are mirrored, and `MigrationBuilderExtensions` emits the SQL; see the migrations README.
+
 ## Data access
 
 Repositories are the **EF boundary**: never leak `IQueryable` out of a repository — it has to be
