@@ -32,6 +32,7 @@
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="ODK.Core.Tests/ODK.Core.Tests.csproj" />
+    <Project Path="ODK.Data.EntityFramework.Migrations.Tests/ODK.Data.EntityFramework.Migrations.Tests.csproj" />
     <Project Path="ODK.Services.Integrations.Tests/ODK.Services.Integrations.Tests.csproj" />
     <Project Path="ODK.Services.Tests/ODK.Services.Tests.csproj" />
     <Project Path="ODK.Web.Razor.Tests/ODK.Web.Razor.Tests.csproj" />

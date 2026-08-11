@@ -65,6 +65,48 @@ Examples:
 | Drop the `LegacyToken` column from `Member` | `Member-LegacyToken-Remove` |
 | Make `Member.EmailAddress` non-nullable | `Member-EmailAddress-MakeRequired` |
 
+## Enum lookup tables
+
+Some enums are mirrored by a database table so other tables can foreign key to them —
+`SiteFeatureType` → `SiteFeatures`, referenced by `SiteSubscriptionFeatures.SiteFeatureId`.
+These tables are **not in the EF model**, so nothing keeps them in step automatically: adding
+an enum member without adding the matching row makes every insert of that value fail the
+foreign key. That is exactly how `SiteFeatureType.Theme` failed in production.
+
+`Enums/EnumTables.cs` is the registry of which enum maps to which table. Register a new one
+there — an unregistered type throws rather than guessing a name.
+
+`Enums/MigrationBuilderExtensions.cs` emits the SQL from a migration:
+
+```csharp
+migrationBuilder.CreateEnumTable<SiteFeatureType>();
+migrationBuilder.InsertAllEnumValues<SiteFeatureType>();
+migrationBuilder.InsertEnumValues(SiteFeatureType.Theme);
+migrationBuilder.AddEnumForeignKey<SiteFeatureType>("SiteSubscriptionFeatures", "SiteFeatureId");
+
+migrationBuilder.DeleteEnumValues(SiteFeatureType.Theme);
+migrationBuilder.DropEnumTable<SiteFeatureType>();
+```
+
+Notes:
+
+- The `Name` column holds the enum's `[Display(Name = "…")]` value, falling back to the member
+  name where there is no attribute.
+- Every statement is guarded (`IF OBJECT_ID … IS NULL`, `IF NOT EXISTS …`), because these tables
+  already exist in databases restored from production but not in one built from the migrations
+  alone. The same migration therefore has to be a no-op against the former.
+- `InsertAllEnumValues` skips the zero value: `None` is the reserved unset sentinel, not a real
+  value, so it is deliberately not a valid foreign key target. Pass it to `InsertEnumValues`
+  explicitly if a column genuinely needs to store it.
+- An existing row is left alone rather than having its name refreshed — renaming a value is a
+  separate decision, and doing it implicitly would rewrite rows the migration never mentioned.
+- There is no drop-foreign-key helper; `migrationBuilder.DropForeignKey(...)` already covers it.
+- The SQL builders (`Enums/EnumTableSql.cs`) are pure functions and are covered by
+  `ODK.Data.EntityFramework.Migrations.Tests`.
+
+**Adding an enum member to a mirrored enum means adding a migration**, named for the table
+(e.g. `SiteFeatures-Theme-Add`).
+
 ## Everyday commands
 
 Run from the solution root.
