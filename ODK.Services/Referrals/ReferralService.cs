@@ -84,7 +84,8 @@ public class ReferralService : IReferralService
             {
                 { "member.fullName", currentMember.FullName },
                 { "referral.id", referral.Id.ToString() },
-                { "url", urlProvider.JoinUrl() }
+                { "url", urlProvider.JoinUrl() },
+                { "site.urls.join", urlProvider.JoinUrl() }
             });
 
         return Sent();

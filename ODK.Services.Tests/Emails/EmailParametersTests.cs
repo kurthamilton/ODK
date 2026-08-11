@@ -35,7 +35,7 @@ public static class EmailParametersTests
         // Assert - platform and theme values are the site's to set, so a group is not offered them.
         result.Should().Contain(EmailParameters.TitleName);
         result.Should().OnlyContain(x => x.StartsWith("group.") || x == EmailParameters.TitleName);
-        result.Should().NotContain("platform.baseurl");
+        result.Should().NotContain("platform.url");
     }
 
     [Test]
@@ -50,7 +50,7 @@ public static class EmailParametersTests
 
         // Assert
         result.Should().ContainKey("group.name");
-        result.Should().NotContainKey("group.baseurl");
+        result.Should().NotContainKey("group.url");
     }
 
     [Test]
@@ -59,10 +59,10 @@ public static class EmailParametersTests
         // Arrange
         var parameters = new EmailParameters
         {
-            GroupBaseUrl = "https://example.com/bristol",
+            GroupUrl = "https://example.com/bristol",
             GroupFullName = "Bristol Drunken Knitwits",
             GroupName = "Bristol",
-            PlatformBaseUrl = "https://example.com",
+            PlatformUrl = "https://example.com",
             ThemeBodyBackground = "#fff",
             ThemeBodyColor = "#000",
             ThemeHeaderBackground = "#eee",

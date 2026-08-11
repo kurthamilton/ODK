@@ -13,6 +13,18 @@
 public sealed class EmailParameters : IEmailParameters
 {
     /// <summary>
+    /// The rendered email, which only the layout template uses. Set by <see cref="EmailService"/> once
+    /// every other parameter has been resolved, since it is the result of interpolating them.
+    /// </summary>
+    public const string BodyName = "body";
+
+    /// <summary>
+    /// Marks a parameter whose value is HTML and must be interpolated without encoding. A template
+    /// refers to the parameter by its plain name; only the supplied key carries the prefix.
+    /// </summary>
+    public const string HtmlPrefix = "html:";
+
+    /// <summary>
     /// Has no property here: the title is interpolated from the other parameters, so it can only be
     /// resolved after they have all been merged. Named here so <see cref="Names"/> stays complete.
     /// </summary>
@@ -20,14 +32,18 @@ public sealed class EmailParameters : IEmailParameters
 
     private const string GroupPrefix = "group.";
 
+    private const string ThemePrefix = "theme.";
+
     /* One table for both the values and the names, so the list offered to an admin cannot drift from
        the list the app actually supplies. Adding a property means adding a row here. */
     private static readonly (string Name, Func<EmailParameters, string?> Value)[] Values =
     [
-        ("group.baseurl", x => x.GroupBaseUrl),
         ("group.fullname", x => x.GroupFullName),
         ("group.name", x => x.GroupName),
-        ("platform.baseurl", x => x.PlatformBaseUrl),
+        ("group.baseurl", x => x.GroupUrl),
+        ("group.url", x => x.GroupUrl),
+        ("platform.url", x => x.PlatformUrl),
+        ("platform.baseurl", x => x.PlatformUrl),
         ("theme.body.background", x => x.ThemeBodyBackground),
         ("theme.body.color", x => x.ThemeBodyColor),
         ("theme.header.background", x => x.ThemeHeaderBackground),
@@ -52,13 +68,21 @@ public sealed class EmailParameters : IEmailParameters
         .Where(x => x.StartsWith(GroupPrefix, StringComparison.Ordinal) || x == TitleName)
         .ToArray();
 
-    public string? GroupBaseUrl { get; set; }
+    /// <summary>
+    /// The colours the layout styles itself with. Supplied to every email like the rest, but only worth
+    /// offering on the layout, which is the only template holding the markup they apply to.
+    /// </summary>
+    public static IReadOnlyCollection<string> ThemeNames { get; } = Names
+        .Where(x => x.StartsWith(ThemePrefix, StringComparison.Ordinal))
+        .ToArray();
+
+    public string? GroupUrl { get; set; }
 
     public string? GroupFullName { get; set; }
 
     public string? GroupName { get; set; }
 
-    public string? PlatformBaseUrl { get; set; }
+    public string? PlatformUrl { get; set; }
 
     public string? ThemeBodyBackground { get; set; }
 

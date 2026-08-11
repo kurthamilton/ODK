@@ -40,7 +40,7 @@ public static class EmailServiceTests
         // a real email, so assert on the substituted value rather than merely "no exception".
         var sent = await SendTemplate(
             subject: "{group.name} subject",
-            body: "<p>{group.fullname} - {group.baseurl}</p>");
+            body: "<p>{group.fullname} - {group.url}</p>");
 
         // Assert
         sent.Subject.Should().Be("Test group subject");
