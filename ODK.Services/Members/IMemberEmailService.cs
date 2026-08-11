@@ -39,10 +39,6 @@ public interface IMemberEmailService
         IReadOnlyCollection<Member> to,
         bool isReply);
 
-    Task SendChapterInviteEmail(
-        IChapterServiceRequest request,
-        Member member);
-
     Task SendChapterMessage(
         IChapterServiceRequest request,
         IReadOnlyCollection<ChapterAdminMember> adminMembers,
@@ -79,10 +75,6 @@ public interface IMemberEmailService
         IChapterServiceRequest request,
         Member owner);
 
-    Task SendGroupImportActivationEmail(
-        IMemberChapterServiceRequest request,
-        string activationToken);
-
     Task SendMemberApprovedEmail(
         IChapterServiceRequest request,
         Member member);
@@ -111,6 +103,14 @@ public interface IMemberEmailService
         IChapterServiceRequest request,
         Member member,
         string? reason);
+
+    Task SendMemberImportActivationEmail(
+        IMemberChapterServiceRequest request,
+        string activationToken);
+
+    Task SendMemberImportInviteEmail(
+        IChapterServiceRequest request,
+        Member member);
 
     Task SendMemberLeftChapterEmail(
         IChapterServiceRequest request,

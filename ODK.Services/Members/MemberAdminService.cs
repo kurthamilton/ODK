@@ -830,7 +830,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         }
 
         var emailRequest = MemberChapterServiceRequest.Create(chapter, member, request);
-        await _memberEmailService.SendGroupImportActivationEmail(
+        await _memberEmailService.SendMemberImportActivationEmail(
             emailRequest, activationToken.ActivationToken);
     }
 
@@ -842,7 +842,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             x => x.ChapterRepository.GetById(request.Platform, chapterId));
 
         var chapterRequest = ChapterServiceRequest.Create(chapter, request);
-        await _memberEmailService.SendChapterInviteEmail(chapterRequest, member);
+        await _memberEmailService.SendMemberImportInviteEmail(chapterRequest, member);
     }
 
     public async Task<ServiceResult> RemoveMemberFromChapter(

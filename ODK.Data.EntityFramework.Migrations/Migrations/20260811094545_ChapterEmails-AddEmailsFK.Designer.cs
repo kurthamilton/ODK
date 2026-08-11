@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 using ODK.Data.EntityFramework;
@@ -12,9 +13,11 @@ using ODK.Data.EntityFramework;
 namespace ODK.Data.EntityFramework.Migrations.Migrations
 {
     [DbContext(typeof(OdkContext))]
-    partial class OdkContextModelSnapshot : ModelSnapshot
+    [Migration("20260811094545_ChapterEmails-AddEmailsFK")]
+    partial class ChapterEmailsAddEmailsFK
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -790,8 +793,7 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
 
                     b.Property<string>("Subject")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Type")
                         .HasColumnType("int")
