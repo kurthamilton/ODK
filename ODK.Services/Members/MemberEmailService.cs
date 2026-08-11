@@ -12,6 +12,7 @@ using ODK.Core.Utils;
 using ODK.Core.Venues;
 using ODK.Data.Core;
 using ODK.Services.Emails;
+using ODK.Services.Emails.Parameters;
 using ODK.Services.Web;
 
 namespace ODK.Services.Members;
@@ -46,9 +47,9 @@ public class MemberEmailService : IMemberEmailService
 
         var to = member.ToEmailAddressee();
 
-        var parameters = new CustomEmailParameters
+        var parameters = new ActivateAccountParameters
         {
-            { "url", url }
+            Url = url
         };
 
         await _emailService.SendEmail(request, chapter, to, EmailType.ActivateAccount, parameters);
@@ -66,9 +67,9 @@ public class MemberEmailService : IMemberEmailService
 
         var to = new EmailAddressee(newEmailAddress, member.FullName);
 
-        var parameters = new CustomEmailParameters
+        var parameters = new EmailAddressUpdateParameters
         {
-            { "url", url }
+            Url = url
         };
 
         await _emailService.SendEmail(request, chapter, to, EmailType.EmailAddressUpdate, parameters);
@@ -133,7 +134,8 @@ public class MemberEmailService : IMemberEmailService
         {
             { "conversation.subject", conversation.Subject },
             { "conversation.message", message.Text },
-            { "url", url }
+            { "url", url },
+            { "conversation.url", url }
         };
 
         await _emailService.SendEmail(request, chapter, addressees, subject, body, parameters);
@@ -149,11 +151,11 @@ public class MemberEmailService : IMemberEmailService
         var urlProvider = await _urlProviderFactory.Create(request);
         var url = urlProvider.MessageAdminUrl(chapter, message.Id);
 
-        var parameters = new CustomEmailParameters
+        var parameters = new ContactRequestParameters
         {
-            { "message.from", message.FromAddress },
-            { "message.text", message.Message },
-            { "url", url }
+            From = message.FromAddress,
+            Text = message.Message,
+            Url = url
         };
 
         var to = adminMembers
@@ -193,7 +195,8 @@ public class MemberEmailService : IMemberEmailService
 
         var parameters = new CustomEmailParameters
         {
-            { "url", url }
+            { "url", url },
+            { "group.url", url }
         };
 
         return await _emailService.SendEmail(
@@ -219,9 +222,9 @@ public class MemberEmailService : IMemberEmailService
             chapter,
             member.ToEmailAddressee(),
             EmailType.DuplicateEmail,
-            new CustomEmailParameters
+            new DuplicateEmailParameters
             {
-                { "loginUrl", url  }
+                LoginUrl = url
             });
     }
 
@@ -236,11 +239,11 @@ public class MemberEmailService : IMemberEmailService
         var urlProvider = await _urlProviderFactory.Create(request);
         var url = urlProvider.EventUrl(chapter, @event.Shortcode);
 
-        var parameters = new CustomEmailParameters
+        var parameters = new EventCommentParameters
         {
-            { "comment.text", eventComment.Text },
-            { "event.id", @event.Id.ToString() },
-            { "event.url", url }
+            EventId = @event.Id.ToString(),
+            EventUrl = url,
+            Text = eventComment.Text
         };
 
         await _emailService.SendEventCommentEmail(
@@ -274,16 +277,16 @@ public class MemberEmailService : IMemberEmailService
 
         foreach (var group in memberList.GroupBy(x => cultures[x.Id]))
         {
-            var parameters = new CustomEmailParameters
+            var parameters = new EventInviteParameters
             {
-                { "event.date", @event.DateUtc.ToString("dddd dd MMMM, yyyy", group.Key) },
-                { "event.id", @event.Id.ToString() },
-                { "event.location", venue.Name },
-                { "event.name", @event.GetDisplayName() },
-                { "event.time", time },
-                { "event.rsvpurl", rsvpUrl },
-                { "event.url", eventUrl },
-                { "unsubscribeUrl", unsubscribeUrl }
+                Date = @event.DateUtc.ToString("dddd dd MMMM, yyyy", group.Key),
+                EventId = @event.Id.ToString(),
+                Location = venue.Name,
+                Name = @event.GetDisplayName(),
+                RsvpUrl = rsvpUrl,
+                Time = time,
+                UnsubscribeUrl = unsubscribeUrl,
+                Url = eventUrl
             };
 
             await _emailService.SendBulkEmail(request, group, EmailType.EventInvite, parameters);
@@ -305,7 +308,7 @@ public class MemberEmailService : IMemberEmailService
         var body = new EmailBodyBuilder()
             .AddParagraph("A spot has opened up for {event.name} on {event.date}.")
             .AddParagraph("Please update your RSVP if you no longer wish to attend.")
-            .AddParagraphLink("url")
+            .AddParagraphLink("event.url")
             .ToString();
 
         // Each recipient's date is formatted in their own locale (default fallback), so group recipients by
@@ -317,7 +320,7 @@ public class MemberEmailService : IMemberEmailService
         {
             var parameters = new CustomEmailParameters
             {
-                { "url", url },
+                { "event.url", url },
                 { "event.date", @event.DateUtc.ToString("dddd dd MMMM, yyyy", group.Key) },
                 { "event.name", @event.GetDisplayName() }
             };
@@ -341,14 +344,14 @@ public class MemberEmailService : IMemberEmailService
 
         var body = new EmailBodyBuilder()
             .AddParagraph("Your group <strong>{group.fullname}</strong> has been approved and you are ready to go!")
-            .AddParagraphLink("url")
+            .AddParagraphLink("group.url")
             .ToString();
 
         var to = owner.ToEmailAddressee();
 
         var parameters = new CustomEmailParameters
         {
-            { "url", url }
+            { "group.url", url }
         };
 
         await _emailService.SendMemberEmail(
@@ -371,13 +374,13 @@ public class MemberEmailService : IMemberEmailService
 
         var parameters = new CustomEmailParameters
         {
-            { "url", url }
+            { "group.url", url }
         };
 
         var subject = "{title} - You have been approved by {group.fullname}";
         var body = new EmailBodyBuilder()
             .AddParagraph("Your application to join {group.fullname} has been approved")
-            .AddParagraphLink("url")
+            .AddParagraphLink("group.url")
             .ToString();
 
         await _emailService.SendMemberEmail(
@@ -415,7 +418,7 @@ public class MemberEmailService : IMemberEmailService
 
         var body = bodyBuilder
             .AddParagraph("{issue.message}")
-            .AddParagraphLink("url")
+            .AddParagraphLink("issue.url")
             .ToString();
 
         var urlProvider = await _urlProviderFactory.Create(request);
@@ -431,7 +434,7 @@ public class MemberEmailService : IMemberEmailService
         {
             { "issue.title", issue.Title },
             { "issue.message", reply.Text },
-            { "url", url }
+            { "issue.url", url }
         };
 
         await _emailService.SendEmail(
@@ -454,10 +457,10 @@ public class MemberEmailService : IMemberEmailService
         var currency = chapterSubscription.Currency;
         var culture = await _memberLocaleService.GetCulture(member.Id);
 
-        var parameters = new CustomEmailParameters
+        var parameters = new SubscriptionConfirmationParameters
         {
-            { "subscription.amount", currency.ToAmountString(chapterSubscription.Amount) },
-            { "subscription.end", chapter.ToChapterTime(expiresUtc).ToString("d MMMM yyyy", culture) }
+            Amount = currency.ToAmountString(chapterSubscription.Amount),
+            End = chapter.ToChapterTime(expiresUtc).ToString("d MMMM yyyy", culture)
         };
 
         await _emailService.SendEmail(
@@ -480,21 +483,21 @@ public class MemberEmailService : IMemberEmailService
         var expiring = expires > DateTime.UtcNow;
         var culture = await _memberLocaleService.GetCulture(member.Id);
 
-        var properties = new CustomEmailParameters
+        var parameters = new SubscriptionExpiryParameters
         {
-            { "member.firstName", member.FirstName },
-            { "subscription.expiryDate", expires.ToFriendlyDateString(new FriendlyDateStringOptions
+            DisabledDate = disabledDate.ToFriendlyDateString(new FriendlyDateStringOptions
             {
                 IncludeDayOfWeek = true,
                 TimeZone = chapter.TimeZone,
                 Culture = culture
-            }) },
-            { "subscription.disabledDate", disabledDate.ToFriendlyDateString(new FriendlyDateStringOptions
+            }),
+            ExpiryDate = expires.ToFriendlyDateString(new FriendlyDateStringOptions
             {
                 IncludeDayOfWeek = true,
                 TimeZone = chapter.TimeZone,
                 Culture = culture
-            }) }
+            }),
+            FirstName = member.FirstName
         };
 
         var emailType = expiring
@@ -514,7 +517,7 @@ public class MemberEmailService : IMemberEmailService
             chapter,
             member.ToEmailAddressee(),
             emailType,
-            properties);
+            parameters);
     }
 
     public async Task SendMemberDeleteEmail(
@@ -561,9 +564,9 @@ public class MemberEmailService : IMemberEmailService
         var urlProvider = await _urlProviderFactory.Create(request);
         var url = urlProvider.ActivateAccountUrl(chapter, activationToken);
 
-        var parameters = new CustomEmailParameters
+        var parameters = new MemberImportActivationParameters
         {
-            { "url", url }
+            Url = url
         };
 
         await _emailService.SendEmail(
@@ -583,9 +586,9 @@ public class MemberEmailService : IMemberEmailService
         var urlProvider = await _urlProviderFactory.Create(request);
         var url = urlProvider.ChapterSubscription(chapter);
 
-        var parameters = new CustomEmailParameters
+        var parameters = new MemberImportInviteParameters
         {
-            { "url", url }
+            Url = url
         };
 
         await _emailService.SendEmail(
@@ -617,7 +620,7 @@ public class MemberEmailService : IMemberEmailService
 
         var bodyBuilder = new EmailBodyBuilder()
             .AddParagraph("{member.name} has left {group.fullname}")
-            .AddParagraph("They had been a member since {joined}");
+            .AddParagraph("They had been a member since {member.joined}");
 
         if (!string.IsNullOrEmpty(reason))
         {
@@ -643,7 +646,7 @@ public class MemberEmailService : IMemberEmailService
             var parameters = new CustomEmailParameters
             {
                 { "member.name", member.FullName },
-                { "joined", memberChapter?.CreatedUtc.ToFriendlyDateString(new FriendlyDateStringOptions
+                { "member.joined", memberChapter?.CreatedUtc.ToFriendlyDateString(new FriendlyDateStringOptions
                 {
                     IncludeDayOfWeek = true,
                     TimeZone = chapter.TimeZone,
@@ -753,10 +756,10 @@ public class MemberEmailService : IMemberEmailService
         var urlProvider = await _urlProviderFactory.Create(request);
         var url = urlProvider.MemberAdminUrl(chapter, member.Id);
 
-        var parameters = new CustomEmailParameters
+        var parameters = new NewMemberAdminParameters
         {
-            { "html:member.properties", memberPropertiesBuilder.ToString() },
-            { "url", url }
+            AdminUrl = url,
+            Properties = memberPropertiesBuilder.ToString()
         };
 
         var to = adminMembers
@@ -784,10 +787,10 @@ public class MemberEmailService : IMemberEmailService
         var urlProvider = await _urlProviderFactory.Create(request);
         var eventsUrl = urlProvider.EventsUrl(chapter);
 
-        var parameters = new CustomEmailParameters
+        var parameters = new NewMemberParameters
         {
-            { "eventsUrl", eventsUrl },
-            { "member.firstName", HttpUtility.HtmlEncode(member.FirstName) }
+            EventsUrl = eventsUrl,
+            FirstName = HttpUtility.HtmlEncode(member.FirstName)
         };
 
         await _emailService.SendEmail(
@@ -856,9 +859,9 @@ public class MemberEmailService : IMemberEmailService
         var urlProvider = await _urlProviderFactory.Create(request);
         var url = urlProvider.PasswordReset(chapter, token);
 
-        var parameters = new CustomEmailParameters
+        var parameters = new PasswordResetParameters
         {
-            { "url", url }
+            Url = url
         };
 
         await _emailService.SendEmail(
@@ -909,12 +912,13 @@ public class MemberEmailService : IMemberEmailService
         IEnumerable<Member> siteAdmins)
     {
         var urlProvider = await _urlProviderFactory.Create(request);
+        var url = urlProvider.MessageSiteAdminUrl(message.Id);
 
-        var parameters = new CustomEmailParameters
+        var parameters = new ContactRequestParameters
         {
-            { "message.from", message.FromAddress },
-            { "message.text", message.Message },
-            { "url", urlProvider.MessageSiteAdminUrl(message.Id) }
+            From = message.FromAddress,
+            Text = message.Message,
+            Url = url
         };
 
         var to = siteAdmins.Select(x => x.ToEmailAddressee());

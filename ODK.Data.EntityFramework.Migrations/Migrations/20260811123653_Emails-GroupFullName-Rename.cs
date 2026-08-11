@@ -21,12 +21,7 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
             ("SiteEmailSettings", ["Title", "FromName"]),
             ("ReferralCampaigns", ["EmailSubject", "EmailText"])
         ];
-
-        /* group.fullName was the only camelCase parameter among group.baseurl and group.name. This is
-           consistency rather than repair: token matching is case-insensitive, so a template left on
-           {group.fullName} keeps resolving. Stored templates are the examples the next author copies,
-           which is the reason to make them agree. */
-        /// <inheritdoc />
+        
         protected override void Up(MigrationBuilder migrationBuilder)
             => Rename(migrationBuilder, from: CamelCaseToken, to: LowerCaseToken);
 

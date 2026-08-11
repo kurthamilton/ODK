@@ -259,11 +259,11 @@ public class EmailService : IEmailService
 
         var core = new EmailParameters
         {
-            GroupBaseUrl = options.Chapter != null ? urlProvider.GroupUrl(options.Chapter) : null,
+            GroupUrl = options.Chapter != null ? urlProvider.GroupUrl(options.Chapter) : null,
             GroupFullName = StringUtils.Coalesce(options.Chapter?.FullName, siteSettings.PlatformTitle),
             GroupName = StringUtils.Coalesce(
                 options.Chapter?.GetDisplayName(request.Platform), siteSettings.PlatformTitle),
-            PlatformBaseUrl = urlProvider.BaseUrl(),
+            PlatformUrl = urlProvider.BaseUrl(),
             ThemeBodyBackground = _settings.DefaultBodyBackground,
             ThemeBodyColor = _settings.DefaultBodyColor,
             ThemeHeaderBackground = StringUtils.Coalesce(
@@ -293,16 +293,16 @@ public class EmailService : IEmailService
             : bodyEmail?.HtmlContent ?? string.Empty;
         body = body.Interpolate(parameters.AsReadOnly(), HttpUtility.HtmlEncode);
 
-        foreach (var htmlParameter in parameters.Where(x => x.Key.StartsWith("html:")))
+        foreach (var htmlParameter in parameters.Where(x => x.Key.StartsWith(EmailParameters.HtmlPrefix)))
         {
-            var parameterName = htmlParameter.Key.Substring("html:".Length);
+            var parameterName = htmlParameter.Key[EmailParameters.HtmlPrefix.Length..];
             body = body.Interpolate(new Dictionary<string, string>
             {
                 { parameterName, parameters[htmlParameter.Key] }
             });
         }
 
-        parameters["body"] = body;
+        parameters[EmailParameters.BodyName] = body;
 
         return parameters.AsReadOnly();
     }
