@@ -8,7 +8,7 @@
     Model.Title = "Email | Admin";
 
     var chapter = Model.Chapter;
-    var viewModel = new ChapterEmailContentViewModel(chapter, Model.Email);
+    var viewModel = new ChapterEmailContentViewModel(chapter, Model.Email, Model.CanEdit);
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel

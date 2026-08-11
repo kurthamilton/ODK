@@ -30,5 +30,8 @@ public enum SiteFeatureType
     SendMemberEmails = 8,
 
     [Display(Name = "Custom theme")]
-    Theme = 9
+    Theme = 9,
+
+    [Display(Name = "Custom emails")]
+    CustomEmails = 10
 }

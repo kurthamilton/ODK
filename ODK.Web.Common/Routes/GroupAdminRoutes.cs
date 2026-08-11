@@ -44,12 +44,8 @@ public class GroupAdminRoutes
 
     public GroupAdminRoute Email(Chapter chapter, EmailType type) => Emails(chapter).Child($"/{type}");
 
-    public GroupAdminRoute Emails(Chapter chapter) => Platform switch
-    {
-        PlatformType.DrunkenKnitwits
-            => Group(chapter).Child("/emails", ChapterAdminSecurable.Emails, PlatformType.DrunkenKnitwits),
-        _ => GroupAdminRoute.Default
-    };
+    public GroupAdminRoute Emails(Chapter chapter)
+        => Group(chapter).Child("/emails", ChapterAdminSecurable.Emails);
 
     public GroupAdminRoute Event(Chapter chapter, Guid eventId)
         => Events(chapter).Child($"/{eventId}");

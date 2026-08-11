@@ -6,6 +6,7 @@ using ODK.Services;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.Models;
 using ODK.Services.Emails;
+using ODK.Services.Emails.Models;
 using ODK.Services.Security;
 using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
@@ -285,6 +286,23 @@ public class ChapterAdminController : AdminControllerBase
             Color = viewModel.Color
         });
         AddFeedback(result, "Theme updated");
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("groups/{chapterId:guid}/emails/{type}")]
+    public async Task<IActionResult> UpdateChapterEmail(
+        Guid chapterId, EmailType type, [FromForm] ChapterEmailFormSubmitViewModel viewModel)
+    {
+        var request = MemberChapterAdminServiceRequest.Create(
+            ChapterAdminSecurable.Emails, MemberChapterServiceRequest);
+        var result = await _emailAdminService.UpdateChapterEmail(request, type, new EmailUpdateModel
+        {
+            HtmlContent = viewModel.Content,
+            Overridable = false,
+            Subject = viewModel.Subject
+        });
+
+        AddFeedback(result, "Email updated");
         return RedirectToReferrer();
     }
 
