@@ -5,7 +5,7 @@
 /// </summary>
 public sealed class MemberImportActivationParameters : EmailTypeParameters
 {
-    private const string UrlName = "group.urls.activateAccount";
+    private const string UrlName = "account.urls.activate";
 
     public static IReadOnlyCollection<string> Names { get; } = [UrlName];
 
@@ -14,6 +14,5 @@ public sealed class MemberImportActivationParameters : EmailTypeParameters
     protected override void AddParameters(IDictionary<string, string> values)
     {
         Add(values, UrlName, Url);
-        Add(values, LegacyUrlName, Url);
     }
 }

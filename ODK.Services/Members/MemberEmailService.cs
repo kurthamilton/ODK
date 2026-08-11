@@ -106,7 +106,7 @@ public class MemberEmailService : IMemberEmailService
 
         var body = new EmailBodyBuilder()
             .AddParagraph("{conversation.message}")
-            .AddParagraphLink("url")
+            .AddParagraphLink("conversation.url")
             .ToString();
 
         var isToMember = message.MemberId != conversation.MemberId;
@@ -134,7 +134,6 @@ public class MemberEmailService : IMemberEmailService
         {
             { "conversation.subject", conversation.Subject },
             { "conversation.message", message.Text },
-            { "url", url },
             { "conversation.url", url }
         };
 
@@ -190,12 +189,11 @@ public class MemberEmailService : IMemberEmailService
             .AddLine()
             .AddParagraph("Your original message:")
             .AddText(originalMessage.Message)
-            .AddParagraphLink("url")
+            .AddParagraphLink("group.url")
             .ToString();
 
         var parameters = new CustomEmailParameters
         {
-            { "url", url },
             { "group.url", url }
         };
 
@@ -670,7 +668,7 @@ public class MemberEmailService : IMemberEmailService
 
         var parameters = new CustomEmailParameters
         {
-            { "url", url }
+            { "siteadmin.urls.groups", url }
         };
 
         var to = siteAdmins
@@ -682,7 +680,7 @@ public class MemberEmailService : IMemberEmailService
         var body = new EmailBodyBuilder()
             .AddParagraph("A group has just been created")
             .AddParagraph("Name: {group.fullname}")
-            .AddParagraphLink("url")
+            .AddParagraphLink("siteadmin.urls.groups")
             .ToString();
 
         await _emailService.SendEmail(
@@ -707,7 +705,7 @@ public class MemberEmailService : IMemberEmailService
             .AddParagraph("A new issue has been created by {member.name}:")
             .AddParagraph("{issue.title}")
             .AddParagraph("{issue.message}")
-            .AddParagraphLink("url")
+            .AddParagraphLink("siteadmin.urls.issue")
             .ToString();
 
         var urlProvider = await _urlProviderFactory.Create(request);
@@ -725,7 +723,7 @@ public class MemberEmailService : IMemberEmailService
             {
                 { "issue.title", issue.Title },
                 { "member.name", member.FullName },
-                { "url", urlProvider.IssueAdminUrl(issue.Id) }
+                { "siteadmin.urls.issue", urlProvider.IssueAdminUrl(issue.Id) }
             });
     }
 
@@ -818,7 +816,7 @@ public class MemberEmailService : IMemberEmailService
 
         var parameters = new CustomEmailParameters
         {
-            { "url", url }
+            { "siteadmin.urls.topics", url }
         };
 
         var subject = "{title} - New topics";
@@ -836,7 +834,7 @@ public class MemberEmailService : IMemberEmailService
         var body = new EmailBodyBuilder()
             .AddParagraph("The following topics require approval")
             .AddTable(tableBuilder)
-            .AddParagraphLink("url")
+            .AddParagraphLink("siteadmin.urls.topics")
             .ToString();
 
         var to = siteAdmins.Select(x => x.ToEmailAddressee()).ToArray();
@@ -968,12 +966,12 @@ public class MemberEmailService : IMemberEmailService
         var subject = "{title} - Subscription Expired";
         var body = new EmailBodyBuilder()
             .AddParagraph("Your subscription has now expired")
-            .AddParagraphLink("url")
+            .AddParagraphLink("account.urls.siteSubscription")
             .ToString();
 
         var parameters = new CustomEmailParameters
         {
-            { "url", url }
+            { "account.urls.siteSubscription", url }
         };
 
         await _emailService.SendEmail(
@@ -997,13 +995,13 @@ public class MemberEmailService : IMemberEmailService
         var body = new EmailBodyBuilder()
             .AddParagraph("Welcome to {title} {member.firstName}!")
             .AddParagraph("Enjoy creating or joining your first group, and please do share.")
-            .AddParagraphLink("url")
+            .AddParagraphLink("admin.urls.groups")
             .ToString();
 
         var parameters = new CustomEmailParameters
         {
             { "member.firstName", member.FirstName },
-            { "url", url }
+            { "admin.urls.groups", url }
         };
 
         await _emailService.SendMemberEmail(

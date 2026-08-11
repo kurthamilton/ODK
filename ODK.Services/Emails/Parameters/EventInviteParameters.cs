@@ -9,8 +9,6 @@ public sealed class EventInviteParameters : EmailTypeParameters
 
     private const string EventIdName = "event.id";
 
-    private const string LegacyUnsubscribeUrlName = "unsubscribeUrl";
-
     private const string LocationName = "event.location";
 
     private const string NameName = "event.name";
@@ -61,6 +59,5 @@ public sealed class EventInviteParameters : EmailTypeParameters
         Add(values, TimeName, Time);
         Add(values, UrlName, Url);
         Add(values, UnsubscribeUrlName, UnsubscribeUrl);
-        Add(values, LegacyUnsubscribeUrlName, UnsubscribeUrl);
     }
 }

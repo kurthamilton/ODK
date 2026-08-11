@@ -14,6 +14,5 @@ public sealed class MemberImportInviteParameters : EmailTypeParameters
     protected override void AddParameters(IDictionary<string, string> values)
     {
         Add(values, UrlName, Url);
-        Add(values, LegacyUrlName, Url);
     }
 }

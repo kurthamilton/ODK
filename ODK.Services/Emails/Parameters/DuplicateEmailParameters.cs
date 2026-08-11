@@ -6,8 +6,6 @@
 /// </summary>
 public sealed class DuplicateEmailParameters : EmailTypeParameters
 {
-    private const string LegacyLoginUrlName = "loginUrl";
-
     private const string LoginUrlName = "account.urls.login";
 
     public static IReadOnlyCollection<string> Names { get; } = [LoginUrlName];
@@ -17,6 +15,5 @@ public sealed class DuplicateEmailParameters : EmailTypeParameters
     protected override void AddParameters(IDictionary<string, string> values)
     {
         Add(values, LoginUrlName, LoginUrl);
-        Add(values, LegacyLoginUrlName, LoginUrl);
     }
 }

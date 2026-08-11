@@ -24,6 +24,5 @@ public sealed class ContactRequestParameters : EmailTypeParameters
         Add(values, FromName, From);
         Add(values, TextName, Text);
         Add(values, UrlName, Url);
-        Add(values, LegacyUrlName, Url);
     }
 }
