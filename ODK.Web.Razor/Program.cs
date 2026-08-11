@@ -226,6 +226,12 @@ public class Program
                 "js/odk.tasks.js",
                 "js/odk.topics.js",
                 "js/odk.html-editor.js");
+            // Only the admin layouts load this - the scripts in it have no hooks on member-facing pages.
+            pipeline.AddJavaScriptBundle(
+                route: "/js/odk.bundle.admin.js",
+                "js/odk.admin.js",
+                "js/odk.lists.js",
+                "js/odk.placeholders.js");
             pipeline.AddJavaScriptBundle(
                 route: "/js/odk.bundle.head.js",
                 "js/odk.global.js",

@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Emails;
 using ODK.Services.Emails;
 using ODK.Services.Emails.Models;
@@ -28,7 +28,7 @@ public class EmailModel : AdminPageModel
         return Page();
     }
 
-    public async Task<IActionResult> OnPostAsync(EmailType type, ChapterEmailFormViewModel viewModel)
+    public async Task<IActionResult> OnPostAsync(EmailType type, ChapterEmailFormSubmitViewModel viewModel)
     {
         var request = MemberChapterAdminServiceRequest;
         var result = await _emailAdminService.UpdateChapterEmail(request, type, new EmailUpdateModel

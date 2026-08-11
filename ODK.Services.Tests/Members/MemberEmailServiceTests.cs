@@ -52,7 +52,7 @@ public static class MemberEmailServiceTests
                 chapter,
                 It.Is<EmailAddressee>(x => x.Address == member.EmailAddress),
                 EmailType.MemberImportActivation,
-                It.Is<IDictionary<string, string>>(x => x["url"] == "https://test.local/activate/token-123")),
+                It.Is<IEmailParameters>(x => x.ToDictionary()["url"] == "https://test.local/activate/token-123")),
             Times.Once);
     }
 
@@ -89,7 +89,7 @@ public static class MemberEmailServiceTests
                 chapter,
                 It.Is<EmailAddressee>(x => x.Address == member.EmailAddress),
                 EmailType.MemberImportInvite,
-                It.Is<IDictionary<string, string>>(x => x["url"] == "https://test.local/group/subscription")),
+                It.Is<IEmailParameters>(x => x.ToDictionary()["url"] == "https://test.local/group/subscription")),
             Times.Once);
     }
 
@@ -110,7 +110,7 @@ public static class MemberEmailServiceTests
                 It.IsAny<Chapter?>(),
                 It.IsAny<EmailAddressee>(),
                 It.IsAny<EmailType>(),
-                It.IsAny<IDictionary<string, string>>()))
+                It.IsAny<IEmailParameters>()))
             .ReturnsAsync(ServiceResult.Successful());
 
         return mock;

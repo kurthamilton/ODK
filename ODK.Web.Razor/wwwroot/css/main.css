@@ -13188,6 +13188,30 @@ footer {
   margin-bottom: 0;
 }
 
+.placeholders {
+  position: relative;
+}
+
+.placeholders-toggle {
+  bottom: 0.5rem;
+  opacity: 1;
+  position: absolute;
+  right: 1.5rem;
+  transition: opacity 0.15s ease-in-out;
+  z-index: 1;
+}
+.placeholders-toggle.collapsed {
+  opacity: 0.5;
+}
+.placeholders-toggle:hover, .placeholders-toggle:focus-visible {
+  opacity: 1;
+}
+
+.placeholders-list {
+  max-height: 12rem;
+  overflow-y: auto;
+}
+
 .preview-label {
   height: 8rem;
   overflow: hidden;

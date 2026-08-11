@@ -1,4 +1,6 @@
-﻿namespace ODK.Core.Emails;
+﻿using ODK.Core.Utils;
+
+namespace ODK.Core.Emails;
 
 public class ChapterEmail : IDatabaseEntity
 {
@@ -7,6 +9,9 @@ public class ChapterEmail : IDatabaseEntity
     public string HtmlContent { get; set; } = string.Empty;
 
     public Guid Id { get; set; }
+
+    /// <inheritdoc cref="Email.Name" />
+    public string Name => EnumUtils.GetDisplayValue(Type);
 
     public string Subject { get; set; } = string.Empty;
 

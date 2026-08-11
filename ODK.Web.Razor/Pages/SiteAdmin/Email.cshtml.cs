@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Emails;
 using ODK.Services.Emails;
 using ODK.Services.Emails.Models;
@@ -25,7 +25,7 @@ public class EmailModel : SiteAdminPageModel
     }
 
     public async Task<IActionResult> OnPostAsync(EmailType type,
-        [FromForm] ChapterEmailFormViewModel viewModel,
+        [FromForm] ChapterEmailFormSubmitViewModel viewModel,
         [FromForm] bool overridable)
     {
         var result = await _emailAdminService.UpdateEmail(MemberServiceRequest, type, new EmailUpdateModel

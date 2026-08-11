@@ -16,12 +16,12 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var email in emails.OrderBy(x => x.Type.ToString()))
+            @foreach (var email in emails.OrderBy(x => x.Name))
             {
                 <tr>
                     <td>
                         <a href="@OdkRoutes.SiteAdmin.Email(email.Type)">
-                            @email.Type
+                            @email.Name
                         </a>
                     </td>
                 </tr>
