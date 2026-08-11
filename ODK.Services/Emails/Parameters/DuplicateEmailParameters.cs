@@ -8,7 +8,7 @@ public sealed class DuplicateEmailParameters : EmailTypeParameters
 {
     private const string LegacyLoginUrlName = "loginUrl";
 
-    private const string LoginUrlName = "login.url";
+    private const string LoginUrlName = "account.urls.login";
 
     public static IReadOnlyCollection<string> Names { get; } = [LoginUrlName];
 

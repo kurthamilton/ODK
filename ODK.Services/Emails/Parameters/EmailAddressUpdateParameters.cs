@@ -5,7 +5,7 @@
 /// </summary>
 public sealed class EmailAddressUpdateParameters : EmailTypeParameters
 {
-    private const string UrlName = "group.urls.confirmEmailAddressUpdate";
+    private const string UrlName = "account.urls.confirmEmailAddressUpdate";
 
     public static IReadOnlyCollection<string> Names { get; } = [UrlName];
 

@@ -5,7 +5,7 @@
 /// </summary>
 public sealed class PasswordResetParameters : EmailTypeParameters
 {
-    private const string UrlName = "group.urls.passwordReset";
+    private const string UrlName = "account.urls.passwordReset";
 
     public static IReadOnlyCollection<string> Names { get; } = [UrlName];
 
