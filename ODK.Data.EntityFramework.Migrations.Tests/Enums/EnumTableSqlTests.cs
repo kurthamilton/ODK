@@ -25,7 +25,7 @@ public class EnumTableSqlTests
             "        AND COL_NAME(fkc.parent_object_id, fkc.parent_column_id) = N'SiteFeatureId')",
             "BEGIN",
             "    ALTER TABLE [SiteSubscriptionFeatures] ADD CONSTRAINT [FK_SiteSubscriptionFeatures_SiteFeatures_SiteFeatureId]",
-            "        FOREIGN KEY ([SiteFeatureId]) REFERENCES [SiteFeatures] ([SiteFeatureId]);",
+            "        FOREIGN KEY ([SiteFeatureId]) REFERENCES [SiteFeatures] ([Id]);",
             "END"));
     }
 
@@ -40,9 +40,9 @@ public class EnumTableSqlTests
             "IF OBJECT_ID(N'SiteFeatures', N'U') IS NULL",
             "BEGIN",
             "    CREATE TABLE [SiteFeatures] (",
-            "        [SiteFeatureId] int NOT NULL,",
+            "        [Id] int NOT NULL,",
             "        [Name] nvarchar(100) NOT NULL,",
-            "        CONSTRAINT [PK_SiteFeatures] PRIMARY KEY ([SiteFeatureId]),",
+            "        CONSTRAINT [PK_SiteFeatures] PRIMARY KEY ([Id]),",
             "        CONSTRAINT [UQ_SiteFeatures_Name] UNIQUE ([Name])",
             "    );",
             "END"));
@@ -55,7 +55,7 @@ public class EnumTableSqlTests
         var result = EnumTableSql.Delete(SiteFeatureType.Theme, SiteFeatureType.Payments);
 
         // Assert
-        result.Should().Be("DELETE FROM [SiteFeatures] WHERE [SiteFeatureId] IN (9, 6);");
+        result.Should().Be("DELETE FROM [SiteFeatures] WHERE [Id] IN (9, 6);");
     }
 
     [Test]
@@ -86,10 +86,10 @@ public class EnumTableSqlTests
 
         // Assert
         result.Should().Be(Lines(
-            "IF NOT EXISTS (SELECT 1 FROM [SiteFeatures] WHERE [SiteFeatureId] = 9)",
-            "    INSERT INTO [SiteFeatures] ([SiteFeatureId], [Name]) VALUES (9, N'Custom theme');",
-            "IF NOT EXISTS (SELECT 1 FROM [SiteFeatures] WHERE [SiteFeatureId] = 4)",
-            "    INSERT INTO [SiteFeatures] ([SiteFeatureId], [Name]) VALUES (4, N'Instagram feed');"));
+            "IF NOT EXISTS (SELECT 1 FROM [SiteFeatures] WHERE [Id] = 9)",
+            "    INSERT INTO [SiteFeatures] ([Id], [Name]) VALUES (9, N'Custom theme');",
+            "IF NOT EXISTS (SELECT 1 FROM [SiteFeatures] WHERE [Id] = 4)",
+            "    INSERT INTO [SiteFeatures] ([Id], [Name]) VALUES (4, N'Instagram feed');"));
     }
 
     [Test]
@@ -128,14 +128,14 @@ public class EnumTableSqlTests
         // Arrange
         var expected = Enum.GetValues<SiteFeatureType>()
             .Where(x => x != SiteFeatureType.None)
-            .Select(x => $"WHERE [SiteFeatureId] = {(int)x})");
+            .Select(x => $"WHERE [Id] = {(int)x})");
 
         // Act
         var result = EnumTableSql.InsertAll<SiteFeatureType>();
 
         // Assert
         result.Should().ContainAll(expected);
-        result.Should().NotContain("WHERE [SiteFeatureId] = 0)");
+        result.Should().NotContain("WHERE [Id] = 0)");
     }
 
     private static string Lines(params string[] lines) => string.Join(Environment.NewLine, lines);

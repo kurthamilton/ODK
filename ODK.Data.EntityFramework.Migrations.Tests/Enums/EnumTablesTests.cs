@@ -16,7 +16,7 @@ public class EnumTablesTests
 
         // Assert
         result.Name.Should().Be("SiteFeatures");
-        result.IdColumnName.Should().Be("SiteFeatureId");
+        result.IdColumnName.Should().Be("Id");
     }
 
     [Test]
