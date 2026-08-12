@@ -11,7 +11,7 @@ public interface IEmailAdminService
     Task<ChapterEmailAdminPageViewModel> GetChapterEmail(
         IMemberChapterAdminServiceRequest request, EmailType type);
 
-    Task<IReadOnlyCollection<ChapterEmail>> GetChapterEmails(IMemberChapterAdminServiceRequest request);
+    Task<ChapterEmailsAdminPageViewModel> GetChapterEmails(IMemberChapterAdminServiceRequest request);
 
     Task<Email> GetEmail(IMemberServiceRequest request, EmailType type);
 
@@ -22,6 +22,13 @@ public interface IEmailAdminService
     Task<ServiceResult> SendTestMemberEmail(IMemberServiceRequest request, EmailType type);
 
     Task<ServiceResult> UpdateChapterEmail(IMemberChapterAdminServiceRequest request, EmailType type, EmailUpdateModel model);
+
+    /// <summary>
+    /// Sets the group's own audience titles. A blank value is stored as unset, which is how the group goes
+    /// back to inheriting the site's.
+    /// </summary>
+    Task<ServiceResult> UpdateChapterEmailSettings(
+        IMemberChapterAdminServiceRequest request, ChapterEmailSettingsUpdateModel model);
 
     Task<ServiceResult> UpdateEmail(IMemberServiceRequest request, EmailType type, EmailUpdateModel model);
 

@@ -57,6 +57,58 @@ public static class EmailAdminServiceTests
     }
 
     [Test]
+    public static async Task GetChapterEmails_TakesTheRecipientTypeFromTheSiteEmail()
+    {
+        // Arrange - a ChapterEmail carries no recipient type, so the list reads it from the site's row. The
+        // group has overridden this template, which is the case where there is something else to read.
+        using var context = new MockOdkContext();
+        var (chapter, currentMember) = CreateChapter(context, withFeature: true);
+        CreateSiteEmail(context, EmailRecipientType.Admins);
+        context.Create(new ChapterEmail
+        {
+            ChapterId = chapter.Id,
+            HtmlContent = "<p>Custom</p>",
+            Id = Guid.NewGuid(),
+            Subject = "Custom",
+            Type = Type
+        });
+
+        var service = CreateService(context);
+
+        // Act
+        var result = await service.GetChapterEmails(CreateRequest(chapter, currentMember));
+
+        // Assert
+        var email = result.Emails.Single();
+        email.RecipientType.Should().Be(EmailRecipientType.Admins);
+        email.Email.IsDefault().Should().BeFalse();
+    }
+
+    [Test]
+    public static async Task GetChapterEmails_ReturnsTheGroupsSettings()
+    {
+        // Arrange - the settings form is rendered from these, so the page needs them alongside the list.
+        using var context = new MockOdkContext();
+        var (chapter, currentMember) = CreateChapter(context, withFeature: true);
+        CreateSiteEmail(context);
+        context.Create(new ChapterEmailSettings
+        {
+            ChapterId = chapter.Id,
+            Id = Guid.NewGuid(),
+            MemberTitle = "Our own wording"
+        });
+
+        var service = CreateService(context);
+
+        // Act
+        var result = await service.GetChapterEmails(CreateRequest(chapter, currentMember));
+
+        // Assert
+        result.Settings!.MemberTitle.Should().Be("Our own wording");
+        result.CanEdit.Should().BeTrue();
+    }
+
+    [Test]
     public static async Task GetChapterEmails_WithoutTheFeature_StillListsTheTemplates()
     {
         // Arrange - the list is navigation, not something the feature withholds: an owner sees which
@@ -71,7 +123,8 @@ public static class EmailAdminServiceTests
         var result = await service.GetChapterEmails(CreateRequest(chapter, currentMember));
 
         // Assert
-        result.Should().ContainSingle(x => x.Type == Type);
+        result.Emails.Should().ContainSingle(x => x.Email.Type == Type);
+        result.CanEdit.Should().BeFalse();
     }
 
     [Test]
@@ -137,6 +190,90 @@ public static class EmailAdminServiceTests
         var stored = context.Set<ChapterEmail>().Single(x => x.ChapterId == chapter.Id);
         stored.Subject.Should().Be("Existing");
         stored.HtmlContent.Should().Be("<p>Existing</p>");
+    }
+
+    [Test]
+    public static async Task UpdateChapterEmailSettings_BlankTitle_StoresItAsUnset()
+    {
+        // Arrange - blank is how the form posts a box the group cleared. Stored as null so the row says
+        // the group has not set a title, which is what makes it inherit the site's again.
+        using var context = new MockOdkContext();
+        var (chapter, currentMember) = CreateChapter(context, withFeature: true);
+        CreateSiteEmail(context);
+        context.Create(new ChapterEmailSettings
+        {
+            ChapterId = chapter.Id,
+            Id = Guid.NewGuid(),
+            MemberTitle = "Previous wording"
+        });
+
+        var service = CreateService(context);
+
+        // Act
+        var result = await service.UpdateChapterEmailSettings(
+            CreateRequest(chapter, currentMember),
+            new ChapterEmailSettingsUpdateModel
+            {
+                AdminTitle = null,
+                MemberTitle = "   "
+            });
+
+        // Assert
+        result.Success.Should().BeTrue();
+        var stored = context.Set<ChapterEmailSettings>().Single(x => x.ChapterId == chapter.Id);
+        stored.MemberTitle.Should().BeNull();
+        stored.AdminTitle.Should().BeNull();
+    }
+
+    [Test]
+    public static async Task UpdateChapterEmailSettings_WithTheFeature_StoresTheTitles()
+    {
+        // Arrange - no row exists until the group saves the form for the first time.
+        using var context = new MockOdkContext();
+        var (chapter, currentMember) = CreateChapter(context, withFeature: true);
+        CreateSiteEmail(context);
+
+        var service = CreateService(context);
+
+        // Act
+        var result = await service.UpdateChapterEmailSettings(
+            CreateRequest(chapter, currentMember),
+            new ChapterEmailSettingsUpdateModel
+            {
+                AdminTitle = "Admin wording",
+                MemberTitle = "Member wording"
+            });
+
+        // Assert
+        result.Success.Should().BeTrue();
+        var stored = context.Set<ChapterEmailSettings>().Single(x => x.ChapterId == chapter.Id);
+        stored.AdminTitle.Should().Be("Admin wording");
+        stored.MemberTitle.Should().Be("Member wording");
+    }
+
+    [Test]
+    public static async Task UpdateChapterEmailSettings_WithoutTheFeature_ReturnsFailure()
+    {
+        // Arrange - the form renders read-only without the feature, but that is only presentation. This is
+        // the guard, and it is what a posted form has to get past.
+        using var context = new MockOdkContext();
+        var (chapter, currentMember) = CreateChapter(context, withFeature: false);
+        CreateSiteEmail(context);
+
+        var service = CreateService(context);
+
+        // Act
+        var result = await service.UpdateChapterEmailSettings(
+            CreateRequest(chapter, currentMember),
+            new ChapterEmailSettingsUpdateModel
+            {
+                AdminTitle = "Admin wording",
+                MemberTitle = "Member wording"
+            });
+
+        // Assert
+        result.Success.Should().BeFalse();
+        context.Set<ChapterEmailSettings>().Should().BeEmpty();
     }
 
     [Test]
@@ -327,10 +464,13 @@ public static class EmailAdminServiceTests
         new AuthorizationService(),
         htmlValidator ?? CreateHtmlValidator(ServiceResult.Successful()));
 
-    private static void CreateSiteEmail(MockOdkContext context) => context.Create(new Email
+    private static void CreateSiteEmail(
+        MockOdkContext context,
+        EmailRecipientType recipientType = EmailRecipientType.Members) => context.Create(new Email
     {
         HtmlContent = "<p>Standard</p>",
         Overridable = true,
+        RecipientType = recipientType,
         Subject = "Standard",
         Type = Type
     });

@@ -25,9 +25,18 @@ public sealed class EmailParameters : IEmailParameters
     public const string HtmlPrefix = "html:";
 
     /// <summary>
-    /// Has no property here: the title is interpolated from the other parameters, so it can only be
-    /// resolved after they have all been merged. Named here so <see cref="Names"/> stays complete.
+    /// The wording an email refers to its group by, and the only title a template names. Its value follows
+    /// the email's own <see cref="Core.Emails.Email.RecipientType"/> - an email written for admins takes the
+    /// admin title, one written for members the member title - so a template author has no audience to
+    /// choose between and cannot choose wrongly. Each title is the group's where it has set one and the
+    /// site's otherwise.
     /// </summary>
+    /// <remarks>
+    /// Has no property here, and cannot have one: the title is itself a template over the other parameters,
+    /// so <see cref="EmailService"/> resolves it only once they have all been merged. A row in
+    /// <see cref="Values"/> would put the unresolved template into the email instead of its value. Named
+    /// here so <see cref="Names"/> stays complete.
+    /// </remarks>
     public const string TitleName = "title";
 
     private const string GroupPrefix = "group.";

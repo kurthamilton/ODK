@@ -308,11 +308,21 @@ the request locale and enqueues a background `IMemberLocaleService.UpdateLocale`
   `IMemberImportStagingService.cs` and `MemberImportStagingService.cs`).
 - **Member ordering within a type**, along three axes (each breaks ties in the one before):
   1. **By kind:** constants, then fields, then constructors, then properties, then methods.
-  2. **By access, within a kind:** `public`, then `protected`, then `private`; and `static` before instance
-     within each access level.
+  2. **By access then lifetime, within a kind.** `static` sorts before instance, but *only inside one access
+     level* — it never promotes a member past a more accessible one. In full precedence order:
+     1. `public static`
+     2. `public` instance
+     3. `internal static`
+     4. `internal` instance
+     5. `protected static`
+     6. `protected` instance
+     7. `private static`
+     8. `private` instance
   3. **Alphabetically by name, within the resulting group.**
   Applies everywhere, including test classes (e.g. private helper methods sit below the public `[Test]` methods).
   (StyleCop enforces axes 1–2 but not the alphabetical axis, so keep axis 3 in mind manually.)
+  The trap worth naming: a `private static` helper added next to the instance methods that call it looks
+  tidy and is wrong — it belongs above every `private` instance method, however far that is from its caller.
 - **No trailing whitespace.**
 - **Preserve line endings and encoding: CRLF, and a UTF-8 BOM on `.cs`/`.cshtml`.** The repo is checked out
   with `core.autocrlf=true`, so working files are CRLF; `.gitattributes` pins the few deliberate exceptions

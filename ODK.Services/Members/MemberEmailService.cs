@@ -88,7 +88,8 @@ public class MemberEmailService : IMemberEmailService
             request,
             to,
             subject,
-            body);
+            body,
+            EmailRecipientType.Members);
     }
 
     public async Task SendChapterConversationEmail(
@@ -140,7 +141,11 @@ public class MemberEmailService : IMemberEmailService
             { "conversation.url", url }
         };
 
-        await _emailService.SendEmail(request, chapter, addressees, subject, body, parameters);
+        // Same conversation, read by whichever side is being written to - hence the same choice as the url.
+        var recipientType = isToMember ? EmailRecipientType.Members : EmailRecipientType.Admins;
+
+        await _emailService.SendEmail(
+            request, chapter, addressees, subject, body, recipientType, parameters);
     }
 
     public async Task SendChapterMessage(
@@ -206,6 +211,8 @@ public class MemberEmailService : IMemberEmailService
             to,
             "Re: your message to {title}",
             body,
+            // Goes to whoever contacted the group, who need not be a member of it.
+            EmailRecipientType.Members,
             parameters);
     }
 
@@ -321,7 +328,8 @@ public class MemberEmailService : IMemberEmailService
 
             var to = group.Select(x => x.ToEmailAddressee()).ToArray();
 
-            await _emailService.SendEmail(request, chapter, to, subject, body, parameters);
+            await _emailService.SendEmail(
+                request, chapter, to, subject, body, EmailRecipientType.Members, parameters);
         }
     }
 
@@ -354,6 +362,7 @@ public class MemberEmailService : IMemberEmailService
             to,
             subject,
             body,
+            EmailRecipientType.Admins,
             parameters);
     }
 
@@ -383,6 +392,7 @@ public class MemberEmailService : IMemberEmailService
             member.ToEmailAddressee(),
             subject,
             body,
+            EmailRecipientType.Members,
             parameters);
     }
 
@@ -437,6 +447,8 @@ public class MemberEmailService : IMemberEmailService
             to,
             subject,
             body,
+            // Same reply, read by whichever side it is addressed to - the same choice as the url above.
+            toMember != null ? EmailRecipientType.Members : EmailRecipientType.Admins,
             parameters);
     }
 
@@ -535,6 +547,7 @@ public class MemberEmailService : IMemberEmailService
             [member.ToEmailAddressee()],
             subject,
             body,
+            EmailRecipientType.Members,
             parameters);
     }
 
@@ -640,7 +653,14 @@ public class MemberEmailService : IMemberEmailService
 
             var to = group.Select(x => x.ToEmailAddressee()).ToArray();
 
-            await _emailService.SendEmail(request, chapter, to, subject: subject, body: body, parameters: parameters);
+            await _emailService.SendEmail(
+                request,
+                chapter,
+                to,
+                subject: subject,
+                body: body,
+                recipientType: EmailRecipientType.Admins,
+                parameters: parameters);
         }
     }
 
@@ -674,6 +694,7 @@ public class MemberEmailService : IMemberEmailService
             to,
             subject,
             body,
+            EmailRecipientType.Admins,
             parameters);
     }
 
@@ -704,6 +725,7 @@ public class MemberEmailService : IMemberEmailService
             to,
             subject,
             body,
+            EmailRecipientType.Admins,
             new CustomEmailParameters
             {
                 { "issue.title", issue.Title },
@@ -830,6 +852,7 @@ public class MemberEmailService : IMemberEmailService
             to,
             subject,
             body,
+            EmailRecipientType.Admins,
             parameters);
     }
 
@@ -874,7 +897,8 @@ public class MemberEmailService : IMemberEmailService
             chapter,
             toAdmins,
             subject,
-            body);
+            body,
+            EmailRecipientType.Admins);
 
         var toMember = member.ToEmailAddressee();
         body =
@@ -886,7 +910,8 @@ public class MemberEmailService : IMemberEmailService
             chapter: null,
             [toMember],
             subject,
-            body);
+            body,
+            EmailRecipientType.Members);
     }
 
     public async Task SendSiteMessage(
@@ -938,7 +963,9 @@ public class MemberEmailService : IMemberEmailService
             null,
             to,
             subject,
-            body);
+            body,
+            // Goes to whoever contacted the site, who need not be a member.
+            EmailRecipientType.Members);
     }
 
     public async Task SendSiteSubscriptionExpiredEmail(
@@ -965,6 +992,7 @@ public class MemberEmailService : IMemberEmailService
             [member.ToEmailAddressee()],
             subject,
             body,
+            EmailRecipientType.Members,
             parameters);
     }
 
@@ -995,6 +1023,7 @@ public class MemberEmailService : IMemberEmailService
             member.ToEmailAddressee(),
             subject,
             body,
+            EmailRecipientType.Members,
             parameters);
     }
 
@@ -1078,6 +1107,7 @@ public class MemberEmailService : IMemberEmailService
                 member.ToEmailAddressee(),
                 subject,
                 body,
+                EmailRecipientType.Members,
                 parameters);
         }
     }
@@ -1139,6 +1169,7 @@ public class MemberEmailService : IMemberEmailService
                 member.ToEmailAddressee(),
                 subject,
                 body,
+                EmailRecipientType.Members,
                 parameters);
         }
     }

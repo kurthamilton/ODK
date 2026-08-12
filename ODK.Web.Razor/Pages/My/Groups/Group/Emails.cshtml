@@ -11,8 +11,10 @@
     var emails = await EmailAdminService.GetChapterEmails(Model.MemberChapterAdminServiceRequest);
     var viewModel = new ChapterEmailsViewModel
     {
+        CanEdit = emails.CanEdit,
         Chapter = Model.Chapter,
-        Emails = emails
+        Emails = emails.Emails,
+        Settings = emails.Settings
     };
 }
 

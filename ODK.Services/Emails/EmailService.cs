@@ -81,7 +81,8 @@ public class EmailService : IEmailService
         IChapterServiceRequest request,
         IEnumerable<Member> to,
         string subject,
-        string body)
+        string body,
+        EmailRecipientType recipientType)
     {
         var chapter = request.Chapter;
 
@@ -89,6 +90,7 @@ public class EmailService : IEmailService
         {
             Body = body,
             Chapter = chapter,
+            RecipientType = recipientType,
             Subject = subject,
             To = to.Select(x => x.ToEmailAddressee()).ToArray(),
         });
@@ -174,9 +176,10 @@ public class EmailService : IEmailService
         Chapter? chapter,
         IEnumerable<EmailAddressee> to,
         string subject,
-        string body)
+        string body,
+        EmailRecipientType recipientType)
     {
-        return await SendEmail(request, chapter, to, subject, body, parameters: null);
+        return await SendEmail(request, chapter, to, subject, body, recipientType, parameters: null);
     }
 
     public async Task<ServiceResult> SendEmail(
@@ -185,6 +188,7 @@ public class EmailService : IEmailService
         IEnumerable<EmailAddressee> to,
         string subject,
         string body,
+        EmailRecipientType recipientType,
         IEmailParameters? parameters)
     {
         return await SendEmail(request, new SendEmailOptions
@@ -192,6 +196,7 @@ public class EmailService : IEmailService
             Body = body,
             Chapter = chapter,
             Parameters = parameters,
+            RecipientType = recipientType,
             Subject = subject,
             To = to.ToArray()
         });
@@ -203,12 +208,14 @@ public class EmailService : IEmailService
         EmailAddressee to,
         string subject,
         string body,
+        EmailRecipientType recipientType,
         IEmailParameters? parameters)
     {
         return await SendEmail(request, new SendEmailOptions
         {
             Body = body,
             Chapter = chapter,
+            RecipientType = recipientType,
             Subject = subject,
             To = [to],
             Parameters = parameters
@@ -266,11 +273,26 @@ public class EmailService : IEmailService
         }
     }
 
+    /// <summary>
+    /// The unresolved title template for an email, chosen by who it is written for: the group's wording
+    /// where it has set one and the site's otherwise. Coalesce reads blank as unset, so a group that has
+    /// never filled its settings form in takes every title from the site.
+    /// </summary>
+    private static string Title(
+        SiteEmailSettings siteSettings,
+        ChapterEmailSettings? chapterEmailSettings,
+        EmailRecipientType recipientType)
+        => recipientType == EmailRecipientType.Admins
+            ? StringUtils.Coalesce(chapterEmailSettings?.AdminTitle, siteSettings.AdminTitle)
+            : StringUtils.Coalesce(chapterEmailSettings?.MemberTitle, siteSettings.MemberTitle);
+
     private async Task<IReadOnlyDictionary<string, string>> BuildParameters(
         IServiceRequest request,
         SendEmailOptions options,
         SiteEmailSettings siteSettings,
-        Email? bodyEmail)
+        ChapterEmailSettings? chapterEmailSettings,
+        string? templateHtml,
+        EmailRecipientType recipientType)
     {
         var urlProvider = await _urlProviderFactory.Create(request);
 
@@ -303,11 +325,15 @@ public class EmailService : IEmailService
             }
         }
 
-        parameters[EmailParameters.TitleName] = siteSettings.Title.Interpolate(parameters.AsReadOnly(), HttpUtility.HtmlEncode);
+        /* Resolved after the merge and not before, because the title is itself a template over the
+           parameters above it. The layout takes the same value as the email it wraps, since it reads this
+           dictionary too - which is why the layout needs no audience of its own. */
+        parameters[EmailParameters.TitleName] = Title(siteSettings, chapterEmailSettings, recipientType)
+            .Interpolate(parameters.AsReadOnly(), HttpUtility.HtmlEncode);
 
         var body = !string.IsNullOrEmpty(options.Body)
             ? options.Body
-            : bodyEmail?.HtmlContent ?? string.Empty;
+            : templateHtml ?? string.Empty;
         body = body.Interpolate(parameters.AsReadOnly(), HttpUtility.HtmlEncode);
 
         foreach (var htmlParameter in parameters.Where(x => x.Key.StartsWith(EmailParameters.HtmlPrefix)))
@@ -329,39 +355,37 @@ public class EmailService : IEmailService
         var platform = request.Platform;
         var chapterId = options.Chapter?.Id;
 
-        var (emails, chapterEmails, siteSettings) = await _unitOfWork.RunAsync(
-            x => x.EmailRepository.GetAll(),
+        var (templates, siteSettings, chapterEmailSettings) = await _unitOfWork.RunAsync(
+            x => x.ChapterEmailRepository.GetDto(chapterId, options.Type),
+            x => x.SiteEmailSettingsRepository.Get(platform),
             x => chapterId != null
-                ? x.ChapterEmailRepository.GetByChapterId(chapterId.Value)
-                : new DefaultDeferredQueryMultiple<ChapterEmail>(),
-            x => x.SiteEmailSettingsRepository.Get(platform));
+                ? x.ChapterEmailSettingsRepository.GetByChapterIdOrDefault(chapterId.Value)
+                : new DefaultDeferredQuerySingleOrDefault<ChapterEmailSettings>());
 
-        /* Where a group has overridden a template, the wording is theirs but the recipient type stays the
-           site's - an override says how the email reads, not who it is for. */
-        var siteLayoutEmail = emails.First(x => x.Type == EmailType.Layout);
-        var layoutEmail = chapterEmails.FirstOrDefault(x => x.Type == EmailType.Layout)
-                ?.ToEmail(siteLayoutEmail.RecipientType)
-            ?? siteLayoutEmail;
+        /* A group's override supplies the wording only. The recipient type is read from the site row either
+           way, because an override says how an email reads and not who it is for. */
+        var layoutHtml = templates.ChapterLayout?.HtmlContent ?? templates.SiteLayout.HtmlContent;
 
-        // Null for the ad-hoc sends, which carry their own body and default Type to Layout.
-        Email? bodyEmail = null;
-        if (options.Type != EmailType.Layout)
-        {
-            var siteBodyEmail = emails.First(x => x.Type == options.Type);
-            bodyEmail = chapterEmails.FirstOrDefault(x => x.Type == options.Type)
-                    ?.ToEmail(siteBodyEmail.RecipientType)
-                ?? siteBodyEmail;
-        }
+        // A send carrying its own body leaves Type at Layout, so it has no template of its own to render.
+        var hasTemplate = options.Type != EmailType.Layout;
 
-        var parameters = await BuildParameters(request, options, siteSettings, bodyEmail);
+        var parameters = await BuildParameters(
+            request,
+            options,
+            siteSettings,
+            chapterEmailSettings,
+            hasTemplate ? templates.ChapterEmail?.HtmlContent ?? templates.SiteEmail.HtmlContent : null,
+            hasTemplate ? templates.SiteEmail.RecipientType : options.RecipientType);
 
         var subject = !string.IsNullOrEmpty(options.Subject)
             ? options.Subject
-            : bodyEmail?.Subject ?? string.Empty;
+            : hasTemplate
+                ? templates.ChapterEmail?.Subject ?? templates.SiteEmail.Subject
+                : string.Empty;
 
         var queuedEmail = _unitOfWork.QueuedEmailRepository.Add(new QueuedEmail
         {
-            Body = layoutEmail.HtmlContent.Interpolate(parameters),
+            Body = layoutHtml.Interpolate(parameters),
             ChapterId = chapterId,
             CreatedUtc = DateTime.UtcNow,
             FromEmailAddress = siteSettings.FromEmailAddress,

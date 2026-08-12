@@ -11,6 +11,7 @@ using ODK.Services.Security;
 using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
 using ODK.Web.Razor.Models.Admin.Chapters;
+using ODK.Web.Razor.Models.Admin.Emails;
 using ODK.Web.Razor.Models.Admin.Members;
 using ODK.Web.Razor.Models.Chapters.SiteAdmin;
 using ODK.Web.Razor.Models.Feedback;
@@ -303,6 +304,24 @@ public class ChapterAdminController : AdminControllerBase
         });
 
         AddFeedback(result, "Email updated");
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("groups/{chapterId:guid}/emails/settings")]
+    public async Task<IActionResult> UpdateChapterEmailSettings(
+        Guid chapterId, [FromForm] ChapterEmailSettingsFormSubmitViewModel viewModel)
+    {
+        var request = MemberChapterAdminServiceRequest.Create(
+            ChapterAdminSecurable.Emails, MemberChapterServiceRequest);
+        var result = await _emailAdminService.UpdateChapterEmailSettings(
+            request,
+            new ChapterEmailSettingsUpdateModel
+            {
+                AdminTitle = viewModel.AdminTitle,
+                MemberTitle = viewModel.MemberTitle
+            });
+
+        AddFeedback(result, "Email settings updated");
         return RedirectToReferrer();
     }
 

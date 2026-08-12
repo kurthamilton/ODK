@@ -1,9 +1,47 @@
-﻿@using ODK.Web.Common.Routes
+﻿@using ODK.Core.Features
+@using ODK.Core.Utils
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Admin.Emails
 @using ODK.Web.Razor.Models.Components
 @model ChapterEmailsViewModel
 @inject IOdkRoutes OdkRoutes
+@{
+    ChapterEmailSettingsFormViewModel SettingsViewModel(bool readOnly) => new()
+    {
+        AdminTitle = Model.Settings?.AdminTitle,
+        MemberTitle = Model.Settings?.MemberTitle,
+        ReadOnly = readOnly
+    };
+}
+
+<section class="section--admin">
+    <h2 class="content-heading">Settings</h2>
+
+    @* DisabledContentFunc rather than hiding it, matching the template form: a group that set a title
+       before its subscription changed keeps sending it, so it needs to see what is set even when it can no
+       longer change it. UpdateChapterEmailSettings enforces this too - the read-only markup is
+       presentation, not the guard. *@
+    @await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.CanEdit)
+    {
+        Chapter = Model.Chapter,
+        Feature = SiteFeatureType.CustomEmails,
+        ContentFunc =
+            @<form method="post" action="/groups/@Model.Chapter.Id/emails/settings">
+                @Html.AntiForgeryToken()
+
+                @await Html.PartialAsync("Admin/Chapter/_EmailSettingsForm", SettingsViewModel(readOnly: false))
+
+                <button class="btn btn-primary" type="submit">Update</button>
+            </form>,
+        DisabledContentFunc =
+            @<div class="mt-3">
+                @await Html.PartialAsync("Admin/Chapter/_EmailSettingsForm", SettingsViewModel(readOnly: true))
+            </div>
+    })
+</section>
+
+<h2 class="content-heading">Emails</h2>
 
 @await Html.PartialAsync("Components/_AdminPageDescription",
     "Templates for the emails your group sends. Each has a default you can override to add your own wording.")
@@ -16,22 +54,26 @@
         <thead>
             <tr>
                 <th>Email</th>
+                <th>Recipients</th>
                 <th>Custom</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var email in Model.Emails.OrderBy(x => x.Name))
+            @foreach (var item in Model.Emails.OrderBy(x => x.Email.Name))
             {
                 <tr>
                     <td>
                         @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
                         {
-                            Route = OdkRoutes.GroupAdmin.Email(Model.Chapter, email.Type),
-                            Text = email.Name
+                            Route = OdkRoutes.GroupAdmin.Email(Model.Chapter, item.Email.Type),
+                            Text = item.Email.Name
                         })
                     </td>
                     <td>
-                        @if (email.IsDefault())
+                        @EnumUtils.GetDisplayValue(item.RecipientType)
+                    </td>
+                    <td>
+                        @if (item.Email.IsDefault())
                         {
                             <span class="text-muted">Default</span>
                         }

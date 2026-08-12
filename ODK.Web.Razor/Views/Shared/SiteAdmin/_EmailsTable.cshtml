@@ -1,4 +1,5 @@
-﻿@using ODK.Services.Emails
+﻿@using ODK.Core.Utils
+@using ODK.Services.Emails
 @using ODK.Web.Common.Routes
 @using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Components
@@ -14,6 +15,7 @@
         <thead>
             <tr>
                 <th>Email</th>
+                <th>Recipients</th>
                 <th>Overridable</th>
             </tr>
         </thead>
@@ -25,6 +27,9 @@
                         <a href="@OdkRoutes.SiteAdmin.Email(email.Type)">
                             @email.Name
                         </a>
+                    </td>
+                    <td>
+                        @EnumUtils.GetDisplayValue(email.RecipientType)
                     </td>
                     <td>
                         @if (email.Overridable)

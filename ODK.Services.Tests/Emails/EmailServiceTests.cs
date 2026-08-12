@@ -97,6 +97,104 @@ public static class EmailServiceTests
     }
 
     [Test]
+    public static async Task SendEmail_MemberEmail_TitleIsTheSitesMemberTitle()
+    {
+        // Arrange - a group that has never filled its settings form in takes every title from the site.
+        var sent = await SendTemplate(
+            subject: "{title} subject",
+            body: "<p>{title}</p>",
+            recipientType: EmailRecipientType.Members);
+
+        // Assert - the title is a template in its own right, so the group name inside it resolves too.
+        sent.Subject.Should().Be("Test group members subject");
+        sent.Body.Should().Contain("Test group members");
+    }
+
+    [Test]
+    public static async Task SendEmail_AdminEmail_TitleIsTheSitesAdminTitle()
+    {
+        // Arrange - the audience is the email's own, so the same template yields different wording.
+        var sent = await SendTemplate(
+            subject: "{title} subject",
+            body: "<p>{title}</p>",
+            recipientType: EmailRecipientType.Admins);
+
+        // Assert
+        sent.Subject.Should().Be("Test group admins subject");
+        sent.Body.Should().Contain("Test group admins");
+    }
+
+    [Test]
+    public static async Task SendEmail_GroupSetsTheTitleForThisAudience_UsesTheGroupsWording()
+    {
+        // Arrange
+        var sent = await SendTemplate(
+            subject: "subject",
+            body: "<p>{title}</p>",
+            recipientType: EmailRecipientType.Members,
+            chapterEmailSettings: new ChapterEmailSettings
+            {
+                Id = Guid.NewGuid(),
+                MemberTitle = "Our own wording"
+            });
+
+        // Assert
+        sent.Body.Should().Contain("Our own wording");
+    }
+
+    [Test]
+    public static async Task SendEmail_GroupSetsTheTitleForTheOtherAudience_InheritsTheSites()
+    {
+        // Arrange - the two audiences are inherited independently, so a group setting one leaves the other
+        // alone. An admin email must not pick up wording written for members.
+        var sent = await SendTemplate(
+            subject: "subject",
+            body: "<p>{title}</p>",
+            recipientType: EmailRecipientType.Admins,
+            chapterEmailSettings: new ChapterEmailSettings
+            {
+                Id = Guid.NewGuid(),
+                MemberTitle = "Our own wording"
+            });
+
+        // Assert
+        sent.Body.Should().Contain("Test group admins");
+        sent.Body.Should().NotContain("Our own wording");
+    }
+
+    [Test]
+    public static async Task SendEmail_GroupTitleIsBlank_InheritsTheSites()
+    {
+        // Arrange - blank is how the form posts a box the group cleared, and it reads as unset rather than
+        // as a title of nothing. Pinned because the failure is a silently empty email title.
+        var sent = await SendTemplate(
+            subject: "subject",
+            body: "<p>{title}</p>",
+            recipientType: EmailRecipientType.Members,
+            chapterEmailSettings: new ChapterEmailSettings
+            {
+                Id = Guid.NewGuid(),
+                MemberTitle = string.Empty
+            });
+
+        // Assert
+        sent.Body.Should().Contain("Test group members");
+    }
+
+    [Test]
+    public static async Task SendEmail_AdHocSend_TitleFollowsTheAudienceItDeclares()
+    {
+        // Arrange - a send carrying its own subject and body has no email row to take an audience from, so
+        // the one it states is what the title resolves through. Nothing falls back to the site-wide title.
+        var admin = await SendAdHoc(EmailRecipientType.Admins);
+        var member = await SendAdHoc(EmailRecipientType.Members);
+
+        // Assert
+        admin.Subject.Should().Be("Test group admins subject");
+        member.Subject.Should().Be("Test group members subject");
+    }
+
+    [Test]
     public static async Task SendEventCommentEmail_SendsTheAdminTemplateToAdminsAndTheReplyTemplateToTheMember()
     {
         // Arrange - one send per audience, each reading its own template, so wording meant for admins
@@ -224,10 +322,9 @@ public static class EmailServiceTests
         return sent;
     }
 
-    private static async Task<EmailClientEmail> SendTemplate(
-        string subject,
-        string body,
-        IEmailParameters? parameters = null)
+    /* The subject/body overload rather than a template: it takes Type's default of Layout, so there is no
+       body email and the recipient type it is given is the only audience available. */
+    private static async Task<EmailClientEmail> SendAdHoc(EmailRecipientType recipientType)
     {
         using var context = new MockOdkContext();
 
@@ -241,9 +338,11 @@ public static class EmailServiceTests
 
         context.Create(new SiteEmailSettings
         {
+            AdminTitle = "{group.name} admins",
             FromEmailAddress = "noreply@example.com",
             FromName = "{group.name}",
             Id = Guid.NewGuid(),
+            MemberTitle = "{group.name} members",
             Platform = PlatformType.DrunkenKnitwits,
             PlatformTitle = "Platform",
             Title = "{group.name}"
@@ -256,9 +355,83 @@ public static class EmailServiceTests
             Type = EmailType.Layout
         });
 
+        EmailClientEmail? sent = null;
+        var emailClient = new Mock<IEmailClient>();
+        emailClient
+            .Setup(x => x.SendEmail(It.IsAny<EmailClientEmail>()))
+            .Callback<EmailClientEmail>(x => sent = x)
+            .ReturnsAsync(new SendEmailResult(true) { ExternalId = "external-id" });
+
+        var service = CreateService(context, chapter, emailClient);
+
+        var request = new ServiceRequest
+        {
+            CurrentMemberOrDefault = null,
+            HttpRequestContext = Mock.Of<IHttpRequestContext>(),
+            Platform = PlatformType.DrunkenKnitwits
+        };
+
+        // Act
+        await service.SendEmail(
+            request,
+            chapter,
+            [new EmailAddressee("member@example.com", "Test Member")],
+            "{title} subject",
+            "<p>{title}</p>",
+            recipientType);
+
+        sent.Should().NotBeNull();
+        return sent!;
+    }
+
+    private static async Task<EmailClientEmail> SendTemplate(
+        string subject,
+        string body,
+        IEmailParameters? parameters = null,
+        ChapterEmailSettings? chapterEmailSettings = null,
+        EmailRecipientType recipientType = EmailRecipientType.Members)
+    {
+        using var context = new MockOdkContext();
+
+        var chapter = context.Create(new Chapter
+        {
+            Id = Guid.NewGuid(),
+            Name = "Test group",
+            Platform = PlatformType.DrunkenKnitwits,
+            Slug = "test-group"
+        });
+
+        /* Each title is a template of its own, and the three are given distinguishable wording so an
+           assertion can tell which one an email resolved to. */
+        context.Create(new SiteEmailSettings
+        {
+            AdminTitle = "{group.name} admins",
+            FromEmailAddress = "noreply@example.com",
+            FromName = "{group.name}",
+            Id = Guid.NewGuid(),
+            MemberTitle = "{group.name} members",
+            Platform = PlatformType.DrunkenKnitwits,
+            PlatformTitle = "Platform",
+            Title = "{group.name}"
+        });
+
+        if (chapterEmailSettings != null)
+        {
+            chapterEmailSettings.ChapterId = chapter.Id;
+            context.Create(chapterEmailSettings);
+        }
+
+        context.Create(new Email
+        {
+            HtmlContent = "{body}",
+            Subject = string.Empty,
+            Type = EmailType.Layout
+        });
+
         context.Create(new Email
         {
             HtmlContent = body,
+            RecipientType = recipientType,
             Subject = subject,
             Type = EmailType.NewMember
         });

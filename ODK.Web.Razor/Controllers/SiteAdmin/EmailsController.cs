@@ -57,8 +57,10 @@ public class EmailsController : OdkControllerBase
     {
         var model = new EmailSettingsUpdateModel
         {
+            AdminTitle = viewModel.AdminTitle,
             FromEmailAddress = viewModel.FromEmailAddress,
             FromEmailName = viewModel.FromEmailName,
+            MemberTitle = viewModel.MemberTitle,
             PlatformTitle = viewModel.PlatformTitle,
             Title = viewModel.Title
         };

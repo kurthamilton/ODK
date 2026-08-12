@@ -1,4 +1,5 @@
 ﻿using ODK.Core;
+using ODK.Core.Chapters;
 using ODK.Core.Emails;
 using ODK.Core.Features;
 using ODK.Core.Subscriptions;
@@ -87,19 +88,22 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         };
     }
 
-    public async Task<IReadOnlyCollection<ChapterEmail>> GetChapterEmails(
+    public async Task<ChapterEmailsAdminPageViewModel> GetChapterEmails(
         IMemberChapterAdminServiceRequest request)
     {
         var chapter = request.Chapter;
 
-        var (chapterEmails, siteEmails) = await GetChapterAdminRestrictedContent(
-            request,
-            x => x.ChapterEmailRepository.GetByChapterId(chapter.Id),
-            x => x.EmailRepository.GetAll());
+        var (chapterEmails, siteEmails, settings, ownerSubscriptionFeatures) =
+            await GetChapterAdminRestrictedContent(
+                request,
+                x => x.ChapterEmailRepository.GetByChapterId(chapter.Id),
+                x => x.EmailRepository.GetAll(),
+                x => x.ChapterEmailSettingsRepository.GetByChapterIdOrDefault(chapter.Id),
+                OwnerSubscriptionFeatures(chapter.Id));
 
         var chapterEmailDictionary = chapterEmails.ToDictionary(x => x.Type);
 
-        var emails = new List<ChapterEmail>();
+        var emails = new List<ChapterEmailListItemViewModel>();
 
         foreach (var siteEmail in siteEmails.OrderBy(x => x.Type))
         {
@@ -108,23 +112,30 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
                 continue;
             }
 
-            if (chapterEmailDictionary.TryGetValue(siteEmail.Type, out var chapterEmail))
+            if (!chapterEmailDictionary.TryGetValue(siteEmail.Type, out var chapterEmail))
             {
-                emails.Add(chapterEmail);
-            }
-            else
-            {
-                emails.Add(new ChapterEmail
+                chapterEmail = new ChapterEmail
                 {
                     ChapterId = chapter.Id,
                     HtmlContent = siteEmail.HtmlContent,
                     Subject = siteEmail.Subject,
                     Type = siteEmail.Type
-                });
+                };
             }
+
+            emails.Add(new ChapterEmailListItemViewModel
+            {
+                Email = chapterEmail,
+                RecipientType = siteEmail.RecipientType
+            });
         }
 
-        return emails;
+        return new ChapterEmailsAdminPageViewModel
+        {
+            CanEdit = CanEditEmails(ownerSubscriptionFeatures),
+            Emails = emails,
+            Settings = settings
+        };
     }
 
     public async Task<Email> GetEmail(IMemberServiceRequest request, EmailType type)
@@ -201,6 +212,41 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         return ServiceResult.Successful();
     }
 
+    public async Task<ServiceResult> UpdateChapterEmailSettings(
+        IMemberChapterAdminServiceRequest request,
+        ChapterEmailSettingsUpdateModel model)
+    {
+        var chapter = request.Chapter;
+
+        var (settings, ownerSubscriptionFeatures) = await GetChapterAdminRestrictedContent(
+            request,
+            x => x.ChapterEmailSettingsRepository.GetByChapterIdOrDefault(chapter.Id),
+            OwnerSubscriptionFeatures(chapter.Id));
+
+        // The form renders read-only without the feature, but that is presentation - this is what
+        // withholds it. Anything already set is left alone and keeps being used.
+        if (!CanEditEmails(ownerSubscriptionFeatures))
+        {
+            return ServiceResult.Failure(NotPermitted);
+        }
+
+        settings ??= new ChapterEmailSettings
+        {
+            ChapterId = chapter.Id
+        };
+
+        /* Blank is stored as null rather than as an empty string, so the row says the group has not set a
+           title rather than that it set one to nothing. Both read the same to the send path, but only null
+           reads that way to someone looking at the data. */
+        settings.AdminTitle = Unset(model.AdminTitle);
+        settings.MemberTitle = Unset(model.MemberTitle);
+
+        _unitOfWork.ChapterEmailSettingsRepository.Upsert(settings);
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
+    }
+
     public async Task<ServiceResult> UpdateEmail(IMemberServiceRequest request, EmailType type, EmailUpdateModel model)
     {
         var existing = await GetSiteAdminRestrictedContent(request,
@@ -253,6 +299,8 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
             .Features()
             .GetAll();
 
+    private static string? Unset(string? value) => !string.IsNullOrWhiteSpace(value) ? value : null;
+
     /* Checked against everything the type supplies, not the narrower list a group is offered: a group
        template using platform.baseurl still resolves, so rejecting it would fail a working email. */
     private static ServiceResult ValidatePlaceholders(EmailType type, string subject, string htmlContent)
@@ -270,6 +318,9 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
                 string.Join(", ", unknown.Select(x => $"{{{x}}}")))
             : ServiceResult.Successful();
     }
+
+    private bool CanEditEmails(IReadOnlyCollection<SiteSubscriptionFeature> ownerSubscriptionFeatures)
+        => _authorizationService.ChapterHasAccess(ownerSubscriptionFeatures, SiteFeatureType.CustomEmails);
 
     private ServiceResult ValidateChapterEmail(ChapterEmail chapterEmail)
     {
@@ -320,7 +371,4 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
     private ServiceResult ValidateHtml(EmailType type, string? htmlContent) => type == EmailType.Layout
         ? ServiceResult.Successful()
         : _htmlValidator.Validate(htmlContent, TemplateHtmlOptions);
-
-    private bool CanEditEmails(IReadOnlyCollection<SiteSubscriptionFeature> ownerSubscriptionFeatures)
-        => _authorizationService.ChapterHasAccess(ownerSubscriptionFeatures, SiteFeatureType.CustomEmails);
 }

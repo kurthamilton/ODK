@@ -159,6 +159,7 @@ public static class ReferralServiceTests
                 It.Is<IEnumerable<EmailAddressee>>(to => to.Single().Address == "friend@example.com"),
                 campaign.EmailSubject,
                 campaign.EmailText,
+                EmailRecipientType.Members,
                 It.Is<IEmailParameters>(p =>
                     p.ToDictionary()["member.fullName"] == "Ada Lovelace" &&
                     p.ToDictionary()["referral.id"] == referral.Id.ToString() &&
@@ -230,6 +231,7 @@ public static class ReferralServiceTests
                 It.IsAny<IEnumerable<EmailAddressee>>(),
                 It.IsAny<string>(),
                 It.IsAny<string>(),
+                It.IsAny<EmailRecipientType>(),
                 It.IsAny<IEmailParameters>()),
             Times.Never);
 }

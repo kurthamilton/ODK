@@ -71,7 +71,8 @@ public class TestEmailParametersFactory : ITestEmailParametersFactory
             {
                 Url = urlProvider.ConfirmEmailAddressUpdate(chapter, "TEST")
             },
-            EmailType.EventComment => chapter != null
+            EmailType.EventComment or
+            EmailType.EventCommentReply => chapter != null
                 ? new EventCommentParameters(new Event())
                 {
                     EventUrl = urlProvider.EventUrl(chapter, "TEST"),
