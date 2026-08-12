@@ -1,7 +1,14 @@
 ﻿@using ODK.Services.Emails.Parameters
 @using ODK.Web.Razor.Models.Admin.Chapters
+@using ODK.Web.Razor.Models.Admin.Emails
 @using ODK.Web.Razor.Models.SiteAdmin
 @model EmailContentViewModel
+
+@await Html.PartialAsync("Admin/Chapter/_EmailRecipients", new EmailRecipientsViewModel
+{
+    RecipientType = Model.Email.RecipientType,
+    Title = Model.Title
+})
 
 <form method="post">
     @Html.AntiForgeryToken()

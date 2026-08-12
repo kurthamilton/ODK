@@ -110,6 +110,17 @@ The app follows a clear split — respect it:
 - **MVC controllers** (`Controllers/**`) handle POSTs that mutate state, then **redirect**
   (Post/Redirect/Get). Controllers derive from `OdkControllerBase` / `AdminControllerBase`.
 
+**Load a page's view model in the `.cshtml`, not the `.cshtml.cs`.** `@inject` the service and call it
+in the `@{ }` block, keeping the result in a local. The page model then holds only what a view cannot
+get for itself — the route values it captures in `OnGet`, the `Securable`, and any POST handler. See
+`Pages/My/Groups/Group/Email.cshtml`.
+
+Loading in the page model means a property per value passed through, and those properties collide with
+the base's own — `Title` is already the browser title, so an email's title had to become `AppliedTitle`
+purely to get past the compiler. A local in the view has no such problem. Where a POST handler renders
+the page again on failure, set the captured route values there too, or the re-render loads against a
+`default` route value.
+
 A page's form typically `action`s a controller endpoint; the controller does the work, calls
 `AddFeedback(...)`, and returns `RedirectToReferrer()` or `Redirect(OdkRoutes...Path)`.
 

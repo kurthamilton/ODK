@@ -64,6 +64,7 @@ public static class EmailAdminServiceTests
         using var context = new MockOdkContext();
         var (chapter, currentMember) = CreateChapter(context, withFeature: true);
         CreateSiteEmail(context, EmailRecipientType.Admins);
+        CreateSiteEmailSettings(context);
         context.Create(new ChapterEmail
         {
             ChapterId = chapter.Id,
@@ -91,6 +92,7 @@ public static class EmailAdminServiceTests
         using var context = new MockOdkContext();
         var (chapter, currentMember) = CreateChapter(context, withFeature: true);
         CreateSiteEmail(context);
+        CreateSiteEmailSettings(context);
         context.Create(new ChapterEmailSettings
         {
             ChapterId = chapter.Id,
@@ -103,8 +105,10 @@ public static class EmailAdminServiceTests
         // Act
         var result = await service.GetChapterEmails(CreateRequest(chapter, currentMember));
 
-        // Assert
+        // Assert - the site's titles come through too, since the form shows them beside the group's boxes.
         result.Settings!.MemberTitle.Should().Be("Our own wording");
+        result.SiteMemberTitle.Should().Be("Site members");
+        result.SiteAdminTitle.Should().Be("Site admins");
         result.CanEdit.Should().BeTrue();
     }
 
@@ -116,6 +120,7 @@ public static class EmailAdminServiceTests
         using var context = new MockOdkContext();
         var (chapter, currentMember) = CreateChapter(context, withFeature: false);
         CreateSiteEmail(context);
+        CreateSiteEmailSettings(context);
 
         var service = CreateService(context);
 
@@ -473,6 +478,20 @@ public static class EmailAdminServiceTests
         RecipientType = recipientType,
         Subject = "Standard",
         Type = Type
+    });
+
+    /* The chapter email pages read the site's titles, to show a group what leaving a box empty gives it, so
+       the settings row has to exist for them to load at all. */
+    private static void CreateSiteEmailSettings(MockOdkContext context) => context.Create(new SiteEmailSettings
+    {
+        AdminTitle = "Site admins",
+        FromEmailAddress = "noreply@example.com",
+        FromName = "Site",
+        Id = Guid.NewGuid(),
+        MemberTitle = "Site members",
+        Platform = PlatformType.Default,
+        PlatformTitle = "Platform",
+        Title = "Site"
     });
 
     private static EmailUpdateModel CreateUpdateModel() => new()

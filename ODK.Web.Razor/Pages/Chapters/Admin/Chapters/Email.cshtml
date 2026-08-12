@@ -1,14 +1,18 @@
 ﻿@page "/{chapterName}/admin/chapter/emails/{type}"
+@using ODK.Services.Emails
 @using ODK.Web.Razor.Models.Admin
-@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Admin.Chapters
+@using ODK.Web.Razor.Models.Components
 @model EmailModel
+@inject IEmailAdminService EmailAdminService
 @{
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Email | Admin";
 
     var chapter = Model.Chapter;
-    var viewModel = new ChapterEmailContentViewModel(chapter, Model.Email, Model.CanEdit);
+    var email = await EmailAdminService.GetChapterEmail(Model.MemberChapterAdminServiceRequest, Model.Type);
+    var viewModel = new ChapterEmailContentViewModel(
+        chapter, email.Email, email.CanEdit, email.RecipientType, email.Title);
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
@@ -17,7 +21,7 @@
     Breadcrumbs = new[]
     {
         new MenuItem { Link = Model.AdminRoutes.Emails(chapter).Path, Text = "Emails" },
-        new MenuItem { Text = Model.Email.Name }
+        new MenuItem { Text = email.Email.Name }
     },
     ContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_EmailContent", viewModel)</div>
 })

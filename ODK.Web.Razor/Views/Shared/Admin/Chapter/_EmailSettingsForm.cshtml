@@ -9,16 +9,20 @@
     </p>
 
     <div class="row mb-3 gy-3">
+        @* The site's wording shown as written rather than rendered: each title is a template in its own
+           right, so it may still contain parameters. *@
         <div class="form-group col-md-6">
             @Html.LabelFor(x => x.MemberTitle, new { @class = "form-label" })
             @Html.TextBoxFor(x => x.MemberTitle, new { @class = "form-control" })
             @Html.ValidationMessageFor(x => x.MemberTitle)
+            <div class="form-text">Default: <code>@Model.SiteMemberTitle</code></div>
         </div>
 
         <div class="form-group col-md-6">
             @Html.LabelFor(x => x.AdminTitle, new { @class = "form-label" })
             @Html.TextBoxFor(x => x.AdminTitle, new { @class = "form-control" })
             @Html.ValidationMessageFor(x => x.AdminTitle)
+            <div class="form-text">Default: <code>@Model.SiteAdminTitle</code></div>
         </div>
     </div>
 </fieldset>

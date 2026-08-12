@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Emails;
 using ODK.Services.Emails;
 using ODK.Services.Emails.Models;
@@ -16,18 +16,20 @@ public class EmailModel : SiteAdminPageModel
         _emailAdminService = emailAdminService;
     }
 
-    public Email Email { get; private set; } = null!;
+    public EmailType Type { get; private set; }
 
-    public async Task<IActionResult> OnGetAsync(EmailType type)
+    public void OnGet(EmailType type)
     {
-        Email = await _emailAdminService.GetEmail(MemberServiceRequest, type);
-        return Page();
+        Type = type;
     }
 
     public async Task<IActionResult> OnPostAsync(EmailType type,
         [FromForm] ChapterEmailFormSubmitViewModel viewModel,
         [FromForm] bool overridable)
     {
+        // Set for the failure path below, which renders the page and so loads the email by this type.
+        Type = type;
+
         var result = await _emailAdminService.UpdateEmail(MemberServiceRequest, type, new EmailUpdateModel
         {
             HtmlContent = viewModel.Content,
