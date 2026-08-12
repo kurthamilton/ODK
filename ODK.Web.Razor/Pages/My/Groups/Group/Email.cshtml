@@ -32,3 +32,7 @@
     BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_EmailContent", viewModel)</div>,
     MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu")
 })
+
+@section scripts {
+    <script src="~/js/odk.bundle.code-editor.js" asp-append-version="true"></script>
+}
