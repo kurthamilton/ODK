@@ -15,25 +15,25 @@ public enum EmailType
     [Display(Name = "Event invitation")]
     EventInvite = 3,
 
-    [Display(Name = "Contact message (to admins)")]
+    [Display(Name = "Contact message (admin)")]
     ContactRequest = 4,
 
-    [Display(Name = "Welcome new member")]
+    [Display(Name = "New member")]
     NewMember = 5,
 
-    [Display(Name = "New member joined (to admins)")]
+    [Display(Name = "New member (admin)")]
     NewMemberAdmin = 6,
 
     [Display(Name = "Email address change")]
     EmailAddressUpdate = 7,
 
-    [Display(Name = "Layout (wraps every email)")]
+    [Display(Name = "Layout")]
     Layout = 8,
 
     [Display(Name = "Membership payment confirmation")]
     SubscriptionConfirmation = 9,
 
-    [Display(Name = "Event comment")]
+    [Display(Name = "Event comment (admin)")]
     EventComment = 10,
 
     [Display(Name = "Sign up with an existing account")]
@@ -55,5 +55,8 @@ public enum EmailType
     MemberImportActivation = 16,
 
     [Display(Name = "Imported member: added to group")]
-    MemberImportInvite = 17
+    MemberImportInvite = 17,
+
+    [Display(Name = "Event comment reply")]
+    EventCommentReply = 18
 }

@@ -16,25 +16,9 @@ public class Email
 
     public IDictionary<string, string?> Parameters { get; } = new Dictionary<string, string?>();
 
+    public EmailRecipientType RecipientType { get; set; }
+
     public string Subject { get; set; } = string.Empty;
 
     public EmailType Type { get; set; }
-
-    public Email Interpolate(IReadOnlyDictionary<string, string> parameters)
-    {
-        foreach (string key in parameters.Keys)
-        {
-            Parameters[key] = parameters[key];
-        }
-
-        string htmlContent = HtmlContent.Interpolate(parameters);
-        string subject = Subject.Interpolate(parameters);
-
-        return new Email
-        {
-            HtmlContent = htmlContent,
-            Subject = subject,
-            Type = Type,
-        };
-    }
 }

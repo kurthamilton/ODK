@@ -109,21 +109,38 @@ public class EmailService : IEmailService
                 ? x.MemberEmailPreferenceRepository.GetByMemberId(replyToMember.Id, MemberEmailPreferenceType.EventMessages)
                 : new DefaultDeferredQuerySingleOrDefault<MemberEmailPreference>());
 
-        var to = GetAddressees(chapterAdminMembers.Where(x => x.ReceiveEventCommentEmails));
-        if (replyToMember != null && replyToMemberEmailPreference?.Disabled != true)
+        /* One send per audience, each reading its own template: admins are told a comment was left on an
+           event they run, the replied-to member that someone answered them. The parameters are the same
+           either way - only the template differs, so a group customising one cannot change the other. */
+        var adminAddressees = GetAddressees(chapterAdminMembers.Where(x => x.ReceiveEventCommentEmails))
+            .ToArray();
+
+        // Nothing is queued when every admin has opted out, rather than an email addressed to nobody.
+        if (adminAddressees.Length > 0)
         {
-            to = to.Append(replyToMember.ToEmailAddressee());
+            await SendEmail(request, new SendEmailOptions
+            {
+                Body = string.Empty,
+                Chapter = chapter,
+                Parameters = parameters,
+                Subject = string.Empty,
+                To = adminAddressees,
+                Type = EmailType.EventComment
+            });
         }
 
-        await SendEmail(request, new SendEmailOptions
+        if (replyToMember != null && replyToMemberEmailPreference?.Disabled != true)
         {
-            Body = string.Empty,
-            Chapter = chapter,
-            Parameters = parameters,
-            Subject = string.Empty,
-            To = to.ToArray(),
-            Type = EmailType.EventComment
-        });
+            await SendEmail(request, new SendEmailOptions
+            {
+                Body = string.Empty,
+                Chapter = chapter,
+                Parameters = parameters,
+                Subject = string.Empty,
+                To = [replyToMember.ToEmailAddressee()],
+                Type = EmailType.EventCommentReply
+            });
+        }
     }
 
     public Task<ServiceResult> SendEmail(
@@ -319,12 +336,22 @@ public class EmailService : IEmailService
                 : new DefaultDeferredQueryMultiple<ChapterEmail>(),
             x => x.SiteEmailSettingsRepository.Get(platform));
 
-        var layoutEmail = chapterEmails.FirstOrDefault(x => x.Type == EmailType.Layout)?.ToEmail()
-            ?? emails.First(x => x.Type == EmailType.Layout);
+        /* Where a group has overridden a template, the wording is theirs but the recipient type stays the
+           site's - an override says how the email reads, not who it is for. */
+        var siteLayoutEmail = emails.First(x => x.Type == EmailType.Layout);
+        var layoutEmail = chapterEmails.FirstOrDefault(x => x.Type == EmailType.Layout)
+                ?.ToEmail(siteLayoutEmail.RecipientType)
+            ?? siteLayoutEmail;
 
-        var bodyEmail = options.Type != EmailType.Layout ?
-            chapterEmails.FirstOrDefault(x => x.Type == options.Type)?.ToEmail() ?? emails.First(x => x.Type == options.Type)
-            : null;
+        // Null for the ad-hoc sends, which carry their own body and default Type to Layout.
+        Email? bodyEmail = null;
+        if (options.Type != EmailType.Layout)
+        {
+            var siteBodyEmail = emails.First(x => x.Type == options.Type);
+            bodyEmail = chapterEmails.FirstOrDefault(x => x.Type == options.Type)
+                    ?.ToEmail(siteBodyEmail.RecipientType)
+                ?? siteBodyEmail;
+        }
 
         var parameters = await BuildParameters(request, options, siteSettings, bodyEmail);
 

@@ -28,11 +28,7 @@ public static class EnumTableSql
         return Join(
             "IF NOT EXISTS (",
             "    SELECT 1",
-            "    FROM sys.foreign_keys fk",
-            "    INNER JOIN sys.foreign_key_columns fkc ON fkc.constraint_object_id = fk.object_id",
-            $"    WHERE fk.parent_object_id = OBJECT_ID({Literal(table)})",
-            $"        AND fk.referenced_object_id = OBJECT_ID({Literal(enumTable.Name)})",
-            $"        AND COL_NAME(fkc.parent_object_id, fkc.parent_column_id) = {Literal(column)})",
+            ForeignKeyMatch("    ", table, enumTable.Name, column) + ")",
             "BEGIN",
             $"    ALTER TABLE {Identifier(table)} ADD CONSTRAINT {Identifier(constraintName)}",
             $"        FOREIGN KEY ({Identifier(column)}) REFERENCES {Identifier(enumTable.Name)} ({Identifier(enumTable.IdColumnName)});",
@@ -72,6 +68,42 @@ public static class EnumTableSql
         var ids = string.Join(", ", values.Select(GetId));
 
         return $"DELETE FROM {Identifier(table.Name)} WHERE {Identifier(table.IdColumnName)} IN ({ids});";
+    }
+
+    /// <summary>
+    /// Removes the column's foreign key to the enum table, whatever the constraint is called. Needed
+    /// before <see cref="DropTable{T}"/>, which cannot drop a table anything still references.
+    /// </summary>
+    /// <remarks>
+    /// Found by the relationship rather than by name, for the same reason the add guard is: the
+    /// constraint may have been created by hand under a name this code cannot predict, so
+    /// <see cref="Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder.DropForeignKey"/> - which
+    /// needs the exact name - cannot be used. Loops rather than dropping the first match, so that when
+    /// this has run no such foreign key is left: stopping at one would leave a second behind and the
+    /// table drop after it would fail anyway, which is a harder failure to read than none at all.
+    /// </remarks>
+    public static string DropForeignKey<T>(string table, string column)
+        where T : struct, Enum
+    {
+        var enumTable = EnumTables.Get<T>();
+
+        // Composed as a literal rather than interpolated into one, so the identifier is escaped for
+        // being inside a string as well as for being an identifier.
+        var alterStatement = Literal($"ALTER TABLE {Identifier(table)} DROP CONSTRAINT ");
+
+        return Join(
+            "DECLARE @name sysname;",
+            "",
+            "WHILE 1 = 1",
+            "BEGIN",
+            "    SET @name = (",
+            "        SELECT TOP 1 fk.name",
+            ForeignKeyMatch("        ", table, enumTable.Name, column) + ");",
+            "",
+            "    IF @name IS NULL BREAK;",
+            "",
+            $"    EXEC({alterStatement} + QUOTENAME(@name));",
+            "END");
     }
 
     public static string DropTable<T>()
@@ -114,6 +146,17 @@ public static class EnumTableSql
     public static string InsertAll<T>()
         where T : struct, Enum
         => Insert(Enum.GetValues<T>().Where(x => GetId(x) != 0).ToArray());
+
+    /* Shared by the add guard and the drop, so the two cannot come to disagree about what counts as
+       "this column's foreign key to the enum table". Indented by the caller because the two nest it at
+       different depths. */
+    private static string ForeignKeyMatch(string indent, string table, string enumTableName, string column)
+        => Join(
+            $"{indent}FROM sys.foreign_keys fk",
+            $"{indent}INNER JOIN sys.foreign_key_columns fkc ON fkc.constraint_object_id = fk.object_id",
+            $"{indent}WHERE fk.parent_object_id = OBJECT_ID({Literal(table)})",
+            $"{indent}    AND fk.referenced_object_id = OBJECT_ID({Literal(enumTableName)})",
+            $"{indent}    AND COL_NAME(fkc.parent_object_id, fkc.parent_column_id) = {Literal(column)}");
 
     private static int GetId<T>(T value)
         where T : struct, Enum

@@ -1,4 +1,5 @@
-﻿using ODK.Core.Features;
+﻿using ODK.Core.Emails;
+using ODK.Core.Features;
 
 namespace ODK.Data.EntityFramework.Migrations.Enums;
 
@@ -14,6 +15,10 @@ public static class EnumTables
 {
     private static readonly IReadOnlyDictionary<Type, EnumTable> Tables = new Dictionary<Type, EnumTable>
     {
+        [typeof(EmailRecipientType)] = new EnumTable
+        {
+            Name = "EmailRecipientTypes"
+        },
         [typeof(SiteFeatureType)] = new EnumTable
         {
             Name = "SiteFeatures"

@@ -287,6 +287,15 @@ the request locale and enqueues a background `IMemberLocaleService.UpdateLocale`
 ## Conventions & style
 
 - Match the style of surrounding code (tabs vs spaces varies by project — follow the file).
+- **Comments describe the code as it is now, never how it got that way.** No "this used to…", "changed
+  from…", "previously…", or an account of the bug that prompted the current shape. Someone reading the
+  file for the first time is trying to understand what it does; the history is in git and does not earn
+  space here. Say what the code does and why it is that way in the present tense.
+  The exception is documenting a road *not* taken, where the comment stops someone making a change that
+  looks like an improvement — "not X, because Y" is about the current design and is worth keeping. Write
+  it as a standing rule rather than as a story ("do not merge these lists: a migration that runs before a
+  column exists must insert without it"), so it reads as a constraint rather than a changelog.
+  Nor should a comment narrate what a call plainly does — the code is definitive.
 - File-scoped namespaces.
 - **Prefer `using` directives over fully-qualified type names.** Import the namespace and use the short
   type name rather than inlining a namespace path at the use site. Applies to Razor too — add a
