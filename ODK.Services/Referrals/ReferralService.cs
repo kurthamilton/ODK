@@ -80,6 +80,7 @@ public class ReferralService : IReferralService
             to: [new EmailAddressee(emailAddress, string.Empty)],
             subject: campaign.EmailSubject,
             body: campaign.EmailText,
+            recipientType: EmailRecipientType.Members,
             parameters: new CustomEmailParameters
             {
                 { "member.fullName", currentMember.FullName },

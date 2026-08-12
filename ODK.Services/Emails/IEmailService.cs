@@ -15,11 +15,15 @@ public interface IEmailService
         EmailType type,
         IEmailParameters? parameters);
 
+    /* The sends below carry their own subject and body, so there is no email row to say who they are
+       written for and each states its own recipient type. That is what {title} resolves through - see
+       EmailService.Title. */
     Task SendBulkEmail(
         IChapterServiceRequest request,
         IEnumerable<Member> to,
         string subject,
-        string body);
+        string body,
+        EmailRecipientType recipientType);
 
     Task SendEventCommentEmail(
         IServiceRequest request,
@@ -47,7 +51,8 @@ public interface IEmailService
         Chapter? chapter,
         IEnumerable<EmailAddressee> to,
         string subject,
-        string body);
+        string body,
+        EmailRecipientType recipientType);
 
     Task<ServiceResult> SendEmail(
         IServiceRequest request,
@@ -55,6 +60,7 @@ public interface IEmailService
         IEnumerable<EmailAddressee> to,
         string subject,
         string body,
+        EmailRecipientType recipientType,
         IEmailParameters? parameters);
 
     Task<ServiceResult> SendMemberEmail(
@@ -63,5 +69,6 @@ public interface IEmailService
         EmailAddressee to,
         string subject,
         string body,
+        EmailRecipientType recipientType,
         IEmailParameters? parameters);
 }

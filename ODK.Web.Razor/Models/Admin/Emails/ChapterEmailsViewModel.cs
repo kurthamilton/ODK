@@ -1,5 +1,5 @@
 ﻿using ODK.Core.Chapters;
-using ODK.Core.Emails;
+using ODK.Services.Emails.ViewModels;
 
 namespace ODK.Web.Razor.Models.Admin.Emails;
 
@@ -13,7 +13,7 @@ public class ChapterEmailsViewModel
 
     public required Chapter Chapter { get; init; }
 
-    public required IReadOnlyCollection<ChapterEmail> Emails { get; init; }
+    public required IReadOnlyCollection<ChapterEmailListItemViewModel> Emails { get; init; }
 
     /// <summary>
     /// Null until the group saves the settings form for the first time, which is the same as inheriting

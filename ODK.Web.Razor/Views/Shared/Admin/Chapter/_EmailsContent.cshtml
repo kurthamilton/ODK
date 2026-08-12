@@ -1,4 +1,5 @@
 ﻿@using ODK.Core.Features
+@using ODK.Core.Utils
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Admin.Emails
@@ -53,22 +54,26 @@
         <thead>
             <tr>
                 <th>Email</th>
+                <th>Recipients</th>
                 <th>Custom</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var email in Model.Emails.OrderBy(x => x.Name))
+            @foreach (var item in Model.Emails.OrderBy(x => x.Email.Name))
             {
                 <tr>
                     <td>
                         @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
                         {
-                            Route = OdkRoutes.GroupAdmin.Email(Model.Chapter, email.Type),
-                            Text = email.Name
+                            Route = OdkRoutes.GroupAdmin.Email(Model.Chapter, item.Email.Type),
+                            Text = item.Email.Name
                         })
                     </td>
                     <td>
-                        @if (email.IsDefault())
+                        @EnumUtils.GetDisplayValue(item.RecipientType)
+                    </td>
+                    <td>
+                        @if (item.Email.IsDefault())
                         {
                             <span class="text-muted">Default</span>
                         }

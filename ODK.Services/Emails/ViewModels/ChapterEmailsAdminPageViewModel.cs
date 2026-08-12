@@ -11,7 +11,7 @@ public class ChapterEmailsAdminPageViewModel
     /// </summary>
     public required bool CanEdit { get; init; }
 
-    public required IReadOnlyCollection<ChapterEmail> Emails { get; init; }
+    public required IReadOnlyCollection<ChapterEmailListItemViewModel> Emails { get; init; }
 
     /// <summary>
     /// Null until the group saves the form for the first time, which is the same thing as inheriting every

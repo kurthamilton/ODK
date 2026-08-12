@@ -103,7 +103,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
 
         var chapterEmailDictionary = chapterEmails.ToDictionary(x => x.Type);
 
-        var emails = new List<ChapterEmail>();
+        var emails = new List<ChapterEmailListItemViewModel>();
 
         foreach (var siteEmail in siteEmails.OrderBy(x => x.Type))
         {
@@ -112,20 +112,22 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
                 continue;
             }
 
-            if (chapterEmailDictionary.TryGetValue(siteEmail.Type, out var chapterEmail))
+            if (!chapterEmailDictionary.TryGetValue(siteEmail.Type, out var chapterEmail))
             {
-                emails.Add(chapterEmail);
-            }
-            else
-            {
-                emails.Add(new ChapterEmail
+                chapterEmail = new ChapterEmail
                 {
                     ChapterId = chapter.Id,
                     HtmlContent = siteEmail.HtmlContent,
                     Subject = siteEmail.Subject,
                     Type = siteEmail.Type
-                });
+                };
             }
+
+            emails.Add(new ChapterEmailListItemViewModel
+            {
+                Email = chapterEmail,
+                RecipientType = siteEmail.RecipientType
+            });
         }
 
         return new ChapterEmailsAdminPageViewModel

@@ -57,6 +57,34 @@ public static class EmailAdminServiceTests
     }
 
     [Test]
+    public static async Task GetChapterEmails_TakesTheRecipientTypeFromTheSiteEmail()
+    {
+        // Arrange - a ChapterEmail carries no recipient type, so the list reads it from the site's row. The
+        // group has overridden this template, which is the case where there is something else to read.
+        using var context = new MockOdkContext();
+        var (chapter, currentMember) = CreateChapter(context, withFeature: true);
+        CreateSiteEmail(context, EmailRecipientType.Admins);
+        context.Create(new ChapterEmail
+        {
+            ChapterId = chapter.Id,
+            HtmlContent = "<p>Custom</p>",
+            Id = Guid.NewGuid(),
+            Subject = "Custom",
+            Type = Type
+        });
+
+        var service = CreateService(context);
+
+        // Act
+        var result = await service.GetChapterEmails(CreateRequest(chapter, currentMember));
+
+        // Assert
+        var email = result.Emails.Single();
+        email.RecipientType.Should().Be(EmailRecipientType.Admins);
+        email.Email.IsDefault().Should().BeFalse();
+    }
+
+    [Test]
     public static async Task GetChapterEmails_ReturnsTheGroupsSettings()
     {
         // Arrange - the settings form is rendered from these, so the page needs them alongside the list.
@@ -95,7 +123,7 @@ public static class EmailAdminServiceTests
         var result = await service.GetChapterEmails(CreateRequest(chapter, currentMember));
 
         // Assert
-        result.Emails.Should().ContainSingle(x => x.Type == Type);
+        result.Emails.Should().ContainSingle(x => x.Email.Type == Type);
         result.CanEdit.Should().BeFalse();
     }
 
@@ -436,10 +464,13 @@ public static class EmailAdminServiceTests
         new AuthorizationService(),
         htmlValidator ?? CreateHtmlValidator(ServiceResult.Successful()));
 
-    private static void CreateSiteEmail(MockOdkContext context) => context.Create(new Email
+    private static void CreateSiteEmail(
+        MockOdkContext context,
+        EmailRecipientType recipientType = EmailRecipientType.Members) => context.Create(new Email
     {
         HtmlContent = "<p>Standard</p>",
         Overridable = true,
+        RecipientType = recipientType,
         Subject = "Standard",
         Type = Type
     });
