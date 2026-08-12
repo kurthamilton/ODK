@@ -40,10 +40,8 @@ public sealed class EmailParameters : IEmailParameters
     [
         ("group.fullname", x => x.GroupFullName),
         ("group.name", x => x.GroupName),
-        ("group.baseurl", x => x.GroupUrl),
         ("group.url", x => x.GroupUrl),
         ("platform.url", x => x.PlatformUrl),
-        ("platform.baseurl", x => x.PlatformUrl),
         ("theme.body.background", x => x.ThemeBodyBackground),
         ("theme.body.color", x => x.ThemeBodyColor),
         ("theme.header.background", x => x.ThemeHeaderBackground),

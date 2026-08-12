@@ -1,4 +1,6 @@
-﻿namespace ODK.Services.Emails.Parameters;
+﻿using ODK.Core.Events;
+
+namespace ODK.Services.Emails.Parameters;
 
 /// <summary>
 /// Sent to event admins, and to the member being replied to, when someone comments on an event.
@@ -11,18 +13,23 @@ public sealed class EventCommentParameters : EmailTypeParameters
 
     private const string TextName = "comment.text";
 
+    private readonly Event _event;
+
+    public EventCommentParameters(Event @event)
+    {
+        _event = @event;
+    }
+
     public static IReadOnlyCollection<string> Names { get; } = [TextName, EventIdName, EventUrlName];
 
-    public string? EventId { get; set; }
+    public required string EventUrl { get; init; }
 
-    public string? EventUrl { get; set; }
-
-    public string? Text { get; set; }
+    public required string Text { get; init; }
 
     protected override void AddParameters(IDictionary<string, string> values)
     {
-        Add(values, TextName, Text);
-        Add(values, EventIdName, EventId);
+        Add(values, EventIdName, _event.Id.ToString());
         Add(values, EventUrlName, EventUrl);
+        Add(values, TextName, Text);
     }
 }

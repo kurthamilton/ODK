@@ -11,9 +11,9 @@ public sealed class NewMemberParameters : EmailTypeParameters
 
     public static IReadOnlyCollection<string> Names { get; } = [EventsUrlName, FirstNameName];
 
-    public string? EventsUrl { get; set; }
+    public required string EventsUrl { get; init; }
 
-    public string? FirstName { get; set; }
+    public required string FirstName { get; init; }
 
     protected override void AddParameters(IDictionary<string, string> values)
     {

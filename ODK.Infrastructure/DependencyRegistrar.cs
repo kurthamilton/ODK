@@ -14,6 +14,7 @@ using ODK.Services.Contact;
 using ODK.Services.Countries;
 using ODK.Services.Csv;
 using ODK.Services.Emails;
+using ODK.Services.Emails.Parameters;
 using ODK.Services.Html;
 using ODK.Services.Emails.Validation;
 using ODK.Services.Integrations.Emails;
@@ -188,6 +189,7 @@ public static class DependencyRegistrar
                     .ToArray()
             })
             .AddScoped<IEmailService, EmailService>()
+            .AddScoped<ITestEmailParametersFactory, TestEmailParametersFactory>()
             .AddSingleton(new EmailServiceSettings
             {
                 DefaultBodyBackground = appSettings.Emails.Theme.Body.Background,
