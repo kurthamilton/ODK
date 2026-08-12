@@ -15,16 +15,8 @@
     </div>
 </div>
 
-@* All three are templates over an email's other parameters, which is why they sit together. A template
-   writes {title}, and which of these it resolves to follows who the email is written for: the member
-   title, the admin title, or Title where the email is written for neither. A group can set its own
-   member and admin titles; Title is the site's alone. *@
-<div class="form-group mb-3">
-    @Html.LabelFor(x => x.Title)
-    @Html.TextBoxFor(x => x.Title, new { @class = "form-control" })
-    @Html.ValidationMessageFor(x => x.Title)
-</div>
-
+@* Both are templates over an email's other parameters. A template writes {title}, and which of the two it
+   resolves to follows who the email is written for. A group can set its own. *@
 <div class="row mb-3 gy-3">
     <div class="form-group col-md-6 required">
         @Html.LabelFor(x => x.MemberTitle)
@@ -43,4 +35,8 @@
     @Html.LabelFor(x => x.PlatformTitle)
     @Html.TextBoxFor(x => x.PlatformTitle, new { @class = "form-control" })
     @Html.ValidationMessageFor(x => x.PlatformTitle)
+    <div class="form-text">
+        Stands in for <code>{group.name}</code> and <code>{group.fullname}</code> in emails that are not
+        about a group — account activation, site messages and the like.
+    </div>
 </div>

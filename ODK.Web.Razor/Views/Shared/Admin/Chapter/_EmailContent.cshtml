@@ -1,6 +1,7 @@
 ﻿@using ODK.Core.Features
 @using ODK.Services.Emails.Parameters
 @using ODK.Web.Razor.Models.Admin.Chapters
+@using ODK.Web.Razor.Models.Admin.Emails
 @using ODK.Web.Razor.Models.Components
 @model ChapterEmailContentViewModel
 @{
@@ -14,6 +15,12 @@
         ValidateUrl = $"/groups/{Model.Chapter.Id}/emails/{Model.Email.Type}/validate"
     };
 }
+
+@await Html.PartialAsync("Admin/Chapter/_EmailRecipients", new EmailRecipientsViewModel
+{
+    RecipientType = Model.RecipientType,
+    Title = Model.Title
+})
 
 @if (Model.Email.IsDefault())
 {

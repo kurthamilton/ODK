@@ -13,7 +13,7 @@ public interface IEmailAdminService
 
     Task<ChapterEmailsAdminPageViewModel> GetChapterEmails(IMemberChapterAdminServiceRequest request);
 
-    Task<Email> GetEmail(IMemberServiceRequest request, EmailType type);
+    Task<EmailAdminPageViewModel> GetEmail(IMemberServiceRequest request, EmailType type);
 
     Task<IReadOnlyCollection<Email>> GetEmails(IMemberServiceRequest request);
 

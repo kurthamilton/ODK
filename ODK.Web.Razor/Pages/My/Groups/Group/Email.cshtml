@@ -1,7 +1,5 @@
 ﻿@page "/my/groups/{chapterId:guid}/emails/{type}"
 @using ODK.Services.Emails
-@using ODK.Web.Common.Routes
-@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Admin.Chapters
 @using ODK.Web.Razor.Models.Components
 @model EmailModel
@@ -11,7 +9,8 @@
     Model.Title = "Email template";
 
     var email = await EmailAdminService.GetChapterEmail(Model.MemberChapterAdminServiceRequest, Model.Type);
-    var viewModel = new ChapterEmailContentViewModel(Model.Chapter, email.Email, email.CanEdit);
+    var viewModel = new ChapterEmailContentViewModel(
+        Model.Chapter, email.Email, email.CanEdit, email.RecipientType, email.Title);
 }
 
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel

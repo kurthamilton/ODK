@@ -10,6 +10,10 @@
 
 <section class="section--admin">
     <h2 class="content-heading">Settings</h2>
+    <p class="text-muted">
+        These apply to <strong>@request.Platform</strong> only. Each platform has its own settings, chosen
+        by the address the site is reached on, so editing here leaves the other platform alone.
+    </p>
     <form action="/siteadmin/emails/settings" method="post">
         @Html.AntiForgeryToken()
         @await Html.PartialAsync("SiteAdmin/_EmailSettingsForm", new SiteEmailSettingsViewModel
@@ -18,8 +22,7 @@
             FromEmailAddress = settings.FromEmailAddress,
             FromEmailName = settings.FromName,
             MemberTitle = settings.MemberTitle,
-            PlatformTitle = settings.PlatformTitle,
-            Title = settings.Title
+            PlatformTitle = settings.PlatformTitle
         })
         <button class="btn btn-primary" type="submit">Update</button>
     </form>

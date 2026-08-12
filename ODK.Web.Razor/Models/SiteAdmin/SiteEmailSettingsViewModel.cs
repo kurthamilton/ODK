@@ -25,7 +25,4 @@ public class SiteEmailSettingsViewModel
     [DisplayName("Platform Title")]
     [Required]
     public string PlatformTitle { get; set; } = string.Empty;
-
-    [Required]
-    public string Title { get; set; } = string.Empty;
 }

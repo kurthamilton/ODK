@@ -20,4 +20,12 @@ public class ChapterEmailsViewModel
     /// every value from the site.
     /// </summary>
     public required ChapterEmailSettings? Settings { get; init; }
+
+    /// <summary>
+    /// The site's titles, shown beside the group's own boxes so it can see what leaving one empty gives it.
+    /// </summary>
+    public required string SiteAdminTitle { get; init; }
+
+    /// <inheritdoc cref="SiteAdminTitle" />
+    public required string SiteMemberTitle { get; init; }
 }

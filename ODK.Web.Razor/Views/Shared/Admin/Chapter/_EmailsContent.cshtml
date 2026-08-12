@@ -11,12 +11,15 @@
     {
         AdminTitle = Model.Settings?.AdminTitle,
         MemberTitle = Model.Settings?.MemberTitle,
-        ReadOnly = readOnly
+        ReadOnly = readOnly,
+        SiteAdminTitle = Model.SiteAdminTitle,
+        SiteMemberTitle = Model.SiteMemberTitle
     };
 }
 
+@* h3 rather than h2: the page shell renders the page title as an h2, so these sit below it. *@
 <section class="section--admin">
-    <h2 class="content-heading">Settings</h2>
+    <h3 class="content-heading">Settings</h3>
 
     @* DisabledContentFunc rather than hiding it, matching the template form: a group that set a title
        before its subscription changed keeps sending it, so it needs to see what is set even when it can no
@@ -41,7 +44,7 @@
     })
 </section>
 
-<h2 class="content-heading">Emails</h2>
+<h3 class="content-heading">Emails</h3>
 
 @await Html.PartialAsync("Components/_AdminPageDescription",
     "Templates for the emails your group sends. Each has a default you can override to add your own wording.")

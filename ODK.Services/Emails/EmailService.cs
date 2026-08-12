@@ -273,19 +273,6 @@ public class EmailService : IEmailService
         }
     }
 
-    /// <summary>
-    /// The unresolved title template for an email, chosen by who it is written for: the group's wording
-    /// where it has set one and the site's otherwise. Coalesce reads blank as unset, so a group that has
-    /// never filled its settings form in takes every title from the site.
-    /// </summary>
-    private static string Title(
-        SiteEmailSettings siteSettings,
-        ChapterEmailSettings? chapterEmailSettings,
-        EmailRecipientType recipientType)
-        => recipientType == EmailRecipientType.Admins
-            ? StringUtils.Coalesce(chapterEmailSettings?.AdminTitle, siteSettings.AdminTitle)
-            : StringUtils.Coalesce(chapterEmailSettings?.MemberTitle, siteSettings.MemberTitle);
-
     private async Task<IReadOnlyDictionary<string, string>> BuildParameters(
         IServiceRequest request,
         SendEmailOptions options,
@@ -328,8 +315,9 @@ public class EmailService : IEmailService
         /* Resolved after the merge and not before, because the title is itself a template over the
            parameters above it. The layout takes the same value as the email it wraps, since it reads this
            dictionary too - which is why the layout needs no audience of its own. */
-        parameters[EmailParameters.TitleName] = Title(siteSettings, chapterEmailSettings, recipientType)
-            .Interpolate(parameters.AsReadOnly(), HttpUtility.HtmlEncode);
+        parameters[EmailParameters.TitleName] =
+            EmailTitle.For(siteSettings, chapterEmailSettings, recipientType)
+                .Interpolate(parameters.AsReadOnly(), HttpUtility.HtmlEncode);
 
         var body = !string.IsNullOrEmpty(options.Body)
             ? options.Body

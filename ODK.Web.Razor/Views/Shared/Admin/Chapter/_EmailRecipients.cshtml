@@ -1,0 +1,11 @@
+﻿@using ODK.Core.Utils
+@using ODK.Web.Razor.Models.Admin.Emails
+@model EmailRecipientsViewModel
+
+@* Both email edit pages show this, because the audience is what decides which title {title} resolves to
+   and neither is otherwise visible while editing a template. The title is shown as written rather than
+   rendered - it is a template in its own right, so it may still contain parameters of its own. *@
+<p class="text-muted">
+    Sent to <strong>@EnumUtils.GetDisplayValue(Model.RecipientType)</strong>.
+    <code>{title}</code> resolves to <code>@Model.Title</code>.
+</p>
