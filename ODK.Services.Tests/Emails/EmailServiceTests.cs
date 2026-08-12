@@ -7,6 +7,7 @@ using Moq;
 using NUnit.Framework;
 using ODK.Core.Chapters;
 using ODK.Core.Emails;
+using ODK.Core.Events;
 using ODK.Core.Platforms;
 using ODK.Core.Web;
 using ODK.Services.Emails;
@@ -93,6 +94,134 @@ public static class EmailServiceTests
         // Assert
         sent.Subject.Should().Be("Overridden subject");
         sent.Body.Should().Contain("https://test.local/somewhere");
+    }
+
+    [Test]
+    public static async Task SendEventCommentEmail_SendsTheAdminTemplateToAdminsAndTheReplyTemplateToTheMember()
+    {
+        // Arrange - one send per audience, each reading its own template, so wording meant for admins
+        // cannot reach members.
+        var sent = await SendEventComment(adminReceivesCommentEmails: true, withReplyToMember: true);
+
+        // Assert
+        sent.Should().HaveCount(2);
+        sent.Should().ContainSingle(x =>
+            x.Subject == "Admin comment" && x.To.Single().Address == "admin@example.com");
+        sent.Should().ContainSingle(x =>
+            x.Subject == "Comment reply" && x.To.Single().Address == "member@example.com");
+    }
+
+    [Test]
+    public static async Task SendEventCommentEmail_NoAdminReceivesThem_SendsOnlyTheReply()
+    {
+        // Arrange - a group whose admins have all opted out has nobody to send the admin copy to, so that
+        // send is skipped rather than queued with no recipients.
+        var sent = await SendEventComment(adminReceivesCommentEmails: false, withReplyToMember: true);
+
+        // Assert
+        sent.Should().ContainSingle();
+        sent.Single().Subject.Should().Be("Comment reply");
+    }
+
+    [Test]
+    public static async Task SendEventCommentEmail_NoReplyToMember_SendsOnlyTheAdminTemplate()
+    {
+        // Arrange - a top-level comment has nobody to notify of a reply.
+        var sent = await SendEventComment(adminReceivesCommentEmails: true, withReplyToMember: false);
+
+        // Assert
+        sent.Should().ContainSingle();
+        sent.Single().Subject.Should().Be("Admin comment");
+    }
+
+    private static async Task<IReadOnlyCollection<EmailClientEmail>> SendEventComment(
+        bool adminReceivesCommentEmails,
+        bool withReplyToMember)
+    {
+        using var context = new MockOdkContext();
+
+        var chapter = context.Create(new Chapter
+        {
+            Id = Guid.NewGuid(),
+            Name = "Test group",
+            Platform = PlatformType.DrunkenKnitwits,
+            Slug = "test-group"
+        });
+
+        context.Create(new SiteEmailSettings
+        {
+            FromEmailAddress = "noreply@example.com",
+            FromName = "{group.name}",
+            Id = Guid.NewGuid(),
+            Platform = PlatformType.DrunkenKnitwits,
+            PlatformTitle = "Platform",
+            Title = "{group.name}"
+        });
+
+        context.Create(new Email
+        {
+            HtmlContent = "{body}",
+            Subject = string.Empty,
+            Type = EmailType.Layout
+        });
+
+        // Distinct subjects, so an assertion can tell which template each send used.
+        context.Create(new Email
+        {
+            HtmlContent = "<p>admin</p>",
+            RecipientType = EmailRecipientType.Admins,
+            Subject = "Admin comment",
+            Type = EmailType.EventComment
+        });
+
+        context.Create(new Email
+        {
+            HtmlContent = "<p>reply</p>",
+            RecipientType = EmailRecipientType.Members,
+            Subject = "Comment reply",
+            Type = EmailType.EventCommentReply
+        });
+
+        var admin = context.CreateMember(afterCreate: x => x.EmailAddress = "admin@example.com");
+        context.Create(new ChapterAdminMember
+        {
+            ChapterId = chapter.Id,
+            Id = Guid.NewGuid(),
+            Member = admin,
+            MemberId = admin.Id,
+            ReceiveEventCommentEmails = adminReceivesCommentEmails,
+            Role = ChapterAdminRole.Admin
+        });
+
+        var replyToMember = withReplyToMember
+            ? context.CreateMember(afterCreate: x => x.EmailAddress = "member@example.com")
+            : null;
+
+        var sent = new List<EmailClientEmail>();
+        var emailClient = new Mock<IEmailClient>();
+        emailClient
+            .Setup(x => x.SendEmail(It.IsAny<EmailClientEmail>()))
+            .Callback<EmailClientEmail>(sent.Add)
+            .ReturnsAsync(new SendEmailResult(true) { ExternalId = "external-id" });
+
+        var service = CreateService(context, chapter, emailClient);
+
+        var request = new ServiceRequest
+        {
+            CurrentMemberOrDefault = null,
+            HttpRequestContext = Mock.Of<IHttpRequestContext>(),
+            Platform = PlatformType.DrunkenKnitwits
+        };
+
+        // Act
+        await service.SendEventCommentEmail(
+            request,
+            chapter,
+            replyToMember,
+            new EventComment { Id = Guid.NewGuid(), Text = "A comment" },
+            parameters: null);
+
+        return sent;
     }
 
     private static async Task<EmailClientEmail> SendTemplate(

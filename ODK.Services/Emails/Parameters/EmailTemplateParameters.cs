@@ -21,6 +21,8 @@ public static class EmailTemplateParameters
             [EmailType.DuplicateEmail] = DuplicateEmailParameters.Names,
             [EmailType.EmailAddressUpdate] = EmailAddressUpdateParameters.Names,
             [EmailType.EventComment] = EventCommentParameters.Names,
+            // The same values as the admin copy - only the audience and the wording differ.
+            [EmailType.EventCommentReply] = EventCommentParameters.Names,
             [EmailType.EventInvite] = EventInviteParameters.Names,
             [EmailType.Layout] = LayoutParameters.Names,
             [EmailType.MemberImportActivation] = MemberImportActivationParameters.Names,

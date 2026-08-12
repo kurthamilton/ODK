@@ -12,6 +12,10 @@ public class EmailMap : IEntityTypeConfiguration<Email>
 
         builder.HasKey(x => x.Type);
 
+        builder.Property(x => x.RecipientType)
+            .HasConversion<int>()
+            .HasColumnName("EmailRecipientTypeId");
+
         builder.Property(x => x.Type)
             .HasColumnName("EmailTypeId")
             .HasConversion<int>();

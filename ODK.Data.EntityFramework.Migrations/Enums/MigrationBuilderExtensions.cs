@@ -3,42 +3,56 @@
 namespace ODK.Data.EntityFramework.Migrations.Enums;
 
 /// <summary>
-/// Runs the <see cref="EnumTableSql"/> statements from a migration. Dropping the foreign key again
-/// has no helper here - <see cref="MigrationBuilder.DropForeignKey"/> already covers it.
+/// Runs the <see cref="EnumTableSql"/> statements from a migration.
 /// </summary>
+/// <remarks>
+/// Including dropping the foreign key: <see cref="MigrationBuilder.DropForeignKey"/> does not cover it,
+/// because it needs the constraint's exact name and these are matched by relationship precisely so that
+/// one created by hand under another name still counts. See <see cref="EnumTableSql.DropForeignKey{T}"/>.
+/// </remarks>
 public static class MigrationBuilderExtensions
 {
-    public static void AddEnumForeignKey<T>(this MigrationBuilder migrationBuilder, string table, string column)
+    public static MigrationBuilder AddEnumForeignKey<T>(this MigrationBuilder migrationBuilder, string table, string column)
         where T : struct, Enum
-        => migrationBuilder.Sql(EnumTableSql.AddForeignKey<T>(table, column));
+        => Sql(migrationBuilder, EnumTableSql.AddForeignKey<T>(table, column));
 
-    public static void CreateEnumTable<T>(this MigrationBuilder migrationBuilder)
+    public static MigrationBuilder CreateEnumTable<T>(this MigrationBuilder migrationBuilder)
         where T : struct, Enum
-        => migrationBuilder.Sql(EnumTableSql.CreateTable<T>());
+        => Sql(migrationBuilder, EnumTableSql.CreateTable<T>());
 
-    public static void DeleteEnumValues<T>(this MigrationBuilder migrationBuilder, params T[] values)
+    public static MigrationBuilder DeleteEnumValues<T>(this MigrationBuilder migrationBuilder, params T[] values)
         where T : struct, Enum
         => Sql(migrationBuilder, EnumTableSql.Delete(values));
 
-    public static void DropEnumTable<T>(this MigrationBuilder migrationBuilder)
+    /// <summary>
+    /// Drops the column's foreign key to the enum table. Call this before
+    /// <see cref="DropEnumTable{T}"/>, which fails while anything still references the table.
+    /// </summary>
+    public static MigrationBuilder DropEnumForeignKey<T>(
+        this MigrationBuilder migrationBuilder, string table, string column)
         where T : struct, Enum
-        => migrationBuilder.Sql(EnumTableSql.DropTable<T>());
+        => Sql(migrationBuilder, EnumTableSql.DropForeignKey<T>(table, column));
 
-    public static void InsertAllEnumValues<T>(this MigrationBuilder migrationBuilder)
+    public static MigrationBuilder DropEnumTable<T>(this MigrationBuilder migrationBuilder)
+        where T : struct, Enum
+        => Sql(migrationBuilder, EnumTableSql.DropTable<T>());
+
+    public static MigrationBuilder InsertAllEnumValues<T>(this MigrationBuilder migrationBuilder)
         where T : struct, Enum
         => Sql(migrationBuilder, EnumTableSql.InsertAll<T>());
 
-    public static void InsertEnumValues<T>(this MigrationBuilder migrationBuilder, params T[] values)
+    public static MigrationBuilder InsertEnumValues<T>(this MigrationBuilder migrationBuilder, params T[] values)
         where T : struct, Enum
         => Sql(migrationBuilder, EnumTableSql.Insert(values));
 
-    private static void Sql(MigrationBuilder migrationBuilder, string sql)
+    private static MigrationBuilder Sql(MigrationBuilder migrationBuilder, string sql)
     {
         if (string.IsNullOrEmpty(sql))
         {
-            return;
+            return migrationBuilder;
         }
 
         migrationBuilder.Sql(sql);
+        return migrationBuilder;
     }
 }

@@ -69,6 +69,48 @@ public class EnumTableSqlTests
     }
 
     [Test]
+    public void DropForeignKey_ReturnsStatementFindingTheConstraintByRelationship()
+    {
+        // Arrange - the constraint name is not assumed, because one added by hand can be called anything.
+        // Act
+        var result = EnumTableSql.DropForeignKey<SiteFeatureType>("SiteSubscriptionFeatures", "SiteFeatureId");
+
+        // Assert
+        result.Should().Be(Lines(
+            "DECLARE @name sysname;",
+            "",
+            "WHILE 1 = 1",
+            "BEGIN",
+            "    SET @name = (",
+            "        SELECT TOP 1 fk.name",
+            "        FROM sys.foreign_keys fk",
+            "        INNER JOIN sys.foreign_key_columns fkc ON fkc.constraint_object_id = fk.object_id",
+            "        WHERE fk.parent_object_id = OBJECT_ID(N'SiteSubscriptionFeatures')",
+            "            AND fk.referenced_object_id = OBJECT_ID(N'SiteFeatures')",
+            "            AND COL_NAME(fkc.parent_object_id, fkc.parent_column_id) = N'SiteFeatureId');",
+            "",
+            "    IF @name IS NULL BREAK;",
+            "",
+            "    EXEC(N'ALTER TABLE [SiteSubscriptionFeatures] DROP CONSTRAINT ' + QUOTENAME(@name));",
+            "END"));
+    }
+
+    [Test]
+    public void DropForeignKey_MatchesTheSameRelationshipAsAddForeignKey()
+    {
+        // Arrange - the pair has to agree on what counts as this column's foreign key to the enum table.
+        // If the drop matched anything narrower, a constraint the add declined to duplicate would be one
+        // the drop then left in place, and the table drop after it would fail.
+        var add = EnumTableSql.AddForeignKey<SiteFeatureType>("SiteSubscriptionFeatures", "SiteFeatureId");
+
+        // Act
+        var drop = EnumTableSql.DropForeignKey<SiteFeatureType>("SiteSubscriptionFeatures", "SiteFeatureId");
+
+        // Assert - compared with indentation removed, since the two nest the clauses at different depths.
+        Clauses(drop).Should().Contain(Clauses(add));
+    }
+
+    [Test]
     public void DropTable_ReturnsGuardedDropStatement()
     {
         // Act
@@ -137,6 +179,15 @@ public class EnumTableSqlTests
         result.Should().ContainAll(expected);
         result.Should().NotContain("WHERE [Id] = 0)");
     }
+
+    /* The lines that decide which foreign key is matched, stripped of indentation and of the trailing
+       bracket each caller closes its own subquery with. */
+    private static string[] Clauses(string sql) => sql
+        .Split(Environment.NewLine)
+        .Select(x => x.Trim().TrimEnd(')', ';'))
+        .Where(x => x.StartsWith("FROM sys.") || x.StartsWith("INNER JOIN sys.") ||
+            x.StartsWith("WHERE fk.") || x.StartsWith("AND "))
+        .ToArray();
 
     private static string Lines(params string[] lines) => string.Join(Environment.NewLine, lines);
 }
