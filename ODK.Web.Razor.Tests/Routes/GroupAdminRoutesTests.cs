@@ -114,24 +114,6 @@ public static class GroupAdminRoutesTests
     }
 
     [Test]
-    public static void PermittedNavigation_Owner_ExcludesOtherPlatformRoutes()
-    {
-        // Arrange
-        var routes = new GroupAdminRoutes(PlatformType.Default);
-        var chapter = CreateChapter();
-
-        // Act
-        var result = routes.PermittedNavigation(
-            chapter, CreateAdminMember(ChapterAdminRole.Owner), CreateMember());
-
-        // Assert
-        // Emails is DrunkenKnitwits-only, so it resolves to the Default sentinel on this platform.
-        var paths = result.SelectMany(x => x.Items).Select(x => x.Route.Path).ToArray();
-        paths.Should().NotContain(GroupAdminRoute.Default.Path);
-        paths.Should().NotContain(routes.Emails(chapter).Path);
-    }
-
-    [Test]
     public static void PermittedNavigation_SiteAdmin_IncludesSiteAdminSection()
     {
         // Arrange

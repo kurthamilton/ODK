@@ -1,6 +1,7 @@
 ﻿@using ODK.Services.Emails.Parameters
 @using ODK.Web.Razor.Models.Admin.Chapters
-@model ODK.Web.Razor.Models.SiteAdmin.EmailContentViewModel
+@using ODK.Web.Razor.Models.SiteAdmin
+@model EmailContentViewModel
 
 <form method="post">
     @Html.AntiForgeryToken()
@@ -16,6 +17,7 @@
     {
         Content = Model.Email.HtmlContent,
         Placeholders = EmailTemplateParameters.ForSite(Model.Email.Type),
+        ReadOnly = false,
         Subject = Model.Email.Subject
     })
     <button class="btn btn-primary">Update</button>

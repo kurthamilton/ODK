@@ -1,0 +1,24 @@
+﻿@page "/my/groups/{chapterId:guid}/emails"
+@using ODK.Services.Emails
+@using ODK.Web.Razor.Models.Admin.Emails
+@using ODK.Web.Razor.Models.Components
+@model EmailsModel
+@inject IEmailAdminService EmailAdminService
+@{
+    Layout = "_GroupAdminLayout";
+    Model.Title = "Email templates";
+
+    var emails = await EmailAdminService.GetChapterEmails(Model.MemberChapterAdminServiceRequest);
+    var viewModel = new ChapterEmailsViewModel
+    {
+        Chapter = Model.Chapter,
+        Emails = emails
+    };
+}
+
+@await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
+{
+    Title = "Email templates",
+    BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_EmailsContent", viewModel)</div>,
+    MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu")
+})

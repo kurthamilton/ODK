@@ -1,5 +1,6 @@
 ﻿using ODK.Core.Emails;
 using ODK.Services.Emails.Models;
+using ODK.Services.Emails.ViewModels;
 
 namespace ODK.Services.Emails;
 
@@ -7,7 +8,8 @@ public interface IEmailAdminService
 {
     Task<ServiceResult> DeleteChapterEmail(IMemberChapterAdminServiceRequest request, EmailType type);
 
-    Task<ChapterEmail> GetChapterEmail(IMemberChapterAdminServiceRequest request, EmailType type);
+    Task<ChapterEmailAdminPageViewModel> GetChapterEmail(
+        IMemberChapterAdminServiceRequest request, EmailType type);
 
     Task<IReadOnlyCollection<ChapterEmail>> GetChapterEmails(IMemberChapterAdminServiceRequest request);
 
