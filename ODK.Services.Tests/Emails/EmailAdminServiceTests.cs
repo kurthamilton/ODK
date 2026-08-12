@@ -13,6 +13,8 @@ using ODK.Core.Web;
 using ODK.Services.Authorization;
 using ODK.Services.Emails;
 using ODK.Services.Emails.Models;
+using ODK.Services.Exceptions;
+using ODK.Services.Html;
 using ODK.Services.Members;
 using ODK.Services.Security;
 using ODK.Services.Tests.Helpers;
@@ -22,6 +24,8 @@ namespace ODK.Services.Tests.Emails;
 [Parallelizable]
 public static class EmailAdminServiceTests
 {
+    private const string HtmlFailure = "Malformed HTML at line 1";
+
     private const EmailType Type = EmailType.NewMember;
 
     [Test]
@@ -135,6 +139,137 @@ public static class EmailAdminServiceTests
         stored.HtmlContent.Should().Be("<p>Existing</p>");
     }
 
+    [Test]
+    public static async Task ValidateChapterEmailHtml_LayoutEmail_SkipsTheCheck()
+    {
+        // Arrange - the layout is the full HTML document the other emails render into, so the allow-list
+        // tuned for rich text would reject it outright. The editor must not flag what the save accepts.
+        using var context = new MockOdkContext();
+        var (chapter, currentMember) = CreateChapter(context, withFeature: true);
+        CreateSiteEmail(context);
+
+        var service = CreateService(context, CreateHtmlValidator(ServiceResult.Failure(HtmlFailure)));
+
+        // Act
+        var result = await service.ValidateChapterEmailHtml(
+            CreateRequest(chapter, currentMember), EmailType.Layout, "<html><body></body></html>");
+
+        // Assert
+        result.Success.Should().BeTrue();
+    }
+
+    [Test]
+    public static async Task ValidateChapterEmailHtml_MalformedHtml_ReturnsFailure()
+    {
+        // Arrange
+        using var context = new MockOdkContext();
+        var (chapter, currentMember) = CreateChapter(context, withFeature: true);
+        CreateSiteEmail(context);
+
+        var service = CreateService(context, CreateHtmlValidator(ServiceResult.Failure(HtmlFailure)));
+
+        // Act
+        var result = await service.ValidateChapterEmailHtml(
+            CreateRequest(chapter, currentMember), Type, "<p>Malformed</p");
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.Message.Should().Be(HtmlFailure);
+    }
+
+    [Test]
+    public static async Task ValidateChapterEmailHtml_NotChapterAdmin_Throws()
+    {
+        // Arrange - the endpoint takes the content the caller is editing, so it has to be as authorised
+        // as the save is: without this, any member could use it to probe another group's admin routes.
+        using var context = new MockOdkContext();
+        var (chapter, _) = CreateChapter(context, withFeature: true);
+        CreateSiteEmail(context);
+        var outsider = context.CreateMember();
+
+        var service = CreateService(context);
+
+        // Act
+        var act = async () => await service.ValidateChapterEmailHtml(
+            CreateRequest(chapter, outsider), Type, "<p>Valid</p>");
+
+        // Assert
+        await act.Should().ThrowAsync<OdkNotAuthorizedException>();
+    }
+
+    [Test]
+    public static async Task ValidateChapterEmailHtml_WithoutTheFeature_StillValidates()
+    {
+        // Arrange - deliberately not gated on the feature, unlike UpdateChapterEmail. Those refusals are
+        // about whether a template may be saved at all, and answering them here would put "cannot be
+        // customised" under a field as if it were a markup error.
+        using var context = new MockOdkContext();
+        var (chapter, currentMember) = CreateChapter(context, withFeature: false);
+        CreateSiteEmail(context);
+
+        var service = CreateService(context, CreateHtmlValidator(ServiceResult.Failure(HtmlFailure)));
+
+        // Act
+        var result = await service.ValidateChapterEmailHtml(
+            CreateRequest(chapter, currentMember), Type, "<p>Malformed</p");
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.Message.Should().Be(HtmlFailure);
+    }
+
+    [Test]
+    public static async Task ValidateChapterEmailHtml_WritesNothing()
+    {
+        // Arrange - the editor calls this while the admin types, so it has to be free of side effects:
+        // content that never gets submitted must not leave a saved override behind.
+        using var context = new MockOdkContext();
+        var (chapter, currentMember) = CreateChapter(context, withFeature: true);
+        CreateSiteEmail(context);
+
+        var service = CreateService(context);
+
+        // Act
+        await service.ValidateChapterEmailHtml(CreateRequest(chapter, currentMember), Type, "<p>Valid</p>");
+
+        // Assert
+        context.Set<ChapterEmail>().Should().BeEmpty();
+    }
+
+    [Test]
+    public static void ValidateEmailHtml_MalformedHtml_ReturnsFailure()
+    {
+        // Arrange
+        using var context = new MockOdkContext();
+        var currentMember = context.CreateMember(siteAdmin: true);
+
+        var service = CreateService(context, CreateHtmlValidator(ServiceResult.Failure(HtmlFailure)));
+
+        // Act
+        var result = service.ValidateEmailHtml(
+            CreateMemberRequest(currentMember), Type, "<p>Malformed</p");
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.Message.Should().Be(HtmlFailure);
+    }
+
+    [Test]
+    public static void ValidateEmailHtml_NotSiteAdmin_Throws()
+    {
+        // Arrange
+        using var context = new MockOdkContext();
+        var currentMember = context.CreateMember();
+
+        var service = CreateService(context);
+
+        // Act
+        var act = () => service.ValidateEmailHtml(CreateMemberRequest(currentMember), Type, "<p>Valid</p>");
+
+        // Assert
+        act.Should().Throw<OdkNotAuthorizedException>();
+    }
+
     private static (Chapter Chapter, Member CurrentMember) CreateChapter(
         MockOdkContext context, bool withFeature)
     {
@@ -148,10 +283,25 @@ public static class EmailAdminServiceTests
         return (chapter, currentMember);
     }
 
+    // Set up explicitly rather than left bare: a Mock.Of with no configured return hands back null from
+    // Validate, which reads as a pass and turns every failure case into a false pass.
+    private static IHtmlValidator CreateHtmlValidator(ServiceResult result) => Mock.Of<IHtmlValidator>(x =>
+        x.Validate(It.IsAny<string?>(), It.IsAny<HtmlValidatorOptions>()) == result);
+
     private static IHttpRequestContext CreateHttpRequestContext()
     {
         var mock = new Mock<IHttpRequestContext>();
         mock.Setup(x => x.BaseUrl).Returns("https://test.local");
+        return mock.Object;
+    }
+
+    private static IMemberServiceRequest CreateMemberRequest(Member currentMember)
+    {
+        var mock = new Mock<IMemberServiceRequest>();
+        mock.Setup(x => x.CurrentMember).Returns(currentMember);
+        mock.Setup(x => x.CurrentMemberOrDefault).Returns(currentMember);
+        mock.Setup(x => x.HttpRequestContext).Returns(CreateHttpRequestContext());
+        mock.Setup(x => x.Platform).Returns(PlatformType.Default);
         return mock.Object;
     }
 
@@ -167,13 +317,15 @@ public static class EmailAdminServiceTests
         return mock.Object;
     }
 
-    private static EmailAdminService CreateService(MockOdkContext context) => new(
+    private static EmailAdminService CreateService(
+        MockOdkContext context, IHtmlValidator? htmlValidator = null) => new(
         MockUnitOfWork.Create(context),
         Mock.Of<IMemberEmailService>(),
         // The real one, not a mock: it has no dependencies and is a pure function over the arranged
         // subscription features. A bare mock returns false from every check, which turns the
         // with-the-feature cases into false passes.
-        new AuthorizationService());
+        new AuthorizationService(),
+        htmlValidator ?? CreateHtmlValidator(ServiceResult.Successful()));
 
     private static void CreateSiteEmail(MockOdkContext context) => context.Create(new Email
     {

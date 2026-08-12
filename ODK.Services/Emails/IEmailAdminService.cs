@@ -24,4 +24,15 @@ public interface IEmailAdminService
     Task<ServiceResult> UpdateChapterEmail(IMemberChapterAdminServiceRequest request, EmailType type, EmailUpdateModel model);
 
     Task<ServiceResult> UpdateEmail(IMemberServiceRequest request, EmailType type, EmailUpdateModel model);
+
+    /// <summary>
+    /// The HTML check <see cref="UpdateChapterEmail"/> applies, without writing anything, so the editor
+    /// can run it while the admin types. Only the markup rules: placeholders are checked in the browser
+    /// already, and reporting them here too would flag the same field twice.
+    /// </summary>
+    Task<ServiceResult> ValidateChapterEmailHtml(
+        IMemberChapterAdminServiceRequest request, EmailType type, string? htmlContent);
+
+    /// <inheritdoc cref="ValidateChapterEmailHtml" />
+    ServiceResult ValidateEmailHtml(IMemberServiceRequest request, EmailType type, string? htmlContent);
 }

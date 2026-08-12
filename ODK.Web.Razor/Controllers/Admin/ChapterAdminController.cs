@@ -306,6 +306,21 @@ public class ChapterAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
+    [HttpPost("groups/{chapterId:guid}/emails/{type}/validate")]
+    public async Task<IActionResult> ValidateChapterEmail(
+        Guid chapterId, EmailType type, [FromForm] string? content)
+    {
+        var request = MemberChapterAdminServiceRequest.Create(
+            ChapterAdminSecurable.Emails, MemberChapterServiceRequest);
+        var result = await _emailAdminService.ValidateChapterEmailHtml(request, type, content);
+
+        return Ok(new EmailHtmlValidationResultViewModel
+        {
+            Message = result.Message,
+            Valid = result.Success
+        });
+    }
+
     [HttpPost("groups/{chapterId:guid}/emails/{type}/restoreDefault")]
     public async Task<IActionResult> RestoreDefaultEmail(Guid chapterId, EmailType type)
     {

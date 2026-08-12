@@ -8,8 +8,10 @@
     {
         Content = Model.Email.HtmlContent,
         Placeholders = EmailTemplateParameters.ForGroup(Model.Email.Type),
+        ValidPlaceholders = EmailTemplateParameters.ForSite(Model.Email.Type),
         ReadOnly = readOnly,
-        Subject = Model.Email.Subject
+        Subject = Model.Email.Subject,
+        ValidateUrl = $"/groups/{Model.Chapter.Id}/emails/{Model.Email.Type}/validate"
     };
 }
 

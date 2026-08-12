@@ -22,6 +22,7 @@ using ODK.Services.Chapters.Models;
 using ODK.Services.Exceptions;
 using ODK.Services.Emails;
 using ODK.Services.Geolocation;
+using ODK.Services.Html;
 using ODK.Services.Imaging;
 using ODK.Services.Logging;
 using ODK.Services.Members;
@@ -1313,11 +1314,11 @@ public static class ChapterAdminServiceTests
         return mock.Object;
     }
 
-    private static IHtmlSanitizer CreateMockHtmlSanitizer()
+    private static IHtmlValidator CreateMockHtmlValidator()
     {
-        var mock = new Mock<IHtmlSanitizer>();
-        mock.Setup(x => x.Sanitize(It.IsAny<string>(), It.IsAny<HtmlSanitizerOptions>()))
-            .Returns((string html, HtmlSanitizerOptions _) => html);
+        var mock = new Mock<IHtmlValidator>();
+        mock.Setup(x => x.Validate(It.IsAny<string?>(), It.IsAny<HtmlValidatorOptions>()))
+            .Returns(ServiceResult.Successful());
         return mock.Object;
     }
 
@@ -1351,7 +1352,7 @@ public static class ChapterAdminServiceTests
 
     private static ChapterAdminService CreateChapterAdminService(
         MockOdkContext context,
-        IHtmlSanitizer? htmlSanitizer = null,
+        IHtmlValidator? htmlValidator = null,
         ISocialMediaService? socialMediaService = null,
         INotificationService? notificationService = null,
         IImageService? imageService = null,
@@ -1368,7 +1369,7 @@ public static class ChapterAdminServiceTests
         return new ChapterAdminService(
             CreateMockUnitOfWork(context),
             new EmailValidationService(new InconclusiveEmailVerifier()),
-            htmlSanitizer ?? CreateMockHtmlSanitizer(),
+            htmlValidator ?? CreateMockHtmlValidator(),
             socialMediaService ?? new Mock<ISocialMediaService>().Object,
             notificationService ?? new Mock<INotificationService>().Object,
             imageService ?? CreateMockImageService(isValidImage: true),

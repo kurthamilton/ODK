@@ -6,7 +6,10 @@ using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
 using ODK.Services.Authorization;
 using ODK.Services.Emails.Models;
+using ODK.Services.Emails.Parameters;
+using ODK.Services.Emails.Validation;
 using ODK.Services.Emails.ViewModels;
+using ODK.Services.Html;
 using ODK.Services.Members;
 
 namespace ODK.Services.Emails;
@@ -15,17 +18,28 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
 {
     private const string NotPermitted = "Not permitted";
 
+    /* Templates are hand-written HTML rather than editor output, so markup left open or closed out of
+       order is a typo worth reporting rather than something to quietly recover from. */
+    private static readonly HtmlValidatorOptions TemplateHtmlOptions = new()
+    {
+        AllowLinks = true,
+        RequireWellFormed = true
+    };
+
     private readonly IAuthorizationService _authorizationService;
+    private readonly IHtmlValidator _htmlValidator;
     private readonly IMemberEmailService _memberEmailService;
     private readonly IUnitOfWork _unitOfWork;
 
     public EmailAdminService(
         IUnitOfWork unitOfWork,
         IMemberEmailService memberEmailService,
-        IAuthorizationService authorizationService)
+        IAuthorizationService authorizationService,
+        IHtmlValidator htmlValidator)
         : base(unitOfWork)
     {
         _authorizationService = authorizationService;
+        _htmlValidator = htmlValidator;
         _memberEmailService = memberEmailService;
         _unitOfWork = unitOfWork;
     }
@@ -208,6 +222,27 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         return ServiceResult.Successful();
     }
 
+    /* Authorised but deliberately not gated on the custom emails feature or on Overridable, unlike
+       UpdateChapterEmail. Those refusals are about whether a template may be saved at all, and the form
+       is read-only when either applies, so no request gets this far; answering them here would put
+       "This email cannot be customised" under a field as if it were a markup error. */
+    public async Task<ServiceResult> ValidateChapterEmailHtml(
+        IMemberChapterAdminServiceRequest request,
+        EmailType type,
+        string? htmlContent)
+    {
+        await AssertMemberIsChapterAdmin(request);
+
+        return ValidateHtml(type, htmlContent);
+    }
+
+    public ServiceResult ValidateEmailHtml(IMemberServiceRequest request, EmailType type, string? htmlContent)
+    {
+        AssertMemberIsSiteAdmin(request.CurrentMember);
+
+        return ValidateHtml(type, htmlContent);
+    }
+
     /* Batched into whichever query the caller is already running rather than fetched on its own, so
        reading the feature costs no extra round trip. */
     private static Func<IUnitOfWork, IDeferredQueryMultiple<SiteSubscriptionFeature>> OwnerSubscriptionFeatures(
@@ -218,7 +253,25 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
             .Features()
             .GetAll();
 
-    private static ServiceResult ValidateChapterEmail(ChapterEmail chapterEmail)
+    /* Checked against everything the type supplies, not the narrower list a group is offered: a group
+       template using platform.baseurl still resolves, so rejecting it would fail a working email. */
+    private static ServiceResult ValidatePlaceholders(EmailType type, string subject, string htmlContent)
+    {
+        var supplied = EmailTemplateParameters.ForSite(type);
+
+        var unknown = EmailTemplateValidator.UnknownPlaceholders(subject, supplied)
+            .Concat(EmailTemplateValidator.UnknownPlaceholders(htmlContent, supplied))
+            .Distinct(EmailParameterComparer.Default)
+            .ToArray();
+
+        return unknown.Length > 0
+            ? ServiceResult.Failure(
+                $"Unknown placeholder{(unknown.Length > 1 ? "s" : "")}: " +
+                string.Join(", ", unknown.Select(x => $"{{{x}}}")))
+            : ServiceResult.Successful();
+    }
+
+    private ServiceResult ValidateChapterEmail(ChapterEmail chapterEmail)
     {
         if (!Enum.IsDefined(typeof(EmailType), chapterEmail.Type) || chapterEmail.Type == EmailType.None)
         {
@@ -231,10 +284,15 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
             return ServiceResult.Failure("Some required fields are missing");
         }
 
-        return ServiceResult.Successful();
+        var placeholderResult = ValidatePlaceholders(
+            chapterEmail.Type, chapterEmail.Subject, chapterEmail.HtmlContent);
+
+        return !placeholderResult.Success
+            ? placeholderResult
+            : ValidateHtml(chapterEmail.Type, chapterEmail.HtmlContent);
     }
 
-    private static ServiceResult ValidateEmail(Email email)
+    private ServiceResult ValidateEmail(Email email)
     {
         if (!Enum.IsDefined(typeof(EmailType), email.Type) || email.Type == EmailType.None)
         {
@@ -247,8 +305,21 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
             return ServiceResult.Failure("Some required fields are missing");
         }
 
-        return ServiceResult.Successful();
+        var placeholderResult = ValidatePlaceholders(email.Type, email.Subject, email.HtmlContent);
+
+        return !placeholderResult.Success
+            ? placeholderResult
+            : ValidateHtml(email.Type, email.HtmlContent);
     }
+
+
+    /* The layout is exempt. It is the full HTML document every other email is rendered into -
+       <html>, <head>, a stylesheet - so the allow-list tuned for rich text would reject it outright.
+       Only the site admin edits it, and it is being made non-overridable. Subjects are not checked
+       either: they are plain text, so a stray angle bracket is not markup. */
+    private ServiceResult ValidateHtml(EmailType type, string? htmlContent) => type == EmailType.Layout
+        ? ServiceResult.Successful()
+        : _htmlValidator.Validate(htmlContent, TemplateHtmlOptions);
 
     private bool CanEditEmails(IReadOnlyCollection<SiteSubscriptionFeature> ownerSubscriptionFeatures)
         => _authorizationService.ChapterHasAccess(ownerSubscriptionFeatures, SiteFeatureType.CustomEmails);

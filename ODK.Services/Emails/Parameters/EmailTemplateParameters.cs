@@ -61,8 +61,6 @@ public static class EmailTemplateParameters
         return names;
     }
 
-    // Type first: those are what distinguishes this template from every other one, so they are what an
-    // admin is looking for. The core parameters are the same on every page and can sit underneath.
     private static IReadOnlyCollection<string> Combine(IEnumerable<string> core, EmailType type)
-        => [.. ForType(type), .. core];
+        => [.. ForType(type).Concat(core).Order(StringComparer.Ordinal)];
 }

@@ -1,12 +1,46 @@
-﻿@using ODK.Web.Razor.Models.Admin.Chapters
+﻿@using ODK.Services.Emails.Validation
+@using ODK.Web.Razor.Models.Admin.Chapters
 @model ChapterEmailFormViewModel
+@{
+    // The pattern and the known placeholders come from the server, so the check the editor applies as
+    // you type is the same one the service applies on submit - see the emailtemplate provider in
+    // odk.forms.js. Validated against what the type supplies, which is wider than what is offered as
+    // buttons: a group template using platform.baseurl resolves, so flagging it would be wrong.
+    IDictionary<string, object> ValidatedField(object attributes)
+    {
+        var validated = HtmlHelper.AnonymousObjectToHtmlAttributes(attributes);
+        validated["data-val"] = "true";
+        validated["data-val-emailtemplate"] = "Unknown placeholder";
+        validated["data-val-emailtemplate-pattern"] = EmailTemplatePattern.Value;
+        validated["data-val-emailtemplate-placeholders"] = string.Join(",", Model.ValidPlaceholders);
+        return validated;
+    }
+
+    // The markup rules cannot run in the browser - they are a parse plus an allow-list the server owns -
+    // so this field is checked by posting it to ValidateUrl. See the htmlcontent provider in
+    // odk.forms.js. Content only: subjects are plain text, so the server does not check them either.
+    IDictionary<string, object> ValidatedHtmlField(object attributes)
+    {
+        var validated = ValidatedField(attributes);
+        validated["data-val-htmlcontent"] = "Invalid HTML";
+        validated["data-val-htmlcontent-url"] = Model.ValidateUrl;
+
+        /* Narrowed from the default "input change" to change alone, which for a textarea means blur
+           after an edit. The default re-runs every validator on the field once it is showing an error,
+           which for this one is a round trip carrying the whole template every time typing pauses.
+           Nobody expects per-keystroke feedback on fifteen rows of hand-written HTML, and it costs the
+           placeholder message clearing as you type rather than on blur. */
+        validated["data-val-event"] = "change";
+        return validated;
+    }
+}
 
 @* One fieldset over the whole form, so the placeholder buttons are disabled with the textarea they
    insert into rather than staying clickable against a field that cannot change. *@
 <fieldset disabled="@(Model.ReadOnly ? "" : null)">
     <div class="form-group mb-3 required">
         @Html.LabelFor(x => x.Subject, new { @class = "form-label" })
-        @Html.TextBoxFor(x => x.Subject, new { @class = "form-control" })
+        @Html.TextBoxFor(x => x.Subject, ValidatedField(new { @class = "form-control" }))
         @Html.ValidationMessageFor(x => x.Subject)
     </div>
 
@@ -15,7 +49,8 @@
 
         @* The toggle is positioned against this wrapper rather than the textarea, which cannot hold children. *@
         <div class="placeholders">
-            @Html.TextAreaFor(x => x.Content, new { @class = "form-control", rows = 15, id = "email-content" })
+            @Html.TextAreaFor(x => x.Content,
+                ValidatedHtmlField(new { @class = "form-control", rows = 15, id = "email-content" }))
 
             @* data-bs-toggle is taken by the collapse, so the hint is a plain title rather than a Bootstrap tooltip. *@
             <button type="button" class="btn btn-sm btn-light font-monospace placeholders-toggle collapsed"

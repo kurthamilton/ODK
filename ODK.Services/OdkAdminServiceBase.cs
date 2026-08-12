@@ -1,16 +1,16 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Members;
-using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
 using ODK.Services.Exceptions;
+using ODK.Services.Html;
 using ODK.Services.Security;
 
 namespace ODK.Services;
 
 public abstract class OdkAdminServiceBase
 {
-    protected static readonly HtmlSanitizerOptions DefaultHtmlSantizerOptions = new HtmlSanitizerOptions
+    protected static readonly HtmlValidatorOptions DefaultHtmlValidatorOptions = new HtmlValidatorOptions
     {
         AllowLinks = true
     };

@@ -85,6 +85,79 @@ window.odk.forms = window.odk.forms || {};
             return new RegExp(pattern).test(value);
         });
 
+        // Custom [data-val-emailtemplate] provider for the email template editor. Flags a placeholder
+        // the send path does not supply - interpolation leaves an unrecognised token exactly as
+        // written, so it reaches the member as literal braces with nothing downstream to catch it.
+        // The pattern and the list of known placeholders are both rendered by the server rather than
+        // written here, so the two checks can't drift apart.
+        // Empty values pass - presence is the [Required] provider's job.
+        v.addProvider('emailtemplate', (value, element) => {
+            if (!value) return true;
+
+            const pattern = element.getAttribute('data-val-emailtemplate-pattern');
+            const known = element.getAttribute('data-val-emailtemplate-placeholders');
+            if (!pattern || known === null) return true;
+
+            // Lower-cased both sides: the server matches placeholders case-insensitively, so flagging
+            // {Group.Name} here would reject a template that renders perfectly well.
+            const allowed = new Set(known.toLowerCase().split(',').filter(x => x));
+
+            const unknown = [];
+            for (const match of value.matchAll(new RegExp(pattern, 'g'))) {
+                const name = match[1].toLowerCase();
+                if (!allowed.has(name) && !unknown.includes(match[1])) {
+                    unknown.push(match[1]);
+                }
+            }
+
+            if (unknown.length === 0) return true;
+
+            return `Unknown placeholder${unknown.length > 1 ? 's' : ''}: `
+                + unknown.map(x => `{${x}}`).join(', ');
+        });
+
+        // Custom [data-val-htmlcontent] provider for the email template editor. The markup rules are a
+        // parse for well-formedness plus an allow-list of tags and attributes, none of which can be
+        // expressed as a pattern the way the providers above are, so this one asks the server: it posts
+        // the value to data-val-htmlcontent-url and returns the promise, which the validation library
+        // awaits (true passes, a string is the message to show).
+        // Fails open on a network or HTTP error: the same check runs again on submit, so a check that
+        // cannot reach the server must not block content the server would have accepted.
+        // Empty values pass - presence is the [Required] provider's job.
+        v.addProvider('htmlcontent', async (value, element) => {
+            if (!value) return true;
+
+            const url = element.getAttribute('data-val-htmlcontent-url');
+            if (!url) return true;
+
+            const body = new FormData();
+            body.append('content', value);
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: window.odk.antiforgeryHeaders(),
+                    body
+                });
+
+                if (!response.ok) {
+                    // Never a verdict on the content: the check did not run. Warned rather than swallowed
+                    // - failing open is silent by design, so without this a broken endpoint looks exactly
+                    // like markup that passed.
+                    console.warn(`Validation request to ${url} failed: ${response.status}`);
+                    return true;
+                }
+
+                const result = await response.json();
+                return result.valid
+                    ? true
+                    : result.message || element.getAttribute('data-val-htmlcontent');
+            } catch (e) {
+                console.warn(`Validation request to ${url} could not be read`, e);
+                return true;
+            }
+        });
+
         v.bootstrap();
         window.odk.forms.validationService = v;
     }
@@ -129,11 +202,16 @@ window.odk.forms = window.odk.forms || {};
             $button.addEventListener('click', () => {
                 if ($target.tagName !== 'FORM') return;
 
-                const submit = () => {
+                // Awaits validateForm rather than reading isValid(): once a provider validates
+                // asynchronously (see htmlcontent) the synchronous state is still stale when isValid
+                // returns, so the form would submit before the answer arrived. The promise resolves true
+                // for a form with no validated fields, which is how the test/restore buttons - which
+                // target their own empty forms - still submit.
+                const submit = async () => {
                     const v = window.odk.forms.validationService;
-                    v.validateForm($target);
-                    if (!v.isValid($target)) return;
-                    $target.submit();
+                    if (await v.validateForm($target)) {
+                        $target.submit();
+                    }
                 };
 
                 // submit() fires no submit event, so the confirm interception in odk.js can't see it - ask

@@ -1,28 +1,28 @@
 ﻿using ODK.Core.Messages;
 using ODK.Core.Notifications;
-using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
 using ODK.Services.Contact.ViewModels;
+using ODK.Services.Html;
 using ODK.Services.Members;
 
 namespace ODK.Services.Contact;
 
 public class ContactAdminService : OdkAdminServiceBase, IContactAdminService
 {
-    private readonly IHtmlSanitizer _htmlSanitizer;
+    private readonly IHtmlValidator _htmlValidator;
     private readonly IMemberEmailService _memberEmailService;
     private readonly ContactAdminServiceSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
 
     public ContactAdminService(
         IUnitOfWork unitOfWork,
-        IHtmlSanitizer htmlSanitizer,
+        IHtmlValidator htmlValidator,
         IMemberEmailService memberEmailService,
         ContactAdminServiceSettings settings)
         : base(unitOfWork)
     {
-        _htmlSanitizer = htmlSanitizer;
+        _htmlValidator = htmlValidator;
         _memberEmailService = memberEmailService;
         _settings = settings;
         _unitOfWork = unitOfWork;
@@ -121,6 +121,12 @@ public class ContactAdminService : OdkAdminServiceBase, IContactAdminService
             return sendResult;
         }
 
+        var htmlResult = _htmlValidator.Validate(message, DefaultHtmlValidatorOptions);
+        if (!htmlResult.Success)
+        {
+            return htmlResult;
+        }
+
         var now = DateTime.UtcNow;
 
         originalMessage.RepliedUtc = now;
@@ -129,7 +135,7 @@ public class ContactAdminService : OdkAdminServiceBase, IContactAdminService
         _unitOfWork.SiteContactMessageReplyRepository.Add(new SiteContactMessageReply
         {
             CreatedUtc = now,
-            Message = _htmlSanitizer.Sanitize(message, DefaultHtmlSantizerOptions) ?? string.Empty,
+            Message = message,
             MemberId = currentMember.Id,
             SiteContactMessageId = originalMessage.Id
         });

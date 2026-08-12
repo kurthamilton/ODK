@@ -9,6 +9,7 @@ using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Core.Web;
 using ODK.Services.Exceptions;
+using ODK.Services.Html;
 using ODK.Services.Questions;
 using ODK.Services.Questions.Models;
 using ODK.Services.Tests.Helpers;
@@ -265,11 +266,11 @@ public static class SiteQuestionAdminServiceTests
 
     private static SiteQuestionAdminService CreateService(MockOdkContext context)
     {
-        var htmlSanitizer = new Mock<IHtmlSanitizer>();
-        htmlSanitizer
-            .Setup(x => x.Sanitize(It.IsAny<string>(), It.IsAny<HtmlSanitizerOptions>()))
-            .Returns((string html, HtmlSanitizerOptions _) => html);
+        var htmlValidator = new Mock<IHtmlValidator>();
+        htmlValidator
+            .Setup(x => x.Validate(It.IsAny<string?>(), It.IsAny<HtmlValidatorOptions>()))
+            .Returns(ServiceResult.Successful());
 
-        return new SiteQuestionAdminService(MockUnitOfWork.Create(context), htmlSanitizer.Object);
+        return new SiteQuestionAdminService(MockUnitOfWork.Create(context), htmlValidator.Object);
     }
 }
