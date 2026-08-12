@@ -11,6 +11,7 @@ public interface IUnitOfWork
     IChapterConversationMessageRepository ChapterConversationMessageRepository { get; }
     IChapterConversationRepository ChapterConversationRepository { get; }
     IChapterEmailRepository ChapterEmailRepository { get; }
+    IChapterEmailSettingsRepository ChapterEmailSettingsRepository { get; }
     IChapterEventSettingsRepository ChapterEventSettingsRepository { get; }
     IChapterImageRepository ChapterImageRepository { get; }
     IChapterLinksRepository ChapterLinksRepository { get; }
