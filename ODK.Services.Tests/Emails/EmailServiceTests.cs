@@ -97,6 +97,73 @@ public static class EmailServiceTests
     }
 
     [Test]
+    public static async Task SendEmail_TemplateUsingAudienceTitles_ResolvesThemFromSiteSettings()
+    {
+        // Arrange - a group that has never filled its settings form in inherits every title from the site.
+        var sent = await SendTemplate(
+            subject: "{memberTitle} subject",
+            body: "<p>{adminTitle} - {title}</p>");
+
+        // Assert - each is a template in its own right, so the group name inside them resolves too.
+        sent.Subject.Should().Be("Test group members subject");
+        sent.Body.Should().Contain("Test group admins - Test group");
+    }
+
+    [Test]
+    public static async Task SendEmail_GroupSetsOneAudienceTitle_UsesItAndInheritsTheOther()
+    {
+        // Arrange - the two are inherited independently, so setting one must not drag the other along.
+        var sent = await SendTemplate(
+            subject: "subject",
+            body: "<p>{memberTitle} - {adminTitle}</p>",
+            chapterEmailSettings: new ChapterEmailSettings
+            {
+                Id = Guid.NewGuid(),
+                MemberTitle = "Our own wording"
+            });
+
+        // Assert
+        sent.Body.Should().Contain("Our own wording - Test group admins");
+    }
+
+    [Test]
+    public static async Task SendEmail_GroupTitleIsBlank_InheritsTheSites()
+    {
+        // Arrange - blank is how the form posts a box the group cleared, and it reads as unset rather than
+        // as a title of nothing. Pinned because the failure is a silently empty email title.
+        var sent = await SendTemplate(
+            subject: "subject",
+            body: "<p>{memberTitle}</p>",
+            chapterEmailSettings: new ChapterEmailSettings
+            {
+                Id = Guid.NewGuid(),
+                MemberTitle = string.Empty
+            });
+
+        // Assert
+        sent.Body.Should().Contain("Test group members");
+    }
+
+    [Test]
+    public static async Task SendEmail_GroupSetsATitle_DoesNotChangeTheLegacyTitle()
+    {
+        // Arrange - {title} is site-wide: a group has no override of it, so its own wording stays out.
+        var sent = await SendTemplate(
+            subject: "subject",
+            body: "<p>{title}</p>",
+            chapterEmailSettings: new ChapterEmailSettings
+            {
+                AdminTitle = "Our own wording",
+                Id = Guid.NewGuid(),
+                MemberTitle = "Our own wording"
+            });
+
+        // Assert
+        sent.Body.Should().Contain("Test group");
+        sent.Body.Should().NotContain("Our own wording");
+    }
+
+    [Test]
     public static async Task SendEventCommentEmail_SendsTheAdminTemplateToAdminsAndTheReplyTemplateToTheMember()
     {
         // Arrange - one send per audience, each reading its own template, so wording meant for admins
@@ -227,7 +294,8 @@ public static class EmailServiceTests
     private static async Task<EmailClientEmail> SendTemplate(
         string subject,
         string body,
-        IEmailParameters? parameters = null)
+        IEmailParameters? parameters = null,
+        ChapterEmailSettings? chapterEmailSettings = null)
     {
         using var context = new MockOdkContext();
 
@@ -239,15 +307,25 @@ public static class EmailServiceTests
             Slug = "test-group"
         });
 
+        // Each title is itself a template, so they are given one to prove they are interpolated rather
+        // than passed through - the whole-list test below would pass on an empty string either way.
         context.Create(new SiteEmailSettings
         {
+            AdminTitle = "{group.name} admins",
             FromEmailAddress = "noreply@example.com",
             FromName = "{group.name}",
             Id = Guid.NewGuid(),
+            MemberTitle = "{group.name} members",
             Platform = PlatformType.DrunkenKnitwits,
             PlatformTitle = "Platform",
             Title = "{group.name}"
         });
+
+        if (chapterEmailSettings != null)
+        {
+            chapterEmailSettings.ChapterId = chapter.Id;
+            context.Create(chapterEmailSettings);
+        }
 
         context.Create(new Email
         {

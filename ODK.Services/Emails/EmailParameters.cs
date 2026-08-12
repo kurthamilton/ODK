@@ -25,9 +25,33 @@ public sealed class EmailParameters : IEmailParameters
     public const string HtmlPrefix = "html:";
 
     /// <summary>
+    /// The title for an email going to a group's admins, which a group may set for itself and otherwise
+    /// inherits from the site. Like <see cref="TitleName"/> it has no property here - it is itself a
+    /// template, so it can only be resolved once the parameters it interpolates have been merged.
+    /// </summary>
+    /// <remarks>
+    /// Supplied to every email but deliberately absent from <see cref="Names"/>, so it is neither offered
+    /// in the template editor nor accepted by validation. Which of the two audience titles applies is a
+    /// property of the email rather than something an author should choose - a template picking the wrong
+    /// one sends admin wording to members, which has already happened once. Once an email declares its
+    /// audience, <see cref="TitleName"/> is derived from whichever of these two matches, and these stop
+    /// being tokens at all. Offering them meanwhile would only invite templates that need rewriting.
+    /// </remarks>
+    public const string AdminTitleName = "adminTitle";
+
+    /// <summary>
+    /// The title for an email going to a group's members. <inheritdoc cref="AdminTitleName" />
+    /// </summary>
+    public const string MemberTitleName = "memberTitle";
+
+    /// <summary>
     /// Has no property here: the title is interpolated from the other parameters, so it can only be
     /// resolved after they have all been merged. Named here so <see cref="Names"/> stays complete.
     /// </summary>
+    /// <remarks>
+    /// The only title a template refers to, and site-wide for now. It is what the audience titles will be
+    /// derived into - see <see cref="AdminTitleName"/>.
+    /// </remarks>
     public const string TitleName = "title";
 
     private const string GroupPrefix = "group.";
@@ -49,7 +73,9 @@ public sealed class EmailParameters : IEmailParameters
     ];
 
     /// <summary>
-    /// Every parameter an email template can rely on, whichever email it is.
+    /// Every parameter an email template can rely on, whichever email it is. Not everything the send path
+    /// supplies: the audience titles are supplied without being offered - see
+    /// <see cref="AdminTitleName"/>.
     /// </summary>
     public static IReadOnlyCollection<string> Names { get; } = Values
         .Select(x => x.Name)

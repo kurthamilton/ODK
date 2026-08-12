@@ -270,6 +270,7 @@ public class EmailService : IEmailService
         IServiceRequest request,
         SendEmailOptions options,
         SiteEmailSettings siteSettings,
+        ChapterEmailSettings? chapterEmailSettings,
         Email? bodyEmail)
     {
         var urlProvider = await _urlProviderFactory.Create(request);
@@ -303,7 +304,23 @@ public class EmailService : IEmailService
             }
         }
 
-        parameters[EmailParameters.TitleName] = siteSettings.Title.Interpolate(parameters.AsReadOnly(), HttpUtility.HtmlEncode);
+        /* Resolved after the merge and not before, because each is itself a template over the parameters
+           above it. A group's own wording wins where it set any; Coalesce treats blank as unset, which is
+           how a group that has never filled the form in inherits the site's. */
+        var titles = new (string Name, string Value)[]
+        {
+            (EmailParameters.AdminTitleName,
+                StringUtils.Coalesce(chapterEmailSettings?.AdminTitle, siteSettings.AdminTitle)),
+            (EmailParameters.MemberTitleName,
+                StringUtils.Coalesce(chapterEmailSettings?.MemberTitle, siteSettings.MemberTitle)),
+            // Site-wide on purpose - see TitleName. A group is not offered an override of it.
+            (EmailParameters.TitleName, siteSettings.Title)
+        };
+
+        foreach (var (name, value) in titles)
+        {
+            parameters[name] = value.Interpolate(parameters.AsReadOnly(), HttpUtility.HtmlEncode);
+        }
 
         var body = !string.IsNullOrEmpty(options.Body)
             ? options.Body
@@ -329,12 +346,15 @@ public class EmailService : IEmailService
         var platform = request.Platform;
         var chapterId = options.Chapter?.Id;
 
-        var (emails, chapterEmails, siteSettings) = await _unitOfWork.RunAsync(
+        var (emails, chapterEmails, siteSettings, chapterEmailSettings) = await _unitOfWork.RunAsync(
             x => x.EmailRepository.GetAll(),
             x => chapterId != null
                 ? x.ChapterEmailRepository.GetByChapterId(chapterId.Value)
                 : new DefaultDeferredQueryMultiple<ChapterEmail>(),
-            x => x.SiteEmailSettingsRepository.Get(platform));
+            x => x.SiteEmailSettingsRepository.Get(platform),
+            x => chapterId != null
+                ? x.ChapterEmailSettingsRepository.GetByChapterIdOrDefault(chapterId.Value)
+                : new DefaultDeferredQuerySingleOrDefault<ChapterEmailSettings>());
 
         /* Where a group has overridden a template, the wording is theirs but the recipient type stays the
            site's - an override says how the email reads, not who it is for. */
@@ -353,7 +373,8 @@ public class EmailService : IEmailService
                 ?? siteBodyEmail;
         }
 
-        var parameters = await BuildParameters(request, options, siteSettings, bodyEmail);
+        var parameters = await BuildParameters(
+            request, options, siteSettings, chapterEmailSettings, bodyEmail);
 
         var subject = !string.IsNullOrEmpty(options.Subject)
             ? options.Subject

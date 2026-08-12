@@ -15,10 +15,27 @@
     </div>
 </div>
 
+@* Each of these is itself a template over the email's other parameters, which is why they sit together:
+   Title is the legacy one every stored template still uses, and the two below it are what a template
+   should use now - they say who the email is going to, and a group can override them for itself. *@
 <div class="form-group mb-3">
     @Html.LabelFor(x => x.Title)
     @Html.TextBoxFor(x => x.Title, new { @class = "form-control" })
     @Html.ValidationMessageFor(x => x.Title)
+</div>
+
+<div class="row mb-3">
+    <div class="form-group col-md-6 required">
+        @Html.LabelFor(x => x.MemberTitle)
+        @Html.TextBoxFor(x => x.MemberTitle, new { @class = "form-control" })
+        @Html.ValidationMessageFor(x => x.MemberTitle)
+    </div>
+
+    <div class="form-group col-md-6 required">
+        @Html.LabelFor(x => x.AdminTitle)
+        @Html.TextBoxFor(x => x.AdminTitle, new { @class = "form-control" })
+        @Html.ValidationMessageFor(x => x.AdminTitle)
+    </div>
 </div>
 
 <div class="form-group mb-3">

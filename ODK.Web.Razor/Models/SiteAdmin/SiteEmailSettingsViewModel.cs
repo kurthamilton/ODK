@@ -5,6 +5,10 @@ namespace ODK.Web.Razor.Models.SiteAdmin;
 
 public class SiteEmailSettingsViewModel
 {
+    [DisplayName("Admin Title")]
+    [Required]
+    public string AdminTitle { get; set; } = string.Empty;
+
     [DisplayName("From Address")]
     [EmailAddress]
     [Required]
@@ -13,6 +17,10 @@ public class SiteEmailSettingsViewModel
     [DisplayName("From Name")]
     [Required]
     public string FromEmailName { get; set; } = string.Empty;
+
+    [DisplayName("Member Title")]
+    [Required]
+    public string MemberTitle { get; set; } = string.Empty;
 
     [DisplayName("Platform Title")]
     [Required]

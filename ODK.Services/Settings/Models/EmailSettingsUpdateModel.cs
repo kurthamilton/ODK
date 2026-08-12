@@ -2,8 +2,10 @@
 
 public class EmailSettingsUpdateModel
 {
+    public required string AdminTitle { get; init; }
     public required string FromEmailAddress { get; init; }
     public required string FromEmailName { get; init; }
+    public required string MemberTitle { get; init; }
     public required string PlatformTitle { get; init; }
     public required string Title { get; init; }
 }

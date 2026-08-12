@@ -8,6 +8,14 @@ namespace ODK.Services.Tests.Emails;
 [Parallelizable]
 public static class EmailParametersTests
 {
+    /* Supplied by EmailService but deliberately not offered, so they belong to no list here. Held as a
+       pair because every assertion about them is that they are absent. */
+    private static readonly string[] AudienceTitleNames =
+    [
+        EmailParameters.AdminTitleName,
+        EmailParameters.MemberTitleName
+    ];
+
     [Test]
     public static void Names_IncludesTheTitle()
     {
@@ -15,6 +23,19 @@ public static class EmailParametersTests
         // after merging. It is easily lost when the others are refactored.
         // Act / Assert
         EmailParameters.Names.Should().Contain(EmailParameters.TitleName);
+    }
+
+    [Test]
+    public static void Names_ExcludesTheAudienceTitles()
+    {
+        // Arrange - they are supplied to every email but must not be offered or accepted: which one
+        // applies is a property of the email, not a choice for whoever writes the template, and choosing
+        // wrong sends admin wording to members. They stop being tokens once {title} is derived from them,
+        // so a template adopting one now would need rewriting. Pinned so the omission is not read as an
+        // oversight and "fixed".
+        // Act / Assert
+        EmailParameters.Names.Should().NotContain(AudienceTitleNames);
+        EmailParameters.GroupNames.Should().NotContain(AudienceTitleNames);
     }
 
     [Test]
