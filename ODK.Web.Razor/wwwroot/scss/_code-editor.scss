@@ -1,0 +1,30 @@
+// The Ace editor mounted over the email template content field - see odk.code-editor.js.
+
+// The textarea stays the form field: Html.TextAreaFor binds it, aspnet-client-validation attaches to it,
+// and the htmlcontent provider reads its value. So it is moved out of sight rather than taken out of the
+// layout. Deliberately not display:none - the validation library treats a field with no box as hidden
+// and skips it, reporting valid, which would quietly switch off both checks on this field.
+.code-editor-source {
+    border: 0;
+    height: 1px;
+    opacity: 0;
+    overflow: hidden;
+    padding: 0;
+    pointer-events: none;
+    position: absolute;
+    width: 1px;
+}
+
+.code-editor {
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius);
+    // Ace cannot size itself from its content, so the container carries the height. Roughly the fifteen
+    // rows the textarea asked for.
+    height: 24rem;
+    width: 100%;
+
+    // Matches a disabled Bootstrap control, for a group that can see its template but not change it.
+    &.code-editor-readonly {
+        opacity: .65;
+    }
+}

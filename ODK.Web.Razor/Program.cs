@@ -232,6 +232,23 @@ public class Program
                 "js/odk.admin.js",
                 "js/odk.lists.js",
                 "js/odk.placeholders.js");
+            /* Its own bundle, pulled in by the three email template pages rather than added to the admin
+               bundle: Ace is by far the largest script here and nothing else uses it, so every other
+               admin page would pay for it. The mode and both themes are bundled alongside the core so
+               Ace never fetches a module at runtime - that is what would otherwise need basePath set.
+
+               Concatenated only, which is why this is AddBundle rather than AddJavaScriptBundle like the
+               others: cdnjs serves Ace already minified, so all the weight in here has been through a
+               minifier already and running another over it saves nothing worth the startup cost. */
+            pipeline.AddBundle(
+                    "/js/odk.bundle.code-editor.js",
+                    "text/javascript; charset=UTF-8",
+                    "lib/ace/ace.js",
+                    "lib/ace/mode-html.js",
+                    "lib/ace/theme-textmate.js",
+                    "lib/ace/theme-monokai.js",
+                    "js/odk.code-editor.js")
+                .Concatenate();
             pipeline.AddJavaScriptBundle(
                 route: "/js/odk.bundle.head.js",
                 "js/odk.global.js",

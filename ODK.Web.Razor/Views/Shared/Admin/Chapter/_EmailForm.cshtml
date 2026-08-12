@@ -25,6 +25,10 @@
         validated["data-val-htmlcontent"] = "Invalid HTML";
         validated["data-val-htmlcontent-url"] = Model.ValidateUrl;
 
+        // Names the Ace mode - see odk.code-editor.js. The pages that render this form load the code
+        // editor bundle; without it the field stays a plain textarea and everything else still works.
+        validated["data-code-editor"] = "html";
+
         /* Narrowed from the default "input change" to change alone, which for a textarea means blur
            after an edit. The default re-runs every validator on the field once it is showing an error,
            which for this one is a round trip carrying the whole template every time typing pauses.

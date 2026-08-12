@@ -21,3 +21,7 @@
     },
     ContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_EmailContent", viewModel)</div>
 })
+
+@section scripts {
+    <script src="~/js/odk.bundle.code-editor.js" asp-append-version="true"></script>
+}
