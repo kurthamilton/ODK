@@ -16,6 +16,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IChapterConversationMessageRepository> _chapterConversationMessageRepository;
     private readonly Lazy<IChapterConversationRepository> _chapterConversationRepository;
     private readonly Lazy<IChapterEmailRepository> _chapterEmailRepository;
+    private readonly Lazy<IChapterEmailSettingsRepository> _chapterEmailSettingsRepository;
     private readonly Lazy<IChapterEventSettingsRepository> _chapterEventSettingsRepository;
     private readonly Lazy<IChapterImageRepository> _chapterImageRepository;
     private readonly Lazy<IChapterLinksRepository> _chapterLinksRepository;
@@ -105,6 +106,7 @@ public class UnitOfWork : IUnitOfWork
         _chapterConversationMessageRepository = new(() => new ChapterConversationMessageRepository(_context));
         _chapterConversationRepository = new(() => new ChapterConversationRepository(_context));
         _chapterEmailRepository = new(() => new ChapterEmailRepository(_context));
+        _chapterEmailSettingsRepository = new(() => new ChapterEmailSettingsRepository(_context));
         _chapterEventSettingsRepository = new(() => new ChapterEventSettingsRepository(_context));
         _chapterImageRepository = new(() => new ChapterImageRepository(_context));
         _chapterLinksRepository = new(() => new ChapterLinksRepository(_context));
@@ -191,6 +193,7 @@ public class UnitOfWork : IUnitOfWork
     public IChapterConversationMessageRepository ChapterConversationMessageRepository => _chapterConversationMessageRepository.Value;
     public IChapterConversationRepository ChapterConversationRepository => _chapterConversationRepository.Value;
     public IChapterEmailRepository ChapterEmailRepository => _chapterEmailRepository.Value;
+    public IChapterEmailSettingsRepository ChapterEmailSettingsRepository => _chapterEmailSettingsRepository.Value;
     public IChapterEventSettingsRepository ChapterEventSettingsRepository => _chapterEventSettingsRepository.Value;
     public IChapterImageRepository ChapterImageRepository => _chapterImageRepository.Value;
     public IChapterLinksRepository ChapterLinksRepository => _chapterLinksRepository.Value;
