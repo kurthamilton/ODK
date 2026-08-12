@@ -10,7 +10,9 @@ using ODK.Core.Platforms;
 using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Services.Emails;
+using ODK.Services.Emails.Parameters;
 using ODK.Services.Members;
+using ODK.Services.Tests.Helpers;
 using ODK.Services.Web;
 
 namespace ODK.Services.Tests.Members;
@@ -93,6 +95,157 @@ public static class MemberEmailServiceTests
             Times.Once);
     }
 
+    [Test]
+    public static async Task SendTestEmail_FillsMemberAndGroupFromTheCurrentMemberAndGroup()
+    {
+        // Arrange - the point of the test send: an admin checking a template sees it against real values.
+        var chapter = CreateChapter();
+        var member = CreateMember();
+
+        var emailService = CreateEmailService();
+        var urlProvider = new Mock<IUrlProvider>();
+        urlProvider.Setup(x => x.EventsUrl(chapter)).Returns("https://test.local/test-group/events");
+        urlProvider.Setup(x => x.GroupUrl(chapter)).Returns("https://test.local/test-group");
+
+        var service = CreateService(emailService, urlProvider);
+
+        var request = new MemberChapterServiceRequest
+        {
+            Chapter = chapter,
+            CurrentMember = member,
+            CurrentMemberOrDefault = member,
+            HttpRequestContext = CreateHttpRequestContext(),
+            Platform = PlatformType.Default
+        };
+
+        // Act
+        await service.SendTestEmail(request, chapter, member, EmailType.NewMember);
+
+        // Assert
+        emailService.Verify(
+            x => x.SendEmail(
+                request,
+                chapter,
+                It.IsAny<EmailAddressee>(),
+                EmailType.NewMember,
+                It.Is<IEmailParameters>(x =>
+                    x.ToDictionary()["member.firstName"] == "Test" &&
+                    x.ToDictionary()["group.name"] == "Test group" &&
+                    x.ToDictionary()["group.urls.events"] == "https://test.local/test-group/events")),
+            Times.Once);
+    }
+
+    [Test]
+    public static async Task SendTestEmail_WithNoCurrentGroup_DescribesTheMembersFirstGroup()
+    {
+        // Arrange - a site admin testing the site's copy of a template has no current group, so one of
+        // theirs stands in rather than the group parameters falling back to the platform's own details.
+        using var context = new MockOdkContext();
+        var member = context.CreateMember();
+        context.CreateChapter(name: "Beta group", members: [member]);
+        context.CreateChapter(name: "Alpha group", members: [member]);
+
+        var emailService = CreateEmailService();
+        var urlProvider = new Mock<IUrlProvider>();
+        urlProvider.Setup(x => x.GroupUrl(It.IsAny<Chapter>())).Returns("https://test.local/alpha-group");
+
+        var service = CreateService(emailService, urlProvider, MockUnitOfWork.Create(context));
+
+        var request = new MemberServiceRequest
+        {
+            CurrentMember = member,
+            CurrentMemberOrDefault = member,
+            HttpRequestContext = CreateHttpRequestContext(),
+            Platform = PlatformType.Default
+        };
+
+        // Act
+        await service.SendTestEmail(request, null, member, EmailType.NewMember);
+
+        // Assert
+        emailService.Verify(
+            x => x.SendEmail(
+                request,
+                null,
+                It.IsAny<EmailAddressee>(),
+                EmailType.NewMember,
+                It.Is<IEmailParameters>(x => x.ToDictionary()["group.name"] == "Alpha group")),
+            Times.Once);
+    }
+
+    [Test]
+    public static async Task SendTestEmail_WithNoCurrentGroup_StillSendsWithoutAChapter()
+    {
+        // Arrange - the stand-in group reaches the email as parameters only. Sending as that group would
+        // make EmailService look up its override of the template instead of the one being tested.
+        using var context = new MockOdkContext();
+        var member = context.CreateMember();
+        context.CreateChapter(name: "Alpha group", members: [member]);
+
+        var emailService = CreateEmailService();
+        var urlProvider = new Mock<IUrlProvider>();
+        urlProvider.Setup(x => x.GroupUrl(It.IsAny<Chapter>())).Returns("https://test.local/alpha-group");
+
+        var service = CreateService(emailService, urlProvider, MockUnitOfWork.Create(context));
+
+        var request = new MemberServiceRequest
+        {
+            CurrentMember = member,
+            CurrentMemberOrDefault = member,
+            HttpRequestContext = CreateHttpRequestContext(),
+            Platform = PlatformType.Default
+        };
+
+        // Act
+        await service.SendTestEmail(request, null, member, EmailType.NewMember);
+
+        // Assert
+        emailService.Verify(
+            x => x.SendEmail(
+                It.IsAny<IServiceRequest>(),
+                null,
+                It.IsAny<EmailAddressee>(),
+                It.IsAny<EmailType>(),
+                It.IsAny<IEmailParameters>()),
+            Times.Once);
+    }
+
+    [Test]
+    public static async Task SendTestEmail_WithNoGroupAtAll_LeavesGroupSpecificTokensUnset()
+    {
+        // Arrange - the stand-in values an event invite is built from come from a group, so a member who
+        // belongs to none leaves them out rather than inventing them. The tokens stay visible in the test
+        // email, which is the honest answer for a template that cannot be filled in from who is asking.
+        using var context = new MockOdkContext();
+        var member = context.CreateMember();
+
+        var emailService = CreateEmailService();
+        var service = CreateService(emailService, new Mock<IUrlProvider>(), MockUnitOfWork.Create(context));
+
+        var request = new MemberServiceRequest
+        {
+            CurrentMember = member,
+            CurrentMemberOrDefault = member,
+            HttpRequestContext = CreateHttpRequestContext(),
+            Platform = PlatformType.Default
+        };
+
+        // Act
+        await service.SendTestEmail(request, null, member, EmailType.EventInvite);
+
+        // Assert
+        emailService.Verify(
+            x => x.SendEmail(
+                request,
+                null,
+                It.IsAny<EmailAddressee>(),
+                EmailType.EventInvite,
+                It.Is<IEmailParameters>(x =>
+                    !x.ToDictionary().ContainsKey("event.name") &&
+                    !x.ToDictionary().ContainsKey("group.name"))),
+            Times.Once);
+    }
+
     private static Chapter CreateChapter() => new()
     {
         Id = Guid.NewGuid(),
@@ -133,7 +286,8 @@ public static class MemberEmailServiceTests
 
     private static MemberEmailService CreateService(
         Mock<IEmailService> emailService,
-        Mock<IUrlProvider> urlProvider)
+        Mock<IUrlProvider> urlProvider,
+        IUnitOfWork? unitOfWork = null)
     {
         var urlProviderFactory = new Mock<IUrlProviderFactory>();
         urlProviderFactory
@@ -143,7 +297,10 @@ public static class MemberEmailServiceTests
         return new MemberEmailService(
             emailService.Object,
             urlProviderFactory.Object,
-            Mock.Of<IUnitOfWork>(),
-            Mock.Of<IMemberLocaleService>());
+            unitOfWork ?? Mock.Of<IUnitOfWork>(),
+            Mock.Of<IMemberLocaleService>(),
+            // The real factory, not a mock: a bare mock hands back null parameters, which would make every
+            // assertion about what a test email carries pass for the wrong reason.
+            new TestEmailParametersFactory(urlProviderFactory.Object));
     }
 }

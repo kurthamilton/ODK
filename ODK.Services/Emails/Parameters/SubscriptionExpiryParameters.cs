@@ -1,4 +1,8 @@
-﻿namespace ODK.Services.Emails.Parameters;
+﻿using System.Globalization;
+using ODK.Core.Members;
+using ODK.Core.Utils;
+
+namespace ODK.Services.Emails.Parameters;
 
 /// <summary>
 /// Warns a member that their membership or trial is about to lapse, or has lapsed.
@@ -15,6 +19,17 @@ public sealed class SubscriptionExpiryParameters : EmailTypeParameters
 
     private const string FirstNameName = "member.firstName";
 
+    private readonly CultureInfo _culture;
+    private readonly Member _member;
+    private readonly TimeZoneInfo _timeZone;
+
+    public SubscriptionExpiryParameters(Member member, CultureInfo culture)
+    {
+        _culture = culture;
+        _member = member;
+        _timeZone = member.TimeZone;
+    }
+
     public static IReadOnlyCollection<string> Names { get; } =
     [
         FirstNameName,
@@ -22,16 +37,21 @@ public sealed class SubscriptionExpiryParameters : EmailTypeParameters
         DisabledDateName
     ];
 
-    public string? DisabledDate { get; set; }
+    public required DateTime? DisabledUtc { get; set; }
 
-    public string? ExpiryDate { get; set; }
-
-    public string? FirstName { get; set; }
+    public required DateTime? ExpiresUtc { get; set; }
 
     protected override void AddParameters(IDictionary<string, string> values)
     {
-        Add(values, FirstNameName, FirstName);
-        Add(values, ExpiryDateName, ExpiryDate);
-        Add(values, DisabledDateName, DisabledDate);
+        var dateStringOptions = new FriendlyDateStringOptions
+        {
+            IncludeDayOfWeek = true,
+            TimeZone = _timeZone,
+            Culture = _culture
+        };
+
+        Add(values, FirstNameName, _member.FirstName);
+        Add(values, ExpiryDateName, ExpiresUtc?.ToFriendlyDateString(dateStringOptions));
+        Add(values, DisabledDateName, DisabledUtc?.ToFriendlyDateString(dateStringOptions));
     }
 }

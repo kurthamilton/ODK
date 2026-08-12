@@ -21,6 +21,7 @@ public class MemberEmailService : IMemberEmailService
 {
     private readonly IEmailService _emailService;
     private readonly IMemberLocaleService _memberLocaleService;
+    private readonly ITestEmailParametersFactory _testEmailParametersFactory;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUrlProviderFactory _urlProviderFactory;
 
@@ -28,10 +29,12 @@ public class MemberEmailService : IMemberEmailService
         IEmailService emailService,
         IUrlProviderFactory urlProviderFactory,
         IUnitOfWork unitOfWork,
-        IMemberLocaleService memberLocaleService)
+        IMemberLocaleService memberLocaleService,
+        ITestEmailParametersFactory testEmailParametersFactory)
     {
         _emailService = emailService;
         _memberLocaleService = memberLocaleService;
+        _testEmailParametersFactory = testEmailParametersFactory;
         _unitOfWork = unitOfWork;
         _urlProviderFactory = urlProviderFactory;
     }
@@ -237,9 +240,8 @@ public class MemberEmailService : IMemberEmailService
         var urlProvider = await _urlProviderFactory.Create(request);
         var url = urlProvider.EventUrl(chapter, @event.Shortcode);
 
-        var parameters = new EventCommentParameters
+        var parameters = new EventCommentParameters(@event)
         {
-            EventId = @event.Id.ToString(),
             EventUrl = url,
             Text = eventComment.Text
         };
@@ -259,7 +261,6 @@ public class MemberEmailService : IMemberEmailService
         IEnumerable<Member> members)
     {
         var chapter = request.Chapter;
-        var time = @event.ToLocalTimeString(chapter.TimeZone);
 
         var urlProvider = await _urlProviderFactory.Create(request);
         var eventUrl = urlProvider.EventUrl(chapter, @event.Shortcode);
@@ -275,14 +276,9 @@ public class MemberEmailService : IMemberEmailService
 
         foreach (var group in memberList.GroupBy(x => cultures[x.Id]))
         {
-            var parameters = new EventInviteParameters
+            var parameters = new EventInviteParameters(chapter, @event, venue, group.Key)
             {
-                Date = @event.DateUtc.ToString("dddd dd MMMM, yyyy", group.Key),
-                EventId = @event.Id.ToString(),
-                Location = venue.Name,
-                Name = @event.GetDisplayName(),
                 RsvpUrl = rsvpUrl,
-                Time = time,
                 UnsubscribeUrl = unsubscribeUrl,
                 Url = eventUrl
             };
@@ -455,10 +451,10 @@ public class MemberEmailService : IMemberEmailService
         var currency = chapterSubscription.Currency;
         var culture = await _memberLocaleService.GetCulture(member.Id);
 
-        var parameters = new SubscriptionConfirmationParameters
+        var parameters = new SubscriptionConfirmationParameters(currency, member, culture)
         {
-            Amount = currency.ToAmountString(chapterSubscription.Amount),
-            End = chapter.ToChapterTime(expiresUtc).ToString("d MMMM yyyy", culture)
+            Amount = chapterSubscription.Amount,
+            ExpiresUtc = expiresUtc
         };
 
         await _emailService.SendEmail(
@@ -481,21 +477,10 @@ public class MemberEmailService : IMemberEmailService
         var expiring = expires > DateTime.UtcNow;
         var culture = await _memberLocaleService.GetCulture(member.Id);
 
-        var parameters = new SubscriptionExpiryParameters
+        var parameters = new SubscriptionExpiryParameters(member, culture)
         {
-            DisabledDate = disabledDate.ToFriendlyDateString(new FriendlyDateStringOptions
-            {
-                IncludeDayOfWeek = true,
-                TimeZone = chapter.TimeZone,
-                Culture = culture
-            }),
-            ExpiryDate = expires.ToFriendlyDateString(new FriendlyDateStringOptions
-            {
-                IncludeDayOfWeek = true,
-                TimeZone = chapter.TimeZone,
-                Culture = culture
-            }),
-            FirstName = member.FirstName
+            DisabledUtc = disabledDate,
+            ExpiresUtc = expires
         };
 
         var emailType = expiring
@@ -757,7 +742,7 @@ public class MemberEmailService : IMemberEmailService
         var parameters = new NewMemberAdminParameters
         {
             AdminUrl = url,
-            Properties = memberPropertiesBuilder.ToString()
+            PropertiesHtml = memberPropertiesBuilder.ToString()
         };
 
         var to = adminMembers
@@ -1019,12 +1004,14 @@ public class MemberEmailService : IMemberEmailService
         Member to,
         EmailType type)
     {
-        var parameters = new CustomEmailParameters
-        {
-            { "member.emailAddress", to.FirstName },
-            { "member.firstName", to.FirstName },
-            { "member.lastName", to.FirstName }
-        };
+        /* The group the email describes, which is not the group it is sent as. chapter is passed on
+           untouched so the template lookup is unaffected - a site admin testing the site's copy of a
+           template must not be sent a stand-in group's override of it. */
+        var describedChapter = chapter ?? await GetFirstChapter(request, to);
+
+        var culture = await _memberLocaleService.GetCulture(to.Id);
+
+        var parameters = await _testEmailParametersFactory.Create(request, type, to, culture, describedChapter);
 
         return await _emailService.SendEmail(
             request,
@@ -1154,5 +1141,20 @@ public class MemberEmailService : IMemberEmailService
                 body,
                 parameters);
         }
+    }
+
+    /* Ordered by name rather than by when they joined: this only stands in for a group the caller did not
+       name, so any of theirs makes the email concrete and the ordering only has to be stable enough that
+       the same one turns up each time. Null when they belong to no group, which leaves the group
+       parameters to fall back to the platform's own details as they did before. */
+    private async Task<Chapter?> GetFirstChapter(IServiceRequest request, Member member)
+    {
+        var chapters = await _unitOfWork.ChapterRepository
+            .GetByMemberId(request.Platform, member.Id)
+            .Run();
+
+        return chapters
+            .OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
+            .FirstOrDefault();
     }
 }

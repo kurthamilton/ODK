@@ -9,7 +9,7 @@ public sealed class MemberImportActivationParameters : EmailTypeParameters
 
     public static IReadOnlyCollection<string> Names { get; } = [UrlName];
 
-    public string? Url { get; set; }
+    public required string Url { get; init; }
 
     protected override void AddParameters(IDictionary<string, string> values)
     {

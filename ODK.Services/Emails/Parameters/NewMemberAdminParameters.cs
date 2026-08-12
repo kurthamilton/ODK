@@ -15,13 +15,13 @@ public sealed class NewMemberAdminParameters : EmailTypeParameters
 
     public static IReadOnlyCollection<string> Names { get; } = [AdminUrlName, PropertiesName];
 
-    public string? AdminUrl { get; set; }
+    public required string AdminUrl { get; init; }
 
-    public string? Properties { get; set; }
+    public required string PropertiesHtml { get; init; }
 
     protected override void AddParameters(IDictionary<string, string> values)
     {
         Add(values, AdminUrlName, AdminUrl);
-        Add(values, EmailParameters.HtmlPrefix + PropertiesName, Properties);
+        Add(values, EmailParameters.HtmlPrefix + PropertiesName, PropertiesHtml);
     }
 }

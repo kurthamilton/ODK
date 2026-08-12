@@ -13,11 +13,11 @@ public sealed class ContactRequestParameters : EmailTypeParameters
 
     public static IReadOnlyCollection<string> Names { get; } = [FromName, TextName, UrlName];
 
-    public string? From { get; set; }
+    public required string From { get; init; }
 
-    public string? Text { get; set; }
+    public required string Text { get; init; }
 
-    public string? Url { get; set; }
+    public required string Url { get; init; }
 
     protected override void AddParameters(IDictionary<string, string> values)
     {

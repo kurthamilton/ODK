@@ -10,7 +10,7 @@ public sealed class DuplicateEmailParameters : EmailTypeParameters
 
     public static IReadOnlyCollection<string> Names { get; } = [LoginUrlName];
 
-    public string? LoginUrl { get; set; }
+    public required string LoginUrl { get; init; }
 
     protected override void AddParameters(IDictionary<string, string> values)
     {
