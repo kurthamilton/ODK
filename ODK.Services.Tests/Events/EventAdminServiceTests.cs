@@ -11,12 +11,12 @@ using ODK.Core.Events;
 using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
-using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Data.Core.Events;
 using ODK.Services.Authorization;
 using ODK.Services.Events;
 using ODK.Services.Events.Models;
+using ODK.Services.Html;
 using ODK.Services.Logging;
 using ODK.Services.Members;
 using ODK.Services.Notifications;
@@ -334,7 +334,9 @@ public static class EventAdminServiceTests
             unitOfWork: CreateMockUnitOfWork(context),
             Mock.Of<IAuthorizationService>(),
             Mock.Of<INotificationService>(),
-            Mock.Of<IHtmlSanitizer>(),
+            Mock.Of<IHtmlValidator>(x =>
+                x.Validate(It.IsAny<string?>(), It.IsAny<HtmlValidatorOptions>())
+                    == ServiceResult.Successful()),
             Mock.Of<IMemberEmailService>(),
             Mock.Of<IBackgroundTaskService>(),
             Mock.Of<ILoggingService>(),

@@ -3,6 +3,7 @@ using ODK.Core.Utils;
 using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Resources.Resources;
+using ODK.Services.Html;
 using ODK.Services.Questions.Models;
 using ODK.Services.Questions.ViewModels;
 
@@ -10,13 +11,13 @@ namespace ODK.Services.Questions;
 
 public class SiteQuestionAdminService : OdkAdminServiceBase, ISiteQuestionAdminService
 {
-    private readonly IHtmlSanitizer _htmlSanitizer;
+    private readonly IHtmlValidator _htmlValidator;
     private readonly IUnitOfWork _unitOfWork;
 
-    public SiteQuestionAdminService(IUnitOfWork unitOfWork, IHtmlSanitizer htmlSanitizer)
+    public SiteQuestionAdminService(IUnitOfWork unitOfWork, IHtmlValidator htmlValidator)
         : base(unitOfWork)
     {
-        _htmlSanitizer = htmlSanitizer;
+        _htmlValidator = htmlValidator;
         _unitOfWork = unitOfWork;
     }
 
@@ -27,9 +28,15 @@ public class SiteQuestionAdminService : OdkAdminServiceBase, ISiteQuestionAdminS
             request,
             x => x.SiteQuestionRepository.GetByPlatform(request.Platform));
 
+        var htmlResult = _htmlValidator.Validate(model.Answer, DefaultHtmlValidatorOptions);
+        if (!htmlResult.Success)
+        {
+            return ServiceResult<Guid>.Failure(htmlResult.Message ?? string.Empty);
+        }
+
         var question = new SiteQuestion
         {
-            Answer = _htmlSanitizer.Sanitize(model.Answer, DefaultHtmlSantizerOptions),
+            Answer = model.Answer,
             DisplayOrder = existing.Count > 0 ? existing.Max(x => x.DisplayOrder) + 1 : 1,
             Id = Guid.NewGuid(),
             Name = model.Name.NormaliseWhitespace(),
@@ -102,7 +109,12 @@ public class SiteQuestionAdminService : OdkAdminServiceBase, ISiteQuestionAdminS
     {
         var question = await GetQuestion(request, questionId);
 
-        question.Answer = _htmlSanitizer.Sanitize(model.Answer, DefaultHtmlSantizerOptions);
+        var htmlResult = _htmlValidator.Validate(model.Answer, DefaultHtmlValidatorOptions);
+        if (!htmlResult.Success)
+        {
+            return htmlResult;
+        }
+        question.Answer = model.Answer;
         question.Name = model.Name.NormaliseWhitespace();
 
         var validationResult = Validate(question);

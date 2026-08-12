@@ -16,3 +16,6 @@ ODK.E2ETests/appsettings.local.json
 
 # Test run output: the html report, plus the traces and screenshots OdkPageTest writes for failures
 TestResults/
+
+# Claude Code working files: session handovers and local agent config
+.claude/

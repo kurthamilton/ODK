@@ -1,8 +1,7 @@
 ﻿using ODK.Core;
-using ODK.Core.Features;
 using ODK.Core.Subscriptions;
-using ODK.Core.Web;
 using ODK.Data.Core;
+using ODK.Services.Html;
 using ODK.Services.Payments;
 using ODK.Services.Subscriptions.Models;
 using ODK.Services.Subscriptions.ViewModels;
@@ -11,17 +10,17 @@ namespace ODK.Services.Subscriptions;
 
 public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscriptionAdminService
 {
-    private readonly IHtmlSanitizer _htmlSanitizer;
+    private readonly IHtmlValidator _htmlValidator;
     private readonly IPaymentProviderFactory _paymentProviderFactory;
     private readonly IUnitOfWork _unitOfWork;
 
     public SiteSubscriptionAdminService(
         IUnitOfWork unitOfWork,
-        IHtmlSanitizer htmlSanitizer,
+        IHtmlValidator htmlValidator,
         IPaymentProviderFactory paymentProviderFactory)
         : base(unitOfWork)
     {
-        _htmlSanitizer = htmlSanitizer;
+        _htmlValidator = htmlValidator;
         _paymentProviderFactory = paymentProviderFactory;
         _unitOfWork = unitOfWork;
     }
@@ -47,6 +46,12 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
             existing.All(x => x.Id != model.FallbackSiteSubscriptionId))
         {
             return ServiceResult<Guid>.Failure($"Fallback subscription not found");
+        }
+
+        var htmlResult = _htmlValidator.Validate(model.Description, DefaultHtmlValidatorOptions);
+        if (!htmlResult.Success)
+        {
+            return ServiceResult<Guid>.Failure(htmlResult.Message ?? string.Empty);
         }
 
         var subscription = new SiteSubscription
@@ -368,6 +373,11 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
             }
         }
 
+        var htmlResult = _htmlValidator.Validate(model.Description, DefaultHtmlValidatorOptions);
+        if (!htmlResult.Success)
+        {
+            return htmlResult;
+        }
         UpdateSiteSubscription(model, subscription, features);
 
         _unitOfWork.SiteSubscriptionRepository.Update(subscription);
@@ -395,7 +405,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         SiteSubscription subscription,
         IReadOnlyCollection<SiteSubscriptionFeature> existingFeatures)
     {
-        subscription.Description = _htmlSanitizer.Sanitize(model.Description, DefaultHtmlSantizerOptions);
+        subscription.Description = model.Description;
         subscription.Enabled = model.Enabled;
         subscription.FallbackSiteSubscriptionId = model.FallbackSiteSubscriptionId;
         subscription.GroupLimit = model.GroupLimit;

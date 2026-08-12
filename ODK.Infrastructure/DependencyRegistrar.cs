@@ -14,8 +14,10 @@ using ODK.Services.Contact;
 using ODK.Services.Countries;
 using ODK.Services.Csv;
 using ODK.Services.Emails;
+using ODK.Services.Html;
 using ODK.Services.Emails.Validation;
 using ODK.Services.Integrations.Emails;
+using ODK.Services.Integrations.Html;
 using ODK.Services.Events;
 using ODK.Services.Features;
 using ODK.Services.Geolocation;
@@ -80,7 +82,7 @@ public static class DependencyRegistrar
     {
         services
             .AddScoped<IDistanceUnitFactory, DistanceUnitFactory>()
-            .AddSingleton<IHtmlSanitizer>(new HtmlSanitizer())
+            .AddSingleton<IHtmlValidator>(new HtmlValidator())
             .AddSingleton<ICsvReader, CsvReader>()
             .AddSingleton<ICsvWriter, CsvWriter>()
             .AddScoped<IUrlProviderFactory, UrlProviderFactory>();

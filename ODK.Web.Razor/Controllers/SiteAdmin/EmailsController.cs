@@ -7,6 +7,7 @@ using ODK.Services.Settings;
 using ODK.Services.Settings.Models;
 using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
+using ODK.Web.Razor.Models.Admin.Chapters;
 using ODK.Web.Razor.Models.Feedback;
 using ODK.Web.Razor.Models.SiteAdmin;
 
@@ -35,6 +36,20 @@ public class EmailsController : OdkControllerBase
         var result = await _emailAdminService.SendTestMemberEmail(MemberServiceRequest, type);
         AddFeedback(result, "Test email sent");
         return RedirectToReferrer();
+    }
+
+    /* The site-admin counterpart of the group endpoint, and the same contract - see
+       EmailHtmlValidationResultViewModel. */
+    [HttpPost("/siteadmin/emails/{type}/validate")]
+    public IActionResult ValidateEmail(EmailType type, [FromForm] string? content)
+    {
+        var result = _emailAdminService.ValidateEmailHtml(MemberServiceRequest, type, content);
+
+        return Ok(new EmailHtmlValidationResultViewModel
+        {
+            Message = result.Message,
+            Valid = result.Success
+        });
     }
 
     [HttpPost("siteadmin/emails/settings")]

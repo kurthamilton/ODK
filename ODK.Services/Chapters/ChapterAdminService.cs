@@ -24,6 +24,7 @@ using ODK.Services.Chapters.ViewModels;
 using ODK.Services.Emails;
 using ODK.Services.Emails.Validation;
 using ODK.Services.Geolocation;
+using ODK.Services.Html;
 using ODK.Services.Imaging;
 using ODK.Services.Logging;
 using ODK.Services.Members;
@@ -50,7 +51,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     private readonly IAuthorizationService _authorizationService;
     private readonly IGeolocationService _geolocationService;
-    private readonly IHtmlSanitizer _htmlSanitizer;
+    private readonly IHtmlValidator _htmlValidator;
     private readonly IImageService _imageService;
     private readonly ILoggingService _loggingService;
     private readonly IMemberEmailService _memberEmailService;
@@ -68,7 +69,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     public ChapterAdminService(
         IUnitOfWork unitOfWork,
         IEmailValidationService emailValidationService,
-        IHtmlSanitizer htmlSanitizer,
+        IHtmlValidator htmlValidator,
         ISocialMediaService socialMediaService,
         INotificationService notificationService,
         IImageService imageService,
@@ -86,7 +87,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         _authorizationService = authorizationService;
         _geolocationService = geolocationService;
-        _htmlSanitizer = htmlSanitizer;
+        _htmlValidator = htmlValidator;
         _imageService = imageService;
         _loggingService = loggingService;
         _memberEmailService = memberEmailService;
@@ -454,9 +455,15 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         var displayOrder = existing.Count > 0 ? existing.Max(x => x.DisplayOrder) + 1 : 1;
 
+        var htmlResult = _htmlValidator.Validate(model.Answer, DefaultHtmlValidatorOptions);
+        if (!htmlResult.Success)
+        {
+            return htmlResult;
+        }
+
         var question = new ChapterQuestion
         {
-            Answer = _htmlSanitizer.Sanitize(model.Answer, DefaultHtmlSantizerOptions),
+            Answer = model.Answer,
             ChapterId = chapterId,
             DisplayOrder = displayOrder,
             Name = model.Name
@@ -514,12 +521,18 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             }
         }
 
+        var htmlResult = _htmlValidator.Validate(model.Description, DefaultHtmlValidatorOptions);
+        if (!htmlResult.Success)
+        {
+            return htmlResult;
+        }
+
         var subscription = new ChapterSubscription
         {
             Amount = model.Amount,
             ChapterId = chapterId,
             CurrencyId = currency.Id,
-            Description = _htmlSanitizer.Sanitize(model.Description, DefaultHtmlSantizerOptions),
+            Description = model.Description,
             Disabled = model.Disabled,
             Months = model.Months,
             Name = model.Name,
@@ -1471,11 +1484,17 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         originalMessage.RepliedUtc = now;
         _unitOfWork.ChapterContactMessageRepository.Update(originalMessage);
 
+        var htmlResult = _htmlValidator.Validate(message, DefaultHtmlValidatorOptions);
+        if (!htmlResult.Success)
+        {
+            return htmlResult;
+        }
+
         _unitOfWork.ChapterContactMessageReplyRepository.Add(new ChapterContactMessageReply
         {
             ChapterContactMessageId = originalMessage.Id,
             CreatedUtc = now,
-            Message = _htmlSanitizer.Sanitize(message, DefaultHtmlSantizerOptions),
+            Message = message,
             MemberId = request.CurrentMember.Id
         });
 
@@ -1757,7 +1776,13 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         texts ??= new ChapterTexts();
 
-        texts.Description = _htmlSanitizer.Sanitize(description, DefaultHtmlSantizerOptions);
+        var htmlResult = _htmlValidator.Validate(description, DefaultHtmlValidatorOptions);
+        if (!htmlResult.Success)
+        {
+            return htmlResult;
+        }
+
+        texts.Description = description;
 
         if (texts.ChapterId == default)
         {
@@ -2039,7 +2064,13 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         property.ApplicationOnly = model.ApplicationOnly;
         property.DisplayName = model.DisplayName;
         property.HelpText = model.HelpText;
-        property.Label = _htmlSanitizer.Sanitize(model.Label, DefaultHtmlSantizerOptions);
+        var htmlResult = _htmlValidator.Validate(model.Label, DefaultHtmlValidatorOptions);
+        if (!htmlResult.Success)
+        {
+            return htmlResult;
+        }
+
+        property.Label = model.Label;
         property.Name = model.Name.ToLowerInvariant();
         property.Required = model.Required;
         property.Subtitle = model.Subtitle;
@@ -2133,7 +2164,13 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         OdkAssertions.BelongsToChapter(question, chapter.Id);
 
-        question.Answer = _htmlSanitizer.Sanitize(model.Answer, DefaultHtmlSantizerOptions);
+        var htmlResult = _htmlValidator.Validate(model.Answer, DefaultHtmlValidatorOptions);
+        if (!htmlResult.Success)
+        {
+            return htmlResult;
+        }
+
+        question.Answer = model.Answer;
         question.Name = model.Name;
 
         var validationResult = ValidateChapterQuestion(question);
@@ -2279,14 +2316,20 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         texts ??= new ChapterTexts();
 
-        texts.Description = model.Description != null
-            ? _htmlSanitizer.Sanitize(model.Description, DefaultHtmlSantizerOptions)
-            : null;
-        texts.RegisterText = _htmlSanitizer.Sanitize(model.RegisterText, DefaultHtmlSantizerOptions);
-        texts.ShortDescription = model.ShortDescription != null
-            ? _htmlSanitizer.Sanitize(model.ShortDescription, DefaultHtmlSantizerOptions)
-            : null;
-        texts.WelcomeText = _htmlSanitizer.Sanitize(model.WelcomeText, DefaultHtmlSantizerOptions);
+        foreach (var html in new[]
+            { model.Description, model.RegisterText, model.ShortDescription, model.WelcomeText })
+        {
+            var fieldResult = _htmlValidator.Validate(html, DefaultHtmlValidatorOptions);
+            if (!fieldResult.Success)
+            {
+                return fieldResult;
+            }
+        }
+
+        texts.Description = model.Description;
+        texts.RegisterText = model.RegisterText;
+        texts.ShortDescription = model.ShortDescription;
+        texts.WelcomeText = model.WelcomeText;
 
         if (texts.ChapterId == default)
         {

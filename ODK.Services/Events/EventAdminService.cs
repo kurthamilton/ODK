@@ -7,13 +7,13 @@ using ODK.Core.Members;
 using ODK.Core.Notifications;
 using ODK.Core.Utils;
 using ODK.Core.Venues;
-using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Data.Core.Events;
 using ODK.Services.Authorization;
 using ODK.Services.Events.Models;
 using ODK.Services.Events.ViewModels;
 using ODK.Services.Exceptions;
+using ODK.Services.Html;
 using ODK.Services.Logging;
 using ODK.Services.Members;
 using ODK.Services.Notifications;
@@ -27,7 +27,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     private readonly IAuthorizationService _authorizationService;
     private readonly IBackgroundTaskService _backgroundTaskService;
     private readonly IEventService _eventService;
-    private readonly IHtmlSanitizer _htmlSanitizer;
+    private readonly IHtmlValidator _htmlValidator;
     private readonly ILoggingService _loggingService;
     private readonly IMemberEmailService _memberEmailService;
     private readonly INotificationService _notificationService;
@@ -39,7 +39,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         IUnitOfWork unitOfWork,
         IAuthorizationService authorizationService,
         INotificationService notificationService,
-        IHtmlSanitizer htmlSanitizer,
+        IHtmlValidator htmlValidator,
         IMemberEmailService memberEmailService,
         IBackgroundTaskService backgroundTaskService,
         ILoggingService loggingService,
@@ -51,7 +51,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         _authorizationService = authorizationService;
         _backgroundTaskService = backgroundTaskService;
         _eventService = eventService;
-        _htmlSanitizer = htmlSanitizer;
+        _htmlValidator = htmlValidator;
         _loggingService = loggingService;
         _memberEmailService = memberEmailService;
         _notificationService = notificationService;
@@ -90,6 +90,12 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             request,
             chapterAdminMembers.FirstOrDefault(x => x.MemberId == currentMember.Id));
 
+        var htmlResult = _htmlValidator.Validate(model.Description, DefaultHtmlValidatorOptions);
+        if (!htmlResult.Success)
+        {
+            return htmlResult;
+        }
+
         var date = Event.FromLocalTime(model.Date, chapter.TimeZone);
         var @event = new Event
         {
@@ -98,9 +104,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             CreatedBy = currentMember.FullName,
             CreatedUtc = DateTime.UtcNow,
             DateUtc = date,
-            Description = model.Description != null
-                ? _htmlSanitizer.Sanitize(model.Description, DefaultHtmlSantizerOptions)
-                : null,
+            Description = model.Description,
             EndTime = model.EndTime,
             ImageUrl = model.ImageUrl,
             IsPublic = model.IsPublic,
@@ -866,13 +870,16 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             date = date.SpecifyKind(DateTimeKind.Utc);
         }
 
+        var htmlResult = _htmlValidator.Validate(model.Description, DefaultHtmlValidatorOptions);
+        if (!htmlResult.Success)
+        {
+            return htmlResult;
+        }
         var previousAttendeeLimit = @event.AttendeeLimit;
 
         @event.AttendeeLimit = model.AttendeeLimit;
         @event.DateUtc = date;
-        @event.Description = model.Description != null
-            ? _htmlSanitizer.Sanitize(model.Description, DefaultHtmlSantizerOptions)
-            : null;
+        @event.Description = model.Description;
         @event.EndTime = model.EndTime;
         @event.ImageUrl = model.ImageUrl;
         @event.IsPublic = model.IsPublic;

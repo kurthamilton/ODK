@@ -192,7 +192,7 @@
             }
 
             const name = target.getAttribute('data-feature-hidetip');
-            const url = `/Account/FeatureTips/${encodeURIComponent(name)}/Hide`;
+            const url = `/account/featuretips/${encodeURIComponent(name)}/hide`;
 
             fetch(url, {
                 method: 'POST',

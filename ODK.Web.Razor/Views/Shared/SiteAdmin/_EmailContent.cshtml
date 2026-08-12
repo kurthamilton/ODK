@@ -17,8 +17,10 @@
     {
         Content = Model.Email.HtmlContent,
         Placeholders = EmailTemplateParameters.ForSite(Model.Email.Type),
+        ValidPlaceholders = EmailTemplateParameters.ForSite(Model.Email.Type),
         ReadOnly = false,
-        Subject = Model.Email.Subject
+        Subject = Model.Email.Subject,
+        ValidateUrl = $"/siteadmin/emails/{Model.Email.Type}/validate"
     })
     <button class="btn btn-primary">Update</button>
     <button class="btn btn-secondary" type="button"
