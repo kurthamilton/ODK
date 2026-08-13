@@ -252,8 +252,7 @@ public static class EmailServiceTests
             FromName = "{group.name}",
             Id = Guid.NewGuid(),
             Platform = PlatformType.DrunkenKnitwits,
-            PlatformTitle = "Platform",
-            Title = "{group.name}"
+            PlatformTitle = "Platform"
         });
 
         context.Create(new Email
@@ -344,8 +343,7 @@ public static class EmailServiceTests
             Id = Guid.NewGuid(),
             MemberTitle = "{group.name} members",
             Platform = PlatformType.DrunkenKnitwits,
-            PlatformTitle = "Platform",
-            Title = "{group.name}"
+            PlatformTitle = "Platform"
         });
 
         context.Create(new Email
@@ -401,7 +399,7 @@ public static class EmailServiceTests
             Slug = "test-group"
         });
 
-        /* Each title is a template of its own, and the three are given distinguishable wording so an
+        /* Each title is a template of its own, and the two are given distinguishable wording so an
            assertion can tell which one an email resolved to. */
         context.Create(new SiteEmailSettings
         {
@@ -411,8 +409,7 @@ public static class EmailServiceTests
             Id = Guid.NewGuid(),
             MemberTitle = "{group.name} members",
             Platform = PlatformType.DrunkenKnitwits,
-            PlatformTitle = "Platform",
-            Title = "{group.name}"
+            PlatformTitle = "Platform"
         });
 
         if (chapterEmailSettings != null)

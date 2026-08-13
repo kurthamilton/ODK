@@ -17,6 +17,4 @@ public class SiteEmailSettings : IDatabaseEntity
     public PlatformType Platform { get; set; }
 
     public string PlatformTitle { get; set; } = string.Empty;
-
-    public string Title { get; set; } = string.Empty;
 }
