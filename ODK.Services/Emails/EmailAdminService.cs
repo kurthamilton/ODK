@@ -218,8 +218,9 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         /* Blank is stored as null rather than as an empty string, so the row says the group has not
            overridden the field rather than that it overrode it with nothing. Each is independent: setting
            one leaves the other inheriting the site's. */
-        var htmlContent = Unset(model.HtmlContent);
-        var subject = Unset(model.Subject);
+        var htmlContent = Resolve(
+            model.OverrideHtmlContent, model.HtmlContent, chapterEmail?.HtmlContent);
+        var subject = Resolve(model.OverrideSubject, model.Subject, chapterEmail?.Subject);
 
         /* Without the feature a group may still stop customising - that is the state it would be in had it
            never customised at all - but not write wording. So each field has to arrive either cleared or
@@ -374,6 +375,20 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
                     : resolved?.GetValueOrDefault(x)
             })
             .ToArray();
+
+    /* What a field is left holding, given whether the group says it overrides it. Not overriding clears it.
+       Overriding stores the wording supplied - or keeps what is already there where none is, which is how a
+       field the form locked survives a save: a locked field posts nothing, and reading that as "cleared"
+       would wipe wording the group never touched. */
+    private static string? Resolve(bool overrides, string? supplied, string? stored)
+    {
+        if (!overrides)
+        {
+            return null;
+        }
+
+        return Unset(supplied) ?? stored;
+    }
 
     private static string? Unset(string? value) => !string.IsNullOrWhiteSpace(value) ? value : null;
 

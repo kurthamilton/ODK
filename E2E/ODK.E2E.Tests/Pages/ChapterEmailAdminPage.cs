@@ -67,11 +67,30 @@ internal class ChapterEmailAdminPage
     /// <summary>
     /// Turns customisation off for both fields and saves, which is how a group goes back to the default.
     /// </summary>
-    public async Task RestoreDefaults(string emailUrl)
+    public Task RestoreDefaults(string emailUrl) => SetCustomised(emailUrl, subject: false, content: false);
+
+    /// <summary>
+    /// Sets whichever Customise switches are given and saves, without touching any wording. Passing null for
+    /// one leaves that switch as it is.
+    /// </summary>
+    /// <remarks>
+    /// The only way to drive a form whose fields are locked - a group without the custom emails feature can
+    /// still operate the switches, and that is exactly when the wording cannot be typed.
+    /// </remarks>
+    public async Task SetCustomised(string emailUrl, bool? subject = null, bool? content = null)
     {
         await Open(emailUrl);
-        await SetToggle(SubjectToggle, on: false);
-        await SetToggle(ContentToggle, on: false);
+
+        if (subject != null)
+        {
+            await SetToggle(SubjectToggle, on: subject.Value);
+        }
+
+        if (content != null)
+        {
+            await SetToggle(ContentToggle, on: content.Value);
+        }
+
         await Save();
     }
 

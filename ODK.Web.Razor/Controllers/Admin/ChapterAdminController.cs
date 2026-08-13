@@ -299,6 +299,8 @@ public class ChapterAdminController : AdminControllerBase
         var result = await _emailAdminService.UpdateChapterEmail(request, type, new ChapterEmailUpdateModel
         {
             HtmlContent = viewModel.Content,
+            OverrideHtmlContent = viewModel.OverrideContent,
+            OverrideSubject = viewModel.OverrideSubject,
             Subject = viewModel.Subject
         });
 
