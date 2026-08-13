@@ -27,15 +27,19 @@ public static class EmailParametersTests
     }
 
     [Test]
-    public static void GroupNames_IsTheGroupParametersAndTheTitle()
+    public static void GroupNames_IsTheGroupParametersTheTitleAndThePlatformUrl()
     {
         // Act
         var result = EmailParameters.GroupNames;
 
-        // Assert - platform and theme values are the site's to set, so a group is not offered them.
+        /* Assert - the platform's address is offered because the default templates a group can read use it:
+           withholding it left a group looking at a property it could neither understand nor reuse. The theme
+           colours are still held back - they style the layout's markup and belong to the site. */
         result.Should().Contain(EmailParameters.TitleName);
-        result.Should().OnlyContain(x => x.StartsWith("group.") || x == EmailParameters.TitleName);
-        result.Should().NotContain("platform.url");
+        result.Should().Contain("platform.url");
+        result.Should().OnlyContain(x =>
+            x.StartsWith("group.") || x == EmailParameters.TitleName || x == "platform.url");
+        result.Should().NotIntersectWith(EmailParameters.ThemeNames);
     }
 
     [Test]

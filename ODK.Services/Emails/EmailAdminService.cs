@@ -12,6 +12,7 @@ using ODK.Services.Emails.Validation;
 using ODK.Services.Emails.ViewModels;
 using ODK.Services.Html;
 using ODK.Services.Members;
+using ODK.Services.Web;
 
 namespace ODK.Services.Emails;
 
@@ -31,37 +32,21 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
     private readonly IHtmlValidator _htmlValidator;
     private readonly IMemberEmailService _memberEmailService;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IUrlProviderFactory _urlProviderFactory;
 
     public EmailAdminService(
         IUnitOfWork unitOfWork,
         IMemberEmailService memberEmailService,
         IAuthorizationService authorizationService,
-        IHtmlValidator htmlValidator)
+        IHtmlValidator htmlValidator,
+        IUrlProviderFactory urlProviderFactory)
         : base(unitOfWork)
     {
         _authorizationService = authorizationService;
         _htmlValidator = htmlValidator;
         _memberEmailService = memberEmailService;
         _unitOfWork = unitOfWork;
-    }
-
-    public async Task<ServiceResult> DeleteChapterEmail(IMemberChapterAdminServiceRequest request, EmailType type)
-    {
-        var chapter = request.Chapter;
-
-        /* Deliberately not gated on the feature. Deleting the override restores the standard email,
-           which is the state a group without custom emails would be in anyway - blocking it would
-           strand a group with wording it can neither change nor remove. */
-        var chapterEmail = await GetChapterAdminRestrictedContent(
-            request,
-            x => x.ChapterEmailRepository.GetByChapterId(chapter.Id, type));
-
-        OdkAssertions.Exists(chapterEmail);
-
-        _unitOfWork.ChapterEmailRepository.Delete(chapterEmail);
-        await _unitOfWork.SaveChangesAsync();
-
-        return ServiceResult.Successful();
+        _urlProviderFactory = urlProviderFactory;
     }
 
     public async Task<ChapterEmailAdminPageViewModel> GetChapterEmail(
@@ -78,18 +63,35 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
                 x => x.SiteEmailSettingsRepository.Get(request.Platform),
                 OwnerSubscriptionFeatures(chapter.Id));
 
+        var title = EmailTitle.For(siteSettings, settings, siteEmail.RecipientType);
+
+        /* Built from the same type the send path fills in, so the values shown are the ones an email would
+           actually carry and cannot drift from them. The group is fixed on this page, so everything about it
+           already has a value; only what the email is about is still unknown. */
+        var urlProvider = await _urlProviderFactory.Create(request);
+        var resolved = new EmailParameters
+        {
+            GroupFullName = chapter.FullName,
+            GroupName = chapter.GetDisplayName(request.Platform),
+            GroupUrl = urlProvider.GroupUrl(chapter),
+            PlatformUrl = urlProvider.BaseUrl()
+        }.ToDictionary();
+
         return new ChapterEmailAdminPageViewModel
         {
-            CanEdit = CanEditEmails(ownerSubscriptionFeatures),
+            CanOverride = CanOverrideEmails(ownerSubscriptionFeatures),
+            /* Carries the type and the group where there is no override, so the page can render a form for
+               an email the group has yet to customise. Its wording stays unset: a field the group has not
+               overridden is shown as inherited rather than as a copy it has made. */
             Email = chapterEmail ?? new ChapterEmail
             {
                 ChapterId = chapter.Id,
-                HtmlContent = siteEmail.HtmlContent,
-                Subject = siteEmail.Subject,
                 Type = siteEmail.Type
             },
+            Parameters = Parameters(EmailTemplateParameters.ForGroup(siteEmail.Type), title, resolved),
             RecipientType = siteEmail.RecipientType,
-            Title = EmailTitle.For(siteSettings, settings, siteEmail.RecipientType)
+            SiteEmail = siteEmail,
+            Title = title
         };
     }
 
@@ -118,13 +120,14 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
                 continue;
             }
 
+            /* Stands in for a group that has not customised this template, so its wording stays unset - the
+               list reports which fields the group overrides, and filling these with the site's would report
+               every template as fully customised. Only the type is needed: the name comes from it. */
             if (!chapterEmailDictionary.TryGetValue(siteEmail.Type, out var chapterEmail))
             {
                 chapterEmail = new ChapterEmail
                 {
                     ChapterId = chapter.Id,
-                    HtmlContent = siteEmail.HtmlContent,
-                    Subject = siteEmail.Subject,
                     Type = siteEmail.Type
                 };
             }
@@ -138,7 +141,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
 
         return new ChapterEmailsAdminPageViewModel
         {
-            CanEdit = CanEditEmails(ownerSubscriptionFeatures),
+            CanEdit = CanOverrideEmails(ownerSubscriptionFeatures),
             Emails = emails,
             Settings = settings,
             SiteAdminTitle = siteSettings.AdminTitle,
@@ -153,11 +156,23 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
             x => x.EmailRepository.GetByType(type),
             x => x.SiteEmailSettingsRepository.Get(request.Platform));
 
+        // No chapter settings: this is the site's own copy of the template.
+        var title = EmailTitle.For(siteSettings, chapterEmailSettings: null, email.RecipientType);
+
+        /* The platform is the same whatever the email is about, so its URL has a value here. The group
+           parameters deliberately do not: this is the template every group starts from, so showing one
+           group's name would be showing a value the template does not have. */
+        var urlProvider = await _urlProviderFactory.Create(request);
+        var resolved = new EmailParameters
+        {
+            PlatformUrl = urlProvider.BaseUrl()
+        }.ToDictionary();
+
         return new EmailAdminPageViewModel
         {
             Email = email,
-            // No chapter settings: this is the site's own copy of the template.
-            Title = EmailTitle.For(siteSettings, chapterEmailSettings: null, email.RecipientType)
+            Parameters = Parameters(EmailTemplateParameters.ForSite(email.Type), title, resolved),
+            Title = title
         };
     }
 
@@ -186,7 +201,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
     public async Task<ServiceResult> UpdateChapterEmail(
         IMemberChapterAdminServiceRequest request,
         EmailType type,
-        EmailUpdateModel model)
+        ChapterEmailUpdateModel model)
     {
         var chapter = request.Chapter;
 
@@ -201,9 +216,21 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
             return ServiceResult.Failure("This email cannot be customised");
         }
 
-        // The form renders read-only without the feature, but that is presentation - this is what
-        // withholds it. An existing override is left alone and keeps sending; only changing it is blocked.
-        if (!CanEditEmails(ownerSubscriptionFeatures))
+        /* Blank is stored as null rather than as an empty string, so the row says the group has not
+           overridden the field rather than that it overrode it with nothing. Each is independent: setting
+           one leaves the other inheriting the site's. */
+        var htmlContent = Unset(model.HtmlContent);
+        var subject = Unset(model.Subject);
+
+        /* Without the feature a group may still stop customising - that is the state it would be in had it
+           never customised at all - but not write wording. So each field has to arrive either cleared or
+           exactly as stored; anything else is new wording. Refusing the save outright instead would strand a
+           group that lost the feature with wording it could neither change nor remove.
+
+           The form disables what it must, but that is presentation - this is what withholds it. */
+        if (!CanOverrideEmails(ownerSubscriptionFeatures) &&
+            (WritesWording(subject, chapterEmail?.Subject) ||
+                WritesWording(htmlContent, chapterEmail?.HtmlContent)))
         {
             return ServiceResult.Failure(NotPermitted);
         }
@@ -214,13 +241,26 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
             Type = type
         };
 
-        chapterEmail.HtmlContent = model.HtmlContent;
-        chapterEmail.Subject = model.Subject;
+        chapterEmail.HtmlContent = htmlContent;
+        chapterEmail.Subject = subject;
 
         var validationResult = ValidateChapterEmail(chapterEmail);
         if (!validationResult.Success)
         {
             return validationResult;
+        }
+
+        // Blanking both fields is how a group goes back to the standard email, so the row goes rather than
+        // being kept as an override of nothing - which would still badge the email as customised.
+        if (!chapterEmail.OverridesAnything())
+        {
+            if (!chapterEmail.IsDefault())
+            {
+                _unitOfWork.ChapterEmailRepository.Delete(chapterEmail);
+                await _unitOfWork.SaveChangesAsync();
+            }
+
+            return ServiceResult.Successful();
         }
 
         _unitOfWork.ChapterEmailRepository.Upsert(chapterEmail);
@@ -242,7 +282,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
 
         // The form renders read-only without the feature, but that is presentation - this is what
         // withholds it. Anything already set is left alone and keeps being used.
-        if (!CanEditEmails(ownerSubscriptionFeatures))
+        if (!CanOverrideEmails(ownerSubscriptionFeatures))
         {
             return ServiceResult.Failure(NotPermitted);
         }
@@ -316,7 +356,32 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
             .Features()
             .GetAll();
 
+    /* The offered list is passed in rather than derived from the type: a group is offered fewer parameters
+       than the site is, and the table has to describe what its reader can actually use.
+
+       resolved holds whatever is already knowable while editing. The rest stand for the email being sent -
+       the event, the member, the payment - and have no value until there is one. */
+    private static IReadOnlyCollection<EmailParameterViewModel> Parameters(
+        IReadOnlyCollection<string> names,
+        string title,
+        IReadOnlyDictionary<string, string>? resolved = null)
+        => names
+            .Select(x => new EmailParameterViewModel
+            {
+                Name = x,
+                Description = EmailParameterDescriptions.For(x),
+                Value = x == EmailParameters.TitleName
+                    ? title
+                    : resolved?.GetValueOrDefault(x)
+            })
+            .ToArray();
+
     private static string? Unset(string? value) => !string.IsNullOrWhiteSpace(value) ? value : null;
+
+    /* Whether a field arrives carrying wording that is not already stored. Clearing it, or posting back what
+       is there, is not writing - which is what lets a group without the feature save an override away. Both
+       values have been through Unset, so null means the field is not overridden. */
+    private static bool WritesWording(string? value, string? stored) => value != null && value != stored;
 
     /* Checked against everything the type supplies, not the narrower list a group is offered: a group
        template using platform.baseurl still resolves, so rejecting it would fail a working email. */
@@ -336,9 +401,12 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
             : ServiceResult.Successful();
     }
 
-    private bool CanEditEmails(IReadOnlyCollection<SiteSubscriptionFeature> ownerSubscriptionFeatures)
+    private bool CanOverrideEmails(IReadOnlyCollection<SiteSubscriptionFeature> ownerSubscriptionFeatures)
         => _authorizationService.ChapterHasAccess(ownerSubscriptionFeatures, SiteFeatureType.CustomEmails);
 
+    /* Only the fields the group has actually overridden are checked. An unset field is not the group's
+       wording, so holding it to the group's rules would report a problem with the site's template against a
+       form the group cannot fix. */
     private ServiceResult ValidateChapterEmail(ChapterEmail chapterEmail)
     {
         if (!Enum.IsDefined(typeof(EmailType), chapterEmail.Type) || chapterEmail.Type == EmailType.None)
@@ -346,17 +414,18 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
             return ServiceResult.Failure("Invalid type");
         }
 
-        if (string.IsNullOrWhiteSpace(chapterEmail.HtmlContent) ||
-            string.IsNullOrWhiteSpace(chapterEmail.Subject))
+        var placeholderResult = ValidatePlaceholders(
+            chapterEmail.Type,
+            chapterEmail.Subject ?? string.Empty,
+            chapterEmail.HtmlContent ?? string.Empty);
+
+        if (!placeholderResult.Success)
         {
-            return ServiceResult.Failure("Some required fields are missing");
+            return placeholderResult;
         }
 
-        var placeholderResult = ValidatePlaceholders(
-            chapterEmail.Type, chapterEmail.Subject, chapterEmail.HtmlContent);
-
-        return !placeholderResult.Success
-            ? placeholderResult
+        return string.IsNullOrWhiteSpace(chapterEmail.HtmlContent)
+            ? ServiceResult.Successful()
             : ValidateHtml(chapterEmail.Type, chapterEmail.HtmlContent);
     }
 

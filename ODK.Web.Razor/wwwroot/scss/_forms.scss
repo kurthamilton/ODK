@@ -32,15 +32,25 @@
 .form-group.required {
     .form-label:after {
         content: " *";
-        color: $danger;
+        color: var(--bs-danger);
     }
 }
 
 .form-check.required {
     .form-check-label:after {
         content: " *";
-        color: $danger;
+        color: var(--bs-danger);
     }
+}
+
+// Bootstrap has no size modifier for switches. Every dimension of the control is in em, so scaling the
+// font-size shrinks the switch and its label together and keeps them aligned. Use alongside form-switch.
+//
+// em rather than a fixed size, so the switch stays in proportion to the text around it wherever it is used.
+// The ratio is Bootstrap's own small-font ratio; there is no CSS variable for it - Bootstrap exposes
+// font sizes per component (--bs-btn-font-size and the like), not a root-level small size.
+.form-switch-sm {
+    font-size: .875em;
 }
 
 .clearable {

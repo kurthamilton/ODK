@@ -1,13 +1,15 @@
-﻿@using ODK.Services.Emails.Parameters
-@using ODK.Web.Razor.Models.Admin.Chapters
+﻿@using ODK.Core.Emails
+@using ODK.Services.Emails.Parameters
 @using ODK.Web.Razor.Models.Admin.Emails
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.SiteAdmin
 @model EmailContentViewModel
 
-@await Html.PartialAsync("Admin/Chapter/_EmailRecipients", new EmailRecipientsViewModel
+@* No Custom badge: this is the template a group's customisation would be of. *@
+@await Html.PartialAsync("Admin/Chapter/_EmailBadges", new EmailBadgesViewModel
 {
-    RecipientType = Model.Email.RecipientType,
-    Title = Model.Title
+    Customised = false,
+    RecipientType = Model.Email.RecipientType
 })
 
 <form method="post">
@@ -20,24 +22,34 @@
         </label>
     </div>
 
-    @await Html.PartialAsync("Admin/Chapter/_EmailForm", new ChapterEmailFormViewModel
+    @await Html.PartialAsync("SiteAdmin/_EmailForm", new SiteEmailFormViewModel
     {
         Content = Model.Email.HtmlContent,
+        // The layout is a whole HTML document rather than a fragment, so its editor grows to fit it all.
+        MaxEditorLines = Model.Email.Type == EmailType.Layout
+            ? null
+            : SiteEmailFormViewModel.DefaultMaxEditorLines,
         Placeholders = EmailTemplateParameters.ForSite(Model.Email.Type),
-        ValidPlaceholders = EmailTemplateParameters.ForSite(Model.Email.Type),
-        ReadOnly = false,
         Subject = Model.Email.Subject,
         ValidateUrl = $"/siteadmin/emails/{Model.Email.Type}/validate"
     })
-    <button class="btn btn-primary">Update</button>
-    <button class="btn btn-secondary" type="button"
-            data-submit="#send-test-form"
-            data-bs-toggle="tooltip" data-bs-title="Send a test email to yourself">
-        Send test
-    </button>
+    <div class="button-container">
+        <button class="btn btn-primary me-auto">Update</button>
+        <button class="btn btn-secondary" type="button"
+                data-submit="#send-test-form"
+                data-bs-toggle="tooltip" data-bs-title="Send a test email to yourself">
+            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Envelope))
+            <span>Send test</span>
+        </button>
+    </div>
 </form>
 
 <form method="post" action="/siteadmin/emails/@Model.Email.Type/send/test"
       id="send-test-form">
     @Html.AntiForgeryToken()
 </form>
+
+<div class="mt-3">
+    <h3 class="content-heading">Placeholders</h3>
+    @await Html.PartialAsync("Admin/Chapter/_EmailParameters", Model.Parameters)
+</div>

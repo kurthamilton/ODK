@@ -230,6 +230,7 @@ public class Program
             pipeline.AddJavaScriptBundle(
                 route: "/js/odk.bundle.admin.js",
                 "js/odk.admin.js",
+                "js/odk.field-override.js",
                 "js/odk.lists.js",
                 "js/odk.placeholders.js");
             /* Its own bundle, pulled in by the three email template pages rather than added to the admin

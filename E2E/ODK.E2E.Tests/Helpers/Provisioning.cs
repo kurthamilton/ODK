@@ -24,6 +24,13 @@ internal static class Provisioning
     private static readonly Lazy<Task<TestSiteSubscription>> PurchasableSiteSubscription =
         new(CreatePurchasableSiteSubscriptionOnce);
 
+    // A site subscription carrying the CustomEmails feature, created once per run. Its own feature set is
+    // never changed, and each group's owner gets their own MemberSiteSubscription pointing at it, so it is
+    // read-only context. Separate from the purchasable one rather than adding a feature to it: that one's
+    // feature set is what the purchase tests assert against.
+    private static readonly Lazy<Task<TestSiteSubscription>> CustomEmailsSiteSubscription =
+        new(CreateCustomEmailsSiteSubscriptionOnce);
+
     // One shared Playwright driver + browser for ALL provisioning, launched once. Each provisioning call
     // gets a fresh, isolated context (its own cookies/login), which is cheap - so we avoid re-spawning the
     // driver and re-launching a browser on every account/group/member we set up. Disposed at the end of
@@ -59,6 +66,13 @@ internal static class Provisioning
     /// mutates the subscription.
     /// </summary>
     public static Task<TestSiteSubscription> EnsurePurchasableSiteSubscription() => PurchasableSiteSubscription.Value;
+
+    /// <summary>
+    /// A run-once Default site subscription carrying the CustomEmails feature, for a group that is allowed to
+    /// customise its email templates. Assign it to an owner with
+    /// <see cref="MemberSiteSubscriptionDataHelper.EnsureActive"/>.
+    /// </summary>
+    public static Task<TestSiteSubscription> EnsureCustomEmailsSiteSubscription() => CustomEmailsSiteSubscription.Value;
 
     /// <summary>
     /// Creates a chapter subscription as the chapter owner on a throwaway browser, so a purchase test keeps
@@ -344,6 +358,33 @@ internal static class Provisioning
 
         await new SiteSubscriptionDataHelper(E2ESettings.ConnectionString)
             .SetDrunkenKnitwitsDefault("ODK E2E Free");
+    }
+
+    private static async Task<TestSiteSubscription> CreateCustomEmailsSiteSubscriptionOnce()
+    {
+        var payments = new SitePaymentSettingsDataHelper(E2ESettings.ConnectionString);
+        await payments.EnsureStripeSettings(E2ESettings.StripeApiPublicKey, E2ESettings.StripeApiSecretKey);
+
+        var admin = await SharedAccounts.Get(SharedAccounts.SiteAdmin);
+        var name = $"{SiteSubscriptionDataHelper.TestNamePrefix}{Guid.NewGuid():N}";
+
+        // A price is added because MemberSiteSubscriptionLog requires one; nothing here buys it.
+        await RunAs(admin, async page =>
+        {
+            var subscriptions = new SiteAdminSubscriptionsPage(page);
+            await subscriptions.CreateSubscription(
+                SitePaymentSettingsDataHelper.Name, name, "E2E custom emails subscription",
+                groupLimit: 1, memberLimit: 10, featureIds: new[] { 10 }); // 10 = CustomEmails
+            await subscriptions.AddPrice("GBP", "Monthly", 5m);
+        });
+
+        var subscriptionData = new SiteSubscriptionDataHelper(E2ESettings.ConnectionString);
+        var id = await subscriptionData.GetId(name, platformTypeId: 1)
+            ?? throw new InvalidOperationException($"Site subscription '{name}' was not created.");
+        var priceId = await subscriptionData.GetPriceId(id)
+            ?? throw new InvalidOperationException($"Site subscription '{name}' has no price.");
+
+        return new TestSiteSubscription(id, priceId, name);
     }
 
     private static async Task<TestSiteSubscription> CreatePurchasableSiteSubscriptionOnce()

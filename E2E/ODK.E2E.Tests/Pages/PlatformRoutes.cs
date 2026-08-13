@@ -11,6 +11,12 @@ namespace ODK.E2E.Tests.Pages;
 /// </summary>
 internal abstract class PlatformRoutes
 {
+    /// <summary>
+    /// Admin: the group's email-templates list, which links to an edit page per template the site allows a
+    /// group to override.
+    /// </summary>
+    public abstract string EmailsAdmin { get; }
+
     /// <summary>Admin: create-event page (also the POST target - it posts back to itself).</summary>
     public abstract string EventCreate { get; }
 
@@ -80,6 +86,8 @@ internal abstract class PlatformRoutes
             _slug = group.Slug;
         }
 
+        public override string EmailsAdmin => $"/my/groups/{_chapterId}/emails";
+
         public override string EventCreate => $"/my/groups/{_chapterId}/events/new";
 
         public override string EventsAdmin => $"/my/groups/{_chapterId}/events";
@@ -128,6 +136,8 @@ internal abstract class PlatformRoutes
             // chapter was created with, lowercased. TestGroup.Name is that un-suffixed name.
             _shortName = group.Name.ToLowerInvariant();
         }
+
+        public override string EmailsAdmin => $"/{_shortName}/admin/chapter/emails";
 
         public override string EventCreate => $"/{_shortName}/admin/events/create";
 

@@ -1,84 +1,103 @@
-﻿@using ODK.Services.Emails.Validation
-@using ODK.Web.Razor.Models.Admin.Chapters
+﻿@using ODK.Web.Razor.Models.Admin.Chapters
+@using ODK.Web.Razor.Mvc
 @model ChapterEmailFormViewModel
-@{
-    // The pattern and the known placeholders come from the server, so the check the editor applies as
-    // you type is the same one the service applies on submit - see the emailtemplate provider in
-    // odk.forms.js. Validated against what the type supplies, which is wider than what is offered as
-    // buttons: a group template using platform.baseurl resolves, so flagging it would be wrong.
-    IDictionary<string, object> ValidatedField(object attributes)
+
+@* Each control carries its own disabled state rather than the form sitting in one <fieldset disabled>: a
+   group that cannot write wording can still turn a customisation off, so the toggles have to stay live while
+   the fields they control do not. A fieldset would disable its descendants whatever they say themselves.
+
+   data-field-override-locked carries "true"/"false" rather than being present or absent. A null value drops
+   checked and disabled below, but not a data- attribute: that renders as empty and present, so a script
+   testing for presence reads every field as locked. Never give a data- attribute presence semantics here.
+
+   Each field shows what the group sends: its own wording where it customises, the default otherwise. A field
+   left on the default is disabled, so it posts nothing and stays inheriting - see odk.field-override.js. The
+   toggles carry no name: they are how the form is driven, not something it posts. *@
+<div class="form-group mb-3">
+    @Html.LabelFor(x => x.Subject, new { @class = "form-label" })
+
+    <div class="form-check form-switch form-switch-sm">
+        @* aria-label rather than the visible text alone: both toggles read "Customise", which beside their
+           own field is clear enough to see but ambiguous read out on its own. *@
+        <input class="form-check-input" type="checkbox" role="switch" id="override-subject"
+               data-field-override="#Subject" aria-label="Customise subject"
+               checked="@(Model.OverridesSubject ? "checked" : null)"
+               disabled="@(Model.CanToggleSubject ? null : "disabled")"
+               data-field-override-locked="@(Model.CanOverride ? "false" : "true")" />
+        <label class="form-check-label" for="override-subject">Customise</label>
+    </div>
+
+    @Html.OdkEmailTemplateBoxFor(x => x.Subject, Model.ValidPlaceholders,
+        disabled: !Model.CanEditSubject,
+        htmlAttributes: new { @class = "form-control" })
+    @Html.ValidationMessageFor(x => x.Subject)
+
+    @* Shown as written rather than rendered: the default subject is a template in its own right, so it
+       may still contain placeholders. Only while customised - otherwise it is what the box holds. *@
+    @if (Model.OverridesSubject)
     {
-        var validated = HtmlHelper.AnonymousObjectToHtmlAttributes(attributes);
-        validated["data-val"] = "true";
-        validated["data-val-emailtemplate"] = "Unknown placeholder";
-        validated["data-val-emailtemplate-pattern"] = EmailTemplatePattern.Value;
-        validated["data-val-emailtemplate-placeholders"] = string.Join(",", Model.ValidPlaceholders);
-        return validated;
+        <div class="form-text">Default: <code>@Model.InheritedSubject</code></div>
     }
+</div>
 
-    // The markup rules cannot run in the browser - they are a parse plus an allow-list the server owns -
-    // so this field is checked by posting it to ValidateUrl. See the htmlcontent provider in
-    // odk.forms.js. Content only: subjects are plain text, so the server does not check them either.
-    IDictionary<string, object> ValidatedHtmlField(object attributes)
+<div class="form-group mb-3">
+    @Html.LabelFor(x => x.Content, new { @class = "form-label" })
+
+    <div class="form-check form-switch form-switch-sm">
+        @* The content field carries an explicit id, so this points at that rather than at the one the
+           helper would have generated from the property name. *@
+        <input class="form-check-input" type="checkbox" role="switch" id="override-content"
+               data-field-override="#email-content" aria-label="Customise body"
+               checked="@(Model.OverridesContent ? "checked" : null)"
+               disabled="@(Model.CanToggleContent ? null : "disabled")"
+               data-field-override-locked="@(Model.CanOverride ? "false" : "true")" />
+        <label class="form-check-label" for="override-content">Customise</label>
+    </div>
+
+    @* The toggle is positioned against this wrapper rather than the textarea, which cannot hold children. *@
+    <div class="placeholders">
+        @* rows is the editor's minimum height - see odk.code-editor.js. *@
+        @Html.OdkEmailTemplateTextAreaFor(x => x.Content, Model.ValidPlaceholders, Model.ValidateUrl,
+            disabled: !Model.CanEditContent,
+            htmlAttributes: new { @class = "form-control", rows = 5, id = "email-content" })
+
+        @* data-bs-toggle is taken by the collapse, so the hint is a plain title rather than a Bootstrap tooltip. *@
+        <button type="button" class="btn btn-sm btn-light font-monospace placeholders-toggle collapsed"
+                data-bs-toggle="collapse" data-bs-target="#email-placeholders"
+                data-placeholder-toggle="#email-content"
+                aria-expanded="false" aria-controls="email-placeholders"
+                aria-label="Insert a placeholder" title="Insert a placeholder">{}</button>
+    </div>
+
+    @Html.ValidationMessageFor(x => x.Content)
+
+    @* Collapsed, and only while customised: it is fifteen-odd lines of HTML, kept available so a group
+       can compare its version against the default. Plain text in a pre, not the code editor, so it
+       cannot be typed into. *@
+    @if (Model.OverridesContent)
     {
-        var validated = ValidatedField(attributes);
-        validated["data-val-htmlcontent"] = "Invalid HTML";
-        validated["data-val-htmlcontent-url"] = Model.ValidateUrl;
-
-        // Names the Ace mode - see odk.code-editor.js. The pages that render this form load the code
-        // editor bundle; without it the field stays a plain textarea and everything else still works.
-        validated["data-code-editor"] = "html";
-
-        /* Narrowed from the default "input change" to change alone, which for a textarea means blur
-           after an edit. The default re-runs every validator on the field once it is showing an error,
-           which for this one is a round trip carrying the whole template every time typing pauses.
-           Nobody expects per-keystroke feedback on fifteen rows of hand-written HTML, and it costs the
-           placeholder message clearing as you type rather than on blur. */
-        validated["data-val-event"] = "change";
-        return validated;
+        <details class="form-text">
+            <summary>Default</summary>
+            @* text-pre-wrap rather than the pre's own overflow: a scrollbar inside a small box is awkward for
+               fifteen lines of HTML, and wrapping also stops the long lines widening the grid column. *@
+            <pre class="border rounded p-2 mt-2 mb-0 text-pre-wrap"><code>@Model.InheritedContent</code></pre>
+        </details>
     }
-}
+</div>
 
-@* One fieldset over the whole form, so the placeholder buttons are disabled with the textarea they
-   insert into rather than staying clickable against a field that cannot change. *@
-<fieldset disabled="@(Model.ReadOnly ? "" : null)">
-    <div class="form-group mb-3 required">
-        @Html.LabelFor(x => x.Subject, new { @class = "form-label" })
-        @Html.TextBoxFor(x => x.Subject, ValidatedField(new { @class = "form-control" }))
-        @Html.ValidationMessageFor(x => x.Subject)
+@* Inserts at the caret in the textarea named by data-placeholder-target - see odk.placeholders.js. Disabled
+   with the field, since inserting into a locked editor would go nowhere. *@
+<div class="collapse mb-3" id="email-placeholders" data-placeholder-target="#email-content">
+    <div class="placeholders-list small">
+        <p class="text-muted mb-2">
+            Click to insert. Anything else in braces is left as written.
+        </p>
+        @foreach (var placeholder in Model.Placeholders)
+        {
+            var token = $"{{{placeholder}}}";
+            <button type="button" class="btn btn-sm btn-outline-secondary mb-1 me-1 font-monospace"
+                    disabled="@(Model.CanOverride ? null : "disabled")"
+                    data-placeholder-insert="@token">@token</button>
+        }
     </div>
-
-    <div class="form-group mb-3 required">
-        @Html.LabelFor(x => x.Content, new { @class = "form-label" })
-
-        @* The toggle is positioned against this wrapper rather than the textarea, which cannot hold children. *@
-        <div class="placeholders">
-            @Html.TextAreaFor(x => x.Content,
-                ValidatedHtmlField(new { @class = "form-control", rows = 15, id = "email-content" }))
-
-            @* data-bs-toggle is taken by the collapse, so the hint is a plain title rather than a Bootstrap tooltip. *@
-            <button type="button" class="btn btn-sm btn-light font-monospace placeholders-toggle collapsed"
-                    data-bs-toggle="collapse" data-bs-target="#email-placeholders"
-                    data-placeholder-toggle="#email-content"
-                    aria-expanded="false" aria-controls="email-placeholders"
-                    aria-label="Insert a placeholder" title="Insert a placeholder">{}</button>
-        </div>
-
-        @Html.ValidationMessageFor(x => x.Content)
-    </div>
-
-    @* Inserts at the caret in the textarea named by data-placeholder-target - see odk.placeholders.js. *@
-    <div class="collapse mb-3" id="email-placeholders" data-placeholder-target="#email-content">
-        <div class="placeholders-list small">
-            <p class="text-muted mb-2">
-                Click to insert. Anything else in braces is left as written.
-            </p>
-            @foreach (var placeholder in Model.Placeholders)
-            {
-                var token = $"{{{placeholder}}}";
-                <button type="button" class="btn btn-sm btn-outline-secondary mb-1 me-1 font-monospace"
-                        data-placeholder-insert="@token">@token</button>
-            }
-        </div>
-    </div>
-</fieldset>
+</div>

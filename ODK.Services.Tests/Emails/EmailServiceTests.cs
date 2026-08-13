@@ -163,6 +163,63 @@ public static class EmailServiceTests
     }
 
     [Test]
+    public static async Task SendEmail_GroupOverridesSubjectOnly_SendsTheSitesBody()
+    {
+        // Arrange - subject and body are overridden independently, so overriding one must leave the other
+        // sending the site's rather than sending nothing.
+        var sent = await SendTemplate(
+            subject: "Site subject",
+            body: "<p>Site body</p>",
+            chapterEmail: new ChapterEmail
+            {
+                Id = Guid.NewGuid(),
+                Subject = "Our own subject"
+            });
+
+        // Assert
+        sent.Subject.Should().Be("Our own subject");
+        sent.Body.Should().Contain("Site body");
+    }
+
+    [Test]
+    public static async Task SendEmail_GroupOverridesBodyOnly_SendsTheSitesSubject()
+    {
+        // Arrange
+        var sent = await SendTemplate(
+            subject: "Site subject",
+            body: "<p>Site body</p>",
+            chapterEmail: new ChapterEmail
+            {
+                Id = Guid.NewGuid(),
+                HtmlContent = "<p>Our own body</p>"
+            });
+
+        // Assert
+        sent.Subject.Should().Be("Site subject");
+        sent.Body.Should().Contain("Our own body");
+        sent.Body.Should().NotContain("Site body");
+    }
+
+    [Test]
+    public static async Task SendEmail_GroupOverrideFieldIsEmpty_InheritsTheSites()
+    {
+        // Arrange - an empty override reads as unset rather than as an override with nothing in it. Pinned
+        // because the failure is a silently empty subject on every send.
+        var sent = await SendTemplate(
+            subject: "Site subject",
+            body: "<p>Site body</p>",
+            chapterEmail: new ChapterEmail
+            {
+                HtmlContent = "<p>Our own body</p>",
+                Id = Guid.NewGuid(),
+                Subject = string.Empty
+            });
+
+        // Assert
+        sent.Subject.Should().Be("Site subject");
+    }
+
+    [Test]
     public static async Task SendEmail_GroupTitleIsBlank_InheritsTheSites()
     {
         // Arrange - blank is how the form posts a box the group cleared, and it reads as unset rather than
@@ -387,7 +444,8 @@ public static class EmailServiceTests
         string body,
         IEmailParameters? parameters = null,
         ChapterEmailSettings? chapterEmailSettings = null,
-        EmailRecipientType recipientType = EmailRecipientType.Members)
+        EmailRecipientType recipientType = EmailRecipientType.Members,
+        ChapterEmail? chapterEmail = null)
     {
         using var context = new MockOdkContext();
 
@@ -432,6 +490,13 @@ public static class EmailServiceTests
             Subject = subject,
             Type = EmailType.NewMember
         });
+
+        if (chapterEmail != null)
+        {
+            chapterEmail.ChapterId = chapter.Id;
+            chapterEmail.Type = EmailType.NewMember;
+            context.Create(chapterEmail);
+        }
 
         EmailClientEmail? sent = null;
         var emailClient = new Mock<IEmailClient>();

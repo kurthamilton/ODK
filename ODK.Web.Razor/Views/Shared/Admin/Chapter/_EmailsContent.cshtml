@@ -48,9 +48,6 @@
 
 @await Html.PartialAsync("Components/_AdminPageDescription",
     "Templates for the emails your group sends. Each has a default you can override to add your own wording.")
-<div class="alert alert-warning">
-    CAUTION: it is best not to update these templates unless you know what you are doing!
-</div>
 
 <div class="table-responsive">
     <table class="table table-striped">
@@ -75,19 +72,22 @@
                     <td>
                         @EnumUtils.GetDisplayValue(item.RecipientType)
                     </td>
+                    @* Named rather than ticked: subject and body are overridden independently, so which of
+                       them a group has customised is the useful part. *@
                     <td>
-                        @if (item.Email.IsDefault())
+                        @if (!item.Email.OverridesAnything())
                         {
                             <span class="text-muted">Default</span>
                         }
                         else
                         {
-                            <span>
-                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.CheckCircle)
-                                {
-                                    Class = "text-success"
-                                })
-                            </span>
+                            var overridden = new[]
+                            {
+                                item.Email.OverridesSubject ? "Subject" : null,
+                                item.Email.OverridesContent ? "Body" : null
+                            }.Where(x => x != null);
+
+                            <span>@string.Join(", ", overridden)</span>
                         }
                     </td>
                 </tr>

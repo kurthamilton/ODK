@@ -1,34 +1,34 @@
-﻿using ODK.Core.Chapters;
+using ODK.Core.Chapters;
 using ODK.Core.Emails;
+using ODK.Services.Emails.ViewModels;
 
 namespace ODK.Web.Razor.Models.Admin.Chapters;
 
 public class ChapterEmailContentViewModel
 {
-    public ChapterEmailContentViewModel(
-        Chapter chapter,
-        ChapterEmail email,
-        bool canEdit,
-        EmailRecipientType recipientType,
-        string title)
-    {
-        CanEdit = canEdit;
-        Chapter = chapter;
-        Email = email;
-        RecipientType = recipientType;
-        Title = title;
-    }
+    /// <summary>
+    /// Whether the group may write its own wording. Turning customisation off stays available either way.
+    /// </summary>
+    public required bool CanOverride { get; init; }
 
-    public bool CanEdit { get; }
+    public required Chapter Chapter { get; init; }
 
-    public Chapter Chapter { get; }
+    /// <summary>
+    /// The group's override. Either field may be unset, meaning that one inherits from
+    /// <see cref="SiteEmail"/>.
+    /// </summary>
+    public required ChapterEmail Email { get; init; }
 
-    public ChapterEmail Email { get; }
+    /// <summary>The parameters this template may use, listed for reference below the form.</summary>
+    public required IReadOnlyCollection<EmailParameterViewModel> Parameters { get; init; }
 
-    public EmailRecipientType RecipientType { get; }
+    public required EmailRecipientType RecipientType { get; init; }
+
+    /// <summary>What each field the group has not overridden sends.</summary>
+    public required Email SiteEmail { get; init; }
 
     /// <summary>
     /// What this email resolves <c>{title}</c> to, itself a template.
     /// </summary>
-    public string Title { get; }
+    public required string Title { get; init; }
 }

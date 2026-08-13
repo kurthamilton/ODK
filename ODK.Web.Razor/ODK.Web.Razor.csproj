@@ -21,6 +21,12 @@
 		     unaffected. -->
 		<Content Update="wwwroot\scss\**" Watch="false" />
 		<Content Update="wwwroot\css\**" Watch="false" />
+
+		<!-- Vendored libraries, restored by LibraryManager.Build as part of the build. Nobody edits them, so
+		     watching them buys no refresh worth having, and it means a build can rewrite files the watcher is
+		     watching - a burst of changes arriving while it is already mid-build. It is also 731 of the 2481
+		     files watched without this, by far the largest share. -->
+		<Content Update="wwwroot\lib\**" Watch="false" />
 	</ItemGroup>
 
 	<ItemGroup>

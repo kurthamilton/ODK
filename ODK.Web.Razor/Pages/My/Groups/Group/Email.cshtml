@@ -9,8 +9,16 @@
     Model.Title = "Email template";
 
     var email = await EmailAdminService.GetChapterEmail(Model.MemberChapterAdminServiceRequest, Model.Type);
-    var viewModel = new ChapterEmailContentViewModel(
-        Model.Chapter, email.Email, email.CanEdit, email.RecipientType, email.Title);
+    var viewModel = new ChapterEmailContentViewModel
+    {
+        CanOverride = email.CanOverride,
+        Chapter = Model.Chapter,
+        Email = email.Email,
+        Parameters = email.Parameters,
+        RecipientType = email.RecipientType,
+        SiteEmail = email.SiteEmail,
+        Title = email.Title
+    };
 }
 
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel

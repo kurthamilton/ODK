@@ -1,0 +1,15 @@
+﻿@using ODK.Core.Emails
+@using ODK.Core.Utils
+@using ODK.Web.Razor.Models.Admin.Emails
+@model EmailBadgesViewModel
+@{
+    // Two colours purely so the two audiences are told apart at a glance - neither carries a meaning beyond
+    // "not the other one".
+    var recipientClass = Model.RecipientType == EmailRecipientType.Admins
+        ? "text-bg-danger"
+        : "text-bg-success";
+}
+
+<p>
+    <span class="badge @recipientClass">@EnumUtils.GetDisplayValue(Model.RecipientType)</span>
+</p>

@@ -59,6 +59,58 @@ public static class HtmlExtensions
         return htmlHelper.TextBoxFor(expression, htmlAttributeDictionary);
     }
 
+    /// <summary>
+    /// A text box holding an email template's subject. Carries the server's placeholder pattern and the
+    /// placeholders it accepts, so the check the editor applies as you type is the one the service applies
+    /// on submit - see the emailtemplate provider in odk.forms.js.
+    ///
+    /// <paramref name="validPlaceholders"/> is everything the send path supplies for the email, which is
+    /// wider than the set a form offers as buttons: a template using one of the others still resolves, so
+    /// flagging it would fail a working email.
+    /// </summary>
+    public static IHtmlContent OdkEmailTemplateBoxFor<TModel>(
+        this IHtmlHelper<TModel> htmlHelper,
+        Expression<Func<TModel, string?>> expression,
+        IReadOnlyCollection<string> validPlaceholders,
+        bool disabled = false,
+        object? htmlAttributes = null)
+        => htmlHelper.TextBoxFor(
+            expression, EmailTemplateAttributes(validPlaceholders, htmlAttributes, disabled));
+
+    /// <summary>
+    /// A textarea holding an email template's body: <see cref="OdkEmailTemplateBoxFor{TModel}"/>'s placeholder
+    /// check, plus the markup rules that cannot run in the browser - they are a parse and an allow-list the
+    /// server owns - so the field is checked by posting it to <paramref name="validateUrl"/> (the htmlcontent
+    /// provider in odk.forms.js). Subjects are not checked that way: they are plain text, so a stray angle
+    /// bracket is not markup.
+    /// </summary>
+    public static IHtmlContent OdkEmailTemplateTextAreaFor<TModel>(
+        this IHtmlHelper<TModel> htmlHelper,
+        Expression<Func<TModel, string?>> expression,
+        IReadOnlyCollection<string> validPlaceholders,
+        string validateUrl,
+        bool disabled = false,
+        object? htmlAttributes = null)
+    {
+        var attributes = EmailTemplateAttributes(validPlaceholders, htmlAttributes, disabled);
+
+        attributes["data-val-htmlcontent"] = "Invalid HTML";
+        attributes["data-val-htmlcontent-url"] = validateUrl;
+
+        // Names the Ace mode - see odk.code-editor.js. A page rendering this must load the code editor
+        // bundle; without it the field stays a plain textarea and everything else still works.
+        attributes["data-code-editor"] = "html";
+
+        /* Narrowed from the default "input change" to change alone, which for a textarea means blur after an
+           edit. The default re-runs every validator on the field once it is showing an error, which for this
+           one is a round trip carrying the whole template every time typing pauses. Nobody expects
+           per-keystroke feedback on fifteen rows of hand-written HTML, and it costs the placeholder message
+           clearing as you type rather than on blur. */
+        attributes["data-val-event"] = "change";
+
+        return htmlHelper.TextAreaFor(expression, attributes);
+    }
+
     public static IHtmlContent OdkEnumDropDownFor<TModel, TEnum>(
         this IHtmlHelper<TModel> htmlHelper,
         Expression<Func<TModel, TEnum?>> expression,
@@ -138,6 +190,34 @@ public static class HtmlExtensions
         var member = htmlHelper.ViewContext.HttpContext.RequestServices
             .GetService<IRequestStore>()?.CurrentMemberOrDefault;
         return member?.TimeZone;
+    }
+
+    // Sets data-val itself, so the placeholder check applies whether or not the bound property carries a
+    // validation attribute - the group's override fields deliberately carry none.
+    //
+    // disabled is a parameter rather than something a caller passes in htmlAttributes, and has to stay one:
+    // the attribute disables on its presence, so a dictionary carrying disabled=false renders disabled="False"
+    // and disables the field. Only code that sees the boolean can leave the attribute out.
+    private static IDictionary<string, object> EmailTemplateAttributes(
+        IReadOnlyCollection<string> validPlaceholders,
+        object? htmlAttributes,
+        bool disabled)
+    {
+        var attributes = htmlAttributes != null
+            ? HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes)
+            : new Dictionary<string, object>();
+
+        attributes["data-val"] = "true";
+        attributes["data-val-emailtemplate"] = "Unknown placeholder";
+        attributes["data-val-emailtemplate-pattern"] = EmailTemplatePattern.Value;
+        attributes["data-val-emailtemplate-placeholders"] = string.Join(",", validPlaceholders);
+
+        if (disabled)
+        {
+            attributes["disabled"] = "disabled";
+        }
+
+        return attributes;
     }
 
     private static IHtmlContent EnumDropDownFor<TModel, TEnum>(

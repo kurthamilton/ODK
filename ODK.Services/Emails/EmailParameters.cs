@@ -41,6 +41,8 @@ public sealed class EmailParameters : IEmailParameters
 
     private const string GroupPrefix = "group.";
 
+    private const string PlatformUrlName = "platform.url";
+
     private const string ThemePrefix = "theme.";
 
     /* One table for both the values and the names, so the list offered to an admin cannot drift from
@@ -50,7 +52,7 @@ public sealed class EmailParameters : IEmailParameters
         ("group.fullname", x => x.GroupFullName),
         ("group.name", x => x.GroupName),
         ("group.url", x => x.GroupUrl),
-        ("platform.url", x => x.PlatformUrl),
+        (PlatformUrlName, x => x.PlatformUrl),
         ("theme.body.background", x => x.ThemeBodyBackground),
         ("theme.body.color", x => x.ThemeBodyColor),
         ("theme.header.background", x => x.ThemeHeaderBackground),
@@ -67,12 +69,19 @@ public sealed class EmailParameters : IEmailParameters
         .ToArray();
 
     /// <summary>
-    /// The subset offered to a group admin. The rest describe the platform and the theme, which are the
-    /// site's to set rather than a group's - a group template referencing them would still resolve, but
-    /// offering them invites edits to something the group does not control.
+    /// The subset offered to a group admin: everything about its own group, the title, and the platform's
+    /// address - the default templates a group can read use that one, so leaving it out left it visible with
+    /// no description, no value and no way to reuse it.
     /// </summary>
+    /// <remarks>
+    /// Only the theme colours are held back. They style the layout's own markup and belong to the site, so
+    /// offering them invites edits to something a group does not control - a group template already using one
+    /// still resolves, since this is about what is offered rather than what is supplied.
+    /// </remarks>
     public static IReadOnlyCollection<string> GroupNames { get; } = Names
-        .Where(x => x.StartsWith(GroupPrefix, StringComparison.Ordinal) || x == TitleName)
+        .Where(x => x.StartsWith(GroupPrefix, StringComparison.Ordinal)
+            || x == PlatformUrlName
+            || x == TitleName)
         .ToArray();
 
     /// <summary>
