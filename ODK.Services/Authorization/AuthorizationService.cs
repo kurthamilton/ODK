@@ -75,8 +75,7 @@ public class AuthorizationService : IAuthorizationService
             return SubscriptionStatus.Disabled;
         }
 
-        if (subscription.ExpiresUtc == null ||
-            membershipSettings.MembershipDisabledAfterDaysExpired <= 0)
+        if (subscription.ExpiresUtc == null)
         {
             return SubscriptionStatus.Current;
         }
@@ -88,7 +87,12 @@ public class AuthorizationService : IAuthorizationService
                 : SubscriptionStatus.Expiring;
         }
 
-        return subscription.ExpiresUtc >= DateTime.UtcNow.AddDays(-1 * membershipSettings.MembershipDisabledAfterDaysExpired)
+        // The cooldown is how long an expired membership keeps its access. None means access ends with the
+        // subscription; a negative is meaningless and is treated the same way. A membership that never ends
+        // is not expressible here - it has no expiry date at all, handled above.
+        var cooldownDays = Math.Max(0, membershipSettings.MembershipDisabledAfterDaysExpired);
+
+        return subscription.ExpiresUtc >= DateTime.UtcNow.AddDays(-cooldownDays)
             ? SubscriptionStatus.Expired
             : SubscriptionStatus.Disabled;
     }

@@ -71,6 +71,72 @@ To compile, run `npm run build:css`. The compilation script also runs when the a
 See [DEPLOYMENT.md](DEPLOYMENT.md) for how the app is built and deployed via GitHub Actions, how config
 and secrets are managed, and how to add a new platform deployment.
 
+## Subscriptions
+
+Two independent kinds, both paid through Stripe Checkout:
+
+| | Who pays | What for | Log table |
+|---|---|---|---|
+| **Chapter subscription** | a member | membership of one chapter | `MemberSubscriptionLog` |
+| **Site subscription** | a group owner | platform features (`SiteFeatureType`) | `MemberSiteSubscriptionLog` |
+
+The log tables are the source of truth. Each billing event **appends** a row rather than updating one, with
+exactly one row flagged `IsCurrent` — so the payment history survives and the current state is a single read.
+
+### Completion is webhook-driven, always
+
+A completed checkout is recorded **only** by the Stripe webhook, processed off a Hangfire job. The return
+page polls `/payments/sessions/{id}/status` and reloads once the webhook has landed; it records nothing
+itself. Recording a payment from anywhere else would be a second path to recording it twice, so the webhook
+stays the only writer.
+
+Idempotency is keyed on the webhook **event** id, stored as `InitiatorId` on the appended row, with a unique
+index as the backstop. A genuine renewal carries a distinct event id, so it is never mistaken for a retry.
+Keying on the payment id instead would wrongly skip renewals, since recurring invoices reuse the original
+checkout `Payment`.
+
+### How the expiry date is set
+
+**Recurring — the expiry *is* the next payment date.** It is read from the provider on the webhook
+(`ExternalSubscription.NextBillingDate`, Stripe's subscription-item `current_period_end`), never calculated.
+Calculating it lets the two drift apart: the provider anchors its schedule to the original purchase, while a
+webhook arrives whenever it arrives, and every period compounds the delay of the one that carried it.
+Reading it makes "expires" and "next charged" the same value by construction, so a membership can neither
+lapse before the next charge nor outlive it.
+
+Where the provider returns no date, the expiry degrades to the calculated date below rather than blocking
+the payment from being recorded.
+
+**One-off — calculated, continuing the existing period while the member is still effectively a member.** A
+one-off has no schedule to read, so `PaymentService.RollExpiryForward` works it out:
+
+- Expiry still in the future, or lapsed but within the chapter's cooldown → the new period continues from
+  the old expiry, so an annual membership keeps its anniversary instead of drifting later every year.
+- Otherwise → the period starts now.
+- If continuing would land the new expiry in the past — a cooldown longer than the subscription's own length
+  — the period starts now instead. A payment always has to leave the member current.
+
+### The cooldown
+
+`ChapterMembershipSettings.MembershipDisabledAfterDaysExpired` is how long an expired membership keeps its
+access, and it does double duty: it is both that grace period and the window in which a renewal continues
+the previous period. One setting, one meaning — "still effectively a member".
+
+`AuthorizationService.GetSubscriptionStatus` reads it:
+
+| Condition | Status |
+|---|---|
+| No expiry date (`ExpiresUtc == null`) | `Current` |
+| Expiry beyond `MembershipExpiringWarningDays` | `Current` |
+| Expiry within `MembershipExpiringWarningDays` | `Expiring` |
+| Expired, within the cooldown | `Expired` |
+| Expired, past the cooldown | `Disabled` |
+
+A cooldown of **none (0) means access ends with the subscription** — an expired membership is immediately
+`Disabled`. A negative value is meaningless and is treated as none. **A membership that never ends is
+expressed by having no expiry date at all**, not by a sentinel cooldown value; if that is ever wanted as a
+configurable feature it should be an explicit one.
+
 ## Antiforgery (CSRF)
 
 Antiforgery validation is enabled globally: Razor Page POST handlers validate by default, and MVC

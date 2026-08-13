@@ -95,6 +95,27 @@ public static class AuthorizationServiceTests
         return result;
     }
 
+    [TestCase(-1, ExpectedResult = SubscriptionStatus.Disabled)]
+    // Clear of the expiring-warning window, so an unexpired membership is unambiguously current.
+    [TestCase(5, ExpectedResult = SubscriptionStatus.Current)]
+    public static SubscriptionStatus GetSubscriptionStatus_NoCooldown_DisablesAsSoonAsExpired(int expiryDaysFromNow)
+    {
+        // Arrange - a cooldown of none means access ends with the subscription, so there is no window in
+        // which an expired membership stays current. A membership that never ends is expressed by having no
+        // expiry date, not by the cooldown.
+        var service = CreateService();
+
+        var settings = CreateChapterMembershipSettings(membershipDisabledAfterDaysExpired: 0);
+        var subscription = CreateMemberSubscription(expiryDate: DateTime.UtcNow.AddDays(expiryDaysFromNow));
+        var member = CreateMember();
+
+        // Act
+        var result = service.GetSubscriptionStatus(member, subscription, settings);
+
+        // Assert
+        return result;
+    }
+
     private static ChapterMembershipSettings CreateChapterMembershipSettings(
         int membershipDisabledAfterDaysExpired = 60,
         bool enabled = true,

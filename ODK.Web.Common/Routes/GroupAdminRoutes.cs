@@ -395,6 +395,9 @@ public class GroupAdminRoutes
     public GroupAdminRoute SubscriptionCheckout(Chapter chapter, Guid priceId)
         => Subscription(chapter).Child($"/{priceId}/checkout");
 
+    public GroupAdminRoute SubscriptionConfirm(Chapter chapter)
+        => Subscription(chapter).Child("/confirm?sessionId={sessionId}");
+
     public GroupAdminRoute Texts(Chapter chapter)
         => Group(chapter).Child("/texts", ChapterAdminSecurable.Texts);
 
