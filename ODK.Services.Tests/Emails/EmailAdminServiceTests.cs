@@ -362,6 +362,81 @@ public static class EmailAdminServiceTests
     }
 
     [Test]
+    public static async Task UpdateChapterEmail_WithoutTheFeature_TurningOffOneField_KeepsTheOther()
+    {
+        // Arrange - a group that customised both fields and then lost the feature turns the body off. Both
+        // fields are locked, so neither posts wording; only the flags say which is still overridden. Reading
+        // the absent subject as "cleared" removes wording the group never touched, and empties the row.
+        using var context = new MockOdkContext();
+        var (chapter, currentMember) = CreateChapter(context, withFeature: false);
+        CreateSiteEmail(context);
+        context.Create(new ChapterEmail
+        {
+            ChapterId = chapter.Id,
+            HtmlContent = "<p>Existing body</p>",
+            Id = Guid.NewGuid(),
+            Subject = "Existing subject",
+            Type = Type
+        });
+
+        var service = CreateService(context);
+
+        // Act
+        var result = await service.UpdateChapterEmail(
+            CreateRequest(chapter, currentMember),
+            Type,
+            CreateUpdateModel(
+                subject: null,
+                htmlContent: null,
+                overrideSubject: true,
+                overrideHtmlContent: false));
+
+        // Assert
+        result.Success.Should().BeTrue();
+
+        var stored = context.Set<ChapterEmail>().Single(x => x.ChapterId == chapter.Id);
+        stored.Subject.Should().Be("Existing subject");
+        stored.HtmlContent.Should().BeNull();
+    }
+
+    [Test]
+    public static async Task UpdateChapterEmail_WithoutTheFeature_SavingUnchanged_KeepsBoth()
+    {
+        // Arrange - every field is locked without the feature, so a save that changes nothing posts no
+        // wording at all. Pressing Update must leave the override exactly as it was rather than wiping it.
+        using var context = new MockOdkContext();
+        var (chapter, currentMember) = CreateChapter(context, withFeature: false);
+        CreateSiteEmail(context);
+        context.Create(new ChapterEmail
+        {
+            ChapterId = chapter.Id,
+            HtmlContent = "<p>Existing body</p>",
+            Id = Guid.NewGuid(),
+            Subject = "Existing subject",
+            Type = Type
+        });
+
+        var service = CreateService(context);
+
+        // Act
+        var result = await service.UpdateChapterEmail(
+            CreateRequest(chapter, currentMember),
+            Type,
+            CreateUpdateModel(
+                subject: null,
+                htmlContent: null,
+                overrideSubject: true,
+                overrideHtmlContent: true));
+
+        // Assert
+        result.Success.Should().BeTrue();
+
+        var stored = context.Set<ChapterEmail>().Single(x => x.ChapterId == chapter.Id);
+        stored.Subject.Should().Be("Existing subject");
+        stored.HtmlContent.Should().Be("<p>Existing body</p>");
+    }
+
+    [Test]
     public static async Task UpdateChapterEmail_WithoutTheFeature_ReturnsFailure()
     {
         // Arrange - the form locks what cannot be written, but that is only presentation. This is the guard,
@@ -720,11 +795,18 @@ public static class EmailAdminServiceTests
     private static string? Value(ChapterEmailAdminPageViewModel result, string name) =>
         result.Parameters.Single(x => x.Name == name).Value;
 
+    /* The override flags default to whether wording was supplied, which is what the form posts when every
+       field is editable. A test covering a locked field passes them explicitly - that is the case where the
+       two part company, because a locked field posts no wording while still being overridden. */
     private static ChapterEmailUpdateModel CreateUpdateModel(
         string? subject = "Updated",
-        string? htmlContent = "<p>Updated</p>") => new()
+        string? htmlContent = "<p>Updated</p>",
+        bool? overrideSubject = null,
+        bool? overrideHtmlContent = null) => new()
     {
         HtmlContent = htmlContent,
+        OverrideHtmlContent = overrideHtmlContent ?? !string.IsNullOrWhiteSpace(htmlContent),
+        OverrideSubject = overrideSubject ?? !string.IsNullOrWhiteSpace(subject),
         Subject = subject
     };
 }

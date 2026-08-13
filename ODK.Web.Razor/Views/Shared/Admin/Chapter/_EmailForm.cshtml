@@ -11,8 +11,15 @@
    testing for presence reads every field as locked. Never give a data- attribute presence semantics here.
 
    Each field shows what the group sends: its own wording where it customises, the default otherwise. A field
-   left on the default is disabled, so it posts nothing and stays inheriting - see odk.field-override.js. The
-   toggles carry no name: they are how the form is driven, not something it posts. *@
+   left on the default is disabled, so it posts nothing and stays inheriting - see odk.field-override.js.
+
+   Each toggle posts its own state, which is what says whether the group overrides that field. It cannot be
+   inferred from the wording arriving blank: a locked field posts nothing either, so the two would be
+   indistinguishable and a save would clear wording the group never touched.
+
+   Written out rather than through CheckBoxFor, which takes its attributes as a dictionary - and disabled
+   cannot go through one, since a false value renders as present. Names come from NameFor so a renamed
+   property breaks the build rather than the binding. *@
 <div class="form-group mb-3">
     @Html.LabelFor(x => x.Subject, new { @class = "form-label" })
 
@@ -20,6 +27,7 @@
         @* aria-label rather than the visible text alone: both toggles read "Customise", which beside their
            own field is clear enough to see but ambiguous read out on its own. *@
         <input class="form-check-input" type="checkbox" role="switch" id="override-subject"
+               name="@Html.NameFor(x => x.OverrideSubject)" value="true"
                data-field-override="#Subject" aria-label="Customise subject"
                checked="@(Model.OverridesSubject ? "checked" : null)"
                disabled="@(Model.CanToggleSubject ? null : "disabled")"
@@ -47,6 +55,7 @@
         @* The content field carries an explicit id, so this points at that rather than at the one the
            helper would have generated from the property name. *@
         <input class="form-check-input" type="checkbox" role="switch" id="override-content"
+               name="@Html.NameFor(x => x.OverrideContent)" value="true"
                data-field-override="#email-content" aria-label="Customise body"
                checked="@(Model.OverridesContent ? "checked" : null)"
                disabled="@(Model.CanToggleContent ? null : "disabled")"

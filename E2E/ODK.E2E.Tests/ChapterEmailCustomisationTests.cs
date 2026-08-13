@@ -190,6 +190,33 @@ public class ChapterEmailCustomisationTests : DefaultPageTest
             .Should().Be(0, "turning customisation off stays available without the feature");
     }
 
+    [Test]
+    public async Task ChapterEmail_WithoutTheFeature_TurningOffOneField_KeepsTheOther()
+    {
+        // Arrange - a group customises both fields and then loses the feature. Every field locks, so none of
+        // them posts wording however the switches are left; only the switches say what is still customised.
+        // Turning one off must not take the other with it.
+        var (group, owner, page, emailUrl) = await OpenAnEmail();
+
+        var customSubject = $"E2E subject {Guid.NewGuid():N}";
+        var customContent = $"<p>E2E body {Guid.NewGuid():N}</p>";
+        await page.SetCustomWording(emailUrl, subject: customSubject, htmlContent: customContent);
+
+        var ownerId = await Members.GetMemberId(owner.Email);
+        await MemberSubscriptions.Expire(ownerId);
+
+        // Act - turn the body off, leaving the subject switch alone.
+        await page.SetCustomised(emailUrl, content: false);
+
+        // Assert - the subject survives a save that could not post it.
+        (await ChapterEmails.GetSubject(group.ChapterId)).Should().Be(customSubject);
+        (await ChapterEmails.GetHtmlContent(group.ChapterId)).Should().BeNull();
+
+        await page.Open(emailUrl);
+        (await page.IsSubjectCustomised()).Should().BeTrue();
+        (await page.IsContentCustomised()).Should().BeFalse();
+    }
+
     /// <summary>
     /// Provisions a group whose subscription covers custom emails, signs its owner in, and opens whichever
     /// template the app lists first. Returns the page object and that template's path.
