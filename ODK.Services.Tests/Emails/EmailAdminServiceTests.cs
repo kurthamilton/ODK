@@ -13,11 +13,13 @@ using ODK.Core.Web;
 using ODK.Services.Authorization;
 using ODK.Services.Emails;
 using ODK.Services.Emails.Models;
+using ODK.Services.Emails.ViewModels;
 using ODK.Services.Exceptions;
 using ODK.Services.Html;
 using ODK.Services.Members;
 using ODK.Services.Security;
 using ODK.Services.Tests.Helpers;
+using ODK.Services.Web;
 
 namespace ODK.Services.Tests.Emails;
 
@@ -27,34 +29,6 @@ public static class EmailAdminServiceTests
     private const string HtmlFailure = "Malformed HTML at line 1";
 
     private const EmailType Type = EmailType.NewMember;
-
-    [Test]
-    public static async Task DeleteChapterEmail_WithoutTheFeature_StillRestoresTheDefault()
-    {
-        // Arrange - deliberately not gated: restoring the default puts the group on the standard email
-        // it would have without the feature, so blocking it would strand a group with wording it can
-        // neither change nor remove.
-        using var context = new MockOdkContext();
-        var (chapter, currentMember) = CreateChapter(context, withFeature: false);
-        CreateSiteEmail(context);
-        context.Create(new ChapterEmail
-        {
-            ChapterId = chapter.Id,
-            HtmlContent = "<p>Custom</p>",
-            Id = Guid.NewGuid(),
-            Subject = "Custom",
-            Type = Type
-        });
-
-        var service = CreateService(context);
-
-        // Act
-        var result = await service.DeleteChapterEmail(CreateRequest(chapter, currentMember), Type);
-
-        // Assert
-        result.Success.Should().BeTrue();
-        context.Set<ChapterEmail>().Should().BeEmpty();
-    }
 
     [Test]
     public static async Task GetChapterEmails_TakesTheRecipientTypeFromTheSiteEmail()
@@ -83,6 +57,77 @@ public static class EmailAdminServiceTests
         var email = result.Emails.Single();
         email.RecipientType.Should().Be(EmailRecipientType.Admins);
         email.Email.IsDefault().Should().BeFalse();
+    }
+
+    [Test]
+    public static async Task GetEmail_ResolvesOnlyWhatTheSiteTemplateKnows()
+    {
+        // Arrange - the platform is the same whatever the email is about, so its URL has a value. A group's
+        // does not: this is the template every group starts from, so it belongs to no one group.
+        using var context = new MockOdkContext();
+        var currentMember = context.CreateMember(siteAdmin: true);
+        CreateSiteEmail(context);
+        CreateSiteEmailSettings(context);
+
+        var service = CreateService(context);
+
+        // Act
+        var result = await service.GetEmail(CreateMemberRequest(currentMember), Type);
+
+        // Assert
+        result.Parameters.Single(x => x.Name == "platform.url").Value.Should().NotBeNull();
+        result.Parameters.Single(x => x.Name == "group.name").Value.Should().BeNull();
+        result.Parameters.Single(x => x.Name == "title").Value.Should().Be("Site members");
+    }
+
+    [Test]
+    public static async Task GetChapterEmails_WithoutAnOverride_ReportsNothingCustomised()
+    {
+        // Arrange - the list names which fields a group overrides, so a template it has not touched must
+        // report none. The row standing in for an un-customised template carries no wording: filling it with
+        // the site's would make every template read as fully customised.
+        using var context = new MockOdkContext();
+        var (chapter, currentMember) = CreateChapter(context, withFeature: true);
+        CreateSiteEmail(context);
+        CreateSiteEmailSettings(context);
+
+        var service = CreateService(context);
+
+        // Act
+        var result = await service.GetChapterEmails(CreateRequest(chapter, currentMember));
+
+        // Assert
+        var email = result.Emails.Single().Email;
+        email.OverridesSubject.Should().BeFalse();
+        email.OverridesContent.Should().BeFalse();
+        email.OverridesAnything().Should().BeFalse();
+    }
+
+    [Test]
+    public static async Task GetChapterEmails_WithOneFieldOverridden_ReportsOnlyThatField()
+    {
+        // Arrange - subject and body are reported independently, so overriding one must not report both.
+        using var context = new MockOdkContext();
+        var (chapter, currentMember) = CreateChapter(context, withFeature: true);
+        CreateSiteEmail(context);
+        CreateSiteEmailSettings(context);
+        context.Create(new ChapterEmail
+        {
+            ChapterId = chapter.Id,
+            Id = Guid.NewGuid(),
+            Subject = "Custom",
+            Type = Type
+        });
+
+        var service = CreateService(context);
+
+        // Act
+        var result = await service.GetChapterEmails(CreateRequest(chapter, currentMember));
+
+        // Assert
+        var email = result.Emails.Single().Email;
+        email.OverridesSubject.Should().BeTrue();
+        email.OverridesContent.Should().BeFalse();
     }
 
     [Test]
@@ -151,10 +196,175 @@ public static class EmailAdminServiceTests
     }
 
     [Test]
+    public static async Task UpdateChapterEmail_SubjectOnly_LeavesTheBodyInheriting()
+    {
+        // Arrange - overriding one field must not store the other as an empty override, which would send a
+        // blank body rather than the site's.
+        using var context = new MockOdkContext();
+        var (chapter, currentMember) = CreateChapter(context, withFeature: true);
+        CreateSiteEmail(context);
+
+        var service = CreateService(context);
+
+        // Act
+        var result = await service.UpdateChapterEmail(
+            CreateRequest(chapter, currentMember), Type, CreateUpdateModel(htmlContent: null));
+
+        // Assert
+        result.Success.Should().BeTrue();
+
+        var stored = context.Set<ChapterEmail>().Single(x => x.ChapterId == chapter.Id && x.Type == Type);
+        stored.Subject.Should().Be("Updated");
+        stored.HtmlContent.Should().BeNull();
+        stored.OverridesSubject.Should().BeTrue();
+        stored.OverridesContent.Should().BeFalse();
+    }
+
+    [Test]
+    public static async Task UpdateChapterEmail_BlankField_StoresItAsUnsetRatherThanEmpty()
+    {
+        // Arrange - blank is what the form posts for a box the group cleared. Stored as null so the row says
+        // the group has not overridden the field, which is also what the send path falls back on.
+        using var context = new MockOdkContext();
+        var (chapter, currentMember) = CreateChapter(context, withFeature: true);
+        CreateSiteEmail(context);
+
+        var service = CreateService(context);
+
+        // Act
+        var result = await service.UpdateChapterEmail(
+            CreateRequest(chapter, currentMember), Type, CreateUpdateModel(subject: "   "));
+
+        // Assert
+        result.Success.Should().BeTrue();
+
+        var stored = context.Set<ChapterEmail>().Single(x => x.ChapterId == chapter.Id && x.Type == Type);
+        stored.Subject.Should().BeNull();
+        stored.HtmlContent.Should().Be("<p>Updated</p>");
+    }
+
+    [Test]
+    public static async Task UpdateChapterEmail_BothFieldsBlank_RemovesTheOverride()
+    {
+        // Arrange - clearing both is how a group goes back to the standard email, so no row is left behind
+        // overriding nothing (which would still show the email as customised).
+        using var context = new MockOdkContext();
+        var (chapter, currentMember) = CreateChapter(context, withFeature: true);
+        CreateSiteEmail(context);
+        context.Create(new ChapterEmail
+        {
+            ChapterId = chapter.Id,
+            HtmlContent = "<p>Existing</p>",
+            Id = Guid.NewGuid(),
+            Subject = "Existing",
+            Type = Type
+        });
+
+        var service = CreateService(context);
+
+        // Act
+        var result = await service.UpdateChapterEmail(
+            CreateRequest(chapter, currentMember), Type, CreateUpdateModel(subject: null, htmlContent: null));
+
+        // Assert
+        result.Success.Should().BeTrue();
+        context.Set<ChapterEmail>().Should().BeEmpty();
+    }
+
+    [Test]
+    public static async Task GetChapterEmail_WithoutAnOverride_LeavesTheWordingUnsetAndSuppliesTheSites()
+    {
+        // Arrange - the form shows the site's wording as what an un-overridden field sends, rather than
+        // pre-filling the group's boxes with a copy of it.
+        using var context = new MockOdkContext();
+        var (chapter, currentMember) = CreateChapter(context, withFeature: true);
+        CreateSiteEmail(context);
+        CreateSiteEmailSettings(context);
+
+        var service = CreateService(context);
+
+        // Act
+        var result = await service.GetChapterEmail(CreateRequest(chapter, currentMember), Type);
+
+        // Assert
+        result.Email.Subject.Should().BeNull();
+        result.Email.HtmlContent.Should().BeNull();
+        result.Email.Type.Should().Be(Type);
+        result.SiteEmail.Subject.Should().Be("Standard");
+        result.SiteEmail.HtmlContent.Should().Be("<p>Standard</p>");
+    }
+
+    [Test]
+    public static async Task GetChapterEmail_ResolvesWhatIsKnownAboutTheGroup()
+    {
+        // Arrange - the group is fixed on this page, so an author can see what its parameters put in the
+        // email. What the email is about is not, so those stay unresolved.
+        using var context = new MockOdkContext();
+        var (chapter, currentMember) = CreateChapter(context, withFeature: true);
+        CreateSiteEmail(context);
+        CreateSiteEmailSettings(context);
+
+        var service = CreateService(context);
+
+        // Act
+        var result = await service.GetChapterEmail(CreateRequest(chapter, currentMember), Type);
+
+        // Assert - resolved from the same type the send path fills in, so these are the values it would use.
+        Value(result, "group.fullname").Should().Be(chapter.FullName);
+        Value(result, "group.name").Should().Be(chapter.GetDisplayName(PlatformType.Default));
+        Value(result, "group.url").Should().NotBeNull();
+
+        // The title comes from the audience and the group's settings rather than from that dictionary.
+        Value(result, "title").Should().Be("Site members");
+
+        // Unresolved because it stands for the member being emailed.
+        Value(result, "member.firstName").Should().BeNull();
+
+        /* Also unresolved, though it could be: it reads like a group parameter but belongs to the email type,
+           which is handed the URL by its caller rather than working it out. Resolving it here would mean
+           building it a second way, so it stays blank until that is worth doing. */
+        Value(result, "group.urls.events").Should().BeNull();
+    }
+
+    [Test]
+    public static async Task UpdateChapterEmail_WithoutTheFeature_ClearsAnExistingOverride()
+    {
+        // Arrange - a group that cannot write wording can still stop customising, which is the state it would
+        // be in had it never customised. Otherwise losing the feature would strand it with wording it could
+        // neither change nor remove.
+        using var context = new MockOdkContext();
+        var (chapter, currentMember) = CreateChapter(context, withFeature: false);
+        CreateSiteEmail(context);
+        context.Create(new ChapterEmail
+        {
+            ChapterId = chapter.Id,
+            HtmlContent = "<p>Existing</p>",
+            Id = Guid.NewGuid(),
+            Subject = "Existing",
+            Type = Type
+        });
+
+        var service = CreateService(context);
+
+        // Act - the body posts back unchanged, as a locked field does; only the subject is cleared.
+        var result = await service.UpdateChapterEmail(
+            CreateRequest(chapter, currentMember),
+            Type,
+            CreateUpdateModel(subject: null, htmlContent: "<p>Existing</p>"));
+
+        // Assert
+        result.Success.Should().BeTrue();
+
+        var stored = context.Set<ChapterEmail>().Single(x => x.ChapterId == chapter.Id);
+        stored.Subject.Should().BeNull();
+        stored.HtmlContent.Should().Be("<p>Existing</p>");
+    }
+
+    [Test]
     public static async Task UpdateChapterEmail_WithoutTheFeature_ReturnsFailure()
     {
-        // Arrange - the form renders read-only without the feature, but that is only presentation. This
-        // is the guard, and it is what a posted form has to get past.
+        // Arrange - the form locks what cannot be written, but that is only presentation. This is the guard,
+        // and it is what a posted form has to get past.
         using var context = new MockOdkContext();
         var (chapter, currentMember) = CreateChapter(context, withFeature: false);
         CreateSiteEmail(context);
@@ -172,8 +382,9 @@ public static class EmailAdminServiceTests
     [Test]
     public static async Task UpdateChapterEmail_WithoutTheFeature_LeavesTheExistingOverrideAlone()
     {
-        // Arrange - a group that customised an email before its subscription changed keeps sending what
-        // it had. Losing the feature withholds editing; it does not quietly revert the email.
+        // Arrange - a group that customised an email before its subscription changed keeps sending what it
+        // had. A post carrying different wording is refused outright, leaving the row as it was - unlike a
+        // post that only clears a field, which is allowed.
         using var context = new MockOdkContext();
         var (chapter, currentMember) = CreateChapter(context, withFeature: false);
         CreateSiteEmail(context);
@@ -467,7 +678,19 @@ public static class EmailAdminServiceTests
         // subscription features. A bare mock returns false from every check, which turns the
         // with-the-feature cases into false passes.
         new AuthorizationService(),
-        htmlValidator ?? CreateHtmlValidator(ServiceResult.Successful()));
+        htmlValidator ?? CreateHtmlValidator(ServiceResult.Successful()),
+        CreateUrlProviderFactory());
+
+    // Returns a URL for anything asked of it: a bare mock hands back null, and a null group URL would read
+    // as a parameter with no value rather than one this page can resolve.
+    private static IUrlProviderFactory CreateUrlProviderFactory()
+    {
+        var urlProvider = new Mock<IUrlProvider>();
+        urlProvider.SetReturnsDefault("https://test.local/somewhere");
+
+        return Mock.Of<IUrlProviderFactory>(x =>
+            x.Create(It.IsAny<IServiceRequest>()) == Task.FromResult(urlProvider.Object));
+    }
 
     private static void CreateSiteEmail(
         MockOdkContext context,
@@ -493,10 +716,14 @@ public static class EmailAdminServiceTests
         PlatformTitle = "Platform"
     });
 
-    private static EmailUpdateModel CreateUpdateModel() => new()
+    private static string? Value(ChapterEmailAdminPageViewModel result, string name) =>
+        result.Parameters.Single(x => x.Name == name).Value;
+
+    private static ChapterEmailUpdateModel CreateUpdateModel(
+        string? subject = "Updated",
+        string? htmlContent = "<p>Updated</p>") => new()
     {
-        HtmlContent = "<p>Updated</p>",
-        Overridable = false,
-        Subject = "Updated"
+        HtmlContent = htmlContent,
+        Subject = subject
     };
 }

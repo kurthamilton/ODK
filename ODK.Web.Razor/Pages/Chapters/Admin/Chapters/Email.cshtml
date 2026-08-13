@@ -11,13 +11,21 @@
 
     var chapter = Model.Chapter;
     var email = await EmailAdminService.GetChapterEmail(Model.MemberChapterAdminServiceRequest, Model.Type);
-    var viewModel = new ChapterEmailContentViewModel(
-        chapter, email.Email, email.CanEdit, email.RecipientType, email.Title);
+    var viewModel = new ChapterEmailContentViewModel
+    {
+        CanOverride = email.CanOverride,
+        Chapter = chapter,
+        Email = email.Email,
+        Parameters = email.Parameters,
+        RecipientType = email.RecipientType,
+        SiteEmail = email.SiteEmail,
+        Title = email.Title
+    };
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
-    Title = "Email",
+    Title = "",
     Breadcrumbs = new[]
     {
         new MenuItem { Link = Model.AdminRoutes.Emails(chapter).Path, Text = "Emails" },

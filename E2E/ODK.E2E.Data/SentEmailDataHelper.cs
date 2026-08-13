@@ -28,10 +28,12 @@ public class SentEmailDataHelper : DataHelperBase
 
         // Emails are sent by a background (Hangfire) job that runs after the request commits, so poll
         // until the expected number of rows appears; give up and return what we have so the assertion
-        // can report the shortfall.
+        // can report the shortfall against what did arrive.
+        IReadOnlyCollection<string> subjects = [];
+
         for (var attempt = 0; attempt < 20; attempt++)
         {
-            var subjects = await builder.ReadMany(x => x.GetString(0));
+            subjects = await builder.ReadMany(x => x.GetString(0));
             if (subjects.Count >= expectedCount)
             {
                 return subjects;
@@ -40,6 +42,6 @@ public class SentEmailDataHelper : DataHelperBase
             await Task.Delay(250);
         }
 
-        return [];
+        return subjects;
     }
 }

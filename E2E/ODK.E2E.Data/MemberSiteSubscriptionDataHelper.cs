@@ -41,6 +41,26 @@ public class MemberSiteSubscriptionDataHelper : DataHelperBase
         await builder.ExecuteNonQuery();
     }
 
+    /// <summary>
+    /// Backdates the member's current subscription so it has lapsed, taking its features with it. Models a
+    /// subscription running out, which is how a group loses a feature it had been using.
+    /// </summary>
+    public async Task Expire(Guid memberId)
+    {
+        const string sql =
+            """
+            UPDATE MemberSiteSubscriptionLog
+            SET ExpiresUtc = @expires
+            WHERE MemberId = @memberId AND IsCurrent = 1
+            """;
+
+        await using var builder = Builder(sql)
+            .AddParameter("@memberId", memberId)
+            .AddParameter("@expires", DateTime.UtcNow.AddDays(-1));
+
+        await builder.ExecuteNonQuery();
+    }
+
     /// <summary>The member's current site-subscription expiry (UTC), or null if they have no current record yet.</summary>
     public async Task<DateTime?> GetExpiresUtc(Guid memberId)
     {

@@ -351,8 +351,12 @@ public class EmailService : IEmailService
                 : new DefaultDeferredQuerySingleOrDefault<ChapterEmailSettings>());
 
         /* A group's override supplies the wording only. The recipient type is read from the site row either
-           way, because an override says how an email reads and not who it is for. */
-        var layoutHtml = templates.ChapterLayout?.HtmlContent ?? templates.SiteLayout.HtmlContent;
+           way, because an override says how an email reads and not who it is for.
+
+           Subject and body are overridden independently, so each falls back to the site's on its own - a
+           group that has set only one of them sends the site's version of the other. */
+        var layoutHtml = StringUtils.Coalesce(
+            templates.ChapterLayout?.HtmlContent, templates.SiteLayout.HtmlContent);
 
         // A send carrying its own body leaves Type at Layout, so it has no template of its own to render.
         var hasTemplate = options.Type != EmailType.Layout;
@@ -362,13 +366,15 @@ public class EmailService : IEmailService
             options,
             siteSettings,
             chapterEmailSettings,
-            hasTemplate ? templates.ChapterEmail?.HtmlContent ?? templates.SiteEmail.HtmlContent : null,
+            hasTemplate
+                ? StringUtils.Coalesce(templates.ChapterEmail?.HtmlContent, templates.SiteEmail.HtmlContent)
+                : null,
             hasTemplate ? templates.SiteEmail.RecipientType : options.RecipientType);
 
         var subject = !string.IsNullOrEmpty(options.Subject)
             ? options.Subject
             : hasTemplate
-                ? templates.ChapterEmail?.Subject ?? templates.SiteEmail.Subject
+                ? StringUtils.Coalesce(templates.ChapterEmail?.Subject, templates.SiteEmail.Subject)
                 : string.Empty;
 
         var queuedEmail = _unitOfWork.QueuedEmailRepository.Add(new QueuedEmail

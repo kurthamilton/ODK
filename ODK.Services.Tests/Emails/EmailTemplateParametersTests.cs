@@ -37,6 +37,25 @@ public static class EmailTemplateParametersTests
     }
 
     [Test]
+    public static void Descriptions_EveryOfferedParameterIsDescribed()
+    {
+        // Arrange - the properties table on both email admin pages is built from these, so a parameter with
+        // no description is a blank row rather than a crash: nothing would surface it but this. ForSite is
+        // the wider list, so covering it covers what a group is offered too.
+        var types = Enum.GetValues<EmailType>().Where(x => x != EmailType.None);
+
+        var undescribed = types
+            .SelectMany(EmailTemplateParameters.ForSite)
+            .Distinct(EmailParameterComparer.Default)
+            .Where(x => EmailParameterDescriptions.For(x) == null)
+            .ToArray();
+
+        // Assert
+        undescribed.Should().BeEmpty(
+            $"every parameter needs a row in {nameof(EmailParameterDescriptions)}");
+    }
+
+    [Test]
     public static void ForType_UnregisteredType_Throws()
     {
         // Act

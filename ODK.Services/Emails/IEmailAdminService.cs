@@ -6,8 +6,6 @@ namespace ODK.Services.Emails;
 
 public interface IEmailAdminService
 {
-    Task<ServiceResult> DeleteChapterEmail(IMemberChapterAdminServiceRequest request, EmailType type);
-
     Task<ChapterEmailAdminPageViewModel> GetChapterEmail(
         IMemberChapterAdminServiceRequest request, EmailType type);
 
@@ -21,7 +19,12 @@ public interface IEmailAdminService
 
     Task<ServiceResult> SendTestMemberEmail(IMemberServiceRequest request, EmailType type);
 
-    Task<ServiceResult> UpdateChapterEmail(IMemberChapterAdminServiceRequest request, EmailType type, EmailUpdateModel model);
+    /// <summary>
+    /// Sets the group's override of one email. Subject and body are independent: a blank field is stored as
+    /// unset, which is how the group goes back to sending the site's. Blanking both removes the override.
+    /// </summary>
+    Task<ServiceResult> UpdateChapterEmail(
+        IMemberChapterAdminServiceRequest request, EmailType type, ChapterEmailUpdateModel model);
 
     /// <summary>
     /// Sets the group's own audience titles. A blank value is stored as unset, which is how the group goes

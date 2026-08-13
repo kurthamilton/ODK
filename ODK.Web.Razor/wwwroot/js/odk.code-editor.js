@@ -10,6 +10,12 @@ window.odk.codeEditor = window.odk.codeEditor || {};
     const DARK_THEME = 'ace/theme/monokai';
     const LIGHT_THEME = 'ace/theme/textmate';
 
+    /* The editor sizes itself to its content between a floor and a ceiling, both taken from the textarea so
+       the markup decides: rows for the floor, data-code-editor-max-lines for the ceiling. These are the
+       fallbacks for a field that sets neither. Past the ceiling the editor scrolls internally. */
+    const DEFAULT_MIN_LINES = 5;
+    const DEFAULT_MAX_LINES = 30;
+
     const editors = new Map();
 
     // Ace ships in its own bundle that only the email template pages load, so on any other page there
@@ -37,6 +43,14 @@ window.odk.codeEditor = window.odk.codeEditor || {};
         return document.querySelector('[data-theme-root]')?.getAttribute('data-bs-theme');
     }
 
+    /* "none" lets the editor grow to whatever it holds, for a field whose content is a whole document rather
+       than a fragment. A missing attribute falls back to the cap rather than to no cap, so a field that
+       forgets it cannot run away down the page. */
+    function maxLines($textarea) {
+        const value = $textarea.dataset.codeEditorMaxLines;
+        return value === 'none' ? Infinity : Number(value) || DEFAULT_MAX_LINES;
+    }
+
     function mount($textarea) {
         const $container = document.createElement('div');
         $container.className = 'code-editor';
@@ -51,6 +65,10 @@ window.odk.codeEditor = window.odk.codeEditor || {};
         const editor = ace.edit($container, {
             mode: `ace/mode/${$textarea.dataset.codeEditor}`,
             theme: aceTheme(currentTheme()),
+            // Ace measures wrapped lines as it renders them, so a wrapped line counts as the rows it
+            // occupies rather than as one.
+            minLines: $textarea.rows || DEFAULT_MIN_LINES,
+            maxLines: maxLines($textarea),
             /* Highlighting only, no syntax checking - that is what the worker adds, and turning it on
                needs worker-html.js served as its own file (a Web Worker cannot load out of the bundle)
                plus basePath set so Ace can find it. Its well-formedness rules do line up with the

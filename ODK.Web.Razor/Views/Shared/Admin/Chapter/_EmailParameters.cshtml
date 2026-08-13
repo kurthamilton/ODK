@@ -1,0 +1,44 @@
+﻿@using ODK.Services.Emails.ViewModels
+@model IReadOnlyCollection<EmailParameterViewModel>
+
+@* "Placeholder" throughout the UI, though the code calls these parameters: it is the word the insert
+   buttons beside the body field already use, and the more familiar one for an admin who writes wording
+   rather than code. *@
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "Write a placeholder in braces and it is replaced when the email is sent. Most stand for whatever the " +
+    "email is about, so their value is only known at that point.")
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Placeholder</th>
+                <th>Description</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var parameter in Model)
+            {
+                <tr>
+                    <td class="font-monospace">{@parameter.Name}</td>
+                    <td>@parameter.Description</td>
+
+                    @* Only the title has a value while editing - it comes from the email's audience and this
+                       group's settings rather than from whatever the email is about. Shown as written, since
+                       it is a template in its own right. *@
+                    <td>
+                        @if (parameter.Value != null)
+                        {
+                            <code class="text-pre-wrap">@parameter.Value</code>
+                        }
+                        else
+                        {
+                            <span>-</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

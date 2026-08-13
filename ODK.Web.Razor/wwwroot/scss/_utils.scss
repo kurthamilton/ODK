@@ -10,6 +10,17 @@
     color: var(--bs-body-color);
 }
 
+// Fills the gap between Bootstrap's two text-wrap utilities for preformatted text: text-wrap collapses the
+// newlines and indentation that are the reason for using a pre, and text-break cannot help because
+// white-space: pre forbids wrapping outright. Long lines wrap here instead of widening their container,
+// which a pre inside a grid column does - a flex item's min-width is auto, so min-content pushes it past
+// the row and the page scrolls sideways.
+.text-pre-wrap {
+    white-space: pre-wrap;
+    // A run of HTML with no spaces - a long URL in an href - would otherwise still not break.
+    overflow-wrap: anywhere;
+}
+
 @include media-breakpoint-down(md) {
     .hide-below-md {
         display: none !important;

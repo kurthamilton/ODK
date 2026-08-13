@@ -296,10 +296,9 @@ public class ChapterAdminController : AdminControllerBase
     {
         var request = MemberChapterAdminServiceRequest.Create(
             ChapterAdminSecurable.Emails, MemberChapterServiceRequest);
-        var result = await _emailAdminService.UpdateChapterEmail(request, type, new EmailUpdateModel
+        var result = await _emailAdminService.UpdateChapterEmail(request, type, new ChapterEmailUpdateModel
         {
             HtmlContent = viewModel.Content,
-            Overridable = false,
             Subject = viewModel.Subject
         });
 
@@ -338,16 +337,6 @@ public class ChapterAdminController : AdminControllerBase
             Message = result.Message,
             Valid = result.Success
         });
-    }
-
-    [HttpPost("groups/{chapterId:guid}/emails/{type}/restoreDefault")]
-    public async Task<IActionResult> RestoreDefaultEmail(Guid chapterId, EmailType type)
-    {
-        var request = MemberChapterAdminServiceRequest.Create(
-            ChapterAdminSecurable.Emails, MemberChapterServiceRequest);
-        var result = await _emailAdminService.DeleteChapterEmail(request, type);
-        AddFeedback(result, "Default email restored");
-        return RedirectToReferrer();
     }
 
     [HttpPost("groups/{chapterId:guid}/emails/{type}/test")]
