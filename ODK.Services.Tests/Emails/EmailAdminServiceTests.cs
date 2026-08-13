@@ -400,6 +400,45 @@ public static class EmailAdminServiceTests
     }
 
     [Test]
+    public static async Task UpdateChapterEmail_StoredBodyWouldNotValidate_TurningOffTheSubjectStillSaves()
+    {
+        // Arrange - a body stored before today's markup rules, which now fails them. Changing the subject
+        // does not touch it, so the save must not be judged on it: the group would be told to fix wording
+        // this save is not writing, and a group without the feature could not fix it at all.
+        using var context = new MockOdkContext();
+        var (chapter, currentMember) = CreateChapter(context, withFeature: false);
+        CreateSiteEmail(context);
+        context.Create(new ChapterEmail
+        {
+            ChapterId = chapter.Id,
+            HtmlContent = "<p style=\"text-align: center;\">Existing body</p>",
+            Id = Guid.NewGuid(),
+            Subject = "Existing subject",
+            Type = Type
+        });
+
+        // Rejects any markup it is given, standing in for the stored body failing the current rules.
+        var service = CreateService(context, CreateHtmlValidator(ServiceResult.Failure(HtmlFailure)));
+
+        // Act - turn the subject off and leave the body customised.
+        var result = await service.UpdateChapterEmail(
+            CreateRequest(chapter, currentMember),
+            Type,
+            CreateUpdateModel(
+                subject: null,
+                htmlContent: null,
+                overrideSubject: false,
+                overrideHtmlContent: true));
+
+        // Assert
+        result.Success.Should().BeTrue();
+
+        var stored = context.Set<ChapterEmail>().Single(x => x.ChapterId == chapter.Id);
+        stored.Subject.Should().BeNull();
+        stored.HtmlContent.Should().Be("<p style=\"text-align: center;\">Existing body</p>");
+    }
+
+    [Test]
     public static async Task UpdateChapterEmail_WithoutTheFeature_SavingUnchanged_KeepsBoth()
     {
         // Arrange - every field is locked without the feature, so a save that changes nothing posts no
@@ -585,6 +624,26 @@ public static class EmailAdminServiceTests
 
         // Assert
         result.Success.Should().BeTrue();
+    }
+
+    [Test]
+    public static async Task UpdateChapterEmail_WritingTheBody_StillValidatesIt()
+    {
+        // Arrange - the counterpart: skipping the check for an untouched field must not skip it for one the
+        // save is writing, or malformed markup would go in unchecked.
+        using var context = new MockOdkContext();
+        var (chapter, currentMember) = CreateChapter(context, withFeature: true);
+        CreateSiteEmail(context);
+
+        var service = CreateService(context, CreateHtmlValidator(ServiceResult.Failure(HtmlFailure)));
+
+        // Act
+        var result = await service.UpdateChapterEmail(
+            CreateRequest(chapter, currentMember), Type, CreateUpdateModel(htmlContent: "<p>Malformed</p"));
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.Message.Should().Be(HtmlFailure);
     }
 
     [Test]
