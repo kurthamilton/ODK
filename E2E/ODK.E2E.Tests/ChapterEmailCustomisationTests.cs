@@ -50,7 +50,8 @@ public class ChapterEmailCustomisationTests : DefaultPageTest
 
         (await page.IsSubjectEditable()).Should().BeFalse("a field on the default is not typed into");
         (await page.IsContentEditable()).Should().BeFalse();
-        (await page.IsCustomised()).Should().BeFalse();
+        (await page.IsSubjectCustomised()).Should().BeFalse();
+        (await page.IsContentCustomised()).Should().BeFalse();
     }
 
     [Test]
@@ -70,10 +71,12 @@ public class ChapterEmailCustomisationTests : DefaultPageTest
         // the send fall back rather than sending an empty body.
         (await ChapterEmails.GetSubject(group.ChapterId)).Should().Be(customSubject);
         (await ChapterEmails.GetHtmlContent(group.ChapterId)).Should().BeNull();
-        (await page.IsCustomised()).Should().BeTrue();
 
-        // The body field still shows the default, unchanged and still locked.
+        // The form comes back showing the subject customised and the body still on the default, unchanged
+        // and still locked.
         await page.Open(emailUrl);
+        (await page.IsSubjectCustomised()).Should().BeTrue();
+        (await page.IsContentCustomised()).Should().BeFalse();
         (await page.GetContent()).Should().Be(defaultContent);
         (await page.IsContentEditable()).Should().BeFalse();
 
@@ -124,10 +127,11 @@ public class ChapterEmailCustomisationTests : DefaultPageTest
 
         // Assert
         (await ChapterEmails.GetRowCount(group.ChapterId)).Should().Be(0);
-        (await page.IsCustomised()).Should().BeFalse();
 
-        // The form is back to showing the default, locked.
+        // The form is back to showing the default, locked, with both switches off.
         await page.Open(emailUrl);
+        (await page.IsSubjectCustomised()).Should().BeFalse();
+        (await page.IsContentCustomised()).Should().BeFalse();
         (await page.GetSubject()).Should().Be(defaultSubject);
         (await page.IsSubjectEditable()).Should().BeFalse();
     }

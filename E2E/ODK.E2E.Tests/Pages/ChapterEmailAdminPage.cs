@@ -30,11 +30,13 @@ internal class ChapterEmailAdminPage
     }
 
     /// <summary>
-    /// Whether the page badges the email as customised. Matched exactly: the recipient badge sits beside it,
-    /// and a substring match on "Custom" would also hit an upgrade prompt naming the Custom emails feature.
+    /// Whether the form shows the body as customised. The switches are the page's own record of that, so
+    /// reading them back after a reload is what checks the form reflects what was stored.
     /// </summary>
-    public Task<bool> IsCustomised() =>
-        _page.Locator(".badge").GetByText("Custom", new() { Exact = true }).IsVisibleAsync();
+    public Task<bool> IsContentCustomised() => _page.Locator(ContentToggle).IsCheckedAsync();
+
+    /// <inheritdoc cref="IsContentCustomised" />
+    public Task<bool> IsSubjectCustomised() => _page.Locator(SubjectToggle).IsCheckedAsync();
 
     /// <summary>
     /// What the templates list reports the group has customised for the email at <paramref name="listUrl"/>'s
@@ -138,11 +140,15 @@ internal class ChapterEmailAdminPage
     /// <summary>Whether the body's Customise switch can be operated at all.</summary>
     public Task<bool> IsContentToggleEnabled() => _page.Locator(ContentToggle).IsEnabledAsync();
 
+    /* Waits for the form's own submit, identified as the POST that navigates. Any-POST would also match the
+       editor's HTML-check request - it posts the content to ValidateUrl whenever the body changes - and
+       returning on that one hands back before the save has happened, so an assertion reads the database as it
+       was. */
     private async Task Save()
     {
         await _page.RunAndWaitForResponseAsync(
             () => _page.ClickAsync("button:has-text('Update')"),
-            r => r.Request.Method == "POST");
+            r => r.Request.Method == "POST" && r.Request.ResourceType == "document");
         await _page.WaitForLoadStateAsync();
     }
 

@@ -141,6 +141,10 @@ iterating - not for every feature, or filtering stops meaning anything.
   member-facing URLs (Default `/my/groups/{chapterId}/...` vs DrunkenKnitwits `/{chapterName}/admin/...`,
   whose leaf segments even differ — `/new` vs `/create`). Add a route here rather than composing paths in
   a page object or test. Mirrors the app's `GroupAdminRoutes`/`GroupRoutes`.
+- **Waiting for a form submit:** match the POST that **navigates**
+  (`r.Request.ResourceType == "document"`), not any POST. A page whose fields are validated by an XHR - the
+  email template body posts itself to a validate endpoint on change - fires a POST of its own, so an
+  any-POST wait returns before the form has submitted and the assertions then read the database as it was.
 - **Data helpers** (`ODK.E2E.Data/*DataHelper.cs`): all DB access goes through `E2EQueryBuilder`
   (`Create(sql).AddParameter(...).ExecuteScalar<T>()/ReadMany(...)/ExecuteNonQuery()`), never inline
   `SqlConnection`. **`ExecuteScalar<T>()` gotcha:** for a value-type column that can be null, call it with
