@@ -30,8 +30,5 @@ public class SiteEmailSettingsMap : IEntityTypeConfiguration<SiteEmailSettings>
 
         builder.Property(x => x.PlatformTitle)
             .HasMaxLength(255);
-
-        builder.Property(x => x.Title)
-            .HasMaxLength(255);
     }
 }

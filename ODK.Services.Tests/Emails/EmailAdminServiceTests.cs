@@ -490,8 +490,7 @@ public static class EmailAdminServiceTests
         Id = Guid.NewGuid(),
         MemberTitle = "Site members",
         Platform = PlatformType.Default,
-        PlatformTitle = "Platform",
-        Title = "Site"
+        PlatformTitle = "Platform"
     });
 
     private static EmailUpdateModel CreateUpdateModel() => new()
