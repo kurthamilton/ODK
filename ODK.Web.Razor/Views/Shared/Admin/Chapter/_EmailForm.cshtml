@@ -6,6 +6,10 @@
    group that cannot write wording can still turn a customisation off, so the toggles have to stay live while
    the fields they control do not. A fieldset would disable its descendants whatever they say themselves.
 
+   data-field-override-locked carries "true"/"false" rather than being present or absent. A null value drops
+   checked and disabled below, but not a data- attribute: that renders as empty and present, so a script
+   testing for presence reads every field as locked. Never give a data- attribute presence semantics here.
+
    Each field shows what the group sends: its own wording where it customises, the default otherwise. A field
    left on the default is disabled, so it posts nothing and stays inheriting - see odk.field-override.js. The
    toggles carry no name: they are how the form is driven, not something it posts. *@
@@ -19,7 +23,7 @@
                data-field-override="#Subject" aria-label="Customise subject"
                checked="@(Model.OverridesSubject ? "checked" : null)"
                disabled="@(Model.CanToggleSubject ? null : "disabled")"
-               data-field-override-locked="@(Model.CanOverride ? null : "")" />
+               data-field-override-locked="@(Model.CanOverride ? "false" : "true")" />
         <label class="form-check-label" for="override-subject">Customise</label>
     </div>
 
@@ -46,7 +50,7 @@
                data-field-override="#email-content" aria-label="Customise body"
                checked="@(Model.OverridesContent ? "checked" : null)"
                disabled="@(Model.CanToggleContent ? null : "disabled")"
-               data-field-override-locked="@(Model.CanOverride ? null : "")" />
+               data-field-override-locked="@(Model.CanOverride ? "false" : "true")" />
         <label class="form-check-label" for="override-content">Customise</label>
     </div>
 

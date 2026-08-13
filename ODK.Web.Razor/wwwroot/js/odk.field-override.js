@@ -17,8 +17,11 @@
 
         /* Locked means the field may never be typed into, however the toggle is left - a group whose
            subscription does not cover custom emails can turn a customisation off but not write one. So the
-           toggle still governs whether the field posts; it just cannot make it editable. */
-        const locked = 'fieldOverrideLocked' in toggle.dataset;
+           toggle still governs whether the field posts; it just cannot make it editable.
+
+           Read as a value, not by presence: a data- attribute given a null value in Razor still renders,
+           empty, so presence would be true for every field and nothing would ever unlock. */
+        const locked = toggle.dataset.fieldOverrideLocked === 'true';
 
         toggle.addEventListener('change', () => {
             const editable = toggle.checked && !locked;

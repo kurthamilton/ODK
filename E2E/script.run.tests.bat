@@ -23,6 +23,7 @@ if "%CATEGORY%"=="" (
     echo   NoStripe             - everything except payments
     echo   Venues               - venue admin; creation, name normalising, slugs, events filter
     echo   SiteQuestions        - site FAQ admin and the About page; Group Squirrel only
+    echo   EmailAdmin           - a group customising its email templates; Group Squirrel only
     echo.
     set /p "CATEGORY=Category [E2E]: "
 )

@@ -80,12 +80,17 @@ Two axes, composed by the filter:
   - **`SiteQuestions`** — site FAQ admin (create, reorder, edit, delete) and the About page that displays
     it, applied at *fixture* level. Group Squirrel only: site questions are per-platform and Drunken
     Knitwits has none, which is exactly why its About page 404s.
+  - **`EmailAdmin`** — a group customising its email templates, applied at *fixture* level. Each test
+    provisions its own group plus a subscription carrying the CustomEmails feature, so the fixture is slow
+    to arrange, and the behaviour it covers is fiddly enough to iterate on: subject and body are customised
+    independently, and the form's state is driven by client script.
 
 ```
 script.run.tests.bat                 # prompts for a category
 script.run.tests.bat Stripe          # just the payment tests
 script.run.tests.bat Venues          # just the venue admin tests
 script.run.tests.bat SiteQuestions   # just the site FAQ tests
+script.run.tests.bat EmailAdmin      # just the email customisation tests
 script.run.tests.bat Default         # one platform
 script.run.tests.bat NoStripe        # everything except payments - skips the slow ones
 ```

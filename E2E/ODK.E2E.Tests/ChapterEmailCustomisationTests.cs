@@ -24,6 +24,7 @@ namespace ODK.E2E.Tests;
 /// </para>
 /// </summary>
 [TestFixture]
+[Category("EmailAdmin")]
 public class ChapterEmailCustomisationTests : DefaultPageTest
 {
     private static ChapterEmailDataHelper ChapterEmails => new(E2ESettings.ConnectionString);
