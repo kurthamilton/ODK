@@ -14,16 +14,13 @@ namespace ODK.Services.Subscriptions;
 
 public class SiteSubscriptionService : ISiteSubscriptionService
 {
-    private readonly IMemberSiteSubscriptionWriter _memberSiteSubscriptionWriter;
     private readonly IPaymentProviderFactory _paymentProviderFactory;
     private readonly IUnitOfWork _unitOfWork;
 
     public SiteSubscriptionService(
         IUnitOfWork unitOfWork,
-        IPaymentProviderFactory paymentProviderFactory,
-        IMemberSiteSubscriptionWriter memberSiteSubscriptionWriter)
+        IPaymentProviderFactory paymentProviderFactory)
     {
-        _memberSiteSubscriptionWriter = memberSiteSubscriptionWriter;
         _paymentProviderFactory = paymentProviderFactory;
         _unitOfWork = unitOfWork;
     }
@@ -57,48 +54,6 @@ public class SiteSubscriptionService : ISiteSubscriptionService
         return result
             ? ServiceResult.Successful()
             : ServiceResult.Failure("Subscription could not be cancelled");
-    }
-
-    public async Task<ServiceResult> ConfirmMemberSiteSubscription(
-        IMemberServiceRequest request,
-        Guid siteSubscriptionPriceId,
-        string externalId)
-    {
-        var currentMember = request.CurrentMember;
-
-        var (sitePaymentSettings, memberSubscriptionDto, siteSubscriptionPrice) = await _unitOfWork.RunAsync(
-            x => x.SitePaymentSettingsRepository.GetAll(),
-            x => x.MemberSiteSubscriptionRecordRepository.GetDtoByMemberId(currentMember.Id),
-            x => x.SiteSubscriptionPriceRepository.GetById(siteSubscriptionPriceId));
-
-        var siteSubscription = await _unitOfWork.SiteSubscriptionRepository.GetById(siteSubscriptionPrice.SiteSubscriptionId).Run();
-
-        var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(
-            sitePaymentSettings,
-            memberSubscriptionDto?.SiteSubscription.SitePaymentSettingId);
-
-        var externalSubscription = await paymentProvider.GetSubscription(externalId);
-
-        if (externalSubscription == null ||
-            externalSubscription.ExternalSubscriptionPlanId != siteSubscriptionPrice.ExternalId)
-        {
-            return ServiceResult.Failure("Error confirming subscription");
-        }
-
-        await _memberSiteSubscriptionWriter.MakeRecordCurrent(
-            new MemberSiteSubscriptionRecord
-            {
-                CreatedUtc = DateTime.UtcNow,
-                ExpiresUtc = externalSubscription.NextBillingDate,
-                ExternalId = externalSubscription.ExternalId,
-                MemberId = currentMember.Id,
-                SiteSubscriptionId = siteSubscription.Id,
-                SiteSubscriptionPriceId = siteSubscriptionPrice.Id
-            });
-
-        await _unitOfWork.SaveChangesAsync();
-
-        return ServiceResult.Successful();
     }
 
     public async Task<SiteSubscriptionsViewModel> GetSiteSubscriptionsViewModel(

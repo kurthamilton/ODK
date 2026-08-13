@@ -17,12 +17,14 @@ internal sealed class StripeTestClock : IAsyncDisposable
     private readonly StripeClient _client;
     private readonly string _clockId;
     private readonly DateTime _frozenStart;
+    private readonly string _subscriptionId;
 
-    private StripeTestClock(StripeClient client, string clockId, DateTime frozenStart)
+    private StripeTestClock(StripeClient client, string clockId, DateTime frozenStart, string subscriptionId)
     {
         _client = client;
         _clockId = clockId;
         _frozenStart = frozenStart;
+        _subscriptionId = subscriptionId;
     }
 
     /// <summary>
@@ -74,7 +76,22 @@ internal sealed class StripeTestClock : IAsyncDisposable
                 "first invoice did not pay, so no webhook will fire.");
         }
 
-        return new StripeTestClock(client, clock.Id, frozenStart);
+        return new StripeTestClock(client, clock.Id, frozenStart, subscription.Id);
+    }
+
+    /// <summary>
+    /// The date Stripe will next charge the subscription, read from the same field the app reads
+    /// (the subscription item's current period end). A subscription's stored expiry is expected to match it.
+    /// </summary>
+    public async Task<DateTime> GetNextPaymentDateUtc()
+    {
+        var subscription = await new SubscriptionService(_client).GetAsync(_subscriptionId);
+
+        var item = subscription.Items?.Data?.FirstOrDefault()
+            ?? throw new InvalidOperationException(
+                $"Test-clock subscription '{_subscriptionId}' has no items, so it has no billing period.");
+
+        return item.CurrentPeriodEnd;
     }
 
     /// <summary>Advances the clock just past one billing month, triggering a renewal invoice + webhook.</summary>

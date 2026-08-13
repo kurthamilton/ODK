@@ -82,9 +82,9 @@
         }
         else if (externalSubscription?.Status == ExternalSubscriptionStatus.Active)
         {
-            @* The next payment date is Stripe's NextBillingDate, which supersedes the locally stored expiry:
-               thanks to the rolling expiry, NextBillingDate is never later than ExpiresUtc, so ExpiresUtc
-               would show a misleadingly-later date. (Previously both were rendered, showing two dates.) *@
+            @* An active subscription's stored expiry is the provider's next billing date, so only one of the
+               two is worth showing - and it is read live from the provider, which is authoritative if a
+               renewal webhook has yet to arrive. *@
             <label class="form-label">Next payment date</label>
             <div class="form-control-plaintext">
                 @if (externalSubscription.NextBillingDate != null && currentMember != null)

@@ -2,6 +2,13 @@
 
 public static class SiteSubscriptionFrequencyExtensions
 {
+    public static int Months(this SiteSubscriptionFrequency frequency) => frequency switch
+    {
+        SiteSubscriptionFrequency.Monthly => 1,
+        SiteSubscriptionFrequency.Yearly => 12,
+        _ => 0
+    };
+
     public static string PeriodUnit(this SiteSubscriptionFrequency frequency) => frequency switch
     {
         SiteSubscriptionFrequency.Monthly => "month",

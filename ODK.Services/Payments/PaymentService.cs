@@ -256,6 +256,60 @@ public class PaymentService : IPaymentService
         }
     }
 
+    // A period that is still live - or lapsed but inside the chapter's cooldown - is continued, so a
+    // membership keeps its anniversary instead of drifting by however late the member renewed. Otherwise the
+    // period starts now. A cooldown of zero therefore continues only a live period.
+    //
+    // A cooldown longer than the subscription's own length can continue a period that has already fully
+    // elapsed, so a calculated expiry that is not in the future starts a new period instead: a payment must
+    // always leave the member current.
+    private static DateTime RollExpiryForward(
+        DateTime? currentExpiresUtc,
+        int months,
+        int cooldownDaysAfterExpiry,
+        DateTime utcNow)
+    {
+        // A negative cooldown is meaningless and is treated as none, so it cannot narrow the window to less
+        // than a live period.
+        var cooldownStartUtc = utcNow.AddDays(-Math.Max(0, cooldownDaysAfterExpiry));
+
+        var continueFromUtc = currentExpiresUtc >= cooldownStartUtc
+            ? currentExpiresUtc.Value
+            : utcNow;
+
+        var expiresUtc = continueFromUtc.AddMonths(months);
+
+        return expiresUtc > utcNow
+            ? expiresUtc
+            : utcNow.AddMonths(months);
+    }
+
+    private async Task<DateTime?> GetChapterSubscriptionNextPaymentDate(Guid chapterId, string externalId)
+    {
+        var (sitePaymentSettings, paymentAccount) = await _unitOfWork.RunAsync(
+            x => x.SitePaymentSettingsRepository.GetActive(),
+            x => x.ChapterPaymentAccountRepository.GetByChapterId(chapterId));
+
+        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(sitePaymentSettings, paymentAccount);
+
+        return await GetNextPaymentDate(paymentProvider, externalId);
+    }
+
+    private async Task<DateTime?> GetNextPaymentDate(IPaymentProvider paymentProvider, string externalId)
+    {
+        var externalSubscription = await paymentProvider.GetSubscription(externalId);
+
+        if (externalSubscription?.NextBillingDate == null)
+        {
+            await _loggingService.Warn(
+                $"Next payment date not found for {paymentProvider.Type} subscription '{externalId}'; " +
+                $"calculating the expiry date instead");
+            return null;
+        }
+
+        return externalSubscription.NextBillingDate;
+    }
+
     private async Task<PaymentWebhookProcessingResult> ProcessCompletedChapterSubscription(
         PlatformType platform,
         IReadOnlyDictionary<string, string> metadataDictionary,
@@ -786,14 +840,15 @@ public class PaymentService : IPaymentService
 
         var (chapterId, memberId) = (chapter.Id, member.Id);
 
-        var (currentRecord, recordForInitiator) = await _unitOfWork.RunAsync(
+        var (currentRecord, recordForInitiator, membershipSettings) = await _unitOfWork.RunAsync(
             x => x.MemberSubscriptionRecordRepository.Query().Current().ForMember(memberId).ForChapter(chapterId).GetSingleOrDefault(),
             x => !string.IsNullOrEmpty(initiatorId)
                 ? x.MemberSubscriptionRecordRepository
                     .Query()
                     .ForInitiator(initiatorId)
                     .GetSingleOrDefault()
-                : new DefaultDeferredQuerySingleOrDefault<MemberSubscriptionRecord>());
+                : new DefaultDeferredQuerySingleOrDefault<MemberSubscriptionRecord>(),
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId));
 
         // Idempotency: if this initiating event (the payment provider webhook id) has already recorded a
         // subscription, do not record it again. This protects against a retry of the webhook-processing job
@@ -807,13 +862,19 @@ public class PaymentService : IPaymentService
                 member, chapter, payment, chapterSubscription.Currency);
         }
 
-        // Roll the expiry forward: a first purchase starts from now, a renewal/extension adds onto the
-        // subscription's existing (future) expiry - read from the current log record (the source of truth);
-        // the value is fixed on the new record at insert.
-        var originalExpiresUtc = currentRecord?.ExpiresUtc > utcNow
-            ? currentRecord.ExpiresUtc.Value
-            : utcNow;
-        var expiresUtc = originalExpiresUtc.AddMonths(chapterSubscription.Months);
+        // A recurring subscription expires when the provider next takes payment, so the two cannot drift
+        // apart: the provider anchors its schedule to the original purchase
+        var nextPaymentUtc = chapterSubscription.Recurring
+            ? await GetChapterSubscriptionNextPaymentDate(chapterId, externalId)
+            : null;
+
+        // A one-off has no schedule to read, so its expiry is calculated from the current log record (the
+        // source of truth). The value is fixed on the new record at insert.
+        var expiresUtc = nextPaymentUtc ?? RollExpiryForward(
+            currentRecord?.ExpiresUtc,
+            chapterSubscription.Months,
+            membershipSettings?.MembershipDisabledAfterDaysExpired ?? 0,
+            utcNow);
 
         // Append a new current record for this payment (renewals keep the subscription's history).
         _memberChapterSubscriptionWriter.MakeRecordCurrent(
@@ -834,9 +895,10 @@ public class PaymentService : IPaymentService
             },
             existingCurrent: currentRecord);
 
+        var previousExpiresUtc = currentRecord?.ExpiresUtc?.ToString("yyyy-MM-dd HH:mm:ss") ?? "none";
         await _loggingService.Info(
             $"Updating member {member.Id} subscription for chapter {chapter.Name}. " +
-            $"Updating expiry date from {originalExpiresUtc:yyyy-MM-dd HH:mm:ss} to {expiresUtc:yyyy-MM-dd HH:mm:ss}");
+            $"Updating expiry date from {previousExpiresUtc} to {expiresUtc:yyyy-MM-dd HH:mm:ss}");
 
         await _unitOfWork.SaveChangesAsync();
 
@@ -854,11 +916,12 @@ public class PaymentService : IPaymentService
     {
         var memberId = member.Id;
 
-        var (recordForInitiator, currentRecord) = await _unitOfWork.RunAsync(
+        var (recordForInitiator, currentRecord, sitePaymentSettings) = await _unitOfWork.RunAsync(
             x => !string.IsNullOrEmpty(initiatorId)
                 ? x.MemberSiteSubscriptionRecordRepository.Query().ForInitiator(initiatorId).GetSingleOrDefault()
                 : new DefaultDeferredQuerySingleOrDefault<MemberSiteSubscriptionRecord>(),
-            x => x.MemberSiteSubscriptionRecordRepository.Query().Current().ForMember(memberId).GetSingleOrDefault());
+            x => x.MemberSiteSubscriptionRecordRepository.Query().Current().ForMember(memberId).GetSingleOrDefault(),
+            x => x.SitePaymentSettingsRepository.GetAll());
 
         // Idempotency: if this initiating event (the payment provider webhook id) has already extended a
         // subscription, do not extend again. This protects against a retry of the webhook-processing job
@@ -873,15 +936,19 @@ public class PaymentService : IPaymentService
                 member, chapter: null, payment, siteSubscriptionPrice.Currency);
         }
 
-        var months = siteSubscriptionPrice.Frequency == SiteSubscriptionFrequency.Yearly
-            ? 12
-            : 1;
+        // A site subscription is always a provider subscription, so it expires when payment is next taken.
+        var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(
+            sitePaymentSettings, payment.SitePaymentSettingId);
+        var nextPaymentUtc = await GetNextPaymentDate(paymentProvider, externalId);
 
-        // Roll the expiry forward from the current record's expiry (the log is the source of truth); the
-        // value is fixed on the new record at insert.
-        var expiresUtc = currentRecord?.ExpiresUtc > utcNow
-            ? currentRecord.ExpiresUtc.Value.AddMonths(months)
-            : utcNow.AddMonths(months);
+        var months = siteSubscriptionPrice.Frequency.Months();
+
+        // Where the provider has no date to give, roll the expiry forward from the current record's expiry
+        // (the log is the source of truth); the value is fixed on the new record at insert.
+        var expiresUtc = nextPaymentUtc
+            ?? (currentRecord?.ExpiresUtc > utcNow
+                ? currentRecord.ExpiresUtc.Value.AddMonths(months)
+                : utcNow.AddMonths(months));
 
         // Append a new current record for this payment (renewals keep the subscription's history).
         _memberSiteSubscriptionWriter.MakeRecordCurrent(

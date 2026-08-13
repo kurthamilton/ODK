@@ -12,7 +12,6 @@ using ODK.Services.Issues.Models;
 using ODK.Services.Members;
 using ODK.Services.Members.Models;
 using ODK.Services.Notifications;
-using ODK.Services.Subscriptions;
 using ODK.Services.Topics.Models;
 using ODK.Services.Users.ViewModels;
 using ODK.Web.Common.Account;
@@ -35,14 +34,12 @@ public class AccountController : OdkControllerBase
     private readonly ILoginHandler _loginHandler;
     private readonly IMemberService _memberService;
     private readonly INotificationService _notificationService;
-    private readonly ISiteSubscriptionService _siteSubscriptionService;
 
     public AccountController(
         IMemberService memberService,
         ILoginHandler loginHandler,
         IAuthenticationService authenticationService,
         IFeatureService featureService,
-        ISiteSubscriptionService siteSubscriptionService,
         INotificationService notificationService,
         IIssueService issueService,
         IRequestStore requestStore,
@@ -55,7 +52,6 @@ public class AccountController : OdkControllerBase
         _loginHandler = loginHandler;
         _memberService = memberService;
         _notificationService = notificationService;
-        _siteSubscriptionService = siteSubscriptionService;
     }
 
     [AllowAnonymous]
@@ -424,19 +420,6 @@ public class AccountController : OdkControllerBase
     {
         await _memberService.RotateMemberImage(CurrentMember.Id);
 
-        return RedirectToReferrer();
-    }
-
-    [HttpPost("account/subscription/confirm")]
-    public async Task<IActionResult> ConfirmSiteSubscription(
-        [FromForm] Guid siteSubscriptionPriceId,
-        [FromForm] string externalId)
-    {
-        var result = await _siteSubscriptionService.ConfirmMemberSiteSubscription(
-            MemberServiceRequest,
-            siteSubscriptionPriceId,
-            externalId);
-        AddFeedback(result, "Subscription updated");
         return RedirectToReferrer();
     }
 

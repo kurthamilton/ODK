@@ -508,6 +508,94 @@ public static class PaymentServiceTests
     }
 
     [Test]
+    // A live period continues, so a membership keeps its anniversary rather than drifting by however late
+    // the member renewed.
+    [TestCase(10, 30, true)]
+    // Lapsed but inside the cooldown - still effectively a member, so the period continues.
+    [TestCase(-5, 30, true)]
+    // Lapsed beyond the cooldown: a returning member starts a new period.
+    [TestCase(-40, 30, false)]
+    // No cooldown configured, so only a live period continues.
+    [TestCase(-5, 0, false)]
+    // The cooldown outlasts the subscription itself, so continuing would expire in the past. A payment has
+    // to leave the member current, so the period starts now.
+    [TestCase(-40, 60, false)]
+    public static async Task ProcessWebhook_OneOffChapterSubscription_ContinuesPeriodOnlyWithinCooldown(
+        int expiryDaysFromNow,
+        int cooldownDays,
+        bool continuesExistingPeriod)
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var member = context.CreateMember();
+        var chapter = context.CreateChapter(members: [member]);
+        var chapterSubscription = context.CreateChapterSubscription(chapter: chapter);
+        chapterSubscription.Months = 1;
+        chapterSubscription.Recurring = false;
+
+        context.Create(new ChapterMembershipSettings
+        {
+            ChapterId = chapter.Id,
+            Enabled = true,
+            MembershipDisabledAfterDaysExpired = cooldownDays
+        });
+
+        var payment = context.CreatePayment(
+            member: member,
+            chapter: chapter,
+            paidUtc: DateTime.UtcNow.AddMonths(-1));
+        var paymentCheckoutSession = context.CreatePaymentCheckoutSession(
+            payment: payment,
+            completedUtc: DateTime.UtcNow.AddMonths(-1));
+
+        var originalExpiry = DateTime.UtcNow.AddDays(expiryDaysFromNow);
+
+        context.Create(new MemberSubscriptionRecord
+        {
+            Amount = chapterSubscription.Amount,
+            ChapterId = chapter.Id,
+            ChapterSubscriptionId = chapterSubscription.Id,
+            ExpiresUtc = originalExpiry,
+            Id = Guid.NewGuid(),
+            IsCurrent = true,
+            MemberId = member.Id,
+            Months = chapterSubscription.Months,
+            PaymentId = payment.Id,
+            PurchasedUtc = DateTime.UtcNow.AddMonths(-1),
+            Type = chapterSubscription.Type
+        });
+
+        var webhook = CreatePaymentProviderWebhook(
+            id: "wh_oneoff",
+            type: PaymentProviderWebhookType.InvoicePaymentSucceeded,
+            subscriptionId: "sub_123",
+            metadata: new PaymentMetadataModel(
+                PlatformType.Default,
+                PaymentReasonType.ChapterSubscription,
+                member,
+                chapterSubscription,
+                paymentCheckoutSession.Id,
+                payment.Id));
+
+        var service = CreatePaymentService(context);
+        var request = CreateServiceRequest();
+
+        // Act
+        await service.ProcessWebhook(request, webhook);
+
+        // Assert
+        var current = context.Set<MemberSubscriptionRecord>()
+            .Single(x => x.MemberId == member.Id && x.ChapterId == chapter.Id && x.IsCurrent);
+
+        var expected = continuesExistingPeriod
+            ? originalExpiry.AddMonths(1)
+            : DateTime.UtcNow.AddMonths(1);
+
+        current.ExpiresUtc.Should().BeCloseTo(expected, TimeSpan.FromMinutes(5));
+    }
+
+    [Test]
     public static async Task ProcessWebhook_ChapterSubscriptionFirstInvoiceThenRenewal_ExtendsExpiryOncePerPeriod()
     {
         // Arrange - mirror the E2E test-clock flow driven end to end: a recurring subscription's first
@@ -613,6 +701,53 @@ public static class PaymentServiceTests
     }
 
     [Test]
+    public static async Task ProcessWebhook_ChapterSubscription_UsesNextPaymentDateOnlyWhenRecurring(
+        [Values(true, false)] bool recurring)
+    {
+        // Arrange - a recurring subscription expires when the provider next takes payment, so the two cannot
+        // drift apart. A one-off has no payment schedule to read and calculates the expiry from the plan's
+        // months; the external id it was given is a payment intent, not a subscription, so it must not be
+        // looked up.
+        using var context = CreateMockOdkContext();
+
+        var member = context.CreateMember();
+        var chapter = context.CreateChapter(members: [member]);
+        var chapterSubscription = context.CreateChapterSubscription(chapter: chapter);
+        chapterSubscription.Months = 1;
+        chapterSubscription.Recurring = recurring;
+
+        // Deliberately not a month out, so only reading the provider's date can satisfy the assertion.
+        var nextPaymentDate = DateTime.UtcNow.AddDays(20);
+
+        var webhook = CreatePaymentProviderWebhook(
+            id: "wh_inv",
+            type: PaymentProviderWebhookType.InvoicePaymentSucceeded,
+            subscriptionId: "sub_123",
+            metadata: new PaymentMetadataModel(
+                PlatformType.Default,
+                PaymentReasonType.ChapterSubscription,
+                member,
+                chapterSubscription,
+                Guid.NewGuid(),
+                Guid.NewGuid()));
+
+        var service = CreatePaymentService(
+            context,
+            paymentProviderFactory: CreateMockPaymentProviderFactory(nextPaymentDate));
+        var request = CreateServiceRequest();
+
+        // Act
+        await service.ProcessWebhook(request, webhook);
+
+        // Assert
+        var current = context.Set<MemberSubscriptionRecord>()
+            .Single(x => x.MemberId == member.Id && x.ChapterId == chapter.Id && x.IsCurrent);
+
+        var expected = recurring ? nextPaymentDate : DateTime.UtcNow.AddMonths(1);
+        current.ExpiresUtc.Should().BeCloseTo(expected, TimeSpan.FromMinutes(5));
+    }
+
+    [Test]
     public static async Task ProcessWebhookAction_WhenSameEventProcessedTwice_ExtendsChapterSubscriptionOnce()
     {
         // Arrange
@@ -706,7 +841,8 @@ public static class PaymentServiceTests
         var currentRecord = context.Set<MemberSiteSubscriptionRecord>()
             .Single(x => x.MemberId == member.Id && x.IsCurrent);
 
-        // Extended once (a yearly plan, so 12 months), not twice.
+        // Set once, not twice: the provider gives no next payment date here, so the expiry falls back to the
+        // yearly plan's 12 months.
         currentRecord.ExpiresUtc
             .Should()
             .BeCloseTo(DateTime.UtcNow.AddMonths(12), TimeSpan.FromMinutes(5));
@@ -762,7 +898,8 @@ public static class PaymentServiceTests
         var currentRecord = context.Set<MemberSiteSubscriptionRecord>()
             .Single(x => x.MemberId == member.Id && x.IsCurrent);
 
-        // Extended by the plan's 12 months from the existing expiry - the renewal was not skipped.
+        // The provider gives no next payment date here, so the expiry falls back to the plan's 12 months
+        // from the existing expiry - the point being that the renewal was not skipped.
         currentRecord.ExpiresUtc
             .Should()
             .BeCloseTo(originalExpiry.AddMonths(12), TimeSpan.FromMinutes(5));
@@ -772,6 +909,90 @@ public static class PaymentServiceTests
             .Count()
             .Should()
             .Be(2);
+    }
+
+    [Test]
+    public static async Task ProcessWebhook_RecurringChapterSubscription_WhenProviderHasNoNextPaymentDate_CalculatesExpiry()
+    {
+        // Arrange - a provider lookup that comes back empty must not block the payment being recorded, so the
+        // expiry degrades to the calculated date rather than being left unset.
+        using var context = CreateMockOdkContext();
+
+        var member = context.CreateMember();
+        var chapter = context.CreateChapter(members: [member]);
+        var chapterSubscription = context.CreateChapterSubscription(chapter: chapter);
+        chapterSubscription.Months = 1;
+        chapterSubscription.Recurring = true;
+
+        var webhook = CreatePaymentProviderWebhook(
+            id: "wh_inv",
+            type: PaymentProviderWebhookType.InvoicePaymentSucceeded,
+            subscriptionId: "sub_123",
+            metadata: new PaymentMetadataModel(
+                PlatformType.Default,
+                PaymentReasonType.ChapterSubscription,
+                member,
+                chapterSubscription,
+                Guid.NewGuid(),
+                Guid.NewGuid()));
+
+        // The default factory returns no subscription, so there is no next payment date to read.
+        var service = CreatePaymentService(context);
+        var request = CreateServiceRequest();
+
+        // Act
+        await service.ProcessWebhook(request, webhook);
+
+        // Assert
+        var current = context.Set<MemberSubscriptionRecord>()
+            .Single(x => x.MemberId == member.Id && x.ChapterId == chapter.Id && x.IsCurrent);
+
+        current.ExpiresUtc.Should().BeCloseTo(DateTime.UtcNow.AddMonths(1), TimeSpan.FromMinutes(5));
+    }
+
+    [Test]
+    public static async Task ProcessWebhook_SiteSubscription_SetsExpiryToNextPaymentDate()
+    {
+        // Arrange - a site subscription is always a provider subscription, so its expiry is the date payment
+        // is next taken rather than a date calculated from the plan's frequency.
+        using var context = CreateMockOdkContext();
+
+        var member = context.CreateMember();
+        var currency = context.CreateCurrency();
+        var siteSubscription = context.CreateSiteSubscription();
+        var siteSubscriptionPrice = context.CreateSiteSubscriptionPrice(
+            siteSubscription: siteSubscription,
+            currency: currency);
+        var payment = context.CreatePayment(member: member, currency: currency);
+
+        // Deliberately not the year out the yearly plan would calculate.
+        var nextPaymentDate = DateTime.UtcNow.AddMonths(11);
+
+        var webhook = CreatePaymentProviderWebhook(
+            id: "wh_invoice",
+            type: PaymentProviderWebhookType.InvoicePaymentSucceeded,
+            subscriptionId: "sub_123",
+            metadata: new PaymentMetadataModel(
+                PlatformType.Default,
+                PaymentReasonType.SiteSubscription,
+                member,
+                siteSubscriptionPrice,
+                Guid.NewGuid(),
+                payment.Id));
+
+        var service = CreatePaymentService(
+            context,
+            paymentProviderFactory: CreateMockPaymentProviderFactory(nextPaymentDate));
+        var request = CreateServiceRequest();
+
+        // Act
+        await service.ProcessWebhook(request, webhook);
+
+        // Assert
+        var currentRecord = context.Set<MemberSiteSubscriptionRecord>()
+            .Single(x => x.MemberId == member.Id && x.IsCurrent);
+
+        currentRecord.ExpiresUtc.Should().BeCloseTo(nextPaymentDate, TimeSpan.FromMinutes(5));
     }
 
     [Test]
@@ -1028,6 +1249,42 @@ public static class PaymentServiceTests
         return context;
     }
 
+    // Returning no subscription by default leaves a recurring expiry falling back to the calculated date,
+    // which is what most tests here assert. Pass a date to exercise the provider lookup.
+    private static IPaymentProviderFactory CreateMockPaymentProviderFactory(DateTime? nextBillingDate = null)
+    {
+        var paymentProvider = new Mock<IPaymentProvider>();
+
+        paymentProvider
+            .Setup(x => x.GetSubscription(It.IsAny<string>()))
+            .ReturnsAsync(nextBillingDate != null
+                ? new ExternalSubscription
+                {
+                    CancelDate = null,
+                    ConnectedAccountId = null,
+                    ExternalId = "sub_123",
+                    ExternalSubscriptionPlanId = "price_123",
+                    LastPaymentDate = DateTime.UtcNow,
+                    Metadata = new Dictionary<string, string>(),
+                    NextBillingDate = nextBillingDate,
+                    Status = ExternalSubscriptionStatus.Active
+                }
+                : null);
+
+        var factory = new Mock<IPaymentProviderFactory>();
+
+        factory
+            .Setup(x => x.GetPaymentProvider(It.IsAny<SitePaymentSettings>(), It.IsAny<ChapterPaymentAccount?>()))
+            .Returns(paymentProvider.Object);
+
+        factory
+            .Setup(x => x.GetSitePaymentProvider(
+                It.IsAny<IReadOnlyCollection<SitePaymentSettings>>(), It.IsAny<Guid?>()))
+            .Returns(paymentProvider.Object);
+
+        return factory.Object;
+    }
+
     private static IUnitOfWork CreateMockUnitOfWork(MockOdkContext? context = null) => MockUnitOfWork.Create(context);
 
     private static PaymentService CreatePaymentService(
@@ -1042,7 +1299,7 @@ public static class PaymentServiceTests
             unitOfWork,
             loggingService ?? CreateMockLoggingService(),
             memberEmailService ?? CreateMockMemberEmailService(),
-            paymentProviderFactory ?? new Mock<IPaymentProviderFactory>().Object,
+            paymentProviderFactory ?? CreateMockPaymentProviderFactory(),
             eventService ?? CreateMockEventService(),
             new MockBackgroundTaskService(),
             new MemberChapterSubscriptionWriter(unitOfWork),

@@ -52,6 +52,19 @@ public class MemberSiteSubscriptionDataHelper : DataHelperBase
     }
 
     /// <summary>
+    /// How many log rows the member has. One row is appended per billing event, so this is what distinguishes
+    /// a renewal being applied once from being applied twice - the expiry cannot, since it is the provider's
+    /// next payment date and re-applying an event sets the same value.
+    /// </summary>
+    public async Task<int> GetRecordCount(Guid memberId)
+    {
+        const string sql = "SELECT COUNT(1) FROM MemberSiteSubscriptionLog WHERE MemberId = @memberId";
+
+        await using var builder = Builder(sql).AddParameter("@memberId", memberId);
+        return await builder.ExecuteScalar<int>();
+    }
+
+    /// <summary>
     /// The payment provider's subscription id on the member's current record, or null if they have no
     /// current record or it was not created by a purchase. Cancellation is driven entirely through the
     /// provider using this id, so a test polls for it rather than for the expiry.

@@ -10,10 +10,11 @@ namespace ODK.E2E.Tests;
 /// Recurring site-subscription renewal via a Stripe test clock (Simulations). The app's Checkout can't put
 /// its customer on a clock, so this SDK-creates a customer + subscription on a fresh clock, tagged with the
 /// metadata the webhook processing needs (MemberId, SiteSubscriptionPriceId, Platform), then advances the
-/// clock a month to fire a real renewal webhook over the ngrok tunnel. Asserts the first invoice sets expiry
-/// ~1 month out and the renewal extends it to ~2 months (a single extension per event - guarding
-/// UpdateMemberSiteSubscription's extend/idempotency). Webhook-only, so the tunnel must be up. It doesn't
-/// exercise the purchase UI (test clocks require an SDK-created subscription); #2 covers real Checkout.
+/// clock a month to fire a real renewal webhook over the ngrok tunnel. Asserts the stored expiry equals
+/// Stripe's next payment date after both the first invoice and the renewal - the invariant that keeps a
+/// subscription from lapsing before, or outliving, the next charge - and that each billing event appends
+/// exactly one log row. Webhook-only, so the tunnel must be up. It doesn't exercise the purchase UI (test
+/// clocks require an SDK-created subscription); SiteSubscriptionPurchaseTests covers real Checkout.
 /// </summary>
 [TestFixture]
 [Category("Stripe")]
@@ -28,7 +29,7 @@ public class RecurringSiteSubscriptionRenewalTests : DefaultPageTest
     private static SiteSubscriptionDataHelper Subscriptions => new(E2ESettings.ConnectionString);
 
     [Test]
-    public async Task RecurringSiteSubscription_RenewsViaWebhook_ExtendsExpiryOncePerPeriod()
+    public async Task RecurringSiteSubscription_RenewsViaWebhook_SetsExpiryToNextPaymentDate()
     {
         // Arrange - renewals arrive as real Stripe webhooks over the tunnel; the SDK and app share the Stripe
         // account (same secret) so the app's recurring price is usable here.
@@ -53,19 +54,32 @@ public class RecurringSiteSubscriptionRenewalTests : DefaultPageTest
 
         await using var clock = await StripeTestClock.CreateSubscription(priceExternalId, metadata);
 
-        // Assert - the first invoice's webhook activates the subscription ~1 month out.
+        // Assert - the first invoice's webhook records the expiry as the date Stripe will next charge, read
+        // from the provider rather than calculated, so the two cannot disagree.
+        var firstPaymentDateUtc = await clock.GetNextPaymentDateUtc();
         var afterFirst = await PollForExpiryBeyond(memberId, DateTime.UtcNow.AddDays(20));
         afterFirst.Should().NotBeNull("the first invoice webhook should activate the subscription");
-        afterFirst!.Value.Should().BeCloseTo(DateTime.UtcNow.AddMonths(1), TimeSpan.FromDays(4));
+        afterFirst!.Value.Should().BeCloseTo(firstPaymentDateUtc, TimeSpan.FromMinutes(1));
+
+        // The member starts with a free placeholder record from account creation, so the purchase is the
+        // second row. Counting them is what catches a double-apply below.
+        var recordsAfterFirst = await MemberSubscriptions.GetRecordCount(memberId);
 
         // Act - advance the clock past the billing period to trigger a renewal.
         await clock.AdvanceOneMonth();
 
-        // Assert - the renewal extends expiry by ~one more month (to ~2 months, not ~3: a single extension
-        // per event, guarding against an idempotency/double-extension regression).
+        // Assert - the renewal moves the expiry to the new next-payment date, a period later.
+        var renewedPaymentDateUtc = await clock.GetNextPaymentDateUtc();
+        renewedPaymentDateUtc.Should().BeAfter(firstPaymentDateUtc, "the clock advanced past a billing period");
+
         var afterRenewal = await PollForExpiryBeyond(memberId, afterFirst.Value.AddDays(20));
         afterRenewal.Should().NotBeNull("the renewal webhook should extend the subscription");
-        afterRenewal!.Value.Should().BeCloseTo(DateTime.UtcNow.AddMonths(2), TimeSpan.FromDays(7));
+        afterRenewal!.Value.Should().BeCloseTo(renewedPaymentDateUtc, TimeSpan.FromMinutes(1));
+
+        // One row per billing event. The expiry cannot reveal a double-apply - re-processing an event writes
+        // the same provider date - so the row count is what guards the idempotency.
+        (await MemberSubscriptions.GetRecordCount(memberId))
+            .Should().Be(recordsAfterFirst + 1, "the renewal should append exactly one further log row");
     }
 
     private static async Task<DateTime?> PollForExpiryBeyond(Guid memberId, DateTime threshold)
