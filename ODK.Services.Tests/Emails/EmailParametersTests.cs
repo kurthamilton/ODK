@@ -64,8 +64,7 @@ public static class EmailParametersTests
         var parameters = new EmailParameters
         {
             GroupUrl = "https://example.com/bristol",
-            GroupFullName = "Bristol Drunken Knitwits",
-            GroupName = "Bristol",
+            GroupName = "Bristol Drunken Knitwits",
             PlatformUrl = "https://example.com",
             ThemeBodyBackground = "#fff",
             ThemeBodyColor = "#000",

@@ -39,12 +39,15 @@ public static class EmailServiceTests
     {
         // Arrange - the parameters the app supplies. An unresolved token renders as literal braces in
         // a real email, so assert on the substituted value rather than merely "no exception".
+        //
+        // group.name is the group's full name, from its own platform: this is a Drunken Knitwits chapter, so
+        // it carries the suffix whichever platform's request triggered the send.
         var sent = await SendTemplate(
             subject: "{group.name} subject",
-            body: "<p>{group.fullname} - {group.url}</p>");
+            body: "<p>{group.name} - {group.url}</p>");
 
         // Assert
-        sent.Subject.Should().Be("Test group subject");
+        sent.Subject.Should().Be("Test group Drunken Knitwits subject");
         sent.Body.Should().Contain("Test group Drunken Knitwits - https://test.local/groups/test-group");
     }
 
@@ -70,10 +73,10 @@ public static class EmailServiceTests
         // matching is case-insensitive. Pinned because the alternative fails silently in a sent email.
         var sent = await SendTemplate(
             subject: "{Group.Name} subject",
-            body: "<p>{GROUP.FULLNAME}</p>");
+            body: "<p>{GROUP.NAME}</p>");
 
         // Assert
-        sent.Subject.Should().Be("Test group subject");
+        sent.Subject.Should().Be("Test group Drunken Knitwits subject");
         sent.Body.Should().Contain("Test group Drunken Knitwits");
     }
 
@@ -106,8 +109,8 @@ public static class EmailServiceTests
             recipientType: EmailRecipientType.Members);
 
         // Assert - the title is a template in its own right, so the group name inside it resolves too.
-        sent.Subject.Should().Be("Test group members subject");
-        sent.Body.Should().Contain("Test group members");
+        sent.Subject.Should().Be("Test group Drunken Knitwits members subject");
+        sent.Body.Should().Contain("Test group Drunken Knitwits members");
     }
 
     [Test]
@@ -120,8 +123,8 @@ public static class EmailServiceTests
             recipientType: EmailRecipientType.Admins);
 
         // Assert
-        sent.Subject.Should().Be("Test group admins subject");
-        sent.Body.Should().Contain("Test group admins");
+        sent.Subject.Should().Be("Test group Drunken Knitwits admins subject");
+        sent.Body.Should().Contain("Test group Drunken Knitwits admins");
     }
 
     [Test]
@@ -158,7 +161,7 @@ public static class EmailServiceTests
             });
 
         // Assert
-        sent.Body.Should().Contain("Test group admins");
+        sent.Body.Should().Contain("Test group Drunken Knitwits admins");
         sent.Body.Should().NotContain("Our own wording");
     }
 
@@ -235,7 +238,7 @@ public static class EmailServiceTests
             });
 
         // Assert
-        sent.Body.Should().Contain("Test group members");
+        sent.Body.Should().Contain("Test group Drunken Knitwits members");
     }
 
     [Test]
@@ -247,8 +250,8 @@ public static class EmailServiceTests
         var member = await SendAdHoc(EmailRecipientType.Members);
 
         // Assert
-        admin.Subject.Should().Be("Test group admins subject");
-        member.Subject.Should().Be("Test group members subject");
+        admin.Subject.Should().Be("Test group Drunken Knitwits admins subject");
+        member.Subject.Should().Be("Test group Drunken Knitwits members subject");
     }
 
     [Test]

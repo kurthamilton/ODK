@@ -30,7 +30,6 @@ public static class EmailParameterDescriptions
             ["event.rsvpUrl"] = "Link the recipient follows to reply yes to the event",
             ["event.time"] = "The event's start time",
             ["event.url"] = "Link to the event's page",
-            ["group.fullname"] = "Your group's full name",
             ["group.name"] = "Your group's name",
             ["group.url"] = "Link to your group's home page",
             ["group.urls.events"] = "Link to your group's events page",

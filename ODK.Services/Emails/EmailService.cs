@@ -286,9 +286,10 @@ public class EmailService : IEmailService
         var core = new EmailParameters
         {
             GroupUrl = options.Chapter != null ? urlProvider.GroupUrl(options.Chapter) : null,
-            GroupFullName = StringUtils.Coalesce(options.Chapter?.FullName, siteSettings.PlatformTitle),
-            GroupName = StringUtils.Coalesce(
-                options.Chapter?.GetDisplayName(request.Platform), siteSettings.PlatformTitle),
+            /* From the group's own platform rather than the request's: an email is read in an inbox rather
+               than on a platform, so the same chapter must not be named differently depending on which site
+               triggered the send. */
+            GroupName = StringUtils.Coalesce(options.Chapter?.FullName, siteSettings.PlatformTitle),
             PlatformUrl = urlProvider.BaseUrl(),
             ThemeBodyBackground = _settings.DefaultBodyBackground,
             ThemeBodyColor = _settings.DefaultBodyColor,
