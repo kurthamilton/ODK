@@ -71,8 +71,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         var urlProvider = await _urlProviderFactory.Create(request);
         var resolved = new EmailParameters
         {
-            GroupFullName = chapter.FullName,
-            GroupName = chapter.GetDisplayName(request.Platform),
+            GroupName = chapter.FullName,
             GroupUrl = urlProvider.GroupUrl(chapter),
             PlatformUrl = urlProvider.BaseUrl()
         }.ToDictionary();

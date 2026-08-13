@@ -38,8 +38,7 @@ public class TestEmailParametersFactory : ITestEmailParametersFactory
         => chapter != null
             ? new EmailParameters
             {
-                GroupFullName = chapter.FullName,
-                GroupName = chapter.GetDisplayName(request.Platform),
+                GroupName = chapter.FullName,
                 GroupUrl = urlProvider.GroupUrl(chapter)
             }
             : null;

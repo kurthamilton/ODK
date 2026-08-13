@@ -309,9 +309,10 @@ public static class EmailAdminServiceTests
         // Act
         var result = await service.GetChapterEmail(CreateRequest(chapter, currentMember), Type);
 
-        // Assert - resolved from the same type the send path fills in, so these are the values it would use.
-        Value(result, "group.fullname").Should().Be(chapter.FullName);
-        Value(result, "group.name").Should().Be(chapter.GetDisplayName(PlatformType.Default));
+        /* Assert - resolved from the same type the send path fills in, so these are the values it would use.
+           group.name is the group's full name, taken from the group's own platform rather than the request's,
+           so the table shows what an email would carry. */
+        Value(result, "group.name").Should().Be(chapter.FullName);
         Value(result, "group.url").Should().NotBeNull();
 
         // The title comes from the audience and the group's settings rather than from that dictionary.

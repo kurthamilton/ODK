@@ -345,7 +345,7 @@ public class MemberEmailService : IMemberEmailService
         var subject = "{title} - Your group has been approved 🚀";
 
         var body = new EmailBodyBuilder()
-            .AddParagraph("Your group <strong>{group.fullname}</strong> has been approved and you are ready to go!")
+            .AddParagraph("Your group <strong>{group.name}</strong> has been approved and you are ready to go!")
             .AddParagraphLink("group.url")
             .ToString();
 
@@ -380,9 +380,9 @@ public class MemberEmailService : IMemberEmailService
             { "group.url", url }
         };
 
-        var subject = "{title} - You have been approved by {group.fullname}";
+        var subject = "{title} - You have been approved by {group.name}";
         var body = new EmailBodyBuilder()
-            .AddParagraph("Your application to join {group.fullname} has been approved")
+            .AddParagraph("Your application to join {group.name} has been approved")
             .AddParagraphLink("group.url")
             .ToString();
 
@@ -525,7 +525,7 @@ public class MemberEmailService : IMemberEmailService
         var subject = "{title} - you have been removed from a group";
 
         var bodyBuilder = new EmailBodyBuilder()
-            .AddParagraph("You have been removed from the {group.fullname} group");
+            .AddParagraph("You have been removed from the {group.name} group");
 
         if (!string.IsNullOrEmpty(reason))
         {
@@ -612,10 +612,10 @@ public class MemberEmailService : IMemberEmailService
             return;
         }
 
-        var subject = "{title} - {member.name} has left {group.fullname}";
+        var subject = "{title} - {member.name} has left {group.name}";
 
         var bodyBuilder = new EmailBodyBuilder()
-            .AddParagraph("{member.name} has left {group.fullname}")
+            .AddParagraph("{member.name} has left {group.name}")
             .AddParagraph("They had been a member since {member.joined}");
 
         if (!string.IsNullOrEmpty(reason))
@@ -684,7 +684,7 @@ public class MemberEmailService : IMemberEmailService
 
         var body = new EmailBodyBuilder()
             .AddParagraph("A group has just been created")
-            .AddParagraph("Name: {group.fullname}")
+            .AddParagraph("Name: {group.name}")
             .AddParagraphLink("siteadmin.urls.groups")
             .ToString();
 

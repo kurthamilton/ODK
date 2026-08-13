@@ -49,7 +49,6 @@ public sealed class EmailParameters : IEmailParameters
        the list the app actually supplies. Adding a property means adding a row here. */
     private static readonly (string Name, Func<EmailParameters, string?> Value)[] Values =
     [
-        ("group.fullname", x => x.GroupFullName),
         ("group.name", x => x.GroupName),
         ("group.url", x => x.GroupUrl),
         (PlatformUrlName, x => x.PlatformUrl),
@@ -94,8 +93,11 @@ public sealed class EmailParameters : IEmailParameters
 
     public string? GroupUrl { get; set; }
 
-    public string? GroupFullName { get; set; }
-
+    /// <summary>
+    /// The one name a template refers to a group by. Resolved from the group's own platform, so it carries
+    /// the Drunken Knitwits suffix for a Drunken Knitwits chapter and is the plain name everywhere else - a
+    /// template author needs no knowledge of which platform their group is on.
+    /// </summary>
     public string? GroupName { get; set; }
 
     public string? PlatformUrl { get; set; }
