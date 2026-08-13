@@ -222,15 +222,17 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
             model.OverrideHtmlContent, model.HtmlContent, chapterEmail?.HtmlContent);
         var subject = Resolve(model.OverrideSubject, model.Subject, chapterEmail?.Subject);
 
+        /* Which fields this save actually writes. Both what may be written and what is checked hang off the
+           same answer, so the two cannot disagree about whether a field is being touched. */
+        var writesSubject = WritesWording(subject, chapterEmail?.Subject);
+        var writesHtmlContent = WritesWording(htmlContent, chapterEmail?.HtmlContent);
+
         /* Without the feature a group may still stop customising - that is the state it would be in had it
-           never customised at all - but not write wording. So each field has to arrive either cleared or
-           exactly as stored; anything else is new wording. Refusing the save outright instead would strand a
+           never customised at all - but not write wording. Refusing the save outright instead would strand a
            group that lost the feature with wording it could neither change nor remove.
 
            The form disables what it must, but that is presentation - this is what withholds it. */
-        if (!CanOverrideEmails(ownerSubscriptionFeatures) &&
-            (WritesWording(subject, chapterEmail?.Subject) ||
-                WritesWording(htmlContent, chapterEmail?.HtmlContent)))
+        if (!CanOverrideEmails(ownerSubscriptionFeatures) && (writesSubject || writesHtmlContent))
         {
             return ServiceResult.Failure(NotPermitted);
         }
@@ -244,7 +246,10 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         chapterEmail.HtmlContent = htmlContent;
         chapterEmail.Subject = subject;
 
-        var validationResult = ValidateChapterEmail(chapterEmail);
+        var validationResult = ValidateChapterEmail(
+            type,
+            writesSubject ? subject : null,
+            writesHtmlContent ? htmlContent : null);
         if (!validationResult.Success)
         {
             return validationResult;
@@ -418,29 +423,31 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
     private bool CanOverrideEmails(IReadOnlyCollection<SiteSubscriptionFeature> ownerSubscriptionFeatures)
         => _authorizationService.ChapterHasAccess(ownerSubscriptionFeatures, SiteFeatureType.CustomEmails);
 
-    /* Only the fields the group has actually overridden are checked. An unset field is not the group's
-       wording, so holding it to the group's rules would report a problem with the site's template against a
-       form the group cannot fix. */
-    private ServiceResult ValidateChapterEmail(ChapterEmail chapterEmail)
+    /* Takes only the wording this save writes; null for a field it leaves alone. A field the group is not
+       writing was accepted when it was written, or predates the rule being applied now, so checking it again
+       can only report a problem the group has no way to act on - and none at all where it is a field they
+       cannot edit. That would let one field's stored wording block an unrelated change to the other.
+
+       An unset field is not the group's wording either, so the same applies: holding it to these rules would
+       report a problem with the site's template against a form the group cannot fix. */
+    private ServiceResult ValidateChapterEmail(EmailType type, string? subject, string? htmlContent)
     {
-        if (!Enum.IsDefined(typeof(EmailType), chapterEmail.Type) || chapterEmail.Type == EmailType.None)
+        if (!Enum.IsDefined(typeof(EmailType), type) || type == EmailType.None)
         {
             return ServiceResult.Failure("Invalid type");
         }
 
         var placeholderResult = ValidatePlaceholders(
-            chapterEmail.Type,
-            chapterEmail.Subject ?? string.Empty,
-            chapterEmail.HtmlContent ?? string.Empty);
+            type, subject ?? string.Empty, htmlContent ?? string.Empty);
 
         if (!placeholderResult.Success)
         {
             return placeholderResult;
         }
 
-        return string.IsNullOrWhiteSpace(chapterEmail.HtmlContent)
+        return string.IsNullOrWhiteSpace(htmlContent)
             ? ServiceResult.Successful()
-            : ValidateHtml(chapterEmail.Type, chapterEmail.HtmlContent);
+            : ValidateHtml(type, htmlContent);
     }
 
     private ServiceResult ValidateEmail(Email email)
