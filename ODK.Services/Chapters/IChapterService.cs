@@ -22,4 +22,10 @@ public interface IChapterService
     Task<Chapter?> GetDefaultChapter(IMemberServiceRequest request);
 
     Task<OdkHomeHeaderViewModel> GetOdkHomeHeaderViewModel();
+
+    /// <summary>
+    /// The single published chapter the member belongs to on the request's platform, or null when they
+    /// belong to none, or to more than one.
+    /// </summary>
+    Task<Chapter?> GetSoleChapter(IMemberServiceRequest request);
 }

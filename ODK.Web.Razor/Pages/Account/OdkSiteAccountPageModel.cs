@@ -25,7 +25,7 @@ public abstract class OdkSiteAccountPageModel : OdkPageModel
 
         var redirectPath = chapter == null
             ? "/"
-            : OdkRoutes.Account.Index(null);
+            : OdkRoutes.Account.Index(chapter);
 
         context.Result = Redirect(redirectPath);
     }
