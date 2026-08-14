@@ -1,0 +1,14 @@
+// The email preview dialog - see odk.email-preview.js.
+
+.email-preview-frame {
+    border: 0;
+    // Tall enough to read a whole short email without scrolling, and short enough to leave the dialog's own
+    // chrome visible on a laptop.
+    height: 60vh;
+    width: 100%;
+
+    /* White whatever the admin's theme, because an email is: the layout paints its own background and picks
+       its own text colours, and a dark ground behind it would show through wherever it does not - which is
+       not what the recipient will see. */
+    background-color: #fff;
+}

@@ -20,6 +20,15 @@ internal class ChapterEmailAdminPage
 
     private const string SubjectField = "#Subject";
 
+    // The toolbar buttons are icon-only, so there is no text to match them on.
+    private const string PreviewButton = "[data-email-preview-url]";
+
+    private const string PreviewFrame = "[data-email-preview-frame]";
+
+    private const string PreviewSubject = "[data-email-preview-subject]";
+
+    private const string SendTestButton = "[data-submit='#send-test-form']";
+
     private const string SubjectToggle = "#override-subject";
 
     private readonly IPage _page;
@@ -101,7 +110,16 @@ internal class ChapterEmailAdminPage
     public async Task SetCustomWording(string emailUrl, string? subject = null, string? htmlContent = null)
     {
         await Open(emailUrl);
+        await EnterWording(subject, htmlContent);
+        await Save();
+    }
 
+    /// <summary>
+    /// Types wording into whichever of the two is given, releasing its Customise switch first, and stops
+    /// short of saving - which is what lets a test check the preview against unsaved wording.
+    /// </summary>
+    public async Task EnterWording(string? subject = null, string? htmlContent = null)
+    {
         if (subject != null)
         {
             await SetToggle(SubjectToggle, on: true);
@@ -113,16 +131,35 @@ internal class ChapterEmailAdminPage
             await SetToggle(ContentToggle, on: true);
             await SetContent(htmlContent);
         }
-
-        await Save();
     }
 
-    /// <summary>Sends a test of this email to the signed-in admin, via the form's own Send test button.</summary>
+    /// <summary>
+    /// Opens the preview dialog for the wording the form currently holds and returns the whole email as its
+    /// frame renders it, layout included.
+    /// </summary>
+    public async Task<string> Preview()
+    {
+        await _page.ClickAsync(PreviewButton);
+
+        // The frame is filled from the preview response, so its content is empty until that arrives - the
+        // dialog itself opens first.
+        await _page.WaitForFunctionAsync(
+            "selector => document.querySelector(selector)?.srcdoc?.length > 0", PreviewFrame);
+
+        return await _page.GetAttributeAsync(PreviewFrame, "srcdoc") ?? string.Empty;
+    }
+
+    /// <summary>The resolved subject the preview reports, which is shown as text beside the frame.</summary>
+    public Task<string> GetPreviewSubject() => _page.InnerTextAsync(PreviewSubject);
+
+    /// <summary>
+    /// Sends a test of this email to the signed-in admin, via the test button in the editor's toolbar.
+    /// </summary>
     public async Task SendTest(string emailUrl)
     {
         await Open(emailUrl);
         await _page.RunAndWaitForResponseAsync(
-            () => _page.ClickAsync("button:has-text('Send test')"),
+            () => _page.ClickAsync(SendTestButton),
             r => r.Request.Method == "POST" && r.Url.Contains("/test"));
         await _page.WaitForLoadStateAsync();
     }

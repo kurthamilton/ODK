@@ -230,6 +230,7 @@ public class Program
             pipeline.AddJavaScriptBundle(
                 route: "/js/odk.bundle.admin.js",
                 "js/odk.admin.js",
+                "js/odk.email-preview.js",
                 "js/odk.field-override.js",
                 "js/odk.lists.js",
                 "js/odk.placeholders.js");

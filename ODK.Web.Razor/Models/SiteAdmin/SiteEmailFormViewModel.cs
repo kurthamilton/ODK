@@ -19,6 +19,11 @@ public class SiteEmailFormViewModel : SiteEmailFormSubmitViewModel
     public required IReadOnlyCollection<string> Placeholders { get; init; }
 
     /// <summary>
+    /// Endpoint the Preview button posts the whole form to, which renders it and hands back the email.
+    /// </summary>
+    public required string PreviewUrl { get; init; }
+
+    /// <summary>
     /// Endpoint the editor posts the content to for the HTML checks that cannot run in the browser.
     /// </summary>
     public required string ValidateUrl { get; init; }

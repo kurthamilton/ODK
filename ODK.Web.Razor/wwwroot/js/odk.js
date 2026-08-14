@@ -417,7 +417,12 @@
     }
 
     function bindTooltips() {
-        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        /* Two hooks for the same thing. data-bs-toggle is a single slot, so an element that is already a
+           collapse or dropdown trigger cannot declare a tooltip through it - and moving the tooltip to an
+           inner span instead shrinks it to that span, leaving the rest of the button hovering silently.
+           data-odk-tooltip marks those. Both take their text from data-bs-title. */
+        const tooltipTriggerList = document.querySelectorAll(
+            '[data-bs-toggle="tooltip"], [data-odk-tooltip]');
         const tooltipList = [...tooltipTriggerList]
             .filter(x => !!x.getAttribute('data-bs-title'))
             .map(x => new bootstrap.Tooltip(x));

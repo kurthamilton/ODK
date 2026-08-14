@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using ODK.Core.Chapters;
+﻿using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Emails;
 using ODK.Core.Events;
@@ -9,11 +8,24 @@ using ODK.Core.Messages;
 using ODK.Core.Payments;
 using ODK.Core.Topics;
 using ODK.Core.Venues;
+using ODK.Services.Emails;
 
 namespace ODK.Services.Members;
 
 public interface IMemberEmailService
 {
+    /// <summary>
+    /// Renders an email against the same stand-in values a test send uses, without queuing anything, so an
+    /// admin can see wording that has not been saved.
+    /// </summary>
+    Task<RenderedEmail> RenderTestEmail(
+        IServiceRequest request,
+        Chapter? chapter,
+        Member to,
+        EmailType type,
+        string subject,
+        string body);
+
     Task SendActivationEmail(
         IServiceRequest request,
         Chapter? chapter,

@@ -341,6 +341,26 @@ public class ChapterAdminController : AdminControllerBase
         });
     }
 
+    /* Binds the same view model the save binds, so the preview is of what saving would send rather than of
+       what is stored. A locked field posts nothing here either, which is what leaves it previewing the
+       site's wording. */
+    [HttpPost("groups/{chapterId:guid}/emails/{type}/preview")]
+    public async Task<IActionResult> PreviewChapterEmail(
+        Guid chapterId, EmailType type, [FromForm] ChapterEmailFormSubmitViewModel viewModel)
+    {
+        var request = MemberChapterAdminServiceRequest.Create(
+            ChapterAdminSecurable.Emails, MemberChapterServiceRequest);
+        var preview = await _emailAdminService.PreviewChapterEmail(request, type, new ChapterEmailUpdateModel
+        {
+            HtmlContent = viewModel.Content,
+            OverrideHtmlContent = viewModel.OverrideContent,
+            OverrideSubject = viewModel.OverrideSubject,
+            Subject = viewModel.Subject
+        });
+
+        return Ok(EmailPreviewViewModel.FromRendered(preview));
+    }
+
     [HttpPost("groups/{chapterId:guid}/emails/{type}/test")]
     public async Task<IActionResult> SendTestEmail(Guid chapterId, EmailType type)
     {

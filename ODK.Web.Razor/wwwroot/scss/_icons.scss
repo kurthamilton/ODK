@@ -2,6 +2,22 @@
     line-height: 1;
 }
 
+/* For an icon that is the whole of a button's content. Font Awesome gives an icon line-height 1, so as an
+   inline box it hangs off the button's text baseline, and the button's height then comes from the icon rather
+   than from a line of its text - which leaves an icon-only button shorter than a text button beside it.
+
+   As a block with the button's own line-height, the icon's box is exactly a line of that text and the glyph
+   centres within it by half-leading, so the button is the height it would be around a letter and the glyph
+   sits in the middle.
+
+   Not flex on the button, and not a flex wrapper span: in the first the icon becomes the flex item that
+   sizes the button, which is the same shrinking by another route, and in the second the wrapper hugs the
+   icon, so centring inside it is a no-op and the wrapper still hangs off the baseline. */
+.icon--centred {
+    display: block;
+    line-height: inherit;
+}
+
 .icon--help {
     color: #6d6dcb;
 }

@@ -21,6 +21,77 @@ namespace ODK.Services.Tests.Members;
 public static class MemberEmailServiceTests
 {
     [Test]
+    public static async Task RenderTestEmail_OrdinaryType_RendersTheSuppliedWordingAsTheBody()
+    {
+        // Arrange
+        var chapter = CreateChapter();
+        var member = CreateMember();
+
+        var emailService = CreateEmailService();
+        var service = CreateService(emailService, new Mock<IUrlProvider>());
+
+        var request = new MemberChapterServiceRequest
+        {
+            Chapter = chapter,
+            CurrentMember = member,
+            CurrentMemberOrDefault = member,
+            HttpRequestContext = CreateHttpRequestContext(),
+            Platform = PlatformType.Default
+        };
+
+        // Act
+        await service.RenderTestEmail(
+            request, chapter, member, EmailType.NewMember, "A subject", "<p>A body</p>");
+
+        // Assert - no layout of its own, so the stored one wraps it.
+        emailService.Verify(
+            x => x.RenderEmail(
+                request,
+                It.Is<RenderEmailOptions>(x =>
+                    x.Body == "<p>A body</p>" &&
+                    x.Layout == null &&
+                    x.Subject == "A subject" &&
+                    x.Type == EmailType.NewMember)),
+            Times.Once);
+    }
+
+    [Test]
+    public static async Task RenderTestEmail_TheLayout_RendersTheSuppliedWordingAroundAStandInBody()
+    {
+        /* Arrange - the layout wraps a body rather than being one. Rendered as the body it would show its own
+           markup as the email's content, and nothing of what it wraps. */
+        var chapter = CreateChapter();
+        var member = CreateMember();
+
+        var emailService = CreateEmailService();
+        var service = CreateService(emailService, new Mock<IUrlProvider>());
+
+        var request = new MemberChapterServiceRequest
+        {
+            Chapter = chapter,
+            CurrentMember = member,
+            CurrentMemberOrDefault = member,
+            HttpRequestContext = CreateHttpRequestContext(),
+            Platform = PlatformType.Default
+        };
+
+        var layout = "<html><body>{body}</body></html>";
+
+        // Act
+        await service.RenderTestEmail(request, chapter, member, EmailType.Layout, string.Empty, layout);
+
+        // Assert
+        emailService.Verify(
+            x => x.RenderEmail(
+                request,
+                It.Is<RenderEmailOptions>(x =>
+                    x.Layout == layout &&
+                    x.Body != layout &&
+                    x.Body.Length > 0)),
+            Times.Once);
+    }
+
+    [Test]
     public static async Task SendMemberImportActivationEmail_SendsActivationTemplateWithTheActivationUrl()
     {
         // Arrange
@@ -265,6 +336,18 @@ public static class MemberEmailServiceTests
                 It.IsAny<EmailType>(),
                 It.IsAny<IEmailParameters>()))
             .ReturnsAsync(ServiceResult.Successful());
+
+        // Set up rather than left to the mock's default, which hands back a null email and turns every
+        // assertion about a render into a null reference on the way there.
+        mock
+            .Setup(x => x.RenderEmail(It.IsAny<IServiceRequest>(), It.IsAny<RenderEmailOptions>()))
+            .ReturnsAsync(new RenderedEmail
+            {
+                Body = string.Empty,
+                FromEmailAddress = string.Empty,
+                FromName = string.Empty,
+                Subject = string.Empty
+            });
 
         return mock;
     }

@@ -19,6 +19,31 @@ namespace ODK.Services.Tests.Emails;
 [Parallelizable]
 public static class TestEmailParametersFactoryTests
 {
+    [Test]
+    public static async Task Create_EventInvite_NamesTheEventAndTheVenue()
+    {
+        /* Arrange - built from bare entities these came through empty, which reads as a broken template
+           rather than as a stand-in: the preview showed the template's own tokens where the event's name and
+           location belong. */
+        var factory = new TestEmailParametersFactory(CreateUrlProviderFactory());
+
+        // Act
+        var result = await factory.Create(
+            CreateRequest(),
+            EmailType.EventInvite,
+            CreateMember(),
+            CultureInfo.InvariantCulture,
+            CreateChapter());
+
+        // Assert
+        var parameters = result.ToDictionary();
+        parameters["event.name"].Should().Be("EVENT NAME");
+        parameters["event.location"].Should().Be("VENUE NAME");
+
+        // A real date, so the stand-in event is not dated to DateTime.MinValue.
+        parameters["event.date"].Should().NotContain("0001");
+    }
+
     [TestCaseSource(nameof(EmailTypes))]
     public static async Task Create_EveryTypeExceptTheLayout_SuppliesSomeOfItsOwnParameters(EmailType type)
     {

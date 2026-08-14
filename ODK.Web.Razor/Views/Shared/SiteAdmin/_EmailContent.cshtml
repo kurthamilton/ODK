@@ -1,12 +1,11 @@
 ﻿@using ODK.Core.Emails
 @using ODK.Services.Emails.Parameters
 @using ODK.Web.Razor.Models.Admin.Emails
-@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.SiteAdmin
 @model EmailContentViewModel
 
 @* No Custom badge: this is the template a group's customisation would be of. *@
-@await Html.PartialAsync("Admin/Chapter/_EmailBadges", new EmailBadgesViewModel
+@await Html.PartialAsync("Emails/_EmailBadges", new EmailBadgesViewModel
 {
     Customised = false,
     RecipientType = Model.Email.RecipientType
@@ -30,26 +29,25 @@
             ? null
             : SiteEmailFormViewModel.DefaultMaxEditorLines,
         Placeholders = EmailTemplateParameters.ForSite(Model.Email.Type),
+        PreviewUrl = $"/siteadmin/emails/{Model.Email.Type}/preview",
         Subject = Model.Email.Subject,
         ValidateUrl = $"/siteadmin/emails/{Model.Email.Type}/validate"
     })
     <div class="button-container">
-        <button class="btn btn-primary me-auto">Update</button>
-        <button class="btn btn-secondary" type="button"
-                data-submit="#send-test-form"
-                data-bs-toggle="tooltip" data-bs-title="Send a test email to yourself">
-            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Envelope))
-            <span>Send test</span>
-        </button>
+        <button class="btn btn-primary">Update</button>
     </div>
 </form>
 
+@* Empty but for its token: the toolbar's test button submits it, and it cannot be nested inside the form
+   above. *@
 <form method="post" action="/siteadmin/emails/@Model.Email.Type/send/test"
-      id="send-test-form">
+      id="@EmailEditorElements.SendTestFormId">
     @Html.AntiForgeryToken()
 </form>
 
 <div class="mt-3">
     <h3 class="content-heading">Placeholders</h3>
-    @await Html.PartialAsync("Admin/Chapter/_EmailParameters", Model.Parameters)
+    @await Html.PartialAsync("Emails/_EmailParameters", Model.Parameters)
 </div>
+
+@await Html.PartialAsync("Emails/_EmailPreviewModal")

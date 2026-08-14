@@ -1,0 +1,22 @@
+﻿@using ODK.Web.Razor.Models.Admin.Emails
+@model EmailPlaceholdersViewModel
+
+@* Inserts at the caret in the field named by data-placeholder-target - see odk.placeholders.js.
+
+   The vertical margin is the one piece of spacing this owns rather than leaving to the caller, and it has to
+   be: a wrapper around a collapse keeps its margins while the list is hidden, so the gap would show with
+   nothing in it. It sits on the collapsing element, which disappears entirely when closed. *@
+<div class="collapse my-3" id="@EmailEditorElements.PlaceholdersId"
+     data-placeholder-target="@EmailEditorElements.FieldSelector">
+    <div class="placeholders-list small">
+        @foreach (var placeholder in Model.Placeholders)
+        {
+            var token = $"{{{placeholder}}}";
+            <button type="button" class="btn btn-sm btn-outline-secondary mb-1 me-1 font-monospace"
+                    disabled="@(Model.CanInsert ? null : "disabled")"
+                    data-placeholder-insert="@token">
+                @token
+            </button>
+        }
+    </div>
+</div>

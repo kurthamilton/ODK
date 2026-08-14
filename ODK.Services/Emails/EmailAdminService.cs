@@ -181,6 +181,46 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
             x => x.EmailRepository.GetAll());
     }
 
+    public async Task<RenderedEmail> PreviewChapterEmail(
+        IMemberChapterAdminServiceRequest request,
+        EmailType type,
+        ChapterEmailUpdateModel model)
+    {
+        var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
+
+        var (chapterEmail, siteEmail) = await GetChapterAdminRestrictedContent(
+            request,
+            x => x.ChapterEmailRepository.GetByChapterId(chapter.Id, type),
+            x => x.EmailRepository.GetByType(type));
+
+        /* Resolved exactly as UpdateChapterEmail resolves it, so the preview shows what saving this form
+           would send rather than what is stored.
+
+           The fall through to the site's wording is stated here rather than left to the renderer's own
+           fallback: the stored row may still hold an override this form is turning off, which is what that
+           fallback would find and show. */
+        var htmlContent = Resolve(model.OverrideHtmlContent, model.HtmlContent, chapterEmail?.HtmlContent)
+            ?? siteEmail.HtmlContent;
+        var subject = Resolve(model.OverrideSubject, model.Subject, chapterEmail?.Subject)
+            ?? siteEmail.Subject;
+
+        return await _memberEmailService.RenderTestEmail(
+            request, chapter, currentMember, type, subject, htmlContent);
+    }
+
+    public async Task<RenderedEmail> PreviewEmail(
+        IMemberServiceRequest request,
+        EmailType type,
+        string subject,
+        string body)
+    {
+        AssertMemberIsSiteAdmin(request.CurrentMember);
+
+        // Nothing to resolve: the site's form posts both fields, so what it holds is what it sends.
+        return await _memberEmailService.RenderTestEmail(
+            request, null, request.CurrentMember, type, subject, body);
+    }
+
     public async Task<ServiceResult> SendTestEmail(IMemberChapterAdminServiceRequest request, EmailType type)
     {
         var (chapter, currentMember) = (request.Chapter, request.CurrentMember);

@@ -217,6 +217,31 @@ public class ChapterEmailCustomisationTests : DefaultPageTest
         (await page.IsContentCustomised()).Should().BeFalse();
     }
 
+    [Test]
+    public async Task ChapterEmail_Preview_ShowsTheWordingOnTheFormRatherThanWhatIsStored()
+    {
+        // Arrange - the point of previewing: an admin checks a change before committing it, so the preview has
+        // to render what the form holds and not what has been saved.
+        var (group, owner, page, emailUrl) = await OpenAnEmail();
+
+        var customSubject = $"E2E preview subject {Guid.NewGuid():N}";
+        var customContent = $"<p>E2E preview body {Guid.NewGuid():N}</p>";
+
+        await page.Open(emailUrl);
+        await page.EnterWording(subject: customSubject, htmlContent: customContent);
+
+        // Act - no save in between.
+        var preview = await page.Preview();
+
+        // Assert - the wording comes back wrapped in the layout, which is what a recipient would see.
+        preview.Should().Contain(customContent);
+        preview.Should().NotBe(customContent, "the body should be rendered inside the layout");
+        (await page.GetPreviewSubject()).Should().Be(customSubject);
+
+        // And previewing wrote nothing: the group is still on the default.
+        (await ChapterEmails.GetRowCount(group.ChapterId)).Should().Be(0);
+    }
+
     /// <summary>
     /// Provisions a group whose subscription covers custom emails, signs its owner in, and opens whichever
     /// template the app lists first. Returns the page object and that template's path.

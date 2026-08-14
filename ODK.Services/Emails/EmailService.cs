@@ -58,6 +58,55 @@ public class EmailService : IEmailService
         await _unitOfWork.SaveChangesAsync();
     }
 
+    public async Task<RenderedEmail> RenderEmail(IServiceRequest request, RenderEmailOptions options)
+    {
+        var platform = request.Platform;
+        var chapterId = options.Chapter?.Id;
+
+        var (templates, siteSettings, chapterEmailSettings) = await _unitOfWork.RunAsync(
+            x => x.ChapterEmailRepository.GetDto(chapterId, options.Type),
+            x => x.SiteEmailSettingsRepository.Get(platform),
+            x => chapterId != null
+                ? x.ChapterEmailSettingsRepository.GetByChapterIdOrDefault(chapterId.Value)
+                : new DefaultDeferredQuerySingleOrDefault<ChapterEmailSettings>());
+
+        // A supplied layout wins, so a preview shows an edited layout rather than the stored one.
+        var layoutHtml = StringUtils.Coalesce(
+            options.Layout, templates.ChapterLayout?.HtmlContent, templates.SiteLayout.HtmlContent);
+
+        // A send carrying its own body leaves Type at Layout, so it has no template of its own to render.
+        var hasTemplate = options.Type != EmailType.Layout;
+
+        var parameters = await BuildParameters(
+            request,
+            options,
+            siteSettings,
+            chapterEmailSettings,
+            hasTemplate
+                ? StringUtils.Coalesce(templates.ChapterEmail?.HtmlContent, templates.SiteEmail.HtmlContent)
+                : null,
+            hasTemplate ? templates.SiteEmail.RecipientType : options.RecipientType);
+
+        /* A group's override supplies the wording only. The recipient type is read from the site row either
+           way, because an override says how an email reads and not who it is for.
+
+           Subject and body are overridden independently, so each falls back to the site's on its own - a
+           group that has set only one of them sends the site's version of the other. */
+        var subject = !string.IsNullOrEmpty(options.Subject)
+            ? options.Subject
+            : hasTemplate
+                ? StringUtils.Coalesce(templates.ChapterEmail?.Subject, templates.SiteEmail.Subject)
+                : string.Empty;
+
+        return new RenderedEmail
+        {
+            Body = layoutHtml.Interpolate(parameters),
+            FromEmailAddress = siteSettings.FromEmailAddress,
+            FromName = siteSettings.FromName.Interpolate(parameters),
+            Subject = subject.Interpolate(parameters)
+        };
+    }
+
     public async Task SendBulkEmail(
         IChapterServiceRequest request,
         IEnumerable<Member> to,
@@ -275,7 +324,7 @@ public class EmailService : IEmailService
 
     private async Task<IReadOnlyDictionary<string, string>> BuildParameters(
         IServiceRequest request,
-        SendEmailOptions options,
+        RenderEmailOptions options,
         SiteEmailSettings siteSettings,
         ChapterEmailSettings? chapterEmailSettings,
         string? templateHtml,
@@ -341,52 +390,17 @@ public class EmailService : IEmailService
 
     private async Task<ServiceResult> SendEmail(IServiceRequest request, SendEmailOptions options)
     {
-        var platform = request.Platform;
-        var chapterId = options.Chapter?.Id;
-
-        var (templates, siteSettings, chapterEmailSettings) = await _unitOfWork.RunAsync(
-            x => x.ChapterEmailRepository.GetDto(chapterId, options.Type),
-            x => x.SiteEmailSettingsRepository.Get(platform),
-            x => chapterId != null
-                ? x.ChapterEmailSettingsRepository.GetByChapterIdOrDefault(chapterId.Value)
-                : new DefaultDeferredQuerySingleOrDefault<ChapterEmailSettings>());
-
-        /* A group's override supplies the wording only. The recipient type is read from the site row either
-           way, because an override says how an email reads and not who it is for.
-
-           Subject and body are overridden independently, so each falls back to the site's on its own - a
-           group that has set only one of them sends the site's version of the other. */
-        var layoutHtml = StringUtils.Coalesce(
-            templates.ChapterLayout?.HtmlContent, templates.SiteLayout.HtmlContent);
-
-        // A send carrying its own body leaves Type at Layout, so it has no template of its own to render.
-        var hasTemplate = options.Type != EmailType.Layout;
-
-        var parameters = await BuildParameters(
-            request,
-            options,
-            siteSettings,
-            chapterEmailSettings,
-            hasTemplate
-                ? StringUtils.Coalesce(templates.ChapterEmail?.HtmlContent, templates.SiteEmail.HtmlContent)
-                : null,
-            hasTemplate ? templates.SiteEmail.RecipientType : options.RecipientType);
-
-        var subject = !string.IsNullOrEmpty(options.Subject)
-            ? options.Subject
-            : hasTemplate
-                ? StringUtils.Coalesce(templates.ChapterEmail?.Subject, templates.SiteEmail.Subject)
-                : string.Empty;
+        var rendered = await RenderEmail(request, options);
 
         var queuedEmail = _unitOfWork.QueuedEmailRepository.Add(new QueuedEmail
         {
-            Body = layoutHtml.Interpolate(parameters),
-            ChapterId = chapterId,
+            Body = rendered.Body,
+            ChapterId = options.Chapter?.Id,
             CreatedUtc = DateTime.UtcNow,
-            FromEmailAddress = siteSettings.FromEmailAddress,
-            FromName = siteSettings.FromName.Interpolate(parameters),
+            FromEmailAddress = rendered.FromEmailAddress,
+            FromName = rendered.FromName,
             Id = Guid.NewGuid(),
-            Subject = subject.Interpolate(parameters)
+            Subject = rendered.Subject
         });
 
         foreach (var recipient in options.To)
