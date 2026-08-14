@@ -48,6 +48,12 @@ public class ChapterEmailFormViewModel : ChapterEmailFormSubmitViewModel
     public required IReadOnlyCollection<string> Placeholders { get; init; }
 
     /// <summary>
+    /// Endpoint the Preview button posts the whole form to, which renders it and hands back the email. An
+    /// endpoint per page for the same reason as <see cref="ValidateUrl"/>.
+    /// </summary>
+    public required string PreviewUrl { get; init; }
+
+    /// <summary>
     /// Endpoint the editor posts the content to for the HTML checks that cannot run in the browser. The
     /// form is shared by the group and site-admin pages, which authorise differently and so have an
     /// endpoint each - hence supplied by the caller rather than built in the partial.

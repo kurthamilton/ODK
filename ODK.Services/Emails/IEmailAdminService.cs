@@ -15,6 +15,17 @@ public interface IEmailAdminService
 
     Task<IReadOnlyCollection<Email>> GetEmails(IMemberServiceRequest request);
 
+    /// <summary>
+    /// Renders one of a group's emails as the form currently holds it, resolving each field the way
+    /// <see cref="UpdateChapterEmail"/> would, so an admin sees what saving would send.
+    /// </summary>
+    Task<RenderedEmail> PreviewChapterEmail(
+        IMemberChapterAdminServiceRequest request, EmailType type, ChapterEmailUpdateModel model);
+
+    /// <inheritdoc cref="PreviewChapterEmail" />
+    Task<RenderedEmail> PreviewEmail(
+        IMemberServiceRequest request, EmailType type, string subject, string body);
+
     Task<ServiceResult> SendTestEmail(IMemberChapterAdminServiceRequest request, EmailType type);
 
     Task<ServiceResult> SendTestMemberEmail(IMemberServiceRequest request, EmailType type);

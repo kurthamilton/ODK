@@ -9,6 +9,12 @@ public interface IEmailService
 {
     Task AddEvent(string externalId, string eventName);
 
+    /// <summary>
+    /// Resolves an email's wording without queuing it, for a preview. The send path renders through this
+    /// too, so the two cannot disagree.
+    /// </summary>
+    Task<RenderedEmail> RenderEmail(IServiceRequest request, RenderEmailOptions options);
+
     Task SendBulkEmail(
         IChapterServiceRequest request,
         IEnumerable<Member> to,

@@ -1,0 +1,31 @@
+﻿@using ODK.Web.Razor.Models.Components
+
+@* Shared email preview dialog - one instance per page. The Preview button in the editor toolbar fills it
+   from the form as it stands, so an admin sees a change before saving it - see odk.email-preview.js. *@
+@await Html.PartialAsync("Components/_Modal", new ModalViewModel
+{
+    Id = "email-preview-modal",
+    Size = ModalSize.ExtraLarge,
+    Title = "Preview",
+    Body =
+        @<div>
+            <div class="alert alert-danger d-none" role="alert" data-email-preview-error></div>
+
+            <dl class="row small mb-3">
+                <dt class="col-sm-2">From</dt>
+                <dd class="col-sm-10 mb-1 text-break" data-email-preview-from></dd>
+
+                <dt class="col-sm-2">Subject</dt>
+                <dd class="col-sm-10 mb-0 text-break" data-email-preview-subject></dd>
+            </dl>
+
+            @* srcdoc into a sandboxed frame rather than rendered into the page: the email brings its own
+               layout, colours and table structure, which would collide with the page's styling and with the
+               admin's chosen theme. The sandbox attribute is left empty, which withholds everything -
+               including scripting, so hand-written template HTML cannot reach this document. *@
+            <iframe class="email-preview-frame" sandbox="" title="Email preview"
+                    data-email-preview-frame></iframe>
+        </div>,
+    Footer =
+        @<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+})

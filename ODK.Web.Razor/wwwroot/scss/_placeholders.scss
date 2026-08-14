@@ -1,35 +1,17 @@
-// The placeholder picker on the email template forms: a toggle sitting over the corner of a textarea,
-// opening a collapsed list of tokens that insert at the caret.
+// The placeholder picker on the email template forms: a collapsed list of tokens that insert at the caret,
+// opened from the button in the field's toolbar.
 
-// Positioning context for the toggle. A textarea cannot hold children, so the button is a sibling
-// placed against this wrapper instead.
-.placeholders {
-    position: relative;
-}
+/* The button reads as pressed while its list is open. Keyed off the absence of .collapsed because that is
+   the only class Bootstrap maintains - it adds it to the trigger while the target is hidden and removes it
+   while it is shown, and there is no matching class for the open state to key off directly. The initial
+   value is the markup's to state, so the button is authored with .collapsed.
 
-.placeholders-toggle {
-    bottom: .5rem;
-    opacity: 1;
-    position: absolute;
-    // Clear of the right edge rather than flush to it: the textarea's own resize grip lives in that
-    // corner, and a button on top of it would take the drag.
-    right: 1.5rem;
-    transition: opacity .15s ease-in-out;
-    z-index: 1;
-
-    // Bootstrap puts .collapsed on the trigger while the target is hidden. Faded until it is either in
-    // use or under the pointer, so it stays out of the way of the content being edited.
-    &.collapsed {
-        opacity: .5;
-    }
-
-    // :focus-visible rather than :focus. A click hands focus back to the textarea, but only
-    // :focus-visible would keep the button lit for a keyboard user who has tabbed to it - which is a
-    // focus indicator doing its job, not the stuck-opaque state a click used to leave behind.
-    &:hover,
-    &:focus-visible {
-        opacity: 1;
-    }
+   Bootstrap's own active variables rather than picked colours: they are already defined on the button by
+   its .btn-outline-secondary, so this matches what .active would look like and follows the theme. */
+.placeholders-toggle:not(.collapsed) {
+    background-color: var(--bs-btn-active-bg);
+    border-color: var(--bs-btn-active-border-color);
+    color: var(--bs-btn-active-color);
 }
 
 // Capped and scrolled rather than growing: the list is short today, but it is expected to grow per email

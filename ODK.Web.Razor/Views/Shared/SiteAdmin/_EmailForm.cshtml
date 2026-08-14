@@ -1,4 +1,5 @@
-﻿@using ODK.Web.Razor.Models.SiteAdmin
+﻿@using ODK.Web.Razor.Models.Admin.Emails
+@using ODK.Web.Razor.Models.SiteAdmin
 @using ODK.Web.Razor.Mvc
 @model SiteEmailFormViewModel
 
@@ -10,42 +11,33 @@
 </div>
 
 <div class="form-group mb-3 required">
-    @Html.LabelFor(x => x.Content, new { @class = "form-label" })
+    @* Label and toolbar share a row, laid out here rather than by the toolbar. Nothing below it: the site's
+       own fields are always editable, so there is no Customise switch to sit under the label. *@
+    <div class="d-flex align-items-center flex-wrap gap-2 mb-1">
+        @Html.LabelFor(x => x.Content, new { @class = "form-label mb-0 me-auto" })
 
-    @* The toggle is positioned against this wrapper rather than the textarea, which cannot hold children. *@
-    <div class="placeholders">
-        @* rows is the editor's minimum height and max-lines its maximum - see odk.code-editor.js. *@
-        @Html.OdkEmailTemplateTextAreaFor(x => x.Content, Model.Placeholders, Model.ValidateUrl,
-            htmlAttributes: new
-            {
-                @class = "form-control",
-                rows = 5,
-                id = "email-content",
-                data_code_editor_max_lines = Model.MaxEditorLines?.ToString() ?? "none"
-            })
-
-        @* data-bs-toggle is taken by the collapse, so the hint is a plain title rather than a Bootstrap tooltip. *@
-        <button type="button" class="btn btn-sm btn-light font-monospace placeholders-toggle collapsed"
-                data-bs-toggle="collapse" data-bs-target="#email-placeholders"
-                data-placeholder-toggle="#email-content"
-                aria-expanded="false" aria-controls="email-placeholders"
-                aria-label="Insert a placeholder" title="Insert a placeholder">{}</button>
+        @await Html.PartialAsync("Emails/_EmailEditorButtons", new EmailEditorButtonsViewModel
+        {
+            PreviewUrl = Model.PreviewUrl
+        })
     </div>
+
+    @* Always insertable: the site's own template is written by a site admin, who may use every placeholder. *@
+    @await Html.PartialAsync("Emails/_EmailPlaceholders", new EmailPlaceholdersViewModel
+    {
+        CanInsert = true,
+        Placeholders = Model.Placeholders
+    })
+
+    @* rows is the editor's minimum height and max-lines its maximum - see odk.code-editor.js. *@
+    @Html.OdkEmailTemplateTextAreaFor(x => x.Content, Model.Placeholders, Model.ValidateUrl,
+        htmlAttributes: new
+        {
+            @class = "form-control",
+            rows = 5,
+            id = EmailEditorElements.FieldId,
+            data_code_editor_max_lines = Model.MaxEditorLines?.ToString() ?? "none"
+        })
 
     @Html.ValidationMessageFor(x => x.Content)
-</div>
-
-@* Inserts at the caret in the textarea named by data-placeholder-target - see odk.placeholders.js. *@
-<div class="collapse mb-3" id="email-placeholders" data-placeholder-target="#email-content">
-    <div class="placeholders-list small">
-        <p class="text-muted mb-2">
-            Click to insert. Anything else in braces is left as written.
-        </p>
-        @foreach (var placeholder in Model.Placeholders)
-        {
-            var token = $"{{{placeholder}}}";
-            <button type="button" class="btn btn-sm btn-outline-secondary mb-1 me-1 font-monospace"
-                    data-placeholder-insert="@token">@token</button>
-        }
-    </div>
 </div>

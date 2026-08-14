@@ -1,0 +1,42 @@
+﻿@using ODK.Web.Razor.Models.Admin.Emails
+@using ODK.Web.Razor.Models.Components
+@model EmailEditorButtonsViewModel
+
+@* The buttons that act on an email's body field. Positioning is the caller's: both forms put them in the
+   field's label row and push them right from the label, but that is the row's business, not theirs - nothing
+   here assumes where it sits.
+
+   collapsed is authored, not just maintained: Bootstrap adds and removes it as the list opens and closes, but
+   the initial state is the markup's to state - and the styling that shows the button as pressed keys off its
+   absence. *@
+<div class="button-container">
+    @* data-odk-tooltip rather than data-bs-toggle, which the collapse has taken - see bindTooltips in odk.js.
+       On the button so the whole button shows the tooltip rather than only the glyph. *@
+    <button type="button"
+            class="btn btn-sm btn-outline-secondary placeholders-toggle collapsed fw-bold font-monospace"
+            data-bs-toggle="collapse" data-bs-target="@EmailEditorElements.PlaceholdersSelector"
+            data-placeholder-toggle="@EmailEditorElements.FieldSelector"
+            data-odk-tooltip data-bs-title="Insert a placeholder"
+            aria-expanded="false" aria-controls="@EmailEditorElements.PlaceholdersId"
+            aria-label="Insert a placeholder">{}</button>
+
+    @* Enabled whatever a group's switches say: a group that cannot write wording can still want to see what
+       the email it inherits looks like. aria-label because the icon is all there is to read. *@
+    <button type="button" class="btn btn-sm btn-outline-secondary"
+            data-email-preview-url="@Model.PreviewUrl"
+            data-bs-toggle="tooltip" data-bs-title="Preview"
+            aria-label="Preview">
+        @await Html.PartialAsync("Components/_Icon",
+            new IconViewModel(IconType.EyeOutline) { Class = "icon--centred" })
+    </button>
+
+    @* Submits the sibling test-send form rather than the one holding the editor - see bindSubmits in
+       odk.forms.js. type=button so it leaves the editor's own form alone. *@
+    <button type="button" class="btn btn-sm btn-outline-secondary"
+            data-submit="@EmailEditorElements.SendTestFormSelector"
+            data-bs-toggle="tooltip" data-bs-title="Send a test email to yourself"
+            aria-label="Send a test email to yourself">
+        @await Html.PartialAsync("Components/_Icon",
+            new IconViewModel(IconType.EnvelopeOutline) { Class = "icon--centred" })
+    </button>
+</div>

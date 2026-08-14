@@ -18,13 +18,14 @@
         OverridesContent = Model.Email.OverridesContent,
         OverridesSubject = Model.Email.OverridesSubject,
         Placeholders = EmailTemplateParameters.ForGroup(Model.Email.Type),
+        PreviewUrl = $"/groups/{Model.Chapter.Id}/emails/{Model.Email.Type}/preview",
         ValidPlaceholders = EmailTemplateParameters.ForSite(Model.Email.Type),
         Subject = StringUtils.Coalesce(Model.Email.Subject, Model.SiteEmail.Subject),
         ValidateUrl = $"/groups/{Model.Chapter.Id}/emails/{Model.Email.Type}/validate"
     };
 }
 
-@await Html.PartialAsync("Admin/Chapter/_EmailBadges", new EmailBadgesViewModel
+@await Html.PartialAsync("Emails/_EmailBadges", new EmailBadgesViewModel
 {
     Customised = !Model.Email.IsDefault(),
     RecipientType = Model.RecipientType
@@ -62,18 +63,14 @@
     @await Html.PartialAsync("Admin/Chapter/_EmailForm", formViewModel)
 
     <div class="button-container">
-        <button class="btn btn-primary me-auto">Update</button>
-        <button class="btn btn-secondary" type="button"
-                data-submit="#send-test-form"
-                data-bs-toggle="tooltip" data-bs-title="Send a test email to yourself">
-            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Envelope))
-            <span>Send test</span>
-        </button>
+        <button class="btn btn-primary">Update</button>
     </div>
 </form>
 
+@* Empty but for its token: the toolbar's test button submits it, and it cannot be nested inside the form
+   above. *@
 <form method="post" action="/groups/@Model.Chapter.Id/emails/@Model.Email.Type/test"
-      id="send-test-form">
+      id="@EmailEditorElements.SendTestFormId">
     @Html.AntiForgeryToken()
 </form>
 
@@ -83,5 +80,7 @@
        this is where to find out what each of them does. *@
     <h3 class="content-heading">Placeholders</h3>
 
-    @await Html.PartialAsync("Admin/Chapter/_EmailParameters", Model.Parameters)
+    @await Html.PartialAsync("Emails/_EmailParameters", Model.Parameters)
 </div>
+
+@await Html.PartialAsync("Emails/_EmailPreviewModal")

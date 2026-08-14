@@ -12677,6 +12677,16 @@ img {
   width: 100%;
 }
 
+.email-preview-frame {
+  border: 0;
+  height: 60vh;
+  width: 100%;
+  /* White whatever the admin's theme, because an email is: the layout paints its own background and picks
+     its own text colours, and a dark ground behind it would show through wherever it does not - which is
+     not what the recipient will see. */
+  background-color: #fff;
+}
+
 .expanded-select-item {
   cursor: pointer;
   display: flex;
@@ -12840,6 +12850,22 @@ footer {
 }
 .icon-wrapper {
   line-height: 1;
+}
+
+/* For an icon that is the whole of a button's content. Font Awesome gives an icon line-height 1, so as an
+   inline box it hangs off the button's text baseline, and the button's height then comes from the icon rather
+   than from a line of its text - which leaves an icon-only button shorter than a text button beside it.
+
+   As a block with the button's own line-height, the icon's box is exactly a line of that text and the glyph
+   centres within it by half-leading, so the button is the height it would be around a letter and the glyph
+   sits in the middle.
+
+   Not flex on the button, and not a flex wrapper span: in the first the icon becomes the flex item that
+   sizes the button, which is the same shrinking by another route, and in the second the wrapper hugs the
+   icon, so centring inside it is a no-op and the wrapper still hangs off the baseline. */
+.icon--centred {
+  display: block;
+  line-height: inherit;
 }
 
 .icon--help {
@@ -13225,23 +13251,17 @@ footer {
   margin-bottom: 0;
 }
 
-.placeholders {
-  position: relative;
-}
+/* The button reads as pressed while its list is open. Keyed off the absence of .collapsed because that is
+   the only class Bootstrap maintains - it adds it to the trigger while the target is hidden and removes it
+   while it is shown, and there is no matching class for the open state to key off directly. The initial
+   value is the markup's to state, so the button is authored with .collapsed.
 
-.placeholders-toggle {
-  bottom: 0.5rem;
-  opacity: 1;
-  position: absolute;
-  right: 1.5rem;
-  transition: opacity 0.15s ease-in-out;
-  z-index: 1;
-}
-.placeholders-toggle.collapsed {
-  opacity: 0.5;
-}
-.placeholders-toggle:hover, .placeholders-toggle:focus-visible {
-  opacity: 1;
+   Bootstrap's own active variables rather than picked colours: they are already defined on the button by
+   its .btn-outline-secondary, so this matches what .active would look like and follows the theme. */
+.placeholders-toggle:not(.collapsed) {
+  background-color: var(--bs-btn-active-bg);
+  border-color: var(--bs-btn-active-border-color);
+  color: var(--bs-btn-active-color);
 }
 
 .placeholders-list {

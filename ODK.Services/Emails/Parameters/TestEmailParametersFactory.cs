@@ -11,6 +11,12 @@ namespace ODK.Services.Emails.Parameters;
 
 public class TestEmailParametersFactory : ITestEmailParametersFactory
 {
+    /* Upper case on purpose: a stand-in value has to be recognisable as one at a glance, so nobody reads a
+       preview and takes it for the group's own content. */
+    private const string EventName = "EVENT NAME";
+
+    private const string VenueName = "VENUE NAME";
+
     private readonly IUrlProviderFactory _urlProviderFactory;
 
     public TestEmailParametersFactory(IUrlProviderFactory urlProviderFactory)
@@ -43,6 +49,24 @@ public class TestEmailParametersFactory : ITestEmailParametersFactory
             }
             : null;
 
+    /* A whole event rather than a bare one, so every event parameter resolves to something readable. An
+       unfilled entity leaves event.name empty and dates it to DateTime.MinValue, which reads as a broken
+       template rather than as a template with nothing filled in. */
+    private static Event TestEvent() => new()
+    {
+        // A clean hour next week, rather than now: an arbitrary minute reads like real data.
+        DateUtc = DateTime.UtcNow.Date.AddDays(7).AddHours(19),
+        EndTime = new TimeSpan(21, 0, 0),
+        Name = EventName,
+        // Published, or GetDisplayName prefixes "[DRAFT] " onto the name in every preview.
+        PublishedUtc = DateTime.UtcNow
+    };
+
+    private static Venue TestVenue() => new()
+    {
+        Name = VenueName
+    };
+
     /* Only the types with a parameter this can answer. Null for the rest - there is nothing to add, and
        an empty set of the right class would say the same thing at more length. A type gains an entry here
        when one of its parameters becomes answerable from the member or the group alone. */
@@ -72,14 +96,14 @@ public class TestEmailParametersFactory : ITestEmailParametersFactory
             },
             EmailType.EventComment or
             EmailType.EventCommentReply => chapter != null
-                ? new EventCommentParameters(new Event())
+                ? new EventCommentParameters(TestEvent())
                 {
                     EventUrl = urlProvider.EventUrl(chapter, "TEST"),
                     Text = "Test comment"
                 }
                 : null,
             EmailType.EventInvite => chapter != null
-                ? new EventInviteParameters(chapter, new Event(), new Venue(), culture)
+                ? new EventInviteParameters(chapter, TestEvent(), TestVenue(), culture)
                 {
                     RsvpUrl = urlProvider.EventRsvpUrl(chapter, "TEST"),
                     UnsubscribeUrl = urlProvider.EmailPreferences(chapter),

@@ -1,4 +1,5 @@
 ﻿@using ODK.Web.Razor.Models.Admin.Chapters
+@using ODK.Web.Razor.Models.Admin.Emails
 @using ODK.Web.Razor.Mvc
 @model ChapterEmailFormViewModel
 
@@ -49,34 +50,37 @@
 </div>
 
 <div class="form-group mb-3">
-    @Html.LabelFor(x => x.Content, new { @class = "form-label" })
+    @Html.LabelFor(x => x.Content, new { @class = "form-label mb-0" })
 
-    <div class="form-check form-switch form-switch-sm">
-        @* The content field carries an explicit id, so this points at that rather than at the one the
+    <div class="d-flex align-items-center flex-wrap gap-2 mb-1">        
+        <div class="form-check form-switch form-switch-sm me-auto">
+            @* The content field carries an explicit id, so this points at that rather than at the one the
            helper would have generated from the property name. *@
-        <input class="form-check-input" type="checkbox" role="switch" id="override-content"
-               name="@Html.NameFor(x => x.OverrideContent)" value="true"
-               data-field-override="#email-content" aria-label="Customise body"
-               checked="@(Model.OverridesContent ? "checked" : null)"
-               disabled="@(Model.CanToggleContent ? null : "disabled")"
-               data-field-override-locked="@(Model.CanOverride ? "false" : "true")" />
-        <label class="form-check-label" for="override-content">Customise</label>
-    </div>
+            <input class="form-check-input" type="checkbox" role="switch" id="override-content"
+                   name="@Html.NameFor(x => x.OverrideContent)" value="true"
+                   data-field-override="@EmailEditorElements.FieldSelector" aria-label="Customise body"
+                   checked="@(Model.OverridesContent ? "checked" : null)"
+                   disabled="@(Model.CanToggleContent ? null : "disabled")"
+                   data-field-override-locked="@(Model.CanOverride ? "false" : "true")" />
+            <label class="form-check-label" for="override-content">Customise</label>
+        </div>
 
-    @* The toggle is positioned against this wrapper rather than the textarea, which cannot hold children. *@
-    <div class="placeholders">
-        @* rows is the editor's minimum height - see odk.code-editor.js. *@
-        @Html.OdkEmailTemplateTextAreaFor(x => x.Content, Model.ValidPlaceholders, Model.ValidateUrl,
-            disabled: !Model.CanEditContent,
-            htmlAttributes: new { @class = "form-control", rows = 5, id = "email-content" })
+        @await Html.PartialAsync("Emails/_EmailEditorButtons", new EmailEditorButtonsViewModel
+        {
+            PreviewUrl = Model.PreviewUrl
+        })
+    </div>    
 
-        @* data-bs-toggle is taken by the collapse, so the hint is a plain title rather than a Bootstrap tooltip. *@
-        <button type="button" class="btn btn-sm btn-light font-monospace placeholders-toggle collapsed"
-                data-bs-toggle="collapse" data-bs-target="#email-placeholders"
-                data-placeholder-toggle="#email-content"
-                aria-expanded="false" aria-controls="email-placeholders"
-                aria-label="Insert a placeholder" title="Insert a placeholder">{}</button>
-    </div>
+    @await Html.PartialAsync("Emails/_EmailPlaceholders", new EmailPlaceholdersViewModel
+    {
+        CanInsert = Model.CanOverride,
+        Placeholders = Model.Placeholders
+    })
+
+    @* rows is the editor's minimum height - see odk.code-editor.js. *@
+    @Html.OdkEmailTemplateTextAreaFor(x => x.Content, Model.ValidPlaceholders, Model.ValidateUrl,
+        disabled: !Model.CanEditContent,
+        htmlAttributes: new { @class = "form-control", rows = 5, id = EmailEditorElements.FieldId })
 
     @Html.ValidationMessageFor(x => x.Content)
 
@@ -92,21 +96,4 @@
             <pre class="border rounded p-2 mt-2 mb-0 text-pre-wrap"><code>@Model.InheritedContent</code></pre>
         </details>
     }
-</div>
-
-@* Inserts at the caret in the textarea named by data-placeholder-target - see odk.placeholders.js. Disabled
-   with the field, since inserting into a locked editor would go nowhere. *@
-<div class="collapse mb-3" id="email-placeholders" data-placeholder-target="#email-content">
-    <div class="placeholders-list small">
-        <p class="text-muted mb-2">
-            Click to insert. Anything else in braces is left as written.
-        </p>
-        @foreach (var placeholder in Model.Placeholders)
-        {
-            var token = $"{{{placeholder}}}";
-            <button type="button" class="btn btn-sm btn-outline-secondary mb-1 me-1 font-monospace"
-                    disabled="@(Model.CanOverride ? null : "disabled")"
-                    data-placeholder-insert="@token">@token</button>
-        }
-    </div>
 </div>

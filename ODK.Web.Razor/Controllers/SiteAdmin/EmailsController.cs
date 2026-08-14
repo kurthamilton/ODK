@@ -8,6 +8,7 @@ using ODK.Services.Settings.Models;
 using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
 using ODK.Web.Razor.Models.Admin.Chapters;
+using ODK.Web.Razor.Models.Admin.Emails;
 using ODK.Web.Razor.Models.Feedback;
 using ODK.Web.Razor.Models.SiteAdmin;
 
@@ -28,6 +29,18 @@ public class EmailsController : OdkControllerBase
     {
         _emailAdminService = emailAdminService;
         _settingsService = settingsService;
+    }
+
+    /* Binds the same view model the save binds, so the preview is of what saving would send rather than of
+       what is stored. */
+    [HttpPost("/siteadmin/emails/{type}/preview")]
+    public async Task<IActionResult> PreviewEmail(
+        EmailType type, [FromForm] SiteEmailFormSubmitViewModel viewModel)
+    {
+        var preview = await _emailAdminService.PreviewEmail(
+            MemberServiceRequest, type, viewModel.Subject, viewModel.Content);
+
+        return Ok(EmailPreviewViewModel.FromRendered(preview));
     }
 
     [HttpPost("/siteadmin/emails/{type}/send/test")]

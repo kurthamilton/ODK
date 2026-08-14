@@ -19,6 +19,12 @@ namespace ODK.Services.Members;
 
 public class MemberEmailService : IMemberEmailService
 {
+    /* Stands in for a real email while the layout that wraps it is being previewed. Enough of one to show
+       where the body sits and that the layout's own styling reaches it. */
+    private const string LayoutPreviewBody =
+        "<p>EMAIL BODY</p>" +
+        "<p>The email being sent appears here, inside the layout.</p>";
+
     private readonly IEmailService _emailService;
     private readonly IMemberLocaleService _memberLocaleService;
     private readonly ITestEmailParametersFactory _testEmailParametersFactory;
@@ -37,6 +43,34 @@ public class MemberEmailService : IMemberEmailService
         _testEmailParametersFactory = testEmailParametersFactory;
         _unitOfWork = unitOfWork;
         _urlProviderFactory = urlProviderFactory;
+    }
+
+    public async Task<RenderedEmail> RenderTestEmail(
+        IServiceRequest request,
+        Chapter? chapter,
+        Member to,
+        EmailType type,
+        string subject,
+        string body)
+    {
+        var parameters = await TestEmailParameters(request, chapter, to, type);
+
+        /* The layout template wraps a body rather than being one, so an edited layout is previewed around a
+           stand-in body. Every other type is the body, and takes the stored layout. */
+        var isLayout = type == EmailType.Layout;
+
+        return await _emailService.RenderEmail(request, new RenderEmailOptions
+        {
+            Body = isLayout ? LayoutPreviewBody : body,
+            Chapter = chapter,
+            Layout = isLayout ? body : null,
+            Parameters = parameters,
+            /* Only read for the layout, which has no email row to declare an audience. Stated rather than
+               left to default, because the default is None and {title} would resolve through it. */
+            RecipientType = EmailRecipientType.Members,
+            Subject = subject,
+            Type = type
+        });
     }
 
     public async Task SendActivationEmail(
@@ -1033,14 +1067,7 @@ public class MemberEmailService : IMemberEmailService
         Member to,
         EmailType type)
     {
-        /* The group the email describes, which is not the group it is sent as. chapter is passed on
-           untouched so the template lookup is unaffected - a site admin testing the site's copy of a
-           template must not be sent a stand-in group's override of it. */
-        var describedChapter = chapter ?? await GetFirstChapter(request, to);
-
-        var culture = await _memberLocaleService.GetCulture(to.Id);
-
-        var parameters = await _testEmailParametersFactory.Create(request, type, to, culture, describedChapter);
+        var parameters = await TestEmailParameters(request, chapter, to, type);
 
         return await _emailService.SendEmail(
             request,
@@ -1187,5 +1214,21 @@ public class MemberEmailService : IMemberEmailService
         return chapters
             .OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
             .FirstOrDefault();
+    }
+
+    private async Task<IEmailParameters> TestEmailParameters(
+        IServiceRequest request,
+        Chapter? chapter,
+        Member to,
+        EmailType type)
+    {
+        /* The group the email describes, which is not the group it is sent as. chapter is passed on
+           untouched so the template lookup is unaffected - a site admin testing the site's copy of a
+           template must not be sent a stand-in group's override of it. */
+        var describedChapter = chapter ?? await GetFirstChapter(request, to);
+
+        var culture = await _memberLocaleService.GetCulture(to.Id);
+
+        return await _testEmailParametersFactory.Create(request, type, to, culture, describedChapter);
     }
 }
