@@ -15,6 +15,8 @@ public class CountryMap : IEntityTypeConfiguration<Country>
         builder.Property(x => x.Id)
             .HasColumnName("CountryId");
 
+        builder.HasRenamedIdColumn();
+
         builder.Property(x => x.IsoCode2)
             .HasMaxLength(2);
 

@@ -14,5 +14,7 @@ public class CurrencyMap : IEntityTypeConfiguration<Currency>
 
         builder.Property(x => x.Id)
             .HasColumnName("CurrencyId");
+
+        builder.HasRenamedIdColumn();
     }
 }

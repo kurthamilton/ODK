@@ -55,6 +55,11 @@ Migration names follow:
 Hyphens are preserved in the migration id and file name; EF strips them when forming the C# class
 name (`MemberSubscriptionLog-InitiatorId-Add` → class `MemberSubscriptionLogInitiatorIdAdd`).
 
+Where one migration makes the **same change to several tables** — a schema-wide sweep rather than a
+feature — name it for the group of tables instead of listing them, e.g. `LookupTables-Id-Add`. Splitting
+it per table would be a batch of migrations that must be applied together and could otherwise be applied
+apart, which is worse than a name that names a set.
+
 Examples:
 
 | Change | Migration name |
