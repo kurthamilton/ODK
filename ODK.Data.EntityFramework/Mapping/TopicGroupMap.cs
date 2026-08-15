@@ -14,5 +14,7 @@ public class TopicGroupMap : IEntityTypeConfiguration<TopicGroup>
 
         builder.Property(x => x.Id)
             .HasColumnName("TopicGroupId");
+
+        builder.HasRenamedIdColumn();
     }
 }
