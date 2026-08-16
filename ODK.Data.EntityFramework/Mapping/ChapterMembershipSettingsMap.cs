@@ -11,5 +11,10 @@ public class ChapterMembershipSettingsMap : IEntityTypeConfiguration<ChapterMemb
         builder.ToTable("ChapterMembershipSettings");
 
         builder.HasKey(x => x.ChapterId);
+
+        builder.HasOne<Chapter>()
+            .WithOne()
+            .HasForeignKey<ChapterMembershipSettings>(x => x.ChapterId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

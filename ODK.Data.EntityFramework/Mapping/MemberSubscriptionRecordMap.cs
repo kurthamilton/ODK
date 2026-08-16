@@ -50,9 +50,12 @@ public class MemberSubscriptionRecordMap : IEntityTypeConfiguration<MemberSubscr
             .HasColumnName("SubscriptionTypeId")
             .HasConversion<int>();
 
+        // Stated rather than left to convention, which would cascade: the database restricts, and a
+        // subscription record is a financial log that outlives the group it was for.
         builder.HasOne<Chapter>()
             .WithMany()
-            .HasForeignKey(x => x.ChapterId);
+            .HasForeignKey(x => x.ChapterId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne<ChapterSubscription>()
             .WithMany()

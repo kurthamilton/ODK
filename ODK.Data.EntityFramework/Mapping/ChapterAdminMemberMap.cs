@@ -20,5 +20,10 @@ public class ChapterAdminMemberMap : IEntityTypeConfiguration<ChapterAdminMember
             .WithMany()
             .HasForeignKey(x => x.MemberId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne<Chapter>()
+            .WithMany()
+            .HasForeignKey(x => x.ChapterId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

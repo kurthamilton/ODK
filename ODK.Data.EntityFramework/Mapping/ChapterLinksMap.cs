@@ -14,5 +14,12 @@ public class ChapterLinksMap : IEntityTypeConfiguration<ChapterLinks>
 
         builder.Property(x => x.Version)
             .IsRowVersion();
+
+        builder.HasOne<Chapter>()
+            .WithOne()
+            // No action, matching the constraint the database already enforces - unlike its siblings, which
+            // cascade.
+            .HasForeignKey<ChapterLinks>(x => x.ChapterId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

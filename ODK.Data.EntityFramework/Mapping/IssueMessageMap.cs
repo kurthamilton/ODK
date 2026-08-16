@@ -21,8 +21,11 @@ public class IssueMessageMap : IEntityTypeConfiguration<IssueMessage>
             .HasForeignKey(x => x.IssueId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        // Stated rather than left to convention, which would cascade: the database restricts, so a message
+        // survives the member who wrote it.
         builder.HasOne(x => x.Member)
             .WithMany()
-            .HasForeignKey(x => x.MemberId);
+            .HasForeignKey(x => x.MemberId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

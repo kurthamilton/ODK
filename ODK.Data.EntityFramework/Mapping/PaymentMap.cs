@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using ODK.Core.Chapters;
 using ODK.Core.Countries;
+using ODK.Core.Members;
 using ODK.Core.Payments;
 using ODK.Data.EntityFramework.Converters;
 
@@ -19,8 +21,20 @@ public class PaymentMap : IEntityTypeConfiguration<Payment>
 
         builder.Property(x => x.PaidUtc)
             .HasConversion<UtcDateTimeConverter>();
+
         builder.HasOne(x => x.Currency)
             .WithMany()
             .HasForeignKey(x => x.CurrencyId);
+
+        // Cascade on both, matching the constraints the database already enforces.
+        builder.HasOne<Member>()
+            .WithMany()
+            .HasForeignKey(x => x.MemberId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne<Chapter>()
+            .WithMany()
+            .HasForeignKey(x => x.ChapterId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
