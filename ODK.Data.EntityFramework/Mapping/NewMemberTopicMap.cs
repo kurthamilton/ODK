@@ -16,6 +16,8 @@ public class NewMemberTopicMap : IEntityTypeConfiguration<NewMemberTopic>
         builder.Property(x => x.Id)
             .HasColumnName("NewMemberTopicId");
 
+        builder.HasRenamedIdColumn();
+
         builder.HasOne<Member>()
             .WithMany()
             .HasForeignKey(x => x.MemberId)

@@ -24,6 +24,8 @@ public class ChapterPaymentAccountMap : IEntityTypeConfiguration<ChapterPaymentA
         builder.Property(x => x.Id)
             .HasColumnName("ChapterPaymentAccountId");
 
+        builder.HasRenamedIdColumn();
+
         builder.Property(x => x.IdentityDocumentsProvidedUtc)
             .HasConversion<NullableUtcDateTimeConverter>();
 

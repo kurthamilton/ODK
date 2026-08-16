@@ -26,6 +26,8 @@ public class ReferralMap : IEntityTypeConfiguration<Referral>
         builder.Property(x => x.Id)
             .HasColumnName("ReferralId");
 
+        builder.HasRenamedIdColumn();
+
         // Cascade from the campaign: a deleted campaign takes its referrals with it, they have no meaning
         // without it. Restrict from the member so deleting a member can't silently drop campaign history.
         builder.HasOne<ReferralCampaign>()

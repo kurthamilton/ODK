@@ -15,6 +15,8 @@ public class MemberNotificationSettingsMap : IEntityTypeConfiguration<MemberNoti
         builder.Property(x => x.Id)
             .HasColumnName("MemberNotificationSettingsId");
 
+        builder.HasRenamedIdColumn();
+
         builder.Property(x => x.NotificationType)
             .HasColumnName("NotificationTypeId")
             .HasConversion<int>();

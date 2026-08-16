@@ -23,6 +23,8 @@ public class PaymentCheckoutSessionMap : IEntityTypeConfiguration<PaymentCheckou
         builder.Property(x => x.Id)
             .HasColumnName("PaymentCheckoutSessionId");
 
+        builder.HasRenamedIdColumn();
+
         builder.Property(x => x.StartedUtc)
             .HasConversion<UtcDateTimeConverter>();
 
