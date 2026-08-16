@@ -20,6 +20,8 @@ public class MemberChapterMap : IEntityTypeConfiguration<MemberChapter>
         builder.Property(x => x.Id)
             .HasColumnName("MemberChapterId");
 
+        builder.HasRenamedIdColumn();
+
         builder.HasOne<Chapter>()
             .WithMany()
             .HasForeignKey(x => x.ChapterId);

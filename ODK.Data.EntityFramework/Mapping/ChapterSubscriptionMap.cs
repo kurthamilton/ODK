@@ -16,6 +16,8 @@ public class ChapterSubscriptionMap : IEntityTypeConfiguration<ChapterSubscripti
         builder.Property(x => x.Id)
             .HasColumnName("ChapterSubscriptionId");
 
+        builder.HasRenamedIdColumn();
+
         builder.Property(x => x.Amount)
             .HasPrecision(18, 2);
 

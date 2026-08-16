@@ -20,6 +20,8 @@ public class PaymentMap : IEntityTypeConfiguration<Payment>
         builder.Property(x => x.Id)
             .HasColumnName("PaymentId");
 
+        builder.HasRenamedIdColumn();
+
         builder.Property(x => x.PaidUtc)
             .HasConversion<UtcDateTimeConverter>();
         builder.HasOne(x => x.Currency)
