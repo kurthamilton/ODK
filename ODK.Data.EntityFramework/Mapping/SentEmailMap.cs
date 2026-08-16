@@ -16,6 +16,8 @@ public class SentEmailMap : IEntityTypeConfiguration<SentEmail>
         builder.Property(x => x.Id)
             .HasColumnName("SentEmailId");
 
+        builder.HasRenamedIdColumn();
+
         builder.Property(x => x.SentUtc)
             .HasConversion<UtcDateTimeConverter>();
     }

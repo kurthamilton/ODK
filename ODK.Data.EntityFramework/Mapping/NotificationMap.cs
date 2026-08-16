@@ -24,6 +24,8 @@ public class NotificationMap : IEntityTypeConfiguration<Notification>
         builder.Property(x => x.Id)
             .HasColumnName("NotificationId");
 
+        builder.HasRenamedIdColumn();
+
         builder.Property(x => x.ReadUtc)
             .HasConversion<NullableUtcDateTimeConverter>();
 
