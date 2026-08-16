@@ -16,11 +16,6 @@ public class SentEmailEventMap : IEntityTypeConfiguration<SentEmailEvent>
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();
 
-        builder.Property(x => x.Id)
-            .HasColumnName("SentEmailEventId");
-
-        builder.HasRenamedIdColumn();
-
         builder.HasOne<SentEmail>()
             .WithMany()
             .HasForeignKey(x => x.SentEmailId);

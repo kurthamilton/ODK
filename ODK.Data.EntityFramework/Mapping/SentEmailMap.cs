@@ -13,11 +13,6 @@ public class SentEmailMap : IEntityTypeConfiguration<SentEmail>
 
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.Id)
-            .HasColumnName("SentEmailId");
-
-        builder.HasRenamedIdColumn();
-
         builder.Property(x => x.SentUtc)
             .HasConversion<UtcDateTimeConverter>();
     }

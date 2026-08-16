@@ -12,11 +12,6 @@ public class InstagramImageMap : IEntityTypeConfiguration<InstagramImage>
 
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.Id)
-            .HasColumnName("InstagramImageId");
-
-        builder.HasRenamedIdColumn();
-
         builder.Property(x => x.Version)
             .IsRowVersion();
 
