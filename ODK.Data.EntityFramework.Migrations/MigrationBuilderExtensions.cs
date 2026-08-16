@@ -58,6 +58,18 @@ internal static class MigrationBuilderExtensions
     }
 
     /// <summary>
+    /// Drops a table's primary key, whatever it is called, and does nothing where the table has none - use
+    /// in place of <see cref="MigrationBuilder.DropPrimaryKey"/>, which needs the exact name and assumes the
+    /// constraint exists. See <see cref="PrimaryKeySql.Drop"/>.
+    /// </summary>
+    internal static MigrationBuilder DropPrimaryKeyIfExists(
+        this MigrationBuilder migrationBuilder, string table)
+    {
+        migrationBuilder.Sql(PrimaryKeySql.Drop(table));
+        return migrationBuilder;
+    }
+
+    /// <summary>
     /// Inserts rows into Emails, writing EmailRecipientTypeId for each email that sets
     /// <see cref="Email.RecipientType"/> and omitting the column for each one that leaves it unset.
     /// </summary>

@@ -12,11 +12,6 @@ public class QueuedEmailRecipientMap : IEntityTypeConfiguration<QueuedEmailRecip
 
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.Id)
-            .HasColumnName("QueuedEmailRecipientId");
-
-        builder.HasRenamedIdColumn();
-
         builder.HasOne<QueuedEmail>()
             .WithMany()
             .HasForeignKey(x => x.QueuedEmailId);

@@ -127,8 +127,18 @@ migrationBuilder.DropForeignKeys("Chapters", "CountryId");
 ```
 
 EF then adds its own back under the conventional name, so a table converges on the convention as it is
-migrated. The same blind spot applies to **primary key** and **unique** constraint names —
-`DropConstraintIfExists` covers those.
+migrated.
+
+**A mapped key is not a constraint.** The same applies to primary keys, which the scaffolder also names by
+convention — and it additionally assumes there is one to drop. `SentEmailEvents` was mapped with `HasKey` for
+years while the table had no primary key at all, and nothing said so until a migration tried to drop it. Look
+it up instead, which handles both the unexpected name and the missing constraint:
+
+```csharp
+migrationBuilder.DropPrimaryKeyIfExists("SentEmailEvents");
+```
+
+`DropConstraintIfExists` covers a **unique** constraint whose name you do know.
 
 **Adding a relationship the database already has scaffolds only the additions.** EF has no idea the
 constraint and its index are already there, so it emits `AddForeignKey` and `CreateIndex` with nothing to
@@ -145,8 +155,12 @@ EF is about to create — non-primary-key, non-unique, nonclustered, keyed on th
 composite index beginning with the column serves queries the migration knows nothing about, a unique index is
 a constraint rather than a lookup aid, and dropping a clustered one would rewrite the table.
 
-`ForeignKeySql` and `IndexSql` build the SQL and are covered by `ODK.Data.EntityFramework.Migrations.Tests`;
-`EnumTableSql.DropForeignKey` does the same job for the enum lookup tables.
+`ForeignKeySql`, `IndexSql` and `PrimaryKeySql` build the SQL and are covered by
+`ODK.Data.EntityFramework.Migrations.Tests`; `EnumTableSql.DropForeignKey` does the same job for the enum
+lookup tables. All of them name their SQL variables after the table and column they act on, because a
+migration emitting several blocks runs them in one batch and variables are scoped to the batch, not the
+block — and all of them build the statement into a variable before executing it, because `EXEC` takes string
+literals and variables joined by `+` and nothing else, so `EXEC(N'…' + QUOTENAME(@n))` is a syntax error.
 
 **Find them before writing the migration** rather than one failed run at a time. For the tables a migration
 touches:
