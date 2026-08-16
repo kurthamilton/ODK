@@ -12,11 +12,6 @@ public class ChapterAdminMemberMap : IEntityTypeConfiguration<ChapterAdminMember
 
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.Id)
-            .HasColumnName("ChapterAdminMemberId");
-
-        builder.HasRenamedIdColumn();
-
         builder.Property(x => x.Role)
             .HasColumnName("ChapterAdminRoleId")
             .HasConversion<int>();

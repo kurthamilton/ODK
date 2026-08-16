@@ -16,11 +16,6 @@ public class ChapterContactMessageMap : IEntityTypeConfiguration<ChapterContactM
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();
 
-        builder.Property(x => x.Id)
-            .HasColumnName("ChapterContactMessageId");
-
-        builder.HasRenamedIdColumn();
-
         builder.Property(x => x.RepliedUtc)
             .HasConversion<NullableUtcDateTimeConverter>();
     }

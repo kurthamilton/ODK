@@ -12,11 +12,6 @@ public class ChapterQuestionMap : IEntityTypeConfiguration<ChapterQuestion>
 
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.Id)
-            .HasColumnName("ChapterQuestionId");
-
-        builder.HasRenamedIdColumn();
-
         builder.Property(x => x.Version)
             .IsRowVersion();
     }

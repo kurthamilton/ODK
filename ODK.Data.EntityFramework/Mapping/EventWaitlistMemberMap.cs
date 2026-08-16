@@ -17,11 +17,6 @@ public class EventWaitlistMemberMap : IEntityTypeConfiguration<EventWaitlistMemb
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();
 
-        builder.Property(x => x.Id)
-            .HasColumnName("EventWaitlistMemberId");
-
-        builder.HasRenamedIdColumn();
-
         builder.HasOne<Event>()
             .WithMany()
             .HasForeignKey(x => x.EventId);

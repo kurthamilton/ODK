@@ -20,11 +20,6 @@ public class ChapterConversationMap : IEntityTypeConfiguration<ChapterConversati
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();
 
-        builder.Property(x => x.Id)
-            .HasColumnName("ChapterConversationId");
-
-        builder.HasRenamedIdColumn();
-
         builder.HasOne<Chapter>()
             .WithMany()
             .HasForeignKey(x => x.ChapterId);

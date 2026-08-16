@@ -112,27 +112,53 @@ Notes:
 **Adding an enum member to a mirrored enum means adding a migration**, named for the table
 (e.g. `SiteFeatures-Theme-Add`).
 
-## Constraints created outside EF
+## Constraints and indexes created outside EF
 
-Much of this schema pre-dates EF, so plenty of its foreign keys are named nothing like EF's convention
-(`FK_Payments_Currencies`, not `FK_Payments_Currencies_CurrencyId`). The scaffolder cannot know that — it
-emits the name it would have chosen itself — so **a scaffolded `DropForeignKey` fails against any constraint
-created by hand**, and takes the whole migration with it.
+The scaffolder only ever emits names it would have chosen itself, and it only knows what the model tells it.
+Both of those are wrong often enough here to be worth planning around: much of this schema pre-dates EF.
 
-Drop by the column instead, which drops whatever is actually there:
+**Names are guesses.** Plenty of foreign keys are named nothing like EF's convention
+(`FK_Payments_Currencies`, not `FK_Payments_Currencies_CurrencyId`), so **a scaffolded `DropForeignKey` fails
+against any constraint created by hand**, and takes the whole migration with it. Drop by the column instead,
+which drops whatever is actually there:
 
 ```csharp
 migrationBuilder.DropForeignKeys("Chapters", "CountryId");
 ```
 
 EF then adds its own back under the conventional name, so a table converges on the convention as it is
-migrated. `ForeignKeySql` builds the SQL and is covered by `ODK.Data.EntityFramework.Migrations.Tests`;
-`EnumTableSql.DropForeignKey` does the same for the enum lookup tables.
+migrated. The same blind spot applies to **primary key** and **unique** constraint names —
+`DropConstraintIfExists` covers those.
 
-The same blind spot applies to **primary key** and **unique** constraint names, which the scaffolder also
-guesses — `DropConstraintIfExists` covers those. And when a relationship is added to the model that the
-database already enforces, EF scaffolds only the `AddForeignKey`: nothing drops the constraint already on the
-column, so the add collides. Drop it first.
+**Adding a relationship the database already has scaffolds only the additions.** EF has no idea the
+constraint and its index are already there, so it emits `AddForeignKey` and `CreateIndex` with nothing to
+drop. The foreign key collides; the index either collides or quietly leaves a second index on the column.
+Drop both first:
+
+```csharp
+migrationBuilder.DropForeignKeys("Events", "VenueId");
+migrationBuilder.DropIndexes("Events", "VenueId");
+```
+
+`DropIndexes` is deliberately narrower than `DropForeignKeys`: it removes only an index that duplicates what
+EF is about to create — non-primary-key, non-unique, nonclustered, keyed on that one column alone. A
+composite index beginning with the column serves queries the migration knows nothing about, a unique index is
+a constraint rather than a lookup aid, and dropping a clustered one would rewrite the table.
+
+`ForeignKeySql` and `IndexSql` build the SQL and are covered by `ODK.Data.EntityFramework.Migrations.Tests`;
+`EnumTableSql.DropForeignKey` does the same job for the enum lookup tables.
+
+**Find them before writing the migration** rather than one failed run at a time. For the tables a migration
+touches:
+
+```sql
+SELECT fk.name, OBJECT_NAME(fk.parent_object_id) AS from_table, OBJECT_NAME(fk.referenced_object_id) AS to_table
+FROM sys.foreign_keys fk
+WHERE OBJECT_NAME(fk.referenced_object_id) IN (<tables>);
+```
+
+Anything that query returns which the model does not declare is a relationship to add to the mapping — and a
+pair of drops to write by hand.
 
 ## Everyday commands
 

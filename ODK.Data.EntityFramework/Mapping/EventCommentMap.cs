@@ -17,11 +17,6 @@ public class EventCommentMap : IEntityTypeConfiguration<EventComment>
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();
 
-        builder.Property(x => x.Id)
-            .HasColumnName("EventCommentId");
-
-        builder.HasRenamedIdColumn();
-
         builder.HasOne<Event>()
             .WithMany()
             .HasForeignKey(x => x.EventId)

@@ -15,11 +15,6 @@ public class ChapterPropertyMap : IEntityTypeConfiguration<ChapterProperty>
         builder.Property(x => x.ApplicationOnly)
             .HasColumnName("Hidden");
 
-        builder.Property(x => x.Id)
-            .HasColumnName("ChapterPropertyId");
-
-        builder.HasRenamedIdColumn();
-
         builder.Property(x => x.DataType)
             .HasColumnName("DataTypeId")
             .HasConversion<int>();
