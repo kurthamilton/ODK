@@ -27,6 +27,8 @@ public class ChapterMap : IEntityTypeConfiguration<Chapter>
         builder.Property(x => x.Id)
             .HasColumnName("ChapterId");
 
+        builder.HasRenamedIdColumn();
+
         builder.Property(x => x.Name)
             .HasMaxLength(255);
 
