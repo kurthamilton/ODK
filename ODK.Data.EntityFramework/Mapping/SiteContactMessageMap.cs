@@ -16,11 +16,6 @@ public class SiteContactMessageMap : IEntityTypeConfiguration<SiteContactMessage
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();
 
-        builder.Property(x => x.Id)
-            .HasColumnName("SiteContactMessageId");
-
-        builder.HasRenamedIdColumn();
-
         builder.Property(x => x.RepliedUtc)
             .HasConversion<NullableUtcDateTimeConverter>();
     }

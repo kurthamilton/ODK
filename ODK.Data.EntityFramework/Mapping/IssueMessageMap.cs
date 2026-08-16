@@ -16,11 +16,6 @@ public class IssueMessageMap : IEntityTypeConfiguration<IssueMessage>
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();
 
-        builder.Property(x => x.Id)
-            .HasColumnName("IssueMessageId");
-
-        builder.HasRenamedIdColumn();
-
         builder.HasOne<Issue>()
             .WithMany()
             .HasForeignKey(x => x.IssueId)
