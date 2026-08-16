@@ -11,10 +11,5 @@ public class CurrencyMap : IEntityTypeConfiguration<Currency>
         builder.ToTable("Currencies");
 
         builder.HasKey(x => x.Id);
-
-        builder.Property(x => x.Id)
-            .HasColumnName("CurrencyId");
-
-        builder.HasRenamedIdColumn();
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ODK.Core.Chapters;
+using ODK.Core.Countries;
 using ODK.Data.EntityFramework.Converters;
 
 namespace ODK.Data.EntityFramework.Mapping;
@@ -50,5 +51,10 @@ public class ChapterMap : IEntityTypeConfiguration<Chapter>
 
         builder.HasIndex(x => x.Slug)
             .IsUnique();
+
+        builder.HasOne<Country>()
+            .WithMany()
+            .HasForeignKey(x => x.CountryId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

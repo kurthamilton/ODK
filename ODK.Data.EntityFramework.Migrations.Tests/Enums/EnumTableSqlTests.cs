@@ -77,11 +77,12 @@ public class EnumTableSqlTests
 
         // Assert
         result.Should().Be(Lines(
-            "DECLARE @name sysname;",
+            "DECLARE @name_SiteSubscriptionFeatures_SiteFeatureId sysname;",
+            "DECLARE @sql_SiteSubscriptionFeatures_SiteFeatureId nvarchar(max);",
             "",
             "WHILE 1 = 1",
             "BEGIN",
-            "    SET @name = (",
+            "    SET @name_SiteSubscriptionFeatures_SiteFeatureId = (",
             "        SELECT TOP 1 fk.name",
             "        FROM sys.foreign_keys fk",
             "        INNER JOIN sys.foreign_key_columns fkc ON fkc.constraint_object_id = fk.object_id",
@@ -89,9 +90,12 @@ public class EnumTableSqlTests
             "            AND fk.referenced_object_id = OBJECT_ID(N'SiteFeatures')",
             "            AND COL_NAME(fkc.parent_object_id, fkc.parent_column_id) = N'SiteFeatureId');",
             "",
-            "    IF @name IS NULL BREAK;",
+            "    IF @name_SiteSubscriptionFeatures_SiteFeatureId IS NULL BREAK;",
             "",
-            "    EXEC(N'ALTER TABLE [SiteSubscriptionFeatures] DROP CONSTRAINT ' + QUOTENAME(@name));",
+            /* EXEC takes string literals and variables joined by +, and nothing else, so the statement is
+               built into a variable rather than QUOTENAME being called inside the EXEC. */
+            "    SET @sql_SiteSubscriptionFeatures_SiteFeatureId = N'ALTER TABLE [SiteSubscriptionFeatures] DROP CONSTRAINT ' + QUOTENAME(@name_SiteSubscriptionFeatures_SiteFeatureId);",
+            "    EXEC(@sql_SiteSubscriptionFeatures_SiteFeatureId);",
             "END"));
     }
 

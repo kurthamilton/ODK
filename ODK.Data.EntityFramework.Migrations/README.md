@@ -112,6 +112,28 @@ Notes:
 **Adding an enum member to a mirrored enum means adding a migration**, named for the table
 (e.g. `SiteFeatures-Theme-Add`).
 
+## Constraints created outside EF
+
+Much of this schema pre-dates EF, so plenty of its foreign keys are named nothing like EF's convention
+(`FK_Payments_Currencies`, not `FK_Payments_Currencies_CurrencyId`). The scaffolder cannot know that — it
+emits the name it would have chosen itself — so **a scaffolded `DropForeignKey` fails against any constraint
+created by hand**, and takes the whole migration with it.
+
+Drop by the column instead, which drops whatever is actually there:
+
+```csharp
+migrationBuilder.DropForeignKeys("Chapters", "CountryId");
+```
+
+EF then adds its own back under the conventional name, so a table converges on the convention as it is
+migrated. `ForeignKeySql` builds the SQL and is covered by `ODK.Data.EntityFramework.Migrations.Tests`;
+`EnumTableSql.DropForeignKey` does the same for the enum lookup tables.
+
+The same blind spot applies to **primary key** and **unique** constraint names, which the scaffolder also
+guesses — `DropConstraintIfExists` covers those. And when a relationship is added to the model that the
+database already enforces, EF scaffolds only the `AddForeignKey`: nothing drops the constraint already on the
+column, so the add collides. Drop it first.
+
 ## Everyday commands
 
 Run from the solution root.

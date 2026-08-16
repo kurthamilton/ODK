@@ -15,9 +15,5 @@ public class FeatureMap : IEntityTypeConfiguration<Feature>
 
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();
-        builder.Property(x => x.Id)
-            .HasColumnName("FeatureId");
-
-        builder.HasRenamedIdColumn();
     }
 }
