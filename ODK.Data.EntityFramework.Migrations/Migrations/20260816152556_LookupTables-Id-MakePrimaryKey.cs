@@ -75,7 +75,7 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                 name: "PK_Countries",
                 table: "Countries");
 
-            /* Kept, not dropped - that is LookupTables-Id-Remove's job. The build that is live while this runs
+            /* Kept, not dropped - that is LookupTables-OldIdColumns-Remove's job. The build that is live while this runs
                still reads and writes the old column, so it has to survive until the build after this one has
                replaced it. Nullable because that build no longer writes it. */
             migrationBuilder.AlterColumn<Guid>(
