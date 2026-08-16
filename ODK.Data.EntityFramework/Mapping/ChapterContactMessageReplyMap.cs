@@ -19,6 +19,8 @@ public class ChapterContactMessageReplyMap : IEntityTypeConfiguration<ChapterCon
         builder.Property(x => x.Id)
             .HasColumnName("ChapterContactMessageReplyId");
 
+        builder.HasRenamedIdColumn();
+
         builder.HasOne<ChapterContactMessage>()
             .WithMany()
             .HasForeignKey(x => x.ChapterContactMessageId);

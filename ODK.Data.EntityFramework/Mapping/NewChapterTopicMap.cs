@@ -17,6 +17,8 @@ public class NewChapterTopicMap : IEntityTypeConfiguration<NewChapterTopic>
         builder.Property(x => x.Id)
             .HasColumnName("NewChapterTopicId");
 
+        builder.HasRenamedIdColumn();
+
         builder.HasOne<Chapter>()
             .WithMany()
             .HasForeignKey(x => x.ChapterId)

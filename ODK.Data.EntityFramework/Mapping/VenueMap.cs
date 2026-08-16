@@ -20,6 +20,8 @@ public class VenueMap : IEntityTypeConfiguration<Venue>
         builder.Property(x => x.Id)
             .HasColumnName("VenueId");
 
+        builder.HasRenamedIdColumn();
+
         builder.Property(x => x.Name)
             .HasMaxLength(255);
 
