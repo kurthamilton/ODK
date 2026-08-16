@@ -20,11 +20,6 @@ public class IssueMap : IEntityTypeConfiguration<Issue>
         builder.Property(x => x.ClosedUtc)
             .HasConversion<NullableUtcDateTimeConverter>();
 
-        builder.Property(x => x.Id)
-            .HasColumnName("IssueId");
-
-        builder.HasRenamedIdColumn();
-
         builder.Property(x => x.Status)
             .HasColumnName("IssueStatusTypeId")
             .HasConversion<int>();

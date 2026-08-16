@@ -16,11 +16,6 @@ public class SiteContactMessageReplyMap : IEntityTypeConfiguration<SiteContactMe
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();
 
-        builder.Property(x => x.Id)
-            .HasColumnName("SiteContactMessageReplyId");
-
-        builder.HasRenamedIdColumn();
-
         builder.HasOne<SiteContactMessage>()
             .WithMany()
             .HasForeignKey(x => x.SiteContactMessageId);
