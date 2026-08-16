@@ -91,18 +91,29 @@ public static class EnumTableSql
         // being inside a string as well as for being an identifier.
         var alterStatement = Literal($"ALTER TABLE {Identifier(table)} DROP CONSTRAINT ");
 
+        /* Variables named for what they act on, because they are batch-scoped: a migration emitting more
+           than one of these blocks runs them all in one batch, where a second DECLARE of the same name is
+           an error. */
+        var name = $"@name_{Suffix(table)}_{Suffix(column)}";
+        var statement = $"@sql_{Suffix(table)}_{Suffix(column)}";
+
         return Join(
-            "DECLARE @name sysname;",
+            $"DECLARE {name} sysname;",
+            $"DECLARE {statement} nvarchar(max);",
             "",
             "WHILE 1 = 1",
             "BEGIN",
-            "    SET @name = (",
+            $"    SET {name} = (",
             "        SELECT TOP 1 fk.name",
             ForeignKeyMatch("        ", table, enumTable.Name, column) + ");",
             "",
-            "    IF @name IS NULL BREAK;",
+            $"    IF {name} IS NULL BREAK;",
             "",
-            $"    EXEC({alterStatement} + QUOTENAME(@name));",
+            /* Built into a variable and then executed, rather than executed as one expression: EXEC takes
+               string literals and variables joined by +, and nothing else, so calling QUOTENAME inside it
+               is a syntax error. */
+            $"    SET {statement} = {alterStatement} + QUOTENAME({name});",
+            $"    EXEC({statement});",
             "END");
     }
 
@@ -167,4 +178,9 @@ public static class EnumTableSql
     private static string Join(params string[] lines) => string.Join(Environment.NewLine, lines);
 
     private static string Literal(string value) => $"N'{value.Replace("'", "''")}'";
+
+    // Anything not legal in a variable name goes, so an unusual table or column name cannot produce one
+    // that will not parse. Only uniqueness within the batch matters, not readability.
+    private static string Suffix(string name)
+        => new([.. name.Where(x => char.IsLetterOrDigit(x) || x == '_')]);
 }

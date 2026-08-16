@@ -12,11 +12,6 @@ public class TopicMap : IEntityTypeConfiguration<Topic>
 
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.Id)
-            .HasColumnName("TopicId");
-
-        builder.HasRenamedIdColumn();
-
         builder.HasOne(x => x.TopicGroup)
             .WithMany()
             .HasForeignKey(x => x.TopicGroupId);

@@ -34,6 +34,18 @@ internal static class MigrationBuilderExtensions
     }
 
     /// <summary>
+    /// Drops every foreign key on a column, whatever each one is called - use in place of
+    /// <see cref="MigrationBuilder.DropForeignKey"/>, which needs a name the scaffolder can only guess.
+    /// See <see cref="ForeignKeySql.Drop"/>.
+    /// </summary>
+    internal static MigrationBuilder DropForeignKeys(
+        this MigrationBuilder migrationBuilder, string table, string column)
+    {
+        migrationBuilder.Sql(ForeignKeySql.Drop(table, column));
+        return migrationBuilder;
+    }
+
+    /// <summary>
     /// Inserts rows into Emails, writing EmailRecipientTypeId for each email that sets
     /// <see cref="Email.RecipientType"/> and omitting the column for each one that leaves it unset.
     /// </summary>
