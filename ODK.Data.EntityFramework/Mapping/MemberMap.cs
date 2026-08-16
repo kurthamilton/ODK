@@ -19,6 +19,8 @@ public class MemberMap : IEntityTypeConfiguration<Member>
         builder.Property(x => x.Id)
             .HasColumnName("MemberId");
 
+        builder.HasRenamedIdColumn();
+
         builder.Property(x => x.SiteAdmin)
             .HasColumnName("SuperAdmin");
 
