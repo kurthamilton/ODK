@@ -12,11 +12,6 @@ public class EventHostMap : IEntityTypeConfiguration<EventHost>
 
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.Id)
-            .HasColumnName("EventHostId");
-
-        builder.HasRenamedIdColumn();
-
         builder.HasOne<Event>()
             .WithMany()
             .HasForeignKey(x => x.EventId);

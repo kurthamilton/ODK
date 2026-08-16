@@ -12,11 +12,6 @@ public class EventTicketPaymentMap : IEntityTypeConfiguration<EventTicketPayment
 
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.Id)
-            .HasColumnName("EventTicketPaymentId");
-
-        builder.HasRenamedIdColumn();
-
         builder.HasOne<Event>()
             .WithMany()
             .HasForeignKey(x => x.EventId);

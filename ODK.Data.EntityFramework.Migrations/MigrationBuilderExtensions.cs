@@ -46,6 +46,18 @@ internal static class MigrationBuilderExtensions
     }
 
     /// <summary>
+    /// Drops any existing plain index on a column, whatever it is called, so a scaffolded
+    /// <see cref="MigrationBuilder.CreateIndex"/> for that column neither collides with it nor leaves a
+    /// duplicate beside it. See <see cref="IndexSql.Drop"/>.
+    /// </summary>
+    internal static MigrationBuilder DropIndexes(
+        this MigrationBuilder migrationBuilder, string table, string column)
+    {
+        migrationBuilder.Sql(IndexSql.Drop(table, column));
+        return migrationBuilder;
+    }
+
+    /// <summary>
     /// Inserts rows into Emails, writing EmailRecipientTypeId for each email that sets
     /// <see cref="Email.RecipientType"/> and omitting the column for each one that leaves it unset.
     /// </summary>
