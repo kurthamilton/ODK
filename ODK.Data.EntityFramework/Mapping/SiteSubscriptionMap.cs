@@ -13,11 +13,6 @@ public class SiteSubscriptionMap : IEntityTypeConfiguration<SiteSubscription>
 
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.Id)
-            .HasColumnName("SiteSubscriptionId");
-
-        builder.HasRenamedIdColumn();
-
         builder.Property(x => x.Platform)
             .HasColumnName("PlatformTypeId")
             .HasConversion<int>();

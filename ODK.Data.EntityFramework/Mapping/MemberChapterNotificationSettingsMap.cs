@@ -12,11 +12,6 @@ public class MemberChapterNotificationSettingsMap : IEntityTypeConfiguration<Mem
 
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.Id)
-            .HasColumnName("MemberChapterNotificationSettingId");
-
-        builder.HasRenamedIdColumn();
-
         builder.Property(x => x.NotificationType)
             .HasColumnName("NotificationTypeId")
             .HasConversion<int>();

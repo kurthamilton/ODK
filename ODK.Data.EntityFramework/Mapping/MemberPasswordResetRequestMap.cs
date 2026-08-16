@@ -18,11 +18,6 @@ public class MemberPasswordResetRequestMap : IEntityTypeConfiguration<MemberPass
 
         builder.Property(x => x.ExpiresUtc)
             .HasConversion<UtcDateTimeConverter>();
-        builder.Property(x => x.Id)
-            .HasColumnName("MemberPasswordResetRequestId");
-
-        builder.HasRenamedIdColumn();
-
         builder.HasOne<Member>()
             .WithMany()
             .HasForeignKey(x => x.MemberId);
