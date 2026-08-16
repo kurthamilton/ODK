@@ -12,11 +12,6 @@ public class SiteSubscriptionFeatureMap : IEntityTypeConfiguration<SiteSubscript
 
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.Id)
-            .HasColumnName("SiteSubscriptionFeatureId");
-
-        builder.HasRenamedIdColumn();
-
         builder.Property(x => x.Feature)
             .HasColumnName("SiteFeatureId")
             .HasConversion<int>();

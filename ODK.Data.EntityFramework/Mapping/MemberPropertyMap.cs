@@ -13,11 +13,6 @@ public class MemberPropertyMap : IEntityTypeConfiguration<MemberProperty>
 
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.Id)
-            .HasColumnName("MemberPropertyId");
-
-        builder.HasRenamedIdColumn();
-
         builder.HasOne<ChapterProperty>()
             .WithMany()
             .HasForeignKey(x => x.ChapterPropertyId)

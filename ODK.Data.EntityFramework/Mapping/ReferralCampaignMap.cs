@@ -19,11 +19,6 @@ public class ReferralCampaignMap : IEntityTypeConfiguration<ReferralCampaign>
         builder.Property(x => x.ExpiresUtc)
             .HasConversion<NullableUtcDateTimeConverter>();
 
-        builder.Property(x => x.Id)
-            .HasColumnName("ReferralCampaignId");
-
-        builder.HasRenamedIdColumn();
-
         builder.Property(x => x.Name)
             .HasMaxLength(255);
     }
