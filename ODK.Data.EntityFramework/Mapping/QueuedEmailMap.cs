@@ -17,6 +17,8 @@ public class QueuedEmailMap : IEntityTypeConfiguration<QueuedEmail>
         builder.Property(x => x.Id)
             .HasColumnName("QueuedEmailId");
 
+        builder.HasRenamedIdColumn();
+
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();
 

@@ -18,5 +18,7 @@ public class InstagramFetchLogEntryMap : IEntityTypeConfiguration<InstagramFetch
 
         builder.Property(x => x.Id)
             .HasColumnName("InstagramFetchLogId");
+
+        builder.HasRenamedIdColumn();
     }
 }
