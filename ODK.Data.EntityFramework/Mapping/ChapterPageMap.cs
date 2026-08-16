@@ -15,6 +15,8 @@ public class ChapterPageMap : IEntityTypeConfiguration<ChapterPage>
         builder.Property(x => x.Id)
             .HasColumnName("ChapterPageId");
 
+        builder.HasRenamedIdColumn();
+
         builder.Property(x => x.PageType)
             .HasColumnName("PageTypeId")
             .HasConversion<int>();
