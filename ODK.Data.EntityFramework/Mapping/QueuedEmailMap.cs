@@ -20,8 +20,11 @@ public class QueuedEmailMap : IEntityTypeConfiguration<QueuedEmail>
         builder.Property(x => x.SendAfterUtc)
             .HasConversion<NullableUtcDateTimeConverter>();
 
+        // Stated rather than left to convention: the column is optional, which would give no action, while
+        // the database cascades - a queued email has no meaning once its group is gone.
         builder.HasOne<Chapter>()
             .WithMany()
-            .HasForeignKey(x => x.ChapterId);
+            .HasForeignKey(x => x.ChapterId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

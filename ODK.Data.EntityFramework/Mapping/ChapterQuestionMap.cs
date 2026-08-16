@@ -14,5 +14,10 @@ public class ChapterQuestionMap : IEntityTypeConfiguration<ChapterQuestion>
 
         builder.Property(x => x.Version)
             .IsRowVersion();
+
+        builder.HasOne<Chapter>()
+            .WithMany()
+            .HasForeignKey(x => x.ChapterId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

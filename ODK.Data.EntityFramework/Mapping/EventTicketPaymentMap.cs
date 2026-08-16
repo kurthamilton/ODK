@@ -12,9 +12,12 @@ public class EventTicketPaymentMap : IEntityTypeConfiguration<EventTicketPayment
 
         builder.HasKey(x => x.Id);
 
+        // Stated rather than left to convention, which would cascade: the database restricts, so deleting an
+        // event cannot take the record of what was paid for it.
         builder.HasOne<Event>()
             .WithMany()
-            .HasForeignKey(x => x.EventId);
+            .HasForeignKey(x => x.EventId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(x => x.Payment)
             .WithOne()

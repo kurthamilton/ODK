@@ -27,5 +27,10 @@ public class ChapterSubscriptionMap : IEntityTypeConfiguration<ChapterSubscripti
         builder.HasOne<SitePaymentSettings>()
             .WithMany()
             .HasForeignKey(x => x.SitePaymentSettingId);
+
+        builder.HasOne<Chapter>()
+            .WithMany()
+            .HasForeignKey(x => x.ChapterId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

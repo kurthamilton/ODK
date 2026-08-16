@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using ODK.Core.Chapters;
 using ODK.Core.Events;
 using ODK.Core.Venues;
 using ODK.Data.EntityFramework.Converters;
@@ -17,11 +18,6 @@ public class EventMap : IEntityTypeConfiguration<Event>
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();
 
-        builder.Property(x => x.Id)
-            .HasColumnName("EventId");
-
-        builder.HasRenamedIdColumn();
-
         builder.Property(x => x.PublishedUtc)
             .HasConversion<NullableUtcDateTimeConverter>();
 
@@ -36,5 +32,10 @@ public class EventMap : IEntityTypeConfiguration<Event>
         builder.HasOne(x => x.TicketSettings)
             .WithOne()
             .HasForeignKey<EventTicketSettings>(x => x.EventId);
+
+        builder.HasOne<Chapter>()
+            .WithMany()
+            .HasForeignKey(x => x.ChapterId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

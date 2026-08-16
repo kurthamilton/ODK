@@ -18,5 +18,10 @@ public class ChapterContactMessageMap : IEntityTypeConfiguration<ChapterContactM
 
         builder.Property(x => x.RepliedUtc)
             .HasConversion<NullableUtcDateTimeConverter>();
+
+        builder.HasOne<Chapter>()
+            .WithMany()
+            .HasForeignKey(x => x.ChapterId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

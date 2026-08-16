@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ODK.Core.Chapters;
 using ODK.Core.Countries;
+using ODK.Core.Members;
 using ODK.Data.EntityFramework.Converters;
 
 namespace ODK.Data.EntityFramework.Mapping;
@@ -23,11 +24,6 @@ public class ChapterMap : IEntityTypeConfiguration<Chapter>
 
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();
-
-        builder.Property(x => x.Id)
-            .HasColumnName("ChapterId");
-
-        builder.HasRenamedIdColumn();
 
         builder.Property(x => x.Name)
             .HasMaxLength(255);
@@ -57,6 +53,12 @@ public class ChapterMap : IEntityTypeConfiguration<Chapter>
         builder.HasOne<Country>()
             .WithMany()
             .HasForeignKey(x => x.CountryId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Restrict rather than cascade: removing a member must not take the groups they own with it.
+        builder.HasOne<Member>()
+            .WithMany()
+            .HasForeignKey(x => x.OwnerId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

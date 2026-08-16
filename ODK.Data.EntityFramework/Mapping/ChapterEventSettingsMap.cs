@@ -11,5 +11,10 @@ public class ChapterEventSettingsMap : IEntityTypeConfiguration<ChapterEventSett
         builder.ToTable("ChapterEventSettings");
 
         builder.HasKey(x => x.ChapterId);
+
+        builder.HasOne<Chapter>()
+            .WithOne()
+            .HasForeignKey<ChapterEventSettings>(x => x.ChapterId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

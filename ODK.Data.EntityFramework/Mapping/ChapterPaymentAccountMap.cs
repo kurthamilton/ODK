@@ -27,13 +27,17 @@ public class ChapterPaymentAccountMap : IEntityTypeConfiguration<ChapterPaymentA
         builder.Property(x => x.OnboardingCompletedUtc)
             .HasConversion<NullableUtcDateTimeConverter>();
 
+        /* Both stated rather than left to convention, which would cascade: the database restricts, and a
+           payment account is not something to delete as a side effect of removing a group or a member. */
         builder.HasOne<Chapter>()
             .WithOne()
-            .HasForeignKey<ChapterPaymentAccount>(x => x.ChapterId);
+            .HasForeignKey<ChapterPaymentAccount>(x => x.ChapterId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne<Member>()
             .WithMany()
-            .HasForeignKey(x => x.OwnerId);
+            .HasForeignKey(x => x.OwnerId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne<SitePaymentSettings>()
             .WithMany()
