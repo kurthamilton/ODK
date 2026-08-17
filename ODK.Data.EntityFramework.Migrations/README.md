@@ -161,7 +161,9 @@ migrationBuilder.DropPrimaryKeyIfExists("SentEmailEvents");
 **Nor is an unmapped column or table.** `DropColumn` and `DropTable` assume the thing exists, which holds for
 anything a migration created and fails for anything that only ever existed in a restored database — the
 schema pre-dates the baseline, so a database built from the migrations alone never had it. Use
-`DropColumnIfExists` and `DropTableIfExists`, which are no-ops there:
+`DropColumnIfExists` and `DropTableIfExists`, which are no-ops there. `DropColumnIfExists` also clears the
+column's default constraint, looked up rather than named, since a default blocks the drop and `DropColumn` only
+handles it for a column EF knows about:
 
 ```csharp
 migrationBuilder.DropColumnIfExists("Payments", "PaymentReconciliationId");
@@ -193,7 +195,7 @@ EF is about to create — non-primary-key, non-unique, nonclustered, keyed on th
 composite index beginning with the column serves queries the migration knows nothing about, a unique index is
 a constraint rather than a lookup aid, and dropping a clustered one would rewrite the table.
 
-`ForeignKeySql`, `IndexSql` and `PrimaryKeySql` build the SQL and are covered by
+`ColumnSql`, `ForeignKeySql`, `IndexSql` and `PrimaryKeySql` build the SQL and are covered by
 `ODK.Data.EntityFramework.Migrations.Tests`; `EnumTableSql.DropForeignKey` does the same job for the enum
 lookup tables. All of them name their SQL variables after the table and column they act on, because a
 migration emitting several blocks runs them in one batch and variables are scoped to the batch, not the

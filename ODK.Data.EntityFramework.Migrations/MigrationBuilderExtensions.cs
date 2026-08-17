@@ -34,16 +34,15 @@ internal static class MigrationBuilderExtensions
     }
 
     /// <summary>
-    /// Drops a column where the table has one - use in place of <see cref="MigrationBuilder.DropColumn"/> for
-    /// a column no migration created, which a database built from the migrations alone will not have.
+    /// Drops a column where the table has one, and its default constraint with it - use in place of
+    /// <see cref="MigrationBuilder.DropColumn"/> for a column no migration created, which a database built from
+    /// the migrations alone will not have. Any index or foreign key on the column is the caller's to clear
+    /// first. See <see cref="ColumnSql.Drop"/>.
     /// </summary>
     internal static MigrationBuilder DropColumnIfExists(
         this MigrationBuilder migrationBuilder, string table, string column)
     {
-        var sql =
-            $"IF COL_LENGTH(N'{table}', N'{column}') IS NOT NULL" + Environment.NewLine +
-            $"    ALTER TABLE [{table}] DROP COLUMN [{column}];";
-        migrationBuilder.Sql(sql);
+        migrationBuilder.Sql(ColumnSql.Drop(table, column));
         return migrationBuilder;
     }
 
