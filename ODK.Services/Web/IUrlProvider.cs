@@ -8,7 +8,7 @@ public interface IUrlProvider
 
     string BaseUrl();
 
-    string ChapterJoin(Chapter chapter);
+    string ChapterJoin(Chapter chapter, string inviteToken);
 
     string ChapterSubscription(Chapter chapter);
 

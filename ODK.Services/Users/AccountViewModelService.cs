@@ -3,6 +3,7 @@ using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Data.Core;
+using ODK.Data.Core.Deferred;
 using ODK.Services.Geolocation;
 using ODK.Services.Users.ViewModels;
 
@@ -47,21 +48,42 @@ public class AccountViewModelService : IAccountViewModelService
     }
 
     public async Task<ChapterJoinPageViewModel> GetChapterJoinPage(
-        IChapterServiceRequest request)
+        IChapterServiceRequest request, string? inviteToken)
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
 
         var (
             chapterProperties,
             chapterPropertyOptions,
-            chapterTexts) = await _unitOfWork.RunAsync(
+            chapterTexts,
+            invite) = await _unitOfWork.RunAsync(
             x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPropertyOptionRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterTextsRepository.GetByChapterId(chapter.Id));
+            x => x.ChapterTextsRepository.GetByChapterId(chapter.Id),
+            x => !string.IsNullOrEmpty(inviteToken)
+                ? x.MemberChapterInviteRepository.GetByToken(inviteToken)
+                : new DefaultDeferredQuerySingleOrDefault<MemberChapterInvite>());
+
+        /* A second round-trip only when there is an invitation to resolve: the member it names cannot be
+           batched with the query that finds it. An invitation for another chapter is ignored rather than
+           refused - the link is simply not for this page. */
+        var invitedMember = invite != null && invite.ChapterId == chapter.Id
+            ? await _unitOfWork.MemberRepository.GetByIdOrDefault(invite.MemberId).Run()
+            : null;
 
         return new ChapterJoinPageViewModel
         {
             Chapter = chapter,
+            InvitedMemberHasAccount = invitedMember?.Activated == true,
+            PersonalDetails = new PersonalDetailsFormViewModel
+            {
+                Chapter = chapter,
+                EmailAddress = invitedMember?.EmailAddress ?? string.Empty,
+                FirstName = invitedMember?.FirstName ?? string.Empty,
+                // Only a token that resolved to a member is worth posting back; anything else is a dead link.
+                InviteToken = invitedMember != null ? inviteToken : null,
+                LastName = invitedMember?.LastName ?? string.Empty
+            },
             Profile = CreateProfileFormViewModel(
                 request.Platform,
                 chapter,

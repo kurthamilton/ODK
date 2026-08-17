@@ -32,35 +32,35 @@ public class TestDataCleaner : DataHelperBase
 
     public async Task<int> DeleteTestData()
     {
-        const string memberIdSql = "SELECT MemberId FROM Members WHERE EmailAddress LIKE @pattern";
-        const string siteSubIdSql = "SELECT SiteSubscriptionId FROM SiteSubscriptions WHERE Name LIKE @subPattern";
+        const string memberIdSql = "SELECT Id FROM Members WHERE EmailAddress LIKE @pattern";
+        const string siteSubIdSql = "SELECT Id FROM SiteSubscriptions WHERE Name LIKE @subPattern";
 
         const string sql =
             $"""
             DELETE FROM SentEmails WHERE [To] LIKE @pattern;
 
             DELETE ei FROM EventInvites ei
-                INNER JOIN Events e ON e.EventId = ei.EventId
-                INNER JOIN Chapters c ON c.ChapterId = e.ChapterId
+                INNER JOIN Events e ON e.Id = ei.EventId
+                INNER JOIN Chapters c ON c.Id = e.ChapterId
                 WHERE c.OwnerId IN ({memberIdSql});
 
             DELETE e FROM Events e
-                INNER JOIN Chapters c ON c.ChapterId = e.ChapterId
+                INNER JOIN Chapters c ON c.Id = e.ChapterId
                 WHERE c.OwnerId IN ({memberIdSql});
 
             DELETE FROM ChapterPaymentAccounts WHERE ChapterId IN
-                (SELECT ChapterId FROM Chapters WHERE OwnerId IN ({memberIdSql}));
+                (SELECT Id FROM Chapters WHERE OwnerId IN ({memberIdSql}));
             DELETE FROM MemberSubscriptionLog WHERE MemberId IN ({memberIdSql});
             DELETE FROM ChapterSubscriptions WHERE ChapterId IN
-                (SELECT ChapterId FROM Chapters WHERE OwnerId IN ({memberIdSql}));
+                (SELECT Id FROM Chapters WHERE OwnerId IN ({memberIdSql}));
             DELETE FROM Chapters WHERE OwnerId IN ({memberIdSql});
             DELETE FROM MemberSiteSubscriptionLog WHERE MemberId IN ({memberIdSql});
             DELETE FROM Payments WHERE MemberId IN ({memberIdSql});
-            DELETE FROM Members WHERE MemberId IN ({memberIdSql});
+            DELETE FROM Members WHERE Id IN ({memberIdSql});
 
             DELETE FROM SiteSubscriptionFeatures WHERE SiteSubscriptionId IN ({siteSubIdSql});
             DELETE FROM SiteSubscriptionPrices WHERE SiteSubscriptionId IN ({siteSubIdSql});
-            DELETE FROM SiteSubscriptions WHERE SiteSubscriptionId IN ({siteSubIdSql});
+            DELETE FROM SiteSubscriptions WHERE Id IN ({siteSubIdSql});
 
             DELETE FROM SiteQuestions WHERE Name LIKE @questionPattern;
             """;

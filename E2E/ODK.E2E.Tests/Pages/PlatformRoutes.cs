@@ -38,6 +38,12 @@ internal abstract class PlatformRoutes
     /// <summary>Member-facing: the chapter/group landing (home) page.</summary>
     public abstract string Home { get; }
 
+    /// <summary>Admin: the members list, which is also where a completed import redirects.</summary>
+    public abstract string MembersAdmin { get; }
+
+    /// <summary>Admin: the member-import wizard (upload a CSV, review, confirm).</summary>
+    public abstract string MembersImport { get; }
+
     /// <summary>Member-facing: the members-list page.</summary>
     public abstract string MembersList { get; }
 
@@ -102,6 +108,10 @@ internal abstract class PlatformRoutes
 
         public override string Home => $"/groups/{_slug}";
 
+        public override string MembersAdmin => $"/my/groups/{_chapterId}/members";
+
+        public override string MembersImport => $"/my/groups/{_chapterId}/members/import";
+
         public override string MembersList => $"/groups/{_slug}/members";
 
         public override string PropertyCreate => $"/my/groups/{_chapterId}/members/properties/new";
@@ -152,6 +162,10 @@ internal abstract class PlatformRoutes
         public override string EventsList => $"/{_shortName}/events";
 
         public override string Home => $"/{_shortName}";
+
+        public override string MembersAdmin => $"/{_shortName}/admin/members";
+
+        public override string MembersImport => $"/{_shortName}/admin/members/import";
 
         public override string MembersList => $"/{_shortName}/members";
 

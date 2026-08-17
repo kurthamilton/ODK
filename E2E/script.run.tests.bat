@@ -21,6 +21,7 @@ if "%CATEGORY%"=="" (
     echo   DrunkenKnitwits      - Drunken Knitwits only
     echo   Stripe               - payments only; slow, needs the ngrok tunnel up
     echo   NoStripe             - everything except payments
+    echo   AccountCreate        - every route into an account: sign-up, activation, invited members
     echo   Venues               - venue admin; creation, name normalising, slugs, events filter
     echo   SiteQuestions        - site FAQ admin and the About page; Group Squirrel only
     echo   EmailAdmin           - a group customising its email templates; Group Squirrel only

@@ -23,8 +23,8 @@ public class UrlProvider : IUrlProvider
 
     public string BaseUrl() => GetUrl(string.Empty);
 
-    public string ChapterJoin(Chapter chapter)
-        => GetUrl(_odkRoutes.Groups.Join(chapter));
+    public string ChapterJoin(Chapter chapter, string inviteToken)
+        => GetUrl(_odkRoutes.Groups.Join(chapter, inviteToken));
 
     public string ChapterSubscription(Chapter chapter)
         => GetUrl(_odkRoutes.Groups.Subscription(chapter));

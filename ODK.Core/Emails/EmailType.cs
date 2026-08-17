@@ -54,7 +54,7 @@ public enum EmailType
     [Display(Name = "Imported member: activate account")]
     MemberImportActivation = 16,
 
-    [Display(Name = "Imported member: added to group")]
+    [Display(Name = "Imported member: invited to group")]
     MemberImportInvite = 17,
 
     [Display(Name = "Event comment reply")]

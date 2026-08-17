@@ -15,7 +15,7 @@ public class VenueDataHelper : DataHelperBase
     {
         const string sql =
             """
-            SELECT TOP 1 VenueId
+            SELECT TOP 1 Id
             FROM Venues
             WHERE ChapterId = @chapterId AND Name = @name AND ArchivedUtc IS NULL
             """;

@@ -95,6 +95,19 @@ Two styles coexist for composing those queries:
   repositories have been converted (the builder pattern is verbose to set up), so this style remains;
   it's fine to extend a repo that already uses it, but reach for a query builder for anything new.
 
+**Cluster on the most suitable column(s) where it makes sense.** EF clusters the primary key by default, which
+is only the right answer when rows are actually looked up by their key. Plenty here are not: a member entity is
+almost always queried *by member*, so ordering the rows that way serves the reads the table exists for. Where a
+better key is clear, say so explicitly — `.IsClustered(false)` on the `HasKey` and `.IsClustered()` on the index
+that earns it (see `MemberChapterInviteMap`, clustered on `(MemberId, ChapterId)`, and `ChapterEmailMap`,
+clustered on `ChapterId`). Lead the composite with the column the reads start from, so one index answers both
+the exact-row lookup and the "all of this member's rows" one; a foreign key on another column keeps the index EF
+gives it, which covers reads from that direction.
+
+Deliberately a judgement call rather than a rule — what a table is read by is not something a convention can
+decide for it. The point is to *make a choice* rather than inherit the default without looking, and to leave a
+comment saying what the reads are, since that is the reasoning a later reader cannot recover from the schema.
+
 ## Web architecture
 
 The app is **server-rendered** with minimal client-side JavaScript (Bootstrap + small
@@ -114,6 +127,17 @@ The app follows a clear split — respect it:
 in the `@{ }` block, keeping the result in a local. The page model then holds only what a view cannot
 get for itself — the route values it captures in `OnGet`, the `Securable`, and any POST handler. See
 `Pages/My/Groups/Group/Email.cshtml`.
+
+**Loaded once, in one round-trip.** A view model is fetched a single time on load — by the page's `.cshtml` or by
+a shared partial, whichever owns that piece of the screen — and never re-fetched further down the render. One
+`Get...ViewModel(request)` call per view model, held in a local. The service behind it batches everything it needs
+through `IUnitOfWork.RunAsync(...)` so the page costs one database round-trip rather than one per value; a partial
+that quietly loads its own extras turns a single round-trip into several and hides them from the page that pays
+for them. When a partial genuinely owns its data, give it its own view model and its own single load — do not
+have the parent fetch on its behalf and pass fragments down.
+
+The same applies to a `GET` that arrives with something to look up, such as a token in the query string: resolve
+it once into the view model the page renders, rather than reading it in `OnGet` and again in the view.
 
 Loading in the page model means a property per value passed through, and those properties collide with
 the base's own — `Title` is already the browser title, so an email's title had to become `AppliedTitle`
@@ -231,6 +255,16 @@ otherwise it exists but is unreachable from the menu and invisible to the redire
 
 - **`ServiceResult` / `ServiceResult<T>`** is the standard return for operations that can fail.
   Use `.Successful(...)` / `.Failure(msg)`; the web layer surfaces it via `AddFeedback(result)`.
+- **When the payload is a primitive, derive a named result type instead of using `ServiceResult<T>`.**
+  `ServiceResult<Member?>` is fine — the type says what the value is. `ServiceResult<string?>` does not: `Value`
+  could be a token, a URL or a reference, so the meaning lives in a comment on the method and in the reader's
+  memory. A derived type names it at the use site — `result.ActivationToken` needs no comment. Name it after the
+  method (`CreateChapterAccount` → `CreateChapterAccountResult`), keep the constructor `private` behind static
+  factories named for the outcome they describe, and re-declare `Failure` / `Successful` with `new` so they
+  return the derived type. Give each factory the arguments that outcome actually has — a success carrying a token
+  and a success carrying a message must not be two calls with the same signature, or the wrong one is a silent
+  mistake rather than a compiler error. `FromResult(result)` carries a failure raised elsewhere through unchanged.
+  See `CreateChapterAccountResult`.
 - **Service requests** (`IServiceRequest`, `IMemberChapterServiceRequest`,
   `IMemberChapterAdminServiceRequest`, …) carry the caller context (platform, chapter, member).
   Controllers/pages get them from the request store; don't reconstruct them ad hoc.
@@ -327,6 +361,14 @@ the request locale and enqueues a background `IMemberLocaleService.UpdateLocale`
   looks like an improvement — "not X, because Y" is about the current design and is worth keeping. Write
   it as a standing rule rather than as a story ("do not merge these lists: a migration that runs before a
   column exists must insert without it"), so it reads as a constraint rather than a changelog.
+  That exception is narrower than it looks, and two tests keep it honest. The comment must be **anchored to code
+  that exists** — never explaining why something is absent, because a comment on a hole has nothing that prompts
+  a reader to revisit it when the hole gets filled, and it then reads as an argument against the very change
+  being made. And the *because* must be a **constraint that cannot change**, not a design preference in the
+  grammar of one: "a migration that runs before a column exists must insert without it" stays true, whereas "this
+  carries no token, because accepting requires being signed in" only describes a choice, and became wrong the day
+  a token was wanted. If you are explaining an absence, or a reason a new requirement could overturn, say nothing
+  and let the code speak.
   Nor should a comment narrate what a call plainly does — the code is definitive.
 - File-scoped namespaces.
 - **Prefer `using` directives over fully-qualified type names.** Import the namespace and use the short

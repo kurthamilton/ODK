@@ -18,7 +18,7 @@ public class MemberPropertyDataHelper : DataHelperBase
             """
             SELECT mp.Value
             FROM MemberProperties mp
-            INNER JOIN Members m ON m.MemberId = mp.MemberId
+            INNER JOIN Members m ON m.Id = mp.MemberId
             WHERE m.EmailAddress = @email AND mp.ChapterPropertyId = @propertyId
             """;
 

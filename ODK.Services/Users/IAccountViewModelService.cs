@@ -8,7 +8,7 @@ public interface IAccountViewModelService
 {
     Task<AccountCreatePageViewModel> GetAccountCreatePage(IServiceRequest request);
 
-    Task<ChapterJoinPageViewModel> GetChapterJoinPage(IChapterServiceRequest request);
+    Task<ChapterJoinPageViewModel> GetChapterJoinPage(IChapterServiceRequest request, string? inviteToken);
 
     Task<ChapterLoginPageViewModel> GetChapterLoginPage();
 

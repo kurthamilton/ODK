@@ -7,6 +7,7 @@ using ODK.Core.Events;
 using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Notifications;
+using ODK.Core.Platforms;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Events.ViewModels;
@@ -663,7 +664,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
-        var (siteSubscription, chapterLocation, currency, country, existingMembers, membershipSettings) = await GetChapterAdminRestrictedContent(request,
+        var (siteSubscription, chapterLocation, currency, country, existingMembers, outstandingInvites) = await GetChapterAdminRestrictedContent(request,
             x => x.SiteSubscriptionRepository.GetDefault(platform),
             x => x.ChapterLocationRepository.GetByChapterId(chapter.Id),
             x => x.CurrencyRepository.GetByChapterId(chapter.Id),
@@ -672,10 +673,14 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                 .Query()
                 .HasEmailAddress(emailAddresses)
                 .GetAll(),
-            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id));
+            x => x.MemberChapterInviteRepository.GetByChapterId(chapter.Id));
 
         var existingMemberDictionary = existingMembers
             .ToDictionary(x => x.EmailAddress, StringComparer.OrdinalIgnoreCase);
+
+        var invitedMemberIds = outstandingInvites
+            .Select(x => x.MemberId)
+            .ToHashSet();
 
         // De-duplicate the incoming rows by email (case-insensitively) so a file that contains the
         // same address more than once does not create multiple members for it.
@@ -686,8 +691,8 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         // The same check the preview showed, so what gets imported matches what was displayed.
         var validity = await ValidateImportEmailAddresses(distinctMembers);
 
-        var pendingActivationMembers = new List<Member>();
-        var invitedMembers = new List<Member>();
+        var activationEmailMembers = new List<Member>();
+        var inviteEmailMembers = new List<Member>();
 
         foreach (var importMember in distinctMembers)
         {
@@ -698,7 +703,9 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
             existingMemberDictionary.TryGetValue(importMember.EmailAddress, out var member);
 
-            if (member != null && member.IsMemberOf(chapter.Id))
+            // Already in the group, or already asked to join it - re-importing either is a no-op rather than a
+            // second invitation, which the unique index on (chapter, member) would reject anyway.
+            if (member != null && (member.IsMemberOf(chapter.Id) || invitedMemberIds.Contains(member.Id)))
             {
                 continue;
             }
@@ -761,32 +768,37 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                     MemberId = member.Id
                 });
 
-                pendingActivationMembers.Add(member);
+                /* Which email a new member gets is decided by whether they can act on the invitation's link.
+                   Signing up on Drunken Knitwits is joining the group, so the link lands on the join page with
+                   their details already filled in and the account is created from what they submit - while an
+                   activation link would take them straight past that page into an account belonging to no group.
+                   Group Squirrel's join page requires an account, so a new member there has to activate first. */
+                if (platform == PlatformType.DrunkenKnitwits)
+                {
+                    inviteEmailMembers.Add(member);
+                }
+                else
+                {
+                    activationEmailMembers.Add(member);
+                }
             }
             else
             {
-                invitedMembers.Add(member);
+                // Already has an account, so they can act on the invitation whichever platform they are on.
+                inviteEmailMembers.Add(member);
             }
 
-            var memberChapter = _unitOfWork.MemberChapterRepository.Add(new MemberChapter
+            /* An invitation, not a membership. An imported member has no membership status in the group until
+               they activate their account and join, so neither the MemberChapter nor the subscription record is
+               written here - MemberService.JoinChapter writes both when the invitation is accepted, which also
+               means the trial period starts when they actually join rather than when the file was uploaded. */
+            _unitOfWork.MemberChapterInviteRepository.Add(new MemberChapterInvite
             {
-                Approved = true,
                 ChapterId = chapter.Id,
                 CreatedUtc = utcNow,
-                MemberId = member.Id
+                MemberId = member.Id,
+                Token = TokenGenerator.GenerateBase64Token(64)
             });
-
-            var trial = membershipSettings?.TrialPeriodMonths > 0;
-            _memberChapterSubscriptionWriter.MakeRecordCurrent(
-                newRecord: new MemberSubscriptionRecord
-                {
-                    ChapterId = chapter.Id,
-                    ExpiresUtc = trial ? utcNow.AddMonths(membershipSettings!.TrialPeriodMonths) : null,
-                    MemberId = member.Id,
-                    PurchasedUtc = utcNow,
-                    Type = trial ? SubscriptionType.Trial : SubscriptionType.Free
-                },
-                existingCurrent: null);
         }
 
         await _unitOfWork.SaveChangesAsync();
@@ -796,7 +808,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         // Hangfire boundary; the member/chapter/token are reloaded by id inside each job.
         var emailRequest = ServiceRequest.Create(request);
 
-        foreach (var member in pendingActivationMembers)
+        foreach (var member in activationEmailMembers)
         {
             var memberId = member.Id;
             _backgroundTaskService.Enqueue(
@@ -804,7 +816,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                 BackgroundTaskQueueType.Emails);
         }
 
-        foreach (var member in invitedMembers)
+        foreach (var member in inviteEmailMembers)
         {
             var memberId = member.Id;
             _backgroundTaskService.Enqueue(
@@ -837,12 +849,19 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     // Public for Hangfire
     public async Task SendImportInviteEmail(IServiceRequest request, Guid chapterId, Guid memberId)
     {
-        var (member, chapter) = await _unitOfWork.RunAsync(
+        var (member, chapter, invite) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(memberId),
-            x => x.ChapterRepository.GetById(request.Platform, chapterId));
+            x => x.ChapterRepository.GetById(request.Platform, chapterId),
+            x => x.MemberChapterInviteRepository.GetByMemberId(memberId, chapterId));
+
+        // Consumed once they join, and the link is worthless without it, so there is nothing to send.
+        if (invite == null)
+        {
+            return;
+        }
 
         var chapterRequest = ChapterServiceRequest.Create(chapter, request);
-        await _memberEmailService.SendMemberImportInviteEmail(chapterRequest, member);
+        await _memberEmailService.SendMemberImportInviteEmail(chapterRequest, member, invite.Token);
     }
 
     public async Task<ServiceResult> RemoveMemberFromChapter(

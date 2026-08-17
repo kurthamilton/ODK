@@ -84,6 +84,13 @@ Two axes, composed by the filter:
     provisions its own group plus a subscription carrying the CustomEmails feature, so the fixture is slow
     to arrange, and the behaviour it covers is fiddly enough to iterate on: subject and body are customised
     independently, and the form's state is driven by client script.
+  - **`AccountCreate`** — every route into an account, on both platforms, applied at *fixture* level:
+    `AccountFlowTests` (Group Squirrel sign-up → activate → log in), `DrunkenKnitwitsAccountFlowTests` (where
+    signing up is joining the chapter) and `DrunkenKnitwitsInvitedMemberTests` (an imported member accepting
+    an invitation). Worth isolating because account creation is what nearly every other fixture provisions
+    through, so it is the first thing to run when a change might have broken sign-up — and because the invited
+    flows branch four ways on state a test has to arrange (invited or not, address kept or changed, account or
+    no account).
 
 ```
 script.run.tests.bat                 # prompts for a category
@@ -91,6 +98,7 @@ script.run.tests.bat Stripe          # just the payment tests
 script.run.tests.bat Venues          # just the venue admin tests
 script.run.tests.bat SiteQuestions   # just the site FAQ tests
 script.run.tests.bat EmailAdmin      # just the email customisation tests
+script.run.tests.bat AccountCreate   # just the account-creation and invited-member tests
 script.run.tests.bat Default         # one platform
 script.run.tests.bat NoStripe        # everything except payments - skips the slow ones
 ```
@@ -141,15 +149,32 @@ iterating - not for every feature, or filtering stops meaning anything.
   member-facing URLs (Default `/my/groups/{chapterId}/...` vs DrunkenKnitwits `/{chapterName}/admin/...`,
   whose leaf segments even differ — `/new` vs `/create`). Add a route here rather than composing paths in
   a page object or test. Mirrors the app's `GroupAdminRoutes`/`GroupRoutes`.
-- **Waiting for a form submit:** match the POST that **navigates**
-  (`r.Request.ResourceType == "document"`), not any POST. A page whose fields are validated by an XHR - the
+- **Waiting for a form submit takes two waits, not one.** Match the POST that **navigates**
+  (`r.Request.ResourceType == "document"`), not any POST: a page whose fields are validated by an XHR - the
   email template body posts itself to a validate endpoint on change - fires a POST of its own, so an
   any-POST wait returns before the form has submitted and the assertions then read the database as it was.
+  **Then wait for the document `GET` that follows.** Every form here is Post/Redirect/Get, so the POST
+  response *is* the 302 and arrives while the redirected GET is still in flight; `WaitForLoadStateAsync` right
+  after it just re-reports the page being left. A caller that then navigates to the same URL has its
+  navigation cut short by the one already running - `Navigation to X is interrupted by another navigation to X`.
+  Register the GET waiter *before* the click so it cannot be missed. `ChapterEmailAdminPage.Submit` is the
+  pattern.
+- **Don't select on text a page's chrome also carries.** The header renders "Sign in" on every anonymous page
+  and the group menu renders "Join", so `a:has-text('Sign in')` resolves to two elements: an *action* on it
+  throws a strict-mode violation, and - worse - a `CountAsync() > 0` presence check quietly passes on the
+  chrome alone, whether or not the thing under test rendered. Add a `data-*` hook to the element the test means
+  (`[data-invite-signin]`) rather than narrowing by ancestor. `button:has-text(...)` is usually safe because
+  the chrome's equivalents are links.
 - **Data helpers** (`ODK.E2E.Data/*DataHelper.cs`): all DB access goes through `E2EQueryBuilder`
   (`Create(sql).AddParameter(...).ExecuteScalar<T>()/ReadMany(...)/ExecuteNonQuery()`), never inline
   `SqlConnection`. **`ExecuteScalar<T>()` gotcha:** for a value-type column that can be null, call it with
   the nullable type — `ExecuteScalar<DateTime?>()`, `ExecuteScalar<int?>()`. With a non-nullable `T`, `T?`
   is just `T`, so a missing value comes back as `default(T)`, not null.
+- **An email's *body* is not readable — only its subject.** `SentEmails` records `To`, `Subject` and
+  `SentUtc`, and there is no test mail sink, so a link inside an email can never be scraped. Read the token the
+  link would carry straight from the database and build the URL in the test: `ActivationTokenDataHelper` does
+  that for activation, `MemberChapterInviteDataHelper` for an invitation. Where a subject is the only signal
+  available, keep the fragment asserted on in a named constant, since it is seeded wording that may change.
 - **Provisioning** (`Helpers/Provisioning.cs`): builds prerequisite state by driving the real UI on a
   throwaway browser (its own context with `BaseURL` set). `SharedAccounts.GetAsync(role)` caches an
   account per role for the run; use `Provisioning.NewAccountAsync(role)` for a fresh, one-off account

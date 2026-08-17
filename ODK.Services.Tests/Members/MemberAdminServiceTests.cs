@@ -586,6 +586,265 @@ public static class MemberAdminServiceTests
     }
 
     [Test]
+    public static async Task ImportMembers_NewMember_InvitesThemWithoutGivingThemMembership()
+    {
+        /* Arrange - an imported member has no membership status until they activate their account and join, so
+           the import records the invitation and nothing else. Creating the membership here would make them a
+           member of a group they have never responded to. */
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(owner: currentMember);
+
+        context.Create(new SiteSubscription
+        {
+            Id = Guid.NewGuid(),
+            Name = "Default",
+            Description = "",
+            GroupLimit = 10,
+            Enabled = true,
+            Default = true,
+            Platform = PlatformType.Default,
+            SitePaymentSettingId = Guid.NewGuid()
+        });
+
+        var service = CreateMemberAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberImport);
+
+        var members = new[]
+        {
+            new MemberImportModel { EmailAddress = "new@example.com", FirstName = "New", LastName = "Member" }
+        };
+
+        // Act
+        var result = await service.ImportMembers(request, members);
+
+        // Assert
+        result.Success.Should().BeTrue();
+
+        var member = context.Set<Member>().Single(x => x.EmailAddress == "new@example.com");
+
+        context.Set<MemberChapterInvite>()
+            .Count(x => x.MemberId == member.Id && x.ChapterId == chapter.Id)
+            .Should()
+            .Be(1);
+
+        context.Set<MemberChapter>()
+            .Any(x => x.MemberId == member.Id && x.ChapterId == chapter.Id)
+            .Should()
+            .BeFalse();
+
+        // Nor a subscription: the trial starts when they join, not when the file was uploaded.
+        context.Set<MemberSubscriptionRecord>()
+            .Any(x => x.MemberId == member.Id && x.ChapterId == chapter.Id)
+            .Should()
+            .BeFalse();
+    }
+
+    [Test]
+    public static async Task ImportMembers_AlreadyInvited_DoesNotInviteAgain()
+    {
+        /* Arrange - re-importing the same file is a normal thing to do, and the unique index on
+           (chapter, member) would reject a second invitation rather than ignore it. */
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(owner: currentMember);
+        var invited = context.CreateMember();
+        invited.EmailAddress = "invited@example.com";
+
+        context.Create(new MemberChapterInvite
+        {
+            ChapterId = chapter.Id,
+            CreatedUtc = DateTime.UtcNow,
+            Id = Guid.NewGuid(),
+            MemberId = invited.Id
+        });
+
+        // Read whether or not a new member is created, so it has to be present even though this row is skipped.
+        context.Create(new SiteSubscription
+        {
+            Id = Guid.NewGuid(),
+            Name = "Default",
+            Description = "",
+            GroupLimit = 10,
+            Enabled = true,
+            Default = true,
+            Platform = PlatformType.Default,
+            SitePaymentSettingId = Guid.NewGuid()
+        });
+
+        var service = CreateMemberAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberImport);
+
+        var members = new[]
+        {
+            new MemberImportModel
+            {
+                EmailAddress = "invited@example.com", FirstName = "Invited", LastName = "Member"
+            }
+        };
+
+        // Act
+        var result = await service.ImportMembers(request, members);
+
+        // Assert
+        result.Success.Should().BeTrue();
+
+        context.Set<MemberChapterInvite>()
+            .Count(x => x.MemberId == invited.Id && x.ChapterId == chapter.Id)
+            .Should()
+            .Be(1);
+    }
+
+    [Test]
+    public static async Task ImportMembers_NewMemberOnDrunkenKnitwits_SendsTheInvitationNotAnActivationLink()
+    {
+        /* Arrange - signing up on this platform is joining the group, so the invitation's link is the one that
+           lands on the join page with their details filled in. An activation link would take them past it. */
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(
+            owner: currentMember,
+            afterCreate: x => x.Platform = PlatformType.DrunkenKnitwits);
+
+        SeedDefaultSiteSubscription(context, PlatformType.DrunkenKnitwits);
+
+        var emailService = new Mock<IMemberEmailService>();
+        var service = CreateMemberAdminService(context, memberEmailService: emailService.Object);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            platform: PlatformType.DrunkenKnitwits,
+            securable: ChapterAdminSecurable.MemberImport);
+
+        var members = new[]
+        {
+            new MemberImportModel { EmailAddress = "new@example.com", FirstName = "New", LastName = "Member" }
+        };
+
+        // Act
+        var result = await service.ImportMembers(request, members);
+
+        // Assert
+        result.Success.Should().BeTrue();
+
+        emailService.Verify(
+            x => x.SendMemberImportInviteEmail(
+                It.IsAny<IChapterServiceRequest>(),
+                It.Is<Member>(m => m.EmailAddress == "new@example.com"),
+                It.IsAny<string>()),
+            Times.Once);
+        emailService.Verify(
+            x => x.SendMemberImportActivationEmail(
+                It.IsAny<IMemberChapterServiceRequest>(),
+                It.IsAny<string>()),
+            Times.Never);
+    }
+
+    [Test]
+    public static async Task ImportMembers_NewMemberOnGroupSquirrel_SendsAnActivationLink()
+    {
+        /* Arrange - the pair to the test above. This platform's join page needs an account before an invitation
+           can be accepted, so a member who has none activates first. */
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(owner: currentMember);
+
+        SeedDefaultSiteSubscription(context, PlatformType.Default);
+
+        var emailService = new Mock<IMemberEmailService>();
+        var service = CreateMemberAdminService(context, memberEmailService: emailService.Object);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberImport);
+
+        var members = new[]
+        {
+            new MemberImportModel { EmailAddress = "new@example.com", FirstName = "New", LastName = "Member" }
+        };
+
+        // Act
+        var result = await service.ImportMembers(request, members);
+
+        // Assert
+        result.Success.Should().BeTrue();
+
+        emailService.Verify(
+            x => x.SendMemberImportActivationEmail(
+                It.IsAny<IMemberChapterServiceRequest>(),
+                It.IsAny<string>()),
+            Times.Once);
+        emailService.Verify(
+            x => x.SendMemberImportInviteEmail(
+                It.IsAny<IChapterServiceRequest>(),
+                It.IsAny<Member>(),
+                It.IsAny<string>()),
+            Times.Never);
+    }
+
+    [Test]
+    public static async Task ImportMembers_ExistingMember_SendsTheInvitationRatherThanRecreatingTheirAccount()
+    {
+        /* Arrange - someone who already has an account, on either platform: there is nothing to activate, so the
+           invitation is the only email that makes sense. */
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(owner: currentMember);
+        var existing = context.CreateMember(afterCreate: x => x.EmailAddress = "existing@example.com");
+
+        SeedDefaultSiteSubscription(context, PlatformType.Default);
+
+        var emailService = new Mock<IMemberEmailService>();
+        var service = CreateMemberAdminService(context, memberEmailService: emailService.Object);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberImport);
+
+        var members = new[]
+        {
+            new MemberImportModel
+            {
+                EmailAddress = "existing@example.com", FirstName = "Existing", LastName = "Member"
+            }
+        };
+
+        // Act
+        var result = await service.ImportMembers(request, members);
+
+        // Assert
+        result.Success.Should().BeTrue();
+
+        emailService.Verify(
+            x => x.SendMemberImportInviteEmail(
+                It.IsAny<IChapterServiceRequest>(),
+                It.Is<Member>(m => m.Id == existing.Id),
+                It.IsAny<string>()),
+            Times.Once);
+        emailService.Verify(
+            x => x.SendMemberImportActivationEmail(
+                It.IsAny<IMemberChapterServiceRequest>(),
+                It.IsAny<string>()),
+            Times.Never);
+    }
+
+    [Test]
     public static async Task ImportMembers_MalformedEmailAddress_SkipsThatRowAndImportsTheRest()
     {
         // Arrange - a CSV is typed by hand, so a broken address is the likeliest thing in it. One bad row
@@ -889,5 +1148,21 @@ public static class MemberAdminServiceTests
             CreatedUtc = DateTime.UtcNow,
             EntityId = entityId
         };
+    }
+
+    // The import reads the platform's default subscription whether or not it creates a member.
+    private static void SeedDefaultSiteSubscription(MockOdkContext context, PlatformType platform)
+    {
+        context.Create(new SiteSubscription
+        {
+            Default = true,
+            Description = "",
+            Enabled = true,
+            GroupLimit = 10,
+            Id = Guid.NewGuid(),
+            Name = "Default",
+            Platform = platform,
+            SitePaymentSettingId = Guid.NewGuid()
+        });
     }
 }
