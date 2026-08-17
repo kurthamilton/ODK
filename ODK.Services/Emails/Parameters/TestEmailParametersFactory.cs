@@ -15,6 +15,8 @@ public class TestEmailParametersFactory : ITestEmailParametersFactory
        preview and takes it for the group's own content. */
     private const string EventName = "EVENT NAME";
 
+    private const string PaymentReference = "PAYMENT REFERENCE";
+
     private const string VenueName = "VENUE NAME";
 
     private readonly IUrlProviderFactory _urlProviderFactory;
@@ -138,6 +140,12 @@ public class TestEmailParametersFactory : ITestEmailParametersFactory
             EmailType.PasswordReset => new PasswordResetParameters
             {
                 Url = urlProvider.PasswordReset(chapter, "TEST")
+            },
+            EmailType.PaymentNotification => new PaymentNotificationParameters(
+                new Currency { Symbol = "X" })
+            {
+                Amount = 1.23M,
+                Reference = PaymentReference
             },
             EmailType.SubscriptionConfirmation => new SubscriptionConfirmationParameters(
                 new Currency { Symbol = "X" }, member, culture)

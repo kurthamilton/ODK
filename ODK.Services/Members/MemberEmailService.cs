@@ -921,35 +921,21 @@ public class MemberEmailService : IMemberEmailService
         Member member,
         Chapter? chapter,
         Payment payment,
-        Currency currency,
-        IEnumerable<Member> siteAdmins)
+        Currency currency)
     {
-        var toAdmins = siteAdmins.Select(x => x.ToEmailAddressee()).ToArray();
-        var subject = "{title} - Payment Received";
-        var body =
-            $"<p>A payment has been received for {currency.ToAmountString(payment.Amount)}.</p>" +
-            $"<p>Reference: {payment.Reference}</p>";
-
+        /* Sent as the group where the payment was made to one - a membership or a ticket is the group's own
+           transaction with its member, so the receipt carries the group's title, theme, layout and any wording
+           it has overridden. A payment to the site has no group, and comes from the site. */
         await _emailService.SendEmail(
             request,
             chapter,
-            toAdmins,
-            subject,
-            body,
-            EmailRecipientType.Admins);
-
-        var toMember = member.ToEmailAddressee();
-        body =
-            $"<p>Your payment of {currency.ToAmountString(payment.Amount)} has been processed.</p>" +
-            $"<p>Reference: {payment.Reference}</p>";
-
-        await _emailService.SendEmail(
-            request,
-            chapter: null,
-            [toMember],
-            subject,
-            body,
-            EmailRecipientType.Members);
+            [member.ToEmailAddressee()],
+            EmailType.PaymentNotification,
+            new PaymentNotificationParameters(currency)
+            {
+                Amount = payment.Amount,
+                Reference = payment.Reference
+            });
     }
 
     public async Task SendSiteMessage(

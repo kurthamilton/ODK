@@ -30,6 +30,7 @@ public static class EmailTemplateParameters
             [EmailType.NewMember] = NewMemberParameters.Names,
             [EmailType.NewMemberAdmin] = NewMemberAdminParameters.Names,
             [EmailType.PasswordReset] = PasswordResetParameters.Names,
+            [EmailType.PaymentNotification] = PaymentNotificationParameters.Names,
             [EmailType.SubscriptionConfirmation] = SubscriptionConfirmationParameters.Names,
             [EmailType.SubscriptionExpired] = SubscriptionExpiryParameters.Names,
             [EmailType.SubscriptionExpiring] = SubscriptionExpiryParameters.Names,

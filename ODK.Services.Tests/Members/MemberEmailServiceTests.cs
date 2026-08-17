@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Moq;
 using NUnit.Framework;
 using ODK.Core.Chapters;
+using ODK.Core.Countries;
 using ODK.Core.Emails;
 using ODK.Core.Members;
+using ODK.Core.Payments;
 using ODK.Core.Platforms;
 using ODK.Core.Web;
 using ODK.Data.Core;
@@ -165,6 +168,63 @@ public static class MemberEmailServiceTests
                 It.Is<EmailAddressee>(x => x.Address == member.EmailAddress),
                 EmailType.MemberImportInvite,
                 It.Is<IEmailParameters>(x => x.ToDictionary()["group.urls.join"] == "https://test.local/group/join")),
+            Times.Once);
+    }
+
+    [Test]
+    public static async Task SendPaymentNotification_ForAGroupsPayment_SendsAsTheGroupWithThePaymentValues()
+    {
+        /* Arrange - the wording used to be interpolated here, so an admin could not change it. It is a stored
+           template now, and sent as the group: a membership payment is the group's transaction with its member,
+           so the receipt takes the group's title, theme and layout rather than the site's. */
+        var chapter = CreateChapter();
+        var member = CreateMember();
+
+        var emailService = CreateEmailService();
+        var service = CreateService(emailService, new Mock<IUrlProvider>());
+
+        var request = CreateServiceRequest();
+
+        // Act
+        await service.SendPaymentNotification(
+            request, member, chapter, CreatePayment(), CreateCurrency());
+
+        // Assert
+        emailService.Verify(
+            x => x.SendEmail(
+                request,
+                chapter,
+                It.Is<IEnumerable<EmailAddressee>>(to => to.Any(x => x.Address == member.EmailAddress)),
+                EmailType.PaymentNotification,
+                It.Is<IEmailParameters>(x =>
+                    x.ToDictionary()["payment.amount"] == "£12.34" &&
+                    x.ToDictionary()["payment.reference"] == "REF123")),
+            Times.Once);
+    }
+
+    [Test]
+    public static async Task SendPaymentNotification_ForASitePayment_SendsWithNoGroup()
+    {
+        // Arrange - a payment to the site belongs to no group, so there is none to send as.
+        var member = CreateMember();
+
+        var emailService = CreateEmailService();
+        var service = CreateService(emailService, new Mock<IUrlProvider>());
+
+        var request = CreateServiceRequest();
+
+        // Act
+        await service.SendPaymentNotification(
+            request, member, chapter: null, CreatePayment(), CreateCurrency());
+
+        // Assert
+        emailService.Verify(
+            x => x.SendEmail(
+                request,
+                null,
+                It.IsAny<IEnumerable<EmailAddressee>>(),
+                EmailType.PaymentNotification,
+                It.IsAny<IEmailParameters>()),
             Times.Once);
     }
 
@@ -354,6 +414,13 @@ public static class MemberEmailServiceTests
         return mock;
     }
 
+    private static Currency CreateCurrency() => new()
+    {
+        Code = "GBP",
+        Id = Guid.NewGuid(),
+        Symbol = "£"
+    };
+
     private static IHttpRequestContext CreateHttpRequestContext()
     {
         var mock = new Mock<IHttpRequestContext>();
@@ -367,6 +434,24 @@ public static class MemberEmailServiceTests
         FirstName = "Test",
         Id = Guid.NewGuid(),
         LastName = "Member"
+    };
+
+    private static Payment CreatePayment() => new()
+    {
+        Amount = 12.34M,
+        CreatedUtc = DateTime.UtcNow,
+        CurrencyId = Guid.NewGuid(),
+        Id = Guid.NewGuid(),
+        MemberId = Guid.NewGuid(),
+        Reference = "REF123",
+        SitePaymentSettingId = Guid.NewGuid()
+    };
+
+    private static IServiceRequest CreateServiceRequest() => new ServiceRequest
+    {
+        CurrentMemberOrDefault = null,
+        HttpRequestContext = CreateHttpRequestContext(),
+        Platform = PlatformType.Default
     };
 
     private static MemberEmailService CreateService(
