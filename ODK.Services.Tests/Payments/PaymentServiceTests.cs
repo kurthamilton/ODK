@@ -996,6 +996,48 @@ public static class PaymentServiceTests
     }
 
     [Test]
+    public static async Task ProcessWebhook_ChapterSubscription_NotifiesTheMemberAsTheGroup()
+    {
+        /* Arrange - the receipt for a membership payment is sent as the group, so it carries the group's title,
+           theme and layout. It went out with no group for as long as it existed, which took the site's. */
+        using var context = CreateMockOdkContext();
+
+        var member = context.CreateMember();
+        var chapter = context.CreateChapter(members: [member]);
+        var chapterSubscription = context.CreateChapterSubscription(chapter: chapter);
+        var paymentCheckoutSession = context.CreatePaymentCheckoutSession();
+
+        var webhook = CreatePaymentProviderWebhook(
+            id: "wh_chapter_notify",
+            type: PaymentProviderWebhookType.CheckoutSessionCompleted,
+            subscriptionId: "sub_123",
+            metadata: new PaymentMetadataModel(
+                PlatformType.Default,
+                PaymentReasonType.ChapterSubscription,
+                member,
+                chapterSubscription,
+                paymentCheckoutSession.Id,
+                paymentCheckoutSession.PaymentId));
+
+        var memberEmailService = CreateMockMemberEmailService();
+        var service = CreatePaymentService(context, memberEmailService: memberEmailService);
+        var request = CreateServiceRequest();
+
+        // Act
+        await service.ProcessWebhook(request, webhook);
+
+        // Assert
+        Mock.Get(memberEmailService).Verify(
+            x => x.SendPaymentNotification(
+                request,
+                It.Is<Member>(x => x.Id == member.Id),
+                It.Is<Chapter>(x => x.Id == chapter.Id),
+                It.IsAny<Payment>(),
+                It.IsAny<Currency>()),
+            Times.Once);
+    }
+
+    [Test]
     public static async Task ProcessWebhook_WhenInvalidWebhookType_DoesNotSendEmail()
     {
         // Arrange
@@ -1011,7 +1053,7 @@ public static class PaymentServiceTests
 
         // Assert
         Mock.Get(memberEmailService)
-            .Verify(x => x.SendPaymentNotification(It.IsAny<IServiceRequest>(), It.IsAny<Member>(), It.IsAny<Chapter>(), It.IsAny<Payment>(), It.IsAny<Currency>(), It.IsAny<IEnumerable<Member>>()), Times.Never);
+            .Verify(x => x.SendPaymentNotification(It.IsAny<IServiceRequest>(), It.IsAny<Member>(), It.IsAny<Chapter>(), It.IsAny<Payment>(), It.IsAny<Currency>()), Times.Never);
     }
 
     [Test]
@@ -1234,8 +1276,7 @@ public static class PaymentServiceTests
                 It.IsAny<Member>(),
                 It.IsAny<Chapter>(),
                 It.IsAny<Payment>(),
-                It.IsAny<Currency>(),
-                It.IsAny<IEnumerable<Member>>()))
+                It.IsAny<Currency>()))
             .Returns(Task.CompletedTask);
         return mock.Object;
     }

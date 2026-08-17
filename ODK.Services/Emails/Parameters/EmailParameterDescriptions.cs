@@ -39,6 +39,8 @@ public static class EmailParameterDescriptions
             ["message.from"] = "The name and email address the message came from",
             ["message.text"] = "The message that was sent",
             ["message.url"] = "Link to the message in the group's admin area",
+            ["payment.amount"] = "The amount paid, with its currency symbol",
+            ["payment.reference"] = "The payment's reference, for matching it against your records",
             ["platform.url"] = "Link to the platform's home page",
             ["subscription.amount"] = "The amount paid, with its currency symbol",
             ["subscription.disabledDate"] = "The date the membership stops working",

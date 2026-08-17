@@ -173,8 +173,7 @@ public interface IMemberEmailService
         Member member,
         Chapter? chapter,
         Payment payment,
-        Currency currency,
-        IEnumerable<Member> siteAdmins);
+        Currency currency);
 
     Task SendSiteMessage(
         IServiceRequest request,

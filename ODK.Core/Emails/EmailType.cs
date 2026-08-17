@@ -58,5 +58,8 @@ public enum EmailType
     MemberImportInvite = 17,
 
     [Display(Name = "Event comment reply")]
-    EventCommentReply = 18
+    EventCommentReply = 18,
+
+    [Display(Name = "Payment notification")]
+    PaymentNotification = 19
 }

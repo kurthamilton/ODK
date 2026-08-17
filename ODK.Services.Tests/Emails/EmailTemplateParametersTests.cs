@@ -162,6 +162,15 @@ public static class EmailTemplateParametersTests
             };
         }
 
+        if (parametersType == typeof(PaymentNotificationParameters))
+        {
+            return new PaymentNotificationParameters(Currency())
+            {
+                Amount = 1.23M,
+                Reference = "value"
+            };
+        }
+
         if (parametersType == typeof(SubscriptionConfirmationParameters))
         {
             return new SubscriptionConfirmationParameters(Currency(), Member(), CultureInfo.InvariantCulture)
