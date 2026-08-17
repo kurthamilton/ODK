@@ -24,7 +24,7 @@
 <section class="section">
     <form action="/siteadmin/payments/@settings.Id" method="post">
         @Html.AntiForgeryToken()
-        @await Html.PartialAsync("SiteAdmin/_PaymentSettingsForm", new SitePaymentSettingsFormViewModel
+        @await Html.PartialAsync("SiteAdmin/_SitePaymentSettingsForm", new SitePaymentSettingsFormViewModel
         {         
             Commission = 100 * settings.Commission,
             Enabled = settings.Enabled,

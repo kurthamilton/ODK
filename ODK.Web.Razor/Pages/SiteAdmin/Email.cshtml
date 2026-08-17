@@ -23,7 +23,7 @@
 })
 
 <section class="section">
-    @await Html.PartialAsync("SiteAdmin/_EmailContent",
+    @await Html.PartialAsync("SiteAdmin/_SiteAdminEmailContent",
         new EmailContentViewModel(email.Email, email.Parameters, email.Title))
 </section>
 

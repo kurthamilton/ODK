@@ -14,6 +14,6 @@
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
 {
     Title = "Payments",
-    BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Payments/_PaymentsContent", viewModel)</div>,
+    BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Payments/_ChapterAdminPaymentsContent", viewModel)</div>,
     MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu")
 })

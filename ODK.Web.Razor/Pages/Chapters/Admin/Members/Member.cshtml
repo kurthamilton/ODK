@@ -24,5 +24,5 @@
         },
         new MenuItem { Text = viewModel.Member.GetDisplayName(viewModel.Chapter.Id) }
     },
-    ContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_MemberContent", viewModel)</div>
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_MemberAdminContent", viewModel)</div>
 })

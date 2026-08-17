@@ -12,7 +12,7 @@
 
 <form method="post">
     @Html.AntiForgeryToken()
-    @await Html.PartialAsync("Chapters/siteadmin/_PaymentSettingsForm", new PaymentSettingsFormViewModel
+    @await Html.PartialAsync("Chapters/SiteAdmin/_ChapterPaymentSettingsForm", new PaymentSettingsFormViewModel
     {
         CurrencyOptions = Model.Currencies,
         CurrencyId = Model.PaymentSettings?.CurrencyId

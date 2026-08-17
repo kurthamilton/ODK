@@ -16,7 +16,7 @@
     </p>
     <form action="/siteadmin/emails/settings" method="post">
         @Html.AntiForgeryToken()
-        @await Html.PartialAsync("SiteAdmin/_EmailSettingsForm", new SiteEmailSettingsViewModel
+        @await Html.PartialAsync("SiteAdmin/_SiteAdminEmailSettingsForm", new SiteEmailSettingsViewModel
         {
             AdminTitle = settings.AdminTitle,
             FromEmailAddress = settings.FromEmailAddress,

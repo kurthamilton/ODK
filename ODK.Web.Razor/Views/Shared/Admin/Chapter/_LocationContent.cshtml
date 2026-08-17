@@ -34,7 +34,7 @@
         </div>
       
 
-        @await Html.PartialAsync("Admin/Chapter/_LocationForm", new ChapterLocationFormViewModel
+        @await Html.PartialAsync("Admin/Chapter/_ChapterAdminLocationForm", new ChapterLocationFormViewModel
         {
             Lat = Model.Location?.LatLong.Lat,
             Long = Model.Location?.LatLong.Long,

@@ -17,7 +17,7 @@
 <div class="sidebar sidebar--cards">
     @await Html.PartialAsync("Groups/Home/_GroupInfo", Model)
 
-    @await Html.PartialAsync("Components/_panel", new PanelViewModel
+    @await Html.PartialAsync("Components/_Panel", new PanelViewModel
     {
         TitleContentFunc = @<h5>Organisers</h5>,
         TitleEndContentFunc = 

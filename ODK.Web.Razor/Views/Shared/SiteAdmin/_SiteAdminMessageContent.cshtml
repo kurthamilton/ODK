@@ -99,7 +99,7 @@
 
     <form action="/siteadmin/messages/@Model.Message.Id/reply" method="post">
         @Html.AntiForgeryToken()
-        @await Html.PartialAsync("SiteAdmin/_MessageForm", new MessageReplyFormViewModel
+        @await Html.PartialAsync("SiteAdmin/_SiteAdminMessageForm", new MessageReplyFormViewModel
         {
             Message = ""
         })

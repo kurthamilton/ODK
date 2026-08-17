@@ -9,7 +9,7 @@
 <section class="section section--admin">
     <h2 class="content-heading">Messages</h2>
 
-    @await Html.PartialAsync("SiteAdmin/_MessagesTabs", Model)
+    @await Html.PartialAsync("SiteAdmin/_SiteAdminMessagesTabs", Model)
 
     @if (Model.Status == MessageStatus.Spam && Model.Messages.Count > 0)
     {

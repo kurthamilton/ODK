@@ -10,7 +10,7 @@
     <h2 class="content-heading">@Model.Subscription.Name</h2>
     <form action="/siteadmin/Subscriptions/@Model.Subscription.Id" method="post">
         @Html.AntiForgeryToken()
-        @await Html.PartialAsync("SiteAdmin/_SubscriptionForm", new SiteSubscriptionFormViewModel
+        @await Html.PartialAsync("SiteAdmin/_SiteAdminSubscriptionForm", new SiteSubscriptionFormViewModel
         {
             Description = Model.Subscription.Description,
             Enabled = Model.Subscription.Enabled,

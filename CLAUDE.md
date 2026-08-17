@@ -176,8 +176,29 @@ identically. Add a matching `GroupAdminRoutes` helper — it resolves the platfo
   `required` instead of an optional field with a comment explaining why it can be ignored. The form partial
   keeps `@model ...FormViewModel`, and because that derives from the submit model the field names are
   unchanged, so the POST still binds. See `ThemeFormSubmitViewModel` / `ThemeFormViewModel`.
-- Partials live in `Views/Shared/**` (e.g. `Admin/Members/_MembersContent`) and are rendered with
+- Partials live in `Views/Shared/**` (e.g. `Admin/Members/_MembersAdminContent`) and are rendered with
   `Html.PartialAsync`. Reusable page chrome goes through `Admin/_AdminBody` and `Admin/_AdminLink`.
+- **A partial's file name is unique across the whole project** — the directory disambiguates for the
+  framework, but nothing else works that way: editor tabs, "go to file", and search results show the file
+  name alone, so four `_EmailForm.cshtml` are four indistinguishable results. Qualify the name with the
+  context its directory denotes, in the codebase's own vocabulary: `Admin/Chapter/_ChapterAdminEmailForm`
+  and `SiteAdmin/_SiteAdminEmailForm`, not two `_EmailForm`. The prefixes in use are `ChapterAdmin`,
+  `SiteAdmin`, `EventAdmin`, `MemberAdmin`, `Account`, `Chapter` and `Site`.
+  Three refinements, because a mechanical prefix reads badly often enough to be worth stating:
+  **don't repeat a word the name already has** (`_EventAdminContent`, not `_EventAdminEventContent`);
+  **leave the plain member-facing partial unqualified** where qualifying its admin counterpart already makes
+  both unique (`Events/_EventContent` stays, `Admin/Events/Event/_EventAdminContent` moves) — the public one
+  is the unmarked case, and prefixing it would only restate its folder; and **suffix instead of prefix when
+  the difference is asset type rather than context** (`_ImagingScripts` / `_ImagingStyles`).
+- **Partial paths are strings, so the compiler never checks them.** A rename builds clean and fails at
+  request time. After moving or renaming a partial, confirm every `Html.PartialAsync("…")` argument still
+  resolves to a file — and mind the casing while you are there: Windows resolves
+  `Components/_panel` to `_Panel.cshtml`, and a case-sensitive filesystem would not.
+- **`data-odk-component` carries the partial's file name, exactly** — primarily a dev-tools aid for finding
+  which partial emitted an element, but E2E tests also select on it
+  (`[data-odk-component='_ChapterSidebar']`), so treat a change to a value as a change to a selector rather
+  than to a comment. Keep it in step with a rename, and keep it the bare name: a path-qualified value only
+  ever meant the file name was ambiguous, which the rule above stops it being.
 
 ### Routing
 

@@ -44,5 +44,5 @@
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
     Title = "Conversation",
-    Content = await Html.PartialAsync("Conversations/_ConversationContent", conversationViewModel)
+    Content = await Html.PartialAsync("Conversations/_ChapterConversationContent", conversationViewModel)
 })

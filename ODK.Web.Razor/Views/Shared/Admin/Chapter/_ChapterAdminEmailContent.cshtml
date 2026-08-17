@@ -60,7 +60,7 @@
 <form method="post" action="/groups/@Model.Chapter.Id/emails/@Model.Email.Type">
     @Html.AntiForgeryToken()
 
-    @await Html.PartialAsync("Admin/Chapter/_EmailForm", formViewModel)
+    @await Html.PartialAsync("Admin/Chapter/_ChapterAdminEmailForm", formViewModel)
 
     <div class="button-container">
         <button class="btn btn-primary">Update</button>

@@ -10,7 +10,7 @@
 @await Html.PartialAsync("Components/_AdminPageDescription",
     "Questions and comments members have left on this event.")
 
-@await Html.PartialAsync("Admin/Events/Event/_EventHeader")
+@await Html.PartialAsync("Admin/Events/Event/_EventAdminHeader")
 @await Html.PartialAsync("Admin/Events/Event/_EventAdminTabs")
 
 @if (Model.Comments.Count == 0)

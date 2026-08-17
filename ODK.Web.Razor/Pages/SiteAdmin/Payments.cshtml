@@ -12,4 +12,4 @@
     var settings = await SettingsService.GetSitePaymentSettings(Model.MemberServiceRequest);
 }
 
-@await Html.PartialAsync("SiteAdmin/_PaymentsContent", settings)
+@await Html.PartialAsync("SiteAdmin/_SiteAdminPaymentsContent", settings)
