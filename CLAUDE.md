@@ -353,6 +353,27 @@ the request locale and enqueues a background `IMemberLocaleService.UpdateLocale`
   `appsettings.json`, so nobody reviewing the config can see what the app will actually use, and the two
   quietly disagree. A property that is legitimately empty in some environments (an API key absent locally)
   is still `required` — it's set to `""` in config, which is a statement rather than an omission.
+  **`required` states intent and enforces nothing here.** The configuration binder constructs settings
+  reflectively, so a key missing from `appsettings.json` arrives as `null` (or `0`, or `false`) whatever the
+  declaration says — `required` only binds C# code using an object initialiser. So the code reading a settings
+  value must still cope with absence; `DependencyRegistrar` coalescing `x.Paths ?? []` is not redundant.
+- **Declare a setting nullable when config genuinely cannot state it, and coalesce at the mapping.** Two cases,
+  both of which the binder resolves to `null` rather than to something empty: a **dictionary**, because `{}`
+  produces no config keys at all (`Instagram:Client:Cookies`); and any property an **array element** leaves out,
+  because each entry states only the keys it uses (`Logging:IgnoreExceptions`). An empty **array** is not one of
+  them — `[]` binds to an empty array, so a `string[]` that config declares as `[]` is safely non-null. Marking
+  the unstatable ones `Dictionary<..>?` / `string[]?` makes the `?? []` in `DependencyRegistrar` compiler-enforced
+  instead of remembered, and keeps the annotation honest about what the binder can deliver.
+  `AppSettingsTests` walks the bound graph and fails on any *non-nullable* setting that came back null, so this
+  stays enforced rather than reviewed.
+- **Everything bound to `appsettings.json` lives in `ODK.Infrastructure/Settings`**, named for its config path
+  plus `Settings` (`Payments:Stripe` → `PaymentsStripeSettings`, one entry of `Logging:IgnoreExceptions` →
+  `LoggingIgnoreExceptionSettings`). That includes the element types of arrays and nested sections, not just the
+  top-level ones. Where a service needs the same values it declares **its own** type (`LoggingServiceSettings`,
+  `EmailServiceSettings`) and `DependencyRegistrar` maps one to the other. The duplication is the point: the
+  config shape is a contract with deployed `appsettings.json` files and with Doppler, so a service must be able
+  to change what it consumes without that being a breaking config change — and dependencies only ever point from
+  `ODK.Infrastructure` into `ODK.Services`, never back. A config-bound type declared in a service inverts that.
 - **Every enum reserves `None` for 0.** Without it the zero value is a real case, so anything that arrives
   unset — a `default(T)`, a field never assigned, a value that failed to bind — silently means whichever
   member happens to sit first, and the bug looks like correct behaviour. Reserving `None` makes an unset

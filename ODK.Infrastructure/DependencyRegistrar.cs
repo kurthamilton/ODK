@@ -176,6 +176,18 @@ public static class DependencyRegistrar
             .AddSingleton(new LoggingServiceSettings
             {
                 IgnoreExceptions = appSettings.Logging.IgnoreExceptions
+                    /* Coalesced because `required` binds nothing: the configuration binder constructs settings
+                       reflectively, so a key absent from appsettings.json arrives null however the property is
+                       declared. An omitted criterion means the rule has none of that kind, which is what an
+                       empty array says - and lets a rule state only the criteria it uses. */
+                    .Select(x => new IgnoreExceptionRule
+                    {
+                        Exceptions = x.Exceptions ?? [],
+                        Headers = x.Headers ?? [],
+                        Paths = x.Paths ?? [],
+                        PathPatterns = x.PathPatterns ?? [],
+                        UserAgents = x.UserAgents ?? []
+                    })
                     .Append(new IgnoreExceptionRule
                     {
                         Exceptions = [nameof(OdkNotFoundException)],
@@ -207,9 +219,10 @@ public static class DependencyRegistrar
             .AddSingleton(new InstagramClientSettings
             {
                 ChannelUrl = appSettings.Instagram.BaseUrl + appSettings.Instagram.Paths.Channel,
-                Cookies = appSettings.Instagram.Client.Cookies,
+                // Coalesced because config cannot state an empty dictionary - see InstagramClientAppSettings.
+                Cookies = appSettings.Instagram.Client.Cookies ?? [],
                 GraphQLUrl = appSettings.Instagram.BaseUrl + appSettings.Instagram.Paths.GraphQL,
-                Headers = appSettings.Instagram.Client.Headers,
+                Headers = appSettings.Instagram.Client.Headers ?? [],
                 PostsGraphQlDocId = appSettings.Instagram.Client.GraphQL.PostsDocId
             })
             .AddScoped<IMemberAdminService, MemberAdminService>()
