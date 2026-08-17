@@ -151,6 +151,7 @@ public class MemberService : IMemberService
                 : new DefaultDeferredQuerySingleOrDefault<Referral>());
 
         string? reusableActivationToken = null;
+        IReadOnlyCollection<MemberChapterInvite> carriedOverInvites = [];
         if (existing != null)
         {
             if (existing.Activated)
@@ -166,6 +167,14 @@ public class MemberService : IMemberService
             reusableActivationToken = (await _unitOfWork.MemberActivationTokenRepository
                 .GetByMemberId(existing.Id)
                 .Run())?.ActivationToken;
+
+            /* Carried over for the same reason, and it matters most to imported members: this is the state an
+               import leaves them in, so signing up rather than following the emailed link is a likely route.
+               The invitation is an admin's record that they were asked to join, and it is what lets them skip
+               approval - the delete below would cascade it away. */
+            carriedOverInvites = await _unitOfWork.MemberChapterInviteRepository
+                .GetByMemberId(existing.Id)
+                .Run();
 
             _unitOfWork.MemberRepository.Delete(existing);
             await _unitOfWork.SaveChangesAsync();
@@ -268,6 +277,8 @@ public class MemberService : IMemberService
             });
         }
 
+        AddCarriedOverInvites(member.Id, carriedOverInvites);
+
         if (topics.Count > 0)
         {
             _unitOfWork.MemberTopicRepository.AddMany(topics.Select(x => new MemberTopic
@@ -295,7 +306,8 @@ public class MemberService : IMemberService
         return ServiceResult<Member?>.Successful(member);
     }
 
-    public async Task<ServiceResult> CreateChapterAccount(IChapterServiceRequest request, MemberCreateProfile model)
+    public async Task<CreateChapterAccountResult> CreateChapterAccount(
+        IChapterServiceRequest request, MemberCreateProfile model)
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
 
@@ -323,7 +335,7 @@ public class MemberService : IMemberService
         var validationResult = await ValidateMemberProfile(chapterProperties, model, forApplication: true);
         if (!validationResult.Success)
         {
-            return validationResult;
+            return CreateChapterAccountResult.FromResult(validationResult);
         }
 
         var avatar = new MemberAvatar();
@@ -331,16 +343,17 @@ public class MemberService : IMemberService
         var imageValidationResult = _memberImageService.UpdateMemberImage(avatar, model.ImageData);
         if (!imageValidationResult.Success)
         {
-            return imageValidationResult;
+            return CreateChapterAccountResult.FromResult(imageValidationResult);
         }
 
         string? reusableActivationToken = null;
+        IReadOnlyCollection<MemberChapterInvite> carriedOverInvites = [];
         if (existing != null)
         {
             if (existing.Activated)
             {
                 await _memberEmailService.SendDuplicateMemberEmail(request, chapter, existing);
-                return ServiceResult.Successful();
+                return CreateChapterAccountResult.Successful();
             }
 
             // Signing up again against an existing but unactivated account: discard the incomplete
@@ -350,6 +363,14 @@ public class MemberService : IMemberService
             reusableActivationToken = (await _unitOfWork.MemberActivationTokenRepository
                 .GetByMemberId(existing.Id)
                 .Run())?.ActivationToken;
+
+            /* Carried over for the same reason, and it matters most to imported members: this is the state an
+               import leaves them in, so signing up rather than following the emailed link is a likely route.
+               The invitation is an admin's record that they were asked to join, and it is what lets them skip
+               approval - the delete below would cascade it away. */
+            carriedOverInvites = await _unitOfWork.MemberChapterInviteRepository
+                .GetByMemberId(existing.Id)
+                .Run();
 
             _unitOfWork.MemberRepository.Delete(existing);
             await _unitOfWork.SaveChangesAsync();
@@ -395,7 +416,19 @@ public class MemberService : IMemberService
             .Select(x => x.ToMemberProperty(member.Id))
             .ToArray();
 
-        AddMemberToChapter(now, member, chapter, memberProperties, membershipSettings, ownerSubscriptionFeatures);
+        /* Signing up is joining on this platform, so this is where an invited member accepts. They arrive with an
+           unactivated account the import created, which the branch above discarded and recreated - so the
+           invitation is one of the rows carried over from it rather than one to load here. */
+        var invite = carriedOverInvites.SingleOrDefault(x => x.ChapterId == chapter.Id);
+
+        AddMemberToChapter(
+            now,
+            member,
+            chapter,
+            memberProperties,
+            membershipSettings,
+            ownerSubscriptionFeatures,
+            invited: invite != null);
 
         if (chapterLocation != null)
         {
@@ -428,6 +461,12 @@ public class MemberService : IMemberService
             MemberId = member.Id
         });
 
+        /* Every carried-over invitation except this chapter's, which joining has just consumed. Re-raising it
+           only to delete it would leave the member listed as invited to a group they are now in. */
+        AddCarriedOverInvites(
+            member.Id,
+            carriedOverInvites.Where(x => x.ChapterId != chapter.Id).ToArray());
+
         try
         {
             await _unitOfWork.SaveChangesAsync();
@@ -441,22 +480,33 @@ public class MemberService : IMemberService
             {
                 await _loggingService.Info(
                     $"Chapter account create: double submission detected for '{model.EmailAddress}', returning OK");
-                return ServiceResult.Successful();
+                return CreateChapterAccountResult.Successful();
             }
 
             await _loggingService.Error($"Error creating chapter account for '{model.EmailAddress}'", ex);
-            return ServiceResult.Failure("An error occurred when creating your account. Please try again.");
+            return CreateChapterAccountResult.Failure(
+                "An error occurred when creating your account. Please try again.");
+        }
+
+        /* Holding the token from an invitation sent to the address being registered proves the sign-up reached
+           that inbox, which is all an activation email establishes - so the caller can hand them the activation
+           token instead of mailing it. The token is only ever trusted against the account the posted address
+           resolves to, since one posted with a different address proves nothing about that address. */
+        if (invite != null && !string.IsNullOrEmpty(model.InviteToken) && invite.Token == model.InviteToken)
+        {
+            return CreateChapterAccountResult.SuccessfulReadyToActivate(activationToken);
         }
 
         try
         {
             await _memberEmailService.SendActivationEmail(request, chapter, member, activationToken);
 
-            return ServiceResult.Successful();
+            return CreateChapterAccountResult.Successful();
         }
         catch
         {
-            return ServiceResult.Failure("Your account has been created but an error occurred sending an email.");
+            return CreateChapterAccountResult.Failure(
+                "Your account has been created but an error occurred sending an email.");
         }
     }
 
@@ -600,7 +650,8 @@ public class MemberService : IMemberService
             members,
             chapterProperties,
             chapterPropertyOptions,
-            membershipSettings
+            membershipSettings,
+            invite
             ) = await _unitOfWork.RunAsync(
             x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => x.MemberNotificationSettingsRepository.GetByChapterId(chapter.Id, NotificationType.NewMember),
@@ -612,7 +663,8 @@ public class MemberService : IMemberService
             x => x.MemberRepository.GetCountByChapterId(chapter.Id),
             x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPropertyOptionRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id));
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
+            x => x.MemberChapterInviteRepository.GetByMemberId(currentMember.Id, chapter.Id));
 
         if (currentMember.IsMemberOf(chapter.Id))
         {
@@ -641,7 +693,15 @@ public class MemberService : IMemberService
             chapter,
             memberProperties,
             membershipSettings,
-            ownerSubscriptionDto?.Features ?? []);
+            ownerSubscriptionDto?.Features ?? [],
+            invited: invite != null);
+
+        /* Consumed, not kept. The membership row is now the record that they joined, so leaving the invitation
+           behind would make them look invited for a group they are already in. */
+        if (invite != null)
+        {
+            _unitOfWork.MemberChapterInviteRepository.Delete(invite);
+        }
 
         _notificationService.AddNewMemberNotifications(currentMember, chapter.Id, adminMembers, notificationSettings);
 
@@ -1094,17 +1154,40 @@ public class MemberService : IMemberService
             .Select(x => x.GetDisplayText());
     }
 
+    /* Re-raises the invitations an unactivated account had before it was discarded and recreated, each keeping
+       its own token so an invitation link already emailed still works - the same reason the activation token is
+       reused. The original CreatedUtc is not recoverable here and does not matter: nothing reads the date, and
+       the invitation's job is to say the member was asked to join, not when. */
+    private void AddCarriedOverInvites(Guid memberId, IReadOnlyCollection<MemberChapterInvite> invites)
+    {
+        foreach (var invite in invites)
+        {
+            _unitOfWork.MemberChapterInviteRepository.Add(new MemberChapterInvite
+            {
+                ChapterId = invite.ChapterId,
+                CreatedUtc = DateTime.UtcNow,
+                MemberId = memberId,
+                Token = invite.Token
+            });
+        }
+    }
+
     private MemberChapter AddMemberToChapter(
         DateTime now,
         Member member,
         Chapter chapter,
         IEnumerable<MemberProperty> memberProperties,
         ChapterMembershipSettings? membershipSettings,
-        IReadOnlyCollection<SiteSubscriptionFeature> ownerSubscriptionFeatures)
+        IReadOnlyCollection<SiteSubscriptionFeature> ownerSubscriptionFeatures,
+        bool invited)
     {
         var memberChapter = new MemberChapter
         {
+            /* An invitation is approval: an admin imported this member's address, so putting them in the
+               approvals queue would be asking the group to approve someone it asked to join. Every other route
+               in still honours the setting. */
             Approved =
+                invited ||
                 !_authorizationService.ChapterHasAccess(ownerSubscriptionFeatures, SiteFeatureType.ApproveMembers) ||
                 membershipSettings?.ApproveNewMembers != true,
             CreatedUtc = now,

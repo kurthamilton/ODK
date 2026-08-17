@@ -123,7 +123,8 @@ public interface IMemberEmailService
 
     Task SendMemberImportInviteEmail(
         IChapterServiceRequest request,
-        Member member);
+        Member member,
+        string inviteToken);
 
     Task SendMemberLeftChapterEmail(
         IChapterServiceRequest request,

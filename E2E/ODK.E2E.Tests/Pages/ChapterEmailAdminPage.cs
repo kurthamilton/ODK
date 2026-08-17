@@ -158,10 +158,7 @@ internal class ChapterEmailAdminPage
     public async Task SendTest(string emailUrl)
     {
         await Open(emailUrl);
-        await _page.RunAndWaitForResponseAsync(
-            () => _page.ClickAsync(SendTestButton),
-            r => r.Request.Method == "POST" && r.Url.Contains("/test"));
-        await _page.WaitForLoadStateAsync();
+        await Submit(SendTestButton, r => r.Request.Method == "POST" && r.Url.Contains("/test"));
     }
 
     /// <summary>
@@ -196,17 +193,12 @@ internal class ChapterEmailAdminPage
     /// <summary>Whether the body's Customise switch can be operated at all.</summary>
     public Task<bool> IsContentToggleEnabled() => _page.Locator(ContentToggle).IsEnabledAsync();
 
-    /* Waits for the form's own submit, identified as the POST that navigates. Any-POST would also match the
-       editor's HTML-check request - it posts the content to ValidateUrl whenever the body changes - and
-       returning on that one hands back before the save has happened, so an assertion reads the database as it
-       was. */
-    private async Task Save()
-    {
-        await _page.RunAndWaitForResponseAsync(
-            () => _page.ClickAsync("button:has-text('Update')"),
-            r => r.Request.Method == "POST" && r.Request.ResourceType == "document");
-        await _page.WaitForLoadStateAsync();
-    }
+    /* Identified as the POST that navigates. Any-POST would also match the editor's HTML-check request - it
+       posts the content to ValidateUrl whenever the body changes - and returning on that one hands back before
+       the save has happened, so an assertion reads the database as it was. */
+    private Task Save() => Submit(
+        "button:has-text('Update')",
+        r => r.Request.Method == "POST" && r.Request.ResourceType == "document");
 
     // Ace owns the box the user types in, so the textarea cannot be filled directly - see
     // odk.code-editor.js. Setting through the editor writes the textarea and raises the change the
@@ -248,5 +240,22 @@ internal class ChapterEmailAdminPage
         {
             await toggle.UncheckAsync();
         }
+    }
+
+    /* Clicks something that posts, and returns only once the page it redirects to has rendered. Waiting on the
+       POST response alone is not enough: every form here is Post/Redirect/Get, and that response is the 302 -
+       so it arrives while the redirected GET is still in flight. A caller that then navigates to the same URL
+       has its navigation cut short by the one already running, which Playwright reports as "Navigation to X is
+       interrupted by another navigation to X". The GET waiter is registered before the click so it cannot be
+       missed. */
+    private async Task Submit(string selector, Func<IResponse, bool> posted)
+    {
+        var rendered = _page.WaitForResponseAsync(
+            r => r.Request.Method == "GET" && r.Request.ResourceType == "document");
+
+        await _page.RunAndWaitForResponseAsync(() => _page.ClickAsync(selector), posted);
+
+        await rendered;
+        await _page.WaitForLoadStateAsync();
     }
 }

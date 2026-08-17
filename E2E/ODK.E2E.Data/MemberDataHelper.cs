@@ -13,7 +13,7 @@ public class MemberDataHelper : DataHelperBase
 
     public async Task<string> GetEmailAddress(Guid memberId)
     {
-        const string sql = "SELECT EmailAddress FROM Members WHERE MemberId = @id";
+        const string sql = "SELECT EmailAddress FROM Members WHERE Id = @id";
 
         await using var builder = Builder(sql)
             .AddParameter("@id", memberId);
@@ -36,7 +36,7 @@ public class MemberDataHelper : DataHelperBase
 
     public async Task<Guid> GetMemberId(string emailAddress)
     {
-        const string sql = "SELECT MemberId FROM Members WHERE EmailAddress = @email";
+        const string sql = "SELECT Id FROM Members WHERE EmailAddress = @email";
 
         await using var builder = Builder(sql)
             .AddParameter("@email", emailAddress);
@@ -48,7 +48,7 @@ public class MemberDataHelper : DataHelperBase
 
     public async Task<(string FirstName, string LastName)> GetName(Guid memberId)
     {
-        const string sql = "SELECT FirstName, LastName FROM Members WHERE MemberId = @id";
+        const string sql = "SELECT FirstName, LastName FROM Members WHERE Id = @id";
 
         await using var builder = Builder(sql)
             .AddParameter("@id", memberId);
@@ -66,7 +66,7 @@ public class MemberDataHelper : DataHelperBase
     /// </summary>
     public async Task SetTimeZone(Guid memberId, string timeZoneId)
     {
-        const string sql = "UPDATE Members SET TimeZone = @timeZone WHERE MemberId = @id";
+        const string sql = "UPDATE Members SET TimeZone = @timeZone WHERE Id = @id";
 
         await using var builder = Builder(sql)
             .AddParameter("@id", memberId)

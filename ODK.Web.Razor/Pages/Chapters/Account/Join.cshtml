@@ -8,7 +8,7 @@
     Model.Title = "Join";
 
     var request = Model.ChapterServiceRequest;
-    var viewModel = await AccountViewModelService.GetChapterJoinPage(request);
+    var viewModel = await AccountViewModelService.GetChapterJoinPage(request, Model.InviteToken);
 }
 
 @if (!viewModel.Chapter.IsOpenForRegistration())

@@ -51,6 +51,9 @@ public abstract class OdkPageTest : PageTest
     protected ChapterDataHelper ChapterDataHelper
         => new ChapterDataHelper(E2ESettings.ConnectionString);
 
+    protected MemberChapterInviteDataHelper MemberChapterInviteDataHelper
+        => new MemberChapterInviteDataHelper(E2ESettings.ConnectionString);
+
     protected SentEmailDataHelper SentEmailDataHelper
         => new SentEmailDataHelper(E2ESettings.ConnectionString);
 

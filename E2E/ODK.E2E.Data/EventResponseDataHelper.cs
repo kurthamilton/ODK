@@ -21,7 +21,7 @@ public class EventResponseDataHelper : DataHelperBase
         const string sql =
             """
             INSERT INTO EventResponses (EventId, MemberId, ResponseTypeId)
-            SELECT @eventId, MemberId, 1
+            SELECT @eventId, Id, 1
             FROM Members
             WHERE EmailAddress = @email
             """;
@@ -49,7 +49,7 @@ public class EventResponseDataHelper : DataHelperBase
             """
             SELECT r.ResponseTypeId
             FROM EventResponses r
-            INNER JOIN Members m ON m.MemberId = r.MemberId
+            INNER JOIN Members m ON m.Id = r.MemberId
             WHERE r.EventId = @eventId AND m.EmailAddress = @email
             """;
 

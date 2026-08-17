@@ -14,7 +14,7 @@ public class ChapterPropertyDataHelper : DataHelperBase
 
     public async Task<int?> GetDisplayOrder(Guid chapterPropertyId)
     {
-        const string sql = "SELECT DisplayOrder FROM ChapterProperties WHERE ChapterPropertyId = @id";
+        const string sql = "SELECT DisplayOrder FROM ChapterProperties WHERE Id = @id";
 
         await using var builder = Builder(sql)
             .AddParameter("@id", chapterPropertyId);
@@ -25,7 +25,7 @@ public class ChapterPropertyDataHelper : DataHelperBase
     public async Task<Guid?> GetPropertyId(Guid chapterId, string label)
     {
         const string sql =
-            "SELECT TOP 1 ChapterPropertyId FROM ChapterProperties WHERE ChapterId = @chapterId AND Label = @label";
+            "SELECT TOP 1 Id FROM ChapterProperties WHERE ChapterId = @chapterId AND Label = @label";
 
         await using var builder = Builder(sql)
             .AddParameter("@chapterId", chapterId)

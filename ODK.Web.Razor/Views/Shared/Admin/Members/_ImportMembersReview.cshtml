@@ -8,10 +8,12 @@
     var importableRows = preview.ImportableRows.ToArray();
     var canImport = importableRows.Length > 0;
 
+    /* Whether the site already knows this person, not what the import does to them - everyone importable is
+       invited, and the summary below says so. A label naming the action would have to say "invite" twice. */
     (string Label, string CssClass) StatusBadge(MemberImportRowStatus status) => status switch
     {
         MemberImportRowStatus.New => ("New", "bg-success"),
-        MemberImportRowStatus.ExistingNotInGroup => ("Add to group", "bg-primary"),
+        MemberImportRowStatus.ExistingNotInGroup => ("Existing", "bg-primary"),
         MemberImportRowStatus.ExistingInGroup => ("Already in group", "bg-secondary"),
         _ => (status.ToString(), "bg-secondary")
     };
@@ -19,7 +21,7 @@
 
 <p>
     <span class="badge bg-success">@preview.NewCount new</span>
-    <span class="badge bg-primary">@preview.ExistingNotInGroupCount existing to add</span>
+    <span class="badge bg-primary">@preview.ExistingNotInGroupCount existing</span>
     <span class="badge bg-secondary">@preview.ExistingInGroupCount already in group</span>
 </p>
 
@@ -51,8 +53,9 @@
 @if (canImport)
 {
     <p>
-        <span>You're about to import </span>
-        <strong>@importableRows.Length @StringUtils.Pluralise(importableRows.Length, "member")</strong>:
+        <span>You're about to invite </span>
+        <strong>@importableRows.Length @StringUtils.Pluralise(importableRows.Length, "member")</strong>
+        <span> to the group. They become members when they accept.</span>
     </p>
     <ul>
         @if (preview.NewCount > 0)
@@ -65,7 +68,7 @@
         @if (preview.ExistingNotInGroupCount > 0)
         {
             <li>
-                @preview.ExistingNotInGroupCount existing @StringUtils.Pluralise(preview.ExistingNotInGroupCount, "member") added to the group
+                @preview.ExistingNotInGroupCount existing @StringUtils.Pluralise(preview.ExistingNotInGroupCount, "member")
             </li>
         }
 

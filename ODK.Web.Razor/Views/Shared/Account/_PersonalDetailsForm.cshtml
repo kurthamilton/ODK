@@ -20,6 +20,10 @@
 
     @* odk.referrer.js fills this from local storage, where the join page put the utm_source value. *@
     @Html.HiddenFor(x => x.ReferralId, new { data_odk_referrer = "" })
+
+    @* Carries the invitation into the submit, which trusts it in place of an activation email while the address
+       it was sent to is the one being registered. *@
+    @Html.HiddenFor(x => x.InviteToken)
 }
 
 <div class="form-group mb-3 @(member == null ? "required" : null)">

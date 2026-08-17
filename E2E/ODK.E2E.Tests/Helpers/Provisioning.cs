@@ -123,6 +123,17 @@ internal static class Provisioning
         => CreateEvent(owner, routes, chapterId, baseUrl, draft: false, attendeeLimit);
 
     /// <summary>
+    /// Imports members into a group from a CSV, as the group owner on a throwaway browser, driving the real
+    /// import wizard. Runs on its own browser so a test's own browser stays anonymous (or signed in as
+    /// somebody else) - the join page behaves differently for a signed-in visitor. The invitations exist by
+    /// the time this returns; the emails follow on a background job.
+    /// </summary>
+    public static Task ImportMembers(
+        TestAccount owner, PlatformRoutes routes, string baseUrl, IReadOnlyCollection<MemberImportRow> rows)
+        => RunAs(owner, page => new MemberImportAdminPage(page).Import(
+            routes.MembersImport, routes.MembersAdmin, rows), baseUrl);
+
+    /// <summary>
     /// Provisions a fresh member of a Default group: a new account joins through the UI. The member is
     /// approved automatically by the platform (the chapter's subscription has no ApproveMembers feature),
     /// so this doesn't touch the approval state itself.

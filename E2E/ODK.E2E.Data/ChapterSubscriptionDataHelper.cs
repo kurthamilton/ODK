@@ -29,7 +29,7 @@ public class ChapterSubscriptionDataHelper : DataHelperBase
     public async Task<Guid?> GetId(Guid chapterId, string name)
     {
         const string sql =
-            "SELECT ChapterSubscriptionId FROM ChapterSubscriptions WHERE ChapterId = @chapterId AND Name = @name";
+            "SELECT Id FROM ChapterSubscriptions WHERE ChapterId = @chapterId AND Name = @name";
 
         await using var builder = Builder(sql)
             .AddParameter("@chapterId", chapterId)

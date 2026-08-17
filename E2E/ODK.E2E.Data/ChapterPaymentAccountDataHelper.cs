@@ -24,7 +24,7 @@ public class ChapterPaymentAccountDataHelper : DataHelperBase
             """
             IF NOT EXISTS (SELECT 1 FROM ChapterPaymentAccounts WHERE ChapterId = @chapterId)
                 INSERT INTO ChapterPaymentAccounts
-                    (ChapterPaymentAccountId, ChapterId, OwnerId, SitePaymentSettingId, ExternalId,
+                    (Id, ChapterId, OwnerId, SitePaymentSettingId, ExternalId,
                      CreatedUtc, OnboardingCompletedUtc, IdentityDocumentsProvidedUtc)
                 VALUES (NEWID(), @chapterId, @ownerId, @settingId, @externalId, @now, @now, @now);
             ELSE
@@ -33,7 +33,7 @@ public class ChapterPaymentAccountDataHelper : DataHelperBase
                     OnboardingCompletedUtc = @now, IdentityDocumentsProvidedUtc = @now
                 WHERE ChapterId = @chapterId;
 
-            SELECT ChapterPaymentAccountId FROM ChapterPaymentAccounts WHERE ChapterId = @chapterId;
+            SELECT Id FROM ChapterPaymentAccounts WHERE ChapterId = @chapterId;
             """;
 
         await using var builder = Builder(sql)

@@ -130,17 +130,19 @@ public static class MemberEmailServiceTests
     }
 
     [Test]
-    public static async Task SendMemberImportInviteEmail_SendsInviteTemplateWithTheSubscriptionUrl()
+    public static async Task SendMemberImportInviteEmail_SendsInviteTemplateWithTheJoinUrl()
     {
-        // Arrange
+        /* Arrange - the join page, which is where an invitation is accepted. This used to be the subscription
+           page, which asked an invited member to pay for a membership they did not have yet, and disagreed with
+           the name of the only parameter the template takes. */
         var chapter = CreateChapter();
         var member = CreateMember();
 
         var emailService = CreateEmailService();
         var urlProvider = new Mock<IUrlProvider>();
         urlProvider
-            .Setup(x => x.ChapterSubscription(chapter))
-            .Returns("https://test.local/group/subscription");
+            .Setup(x => x.ChapterJoin(chapter, "invite-token"))
+            .Returns("https://test.local/group/join");
 
         var service = CreateService(emailService, urlProvider);
 
@@ -153,7 +155,7 @@ public static class MemberEmailServiceTests
         };
 
         // Act
-        await service.SendMemberImportInviteEmail(request, member);
+        await service.SendMemberImportInviteEmail(request, member, "invite-token");
 
         // Assert
         emailService.Verify(
@@ -162,7 +164,7 @@ public static class MemberEmailServiceTests
                 chapter,
                 It.Is<EmailAddressee>(x => x.Address == member.EmailAddress),
                 EmailType.MemberImportInvite,
-                It.Is<IEmailParameters>(x => x.ToDictionary()["group.urls.join"] == "https://test.local/group/subscription")),
+                It.Is<IEmailParameters>(x => x.ToDictionary()["group.urls.join"] == "https://test.local/group/join")),
             Times.Once);
     }
 

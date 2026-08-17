@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Web;
 using ODK.Core.Chapters;
 using ODK.Core.Platforms;
 
@@ -70,7 +71,33 @@ public class GroupRoutes
         _ => "/groups"
     };
 
-    public string Join(Chapter chapter) => GroupPath(chapter, "/join");
+    /// <summary>
+    /// Where someone who is not yet a member goes to become one.
+    /// </summary>
+    /// <remarks>
+    /// The two platforms reach that through different pages, so this is the one place that knows which. Signing
+    /// up on Drunken Knitwits *is* joining the chapter, so there is no separate join page - it is the chapter's
+    /// account sign-up. Group Squirrel has members before they have groups, so joining is its own page and
+    /// assumes an account already exists.
+    /// </remarks>
+    public string Join(Chapter chapter) => Platform switch
+    {
+        PlatformType.DrunkenKnitwits => AccountRoutes.Join(chapter),
+        _ => GroupPath(chapter, "/join")
+    };
+
+    /// <summary>
+    /// <see cref="Join(Chapter)"/> carrying an invitation token, so the page can identify who was invited and
+    /// fill in what is already known about them.
+    /// </summary>
+    /// <remarks>
+    /// Only Drunken Knitwits can use it: its join page is the chapter's account sign-up and is anonymous, while
+    /// Group Squirrel's requires an account already. The token is still appended there so the link is not
+    /// silently different between platforms, and the page ignores it until Group Squirrel has a page that can
+    /// accept an invitation without one.
+    /// </remarks>
+    public string Join(Chapter chapter, string inviteToken)
+        => $"{Join(chapter)}?token={HttpUtility.UrlEncode(inviteToken)}";
 
     public string Member(Chapter chapter, Guid memberId)
         => $"{Members(chapter)}/{memberId}";

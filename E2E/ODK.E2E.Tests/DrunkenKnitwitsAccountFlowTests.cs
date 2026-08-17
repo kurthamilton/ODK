@@ -13,6 +13,7 @@ namespace ODK.E2E.Tests;
 /// is chapter-scoped - join (= create account) -> activate -> log in - against a seeded chapter.
 /// </summary>
 [TestFixture]
+[Category("AccountCreate")]
 public class DrunkenKnitwitsAccountFlowTests : DrunkenKnitwitsPageTest
 {
     [Test]

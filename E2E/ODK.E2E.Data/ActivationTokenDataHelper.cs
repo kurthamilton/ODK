@@ -17,7 +17,7 @@ public class ActivationTokenDataHelper : DataHelperBase
             """
             SELECT TOP 1 t.ActivationToken
             FROM MemberActivationTokens t
-            INNER JOIN Members m ON m.MemberId = t.MemberId
+            INNER JOIN Members m ON m.Id = t.MemberId
             WHERE m.EmailAddress = @email
             """;
 

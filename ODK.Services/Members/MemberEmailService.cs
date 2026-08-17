@@ -609,12 +609,16 @@ public class MemberEmailService : IMemberEmailService
 
     public async Task SendMemberImportInviteEmail(
         IChapterServiceRequest request,
-        Member member)
+        Member member,
+        string inviteToken)
     {
         var chapter = request.Chapter;
 
+        /* The join page, which is where accepting an invitation happens and what this email's only parameter,
+           group.urls.join, names. The token identifies the invitation to a member who cannot sign in yet, which
+           on Drunken Knitwits is everyone it is sent to - they have no password until they set one. */
         var urlProvider = await _urlProviderFactory.Create(request);
-        var url = urlProvider.ChapterSubscription(chapter);
+        var url = urlProvider.ChapterJoin(chapter, inviteToken);
 
         var parameters = new MemberImportInviteParameters
         {

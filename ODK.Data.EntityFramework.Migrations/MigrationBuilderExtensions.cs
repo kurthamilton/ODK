@@ -149,6 +149,31 @@ internal static class MigrationBuilderExtensions
         return migrationBuilder;
     }
 
+    /// <summary>
+    /// Rewrites the site's wording for an email, keyed by the column the given <see cref="EmailSchemaEra"/>
+    /// keys on - the key column has moved, so an update has to state its era for the same reason an insert
+    /// does.
+    /// </summary>
+    /// <remarks>
+    /// A group's own override lives in ChapterEmails and is deliberately left alone: a group that customised
+    /// this template chose its wording, and the site's is only what the rest of them inherit.
+    /// </remarks>
+    internal static MigrationBuilder UpdateEmailWording(
+        this MigrationBuilder migrationBuilder,
+        EmailSchemaEra era,
+        EmailType type,
+        string subject,
+        string body)
+    {
+        migrationBuilder.UpdateData(
+            table: "Emails",
+            keyColumn: KeyColumn(era),
+            keyValue: (int)type,
+            columns: ["Subject", "Body"],
+            values: [subject, body]);
+        return migrationBuilder;
+    }
+
     private static (string[] Columns, string[] ColumnTypes) Columns(EmailSchemaEra era) => era switch
     {
         EmailSchemaEra.TypeIdKey => (TypeIdKeyColumns, TypeIdKeyColumnTypes),

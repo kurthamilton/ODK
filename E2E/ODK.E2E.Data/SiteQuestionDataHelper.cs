@@ -32,7 +32,7 @@ public class SiteQuestionDataHelper : DataHelperBase
     {
         const string sql =
             """
-            SELECT TOP 1 SiteQuestionId
+            SELECT TOP 1 Id
             FROM SiteQuestions
             WHERE Name = @name
             """;

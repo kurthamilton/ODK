@@ -13,7 +13,7 @@ public class ChapterDataHelper : DataHelperBase
 
     public async Task<DateTime?> GetApprovedUtc(Guid chapterId)
     {
-        const string sql = "SELECT ApprovedUtc FROM Chapters WHERE ChapterId = @id";
+        const string sql = "SELECT ApprovedUtc FROM Chapters WHERE Id = @id";
 
         await using var builder = Builder(sql)
             .AddParameter("@id", chapterId);
@@ -23,7 +23,7 @@ public class ChapterDataHelper : DataHelperBase
 
     public async Task<DateTime?> GetPublishedUtc(Guid chapterId)
     {
-        const string sql = "SELECT PublishedUtc FROM Chapters WHERE ChapterId = @id";
+        const string sql = "SELECT PublishedUtc FROM Chapters WHERE Id = @id";
 
         await using var builder = Builder(sql)
             .AddParameter("@id", chapterId);
@@ -33,7 +33,7 @@ public class ChapterDataHelper : DataHelperBase
 
     public async Task<string> GetSlug(Guid chapterId)
     {
-        const string sql = "SELECT Slug FROM Chapters WHERE ChapterId = @id";
+        const string sql = "SELECT Slug FROM Chapters WHERE Id = @id";
 
         await using var builder = Builder(sql)
             .AddParameter("@id", chapterId);
@@ -45,7 +45,7 @@ public class ChapterDataHelper : DataHelperBase
     public async Task<string> GetTimeZoneId(Guid chapterId)
     {
         // The TimeZoneId property maps to the "TimeZone" column.
-        const string sql = "SELECT TimeZone FROM Chapters WHERE ChapterId = @id";
+        const string sql = "SELECT TimeZone FROM Chapters WHERE Id = @id";
 
         await using var builder = Builder(sql)
             .AddParameter("@id", chapterId);
@@ -74,7 +74,7 @@ public class ChapterDataHelper : DataHelperBase
                 Name = CASE WHEN Name LIKE '% Drunken Knitwits' THEN Name ELSE Name + ' Drunken Knitwits' END,
                 ApprovedUtc = @approvedUtc,
                 PublishedUtc = @publishedUtc
-            WHERE ChapterId = @id
+            WHERE Id = @id
             """;
 
         await using var builder = Builder(sql)
@@ -91,7 +91,7 @@ public class ChapterDataHelper : DataHelperBase
             """
             SELECT COUNT(1)
             FROM MemberChapters mc
-            INNER JOIN Members m ON m.MemberId = mc.MemberId
+            INNER JOIN Members m ON m.Id = mc.MemberId
             WHERE m.EmailAddress = @email AND mc.ChapterId = @id
             """;
 

@@ -22,7 +22,7 @@ public class SiteSubscriptionDataHelper : DataHelperBase
     public async Task<Guid?> GetId(string name, int platformTypeId)
     {
         const string sql =
-            "SELECT SiteSubscriptionId FROM SiteSubscriptions WHERE Name = @name AND PlatformTypeId = @platform";
+            "SELECT Id FROM SiteSubscriptions WHERE Name = @name AND PlatformTypeId = @platform";
 
         await using var builder = Builder(sql)
             .AddParameter("@name", name)
@@ -45,7 +45,7 @@ public class SiteSubscriptionDataHelper : DataHelperBase
     public async Task<Guid?> GetPriceId(Guid subscriptionId)
     {
         const string sql =
-            "SELECT TOP 1 SiteSubscriptionPriceId FROM SiteSubscriptionPrices WHERE SiteSubscriptionId = @id ORDER BY Amount";
+            "SELECT TOP 1 Id FROM SiteSubscriptionPrices WHERE SiteSubscriptionId = @id ORDER BY Amount";
 
         await using var builder = Builder(sql).AddParameter("@id", subscriptionId);
         return await builder.ExecuteScalar<Guid?>();

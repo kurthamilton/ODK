@@ -15,7 +15,7 @@ public class EventDataHelper : DataHelperBase
     {
         const string sql =
             """
-            SELECT TOP 1 EventId
+            SELECT TOP 1 Id
             FROM Events
             WHERE ChapterId = @chapterId AND Name = @name
             ORDER BY CreatedUtc DESC
@@ -30,7 +30,7 @@ public class EventDataHelper : DataHelperBase
 
     public async Task<string?> GetName(Guid eventId)
     {
-        const string sql = "SELECT Name FROM Events WHERE EventId = @id";
+        const string sql = "SELECT Name FROM Events WHERE Id = @id";
 
         await using var builder = Builder(sql)
             .AddParameter("@id", eventId);
@@ -40,7 +40,7 @@ public class EventDataHelper : DataHelperBase
 
     public async Task<string> GetShortcode(Guid eventId)
     {
-        const string sql = "SELECT Shortcode FROM Events WHERE EventId = @id";
+        const string sql = "SELECT Shortcode FROM Events WHERE Id = @id";
 
         await using var builder = Builder(sql)
             .AddParameter("@id", eventId);

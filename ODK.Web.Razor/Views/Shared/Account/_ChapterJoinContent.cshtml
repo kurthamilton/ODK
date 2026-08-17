@@ -1,8 +1,8 @@
-﻿@using ODK.Core.Chapters
-@using ODK.Services.Chapters
-@using ODK.Services.Users.ViewModels
+﻿@using ODK.Services.Users.ViewModels
 @using ODK.Web.Common.Extensions
+@using ODK.Web.Common.Routes
 @model ChapterJoinPageViewModel
+@inject IOdkRoutes OdkRoutes
 @{
     var memberId = User.MemberIdOrDefault();
 }
@@ -14,18 +14,32 @@
     </p>
 }
 
+@if (memberId == null && Model.InvitedMemberHasAccount)
+{
+    @* Signing back in returns them here, where the form below joins them to the group. *@
+    var returnUrl = $"{Context.Request.Path}{Context.Request.QueryString}";
+    
+    <p>
+        You already have an account, so sign in to accept your invitation.
+    </p>
+
+    @* data-invite-signin is an E2E selector - no CSS or script reads it. The header renders a "Sign in" link of
+       its own on every anonymous page, so a test matching on the text finds two. *@
+    <a class="btn btn-primary" href="@OdkRoutes.Account.Login(Model.Chapter, returnUrl)"
+       data-invite-signin>Sign in</a>
+
+    return;
+}
+
 <form method="post" enctype="multipart/form-data">
     @Html.AntiForgeryToken()
 
     @if (memberId == null)
     {
-        @await Html.PartialAsync("Account/_PersonalDetailsForm", new PersonalDetailsFormViewModel
-        {
-            Chapter = Model.Chapter
-        });
-    }    
+        @await Html.PartialAsync("Account/_PersonalDetailsForm", Model.PersonalDetails);
+    }
 
     @await Html.PartialAsync("Account/_ChapterProfileForm", Model.Profile)
-    
-    <button type="submit" class="btn btn-primary">Create</button>
+
+    <button type="submit" class="btn btn-primary">@(memberId == null ? "Create" : "Join")</button>
 </form>
