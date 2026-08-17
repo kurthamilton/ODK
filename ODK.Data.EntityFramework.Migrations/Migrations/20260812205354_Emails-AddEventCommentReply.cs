@@ -12,7 +12,7 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             // adapted from EmailType.EventComment
-            migrationBuilder.InsertEmails(new Email
+            migrationBuilder.InsertEmails(EmailSchemaEra.TypeIdKeyWithRecipientType, new Email
             {
                 HtmlContent = "<p>An event comment has been replied to.</p><p>{comment.text}</p><p><a href=\"{event.url}\">{event.url}</a></p>",
                 Overridable = true,
@@ -25,7 +25,7 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DeleteEmail(EmailType.EventCommentReply);
+            migrationBuilder.DeleteEmail(EmailSchemaEra.TypeIdKeyWithRecipientType, EmailType.EventCommentReply);
         }
     }
 }

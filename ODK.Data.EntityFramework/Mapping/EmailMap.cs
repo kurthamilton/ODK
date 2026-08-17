@@ -17,7 +17,7 @@ public class EmailMap : IEntityTypeConfiguration<Email>
             .HasColumnName("EmailRecipientTypeId");
 
         builder.Property(x => x.Type)
-            .HasColumnName("EmailTypeId")
+            .HasColumnName("Id")
             .HasConversion<int>();
 
         builder.Property(x => x.HtmlContent)

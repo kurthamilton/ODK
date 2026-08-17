@@ -8,19 +8,27 @@ internal static class MigrationBuilderExtensions
     /* A migration inserts with the columns the table had when the migration was written, so each schema
        era keeps its own set. Do not merge them: a migration that runs before a column exists must insert
        without it, or a database built from the migrations alone fails on that migration. */
-    private static readonly string[] EmailColumns = ["EmailTypeId", "Subject", "Body", "Overridable", "Name"];
+    private static readonly string[] IdKeyColumns =
+        ["Id", "Subject", "Body", "Overridable", "Name", "EmailRecipientTypeId"];
 
-    private static readonly string[] EmailColumnsWithRecipientType = [.. EmailColumns, "EmailRecipientTypeId"];
+    private static readonly string[] IdKeyColumnTypes =
+        ["int", "nvarchar(255)", "nvarchar(max)", "bit", "nvarchar(255)", "int"];
 
-    private static readonly string[] EmailColumnTypes = ["int", "nvarchar(255)", "nvarchar(max)", "bit", "nvarchar(255)"];
+    private static readonly string[] TypeIdKeyColumns = ["EmailTypeId", "Subject", "Body", "Overridable", "Name"];
 
-    private static readonly string[] EmailColumnTypesWithRecipientType = [.. EmailColumnTypes, "int"];
+    private static readonly string[] TypeIdKeyColumnTypes =
+        ["int", "nvarchar(255)", "nvarchar(max)", "bit", "nvarchar(255)"];
 
-    internal static MigrationBuilder DeleteEmail(this MigrationBuilder migrationBuilder, EmailType type)
+    private static readonly string[] TypeIdKeyWithRecipientTypeColumns = [.. TypeIdKeyColumns, "EmailRecipientTypeId"];
+
+    private static readonly string[] TypeIdKeyWithRecipientTypeColumnTypes = [.. TypeIdKeyColumnTypes, "int"];
+
+    internal static MigrationBuilder DeleteEmail(
+        this MigrationBuilder migrationBuilder, EmailSchemaEra era, EmailType type)
     {
         migrationBuilder.DeleteData(
             table: "Emails",
-            keyColumn: "EmailTypeId",
+            keyColumn: KeyColumn(era),
             keyValue: (int)type);
         return migrationBuilder;
     }
@@ -106,23 +114,21 @@ internal static class MigrationBuilderExtensions
     }
 
     /// <summary>
-    /// Inserts rows into Emails, writing EmailRecipientTypeId for each email that sets
-    /// <see cref="Email.RecipientType"/> and omitting the column for each one that leaves it unset.
+    /// Inserts rows into Emails using the column set for the given <see cref="EmailSchemaEra"/>.
     /// </summary>
     /// <remarks>
-    /// The recipient type is what selects the schema era, so a migration gets the right one from the rows
-    /// it declares and has no separate switch to get wrong. Leaving it unset targets the schema without
-    /// EmailRecipientTypeId, which is the era a migration older than that column has to keep inserting
-    /// for. A newer migration that omits it inserts nothing into a NOT NULL column with no default and
-    /// fails there, which is the wanted outcome: <see cref="EmailRecipientType.None"/> has no row in the
-    /// lookup table, so there is no such thing as a valid row carrying it.
+    /// The era is the caller's to state, because nothing about an <see cref="Email"/> reveals it: the key
+    /// column moved from EmailTypeId to Id, and a row carries no trace of which schema it is being written
+    /// into. Pass the era the migration was written for and never change it - see
+    /// <see cref="EmailSchemaEra"/>.
     /// </remarks>
-    internal static MigrationBuilder InsertEmails(this MigrationBuilder migrationBuilder, params Email[] emails)
+    internal static MigrationBuilder InsertEmails(
+        this MigrationBuilder migrationBuilder, EmailSchemaEra era, params Email[] emails)
     {
+        var (columns, columnTypes) = Columns(era);
+
         foreach (var email in emails)
         {
-            var withRecipientType = email.RecipientType != EmailRecipientType.None;
-
             object[] values =
             [
                 (int)email.Type,
@@ -132,14 +138,31 @@ internal static class MigrationBuilderExtensions
                 email.Type.ToString()
             ];
 
-            // Columns, types and values all follow the one condition, so they cannot come to disagree.
+            /* The recipient type is the only column any era adds, so the one era without it is the one era
+               that writes the shorter value list. */
             migrationBuilder.InsertData(
                 table: "Emails",
-                columns: withRecipientType ? EmailColumnsWithRecipientType : EmailColumns,
-                columnTypes: withRecipientType ? EmailColumnTypesWithRecipientType : EmailColumnTypes,
-                values: withRecipientType ? [.. values, (int)email.RecipientType] : values);
+                columns: columns,
+                columnTypes: columnTypes,
+                values: era == EmailSchemaEra.TypeIdKey ? values : [.. values, (int)email.RecipientType]);
         }
 
         return migrationBuilder;
     }
+
+    private static (string[] Columns, string[] ColumnTypes) Columns(EmailSchemaEra era) => era switch
+    {
+        EmailSchemaEra.TypeIdKey => (TypeIdKeyColumns, TypeIdKeyColumnTypes),
+        EmailSchemaEra.TypeIdKeyWithRecipientType =>
+            (TypeIdKeyWithRecipientTypeColumns, TypeIdKeyWithRecipientTypeColumnTypes),
+        EmailSchemaEra.IdKey => (IdKeyColumns, IdKeyColumnTypes),
+        _ => throw new ArgumentOutOfRangeException(nameof(era), era, "No Emails column set for this era.")
+    };
+
+    private static string KeyColumn(EmailSchemaEra era) => era switch
+    {
+        EmailSchemaEra.TypeIdKey or EmailSchemaEra.TypeIdKeyWithRecipientType => "EmailTypeId",
+        EmailSchemaEra.IdKey => "Id",
+        _ => throw new ArgumentOutOfRangeException(nameof(era), era, "No Emails key column for this era.")
+    };
 }

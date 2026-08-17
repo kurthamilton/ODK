@@ -49,7 +49,6 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
             migrationBuilder.DropIndexes("InstagramPosts", "ChapterId");
             migrationBuilder.DropForeignKeys("EventTicketPurchases", "EventId");
             migrationBuilder.DropForeignKeys("EventTicketPurchases", "MemberId");
-            migrationBuilder.DropForeignKeys("MemberImages", "MemberId");
             migrationBuilder.DropForeignKeys("ContactRequests", "ChapterId");
             migrationBuilder.DropForeignKeys("PaymentReconciliations", "ChapterId");
             migrationBuilder.DropForeignKeys("ChapterAdminMembers", "MemberId");
@@ -871,10 +870,6 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                 "FOREIGN KEY ([MemberId]) REFERENCES [Members] ([Id]) ON DELETE CASCADE");
 
             migrationBuilder.Sql(
-                "ALTER TABLE [MemberImages] ADD CONSTRAINT [FK_MemberImages_Members] " +
-                "FOREIGN KEY ([MemberId]) REFERENCES [Members] ([Id]) ON DELETE CASCADE");
-
-            migrationBuilder.Sql(
                 "ALTER TABLE [ContactRequests] ADD CONSTRAINT [FK_ContactRequests_Chapters] " +
                 "FOREIGN KEY ([ChapterId]) REFERENCES [Chapters] ([Id])");
 
@@ -890,13 +885,11 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
             // See Up: none of these is EF's to manage.
             migrationBuilder.DropForeignKeys("EventTicketPurchases", "EventId");
             migrationBuilder.DropForeignKeys("EventTicketPurchases", "MemberId");
-            migrationBuilder.DropForeignKeys("MemberImages", "MemberId");
             migrationBuilder.DropForeignKeys("ContactRequests", "ChapterId");
             migrationBuilder.DropForeignKeys("PaymentReconciliations", "ChapterId");
             migrationBuilder.DropForeignKey(
                 name: "FK_ChapterAdminMembers_Members_MemberId",
                 table: "ChapterAdminMembers");
-
 
             migrationBuilder.DropForeignKey(
                 name: "FK_ChapterContactMessages_Chapters_ChapterId",
@@ -1786,10 +1779,6 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
 
             migrationBuilder.Sql(
                 "ALTER TABLE [EventTicketPurchases] ADD CONSTRAINT [FK_EventTicketPurchases_Members] " +
-                "FOREIGN KEY ([MemberId]) REFERENCES [Members] ([MemberId]) ON DELETE CASCADE");
-
-            migrationBuilder.Sql(
-                "ALTER TABLE [MemberImages] ADD CONSTRAINT [FK_MemberImages_Members] " +
                 "FOREIGN KEY ([MemberId]) REFERENCES [Members] ([MemberId]) ON DELETE CASCADE");
 
             migrationBuilder.Sql(
