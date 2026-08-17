@@ -25,6 +25,20 @@ internal static class MigrationBuilderExtensions
         return migrationBuilder;
     }
 
+    /// <summary>
+    /// Drops a column where the table has one - use in place of <see cref="MigrationBuilder.DropColumn"/> for
+    /// a column no migration created, which a database built from the migrations alone will not have.
+    /// </summary>
+    internal static MigrationBuilder DropColumnIfExists(
+        this MigrationBuilder migrationBuilder, string table, string column)
+    {
+        var sql =
+            $"IF COL_LENGTH(N'{table}', N'{column}') IS NOT NULL" + Environment.NewLine +
+            $"    ALTER TABLE [{table}] DROP COLUMN [{column}];";
+        migrationBuilder.Sql(sql);
+        return migrationBuilder;
+    }
+
     internal static MigrationBuilder DropConstraintIfExists(
         this MigrationBuilder migrationBuilder, string table, string constraint)
     {
@@ -58,6 +72,18 @@ internal static class MigrationBuilderExtensions
     }
 
     /// <summary>
+    /// Drops an index by name where it exists. Use when clearing the way for a column drop, which any index
+    /// on the column blocks - <see cref="DropIndexes"/> is scoped to one duplicating an index EF is about to
+    /// create, and passes over a unique or clustered one.
+    /// </summary>
+    internal static MigrationBuilder DropIndexIfExists(
+        this MigrationBuilder migrationBuilder, string table, string index)
+    {
+        migrationBuilder.Sql($"DROP INDEX IF EXISTS [{index}] ON [{table}];");
+        return migrationBuilder;
+    }
+
+    /// <summary>
     /// Drops a table's primary key, whatever it is called, and does nothing where the table has none - use
     /// in place of <see cref="MigrationBuilder.DropPrimaryKey"/>, which needs the exact name and assumes the
     /// constraint exists. See <see cref="PrimaryKeySql.Drop"/>.
@@ -66,6 +92,16 @@ internal static class MigrationBuilderExtensions
         this MigrationBuilder migrationBuilder, string table)
     {
         migrationBuilder.Sql(PrimaryKeySql.Drop(table));
+        return migrationBuilder;
+    }
+
+    /// <summary>
+    /// Drops a table where the database has one - use in place of <see cref="MigrationBuilder.DropTable"/> for
+    /// a table no migration created, which a database built from the migrations alone will not have.
+    /// </summary>
+    internal static MigrationBuilder DropTableIfExists(this MigrationBuilder migrationBuilder, string table)
+    {
+        migrationBuilder.Sql($"DROP TABLE IF EXISTS [{table}];");
         return migrationBuilder;
     }
 
