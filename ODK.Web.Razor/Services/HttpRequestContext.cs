@@ -15,6 +15,8 @@ public class HttpRequestContext : IHttpRequestContext
 
     public string BaseUrl => _baseUrl.Value;
 
+    public required IReadOnlyDictionary<string, string[]> Headers { get; init; }
+
     public required string IpAddress { get; init; }
 
     public required string? Locale { get; init; }
@@ -41,6 +43,7 @@ public class HttpRequestContext : IHttpRequestContext
 
         return new HttpRequestContext
         {
+            Headers = GetHeaders(request),
             IpAddress = request?.Headers["X-Forwarded-For"].FirstOrDefault()
                     ?.Split(',')
                     .FirstOrDefault()
@@ -54,6 +57,16 @@ public class HttpRequestContext : IHttpRequestContext
             UserAgent = request?.Headers.UserAgent.ToString() ?? string.Empty
         };
     }
+
+    /* Keyed case-insensitively, as the request's own header collection is, so a caller that does look a header
+       up by name gets the same answer ASP.NET would give. A null value becomes empty rather than being dropped:
+       a header that arrived with no value is still a header that arrived. */
+    private static IReadOnlyDictionary<string, string[]> GetHeaders(HttpRequest? request)
+        => request?.Headers.ToDictionary(
+                x => x.Key,
+                x => x.Value.Select(value => value ?? string.Empty).ToArray(),
+                StringComparer.OrdinalIgnoreCase)
+            ?? new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
 
     // Accept-Language values, highest quality first (an omitted quality defaults to 1.0 - highest).
     private static IEnumerable<string?> GetAcceptLanguages(HttpRequest? request)
