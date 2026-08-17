@@ -46,7 +46,7 @@ public static class PaginationViewModelTests
         var model = CreateModel(page: 1, totalPages: 100);
 
         // Act / Assert
-        model.VisiblePages.Should().Equal(1, 2, null, 100);
+        model.VisiblePages.Should().Equal(1, 2, 3, 4, null, 100);
     }
 
     [Test]
@@ -56,7 +56,26 @@ public static class PaginationViewModelTests
         var model = CreateModel(page: 100, totalPages: 100);
 
         // Act / Assert
-        model.VisiblePages.Should().Equal(1, null, 99, 100);
+        model.VisiblePages.Should().Equal(1, null, 97, 98, 99, 100);
+    }
+
+    [TestCase(1)]
+    [TestCase(2)]
+    [TestCase(8)]
+    [TestCase(15)]
+    [TestCase(16)]
+    public static void VisiblePages_WhereverTheCurrentPageSits_OffersTheSameNumberOfPages(int page)
+    {
+        /* Arrange - the first page used to offer [1] [2] ... [16] against the [1] ... [7] [8] [9] ... [16] of
+           the middle, because the half of the window that fell outside the list was simply lost. An end has
+           nowhere to put that half, so it goes on the other side instead. */
+        var model = CreateModel(page, totalPages: 16);
+
+        // Act
+        var numbered = model.VisiblePages.Where(x => x != null).ToArray();
+
+        // Assert - the ellipses vary with where the run sits; the number of pages to click does not.
+        numbered.Should().HaveCount(5);
     }
 
     [Test]

@@ -5,6 +5,12 @@ public class PaginationViewModel
     /// <summary>How many pages are shown either side of the current one.</summary>
     private const int Window = 1;
 
+    /// <summary>
+    /// How many page numbers the component offers: the first, the last, and the window around the current
+    /// page. The same number wherever the current page sits, which is what <see cref="Run"/> is for.
+    /// </summary>
+    private const int Quota = (Window * 2) + 3;
+
     public required string AccessibilityLabel { get; init; }
 
     public required Func<int, string> GetPageUrl { get; init; }
@@ -27,10 +33,13 @@ public class PaginationViewModel
     {
         get
         {
+            var (from, to) = Run();
+
             var pages = new List<int?>();
             var previous = 0;
 
-            foreach (var page in Enumerable.Range(1, TotalPages).Where(Include))
+            foreach (var page in Enumerable.Range(1, TotalPages)
+                .Where(x => x == 1 || x == TotalPages || (x >= from && x <= to)))
             {
                 var gap = page - previous - 1;
 
@@ -54,6 +63,36 @@ public class PaginationViewModel
         }
     }
 
-    private bool Include(int page)
-        => page == 1 || page == TotalPages || Math.Abs(page - Page) <= Window;
+    /// <summary>
+    /// The run of pages shown around the current one, as an inclusive range.
+    /// </summary>
+    /// <remarks>
+    /// The run offers the same number of links wherever the current page sits. Centred on the current page it
+    /// is <see cref="Window"/> either side, and the first and last pages are added to it. Against either end
+    /// there is nowhere to put half of it, so rather than losing those links it runs from the end instead and
+    /// takes one more - absorbing the first or last page, which it would otherwise sit beside. Page 1 of 16
+    /// therefore offers as many pages as page 8 does, instead of a third of them.
+    /// </remarks>
+    private (int From, int To) Run()
+    {
+        var atStart = Page - Window <= 1;
+        var atEnd = Page + Window >= TotalPages;
+
+        if (atStart && atEnd)
+        {
+            return (1, TotalPages);
+        }
+
+        if (atStart)
+        {
+            return (1, Math.Min(TotalPages, Quota - 1));
+        }
+
+        if (atEnd)
+        {
+            return (Math.Max(1, TotalPages - Quota + 2), TotalPages);
+        }
+
+        return (Page - Window, Page + Window);
+    }
 }
