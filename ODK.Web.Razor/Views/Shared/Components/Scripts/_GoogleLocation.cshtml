@@ -1,8 +1,9 @@
-﻿@using ODK.Infrastructure.Settings
-@inject AppSettings AppSettings
+﻿@using ODK.Web.Common.Settings
+@inject GoogleLocationViewSettings Settings
 @{
-    var apiKey = AppSettings.Google.Maps.ApiKey;
+    var apiKey = Settings.ApiKey;
+    var url = $"https://maps.googleapis.com/maps/api/js?key={apiKey}&libraries=places&v=beta";
 }
 
-<script src="https://maps.googleapis.com/maps/api/js?key=@apiKey&libraries=places&v=beta"></script>
+<script src="@url"></script>
 <script src="~/js/odk.google.places.js" asp-append-version="true"></script>

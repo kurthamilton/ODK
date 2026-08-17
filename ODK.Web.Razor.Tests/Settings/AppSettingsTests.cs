@@ -2,7 +2,9 @@
 using System.Reflection;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using ODK.Infrastructure;
 using ODK.Infrastructure.Settings;
 
 namespace ODK.Web.Razor.Tests.Settings;
@@ -23,14 +25,8 @@ public static class AppSettingsTests
     [Test]
     public static void AppSettings_EveryReferenceValueIsStatedInConfig()
     {
-        // Arrange
-        var config = new ConfigurationBuilder()
-            .SetBasePath(AppContext.BaseDirectory)
-            .AddJsonFile("appsettings.json")
-            .Build();
-
         // Act
-        var settings = config.Get<AppSettings>();
+        var settings = BindAppSettings();
 
         // Assert
         settings.Should().NotBeNull();
@@ -42,6 +38,22 @@ public static class AppSettingsTests
         nullPaths.Should().BeEmpty(
             "every non-nullable setting must be stated in config, but these bound to null: {0}",
             string.Join(", ", nullPaths));
+    }
+
+    [Test]
+    public static void ConfigureDependencies_DoesNotRegisterAppSettings()
+    {
+        /* Arrange - every consumer takes a mapped settings type declaring the values it uses. Nothing injects
+           AppSettings itself, and nothing should be able to: injecting an unregistered type fails when the
+           request is served rather than when the app builds, so a test is the only thing that catches it. */
+        var services = new ServiceCollection();
+
+        // Act
+        services.ConfigureDependencies(BindAppSettings());
+
+        // Assert - on the one fact, not the collection, which is several hundred registrations long.
+        var registered = services.Any(x => x.ServiceType == typeof(AppSettings));
+        registered.Should().BeFalse("AppSettings must not be resolvable - consumers take a mapped settings type");
     }
 
     private static void AddChildNullPaths(
@@ -79,6 +91,14 @@ public static class AppSettingsTests
                 return;
         }
     }
+
+    // The real appsettings.json, which the web project copies to this project's output.
+    private static AppSettings BindAppSettings()
+        => new ConfigurationBuilder()
+            .SetBasePath(AppContext.BaseDirectory)
+            .AddJsonFile("appsettings.json")
+            .Build()
+            .Get<AppSettings>()!;
 
     private static void AddItemNullPaths(
         object? item, string path, List<string> paths, NullabilityInfoContext nullability)

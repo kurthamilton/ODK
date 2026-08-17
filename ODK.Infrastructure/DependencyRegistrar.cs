@@ -54,6 +54,7 @@ using ODK.Services.Web;
 using ODK.Web.Common.Account;
 using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
+using ODK.Web.Common.Settings;
 using ODK.Services.Integrations.Emails.Reoon;
 using ODK.Services.Questions;
 
@@ -69,8 +70,11 @@ public static class DependencyRegistrar
         ConfigureServiceSettings(services, appSettings);
         ConfigureServices(services, appSettings);
         ConfigureData(services, appSettings);
+        ConfigureWebSettings(services, appSettings);
 
-        services.AddSingleton(appSettings);
+        /* AppSettings is deliberately not registered. Every consumer takes a mapped settings type declaring the
+           values it uses, so config stays a contract this project translates rather than one anything can reach
+           into - and a consumer that wants a new value has to say so here. */
     }
 
     private static void ConfigureAuthentication(this IServiceCollection services, AppSettings appSettings)
@@ -342,6 +346,46 @@ public static class DependencyRegistrar
             SecretKey = recaptcha.SecretKey,
             SiteKey = recaptcha.SiteKey,
             VerifyUrl = recaptcha.VerifyUrl
+        });
+    }
+
+    /* The web layer's own mapped settings, declared in ODK.Web.Common so this project can see them - the
+       consumers are middleware and controllers in ODK.Web.Razor, which it cannot. Same rule as the service
+       settings above: a consumer takes what it needs, not AppSettings. */
+    private static void ConfigureWebSettings(IServiceCollection services, AppSettings appSettings)
+    {
+        GoogleMapsSettings maps = appSettings.Google.Maps;
+        RateLimitingSettings rateLimiting = appSettings.RateLimiting;
+
+        services.AddSingleton(new GoogleLocationViewSettings
+        {
+            ApiKey = maps.ApiKey
+        });
+
+        services.AddSingleton(new GoogleMapViewSettings
+        {
+            ApiKey = maps.ApiKey
+        });
+
+        services.AddSingleton(new RateLimitingMiddlewareSettings
+        {
+            BlockForSeconds = rateLimiting.BlockForSeconds,
+            BlockIpAddresses = rateLimiting.BlockIpAddresses,
+            BlockPaths = rateLimiting.BlockPaths,
+            BlockPatterns = rateLimiting.BlockPatterns
+        });
+
+        services.AddSingleton(new ScheduledTasksControllerSettings
+        {
+            ApiKey = appSettings.ScheduledTasks.ApiKey
+        });
+
+        services.AddSingleton(new WebhooksControllerSettings
+        {
+            BrevoWebhookEnv = appSettings.Brevo.WebhookEnv,
+            BrevoWebhookEnvHeader = appSettings.Brevo.WebhookEnvHeader,
+            BrevoWebhookPassword = appSettings.Brevo.WebhookPassword,
+            BrevoWebhookPasswordHeader = appSettings.Brevo.WebhookPasswordHeader
         });
     }
 }
