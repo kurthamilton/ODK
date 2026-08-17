@@ -23,6 +23,6 @@
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
 {
     Title = "Email templates",
-    BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_EmailsContent", viewModel)</div>,
+    BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_ChapterAdminEmailsContent", viewModel)</div>,
     MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu")
 })

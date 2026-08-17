@@ -16,7 +16,7 @@
         .ToArray() ?? [];
 }
 
-@await Html.PartialAsync("Admin/Events/Event/_EventHeader", Model)
+@await Html.PartialAsync("Admin/Events/Event/_EventAdminHeader", Model)
 @await Html.PartialAsync("Admin/Events/Event/_EventAdminTabs", Model)
 
 @if (Model.Event.PublishedUtc == null)

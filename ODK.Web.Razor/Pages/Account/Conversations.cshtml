@@ -27,7 +27,7 @@
         Content =
             @<div>
                 <section class="section">
-                    @await Html.PartialAsync("Conversations/_ConversationsContent", new ChapterConversationsViewModel
+                    @await Html.PartialAsync("Conversations/_ChapterConversationsContent", new ChapterConversationsViewModel
                     {
                         ActiveConversationCount = viewModel.ActiveConversationCount,
                         Archived = Model.Archived,

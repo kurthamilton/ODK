@@ -14,5 +14,5 @@
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
     Title = "Members",
-    ContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_MembersContent", viewModel)</div>
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_MembersAdminContent", viewModel)</div>
 })

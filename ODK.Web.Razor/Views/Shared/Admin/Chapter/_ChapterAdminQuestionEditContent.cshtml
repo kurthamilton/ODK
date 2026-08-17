@@ -11,7 +11,7 @@
 
 <form method="post" action="/admin/groups/@Model.Chapter.Id/questions/@Model.Question.Id">
     @Html.AntiForgeryToken()
-    @await Html.PartialAsync("Admin/Chapter/_QuestionForm", new ChapterQuestionFormViewModel
+    @await Html.PartialAsync("Admin/Chapter/_ChapterAdminQuestionForm", new ChapterQuestionFormViewModel
     {
         Answer = Model.Question.Answer,
         Question = Model.Question.Name

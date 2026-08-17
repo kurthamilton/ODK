@@ -32,7 +32,7 @@
             Title = "Location",
             ContentFunc = 
                 @<div>
-                    @await Html.PartialAsync("Account/_LocationForm", Model.PostedLocation ?? new LocationFormViewModel
+                    @await Html.PartialAsync("Account/_AccountLocationForm", Model.PostedLocation ?? new LocationFormViewModel
                     {
                         Lat = Model.Location?.LatLong.Lat,
                         LocationName = Model.Location?.Name ?? string.Empty,

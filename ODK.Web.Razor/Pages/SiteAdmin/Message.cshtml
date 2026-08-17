@@ -11,4 +11,4 @@
     var viewModel = await ContactAdminService.GetMessageViewModel(Model.MemberServiceRequest, Model.MessageId);
 }
 
-@await Html.PartialAsync("SiteAdmin/_MessageContent", viewModel)
+@await Html.PartialAsync("SiteAdmin/_SiteAdminMessageContent", viewModel)

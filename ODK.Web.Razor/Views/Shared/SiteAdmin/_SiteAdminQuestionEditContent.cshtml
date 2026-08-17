@@ -22,7 +22,7 @@
 
 <form method="post" action="/siteadmin/questions/@question.Id">
     @Html.AntiForgeryToken()
-    @await Html.PartialAsync("SiteAdmin/_QuestionForm", formViewModel)
+    @await Html.PartialAsync("SiteAdmin/_SiteAdminQuestionForm", formViewModel)
 
     <div class="d-flex justify-content-between">
         <button type="submit" class="btn btn-primary">Save</button>

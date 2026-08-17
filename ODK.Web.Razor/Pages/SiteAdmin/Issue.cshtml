@@ -11,4 +11,4 @@
     var viewModel = await IssueAdminService.GetIssueAdminPageViewModel(Model.MemberServiceRequest, Model.IssueId);
 }
 
-@await Html.PartialAsync("SiteAdmin/_IssueContent", viewModel)
+@await Html.PartialAsync("SiteAdmin/_SiteAdminIssueContent", viewModel)

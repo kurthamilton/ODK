@@ -21,7 +21,7 @@
         </label>
     </div>
 
-    @await Html.PartialAsync("SiteAdmin/_EmailForm", new SiteEmailFormViewModel
+    @await Html.PartialAsync("SiteAdmin/_SiteAdminEmailForm", new SiteEmailFormViewModel
     {
         Content = Model.Email.HtmlContent,
         // The layout is a whole HTML document rather than a fragment, so its editor grows to fit it all.

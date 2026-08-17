@@ -12,7 +12,7 @@ namespace ODK.E2E.Tests;
 /// stale JS after a deploy. That failure is invisible on the page - the scripts still load - so it needs an
 /// explicit test.
 ///
-/// <c>/account/create</c> renders three of those partials (<c>_Imaging</c>, <c>_GoogleLocation</c>,
+/// <c>/account/create</c> renders three of those partials (<c>_ImagingScripts</c>, <c>_GoogleLocation</c>,
 /// <c>_OAuth</c>) and is anonymous, which makes it the cheapest place to check: no login, no provisioning,
 /// no payment provider.
 /// </summary>

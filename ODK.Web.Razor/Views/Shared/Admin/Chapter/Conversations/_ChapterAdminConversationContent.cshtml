@@ -54,7 +54,7 @@
                         {
                             <form action="/admin/groups/@Model.Chapter.Id/conversations/@Model.Conversation.Id/reply" method="post">
                                 @Html.AntiForgeryToken()
-                                @await Html.PartialAsync("Admin/Chapter/Conversations/_ConversationReplyForm", 
+                                @await Html.PartialAsync("Admin/Chapter/Conversations/_ChapterAdminConversationReplyForm", 
                                     new ChapterConversationReplyFormViewModel())
                                 <button class="btn btn-primary">Send</button>
                             </form>

@@ -49,7 +49,7 @@
         },
         new MenuItem { Text = title }
     },
-    Content = await Html.PartialAsync("Chapters/_AboutContent", new AboutContentViewModel
+    Content = await Html.PartialAsync("Chapters/_ChapterAboutContent", new AboutContentViewModel
     {
         Chapter = chapter,
         Questions = viewModel.Questions,

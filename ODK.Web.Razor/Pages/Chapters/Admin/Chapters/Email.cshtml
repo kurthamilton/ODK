@@ -31,7 +31,7 @@
         new MenuItem { Link = Model.AdminRoutes.Emails(chapter).Path, Text = "Emails" },
         new MenuItem { Text = email.Email.Name }
     },
-    ContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_EmailContent", viewModel)</div>
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_ChapterAdminEmailContent", viewModel)</div>
 })
 
 @section scripts {
