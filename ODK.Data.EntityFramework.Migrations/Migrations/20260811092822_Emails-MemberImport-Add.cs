@@ -35,6 +35,7 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.InsertEmails(
+                EmailSchemaEra.TypeIdKey,
                 new Email
                 {
                     HtmlContent = ActivationBody,
