@@ -1,5 +1,13 @@
-﻿using ODK.Core.Emails;
+﻿using ODK.Core.Chapters;
+using ODK.Core.Countries;
+using ODK.Core.DataTypes;
+using ODK.Core.Emails;
+using ODK.Core.Events;
 using ODK.Core.Features;
+using ODK.Core.Issues;
+using ODK.Core.Members;
+using ODK.Core.Notifications;
+using ODK.Core.Platforms;
 
 namespace ODK.Data.EntityFramework.Migrations.Enums;
 
@@ -15,13 +23,53 @@ public static class EnumTables
 {
     private static readonly IReadOnlyDictionary<Type, EnumTable> Tables = new Dictionary<Type, EnumTable>
     {
+        [typeof(ChapterAdminRole)] = new EnumTable
+        {
+            Name = "ChapterAdminRoles"
+        },
+        [typeof(DataType)] = new EnumTable
+        {
+            Name = "DataTypes"
+        },
+        [typeof(DistanceUnitType)] = new EnumTable
+        {
+            Name = "DistanceUnitTypes"
+        },
         [typeof(EmailRecipientType)] = new EnumTable
         {
             Name = "EmailRecipientTypes"
         },
+        [typeof(EventResponseType)] = new EnumTable
+        {
+            Name = "EventResponseTypes"
+        },
+        [typeof(IssueStatusType)] = new EnumTable
+        {
+            Name = "IssueStatusTypes"
+        },
+        [typeof(IssueType)] = new EnumTable
+        {
+            Name = "IssueTypes"
+        },
+        [typeof(MemberEmailPreferenceType)] = new EnumTable
+        {
+            Name = "MemberEmailPreferenceTypes"
+        },
+        [typeof(NotificationType)] = new EnumTable
+        {
+            Name = "NotificationTypes"
+        },
+        [typeof(PlatformType)] = new EnumTable
+        {
+            Name = "PlatformTypes"
+        },
         [typeof(SiteFeatureType)] = new EnumTable
         {
             Name = "SiteFeatures"
+        },
+        [typeof(SubscriptionType)] = new EnumTable
+        {
+            Name = "SubscriptionTypes"
         }
     };
 

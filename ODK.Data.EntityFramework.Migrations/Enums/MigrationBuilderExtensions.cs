@@ -45,6 +45,14 @@ public static class MigrationBuilderExtensions
         where T : struct, Enum
         => Sql(migrationBuilder, EnumTableSql.Insert(values));
 
+    /// <summary>
+    /// Brings a lookup table created before this registry existed onto the standard id column name.
+    /// See <see cref="EnumTableSql.RenameIdColumn{T}"/>.
+    /// </summary>
+    public static MigrationBuilder RenameEnumIdColumn<T>(this MigrationBuilder migrationBuilder, string fromColumn)
+        where T : struct, Enum
+        => Sql(migrationBuilder, EnumTableSql.RenameIdColumn<T>(fromColumn));
+
     private static MigrationBuilder Sql(MigrationBuilder migrationBuilder, string sql)
     {
         if (string.IsNullOrEmpty(sql))

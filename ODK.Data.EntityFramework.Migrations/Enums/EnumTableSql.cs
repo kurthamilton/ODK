@@ -158,6 +158,31 @@ public static class EnumTableSql
         where T : struct, Enum
         => Insert(Enum.GetValues<T>().Where(x => GetId(x) != 0).ToArray());
 
+    /// <summary>
+    /// Renames a table's existing id column to <see cref="EnumTable.IdColumnName"/>. Foreign keys
+    /// reference a column by id rather than by name, so those pointing at it survive the rename and
+    /// do not need dropping and recreating around it.
+    /// </summary>
+    /// <remarks>
+    /// Guarded at both ends, because the two databases this runs against differ: one built from the
+    /// migrations alone already has the column under its new name, and one restored from production
+    /// has it under the old one. COL_LENGTH returns null for a table that does not exist either, so a
+    /// database with neither is covered by the same guard.
+    /// </remarks>
+    public static string RenameIdColumn<T>(string fromColumn)
+        where T : struct, Enum
+    {
+        var table = EnumTables.Get<T>();
+
+        return Join(
+            $"IF COL_LENGTH({Literal(table.Name)}, {Literal(fromColumn)}) IS NOT NULL",
+            $"    AND COL_LENGTH({Literal(table.Name)}, {Literal(table.IdColumnName)}) IS NULL",
+            "BEGIN",
+            $"    EXEC sp_rename {Literal($"{Identifier(table.Name)}.{Identifier(fromColumn)}")}, " +
+                $"{Literal(table.IdColumnName)}, N'COLUMN';",
+            "END");
+    }
+
     /* Shared by the add guard and the drop, so the two cannot come to disagree about what counts as
        "this column's foreign key to the enum table". Indented by the caller because the two nest it at
        different depths. */

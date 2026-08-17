@@ -93,6 +93,24 @@ migrationBuilder.DeleteEnumValues(SiteFeatureType.Theme);
 migrationBuilder.DropEnumTable<SiteFeatureType>();
 ```
 
+**Bringing an older lookup table into the registry.** Tables built before it exists key themselves on their
+own name (`SubscriptionTypes.SubscriptionTypeId`), while everything here expects `Id`. Rename it, then run
+the same statements the registry emits for a table it manages — the rename brings a production restore into
+line, and the guarded create/insert/foreign key build the table in a database that only ever had the
+migrations:
+
+```csharp
+migrationBuilder.RenameEnumIdColumn<SubscriptionType>("SubscriptionTypeId");
+migrationBuilder.CreateEnumTable<SubscriptionType>();
+migrationBuilder.InsertAllEnumValues<SubscriptionType>();
+migrationBuilder.AddEnumForeignKey<SubscriptionType>("MemberSubscriptionLog", "SubscriptionTypeId");
+```
+
+The rename needs no foreign keys dropped around it: SQL Server binds a foreign key to a column by id, not
+by name, so the ones pointing at the renamed column follow it. And only the lookup table's own key column
+is renamed — a referencing column like `MemberSubscriptionLog.SubscriptionTypeId` keeps its name, which
+states a relationship that really is there.
+
 Notes:
 
 - The `Name` column holds the enum's `[Display(Name = "…")]` value, falling back to the member
@@ -139,6 +157,26 @@ migrationBuilder.DropPrimaryKeyIfExists("SentEmailEvents");
 ```
 
 `DropConstraintIfExists` covers a **unique** constraint whose name you do know.
+
+**Nor is an unmapped column or table.** `DropColumn` and `DropTable` assume the thing exists, which holds for
+anything a migration created and fails for anything that only ever existed in a restored database — the
+schema pre-dates the baseline, so a database built from the migrations alone never had it. Use
+`DropColumnIfExists` and `DropTableIfExists`, which are no-ops there:
+
+```csharp
+migrationBuilder.DropColumnIfExists("Payments", "PaymentReconciliationId");
+migrationBuilder.DropTableIfExists("PaymentReconciliations");
+```
+
+Dropping a column means clearing everything that depends on it first — a foreign key, and **any** index, not
+just the kind `DropIndexes` removes. That helper is scoped to an index duplicating one EF is about to create
+and passes over a unique or clustered index, so use `DropIndexIfExists` with the name for this:
+
+```csharp
+migrationBuilder.DropForeignKeys("Payments", "PaymentReconciliationId");
+migrationBuilder.DropIndexIfExists("Payments", "IX_Payments_PaymentReconciliationId");
+migrationBuilder.DropColumnIfExists("Payments", "PaymentReconciliationId");
+```
 
 **Adding a relationship the database already has scaffolds only the additions.** EF has no idea the
 constraint and its index are already there, so it emits `AddForeignKey` and `CreateIndex` with nothing to

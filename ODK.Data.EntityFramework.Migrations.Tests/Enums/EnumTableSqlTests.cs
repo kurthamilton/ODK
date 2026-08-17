@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using NUnit.Framework;
 using ODK.Core.Features;
+using ODK.Core.Members;
 using ODK.Data.EntityFramework.Migrations.Enums;
 
 namespace ODK.Data.EntityFramework.Migrations.Tests.Enums;
@@ -182,6 +183,33 @@ public class EnumTableSqlTests
         // Assert
         result.Should().ContainAll(expected);
         result.Should().NotContain("WHERE [Id] = 0)");
+    }
+
+    [Test]
+    public void RenameIdColumn_ReturnsRenameGuardedOnBothTheOldAndTheNewColumn()
+    {
+        // Act
+        var result = EnumTableSql.RenameIdColumn<SubscriptionType>("SubscriptionTypeId");
+
+        // Assert
+        result.Should().Be(Lines(
+            "IF COL_LENGTH(N'SubscriptionTypes', N'SubscriptionTypeId') IS NOT NULL",
+            "    AND COL_LENGTH(N'SubscriptionTypes', N'Id') IS NULL",
+            "BEGIN",
+            "    EXEC sp_rename N'[SubscriptionTypes].[SubscriptionTypeId]', N'Id', N'COLUMN';",
+            "END"));
+    }
+
+    [Test]
+    public void RenameIdColumn_PassesTheNewNameUnqualified()
+    {
+        // Arrange - sp_rename takes the new name on its own. Qualifying or bracketing it produces a column
+        // actually called "[Id]", brackets included, rather than failing.
+        // Act
+        var result = EnumTableSql.RenameIdColumn<SubscriptionType>("SubscriptionTypeId");
+
+        // Assert
+        result.Should().Contain(", N'Id', N'COLUMN';");
     }
 
     /* The lines that decide which foreign key is matched, stripped of indentation and of the trailing
