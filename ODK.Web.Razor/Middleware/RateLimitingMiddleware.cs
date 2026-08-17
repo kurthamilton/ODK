@@ -1,9 +1,9 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Net;
 using System.Text.RegularExpressions;
 using ODK.Core.Utils;
-using ODK.Infrastructure.Settings;
 using ODK.Services.Logging;
+using ODK.Web.Common.Settings;
 
 namespace ODK.Web.Razor.Middleware;
 
@@ -17,18 +17,18 @@ public class RateLimitingMiddleware
     private static long _nextCleanupTicks;
 
     private readonly RequestDelegate _next;
-    private readonly AppSettings _appSettings;
+    private readonly RateLimitingMiddlewareSettings _settings;
 
-    // BlockPatterns come from the singleton AppSettings and don't change at runtime, so the pattern is
-    // compiled once here rather than on every request.
+    // BlockPatterns come from singleton settings and don't change at runtime, so the pattern is compiled once
+    // here rather than on every request.
     private readonly Regex? _blockPatternRegex;
 
-    public RateLimitingMiddleware(RequestDelegate next, AppSettings appSettings)
+    public RateLimitingMiddleware(RequestDelegate next, RateLimitingMiddlewareSettings settings)
     {
         _next = next;
-        _appSettings = appSettings;
+        _settings = settings;
 
-        var blockPatterns = appSettings.RateLimiting.BlockPatterns;
+        var blockPatterns = settings.BlockPatterns;
         _blockPatternRegex = blockPatterns.Length > 0
             ? new Regex($@"^({string.Join('|', blockPatterns)})$", RegexOptions.IgnoreCase | RegexOptions.Compiled)
             : null;
@@ -42,7 +42,7 @@ public class RateLimitingMiddleware
         var ipAddress = context.Connection.RemoteIpAddress?.ToString() ?? string.Empty;
 
         // Check black list - block immediately, don't run the rest of the pipeline.
-        if (_appSettings.RateLimiting.BlockIpAddresses.Contains(ipAddress, StringComparer.OrdinalIgnoreCase))
+        if (_settings.BlockIpAddresses.Contains(ipAddress, StringComparer.OrdinalIgnoreCase))
         {
             context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
             return;
@@ -94,31 +94,9 @@ public class RateLimitingMiddleware
             blockedUntilUtc = utcNow;
         }
 
-        blockedUntilUtc = blockedUntilUtc.Value.AddSeconds(_appSettings.RateLimiting.BlockForSeconds);
+        blockedUntilUtc = blockedUntilUtc.Value.AddSeconds(_settings.BlockForSeconds);
 
         GreyList[ipAddress] = blockedUntilUtc.Value;
-    }
-
-    internal static bool MatchesConfigRule(string rule, string value)
-    {
-        var (wildStart, wildEnd) = (rule.StartsWith('*'), rule.EndsWith('*'));
-
-        if (wildStart && wildEnd)
-        {
-            return value.Contains(rule[1..^1], StringComparison.OrdinalIgnoreCase);
-        }
-
-        if (wildStart)
-        {
-            return value.EndsWith(rule[1..], StringComparison.OrdinalIgnoreCase);
-        }
-
-        if (wildEnd)
-        {
-            return value.StartsWith(rule[..^1], StringComparison.OrdinalIgnoreCase);
-        }
-
-        return value.Equals(rule, StringComparison.OrdinalIgnoreCase);
     }
 
     private static void CleanupExpired(DateTime utcNow)
@@ -147,7 +125,7 @@ public class RateLimitingMiddleware
 
     private bool IsRateLimited(string requestPath)
     {
-        if (_appSettings.RateLimiting.BlockPaths.Any(x => MatchesConfigRule(x, requestPath)))
+        if (_settings.BlockPaths.Any(x => WildcardUtils.Matches(x, requestPath)))
         {
             return true;
         }

@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Platforms;
 using ODK.Core.Utils;
-using ODK.Infrastructure.Settings;
 using ODK.Services.Emails;
 using ODK.Services.Exceptions;
 using ODK.Services.Logging;
@@ -11,6 +10,7 @@ using ODK.Services.Payments.Models;
 using ODK.Services.Tasks;
 using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
+using ODK.Web.Common.Settings;
 using ServiceRequestImpl = ODK.Services.ServiceRequest;
 
 namespace ODK.Web.Razor.Controllers;
@@ -19,7 +19,7 @@ namespace ODK.Web.Razor.Controllers;
 [IgnoreAntiforgeryToken] // external POSTs; authenticated by signature/secret, not a token
 public class WebhooksController : OdkControllerBase
 {
-    private readonly AppSettings _appSettings;
+    private readonly WebhooksControllerSettings _settings;
     private readonly IBackgroundTaskService _backgroundTaskService;
     private readonly IEmailService _emailService;
     private readonly ILoggingService _loggingService;
@@ -34,11 +34,11 @@ public class WebhooksController : OdkControllerBase
         IStripeWebhookParser stripeWebhookParser,
         IRequestStore requestStore,
         IEmailService emailService,
-        AppSettings appSettings,
+        WebhooksControllerSettings settings,
         IOdkRoutes odkRoutes)
         : base(requestStore, odkRoutes)
     {
-        _appSettings = appSettings;
+        _settings = settings;
         _backgroundTaskService = backgroundTaskService;
         _emailService = emailService;
         _loggingService = loggingService;
@@ -49,14 +49,14 @@ public class WebhooksController : OdkControllerBase
     [HttpPost("webhooks/brevo")]
     public async Task Brevo()
     {
-        var env = GetHeader(_appSettings.Brevo.WebhookEnvHeader);
-        if (env != _appSettings.Brevo.WebhookEnv)
+        var env = GetHeader(_settings.BrevoWebhookEnvHeader);
+        if (env != _settings.BrevoWebhookEnv)
         {
             return;
         }
 
-        var password = GetHeader(_appSettings.Brevo.WebhookPasswordHeader);
-        if (password != _appSettings.Brevo.WebhookPassword)
+        var password = GetHeader(_settings.BrevoWebhookPasswordHeader);
+        if (password != _settings.BrevoWebhookPassword)
         {
             throw new OdkNotAuthenticatedException();
         }

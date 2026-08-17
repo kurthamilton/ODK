@@ -158,9 +158,9 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
         return _settings.IgnoreExceptions
             .Where(rule => rule.Exceptions.Any(x => x.Equals(exceptionName, StringComparison.OrdinalIgnoreCase)))
             .Any(rule =>
-                rule.Paths.Any(x => MatchesConfigRule(x, path)) ||
+                rule.Paths.Any(x => WildcardUtils.Matches(x, path)) ||
                 rule.PathPatterns.Any(x => Regex.IsMatch(path, x, RegexOptions.IgnoreCase)) ||
-                rule.UserAgents.Any(x => MatchesConfigRule(x, userAgent)) ||
+                rule.UserAgents.Any(x => WildcardUtils.Matches(x, userAgent)) ||
                 rule.Headers.Any(x => MatchesHeaderRule(x, httpRequestContext.Headers)));
     }
 
@@ -172,6 +172,20 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
 
     public Task Warn(string message, IDictionary<string, string?> properties)
         => Log(LogEventLevel.Warning, message, properties);
+
+    private static bool MatchesHeaderRule(
+        KeyValuePair<string, string[]> rule,
+        IReadOnlyDictionary<string, string[]> headers)
+    {
+        /* Keys compared rather than looked up, so case-insensitivity holds however the dictionary was built -
+           IReadOnlyDictionary cannot be asked which comparer it uses. A request carries few enough headers for
+           the scan to cost nothing, and this only runs on an exception that already matched by type. */
+        var values = headers
+            .Where(x => x.Key.Equals(rule.Key, StringComparison.OrdinalIgnoreCase))
+            .SelectMany(x => x.Value);
+
+        return values.Any(value => rule.Value.Any(x => WildcardUtils.Matches(x, value)));
+    }
 
     private Task Log(
         LogEventLevel level,
@@ -210,44 +224,5 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
         }
 
         return Task.CompletedTask;
-    }
-
-    private bool MatchesConfigRule(string rule, string value)
-    {
-        var (wildStart, wildEnd) = (rule.StartsWith('*'), rule.EndsWith('*'));
-
-        if (wildStart && wildEnd)
-        {
-            /* "*" on its own is both wildcards at once with nothing between them, so there is no substring to
-               look for and it matches anything - which is what the rules promise it does. Taking rule[1..^1]
-               of it asks for a range ending before it starts. */
-            return rule.Length == 1 || value.Contains(rule[1..^1], StringComparison.OrdinalIgnoreCase);
-        }
-
-        if (wildStart)
-        {
-            return value.EndsWith(rule[1..], StringComparison.OrdinalIgnoreCase);
-        }
-
-        if (wildEnd)
-        {
-            return value.StartsWith(rule[..^1], StringComparison.OrdinalIgnoreCase);
-        }
-
-        return value.Equals(rule, StringComparison.OrdinalIgnoreCase);
-    }
-
-    private bool MatchesHeaderRule(
-        KeyValuePair<string, string[]> rule,
-        IReadOnlyDictionary<string, string[]> headers)
-    {
-        /* Keys compared rather than looked up, so case-insensitivity holds however the dictionary was built -
-           IReadOnlyDictionary cannot be asked which comparer it uses. A request carries few enough headers for
-           the scan to cost nothing, and this only runs on an exception that already matched by type. */
-        var values = headers
-            .Where(x => x.Key.Equals(rule.Key, StringComparison.OrdinalIgnoreCase))
-            .SelectMany(x => x.Value);
-
-        return values.Any(value => rule.Value.Any(x => MatchesConfigRule(x, value)));
     }
 }

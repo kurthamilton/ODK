@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using ODK.Infrastructure.Settings;
 using ODK.Services.Exceptions;
 using ODK.Services.Members;
 using ODK.Services.SocialMedia;
 using ODK.Services.Subscriptions;
 using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
+using ODK.Web.Common.Settings;
 
 namespace ODK.Web.Razor.Controllers;
 
@@ -15,13 +15,13 @@ namespace ODK.Web.Razor.Controllers;
 public class ScheduledTasksController : OdkControllerBase
 {
     private readonly IMemberAdminService _memberAdminService;
-    private readonly ScheduledTasksSettings _settings;
+    private readonly ScheduledTasksControllerSettings _settings;
     private readonly ISiteSubscriptionService _siteSubscriptionService;
     private readonly ISocialMediaService _socialMediaService;
 
     public ScheduledTasksController(
         ISocialMediaService socialMediaService,
-        AppSettings settings,
+        ScheduledTasksControllerSettings settings,
         ISiteSubscriptionService siteSubscriptionService,
         IMemberAdminService memberAdminService,
         IRequestStore requestStore,
@@ -29,7 +29,7 @@ public class ScheduledTasksController : OdkControllerBase
         : base(requestStore, odkRoutes)
     {
         _memberAdminService = memberAdminService;
-        _settings = settings.ScheduledTasks;
+        _settings = settings;
         _siteSubscriptionService = siteSubscriptionService;
         _socialMediaService = socialMediaService;
     }
