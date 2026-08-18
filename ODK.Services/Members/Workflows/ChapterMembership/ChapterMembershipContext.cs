@@ -1,6 +1,5 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Members;
-using ODK.Core.Notifications;
 using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
 using ODK.Services.Members.Models;
@@ -60,4 +59,11 @@ public sealed class ChapterMembershipContext
     public required IReadOnlyCollection<MemberPropertyUpdateModel> Properties { get; init; }
 
     public required IChapterServiceRequest Request { get; init; }
+
+    /// <summary>
+    /// The membership row the transition acts on. A step only ever runs on a transition out of a state that
+    /// has one, so its absence is a fault in the definition rather than anything an admin did.
+    /// </summary>
+    public MemberChapter RequiredMemberChapter => Member.MemberChapter(ChapterId)
+        ?? throw new InvalidOperationException("The transition is acting on a member who has not joined");
 }

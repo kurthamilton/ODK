@@ -1,5 +1,4 @@
 ﻿using System.Security.Claims;
-using ODK.Core.Chapters;
 using ODK.Core.Members;
 
 namespace ODK.Services.Authentication;

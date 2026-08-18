@@ -13,6 +13,9 @@ public abstract class AccountRoutes
     /// <summary>The change-password form.</summary>
     public abstract string ChangePassword { get; }
 
+    /// <summary>The forgotten-password request form, which emails a reset link.</summary>
+    public abstract string ForgottenPassword { get; }
+
     /// <summary>The personal-details (name) edit page.</summary>
     public abstract string PersonalDetails { get; }
 
@@ -24,16 +27,24 @@ public abstract class AccountRoutes
     /// <summary>The link that confirms a pending email change (as the logged-in member).</summary>
     public abstract string EmailChangeConfirm(string token);
 
+    /// <summary>The reset form the emailed link lands on, carrying the token.</summary>
+    public abstract string PasswordReset(string token);
+
     private sealed class DefaultAccountRoutes : AccountRoutes
     {
         public override string ChangeEmail => "/account/emails";
 
         public override string ChangePassword => "/account/password/change";
 
+        public override string ForgottenPassword => "/account/password/forgotten";
+
         public override string PersonalDetails => "/account";
 
         public override string EmailChangeConfirm(string token) =>
             $"/account/email/change/confirm?token={Uri.EscapeDataString(token)}";
+
+        public override string PasswordReset(string token) =>
+            $"/account/password/reset?token={Uri.EscapeDataString(token)}";
     }
 
     private sealed class DrunkenKnitwitsAccountRoutes : AccountRoutes
@@ -49,9 +60,14 @@ public abstract class AccountRoutes
 
         public override string ChangePassword => $"/{_shortName}/account/password/change";
 
+        public override string ForgottenPassword => $"/{_shortName}/account/password/forgotten";
+
         public override string PersonalDetails => $"/{_shortName}/account";
 
         public override string EmailChangeConfirm(string token) =>
             $"/{_shortName}/account/email/change/confirm?token={Uri.EscapeDataString(token)}";
+
+        public override string PasswordReset(string token) =>
+            $"/{_shortName}/account/password/reset?token={Uri.EscapeDataString(token)}";
     }
 }

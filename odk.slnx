@@ -10,6 +10,18 @@
     <File Path="DEPLOYMENT.md" />
     <File Path="README.md" />
   </Folder>
+  <Folder Name="/Solution Items/docs/">
+    <File Path="docs/workflows/account.md" />
+    <File Path="docs/workflows/chapter-membership.md" />
+    <File Path="docs/workflows/chapter-publication.md" />
+    <File Path="docs/workflows/README.md" />
+  </Folder>
+  <Folder Name="/Solution Items/docs/workflows/">
+    <File Path="docs/workflows/account.md" />
+    <File Path="docs/workflows/chapter-membership.md" />
+    <File Path="docs/workflows/chapter-publication.md" />
+    <File Path="docs/workflows/README.md" />
+  </Folder>
   <Folder Name="/Solution Items/Github/" />
   <Folder Name="/Solution Items/Github/Workflows/">
     <File Path=".github/workflows/build.yml" />

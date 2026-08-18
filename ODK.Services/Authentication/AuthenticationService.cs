@@ -15,13 +15,12 @@ namespace ODK.Services.Authentication;
 
 public class AuthenticationService : IAuthenticationService
 {
-    private readonly IBreachedPasswordChecker _breachedPasswordChecker;
     private readonly IEmailValidationService _emailValidationService;
     private readonly Lazy<IHashedPassword> _dummyPassword;
     private readonly IMemberEmailService _memberEmailService;
+    private readonly IMemberPasswordService _memberPasswordService;
     private readonly INotificationService _notificationService;
     private readonly IPasswordHasher _passwordHasher;
-    private readonly IPasswordPolicy _passwordPolicy;
     private readonly AuthenticationServiceSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -31,16 +30,14 @@ public class AuthenticationService : IAuthenticationService
         IMemberEmailService memberEmailService,
         INotificationService notificationService,
         IPasswordHasher passwordHasher,
-        IPasswordPolicy passwordPolicy,
-        IBreachedPasswordChecker breachedPasswordChecker,
+        IMemberPasswordService memberPasswordService,
         IEmailValidationService emailValidationService)
     {
-        _breachedPasswordChecker = breachedPasswordChecker;
         _emailValidationService = emailValidationService;
         _memberEmailService = memberEmailService;
+        _memberPasswordService = memberPasswordService;
         _notificationService = notificationService;
         _passwordHasher = passwordHasher;
-        _passwordPolicy = passwordPolicy;
         _settings = settings;
         _unitOfWork = unitOfWork;
 
@@ -84,13 +81,13 @@ public class AuthenticationService : IAuthenticationService
 
         OdkAssertions.MeetsCondition(token, x => x.ChapterId == chapter.Id);
 
-        var validationResult = await ValidatePasswordAsync(password);
+        var validationResult = await _memberPasswordService.Validate(password);
         if (!validationResult.Success)
         {
             return validationResult;
         }
 
-        memberPassword = UpdateValidatedPassword(memberPassword, password);
+        memberPassword = _memberPasswordService.Apply(memberPassword, password);
         member.Activated = true;
 
         _unitOfWork.MemberRepository.Update(member);
@@ -138,13 +135,13 @@ public class AuthenticationService : IAuthenticationService
             x => x.MemberRepository.GetById(token.MemberId),
             x => x.MemberPasswordRepository.GetByMemberId(token.MemberId));
 
-        var validationResult = await ValidatePasswordAsync(password);
+        var validationResult = await _memberPasswordService.Validate(password);
         if (!validationResult.Success)
         {
             return validationResult;
         }
 
-        memberPassword = UpdateValidatedPassword(memberPassword, password);
+        memberPassword = _memberPasswordService.Apply(memberPassword, password);
         member.Activated = true;
 
         _unitOfWork.MemberRepository.Update(member);
@@ -179,13 +176,13 @@ public class AuthenticationService : IAuthenticationService
             return ServiceResult.Failure("Current password is incorrect");
         }
 
-        var validationResult = await ValidatePasswordAsync(newPassword);
+        var validationResult = await _memberPasswordService.Validate(newPassword);
         if (!validationResult.Success)
         {
             return validationResult;
         }
 
-        memberPassword = UpdateValidatedPassword(memberPassword, newPassword);
+        memberPassword = _memberPasswordService.Apply(memberPassword, newPassword);
         _unitOfWork.MemberPasswordRepository.Update(memberPassword);
 
         await _unitOfWork.SaveChangesAsync();
@@ -223,7 +220,7 @@ public class AuthenticationService : IAuthenticationService
 
         if (_passwordHasher.ShouldUpdate(memberPassword))
         {
-            memberPassword = UpdateValidatedPassword(memberPassword, password);
+            memberPassword = _memberPasswordService.Apply(memberPassword, password);
             _unitOfWork.MemberPasswordRepository.Update(memberPassword);
             await _unitOfWork.SaveChangesAsync();
         }
@@ -311,7 +308,7 @@ public class AuthenticationService : IAuthenticationService
 
     public async Task<ServiceResult> ResetPasswordAsync(string token, string password)
     {
-        var validationResult = await ValidatePasswordAsync(password);
+        var validationResult = await _memberPasswordService.Validate(password);
         if (!validationResult.Success)
         {
             return validationResult;
@@ -339,7 +336,7 @@ public class AuthenticationService : IAuthenticationService
             .GetByMemberId(request.MemberId)
             .Run();
 
-        memberPassword = UpdateValidatedPassword(memberPassword, password);
+        memberPassword = _memberPasswordService.Apply(memberPassword, password);
 
         if (memberPassword.MemberId == default)
         {
@@ -352,23 +349,6 @@ public class AuthenticationService : IAuthenticationService
         }
 
         await _unitOfWork.SaveChangesAsync();
-
-        return ServiceResult.Successful();
-    }
-
-    private async Task<ServiceResult> ValidatePasswordAsync(string password)
-    {
-        var error = _passwordPolicy.GetValidationError(password);
-        if (error != null)
-        {
-            return ServiceResult.Failure(error);
-        }
-
-        if (await _breachedPasswordChecker.IsBreachedAsync(password))
-        {
-            return ServiceResult.Failure(
-                "This password has appeared in a known data breach. Please choose a different password.");
-        }
 
         return ServiceResult.Successful();
     }
@@ -403,18 +383,5 @@ public class AuthenticationService : IAuthenticationService
         return memberPassword != null
             ? _passwordHasher.Check(password, memberPassword)
             : false;
-    }
-
-    private MemberPassword UpdateValidatedPassword(MemberPassword? memberPassword, string password)
-    {
-        var (hash, options) = _passwordHasher.ComputeHash(password);
-
-        memberPassword ??= new MemberPassword();
-        memberPassword.Hash = hash;
-        memberPassword.Salt = options.Salt;
-        memberPassword.Algorithm = options.Algorithm;
-        memberPassword.Iterations = options.Iterations;
-
-        return memberPassword;
     }
 }

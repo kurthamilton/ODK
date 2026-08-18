@@ -38,7 +38,7 @@ namespace ODK.Services.Tests.Members;
 public static class MemberAdminServiceTests
 {
     [Test]
-    public static async Task ApproveMember_WhenMemberExists_ApprovesMember()
+    public static async Task ApproveMember_WhenMemberExists_ApprovesMemberAndTellsThem()
     {
         // Arrange
         using var context = CreateMockOdkContext();
@@ -49,7 +49,8 @@ public static class MemberAdminServiceTests
             owner: currentMember,
             unapprovedMembers: [member]);
 
-        var service = CreateMemberAdminService(context);
+        var emailService = new Mock<IMemberEmailService>();
+        var service = CreateMemberAdminService(context, memberEmailService: emailService.Object);
 
         var request = CreateMemberChapterAdminServiceRequest(
             chapter: chapter,
@@ -66,6 +67,46 @@ public static class MemberAdminServiceTests
         var memberChapter = member.MemberChapter(chapter.Id);
         memberChapter.Should().NotBeNull();
         memberChapter.Approved.Should().BeTrue();
+
+        emailService.Verify(
+            x => x.SendMemberApprovedEmail(It.IsAny<IChapterServiceRequest>(), It.IsAny<Member>()),
+            Times.Once);
+    }
+
+    [Test]
+    public static async Task ApproveMember_AlreadyApproved_SucceedsWithoutTellingThemAgain()
+    {
+        /* Arrange - approving a member who is already in is not a mistake, so it reports success. The machine
+           expresses that as an Approve edge out of Joined that carries no work, which is why nothing here has
+           to check first, and why a second click sends no second email. */
+        using var context = CreateMockOdkContext();
+
+        var (currentMember, member) = (context.CreateMember(), context.CreateMember());
+
+        var chapter = context.CreateChapter(
+            owner: currentMember,
+            members: [member]);
+
+        var emailService = new Mock<IMemberEmailService>();
+        var service = CreateMemberAdminService(context, memberEmailService: emailService.Object);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberApprovals);
+
+        // Act
+        var result = await service.ApproveMember(request, member.Id);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        context.Set<Member>()
+            .Single(x => x.Id == member.Id)
+            .MemberChapter(chapter.Id)!.Approved.Should().BeTrue();
+
+        emailService.Verify(
+            x => x.SendMemberApprovedEmail(It.IsAny<IChapterServiceRequest>(), It.IsAny<Member>()),
+            Times.Never);
     }
 
     [Test]
@@ -1041,21 +1082,20 @@ public static class MemberAdminServiceTests
         IMemberService? memberService = null)
     {
         var unitOfWork = CreateMockUnitOfWork(context);
+        var emailService = memberEmailService ?? CreateMockMemberEmailService();
         var distanceUnitFactory = new DistanceUnitFactory();
         var siteSubscriptionWriter = new MemberSiteSubscriptionWriter(unitOfWork);
 
-        var workflow = CreateImportWorkflow(unitOfWork, distanceUnitFactory, siteSubscriptionWriter);
+        var workflow = CreateWorkflows(unitOfWork, distanceUnitFactory, siteSubscriptionWriter, emailService);
 
         return new MemberAdminService(
             unitOfWork,
             memberService ?? CreateMockMemberService(),
             authorizationService ?? CreateMockAuthorizationService(),
             memberImageService ?? CreateMockMemberImageService(isValid: true),
-            memberEmailService ?? CreateMockMemberEmailService(),
-            distanceUnitFactory,
+            emailService,
             new MockBackgroundTaskService(),
             new MemberChapterSubscriptionWriter(unitOfWork),
-            siteSubscriptionWriter,
             new EmailValidationService(new InconclusiveEmailVerifier()),
             workflow.GetRequiredService<StateMachineRunner<AccountState, AccountTrigger, AccountContext>>(),
             workflow.GetRequiredService<IAccountContextFactory>(),
@@ -1066,13 +1106,14 @@ public static class MemberAdminServiceTests
 
     /// <summary>
     /// The two machines wired the way the app wires them, over the same instances the service under test uses.
-    /// An import only ever fires the write-only Import and Invite transitions, so only their dependencies need
-    /// to resolve - but the steps still come from the definitions, so one added later needs no change here.
+    /// Only the dependencies of the transitions these tests fire have to resolve - but the steps come from the
+    /// definitions, so one added to a transition later needs no change here.
     /// </summary>
-    private static IServiceProvider CreateImportWorkflow(
+    private static IServiceProvider CreateWorkflows(
         IUnitOfWork unitOfWork,
         IDistanceUnitFactory distanceUnitFactory,
-        IMemberSiteSubscriptionWriter siteSubscriptionWriter)
+        IMemberSiteSubscriptionWriter siteSubscriptionWriter,
+        IMemberEmailService memberEmailService)
     {
         var account = AccountStateMachine.Create();
         var membership = ChapterMembershipStateMachine.Create();
@@ -1082,7 +1123,7 @@ public static class MemberAdminServiceTests
             .AddSingleton(distanceUnitFactory)
             .AddSingleton(siteSubscriptionWriter)
             .AddSingleton(Mock.Of<IAuthorizationService>())
-            .AddSingleton(Mock.Of<IMemberEmailService>())
+            .AddSingleton(memberEmailService)
             .AddSingleton(Mock.Of<IMemberImageService>())
             .AddSingleton(Mock.Of<INotificationService>())
             .AddSingleton(Mock.Of<IRecaptchaService>())

@@ -79,7 +79,6 @@ public static class ChapterSiteAdminServiceTests
 
         return new ChapterSiteAdminService(
             unitOfWork,
-            memberEmailService,
             new MemberSiteSubscriptionWriter(unitOfWork),
             CreatePublicationRunner(unitOfWork, memberEmailService));
     }

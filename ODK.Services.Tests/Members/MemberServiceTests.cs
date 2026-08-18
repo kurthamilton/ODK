@@ -822,16 +822,13 @@ public static class MemberServiceTests
 
         return new MemberService(
             unitOfWork,
-            resolvedAuthorizationService,
             memberImageService.Object,
             memberEmailService,
-            notificationService,
             topicService,
             Mock.Of<IPaymentProviderFactory>(),
             geolocationService,
             loggingService,
             distanceUnitFactory,
-            subscriptionWriter,
             emailValidationService,
             workflow.GetRequiredService<IChapterMembershipContextFactory>(),
             workflow.GetRequiredService<StateMachineRunner<

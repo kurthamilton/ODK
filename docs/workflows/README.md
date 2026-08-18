@@ -13,6 +13,7 @@ The framework is `ODK.Core.Workflows`, and it depends on nothing — not even `O
 |---|---|---|
 | Account | [account.md](account.md) | Site-level: does an address have an account, and can it sign in |
 | Chapter membership | [chapter-membership.md](chapter-membership.md) | Per group: invited, applied, joined |
+| Chapter publication | [chapter-publication.md](chapter-publication.md) | Per group: draft, approved, published |
 
 **Do not edit them by hand.** Each is produced by walking the definition the app actually executes, and
 `WorkflowDocumentationTests` fails the build when a committed page no longer matches its definition —
@@ -20,10 +21,10 @@ regenerating it in the process, so the fix is to review the change and commit it
 reason these pages can be trusted: a diagram maintained separately from the code drifts, and this one
 cannot.
 
-The two machines are deliberately separate. An account and a group membership are independent lifecycles:
-signing up on Drunken Knitwits writes a membership *before* the account can sign in, so a member can be
-`Joined` in one machine and `Registered` in the other, both true at once. Holding both in one machine meant
-edges that existed only to reconcile them.
+The account and membership machines are deliberately separate. An account and a group membership are
+independent lifecycles: signing up on Drunken Knitwits writes a membership *before* the account can sign in,
+so a member can be `Joined` in one machine and `Registered` in the other, both true at once. Holding both in
+one machine meant edges that existed only to reconcile them.
 
 ## How a definition is built
 
@@ -84,9 +85,16 @@ renders every registered machine, which is the option that needs nothing install
 | Framework tests | `ODK.Core.Workflows.Tests` |
 | Account machine | `ODK.Services/Members/Workflows/Account` |
 | Chapter membership machine | `ODK.Services/Members/Workflows/ChapterMembership` |
-| Wiring | `DependencyRegistrar.AddAccountWorkflows` |
-| Machine tests, and the page drift test | `ODK.Services.Tests/Members/Workflows` |
+| Chapter publication machine | `ODK.Services/Chapters/Workflows` |
+| Wiring | `DependencyRegistrar.AddAccountWorkflows` and `AddChapterWorkflows` |
+| Machine tests, and the page drift test | `ODK.Services.Tests/**/Workflows` |
 
 A machine is a definition, a context, a context factory, a state resolver, its guards and its steps. Adding
 another means adding those; the framework needs no changes, and the diagram and its drift test come for
 free.
+
+**A service holds its runner as `_<machine>Workflow`** — `_accountWorkflow`, `_chapterMembershipWorkflow`,
+`_chapterPublicationWorkflow` — rather than after the `StateMachineRunner` type it is declared as. The type
+already says what it is; the field name should say which flow the method below it is running. Extracting a
+transition usually leaves an injected dependency behind with no callers, so check the constructor for one
+the steps have taken over and remove it with its `using`.

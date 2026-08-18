@@ -147,8 +147,8 @@ public static class AuthenticationServiceReferralTests
             Mock.Of<IMemberEmailService>(),
             Mock.Of<INotificationService>(),
             passwordHasher.Object,
-            Mock.Of<IPasswordPolicy>(),
-            Mock.Of<IBreachedPasswordChecker>(),
+            new MemberPasswordService(
+                Mock.Of<IPasswordPolicy>(), passwordHasher.Object, Mock.Of<IBreachedPasswordChecker>()),
             new EmailValidationService(new InconclusiveEmailVerifier()));
     }
 }

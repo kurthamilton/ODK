@@ -3,88 +3,69 @@ using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Cryptography;
 using ODK.Core.Exceptions;
-using ODK.Core.Features;
 using ODK.Core.Members;
-using ODK.Core.Notifications;
 using ODK.Core.Payments;
-using ODK.Core.Referrals;
-using ODK.Core.Subscriptions;
 using ODK.Core.Workflows;
 using ODK.Data.Core;
-using ODK.Data.Core.Deferred;
-using ODK.Services.Authentication.OAuth;
-using ODK.Services.Authorization;
 using ODK.Services.Emails;
 using ODK.Services.Emails.Validation;
 using ODK.Services.Geolocation;
 using ODK.Services.Logging;
 using ODK.Services.Members.Models;
 using ODK.Services.Members.ViewModels;
-using ODK.Services.Notifications;
-using ODK.Services.Payments;
-using ODK.Services.Payments.Models;
-using ODK.Services.Recaptcha;
-using ODK.Services.Subscriptions;
-using ODK.Services.Topics;
-using ODK.Services.Topics.Models;
 using ODK.Services.Members.Workflows.Account;
 using ODK.Services.Members.Workflows.ChapterMembership;
+using ODK.Services.Payments;
+using ODK.Services.Payments.Models;
+using ODK.Services.Topics;
+using ODK.Services.Topics.Models;
 using ODK.Services.Workflows;
 
 namespace ODK.Services.Members;
 
 public class MemberService : IMemberService
 {
-    private readonly StateMachineRunner<AccountState, AccountTrigger, AccountContext> _account;
+    private readonly StateMachineRunner<AccountState, AccountTrigger, AccountContext> _accountWorkflow;
     private readonly IAccountContextFactory _accountContextFactory;
     private readonly IChapterMembershipContextFactory _chapterMembershipContextFactory;
     private readonly StateMachineRunner<
-        ChapterMembershipState, ChapterMembershipTrigger, ChapterMembershipContext> _chapterMembership;
-    private readonly IAuthorizationService _authorizationService;
+        ChapterMembershipState, ChapterMembershipTrigger, ChapterMembershipContext> _chapterMembershipWorkflow;
     private readonly IEmailValidationService _emailValidationService;
     private readonly IDistanceUnitFactory _distanceUnitFactory;
     private readonly IGeolocationService _geolocationService;
     private readonly ILoggingService _loggingService;
-    private readonly IMemberChapterSubscriptionWriter _memberChapterSubscriptionWriter;
     private readonly IMemberEmailService _memberEmailService;
     private readonly IMemberImageService _memberImageService;
-    private readonly INotificationService _notificationService;
     private readonly IPaymentProviderFactory _paymentProviderFactory;
     private readonly ITopicService _topicService;
     private readonly IUnitOfWork _unitOfWork;
 
     public MemberService(
         IUnitOfWork unitOfWork,
-        IAuthorizationService authorizationService,
         IMemberImageService memberImageService,
         IMemberEmailService memberEmailService,
-        INotificationService notificationService,
         ITopicService topicService,
         IPaymentProviderFactory paymentProviderFactory,
         IGeolocationService geolocationService,
         ILoggingService loggingService,
         IDistanceUnitFactory distanceUnitFactory,
-        IMemberChapterSubscriptionWriter memberChapterSubscriptionWriter,
         IEmailValidationService emailValidationService,
         IChapterMembershipContextFactory chapterMembershipContextFactory,
         StateMachineRunner<ChapterMembershipState, ChapterMembershipTrigger, ChapterMembershipContext>
-            chapterMembership,
-        StateMachineRunner<AccountState, AccountTrigger, AccountContext> account,
+            chapterMembershipWorkflow,
+        StateMachineRunner<AccountState, AccountTrigger, AccountContext> accountWorkflow,
         IAccountContextFactory accountContextFactory)
     {
-        _account = account;
+        _accountWorkflow = accountWorkflow;
         _accountContextFactory = accountContextFactory;
-        _chapterMembership = chapterMembership;
+        _chapterMembershipWorkflow = chapterMembershipWorkflow;
         _chapterMembershipContextFactory = chapterMembershipContextFactory;
-        _authorizationService = authorizationService;
         _emailValidationService = emailValidationService;
         _distanceUnitFactory = distanceUnitFactory;
         _geolocationService = geolocationService;
         _loggingService = loggingService;
-        _memberChapterSubscriptionWriter = memberChapterSubscriptionWriter;
         _memberEmailService = memberEmailService;
         _memberImageService = memberImageService;
-        _notificationService = notificationService;
         _paymentProviderFactory = paymentProviderFactory;
         _topicService = topicService;
         _unitOfWork = unitOfWork;
@@ -144,7 +125,7 @@ public class MemberService : IMemberService
     {
         var context = await _accountContextFactory.CreateForSiteSignUp(request, model);
 
-        var result = await _account.Fire(AccountTrigger.SignUp, context);
+        var result = await _accountWorkflow.Fire(AccountTrigger.SignUp, context);
         if (!result.Success)
         {
             return ServiceResult<Member?>.Failure(result.Message ?? string.Empty);
@@ -163,7 +144,7 @@ public class MemberService : IMemberService
 
         var context = await _accountContextFactory.CreateForGroupSignUp(request, model);
 
-        var result = await _account.Fire(AccountTrigger.SignUp, context);
+        var result = await _accountWorkflow.Fire(AccountTrigger.SignUp, context);
         if (!result.Success)
         {
             return CreateChapterAccountResult.FromResult(result.ToServiceResult());
@@ -310,7 +291,7 @@ public class MemberService : IMemberService
         IMemberChapterServiceRequest request, IEnumerable<MemberPropertyUpdateModel> properties)
     {
         var context = await _chapterMembershipContextFactory.CreateForJoin(request, properties);
-        var result = await _chapterMembership.Fire(ChapterMembershipTrigger.Join, context);
+        var result = await _chapterMembershipWorkflow.Fire(ChapterMembershipTrigger.Join, context);
 
         /* Already being in the group is not checked here: the machine has no Join edge out of a state that
            holds a membership, so it reports the trigger as not permitted from there. Only the wording is

@@ -80,10 +80,13 @@ Three axes, composed by the filter:
     account creation is what nearly every other fixture provisions through, so it is the first thing to run
     when a change might have broken sign-up — and because the invited flows branch four ways on state a test
     has to arrange (invited or not, address kept or changed, account or no account).
-  - **`ChapterMembershipWorkflows`** — every route into a group. `GroupTests` and the two DrunkenKnitwits
-    fixtures above carry it at *fixture* level; the two `JoinChapter_*` tests in `MemberProfileTestsBase`
-    carry it at *method* level, because a group's required questions are a step on the Join transition while
-    the fixture's other six tests are about the member page.
+  - **`ChapterMembershipWorkflows`** — every route into a group. `GroupTests`, `MemberApprovalTests` and the
+    two DrunkenKnitwits fixtures above carry it at *fixture* level; the two `JoinChapter_*` tests in
+    `MemberProfileTestsBase` carry it at *method* level, because a group's required questions are a step on
+    the Join transition while the fixture's other six tests are about the member page.
+    `MemberApprovalTests` covers the machine's `PendingApproval` edges — joining a group that vets new
+    members, and an admin letting one in — and is Group Squirrel only, because the approvals route is
+    declared `PlatformType.Default` in the app.
   - **`ChapterPublicationWorkflows`** — a group becoming findable: the site admin approving it
     (`SiteAdminTests`) and its owner publishing it (`GroupOwnerTests`). Applied at *method* level, because
     both fixtures are named for an **actor** rather than for a workflow and so will attract unrelated tests —

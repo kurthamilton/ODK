@@ -1,6 +1,4 @@
-﻿using ODK.Data.Core.Members;
-
-namespace ODK.Services.Members.ViewModels;
+﻿namespace ODK.Services.Members.ViewModels;
 
 public class MemberImageAdminPageViewModel : MemberAdminPageViewModelBase
 {

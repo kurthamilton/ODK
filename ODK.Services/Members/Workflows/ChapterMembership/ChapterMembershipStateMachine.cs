@@ -85,8 +85,22 @@ public static class ChapterMembershipStateMachine
                 ChapterMembershipState.Joined,
                 x => join(x))
 
+            /* An admin letting a queued member in. Record, commit, then tell them: the approval has to be
+               durable before an email says it happened. */
             .Transition(
                 ChapterMembershipState.PendingApproval,
+                ChapterMembershipTrigger.Approve,
+                ChapterMembershipState.Joined,
+                x => x
+                    .Then<MarkMemberApproved>()
+                    .Then<Commit<ChapterMembershipContext>>()
+                    .Then<SendMemberApprovedEmail>())
+
+            /* Approving a member who is already in changes nothing and is not a mistake, so the edge exists
+               and does nothing rather than being absent and reporting the trigger as illegal. It is also what
+               stops a second click sending a second approval email. */
+            .Transition(
+                ChapterMembershipState.Joined,
                 ChapterMembershipTrigger.Approve,
                 ChapterMembershipState.Joined)
             .Build();

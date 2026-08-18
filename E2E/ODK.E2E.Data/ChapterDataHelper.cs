@@ -85,6 +85,28 @@ public class ChapterDataHelper : DataHelperBase
         await builder.ExecuteNonQuery();
     }
 
+    /// <summary>
+    /// Whether the address has an <em>approved</em> membership of the group. Distinct from
+    /// <see cref="IsMember"/>: a member of a group that vets new members has a row from the moment they
+    /// apply, and approval is a flag on it.
+    /// </summary>
+    public async Task<bool> IsApprovedMember(string emailAddress, Guid chapterId)
+    {
+        const string sql =
+            """
+            SELECT COUNT(1)
+            FROM MemberChapters mc
+            INNER JOIN Members m ON m.Id = mc.MemberId
+            WHERE m.EmailAddress = @email AND mc.ChapterId = @id AND mc.Approved = 1
+            """;
+
+        await using var builder = Builder(sql)
+            .AddParameter("@id", chapterId)
+            .AddParameter("@email", emailAddress);
+
+        return await builder.ExecuteScalar<int>() > 0;
+    }
+
     public async Task<bool> IsMember(string emailAddress, Guid chapterId)
     {
         const string sql =
