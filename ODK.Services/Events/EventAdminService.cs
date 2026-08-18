@@ -159,7 +159,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         @event.Shortcode = shortcode;
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         if (eventEmail?.ScheduledUtc != null)
         {
@@ -168,7 +168,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
                 eventEmail.ScheduledUtc.Value,
                 BackgroundTaskQueueType.Emails);
             _unitOfWork.EventEmailRepository.Update(eventEmail);
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveChanges();
         }
 
         if (@event.Ticketed)
@@ -192,7 +192,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         AssertEventCanBeDeleted(eventEmail, responses);
 
         _unitOfWork.EventRepository.Delete(@event);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
     }
 
     public async Task<Event> GetEvent(IMemberChapterAdminServiceRequest request, Guid id)
@@ -579,7 +579,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         await _notificationService.AddNewEventNotifications(@event, venue, members, notificationSettings);
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
     }
 
     public async Task SendEventInviteeEmail(
@@ -702,7 +702,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             _unitOfWork.EventEmailRepository.Update(eventEmail);
         }
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return result;
     }
@@ -736,7 +736,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
             eventEmail.ScheduledUtc = null;
             _unitOfWork.EventEmailRepository.Update(eventEmail);
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveChanges();
             return;
         }
 
@@ -787,7 +787,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
             eventEmail.SentUtc = DateTime.UtcNow;
             _unitOfWork.EventEmailRepository.Update(eventEmail);
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveChanges();
         }
         catch (Exception ex)
         {
@@ -817,7 +817,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         eventComment.Hidden = hidden;
         _unitOfWork.EventCommentRepository.Update(eventComment);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         await _loggingService.Info($"Event comment {eventComment.Id} hidden set to '{hidden}' by member {request.CurrentMember.Id}");
 
@@ -927,7 +927,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             }
         }
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         if (@event.Ticketed)
         {
@@ -987,7 +987,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             _unitOfWork.ChapterEventSettingsRepository.Update(settings);
         }
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
     }
 
     public async Task<ServiceResult> UpdateMemberResponse(
@@ -1045,7 +1045,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         if (eventEmail != null)
         {
             _unitOfWork.EventEmailRepository.Delete(eventEmail);
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveChanges();
 
             if (!string.IsNullOrEmpty(eventEmail.JobId))
             {
@@ -1083,7 +1083,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         };
 
         _unitOfWork.EventEmailRepository.Add(eventEmail);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         eventEmail.JobId = _backgroundTaskService.Schedule(
             () => SendScheduledEmails(request, eventEmail.Id),
@@ -1091,7 +1091,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             BackgroundTaskQueueType.Emails);
 
         _unitOfWork.EventEmailRepository.Update(eventEmail);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }

@@ -82,7 +82,7 @@ public class TopicService : ITopicService
         if (newTopics.Count > 0)
         {
             _unitOfWork.NewChapterTopicRepository.AddMany(newTopics);
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveChanges();
 
             await _memberEmailService.SendNewTopicEmail(request, newTopics, siteAdmins);
         }
@@ -151,7 +151,7 @@ public class TopicService : ITopicService
         if (newTopics.Count > 0)
         {
             _unitOfWork.NewMemberTopicRepository.AddMany(newTopics);
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveChanges();
 
             await _memberEmailService.SendNewTopicEmail(request, newTopics, siteAdmins);
         }

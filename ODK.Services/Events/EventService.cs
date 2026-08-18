@@ -90,7 +90,7 @@ public class EventService : IEventService
             Text = comment
         };
         _unitOfWork.EventCommentRepository.Add(eventComment);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         await _memberEmailService.SendEventCommentEmail(
             request,
@@ -146,7 +146,7 @@ public class EventService : IEventService
             _unitOfWork.EventResponseRepository.Update(response);
         }
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
     }
 
     public Task<Event> GetById(Guid eventId) => _unitOfWork.EventRepository.GetById(eventId).Run();
@@ -176,7 +176,7 @@ public class EventService : IEventService
             MemberId = memberId
         });
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
         return ServiceResult.Successful();
     }
 
@@ -193,7 +193,7 @@ public class EventService : IEventService
         }
 
         _unitOfWork.EventWaitlistMemberRepository.Delete(waitlistMember);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful("You have left the waiting list");
     }
@@ -278,7 +278,7 @@ public class EventService : IEventService
 
         _notificationService.AddEventWaitlistPromotionNotifications(@event, members, notificationSettings);
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         await _memberEmailService.SendEventWaitlistPromotionNotification(
             ChapterServiceRequest.Create(chapter, request), @event, members);
@@ -462,7 +462,7 @@ public class EventService : IEventService
                         EventId = eventId,
                         MemberId = member.Id
                     });
-                    await _unitOfWork.SaveChangesAsync();
+                    await _unitOfWork.SaveChanges();
 
                     var message = adminMemberId != null
                         ? "No more spaces left. Member has been added to the waiting list"
@@ -504,7 +504,7 @@ public class EventService : IEventService
             _unitOfWork.EventResponseRepository.Update(memberResponse);
         }
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         _backgroundTaskService.Enqueue(
             () => NotifyWaitlist(request, eventId),

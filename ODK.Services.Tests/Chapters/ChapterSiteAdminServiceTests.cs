@@ -75,7 +75,7 @@ public static class ChapterSiteAdminServiceTests
     private static ChapterSiteAdminService CreateService(
         MockOdkContext context, IMemberEmailService memberEmailService)
     {
-        var unitOfWork = MockUnitOfWork.Create(context);
+        var unitOfWork = MockUnitOfWorkFactory.Create(context);
 
         return new ChapterSiteAdminService(
             unitOfWork,

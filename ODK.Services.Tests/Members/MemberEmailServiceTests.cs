@@ -282,7 +282,7 @@ public static class MemberEmailServiceTests
         var urlProvider = new Mock<IUrlProvider>();
         urlProvider.Setup(x => x.GroupUrl(It.IsAny<Chapter>())).Returns("https://test.local/alpha-group");
 
-        var service = CreateService(emailService, urlProvider, MockUnitOfWork.Create(context));
+        var service = CreateService(emailService, urlProvider, MockUnitOfWorkFactory.Create(context));
 
         var request = new MemberServiceRequest
         {
@@ -319,7 +319,7 @@ public static class MemberEmailServiceTests
         var urlProvider = new Mock<IUrlProvider>();
         urlProvider.Setup(x => x.GroupUrl(It.IsAny<Chapter>())).Returns("https://test.local/alpha-group");
 
-        var service = CreateService(emailService, urlProvider, MockUnitOfWork.Create(context));
+        var service = CreateService(emailService, urlProvider, MockUnitOfWorkFactory.Create(context));
 
         var request = new MemberServiceRequest
         {
@@ -353,7 +353,7 @@ public static class MemberEmailServiceTests
         var member = context.CreateMember();
 
         var emailService = CreateEmailService();
-        var service = CreateService(emailService, new Mock<IUrlProvider>(), MockUnitOfWork.Create(context));
+        var service = CreateService(emailService, new Mock<IUrlProvider>(), MockUnitOfWorkFactory.Create(context));
 
         var request = new MemberServiceRequest
         {

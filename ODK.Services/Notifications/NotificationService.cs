@@ -177,7 +177,7 @@ public class NotificationService : INotificationService
             _unitOfWork.NotificationRepository.Update(notification);
         }
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
     }
 
     public async Task MarkAsRead(Guid memberId, Guid notificationId)
@@ -193,7 +193,7 @@ public class NotificationService : INotificationService
 
         notification.ReadUtc = DateTime.UtcNow;
         _unitOfWork.NotificationRepository.Update(notification);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
     }
 
     public async Task<ServiceResult> UpdateMemberNotificationSettings(
@@ -248,7 +248,7 @@ public class NotificationService : INotificationService
             }
         }
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -311,7 +311,7 @@ public class NotificationService : INotificationService
             }
         }
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }

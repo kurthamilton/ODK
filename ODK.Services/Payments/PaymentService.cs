@@ -89,7 +89,7 @@ public class PaymentService : IPaymentService
             _unitOfWork.ChapterPaymentSettingsRepository.Update(chapterPaymentSettings);
         }
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
     }
 
     public async Task<PaymentStatusType> GetMemberChapterPaymentCheckoutSessionStatus(
@@ -201,7 +201,7 @@ public class PaymentService : IPaymentService
             ReceivedUtc = DateTime.UtcNow
         });
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         // Run the actioning of the webhook itself in a new task so that we can persist the event as quickly as possible
         // and make the actual processing retryable.
@@ -355,7 +355,7 @@ public class PaymentService : IPaymentService
                 CreatedUtc = completedUtc,
                 CurrencyId = chapterSubscription.CurrencyId,
                 ExternalId = externalId,
-                Id = Guid.NewGuid(),
+                Id = _unitOfWork.NewId(),
                 MemberId = member.Id,
                 PaidUtc = completedUtc,
                 Reference = chapterSubscription.ToReference(),
@@ -468,7 +468,7 @@ public class PaymentService : IPaymentService
 
         if (metadata.EventTicketPaymentId != null)
         {
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveChanges();
 
             var eventTicketPayment = await _unitOfWork.EventTicketPaymentRepository
                 .GetById(metadata.EventTicketPaymentId.Value)
@@ -546,7 +546,7 @@ public class PaymentService : IPaymentService
                 CreatedUtc = completedUtc,
                 CurrencyId = siteSubscriptionPrice.CurrencyId,
                 ExternalId = externalId,
-                Id = Guid.NewGuid(),
+                Id = _unitOfWork.NewId(),
                 MemberId = member.Id,
                 PaidUtc = completedUtc,
                 Reference = siteSubscription.ToReference(),
@@ -648,7 +648,7 @@ public class PaymentService : IPaymentService
         paymentCheckoutSession.ExpiredUtc = utcNow;
         _unitOfWork.PaymentCheckoutSessionRepository.Update(paymentCheckoutSession);
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return PaymentWebhookProcessingResult.Successful(member: null, chapter: null, payment: null, currency: null);
     }
@@ -713,7 +713,7 @@ public class PaymentService : IPaymentService
 
             memberSubscriptionRecord.CancelledUtc = webhook.OriginatedUtc;
             _unitOfWork.MemberSubscriptionRecordRepository.Update(memberSubscriptionRecord);
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveChanges();
             return PaymentWebhookProcessingResult.Successful(member: null, chapter: null, payment: null, currency: null);
         }
 
@@ -894,7 +894,7 @@ public class PaymentService : IPaymentService
             $"Updating member {member.Id} subscription for chapter {chapter.Name}. " +
             $"Updating expiry date from {previousExpiresUtc} to {expiresUtc:yyyy-MM-dd HH:mm:ss}");
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return PaymentWebhookProcessingResult.Successful(
             member, chapter, payment, chapterSubscription.Currency);
@@ -959,7 +959,7 @@ public class PaymentService : IPaymentService
             },
             existingCurrent: currentRecord);
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return PaymentWebhookProcessingResult.Successful(
             member, chapter: null, payment, siteSubscriptionPrice.Currency);

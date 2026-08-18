@@ -96,11 +96,14 @@ public abstract class ReadWriteRepositoryBase<T, TBuilder> : WriteRepositoryBase
     protected TBuilder CreateQueryBuilder(Func<DbContext, TBuilder> factory)
         => CreateQueryBuilder<TBuilder, T>(factory);
 
+    /* Taken from the generator's static entry point: a repository is constructed
+       by the unit of work per property, so there is nothing here to inject through. It is the
+       same sequence an injected IEntityIdGenerator draws on. */
     private static void SetId(T entity)
     {
         if (entity.Id == default)
         {
-            entity.Id = Guid.NewGuid();
+            entity.Id = SequentialIdGenerator.NextId();
         }
     }
 }

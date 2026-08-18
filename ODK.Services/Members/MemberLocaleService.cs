@@ -48,6 +48,6 @@ public class MemberLocaleService : IMemberLocaleService
         preferences.Locale = locale;
         _unitOfWork.MemberPreferencesRepository.Upsert(preferences, memberId);
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
     }
 }

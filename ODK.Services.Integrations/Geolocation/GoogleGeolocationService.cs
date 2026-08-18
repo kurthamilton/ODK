@@ -148,7 +148,7 @@ public class GoogleGeolocationService : IGeolocationService
             IsoCode3 = countryInfo.IsoCode3,
             Name = countryInfo.Name
         });
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return country;
     }

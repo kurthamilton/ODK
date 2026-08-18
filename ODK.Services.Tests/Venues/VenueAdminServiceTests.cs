@@ -220,7 +220,7 @@ public static class VenueAdminServiceTests
     private static (IVenueAdminService Service, IMemberChapterAdminServiceRequest Request) CreateService(
         MockOdkContext context, Member currentMember, Chapter chapter)
     {
-        var unitOfWork = MockUnitOfWork.Create(context);
+        var unitOfWork = MockUnitOfWorkFactory.Create(context);
 
         var request = new Mock<IMemberChapterAdminServiceRequest>();
         request.Setup(x => x.Chapter).Returns(chapter);

@@ -146,7 +146,7 @@ public class ChapterViewModelService : IChapterViewModelService
 
             _unitOfWork.MemberPreferencesRepository.Upsert(preferences, currentMember.Id);
 
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveChanges();
         }
 
         var distanceUnits = _distanceUnitFactory.GetAll();
@@ -375,7 +375,7 @@ public class ChapterViewModelService : IChapterViewModelService
 
         if (unread.Length > 0 || notifications.Count > 0)
         {
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveChanges();
         }
 
         return new GroupConversationPageViewModel

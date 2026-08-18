@@ -35,12 +35,12 @@ public class ReferralAdminService : OdkAdminServiceBase, IReferralAdminService
             EmailSubject = model.EmailSubject,
             EmailText = model.EmailText,
             ExpiresUtc = ToExpiresUtc(model.ExpiresLocalDate),
-            Id = Guid.NewGuid(),
+            Id = _unitOfWork.NewId(),
             Name = model.Name.NormaliseWhitespace()
         };
 
         _unitOfWork.ReferralCampaignRepository.Add(campaign);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult<Guid>.Successful(campaign.Id);
     }
@@ -92,7 +92,7 @@ public class ReferralAdminService : OdkAdminServiceBase, IReferralAdminService
         campaign.Name = model.Name.NormaliseWhitespace();
 
         _unitOfWork.ReferralCampaignRepository.Update(campaign);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }

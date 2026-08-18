@@ -112,7 +112,7 @@ public class EventViewModelService : IEventViewModelService
 
             chapterPaymentSettings.ExternalProductId = externalProductId;
 
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveChanges();
         }
 
         var paidSoFar = eventTicketPayments.Sum(x => x.Payment.Amount);
@@ -136,12 +136,12 @@ public class EventViewModelService : IEventViewModelService
         }
 
         var utcNow = DateTime.UtcNow;
-        var paymentCheckoutSessionId = Guid.NewGuid();
-        var paymentId = Guid.NewGuid();
+        var paymentCheckoutSessionId = _unitOfWork.NewId();
+        var paymentId = _unitOfWork.NewId();
 
         var eventTicketPayment = new EventTicketPayment
         {
-            Id = Guid.NewGuid(),
+            Id = _unitOfWork.NewId(),
             EventId = @event.Id,
             PaymentId = paymentId
         };
@@ -194,7 +194,7 @@ public class EventViewModelService : IEventViewModelService
 
         _unitOfWork.EventTicketPaymentRepository.Add(eventTicketPayment);
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         var canViewVenue = _authorizationService.CanViewVenue(
             venue, currentMember, memberSubscription, membershipSettings, privacySettings);
@@ -339,7 +339,7 @@ public class EventViewModelService : IEventViewModelService
         if (notifications.Count > 0)
         {
             _unitOfWork.NotificationRepository.MarkAsRead(notifications);
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveChanges();
         }
 
         var amountPaid = payments.Sum(x => x.Payment.Amount);

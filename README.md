@@ -1,5 +1,16 @@
 # Getting started
 
+- [Installation](#installation)
+- [Apps](#apps)
+- [Running locally](#running-locally)
+- [ngrok](#ngrok)
+- [CSS](#css)
+- [Deployment](#deployment)
+- [Subscriptions](#subscriptions)
+- [Workflows](#workflows)
+- [Database keys](#database-keys)
+- [Antiforgery (CSRF)](#antiforgery-csrf)
+
 ## Installation
 1. Install the latest version of .NET
 2. Install the latest version of SQL Server
@@ -175,6 +186,42 @@ them, the conditions deciding which move is legal, and the ordered work each mov
 The diagrams are **generated from the definitions the app executes**, and a test fails the build when a
 committed page no longer matches its definition. See [docs/workflows](docs/workflows/README.md) for how a
 machine is built and how to view the diagrams; GitHub renders them inline.
+
+## Database keys
+
+Every table keys on a `uniqueidentifier` called `Id`, and **the app generates it, not the database**. Two
+things depend on the key existing before the row does:
+
+- A payment's ids are sent to the payment provider as checkout metadata *before* the rows are written, and
+  come back on the webhook — they are how a callback is matched to what started it.
+- Foreign keys are set by value (`MemberId = member.Id`) while several rows are staged for one commit, so a
+  key that only appeared on save would read as empty everywhere it is used in between.
+
+That rules out a `NEWSEQUENTIALID()` column default and EF's own value generation, both of which supply the
+key at insert.
+
+**Keys are sequential, because the clustered index cares.** A random GUID lands anywhere in the index, so
+every insert can split a page; a key that ascends appends instead. Which key each table clusters on is a
+deliberate choice — see the data-access notes in [CLAUDE.md](CLAUDE.md) — but whatever it is, ascending keys
+are what keep writes at the end of it.
+
+**Sequential means sequential *to SQL Server*, which is the part that catches people out.** SQL Server does
+not compare a `uniqueidentifier` in byte order: it compares the last six bytes first, then bytes 8-9, 6-7,
+4-5 and 0-3. So a version 7 UUID, which carries its timestamp in the *first* six bytes, sorts as randomly
+here as a version 4 does. `SequentialIdGenerator` wraps EF's `SequentialGuidValueGenerator`, which puts its
+counter where SQL Server actually looks.
+
+Three properties make that sound in this app:
+
+- **One sequence.** The counter is static, so every caller draws on it — whether it arrives through
+  `IUnitOfWork.NewId()` or through the repository base classes, which have nothing to inject through.
+- **Restarts resume above the previous run.** The counter is seeded from `DateTime.UtcNow.Ticks` and
+  increments once per key, while ticks advance ten million times a second. A new process therefore starts far
+  beyond where the last one stopped.
+- **Sharing one sequence across tables costs nothing.** Each table has its own index and only cares that its
+  own inserts ascend, which a single monotonic counter gives all of them at once.
+
+Nothing generates a database key with `Guid.NewGuid()`.
 
 ## Antiforgery (CSRF)
 

@@ -55,14 +55,14 @@ public class ReferralService : IReferralService
         {
             CreatedUtc = DateTime.UtcNow,
             EmailAddress = emailAddress,
-            Id = Guid.NewGuid(),
+            Id = _unitOfWork.NewId(),
             MemberId = currentMember.Id,
             ReferralCampaignId = campaign.Id
         });
 
         // Committed before the send, so the referral the email points at is already durable - the email
         // carries its id, and an id that rolled back would arrive as a dead link.
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         // Already a member: the referral is recorded, but no email goes out - there is nothing to invite
         // them to. The result is identical to a real referral either way, so the response can't be used to

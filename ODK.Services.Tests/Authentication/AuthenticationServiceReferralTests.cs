@@ -156,7 +156,7 @@ public static class AuthenticationServiceReferralTests
             .Setup(x => x.ComputeHash(It.IsAny<string>()))
             .Returns((string plainText) => (plainText, Mock.Of<IHashedPasswordOptions>()));
 
-        var unitOfWork = MockUnitOfWork.Create(context);
+        var unitOfWork = MockUnitOfWorkFactory.Create(context);
         var workflow = CreateAccountWorkflow(unitOfWork);
 
         return new AuthenticationService(

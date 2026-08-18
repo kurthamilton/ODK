@@ -68,7 +68,7 @@ public class IssueAdminService : OdkAdminServiceBase, IIssueAdminService
         };
 
         _unitOfWork.IssueMessageRepository.Add(issueMessage);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         var (member, siteAdmins) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(issue.MemberId),

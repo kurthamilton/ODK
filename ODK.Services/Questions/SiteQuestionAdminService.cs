@@ -38,7 +38,7 @@ public class SiteQuestionAdminService : OdkAdminServiceBase, ISiteQuestionAdminS
         {
             Answer = model.Answer,
             DisplayOrder = existing.Count > 0 ? existing.Max(x => x.DisplayOrder) + 1 : 1,
-            Id = Guid.NewGuid(),
+            Id = _unitOfWork.NewId(),
             Name = model.Name.NormaliseWhitespace(),
             Platform = request.Platform
         };
@@ -50,7 +50,7 @@ public class SiteQuestionAdminService : OdkAdminServiceBase, ISiteQuestionAdminS
         }
 
         _unitOfWork.SiteQuestionRepository.Add(question);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult<Guid>.Successful(question.Id);
     }
@@ -78,7 +78,7 @@ public class SiteQuestionAdminService : OdkAdminServiceBase, ISiteQuestionAdminS
         }
 
         _unitOfWork.SiteQuestionRepository.Delete(question);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
     }
 
     public async Task<SiteQuestionAdminPageViewModel> GetQuestionViewModel(
@@ -124,7 +124,7 @@ public class SiteQuestionAdminService : OdkAdminServiceBase, ISiteQuestionAdminS
         }
 
         _unitOfWork.SiteQuestionRepository.Update(question);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -162,7 +162,7 @@ public class SiteQuestionAdminService : OdkAdminServiceBase, ISiteQuestionAdminS
 
         _unitOfWork.SiteQuestionRepository.Update(question);
         _unitOfWork.SiteQuestionRepository.Update(switchWith);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return questions.OrderBy(x => x.DisplayOrder).ToArray();
     }

@@ -325,7 +325,7 @@ public static class EventAdminServiceTests
         return mock.Object;
     }
 
-    private static IUnitOfWork CreateMockUnitOfWork(MockOdkContext? context = null) => MockUnitOfWork.Create(context);
+    private static IUnitOfWork CreateMockUnitOfWork(MockOdkContext? context = null) => MockUnitOfWorkFactory.Create(context);
 
     private static EventAdminService CreateService(
         MockOdkContext context)

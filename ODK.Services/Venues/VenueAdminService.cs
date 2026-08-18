@@ -34,7 +34,7 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
 
         venue.ArchivedUtc = DateTime.UtcNow;
         _unitOfWork.VenueRepository.Update(venue);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -83,7 +83,7 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
         location.VenueId = venue.Id;
         _unitOfWork.VenueLocationRepository.Add(location);
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -105,7 +105,7 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
         }
 
         _unitOfWork.VenueRepository.Delete(venue);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -206,7 +206,7 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
 
         venue.ArchivedUtc = null;
         _unitOfWork.VenueRepository.Update(venue);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -261,7 +261,7 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
             _unitOfWork.VenueLocationRepository.Update(location);
         }
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }

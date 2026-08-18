@@ -136,7 +136,7 @@ public static class ChapterServiceTests
     }
 
     private static ChapterService CreateChapterService(MockOdkContext context)
-        => new(MockUnitOfWork.Create(context), Mock.Of<IPaymentProviderFactory>());
+        => new(MockUnitOfWorkFactory.Create(context), Mock.Of<IPaymentProviderFactory>());
 
     private static Chapter CreateDrunkenKnitwitsChapter(
         MockOdkContext context,

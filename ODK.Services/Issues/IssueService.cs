@@ -56,7 +56,7 @@ public class IssueService : IIssueService
 
         _unitOfWork.IssueMessageRepository.Add(issueMessage);
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         await _memberEmailService.SendNewIssueEmail(
             request,
@@ -122,7 +122,7 @@ public class IssueService : IIssueService
         };
 
         _unitOfWork.IssueMessageRepository.Add(issueMessage);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         await _memberEmailService.SendIssueReply(
             request,

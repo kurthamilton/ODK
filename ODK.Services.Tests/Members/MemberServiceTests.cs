@@ -791,7 +791,7 @@ public static class MemberServiceTests
             .Setup(x => x.ValidateImage(It.IsAny<byte[]>()))
             .Returns(ServiceResult.Successful());
 
-        var unitOfWork = MockUnitOfWork.Create(context);
+        var unitOfWork = MockUnitOfWorkFactory.Create(context);
         var resolvedAuthorizationService = authorizationService ?? Mock.Of<IAuthorizationService>();
         var notificationService = Mock.Of<INotificationService>();
         var subscriptionWriter = new MemberChapterSubscriptionWriter(unitOfWork);

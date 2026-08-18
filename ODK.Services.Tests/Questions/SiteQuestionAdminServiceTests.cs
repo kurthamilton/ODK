@@ -271,6 +271,6 @@ public static class SiteQuestionAdminServiceTests
             .Setup(x => x.Validate(It.IsAny<string?>(), It.IsAny<HtmlValidatorOptions>()))
             .Returns(ServiceResult.Successful());
 
-        return new SiteQuestionAdminService(MockUnitOfWork.Create(context), htmlValidator.Object);
+        return new SiteQuestionAdminService(MockUnitOfWorkFactory.Create(context), htmlValidator.Object);
     }
 }

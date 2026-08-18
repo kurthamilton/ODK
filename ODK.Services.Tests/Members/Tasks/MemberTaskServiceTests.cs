@@ -94,6 +94,6 @@ public static class MemberTaskServiceTests
 
     private static MemberTaskService CreateService(MockOdkContext context) =>
         new MemberTaskService(
-            MockUnitOfWork.Create(context),
+            MockUnitOfWorkFactory.Create(context),
             [new CompleteChapterProfileTaskProvider(), new UploadImageTaskProvider()]);
 }

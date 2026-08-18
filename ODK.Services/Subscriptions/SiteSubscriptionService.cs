@@ -166,8 +166,8 @@ public class SiteSubscriptionService : ISiteSubscriptionService
         }
 
         var utcNow = DateTime.UtcNow;
-        var paymentCheckoutSessionId = Guid.NewGuid();
-        var paymentId = Guid.NewGuid();
+        var paymentCheckoutSessionId = _unitOfWork.NewId();
+        var paymentId = _unitOfWork.NewId();
 
         var metadata = new PaymentMetadataModel(
             platform,
@@ -205,7 +205,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             SitePaymentSettingId = siteSubscription.SitePaymentSettingId
         });
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return new SiteSubscriptionCheckoutViewModel
         {
