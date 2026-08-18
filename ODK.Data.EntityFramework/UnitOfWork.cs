@@ -1,5 +1,4 @@
-﻿using ODK.Core.Platforms;
-using ODK.Data.Core;
+﻿using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Repositories;
@@ -9,6 +8,7 @@ namespace ODK.Data.EntityFramework;
 public class UnitOfWork : IUnitOfWork
 {
     private readonly OdkContext _context;
+    private readonly IEntityIdGenerator _idGenerator;
 
     private readonly Lazy<IChapterAdminMemberRepository> _chapterAdminMemberRepository;
     private readonly Lazy<IChapterContactMessageReplyRepository> _chapterContactMessageReplyRepository;
@@ -97,9 +97,10 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IVenueLocationRepository> _venueLocationRepository;
     private readonly Lazy<IVenueRepository> _venueRepository;
 
-    public UnitOfWork(OdkContext context)
+    public UnitOfWork(OdkContext context, IEntityIdGenerator idGenerator)
     {
         _context = context;
+        _idGenerator = idGenerator;
 
         _chapterAdminMemberRepository = new(() => new ChapterAdminMemberRepository(_context));
         _chapterContactMessageReplyRepository = new(() => new ChapterContactMessageReplyRepository(_context));
@@ -276,6 +277,8 @@ public class UnitOfWork : IUnitOfWork
     public ITopicRepository TopicRepository => _topicRepository.Value;
     public IVenueLocationRepository VenueLocationRepository => _venueLocationRepository.Value;
     public IVenueRepository VenueRepository => _venueRepository.Value;
+
+    public Guid NewId() => _idGenerator.Next();
 
     public async Task<T1> RunAsync<T1>(
         Func<IUnitOfWork, IDeferredQuery<T1>> query1)
@@ -895,5 +898,5 @@ public class UnitOfWork : IUnitOfWork
             await q18.Run());
     }
 
-    public Task SaveChangesAsync() => _context.SaveChangesAsync();
+    public Task SaveChanges() => _context.SaveChangesAsync();
 }

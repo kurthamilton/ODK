@@ -63,7 +63,7 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
             x => x.ChapterRepository.GetById(platform, chapterId));
 
         _unitOfWork.ChapterRepository.Delete(chapter);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -188,7 +188,7 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
             },
             existingCurrent: currentRecord);
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
         return ServiceResult.Successful();
     }
 }

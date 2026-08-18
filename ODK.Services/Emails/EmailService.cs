@@ -54,7 +54,7 @@ public class EmailService : IEmailService
             SentEmailId = sentEmail.Id
         });
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
     }
 
     public async Task<RenderedEmail> RenderEmail(IServiceRequest request, RenderEmailOptions options)
@@ -299,7 +299,7 @@ public class EmailService : IEmailService
         var sentEmails = recipients
             .Select(x => new SentEmail
             {
-                Id = Guid.NewGuid(),
+                Id = _unitOfWork.NewId(),
                 ExternalId = result.ExternalId,
                 SentUtc = sentUtc,
                 Subject = queuedEmail.Subject,
@@ -310,7 +310,7 @@ public class EmailService : IEmailService
         _unitOfWork.QueuedEmailRecipientRepository.DeleteMany(recipients);
         _unitOfWork.QueuedEmailRepository.Delete(queuedEmail);
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
     }
 
     private static IEnumerable<EmailAddressee> GetAddressees(IEnumerable<ChapterAdminMember> adminMembers)
@@ -398,7 +398,7 @@ public class EmailService : IEmailService
             CreatedUtc = DateTime.UtcNow,
             FromEmailAddress = rendered.FromEmailAddress,
             FromName = rendered.FromName,
-            Id = Guid.NewGuid(),
+            Id = _unitOfWork.NewId(),
             Subject = rendered.Subject
         });
 
@@ -407,13 +407,13 @@ public class EmailService : IEmailService
             _unitOfWork.QueuedEmailRecipientRepository.Add(new QueuedEmailRecipient
             {
                 EmailAddress = recipient.Address,
-                Id = Guid.NewGuid(),
+                Id = _unitOfWork.NewId(),
                 Name = recipient.Name,
                 QueuedEmailId = queuedEmail.Id
             });
         }
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         _backgroundTaskService.Enqueue(
             () => SendQueuedEmailTask(queuedEmail.Id),

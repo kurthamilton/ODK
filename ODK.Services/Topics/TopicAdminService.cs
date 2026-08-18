@@ -40,7 +40,7 @@ public class TopicAdminService : OdkAdminServiceBase, ITopicAdminService
             TopicGroupId = topicGroupId
         });
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -53,7 +53,7 @@ public class TopicAdminService : OdkAdminServiceBase, ITopicAdminService
         {
             Name = name
         });
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -135,7 +135,7 @@ public class TopicAdminService : OdkAdminServiceBase, ITopicAdminService
             {
                 topicGroup = new TopicGroup
                 {
-                    Id = Guid.NewGuid(),
+                    Id = _unitOfWork.NewId(),
                     Name = newChapterTopic.TopicGroup
                 };
 
@@ -151,7 +151,7 @@ public class TopicAdminService : OdkAdminServiceBase, ITopicAdminService
             {
                 topic = new Topic
                 {
-                    Id = Guid.NewGuid(),
+                    Id = _unitOfWork.NewId(),
                     Name = newChapterTopic.Topic,
                     Public = true,
                     TopicGroupId = topicGroup.Id
@@ -182,7 +182,7 @@ public class TopicAdminService : OdkAdminServiceBase, ITopicAdminService
             {
                 topicGroup = new TopicGroup
                 {
-                    Id = Guid.NewGuid(),
+                    Id = _unitOfWork.NewId(),
                     Name = newMemberTopic.TopicGroup
                 };
 
@@ -197,7 +197,7 @@ public class TopicAdminService : OdkAdminServiceBase, ITopicAdminService
             {
                 topic = new Topic
                 {
-                    Id = Guid.NewGuid(),
+                    Id = _unitOfWork.NewId(),
                     Name = newMemberTopic.Topic,
                     Public = true,
                     TopicGroupId = topicGroup.Id
@@ -228,7 +228,7 @@ public class TopicAdminService : OdkAdminServiceBase, ITopicAdminService
             _unitOfWork.NewMemberTopicRepository.Delete(newTopic);
         }
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         var approvedChapterTopics = newChapterTopics
             .Where(x => approvedChapterModelDictionary.ContainsKey(x.Id))
@@ -303,7 +303,7 @@ public class TopicAdminService : OdkAdminServiceBase, ITopicAdminService
         topic.TopicGroupId = model.TopicGroupId;
 
         _unitOfWork.TopicRepository.Update(topic);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }

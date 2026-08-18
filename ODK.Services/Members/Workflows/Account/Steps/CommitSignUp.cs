@@ -33,7 +33,7 @@ public sealed class CommitSignUp : IStep<AccountContext>
 
         try
         {
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveChanges();
             return StepOutcome.Continue();
         }
         catch (Exception ex)

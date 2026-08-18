@@ -189,16 +189,20 @@ means a new category and the E2E suite tracks the app's workflows rather than a 
   member-facing URLs (Default `/my/groups/{chapterId}/...` vs DrunkenKnitwits `/{chapterName}/admin/...`,
   whose leaf segments even differ — `/new` vs `/create`). Add a route here rather than composing paths in
   a page object or test. Mirrors the app's `GroupAdminRoutes`/`GroupRoutes`.
-- **Waiting for a form submit takes two waits, not one.** Match the POST that **navigates**
+- **Waiting for a form submit takes three waits, not one.** Match the POST that **navigates**
   (`r.Request.ResourceType == "document"`), not any POST: a page whose fields are validated by an XHR - the
   email template body posts itself to a validate endpoint on change - fires a POST of its own, so an
   any-POST wait returns before the form has submitted and the assertions then read the database as it was.
-  **Then wait for the document `GET` that follows.** Every form here is Post/Redirect/Get, so the POST
-  response *is* the 302 and arrives while the redirected GET is still in flight; `WaitForLoadStateAsync` right
-  after it just re-reports the page being left. A caller that then navigates to the same URL has its
-  navigation cut short by the one already running - `Navigation to X is interrupted by another navigation to X`.
-  Register the GET waiter *before* the click so it cannot be missed. `ChapterEmailAdminPage.Submit` is the
-  pattern.
+  **Then wait for the document `GET` that follows**, registering that waiter *before* the click so it cannot
+  be missed: every form here is Post/Redirect/Get, so the POST response *is* the 302 and arrives while the
+  redirected GET is still in flight.
+  **Then settle the network** (`WaitForLoadStateAsync(LoadState.NetworkIdle)`). The GET response arriving is
+  not the browser having committed the document it carries, and a plain `WaitForLoadStateAsync` reports on
+  whichever document is current - in that window, still the one being left. A caller that then navigates to
+  the same URL has its navigation cut short by the one already running: `Navigation to X is interrupted by
+  another navigation to X`. **Waiting on the URL does not work here** and looks like it does: these forms
+  post to their own address and redirect back to it, so `WaitForURLAsync` is satisfied before the submit even
+  starts. `ChapterEmailAdminPage.Submit` is the pattern.
 - **Don't select on text a page's chrome also carries.** The header renders "Sign in" on every anonymous page
   and the group menu renders "Join", so `a:has-text('Sign in')` resolves to two elements: an *action* on it
   throws a strict-mode violation, and - worse - a `CountAsync() > 0` presence check quietly passes on the

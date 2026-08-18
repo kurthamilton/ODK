@@ -1306,7 +1306,7 @@ public static class ChapterAdminServiceTests
         return context;
     }
 
-    private static IUnitOfWork CreateMockUnitOfWork(MockOdkContext? context = null) => MockUnitOfWork.Create(context);
+    private static IUnitOfWork CreateMockUnitOfWork(MockOdkContext? context = null) => MockUnitOfWorkFactory.Create(context);
 
     private static IImageService CreateMockImageService(bool isValidImage, byte[]? processedData = null)
     {

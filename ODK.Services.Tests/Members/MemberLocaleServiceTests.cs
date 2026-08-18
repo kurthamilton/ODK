@@ -18,7 +18,7 @@ public static class MemberLocaleServiceTests
         // Arrange - a member with no preferences at all.
         using var context = new MockOdkContext();
         var member = context.CreateMember();
-        var service = new MemberLocaleService(MockUnitOfWork.Create(context));
+        var service = new MemberLocaleService(MockUnitOfWorkFactory.Create(context));
 
         // Act
         var culture = await service.GetCulture(member.Id);
@@ -34,7 +34,7 @@ public static class MemberLocaleServiceTests
         using var context = new MockOdkContext();
         var member = context.CreateMember();
         context.Create(new MemberPreferences { MemberId = member.Id, Locale = "fr-FR" });
-        var service = new MemberLocaleService(MockUnitOfWork.Create(context));
+        var service = new MemberLocaleService(MockUnitOfWorkFactory.Create(context));
 
         // Act
         var culture = await service.GetCulture(member.Id);
@@ -51,7 +51,7 @@ public static class MemberLocaleServiceTests
         var withLocale = context.CreateMember();
         var withoutLocale = context.CreateMember();
         context.Create(new MemberPreferences { MemberId = withLocale.Id, Locale = "en-US" });
-        var service = new MemberLocaleService(MockUnitOfWork.Create(context));
+        var service = new MemberLocaleService(MockUnitOfWorkFactory.Create(context));
 
         // Act
         var cultures = await service.GetCultures([withLocale.Id, withoutLocale.Id]);
@@ -68,7 +68,7 @@ public static class MemberLocaleServiceTests
         using var context = new MockOdkContext();
         var member = context.CreateMember();
         context.Create(new MemberPreferences { MemberId = member.Id, Locale = "en-GB" });
-        var service = new MemberLocaleService(MockUnitOfWork.Create(context));
+        var service = new MemberLocaleService(MockUnitOfWorkFactory.Create(context));
 
         // Act
         await service.UpdateLocale(member.Id, "en-US");
@@ -83,7 +83,7 @@ public static class MemberLocaleServiceTests
         // Arrange - a member who has never had preferences (e.g. an admin-imported member).
         using var context = new MockOdkContext();
         var member = context.CreateMember();
-        var service = new MemberLocaleService(MockUnitOfWork.Create(context));
+        var service = new MemberLocaleService(MockUnitOfWorkFactory.Create(context));
 
         // Act
         await service.UpdateLocale(member.Id, "en-US");

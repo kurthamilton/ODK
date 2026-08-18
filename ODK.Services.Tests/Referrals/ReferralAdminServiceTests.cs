@@ -236,6 +236,6 @@ public static class ReferralAdminServiceTests
         request.Setup(x => x.CurrentMemberOrDefault).Returns(currentMember);
         request.Setup(x => x.Platform).Returns(PlatformType.Default);
 
-        return (new ReferralAdminService(MockUnitOfWork.Create(context)), request.Object);
+        return (new ReferralAdminService(MockUnitOfWorkFactory.Create(context)), request.Object);
     }
 }

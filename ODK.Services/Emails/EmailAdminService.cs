@@ -301,14 +301,14 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
             if (!chapterEmail.IsDefault())
             {
                 _unitOfWork.ChapterEmailRepository.Delete(chapterEmail);
-                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.SaveChanges();
             }
 
             return ServiceResult.Successful();
         }
 
         _unitOfWork.ChapterEmailRepository.Upsert(chapterEmail);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -343,7 +343,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         settings.MemberTitle = Unset(model.MemberTitle);
 
         _unitOfWork.ChapterEmailSettingsRepository.Upsert(settings);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -364,7 +364,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         }
 
         _unitOfWork.EmailRepository.Update(existing);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }

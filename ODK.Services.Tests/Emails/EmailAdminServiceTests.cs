@@ -807,7 +807,7 @@ public static class EmailAdminServiceTests
 
     private static EmailAdminService CreateService(
         MockOdkContext context, IHtmlValidator? htmlValidator = null) => new(
-        MockUnitOfWork.Create(context),
+        MockUnitOfWorkFactory.Create(context),
         Mock.Of<IMemberEmailService>(),
         // The real one, not a mock: it has no dependencies and is a pure function over the arranged
         // subscription features. A bare mock returns false from every check, which turns the

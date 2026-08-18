@@ -120,7 +120,7 @@ public class SocialMediaService : ISocialMediaService
             Success = result.Success,
             Username = links.InstagramName
         });
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         var posts = result.Posts;
         if (posts == null || posts.Count == 0)
@@ -166,7 +166,7 @@ public class SocialMediaService : ISocialMediaService
 
             await Task.WhenAll(fetchImageTasks);
 
-            var postId = Guid.NewGuid();
+            var postId = _unitOfWork.NewId();
 
             _unitOfWork.InstagramPostRepository.Add(new InstagramPost
             {
@@ -199,7 +199,7 @@ public class SocialMediaService : ISocialMediaService
 
         try
         {
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveChanges();
 
             await _loggingService.Info(
                 $"Saved {posts.Count} new Instagram posts for group '{chapterId}' account '{links.InstagramName}'");

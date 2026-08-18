@@ -19,7 +19,7 @@ public static class CountryAdminServiceTests
         using var context = new MockOdkContext();
         context.CreateCountry(isoCode2: "US");
         var member = context.CreateMember(siteAdmin: false);
-        var service = new CountryAdminService(MockUnitOfWork.Create(context));
+        var service = new CountryAdminService(MockUnitOfWorkFactory.Create(context));
 
         // Act / Assert
         await FluentActions.Awaiting(() => service.GetCountries(CreateRequest(member)))
@@ -34,7 +34,7 @@ public static class CountryAdminServiceTests
         context.CreateCountry(isoCode2: "US");
         context.CreateCountry(isoCode2: "GB");
         var member = context.CreateMember(siteAdmin: true);
-        var service = new CountryAdminService(MockUnitOfWork.Create(context));
+        var service = new CountryAdminService(MockUnitOfWorkFactory.Create(context));
 
         // Act
         var countries = await service.GetCountries(CreateRequest(member));

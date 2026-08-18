@@ -38,7 +38,7 @@ public class ContactAdminService : OdkAdminServiceBase, IContactAdminService
                 .GetAll());
 
         _unitOfWork.SiteContactMessageRepository.DeleteMany(messages);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -93,7 +93,7 @@ public class ContactAdminService : OdkAdminServiceBase, IContactAdminService
         if (notifications.Count > 0)
         {
             _unitOfWork.NotificationRepository.MarkAsRead(notifications);
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveChanges();
         }
 
         return new MessageAdminPageViewModel
@@ -140,7 +140,7 @@ public class ContactAdminService : OdkAdminServiceBase, IContactAdminService
             SiteContactMessageId = originalMessage.Id
         });
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -154,7 +154,7 @@ public class ContactAdminService : OdkAdminServiceBase, IContactAdminService
 
         _unitOfWork.SiteContactMessageRepository.Update(originalMessage);
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }

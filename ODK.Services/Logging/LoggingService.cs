@@ -35,7 +35,7 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
             x => x.ErrorRepository.GetById(id));
 
         _unitOfWork.ErrorRepository.Delete(error);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
     }
 
     public async Task DeleteAllErrors(IMemberServiceRequest request, Guid id)
@@ -104,7 +104,7 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
             });
         unitOfWork.ErrorPropertyRepository.AddMany(errorProperties);
 
-        await unitOfWork.SaveChangesAsync();
+        await unitOfWork.SaveChanges();
     }
 
     public async Task Error(Exception exception, IDictionary<string, string?> properties)
@@ -127,7 +127,7 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
 
         unitOfWork.ErrorPropertyRepository.AddMany(errorProperties);
 
-        await unitOfWork.SaveChangesAsync();
+        await unitOfWork.SaveChanges();
     }
 
     public async Task<ErrorDto> GetErrorDto(IMemberServiceRequest request, Guid errorId)

@@ -31,7 +31,7 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
         }
 
         _unitOfWork.SitePaymentSettingsRepository.UpdateMany(paymentSettings);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -57,7 +57,7 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
             Provider = provider
         });
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -92,7 +92,7 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
         settings.PlatformTitle = model.PlatformTitle;
 
         _unitOfWork.SiteEmailSettingsRepository.Update(settings);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -116,7 +116,7 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
         settings.Enabled = enabled;
 
         _unitOfWork.SitePaymentSettingsRepository.Update(settings);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }

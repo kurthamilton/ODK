@@ -130,7 +130,7 @@ public class AuthenticationService : IAuthenticationService
         memberPassword = _memberPasswordService.Apply(memberPassword, newPassword);
         _unitOfWork.MemberPasswordRepository.Update(memberPassword);
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -167,7 +167,7 @@ public class AuthenticationService : IAuthenticationService
         {
             memberPassword = _memberPasswordService.Apply(memberPassword, password);
             _unitOfWork.MemberPasswordRepository.Update(memberPassword);
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveChanges();
         }
 
         await CompleteReferral(member);
@@ -214,7 +214,7 @@ public class AuthenticationService : IAuthenticationService
                     ChapterId = chapter?.Id,
                     MemberId = member.Id
                 });
-                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.SaveChanges();
             }
 
             await _memberEmailService.SendActivationEmail(
@@ -237,7 +237,7 @@ public class AuthenticationService : IAuthenticationService
             Token = token
         });
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         await _memberEmailService.SendPasswordResetEmail(request, chapter, member, token);
 
@@ -273,7 +273,7 @@ public class AuthenticationService : IAuthenticationService
 
         if (request.ExpiresUtc < DateTime.UtcNow)
         {
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveChanges();
             return ServiceResult.Failure(message);
         }
 
@@ -293,7 +293,7 @@ public class AuthenticationService : IAuthenticationService
             _unitOfWork.MemberPasswordRepository.Update(memberPassword);
         }
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -320,7 +320,7 @@ public class AuthenticationService : IAuthenticationService
 
         referral.CompletedUtc = DateTime.UtcNow;
         _unitOfWork.ReferralRepository.Update(referral);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
     }
 
     private bool CheckPassword([NotNullWhen(true)] MemberPassword? memberPassword, string password)

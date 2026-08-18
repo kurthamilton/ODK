@@ -1326,7 +1326,7 @@ public static class PaymentServiceTests
         return factory.Object;
     }
 
-    private static IUnitOfWork CreateMockUnitOfWork(MockOdkContext? context = null) => MockUnitOfWork.Create(context);
+    private static IUnitOfWork CreateMockUnitOfWork(MockOdkContext? context = null) => MockUnitOfWorkFactory.Create(context);
 
     private static PaymentService CreatePaymentService(
         MockOdkContext? context = null,

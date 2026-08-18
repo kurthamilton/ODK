@@ -92,6 +92,14 @@ public interface IUnitOfWork
     IVenueLocationRepository VenueLocationRepository { get; }
     IVenueRepository VenueRepository { get; }
 
+    /// <summary>
+    /// A new database key, drawn from a sequence that ascends in the order SQL Server sorts
+    /// <c>uniqueidentifier</c>. Here rather than as a dependency of its own so that a service which already
+    /// holds a unit of work needs nothing else to write a row, and so there is one place the rule lives:
+    /// nothing generates a database key with <c>Guid.NewGuid()</c>.
+    /// </summary>
+    Guid NewId();
+
     Task<T1> RunAsync<T1>(
         Func<IUnitOfWork, IDeferredQuery<T1>> query1);
 
@@ -299,5 +307,5 @@ public interface IUnitOfWork
         Func<IUnitOfWork, IDeferredQuery<T17>> query17,
         Func<IUnitOfWork, IDeferredQuery<T18>> query18);
 
-    Task SaveChangesAsync();
+    Task SaveChanges();
 }

@@ -215,7 +215,7 @@ public static class ReferralServiceTests
         urlProviderFactory.Setup(x => x.Create(It.IsAny<IServiceRequest>())).ReturnsAsync(urlProvider.Object);
 
         var service = new ReferralService(
-            MockUnitOfWork.Create(context),
+            MockUnitOfWorkFactory.Create(context),
             emailService.Object,
             new EmailValidationService(new InconclusiveEmailVerifier()),
             urlProviderFactory.Object);

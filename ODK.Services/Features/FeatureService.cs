@@ -22,11 +22,11 @@ public class FeatureService : OdkAdminServiceBase, IFeatureService
         {
             CreatedUtc = DateTime.UtcNow,
             Description = model.Description,
-            Id = Guid.NewGuid(),
+            Id = _unitOfWork.NewId(),
             Name = model.Name
         });
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -37,7 +37,7 @@ public class FeatureService : OdkAdminServiceBase, IFeatureService
             x => x.FeatureRepository.GetById(featureId));
 
         _unitOfWork.FeatureRepository.Delete(feature);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
     }
 
     public async Task<Feature> GetFeature(IMemberServiceRequest request, Guid featureId)
@@ -67,7 +67,7 @@ public class FeatureService : OdkAdminServiceBase, IFeatureService
         }
 
         _unitOfWork.FeatureRepository.MarkAsSeen(memberId, feature);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
     }
 
     public async Task UpdateFeature(IMemberServiceRequest request, Guid featureId, FeatureUpdateModel model)
@@ -79,6 +79,6 @@ public class FeatureService : OdkAdminServiceBase, IFeatureService
         feature.Name = model.Name;
 
         _unitOfWork.FeatureRepository.Update(feature);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
     }
 }

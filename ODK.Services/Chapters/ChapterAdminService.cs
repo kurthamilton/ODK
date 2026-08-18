@@ -142,7 +142,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             MemberId = member.Id,
             Role = ChapterAdminRole.Organiser
         });
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -312,7 +312,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         image.ChapterId = chapter.Id;
         _unitOfWork.ChapterImageRepository.Add(image);
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         await _topicService.AddNewChapterTopics(
             MemberChapterServiceRequest.Create(chapter, request),
@@ -394,7 +394,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             SitePaymentSettingId = sitePaymentSettings.Id
         });
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult<ChapterPaymentAccount>.Successful(paymentAccount);
     }
@@ -445,7 +445,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             _unitOfWork.ChapterPropertyOptionRepository.AddMany(options);
         }
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -482,7 +482,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         }
 
         _unitOfWork.ChapterQuestionRepository.Add(question);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -593,7 +593,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         _unitOfWork.ChapterSubscriptionRepository.Add(subscription);
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -629,7 +629,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         }
 
         _unitOfWork.ChapterAdminMemberRepository.Delete(adminMember);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -644,7 +644,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         OdkAssertions.BelongsToChapter(contactMessage, request.Chapter.Id);
 
         _unitOfWork.ChapterContactMessageRepository.Delete(contactMessage);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -672,7 +672,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         }
 
         _unitOfWork.ChapterPropertyRepository.Delete(property);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
     }
 
     public async Task DeleteChapterQuestion(IMemberChapterAdminServiceRequest request, Guid id)
@@ -697,7 +697,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         }
 
         _unitOfWork.ChapterQuestionRepository.Delete(question);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
     }
 
     public async Task<ServiceResult> DeleteChapterSpamContactMessages(IMemberChapterAdminServiceRequest request)
@@ -712,7 +712,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
                 .GetAll());
 
         _unitOfWork.ChapterContactMessageRepository.DeleteMany(messages);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -731,7 +731,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         }
 
         _unitOfWork.ChapterSubscriptionRepository.Delete(subscription);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -771,7 +771,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         existing.OnboardingUrl = url;
         _unitOfWork.ChapterPaymentAccountRepository.Update(existing);
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult<string>.Successful(url);
     }
@@ -934,7 +934,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         if (unread.Length > 0 || notifications.Count > 0)
         {
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveChanges();
         }
 
         return new ChapterConversationAdminPageViewModel
@@ -1173,7 +1173,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
                 remainingSteps.Add("Provide identity document");
             }
 
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveChanges();
         }
 
         return new ChapterPaymentAccountAdminPageViewModel
@@ -1451,7 +1451,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             member,
             notificationSettings != null ? [notificationSettings] : []);
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         await _memberEmailService.SendChapterConversationEmail(
             request,
@@ -1505,7 +1505,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             MemberId = request.CurrentMember.Id
         });
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -1525,7 +1525,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         _unitOfWork.ChapterContactMessageRepository.Update(originalMessage);
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -1538,7 +1538,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         chapter.OwnerId = memberId;
         _unitOfWork.ChapterRepository.Update(chapter);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
     }
 
     public async Task<ServiceResult> StartConversation(
@@ -1592,7 +1592,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             member,
             notificationSettings != null ? [notificationSettings] : []);
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         await _memberEmailService.SendChapterConversationEmail(
             request,
@@ -1677,7 +1677,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         existing.Role = model.Role;
 
         _unitOfWork.ChapterAdminMemberRepository.Update(existing);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -1700,7 +1700,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         }
 
         _unitOfWork.ChapterImageRepository.Upsert(image, chapter.Id);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -1757,7 +1757,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             _unitOfWork.ChapterPrivacySettingsRepository.Upsert(privacySettings, chapter.Id);
         }
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         if (links.InstagramName != originalInstagramName && !string.IsNullOrEmpty(links.InstagramName))
         {
@@ -1801,7 +1801,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             _unitOfWork.ChapterTextsRepository.Update(texts);
         }
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -1853,7 +1853,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             _unitOfWork.ChapterLocationRepository.Update(chapterLocation);
         }
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -1909,7 +1909,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             _unitOfWork.ChapterMembershipSettingsRepository.Update(settings);
         }
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -1969,7 +1969,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             _unitOfWork.ChapterPageRepository.Upsert(page);
         }
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -2014,7 +2014,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             }
         }
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -2048,7 +2048,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             _unitOfWork.ChapterPrivacySettingsRepository.Update(settings);
         }
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -2106,7 +2106,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         }
 
         _unitOfWork.ChapterPropertyRepository.Update(property);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -2155,7 +2155,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         _unitOfWork.ChapterPropertyRepository.Update(property);
         _unitOfWork.ChapterPropertyRepository.Update(switchWith);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return properties.OrderBy(x => x.DisplayOrder).ToArray();
     }
@@ -2187,7 +2187,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         }
 
         _unitOfWork.ChapterQuestionRepository.Update(question);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -2236,7 +2236,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         _unitOfWork.ChapterQuestionRepository.Update(question);
         _unitOfWork.ChapterQuestionRepository.Update(switchWith);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return questions.OrderBy(x => x.DisplayOrder).ToArray();
     }
@@ -2250,7 +2250,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         chapter.RedirectUrl = redirectUrl;
 
         _unitOfWork.ChapterRepository.Update(chapter);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
     }
 
     public async Task<ServiceResult> UpdateChapterSubscription(
@@ -2284,7 +2284,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         }
 
         _unitOfWork.ChapterSubscriptionRepository.Update(subscription);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         if (wasDisabled != model.Disabled && !string.IsNullOrEmpty(subscription.ExternalId))
         {
@@ -2348,7 +2348,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             _unitOfWork.ChapterTextsRepository.Update(texts);
         }
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -2377,7 +2377,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         chapter.ThemeColor = model.Color;
 
         _unitOfWork.ChapterRepository.Update(chapter);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -2395,7 +2395,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         var changes = _unitOfWork.ChapterTopicRepository.Merge(chapterTopics, chapter.Id, topicIds);
         if (changes > 0)
         {
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveChanges();
         }
 
         return ServiceResult.Successful();

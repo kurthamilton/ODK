@@ -564,7 +564,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         if (notifications.Count > 0)
         {
             _unitOfWork.NotificationRepository.MarkAsRead(notifications);
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveChanges();
         }
 
         return new MemberAdminPageViewModel
@@ -745,7 +745,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             (canActOnTheInvitation ? inviteEmailMembers : activationEmailMembers).Add(member);
         }
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         // Send the activation/invite emails in the background so a large import doesn't block the request,
         // and so each email is an independently-retryable job. Only a narrowed request is passed across the
@@ -1020,7 +1020,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         }
 
         // Persist any trial records created above for members that had none.
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
     }
 
     public async Task SetMemberVisibility(
@@ -1040,7 +1040,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
         _unitOfWork.MemberChapterRepository.Update(memberChapter);
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
     }
 
     public async Task<ServiceResult> UpdateMemberImage(
@@ -1075,7 +1075,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             _unitOfWork.MemberAvatarRepository.Update(avatar);
         }
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful("Picture updated");
     }
@@ -1118,7 +1118,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             },
             existingCurrent: currentRecord);
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }

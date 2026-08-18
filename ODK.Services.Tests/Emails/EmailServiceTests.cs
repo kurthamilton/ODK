@@ -546,7 +546,7 @@ public static class EmailServiceTests
             .ReturnsAsync(urlProvider.Object);
 
         return new EmailService(
-            MockUnitOfWork.Create(context),
+            MockUnitOfWorkFactory.Create(context),
             emailClient.Object,
             urlProviderFactory.Object,
             new MockBackgroundTaskService(),

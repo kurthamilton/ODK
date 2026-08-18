@@ -130,7 +130,7 @@ public static class MemberSubscriptionRecordRepositoryTests
     private static async Task<MemberChapterSubscription?> GetCurrentChapterSubscription(
         MockOdkContext context, Guid memberId, Guid chapterId)
     {
-        var unitOfWork = MockUnitOfWork.Create(context);
+        var unitOfWork = MockUnitOfWorkFactory.Create(context);
         return await unitOfWork.MemberSubscriptionRecordRepository
             .Query()
             .Current()

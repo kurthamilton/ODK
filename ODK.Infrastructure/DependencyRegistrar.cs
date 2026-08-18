@@ -103,6 +103,7 @@ public static class DependencyRegistrar
         var connectionString = appSettings.ConnectionStrings.Default;
         services.AddScoped<OdkContext>();
         services.AddSingleton(new OdkContextSettings(connectionString));
+        services.AddSingleton<IEntityIdGenerator>(new SequentialIdGenerator());
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IUnitOfWorkFactory, UnitOfWorkFactory>();
     }

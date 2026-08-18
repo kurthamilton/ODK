@@ -53,7 +53,7 @@ public class ContactService : IContactService
         conversation.ArchivedUtc = DateTime.UtcNow;
         _unitOfWork.ChapterConversationRepository.Update(conversation);
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -101,7 +101,7 @@ public class ContactService : IContactService
             adminMembers,
             notificationSettings);
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         var addressees = adminMembers
             .Where(x => x.ReceiveContactEmails)
@@ -157,7 +157,7 @@ public class ContactService : IContactService
             notificationSettings);
         }
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         if (!flagged)
         {
@@ -197,7 +197,7 @@ public class ContactService : IContactService
 
         _unitOfWork.SiteContactMessageRepository.Add(contactMessage);
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         if (!flagged)
         {
@@ -254,7 +254,7 @@ public class ContactService : IContactService
             adminMembers,
             notificationSettings);
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         var emailMembers = adminMembers
             .Where(x => x.ReceiveContactEmails)
@@ -288,7 +288,7 @@ public class ContactService : IContactService
         conversation.ArchivedUtc = null;
         _unitOfWork.ChapterConversationRepository.Update(conversation);
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }

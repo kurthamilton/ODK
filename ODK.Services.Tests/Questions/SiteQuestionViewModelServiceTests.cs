@@ -126,5 +126,5 @@ public static class SiteQuestionViewModelServiceTests
     }
 
     private static SiteQuestionViewModelService CreateService(MockOdkContext context)
-        => new(MockUnitOfWork.Create(context));
+        => new(MockUnitOfWorkFactory.Create(context));
 }

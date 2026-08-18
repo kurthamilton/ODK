@@ -56,7 +56,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
 
         var subscription = new SiteSubscription
         {
-            Id = Guid.NewGuid(),
+            Id = _unitOfWork.NewId(),
             Platform = platform,
             SitePaymentSettingId = paymentSettings.Id
         };
@@ -69,7 +69,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
 
         _unitOfWork.SiteSubscriptionRepository.Add(subscription);
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult<Guid>.Successful(subscription.Id);
     }
@@ -124,7 +124,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         }
 
         _unitOfWork.SiteSubscriptionPriceRepository.Add(price);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         if (!string.IsNullOrEmpty(price.ExternalId))
         {
@@ -145,7 +145,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         OdkAssertions.MeetsCondition(price, x => x.SiteSubscriptionId == siteSubscriptionId);
 
         _unitOfWork.SiteSubscriptionPriceRepository.Delete(price);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         if (!string.IsNullOrEmpty(price.ExternalId))
         {
@@ -335,7 +335,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         subscription.Default = true;
         _unitOfWork.SiteSubscriptionRepository.Update(subscription);
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
     }
 
     public async Task<ServiceResult> UpdateSiteSubscription(
@@ -381,7 +381,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         UpdateSiteSubscription(model, subscription, features);
 
         _unitOfWork.SiteSubscriptionRepository.Update(subscription);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -395,7 +395,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         subscription.Enabled = enabled;
 
         _unitOfWork.SiteSubscriptionRepository.Update(subscription);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -422,7 +422,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
                 _unitOfWork.SiteSubscriptionFeatureRepository.Add(new SiteSubscriptionFeature
                 {
                     Feature = feature,
-                    Id = Guid.NewGuid(),
+                    Id = _unitOfWork.NewId(),
                     SiteSubscriptionId = subscription.Id
                 });
             }

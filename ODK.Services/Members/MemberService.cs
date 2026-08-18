@@ -109,14 +109,14 @@ public class MemberService : IMemberService
         var existing = await _unitOfWork.MemberRepository.GetByEmailAddress(token.NewEmailAddress).Run();
         if (existing != null)
         {
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveChanges();
             return ServiceResult.Failure("Email not updated: new email address is already in use");
         }
 
         member.EmailAddress = token.NewEmailAddress;
         _unitOfWork.MemberRepository.Update(member);
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -172,7 +172,7 @@ public class MemberService : IMemberService
         }
 
         _unitOfWork.MemberRepository.Delete(currentMember);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -210,7 +210,7 @@ public class MemberService : IMemberService
         _unitOfWork.MemberPropertyRepository.DeleteMany(memberProperties);
         _unitOfWork.NotificationRepository.DeleteMany(notifications);
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -386,7 +386,7 @@ public class MemberService : IMemberService
 
         _unitOfWork.MemberAvatarRepository.Update(avatar);
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
     }
 
     public async Task<ChapterSubscriptionCheckoutStartedViewModel> StartChapterSubscriptionCheckoutSession(
@@ -419,8 +419,8 @@ public class MemberService : IMemberService
         }
 
         var utcNow = DateTime.UtcNow;
-        var paymentCheckoutSessionId = Guid.NewGuid();
-        var paymentId = Guid.NewGuid();
+        var paymentCheckoutSessionId = _unitOfWork.NewId();
+        var paymentId = _unitOfWork.NewId();
 
         var metadata = new PaymentMetadataModel(
             platform,
@@ -459,7 +459,7 @@ public class MemberService : IMemberService
             SitePaymentSettingId = chapterSubscription.SitePaymentSettingId
         });
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return new ChapterSubscriptionCheckoutStartedViewModel
         {
@@ -511,7 +511,7 @@ public class MemberService : IMemberService
             _unitOfWork.MemberEmailPreferenceRepository.Delete(preference);
         }
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -565,7 +565,7 @@ public class MemberService : IMemberService
         }
 
         _unitOfWork.MemberRepository.Update(currentMember);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -595,7 +595,7 @@ public class MemberService : IMemberService
             _unitOfWork.MemberPaymentSettingsRepository.Update(paymentSettings);
         }
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -624,7 +624,7 @@ public class MemberService : IMemberService
             _unitOfWork.MemberAvatarRepository.Update(avatar);
         }
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful("Picture updated");
     }
@@ -654,7 +654,7 @@ public class MemberService : IMemberService
             }
 
             _unitOfWork.MemberLocationRepository.Delete(memberLocation);
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveChanges();
             return ServiceResult.Successful();
         }
 
@@ -677,7 +677,7 @@ public class MemberService : IMemberService
             _unitOfWork.MemberPreferencesRepository.Upsert(memberPreferences, id);
         }
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -691,7 +691,7 @@ public class MemberService : IMemberService
         member.LastName = model.LastName.Trim();
 
         _unitOfWork.MemberRepository.Update(member);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -707,7 +707,7 @@ public class MemberService : IMemberService
 
         if (_unitOfWork.MemberTopicRepository.Merge(existing, currentMemberId, topicIds) > 0)
         {
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveChanges();
         }
 
         await _topicService.AddNewMemberTopics(
@@ -752,7 +752,7 @@ public class MemberService : IMemberService
         {
             memberSubscriptionRecord.CancelledUtc = DateTime.UtcNow;
             _unitOfWork.MemberSubscriptionRecordRepository.Update(memberSubscriptionRecord);
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveChanges();
         }
 
         return success

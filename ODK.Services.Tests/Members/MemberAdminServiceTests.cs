@@ -1160,7 +1160,7 @@ public static class MemberAdminServiceTests
 
     private static MockOdkContext CreateMockOdkContext() => new MockOdkContext();
 
-    private static IUnitOfWork CreateMockUnitOfWork(MockOdkContext? context = null) => MockUnitOfWork.Create(context);
+    private static IUnitOfWork CreateMockUnitOfWork(MockOdkContext? context = null) => MockUnitOfWorkFactory.Create(context);
 
     private static IAuthorizationService CreateMockAuthorizationService()
     {
