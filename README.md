@@ -16,16 +16,44 @@ The Drunken Knitwits platform, specifically for Drunken Knitwits groups around t
 A Meetup-style platform currently under development.
 
 ## Running locally
-Run `run.app.bat`. One process serves **both** platforms — Group Squirrel on
+Run `Scripts/run.app.bat`. One process serves **both** platforms — Group Squirrel on
 [localhost:8123](http://localhost:8123) and ODK on [localhost:8124](http://localhost:8124) — with the
 platform resolved from the request URL (the `Platforms` config in `appsettings.Development.json`).
 
-It opens a Windows Terminal window with two tabs: `app` (`dotnet watch`, hot reload) and `sass` (the SCSS
-watchers). They're separate tabs rather than one `concurrently` process because `concurrently` redirects
-stdin, which silently disables `dotnet watch`'s keyboard shortcuts — in its own tab you keep **Ctrl+R** to
-force a restart when a change isn't picked up or the app doesn't recover from an error.
+It compiles the SCSS once, then runs `dotnet watch` in that window. `dotnet watch` owns the console's stdin,
+so its shortcuts work — notably **Ctrl+R** to force a restart when a change isn't picked up or the app doesn't
+recover from an error.
 
-Use `run.app.simple.bat` for a plain run with no hot reload and no watchers (compiles the SCSS once first).
+`.cs` and `.cshtml` changes hot-reload as usual. Styles do not — see below.
+
+### Rebuilding the CSS after an SCSS change
+
+Nothing watches `wwwroot/scss` while the app is running, so a change there has no effect until you compile
+it. In a **second** terminal (leave `dotnet watch` running in the first):
+
+```
+Scripts/run.build.css.bat
+```
+
+or, equivalently, `npm run build:css` from `ODK.Web.Razor`.
+
+Then refresh the browser. The `<link>` carries a content hash, so an ordinary refresh normally picks the new
+file up; hard-refresh (Ctrl+F5) if it doesn't, since the caching headers for static assets are computed when
+the project builds and a file changed since then can still be served as unmodified.
+
+`build:css` writes all four outputs: `main.css` / `odk.css` and their `.min` counterparts. The app links only
+the minified pair; the expanded pair is committed alongside so the compiled output is readable in a diff. Run
+the whole script rather than `sass:min` alone, or the expanded files go stale.
+
+**Do not run a sass watcher alongside `dotnet watch`.** MSBuild enumerates and hashes every file under
+`wwwroot` as a static web asset on each rebuild, so a watcher rewriting `wwwroot/css` while `dotnet watch` is
+evaluating the project takes `dotnet watch` down with it — it exits and leaves the console at a prompt. The
+`Watch="false"` entries in the csproj do not prevent this: they keep those files out of the *watch* list, but
+the build reads them either way.
+
+If you would rather have styles compile on save, drop `dotnet watch`: run the app with a plain `dotnet run`
+and `npm run watch:sass` beside it. That pairing is safe — there is no rebuild for a stylesheet write to land
+in the middle of — and the cost is losing hot reload for `.cs` and `.cshtml`.
 
 ## ngrok
 [ngrok](https://ngrok.com) exposes a local app on a public URL, so third parties can reach it — needed for
@@ -35,7 +63,7 @@ Two tunnels are defined, one per local app:
 
 | Tunnel | Local app | Started by |
 |---|---|---|
-| `odk` | `http://localhost:8123` (dev) | `run.ngrok.odk.bat` (repo root) |
+| `odk` | `http://localhost:8123` (dev) | `Scripts/run.ngrok.odk.bat` |
 | `odk-e2e` | `http://localhost:8125` (e2e) | `E2E/script.run.ngrok.e2e.bat`, also opened as a third tab by `E2E/script.run.tests.bat` |
 
 Both read `ngrok.yml` in the **repo root**. That file is gitignored (it holds your auth token), so create it
@@ -65,7 +93,8 @@ column, and `upstream`'s own `url` is indented one level further.
 ## CSS
 `.css` files are compiled into `wwwroot/css` from the `.scss` files in `wwwroot/scss`.
 
-To compile, run `npm run build:css`. The compilation script also runs when the app is run from one of the batch files.
+To compile, run `Scripts/run.build.css.bat` (or `npm run build:css` from `ODK.Web.Razor`).
+`Scripts/run.app.bat` also compiles once before it starts the app.
 
 ## Deployment
 See [DEPLOYMENT.md](DEPLOYMENT.md) for how the app is built and deployed via GitHub Actions, how config
@@ -136,6 +165,16 @@ A cooldown of **none (0) means access ends with the subscription** — an expire
 `Disabled`. A negative value is meaningless and is treated as none. **A membership that never ends is
 expressed by having no expiry date at all**, not by a sentinel cooldown value; if that is ever wanted as a
 configurable feature it should be an explicit one.
+
+## Workflows
+
+Flows that vary by platform, entry point and what the member already has — account creation above all — are
+modelled as state machines rather than as branches inside a service method: states, the triggers between
+them, the conditions deciding which move is legal, and the ordered work each move performs.
+
+The diagrams are **generated from the definitions the app executes**, and a test fails the build when a
+committed page no longer matches its definition. See [docs/workflows](docs/workflows/README.md) for how a
+machine is built and how to view the diagrams; GitHub renders them inline.
 
 ## Antiforgery (CSRF)
 

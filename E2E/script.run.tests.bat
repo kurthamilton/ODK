@@ -5,8 +5,9 @@ rem   - "e2e tests" : waits for the app, runs the tests for the given category, 
 rem   - "e2e ngrok" : public tunnel to the e2e app, for testing integrations that call back in
 rem                   (see the ngrok section in the root README for the gitignored ngrok.yml).
 rem
-rem Usage: script.run.tests.bat [category]
+rem Usage: script.run.tests.bat [category[,category...]]
 rem   Pass a category to skip the prompt; run with no argument (or double-click) to be asked.
+rem   Comma-separate to run several at once - a test in more than one of them still runs once.
 setlocal
 
 set CATEGORY=%~1
@@ -22,14 +23,21 @@ if "%CATEGORY%"=="" (
     echo   Stripe               - payments only; slow, needs the ngrok tunnel up
     echo   NoStripe             - everything except payments
     echo   AccountCreate        - every route into an account: sign-up, activation, invited members
+    echo   SiteMembership       - the account lifecycle: sign-up, activation, imported accounts
+    echo   ChapterMembership    - standing in a group: joining, invitations, accepting, member limits
     echo   Venues               - venue admin; creation, name normalising, slugs, events filter
     echo   SiteQuestions        - site FAQ admin and the About page; Group Squirrel only
     echo   EmailAdmin           - a group customising its email templates; Group Squirrel only
+    echo.
+    echo   Comma-separate to combine, e.g. ChapterMembership,SiteMembership
     echo.
     set /p "CATEGORY=Category [E2E]: "
 )
 
 if "%CATEGORY%"=="" set CATEGORY=E2E
+
+rem Spaces would split the value when it is passed on as an argument below, so "A, B" becomes "A,B".
+set "CATEGORY=%CATEGORY: =%"
 
 rem The two platform ports bind together in one process, so waiting on 8125 is enough.
 set PORT=8125

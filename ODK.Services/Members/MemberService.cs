@@ -27,15 +27,19 @@ using ODK.Services.Recaptcha;
 using ODK.Services.Subscriptions;
 using ODK.Services.Topics;
 using ODK.Services.Topics.Models;
-using ODK.Services.Members.Workflows;
+using ODK.Services.Members.Workflows.Account;
+using ODK.Services.Members.Workflows.ChapterMembership;
 using ODK.Services.Workflows;
 
 namespace ODK.Services.Members;
 
 public class MemberService : IMemberService
 {
+    private readonly StateMachineRunner<AccountState, AccountTrigger, AccountContext> _account;
     private readonly IAccountContextFactory _accountContextFactory;
-    private readonly StateMachineRunner<AccountState, AccountTrigger, AccountContext> _accountStateMachine;
+    private readonly IChapterMembershipContextFactory _chapterMembershipContextFactory;
+    private readonly StateMachineRunner<
+        ChapterMembershipState, ChapterMembershipTrigger, ChapterMembershipContext> _chapterMembership;
     private readonly IAuthorizationService _authorizationService;
     private readonly IEmailValidationService _emailValidationService;
     private readonly IDistanceUnitFactory _distanceUnitFactory;
@@ -44,11 +48,8 @@ public class MemberService : IMemberService
     private readonly IMemberChapterSubscriptionWriter _memberChapterSubscriptionWriter;
     private readonly IMemberEmailService _memberEmailService;
     private readonly IMemberImageService _memberImageService;
-    private readonly IMemberSiteSubscriptionWriter _memberSiteSubscriptionWriter;
     private readonly INotificationService _notificationService;
-    private readonly IOAuthProviderFactory _oauthProviderFactory;
     private readonly IPaymentProviderFactory _paymentProviderFactory;
-    private readonly IRecaptchaService _recaptchaService;
     private readonly ITopicService _topicService;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -58,21 +59,23 @@ public class MemberService : IMemberService
         IMemberImageService memberImageService,
         IMemberEmailService memberEmailService,
         INotificationService notificationService,
-        IOAuthProviderFactory oauthProviderFactory,
         ITopicService topicService,
         IPaymentProviderFactory paymentProviderFactory,
         IGeolocationService geolocationService,
         ILoggingService loggingService,
         IDistanceUnitFactory distanceUnitFactory,
         IMemberChapterSubscriptionWriter memberChapterSubscriptionWriter,
-        IMemberSiteSubscriptionWriter memberSiteSubscriptionWriter,
-        IRecaptchaService recaptchaService,
         IEmailValidationService emailValidationService,
-        IAccountContextFactory accountContextFactory,
-        StateMachineRunner<AccountState, AccountTrigger, AccountContext> accountStateMachine)
+        IChapterMembershipContextFactory chapterMembershipContextFactory,
+        StateMachineRunner<ChapterMembershipState, ChapterMembershipTrigger, ChapterMembershipContext>
+            chapterMembership,
+        StateMachineRunner<AccountState, AccountTrigger, AccountContext> account,
+        IAccountContextFactory accountContextFactory)
     {
+        _account = account;
         _accountContextFactory = accountContextFactory;
-        _accountStateMachine = accountStateMachine;
+        _chapterMembership = chapterMembership;
+        _chapterMembershipContextFactory = chapterMembershipContextFactory;
         _authorizationService = authorizationService;
         _emailValidationService = emailValidationService;
         _distanceUnitFactory = distanceUnitFactory;
@@ -81,11 +84,8 @@ public class MemberService : IMemberService
         _memberChapterSubscriptionWriter = memberChapterSubscriptionWriter;
         _memberEmailService = memberEmailService;
         _memberImageService = memberImageService;
-        _memberSiteSubscriptionWriter = memberSiteSubscriptionWriter;
         _notificationService = notificationService;
-        _oauthProviderFactory = oauthProviderFactory;
         _paymentProviderFactory = paymentProviderFactory;
-        _recaptchaService = recaptchaService;
         _topicService = topicService;
         _unitOfWork = unitOfWork;
     }
@@ -142,381 +142,39 @@ public class MemberService : IMemberService
 
     public async Task<ServiceResult<Member?>> CreateAccount(IServiceRequest request, AccountCreateModel model)
     {
-        // Before any query: the address is about to receive an activation email, and an unusable one
-        // leaves an account nobody can ever activate.
-        var emailValidationResult = await _emailValidationService.Validate(
-            model.EmailAddress, EmailValidationLevel.Full);
-        if (!emailValidationResult.Success)
+        var context = await _accountContextFactory.CreateForSiteSignUp(request, model);
+
+        var result = await _account.Fire(AccountTrigger.SignUp, context);
+        if (!result.Success)
         {
-            return ServiceResult<Member?>.Failure(emailValidationResult.Message ?? string.Empty);
+            return ServiceResult<Member?>.Failure(result.Message ?? string.Empty);
         }
 
-        var (existing, siteSubscription, topics, referral) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetByEmailAddress(model.EmailAddress),
-            x => x.SiteSubscriptionRepository.GetDefault(request.Platform),
-            x => x.TopicRepository.GetByIds(model.TopicIds),
-            x => model.ReferralId != null
-                ? x.ReferralRepository.GetByIdOrDefault(model.ReferralId.Value)
-                : new DefaultDeferredQuerySingleOrDefault<Referral>());
-
-        string? reusableActivationToken = null;
-        IReadOnlyCollection<MemberChapterInvite> carriedOverInvites = [];
-        if (existing != null)
-        {
-            if (existing.Activated)
-            {
-                await _memberEmailService.SendDuplicateMemberEmail(request, null, existing);
-                return ServiceResult<Member?>.Successful(null);
-            }
-
-            // Signing up again against an existing but unactivated account: discard the incomplete
-            // account so it is recreated below from the newly submitted details (latest info wins).
-            // Preserve the original activation token (before the delete cascades it away) and reuse it
-            // for the recreated account, so any activation link already emailed to them still works.
-            reusableActivationToken = (await _unitOfWork.MemberActivationTokenRepository
-                .GetByMemberId(existing.Id)
-                .Run())?.ActivationToken;
-
-            /* Carried over for the same reason, and it matters most to imported members: this is the state an
-               import leaves them in, so signing up rather than following the emailed link is a likely route.
-               The invitation is an admin's record that they were asked to join, and it is what lets them skip
-               approval - the delete below would cascade it away. */
-            carriedOverInvites = await _unitOfWork.MemberChapterInviteRepository
-                .GetByMemberId(existing.Id)
-                .Run();
-
-            _unitOfWork.MemberRepository.Delete(existing);
-            await _unitOfWork.SaveChangesAsync();
-        }
-
-        var timeZone = model.Location != null
-            ? await _geolocationService.GetTimeZoneFromLocation(model.Location.Value)
-            : null;
-
-        if (timeZone == null)
-        {
-            await _loggingService.Error(
-                $"Error getting member time zone for location {model.Location?.Lat}, {model.Location?.Long}. " +
-                $"Falling back to default");
-
-            timeZone = Chapter.DefaultTimeZone;
-        }
-
-        // Score the signup but never block it - a low score flags the account for site admin review. The
-        // flag is decided here, against the current threshold, and stored as a snapshot.
-        var recaptchaResult = await _recaptchaService.Verify(model.RecaptchaToken);
-
-        var member = _unitOfWork.MemberRepository.Add(new Member
-        {
-            CreatedUtc = DateTime.UtcNow,
-            EmailAddress = model.EmailAddress,
-            FirstName = model.FirstName,
-            LastName = model.LastName,
-            RecaptchaFlagged = !_recaptchaService.Success(recaptchaResult),
-            RecaptchaScore = recaptchaResult.Score,
-            // The resolved referral, not the posted id: the id comes from the browser, so one that matches
-            // nothing is discarded rather than failing the signup on a foreign key violation. An already
-            // completed referral is discarded too, so one referral can only ever bring in one member -
-            // without it, a stored id left over from an earlier signup would attribute a later one as well.
-            ReferralId = referral?.CompletedUtc == null ? referral?.Id : null,
-            TimeZone = timeZone
-        });
-
-        if (model.OAuthProviderType != null && !string.IsNullOrEmpty(model.OAuthToken))
-        {
-            var oauthProvider = _oauthProviderFactory.GetProvider(model.OAuthProviderType.Value);
-            var oauthUser = await oauthProvider.GetUser(model.OAuthToken);
-            if (string.Equals(oauthUser.Email, model.EmailAddress, StringComparison.InvariantCultureIgnoreCase))
-            {
-                member.Activated = true;
-            }
-        }
-
-        Country? country = null;
-        if (model.Location != null)
-        {
-            country = await _geolocationService.GetCountryFromLocation(model.Location.Value);
-
-            _unitOfWork.MemberLocationRepository.Add(new MemberLocation
-            {
-                CountryId = country?.Id,
-                Latitude = model.Location.Value.Lat,
-                Longitude = model.Location.Value.Long,
-                MemberId = member.Id,
-                Name = model.LocationName
-            });
-
-            if (country?.CurrencyId != null)
-            {
-                _unitOfWork.MemberPaymentSettingsRepository.Add(new MemberPaymentSettings
-                {
-                    CurrencyId = country.CurrencyId,
-                    MemberId = member.Id
-                });
-            }
-        }
-
-        var distanceUnitType = country != null
-            ? country.DistanceUnit
-            : _distanceUnitFactory.GetDefault().Type;
-
-        _unitOfWork.MemberPreferencesRepository.Add(new MemberPreferences
-        {
-            DistanceUnit = distanceUnitType,
-            Locale = request.HttpRequestContext.Locale,
-            MemberId = member.Id
-        });
-
-        await _memberSiteSubscriptionWriter.MakeRecordCurrent(
-            new MemberSiteSubscriptionRecord
-            {
-                CreatedUtc = DateTime.UtcNow,
-                MemberId = member.Id,
-                SiteSubscriptionId = siteSubscription.Id
-            });
-
-        string? activationToken = null;
-        if (!member.Activated)
-        {
-            activationToken = reusableActivationToken ?? TokenGenerator.GenerateBase64Token(64);
-            _unitOfWork.MemberActivationTokenRepository.Add(new MemberActivationToken
-            {
-                ActivationToken = activationToken,
-                MemberId = member.Id
-            });
-        }
-
-        AddCarriedOverInvites(member.Id, carriedOverInvites);
-
-        if (topics.Count > 0)
-        {
-            _unitOfWork.MemberTopicRepository.AddMany(topics.Select(x => new MemberTopic
-            {
-                MemberId = member.Id,
-                TopicId = x.Id
-            }));
-        }
-
-        await _unitOfWork.SaveChangesAsync();
-
-        await _topicService.AddNewMemberTopics(
-            MemberServiceRequest.Create(member, request),
-            model.NewTopics);
-
-        if (!string.IsNullOrEmpty(activationToken))
-        {
-            await _memberEmailService.SendActivationEmail(request, null, member, activationToken);
-        }
-        else
-        {
-            await _memberEmailService.SendSiteWelcomeEmail(request, member);
-        }
-
-        return ServiceResult<Member?>.Successful(member);
+        /* Null when the address already had an account it could sign in with: nothing was created and the
+           address was emailed to say so. The caller reports that identically to a genuine sign-up, so nobody
+           can find out from the response whether an address is registered. */
+        return ServiceResult<Member?>.Successful(context.NewMember);
     }
 
     public async Task<CreateChapterAccountResult> CreateChapterAccount(
         IChapterServiceRequest request, MemberCreateProfile model)
     {
-        var (platform, chapter) = (request.Platform, request.Chapter);
-
         await _loggingService.Info($"Creating chapter account for {model.EmailAddress}");
 
-        var (
-            chapterProperties,
-            membershipSettings,
-            existing,
-            siteSubscription,
-            ownerSubscriptionFeatures,
-            chapterLocation
-        ) = await _unitOfWork.RunAsync(
-            x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
-            x => x.MemberRepository.GetByEmailAddress(model.EmailAddress),
-            x => x.SiteSubscriptionRepository.GetDefault(platform),
-            x => x.MemberSiteSubscriptionRecordRepository
-                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active())
-                .SiteSubscription()
-                .Features()
-                .GetAll(),
-            x => x.ChapterLocationRepository.GetByChapterId(chapter.Id));
+        var context = await _accountContextFactory.CreateForGroupSignUp(request, model);
 
-        var validationResult = await ValidateMemberProfile(chapterProperties, model, forApplication: true);
-        if (!validationResult.Success)
+        var result = await _account.Fire(AccountTrigger.SignUp, context);
+        if (!result.Success)
         {
-            return CreateChapterAccountResult.FromResult(validationResult);
-        }
-
-        var avatar = new MemberAvatar();
-
-        var imageValidationResult = _memberImageService.UpdateMemberImage(avatar, model.ImageData);
-        if (!imageValidationResult.Success)
-        {
-            return CreateChapterAccountResult.FromResult(imageValidationResult);
-        }
-
-        string? reusableActivationToken = null;
-        IReadOnlyCollection<MemberChapterInvite> carriedOverInvites = [];
-        if (existing != null)
-        {
-            if (existing.Activated)
-            {
-                await _memberEmailService.SendDuplicateMemberEmail(request, chapter, existing);
-                return CreateChapterAccountResult.Successful();
-            }
-
-            // Signing up again against an existing but unactivated account: discard the incomplete
-            // account so it is recreated below from the newly submitted details (latest info wins).
-            // Preserve the original activation token (before the delete cascades it away) and reuse it
-            // for the recreated account, so any activation link already emailed to them still works.
-            reusableActivationToken = (await _unitOfWork.MemberActivationTokenRepository
-                .GetByMemberId(existing.Id)
-                .Run())?.ActivationToken;
-
-            /* Carried over for the same reason, and it matters most to imported members: this is the state an
-               import leaves them in, so signing up rather than following the emailed link is a likely route.
-               The invitation is an admin's record that they were asked to join, and it is what lets them skip
-               approval - the delete below would cascade it away. */
-            carriedOverInvites = await _unitOfWork.MemberChapterInviteRepository
-                .GetByMemberId(existing.Id)
-                .Run();
-
-            _unitOfWork.MemberRepository.Delete(existing);
-            await _unitOfWork.SaveChangesAsync();
-        }
-
-        var now = DateTime.UtcNow;
-
-        // Score the signup but never block it - a low score flags the account for site admin review. The
-        // flag is decided here, against the current threshold, and stored as a snapshot.
-        var recaptchaResult = await _recaptchaService.Verify(model.RecaptchaToken);
-
-        var member = _unitOfWork.MemberRepository.Add(new Member
-        {
-            Activated = false,
-            CreatedUtc = now,
-            EmailAddress = model.EmailAddress,
-            FirstName = model.FirstName,
-            LastName = model.LastName,
-            RecaptchaFlagged = !_recaptchaService.Success(recaptchaResult),
-            RecaptchaScore = recaptchaResult.Score,
-            SiteAdmin = false,
-            TimeZone = chapter.TimeZone
-        });
-
-        if (model.EmailOptIn != true)
-        {
-            _unitOfWork.MemberEmailPreferenceRepository.Add(new MemberEmailPreference
-            {
-                Disabled = true,
-                MemberId = member.Id,
-                Type = MemberEmailPreferenceType.Events
-            });
-        }
-
-        _unitOfWork.MemberPreferencesRepository.Add(new MemberPreferences
-        {
-            Locale = request.HttpRequestContext.Locale,
-            MemberId = member.Id
-        });
-
-        var memberProperties = model
-            .Properties
-            .Select(x => x.ToMemberProperty(member.Id))
-            .ToArray();
-
-        /* Signing up is joining on this platform, so this is where an invited member accepts. They arrive with an
-           unactivated account the import created, which the branch above discarded and recreated - so the
-           invitation is one of the rows carried over from it rather than one to load here. */
-        var invite = carriedOverInvites.SingleOrDefault(x => x.ChapterId == chapter.Id);
-
-        AddMemberToChapter(
-            now,
-            member,
-            chapter,
-            memberProperties,
-            membershipSettings,
-            ownerSubscriptionFeatures,
-            invited: invite != null);
-
-        if (chapterLocation != null)
-        {
-            _unitOfWork.MemberLocationRepository.Add(new MemberLocation
-            {
-                CountryId = chapter.CountryId,
-                MemberId = member.Id,
-                Latitude = chapterLocation.Latitude,
-                Longitude = chapterLocation.Longitude,
-                Name = chapterLocation.Name
-            });
-        }
-
-        await _memberSiteSubscriptionWriter.MakeRecordCurrent(
-            new MemberSiteSubscriptionRecord
-            {
-                CreatedUtc = DateTime.UtcNow,
-                MemberId = member.Id,
-                SiteSubscriptionId = siteSubscription.Id
-            });
-
-        avatar.MemberId = member.Id;
-        _unitOfWork.MemberAvatarRepository.Add(avatar);
-
-        var activationToken = reusableActivationToken ?? TokenGenerator.GenerateBase64Token(64);
-        _unitOfWork.MemberActivationTokenRepository.Add(new MemberActivationToken
-        {
-            ActivationToken = activationToken,
-            ChapterId = chapter.Id,
-            MemberId = member.Id
-        });
-
-        /* Every carried-over invitation except this chapter's, which joining has just consumed. Re-raising it
-           only to delete it would leave the member listed as invited to a group they are now in. */
-        AddCarriedOverInvites(
-            member.Id,
-            carriedOverInvites.Where(x => x.ChapterId != chapter.Id).ToArray());
-
-        try
-        {
-            await _unitOfWork.SaveChangesAsync();
-        }
-        catch (Exception ex)
-        {
-            // double check the existence of the user in the DB to see if this was a double submission
-            existing = await _unitOfWork.MemberRepository.GetByEmailAddress(model.EmailAddress).Run();
-
-            if (existing != null)
-            {
-                await _loggingService.Info(
-                    $"Chapter account create: double submission detected for '{model.EmailAddress}', returning OK");
-                return CreateChapterAccountResult.Successful();
-            }
-
-            await _loggingService.Error($"Error creating chapter account for '{model.EmailAddress}'", ex);
-            return CreateChapterAccountResult.Failure(
-                "An error occurred when creating your account. Please try again.");
+            return CreateChapterAccountResult.FromResult(result.ToServiceResult());
         }
 
         /* Holding the token from an invitation sent to the address being registered proves the sign-up reached
-           that inbox, which is all an activation email establishes - so the caller can hand them the activation
-           token instead of mailing it. The token is only ever trusted against the account the posted address
-           resolves to, since one posted with a different address proves nothing about that address. */
-        if (invite != null && !string.IsNullOrEmpty(model.InviteToken) && invite.Token == model.InviteToken)
-        {
-            return CreateChapterAccountResult.SuccessfulReadyToActivate(activationToken);
-        }
-
-        try
-        {
-            await _memberEmailService.SendActivationEmail(request, chapter, member, activationToken);
-
-            return CreateChapterAccountResult.Successful();
-        }
-        catch
-        {
-            return CreateChapterAccountResult.Failure(
-                "Your account has been created but an error occurred sending an email.");
-        }
+           that inbox, which is all an activation email establishes - so no email was sent and the caller hands
+           them straight to setting a password. Read from the same rule the machine picked the edge with. */
+        return context.PresentedTheInviteToken
+            ? CreateChapterAccountResult.SuccessfulReadyToActivate(context.RequiredActivationToken)
+            : CreateChapterAccountResult.Successful();
     }
 
     public async Task<ServiceResult> DeleteMember(IMemberServiceRequest request)
@@ -651,13 +309,14 @@ public class MemberService : IMemberService
     public async Task<ServiceResult> JoinChapter(
         IMemberChapterServiceRequest request, IEnumerable<MemberPropertyUpdateModel> properties)
     {
-        var context = await _accountContextFactory.CreateForJoin(request, properties);
-        var result = await _accountStateMachine.Fire(AccountTrigger.Join, context);
+        var context = await _chapterMembershipContextFactory.CreateForJoin(request, properties);
+        var result = await _chapterMembership.Fire(ChapterMembershipTrigger.Join, context);
 
         /* Already being in the group is not checked here: the machine has no Join edge out of a state that
            holds a membership, so it reports the trigger as not permitted from there. Only the wording is
            this method's. */
-        if (!result.Success && result.From is AccountState.GroupMember or AccountState.PendingApproval)
+        if (!result.Success &&
+            result.From is ChapterMembershipState.Joined or ChapterMembershipState.PendingApproval)
         {
             return ServiceResult.Failure("You are already a member of this group");
         }
@@ -1090,71 +749,6 @@ public class MemberService : IMemberService
             .Select(x => x.GetDisplayText());
     }
 
-    /* Re-raises the invitations an unactivated account had before it was discarded and recreated, each keeping
-       its own token so an invitation link already emailed still works - the same reason the activation token is
-       reused. The original CreatedUtc is not recoverable here and does not matter: nothing reads the date, and
-       the invitation's job is to say the member was asked to join, not when. */
-    private void AddCarriedOverInvites(Guid memberId, IReadOnlyCollection<MemberChapterInvite> invites)
-    {
-        foreach (var invite in invites)
-        {
-            _unitOfWork.MemberChapterInviteRepository.Add(new MemberChapterInvite
-            {
-                ChapterId = invite.ChapterId,
-                CreatedUtc = DateTime.UtcNow,
-                MemberId = memberId,
-                Token = invite.Token
-            });
-        }
-    }
-
-    private MemberChapter AddMemberToChapter(
-        DateTime now,
-        Member member,
-        Chapter chapter,
-        IEnumerable<MemberProperty> memberProperties,
-        ChapterMembershipSettings? membershipSettings,
-        IReadOnlyCollection<SiteSubscriptionFeature> ownerSubscriptionFeatures,
-        bool invited)
-    {
-        var memberChapter = new MemberChapter
-        {
-            /* An invitation is approval: an admin imported this member's address, so putting them in the
-               approvals queue would be asking the group to approve someone it asked to join. Every other route
-               in still honours the setting. */
-            Approved =
-                invited ||
-                !_authorizationService.ChapterHasAccess(ownerSubscriptionFeatures, SiteFeatureType.ApproveMembers) ||
-                membershipSettings?.ApproveNewMembers != true,
-            CreatedUtc = now,
-            MemberId = member.Id,
-            ChapterId = chapter.Id
-        };
-
-        _unitOfWork.MemberChapterRepository.Add(memberChapter);
-
-        var hasSubscriptions = _authorizationService
-            .ChapterHasAccess(ownerSubscriptionFeatures, SiteFeatureType.MemberSubscriptions);
-        if (hasSubscriptions && membershipSettings?.Enabled == true)
-        {
-            var trial = membershipSettings.TrialPeriodMonths > 0;
-            _memberChapterSubscriptionWriter.MakeRecordCurrent(
-                newRecord: new MemberSubscriptionRecord
-                {
-                    ChapterId = chapter.Id,
-                    ExpiresUtc = trial ? now.AddMonths(membershipSettings.TrialPeriodMonths) : null,
-                    MemberId = member.Id,
-                    PurchasedUtc = now,
-                    Type = trial ? SubscriptionType.Trial : SubscriptionType.Free
-                },
-                existingCurrent: null);
-        }
-
-        _unitOfWork.MemberPropertyRepository.AddMany(memberProperties);
-
-        return memberChapter;
-    }
-
     private async Task<ServiceResult> CancelSubscription(MemberSubscriptionRecord memberSubscriptionRecord)
     {
         if (memberSubscriptionRecord.ChapterSubscriptionId == null ||
@@ -1241,40 +835,4 @@ public class MemberService : IMemberService
         return ServiceResult.Successful();
     }
 
-    private async Task<ServiceResult> ValidateMemberProfile(
-        IReadOnlyCollection<ChapterProperty> chapterProperties,
-        MemberCreateProfile profile,
-        bool forApplication)
-    {
-        // The group's own questions come first: they cost nothing to check, where verifying the address spends
-        // an external request that an incomplete form need not pay for.
-        var propertyResult = ValidateMemberProperties(chapterProperties, profile.Properties, forApplication);
-        if (!propertyResult.Success)
-        {
-            return propertyResult;
-        }
-
-        var emailValidationResult = await _emailValidationService.Validate(profile.EmailAddress, EmailValidationLevel.Full);
-        if (!emailValidationResult.Success)
-        {
-            return emailValidationResult;
-        }
-
-        return ServiceResult.Successful();
-    }
-
-    private ServiceResult ValidateMemberProperties(
-        IReadOnlyCollection<ChapterProperty> chapterProperties,
-        IEnumerable<MemberPropertyUpdateModel> memberProperties,
-        bool forApplication)
-    {
-        var missingProperties = GetMissingMemberProfileProperties(chapterProperties, memberProperties, forApplication)
-            .ToArray();
-        if (missingProperties.Length > 0)
-        {
-            return ServiceResult.Failure($"The following properties are required: {string.Join(", ", missingProperties)}");
-        }
-
-        return ServiceResult.Successful();
-    }
 }

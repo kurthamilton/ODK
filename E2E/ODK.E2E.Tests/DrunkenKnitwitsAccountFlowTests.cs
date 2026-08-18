@@ -1,7 +1,8 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using NUnit.Framework;
 using ODK.E2E.Data;
 using ODK.E2E.Data.Models;
+using ODK.E2E.Tests.Config;
 using ODK.E2E.Tests.Helpers;
 using ODK.E2E.Tests.Pages;
 
@@ -14,6 +15,8 @@ namespace ODK.E2E.Tests;
 /// </summary>
 [TestFixture]
 [Category("AccountCreate")]
+[Category("ChapterMembership")]
+[Category("SiteMembership")]
 public class DrunkenKnitwitsAccountFlowTests : DrunkenKnitwitsPageTest
 {
     [Test]
@@ -49,4 +52,42 @@ public class DrunkenKnitwitsAccountFlowTests : DrunkenKnitwitsPageTest
             x => x.Contains("Activate", StringComparison.OrdinalIgnoreCase),
             $"No activation email was sent. Subjects sent to {email}: [{string.Join(", ", subjects)}]");
     }
+
+    [Test]
+    public async Task JoinChapter_ChapterAtItsMemberLimit_IsRefusedAndCreatesNoAccount()
+    {
+        /* Arrange - a chapter whose owner is on a subscription allowing one member. Creating a chapter makes
+           its owner an approved member, so that one place is already taken and the chapter is full before
+           anybody tries to join. Signing up on DrunkenKnitwits *is* joining, so the same limit applies here as
+           it does to a member who already has an account. */
+        var subscription = await Provisioning.EnsureMemberLimitedSiteSubscription();
+
+        var owner = await Provisioning.NewAccount("dk-full-chapter-owner");
+        var chapterName = $"e2edkfull{Guid.NewGuid():N}";
+        await Provisioning.SeedDrunkenKnitwitsChapter(owner, chapterName);
+        var shortName = chapterName.ToLowerInvariant();
+
+        var ownerId = await Members.GetMemberId(owner.Email);
+        await MemberSubscriptions.EnsureActive(ownerId, subscription.Id, subscription.PriceId);
+
+        var email = TestAccounts.NewEmailAddress();
+
+        // Act
+        var joinPage = new DrunkenKnitwitsJoinPage(Page);
+        var joined = await joinPage.TryJoinWithProperties(
+            shortName, "E2E", "Test", email, new Dictionary<Guid, string>());
+
+        // Assert - refused, and told why.
+        joined.Should().BeFalse("the chapter has no room for another member");
+        (await joinPage.HasFeedback("This group is not able to welcome any new members"))
+            .Should().BeTrue();
+
+        /* Assert - refused before anything was written. No account is the decisive check: there is nothing to
+           activate, and nothing for the activation email to be sent to. */
+        (await Members.Exists(email)).Should().BeFalse();
+    }
+
+    private static MemberDataHelper Members => new(E2ESettings.ConnectionString);
+
+    private static MemberSiteSubscriptionDataHelper MemberSubscriptions => new(E2ESettings.ConnectionString);
 }

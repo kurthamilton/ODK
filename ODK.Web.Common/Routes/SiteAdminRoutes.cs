@@ -47,6 +47,8 @@ public class SiteAdminRoutes
 
     public SiteAdminRoute Topics => Path("/topics");
 
+    public SiteAdminRoute Workflows => Path("/workflows");
+
     public SiteAdminRoute Country(Guid id) => Countries.Child($"/{id}");
 
     public SiteAdminRoute Email(EmailType type) => Emails.Child($"/{type}");
@@ -88,7 +90,8 @@ public class SiteAdminRoutes
         new(Payments, "Payments"),
         new(Referrals, "Referrals"),
         new(Subscriptions, "Subscriptions"),
-        new(Topics, "Topics")
+        new(Topics, "Topics"),
+        new(Workflows, "Workflows")
     ];
 
     public SiteAdminRoute Payment(Guid id) => Payments.Child($"/{id}");

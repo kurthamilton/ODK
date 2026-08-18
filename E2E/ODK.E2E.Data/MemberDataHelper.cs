@@ -1,4 +1,4 @@
-namespace ODK.E2E.Data;
+﻿namespace ODK.E2E.Data;
 
 /// <summary>
 /// Reads member records directly from the database - e.g. to resolve a member's id for the member-facing
@@ -9,6 +9,17 @@ public class MemberDataHelper : DataHelperBase
     public MemberDataHelper(string connectionString)
         : base(connectionString)
     {
+    }
+
+    /// <summary>Whether an account exists for the address. For asserting that a flow created none.</summary>
+    public async Task<bool> Exists(string emailAddress)
+    {
+        const string sql = "SELECT COUNT(1) FROM Members WHERE EmailAddress = @email";
+
+        await using var builder = Builder(sql)
+            .AddParameter("@email", emailAddress);
+
+        return await builder.ExecuteScalar<int>() > 0;
     }
 
     public async Task<string> GetEmailAddress(Guid memberId)

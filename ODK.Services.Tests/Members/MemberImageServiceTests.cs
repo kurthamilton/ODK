@@ -1,4 +1,5 @@
-﻿using Moq;
+﻿using FluentAssertions;
+using Moq;
 using NUnit.Framework;
 using ODK.Core.Images;
 using ODK.Core.Members;
@@ -91,13 +92,61 @@ public static class MemberImageServiceTests
     //    return avatar.CropY;
     //}
 
+    [Test]
+    public static void ValidateImage_IsAnImage_Succeeds()
+    {
+        // Arrange
+        var service = CreateService(CreateMockImageService(isImage: true));
+
+        // Act
+        var result = service.ValidateImage([1, 2, 3]);
+
+        // Assert
+        result.Success.Should().BeTrue();
+    }
+
+    [Test]
+    public static void ValidateImage_IsNotAnImage_Fails()
+    {
+        // Arrange
+        var service = CreateService(CreateMockImageService(isImage: false));
+
+        // Act
+        var result = service.ValidateImage([1, 2, 3]);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.Message.Should().Be("Invalid image");
+    }
+
+    [Test]
+    public static void UpdateMemberImage_IsNotAnImage_FailsWithoutProcessing()
+    {
+        // Arrange - the same check, so a rejected submission never reaches the resize.
+        var imageService = new Mock<IImageService>();
+        imageService.Setup(x => x.IsImage(It.IsAny<byte[]>())).Returns(false);
+        var service = CreateService(imageService.Object);
+
+        // Act
+        var result = service.UpdateMemberImage(new MemberAvatar(), [1, 2, 3]);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        imageService.Verify(
+            x => x.Process(It.IsAny<byte[]>(), It.IsAny<ImageProcessingOptions>()),
+            Times.Never);
+    }
+
     private static IImageService CreateMockImageService(
-        ImageSize? imageSize = null)
+        ImageSize? imageSize = null,
+        bool isImage = true)
     {
         var mock = new Mock<IImageService>();
 
         mock.Setup(x => x.Size(It.IsAny<byte[]>()))
             .Returns(imageSize ?? new ImageSize());
+        mock.Setup(x => x.IsImage(It.IsAny<byte[]>()))
+            .Returns(isImage);
 
         return mock.Object;
     }

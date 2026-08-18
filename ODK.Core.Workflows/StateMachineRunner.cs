@@ -55,6 +55,11 @@ public sealed class StateMachineRunner<TState, TTrigger, TContext>
             {
                 return TransitionResult<TState>.Failed(from, outcome.Message ?? $"{step.Description} failed");
             }
+
+            if (outcome.Complete)
+            {
+                break;
+            }
         }
 
         return TransitionResult<TState>.Successful(from, transition.To);

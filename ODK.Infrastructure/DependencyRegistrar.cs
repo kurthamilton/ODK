@@ -38,7 +38,8 @@ using ODK.Services.Issues;
 using ODK.Services.Localization;
 using ODK.Services.Logging;
 using ODK.Services.Members;
-using ODK.Services.Members.Workflows;
+using ODK.Services.Members.Workflows.Account;
+using ODK.Services.Members.Workflows.ChapterMembership;
 using ODK.Services.Workflows;
 using ODK.Core.Workflows;
 using ODK.Services.Members.Tasks;
@@ -248,7 +249,7 @@ public static class DependencyRegistrar
                 MemberAvatarSize = appSettings.Members.AvatarSize
             })
             .AddScoped<IMemberService, MemberService>()
-            .AddAccountWorkflow()
+            .AddAccountWorkflows()
             .AddScoped<IMemberTaskService, MemberTaskService>()
             .AddScoped<IMemberTaskProvider, CompleteChapterProfileTaskProvider>()
             .AddScoped<IMemberTaskProvider, PublishChapterTaskProvider>()
@@ -393,22 +394,37 @@ public static class DependencyRegistrar
     }
 
     /// <summary>
-    /// The account state machine. Its definition is immutable and holds no state, so one instance serves every
+    /// The two account machines. A definition is immutable and holds no state, so one instance serves every
     /// request, and the steps come from the definition rather than from a list repeated here - a step added to a
     /// transition is registered by being on it.
     /// </summary>
-    private static IServiceCollection AddAccountWorkflow(this IServiceCollection services)
+    private static IServiceCollection AddAccountWorkflows(this IServiceCollection services)
     {
-        var definition = AccountStateMachine.Create();
+        var account = AccountStateMachine.Create();
+        var membership = ChapterMembershipStateMachine.Create();
 
         services
-            .AddSingleton(definition)
+            .AddSingleton(account)
+            /* Also registered under the non-generic view of a definition, which exists so the site-admin page
+               can hold machines whose state and context types differ. */
+            .AddSingleton<IStateMachineDiagram>(account)
             .AddScoped<IAccountContextFactory, AccountContextFactory>()
             .AddScoped<IStateResolver<AccountState, AccountContext>, AccountStateResolver>()
             .AddScoped<IStepFactory<AccountContext>, ServiceProviderStepFactory<AccountContext>>()
-            .AddScoped<StateMachineRunner<AccountState, AccountTrigger, AccountContext>>();
+            .AddScoped<StateMachineRunner<AccountState, AccountTrigger, AccountContext>>()
+            .AddSingleton(membership)
+            .AddSingleton<IStateMachineDiagram>(membership)
+            .AddScoped<IChapterMembershipContextFactory, ChapterMembershipContextFactory>()
+            .AddScoped<
+                IStateResolver<ChapterMembershipState, ChapterMembershipContext>,
+                ChapterMembershipStateResolver>()
+            .AddScoped<
+                IStepFactory<ChapterMembershipContext>,
+                ServiceProviderStepFactory<ChapterMembershipContext>>()
+            .AddScoped<StateMachineRunner<
+                ChapterMembershipState, ChapterMembershipTrigger, ChapterMembershipContext>>();
 
-        foreach (var stepType in definition.StepTypes)
+        foreach (var stepType in account.StepTypes.Concat(membership.StepTypes))
         {
             services.AddScoped(stepType);
         }

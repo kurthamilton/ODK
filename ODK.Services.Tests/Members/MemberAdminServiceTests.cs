@@ -4,6 +4,17 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Moq;
+using Microsoft.Extensions.DependencyInjection;
+using ODK.Core.Workflows;
+using ODK.Services.Geolocation;
+using ODK.Services.Members.Workflows.Account;
+using ODK.Services.Members.Workflows.ChapterMembership;
+using ODK.Services.Notifications;
+using ODK.Services.Recaptcha;
+using ODK.Services.Topics;
+using ODK.Services.Workflows;
+using ODK.Services.Authentication.OAuth;
+using ODK.Services.Logging;
 using NUnit.Framework;
 using ODK.Core.Chapters;
 using ODK.Core.Countries;
@@ -1030,17 +1041,80 @@ public static class MemberAdminServiceTests
         IMemberService? memberService = null)
     {
         var unitOfWork = CreateMockUnitOfWork(context);
+        var distanceUnitFactory = new DistanceUnitFactory();
+        var siteSubscriptionWriter = new MemberSiteSubscriptionWriter(unitOfWork);
+
+        var workflow = CreateImportWorkflow(unitOfWork, distanceUnitFactory, siteSubscriptionWriter);
+
         return new MemberAdminService(
             unitOfWork,
             memberService ?? CreateMockMemberService(),
             authorizationService ?? CreateMockAuthorizationService(),
             memberImageService ?? CreateMockMemberImageService(isValid: true),
             memberEmailService ?? CreateMockMemberEmailService(),
-            Mock.Of<IDistanceUnitFactory>(),
+            distanceUnitFactory,
             new MockBackgroundTaskService(),
             new MemberChapterSubscriptionWriter(unitOfWork),
-            new MemberSiteSubscriptionWriter(unitOfWork),
-            new EmailValidationService(new InconclusiveEmailVerifier()));
+            siteSubscriptionWriter,
+            new EmailValidationService(new InconclusiveEmailVerifier()),
+            workflow.GetRequiredService<StateMachineRunner<AccountState, AccountTrigger, AccountContext>>(),
+            workflow.GetRequiredService<IAccountContextFactory>(),
+            workflow.GetRequiredService<StateMachineRunner<
+                ChapterMembershipState, ChapterMembershipTrigger, ChapterMembershipContext>>(),
+            workflow.GetRequiredService<IChapterMembershipContextFactory>());
+    }
+
+    /// <summary>
+    /// The two machines wired the way the app wires them, over the same instances the service under test uses.
+    /// An import only ever fires the write-only Import and Invite transitions, so only their dependencies need
+    /// to resolve - but the steps still come from the definitions, so one added later needs no change here.
+    /// </summary>
+    private static IServiceProvider CreateImportWorkflow(
+        IUnitOfWork unitOfWork,
+        IDistanceUnitFactory distanceUnitFactory,
+        IMemberSiteSubscriptionWriter siteSubscriptionWriter)
+    {
+        var account = AccountStateMachine.Create();
+        var membership = ChapterMembershipStateMachine.Create();
+
+        var services = new ServiceCollection()
+            .AddSingleton(unitOfWork)
+            .AddSingleton(distanceUnitFactory)
+            .AddSingleton(siteSubscriptionWriter)
+            .AddSingleton(Mock.Of<IAuthorizationService>())
+            .AddSingleton(Mock.Of<IMemberEmailService>())
+            .AddSingleton(Mock.Of<IMemberImageService>())
+            .AddSingleton(Mock.Of<INotificationService>())
+            .AddSingleton(Mock.Of<IRecaptchaService>())
+            .AddSingleton(Mock.Of<IGeolocationService>())
+            .AddSingleton(Mock.Of<ITopicService>())
+            .AddSingleton(Mock.Of<IOAuthProviderFactory>())
+            .AddSingleton(Mock.Of<ILoggingService>())
+            .AddSingleton<IEmailValidationService>(
+                new EmailValidationService(new InconclusiveEmailVerifier()))
+            .AddSingleton<IMemberChapterSubscriptionWriter>(new MemberChapterSubscriptionWriter(unitOfWork))
+            .AddSingleton(account)
+            .AddSingleton(membership)
+            .AddScoped<IAccountContextFactory, AccountContextFactory>()
+            .AddScoped<IStateResolver<AccountState, AccountContext>, AccountStateResolver>()
+            .AddScoped<IStepFactory<AccountContext>, ServiceProviderStepFactory<AccountContext>>()
+            .AddScoped<StateMachineRunner<AccountState, AccountTrigger, AccountContext>>()
+            .AddScoped<IChapterMembershipContextFactory, ChapterMembershipContextFactory>()
+            .AddScoped<
+                IStateResolver<ChapterMembershipState, ChapterMembershipContext>,
+                ChapterMembershipStateResolver>()
+            .AddScoped<
+                IStepFactory<ChapterMembershipContext>,
+                ServiceProviderStepFactory<ChapterMembershipContext>>()
+            .AddScoped<StateMachineRunner<
+                ChapterMembershipState, ChapterMembershipTrigger, ChapterMembershipContext>>();
+
+        foreach (var stepType in account.StepTypes.Concat(membership.StepTypes))
+        {
+            services.AddScoped(stepType);
+        }
+
+        return services.BuildServiceProvider();
     }
 
     private static MockOdkContext CreateMockOdkContext() => new MockOdkContext();

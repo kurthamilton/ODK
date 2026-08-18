@@ -83,6 +83,25 @@ public static class StateMachineRunnerTests
     }
 
     [Test]
+    public static async Task Fire_StepStops_SucceedsWithoutRunningTheStepsAfterIt()
+    {
+        // Arrange
+        var definition = Definition(x => x
+            .Then<DecisionStep>()
+            .Then<StoppingStep>()
+            .Then<WriteStep>());
+        var context = new SampleContext { State = SampleState.Start };
+
+        // Act
+        var result = await Runner(definition).Fire(SampleTrigger.Go, context);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.To.Should().Be(SampleState.Middle);
+        context.Executed.Should().Equal(nameof(DecisionStep), nameof(StoppingStep));
+    }
+
+    [Test]
     public static async Task Fire_TriggerNotValidFromTheCurrentState_Fails()
     {
         // Arrange

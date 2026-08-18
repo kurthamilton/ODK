@@ -9,10 +9,7 @@
     "build:css": "npm run sass:css && npm run sass:min",
     "watch:css": "sass wwwroot/scss/main.scss:wwwroot/css/main.css wwwroot/scss/odk.scss:wwwroot/css/odk.css --style=expanded --no-source-map --quiet-deps --silence-deprecation=import,global-builtin,slash-div,color-functions --watch --update",
     "watch:min": "sass wwwroot/scss/main.scss:wwwroot/css/main.min.css wwwroot/scss/odk.scss:wwwroot/css/odk.min.css --style=compressed --no-source-map --quiet-deps --silence-deprecation=import,global-builtin,slash-div,color-functions --watch --update",
-    "watch:sass": "concurrently -k -n css,min -c green,cyan \"npm:watch:css\" \"npm:watch:min\"",
-    "dev": "concurrently -k -n dotnet,css,min -c blue,green,cyan \"dotnet watch --non-interactive run --urls=http://localhost:8123;http://localhost:8124 --environment=Development\" \"npm:watch:css\" \"npm:watch:min\"",
-    "dev:meetup": "concurrently -k -n dotnet,css,min -c blue,green,cyan \"dotnet watch --non-interactive run --urls=http://localhost:8123 --environment=Development\" \"npm:watch:css\" \"npm:watch:min\"",
-    "dev:odk": "concurrently -k -n dotnet,css,min -c magenta,green,cyan \"dotnet watch --non-interactive --urls=http://localhost:8124\" \"npm:watch:css\" \"npm:watch:min\""
+    "watch:sass": "concurrently -k -n css,min -c green,cyan \"npm:watch:css\" \"npm:watch:min\""
   },
   "devDependencies": {
     "concurrently": "^9.2.4",

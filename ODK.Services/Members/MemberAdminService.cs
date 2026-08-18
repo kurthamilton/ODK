@@ -14,6 +14,9 @@ using ODK.Services.Events.ViewModels;
 using ODK.Services.Exceptions;
 using ODK.Services.Emails;
 using ODK.Services.Emails.Validation;
+using ODK.Core.Workflows;
+using ODK.Services.Members.Workflows.Account;
+using ODK.Services.Members.Workflows.ChapterMembership;
 using ODK.Services.Members.Models;
 using ODK.Services.Members.ViewModels;
 using ODK.Services.Subscriptions;
@@ -23,10 +26,15 @@ namespace ODK.Services.Members;
 
 public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 {
+    private readonly StateMachineRunner<AccountState, AccountTrigger, AccountContext> _account;
+    private readonly IAccountContextFactory _accountContextFactory;
     private readonly IAuthorizationService _authorizationService;
     private readonly IBackgroundTaskService _backgroundTaskService;
     private readonly IDistanceUnitFactory _distanceUnitFactory;
     private readonly IEmailValidationService _emailValidationService;
+    private readonly StateMachineRunner<
+        ChapterMembershipState, ChapterMembershipTrigger, ChapterMembershipContext> _chapterMembership;
+    private readonly IChapterMembershipContextFactory _chapterMembershipContextFactory;
     private readonly IMemberChapterSubscriptionWriter _memberChapterSubscriptionWriter;
     private readonly IMemberEmailService _memberEmailService;
     private readonly IMemberImageService _memberImageService;
@@ -44,10 +52,19 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         IBackgroundTaskService backgroundTaskService,
         IMemberChapterSubscriptionWriter memberChapterSubscriptionWriter,
         IMemberSiteSubscriptionWriter memberSiteSubscriptionWriter,
-        IEmailValidationService emailValidationService)
+        IEmailValidationService emailValidationService,
+        StateMachineRunner<AccountState, AccountTrigger, AccountContext> account,
+        IAccountContextFactory accountContextFactory,
+        StateMachineRunner<ChapterMembershipState, ChapterMembershipTrigger, ChapterMembershipContext>
+            chapterMembership,
+        IChapterMembershipContextFactory chapterMembershipContextFactory)
         : base(unitOfWork)
     {
+        _account = account;
+        _accountContextFactory = accountContextFactory;
         _authorizationService = authorizationService;
+        _chapterMembership = chapterMembership;
+        _chapterMembershipContextFactory = chapterMembershipContextFactory;
         _backgroundTaskService = backgroundTaskService;
         _distanceUnitFactory = distanceUnitFactory;
         _memberChapterSubscriptionWriter = memberChapterSubscriptionWriter;
@@ -675,20 +692,24 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                 .GetAll(),
             x => x.MemberChapterInviteRepository.GetByChapterId(chapter.Id));
 
-        var existingMemberDictionary = existingMembers
-            .ToDictionary(x => x.EmailAddress, StringComparer.OrdinalIgnoreCase);
-
-        var invitedMemberIds = outstandingInvites
-            .Select(x => x.MemberId)
-            .ToHashSet();
+        // Read once for the whole file: every row's context is a projection of this, so a file of a thousand
+        // rows costs the same queries as a file of one.
+        var batch = new ImportBatch
+        {
+            ChapterLocation = chapterLocation,
+            Country = country,
+            Currency = currency,
+            ExistingMembers = existingMembers,
+            OutstandingInvites = outstandingInvites,
+            SiteSubscription = siteSubscription
+        };
 
         // De-duplicate the incoming rows by email (case-insensitively) so a file that contains the
         // same address more than once does not create multiple members for it.
         var distinctMembers = DistinctByEmailAddress(members);
 
-        var utcNow = DateTime.UtcNow;
-
-        // The same check the preview showed, so what gets imported matches what was displayed.
+        // The same check the preview showed, so what gets imported matches what was displayed. Batched, because
+        // it calls out to a verifier.
         var validity = await ValidateImportEmailAddresses(distinctMembers);
 
         var activationEmailMembers = new List<Member>();
@@ -701,104 +722,38 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                 continue;
             }
 
-            existingMemberDictionary.TryGetValue(importMember.EmailAddress, out var member);
+            /* Raising the account and asking the member to join are two machines, and both only stage writes -
+               the file is committed once, below. Neither trigger being permitted is how a row that needs nothing
+               doing is skipped: an address that already has an account cannot be imported again, and a member
+               already invited or already in the group cannot be invited again. */
+            var accountContext = _accountContextFactory.CreateForImport(request, importMember, batch);
+            var raised = await _account.Fire(AccountTrigger.Import, accountContext);
 
-            // Already in the group, or already asked to join it - re-importing either is a no-op rather than a
-            // second invitation, which the unique index on (chapter, member) would reject anyway.
-            if (member != null && (member.IsMemberOf(chapter.Id) || invitedMemberIds.Contains(member.Id)))
+            var member = accountContext.NewMember ?? accountContext.Member;
+            if (member == null)
             {
                 continue;
             }
 
-            if (member == null)
+            var invited = await _chapterMembership.Fire(
+                ChapterMembershipTrigger.Invite,
+                _chapterMembershipContextFactory.CreateForInvite(
+                    request, member, batch.OutstandingInvite(member.Id)));
+
+            if (!invited.Success)
             {
-                member = _unitOfWork.MemberRepository.Add(new Member
-                {
-                    CreatedUtc = utcNow,
-                    EmailAddress = importMember.EmailAddress,
-                    FirstName = importMember.FirstName,
-                    LastName = importMember.LastName,
-                    TimeZone = chapter.TimeZone
-                });
-
-                if (chapterLocation != null)
-                {
-                    _unitOfWork.MemberLocationRepository.Add(new MemberLocation
-                    {
-                        CountryId = chapter.CountryId,
-                        Latitude = chapterLocation.Latitude,
-                        Longitude = chapterLocation.Longitude,
-                        MemberId = member.Id,
-                        Name = chapterLocation.Name
-                    });
-                }
-
-                if (currency != null)
-                {
-                    _unitOfWork.MemberPaymentSettingsRepository.Add(new MemberPaymentSettings
-                    {
-                        CurrencyId = currency.Id,
-                        MemberId = member.Id
-                    });
-                }
-
-                var distanceUnitType = country != null
-                    ? country.DistanceUnit
-                    : _distanceUnitFactory.GetDefault().Type;
-
-                _unitOfWork.MemberPreferencesRepository.Add(new MemberPreferences
-                {
-                    DistanceUnit = distanceUnitType,
-                    MemberId = member.Id
-                });
-
-                _memberSiteSubscriptionWriter.MakeRecordCurrent(
-                    newRecord: new MemberSiteSubscriptionRecord
-                    {
-                        CreatedUtc = DateTime.UtcNow,
-                        MemberId = member.Id,
-                        SiteSubscriptionId = siteSubscription.Id
-                    },
-                    existingCurrent: null);
-
-                var activationToken = TokenGenerator.GenerateBase64Token(64);
-                _unitOfWork.MemberActivationTokenRepository.Add(new MemberActivationToken
-                {
-                    ActivationToken = activationToken,
-                    MemberId = member.Id
-                });
-
-                /* Which email a new member gets is decided by whether they can act on the invitation's link.
-                   Signing up on Drunken Knitwits is joining the group, so the link lands on the join page with
-                   their details already filled in and the account is created from what they submit - while an
-                   activation link would take them straight past that page into an account belonging to no group.
-                   Group Squirrel's join page requires an account, so a new member there has to activate first. */
-                if (platform == PlatformType.DrunkenKnitwits)
-                {
-                    inviteEmailMembers.Add(member);
-                }
-                else
-                {
-                    activationEmailMembers.Add(member);
-                }
-            }
-            else
-            {
-                // Already has an account, so they can act on the invitation whichever platform they are on.
-                inviteEmailMembers.Add(member);
+                continue;
             }
 
-            /* An invitation, not a membership. An imported member has no membership status in the group until
-               they activate their account and join, so neither the MemberChapter nor the subscription record is
-               written here - MemberService.JoinChapter writes both when the invitation is accepted, which also
-               means the trial period starts when they actually join rather than when the file was uploaded. */
-            _unitOfWork.MemberChapterInviteRepository.Add(new MemberChapterInvite
-            {
-                ChapterId = chapter.Id,
-                CreatedUtc = utcNow,
-                MemberId = member.Id,
-                Token = TokenGenerator.GenerateBase64Token(64)
-            });
+            /* Which email a new member gets is decided by whether they can act on the invitation's link.
+               Signing up on Drunken Knitwits is joining the group, so the link lands on the join page with
+               their details already filled in and the account is created from what they submit - while an
+               activation link would take them straight past that page into an account belonging to no group.
+               Group Squirrel's join page requires an account, so a new member there has to activate first. A
+               member who already had an account can act on it whichever platform they are on. */
+            var canActOnTheInvitation = !raised.Success || platform == PlatformType.DrunkenKnitwits;
+
+            (canActOnTheInvitation ? inviteEmailMembers : activationEmailMembers).Add(member);
         }
 
         await _unitOfWork.SaveChangesAsync();

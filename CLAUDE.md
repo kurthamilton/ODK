@@ -37,10 +37,15 @@ Tests: `ODK.Core.Tests`, `ODK.Core.Workflows.Tests`, `ODK.Services.Tests`,
 
 - **Build:** `dotnet build ODK.Web.Razor/ODK.Web.Razor.csproj` (builds the referenced graph).
 - **Test:** `dotnet test ODK.Services.Tests/ODK.Services.Tests.csproj` (or the solution).
-- **Run locally:** `run-odk.bat` (Drunken Knitwits) or `run-gs.bat` (Group Squirrel). These spawn
-  the `dotnet` process and a Sass watcher. Requires a local SQL Server restored from a prod backup.
-- **CSS:** `.scss` in `wwwroot/scss` compiles to `wwwroot/css` via `npm run build:css` (also run by
-  the batch files). Don't hand-edit compiled `.css`.
+- **Run locally:** `Scripts/run.app.bat`. One process serves both platforms, resolved from the request URL.
+  Requires a local SQL Server restored from a prod backup.
+- **CSS:** `.scss` in `wwwroot/scss` compiles to `wwwroot/css` via `Scripts/run.build.css.bat` (or
+  `npm run build:css` from `ODK.Web.Razor`); the run script compiles once before starting. Don't hand-edit
+  compiled `.css`, and **don't run a Sass watcher alongside `dotnet watch`** - a stylesheet rewritten while
+  MSBuild is evaluating the project takes `dotnet watch` down with it. See the README.
+- **Batch scripts live in `Scripts/`, and resolve paths from `%~dp0`, never from the current directory.** A
+  `cd ..` is relative to the caller, and a failed `cd` does not stop a batch file - it carries on in the wrong
+  directory.
 
 Project defaults: `net10.0`, nullable enabled, implicit usings enabled.
 
