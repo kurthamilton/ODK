@@ -274,6 +274,7 @@ public static class DependencyRegistrar
                 Enabled = appSettings.Hibp.Enabled,
                 RangeApiUrl = appSettings.Hibp.RangeApiUrl
             })
+            .AddScoped<IMemberPasswordService, MemberPasswordService>()
             .AddScoped<IPasswordPolicy, PasswordPolicy>()
             .AddSingleton(new PasswordPolicySettings
             {

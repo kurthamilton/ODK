@@ -1,45 +1,42 @@
 ﻿using System.Globalization;
 using ODK.Core;
 using ODK.Core.Chapters;
-using ODK.Core.Countries;
-using ODK.Core.Cryptography;
 using ODK.Core.Events;
 using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Notifications;
 using ODK.Core.Platforms;
+using ODK.Core.Workflows;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
-using ODK.Services.Events.ViewModels;
-using ODK.Services.Exceptions;
 using ODK.Services.Emails;
 using ODK.Services.Emails.Validation;
-using ODK.Core.Workflows;
-using ODK.Services.Members.Workflows.Account;
-using ODK.Services.Members.Workflows.ChapterMembership;
+using ODK.Services.Events.ViewModels;
+using ODK.Services.Exceptions;
 using ODK.Services.Members.Models;
 using ODK.Services.Members.ViewModels;
+using ODK.Services.Members.Workflows.Account;
+using ODK.Services.Members.Workflows.ChapterMembership;
 using ODK.Services.Subscriptions;
 using ODK.Services.Tasks;
+using ODK.Services.Workflows;
 
 namespace ODK.Services.Members;
 
 public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 {
-    private readonly StateMachineRunner<AccountState, AccountTrigger, AccountContext> _account;
+    private readonly StateMachineRunner<AccountState, AccountTrigger, AccountContext> _accountWorkflow;
     private readonly IAccountContextFactory _accountContextFactory;
     private readonly IAuthorizationService _authorizationService;
     private readonly IBackgroundTaskService _backgroundTaskService;
-    private readonly IDistanceUnitFactory _distanceUnitFactory;
     private readonly IEmailValidationService _emailValidationService;
     private readonly StateMachineRunner<
-        ChapterMembershipState, ChapterMembershipTrigger, ChapterMembershipContext> _chapterMembership;
+        ChapterMembershipState, ChapterMembershipTrigger, ChapterMembershipContext> _chapterMembershipWorkflow;
     private readonly IChapterMembershipContextFactory _chapterMembershipContextFactory;
     private readonly IMemberChapterSubscriptionWriter _memberChapterSubscriptionWriter;
     private readonly IMemberEmailService _memberEmailService;
     private readonly IMemberImageService _memberImageService;
     private readonly IMemberService _memberService;
-    private readonly IMemberSiteSubscriptionWriter _memberSiteSubscriptionWriter;
     private readonly IUnitOfWork _unitOfWork;
 
     public MemberAdminService(
@@ -48,10 +45,8 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         IAuthorizationService authorizationService,
         IMemberImageService memberImageService,
         IMemberEmailService memberEmailService,
-        IDistanceUnitFactory distanceUnitFactory,
         IBackgroundTaskService backgroundTaskService,
         IMemberChapterSubscriptionWriter memberChapterSubscriptionWriter,
-        IMemberSiteSubscriptionWriter memberSiteSubscriptionWriter,
         IEmailValidationService emailValidationService,
         StateMachineRunner<AccountState, AccountTrigger, AccountContext> account,
         IAccountContextFactory accountContextFactory,
@@ -60,18 +55,16 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         IChapterMembershipContextFactory chapterMembershipContextFactory)
         : base(unitOfWork)
     {
-        _account = account;
+        _accountWorkflow = account;
         _accountContextFactory = accountContextFactory;
         _authorizationService = authorizationService;
-        _chapterMembership = chapterMembership;
+        _chapterMembershipWorkflow = chapterMembership;
         _chapterMembershipContextFactory = chapterMembershipContextFactory;
         _backgroundTaskService = backgroundTaskService;
-        _distanceUnitFactory = distanceUnitFactory;
         _memberChapterSubscriptionWriter = memberChapterSubscriptionWriter;
         _memberEmailService = memberEmailService;
         _memberImageService = memberImageService;
         _memberService = memberService;
-        _memberSiteSubscriptionWriter = memberSiteSubscriptionWriter;
         _emailValidationService = emailValidationService;
         _unitOfWork = unitOfWork;
     }
@@ -80,25 +73,21 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     {
         var chapter = request.Chapter;
 
+        /* Loaded here rather than by a context factory: the securable is enforced by the wrapper that does the
+           loading, so a factory would have to sit inside it. The service loads, the factory maps. */
         var member = await GetChapterAdminRestrictedContent(
             request,
             x => x.MemberRepository.GetById(memberId));
 
-        var memberChapter = member.MemberChapter(chapter.Id);
-
         OdkAssertions.MemberOf(member, chapter.Id);
-        OdkAssertions.Exists(memberChapter);
 
-        memberChapter.Approved = true;
+        /* Approving a member who is already approved is a legal no-op rather than a failure, so there is no
+           check for it here - the machine has an Approve edge out of Joined that does nothing. */
+        var result = await _chapterMembershipWorkflow.Fire(
+            ChapterMembershipTrigger.Approve,
+            _chapterMembershipContextFactory.CreateForApproval(request, member));
 
-        _unitOfWork.MemberChapterRepository.Update(memberChapter);
-        await _unitOfWork.SaveChangesAsync();
-
-        await _memberEmailService.SendMemberApprovedEmail(
-            request,
-            member);
-
-        return ServiceResult.Successful();
+        return result.ToServiceResult();
     }
 
     public async Task<AdminMemberAdminPageViewModel> GetAdminMemberViewModel(
@@ -727,7 +716,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                doing is skipped: an address that already has an account cannot be imported again, and a member
                already invited or already in the group cannot be invited again. */
             var accountContext = _accountContextFactory.CreateForImport(request, importMember, batch);
-            var raised = await _account.Fire(AccountTrigger.Import, accountContext);
+            var raised = await _accountWorkflow.Fire(AccountTrigger.Import, accountContext);
 
             var member = accountContext.NewMember ?? accountContext.Member;
             if (member == null)
@@ -735,7 +724,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                 continue;
             }
 
-            var invited = await _chapterMembership.Fire(
+            var invited = await _chapterMembershipWorkflow.Fire(
                 ChapterMembershipTrigger.Invite,
                 _chapterMembershipContextFactory.CreateForInvite(
                     request, member, batch.OutstandingInvite(member.Id)));

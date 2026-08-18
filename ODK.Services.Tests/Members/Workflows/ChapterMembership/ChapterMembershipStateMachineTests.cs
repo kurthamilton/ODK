@@ -117,4 +117,43 @@ public static class ChapterMembershipStateMachineTests
         // Assert
         guards.Should().OnlyContain(x => !x.Contains("activat", System.StringComparison.OrdinalIgnoreCase));
     }
+
+    [Test]
+    public static void Create_Approve_RecordsThenCommitsThenTellsTheMember()
+    {
+        /* Arrange - the email must follow the commit: an approval an admin has been told about, then rolled
+           back, cannot be taken back out of the member's inbox. */
+        var definition = ChapterMembershipStateMachine.Create();
+
+        // Act
+        var kinds = definition.Transitions
+            .Single(x => x.Trigger == ChapterMembershipTrigger.Approve &&
+                         x.From == ChapterMembershipState.PendingApproval)
+            .Steps
+            .Select(x => x.Kind)
+            .ToArray();
+
+        // Assert
+        kinds.Should().Equal(StepKind.Write, StepKind.Commit, StepKind.ExternalEffect);
+    }
+
+    [Test]
+    public static void Create_ApproveWhenAlreadyApproved_IsLegalAndDoesNothing()
+    {
+        /* Arrange - approving a member who is already in is not a mistake, so the edge exists and carries no
+           work rather than being absent and reporting the trigger as illegal. Its emptiness is what stops a
+           second click sending a second approval email. */
+        var definition = ChapterMembershipStateMachine.Create();
+
+        // Act
+        var idempotent = definition.Transitions
+            .Where(x => x.Trigger == ChapterMembershipTrigger.Approve &&
+                        x.From != ChapterMembershipState.PendingApproval)
+            .ToArray();
+
+        // Assert
+        idempotent.Should().ContainSingle();
+        idempotent.Should().OnlyContain(x => x.From == x.To);
+        idempotent.SelectMany(x => x.Steps).Should().BeEmpty();
+    }
 }

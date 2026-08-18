@@ -17,14 +17,14 @@ public sealed class JoinTheGroup : IStep<AccountContext>
 {
     private readonly IChapterMembershipContextFactory _contextFactory;
     private readonly StateMachineRunner<
-        ChapterMembershipState, ChapterMembershipTrigger, ChapterMembershipContext> _chapterMembership;
+        ChapterMembershipState, ChapterMembershipTrigger, ChapterMembershipContext> _chapterMembershipWorkflow;
 
     public JoinTheGroup(
         IChapterMembershipContextFactory contextFactory,
         StateMachineRunner<ChapterMembershipState, ChapterMembershipTrigger, ChapterMembershipContext>
-            chapterMembership)
+            chapterMembershipWorkflow)
     {
-        _chapterMembership = chapterMembership;
+        _chapterMembershipWorkflow = chapterMembershipWorkflow;
         _contextFactory = contextFactory;
     }
 
@@ -36,7 +36,7 @@ public sealed class JoinTheGroup : IStep<AccountContext>
     {
         var membershipContext = _contextFactory.CreateForGroupSignUp(context);
 
-        var result = await _chapterMembership.Fire(
+        var result = await _chapterMembershipWorkflow.Fire(
             ChapterMembershipTrigger.SignUp,
             membershipContext,
             cancellationToken);

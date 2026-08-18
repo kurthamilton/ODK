@@ -31,6 +31,13 @@ internal static class Provisioning
     private static readonly Lazy<Task<TestSiteSubscription>> CustomEmailsSiteSubscription =
         new(CreateCustomEmailsSiteSubscriptionOnce);
 
+    // A site subscription carrying member approval, created once per run. Read-only context in the same way
+    // as the others: each group's owner gets their own MemberSiteSubscription pointing at it. It needs the
+    // MemberSubscriptions feature too, because that is what renders the membership settings form the approval
+    // switch lives on.
+    private static readonly Lazy<Task<TestSiteSubscription>> MemberApprovalSiteSubscription =
+        new(CreateMemberApprovalSiteSubscriptionOnce);
+
     // A site subscription that allows exactly one member, created once per run. Read-only context in the same
     // way as the others: each group's owner gets their own MemberSiteSubscription pointing at it.
     private static readonly Lazy<Task<TestSiteSubscription>> MemberLimitedSiteSubscription =
@@ -78,6 +85,15 @@ internal static class Provisioning
     /// <see cref="MemberSiteSubscriptionDataHelper.EnsureActive"/>.
     /// </summary>
     public static Task<TestSiteSubscription> EnsureCustomEmailsSiteSubscription() => CustomEmailsSiteSubscription.Value;
+
+    /// <summary>
+    /// A run-once Default site subscription carrying member approval, for tests about a group that vets who
+    /// joins. Point a group's owner at it with <see cref="MemberSiteSubscriptionDataHelper.EnsureActive"/>,
+    /// then turn the switch on with <see cref="Pages.MembershipSettingsAdminPage"/> - the feature only makes
+    /// the setting available, it does not enable it.
+    /// </summary>
+    public static Task<TestSiteSubscription> EnsureMemberApprovalSiteSubscription() =>
+        MemberApprovalSiteSubscription.Value;
 
     /// <summary>
     /// A run-once site subscription whose member limit is 1. Assign it to a group's owner with
@@ -152,9 +168,17 @@ internal static class Provisioning
             routes.MembersImport, routes.MembersAdmin, rows), baseUrl);
 
     /// <summary>
-    /// Provisions a fresh member of a Default group: a new account joins through the UI. The member is
-    /// approved automatically by the platform (the chapter's subscription has no ApproveMembers feature),
-    /// so this doesn't touch the approval state itself.
+    /// Turns on "new members need approval" for a group, as its owner on a throwaway browser so the calling
+    /// test's own browser stays anonymous. The owner's subscription has to carry the feature first - see
+    /// <see cref="EnsureMemberApprovalSiteSubscription"/> - because the switch is not rendered without it.
+    /// </summary>
+    public static Task RequireMemberApproval(TestAccount owner, Guid chapterId)
+        => RunAs(owner, page => new MembershipSettingsAdminPage(page).RequireApproval(chapterId));
+
+    /// <summary>
+    /// Provisions a fresh member of a Default group: a new account joins through the UI. Approval state is
+    /// left to the group - a group that vets new members leaves them waiting, and one that does not admits
+    /// them - so this never writes it directly.
     /// </summary>
     public static async Task<TestAccount> JoinGroupAsMember(TestGroup group)
     {
@@ -387,6 +411,35 @@ internal static class Provisioning
 
         await new SiteSubscriptionDataHelper(E2ESettings.ConnectionString)
             .SetDrunkenKnitwitsDefault("ODK E2E Free");
+    }
+
+    private static async Task<TestSiteSubscription> CreateMemberApprovalSiteSubscriptionOnce()
+    {
+        var payments = new SitePaymentSettingsDataHelper(E2ESettings.ConnectionString);
+        await payments.EnsureStripeSettings(E2ESettings.StripeApiPublicKey, E2ESettings.StripeApiSecretKey);
+
+        var admin = await SharedAccounts.Get(SharedAccounts.SiteAdmin);
+        var name = $"{SiteSubscriptionDataHelper.TestNamePrefix}{Guid.NewGuid():N}";
+
+        // A price is added because MemberSiteSubscriptionLog requires one; nothing here buys it.
+        await RunAs(admin, async page =>
+        {
+            var subscriptions = new SiteAdminSubscriptionsPage(page);
+            await subscriptions.CreateSubscription(
+                SitePaymentSettingsDataHelper.Name, name, "E2E member approval subscription",
+                // 5 = MemberSubscriptions, which renders the membership settings form; 2 = ApproveMembers,
+                // which renders the approval switch on it. Both are needed to reach the setting.
+                groupLimit: 1, memberLimit: 10, featureIds: new[] { 5, 2 });
+            await subscriptions.AddPrice("GBP", "Monthly", 5m);
+        });
+
+        var subscriptionData = new SiteSubscriptionDataHelper(E2ESettings.ConnectionString);
+        var id = await subscriptionData.GetId(name, platformTypeId: 1)
+            ?? throw new InvalidOperationException($"Site subscription '{name}' was not created.");
+        var priceId = await subscriptionData.GetPriceId(id)
+            ?? throw new InvalidOperationException($"Site subscription '{name}' has no price.");
+
+        return new TestSiteSubscription(id, priceId, name);
     }
 
     private static async Task<TestSiteSubscription> CreateMemberLimitedSiteSubscriptionOnce()

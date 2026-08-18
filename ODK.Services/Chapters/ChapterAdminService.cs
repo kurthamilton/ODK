@@ -12,9 +12,7 @@ using ODK.Core.Payments;
 using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
 using ODK.Core.Utils;
-using ODK.Core.Web;
 using ODK.Core.Workflows;
-using ODK.Services.Chapters.Workflows;
 using ODK.Data.Core;
 using ODK.Data.Core.Chapters;
 using ODK.Data.Core.Deferred;
@@ -23,6 +21,7 @@ using ODK.Resources.Resources;
 using ODK.Services.Authorization;
 using ODK.Services.Chapters.Models;
 using ODK.Services.Chapters.ViewModels;
+using ODK.Services.Chapters.Workflows;
 using ODK.Services.Emails;
 using ODK.Services.Emails.Validation;
 using ODK.Services.Geolocation;
@@ -32,8 +31,8 @@ using ODK.Services.Logging;
 using ODK.Services.Members;
 using ODK.Services.Notifications;
 using ODK.Services.Payments;
-using ODK.Services.Security;
 using ODK.Services.Payments.Models;
+using ODK.Services.Security;
 using ODK.Services.SocialMedia;
 using ODK.Services.Subscriptions;
 using ODK.Services.Subscriptions.ViewModels;
@@ -52,6 +51,9 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         };
 
     private readonly IAuthorizationService _authorizationService;
+    private readonly StateMachineRunner<
+        ChapterPublicationState, ChapterPublicationTrigger, ChapterPublicationContext> _chapterPublicationWorkflow;
+    private readonly IEmailValidationService _emailValidationService;
     private readonly IGeolocationService _geolocationService;
     private readonly IHtmlValidator _htmlValidator;
     private readonly IImageService _imageService;
@@ -64,9 +66,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     private readonly ISiteSubscriptionService _siteSubscriptionService;
     private readonly ISocialMediaService _socialMediaService;
     private readonly ITopicService _topicService;
-    private readonly IEmailValidationService _emailValidationService;
-    private readonly StateMachineRunner<
-        ChapterPublicationState, ChapterPublicationTrigger, ChapterPublicationContext> _chapterPublication;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUrlProviderFactory _urlProviderFactory;
 
@@ -88,11 +87,11 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         ILoggingService loggingService,
         IAuthorizationService authorizationService,
         StateMachineRunner<ChapterPublicationState, ChapterPublicationTrigger, ChapterPublicationContext>
-            chapterPublication)
+            chapterPublicationWorkflow)
         : base(unitOfWork)
     {
         _authorizationService = authorizationService;
-        _chapterPublication = chapterPublication;
+        _chapterPublicationWorkflow = chapterPublicationWorkflow;
         _geolocationService = geolocationService;
         _htmlValidator = htmlValidator;
         _imageService = imageService;
@@ -1389,7 +1388,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         await AssertMemberIsChapterAdmin(request);
 
-        var result = await _chapterPublication.Fire(
+        var result = await _chapterPublicationWorkflow.Fire(
             ChapterPublicationTrigger.Publish,
             new ChapterPublicationContext
             {

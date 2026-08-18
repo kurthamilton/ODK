@@ -21,7 +21,7 @@ public sealed class SendSiteWelcomeEmail : IStep<AccountContext>
 
     public async Task<StepOutcome> Execute(AccountContext context, CancellationToken cancellationToken)
     {
-        await _memberEmailService.SendSiteWelcomeEmail(context.Request, context.RequiredNewMember);
+        await _memberEmailService.SendSiteWelcomeEmail(context.Request, context.RequiredAccount);
         return StepOutcome.Continue();
     }
 }

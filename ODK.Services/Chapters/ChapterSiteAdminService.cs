@@ -1,34 +1,30 @@
 ﻿using ODK.Core.Members;
 using ODK.Core.Workflows;
 using ODK.Data.Core;
-using ODK.Services.Chapters.Workflows;
-using ODK.Services.Workflows;
 using ODK.Data.Core.Members;
 using ODK.Services.Chapters.ViewModels;
+using ODK.Services.Chapters.Workflows;
 using ODK.Services.Exceptions;
-using ODK.Services.Members;
 using ODK.Services.Subscriptions;
+using ODK.Services.Workflows;
 
 namespace ODK.Services.Chapters;
 
 public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminService
 {
     private readonly StateMachineRunner<
-        ChapterPublicationState, ChapterPublicationTrigger, ChapterPublicationContext> _chapterPublication;
-    private readonly IMemberEmailService _memberEmailService;
+        ChapterPublicationState, ChapterPublicationTrigger, ChapterPublicationContext> _chapterPublicationWorkflow;
     private readonly IMemberSiteSubscriptionWriter _memberSiteSubscriptionWriter;
     private readonly IUnitOfWork _unitOfWork;
 
     public ChapterSiteAdminService(
         IUnitOfWork unitOfWork,
-        IMemberEmailService memberEmailService,
         IMemberSiteSubscriptionWriter memberSiteSubscriptionWriter,
         StateMachineRunner<ChapterPublicationState, ChapterPublicationTrigger, ChapterPublicationContext>
-            chapterPublication)
+            chapterPublicationWorkflow)
         : base(unitOfWork)
     {
-        _chapterPublication = chapterPublication;
-        _memberEmailService = memberEmailService;
+        _chapterPublicationWorkflow = chapterPublicationWorkflow;
         _memberSiteSubscriptionWriter = memberSiteSubscriptionWriter;
         _unitOfWork = unitOfWork;
     }
@@ -47,7 +43,7 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
         /* Approving a group that is already approved is a legal no-op rather than a failure, so there is no
            check for it here - the machine has an Approve edge out of every state and only the one out of Draft
            does any work. */
-        var result = await _chapterPublication.Fire(
+        var result = await _chapterPublicationWorkflow.Fire(
             ChapterPublicationTrigger.Approve,
             new ChapterPublicationContext
             {

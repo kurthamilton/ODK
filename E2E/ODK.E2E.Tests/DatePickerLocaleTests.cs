@@ -58,10 +58,14 @@ public class DatePickerLocaleTests : DefaultPageTest
         var @event = await Provisioning.CreatePublishedEvent(owner, routes, group.ChapterId, PlatformBaseUrl);
 
         // The event is created 14 days out at 19:00 (see Provisioning); assert on the day + month tokens,
-        // which are present whether or not the friendly format also shows the year.
+        // which are present whether or not the friendly format also shows the year. The month abbreviation
+        // is taken from each culture separately rather than once: the two do not always agree - September
+        // is "Sept" in en-GB and "Sep" in en-US - so a single token asserted against both pages fails for
+        // whichever culture did not produce it, and only during that month.
         var eventDate = DateTime.Today.AddDays(14);
         var day = eventDate.Day;
-        var month = eventDate.ToString("MMM", CultureInfo.GetCultureInfo("en-GB"));
+        var gbMonth = eventDate.ToString("MMM", CultureInfo.GetCultureInfo("en-GB"));
+        var usMonth = eventDate.ToString("MMM", CultureInfo.GetCultureInfo("en-US"));
 
         // Act - read the same event-admin page under each request locale.
         var editUrl = routes.EventEdit(@event.EventId);
@@ -69,8 +73,8 @@ public class DatePickerLocaleTests : DefaultPageTest
         var us = await ReadEventAdminBodyWithLocale("en-US", owner, editUrl);
 
         // Assert - en-GB writes the day before the month, en-US the month before the day.
-        gb.Should().Contain($"{day} {month}").And.NotContain($"{month} {day}");
-        us.Should().Contain($"{month} {day}").And.NotContain($"{day} {month}");
+        gb.Should().Contain($"{day} {gbMonth}").And.NotContain($"{gbMonth} {day}");
+        us.Should().Contain($"{usMonth} {day}").And.NotContain($"{day} {usMonth}");
     }
 
     // Logs the owner in on a browser context whose locale sets the Accept-Language header, opens the given

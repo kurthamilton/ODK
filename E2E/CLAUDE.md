@@ -51,6 +51,24 @@ is the generic wait-for-ready → run → kill-port runner. The ngrok tab is lef
 console, so tearing it down from another tab just garbles the output; close the terminal window when
 done. Its tunnel config lives in the gitignored root `ngrok.yml` (see the root README).
 
+
+## Reading a run's results
+
+**`script.e2e.bat` writes an HTML report to `E2E/ODK.E2E.Tests/TestResults/e2e.html`** (the `html` logger
+that ships with `Microsoft.NET.Test.Sdk`) and opens it when anything failed. It is the record of the last
+run, including runs started outside this session — so when the user reports a failure, **read that file
+rather than asking which test broke**. Failed tests come first under "Failed Results" with their assertion
+message and stack trace; every test follows under "All Results", so it also answers "did my new test pass".
+
+It is HTML with no newlines between tags, so pipe it through something that breaks tags onto their own
+lines before grepping, e.g.
+
+```
+sed 's/></>\n</g' e2e.html | sed 's/<[^>]*>//g' | grep -v '^\s*$'
+```
+
+Playwright traces and screenshots for a failed test land beside it in `TestResults/artifacts`.
+
 ## Targeting a platform
 
 - Fixtures derive from a **platform base class**, never `PageTest` directly:
@@ -80,10 +98,13 @@ Three axes, composed by the filter:
     account creation is what nearly every other fixture provisions through, so it is the first thing to run
     when a change might have broken sign-up — and because the invited flows branch four ways on state a test
     has to arrange (invited or not, address kept or changed, account or no account).
-  - **`ChapterMembershipWorkflows`** — every route into a group. `GroupTests` and the two DrunkenKnitwits
-    fixtures above carry it at *fixture* level; the two `JoinChapter_*` tests in `MemberProfileTestsBase`
-    carry it at *method* level, because a group's required questions are a step on the Join transition while
-    the fixture's other six tests are about the member page.
+  - **`ChapterMembershipWorkflows`** — every route into a group. `GroupTests`, `MemberApprovalTests` and the
+    two DrunkenKnitwits fixtures above carry it at *fixture* level; the two `JoinChapter_*` tests in
+    `MemberProfileTestsBase` carry it at *method* level, because a group's required questions are a step on
+    the Join transition while the fixture's other six tests are about the member page.
+    `MemberApprovalTests` covers the machine's `PendingApproval` edges — joining a group that vets new
+    members, and an admin letting one in — and is Group Squirrel only, because the approvals route is
+    declared `PlatformType.Default` in the app.
   - **`ChapterPublicationWorkflows`** — a group becoming findable: the site admin approving it
     (`SiteAdminTests`) and its owner publishing it (`GroupOwnerTests`). Applied at *method* level, because
     both fixtures are named for an **actor** rather than for a workflow and so will attract unrelated tests —

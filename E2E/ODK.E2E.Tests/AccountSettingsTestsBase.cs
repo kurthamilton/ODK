@@ -20,6 +20,8 @@ public abstract class AccountSettingsTestsBase : OdkPageTest
 
     private static MemberDataHelper Members => new(E2ESettings.ConnectionString);
 
+    private static PasswordResetTokenDataHelper PasswordResetTokens => new(E2ESettings.ConnectionString);
+
     [Test]
     public async Task ChangeEmail_NewEmailAlreadyInUse_DoesNotUpdate()
     {
@@ -91,6 +93,56 @@ public abstract class AccountSettingsTestsBase : OdkPageTest
         // Assert - the change is rejected: the original password still works, the attempted one doesn't.
         (await LoginSucceeds(member.Email, member.Password)).Should().BeTrue();
         (await LoginSucceeds(member.Email, attemptedPassword)).Should().BeFalse();
+    }
+
+    [Test]
+    public async Task ResetPassword_WithEmailedToken_LoginWithNewPasswordWorks()
+    {
+        // Arrange - a member who has forgotten their password. Nobody is signed in: a reset is the route
+        // back in for somebody who cannot sign in, so the whole journey runs anonymously.
+        var (member, routes) = await ProvisionMember();
+        var memberId = await Members.GetMemberId(member.Email);
+
+        var newPassword = NewPassword();
+
+        // Act - ask for a link, read the token the email carries from the database, and set a new password.
+        await new ForgottenPasswordPage(Page).RequestReset(routes.ForgottenPassword, member.Email);
+        var token = await PasswordResetTokens.GetToken(memberId);
+
+        var reset = await new ForgottenPasswordPage(Page).TryResetPassword(routes.PasswordReset(token), newPassword);
+
+        // Assert - the reset was accepted, the new password works, and the old one no longer does.
+        reset.Should().BeTrue("the reset form should have redirected to the login page");
+        (await LoginSucceeds(member.Email, newPassword)).Should().BeTrue();
+        (await LoginSucceeds(member.Email, member.Password)).Should().BeFalse();
+    }
+
+    [Test]
+    public async Task ResetPassword_TokenAlreadyUsed_IsRejected()
+    {
+        /* A reset link is single use - the request row is deleted when it is spent - so a link forwarded or
+           left in an inbox cannot be replayed to take the account over later. Tested by reusing rather than
+           by expiry, which would need the clock moved. */
+        // Arrange - a member who has already reset their password once.
+        var (member, routes) = await ProvisionMember();
+        var memberId = await Members.GetMemberId(member.Email);
+
+        var firstPassword = NewPassword();
+        await new ForgottenPasswordPage(Page).RequestReset(routes.ForgottenPassword, member.Email);
+        var token = await PasswordResetTokens.GetToken(memberId);
+        (await new ForgottenPasswordPage(Page).TryResetPassword(routes.PasswordReset(token), firstPassword))
+            .Should().BeTrue("the first reset should have been accepted");
+
+        var secondPassword = NewPassword();
+
+        // Act - follow the same link again.
+        var reset = await new ForgottenPasswordPage(Page).TryResetPassword(
+            routes.PasswordReset(token), secondPassword);
+
+        // Assert - refused, and the password from the first reset is the one that still works.
+        reset.Should().BeFalse("a spent reset link should not be accepted a second time");
+        (await LoginSucceeds(member.Email, secondPassword)).Should().BeFalse();
+        (await LoginSucceeds(member.Email, firstPassword)).Should().BeTrue();
     }
 
     [Test]

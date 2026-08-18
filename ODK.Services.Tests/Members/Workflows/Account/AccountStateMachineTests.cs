@@ -78,4 +78,61 @@ public static class AccountStateMachineTests
         // Assert
         states.Should().OnlyContain(x => !x.Contains("Group") && !x.Contains("Member"));
     }
+
+    [Test]
+    public static void Create_Activate_CoversTheGroupAndSiteRoutesAndNothingElse()
+    {
+        /* Arrange - following a link either happened inside a group or on the site, and the absent chapter is
+           what tells them apart. A third edge would mean a route nobody can arrive by. */
+        var definition = AccountStateMachine.Create();
+
+        // Act
+        var result = definition.Transitions
+            .Where(x => x.Trigger == AccountTrigger.Activate)
+            .Select(x => $"{x.From} -> {x.To}: {x.Label()}")
+            .ToArray();
+
+        // Assert
+        result.Should().BeEquivalentTo(
+            "Registered -> Activated: Activate [in a group]",
+            "Registered -> Activated: Activate [not in a group]");
+    }
+
+    [Test]
+    public static void Create_EveryActivateEdge_ChecksThePasswordBeforeWritingAnything()
+    {
+        /* Arrange - a refused password has to leave the account exactly as it was, still awaiting activation.
+           That holds only while the check is the first step, so assert the position rather than presence. */
+        var definition = AccountStateMachine.Create();
+
+        // Act
+        var firstKinds = definition.Transitions
+            .Where(x => x.Trigger == AccountTrigger.Activate)
+            .Select(x => x.Steps.First().Kind)
+            .ToArray();
+
+        // Assert
+        firstKinds.Should().HaveCount(2);
+        firstKinds.Should().OnlyContain(x => x == StepKind.Decision);
+    }
+
+    [Test]
+    public static void Create_EveryActivateEdge_TellsSomebodyOnlyAfterTheCommit()
+    {
+        /* Arrange - both edges end by sending mail, and an email announcing an activation that then rolled
+           back cannot be taken out of an inbox. The builder enforces this, so the test is here to say that
+           the rule is the point of the ordering rather than an accident of it. */
+        var definition = AccountStateMachine.Create();
+
+        // Act
+        var tails = definition.Transitions
+            .Where(x => x.Trigger == AccountTrigger.Activate)
+            .Select(x => x.Steps.SkipWhile(step => step.Kind != StepKind.Commit).Skip(1).ToArray())
+            .ToArray();
+
+        // Assert
+        tails.Should().HaveCount(2);
+        tails.Should().OnlyContain(steps => steps.Length > 0);
+        tails.SelectMany(x => x).Should().OnlyContain(step => step.Kind == StepKind.ExternalEffect);
+    }
 }

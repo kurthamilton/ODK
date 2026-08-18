@@ -1,6 +1,4 @@
-﻿using ODK.Services.Payments.Models;
-
-namespace ODK.Services.Payments;
+﻿namespace ODK.Services.Payments;
 
 public class ExternalCheckoutSession
 {

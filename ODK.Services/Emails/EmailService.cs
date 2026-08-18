@@ -3,7 +3,6 @@ using ODK.Core.Chapters;
 using ODK.Core.Emails;
 using ODK.Core.Events;
 using ODK.Core.Members;
-using ODK.Core.Platforms;
 using ODK.Core.Utils;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;

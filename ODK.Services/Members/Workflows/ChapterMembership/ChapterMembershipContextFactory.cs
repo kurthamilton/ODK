@@ -22,6 +22,29 @@ public sealed class ChapterMembershipContextFactory : IChapterMembershipContextF
     }
 
     /// <summary>
+    /// An admin approving a queued member. Synchronous and issues no query: the securable is enforced by the
+    /// wrapper that loads the member, so the service loads and this maps.
+    /// </summary>
+    public ChapterMembershipContext CreateForApproval(IChapterServiceRequest request, Member member) => new()
+    {
+        /* Approving writes the membership row and emails the member, so everything the join transitions read
+           is empty here - the invitation included. The member is already in the group, so the row rather than
+           an invitation is what the state is derived from. */
+        AdminMembers = [],
+        ApprovalRequired = false,
+        ChapterId = request.Chapter.Id,
+        ChapterProperties = [],
+        Member = member,
+        MemberCount = 0,
+        MemberProperties = [],
+        NotificationSettings = [],
+        OwnerSubscriptionFeatures = [],
+        Platform = request.Platform,
+        Properties = [],
+        Request = request
+    };
+
+    /// <summary>
     /// One row of an import. Synchronous and issues no query for the same reason as its account counterpart:
     /// the whole file's data is read once.
     /// </summary>
