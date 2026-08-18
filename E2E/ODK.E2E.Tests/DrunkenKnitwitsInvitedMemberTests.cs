@@ -1,4 +1,4 @@
-using System.Web;
+﻿using System.Web;
 using FluentAssertions;
 using NUnit.Framework;
 using ODK.E2E.Data.Models;
@@ -25,6 +25,8 @@ namespace ODK.E2E.Tests;
 /// </remarks>
 [TestFixture]
 [Category("AccountCreate")]
+[Category("ChapterMembership")]
+[Category("SiteMembership")]
 public class DrunkenKnitwitsInvitedMemberTests : DrunkenKnitwitsPageTest
 {
     /// <summary>

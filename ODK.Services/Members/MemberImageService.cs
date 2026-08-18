@@ -24,9 +24,10 @@ public class MemberImageService : IMemberImageService
         MemberAvatar avatar,
         byte[] imageData)
     {
-        if (!_imageService.IsImage(imageData))
+        var validationResult = ValidateImage(imageData);
+        if (!validationResult.Success)
         {
-            return ServiceResult.Failure("Invalid image");
+            return validationResult;
         }
 
         var mimeType = MemberAvatar.DefaultMimeType;
@@ -40,4 +41,8 @@ public class MemberImageService : IMemberImageService
 
         return ServiceResult.Successful();
     }
+
+    public ServiceResult ValidateImage(byte[] imageData) => _imageService.IsImage(imageData)
+        ? ServiceResult.Successful()
+        : ServiceResult.Failure("Invalid image");
 }

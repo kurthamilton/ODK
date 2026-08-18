@@ -9,8 +9,6 @@
     <File Path="CLAUDE.md" />
     <File Path="DEPLOYMENT.md" />
     <File Path="README.md" />
-    <File Path="run.app.bat" />
-    <File Path="run.ngrok.odk.bat" />
   </Folder>
   <Folder Name="/Solution Items/E2E/">
     <File Path="E2E/script.run.tests.bat" />
@@ -29,6 +27,9 @@
   </Folder>
   <Folder Name="/Solution Items/Scripts/">
     <File Path="Scripts/dotnet-tool-restore.bat" />
+    <File Path="Scripts/run.app.bat" />
+    <File Path="Scripts/run.build.css.bat" />
+    <File Path="Scripts/run.ngrok.odk.bat" />
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="ODK.Core.Tests/ODK.Core.Tests.csproj" />

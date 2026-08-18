@@ -1,4 +1,4 @@
-using Microsoft.Playwright;
+﻿using Microsoft.Playwright;
 using ODK.E2E.Data;
 using ODK.E2E.Data.Models;
 using ODK.E2E.Tests.Config;
@@ -30,6 +30,11 @@ internal static class Provisioning
     // feature set is what the purchase tests assert against.
     private static readonly Lazy<Task<TestSiteSubscription>> CustomEmailsSiteSubscription =
         new(CreateCustomEmailsSiteSubscriptionOnce);
+
+    // A site subscription that allows exactly one member, created once per run. Read-only context in the same
+    // way as the others: each group's owner gets their own MemberSiteSubscription pointing at it.
+    private static readonly Lazy<Task<TestSiteSubscription>> MemberLimitedSiteSubscription =
+        new(CreateMemberLimitedSiteSubscriptionOnce);
 
     // One shared Playwright driver + browser for ALL provisioning, launched once. Each provisioning call
     // gets a fresh, isolated context (its own cookies/login), which is cheap - so we avoid re-spawning the
@@ -73,6 +78,19 @@ internal static class Provisioning
     /// <see cref="MemberSiteSubscriptionDataHelper.EnsureActive"/>.
     /// </summary>
     public static Task<TestSiteSubscription> EnsureCustomEmailsSiteSubscription() => CustomEmailsSiteSubscription.Value;
+
+    /// <summary>
+    /// A run-once site subscription whose member limit is 1. Assign it to a group's owner with
+    /// <see cref="MemberSiteSubscriptionDataHelper.EnsureActive"/> and the group is full the moment it exists,
+    /// because creating a group makes its owner an approved member and so takes the only place.
+    /// </summary>
+    /// <remarks>
+    /// Created on the Default context, so its platform is Default. Only the member limit matters to a capacity
+    /// check - the rule reads the limit off whichever subscription the group's owner is currently on, whatever
+    /// platform it belongs to.
+    /// </remarks>
+    public static Task<TestSiteSubscription> EnsureMemberLimitedSiteSubscription() =>
+        MemberLimitedSiteSubscription.Value;
 
     /// <summary>
     /// Creates a chapter subscription as the chapter owner on a throwaway browser, so a purchase test keeps
@@ -369,6 +387,33 @@ internal static class Provisioning
 
         await new SiteSubscriptionDataHelper(E2ESettings.ConnectionString)
             .SetDrunkenKnitwitsDefault("ODK E2E Free");
+    }
+
+    private static async Task<TestSiteSubscription> CreateMemberLimitedSiteSubscriptionOnce()
+    {
+        var payments = new SitePaymentSettingsDataHelper(E2ESettings.ConnectionString);
+        await payments.EnsureStripeSettings(E2ESettings.StripeApiPublicKey, E2ESettings.StripeApiSecretKey);
+
+        var admin = await SharedAccounts.Get(SharedAccounts.SiteAdmin);
+        var name = $"{SiteSubscriptionDataHelper.TestNamePrefix}{Guid.NewGuid():N}";
+
+        // A price is added because MemberSiteSubscriptionLog requires one; nothing here buys it.
+        await RunAs(admin, async page =>
+        {
+            var subscriptions = new SiteAdminSubscriptionsPage(page);
+            await subscriptions.CreateSubscription(
+                SitePaymentSettingsDataHelper.Name, name, "E2E one-member subscription",
+                groupLimit: 1, memberLimit: 1);
+            await subscriptions.AddPrice("GBP", "Monthly", 5m);
+        });
+
+        var subscriptionData = new SiteSubscriptionDataHelper(E2ESettings.ConnectionString);
+        var id = await subscriptionData.GetId(name, platformTypeId: 1)
+            ?? throw new InvalidOperationException($"Site subscription '{name}' was not created.");
+        var priceId = await subscriptionData.GetPriceId(id)
+            ?? throw new InvalidOperationException($"Site subscription '{name}' has no price.");
+
+        return new TestSiteSubscription(id, priceId, name);
     }
 
     private static async Task<TestSiteSubscription> CreateCustomEmailsSiteSubscriptionOnce()

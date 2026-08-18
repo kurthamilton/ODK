@@ -1,0 +1,15 @@
+﻿@page "/siteadmin/workflows"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@model WorkflowsModel
+@{
+    Layout = "_SiteAdminLayout";
+    Model.Title = "Workflows | SiteAdmin";
+}
+
+@await Html.PartialAsync("SiteAdmin/_SiteAdminWorkflowsContent")
+
+@section scripts {
+    <script src="~/lib/mermaid/mermaid.min.js" asp-append-version="true"></script>
+    <script src="~/js/odk.workflows.js" asp-append-version="true"></script>
+}

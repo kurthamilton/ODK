@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using NUnit.Framework;
 using ODK.E2E.Data;
 using ODK.E2E.Tests.Helpers;
@@ -7,6 +7,7 @@ using ODK.E2E.Tests.Pages;
 namespace ODK.E2E.Tests;
 
 [TestFixture]
+[Category("ChapterMembership")]
 public class GroupTests : DefaultPageTest
 {
     [Test]

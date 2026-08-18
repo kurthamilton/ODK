@@ -1,0 +1,20 @@
+﻿@using ODK.Core.Workflows
+@inject IEnumerable<IStateMachineDiagram> StateMachines
+
+<div data-odk-component="_SiteAdminWorkflowsContent">
+    <h2 class="content-heading">Workflows</h2>
+
+    <p>
+        Each diagram is generated from the definition the app executes, so it cannot describe a flow the code
+        no longer runs. The ordered steps behind each transition are on the generated pages in
+        <code>docs/workflows</code>.
+    </p>
+
+    @foreach (var stateMachine in StateMachines.OrderBy(x => x.Name))
+    {
+        <section class="section">
+            <h3>@stateMachine.Name</h3>
+            <pre class="mermaid">@stateMachine.ToMermaid()</pre>
+        </section>
+    }
+</div>

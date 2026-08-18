@@ -6,7 +6,8 @@ using FluentAssertions;
 using Moq;
 using Microsoft.Extensions.DependencyInjection;
 using ODK.Core.Workflows;
-using ODK.Services.Members.Workflows;
+using ODK.Services.Members.Workflows.Account;
+using ODK.Services.Members.Workflows.ChapterMembership;
 using ODK.Services.Workflows;
 using ODK.Data.Core;
 using NUnit.Framework;
@@ -262,7 +263,7 @@ public static class MemberServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
         SeedDefaultSiteSubscription(context, PlatformType.DrunkenKnitwits);
-        var chapter = context.CreateChapter();
+        var chapter = context.CreateChapter(siteSubscription: context.CreateSiteSubscription());
 
         var existing = context.CreateMember(activated: true, afterCreate: x => x.EmailAddress = "existing@example.com");
 
@@ -289,7 +290,7 @@ public static class MemberServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
         SeedDefaultSiteSubscription(context, PlatformType.DrunkenKnitwits);
-        var chapter = context.CreateChapter();
+        var chapter = context.CreateChapter(siteSubscription: context.CreateSiteSubscription());
 
         var existing = context.CreateMember(activated: false, afterCreate: x =>
         {
@@ -334,7 +335,7 @@ public static class MemberServiceTests
            email establishes, so they are handed the token instead of being made to wait for one. */
         using var context = CreateMockOdkContext();
         SeedDefaultSiteSubscription(context, PlatformType.DrunkenKnitwits);
-        var chapter = context.CreateChapter();
+        var chapter = context.CreateChapter(siteSubscription: context.CreateSiteSubscription());
 
         var existing = context.CreateMember(activated: false, afterCreate: x =>
         {
@@ -387,7 +388,7 @@ public static class MemberServiceTests
            it was not sent to, so this falls back to proving the new one the usual way. */
         using var context = CreateMockOdkContext();
         SeedDefaultSiteSubscription(context, PlatformType.DrunkenKnitwits);
-        var chapter = context.CreateChapter();
+        var chapter = context.CreateChapter(siteSubscription: context.CreateSiteSubscription());
 
         var existing = context.CreateMember(activated: false, afterCreate: x =>
             x.EmailAddress = "invited@example.com");
@@ -427,7 +428,7 @@ public static class MemberServiceTests
            group still resolves. */
         using var context = CreateMockOdkContext();
         SeedDefaultSiteSubscription(context, PlatformType.DrunkenKnitwits);
-        var chapter = context.CreateChapter();
+        var chapter = context.CreateChapter(siteSubscription: context.CreateSiteSubscription());
         var otherChapter = context.CreateChapter();
 
         var existing = context.CreateMember(activated: false, afterCreate: x =>
@@ -472,13 +473,75 @@ public static class MemberServiceTests
     }
 
     [Test]
+    public static async Task CreateChapterAccount_ExistingActivatedMember_DoesNotScoreTheSignUp()
+    {
+        /* Arrange - nothing is created for an address that already has an account, so the sign-up must not pay
+           for an outbound reCAPTCHA call to decide that. Scoring belongs to the step that creates the account. */
+        using var context = CreateMockOdkContext();
+        SeedDefaultSiteSubscription(context, PlatformType.DrunkenKnitwits);
+        var chapter = context.CreateChapter(siteSubscription: context.CreateSiteSubscription());
+
+        context.CreateMember(activated: true, afterCreate: x => x.EmailAddress = "existing@example.com");
+
+        var recaptchaService = CreateMockRecaptchaService();
+        var service = CreateMemberService(
+            context,
+            new Mock<IMemberEmailService>().Object,
+            recaptchaService: recaptchaService);
+
+        // Act
+        var result = await service.CreateChapterAccount(
+            CreateChapterRequest(chapter),
+            CreateChapterProfile("existing@example.com", firstName: "New"));
+
+        // Assert
+        result.Success.Should().BeTrue();
+        recaptchaService.Verify(x => x.Verify(It.IsAny<string>()), Times.Never);
+    }
+
+    [Test]
+    public static async Task CreateChapterAccount_GroupAtItsMemberLimit_FailsWithoutCreatingAnAccount()
+    {
+        /* Arrange - signing up to a group on Drunken Knitwits is joining it, so the owner's subscription caps it
+           the same way it caps a member who already has an account and joins. */
+        using var context = CreateMockOdkContext();
+        SeedDefaultSiteSubscription(context, PlatformType.DrunkenKnitwits);
+
+        var chapter = context.CreateChapter(
+            siteSubscription: context.CreateSiteSubscription(memberLimit: 1));
+
+        // The one place the subscription allows is already taken.
+        var existing = context.CreateMember(afterCreate: x => x.EmailAddress = "taken@example.com");
+        context.Create(new MemberChapter
+        {
+            Approved = true,
+            ChapterId = chapter.Id,
+            CreatedUtc = DateTime.UtcNow,
+            Id = Guid.NewGuid(),
+            MemberId = existing.Id
+        });
+
+        var service = CreateMemberService(context, new Mock<IMemberEmailService>().Object);
+
+        // Act
+        var result = await service.CreateChapterAccount(
+            CreateChapterRequest(chapter),
+            CreateChapterProfile("new@example.com", firstName: "New"));
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.Message.Should().Be("This group is not able to welcome any new members");
+        context.Set<Member>().Any(x => x.EmailAddress == "new@example.com").Should().BeFalse();
+    }
+
+    [Test]
     public static async Task CreateChapterAccount_RequiredGroupQuestionNotAnswered_Fails()
     {
         /* Arrange - signing up to a group is the same act as joining one, so it enforces the group's required
            questions the way JoinChapter does. */
         using var context = CreateMockOdkContext();
         SeedDefaultSiteSubscription(context, PlatformType.DrunkenKnitwits);
-        var chapter = context.CreateChapter();
+        var chapter = context.CreateChapter(siteSubscription: context.CreateSiteSubscription());
         context.Create(new ChapterProperty
         {
             ChapterId = chapter.Id,
@@ -717,24 +780,45 @@ public static class MemberServiceTests
         MockOdkContext context,
         IMemberEmailService memberEmailService,
         IEmailVerifier? emailVerifier = null,
-        IAuthorizationService? authorizationService = null)
+        IAuthorizationService? authorizationService = null,
+        Mock<IRecaptchaService>? recaptchaService = null)
     {
         var memberImageService = new Mock<IMemberImageService>();
         memberImageService
             .Setup(x => x.UpdateMemberImage(It.IsAny<MemberAvatar>(), It.IsAny<byte[]>()))
+            .Returns(ServiceResult.Successful());
+        memberImageService
+            .Setup(x => x.ValidateImage(It.IsAny<byte[]>()))
             .Returns(ServiceResult.Successful());
 
         var unitOfWork = MockUnitOfWork.Create(context);
         var resolvedAuthorizationService = authorizationService ?? Mock.Of<IAuthorizationService>();
         var notificationService = Mock.Of<INotificationService>();
         var subscriptionWriter = new MemberChapterSubscriptionWriter(unitOfWork);
+        var siteSubscriptionWriter = new MemberSiteSubscriptionWriter(unitOfWork);
+        var resolvedRecaptchaService = (recaptchaService ?? CreateMockRecaptchaService()).Object;
+        var emailValidationService = new EmailValidationService(emailVerifier ?? new InconclusiveEmailVerifier());
+        var loggingService = Mock.Of<ILoggingService>();
+        var geolocationService = Mock.Of<IGeolocationService>();
+        var distanceUnitFactory = new DistanceUnitFactory();
+        var topicService = Mock.Of<ITopicService>();
+        var oauthProviderFactory = Mock.Of<IOAuthProviderFactory>();
 
         var workflow = CreateAccountWorkflow(
             unitOfWork,
             resolvedAuthorizationService,
             memberEmailService,
             notificationService,
-            subscriptionWriter);
+            subscriptionWriter,
+            siteSubscriptionWriter,
+            memberImageService.Object,
+            resolvedRecaptchaService,
+            emailValidationService,
+            loggingService,
+            geolocationService,
+            distanceUnitFactory,
+            topicService,
+            oauthProviderFactory);
 
         return new MemberService(
             unitOfWork,
@@ -742,22 +826,22 @@ public static class MemberServiceTests
             memberImageService.Object,
             memberEmailService,
             notificationService,
-            Mock.Of<IOAuthProviderFactory>(),
-            Mock.Of<ITopicService>(),
+            topicService,
             Mock.Of<IPaymentProviderFactory>(),
-            Mock.Of<IGeolocationService>(),
-            Mock.Of<ILoggingService>(),
-            new DistanceUnitFactory(),
+            geolocationService,
+            loggingService,
+            distanceUnitFactory,
             subscriptionWriter,
-            new MemberSiteSubscriptionWriter(unitOfWork),
-            CreateMockRecaptchaService(),
-            new EmailValidationService(emailVerifier ?? new InconclusiveEmailVerifier()),
-            workflow.GetRequiredService<IAccountContextFactory>(),
-            workflow.GetRequiredService<StateMachineRunner<AccountState, AccountTrigger, AccountContext>>());
+            emailValidationService,
+            workflow.GetRequiredService<IChapterMembershipContextFactory>(),
+            workflow.GetRequiredService<StateMachineRunner<
+                ChapterMembershipState, ChapterMembershipTrigger, ChapterMembershipContext>>(),
+            workflow.GetRequiredService<StateMachineRunner<AccountState, AccountTrigger, AccountContext>>(),
+            workflow.GetRequiredService<IAccountContextFactory>());
     }
 
     /// <summary>
-    /// The account machine wired the way the app wires it, over the same mocks the service under test uses, so
+    /// The membership machine wired the way the app wires it, over the same mocks the service under test uses, so
     /// a step resolves here exactly as it does in production. The steps come from the definition, so one added
     /// to a transition needs no change in this helper.
     /// </summary>
@@ -766,9 +850,19 @@ public static class MemberServiceTests
         IAuthorizationService authorizationService,
         IMemberEmailService memberEmailService,
         INotificationService notificationService,
-        IMemberChapterSubscriptionWriter subscriptionWriter)
+        IMemberChapterSubscriptionWriter subscriptionWriter,
+        IMemberSiteSubscriptionWriter siteSubscriptionWriter,
+        IMemberImageService memberImageService,
+        IRecaptchaService recaptchaService,
+        IEmailValidationService emailValidationService,
+        ILoggingService loggingService,
+        IGeolocationService geolocationService,
+        IDistanceUnitFactory distanceUnitFactory,
+        ITopicService topicService,
+        IOAuthProviderFactory oauthProviderFactory)
     {
-        var definition = AccountStateMachine.Create();
+        var membership = ChapterMembershipStateMachine.Create();
+        var account = AccountStateMachine.Create();
 
         var services = new ServiceCollection()
             .AddSingleton(unitOfWork)
@@ -776,13 +870,32 @@ public static class MemberServiceTests
             .AddSingleton(memberEmailService)
             .AddSingleton(notificationService)
             .AddSingleton(subscriptionWriter)
-            .AddSingleton(definition)
+            .AddSingleton(siteSubscriptionWriter)
+            .AddSingleton(memberImageService)
+            .AddSingleton(recaptchaService)
+            .AddSingleton(emailValidationService)
+            .AddSingleton(loggingService)
+            .AddSingleton(geolocationService)
+            .AddSingleton(distanceUnitFactory)
+            .AddSingleton(topicService)
+            .AddSingleton(oauthProviderFactory)
+            .AddSingleton(membership)
+            .AddSingleton(account)
+            .AddScoped<IChapterMembershipContextFactory, ChapterMembershipContextFactory>()
+            .AddScoped<
+                IStateResolver<ChapterMembershipState, ChapterMembershipContext>,
+                ChapterMembershipStateResolver>()
+            .AddScoped<
+                IStepFactory<ChapterMembershipContext>,
+                ServiceProviderStepFactory<ChapterMembershipContext>>()
+            .AddScoped<StateMachineRunner<
+                ChapterMembershipState, ChapterMembershipTrigger, ChapterMembershipContext>>()
             .AddScoped<IAccountContextFactory, AccountContextFactory>()
             .AddScoped<IStateResolver<AccountState, AccountContext>, AccountStateResolver>()
             .AddScoped<IStepFactory<AccountContext>, ServiceProviderStepFactory<AccountContext>>()
             .AddScoped<StateMachineRunner<AccountState, AccountTrigger, AccountContext>>();
 
-        foreach (var stepType in definition.StepTypes)
+        foreach (var stepType in membership.StepTypes.Concat(account.StepTypes))
         {
             services.AddScoped(stepType);
         }
@@ -808,13 +921,13 @@ public static class MemberServiceTests
         return authorizationService.Object;
     }
 
-    private static IRecaptchaService CreateMockRecaptchaService()
+    private static Mock<IRecaptchaService> CreateMockRecaptchaService()
     {
         var recaptchaService = new Mock<IRecaptchaService>();
         recaptchaService
             .Setup(x => x.Verify(It.IsAny<string>()))
             .ReturnsAsync(new RecaptchaResult { Score = 1, Success = true });
-        return recaptchaService.Object;
+        return recaptchaService;
     }
 
     private static MockOdkContext CreateMockOdkContext() => new MockOdkContext();

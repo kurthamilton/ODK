@@ -1,4 +1,4 @@
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using Microsoft.Playwright;
 using ODK.E2E.Tests.Helpers;
 
@@ -79,6 +79,13 @@ internal class DrunkenKnitwitsJoinPage
     /// </summary>
     public Task OpenInvitation(string chapterShortName, string inviteToken)
         => _page.Navigate($"/{chapterShortName}/account/join?token={Uri.EscapeDataString(inviteToken)}");
+
+    /// <summary>
+    /// Whether a feedback toast carrying the given message is present. Matched in the DOM rather than on
+    /// screen: the toast container renders hidden and is moved into place by script.
+    /// </summary>
+    public async Task<bool> HasFeedback(string message)
+        => await _page.Locator($".toasts:has-text('{message}')").CountAsync() > 0;
 
     public Task<string> GetEmailAddress() => _page.InputValueAsync("[data-email]");
 

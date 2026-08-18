@@ -13,12 +13,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<!-- The npm "dev" script's sass watcher owns the whole scss→css pipeline, so keep dotnet watch out of
-		     both the scss source and the generated css. Editing a .scss makes the sass watchers rewrite the
-		     four css outputs (main/odk × normal/min) in a burst; dotnet watch reacting to those tears the app
-		     down (under `concurrently -k` the whole window closes). Excluding them means the sass watcher
-		     compiles on save and you refresh the browser to see css changes; .cs/.cshtml hot-reload is
-		     unaffected. -->
+		<!-- Generated output and its source: nothing dotnet watch does should react to either, so a css
+		     rebuild never restarts the app. Note this keeps them out of the watch list only - the build still
+		     enumerates and hashes everything under wwwroot as a static web asset, which is why a sass watcher
+		     must not run alongside dotnet watch (see run.app.bat). -->
 		<Content Update="wwwroot\scss\**" Watch="false" />
 		<Content Update="wwwroot\css\**" Watch="false" />
 

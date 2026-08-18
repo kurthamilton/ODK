@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using NUnit.Framework;
 using ODK.E2E.Data;
 using ODK.E2E.Data.Models;
@@ -9,6 +9,7 @@ namespace ODK.E2E.Tests;
 
 [TestFixture]
 [Category("AccountCreate")]
+[Category("SiteMembership")]
 public class AccountFlowTests : DefaultPageTest
 {
     [Test]
