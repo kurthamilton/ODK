@@ -8,6 +8,16 @@ public sealed class StateMachineDefinition<TState, TTrigger, TContext> : IStateM
 
     public required string Name { get; init; }
 
+    /// <summary>
+    /// Every step type the machine names, once each. A definition is the registry of its own steps, so a
+    /// container learns them from here rather than from a list kept alongside.
+    /// </summary>
+    public IReadOnlyCollection<Type> StepTypes => Transitions
+        .SelectMany(x => x.Steps)
+        .Select(x => x.StepType)
+        .Distinct()
+        .ToArray();
+
     public required IReadOnlyCollection<Transition<TState, TTrigger, TContext>> Transitions { get; init; }
 
     public IReadOnlyCollection<Transition<TState, TTrigger, TContext>> From(TState state) => Transitions

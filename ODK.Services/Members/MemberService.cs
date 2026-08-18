@@ -9,6 +9,7 @@ using ODK.Core.Notifications;
 using ODK.Core.Payments;
 using ODK.Core.Referrals;
 using ODK.Core.Subscriptions;
+using ODK.Core.Workflows;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
 using ODK.Services.Authentication.OAuth;
@@ -26,11 +27,15 @@ using ODK.Services.Recaptcha;
 using ODK.Services.Subscriptions;
 using ODK.Services.Topics;
 using ODK.Services.Topics.Models;
+using ODK.Services.Members.Workflows;
+using ODK.Services.Workflows;
 
 namespace ODK.Services.Members;
 
 public class MemberService : IMemberService
 {
+    private readonly IAccountContextFactory _accountContextFactory;
+    private readonly StateMachineRunner<AccountState, AccountTrigger, AccountContext> _accountStateMachine;
     private readonly IAuthorizationService _authorizationService;
     private readonly IEmailValidationService _emailValidationService;
     private readonly IDistanceUnitFactory _distanceUnitFactory;
@@ -62,8 +67,12 @@ public class MemberService : IMemberService
         IMemberChapterSubscriptionWriter memberChapterSubscriptionWriter,
         IMemberSiteSubscriptionWriter memberSiteSubscriptionWriter,
         IRecaptchaService recaptchaService,
-        IEmailValidationService emailValidationService)
+        IEmailValidationService emailValidationService,
+        IAccountContextFactory accountContextFactory,
+        StateMachineRunner<AccountState, AccountTrigger, AccountContext> accountStateMachine)
     {
+        _accountContextFactory = accountContextFactory;
+        _accountStateMachine = accountStateMachine;
         _authorizationService = authorizationService;
         _emailValidationService = emailValidationService;
         _distanceUnitFactory = distanceUnitFactory;
@@ -642,79 +651,18 @@ public class MemberService : IMemberService
     public async Task<ServiceResult> JoinChapter(
         IMemberChapterServiceRequest request, IEnumerable<MemberPropertyUpdateModel> properties)
     {
-        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
+        var context = await _accountContextFactory.CreateForJoin(request, properties);
+        var result = await _accountStateMachine.Fire(AccountTrigger.Join, context);
 
-        var (adminMembers,
-            notificationSettings,
-            ownerSubscriptionDto,
-            members,
-            chapterProperties,
-            chapterPropertyOptions,
-            membershipSettings,
-            invite
-            ) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
-            x => x.MemberNotificationSettingsRepository.GetByChapterId(chapter.Id, NotificationType.NewMember),
-            x => x.MemberSiteSubscriptionRecordRepository
-                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active())
-                .SiteSubscription()
-                .WithFeatures()
-                .GetSingleOrDefault(),
-            x => x.MemberRepository.GetCountByChapterId(chapter.Id),
-            x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterPropertyOptionRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
-            x => x.MemberChapterInviteRepository.GetByMemberId(currentMember.Id, chapter.Id));
-
-        if (currentMember.IsMemberOf(chapter.Id))
+        /* Already being in the group is not checked here: the machine has no Join edge out of a state that
+           holds a membership, so it reports the trigger as not permitted from there. Only the wording is
+           this method's. */
+        if (!result.Success && result.From is AccountState.GroupMember or AccountState.PendingApproval)
         {
             return ServiceResult.Failure("You are already a member of this group");
         }
 
-        var registrationResult = ChapterIsOpenForRegistration(members, ownerSubscriptionDto?.SiteSubscription);
-        if (!registrationResult.Success)
-        {
-            return registrationResult;
-        }
-
-        var validationResult = ValidateMemberProperties(chapterProperties, properties, forApplication: true);
-        if (!validationResult.Success)
-        {
-            return validationResult;
-        }
-
-        var memberProperties = properties
-            .Select(x => x.ToMemberProperty(currentMember.Id))
-            .ToArray();
-
-        AddMemberToChapter(
-            DateTime.UtcNow,
-            currentMember,
-            chapter,
-            memberProperties,
-            membershipSettings,
-            ownerSubscriptionDto?.Features ?? [],
-            invited: invite != null);
-
-        /* Consumed, not kept. The membership row is now the record that they joined, so leaving the invitation
-           behind would make them look invited for a group they are already in. */
-        if (invite != null)
-        {
-            _unitOfWork.MemberChapterInviteRepository.Delete(invite);
-        }
-
-        _notificationService.AddNewMemberNotifications(currentMember, chapter.Id, adminMembers, notificationSettings);
-
-        await _unitOfWork.SaveChangesAsync();
-
-        await _memberEmailService.SendNewMemberAdminEmail(
-            request,
-            adminMembers,
-            currentMember,
-            chapterProperties,
-            memberProperties);
-
-        return ServiceResult.Successful();
+        return result.ToServiceResult();
     }
 
     public async Task<ServiceResult> LeaveChapter(IMemberChapterServiceRequest request, string reason)
@@ -1129,18 +1077,6 @@ public class MemberService : IMemberService
         return ServiceResult.Successful();
     }
 
-    private static ServiceResult ChapterIsOpenForRegistration(
-        int members,
-        SiteSubscription? ownerSubscription)
-    {
-        if (ownerSubscription?.HasCapacity(members) == true)
-        {
-            return ServiceResult.Successful();
-        }
-
-        return ServiceResult.Failure("This group is not able to welcome any new members");
-    }
-
     private static IEnumerable<string> GetMissingMemberProfileProperties(
         IEnumerable<ChapterProperty> chapterProperties,
         IEnumerable<MemberPropertyUpdateModel> memberProperties,
@@ -1310,7 +1246,13 @@ public class MemberService : IMemberService
         MemberCreateProfile profile,
         bool forApplication)
     {
+        // The group's own questions come first: they cost nothing to check, where verifying the address spends
+        // an external request that an incomplete form need not pay for.
         var propertyResult = ValidateMemberProperties(chapterProperties, profile.Properties, forApplication);
+        if (!propertyResult.Success)
+        {
+            return propertyResult;
+        }
 
         var emailValidationResult = await _emailValidationService.Validate(profile.EmailAddress, EmailValidationLevel.Full);
         if (!emailValidationResult.Success)

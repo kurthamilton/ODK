@@ -308,7 +308,8 @@ internal class MockOdkContext : OdkContext
 
     internal SiteSubscription CreateSiteSubscription(
         int? groupLimit = null,
-        IEnumerable<SiteFeatureType>? features = null)
+        IEnumerable<SiteFeatureType>? features = null,
+        int? memberLimit = null)
     {
         var siteSubscription = Create(new SiteSubscription
         {
@@ -316,6 +317,7 @@ internal class MockOdkContext : OdkContext
             Name = "Test Subscription",
             Description = "Test subscription for testing",
             GroupLimit = groupLimit ?? 10,
+            MemberLimit = memberLimit,
             Enabled = true,
             Default = false,
             Platform = PlatformType.Default,
