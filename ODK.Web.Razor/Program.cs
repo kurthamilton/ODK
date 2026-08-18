@@ -220,6 +220,7 @@ public class Program
                 "js/odk.forms.js",
                 "js/odk.load.js",
                 "js/odk.notifications.js",
+                "js/odk.pagination.js",
                 "js/odk.slim-select.js",
                 "js/odk.selects.js",
                 "js/odk.tabs.js",

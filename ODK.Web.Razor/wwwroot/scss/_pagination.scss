@@ -1,0 +1,18 @@
+﻿.pagination {
+    justify-content: center;
+
+    .page-link {
+        &:focus {
+            box-shadow: none;
+        }
+    }
+
+    // The go-to-page panel behind an ellipsis. The menu is absolutely positioned inside a .page-item barely
+    // wider than the ellipsis itself, so its shrink-to-fit width resolves to Bootstrap's 10rem minimum -
+    // which the number input and three buttons do not fit into, and .input-group wraps by default. Widening
+    // the menu is what gives them room; .flex-nowrap on the group is what keeps them on one row whatever the
+    // page numbers run to, leaving the input to take whatever is left.
+    .dropdown-menu {
+        --bs-dropdown-min-width: 16rem;
+    }
+}
