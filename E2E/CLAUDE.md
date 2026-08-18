@@ -51,6 +51,24 @@ is the generic wait-for-ready → run → kill-port runner. The ngrok tab is lef
 console, so tearing it down from another tab just garbles the output; close the terminal window when
 done. Its tunnel config lives in the gitignored root `ngrok.yml` (see the root README).
 
+
+## Reading a run's results
+
+**`script.e2e.bat` writes an HTML report to `E2E/ODK.E2E.Tests/TestResults/e2e.html`** (the `html` logger
+that ships with `Microsoft.NET.Test.Sdk`) and opens it when anything failed. It is the record of the last
+run, including runs started outside this session — so when the user reports a failure, **read that file
+rather than asking which test broke**. Failed tests come first under "Failed Results" with their assertion
+message and stack trace; every test follows under "All Results", so it also answers "did my new test pass".
+
+It is HTML with no newlines between tags, so pipe it through something that breaks tags onto their own
+lines before grepping, e.g.
+
+```
+sed 's/></>\n</g' e2e.html | sed 's/<[^>]*>//g' | grep -v '^\s*$'
+```
+
+Playwright traces and screenshots for a failed test land beside it in `TestResults/artifacts`.
+
 ## Targeting a platform
 
 - Fixtures derive from a **platform base class**, never `PageTest` directly:

@@ -15,9 +15,18 @@ public static class AccountStateMachine
 
     public static StateMachineDefinition<AccountState, AccountTrigger, AccountContext> Create()
     {
+        var inAGroup = new ActivationIsForAGroup();
         var presentedWithTheInviteToken = new InviteTokenMatches();
         var toAGroup = new SignUpIsToAGroup();
         var verifiedByOAuth = new SignUpIsVerifiedByOAuth();
+
+        /* The half of activating that both edges do, in the order they must: nothing is written until the
+           password is accepted, and the link is spent alongside the account it activates. */
+        var activate = (TransitionBuilder<AccountContext> x) => x
+            .Then<ValidateNewPassword>()
+            .Then<MarkAccountActivated>()
+            .Then<StoreMemberPassword>()
+            .Then<ConsumeActivationToken>();
 
         /* Creating the account a group sign-up asks for. Shared by the edge that has no account to start from
            and the two that discard an unactivated one, so the three cannot drift apart. The membership is
@@ -154,7 +163,25 @@ public static class AccountStateMachine
                 AccountState.Activated,
                 x => x.Then<SendDuplicateMemberEmail>())
 
-            .Transition(AccountState.Registered, AccountTrigger.Activate, AccountState.Activated)
+            /* Following the activation link. The shared half - check the password, mark the account able to
+               sign in, store the password, spend the link - is written once and closed differently, because
+               a group hears about its new member and a site account is simply welcomed. */
+            .Transition(
+                AccountState.Registered,
+                AccountTrigger.Activate,
+                AccountState.Activated,
+                x => activate(x.When(inAGroup))
+                    .Then<NotifyGroupOfNewMember>()
+                    .Then<Commit<AccountContext>>()
+                    .Then<SendNewMemberEmails>())
+
+            .Transition(
+                AccountState.Registered,
+                AccountTrigger.Activate,
+                AccountState.Activated,
+                x => activate(x.When(Guard.Not(inAGroup)))
+                    .Then<Commit<AccountContext>>()
+                    .Then<SendSiteWelcomeEmail>())
             .Build();
     }
 }

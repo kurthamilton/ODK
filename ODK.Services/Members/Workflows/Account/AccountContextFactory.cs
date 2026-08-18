@@ -1,5 +1,6 @@
 ﻿using ODK.Core.Cryptography;
 using ODK.Core.Members;
+using ODK.Core.Notifications;
 using ODK.Core.Referrals;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
@@ -17,6 +18,58 @@ public sealed class AccountContextFactory : IAccountContextFactory
     {
         _oauthProviderFactory = oauthProviderFactory;
         _unitOfWork = unitOfWork;
+    }
+
+    public async Task<AccountContext> CreateForChapterActivation(
+        IChapterServiceRequest request, MemberActivationToken token, string password)
+    {
+        var (platform, chapter) = (request.Platform, request.Chapter);
+
+        var (adminMembers, notificationSettings, member, memberPassword, chapterProperties, memberProperties) =
+            await _unitOfWork.RunAsync(
+                x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
+                x => x.MemberNotificationSettingsRepository.GetByChapterId(chapter.Id, NotificationType.NewMember),
+                x => x.MemberRepository.GetById(token.MemberId),
+                x => x.MemberPasswordRepository.GetByMemberId(token.MemberId),
+                x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
+                x => x.MemberPropertyRepository.GetByMemberId(token.MemberId, chapter.Id));
+
+        return new AccountContext
+        {
+            AdminMembers = adminMembers,
+            Chapter = chapter,
+            ChapterProperties = chapterProperties,
+            Member = member,
+            MemberPassword = memberPassword,
+            MemberProperties = memberProperties,
+            NewPassword = password,
+            NotificationSettings = notificationSettings,
+            PendingActivation = token,
+            Request = request,
+            /* Nothing here is a sign-up, so no provider has vouched for anything - following the link is
+               itself the proof the address was reachable. */
+            VerifiedByOAuth = false
+        };
+    }
+
+    public async Task<AccountContext> CreateForSiteActivation(
+        IServiceRequest request, MemberActivationToken token, string password)
+    {
+        var (member, memberPassword) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(token.MemberId),
+            x => x.MemberPasswordRepository.GetByMemberId(token.MemberId));
+
+        return new AccountContext
+        {
+            /* No group, so no admins to notify and no answers to pass on: everything the group edge reads is
+               left empty, and the absent chapter is what picks the edge that ignores it. */
+            Member = member,
+            MemberPassword = memberPassword,
+            NewPassword = password,
+            PendingActivation = token,
+            Request = request,
+            VerifiedByOAuth = false
+        };
     }
 
     /// <summary>

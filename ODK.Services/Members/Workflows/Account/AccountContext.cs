@@ -31,6 +31,12 @@ public sealed class AccountContext
     public string? ActivationToken { get; init; }
 
     /// <summary>
+    /// The group's admins, who hear about a new member when their account is activated - not when it is
+    /// created, since an account that never activates is nobody the group needs telling about.
+    /// </summary>
+    public IReadOnlyCollection<ChapterAdminMember> AdminMembers { get; init; } = [];
+
+    /// <summary>
     /// Invitations held by an unactivated account that a sign-up is about to discard and recreate. They are
     /// read before the delete cascades them away, and re-raised against the new account.
     /// </summary>
@@ -75,6 +81,15 @@ public sealed class AccountContext
     /// <summary>How many members the group already has, which its owner's subscription caps.</summary>
     public int MemberCount { get; init; }
 
+    /// <summary>The member's stored password, where they already have one. Null until they set the first.</summary>
+    public MemberPassword? MemberPassword { get; init; }
+
+    /// <summary>
+    /// The member's answers to the group's questions, which the email to its admins reads. Empty for any
+    /// transition that does not tell a group about somebody.
+    /// </summary>
+    public IReadOnlyCollection<MemberProperty> MemberProperties { get; init; } = [];
+
     public ChapterMembershipSettings? MembershipSettings { get; init; }
 
     /// <summary>
@@ -98,7 +113,20 @@ public sealed class AccountContext
     /// <summary>The group owner's site subscription, which decides the group's member limit.</summary>
     public SiteSubscription? OwnerSubscription { get; init; }
 
+    /// <summary>The password an activation submitted, before it has been validated or hashed.</summary>
+    public string? NewPassword { get; init; }
+
+    /// <summary>Which of the group's admins have asked to hear about new members.</summary>
+    public IReadOnlyCollection<MemberNotificationSettings> NotificationSettings { get; init; } = [];
+
     public IReadOnlyCollection<SiteSubscriptionFeature> OwnerSubscriptionFeatures { get; init; } = [];
+
+    /// <summary>
+    /// The activation token row being spent, on the transition that activates. Distinct from
+    /// <see cref="ActivationToken"/>, which is the string a sign-up issues - this is the record an
+    /// activation consumes and deletes.
+    /// </summary>
+    public MemberActivationToken? PendingActivation { get; init; }
 
     /// <summary>
     /// What a group sign-up submitted. Null for any other trigger, including a sign-up to the site, which
@@ -123,6 +151,22 @@ public sealed class AccountContext
     /// </summary>
     public Member RequiredMember => Member ?? throw new InvalidOperationException(
         "The transition is acting on an account that does not exist");
+
+    /// <summary>
+    /// The account the transition is about, whether it has just created one or found the one it acts on. A
+    /// step that only needs "the member this is happening to" - welcoming them, emailing them - should not
+    /// have to know which of the two got it here.
+    /// </summary>
+    public Member RequiredAccount => NewMember ?? Member ?? throw new InvalidOperationException(
+        "The transition names no account");
+
+    /// <summary>The password an activation submitted, on a transition that sets one.</summary>
+    public string RequiredNewPassword => NewPassword ?? throw new InvalidOperationException(
+        "The transition sets a password but none was submitted");
+
+    /// <summary>The activation row being spent, on the transition that activates.</summary>
+    public MemberActivationToken RequiredPendingActivation => PendingActivation
+        ?? throw new InvalidOperationException("The transition activates but no activation record was resolved");
 
     /// <summary>The group the sign-up is joining, on a transition that only a group sign-up can reach.</summary>
     public Chapter RequiredChapter => Chapter ?? throw new InvalidOperationException(

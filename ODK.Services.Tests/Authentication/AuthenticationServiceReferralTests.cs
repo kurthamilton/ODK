@@ -4,12 +4,27 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Moq;
 using NUnit.Framework;
+using ODK.Core.Countries;
 using ODK.Core.Members;
 using ODK.Core.Referrals;
 using ODK.Services.Authentication;
 using ODK.Services.Emails;
 using ODK.Services.Members;
 using ODK.Services.Notifications;
+using Microsoft.Extensions.DependencyInjection;
+using ODK.Core.Workflows;
+using ODK.Data.Core;
+using ODK.Services.Authentication.OAuth;
+using ODK.Services.Authorization;
+using ODK.Services.Emails.Validation;
+using ODK.Services.Geolocation;
+using ODK.Services.Logging;
+using ODK.Services.Members.Workflows.Account;
+using ODK.Services.Members.Workflows.ChapterMembership;
+using ODK.Services.Recaptcha;
+using ODK.Services.Subscriptions;
+using ODK.Services.Topics;
+using ODK.Services.Workflows;
 using ODK.Services.Tests.Helpers;
 
 namespace ODK.Services.Tests.Authentication;
@@ -141,14 +156,67 @@ public static class AuthenticationServiceReferralTests
             .Setup(x => x.ComputeHash(It.IsAny<string>()))
             .Returns((string plainText) => (plainText, Mock.Of<IHashedPasswordOptions>()));
 
+        var unitOfWork = MockUnitOfWork.Create(context);
+        var workflow = CreateAccountWorkflow(unitOfWork);
+
         return new AuthenticationService(
             new AuthenticationServiceSettings { PasswordResetTokenLifetimeMinutes = 60 },
-            MockUnitOfWork.Create(context),
+            unitOfWork,
             Mock.Of<IMemberEmailService>(),
-            Mock.Of<INotificationService>(),
             passwordHasher.Object,
             new MemberPasswordService(
                 Mock.Of<IPasswordPolicy>(), passwordHasher.Object, Mock.Of<IBreachedPasswordChecker>()),
-            new EmailValidationService(new InconclusiveEmailVerifier()));
+            new EmailValidationService(new InconclusiveEmailVerifier()),
+            workflow.GetRequiredService<StateMachineRunner<AccountState, AccountTrigger, AccountContext>>(),
+            workflow.GetRequiredService<IAccountContextFactory>());
+    }
+
+    /// <summary>
+    /// The account machine wired the way the app wires it. These tests only exercise logging in, which fires
+    /// no transition - but the service takes the runner, so it has to resolve.
+    /// </summary>
+    private static IServiceProvider CreateAccountWorkflow(IUnitOfWork unitOfWork)
+    {
+        var definition = AccountStateMachine.Create();
+
+        var services = new ServiceCollection()
+            .AddSingleton(unitOfWork)
+            .AddSingleton(definition)
+            .AddSingleton(Mock.Of<IAuthorizationService>())
+            .AddSingleton(Mock.Of<IDistanceUnitFactory>())
+            .AddSingleton(Mock.Of<IGeolocationService>())
+            .AddSingleton(Mock.Of<ILoggingService>())
+            .AddSingleton(Mock.Of<IMemberEmailService>())
+            .AddSingleton(Mock.Of<IMemberImageService>())
+            .AddSingleton(Mock.Of<IMemberPasswordService>())
+            .AddSingleton(Mock.Of<IMemberSiteSubscriptionWriter>())
+            .AddSingleton(Mock.Of<INotificationService>())
+            .AddSingleton(Mock.Of<IOAuthProviderFactory>())
+            .AddSingleton(Mock.Of<IRecaptchaService>())
+            .AddSingleton(Mock.Of<ITopicService>())
+            .AddSingleton<IEmailValidationService>(
+                new EmailValidationService(new InconclusiveEmailVerifier()))
+            .AddSingleton(Mock.Of<IMemberChapterSubscriptionWriter>())
+            .AddSingleton(ChapterMembershipStateMachine.Create())
+            .AddScoped<IAccountContextFactory, AccountContextFactory>()
+            .AddScoped<IChapterMembershipContextFactory, ChapterMembershipContextFactory>()
+            .AddScoped<IStateResolver<AccountState, AccountContext>, AccountStateResolver>()
+            .AddScoped<
+                IStateResolver<ChapterMembershipState, ChapterMembershipContext>,
+                ChapterMembershipStateResolver>()
+            .AddScoped<IStepFactory<AccountContext>, ServiceProviderStepFactory<AccountContext>>()
+            .AddScoped<
+                IStepFactory<ChapterMembershipContext>,
+                ServiceProviderStepFactory<ChapterMembershipContext>>()
+            .AddScoped<StateMachineRunner<AccountState, AccountTrigger, AccountContext>>()
+            .AddScoped<StateMachineRunner<
+                ChapterMembershipState, ChapterMembershipTrigger, ChapterMembershipContext>>();
+
+        foreach (var stepType in definition.StepTypes)
+        {
+            services.AddScoped(stepType);
+        }
+
+        return services.BuildServiceProvider();
     }
 }

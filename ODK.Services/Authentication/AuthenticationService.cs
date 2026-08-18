@@ -4,22 +4,24 @@ using ODK.Core;
 using ODK.Core.Chapters;
 using ODK.Core.Cryptography;
 using ODK.Core.Members;
-using ODK.Core.Notifications;
+using ODK.Core.Workflows;
 using ODK.Data.Core;
 using ODK.Services.Emails;
 using ODK.Services.Emails.Validation;
 using ODK.Services.Members;
-using ODK.Services.Notifications;
+using ODK.Services.Members.Workflows.Account;
+using ODK.Services.Workflows;
 
 namespace ODK.Services.Authentication;
 
 public class AuthenticationService : IAuthenticationService
 {
+    private readonly IAccountContextFactory _accountContextFactory;
+    private readonly StateMachineRunner<AccountState, AccountTrigger, AccountContext> _accountWorkflow;
     private readonly IEmailValidationService _emailValidationService;
     private readonly Lazy<IHashedPassword> _dummyPassword;
     private readonly IMemberEmailService _memberEmailService;
     private readonly IMemberPasswordService _memberPasswordService;
-    private readonly INotificationService _notificationService;
     private readonly IPasswordHasher _passwordHasher;
     private readonly AuthenticationServiceSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
@@ -28,17 +30,20 @@ public class AuthenticationService : IAuthenticationService
         AuthenticationServiceSettings settings,
         IUnitOfWork unitOfWork,
         IMemberEmailService memberEmailService,
-        INotificationService notificationService,
         IPasswordHasher passwordHasher,
         IMemberPasswordService memberPasswordService,
-        IEmailValidationService emailValidationService)
+        IEmailValidationService emailValidationService,
+        StateMachineRunner<AccountState, AccountTrigger, AccountContext> accountWorkflow,
+        IAccountContextFactory accountContextFactory)
     {
+        _accountContextFactory = accountContextFactory;
+        _accountWorkflow = accountWorkflow;
         _emailValidationService = emailValidationService;
         _memberEmailService = memberEmailService;
         _memberPasswordService = memberPasswordService;
-        _notificationService = notificationService;
         _passwordHasher = passwordHasher;
         _settings = settings;
+        _unitOfWork = unitOfWork;
         _unitOfWork = unitOfWork;
 
         // A throwaway hash used to equalise timing on the login "no such user / no password" path so it
@@ -61,8 +66,10 @@ public class AuthenticationService : IAuthenticationService
         string activationToken,
         string password)
     {
-        var (platform, chapter) = (request.Platform, request.Chapter);
+        var chapter = request.Chapter;
 
+        /* Resolved before the machine, because a link naming no account leaves nothing whose state could be
+           read - there is no member, so no transition to pick. */
         var token = await _unitOfWork.MemberActivationTokenRepository
             .GetByToken(activationToken)
             .Run();
@@ -71,51 +78,13 @@ public class AuthenticationService : IAuthenticationService
             return ServiceResult.Failure("The link you followed is no longer valid");
         }
 
-        var (adminMembers, notificationSettings, member, memberPassword, chapterProperties, memberProperties) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
-            x => x.MemberNotificationSettingsRepository.GetByChapterId(chapter.Id, NotificationType.NewMember),
-            x => x.MemberRepository.GetById(token.MemberId),
-            x => x.MemberPasswordRepository.GetByMemberId(token.MemberId),
-            x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
-            x => x.MemberPropertyRepository.GetByMemberId(token.MemberId, chapter.Id));
-
         OdkAssertions.MeetsCondition(token, x => x.ChapterId == chapter.Id);
 
-        var validationResult = await _memberPasswordService.Validate(password);
-        if (!validationResult.Success)
-        {
-            return validationResult;
-        }
+        var context = await _accountContextFactory.CreateForChapterActivation(request, token, password);
 
-        memberPassword = _memberPasswordService.Apply(memberPassword, password);
-        member.Activated = true;
+        var result = await _accountWorkflow.Fire(AccountTrigger.Activate, context);
 
-        _unitOfWork.MemberRepository.Update(member);
-
-        if (memberPassword.MemberId == default)
-        {
-            memberPassword.MemberId = member.Id;
-            _unitOfWork.MemberPasswordRepository.Add(memberPassword);
-        }
-        else
-        {
-            _unitOfWork.MemberPasswordRepository.Update(memberPassword);
-        }
-
-        _unitOfWork.MemberActivationTokenRepository.Delete(token);
-
-        _notificationService.AddNewMemberNotifications(member, chapter.Id, adminMembers, notificationSettings);
-
-        await _unitOfWork.SaveChangesAsync();
-
-        await _memberEmailService.SendNewMemberEmailsAsync(
-            request,
-            adminMembers,
-            member,
-            chapterProperties,
-            memberProperties);
-
-        return ServiceResult.Successful();
+        return result.ToServiceResult();
     }
 
     public async Task<ServiceResult> ActivateSiteAccountAsync(
@@ -126,43 +95,19 @@ public class AuthenticationService : IAuthenticationService
         var token = await _unitOfWork.MemberActivationTokenRepository
             .GetByToken(activationToken)
             .Run();
+
+        /* A chapter-scoped token on the site path is refused rather than asserted: the two activation pages
+           are separate URLs a member can arrive at, so the wrong one is a bad link, not a bad request. */
         if (token == null || token.ChapterId != null)
         {
             return ServiceResult.Failure("The link you followed is no longer valid");
         }
 
-        var (member, memberPassword) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(token.MemberId),
-            x => x.MemberPasswordRepository.GetByMemberId(token.MemberId));
+        var context = await _accountContextFactory.CreateForSiteActivation(request, token, password);
 
-        var validationResult = await _memberPasswordService.Validate(password);
-        if (!validationResult.Success)
-        {
-            return validationResult;
-        }
+        var result = await _accountWorkflow.Fire(AccountTrigger.Activate, context);
 
-        memberPassword = _memberPasswordService.Apply(memberPassword, password);
-        member.Activated = true;
-
-        _unitOfWork.MemberRepository.Update(member);
-
-        if (memberPassword.MemberId == default)
-        {
-            memberPassword.MemberId = member.Id;
-            _unitOfWork.MemberPasswordRepository.Add(memberPassword);
-        }
-        else
-        {
-            _unitOfWork.MemberPasswordRepository.Update(memberPassword);
-        }
-
-        _unitOfWork.MemberActivationTokenRepository.Delete(token);
-
-        await _unitOfWork.SaveChangesAsync();
-
-        await _memberEmailService.SendSiteWelcomeEmail(request, member);
-
-        return ServiceResult.Successful();
+        return result.ToServiceResult();
     }
 
     public async Task<ServiceResult> ChangePasswordAsync(Guid memberId, string currentPassword, string newPassword)
