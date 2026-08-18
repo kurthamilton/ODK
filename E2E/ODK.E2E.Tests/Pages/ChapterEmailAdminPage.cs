@@ -255,14 +255,13 @@ internal class ChapterEmailAdminPage
 
         await _page.RunAndWaitForResponseAsync(() => _page.ClickAsync(selector), posted);
 
-        var response = await rendered;
+        await rendered;
 
-        /* The redirected GET arriving is not the navigation finishing - the browser still has to commit it,
-           and WaitForLoadStateAsync reports on whichever document is current, which in that window is still
-           the one being left. A caller that then navigates to the same URL has its navigation cut short
-           ("Navigation to X is interrupted by another navigation to X"). Waiting for the URL to actually be
-           the rendered one is what closes the window. */
-        await _page.WaitForURLAsync(response.Url);
-        await _page.WaitForLoadStateAsync();
+        /* Every form here is Post/Redirect/Get and posts to its own URL, so the address never changes across
+           a save - there is nothing to wait for it to become, and the redirected GET arriving is not the
+           browser having committed the document it carries. Settling the network is what covers that last
+           step. Without it a caller that navigates to the same URL has its navigation cut short by the one
+           still in flight ("Navigation to X is interrupted by another navigation to X"). */
+        await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
     }
 }

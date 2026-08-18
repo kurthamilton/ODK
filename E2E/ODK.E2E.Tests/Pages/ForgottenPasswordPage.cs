@@ -26,8 +26,8 @@ internal class ForgottenPasswordPage
         await _page.Navigate(forgottenPasswordUrl);
         await _page.FillAsync("#EmailAddress", emailAddress);
 
-        // Post/Redirect/Get, so the POST response is the 302 - wait for the redirected GET as well, or the
-        // caller's next navigation is cut short by the one still in flight.
+        /* Post/Redirect/Get onto the same URL, so there is no address change to wait for - settle the
+           network instead, or the caller's next navigation collides with the redirect still in flight. */
         var rendered = _page.WaitForResponseAsync(
             r => r.Request.Method == "GET" && r.Request.ResourceType == "document");
 
@@ -36,7 +36,7 @@ internal class ForgottenPasswordPage
             r => r.Request.Method == "POST" && r.Request.ResourceType == "document");
 
         await rendered;
-        await _page.WaitForLoadStateAsync();
+        await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
     }
 
     /// <summary>
