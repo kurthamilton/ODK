@@ -13,6 +13,8 @@ using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
 using ODK.Core.Utils;
 using ODK.Core.Web;
+using ODK.Core.Workflows;
+using ODK.Services.Chapters.Workflows;
 using ODK.Data.Core;
 using ODK.Data.Core.Chapters;
 using ODK.Data.Core.Deferred;
@@ -63,6 +65,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     private readonly ISocialMediaService _socialMediaService;
     private readonly ITopicService _topicService;
     private readonly IEmailValidationService _emailValidationService;
+    private readonly StateMachineRunner<
+        ChapterPublicationState, ChapterPublicationTrigger, ChapterPublicationContext> _chapterPublication;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUrlProviderFactory _urlProviderFactory;
 
@@ -82,10 +86,13 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         IPaymentService paymentService,
         IGeolocationService geolocationService,
         ILoggingService loggingService,
-        IAuthorizationService authorizationService)
+        IAuthorizationService authorizationService,
+        StateMachineRunner<ChapterPublicationState, ChapterPublicationTrigger, ChapterPublicationContext>
+            chapterPublication)
         : base(unitOfWork)
     {
         _authorizationService = authorizationService;
+        _chapterPublication = chapterPublication;
         _geolocationService = geolocationService;
         _htmlValidator = htmlValidator;
         _imageService = imageService;
@@ -1380,20 +1387,21 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<ServiceResult> PublishChapter(IMemberChapterAdminServiceRequest request)
     {
-        var chapter = request.Chapter;
-
         await AssertMemberIsChapterAdmin(request);
 
-        if (!chapter.CanBePublished())
-        {
-            return ServiceResult.Failure("This group cannot be published");
-        }
+        var result = await _chapterPublication.Fire(
+            ChapterPublicationTrigger.Publish,
+            new ChapterPublicationContext
+            {
+                Chapter = request.Chapter,
+                Request = request
+            });
 
-        chapter.PublishedUtc = DateTime.UtcNow;
-        _unitOfWork.ChapterRepository.Update(chapter);
-        await _unitOfWork.SaveChangesAsync();
-
-        return ServiceResult.Successful();
+        /* Publishing is only legal from approved, so an unapproved group and an already-published one are both
+           the trigger not being permitted. Only the wording is this method's. */
+        return result.Success
+            ? ServiceResult.Successful()
+            : ServiceResult.Failure("This group cannot be published");
     }
 
     public async Task<ServiceResult> ReplyToConversation(

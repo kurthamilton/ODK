@@ -65,9 +65,31 @@ done. Its tunnel config lives in the gitignored root `ngrok.yml` (see the root R
 
 ## Categories
 
-Two axes, composed by the filter:
+Three axes, composed by the filter:
 
 - **Platform** — `Default` / `DrunkenKnitwits`, from the base class (plus `E2E` on everything).
+- **Workflow** — one category per state machine in the app's `**/Workflows` folders, named for the machine's
+  class: `AccountStateMachine` → `AccountWorkflows`. A test belongs to a workflow when the behaviour it
+  asserts is an *edge* of that machine — whichever platform it runs on and whoever drives it — so these cut
+  across the other two axes deliberately. Keeping the names in step with the class names is the whole point:
+  "run the tests for the machine I just changed" stays a mechanical question rather than a judgement.
+  - **`AccountWorkflows`** — every route to an account that can sign in, on both platforms, applied at
+    *fixture* level: `AccountFlowTests` (Group Squirrel sign-up → activate → log in),
+    `DrunkenKnitwitsAccountFlowTests` (where signing up is joining the chapter) and
+    `DrunkenKnitwitsInvitedMemberTests` (an imported member accepting an invitation). Worth isolating because
+    account creation is what nearly every other fixture provisions through, so it is the first thing to run
+    when a change might have broken sign-up — and because the invited flows branch four ways on state a test
+    has to arrange (invited or not, address kept or changed, account or no account).
+  - **`ChapterMembershipWorkflows`** — every route into a group. `GroupTests` and the two DrunkenKnitwits
+    fixtures above carry it at *fixture* level; the two `JoinChapter_*` tests in `MemberProfileTestsBase`
+    carry it at *method* level, because a group's required questions are a step on the Join transition while
+    the fixture's other six tests are about the member page.
+  - **`ChapterPublicationWorkflows`** — a group becoming findable: the site admin approving it
+    (`SiteAdminTests`) and its owner publishing it (`GroupOwnerTests`). Applied at *method* level, because
+    both fixtures are named for an **actor** rather than for a workflow and so will attract unrelated tests —
+    a fixture-level category would swallow them silently. `GroupTests`'s not-approved and not-published cases
+    stay out of it: they assert that the *join* is blocked, which is an edge of the membership machine, and
+    the publication machine has no edge for being read.
 - **Capability** — added where a subset is worth running on its own:
   - **`Stripe`** — the four payment fixtures (site/chapter purchase, recurring renewal, cancellation),
     applied at *fixture* level. These are the slow ones — real Stripe calls, webhook round-trips via the
@@ -84,23 +106,18 @@ Two axes, composed by the filter:
     provisions its own group plus a subscription carrying the CustomEmails feature, so the fixture is slow
     to arrange, and the behaviour it covers is fiddly enough to iterate on: subject and body are customised
     independently, and the form's state is driven by client script.
-  - **`AccountCreate`** — every route into an account, on both platforms, applied at *fixture* level:
-    `AccountFlowTests` (Group Squirrel sign-up → activate → log in), `DrunkenKnitwitsAccountFlowTests` (where
-    signing up is joining the chapter) and `DrunkenKnitwitsInvitedMemberTests` (an imported member accepting
-    an invitation). Worth isolating because account creation is what nearly every other fixture provisions
-    through, so it is the first thing to run when a change might have broken sign-up — and because the invited
-    flows branch four ways on state a test has to arrange (invited or not, address kept or changed, account or
-    no account).
 
 ```
-script.run.tests.bat                 # prompts for a category
-script.run.tests.bat Stripe          # just the payment tests
-script.run.tests.bat Venues          # just the venue admin tests
-script.run.tests.bat SiteQuestions   # just the site FAQ tests
-script.run.tests.bat EmailAdmin      # just the email customisation tests
-script.run.tests.bat AccountCreate   # just the account-creation and invited-member tests
-script.run.tests.bat Default         # one platform
-script.run.tests.bat NoStripe        # everything except payments - skips the slow ones
+script.run.tests.bat                              # prompts for a category
+script.run.tests.bat AccountWorkflows             # every route to an account
+script.run.tests.bat ChapterMembershipWorkflows   # every route into a group
+script.run.tests.bat ChapterPublicationWorkflows  # approving and publishing a group
+script.run.tests.bat Stripe                       # just the payment tests
+script.run.tests.bat Venues                       # just the venue admin tests
+script.run.tests.bat SiteQuestions                # just the site FAQ tests
+script.run.tests.bat EmailAdmin                   # just the email customisation tests
+script.run.tests.bat Default                      # one platform
+script.run.tests.bat NoStripe                     # everything except payments - skips the slow ones
 ```
 
 A bare name is wrapped as `TestCategory=<name>`; anything mentioning `TestCategory` is used verbatim.
@@ -114,7 +131,9 @@ dotnet test ODK.E2E.Tests\ODK.E2E.Tests.csproj --filter "TestCategory=Stripe&Tes
 ```
 
 Add a capability category when a group of tests is slow, needs extra setup, or is worth isolating while
-iterating - not for every feature, or filtering stops meaning anything.
+iterating - not for every feature, or filtering stops meaning anything. **A workflow category is not that
+judgement:** a state machine gets one, and every test asserting one of its edges carries it, so a new machine
+means a new category and the E2E suite tracks the app's workflows rather than a curated selection of them.
 
 ## Conventions
 

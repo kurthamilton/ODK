@@ -10,9 +10,6 @@
     <File Path="DEPLOYMENT.md" />
     <File Path="README.md" />
   </Folder>
-  <Folder Name="/Solution Items/E2E/">
-    <File Path="E2E/script.run.tests.bat" />
-  </Folder>
   <Folder Name="/Solution Items/Github/" />
   <Folder Name="/Solution Items/Github/Workflows/">
     <File Path=".github/workflows/build.yml" />
@@ -26,6 +23,7 @@
     <File Path="Scripts/ef-update-database.bat" />
   </Folder>
   <Folder Name="/Solution Items/Scripts/">
+    <File Path="E2E/script.run.tests.bat" />
     <File Path="Scripts/dotnet-tool-restore.bat" />
     <File Path="Scripts/run.app.bat" />
     <File Path="Scripts/run.build.css.bat" />
@@ -39,8 +37,8 @@
     <Project Path="ODK.Services.Tests/ODK.Services.Tests.csproj" />
     <Project Path="ODK.Web.Razor.Tests/ODK.Web.Razor.Tests.csproj" />
   </Folder>
-  <Project Path="ODK.Core/ODK.Core.csproj" />
   <Project Path="ODK.Core.Workflows/ODK.Core.Workflows.csproj" />
+  <Project Path="ODK.Core/ODK.Core.csproj" />
   <Project Path="ODK.Data.Core/ODK.Data.Core.csproj" />
   <Project Path="ODK.Data.EntityFramework.Migrations/ODK.Data.EntityFramework.Migrations.csproj" />
   <Project Path="ODK.Data.EntityFramework/ODK.Data.EntityFramework.csproj" />

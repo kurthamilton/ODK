@@ -10,6 +10,7 @@ using ODK.Services.Authentication;
 using ODK.Services.Authentication.OAuth;
 using ODK.Services.Authorization;
 using ODK.Services.Chapters;
+using ODK.Services.Chapters.Workflows;
 using ODK.Services.Contact;
 using ODK.Services.Countries;
 using ODK.Services.Csv;
@@ -250,6 +251,7 @@ public static class DependencyRegistrar
             })
             .AddScoped<IMemberService, MemberService>()
             .AddAccountWorkflows()
+            .AddChapterWorkflows()
             .AddScoped<IMemberTaskService, MemberTaskService>()
             .AddScoped<IMemberTaskProvider, CompleteChapterProfileTaskProvider>()
             .AddScoped<IMemberTaskProvider, PublishChapterTaskProvider>()
@@ -398,6 +400,34 @@ public static class DependencyRegistrar
     /// request, and the steps come from the definition rather than from a list repeated here - a step added to a
     /// transition is registered by being on it.
     /// </summary>
+    /// <summary>
+    /// How a group becomes findable. Registered alongside the account machines because the shape is the same;
+    /// it shares nothing with them but the framework.
+    /// </summary>
+    private static IServiceCollection AddChapterWorkflows(this IServiceCollection services)
+    {
+        var publication = ChapterPublicationStateMachine.Create();
+
+        services
+            .AddSingleton(publication)
+            .AddSingleton<IStateMachineDiagram>(publication)
+            .AddScoped<
+                IStateResolver<ChapterPublicationState, ChapterPublicationContext>,
+                ChapterPublicationStateResolver>()
+            .AddScoped<
+                IStepFactory<ChapterPublicationContext>,
+                ServiceProviderStepFactory<ChapterPublicationContext>>()
+            .AddScoped<StateMachineRunner<
+                ChapterPublicationState, ChapterPublicationTrigger, ChapterPublicationContext>>();
+
+        foreach (var stepType in publication.StepTypes)
+        {
+            services.AddScoped(stepType);
+        }
+
+        return services;
+    }
+
     private static IServiceCollection AddAccountWorkflows(this IServiceCollection services)
     {
         var account = AccountStateMachine.Create();

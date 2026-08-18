@@ -7,7 +7,7 @@ using ODK.E2E.Tests.Pages;
 namespace ODK.E2E.Tests;
 
 [TestFixture]
-[Category("ChapterMembership")]
+[Category("ChapterMembershipWorkflows")]
 public class GroupTests : DefaultPageTest
 {
     [Test]

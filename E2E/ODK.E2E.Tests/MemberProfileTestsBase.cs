@@ -23,6 +23,7 @@ public abstract class MemberProfileTestsBase : OdkPageTest
     private static MemberPropertyDataHelper MemberProperties => new(E2ESettings.ConnectionString);
 
     [Test]
+    [Category("ChapterMembershipWorkflows")]
     public async Task JoinChapter_MissingRequiredProperty_CannotSubmit()
     {
         // Arrange - a chapter with one required and one optional profile question.
@@ -42,6 +43,7 @@ public abstract class MemberProfileTestsBase : OdkPageTest
     }
 
     [Test]
+    [Category("ChapterMembershipWorkflows")]
     public async Task JoinChapter_WithProperties_PersistsAnswers()
     {
         // Arrange - a chapter with a required and an optional profile question.

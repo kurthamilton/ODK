@@ -1,5 +1,8 @@
 ﻿using ODK.Core.Members;
+using ODK.Core.Workflows;
 using ODK.Data.Core;
+using ODK.Services.Chapters.Workflows;
+using ODK.Services.Workflows;
 using ODK.Data.Core.Members;
 using ODK.Services.Chapters.ViewModels;
 using ODK.Services.Exceptions;
@@ -10,6 +13,8 @@ namespace ODK.Services.Chapters;
 
 public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminService
 {
+    private readonly StateMachineRunner<
+        ChapterPublicationState, ChapterPublicationTrigger, ChapterPublicationContext> _chapterPublication;
     private readonly IMemberEmailService _memberEmailService;
     private readonly IMemberSiteSubscriptionWriter _memberSiteSubscriptionWriter;
     private readonly IUnitOfWork _unitOfWork;
@@ -17,9 +22,12 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
     public ChapterSiteAdminService(
         IUnitOfWork unitOfWork,
         IMemberEmailService memberEmailService,
-        IMemberSiteSubscriptionWriter memberSiteSubscriptionWriter)
+        IMemberSiteSubscriptionWriter memberSiteSubscriptionWriter,
+        StateMachineRunner<ChapterPublicationState, ChapterPublicationTrigger, ChapterPublicationContext>
+            chapterPublication)
         : base(unitOfWork)
     {
+        _chapterPublication = chapterPublication;
         _memberEmailService = memberEmailService;
         _memberSiteSubscriptionWriter = memberSiteSubscriptionWriter;
         _unitOfWork = unitOfWork;
@@ -29,25 +37,26 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
     {
         var platform = request.Platform;
 
+        /* Loaded here rather than by a context factory: the securable is enforced by the wrapper that does the
+           loading, so a factory would have to sit inside it. The service loads and maps, as the member import
+           does. */
         var (chapter, owner) = await GetSiteAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(platform, chapterId),
             x => x.MemberRepository.GetChapterOwner(chapterId));
 
-        if (chapter.Approved())
-        {
-            return ServiceResult.Successful();
-        }
+        /* Approving a group that is already approved is a legal no-op rather than a failure, so there is no
+           check for it here - the machine has an Approve edge out of every state and only the one out of Draft
+           does any work. */
+        var result = await _chapterPublication.Fire(
+            ChapterPublicationTrigger.Approve,
+            new ChapterPublicationContext
+            {
+                Chapter = chapter,
+                Owner = owner,
+                Request = request
+            });
 
-        chapter.ApprovedUtc = DateTime.UtcNow;
-
-        _unitOfWork.ChapterRepository.Update(chapter);
-        await _unitOfWork.SaveChangesAsync();
-
-        await _memberEmailService.SendGroupApprovedEmail(
-            ChapterServiceRequest.Create(chapter, request),
-            owner);
-
-        return ServiceResult.Successful();
+        return result.ToServiceResult();
     }
 
     public async Task<ServiceResult> DeleteChapter(IMemberServiceRequest request, Guid chapterId)

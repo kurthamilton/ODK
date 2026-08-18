@@ -24,9 +24,8 @@ namespace ODK.E2E.Tests;
 /// </para>
 /// </remarks>
 [TestFixture]
-[Category("AccountCreate")]
-[Category("ChapterMembership")]
-[Category("SiteMembership")]
+[Category("AccountWorkflows")]
+[Category("ChapterMembershipWorkflows")]
 public class DrunkenKnitwitsInvitedMemberTests : DrunkenKnitwitsPageTest
 {
     /// <summary>
