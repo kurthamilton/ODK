@@ -443,8 +443,10 @@ the request locale and enqueues a background `IMemberLocaleService.UpdateLocale`
   value distinguishable; branch on the member you want (`if (level != Full)`) rather than against the one
   you don't, so `None` never falls into the expensive or destructive path.
 - **Assign explicit values only where the number itself is the contract** — persisted to the database,
-  sent over an API, or read from config — because there renumbering silently reinterprets existing data
-  (`PaymentProviderType`, `EmailType`). An enum that never leaves the process keeps implicit values
+  sent over an API, queued as a background job argument, or read from config — because there renumbering
+  silently reinterprets existing data (`PaymentProviderType`, `EmailType`). Hangfire counts: it serialises an
+  enum argument as its number, so a job queued by one version runs as a different member under the next
+  (`AccountState`, `AccountTrigger`). An enum that never leaves the process keeps implicit values
   (`ChapterAdminSecurable`, `MemberImportRowStatus`): numbering it adds a promise nothing needs and
   invites the next member to be appended out of order to preserve it.
 - **Be timezone-aware in new work.** Timestamps are stored/compared in UTC; a user's calendar

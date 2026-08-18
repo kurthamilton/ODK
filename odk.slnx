@@ -32,12 +32,14 @@
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="ODK.Core.Tests/ODK.Core.Tests.csproj" />
+    <Project Path="ODK.Core.Workflows.Tests/ODK.Core.Workflows.Tests.csproj" />
     <Project Path="ODK.Data.EntityFramework.Migrations.Tests/ODK.Data.EntityFramework.Migrations.Tests.csproj" />
     <Project Path="ODK.Services.Integrations.Tests/ODK.Services.Integrations.Tests.csproj" />
     <Project Path="ODK.Services.Tests/ODK.Services.Tests.csproj" />
     <Project Path="ODK.Web.Razor.Tests/ODK.Web.Razor.Tests.csproj" />
   </Folder>
   <Project Path="ODK.Core/ODK.Core.csproj" />
+  <Project Path="ODK.Core.Workflows/ODK.Core.Workflows.csproj" />
   <Project Path="ODK.Data.Core/ODK.Data.Core.csproj" />
   <Project Path="ODK.Data.EntityFramework.Migrations/ODK.Data.EntityFramework.Migrations.csproj" />
   <Project Path="ODK.Data.EntityFramework/ODK.Data.EntityFramework.csproj" />
