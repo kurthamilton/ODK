@@ -19,6 +19,7 @@ Dependencies flow downward; never reference upward.
 
 ```
 ODK.Core                    Domain entities, enums, low-level utils. No infrastructure.
+ODK.Core.Workflows          State machine framework. Depends on nothing, including ODK.Core.
 ODK.Data.Core               Repository/data abstractions.
 ODK.Data.EntityFramework    EF Core implementations.
 ODK.Resources               Embedded resources (email templates etc.).
@@ -29,7 +30,8 @@ ODK.Web.Common              Web helpers shared across web projects (e.g. route b
 ODK.Web.Razor               The web app: Razor Pages, MVC controllers, views, wwwroot.
 ```
 
-Tests: `ODK.Core.Tests`, `ODK.Services.Tests`, `ODK.Services.Integrations.Tests`.
+Tests: `ODK.Core.Tests`, `ODK.Core.Workflows.Tests`, `ODK.Services.Tests`,
+`ODK.Services.Integrations.Tests`.
 
 ## Build / test / run
 

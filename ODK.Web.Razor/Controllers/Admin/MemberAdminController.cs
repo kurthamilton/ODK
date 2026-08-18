@@ -85,7 +85,6 @@ public class MemberAdminController : AdminControllerBase
             return RedirectToReferrer();
         }
 
-        var chapter = Chapter;
         return Redirect(OdkRoutes.GroupAdmin.Members(Chapter).Path);
     }
 

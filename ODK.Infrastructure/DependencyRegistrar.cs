@@ -38,6 +38,9 @@ using ODK.Services.Issues;
 using ODK.Services.Localization;
 using ODK.Services.Logging;
 using ODK.Services.Members;
+using ODK.Services.Members.Workflows;
+using ODK.Services.Workflows;
+using ODK.Core.Workflows;
 using ODK.Services.Members.Tasks;
 using ODK.Services.Members.Tasks.Providers;
 using ODK.Services.Notifications;
@@ -245,6 +248,7 @@ public static class DependencyRegistrar
                 MemberAvatarSize = appSettings.Members.AvatarSize
             })
             .AddScoped<IMemberService, MemberService>()
+            .AddAccountWorkflow()
             .AddScoped<IMemberTaskService, MemberTaskService>()
             .AddScoped<IMemberTaskProvider, CompleteChapterProfileTaskProvider>()
             .AddScoped<IMemberTaskProvider, PublishChapterTaskProvider>()
@@ -311,7 +315,6 @@ public static class DependencyRegistrar
     private static void ConfigureServiceSettings(IServiceCollection services, AppSettings appSettings)
     {
         AuthSettings auth = appSettings.Auth;
-        MembersSettings members = appSettings.Members;
         OAuthSettings oauth = appSettings.OAuth;
         RecaptchaSettings recaptcha = appSettings.Recaptcha;
 
@@ -387,5 +390,29 @@ public static class DependencyRegistrar
             BrevoWebhookPassword = appSettings.Brevo.WebhookPassword,
             BrevoWebhookPasswordHeader = appSettings.Brevo.WebhookPasswordHeader
         });
+    }
+
+    /// <summary>
+    /// The account state machine. Its definition is immutable and holds no state, so one instance serves every
+    /// request, and the steps come from the definition rather than from a list repeated here - a step added to a
+    /// transition is registered by being on it.
+    /// </summary>
+    private static IServiceCollection AddAccountWorkflow(this IServiceCollection services)
+    {
+        var definition = AccountStateMachine.Create();
+
+        services
+            .AddSingleton(definition)
+            .AddScoped<IAccountContextFactory, AccountContextFactory>()
+            .AddScoped<IStateResolver<AccountState, AccountContext>, AccountStateResolver>()
+            .AddScoped<IStepFactory<AccountContext>, ServiceProviderStepFactory<AccountContext>>()
+            .AddScoped<StateMachineRunner<AccountState, AccountTrigger, AccountContext>>();
+
+        foreach (var stepType in definition.StepTypes)
+        {
+            services.AddScoped(stepType);
+        }
+
+        return services;
     }
 }

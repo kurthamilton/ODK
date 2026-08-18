@@ -66,4 +66,24 @@ public static class AccountStateMachineTests
             $"SignUp [on {PlatformType.DrunkenKnitwits}, not presented with the invitation token]",
             $"SignUp [on {PlatformType.Default}]");
     }
+
+    [Test]
+    public static void Create_ActivateWhileRegistered_CoversEveryMembershipTheAccountCouldHold()
+    {
+        // Arrange
+        var definition = AccountStateMachine.Create();
+
+        // Act
+        var result = definition
+            .From(AccountState.Registered)
+            .Where(x => x.Trigger == AccountTrigger.Activate)
+            .Select(x => $"{x.Label()} -> {x.To}")
+            .ToArray();
+
+        // Assert
+        result.Should().BeEquivalentTo(
+            "Activate [not a member of the group] -> Activated",
+            "Activate [a member of the group, approved] -> GroupMember",
+            "Activate [a member of the group, not approved] -> PendingApproval");
+    }
 }

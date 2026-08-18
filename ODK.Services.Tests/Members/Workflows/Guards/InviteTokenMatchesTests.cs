@@ -67,14 +67,8 @@ public static class InviteTokenMatchesTests
         result.Should().BeFalse();
     }
 
-    private static AccountContext Context(MemberChapterInvite? invite, string? inviteToken) => new()
-    {
-        ApprovalRequired = false,
-        Invite = invite,
-        InviteToken = inviteToken,
-        Platform = PlatformType.DrunkenKnitwits,
-        VerifiedByOAuth = false
-    };
+    private static AccountContext Context(MemberChapterInvite? invite, string? inviteToken) =>
+        AccountContexts.Create(Guid.NewGuid(), invite: invite, inviteToken: inviteToken);
 
     private static MemberChapterInvite Invite(string token) => new()
     {

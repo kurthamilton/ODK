@@ -4,8 +4,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Moq;
+using Microsoft.Extensions.DependencyInjection;
+using ODK.Core.Workflows;
+using ODK.Services.Members.Workflows;
+using ODK.Services.Workflows;
+using ODK.Data.Core;
 using NUnit.Framework;
 using ODK.Core.Chapters;
+using ODK.Core.DataTypes;
 using ODK.Core.Countries;
 using ODK.Core.Features;
 using ODK.Core.Members;
@@ -466,6 +472,37 @@ public static class MemberServiceTests
     }
 
     [Test]
+    public static async Task CreateChapterAccount_RequiredGroupQuestionNotAnswered_Fails()
+    {
+        /* Arrange - signing up to a group is the same act as joining one, so it enforces the group's required
+           questions the way JoinChapter does. */
+        using var context = CreateMockOdkContext();
+        SeedDefaultSiteSubscription(context, PlatformType.DrunkenKnitwits);
+        var chapter = context.CreateChapter();
+        context.Create(new ChapterProperty
+        {
+            ChapterId = chapter.Id,
+            DataType = DataType.Text,
+            Id = Guid.NewGuid(),
+            Label = "Favourite yarn",
+            Name = "yarn",
+            Required = true
+        });
+
+        var service = CreateMemberService(context, new Mock<IMemberEmailService>().Object);
+
+        // Act - the profile answers nothing.
+        var result = await service.CreateChapterAccount(
+            CreateChapterRequest(chapter),
+            CreateChapterProfile("new@example.com", firstName: "New"));
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.Message.Should().Be("The following properties are required: Favourite yarn");
+        context.Set<Member>().Any(x => x.EmailAddress == "new@example.com").Should().BeFalse();
+    }
+
+    [Test]
     public static async Task JoinChapter_InvitedMember_SkipsApprovalAndConsumesTheInvitation()
     {
         /* Arrange - a group that approves new members, and a member it has invited. This is how an invitation is
@@ -555,6 +592,70 @@ public static class MemberServiceTests
             .BeFalse();
     }
 
+    [Test]
+    public static async Task JoinChapter_MemberAlreadyInTheGroup_Fails()
+    {
+        /* Arrange - the machine has no Join edge out of a state that holds a membership, so this is refused by
+           the graph rather than by a check. Only the wording belongs to the service. */
+        using var context = CreateMockOdkContext();
+
+        var owner = context.CreateMember();
+        var chapter = context.CreateChapter(owner: owner, siteSubscription: context.CreateSiteSubscription());
+
+        var member = context.CreateMember(afterCreate: x => x.EmailAddress = "existing@example.com");
+        member.Chapters.Add(new MemberChapter
+        {
+            Approved = true,
+            ChapterId = chapter.Id,
+            CreatedUtc = DateTime.UtcNow,
+            MemberId = member.Id
+        });
+
+        var service = CreateMemberService(context, new Mock<IMemberEmailService>().Object);
+
+        // Act
+        var result = await service.JoinChapter(CreateMemberChapterRequest(chapter, member), []);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.Message.Should().Be("You are already a member of this group");
+    }
+
+    [Test]
+    public static async Task JoinChapter_GroupAtItsMemberLimit_FailsWithoutWritingAnything()
+    {
+        // Arrange - the capacity check is the first step, so nothing after it should have run.
+        using var context = CreateMockOdkContext();
+
+        var owner = context.CreateMember();
+        var chapter = context.CreateChapter(
+            owner: owner,
+            siteSubscription: context.CreateSiteSubscription(memberLimit: 1));
+
+        // The one place the subscription allows is already taken.
+        var existing = context.CreateMember(afterCreate: x => x.EmailAddress = "taken@example.com");
+        context.Create(new MemberChapter
+        {
+            Approved = true,
+            ChapterId = chapter.Id,
+            CreatedUtc = DateTime.UtcNow,
+            Id = Guid.NewGuid(),
+            MemberId = existing.Id
+        });
+
+        var member = context.CreateMember(afterCreate: x => x.EmailAddress = "applicant@example.com");
+
+        var service = CreateMemberService(context, new Mock<IMemberEmailService>().Object);
+
+        // Act
+        var result = await service.JoinChapter(CreateMemberChapterRequest(chapter, member), []);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.Message.Should().Be("This group is not able to welcome any new members");
+        context.Set<MemberChapter>().Any(x => x.MemberId == member.Id).Should().BeFalse();
+    }
+
     private static IChapterServiceRequest CreateChapterRequest(Chapter chapter) =>
         Mock.Of<IChapterServiceRequest>(x =>
             x.Platform == PlatformType.DrunkenKnitwits &&
@@ -624,22 +725,69 @@ public static class MemberServiceTests
             .Returns(ServiceResult.Successful());
 
         var unitOfWork = MockUnitOfWork.Create(context);
+        var resolvedAuthorizationService = authorizationService ?? Mock.Of<IAuthorizationService>();
+        var notificationService = Mock.Of<INotificationService>();
+        var subscriptionWriter = new MemberChapterSubscriptionWriter(unitOfWork);
+
+        var workflow = CreateAccountWorkflow(
+            unitOfWork,
+            resolvedAuthorizationService,
+            memberEmailService,
+            notificationService,
+            subscriptionWriter);
+
         return new MemberService(
             unitOfWork,
-            authorizationService ?? Mock.Of<IAuthorizationService>(),
+            resolvedAuthorizationService,
             memberImageService.Object,
             memberEmailService,
-            Mock.Of<INotificationService>(),
+            notificationService,
             Mock.Of<IOAuthProviderFactory>(),
             Mock.Of<ITopicService>(),
             Mock.Of<IPaymentProviderFactory>(),
             Mock.Of<IGeolocationService>(),
             Mock.Of<ILoggingService>(),
             new DistanceUnitFactory(),
-            new MemberChapterSubscriptionWriter(unitOfWork),
+            subscriptionWriter,
             new MemberSiteSubscriptionWriter(unitOfWork),
             CreateMockRecaptchaService(),
-            new EmailValidationService(emailVerifier ?? new InconclusiveEmailVerifier()));
+            new EmailValidationService(emailVerifier ?? new InconclusiveEmailVerifier()),
+            workflow.GetRequiredService<IAccountContextFactory>(),
+            workflow.GetRequiredService<StateMachineRunner<AccountState, AccountTrigger, AccountContext>>());
+    }
+
+    /// <summary>
+    /// The account machine wired the way the app wires it, over the same mocks the service under test uses, so
+    /// a step resolves here exactly as it does in production. The steps come from the definition, so one added
+    /// to a transition needs no change in this helper.
+    /// </summary>
+    private static IServiceProvider CreateAccountWorkflow(
+        IUnitOfWork unitOfWork,
+        IAuthorizationService authorizationService,
+        IMemberEmailService memberEmailService,
+        INotificationService notificationService,
+        IMemberChapterSubscriptionWriter subscriptionWriter)
+    {
+        var definition = AccountStateMachine.Create();
+
+        var services = new ServiceCollection()
+            .AddSingleton(unitOfWork)
+            .AddSingleton(authorizationService)
+            .AddSingleton(memberEmailService)
+            .AddSingleton(notificationService)
+            .AddSingleton(subscriptionWriter)
+            .AddSingleton(definition)
+            .AddScoped<IAccountContextFactory, AccountContextFactory>()
+            .AddScoped<IStateResolver<AccountState, AccountContext>, AccountStateResolver>()
+            .AddScoped<IStepFactory<AccountContext>, ServiceProviderStepFactory<AccountContext>>()
+            .AddScoped<StateMachineRunner<AccountState, AccountTrigger, AccountContext>>();
+
+        foreach (var stepType in definition.StepTypes)
+        {
+            services.AddScoped(stepType);
+        }
+
+        return services.BuildServiceProvider();
     }
 
     private static IMemberChapterServiceRequest CreateMemberChapterRequest(Chapter chapter, Member member) =>
