@@ -17,19 +17,22 @@ rem file then works too, which it didn't when the only way in was an argument.
 if "%CATEGORY%"=="" (
     echo Which tests?
     echo.
-    echo   E2E                  - everything [default]
-    echo   Default              - Group Squirrel only
-    echo   DrunkenKnitwits      - Drunken Knitwits only
-    echo   Stripe               - payments only; slow, needs the ngrok tunnel up
-    echo   NoStripe             - everything except payments
-    echo   AccountCreate        - every route into an account: sign-up, activation, invited members
-    echo   SiteMembership       - the account lifecycle: sign-up, activation, imported accounts
-    echo   ChapterMembership    - standing in a group: joining, invitations, accepting, member limits
-    echo   Venues               - venue admin; creation, name normalising, slugs, events filter
-    echo   SiteQuestions        - site FAQ admin and the About page; Group Squirrel only
-    echo   EmailAdmin           - a group customising its email templates; Group Squirrel only
+    echo   E2E                           - everything [default]
+    echo   Default                       - Group Squirrel only
+    echo   DrunkenKnitwits               - Drunken Knitwits only
+    echo   Stripe                        - payments only; slow, needs the ngrok tunnel up
+    echo   NoStripe                      - everything except payments
     echo.
-    echo   Comma-separate to combine, e.g. ChapterMembership,SiteMembership
+    echo   One state machine each:
+    echo   AccountWorkflows              - every route to an account: sign-up, activation, imported members
+    echo   ChapterMembershipWorkflows    - every route into a group: sign-up, invitation, join, questions
+    echo   ChapterPublicationWorkflows   - a group becoming findable: admin approves, then owner publishes
+    echo.
+    echo   Venues                        - venue admin; creation, name normalising, slugs, events filter
+    echo   SiteQuestions                 - site FAQ admin and the About page; Group Squirrel only
+    echo   EmailAdmin                    - a group customising its email templates; Group Squirrel only
+    echo.
+    echo   Comma-separate to combine, e.g. AccountWorkflows,ChapterMembershipWorkflows
     echo.
     set /p "CATEGORY=Category [E2E]: "
 )

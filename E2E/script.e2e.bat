@@ -8,9 +8,9 @@ rem
 rem Usage: script.e2e.bat <port> <path-to-test-csproj> [category[,category...]]
 rem   category defaults to E2E (all platforms). Use Default or DrunkenKnitwits to target one platform.
 rem   e.g. script.e2e.bat 8125 ODK.E2E.Tests\ODK.E2E.Tests.csproj Default
-rem   Comma-separate to run several: ChapterMembership,SiteMembership runs the union of the two. A test in
-rem   more than one of them still runs once - the categories build a single filter expression, which selects
-rem   a set of tests rather than running the suite once per category.
+rem   Comma-separate to run several: AccountWorkflows,ChapterMembershipWorkflows runs the union of the
+rem   two. A test in more than one of them still runs once - the categories build a single filter
+rem   expression, which selects a set of tests rather than running the suite once per category.
 rem
 rem One-time prerequisite: install the Playwright browsers (see E2E/README.md):
 rem   powershell -File ODK.E2E.Tests\bin\Debug\net10.0\playwright.ps1 install

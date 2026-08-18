@@ -5,6 +5,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Moq;
+using Microsoft.Extensions.DependencyInjection;
+using ODK.Core.Workflows;
+using ODK.Services.Chapters.Workflows;
+using ODK.Services.Workflows;
 using NUnit.Framework;
 using ODK.Core.Chapters;
 using ODK.Core.Countries;
@@ -1366,8 +1370,9 @@ public static class ChapterAdminServiceTests
         ILoggingService? loggingService = null,
         ChapterAdminServiceSettings? settings = null)
     {
+        var unitOfWork = CreateMockUnitOfWork(context);
         return new ChapterAdminService(
-            CreateMockUnitOfWork(context),
+            unitOfWork,
             new EmailValidationService(new InconclusiveEmailVerifier()),
             htmlValidator ?? CreateMockHtmlValidator(),
             socialMediaService ?? new Mock<ISocialMediaService>().Object,
@@ -1385,7 +1390,41 @@ public static class ChapterAdminServiceTests
             // The real one, not a mock: it has no dependencies and is a pure function over the arranged
             // subscription features. A bare mock returns false from every check, which silently turns any
             // feature-gated path into "not permitted" and makes the arrangement look broken instead.
-            new AuthorizationService());
+            new AuthorizationService(),
+            CreatePublicationRunner(unitOfWork));
+    }
+
+    /// <summary>
+    /// The publication machine wired the way the app wires it, over the same unit of work. Its steps come from
+    /// the definition, so one added later needs no change here.
+    /// </summary>
+    private static StateMachineRunner<
+        ChapterPublicationState, ChapterPublicationTrigger, ChapterPublicationContext> CreatePublicationRunner(
+        IUnitOfWork unitOfWork)
+    {
+        var definition = ChapterPublicationStateMachine.Create();
+
+        var services = new ServiceCollection()
+            .AddSingleton(unitOfWork)
+            .AddSingleton(definition)
+            .AddScoped<
+                IStateResolver<ChapterPublicationState, ChapterPublicationContext>,
+                ChapterPublicationStateResolver>()
+            .AddScoped<
+                IStepFactory<ChapterPublicationContext>,
+                ServiceProviderStepFactory<ChapterPublicationContext>>()
+            .AddScoped<StateMachineRunner<
+                ChapterPublicationState, ChapterPublicationTrigger, ChapterPublicationContext>>();
+
+        foreach (var stepType in definition.StepTypes)
+        {
+            services.AddScoped(stepType);
+        }
+
+        return services
+            .BuildServiceProvider()
+            .GetRequiredService<StateMachineRunner<
+                ChapterPublicationState, ChapterPublicationTrigger, ChapterPublicationContext>>();
     }
 
     private static ChapterAdminServiceSettings CreateChapterAdminServiceSettings(

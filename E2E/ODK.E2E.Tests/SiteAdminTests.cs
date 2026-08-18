@@ -10,6 +10,7 @@ namespace ODK.E2E.Tests;
 public class SiteAdminTests : DefaultPageTest
 {
     [Test]
+    [Category("ChapterPublicationWorkflows")]
     public async Task ApproveGroup_SetsApprovedUtcTimestamp()
     {
         // Arrange - a group owner creates a group, which starts unapproved. A fresh owner each time,

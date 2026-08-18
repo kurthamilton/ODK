@@ -14,11 +14,14 @@ namespace ODK.E2E.Tests;
 /// is chapter-scoped - join (= create account) -> activate -> log in - against a seeded chapter.
 /// </summary>
 [TestFixture]
-[Category("AccountCreate")]
-[Category("ChapterMembership")]
-[Category("SiteMembership")]
+[Category("AccountWorkflows")]
+[Category("ChapterMembershipWorkflows")]
 public class DrunkenKnitwitsAccountFlowTests : DrunkenKnitwitsPageTest
 {
+    private static MemberDataHelper Members => new(E2ESettings.ConnectionString);
+
+    private static MemberSiteSubscriptionDataHelper MemberSubscriptions => new(E2ESettings.ConnectionString);
+
     [Test]
     public async Task JoinChapter_ActivateAndLogIn_Succeeds()
     {
@@ -86,8 +89,4 @@ public class DrunkenKnitwitsAccountFlowTests : DrunkenKnitwitsPageTest
            activate, and nothing for the activation email to be sent to. */
         (await Members.Exists(email)).Should().BeFalse();
     }
-
-    private static MemberDataHelper Members => new(E2ESettings.ConnectionString);
-
-    private static MemberSiteSubscriptionDataHelper MemberSubscriptions => new(E2ESettings.ConnectionString);
 }

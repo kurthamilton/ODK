@@ -8,8 +8,7 @@ using ODK.E2E.Tests.Pages;
 namespace ODK.E2E.Tests;
 
 [TestFixture]
-[Category("AccountCreate")]
-[Category("SiteMembership")]
+[Category("AccountWorkflows")]
 public class AccountFlowTests : DefaultPageTest
 {
     [Test]

@@ -10,6 +10,7 @@ namespace ODK.E2E.Tests;
 public class GroupOwnerTests : DefaultPageTest
 {
     [Test]
+    [Category("ChapterPublicationWorkflows")]
     public async Task PublishGroup_Approved_SetsPublishedTimestamp()
     {
         // Arrange - an approved (but not yet published) group.
@@ -30,6 +31,7 @@ public class GroupOwnerTests : DefaultPageTest
     }
 
     [Test]
+    [Category("ChapterPublicationWorkflows")]
     public async Task PublishGroup_NotApproved_IsRejected()
     {
         // NB the service returns a failure (ServiceResult.Failure) rather than throwing, and the UI

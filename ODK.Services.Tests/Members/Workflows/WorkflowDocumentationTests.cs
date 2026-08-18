@@ -2,6 +2,7 @@
 using System.IO;
 using NUnit.Framework;
 using ODK.Core.Workflows;
+using ODK.Services.Chapters.Workflows;
 using ODK.Services.Members.Workflows.Account;
 using ODK.Services.Members.Workflows.ChapterMembership;
 
@@ -17,6 +18,12 @@ public static class WorkflowDocumentationTests
     [Test]
     public static void AccountStateMachine_CommittedDocumentation_MatchesTheDefinition() =>
         AssertMatchesCommittedPage("account.md", MarkdownExporter.ToDocument(AccountStateMachine.Create()));
+
+    [Test]
+    public static void ChapterPublicationStateMachine_CommittedDocumentation_MatchesTheDefinition() =>
+        AssertMatchesCommittedPage(
+            "chapter-publication.md",
+            MarkdownExporter.ToDocument(ChapterPublicationStateMachine.Create()));
 
     [Test]
     public static void ChapterMembershipStateMachine_CommittedDocumentation_MatchesTheDefinition() =>
