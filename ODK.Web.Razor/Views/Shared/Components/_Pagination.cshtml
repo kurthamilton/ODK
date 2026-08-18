@@ -1,7 +1,7 @@
 ﻿@using ODK.Web.Razor.Models.Components
 @model PaginationViewModel
 
-<nav aria-label="@Model.AccessibilityLabel">
+<nav aria-label="@Model.AccessibilityLabel" data-odk-pagination="@Model.PageUrlTemplate">
     @* flex-wrap as well as the windowed page list: the window is bounded, but a narrow enough screen can
        still run out of room, and wrapping keeps it inside the viewport rather than widening the page. *@
     <ul class="pagination flex-wrap">
@@ -11,20 +11,38 @@
                 @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.AngleLeft))
             </a>
         </li>
-        @foreach (var page in Model.VisiblePages)
+        @foreach (var item in Model.VisiblePages)
         {
-            @* Null marks a run of pages the window leaves out. Inert rather than a link: it stands for
-               several pages, so there is no single one for it to go to. *@
-            @if (page == null)
+            @* A gap stands for a run of pages, so it has no single page to link to - it opens a control for
+               picking one instead. A dropdown rather than markup of our own: Popper keeps it inside the
+               viewport near the screen edge, which is the failure this component already has history with. *@
+            @if (item.IsGap)
             {
-                <li class="page-item disabled">
-                    <span class="page-link">&hellip;</span>
+                var inputId = $"pagination-goto-{item.From}-{item.To}";
+
+                <li class="page-item dropdown">
+                    <button type="button" class="page-link" data-bs-toggle="dropdown"
+                            data-bs-auto-close="outside" aria-expanded="false"
+                            aria-label="Go to a page between @item.From and @item.To">&hellip;</button>
+                    <div class="dropdown-menu p-3" data-odk-pagination-goto>
+                        <label class="form-label" for="@inputId">Go to page</label>
+                        <div class="input-group flex-nowrap">
+                            <input type="number" class="form-control" id="@inputId"
+                                   min="@item.From" max="@item.To" value="@item.NearestPage"
+                                   data-odk-pagination-page />
+                            <button type="button" class="btn btn-outline-secondary"
+                                    data-odk-pagination-step="-1" aria-label="Previous page">&minus;</button>
+                            <button type="button" class="btn btn-outline-secondary"
+                                    data-odk-pagination-step="1" aria-label="Next page">+</button>
+                            <button type="button" class="btn btn-primary" data-odk-pagination-go>Go</button>
+                        </div>
+                    </div>
                 </li>
             }
             else
             {
-                <li class="page-item @(page == Model.Page ? "active" : null)">
-                    <a class="page-link" href="@Model.GetPageUrl(page.Value)">@(page)</a>
+                <li class="page-item @(item.PageNumber == Model.Page ? "active" : null)">
+                    <a class="page-link" href="@Model.GetPageUrl(item.PageNumber!.Value)">@(item.PageNumber)</a>
                 </li>
             }
         }

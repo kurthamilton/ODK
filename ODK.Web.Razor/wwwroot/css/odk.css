@@ -13212,6 +13212,16 @@ footer {
   margin: auto;
 }
 
+.pagination {
+  justify-content: center;
+}
+.pagination .page-link:focus {
+  box-shadow: none;
+}
+.pagination .dropdown-menu {
+  --bs-dropdown-min-width: 16rem;
+}
+
 .panel {
   background-color: var(--odk-bg-level-1);
   padding: 1rem;

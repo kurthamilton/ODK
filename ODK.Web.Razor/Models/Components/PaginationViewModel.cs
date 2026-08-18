@@ -1,4 +1,5 @@
-﻿namespace ODK.Web.Razor.Models.Components;
+﻿using System.Globalization;
+namespace ODK.Web.Razor.Models.Components;
 
 public class PaginationViewModel
 {
@@ -11,6 +12,12 @@ public class PaginationViewModel
     /// </summary>
     private const int Quota = (Window * 2) + 3;
 
+    /// <summary>
+    /// Stands in for a page number while <see cref="PageUrlTemplate"/> is built. No pagination reaches it,
+    /// and a URL that happened to contain the same digits would have to contain all ten of them in order.
+    /// </summary>
+    private const int PlaceholderPage = int.MaxValue;
+
     public required string AccessibilityLabel { get; init; }
 
     public required Func<int, string> GetPageUrl { get; init; }
@@ -20,8 +27,20 @@ public class PaginationViewModel
     public required int TotalPages { get; init; }
 
     /// <summary>
-    /// The pages to render, in order, with null where a run of them is replaced by an ellipsis. Always
-    /// carries the first page, the last page, and the current page with <see cref="Window"/> either side.
+    /// The page URL with <c>{page}</c> where the number goes, for the go-to-page control to fill in. The
+    /// pages a gap stands for cannot all be rendered as links, so the browser builds one.
+    /// </summary>
+    /// <remarks>
+    /// Taken by asking <see cref="GetPageUrl"/> for a page number no pagination will ever hold and swapping
+    /// it out, which keeps this working whatever shape a caller's URLs take - a query parameter here, a route
+    /// segment elsewhere - without every caller having to supply a second builder.
+    /// </remarks>
+    public string PageUrlTemplate => GetPageUrl(PlaceholderPage)
+        .Replace(PlaceholderPage.ToString(CultureInfo.InvariantCulture), "{page}");
+
+    /// <summary>
+    /// The entries to render, in order: the first page, the last page, the current page with
+    /// <see cref="Window"/> either side, and a gap standing for each run left out.
     /// </summary>
     /// <remarks>
     /// Bounded on purpose. Rendering every page made the component wider than a phone screen once a list ran
@@ -29,13 +48,13 @@ public class PaginationViewModel
     /// browsers widen the layout viewport to fit it, which is what a fixed-position element anchors to, so an
     /// offcanvas drawer ends up hanging off the far side of the screen.
     /// </remarks>
-    public IReadOnlyCollection<int?> VisiblePages
+    public IReadOnlyCollection<PaginationItem> VisiblePages
     {
         get
         {
             var (from, to) = Run();
 
-            var pages = new List<int?>();
+            var pages = new List<PaginationItem>();
             var previous = 0;
 
             foreach (var page in Enumerable.Range(1, TotalPages)
@@ -48,14 +67,14 @@ public class PaginationViewModel
                    would otherwise be one click away. */
                 if (gap == 1)
                 {
-                    pages.Add(page - 1);
+                    pages.Add(PaginationItem.ForPage(page - 1));
                 }
                 else if (gap > 1)
                 {
-                    pages.Add(null);
+                    pages.Add(PaginationItem.ForGap(previous + 1, page - 1, Page));
                 }
 
-                pages.Add(page);
+                pages.Add(PaginationItem.ForPage(page));
                 previous = page;
             }
 
