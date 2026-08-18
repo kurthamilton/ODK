@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ODK.Core\ODK.Core.csproj" />
+    <ProjectReference Include="..\ODK.Core.Workflows\ODK.Core.Workflows.csproj" />
     <ProjectReference Include="..\ODK.Data.Core\ODK.Data.Core.csproj" />
     <ProjectReference Include="..\ODK.Resources\ODK.Resources.csproj" />
   </ItemGroup>
