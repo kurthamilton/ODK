@@ -18,6 +18,17 @@
     };
 }
 
+@* Breadcrumbs here rather than on the page: naming the question needs the question, and this is where it is
+   loaded - the page holds only its id. *@
+@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+{
+    Breadcrumbs = new[]
+    {
+        new MenuItem { Link = OdkRoutes.SiteAdmin.Questions.Path, Text = "FAQ" },
+        new MenuItem { Text = question.Name }
+    }
+})
+
 <h2 class="content-heading">@question.Name</h2>
 
 <form method="post" action="/siteadmin/questions/@question.Id">
