@@ -1,10 +1,20 @@
 ﻿@page "/siteadmin/questions/new"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
+@using ODK.Web.Razor.Models.Components
 @model QuestionCreateModel
 @{
     Layout = "_SiteAdminLayout";
     Model.Title = "Create question | SiteAdmin";
 }
+
+@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+{
+    Breadcrumbs = new[]
+    {
+        new MenuItem { Link = Model.OdkRoutes.SiteAdmin.Questions.Path, Text = "FAQ" },
+        new MenuItem { Text = "New" }
+    }
+})
 
 @await Html.PartialAsync("SiteAdmin/_SiteAdminQuestionCreateContent")

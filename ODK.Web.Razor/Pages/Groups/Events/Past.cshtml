@@ -1,5 +1,6 @@
 ﻿@page "/groups/{slug}/events/past"
 @using ODK.Services.Chapters
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Groups
 @model PastModel
 @inject IChapterViewModelService ChapterViewModelService
@@ -12,6 +13,15 @@
 @await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel
 {
     Title = "",
+    Breadcrumbs = new[]
+    {
+        new MenuItem
+        {
+            Icon = IconType.ArrowLeft,
+            Link = Model.OdkRoutes.Groups.Events(Model.Chapter),
+            Text = "Back to events"
+        }
+    },
     Content = await Html.PartialAsync("Groups/_GroupEventsContent", viewModel),
     Group = viewModel
 })

@@ -1,5 +1,6 @@
 ﻿@page "/groups/{slug}/subscription/confirm"
 @using ODK.Services.Chapters
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Groups
 @using ODK.Web.Razor.Models.Payments
 @model ConfirmModel
@@ -14,6 +15,11 @@
 @await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel
 {
     Title = "",
+    Breadcrumbs = new[]
+    {
+        new MenuItem { Link = Model.OdkRoutes.Groups.Subscription(Model.Chapter), Text = "My subscription" },
+        new MenuItem { Text = "Checkout" }
+    },
     Group = group,
     Content = await Html.PartialAsync("Payments/_PaymentConfirmContent", new PaymentConfirmViewModel
     {
