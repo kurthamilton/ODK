@@ -18,6 +18,8 @@ public static class NotificationTypeExtensions
         NotificationType.EventWaitlistPromotion => NotificationGroupType.Events,
         NotificationType.NewEvent => NotificationGroupType.Events,
         NotificationType.NewMember => NotificationGroupType.Members,
+        NotificationType.SiteConversationMemberMessage => NotificationGroupType.Messages,
+        NotificationType.SiteConversationReplies => NotificationGroupType.Messages,
         _ => NotificationGroupType.None
     };
 }

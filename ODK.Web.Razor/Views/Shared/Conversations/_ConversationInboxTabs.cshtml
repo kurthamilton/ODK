@@ -1,0 +1,25 @@
+﻿@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Components
+@inject IOdkRoutes OdkRoutes
+
+@* Which of a member's two inboxes they are looking at. A thread with a group and a thread with the site are
+   the same idea against different people, so they sit as tabs on one screen rather than as separate pages a
+   member has to know about. *@
+@await Html.PartialAsync("Components/_Tabs", new TabsViewModel
+{
+    MenuItems = new[]
+    {
+        new MenuItem
+        {
+            Active = !(bool)ViewData["SiteConversationsActive"]!,
+            Text = "Groups",
+            Link = OdkRoutes.Account.Conversations(chapter: null)
+        },
+        new MenuItem
+        {
+            Active = (bool)ViewData["SiteConversationsActive"]!,
+            Text = "Site",
+            Link = OdkRoutes.Account.SiteConversations()
+        }
+    }
+})

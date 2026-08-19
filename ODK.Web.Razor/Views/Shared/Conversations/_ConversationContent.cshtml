@@ -1,7 +1,8 @@
 ﻿@using ODK.Core.Utils
 @using ODK.Web.Razor.Models.Chapters
 @using ODK.Web.Razor.Models.Components
-@model ChapterConversationViewModel
+@using ODK.Web.Razor.Models.Conversations
+@model ConversationViewModel
 
 @await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
 {
@@ -10,13 +11,13 @@
 
 <div class="row mt-section">
     <div class="col-md-8">
-        @if (Model.Conversation.ArchivedUtc != null)
+        @if (Model.ArchivedUtc != null)
         {
             <div class="alert alert-info mb-3">
-                <form method="post" action="/conversations/@Model.Conversation.Id/restore">
+                <form method="post" action="@Model.RestoreUrl">
                     @Html.AntiForgeryToken()
                     <div class="d-flex align-items-center gap-2">
-                        <span>Archived @Model.Conversation.ArchivedUtc.Value.ToRelativeTime(Model.TimeZone).</span>
+                        <span>Archived @Model.ArchivedUtc.Value.ToRelativeTime(Model.TimeZone).</span>
                         <button class="btn btn-link px-0" type="submit">Restore</button>
                     </div>
                 </form>
@@ -29,7 +30,11 @@
                 TitleContentFunc = @<h5>Messages</h5>,
                 BodyContentFunc = 
                     @<div>
-                        @await Html.PartialAsync("Chapters/_Conversation", Model)
+                        @await Html.PartialAsync("Conversations/_ConversationMessages", new ConversationMessagesViewModel
+                        {
+                            CurrentMember = Model.CurrentMember,
+                            Messages = Model.Messages
+                        })
                     </div>
             })    
         </section>
@@ -40,14 +45,14 @@
                 TitleContentFunc = @<h5>Reply</h5>,
                 BodyContentFunc = 
                     @<div>
-                        <form action="/conversations/@Model.Conversation.Id/reply" method="post">
+                        <form action="@Model.ReplyUrl" method="post">
                             @Html.AntiForgeryToken()
                             @await Html.PartialAsync("Conversations/_ChapterConversationReplyForm", new ChapterConversationReplyFormViewModel())
                             
                             <div class="d-flex">
                                 <button class="btn btn-primary" type="submit">Send</button>
 
-                                @if (Model.Conversation.ArchivedUtc == null)
+                                @if (Model.ArchivedUtc == null)
                                 {
                                     <button class="btn btn-secondary ms-auto" type="button"
                                         data-submit="#archive-conversation-form">
@@ -58,9 +63,9 @@
                             </div>                            
                         </form>
 
-                        @if (Model.Conversation.ArchivedUtc == null)
+                        @if (Model.ArchivedUtc == null)
                         {
-                            <form id="archive-conversation-form" method="post" action="/conversations/@Model.Conversation.Id/archive">
+                            <form id="archive-conversation-form" method="post" action="@Model.ArchiveUrl">
                                 @Html.AntiForgeryToken()
                                 @await Html.PartialAsync("Components/_Confirm", new ConfirmViewModel
                                 {
@@ -82,27 +87,27 @@
                 TitleContentFunc = @<h5>Other conversations</h5>,
                 BodyContentFunc = 
                     @<div class="list-group">
-                        @foreach (var dto in Model.OtherConversations.OrderByDescending(x => x.LastMessage.Message.CreatedUtc))
+                        @foreach (var conversation in Model.OtherConversations.OrderByDescending(x => x.LastMessageUtc))
                         {
                             <div class="list-group-item">
                                 <div>
-                                    <a href="@Model.ConversationUrlFunc(dto.Conversation.Id)">
-                                        @dto.Conversation.Subject
+                                    <a href="@Model.ConversationUrlFunc(conversation.Id)">
+                                        @conversation.Subject
                                     </a>
                                 </div>
                                 <div class="small d-flex">
                                     <span class="me-auto">
-                                        @dto.LastMessage.Message.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions 
+                                        @conversation.LastMessageUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions 
                                         { 
                                             IncludeDayOfWeek = true, 
-                                            TimeZone = Model.CurrentMember.TimeZone 
+                                            TimeZone = Model.TimeZone 
                                         })
                                     </span>
                                     <span>
                                         <span data-bs-toggle="tooltip" data-bs-title="Messages">
                                             @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Comments))
                                         </span>
-                                        <span>@dto.MessageCount</span>
+                                        <span>@conversation.MessageCount</span>
                                     </span>
                                 </div>
                             </div>

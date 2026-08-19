@@ -2022,6 +2022,74 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                     b.ToTable("SiteContactMessageReplies", (string)null);
                 });
 
+            modelBuilder.Entity("ODK.Core.Messages.SiteConversation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("ArchivedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("MemberId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
+
+                    b.HasIndex("MemberId", "Id");
+
+                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("MemberId", "Id"));
+
+                    b.ToTable("SiteConversations", (string)null);
+                });
+
+            modelBuilder.Entity("ODK.Core.Messages.SiteConversationMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("FirstReadByMemberUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("FirstReadBySiteAdminUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("MemberId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("SiteConversationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
+
+                    b.HasIndex("MemberId");
+
+                    b.HasIndex("SiteConversationId", "CreatedUtc");
+
+                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("SiteConversationId", "CreatedUtc"));
+
+                    b.ToTable("SiteConversationMessages", (string)null);
+                });
+
             modelBuilder.Entity("ODK.Core.Notifications.Notification", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3426,6 +3494,30 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                         .IsRequired();
 
                     b.Navigation("Member");
+                });
+
+            modelBuilder.Entity("ODK.Core.Messages.SiteConversation", b =>
+                {
+                    b.HasOne("ODK.Core.Members.Member", null)
+                        .WithMany()
+                        .HasForeignKey("MemberId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ODK.Core.Messages.SiteConversationMessage", b =>
+                {
+                    b.HasOne("ODK.Core.Members.Member", null)
+                        .WithMany()
+                        .HasForeignKey("MemberId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("ODK.Core.Messages.SiteConversation", null)
+                        .WithMany()
+                        .HasForeignKey("SiteConversationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("ODK.Core.Notifications.Notification", b =>

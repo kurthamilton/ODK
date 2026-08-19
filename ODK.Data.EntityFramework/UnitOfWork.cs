@@ -86,6 +86,8 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<ISentEmailRepository> _sentEmailRepository;
     private readonly Lazy<ISiteContactMessageReplyRepository> _siteContactMessageReplyRepository;
     private readonly Lazy<ISiteContactMessageRepository> _siteContactMessageRepository;
+    private readonly Lazy<ISiteConversationMessageRepository> _siteConversationMessageRepository;
+    private readonly Lazy<ISiteConversationRepository> _siteConversationRepository;
     private readonly Lazy<ISiteEmailSettingsRepository> _siteEmailSettingsRepository;
     private readonly Lazy<ISitePaymentSettingsRepository> _sitePaymentSettingsRepository;
     private readonly Lazy<ISiteQuestionRepository> _siteQuestionRepository;
@@ -178,6 +180,8 @@ public class UnitOfWork : IUnitOfWork
         _sentEmailRepository = new(() => new SentEmailRepository(_context));
         _siteContactMessageReplyRepository = new(() => new SiteContactMessageReplyRepository(_context));
         _siteContactMessageRepository = new(() => new SiteContactMessageRepository(_context));
+        _siteConversationMessageRepository = new(() => new SiteConversationMessageRepository(_context));
+        _siteConversationRepository = new(() => new SiteConversationRepository(_context));
         _siteEmailSettingsRepository = new(() => new SiteEmailSettingsRepository(_context));
         _sitePaymentSettingsRepository = new(() => new SitePaymentSettingsRepository(_context));
         _siteQuestionRepository = new(() => new SiteQuestionRepository(_context));
@@ -267,6 +271,8 @@ public class UnitOfWork : IUnitOfWork
     public ISentEmailRepository SentEmailRepository => _sentEmailRepository.Value;
     public ISiteContactMessageReplyRepository SiteContactMessageReplyRepository => _siteContactMessageReplyRepository.Value;
     public ISiteContactMessageRepository SiteContactMessageRepository => _siteContactMessageRepository.Value;
+    public ISiteConversationMessageRepository SiteConversationMessageRepository => _siteConversationMessageRepository.Value;
+    public ISiteConversationRepository SiteConversationRepository => _siteConversationRepository.Value;
     public ISiteEmailSettingsRepository SiteEmailSettingsRepository => _siteEmailSettingsRepository.Value;
     public ISitePaymentSettingsRepository SitePaymentSettingsRepository => _sitePaymentSettingsRepository.Value;
     public ISiteQuestionRepository SiteQuestionRepository => _siteQuestionRepository.Value;

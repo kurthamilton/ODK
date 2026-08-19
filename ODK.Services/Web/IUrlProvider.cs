@@ -51,5 +51,11 @@ public interface IUrlProvider
 
     string SiteAdminGroups();
 
+    /// <summary>The site admin's view of a member's thread with the site.</summary>
+    string SiteConversationAdminUrl(Guid conversationId);
+
+    /// <summary>The member's view of their own thread with the site.</summary>
+    string SiteConversationUrl(Guid conversationId);
+
     string TopicApprovalUrl();
 }

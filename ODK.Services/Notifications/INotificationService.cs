@@ -1,6 +1,7 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Events;
 using ODK.Core.Members;
+using ODK.Core.Messages;
 using ODK.Core.Notifications;
 using ODK.Core.Venues;
 using ODK.Services.Notifications.ViewModels;
@@ -39,6 +40,16 @@ public interface INotificationService
         Member member,
         Guid chapterId,
         IReadOnlyCollection<ChapterAdminMember> adminMembers,
+        IReadOnlyCollection<MemberNotificationSettings> settings);
+
+    void AddSiteConversationMemberMessageNotifications(
+        SiteConversation conversation,
+        IReadOnlyCollection<Member> siteAdmins,
+        IReadOnlyCollection<MemberNotificationSettings> settings);
+
+    void AddSiteConversationReplyNotification(
+        SiteConversation conversation,
+        Member member,
         IReadOnlyCollection<MemberNotificationSettings> settings);
 
     Task<NotificationsPageViewModel> GetNotificationsPageViewModel(IMemberServiceRequest request);

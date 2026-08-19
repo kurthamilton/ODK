@@ -1,3 +1,14 @@
+# Normalise line endings for every text file Git can detect one in: LF in the
+# repository, whatever the platform wants on checkout. Without this the policy
+# lives in each clone's core.autocrlf, so a contributor with it unset can commit
+# CRLF and the file then reads as entirely changed for everybody else.
+#
+# It does not stop a local tool writing LF into a working file - only a checkout
+# puts that right - so a scripted edit still wants checking afterwards.
+#
+# The eol=lf pins below deliberately come after this line: later rules win.
+* text=auto
+
 # Dart Sass emits LF line endings. Keep the generated CSS as LF so Git does not
 # rewrite it to CRLF (which caused "LF will be replaced by CRLF" warnings and
 # noisy diffs on every recompile).

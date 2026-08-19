@@ -1,5 +1,6 @@
 ﻿@page "/{chapterName}/account/conversations/{id:guid}"
 @attribute [Authorize]
+@using ODK.Web.Razor.Models.Conversations
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Core.Platforms
 @using ODK.Services.Chapters
@@ -29,20 +30,24 @@
     .Where(x => !string.IsNullOrEmpty(x.Text))
     .ToArray();
 
-    var conversationViewModel = new ChapterConversationViewModel
+    var conversationViewModel = new ConversationViewModel
     {
         Breadcrumbs = breadcrumbs,
-        Chapter = viewModel.Chapter,
-        Conversation = viewModel.Conversation,
+        ArchivedUtc = viewModel.Conversation.ArchivedUtc,
+        ArchiveUrl = $"/conversations/{viewModel.Conversation.Id}/archive",
+        ConversationId = viewModel.Conversation.Id,
         ConversationUrlFunc = id => OdkRoutes.Groups.Conversation(chapter: Model.Chapter, id),
         CurrentMember = Model.CurrentMember,
-        Messages = viewModel.Messages,
-        OtherConversations = viewModel.OtherConversations
+        Messages = viewModel.Messages.ToViewModels(),
+        OtherConversations = viewModel.OtherConversations.ToViewModels(),
+        ReplyUrl = $"/conversations/{viewModel.Conversation.Id}/reply",
+        RestoreUrl = $"/conversations/{viewModel.Conversation.Id}/restore",
+        Subject = viewModel.Conversation.Subject
     };
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
     Title = "Conversation",
-    Content = await Html.PartialAsync("Conversations/_ChapterConversationContent", conversationViewModel)
+    Content = await Html.PartialAsync("Conversations/_ConversationContent", conversationViewModel)
 })

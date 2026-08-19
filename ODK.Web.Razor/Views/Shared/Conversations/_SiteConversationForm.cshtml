@@ -1,0 +1,22 @@
+﻿@using ODK.Web.Razor.Models.Contact
+@model SiteConversationFormViewModel
+
+@* Posts to the one endpoint wherever it is rendered - the modal on the list, or on its own when there is
+   nothing to list yet - so the two cannot drift apart. *@
+<form action="/site-conversations/start" method="post">
+    @Html.AntiForgeryToken()
+
+    <div class="form-group mb-3 required">
+        @Html.LabelFor(x => x.Subject, new { @class = "form-label" })
+        @Html.TextBoxFor(x => x.Subject, new { @class = "form-control" })
+        @Html.ValidationMessageFor(x => x.Subject)
+    </div>
+
+    <div class="form-group mb-3 required">
+        @Html.LabelFor(x => x.Message, new { @class = "form-label" })
+        @Html.TextAreaFor(x => x.Message, new { @class = "form-control", rows = 5 })
+        @Html.ValidationMessageFor(x => x.Message)
+    </div>
+
+    <button class="btn btn-primary">Send</button>
+</form>

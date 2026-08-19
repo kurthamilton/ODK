@@ -30,6 +30,29 @@ public class AccountRoutes : RoutesBase
     public string Conversations(Chapter? chapter, bool archived)
         => AccountPath(chapter, $"/conversations{(archived ? "?archived=true" : null)}");
 
+    /// <summary>
+    /// A member's thread with the site's admins. Never chapter-scoped, unlike <see cref="Conversation"/>.
+    /// </summary>
+    /// <remarks>
+    /// Drunken Knitwits has no site account for this to sit under - an account there belongs to a chapter -
+    /// so it gets a page of its own rather than a tab in an account area that does not exist. Group Squirrel
+    /// keeps it beside the group conversations it is tabbed with.
+    /// </remarks>
+    public string SiteConversation(Guid id) => $"{SiteConversations()}/{id}";
+
+    public string SiteConversations() => SiteConversations(archived: false);
+
+    public string SiteConversations(bool archived)
+    {
+        var query = archived ? "?archived=true" : null;
+
+        return Platform switch
+        {
+            PlatformType.DrunkenKnitwits => $"/conversations{query}",
+            _ => AccountPath(null, $"/site-conversations{query}")
+        };
+    }
+
     public string Delete(Chapter? chapter) => AccountPath(chapter, "/delete");
 
     public string EmailAddressChange(Chapter? chapter) =>

@@ -1,4 +1,5 @@
 ﻿@page "/account/conversations/{id:guid}"
+@using ODK.Web.Razor.Models.Conversations
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Services.Members
 @using ODK.Web.Common.Routes
@@ -28,7 +29,7 @@
         Content =
             @<div>
                 <section class="section">
-                    @await Html.PartialAsync("Conversations/_ChapterConversationContent", new ChapterConversationViewModel
+                    @await Html.PartialAsync("Conversations/_ConversationContent", new ConversationViewModel
                     {
                         Breadcrumbs = 
                         [
@@ -47,12 +48,16 @@
                                 Text = viewModel.Conversation.Subject 
                             }
                         ],
-                        Chapter = viewModel.Chapter,
-                        Conversation = viewModel.Conversation,
+                        ArchivedUtc = viewModel.Conversation.ArchivedUtc,
+                        ArchiveUrl = $"/conversations/{viewModel.Conversation.Id}/archive",
+                        ConversationId = viewModel.Conversation.Id,
                         ConversationUrlFunc = id => OdkRoutes.Account.Conversation(chapter: null, id),
                         CurrentMember = Model.CurrentMember,
-                        Messages = viewModel.Messages,
-                        OtherConversations = viewModel.OtherConversations
+                        Messages = viewModel.Messages.ToViewModels(),
+                        OtherConversations = viewModel.OtherConversations.ToViewModels(),
+                        ReplyUrl = $"/conversations/{viewModel.Conversation.Id}/reply",
+                        RestoreUrl = $"/conversations/{viewModel.Conversation.Id}/restore",
+                        Subject = viewModel.Conversation.Subject
                     })
                 </section>
             </div>

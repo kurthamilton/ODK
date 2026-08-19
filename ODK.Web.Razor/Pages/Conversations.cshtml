@@ -1,0 +1,39 @@
+﻿@page "/conversations"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Services.Contact
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Conversations
+@model ConversationsModel
+@inject IContactService ContactService
+@inject IOdkRoutes OdkRoutes
+@{
+    // _AccountLayout for the Drunken Knitwits header it carries, not because this is an account page.
+    Layout = "_AccountLayout";
+    Model.Title = "My conversations";
+
+    var viewModel = await ContactService.GetSiteConversationsPage(Model.MemberServiceRequest, Model.Archived);
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Title = "My conversations",
+    ContentFunc =
+        @<div>
+            @* No group/site tabs: a conversation with a chapter lives under that chapter here, so this page
+               is only ever the one inbox. *@
+            <section class="section">
+                @await Html.PartialAsync("Conversations/_SiteConversationsContent", new SiteConversationsViewModel
+                {
+                    ActiveConversationCount = viewModel.ActiveConversationCount,
+                    Archived = Model.Archived,
+                    ArchivedConversationCount = viewModel.ArchivedConversationCount,
+                    Conversations = viewModel.Conversations,
+                    ConversationsUrlFunc = archived => OdkRoutes.Account.SiteConversations(archived),
+                    ConversationUrlFunc = id => OdkRoutes.Account.SiteConversation(id),
+                    CurrentMember = Model.CurrentMember
+                })
+            </section>
+        </div>
+})

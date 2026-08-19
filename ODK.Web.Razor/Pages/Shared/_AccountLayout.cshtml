@@ -1,5 +1,19 @@
-﻿@{
+﻿@using ODK.Core.Platforms
+@using ODK.Services.Chapters
+@using ODK.Web.Common.Services
+@inject IChapterService ChapterService
+@inject IRequestStore RequestStore
+@{
     Layout = "_HomeLayout";
+}
+
+@* Group Squirrel's header comes from _Layout, which renders it for every page. Drunken Knitwits' is
+   rendered per page instead, and the account pages were never given one - so they had no header at all.
+   Here rather than on each of them, because the next account page added would have the same gap. *@
+@if (RequestStore.Platform == PlatformType.DrunkenKnitwits)
+{
+    var headerViewModel = await ChapterService.GetOdkHomeHeaderViewModel();
+    @await Html.PartialAsync("Header/_OdkHomeHeader", headerViewModel)
 }
 
 @RenderBody()

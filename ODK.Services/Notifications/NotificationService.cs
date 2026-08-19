@@ -2,6 +2,7 @@
 using ODK.Core.Chapters;
 using ODK.Core.Events;
 using ODK.Core.Members;
+using ODK.Core.Messages;
 using ODK.Core.Notifications;
 using ODK.Core.Platforms;
 using ODK.Core.Utils;
@@ -122,6 +123,36 @@ public class NotificationService : INotificationService
             settings,
             entityId: member.Id,
             chapterId: chapterId);
+    }
+
+    public void AddSiteConversationMemberMessageNotifications(
+        SiteConversation conversation,
+        IReadOnlyCollection<Member> siteAdmins,
+        IReadOnlyCollection<MemberNotificationSettings> settings)
+    {
+        /* No chapter: a site conversation belongs to no group, and Notification.ChapterId is nullable for
+           exactly this kind of notification. */
+        AddNotifications(
+            NotificationType.SiteConversationMemberMessage,
+            _ => conversation.Subject,
+            siteAdmins,
+            settings,
+            entityId: conversation.Id,
+            chapterId: null);
+    }
+
+    public void AddSiteConversationReplyNotification(
+        SiteConversation conversation,
+        Member member,
+        IReadOnlyCollection<MemberNotificationSettings> settings)
+    {
+        AddNotifications(
+            NotificationType.SiteConversationReplies,
+            _ => conversation.Subject,
+            [member],
+            settings,
+            entityId: conversation.Id,
+            chapterId: null);
     }
 
     public async Task<NotificationsPageViewModel> GetNotificationsPageViewModel(

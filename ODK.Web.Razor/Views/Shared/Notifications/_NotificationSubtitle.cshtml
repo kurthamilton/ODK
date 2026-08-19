@@ -60,7 +60,18 @@
                             <a class="nav-link" href="@link"
                                 data-bs-toggle="tooltip" data-bs-title="@EnumUtils.GetDisplayValue(group.Key)">
                                 <span>
-                                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(icon!.Value))
+                                    @* A group the switch above has no icon for names itself instead. The tab
+                                       is otherwise icon-only, so without this it would read as a bare count -
+                                       and asserting an icon exists is what made an unmapped notification type
+                                       take the whole panel down. *@
+                                    @if (icon != null)
+                                    {
+                                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(icon.Value))
+                                    }
+                                    else
+                                    {
+                                        <span>@EnumUtils.GetDisplayValue(group.Key)</span>
+                                    }
                                 </span>
                                 <span>(</span><span data-notification-count>@group.Count()</span><span>)</span>
                             </a>

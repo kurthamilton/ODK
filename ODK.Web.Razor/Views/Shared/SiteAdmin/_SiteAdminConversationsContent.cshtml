@@ -1,0 +1,82 @@
+﻿@using ODK.Core.Utils
+@using ODK.Services.Contact.ViewModels
+@using ODK.Web.Common.Routes
+@using ODK.Web.Common.Services
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Mvc
+@model SiteConversationsAdminPageViewModel
+@inject IOdkRoutes OdkRoutes
+@inject IRequestStore RequestStore
+
+<h2 class="content-heading">Conversations</h2>
+
+@await Html.PartialAsync("Components/_Tabs", new TabsViewModel
+{
+    MenuItems = new[]
+    {
+        new MenuItem
+        {
+            Active = !Model.Archived,
+            Text = $"Active ({Model.ActiveConversationCount})",
+            Link = OdkRoutes.SiteAdmin.Conversations(archived: false).Path
+        },
+        new MenuItem
+        {
+            Active = Model.Archived,
+            Text = $"Archived ({Model.ArchivedConversationCount})",
+            Link = OdkRoutes.SiteAdmin.Conversations(archived: true).Path
+        }
+    }
+})
+
+<section class="section mt-3">
+    @if (Model.Conversations.Count > 0)
+    {
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Member</th>
+                        <th>Messages</th>
+                        <th>Last message</th>
+                        <th class="tcol-narrow"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @* Already ordered by the query - most recently active first, which is the order these are
+                       read in: a thread matters because somebody has just said something. *@
+                    @foreach (var dto in Model.Conversations)
+                    {
+                        <tr>
+                            <td>
+                                <a href="@OdkRoutes.SiteAdmin.Conversation(dto.Conversation.Id).Path">
+                                    @dto.Conversation.Subject
+                                </a>
+                            </td>
+                            <td>@dto.Member.FullName</td>
+                            <td>@dto.MessageCount</td>
+                            <td>
+                                @dto.LastMessage.Message.CreatedUtc.ToRelativeTime(
+                                    Html.DisplayTimeZone(TimeZoneInfo.Utc))
+                            </td>
+                            <td>
+                                @* No member admin page to link to yet, so the id is what makes a
+                                   conversation findable from a query window. *@
+                                <button type="button" class="btn btn-icon"
+                                        data-copy-to-clipboard="@dto.Conversation.Id"
+                                        data-bs-toggle="tooltip" data-bs-title="Copy conversation id">
+                                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Copy))
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <p>There are no conversations to show</p>
+    }
+</section>
