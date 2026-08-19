@@ -230,6 +230,13 @@ identically. Add a matching `GroupAdminRoutes` helper — it resolves the platfo
   (`[data-odk-component='_ChapterSidebar']`), so treat a change to a value as a change to a selector rather
   than to a comment. Keep it in step with a rename, and keep it the bare name: a path-qualified value only
   ever meant the file name was ambiguous, which the rule above stops it being.
+- **Anything in the markup whose only reader is an E2E test says so, at the use site.** The E2E suite is a
+  separate solution that deliberately does not reference this one, so from here a "find usages" turns up
+  nothing: an attribute or class that no CSS and no script touches looks like dead markup, and the next
+  person to tidy up is right to remove it on the evidence available. A one-line comment naming the test
+  dependency is the only thing that makes the coupling visible from this side. This applies to a class with
+  no styling behind it as much as to a bare `data-*` attribute. `data-odk-component` is the exception that
+  needs no note per use - the convention above covers every one of them at once.
 
 ### Routing
 

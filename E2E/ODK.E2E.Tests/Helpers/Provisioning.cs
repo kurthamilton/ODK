@@ -168,6 +168,18 @@ internal static class Provisioning
             routes.MembersImport, routes.MembersAdmin, rows), baseUrl);
 
     /// <summary>
+    /// Answers a member's site conversation as a site admin, on a throwaway browser so the calling test's
+    /// own browser stays signed in as the member whose thread it is - which is who the attribution of the
+    /// reply is for. Pass the platform's base URL; the site-admin area is shared across platforms.
+    /// </summary>
+    public static async Task ReplyToSiteConversationAsSiteAdmin(
+        Guid conversationId, string message, string baseUrl)
+    {
+        var admin = await SharedAccounts.Get(SharedAccounts.SiteAdmin);
+        await RunAs(admin, page => new SiteAdminConversationPage(page).Reply(conversationId, message), baseUrl);
+    }
+
+    /// <summary>
     /// Turns on "new members need approval" for a group, as its owner on a throwaway browser so the calling
     /// test's own browser stays anonymous. The owner's subscription has to carry the feature first - see
     /// <see cref="EnsureMemberApprovalSiteSubscription"/> - because the switch is not rendered without it.

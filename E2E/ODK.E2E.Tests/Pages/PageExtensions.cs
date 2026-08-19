@@ -15,6 +15,33 @@ internal static class PageExtensions
         => page.ClickAsync("#confirm-modal [data-odk-confirm-accept]");
 
     /// <summary>
+    /// Dismisses the cookie banner, as a visitor has to before they can use the bottom of a page: it is
+    /// fixed to the bottom of the viewport above everything else, so it covers the footer and swallows
+    /// clicks meant for it. Does nothing when the banner is not showing - one dismissal covers the rest of
+    /// the browser context.
+    /// </summary>
+    internal static async Task DismissCookieBanner(this IPage page)
+    {
+        var banner = page.Locator(".cc-window");
+
+        try
+        {
+            // Script creates the banner, so it can be a moment behind the navigation; a short wait closes
+            // that gap without making an already-dismissed banner cost the full timeout.
+            await banner.WaitForAsync(new() { Timeout = 2000 });
+        }
+        catch (TimeoutException)
+        {
+            return;
+        }
+
+        /* Waiting for it to hide rather than to detach: the app's own dismiss handler puts a cc-hidden class
+           on the body, which is what takes the banner out of the layout - the element stays in the DOM. */
+        await page.ClickAsync(".cc-window .cc-dismiss");
+        await banner.WaitForAsync(new() { State = WaitForSelectorState.Hidden });
+    }
+
+    /// <summary>
     /// Navigates to a relative path. The absolute host comes from the browser context's
     /// <c>BaseURL</c> (set per platform by the test's base class / by provisioning), so the same page
     /// objects work against whichever platform the fixture targets. Returns the response so a caller can

@@ -203,12 +203,41 @@ means a new category and the E2E suite tracks the app's workflows rather than a 
   another navigation to X`. **Waiting on the URL does not work here** and looks like it does: these forms
   post to their own address and redirect back to it, so `WaitForURLAsync` is satisfied before the submit even
   starts. `ChapterEmailAdminPage.Submit` is the pattern.
-- **Don't select on text a page's chrome also carries.** The header renders "Sign in" on every anonymous page
-  and the group menu renders "Join", so `a:has-text('Sign in')` resolves to two elements: an *action* on it
-  throws a strict-mode violation, and - worse - a `CountAsync() > 0` presence check quietly passes on the
-  chrome alone, whether or not the thing under test rendered. Add a `data-*` hook to the element the test means
-  (`[data-invite-signin]`) rather than narrowing by ancestor. `button:has-text(...)` is usually safe because
-  the chrome's equivalents are links.
+- **Select what a user perceives; add markup only when nothing user-facing distinguishes the element.** The
+  test is a claim about what somebody sees, so the locator should read like one - the words on the control,
+  and where on the page it is. Ambiguity is the usual reason to reach for something else, and the order to
+  reach in:
+  1. **The words, narrowed by the region they are in.** The header renders "Sign in" on every anonymous page
+     and the group menu renders "Contact" and "Join", so a bare `a:has-text('Sign in')` matches twice: an
+     *action* on it throws a strict-mode violation, and - worse - a `CountAsync() > 0` presence check quietly
+     passes on the chrome alone, whether or not the thing under test rendered. Narrow by the **landmark**:
+     `footer a:has-text('Contact')` - a page renders exactly one `<footer>`, and "the Contact link in the
+     footer" is how a person would describe it, so this is still a user-facing locator rather than a markup
+     trick.
+  2. **The content of the thing itself.** For one row, card or message among many, filter by what it says
+     rather than by its position - `.conversation-message` filtered on its own text - and assert about the
+     match. `.d-flex > div:first-child` is what to avoid: it breaks on any restyle and describes nothing a
+     reader would recognise. A class that exists **for styling** is fair game as a scope; it is not test
+     scaffolding.
+  3. **The partial**, via `[data-odk-component='_X']` - an attribute the app already emits on ~30 partials
+     and already documents, so it explains itself at the use site.
+  4. **A bespoke `data-*` hook**, last and rarely (`[data-invite-signin]`). Its only reader is a test, so it
+     reads as noise to everyone else. Not namespaced (`data-odk-e2e-*`) though the prefix would carry the same
+     information: it is messier in the prod markup than the comment it replaces, and the comment can say
+     *which* test and *why*, which a prefix cannot.
+  **Repeated ambiguity is usually an accessibility defect, not a test problem.** Two links with the same
+  accessible name and different destinations are indistinguishable to a screen-reader user listing the links,
+  not merely to Playwright - so the fix that serves both is to give them distinct names in the app, or to put
+  them in regions a reader can already tell apart. Prefer that over a hook that papers over it.
+  **Whichever you land on, if the markup carries something only a test reads, say so where it is written** -
+  this solution deliberately does not reference the app's, so from the prod side a search for the selector
+  finds nothing and an unread attribute looks like dead markup. See the matching rule in the root
+  [`CLAUDE.md`](../CLAUDE.md). Nothing in tiers 1-3 needs a note: a landmark is not a marker, a styling class
+  earns its place already, and `data-odk-component` is documented once for all of its uses.
+  Where the *destination* is what a test asserts, keep it out of the selector - matching the Contact link by
+  its `href` would assert the thing under test into existence. And never strip or environment-gate a hook: a
+  black-box suite has to drive the markup production serves, and markup that only exists in a test build is
+  markup nobody has tested.
 - **Data helpers** (`ODK.E2E.Data/*DataHelper.cs`): all DB access goes through `E2EQueryBuilder`
   (`Create(sql).AddParameter(...).ExecuteScalar<T>()/ReadMany(...)/ExecuteNonQuery()`), never inline
   `SqlConnection`. **`ExecuteScalar<T>()` gotcha:** for a value-type column that can be null, call it with

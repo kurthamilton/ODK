@@ -164,7 +164,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         if (eventEmail?.ScheduledUtc != null)
         {
             eventEmail.JobId = _backgroundTaskService.Schedule(
-                () => SendScheduledEmails(request, eventEmail.Id),
+                () => SendScheduledEmails(ServiceRequest.Create(request), eventEmail.Id),
                 eventEmail.ScheduledUtc.Value,
                 BackgroundTaskQueueType.Emails);
             _unitOfWork.EventEmailRepository.Update(eventEmail);
@@ -1086,7 +1086,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         await _unitOfWork.SaveChanges();
 
         eventEmail.JobId = _backgroundTaskService.Schedule(
-            () => SendScheduledEmails(request, eventEmail.Id),
+            () => SendScheduledEmails(ServiceRequest.Create(request), eventEmail.Id),
             scheduledUtc.Value,
             BackgroundTaskQueueType.Emails);
 

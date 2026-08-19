@@ -50,7 +50,18 @@ internal class ForgottenPasswordPage
     /// </remarks>
     public async Task<bool> TryResetPassword(string passwordResetUrl, string newPassword)
     {
-        await _page.Navigate(passwordResetUrl);
+        var response = await _page.Navigate(passwordResetUrl);
+
+        /* Checked rather than left to the first FillAsync: Playwright does not throw on 4xx, so a page that
+           did not render at all fails thirty seconds later as a locator timeout naming a field, which says
+           nothing about why. A refused reset is a rendered form - never a status - so a bad status here is
+           always the page failing to load. */
+        if (response?.Ok != true)
+        {
+            throw new InvalidOperationException(
+                $"The reset page at '{passwordResetUrl}' returned {response?.Status}, so its form never rendered.");
+        }
+
         await _page.FillAsync("#NewPassword", newPassword);
         await _page.FillAsync("#ConfirmNewPassword", newPassword);
 
