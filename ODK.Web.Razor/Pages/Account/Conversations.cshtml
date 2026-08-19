@@ -13,7 +13,8 @@
     Layout = "_HomeLayout";
 
     var viewModel = await MemberViewModelService.GetMemberConversationsPage(Model.MemberServiceRequest, Model.Archived);
-    var title = viewModel.TotalConversationCount > 0 ? "My conversations" : "Start new conversation";
+    // The same heading on both tabs - which inbox you are looking at is what the active tab says.
+    var title = "My conversations";
     Model.Title = title;
 }
 
@@ -27,6 +28,9 @@
         Content =
             @<div>
                 <section class="section">
+                    @await Html.PartialAsync("Conversations/_ConversationInboxTabs", new object(),
+                        new ViewDataDictionary(ViewData) { ["SiteConversationsActive"] = false })
+
                     @await Html.PartialAsync("Conversations/_ChapterConversationsContent", new ChapterConversationsViewModel
                     {
                         ActiveConversationCount = viewModel.ActiveConversationCount,

@@ -1,5 +1,6 @@
 ﻿using ODK.Core;
 using ODK.Core.Chapters;
+using ODK.Core.Members;
 using ODK.Core.Messages;
 using ODK.Core.Notifications;
 using ODK.Data.Core;
@@ -8,6 +9,7 @@ using ODK.Services.Emails;
 using ODK.Services.Emails.Validation;
 using ODK.Services.Exceptions;
 using ODK.Services.Members;
+using ODK.Services.Members.ViewModels;
 using ODK.Services.Notifications;
 using ODK.Services.Recaptcha;
 
@@ -58,6 +60,18 @@ public class ContactService : IContactService
         return ServiceResult.Successful();
     }
 
+    public async Task<ServiceResult> ArchiveSiteConversation(IMemberServiceRequest request, Guid conversationId)
+    {
+        var conversation = await GetOwnSiteConversation(request, conversationId);
+
+        conversation.ArchivedUtc = DateTime.UtcNow;
+        _unitOfWork.SiteConversationRepository.Update(conversation);
+
+        await _unitOfWork.SaveChanges();
+
+        return ServiceResult.Successful();
+    }
+
     public async Task<ContactPageViewModel> GetContactPageViewModel(IServiceRequest request)
     {
         var hasQuestions = await _unitOfWork.SiteQuestionRepository
@@ -67,6 +81,49 @@ public class ContactService : IContactService
         return new ContactPageViewModel
         {
             HasQuestions = hasQuestions
+        };
+    }
+
+    public async Task<SiteConversationPageViewModel> GetSiteConversationPage(
+        IMemberServiceRequest request, Guid conversationId)
+    {
+        var conversation = await GetOwnSiteConversation(request, conversationId);
+
+        var (messages, otherConversations) = await _unitOfWork.RunAsync(
+            x => x.SiteConversationMessageRepository.GetDtosByConversationId(conversationId),
+            x => x.SiteConversationRepository.GetDtosByMemberId(request.CurrentMember.Id));
+
+        return new SiteConversationPageViewModel
+        {
+            Conversation = conversation,
+            Messages = messages,
+            OtherConversations = otherConversations
+                .Where(x => x.Conversation.Id != conversationId)
+                .ToArray()
+        };
+    }
+
+    public async Task<SiteConversationsPageViewModel> GetSiteConversationsPage(
+        IMemberServiceRequest request, bool archived)
+    {
+        var currentMember = request.CurrentMember;
+
+        var conversations = await _unitOfWork.SiteConversationRepository
+            .GetDtosByMemberId(currentMember.Id)
+            .Run();
+
+        /* Both counts come off the one read rather than two more queries: a member has few enough site
+           conversations that fetching them all is cheaper than counting them separately, and the tabs need
+           both numbers whichever one is being shown. */
+        return new SiteConversationsPageViewModel
+        {
+            ActiveConversationCount = conversations.Count(x => x.Conversation.ArchivedUtc == null),
+            Archived = archived,
+            ArchivedConversationCount = conversations.Count(x => x.Conversation.ArchivedUtc != null),
+            Conversations = conversations
+                .Where(x => (x.Conversation.ArchivedUtc != null) == archived)
+                .ToArray(),
+            CurrentMember = currentMember
         };
     }
 
@@ -113,6 +170,32 @@ public class ContactService : IContactService
             conversationMessage,
             addressees.ToArray(),
             isReply: true);
+
+        return ServiceResult.Successful();
+    }
+
+    public async Task<ServiceResult> ReplyToSiteConversation(
+        IMemberServiceRequest request, Guid conversationId, string message)
+    {
+        var conversation = await GetOwnSiteConversation(request, conversationId);
+        var now = DateTime.UtcNow;
+
+        var conversationMessage = _unitOfWork.SiteConversationMessageRepository.Add(new SiteConversationMessage
+        {
+            CreatedUtc = now,
+            FirstReadByMemberUtc = now,
+            MemberId = request.CurrentMember.Id,
+            SiteConversationId = conversation.Id,
+            Text = message
+        });
+
+        var siteAdmins = await NotifySiteAdmins(conversation);
+
+        await _unitOfWork.SaveChanges();
+
+        // After the commit: the reply is recorded, and an email cannot be taken back.
+        await _memberEmailService.SendSiteConversationEmail(
+            request, conversation, conversationMessage, siteAdmins, isReply: true);
 
         return ServiceResult.Successful();
     }
@@ -270,6 +353,41 @@ public class ContactService : IContactService
         return ServiceResult.Successful();
     }
 
+    public async Task<ServiceResult> StartSiteConversation(
+        IMemberServiceRequest request, string subject, string message)
+    {
+        var currentMember = request.CurrentMember;
+        var now = DateTime.UtcNow;
+
+        var conversation = _unitOfWork.SiteConversationRepository.Add(new SiteConversation
+        {
+            CreatedUtc = now,
+            MemberId = currentMember.Id,
+            Subject = subject
+        });
+
+        /* Read by the member from the moment they send it - they are the one who wrote it, so leaving it
+           unread would make their own message look like something waiting for them. */
+        var conversationMessage = _unitOfWork.SiteConversationMessageRepository.Add(new SiteConversationMessage
+        {
+            CreatedUtc = now,
+            FirstReadByMemberUtc = now,
+            MemberId = currentMember.Id,
+            SiteConversationId = conversation.Id,
+            Text = message
+        });
+
+        var siteAdmins = await NotifySiteAdmins(conversation);
+
+        await _unitOfWork.SaveChanges();
+
+        // After the commit: the conversation exists, and an email cannot be taken back.
+        await _memberEmailService.SendSiteConversationEmail(
+            request, conversation, conversationMessage, siteAdmins, isReply: false);
+
+        return ServiceResult.Successful();
+    }
+
     public async Task<ServiceResult> UnarchiveChapterConversation(IMemberServiceRequest request, Guid conversationId)
     {
         var currentMember = request.CurrentMember;
@@ -291,6 +409,60 @@ public class ContactService : IContactService
         await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
+    }
+
+    public async Task<ServiceResult> UnarchiveSiteConversation(IMemberServiceRequest request, Guid conversationId)
+    {
+        var conversation = await GetOwnSiteConversation(request, conversationId);
+
+        conversation.ArchivedUtc = null;
+        _unitOfWork.SiteConversationRepository.Update(conversation);
+
+        await _unitOfWork.SaveChanges();
+
+        return ServiceResult.Successful();
+    }
+
+    /// <summary>
+    /// The conversation, asserted to belong to the member asking for it. Every site-conversation entry point
+    /// goes through here so that the check cannot be forgotten by one of them - a member reaching another
+    /// member's thread by id would otherwise read and reply to it.
+    /// </summary>
+    private async Task<SiteConversation> GetOwnSiteConversation(
+        IMemberServiceRequest request, Guid conversationId)
+    {
+        var conversation = await _unitOfWork.SiteConversationRepository.GetById(conversationId).Run();
+
+        OdkAssertions.BelongsToMember(conversation, request.CurrentMember.Id);
+
+        return conversation;
+    }
+
+    /// <summary>
+    /// Tells the site's admins a member has written. Staged, not committed - the caller saves the message
+    /// and the notifications together, so an admin is never told about something that then rolled back.
+    /// </summary>
+    /// <remarks>
+    /// Two reads rather than one batch: the settings are keyed by member, so who the site admins are has to
+    /// be known before theirs can be fetched.
+    /// </remarks>
+    private async Task<IReadOnlyCollection<Member>> NotifySiteAdmins(SiteConversation conversation)
+    {
+        var siteAdmins = await _unitOfWork.MemberRepository
+            .Query(x => x.IsSiteAdmin())
+            .GetAll()
+            .Run();
+
+        var notificationSettings = await _unitOfWork.MemberNotificationSettingsRepository
+            .GetByMemberIds(
+                siteAdmins.Select(x => x.Id).ToArray(),
+                NotificationType.SiteConversationMemberMessage)
+            .Run();
+
+        _notificationService.AddSiteConversationMemberMessageNotifications(
+            conversation, siteAdmins, notificationSettings);
+
+        return siteAdmins;
     }
 
     private async Task ValidateRequest(string fromAddress, string message)

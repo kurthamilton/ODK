@@ -12997,7 +12997,8 @@ footer {
     display: none;
   }
 }
-.navbar--no-menu .account-links--right {
+.navbar--no-menu .account-links--right,
+.navbar--no-menu .anonymous-links {
   position: static;
   margin-left: auto;
 }

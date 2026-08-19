@@ -1,0 +1,51 @@
+﻿@using ODK.Services.Contact.ViewModels
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Chapters
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Conversations
+@using ODK.Web.Razor.Models.Messages
+@model SiteConversationAdminPageViewModel
+@inject IOdkRoutes OdkRoutes
+
+@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+{
+    Breadcrumbs =
+    [
+        new MenuItem { Link = OdkRoutes.SiteAdmin.Conversations().Path, Text = "Conversations" },
+        new MenuItem { Text = Model.Conversation.Subject }
+    ]
+})
+
+<p>Started by @Model.Member.FullName</p>
+
+<section class="section">
+    @await Html.PartialAsync("Components/_Panel", new PanelViewModel
+    {
+        TitleContentFunc = @<h5>Messages</h5>,
+        BodyContentFunc =
+            @<div>
+                @* The member is the other side of this thread, so the messages render from their point of
+                   view - an admin reading their own reply as "theirs" is what the current member decides. *@
+                @await Html.PartialAsync("Conversations/_ConversationMessages", new ConversationMessagesViewModel
+                {
+                    CurrentMember = Model.Member,
+                    Messages = Model.Messages.ToSiteAdminViewModels()
+                })
+            </div>
+    })
+</section>
+
+<section class="section">
+    @await Html.PartialAsync("Components/_Panel", new PanelViewModel
+    {
+        TitleContentFunc = @<h5>Reply</h5>,
+        BodyContentFunc =
+            @<div>
+                <form action="/siteadmin/conversations/@Model.Conversation.Id/reply" method="post">
+                    @Html.AntiForgeryToken()
+                    @await Html.PartialAsync("Conversations/_ChapterConversationReplyForm", new ChapterConversationReplyFormViewModel())
+                    <button class="btn btn-primary" type="submit">Send</button>
+                </form>
+            </div>
+    })
+</section>

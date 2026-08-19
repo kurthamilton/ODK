@@ -1,5 +1,4 @@
 ﻿@using ODK.Core.Utils
-@using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Routes
 @using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Chapters
@@ -15,23 +14,23 @@
 }
 
 @if (Model.Conversations.Count > 0 || Model.Chapter == null || Model.Archived)
-{    
+{
     <div class="mt-3">
         @await Html.PartialAsync("Components/_Tabs", new TabsViewModel
         {
             MenuItems = new[]
             {
-                new MenuItem 
+                new MenuItem
                 {
-                    Active = !Model.Archived, 
-                    Text = $"Active ({Model.ActiveConversationCount})", 
+                    Active = !Model.Archived,
+                    Text = $"Active ({Model.ActiveConversationCount})",
                     Link = Model.ConversationsUrlFunc(false)
                 },
-                new MenuItem 
-                { 
-                    Active = Model.Archived, 
-                    Text = $"Archived ({Model.ArchivedConversationCount})", 
-                    Link = Model.ConversationsUrlFunc(true) 
+                new MenuItem
+                {
+                    Active = Model.Archived,
+                    Text = $"Archived ({Model.ArchivedConversationCount})",
+                    Link = Model.ConversationsUrlFunc(true)
                 }
             }
         })
@@ -41,94 +40,112 @@
     {
         <div class="mt-3">
             <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#new-conversation-modal">
-                <span>@await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Message))</span>
+                <span>@await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Comments))</span>
                 <span>New conversation</span>
             </button>
         </div>
     }
 
     <section class="section mt-3">
-        <div class="table-responsive">
-            <table class="table table-striped">
-                <thead>
-                    <tr>                        
-                        <th>Subject</th>
-                        @if (Model.Chapter == null)
-                        {
-                            <th>Group</th>
-                        }
-                        <th>Started</th>
-                        <th>Last message</th>
-                        <th class="tcol-narrow"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var dto in Model.Conversations.OrderByDescending(x => x.LastMessage.Message.CreatedUtc))
-                    {
-                        <tr>                            
-                            <td>
-                                <a href="@Model.ConversationUrlFunc(dto.Conversation.Id)">
-                                    @dto.Conversation.Subject
-                                </a>
-                            </td>
-
+        @if (Model.Conversations.Count > 0)
+        {
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
                             @if (Model.Chapter == null)
                             {
-                                chapterDictionary.TryGetValue(dto.Conversation.ChapterId, out var chapter);
+                                <th>Group</th>
+                            }
+                            <th>Started</th>
+                            <th>Last message</th>
+                            <th class="tcol-narrow"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var dto in Model.Conversations.OrderByDescending(x => x.LastMessage.Message.CreatedUtc))
+                        {
+                            <tr>
                                 <td>
-                                    @if (chapter != null)
+                                    <a href="@Model.ConversationUrlFunc(dto.Conversation.Id)">
+                                        @dto.Conversation.Subject
+                                    </a>
+                                </td>
+
+                                @if (Model.Chapter == null)
+                                {
+                                    chapterDictionary.TryGetValue(dto.Conversation.ChapterId, out var chapter);
+                                    <td>
+                                        @if (chapter != null)
+                                        {
+                                            <a href="@OdkRoutes.Groups.Group(chapter)">
+                                                @chapter.GetDisplayName(platform)
+                                            </a>
+                                        }
+                                    </td>
+                                }
+
+                                <td>
+                                    @dto.Conversation.CreatedUtc.ToRelativeTime(Model.TimeZone)
+                                </td>
+
+                                <td>
+                                    @dto.LastMessage.Message.CreatedUtc.ToRelativeTime(Model.TimeZone)
+                                </td>
+
+                                <td>
+                                    @if (!Model.Archived)
                                     {
-                                        <a href="@OdkRoutes.Groups.Group(chapter)">
-                                            @chapter.GetDisplayName(platform)
-                                        </a>
+                                        <form action="/conversations/@dto.Conversation.Id/archive" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-icon"
+                                                    data-bs-toggle="tooltip" data-bs-title="Archive">
+                                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Archive))
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <form action="/conversations/@dto.Conversation.Id/restore" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-icon"
+                                                    data-bs-toggle="tooltip" data-bs-title="Restore">
+                                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Undo))
+                                            </button>
+                                        </form>
                                     }
                                 </td>
-                            }                                                        
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            @* This view has no form to offer - a conversation with a group starts on that group's own page -
+               so it says where to go rather than showing an empty table. *@
+            <p>
+                @if (Model.Archived)
+                {
+                    <span>You have no archived conversations.</span>
+                }
+                else
+                {
+                    <span>You have no conversations with groups yet. You can start one from a group's own page.</span>
+                }
+            </p>
+        }
+    </section>
 
-                            <td>
-                                @dto.Conversation.CreatedUtc.ToRelativeTime(Model.TimeZone)
-                            </td>
-
-                            <td>
-                                @dto.LastMessage.Message.CreatedUtc.ToRelativeTime(Model.TimeZone)
-                            </td>
-
-                            <td>
-                                @if (!Model.Archived)
-                                {
-                                    <form action="/conversations/@dto.Conversation.Id/archive" method="post">
-                                        @Html.AntiForgeryToken()
-                                        <button type="submit" class="btn btn-icon"
-                                                data-bs-toggle="tooltip" data-bs-title="Archive">
-                                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Archive))
-                                        </button>
-                                    </form>
-                                }
-                                else
-                                {
-                                    <form action="/conversations/@dto.Conversation.Id/restore" method="post">
-                                        @Html.AntiForgeryToken()
-                                        <button type="submit" class="btn btn-icon"
-                                                data-bs-toggle="tooltip" data-bs-title="Restore">
-                                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Undo))
-                                        </button>
-                                    </form>
-                                }
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    </section>  
-    
     @if (Model.Chapter != null)
     {
         @await Html.PartialAsync("Components/_Modal", new ModalViewModel
         {
             Title = "Start new conversation",
             Id = "new-conversation-modal",
-            Body = 
+            Body =
                 @<div>
                     <form action="/groups/@Model.Chapter.Id/conversations" method="post">
                         @Html.AntiForgeryToken()

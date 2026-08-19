@@ -15,6 +15,7 @@ using ODK.Services.Topics.Models;
 using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
 using ODK.Web.Razor.Models.Admin.Chapters;
+using ODK.Web.Razor.Models.Chapters;
 using ODK.Web.Razor.Models.Feedback;
 using ODK.Web.Razor.Models.SiteAdmin;
 
@@ -87,6 +88,16 @@ public class SiteAdminController : OdkControllerBase
     {
         var result = await _contactAdminService.SetMessageAsReplied(MemberServiceRequest, id);
         AddFeedback(result, "Message updated");
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("siteadmin/conversations/{id:guid}/reply")]
+    public async Task<IActionResult> ReplyToSiteConversation(Guid id,
+        [FromForm] ChapterConversationReplyFormViewModel viewModel)
+    {
+        var result = await _contactAdminService.ReplyToSiteConversation(
+            MemberServiceRequest, id, viewModel.Message ?? string.Empty);
+        AddFeedback(result, "Reply sent");
         return RedirectToReferrer();
     }
 

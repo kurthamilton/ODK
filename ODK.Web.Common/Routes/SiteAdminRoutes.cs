@@ -49,6 +49,18 @@ public class SiteAdminRoutes
 
     public SiteAdminRoute Workflows => Path("/workflows");
 
+    /// <summary>
+    /// A member's thread with the site's admins. Distinct from <see cref="Messages()"/>, which is where
+    /// anonymous contact lands - that carries a name, an address and a spam status because anybody can send
+    /// one; these come from a member who is signed in.
+    /// </summary>
+    public SiteAdminRoute Conversation(Guid id) => Conversations().Child($"/{id}");
+
+    public SiteAdminRoute Conversations() => Path("/conversations");
+
+    public SiteAdminRoute Conversations(bool archived)
+        => archived ? Conversations().Child("?archived=true") : Conversations();
+
     public SiteAdminRoute Country(Guid id) => Countries.Child($"/{id}");
 
     public SiteAdminRoute Email(EmailType type) => Emails.Child($"/{type}");
@@ -74,6 +86,7 @@ public class SiteAdminRoutes
     /// </summary>
     public IReadOnlyCollection<SiteAdminNavItem> Navigation() =>
     [
+        new(Conversations(), "Conversations"),
         new(Countries, "Countries"),
         new(Emails, "Emails"),
         new(Errors, "Error log"),

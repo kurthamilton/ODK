@@ -1,0 +1,61 @@
+﻿@page "/account/site-conversations"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Html
+@using ODK.Core.Platforms
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Services.Contact
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Account
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Conversations
+@model SiteConversationsModel
+@inject IContactService ContactService
+@inject IOdkRoutes OdkRoutes
+@{
+    // _AccountLayout rather than _HomeLayout: it carries the Drunken Knitwits header, which _HomeLayout
+    // leaves to each page.
+    Layout = "_AccountLayout";
+
+    var viewModel = await ContactService.GetSiteConversationsPage(Model.MemberServiceRequest, Model.Archived);
+    // The same heading on both tabs - which inbox you are looking at is what the active tab says.
+    var title = "My conversations";
+    Model.Title = title;
+}
+@{
+    /* Drunken Knitwits keeps this out of the account area: its account pages are chapter-scoped, and this
+       one belongs to no chapter, so the account menu would render a column of links built from a null
+       chapter. The footer is the way in there. */
+    var inAccountArea = Model.Platform != PlatformType.DrunkenKnitwits;
+
+    Func<object?, IHtmlContent> content =
+        @<div>
+            <section class="section">
+                @await Html.PartialAsync("Conversations/_ConversationInboxTabs", new object(),
+                    new ViewDataDictionary(ViewData) { ["SiteConversationsActive"] = true })
+
+                @await Html.PartialAsync("Conversations/_SiteConversationsContent", new SiteConversationsViewModel
+                {
+                    ActiveConversationCount = viewModel.ActiveConversationCount,
+                    Archived = Model.Archived,
+                    ArchivedConversationCount = viewModel.ArchivedConversationCount,
+                    Conversations = viewModel.Conversations,
+                    ConversationsUrlFunc = archived => OdkRoutes.Account.SiteConversations(archived),
+                    ConversationUrlFunc = id => OdkRoutes.Account.SiteConversation(id),
+                    CurrentMember = Model.CurrentMember
+                })
+            </section>
+        </div>;
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Title = inAccountArea ? "Account" : title,
+    Content = inAccountArea
+        ? await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
+        {
+            Active = OdkRoutes.Account.Conversations(null),
+            Title = title,
+            Content = content
+        })
+        : content.Invoke(null)
+})

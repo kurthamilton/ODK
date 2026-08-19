@@ -1,0 +1,129 @@
+﻿@using ODK.Core.Utils
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Contact
+@using ODK.Web.Razor.Models.Conversations
+@model SiteConversationsViewModel
+
+@if (Model.TotalConversationCount > 0)
+{
+    <div class="mt-3">
+        @await Html.PartialAsync("Components/_Tabs", new TabsViewModel
+        {
+            MenuItems = new[]
+            {
+                new MenuItem
+                {
+                    Active = !Model.Archived,
+                    Text = $"Active ({Model.ActiveConversationCount})",
+                    Link = Model.ConversationsUrlFunc(false)
+                },
+                new MenuItem
+                {
+                    Active = Model.Archived,
+                    Text = $"Archived ({Model.ArchivedConversationCount})",
+                    Link = Model.ConversationsUrlFunc(true)
+                }
+            }
+        })
+    </div>
+
+    @if (!Model.Archived)
+    {
+        <div class="mt-3">
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#new-site-conversation-modal">
+                <span>@await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Comments))</span>
+                <span>New conversation</span>
+            </button>
+        </div>
+    }
+
+    <section class="section mt-3">
+        @if (Model.Conversations.Count > 0)
+        {
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Started</th>
+                            <th>Last message</th>
+                            <th class="tcol-narrow"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var dto in Model.Conversations.OrderByDescending(x => x.LastMessage.Message.CreatedUtc))
+                        {
+                            <tr>
+                                <td>
+                                    <a href="@Model.ConversationUrlFunc(dto.Conversation.Id)">
+                                        @dto.Conversation.Subject
+                                    </a>
+                                </td>
+                                <td>@dto.Conversation.CreatedUtc.ToRelativeTime(Model.TimeZone)</td>
+                                <td>@dto.LastMessage.Message.CreatedUtc.ToRelativeTime(Model.TimeZone)</td>
+                                <td>
+                                    @if (!Model.Archived)
+                                    {
+                                        <form action="/site-conversations/@dto.Conversation.Id/archive" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-icon"
+                                                    data-bs-toggle="tooltip" data-bs-title="Archive">
+                                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Archive))
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <form action="/site-conversations/@dto.Conversation.Id/restore" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-icon"
+                                                    data-bs-toggle="tooltip" data-bs-title="Restore">
+                                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Undo))
+                                            </button>
+                                        </form>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            @* Reached when the member has conversations but none on this tab - all archived, or none yet
+               archived - so the table would render as headings over nothing. *@
+            <p>
+                @if (Model.Archived)
+                {
+                    <span>You have no archived conversations.</span>
+                }
+                else
+                {
+                    <span>You have no active conversations. Start a new one to get back in touch.</span>
+                }
+            </p>
+        }
+    </section>
+
+    @await Html.PartialAsync("Components/_Modal", new ModalViewModel
+    {
+        Title = "Start new conversation",
+        Id = "new-site-conversation-modal",
+        Body =
+            @<div>
+                @await Html.PartialAsync("Conversations/_SiteConversationForm", new SiteConversationFormViewModel())
+            </div>
+    })
+}
+else
+{
+    @* Nothing to list yet, so the form is the page rather than something behind a button - and it carries
+       its own description, because the heading above it is the same on both tabs and says only whose
+       conversations these are. *@
+    <section class="section mt-3">
+        <p>Send a message to the site admins. Their replies will appear here, so you can pick the conversation up later.</p>
+
+        @await Html.PartialAsync("Conversations/_SiteConversationForm", new SiteConversationFormViewModel())
+    </section>
+}

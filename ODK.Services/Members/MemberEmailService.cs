@@ -182,6 +182,61 @@ public class MemberEmailService : IMemberEmailService
             request, chapter, addressees, subject, body, recipientType, parameters);
     }
 
+    public async Task SendSiteConversationEmail(
+        IServiceRequest request,
+        SiteConversation conversation,
+        SiteConversationMessage message,
+        IReadOnlyCollection<Member> to,
+        bool isReply)
+    {
+        var subject = "{conversation.subject} - {title}";
+
+        if (isReply)
+        {
+            subject = $"Re: {subject}";
+        }
+
+        var body = new EmailBodyBuilder()
+            .AddParagraph("{conversation.message}")
+            .AddParagraphLink("conversation.url")
+            .ToString();
+
+        var isToMember = message.MemberId != conversation.MemberId;
+
+        if (isToMember)
+        {
+            var memberEmailPreference = await _unitOfWork.MemberEmailPreferenceRepository
+                .GetByMemberId(conversation.MemberId, MemberEmailPreferenceType.ConversationMessages)
+                .Run();
+
+            if (memberEmailPreference?.Disabled == true)
+            {
+                return;
+            }
+        }
+
+        /* No chapter anywhere in this: a site conversation belongs to no group, so the URLs are the
+           site-level ones and the email is sent without one. */
+        var urlProvider = await _urlProviderFactory.Create(request);
+        var url = isToMember
+            ? urlProvider.SiteConversationUrl(conversation.Id)
+            : urlProvider.SiteConversationAdminUrl(conversation.Id);
+
+        var addressees = to.Select(x => x.ToEmailAddressee());
+
+        var parameters = new CustomEmailParameters
+        {
+            { "conversation.subject", conversation.Subject },
+            { "conversation.message", message.Text },
+            { "conversation.url", url }
+        };
+
+        var recipientType = isToMember ? EmailRecipientType.Members : EmailRecipientType.Admins;
+
+        await _emailService.SendEmail(
+            request, chapter: null, addressees, subject, body, recipientType, parameters);
+    }
+
     public async Task SendChapterMessage(
         IChapterServiceRequest request,
         IReadOnlyCollection<ChapterAdminMember> adminMembers,

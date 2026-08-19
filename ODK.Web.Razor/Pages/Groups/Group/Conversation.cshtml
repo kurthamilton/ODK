@@ -1,5 +1,6 @@
 ﻿@page "/groups/{slug}/conversations/{id:guid}"
 @attribute [Authorize]
+@using ODK.Web.Razor.Models.Conversations
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Services.Chapters
 @using ODK.Web.Common.Routes
@@ -21,19 +22,23 @@
 @await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel
 {
     Title = "",
-    Content = await Html.PartialAsync("Conversations/_ChapterConversationContent", new ChapterConversationViewModel
+    Content = await Html.PartialAsync("Conversations/_ConversationContent", new ConversationViewModel
     {
         Breadcrumbs =
         [
             new MenuItem { Text = "My conversations", Link = OdkRoutes.Groups.Conversations(Model.Chapter) },
             new MenuItem { Text = viewModel.Conversation.Subject }
         ],
-        Chapter = viewModel.Chapter,
-        Conversation = viewModel.Conversation,
+        ArchivedUtc = viewModel.Conversation.ArchivedUtc,
+        ArchiveUrl = $"/conversations/{viewModel.Conversation.Id}/archive",
+        ConversationId = viewModel.Conversation.Id,
         ConversationUrlFunc = id => OdkRoutes.Groups.Conversation(chapter: Model.Chapter, id),
         CurrentMember = Model.CurrentMember,
-        Messages = viewModel.Messages,
-        OtherConversations = viewModel.OtherConversations
+        Messages = viewModel.Messages.ToViewModels(),
+        OtherConversations = viewModel.OtherConversations.ToViewModels(),
+        ReplyUrl = $"/conversations/{viewModel.Conversation.Id}/reply",
+        RestoreUrl = $"/conversations/{viewModel.Conversation.Id}/restore",
+        Subject = viewModel.Conversation.Subject
     }),
     Group = viewModel
 })

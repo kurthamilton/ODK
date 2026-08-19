@@ -22,6 +22,8 @@
         NotificationType.EventWaitlistPromotion => "Event waiting list update",
         NotificationType.NewEvent => "New event",
         NotificationType.NewMember => "New member",
+        NotificationType.SiteConversationMemberMessage => "New conversation message",
+        NotificationType.SiteConversationReplies => "New conversation message",
         _ => null
     };
 
@@ -51,6 +53,13 @@
             : null,
         NotificationType.NewMember => chapter != null && notification.EntityId != null
             ? OdkRoutes.GroupAdmin.Member(chapter, notification.EntityId.Value).Path
+            : null,
+        // Site conversations belong to no group, so these are the only paths here that need no chapter.
+        NotificationType.SiteConversationMemberMessage => notification.EntityId != null
+            ? OdkRoutes.SiteAdmin.Conversation(notification.EntityId.Value).Path
+            : null,
+        NotificationType.SiteConversationReplies => notification.EntityId != null
+            ? OdkRoutes.Account.SiteConversation(notification.EntityId.Value)
             : null,
         _ => null
     };

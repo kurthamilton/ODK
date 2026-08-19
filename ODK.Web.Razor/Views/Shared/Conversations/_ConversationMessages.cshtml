@@ -1,6 +1,6 @@
-﻿@using ODK.Web.Razor.Models.Chapters
-@using ODK.Web.Razor.Models.Components
-@model ChapterConversationViewModel
+﻿@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Conversations
+@model ConversationMessagesViewModel
 
 @await Html.PartialAsync("Components/_Messages", new MessagesViewModel
 {
@@ -9,10 +9,10 @@
     Messages = Model.Messages
         .Select(x => new MessageViewModel
         {
-            CreatedUtc = x.Message.CreatedUtc,
-            MemberId = x.Message.MemberId,
+            CreatedUtc = x.CreatedUtc,
+            MemberId = x.MemberId,
             MemberFullName = x.MemberFullName,
-            Text = x.Message.Text
+            Text = x.Text
         })
         .ToArray()
 })

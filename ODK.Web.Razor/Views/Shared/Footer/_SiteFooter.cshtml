@@ -26,7 +26,17 @@
                 <a href="@OdkRoutes.Site.Privacy">Privacy</a>
             </div>
             <div>
-                <a href="@OdkRoutes.Site.Contact">Contact</a>
+                @* A signed-in member goes to their conversations, so contacting the site is trackable rather
+                   than a message they never see again. /contact redirects them there too, for anything still
+                   pointing at it. *@
+                @if (RequestStore.CurrentMemberOrDefault != null)
+                {
+                    <a href="@OdkRoutes.Account.SiteConversations()">Contact</a>
+                }
+                else
+                {
+                    <a href="@OdkRoutes.Site.Contact">Contact</a>
+                }
             </div>
             <div>
                 <a href="@OdkRoutes.Site.Pricing">Pricing</a>

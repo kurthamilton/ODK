@@ -1,0 +1,15 @@
+﻿@page "/siteadmin/conversations"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Services.Contact
+@model ConversationsModel
+@inject IContactAdminService ContactAdminService
+@{
+    Layout = "_SiteAdminLayout";
+    Model.Title = "Conversations";
+
+    var viewModel = await ContactAdminService.GetSiteConversationsViewModel(
+        Model.MemberServiceRequest, Model.Archived);
+}
+
+@await Html.PartialAsync("SiteAdmin/_SiteAdminConversationsContent", viewModel)

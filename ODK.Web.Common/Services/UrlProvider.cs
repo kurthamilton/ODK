@@ -76,6 +76,12 @@ public class UrlProvider : IUrlProvider
 
     public string SiteAdminGroups() => GetUrl(_odkRoutes.SiteAdmin.Groups);
 
+    public string SiteConversationAdminUrl(Guid conversationId)
+        => GetUrl(_odkRoutes.SiteAdmin.Conversation(conversationId).Path);
+
+    public string SiteConversationUrl(Guid conversationId)
+        => GetUrl(_odkRoutes.Account.SiteConversation(conversationId));
+
     public string TopicApprovalUrl() => GetUrl(_odkRoutes.SiteAdmin.Topics);
 
     private string GetUrl(string path)

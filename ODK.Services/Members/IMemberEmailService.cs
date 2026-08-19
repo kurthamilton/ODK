@@ -175,6 +175,13 @@ public interface IMemberEmailService
         Payment payment,
         Currency currency);
 
+    Task SendSiteConversationEmail(
+        IServiceRequest request,
+        SiteConversation conversation,
+        SiteConversationMessage message,
+        IReadOnlyCollection<Member> to,
+        bool isReply);
+
     Task SendSiteMessage(
         IServiceRequest request,
         SiteContactMessage message,

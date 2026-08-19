@@ -20,32 +20,32 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "SentEmailId",
-                table: "SentEmails");
-
-            migrationBuilder.DropColumn(
-                name: "SentEmailEventId",
-                table: "SentEmailEvents");
-
-            migrationBuilder.DropColumn(
-                name: "QueuedEmailId",
-                table: "QueuedEmails");
-
-            migrationBuilder.DropColumn(
-                name: "QueuedEmailRecipientId",
-                table: "QueuedEmailRecipients");
-
-            migrationBuilder.DropColumn(
-                name: "NotificationId",
-                table: "Notifications");
-
-            migrationBuilder.DropColumn(
-                name: "InstagramImageId",
-                table: "InstagramImages");
-
-            migrationBuilder.DropColumn(
-                name: "InstagramFetchLogId",
+            migrationBuilder.DropColumn(
+                name: "SentEmailId",
+                table: "SentEmails");
+
+            migrationBuilder.DropColumn(
+                name: "SentEmailEventId",
+                table: "SentEmailEvents");
+
+            migrationBuilder.DropColumn(
+                name: "QueuedEmailId",
+                table: "QueuedEmails");
+
+            migrationBuilder.DropColumn(
+                name: "QueuedEmailRecipientId",
+                table: "QueuedEmailRecipients");
+
+            migrationBuilder.DropColumn(
+                name: "NotificationId",
+                table: "Notifications");
+
+            migrationBuilder.DropColumn(
+                name: "InstagramImageId",
+                table: "InstagramImages");
+
+            migrationBuilder.DropColumn(
+                name: "InstagramFetchLogId",
                 table: "InstagramFetchLog");
         }
 
@@ -59,56 +59,56 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                SentEmailEvents is the exception, and only in one direction: it had no primary key before this
                batch, so its Down leaves the table without one rather than inventing a constraint it never
                had - that is the previous migration's business too. */
-            migrationBuilder.AddColumn<Guid>(
-                name: "SentEmailId",
-                table: "SentEmails",
-                type: "uniqueidentifier",
-                nullable: true);
-
-            migrationBuilder.AddColumn<Guid>(
-                name: "SentEmailEventId",
-                table: "SentEmailEvents",
-                type: "uniqueidentifier",
-                nullable: true);
-
-            migrationBuilder.AddColumn<Guid>(
-                name: "QueuedEmailId",
-                table: "QueuedEmails",
-                type: "uniqueidentifier",
-                nullable: true);
-
-            migrationBuilder.AddColumn<Guid>(
-                name: "QueuedEmailRecipientId",
-                table: "QueuedEmailRecipients",
-                type: "uniqueidentifier",
-                nullable: true);
-
-            migrationBuilder.AddColumn<Guid>(
-                name: "NotificationId",
-                table: "Notifications",
-                type: "uniqueidentifier",
-                nullable: true);
-
-            migrationBuilder.AddColumn<Guid>(
-                name: "InstagramImageId",
-                table: "InstagramImages",
-                type: "uniqueidentifier",
-                nullable: true);
-
-            migrationBuilder.AddColumn<Guid>(
-                name: "InstagramFetchLogId",
-                table: "InstagramFetchLog",
-                type: "uniqueidentifier",
+            migrationBuilder.AddColumn<Guid>(
+                name: "SentEmailId",
+                table: "SentEmails",
+                type: "uniqueidentifier",
+                nullable: true);
+
+            migrationBuilder.AddColumn<Guid>(
+                name: "SentEmailEventId",
+                table: "SentEmailEvents",
+                type: "uniqueidentifier",
+                nullable: true);
+
+            migrationBuilder.AddColumn<Guid>(
+                name: "QueuedEmailId",
+                table: "QueuedEmails",
+                type: "uniqueidentifier",
+                nullable: true);
+
+            migrationBuilder.AddColumn<Guid>(
+                name: "QueuedEmailRecipientId",
+                table: "QueuedEmailRecipients",
+                type: "uniqueidentifier",
+                nullable: true);
+
+            migrationBuilder.AddColumn<Guid>(
+                name: "NotificationId",
+                table: "Notifications",
+                type: "uniqueidentifier",
+                nullable: true);
+
+            migrationBuilder.AddColumn<Guid>(
+                name: "InstagramImageId",
+                table: "InstagramImages",
+                type: "uniqueidentifier",
+                nullable: true);
+
+            migrationBuilder.AddColumn<Guid>(
+                name: "InstagramFetchLogId",
+                table: "InstagramFetchLog",
+                type: "uniqueidentifier",
                 nullable: true);
 
             // EXEC because the generated script puts these in the same batch as the columns they write to,
             // and SQL Server binds column names when it parses a batch - see LookupTables-Id-Add.
-            migrationBuilder.Sql("EXEC('UPDATE SentEmails SET SentEmailId = Id WHERE SentEmailId IS NULL')");
-            migrationBuilder.Sql("EXEC('UPDATE SentEmailEvents SET SentEmailEventId = Id WHERE SentEmailEventId IS NULL')");
-            migrationBuilder.Sql("EXEC('UPDATE QueuedEmails SET QueuedEmailId = Id WHERE QueuedEmailId IS NULL')");
-            migrationBuilder.Sql("EXEC('UPDATE QueuedEmailRecipients SET QueuedEmailRecipientId = Id WHERE QueuedEmailRecipientId IS NULL')");
-            migrationBuilder.Sql("EXEC('UPDATE Notifications SET NotificationId = Id WHERE NotificationId IS NULL')");
-            migrationBuilder.Sql("EXEC('UPDATE InstagramImages SET InstagramImageId = Id WHERE InstagramImageId IS NULL')");
+            migrationBuilder.Sql("EXEC('UPDATE SentEmails SET SentEmailId = Id WHERE SentEmailId IS NULL')");
+            migrationBuilder.Sql("EXEC('UPDATE SentEmailEvents SET SentEmailEventId = Id WHERE SentEmailEventId IS NULL')");
+            migrationBuilder.Sql("EXEC('UPDATE QueuedEmails SET QueuedEmailId = Id WHERE QueuedEmailId IS NULL')");
+            migrationBuilder.Sql("EXEC('UPDATE QueuedEmailRecipients SET QueuedEmailRecipientId = Id WHERE QueuedEmailRecipientId IS NULL')");
+            migrationBuilder.Sql("EXEC('UPDATE Notifications SET NotificationId = Id WHERE NotificationId IS NULL')");
+            migrationBuilder.Sql("EXEC('UPDATE InstagramImages SET InstagramImageId = Id WHERE InstagramImageId IS NULL')");
             migrationBuilder.Sql("EXEC('UPDATE InstagramFetchLog SET InstagramFetchLogId = Id WHERE InstagramFetchLogId IS NULL')");
         }
     }

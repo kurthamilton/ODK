@@ -22,6 +22,9 @@
     <File Path="docs/workflows/chapter-publication.md" />
     <File Path="docs/workflows/README.md" />
   </Folder>
+  <Folder Name="/Solution Items/E2E/">
+    <File Path="E2E/script.run.tests.bat" />
+  </Folder>
   <Folder Name="/Solution Items/Github/" />
   <Folder Name="/Solution Items/Github/Workflows/">
     <File Path=".github/workflows/build.yml" />
@@ -35,7 +38,6 @@
     <File Path="Scripts/ef-update-database.bat" />
   </Folder>
   <Folder Name="/Solution Items/Scripts/">
-    <File Path="E2E/script.run.tests.bat" />
     <File Path="Scripts/dotnet-tool-restore.bat" />
     <File Path="Scripts/run.app.bat" />
     <File Path="Scripts/run.build.css.bat" />
