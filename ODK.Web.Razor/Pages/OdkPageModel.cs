@@ -16,6 +16,13 @@ public abstract class OdkPageModel : PageModel
 {
     public Chapter Chapter => RequestStore.Chapter;
 
+    /// <summary>
+    /// The request's chapter where it has one. A site-level page - anything outside the chapter-scoped route
+    /// trees - has none on Group Squirrel, and <see cref="Chapter"/> throws rather than returning null, so a
+    /// page that can be reached either way reads it from here.
+    /// </summary>
+    public Chapter? ChapterOrDefault => RequestStore.ChapterOrDefault;
+
     public IChapterServiceRequest ChapterServiceRequest => RequestStore.ChapterServiceRequest;
 
     public Member CurrentMember => RequestStore.CurrentMember;
