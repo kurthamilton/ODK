@@ -545,7 +545,7 @@ public static class EmailServiceTests
             urlProviderFactory.Object,
             new MockBackgroundTaskService(),
             Mock.Of<ILoggingService>(),
-            TestPlatformNameProvider.Create(),
+            TestPlatformProvider.Create(),
             new EmailServiceSettings
             {
                 DefaultBodyBackground = "#fff",

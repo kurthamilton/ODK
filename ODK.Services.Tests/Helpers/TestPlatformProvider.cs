@@ -9,7 +9,7 @@ namespace ODK.Services.Tests.Helpers;
 /// a fake would only restate the lookup, and a test asserting on a name should exercise the resolution it
 /// depends on.
 /// </summary>
-internal static class TestPlatformNameProvider
+internal static class TestPlatformProvider
 {
     internal const string DefaultName = "Default platform";
 
@@ -18,13 +18,14 @@ internal static class TestPlatformNameProvider
     /// <param name="defaultName">
     /// The default platform's name, for a test that turns on what the name itself contains.
     /// </param>
-    internal static IPlatformNameProvider Create(string? defaultName = null) => new PlatformNameProvider(
-        new PlatformNameProviderSettings
+    internal static IPlatformProvider Create(string? defaultName = null) => new PlatformProvider(
+        new PlatformProviderSettings
         {
             Names = new Dictionary<PlatformType, string>
             {
                 { PlatformType.Default, defaultName ?? DefaultName },
                 { PlatformType.DrunkenKnitwits, DrunkenKnitwitsName }
-            }
+            },
+            Urls = new Dictionary<PlatformType, IReadOnlyCollection<string>>()
         });
 }

@@ -13,7 +13,7 @@
 @inject IFileVersionProvider FileVersionProvider
 @inject ILocaleService LocaleService
 @inject IOdkRoutes OdkRoutes
-@inject IPlatformNameProvider PlatformNameProvider
+@inject IPlatformProvider PlatformProvider
 @inject IRequestStore RequestStore
 @{
     var (platform, chapter, currentMember) =
@@ -22,7 +22,7 @@
     var datePickerFormat = FlatpickrDateFormat.FromShortDatePattern(
         LocaleService.GetShortDatePattern(RequestStore.ServiceRequest));
 
-    var platformName = PlatformNameProvider.GetName(platform);
+    var platformName = PlatformProvider.GetName(platform);
 
     var title = platformName;
     if (chapter != null)

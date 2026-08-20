@@ -1,10 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ODK.Core.Chapters;
-using ODK.Core.Countries;
 using ODK.Core.Members;
 using ODK.Core.Payments;
 using ODK.Data.EntityFramework.Converters;
+using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework.Mapping;
 
@@ -15,6 +15,9 @@ public class PaymentMap : IEntityTypeConfiguration<Payment>
         builder.ToTable("Payments");
 
         builder.HasKey(x => x.Id);
+
+        builder.Property(x => x.Amount)
+            .IsMoneyType();
 
         builder.Property(x => x.CreatedUtc)
             .HasConversion<NullableUtcDateTimeConverter>();

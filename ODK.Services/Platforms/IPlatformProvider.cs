@@ -2,7 +2,9 @@
 
 namespace ODK.Services.Platforms;
 
-public interface IPlatformNameProvider
+public interface IPlatformProvider
 {
     string GetName(PlatformType platform);
+
+    PlatformType GetPlatform(string requestUrl);
 }

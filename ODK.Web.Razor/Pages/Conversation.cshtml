@@ -10,7 +10,7 @@
 @model ConversationModel
 @inject IContactService ContactService
 @inject IOdkRoutes OdkRoutes
-@inject IPlatformNameProvider PlatformNameProvider
+@inject IPlatformProvider PlatformProvider
 @{
     // _AccountLayout for the Drunken Knitwits header it carries, not because this is an account page.
     Layout = "_AccountLayout";
@@ -18,7 +18,7 @@
     var viewModel = await ContactService.GetSiteConversationPage(Model.MemberServiceRequest, Model.ConversationId);
     Model.Title = viewModel.Conversation.Subject;
 
-    var platformName = PlatformNameProvider.GetName(Model.Platform);
+    var platformName = PlatformProvider.GetName(Model.Platform);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

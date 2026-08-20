@@ -19,7 +19,7 @@ public class EmailService : IEmailService
     private readonly IBackgroundTaskService _backgroundTaskService;
     private readonly IEmailClient _emailClient;
     private readonly ILoggingService _loggingService;
-    private readonly IPlatformNameProvider _platformNameProvider;
+    private readonly IPlatformProvider _platformProvider;
     private readonly EmailServiceSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUrlProviderFactory _urlProviderFactory;
@@ -30,13 +30,13 @@ public class EmailService : IEmailService
         IUrlProviderFactory urlProviderFactory,
         IBackgroundTaskService backgroundTaskService,
         ILoggingService loggingService,
-        IPlatformNameProvider platformNameProvider,
+        IPlatformProvider platformProvider,
         EmailServiceSettings settings)
     {
         _backgroundTaskService = backgroundTaskService;
         _emailClient = emailClient;
         _loggingService = loggingService;
-        _platformNameProvider = platformNameProvider;
+        _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
         _settings = settings;
         _urlProviderFactory = urlProviderFactory;
@@ -344,7 +344,7 @@ public class EmailService : IEmailService
                than on a platform, so the same chapter must not be named differently depending on which site
                triggered the send. An email about no group is from the platform itself, and takes its name. */
             GroupName = StringUtils.Coalesce(
-                options.Chapter?.FullName, _platformNameProvider.GetName(request.Platform)),
+                options.Chapter?.FullName, _platformProvider.GetName(request.Platform)),
             PlatformUrl = urlProvider.BaseUrl(),
             ThemeBodyBackground = _settings.DefaultBodyBackground,
             ThemeBodyColor = _settings.DefaultBodyColor,
