@@ -24,7 +24,7 @@ public class Member : IVersioned, IDatabaseEntity, ITimeZoneEntity
 
     public string LastName { get; set; } = string.Empty;
 
-    public PlatformType? Platform { get; set; }
+    public PlatformType Platform { get; set; }
 
     /// <summary>
     /// The referral this member signed up from, when they arrived via a referral link. Null for every

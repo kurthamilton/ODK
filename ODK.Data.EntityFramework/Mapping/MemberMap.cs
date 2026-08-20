@@ -19,7 +19,7 @@ public class MemberMap : IEntityTypeConfiguration<Member>
 
         builder.Property(x => x.Platform)
             .HasColumnName("PlatformTypeId")
-            .HasConversion<int?>();
+            .HasConversion<int>();
 
         builder.Property(x => x.SiteAdmin)
             .HasColumnName("SuperAdmin");
