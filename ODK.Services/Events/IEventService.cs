@@ -17,11 +17,9 @@ public interface IEventService
     Task<ServiceResult> LeaveWaitlist(Guid eventId, Guid memberId);
 
     /// <summary>
-    /// Queues <see cref="NotifyWaitlist"/>, for a caller that wants the work done but not now.
+    /// Queues the promotion of a waitlist into whatever spaces an event has left.
     /// </summary>
     string EnqueueNotifyWaitlistJob(JobRequest request, Guid eventId);
-
-    Task NotifyWaitlist(IServiceRequest request, Guid eventId);
 
     Task<ServiceResult> UpdateMemberResponse(
         IMemberServiceRequest request, Guid eventId, EventResponseType responseType, Guid? adminMemberId);

@@ -778,41 +778,6 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     public async Task SendImportInviteEmailJob(JobRequest request, Guid chapterId, Guid memberId)
         => await SendImportInviteEmail(await _serviceRequestFactory.Create(request), chapterId, memberId);
 
-    public async Task SendImportActivationEmail(IServiceRequest request, Guid chapterId, Guid memberId)
-    {
-        var (member, chapter, activationToken) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(memberId),
-            x => x.ChapterRepository.GetById(request.Platform, chapterId),
-            x => x.MemberActivationTokenRepository.GetByMemberId(memberId));
-
-        // The token is removed once the member activates; there is nothing to send if that has happened.
-        if (activationToken == null)
-        {
-            return;
-        }
-
-        var emailRequest = MemberChapterServiceRequest.Create(chapter, member, request);
-        await _memberEmailService.SendMemberImportActivationEmail(
-            emailRequest, activationToken.ActivationToken);
-    }
-
-    public async Task SendImportInviteEmail(IServiceRequest request, Guid chapterId, Guid memberId)
-    {
-        var (member, chapter, invite) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(memberId),
-            x => x.ChapterRepository.GetById(request.Platform, chapterId),
-            x => x.MemberChapterInviteRepository.GetByMemberId(memberId, chapterId));
-
-        // Consumed once they join, and the link is worthless without it, so there is nothing to send.
-        if (invite == null)
-        {
-            return;
-        }
-
-        var chapterRequest = ChapterServiceRequest.Create(chapter, request);
-        await _memberEmailService.SendMemberImportInviteEmail(chapterRequest, member, invite.Token);
-    }
-
     public async Task<ServiceResult> RemoveMemberFromChapter(
         IMemberChapterAdminServiceRequest request,
         Guid memberId,
@@ -1178,6 +1143,41 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     /// <summary>
     /// Whether each row's address is a usable format, keyed by the address. Soft only - see the callers.
     /// </summary>
+    private async Task SendImportActivationEmail(IServiceRequest request, Guid chapterId, Guid memberId)
+    {
+        var (member, chapter, activationToken) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(memberId),
+            x => x.ChapterRepository.GetById(request.Platform, chapterId),
+            x => x.MemberActivationTokenRepository.GetByMemberId(memberId));
+
+        // The token is removed once the member activates; there is nothing to send if that has happened.
+        if (activationToken == null)
+        {
+            return;
+        }
+
+        var emailRequest = MemberChapterServiceRequest.Create(chapter, member, request);
+        await _memberEmailService.SendMemberImportActivationEmail(
+            emailRequest, activationToken.ActivationToken);
+    }
+
+    private async Task SendImportInviteEmail(IServiceRequest request, Guid chapterId, Guid memberId)
+    {
+        var (member, chapter, invite) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(memberId),
+            x => x.ChapterRepository.GetById(request.Platform, chapterId),
+            x => x.MemberChapterInviteRepository.GetByMemberId(memberId, chapterId));
+
+        // Consumed once they join, and the link is worthless without it, so there is nothing to send.
+        if (invite == null)
+        {
+            return;
+        }
+
+        var chapterRequest = ChapterServiceRequest.Create(chapter, request);
+        await _memberEmailService.SendMemberImportInviteEmail(chapterRequest, member, invite.Token);
+    }
+
     private async Task<IReadOnlyDictionary<string, bool>> ValidateImportEmailAddresses(
         IReadOnlyCollection<MemberImportModel> members)
     {
