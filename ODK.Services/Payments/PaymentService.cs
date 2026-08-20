@@ -59,52 +59,6 @@ public class PaymentService : IPaymentService
             () => ProcessWebhookJob(request, webhook),
             BackgroundTaskQueueType.Payments);
 
-    public async Task EnsureProductExists(IChapterServiceRequest request)
-    {
-        var chapter = request.Chapter;
-
-        var (chapterPaymentSettings, sitePaymentSettings) = await _unitOfWork.RunAsync(
-            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapter.Id),
-            x => x.SitePaymentSettingsRepository.GetActive());
-
-        if (!string.IsNullOrEmpty(chapterPaymentSettings?.ExternalProductId))
-        {
-            return;
-        }
-
-        var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(sitePaymentSettings);
-
-        var productName = chapter.FullName;
-
-        var productId = await paymentProvider.GetProductId(productName);
-        if (string.IsNullOrEmpty(productId))
-        {
-            productId = await paymentProvider.CreateProduct(productName);
-        }
-
-        if (string.IsNullOrEmpty(productId))
-        {
-            await _loggingService.Error($"Could not create payment product for chapter {chapter.FullName}");
-            return;
-        }
-
-        chapterPaymentSettings ??= new ChapterPaymentSettings();
-
-        chapterPaymentSettings.ExternalProductId = productId;
-
-        if (chapterPaymentSettings.ChapterId == default)
-        {
-            chapterPaymentSettings.ChapterId = chapter.Id;
-            _unitOfWork.ChapterPaymentSettingsRepository.Add(chapterPaymentSettings);
-        }
-        else
-        {
-            _unitOfWork.ChapterPaymentSettingsRepository.Update(chapterPaymentSettings);
-        }
-
-        await _unitOfWork.SaveChanges();
-    }
-
     /* Public for Hangfire, which needs a method to bind to, and called by nothing else: it turns the job's
        ids back into a request and hands off to the work. These signatures are a wire format - see JobRequest -
        so a change to one is a change every queued job of that kind has to survive. */
@@ -303,6 +257,52 @@ public class PaymentService : IPaymentService
         return expiresUtc > utcNow
             ? expiresUtc
             : utcNow.AddMonths(months);
+    }
+
+    private async Task EnsureProductExists(IChapterServiceRequest request)
+    {
+        var chapter = request.Chapter;
+
+        var (chapterPaymentSettings, sitePaymentSettings) = await _unitOfWork.RunAsync(
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapter.Id),
+            x => x.SitePaymentSettingsRepository.GetActive());
+
+        if (!string.IsNullOrEmpty(chapterPaymentSettings?.ExternalProductId))
+        {
+            return;
+        }
+
+        var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(sitePaymentSettings);
+
+        var productName = chapter.FullName;
+
+        var productId = await paymentProvider.GetProductId(productName);
+        if (string.IsNullOrEmpty(productId))
+        {
+            productId = await paymentProvider.CreateProduct(productName);
+        }
+
+        if (string.IsNullOrEmpty(productId))
+        {
+            await _loggingService.Error($"Could not create payment product for chapter {chapter.FullName}");
+            return;
+        }
+
+        chapterPaymentSettings ??= new ChapterPaymentSettings();
+
+        chapterPaymentSettings.ExternalProductId = productId;
+
+        if (chapterPaymentSettings.ChapterId == default)
+        {
+            chapterPaymentSettings.ChapterId = chapter.Id;
+            _unitOfWork.ChapterPaymentSettingsRepository.Add(chapterPaymentSettings);
+        }
+        else
+        {
+            _unitOfWork.ChapterPaymentSettingsRepository.Update(chapterPaymentSettings);
+        }
+
+        await _unitOfWork.SaveChanges();
     }
 
     private async Task<DateTime?> GetChapterSubscriptionNextPaymentDate(Guid chapterId, string externalId)

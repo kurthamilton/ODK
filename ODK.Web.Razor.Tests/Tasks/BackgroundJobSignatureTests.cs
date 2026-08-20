@@ -1,7 +1,6 @@
 ﻿using System.Reflection;
 using FluentAssertions;
 using NUnit.Framework;
-using ODK.Services;
 using ODK.Services.Payments.Models;
 using ODK.Services.Tasks;
 
@@ -21,6 +20,10 @@ namespace ODK.Web.Razor.Tests.Tasks;
 /// Changing an entry here is therefore a deliberate act, not a rename that fell out of a refactor. Add the new
 /// method beside the old one, leave the old one until the queue has drained of jobs holding it, and only then
 /// remove its entry.
+/// </para>
+/// <para>
+/// Every entry now takes either a <see cref="JobRequest"/> or primitives, so nothing a queued job names can be
+/// invalidated by an entity or a web type changing.
 /// </para>
 /// </remarks>
 [Parallelizable]
@@ -47,24 +50,7 @@ public static class BackgroundJobSignatureTests
         new("ODK.Services.Payments.PaymentService", "ProcessWebhookJob",
             typeof(JobRequest), typeof(PaymentProviderWebhook)),
         new("ODK.Services.SocialMedia.SocialMediaService", "ScrapeLatestInstagramPosts",
-            typeof(Queue<Guid>), typeof(int)),
-
-        /* Bound only by jobs queued before the JobRequest split, which the work methods above them replaced
-           without changing. They stay reachable until the queue has drained of those jobs, and their types
-           - ServiceRequest and HttpRequestContext - must stay deserialisable for exactly as long. */
-        new("ODK.Services.Events.EventAdminService", "SendScheduledEmails",
-            typeof(IServiceRequest), typeof(Guid)),
-        new("ODK.Services.Events.EventService", "NotifyWaitlist", typeof(IServiceRequest), typeof(Guid)),
-        new("ODK.Services.Events.IEventService", "NotifyWaitlist", typeof(IServiceRequest), typeof(Guid)),
-        new("ODK.Services.Members.MemberAdminService", "SendImportActivationEmail",
-            typeof(IServiceRequest), typeof(Guid), typeof(Guid)),
-        new("ODK.Services.Members.MemberAdminService", "SendImportInviteEmail",
-            typeof(IServiceRequest), typeof(Guid), typeof(Guid)),
-        new("ODK.Services.Payments.IPaymentService", "EnsureProductExists", typeof(IChapterServiceRequest)),
-        new("ODK.Services.Payments.IPaymentService", "ProcessWebhook",
-            typeof(IServiceRequest), typeof(PaymentProviderWebhook)),
-        new("ODK.Services.Payments.PaymentService", "ProcessWebhookAction",
-            typeof(IServiceRequest), typeof(PaymentProviderWebhook))
+            typeof(Queue<Guid>), typeof(int))
     ];
 
     [Test]

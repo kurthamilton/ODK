@@ -206,92 +206,6 @@ public class EventService : IEventService
         return ServiceResult.Successful("You have left the waiting list");
     }
 
-    public async Task NotifyWaitlist(IServiceRequest request, Guid eventId)
-    {
-        var platform = request.Platform;
-
-        var (chapter, @event, waitlist, responses) = await _unitOfWork.RunAsync(
-            x => x.ChapterRepository.GetByEventId(platform, eventId),
-            x => x.EventRepository.GetById(@eventId),
-            x => x.EventWaitlistMemberRepository.GetByEventId(eventId),
-            x => x.EventResponseRepository.GetByEventId(eventId));
-
-        if (@event.Ticketed)
-        {
-            // do not auto-promote waitlist for ticketed events
-            return;
-        }
-
-        if (@event.RsvpDeadlinePassed)
-        {
-            return;
-        }
-
-        if (waitlist.Count == 0)
-        {
-            return;
-        }
-
-        var membersToConfirm = new List<EventWaitlistMember>();
-
-        var numberOfAttendees = responses.Count(x => x.Type == EventResponseType.Yes);
-
-        var spacesLeft = @event.NumberOfSpacesLeft(numberOfAttendees);
-        if (spacesLeft == null)
-        {
-            spacesLeft = waitlist.Count;
-        }
-
-        if (spacesLeft <= 0)
-        {
-            return;
-        }
-
-        var responseDictionary = responses.ToDictionary(x => x.MemberId);
-
-        var waitlistToPromote = waitlist
-            .OrderBy(x => x.CreatedUtc)
-            .Take(spacesLeft.Value)
-            .ToArray();
-
-        membersToConfirm.AddRange(waitlistToPromote);
-
-        _unitOfWork.EventWaitlistMemberRepository.DeleteMany(waitlistToPromote);
-
-        foreach (var waitlistMember in waitlistToPromote)
-        {
-            if (responseDictionary.TryGetValue(waitlistMember.MemberId, out var response))
-            {
-                response.Type = EventResponseType.Yes;
-                _unitOfWork.EventResponseRepository.Update(response);
-            }
-            else
-            {
-                _unitOfWork.EventResponseRepository.Add(new EventResponse
-                {
-                    EventId = eventId,
-                    MemberId = waitlistMember.MemberId,
-                    Type = EventResponseType.Yes
-                });
-            }
-        }
-
-        var memberIds = membersToConfirm
-            .Select(x => x.MemberId)
-            .ToArray();
-
-        var (members, notificationSettings) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetByIds(memberIds),
-            x => x.MemberNotificationSettingsRepository.GetByMemberIds(memberIds, NotificationType.EventWaitlistPromotion));
-
-        _notificationService.AddEventWaitlistPromotionNotifications(@event, members, notificationSettings);
-
-        await _unitOfWork.SaveChanges();
-
-        await _memberEmailService.SendEventWaitlistPromotionNotification(
-            ChapterServiceRequest.Create(chapter, request), @event, members);
-    }
-
     /* Public for Hangfire, which needs a method to bind to, and called by nothing else: it turns the job's
        ids back into a request and hands off to the work above. Its signature is a wire format - see
        JobRequest - so a change to it is a change every queued job has to survive. */
@@ -408,6 +322,92 @@ public class EventService : IEventService
         return isForAdmin
             ? ServiceResult.Failure("Member is not permitted to attend this event")
             : ServiceResult.Failure("You are not permitted to attend this event");
+    }
+
+    private async Task NotifyWaitlist(IServiceRequest request, Guid eventId)
+    {
+        var platform = request.Platform;
+
+        var (chapter, @event, waitlist, responses) = await _unitOfWork.RunAsync(
+            x => x.ChapterRepository.GetByEventId(platform, eventId),
+            x => x.EventRepository.GetById(@eventId),
+            x => x.EventWaitlistMemberRepository.GetByEventId(eventId),
+            x => x.EventResponseRepository.GetByEventId(eventId));
+
+        if (@event.Ticketed)
+        {
+            // do not auto-promote waitlist for ticketed events
+            return;
+        }
+
+        if (@event.RsvpDeadlinePassed)
+        {
+            return;
+        }
+
+        if (waitlist.Count == 0)
+        {
+            return;
+        }
+
+        var membersToConfirm = new List<EventWaitlistMember>();
+
+        var numberOfAttendees = responses.Count(x => x.Type == EventResponseType.Yes);
+
+        var spacesLeft = @event.NumberOfSpacesLeft(numberOfAttendees);
+        if (spacesLeft == null)
+        {
+            spacesLeft = waitlist.Count;
+        }
+
+        if (spacesLeft <= 0)
+        {
+            return;
+        }
+
+        var responseDictionary = responses.ToDictionary(x => x.MemberId);
+
+        var waitlistToPromote = waitlist
+            .OrderBy(x => x.CreatedUtc)
+            .Take(spacesLeft.Value)
+            .ToArray();
+
+        membersToConfirm.AddRange(waitlistToPromote);
+
+        _unitOfWork.EventWaitlistMemberRepository.DeleteMany(waitlistToPromote);
+
+        foreach (var waitlistMember in waitlistToPromote)
+        {
+            if (responseDictionary.TryGetValue(waitlistMember.MemberId, out var response))
+            {
+                response.Type = EventResponseType.Yes;
+                _unitOfWork.EventResponseRepository.Update(response);
+            }
+            else
+            {
+                _unitOfWork.EventResponseRepository.Add(new EventResponse
+                {
+                    EventId = eventId,
+                    MemberId = waitlistMember.MemberId,
+                    Type = EventResponseType.Yes
+                });
+            }
+        }
+
+        var memberIds = membersToConfirm
+            .Select(x => x.MemberId)
+            .ToArray();
+
+        var (members, notificationSettings) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetByIds(memberIds),
+            x => x.MemberNotificationSettingsRepository.GetByMemberIds(memberIds, NotificationType.EventWaitlistPromotion));
+
+        _notificationService.AddEventWaitlistPromotionNotifications(@event, members, notificationSettings);
+
+        await _unitOfWork.SaveChanges();
+
+        await _memberEmailService.SendEventWaitlistPromotionNotification(
+            ChapterServiceRequest.Create(chapter, request), @event, members);
     }
 
     private async Task<ServiceResult> UpdateMemberResponse(

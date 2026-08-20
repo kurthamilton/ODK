@@ -4,7 +4,6 @@ using Hangfire.Common;
 using NUnit.Framework;
 using ODK.Core.Payments;
 using ODK.Core.Platforms;
-using ODK.Services;
 using ODK.Services.Payments.Models;
 using ODK.Services.Tasks;
 
@@ -133,31 +132,6 @@ public static class BackgroundJobPayloadTests
         result.OriginatedUtc.Should().Be(webhook.OriginatedUtc);
         result.PaymentProviderType.Should().Be(webhook.PaymentProviderType);
         result.Type.Should().Be(webhook.Type);
-    }
-
-    [Test]
-    public static void LegacyServiceRequestPayload_StillDeserialises()
-    {
-        /* Arrange - a payload in the shape queued before jobs took a JobRequest, captured verbatim. Jobs
-           holding one are still in the queue and still bind to the work methods that take an IServiceRequest,
-           so ServiceRequest and HttpRequestContext have to keep deserialising until the queue has drained of
-           them. When that is done, this test and those methods go together. */
-        var json =
-            "{\"$type\":\"ODK.Services.ServiceRequest, ODK.Services\"," +
-            "\"CurrentMemberOrDefault\":null," +
-            "\"HttpRequestContext\":{" +
-            "\"$type\":\"ODK.Web.Razor.Services.HttpRequestContext, ODK.Web.Razor\"," +
-            "\"Headers\":{},\"IpAddress\":\"203.0.113.9\",\"Locale\":\"en-GB\"," +
-            "\"RequestPath\":\"/events\",\"RequestUrl\":\"https://example.com/events\"," +
-            "\"RouteValues\":{},\"UserAgent\":\"probe\"}," +
-            "\"Platform\":2}";
-
-        // Act
-        var result = SerializationHelper.Deserialize<IServiceRequest>(json, SerializationOption.User);
-
-        // Assert
-        result.Platform.Should().Be(PlatformType.DrunkenKnitwits);
-        result.HttpRequestContext.BaseUrl.Should().Be("https://example.com");
     }
 
     private static JobRequest CreateJobRequest() => new()
