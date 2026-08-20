@@ -1,5 +1,13 @@
-﻿@using ODK.Web.Razor.Models.SiteAdmin
+﻿@using ODK.Services.Questions
+@using ODK.Web.Razor.Models.SiteAdmin
 @model SiteQuestionFormViewModel
+
+@* "Placeholder" rather than the parameter the code calls it, matching the word the email templates already
+   use for the same thing. *@
+<p class="text-muted">
+    Write <code>{@SiteQuestionParameters.PlatformName}</code> in either field and it is replaced with this
+    platform's name, so one question reads correctly wherever it is shown.
+</p>
 
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.Question, new { @class = "form-label" })

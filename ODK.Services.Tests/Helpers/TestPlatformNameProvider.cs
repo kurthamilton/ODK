@@ -1,0 +1,30 @@
+﻿using System.Collections.Generic;
+using ODK.Core.Platforms;
+using ODK.Services.Platforms;
+
+namespace ODK.Services.Tests.Helpers;
+
+/// <summary>
+/// The real provider over test names, rather than a double: it does nothing but read a configured name, so
+/// a fake would only restate the lookup, and a test asserting on a name should exercise the resolution it
+/// depends on.
+/// </summary>
+internal static class TestPlatformNameProvider
+{
+    internal const string DefaultName = "Default platform";
+
+    internal const string DrunkenKnitwitsName = "Drunken Knitwits platform";
+
+    /// <param name="defaultName">
+    /// The default platform's name, for a test that turns on what the name itself contains.
+    /// </param>
+    internal static IPlatformNameProvider Create(string? defaultName = null) => new PlatformNameProvider(
+        new PlatformNameProviderSettings
+        {
+            Names = new Dictionary<PlatformType, string>
+            {
+                { PlatformType.Default, defaultName ?? DefaultName },
+                { PlatformType.DrunkenKnitwits, DrunkenKnitwitsName }
+            }
+        });
+}

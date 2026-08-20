@@ -309,10 +309,8 @@ public static class EmailServiceTests
         context.Create(new SiteEmailSettings
         {
             FromEmailAddress = "noreply@example.com",
-            FromName = "{group.name}",
             Id = Guid.NewGuid(),
-            Platform = PlatformType.DrunkenKnitwits,
-            PlatformTitle = "Platform"
+            Platform = PlatformType.DrunkenKnitwits
         });
 
         context.Create(new Email
@@ -399,11 +397,9 @@ public static class EmailServiceTests
         {
             AdminTitle = "{group.name} admins",
             FromEmailAddress = "noreply@example.com",
-            FromName = "{group.name}",
             Id = Guid.NewGuid(),
             MemberTitle = "{group.name} members",
-            Platform = PlatformType.DrunkenKnitwits,
-            PlatformTitle = "Platform"
+            Platform = PlatformType.DrunkenKnitwits
         });
 
         context.Create(new Email
@@ -466,11 +462,9 @@ public static class EmailServiceTests
         {
             AdminTitle = "{group.name} admins",
             FromEmailAddress = "noreply@example.com",
-            FromName = "{group.name}",
             Id = Guid.NewGuid(),
             MemberTitle = "{group.name} members",
-            Platform = PlatformType.DrunkenKnitwits,
-            PlatformTitle = "Platform"
+            Platform = PlatformType.DrunkenKnitwits
         });
 
         if (chapterEmailSettings != null)
@@ -551,6 +545,7 @@ public static class EmailServiceTests
             urlProviderFactory.Object,
             new MockBackgroundTaskService(),
             Mock.Of<ILoggingService>(),
+            TestPlatformNameProvider.Create(),
             new EmailServiceSettings
             {
                 DefaultBodyBackground = "#fff",

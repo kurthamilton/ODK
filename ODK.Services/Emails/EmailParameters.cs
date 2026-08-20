@@ -19,6 +19,12 @@ public sealed class EmailParameters : IEmailParameters
     public const string BodyName = "body";
 
     /// <summary>
+    /// The name an email refers to its group by. Named rather than only listed in <see cref="Values"/>
+    /// because <see cref="EmailService"/> reads the resolved value back out to address the email from it.
+    /// </summary>
+    public const string GroupNameName = "group.name";
+
+    /// <summary>
     /// Marks a parameter whose value is HTML and must be interpolated without encoding. A template
     /// refers to the parameter by its plain name; only the supplied key carries the prefix.
     /// </summary>
@@ -49,7 +55,7 @@ public sealed class EmailParameters : IEmailParameters
        the list the app actually supplies. Adding a property means adding a row here. */
     private static readonly (string Name, Func<EmailParameters, string?> Value)[] Values =
     [
-        ("group.name", x => x.GroupName),
+        (GroupNameName, x => x.GroupName),
         ("group.url", x => x.GroupUrl),
         (PlatformUrlName, x => x.PlatformUrl),
         ("theme.body.background", x => x.ThemeBodyBackground),

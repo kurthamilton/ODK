@@ -8,6 +8,7 @@ using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
 using ODK.Services.Exceptions;
 using ODK.Services.Logging;
+using ODK.Services.Platforms;
 using ODK.Services.Tasks;
 using ODK.Services.Web;
 
@@ -18,6 +19,7 @@ public class EmailService : IEmailService
     private readonly IBackgroundTaskService _backgroundTaskService;
     private readonly IEmailClient _emailClient;
     private readonly ILoggingService _loggingService;
+    private readonly IPlatformNameProvider _platformNameProvider;
     private readonly EmailServiceSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUrlProviderFactory _urlProviderFactory;
@@ -28,11 +30,13 @@ public class EmailService : IEmailService
         IUrlProviderFactory urlProviderFactory,
         IBackgroundTaskService backgroundTaskService,
         ILoggingService loggingService,
+        IPlatformNameProvider platformNameProvider,
         EmailServiceSettings settings)
     {
         _backgroundTaskService = backgroundTaskService;
         _emailClient = emailClient;
         _loggingService = loggingService;
+        _platformNameProvider = platformNameProvider;
         _unitOfWork = unitOfWork;
         _settings = settings;
         _urlProviderFactory = urlProviderFactory;
@@ -101,7 +105,9 @@ public class EmailService : IEmailService
         {
             Body = layoutHtml.Interpolate(parameters),
             FromEmailAddress = siteSettings.FromEmailAddress,
-            FromName = siteSettings.FromName.Interpolate(parameters),
+            /* An email is addressed from the same name its wording refers to its group by, read back out of
+               the parameters rather than resolved again, so the two cannot disagree. */
+            FromName = parameters[EmailParameters.GroupNameName],
             Subject = subject.Interpolate(parameters)
         };
     }
@@ -336,8 +342,9 @@ public class EmailService : IEmailService
             GroupUrl = options.Chapter != null ? urlProvider.GroupUrl(options.Chapter) : null,
             /* From the group's own platform rather than the request's: an email is read in an inbox rather
                than on a platform, so the same chapter must not be named differently depending on which site
-               triggered the send. */
-            GroupName = StringUtils.Coalesce(options.Chapter?.FullName, siteSettings.PlatformTitle),
+               triggered the send. An email about no group is from the platform itself, and takes its name. */
+            GroupName = StringUtils.Coalesce(
+                options.Chapter?.FullName, _platformNameProvider.GetName(request.Platform)),
             PlatformUrl = urlProvider.BaseUrl(),
             ThemeBodyBackground = _settings.DefaultBodyBackground,
             ThemeBodyColor = _settings.DefaultBodyColor,

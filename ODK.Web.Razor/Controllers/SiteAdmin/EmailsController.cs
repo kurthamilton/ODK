@@ -72,9 +72,7 @@ public class EmailsController : OdkControllerBase
         {
             AdminTitle = viewModel.AdminTitle,
             FromEmailAddress = viewModel.FromEmailAddress,
-            FromEmailName = viewModel.FromEmailName,
-            MemberTitle = viewModel.MemberTitle,
-            PlatformTitle = viewModel.PlatformTitle
+            MemberTitle = viewModel.MemberTitle
         };
 
         await _settingsService.UpdateEmailSettings(MemberServiceRequest, model);
