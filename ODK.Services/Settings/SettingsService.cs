@@ -87,9 +87,7 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
 
         settings.AdminTitle = model.AdminTitle;
         settings.FromEmailAddress = model.FromEmailAddress;
-        settings.FromName = model.FromEmailName;
         settings.MemberTitle = model.MemberTitle;
-        settings.PlatformTitle = model.PlatformTitle;
 
         _unitOfWork.SiteEmailSettingsRepository.Update(settings);
         await _unitOfWork.SaveChanges();

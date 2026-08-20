@@ -7,6 +7,7 @@ using NUnit.Framework;
 using ODK.Core.Exceptions;
 using ODK.Core.Platforms;
 using ODK.Core.Web;
+using ODK.Services.Platforms;
 using ODK.Services.Questions;
 using ODK.Services.Tests.Helpers;
 
@@ -43,6 +44,62 @@ public static class SiteQuestionViewModelServiceTests
 
         // Assert
         await act.Should().ThrowAsync<OdkNotFoundException>();
+    }
+
+    [Test]
+    public static async Task GetAboutPage_PlatformNamePlaceholder_IsEncodedInTheAnswer()
+    {
+        // Arrange - the answer is rendered unencoded, so a name carrying markup characters has to arrive
+        // encoded. The question name is rendered as text and Razor encodes that itself.
+        using var context = new MockOdkContext();
+        context.AddRange(CreateQuestion(
+            PlatformType.Default,
+            "{platform.name}",
+            answer: "Welcome to {platform.name}"));
+        var service = CreateService(context, TestPlatformNameProvider.Create("Bells & Whistles"));
+
+        // Act
+        var viewModel = await service.GetAboutPage(CreateRequest(PlatformType.Default));
+
+        // Assert
+        var question = viewModel.Questions.Single();
+        question.Answer.Should().Be("Welcome to Bells &amp; Whistles");
+        question.Name.Should().Be("Bells & Whistles");
+    }
+
+    [Test]
+    public static async Task GetAboutPage_PlatformNamePlaceholder_IsResolvedInTheAnswer()
+    {
+        // Arrange
+        using var context = new MockOdkContext();
+        context.AddRange(CreateQuestion(
+            PlatformType.Default,
+            "Where am I?",
+            answer: "You are on {platform.name}"));
+        var service = CreateService(context);
+
+        // Act
+        var viewModel = await service.GetAboutPage(CreateRequest(PlatformType.Default));
+
+        // Assert
+        viewModel.Questions.Single().Answer
+            .Should().Be($"You are on {TestPlatformNameProvider.DefaultName}");
+    }
+
+    [Test]
+    public static async Task GetAboutPage_PlatformNamePlaceholder_IsResolvedInTheName()
+    {
+        // Arrange
+        using var context = new MockOdkContext();
+        context.AddRange(CreateQuestion(PlatformType.Default, "What is {platform.name}?"));
+        var service = CreateService(context);
+
+        // Act
+        var viewModel = await service.GetAboutPage(CreateRequest(PlatformType.Default));
+
+        // Assert
+        viewModel.Questions.Single().Name
+            .Should().Be($"What is {TestPlatformNameProvider.DefaultName}?");
     }
 
     [Test]
@@ -109,9 +166,10 @@ public static class SiteQuestionViewModelServiceTests
         result.Should().BeTrue();
     }
 
-    private static SiteQuestion CreateQuestion(PlatformType platform, string name, int displayOrder = 1) => new()
+    private static SiteQuestion CreateQuestion(
+        PlatformType platform, string name, int displayOrder = 1, string? answer = null) => new()
     {
-        Answer = $"{name} answer",
+        Answer = answer ?? $"{name} answer",
         DisplayOrder = displayOrder,
         Id = Guid.NewGuid(),
         Name = name,
@@ -125,6 +183,9 @@ public static class SiteQuestionViewModelServiceTests
         return mock.Object;
     }
 
-    private static SiteQuestionViewModelService CreateService(MockOdkContext context)
-        => new(MockUnitOfWorkFactory.Create(context));
+    private static SiteQuestionViewModelService CreateService(
+        MockOdkContext context, IPlatformNameProvider? platformNameProvider = null)
+        => new(
+            MockUnitOfWorkFactory.Create(context),
+            platformNameProvider ?? TestPlatformNameProvider.Create());
 }

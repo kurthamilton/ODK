@@ -844,11 +844,9 @@ public static class EmailAdminServiceTests
     {
         AdminTitle = "Site admins",
         FromEmailAddress = "noreply@example.com",
-        FromName = "Site",
         Id = Guid.NewGuid(),
         MemberTitle = "Site members",
-        Platform = PlatformType.Default,
-        PlatformTitle = "Platform"
+        Platform = PlatformType.Default
     });
 
     private static string? Value(ChapterEmailAdminPageViewModel result, string name) =>
