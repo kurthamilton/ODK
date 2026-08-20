@@ -142,11 +142,10 @@ public static class ChapterServiceTests
         MockOdkContext context,
         Member member,
         bool published = true)
-        => context.CreateChapter(members: [member], afterCreate: x =>
-        {
-            x.Platform = PlatformType.DrunkenKnitwits;
-            x.PublishedUtc = published ? DateTime.UtcNow : null;
-        });
+        => context.CreateChapter(
+            members: [member],
+            platform: PlatformType.DrunkenKnitwits,
+            afterCreate: x => x.PublishedUtc = published ? DateTime.UtcNow : null);
 
     private static IMemberServiceRequest CreateMemberServiceRequest(Member currentMember, PlatformType platform)
     {

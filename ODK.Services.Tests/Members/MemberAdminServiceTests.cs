@@ -767,7 +767,7 @@ public static class MemberAdminServiceTests
         var currentMember = context.CreateMember();
         var chapter = context.CreateChapter(
             owner: currentMember,
-            afterCreate: x => x.Platform = PlatformType.DrunkenKnitwits);
+            platform: PlatformType.DrunkenKnitwits);
 
         SeedDefaultSiteSubscription(context, PlatformType.DrunkenKnitwits);
 
@@ -846,6 +846,43 @@ public static class MemberAdminServiceTests
                 It.IsAny<Member>(),
                 It.IsAny<string>()),
             Times.Never);
+    }
+
+    [TestCase(PlatformType.Default)]
+    [TestCase(PlatformType.DrunkenKnitwits)]
+    public static async Task ImportMembers_NewMember_SavesTheImportingAdminsPlatform(PlatformType platform)
+    {
+        // Arrange - an imported account is raised by an admin rather than by whoever it is for, so the
+        // platform it records is the one the import ran on.
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(
+            owner: currentMember,
+            platform: platform);
+
+        SeedDefaultSiteSubscription(context, platform);
+
+        var service = CreateMemberAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            platform: platform,
+            securable: ChapterAdminSecurable.MemberImport);
+
+        var members = new[]
+        {
+            new MemberImportModel { EmailAddress = "new@example.com", FirstName = "New", LastName = "Member" }
+        };
+
+        // Act
+        var result = await service.ImportMembers(request, members);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        context.Set<Member>().Single(x => x.EmailAddress == "new@example.com")
+            .Platform.Should().Be(platform);
     }
 
     [Test]

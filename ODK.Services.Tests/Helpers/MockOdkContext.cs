@@ -64,6 +64,7 @@ internal class MockOdkContext : OdkContext
         SiteSubscription? siteSubscription = null,
         DateTime? approvedUtc = null,
         string name = "",
+        PlatformType platform = PlatformType.Default,
         TimeZoneInfo? timeZone = null,
         IEnumerable<Member>? adminMembers = null,
         IEnumerable<Member>? members = null,
@@ -87,7 +88,7 @@ internal class MockOdkContext : OdkContext
             OwnerId = owner.Id,
             CreatedUtc = DateTime.UtcNow,
             CountryId = country.Id,
-            Platform = PlatformType.Default,
+            Platform = platform,
             TimeZone = timeZone ?? Chapter.DefaultTimeZone
         });
 

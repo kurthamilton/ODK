@@ -16,6 +16,11 @@ public class MemberMap : IEntityTypeConfiguration<Member>
 
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();
+
+        builder.Property(x => x.Platform)
+            .HasColumnName("PlatformTypeId")
+            .HasConversion<int?>();
+
         builder.Property(x => x.SiteAdmin)
             .HasColumnName("SuperAdmin");
 
