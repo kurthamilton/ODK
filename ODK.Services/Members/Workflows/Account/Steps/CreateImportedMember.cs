@@ -46,6 +46,7 @@ public sealed class CreateImportedMember : IStep<AccountContext>
             EmailAddress = import.EmailAddress,
             FirstName = import.FirstName,
             LastName = import.LastName,
+            Platform = context.Request.Platform,
             TimeZone = chapter.TimeZone
         });
 

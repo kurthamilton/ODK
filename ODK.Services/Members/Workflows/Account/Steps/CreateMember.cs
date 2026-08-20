@@ -41,6 +41,7 @@ public sealed class CreateMember : IStep<AccountContext>
             EmailAddress = profile.EmailAddress,
             FirstName = profile.FirstName,
             LastName = profile.LastName,
+            Platform = context.Request.Platform,
             RecaptchaFlagged = !_recaptchaService.Success(recaptcha),
             RecaptchaScore = recaptcha.Score,
             SiteAdmin = false,

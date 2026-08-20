@@ -257,6 +257,26 @@ public static class MemberServiceTests
         context.Set<MemberPreferences>().Single(x => x.MemberId == member.Id).Locale.Should().Be("fr-FR");
     }
 
+    [TestCase(PlatformType.Default)]
+    [TestCase(PlatformType.DrunkenKnitwits)]
+    public static async Task CreateAccount_NewMember_SavesTheRequestPlatform(PlatformType platform)
+    {
+        // Arrange - an account records the platform it was raised on, taken from the request that raised it.
+        using var context = CreateMockOdkContext();
+        SeedDefaultSiteSubscription(context, platform);
+
+        var service = CreateMemberService(context, new Mock<IMemberEmailService>().Object);
+
+        // Act
+        var result = await service.CreateAccount(
+            CreateSiteRequest(platform), CreateModel("new@example.com", firstName: "New"));
+
+        // Assert
+        result.Success.Should().BeTrue();
+        context.Set<Member>().Single(x => x.EmailAddress == "new@example.com")
+            .Platform.Should().Be(platform);
+    }
+
     [Test]
     public static async Task CreateChapterAccount_ExistingActivatedMember_SendsDuplicateEmail()
     {
@@ -565,6 +585,30 @@ public static class MemberServiceTests
         context.Set<Member>().Any(x => x.EmailAddress == "new@example.com").Should().BeFalse();
     }
 
+    [TestCase(PlatformType.Default)]
+    [TestCase(PlatformType.DrunkenKnitwits)]
+    public static async Task CreateChapterAccount_NewMember_SavesTheRequestPlatform(PlatformType platform)
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+        SeedDefaultSiteSubscription(context, platform);
+        var chapter = context.CreateChapter(
+            siteSubscription: context.CreateSiteSubscription(),
+            platform: platform);
+
+        var service = CreateMemberService(context, new Mock<IMemberEmailService>().Object);
+
+        // Act
+        var result = await service.CreateChapterAccount(
+            CreateChapterRequest(chapter, platform),
+            CreateChapterProfile("new@example.com", firstName: "New"));
+
+        // Assert
+        result.Success.Should().BeTrue();
+        context.Set<Member>().Single(x => x.EmailAddress == "new@example.com")
+            .Platform.Should().Be(platform);
+    }
+
     [Test]
     public static async Task JoinChapter_InvitedMember_SkipsApprovalAndConsumesTheInvitation()
     {
@@ -719,9 +763,10 @@ public static class MemberServiceTests
         context.Set<MemberChapter>().Any(x => x.MemberId == member.Id).Should().BeFalse();
     }
 
-    private static IChapterServiceRequest CreateChapterRequest(Chapter chapter) =>
+    private static IChapterServiceRequest CreateChapterRequest(
+        Chapter chapter, PlatformType platform = PlatformType.DrunkenKnitwits) =>
         Mock.Of<IChapterServiceRequest>(x =>
-            x.Platform == PlatformType.DrunkenKnitwits &&
+            x.Platform == platform &&
             x.Chapter == chapter &&
             x.HttpRequestContext == Mock.Of<IHttpRequestContext>());
 
@@ -756,8 +801,9 @@ public static class MemberServiceTests
         });
     }
 
-    private static IServiceRequest CreateSiteRequest() => Mock.Of<IServiceRequest>(x =>
-        x.Platform == PlatformType.Default &&
+    private static IServiceRequest CreateSiteRequest(PlatformType platform = PlatformType.Default) =>
+        Mock.Of<IServiceRequest>(x =>
+            x.Platform == platform &&
         x.HttpRequestContext == Mock.Of<IHttpRequestContext>());
 
     private static AccountCreateModel CreateModel(

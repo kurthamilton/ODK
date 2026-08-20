@@ -72,6 +72,7 @@ public sealed class CreateSiteMember : IStep<AccountContext>
             EmailAddress = profile.EmailAddress,
             FirstName = profile.FirstName,
             LastName = profile.LastName,
+            Platform = context.Request.Platform,
             RecaptchaFlagged = !_recaptchaService.Success(recaptcha),
             RecaptchaScore = recaptcha.Score,
             /* The resolved referral, not the posted id: the id comes from the browser, so one that matches

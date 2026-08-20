@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Emails;
+using ODK.Core.Platforms;
 using ODK.Core.Utils;
 
 namespace ODK.Core.Members;
@@ -22,6 +23,8 @@ public class Member : IVersioned, IDatabaseEntity, ITimeZoneEntity
     public Guid Id { get; set; }
 
     public string LastName { get; set; } = string.Empty;
+
+    public PlatformType? Platform { get; set; }
 
     /// <summary>
     /// The referral this member signed up from, when they arrived via a referral link. Null for every
