@@ -37,6 +37,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     private readonly IMemberEmailService _memberEmailService;
     private readonly IMemberImageService _memberImageService;
     private readonly IMemberService _memberService;
+    private readonly IServiceRequestFactory _serviceRequestFactory;
     private readonly IUnitOfWork _unitOfWork;
 
     public MemberAdminService(
@@ -52,7 +53,8 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         IAccountContextFactory accountContextFactory,
         StateMachineRunner<ChapterMembershipState, ChapterMembershipTrigger, ChapterMembershipContext>
             chapterMembership,
-        IChapterMembershipContextFactory chapterMembershipContextFactory)
+        IChapterMembershipContextFactory chapterMembershipContextFactory,
+        IServiceRequestFactory serviceRequestFactory)
         : base(unitOfWork)
     {
         _accountWorkflow = account;
@@ -65,6 +67,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         _memberEmailService = memberEmailService;
         _memberImageService = memberImageService;
         _memberService = memberService;
+        _serviceRequestFactory = serviceRequestFactory;
         _emailValidationService = emailValidationService;
         _unitOfWork = unitOfWork;
     }
@@ -748,30 +751,33 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         await _unitOfWork.SaveChanges();
 
         // Send the activation/invite emails in the background so a large import doesn't block the request,
-        // and so each email is an independently-retryable job. Only a narrowed request is passed across the
-        // Hangfire boundary; the member/chapter/token are reloaded by id inside each job.
-        var emailRequest = ServiceRequest.Create(request);
+        // and so each email is an independently-retryable job. Only ids cross the Hangfire boundary; the
+        // member, chapter and token are reloaded inside each job.
+        var jobRequest = JobRequest.Create(request);
 
         foreach (var member in activationEmailMembers)
         {
-            var memberId = member.Id;
-            _backgroundTaskService.Enqueue(
-                () => SendImportActivationEmail(emailRequest, chapter.Id, memberId),
-                BackgroundTaskQueueType.Emails);
+            EnqueueSendImportActivationEmailJob(jobRequest, chapter.Id, member.Id);
         }
 
         foreach (var member in inviteEmailMembers)
         {
-            var memberId = member.Id;
-            _backgroundTaskService.Enqueue(
-                () => SendImportInviteEmail(emailRequest, chapter.Id, memberId),
-                BackgroundTaskQueueType.Emails);
+            EnqueueSendImportInviteEmailJob(jobRequest, chapter.Id, member.Id);
         }
 
         return ServiceResult.Successful();
     }
 
-    // Public for Hangfire
+    /* Public for Hangfire, which needs a method to bind to, and called by nothing else: each turns the
+       job's ids back into a request and hands off to the work. These signatures are a wire format - see
+       JobRequest - so a change to one is a change every queued job of that kind has to survive. */
+    public async Task SendImportActivationEmailJob(JobRequest request, Guid chapterId, Guid memberId)
+        => await SendImportActivationEmail(await _serviceRequestFactory.Create(request), chapterId, memberId);
+
+    /// <inheritdoc cref="SendImportActivationEmailJob" />
+    public async Task SendImportInviteEmailJob(JobRequest request, Guid chapterId, Guid memberId)
+        => await SendImportInviteEmail(await _serviceRequestFactory.Create(request), chapterId, memberId);
+
     public async Task SendImportActivationEmail(IServiceRequest request, Guid chapterId, Guid memberId)
     {
         var (member, chapter, activationToken) = await _unitOfWork.RunAsync(
@@ -790,7 +796,6 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             emailRequest, activationToken.ActivationToken);
     }
 
-    // Public for Hangfire
     public async Task SendImportInviteEmail(IServiceRequest request, Guid chapterId, Guid memberId)
     {
         var (member, chapter, invite) = await _unitOfWork.RunAsync(
@@ -1134,6 +1139,16 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             .GroupBy(x => x.EmailAddress, StringComparer.OrdinalIgnoreCase)
             .Select(g => g.First())
             .ToArray();
+
+    private string EnqueueSendImportActivationEmailJob(JobRequest request, Guid chapterId, Guid memberId)
+        => _backgroundTaskService.Enqueue(
+            () => SendImportActivationEmailJob(request, chapterId, memberId),
+            BackgroundTaskQueueType.Emails);
+
+    private string EnqueueSendImportInviteEmailJob(JobRequest request, Guid chapterId, Guid memberId)
+        => _backgroundTaskService.Enqueue(
+            () => SendImportInviteEmailJob(request, chapterId, memberId),
+            BackgroundTaskQueueType.Emails);
 
     private IEnumerable<Member> FilterMembers(
         IEnumerable<Member> members,

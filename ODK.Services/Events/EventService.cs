@@ -24,6 +24,7 @@ public class EventService : IEventService
     private readonly ILoggingService _loggingService;
     private readonly IMemberEmailService _memberEmailService;
     private readonly INotificationService _notificationService;
+    private readonly IServiceRequestFactory _serviceRequestFactory;
     private readonly IUnitOfWork _unitOfWork;
 
     public EventService(IUnitOfWork unitOfWork,
@@ -31,13 +32,15 @@ public class EventService : IEventService
         IMemberEmailService memberEmailService,
         ILoggingService loggingService,
         IBackgroundTaskService backgroundTaskService,
-        INotificationService notificationService)
+        INotificationService notificationService,
+        IServiceRequestFactory serviceRequestFactory)
     {
         _authorizationService = authorizationService;
         _backgroundTaskService = backgroundTaskService;
         _loggingService = loggingService;
         _memberEmailService = memberEmailService;
         _notificationService = notificationService;
+        _serviceRequestFactory = serviceRequestFactory;
         _unitOfWork = unitOfWork;
     }
 
@@ -148,6 +151,11 @@ public class EventService : IEventService
 
         await _unitOfWork.SaveChanges();
     }
+
+    public string EnqueueNotifyWaitlistJob(JobRequest request, Guid eventId)
+        => _backgroundTaskService.Enqueue(
+            () => NotifyWaitlistJob(request, eventId),
+            BackgroundTaskQueueType.Events);
 
     public Task<Event> GetById(Guid eventId) => _unitOfWork.EventRepository.GetById(eventId).Run();
 
@@ -283,6 +291,12 @@ public class EventService : IEventService
         await _memberEmailService.SendEventWaitlistPromotionNotification(
             ChapterServiceRequest.Create(chapter, request), @event, members);
     }
+
+    /* Public for Hangfire, which needs a method to bind to, and called by nothing else: it turns the job's
+       ids back into a request and hands off to the work above. Its signature is a wire format - see
+       JobRequest - so a change to it is a change every queued job has to survive. */
+    public async Task NotifyWaitlistJob(JobRequest request, Guid eventId)
+        => await NotifyWaitlist(await _serviceRequestFactory.Create(request), eventId);
 
     public async Task<ServiceResult> UpdateMemberResponse(
         IMemberServiceRequest request,
@@ -506,9 +520,7 @@ public class EventService : IEventService
 
         await _unitOfWork.SaveChanges();
 
-        _backgroundTaskService.Enqueue(
-            () => NotifyWaitlist(request, eventId),
-            BackgroundTaskQueueType.Events);
+        EnqueueNotifyWaitlistJob(JobRequest.Create(request), eventId);
 
         return ServiceResult.Successful();
     }

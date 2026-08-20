@@ -30,6 +30,8 @@ namespace ODK.Services.Tests.Events;
 [Parallelizable]
 public static class EventAdminServiceTests
 {
+    private const string BaseUrl = "https://example.com";
+
     [TestCase("Pacific Standard Time", "2024-01-17", "2024-01-15 20:00:00")]
     [TestCase("Pacific Standard Time", "2024-07-17", "2024-07-15 19:00:00")]
     [TestCase("GMT Standard Time", "2024-01-16", "2024-01-15 12:00:00")]
@@ -294,6 +296,10 @@ public static class EventAdminServiceTests
         mock.Setup(x => x.Chapter)
             .Returns(chapter);
 
+        // Set because anything queueing a job reads the base URL off it to build the job's request.
+        mock.Setup(x => x.HttpRequestContext)
+            .Returns(new JobHttpRequestContext { BaseUrl = BaseUrl });
+
         mock.Setup(x => x.CurrentMember)
             .Returns(currentMember);
 
@@ -319,6 +325,9 @@ public static class EventAdminServiceTests
     {
         var mock = new Mock<IServiceRequest>();
 
+        mock.Setup(x => x.HttpRequestContext)
+            .Returns(new JobHttpRequestContext { BaseUrl = BaseUrl });
+
         mock.Setup(x => x.Platform)
             .Returns(PlatformType.Default);
 
@@ -342,6 +351,7 @@ public static class EventAdminServiceTests
             Mock.Of<ILoggingService>(),
             Mock.Of<IPaymentService>(),
             Mock.Of<IEventService>(),
+            new MockServiceRequestFactory(context),
             new EventAdminServiceSettings
             {
                 ShortcodeLength = 8

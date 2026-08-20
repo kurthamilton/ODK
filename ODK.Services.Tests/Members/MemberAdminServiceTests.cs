@@ -1138,7 +1138,8 @@ public static class MemberAdminServiceTests
             workflow.GetRequiredService<IAccountContextFactory>(),
             workflow.GetRequiredService<StateMachineRunner<
                 ChapterMembershipState, ChapterMembershipTrigger, ChapterMembershipContext>>(),
-            workflow.GetRequiredService<IChapterMembershipContextFactory>());
+            workflow.GetRequiredService<IChapterMembershipContextFactory>(),
+            new MockServiceRequestFactory(context));
     }
 
     /// <summary>

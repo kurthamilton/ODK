@@ -24,6 +24,7 @@ public class PaymentService : IPaymentService
     private readonly IMemberEmailService _memberEmailService;
     private readonly IMemberSiteSubscriptionWriter _memberSiteSubscriptionWriter;
     private readonly IPaymentProviderFactory _paymentProviderFactory;
+    private readonly IServiceRequestFactory _serviceRequestFactory;
     private readonly IUnitOfWork _unitOfWork;
 
     public PaymentService(
@@ -34,7 +35,8 @@ public class PaymentService : IPaymentService
         IEventService eventService,
         IBackgroundTaskService backgroundTaskService,
         IMemberChapterSubscriptionWriter memberChapterSubscriptionWriter,
-        IMemberSiteSubscriptionWriter memberSiteSubscriptionWriter)
+        IMemberSiteSubscriptionWriter memberSiteSubscriptionWriter,
+        IServiceRequestFactory serviceRequestFactory)
     {
         _backgroundTaskService = backgroundTaskService;
         _eventService = eventService;
@@ -43,8 +45,19 @@ public class PaymentService : IPaymentService
         _memberEmailService = memberEmailService;
         _memberSiteSubscriptionWriter = memberSiteSubscriptionWriter;
         _paymentProviderFactory = paymentProviderFactory;
+        _serviceRequestFactory = serviceRequestFactory;
         _unitOfWork = unitOfWork;
     }
+
+    public string EnqueueEnsureProductExistsJob(JobRequest request)
+        => _backgroundTaskService.Enqueue(
+            () => EnsureProductExistsJob(request),
+            BackgroundTaskQueueType.General);
+
+    public string EnqueueProcessWebhookJob(JobRequest request, PaymentProviderWebhook webhook)
+        => _backgroundTaskService.Enqueue(
+            () => ProcessWebhookJob(request, webhook),
+            BackgroundTaskQueueType.Payments);
 
     public async Task EnsureProductExists(IChapterServiceRequest request)
     {
@@ -91,6 +104,12 @@ public class PaymentService : IPaymentService
 
         await _unitOfWork.SaveChanges();
     }
+
+    /* Public for Hangfire, which needs a method to bind to, and called by nothing else: it turns the job's
+       ids back into a request and hands off to the work. These signatures are a wire format - see JobRequest -
+       so a change to one is a change every queued job of that kind has to survive. */
+    public async Task EnsureProductExistsJob(JobRequest request)
+        => await EnsureProductExists(await _serviceRequestFactory.CreateChapterRequest(request));
 
     public async Task<PaymentStatusType> GetMemberChapterPaymentCheckoutSessionStatus(
         IMemberServiceRequest request, Guid chapterId, string externalSessionId)
@@ -206,7 +225,7 @@ public class PaymentService : IPaymentService
         // Run the actioning of the webhook itself in a new task so that we can persist the event as quickly as possible
         // and make the actual processing retryable.
         _backgroundTaskService.Enqueue(
-            () => ProcessWebhookAction(request, webhook),
+            () => ProcessWebhookActionJob(JobRequest.Create(request), webhook),
             BackgroundTaskQueueType.Payments);
     }
 
@@ -257,6 +276,14 @@ public class PaymentService : IPaymentService
     // A cooldown longer than the subscription's own length can continue a period that has already fully
     // elapsed, so a calculated expiry that is not in the future starts a new period instead: a payment must
     // always leave the member current.
+    /// <inheritdoc cref="EnsureProductExistsJob" />
+    public async Task ProcessWebhookActionJob(JobRequest request, PaymentProviderWebhook webhook)
+        => await ProcessWebhookAction(await _serviceRequestFactory.Create(request), webhook);
+
+    /// <inheritdoc cref="EnsureProductExistsJob" />
+    public async Task ProcessWebhookJob(JobRequest request, PaymentProviderWebhook webhook)
+        => await ProcessWebhook(await _serviceRequestFactory.Create(request), webhook);
+
     private static DateTime RollExpiryForward(
         DateTime? currentExpiresUtc,
         int months,

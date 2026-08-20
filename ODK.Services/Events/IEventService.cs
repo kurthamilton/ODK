@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Events;
+using ODK.Services.Tasks;
 
 namespace ODK.Services.Events;
 
@@ -14,6 +15,11 @@ public interface IEventService
     Task<ServiceResult> JoinWaitlist(Guid eventId, Guid memberId);
 
     Task<ServiceResult> LeaveWaitlist(Guid eventId, Guid memberId);
+
+    /// <summary>
+    /// Queues <see cref="NotifyWaitlist"/>, for a caller that wants the work done but not now.
+    /// </summary>
+    string EnqueueNotifyWaitlistJob(JobRequest request, Guid eventId);
 
     Task NotifyWaitlist(IServiceRequest request, Guid eventId);
 

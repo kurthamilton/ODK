@@ -6,6 +6,7 @@ using ODK.Core.Referrals;
 using ODK.Core.Platforms;
 using ODK.Core.Web;
 using ODK.Services;
+using ODK.Services.Tasks;
 
 namespace ODK.Web.Common.Services;
 
@@ -40,7 +41,17 @@ public interface IRequestStore
 
     Task<ChapterAdminMember?> GetCurrentChapterAdminMember();
 
+    /// <summary>
+    /// Loads from a request, deriving the platform from its URL and the chapter from its route values.
+    /// </summary>
     Task<IRequestStore> Load(IHttpRequestContext context, Guid? currentMemberIdOrDefault);
+
+    /// <summary>
+    /// Loads from values already resolved, for a background job. A job has no URL to derive a platform from
+    /// and no route values to find a chapter in, and re-deriving either would let routing configuration
+    /// change what a queued job means while it waits.
+    /// </summary>
+    Task<IRequestStore> Load(JobRequest request);
 
     void Reset();
 }

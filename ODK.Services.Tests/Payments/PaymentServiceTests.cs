@@ -19,6 +19,7 @@ using ODK.Services.Members;
 using ODK.Services.Payments;
 using ODK.Services.Payments.Models;
 using ODK.Services.Subscriptions;
+using ODK.Services.Tasks;
 using ODK.Services.Tests.Helpers;
 
 namespace ODK.Services.Tests.Payments;
@@ -1026,10 +1027,11 @@ public static class PaymentServiceTests
         // Act
         await service.ProcessWebhook(request, webhook);
 
-        // Assert
+        /* Assert - matched on the request's platform rather than on the instance, because the actioning runs
+           as a job and builds its own request from the ids the job carries. */
         Mock.Get(memberEmailService).Verify(
             x => x.SendPaymentNotification(
-                request,
+                It.Is<IServiceRequest>(x => x.Platform == PlatformType.Default),
                 It.Is<Member>(x => x.Id == member.Id),
                 It.Is<Chapter>(x => x.Id == chapter.Id),
                 It.IsAny<Payment>(),
@@ -1344,12 +1346,17 @@ public static class PaymentServiceTests
             eventService ?? CreateMockEventService(),
             new MockBackgroundTaskService(),
             new MemberChapterSubscriptionWriter(unitOfWork),
-            new MemberSiteSubscriptionWriter(unitOfWork));
+            new MemberSiteSubscriptionWriter(unitOfWork),
+            new MockServiceRequestFactory(context));
     }
 
     private static IServiceRequest CreateServiceRequest(PlatformType? platform = null)
     {
         var mock = new Mock<IServiceRequest>();
+
+        // Set because anything queueing a job reads the base URL off it to build the job's request.
+        mock.Setup(x => x.HttpRequestContext)
+            .Returns(new JobHttpRequestContext { BaseUrl = "https://example.com" });
 
         mock.Setup(x => x.Platform)
             .Returns(platform ?? PlatformType.Default);

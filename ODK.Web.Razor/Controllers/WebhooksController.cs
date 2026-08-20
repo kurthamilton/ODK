@@ -107,8 +107,6 @@ public class WebhooksController : OdkControllerBase
         // Webhooks without platforms are for older DrunkenKnitwits subscriptions.
         var request = ServiceRequestImpl.Create(ServiceRequest, metadata.Platform ?? PlatformType.DrunkenKnitwits);
 
-        _backgroundTaskService.Enqueue(
-            () => _paymentService.ProcessWebhook(request, webhook),
-            BackgroundTaskQueueType.Payments);
+        _paymentService.EnqueueProcessWebhookJob(JobRequest.Create(request), webhook);
     }
 }
