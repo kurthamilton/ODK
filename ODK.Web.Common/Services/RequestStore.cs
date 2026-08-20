@@ -100,6 +100,14 @@ public class RequestStore : IRequestStore
     public Task<IRequestStore> Load(IHttpRequestContext context, Guid? currentMemberIdOrDefault)
         => Load(context, currentMemberIdOrDefault, verbose: false);
 
+    public Task<IRequestStore> Load(JobRequest request) => Load(
+        new JobHttpRequestContext { BaseUrl = request.BaseUrl },
+        request.Platform,
+        x => request.ChapterId != null
+            ? x.ChapterRepository.GetByIdOrDefault(request.Platform, request.ChapterId.Value)
+            : new DefaultDeferredQuerySingleOrDefault<Chapter>(),
+        request.CurrentMemberId);
+
     public void Reset()
     {
         _chapter = null;
@@ -180,7 +188,18 @@ public class RequestStore : IRequestStore
         return new DefaultDeferredQuerySingleOrDefault<Chapter>();
     }
 
-    private async Task<IRequestStore> Load(IHttpRequestContext context, Guid? currentMemberIdOrDefault, bool verbose)
+    private Task<IRequestStore> Load(IHttpRequestContext context, Guid? currentMemberIdOrDefault, bool verbose)
+        => Load(
+            context,
+            _platformProvider.GetPlatform(context.RequestUrl),
+            x => GetChapterQuery(context, x, verbose),
+            currentMemberIdOrDefault);
+
+    private async Task<IRequestStore> Load(
+        IHttpRequestContext context,
+        PlatformType platform,
+        Func<IUnitOfWork, IDeferredQuerySingleOrDefault<Chapter>> chapterQuery,
+        Guid? currentMemberIdOrDefault)
     {
         if (Loaded)
         {
@@ -188,10 +207,10 @@ public class RequestStore : IRequestStore
         }
 
         // Set the platform directly to persist when resetting other state
-        Platform = _platformProvider.GetPlatform(context.RequestUrl);
+        Platform = platform;
 
         var (chapter, currentMember, memberPreferences, activeReferralCampaign) = await _unitOfWork.RunAsync(
-            x => GetChapterQuery(context, x, verbose),
+            chapterQuery,
             x => currentMemberIdOrDefault != null
                 ? x.MemberRepository.GetByIdOrDefault(currentMemberIdOrDefault.Value)
                 : new DefaultDeferredQuerySingleOrDefault<Member>(),

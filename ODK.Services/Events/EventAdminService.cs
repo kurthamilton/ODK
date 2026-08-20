@@ -32,6 +32,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     private readonly IMemberEmailService _memberEmailService;
     private readonly INotificationService _notificationService;
     private readonly IPaymentService _paymentService;
+    private readonly IServiceRequestFactory _serviceRequestFactory;
     private readonly EventAdminServiceSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -45,6 +46,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         ILoggingService loggingService,
         IPaymentService paymentService,
         IEventService eventService,
+        IServiceRequestFactory serviceRequestFactory,
         EventAdminServiceSettings settings)
         : base(unitOfWork)
     {
@@ -56,6 +58,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         _memberEmailService = memberEmailService;
         _notificationService = notificationService;
         _paymentService = paymentService;
+        _serviceRequestFactory = serviceRequestFactory;
         _settings = settings;
         _unitOfWork = unitOfWork;
     }
@@ -163,19 +166,15 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         if (eventEmail?.ScheduledUtc != null)
         {
-            eventEmail.JobId = _backgroundTaskService.Schedule(
-                () => SendScheduledEmails(ServiceRequest.Create(request), eventEmail.Id),
-                eventEmail.ScheduledUtc.Value,
-                BackgroundTaskQueueType.Emails);
+            eventEmail.JobId = ScheduleSendScheduledEmailsJob(
+                JobRequest.Create(request), eventEmail.Id, eventEmail.ScheduledUtc.Value);
             _unitOfWork.EventEmailRepository.Update(eventEmail);
             await _unitOfWork.SaveChanges();
         }
 
         if (@event.Ticketed)
         {
-            _backgroundTaskService.Enqueue(
-                () => _paymentService.EnsureProductExists(request),
-                BackgroundTaskQueueType.General);
+            _paymentService.EnqueueEnsureProductExistsJob(JobRequest.Create(request));
         }
 
         return ServiceResult.Successful();
@@ -931,20 +930,23 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         if (@event.Ticketed)
         {
-            _backgroundTaskService.Enqueue(
-                () => _paymentService.EnsureProductExists(request),
-                BackgroundTaskQueueType.General);
+            _paymentService.EnqueueEnsureProductExistsJob(JobRequest.Create(request));
         }
 
         if (@event.AttendeeLimit > previousAttendeeLimit)
         {
-            _backgroundTaskService.Enqueue(
-                () => _eventService.NotifyWaitlist(request, id),
-                BackgroundTaskQueueType.Events);
+            _eventService.EnqueueNotifyWaitlistJob(JobRequest.Create(request), id);
         }
 
         return ServiceResult.Successful();
     }
+
+    /* Public for Hangfire, which needs a method to bind to, and called by nothing else: it turns the job's
+       ids back into a request and hands off to the work above. Its signature is a wire format - see
+       JobRequest - so a change to it is a change every queued job has to survive, and a scheduled event email
+       can sit in the queue until the event. */
+    public async Task SendScheduledEmailsJob(JobRequest request, Guid eventEmailId)
+        => await SendScheduledEmails(await _serviceRequestFactory.Create(request), eventEmailId);
 
     public async Task UpdateEventSettings(
         IMemberChapterAdminServiceRequest request, EventSettingsUpdateModel model)
@@ -1085,10 +1087,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         _unitOfWork.EventEmailRepository.Add(eventEmail);
         await _unitOfWork.SaveChanges();
 
-        eventEmail.JobId = _backgroundTaskService.Schedule(
-            () => SendScheduledEmails(ServiceRequest.Create(request), eventEmail.Id),
-            scheduledUtc.Value,
-            BackgroundTaskQueueType.Emails);
+        eventEmail.JobId = ScheduleSendScheduledEmailsJob(
+            JobRequest.Create(request), eventEmail.Id, scheduledUtc.Value);
 
         _unitOfWork.EventEmailRepository.Update(eventEmail);
         await _unitOfWork.SaveChanges();
@@ -1223,6 +1223,13 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     }
 
     private string GenerateShortcode() => StringUtils.RandomString(_settings.ShortcodeLength);
+
+    /// <returns>The Hangfire job id, which the event email row keeps so the send can be cancelled.</returns>
+    private string ScheduleSendScheduledEmailsJob(JobRequest request, Guid eventEmailId, DateTime runAtUtc)
+        => _backgroundTaskService.Schedule(
+            () => SendScheduledEmailsJob(request, eventEmailId),
+            runAtUtc,
+            BackgroundTaskQueueType.Emails);
 
     private EventEmail? ScheduleEventEmail(Event @event, Chapter chapter, ChapterEventSettings? settings)
     {

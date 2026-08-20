@@ -144,6 +144,9 @@ public class Program
         IGlobalConfiguration configuration,
         HangfireSettings settings)
     {
+        /* These two decide the wire format of every queued job's arguments, so BackgroundJobPayloadTests
+           applies the same pair before asserting what that format is. Changing either changes how jobs
+           already in the queue are read, and the test has to move with it. */
         configuration
             .UseSimpleAssemblyNameTypeSerializer()
             .UseRecommendedSerializerSettings();

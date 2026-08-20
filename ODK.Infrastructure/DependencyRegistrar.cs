@@ -6,6 +6,7 @@ using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Data.EntityFramework;
 using ODK.Infrastructure.Settings;
+using ODK.Services;
 using ODK.Services.Authentication;
 using ODK.Services.Authentication.OAuth;
 using ODK.Services.Authorization;
@@ -315,6 +316,7 @@ public static class DependencyRegistrar
             .AddScoped<IRecaptchaService, RecaptchaService>()
             .AddScoped<IRequestStore, RequestStore>()
             .AddScoped<IRequestStoreFactory, RequestStoreFactory>()
+            .AddScoped<IServiceRequestFactory, ServiceRequestFactory>()
             .AddScoped<ISettingsService, SettingsService>()
             .AddScoped<ISiteSubscriptionAdminService, SiteSubscriptionAdminService>()
             .AddScoped<ISiteSubscriptionService, SiteSubscriptionService>()
