@@ -34,6 +34,8 @@ public class AppSettings
 
     public required PaymentsSettings Payments { get; init; }
 
+    public required PlatformNamesSettings PlatformNames { get; init; }
+
     public required PlatformSettings[] Platforms { get; init; }
 
     public required RateLimitingSettings RateLimiting { get; init; }

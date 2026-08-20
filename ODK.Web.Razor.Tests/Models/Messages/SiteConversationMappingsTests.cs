@@ -11,18 +11,20 @@ namespace ODK.Web.Razor.Tests.Models.Messages;
 [Parallelizable]
 public static class SiteConversationMappingsTests
 {
+    private const string PlatformName = "PLATFORM";
+
     [Test]
-    public static void ToMemberViewModels_MessageFromASiteAdmin_IsAttributedToTheSite()
+    public static void ToMemberViewModels_MessageFromASiteAdmin_IsAttributedToThePlatform()
     {
         // Arrange
         var conversation = CreateConversation();
         var message = CreateMessage(Guid.NewGuid(), "Ada", "Admin");
 
         // Act
-        var result = new[] { message }.ToMemberViewModels(conversation);
+        var result = new[] { message }.ToMemberViewModels(conversation, PlatformName);
 
         // Assert
-        result.Single().MemberFullName.Should().Be("Site Admin");
+        result.Single().MemberFullName.Should().Be(PlatformName);
     }
 
     [Test]
@@ -35,7 +37,7 @@ public static class SiteConversationMappingsTests
         var message = CreateMessage(adminId, "Ada", "Admin");
 
         // Act
-        var result = new[] { message }.ToMemberViewModels(conversation);
+        var result = new[] { message }.ToMemberViewModels(conversation, PlatformName);
 
         // Assert
         result.Single().MemberId.Should().Be(adminId);
@@ -49,7 +51,7 @@ public static class SiteConversationMappingsTests
         var message = CreateMessage(conversation.MemberId, "Member", "Name");
 
         // Act
-        var result = new[] { message }.ToMemberViewModels(conversation);
+        var result = new[] { message }.ToMemberViewModels(conversation, PlatformName);
 
         // Assert
         result.Single().MemberFullName.Should().Be("Member Name");

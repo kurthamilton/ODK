@@ -17,6 +17,8 @@ public class SiteContactTests : SiteContactTestsBase
 
     private protected override string ConversationsPath => "/account/site-conversations";
 
+    private protected override string PlatformName => "Group Squirrel";
+
     // A plain account, with no group behind it: contacting the site belongs to no chapter, and Group
     // Squirrel signs a member up without one.
     private protected override Task<TestAccount> NewMember() => Provisioning.NewAccount("site-contact-member");

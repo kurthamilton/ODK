@@ -26,9 +26,6 @@ public abstract class SiteContactTestsBase : OdkPageTest
     /// </summary>
     private const string FooterPage = "/";
 
-    /// <summary>How the site side of a thread is attributed to the member reading it.</summary>
-    private const string SiteAdminName = "Site Admin";
-
     /// <summary>
     /// The name every provisioned test account carries, the site admin's included - so asserting it is
     /// absent is what distinguishes the site's attribution from the account that actually replied.
@@ -37,6 +34,12 @@ public abstract class SiteContactTestsBase : OdkPageTest
 
     /// <summary>Where the footer's Contact link sends a signed-in member on this platform.</summary>
     private protected abstract string ConversationsPath { get; }
+
+    /// <summary>
+    /// The name this platform presents itself by, which the site side of a thread is attributed to. Must match
+    /// the platform's entry under <c>PlatformNames</c> in the app's appsettings.json.
+    /// </summary>
+    private protected abstract string PlatformName { get; }
 
     [Test]
     public async Task FooterContactLink_NotSignedIn_OpensSiteContactForm()
@@ -72,7 +75,7 @@ public abstract class SiteContactTestsBase : OdkPageTest
     }
 
     [Test]
-    public async Task SiteAdminReply_InMemberThread_IsAttributedToSiteAdmin()
+    public async Task SiteAdminReply_InMemberThread_IsAttributedToThePlatform()
     {
         // Arrange - a member with a thread of their own, opened through the UI.
         var member = await NewMember();
@@ -98,7 +101,7 @@ public abstract class SiteContactTestsBase : OdkPageTest
         var messages = await conversation.GetMessages();
         messages.Should().HaveCount(2);
         messages[0].Should().Contain(Asked).And.Contain("You");
-        messages[1].Should().Contain(Answered).And.Contain(SiteAdminName);
+        messages[1].Should().Contain(Answered).And.Contain(PlatformName);
         messages.Should().NotContainMatch($"*{TestAccountName}*");
     }
 
