@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ODK.Core.Subscriptions;
+using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework.Mapping;
 
@@ -11,6 +12,9 @@ public class SiteSubscriptionPriceMap : IEntityTypeConfiguration<SiteSubscriptio
         builder.ToTable("SiteSubscriptionPrices");
 
         builder.HasKey(x => x.Id);
+
+        builder.Property(x => x.Amount)
+            .IsMoneyType();
 
         builder.Property(x => x.Frequency)
             .HasConversion<int>();

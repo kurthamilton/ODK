@@ -284,26 +284,31 @@ public static class DependencyRegistrar
             })
             .AddScoped<IPaymentAdminService, PaymentAdminService>()
             .AddScoped<IPaymentService, PaymentService>()
-            .AddScoped<IPlatformNameProvider, PlatformNameProvider>()
-            .AddSingleton(new PlatformNameProviderSettings
+            .AddScoped<IPlatformProvider, PlatformProvider>()
+            .AddSingleton(new PlatformProviderSettings
             {
                 Names = new Dictionary<PlatformType, string>
                 {
                     { PlatformType.Default, appSettings.PlatformNames.Default },
                     { PlatformType.DrunkenKnitwits, appSettings.PlatformNames.DrunkenKnitwits }
+                },
+                Urls = new Dictionary<PlatformType, IReadOnlyCollection<string>>
+                {
+                    {
+                        PlatformType.Default,
+                        appSettings.Platforms
+                            .Where(x => x.Type == PlatformType.Default.ToString())
+                            .Select(x => x.BaseUrl)
+                            .ToArray()
+                    },
+                    {
+                        PlatformType.DrunkenKnitwits,
+                        appSettings.Platforms
+                            .Where(x => x.Type == PlatformType.DrunkenKnitwits.ToString())
+                            .Select(x => x.BaseUrl)
+                            .ToArray()
+                    }
                 }
-            })
-            .AddScoped<IPlatformProvider, PlatformProvider>()
-            .AddSingleton(new PlatformProviderSettings
-            {
-                DefaultBaseUrls = appSettings.Platforms
-                    .Where(x => x.Type == PlatformType.Default.ToString())
-                    .Select(x => x.BaseUrl)
-                    .ToArray(),
-                DrunkenKnitwitsBaseUrls = appSettings.Platforms
-                    .Where(x => x.Type == PlatformType.DrunkenKnitwits.ToString())
-                    .Select(x => x.BaseUrl)
-                    .ToArray()
             })
             .AddScoped<ICountryAdminService, CountryAdminService>()
             .AddScoped<ILocaleService, LocaleService>()

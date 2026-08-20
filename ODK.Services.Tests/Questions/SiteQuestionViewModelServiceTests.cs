@@ -56,7 +56,7 @@ public static class SiteQuestionViewModelServiceTests
             PlatformType.Default,
             "{platform.name}",
             answer: "Welcome to {platform.name}"));
-        var service = CreateService(context, TestPlatformNameProvider.Create("Bells & Whistles"));
+        var service = CreateService(context, TestPlatformProvider.Create("Bells & Whistles"));
 
         // Act
         var viewModel = await service.GetAboutPage(CreateRequest(PlatformType.Default));
@@ -83,7 +83,7 @@ public static class SiteQuestionViewModelServiceTests
 
         // Assert
         viewModel.Questions.Single().Answer
-            .Should().Be($"You are on {TestPlatformNameProvider.DefaultName}");
+            .Should().Be($"You are on {TestPlatformProvider.DefaultName}");
     }
 
     [Test]
@@ -99,7 +99,7 @@ public static class SiteQuestionViewModelServiceTests
 
         // Assert
         viewModel.Questions.Single().Name
-            .Should().Be($"What is {TestPlatformNameProvider.DefaultName}?");
+            .Should().Be($"What is {TestPlatformProvider.DefaultName}?");
     }
 
     [Test]
@@ -184,8 +184,8 @@ public static class SiteQuestionViewModelServiceTests
     }
 
     private static SiteQuestionViewModelService CreateService(
-        MockOdkContext context, IPlatformNameProvider? platformNameProvider = null)
+        MockOdkContext context, IPlatformProvider? platformProvider = null)
         => new(
             MockUnitOfWorkFactory.Create(context),
-            platformNameProvider ?? TestPlatformNameProvider.Create());
+            platformProvider ?? TestPlatformProvider.Create());
 }

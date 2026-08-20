@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using ODK.Core.Platforms;
 using ODK.Infrastructure;
 using ODK.Infrastructure.Settings;
+using ODK.Services.Platforms;
 using ODK.Services.Tasks;
 using ODK.Web.Razor.Attributes;
 using ODK.Web.Razor.Authentication;

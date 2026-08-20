@@ -9,12 +9,12 @@ namespace ODK.Services.Questions;
 
 public class SiteQuestionViewModelService : ISiteQuestionViewModelService
 {
-    private readonly IPlatformNameProvider _platformNameProvider;
+    private readonly IPlatformProvider _platformProvider;
     private readonly IUnitOfWork _unitOfWork;
 
-    public SiteQuestionViewModelService(IUnitOfWork unitOfWork, IPlatformNameProvider platformNameProvider)
+    public SiteQuestionViewModelService(IUnitOfWork unitOfWork, IPlatformProvider platformProvider)
     {
-        _platformNameProvider = platformNameProvider;
+        _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
     }
 
@@ -32,7 +32,7 @@ public class SiteQuestionViewModelService : ISiteQuestionViewModelService
         }
 
         var parameters = SiteQuestionParameters.ToDictionary(
-            _platformNameProvider.GetName(request.Platform));
+            _platformProvider.GetName(request.Platform));
 
         return new AboutPageViewModel
         {

@@ -2,7 +2,9 @@
 
 namespace ODK.Services.Platforms;
 
-public class PlatformNameProviderSettings
+public class PlatformProviderSettings
 {
     public required IReadOnlyDictionary<PlatformType, string> Names { get; init; }
+
+    public required IReadOnlyDictionary<PlatformType, IReadOnlyCollection<string>> Urls { get; init; }
 }
