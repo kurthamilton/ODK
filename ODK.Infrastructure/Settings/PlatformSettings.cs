@@ -2,7 +2,7 @@
 
 public class PlatformSettings
 {
-    public string BaseUrl { get; set; } = string.Empty;
+    public required string BaseUrl { get; init; }
 
-    public string Type { get; set; } = string.Empty;
+    public required string Type { get; init; }
 }

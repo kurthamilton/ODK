@@ -18,6 +18,8 @@ public class DrunkenKnitwitsSiteContactTests : SiteContactTestsBase
 
     private protected override string ConversationsPath => "/conversations";
 
+    private protected override string PlatformName => "Drunken Knitwits";
+
     /// <summary>
     /// On DrunkenKnitwits an account belongs to a chapter - joining one IS the sign-up - so the member
     /// comes from a join. The chapter is pure context (nothing here mutates it), so it is the shared one;

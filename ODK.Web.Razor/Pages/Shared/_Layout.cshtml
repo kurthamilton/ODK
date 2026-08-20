@@ -5,6 +5,7 @@
 @using ODK.Core.Platforms
 @using ODK.Core.Utils
 @using ODK.Services.Localization
+@using ODK.Services.Platforms
 @using ODK.Web.Common.Routes
 @using ODK.Web.Common.Services
 @using ODK.Web.Razor.Helpers
@@ -12,6 +13,7 @@
 @inject IFileVersionProvider FileVersionProvider
 @inject ILocaleService LocaleService
 @inject IOdkRoutes OdkRoutes
+@inject IPlatformNameProvider PlatformNameProvider
 @inject IRequestStore RequestStore
 @{
     var (platform, chapter, currentMember) =
@@ -20,12 +22,9 @@
     var datePickerFormat = FlatpickrDateFormat.FromShortDatePattern(
         LocaleService.GetShortDatePattern(RequestStore.ServiceRequest));
 
-    var title = platform switch
-    {
-        PlatformType.DrunkenKnitwits => "Drunken Knitwits",
-        _ => "Group Squirrel"
-    };
+    var platformName = PlatformNameProvider.GetName(platform);
 
+    var title = platformName;
     if (chapter != null)
     {
         title = $"{chapter.GetDisplayName(platform)} | {title}";
@@ -140,7 +139,7 @@
         <link rel="icon" type="image/svg+xml" href="@basePath/favicon.svg" />
         <link rel="shortcut icon" href="@basePath/favicon.ico" />
         <link rel="apple-touch-icon" sizes="180x180" href="@basePath/apple-touch-icon.png" />
-        <meta name="apple-mobile-web-app-title" content="Group Squirrel" />
+        <meta name="apple-mobile-web-app-title" content="@platformName" />
         <link rel="manifest" href="@basePath/site.webmanifest" />
     }
 

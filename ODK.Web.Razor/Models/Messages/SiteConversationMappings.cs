@@ -14,13 +14,10 @@ namespace ODK.Web.Razor.Models.Messages;
 /// </remarks>
 public static class SiteConversationMappings
 {
-    /// <summary>How a site admin's reply is attributed to the member reading it.</summary>
-    private const string SiteAdminName = "Site Admin";
-
     /// <summary>
     /// The thread as the member whose conversation it is reads it. Anything they did not write came from a
-    /// site admin and is attributed to the site rather than to the person: the member is talking to the site,
-    /// and which admin picked their conversation up is not theirs to know.
+    /// site admin and is attributed to the platform rather than to the person: the member is talking to the
+    /// site, and which admin picked their conversation up is not theirs to know.
     /// </summary>
     /// <remarks>
     /// Who the site side is follows from the conversation's own member rather than from asking whether the
@@ -30,13 +27,14 @@ public static class SiteConversationMappings
     /// </remarks>
     public static IReadOnlyCollection<ConversationMessageViewModel> ToMemberViewModels(
         this IEnumerable<SiteConversationMessageDto> messages,
-        SiteConversation conversation) => messages
+        SiteConversation conversation,
+        string platformName) => messages
         .Select(x => new ConversationMessageViewModel
         {
             CreatedUtc = x.Message.CreatedUtc,
             MemberFullName = x.Message.MemberId == conversation.MemberId
                 ? x.MemberFullName
-                : SiteAdminName,
+                : platformName,
             MemberId = x.Message.MemberId,
             Text = x.Message.Text
         })
