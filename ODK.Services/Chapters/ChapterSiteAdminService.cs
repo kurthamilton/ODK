@@ -75,7 +75,7 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
 
         var (paymentSettings, currencies) = await GetSiteAdminRestrictedContent(request,
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapter.Id),
-            x => x.CurrencyRepository.GetAll());
+            x => x.CurrencyRepository.GetAllDtos());
 
         return new ChapterPaymentSettingsAdminPageViewModel
         {

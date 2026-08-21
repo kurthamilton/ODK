@@ -27,7 +27,11 @@ internal class SiteAdminSubscriptionsPage
     /// </summary>
     public async Task AddPrice(string currencyCode, string frequency, decimal amount)
     {
-        await _page.SelectOptionAsync("#CurrencyId", new SelectOptionValue { Label = currencyCode });
+        // Currency is picked from a dialog rather than a select, and its rows are labelled with country and
+        // currency names - so the row is matched on the data-currency-code the app renders for this purpose.
+        await _page.ClickAsync("[data-currency-picker-trigger]");
+        await _page.ClickAsync($"[data-currency-picker-option][data-currency-code='{currencyCode}']");
+
         await _page.SelectOptionAsync("#Frequency", new SelectOptionValue { Label = frequency });
         await _page.FillAsync("#Amount", amount.ToString(CultureInfo.InvariantCulture));
 

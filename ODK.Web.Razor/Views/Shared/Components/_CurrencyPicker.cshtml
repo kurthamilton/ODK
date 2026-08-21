@@ -1,0 +1,84 @@
+@using ODK.Web.Razor.Models.Components
+@model CurrencyPickerViewModel
+@{
+    var currencies = Model.Currencies
+        // Ordered by country name. A currency no country owns sorts last rather than under a name it
+        // does not have.
+        .OrderBy(x => x.CountryName == null)
+        .ThenBy(x => x.CountryName)
+        .ThenBy(x => x.Currency.Code)
+        .ToArray();
+
+    var selected = currencies.FirstOrDefault(x => x.Currency.Id == Model.CurrencyId);
+}
+
+<div data-odk-component="_CurrencyPicker" data-currency-picker="currency">
+    @Html.HiddenFor(x => x.CurrencyId, new { data_currency_picker_value = "" })
+
+    <button type="button"
+            class="form-select text-start"
+            data-bs-toggle="modal"
+            data-bs-target="#currency-modal"
+            data-currency-picker-trigger>
+        <span data-currency-picker-label>
+            @if (selected != null)
+            {
+                @await Html.PartialAsync("Components/_Currency", selected)
+            }
+            else
+            {
+                <span class="text-muted">Select a currency</span>
+            }
+        </span>
+    </button>
+</div>
+
+@await Html.PartialAsync("Components/_Modal", new ModalViewModel
+{
+    Id = "currency-modal",
+    Title = "Currency",
+    Size = ModalSize.Large,
+    Body =
+        @<div data-currency-picker-options="currency">
+            <div class="input-group mb-3">
+                <div class="input-group-text">
+                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.MagnifyingGlass))
+                </div>
+                <input class="form-control" placeholder="Search" data-currency-picker-search />
+            </div>
+
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Country</th>
+                        <th>Currency</th>
+                        <th>Code</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var dto in currencies)
+                    {
+                        var currency = dto.Currency;
+                        
+                        @* data-currency-code is read only by the E2E suite (SiteAdminSubscriptionsPage.AddPrice),
+                           which knows a currency by its code rather than by the id the picker posts. Nothing in
+                           this solution reads it, so a "find usages" here comes back empty. *@
+                        <tr data-currency-picker-option="@dto.CountryName @currency.Name @currency.Code"
+                            data-currency-id="@currency.Id"
+                            data-currency-code="@currency.Code"
+                            class="@(dto.Currency.Id == Model.CurrencyId ? "table-active" : null)"
+                            role="button"
+                            tabindex="0">
+                            <td>@dto.CountryName</td>
+                            <td>@currency.Name</td>
+                            @* Cloned into the trigger when this row is picked, so the chosen currency reads the
+                               same in the field as it does here. *@
+                            <td data-currency-picker-option-label>
+                                @await Html.PartialAsync("Components/_Currency", dto)
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+})

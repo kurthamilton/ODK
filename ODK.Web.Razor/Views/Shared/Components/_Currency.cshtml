@@ -1,0 +1,27 @@
+@using ODK.Data.Core.Countries
+@model CurrencyDto
+@{
+    var flagCode = Model.CountryIsoCode2?.ToLowerInvariant();
+
+    var names = new[] { Model.CountryName, Model.Currency.Name }
+        .Where(x => !string.IsNullOrEmpty(x));
+    var title = string.Join(" - ", names);
+}
+
+@* A currency shown as its flag and code, with the country and currency it names in a tooltip. Razor omits a
+   null attribute, so a currency the runtime's culture data does not name carries no tooltip. *@
+<span class="d-inline-flex align-items-center gap-2"
+      data-odk-component="_Currency"
+      data-bs-toggle="tooltip"
+      data-bs-title="@(title.Length > 0 ? title : null)">
+    @if (flagCode != null)
+    {
+        <img src="https://flagcdn.com/16x12/@(flagCode).png"
+             srcset="https://flagcdn.com/32x24/@(flagCode).png 2x, https://flagcdn.com/48x36/@(flagCode).png 3x"
+             width="16"
+             height="12"
+             loading="lazy"
+             alt="@Model.CountryName" />
+    }
+    <span>@Model.Currency.Code</span>
+</span>

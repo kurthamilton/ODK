@@ -11,5 +11,17 @@ public class CurrencyMap : IEntityTypeConfiguration<Currency>
         builder.ToTable("Currencies");
 
         builder.HasKey(x => x.Id);
+
+        builder.Property(x => x.CountryIsoCode2)
+            .HasMaxLength(2);
+
+        builder.Property(x => x.CountryIsoCode3)
+            .HasMaxLength(3);
+
+        builder.Property(x => x.CountryName)
+            .HasMaxLength(255);
+
+        builder.Property(x => x.Name)
+            .HasMaxLength(255);
     }
 }
