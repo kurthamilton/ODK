@@ -1,14 +1,14 @@
-﻿using ODK.Core.Countries;
-using ODK.Core.Members;
+﻿using ODK.Core.Members;
 using ODK.Core.Payments;
 using ODK.Core.Subscriptions;
+using ODK.Data.Core.Countries;
 using ODK.Services.Payments;
 
 namespace ODK.Services.Subscriptions.ViewModels;
 
 public class SiteSubscriptionViewModel
 {
-    public required IReadOnlyCollection<Currency> Currencies { get; init; }
+    public required IReadOnlyCollection<CurrencyDto> Currencies { get; init; }
 
     public required ExternalSubscription? CurrentMemberExternalSubscription { get; init; }
 

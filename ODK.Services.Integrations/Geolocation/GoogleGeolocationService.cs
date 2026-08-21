@@ -122,6 +122,20 @@ public class GoogleGeolocationService : IGeolocationService
         return Task.FromResult(timeZone);
     }
 
+    private static Task<CurrencyInfo?> GetCurrencyInfoFromCountryCode(string isoCode2)
+    {
+        var region = new RegionInfo(isoCode2);
+
+        var currencyInfo = new CurrencyInfo
+        {
+            Code = region.ISOCurrencySymbol,
+            Name = region.CurrencyEnglishName,
+            Symbol = region.CurrencySymbol
+        };
+
+        return Task.FromResult<CurrencyInfo?>(currencyInfo);
+    }
+
     private async Task<Country> CreateCountry(CountryInfo countryInfo)
     {
         var currencyInfo = await GetCurrencyInfoFromCountryCode(countryInfo.IsoCode2);
@@ -136,6 +150,7 @@ public class GoogleGeolocationService : IGeolocationService
             currency = _unitOfWork.CurrencyRepository.Add(new Currency
             {
                 Code = currencyInfo.Code,
+                Name = currencyInfo.Name,
                 Symbol = currencyInfo.Symbol,
             });
         }
@@ -216,18 +231,5 @@ public class GoogleGeolocationService : IGeolocationService
             await _loggingService.Error($"Error retrieving region from lat/long from Google Places API", ex);
             return null;
         }
-    }
-
-    private Task<CurrencyInfo?> GetCurrencyInfoFromCountryCode(string isoCode2)
-    {
-        var region = new RegionInfo(isoCode2);
-
-        var currencyInfo = new CurrencyInfo
-        {
-            Code = region.ISOCurrencySymbol,
-            Symbol = region.CurrencySymbol
-        };
-
-        return Task.FromResult<CurrencyInfo?>(currencyInfo);
     }
 }

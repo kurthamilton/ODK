@@ -79,6 +79,12 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         Guid siteSubscriptionId,
         SiteSubscriptionPriceCreateModel model)
     {
+        // Ahead of the queries because one of them looks the currency up by id and requires a match.
+        if (model.CurrencyId == default)
+        {
+            return ServiceResult.Failure("Currency is required");
+        }
+
         var (sitePaymentSettings, siteSubscription, existing, currency) = await GetSiteAdminRestrictedContent(request,
             x => x.SitePaymentSettingsRepository.GetAll(),
             x => x.SiteSubscriptionRepository.GetById(siteSubscriptionId),
@@ -297,7 +303,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
                 .WithFeatures()
                 .GetSingle(),
             x => x.SiteSubscriptionPriceRepository.GetBySiteSubscriptionId(siteSubscriptionId),
-            x => x.CurrencyRepository.GetAll(),
+            x => x.CurrencyRepository.GetAllDtos(),
             x => x.SitePaymentSettingsRepository.GetAll());
 
         return new SiteSubscriptionViewModel

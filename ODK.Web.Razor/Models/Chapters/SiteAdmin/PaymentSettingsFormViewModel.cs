@@ -1,11 +1,11 @@
 ﻿using System.ComponentModel;
-using ODK.Core.Countries;
+using ODK.Data.Core.Countries;
 
 namespace ODK.Web.Razor.Models.Chapters.SiteAdmin;
 
 public class PaymentSettingsFormViewModel
 {
-    public IReadOnlyCollection<Currency> CurrencyOptions { get; set; } = [];
+    public IReadOnlyCollection<CurrencyDto> CurrencyOptions { get; set; } = [];
 
     [DisplayName("Currency")]
     public Guid? CurrencyId { get; set; }

@@ -1,28 +1,13 @@
-﻿@using ODK.Core.Payments
-@using ODK.Web.Razor.Models.Chapters.SiteAdmin
+﻿@using ODK.Web.Razor.Models.Chapters.SiteAdmin
+@using ODK.Web.Razor.Models.Components
 @model PaymentSettingsFormViewModel
-@{
-    var providerOptions = Enum.GetValues<PaymentProviderType>()
-        .Where(x => x != PaymentProviderType.None)
-        .Select(x => new SelectListItem
-        {
-            Text = x.ToString(),
-            Value = x.ToString()
-        })
-        .ToArray();
-
-    var currencyOptions = Model.CurrencyOptions
-        .Select(x => new SelectListItem
-        {
-            Value = x.Id.ToString(),
-            Text = x.Code
-        })
-        .OrderBy(x => x.Text)
-        .ToArray();
-}
 
 <div class="form-group mb-3">
     @Html.LabelFor(x => x.CurrencyId, new { @class = "form-label" })
-    @Html.DropDownListFor(x => x.CurrencyId, currencyOptions, "", new { @class = "form-select", data_select = "", data_clearable = "" })
+    @await Html.PartialAsync("Components/_CurrencyPicker", new CurrencyPickerViewModel
+    {
+        Currencies = Model.CurrencyOptions,
+        CurrencyId = Model.CurrencyId
+    })
     @Html.ValidationMessageFor(x => x.CurrencyId)
 </div>

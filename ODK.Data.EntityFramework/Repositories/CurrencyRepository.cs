@@ -2,6 +2,7 @@
 using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Members;
+using ODK.Data.Core.Countries;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
@@ -17,6 +18,28 @@ public class CurrencyRepository : ReadWriteRepositoryBase<Currency>, ICurrencyRe
 
     public IDeferredQueryMultiple<Currency> GetAll() => Set()
         .DeferredMultiple();
+
+    public IDeferredQueryMultiple<CurrencyDto> GetAllDtos()
+    {
+        var query =
+            from currency in Set()
+            // Left joined: a currency no country references carries its own codes instead, and has no
+            // country name to show. Where several countries share one, the lowest code keeps the row stable.
+            from country in Set<Country>()
+                .Where(x => x.CurrencyId == currency.Id)
+                .OrderBy(x => x.IsoCode2)
+                .Take(1)
+                .DefaultIfEmpty()
+            select new CurrencyDto
+            {
+                CountryIsoCode2 = currency.CountryIsoCode2 ?? country.IsoCode2,
+                CountryIsoCode3 = currency.CountryIsoCode3 ?? country.IsoCode3,
+                CountryName = currency.CountryName ?? country.Name,
+                Currency = currency
+            };
+
+        return query.DeferredMultiple();
+    }
 
     public IDeferredQuerySingleOrDefault<Currency> GetByCode(string code)
         => Set()

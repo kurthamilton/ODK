@@ -7,6 +7,7 @@ using ODK.Core.Members;
 using ODK.Core.Payments;
 using ODK.Core.Workflows;
 using ODK.Data.Core;
+using ODK.Data.Core.Countries;
 using ODK.Services.Emails;
 using ODK.Services.Emails.Validation;
 using ODK.Services.Geolocation;
@@ -228,6 +229,16 @@ public class MemberService : IMemberService
             ? await _unitOfWork.CurrencyRepository.GetByCountryId(country.Id).Run()
             : null;
 
+        var currencyDto = currency != null && country != null
+            ? new CurrencyDto
+            {
+                CountryIsoCode2 = currency.CountryIsoCode2 ?? country.IsoCode2,
+                CountryIsoCode3 = currency.CountryIsoCode3 ?? country.IsoCode3,
+                CountryName = currency.CountryName ?? country.Name,
+                Currency = currency
+            }
+            : null;
+
         var distanceUnit = country != null
             ? _distanceUnitFactory.Get(country.DistanceUnit)
             : null;
@@ -235,7 +246,7 @@ public class MemberService : IMemberService
         return new LocationDefaultsViewModel
         {
             Country = country,
-            Currency = currency,
+            Currency = currencyDto,
             DistanceUnit = distanceUnit,
             TimeZone = await _geolocationService.GetTimeZoneFromLocation(location)
         };

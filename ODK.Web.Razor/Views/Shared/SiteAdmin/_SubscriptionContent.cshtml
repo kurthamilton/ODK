@@ -3,7 +3,7 @@
 @using ODK.Web.Razor.Models.SiteAdmin
 @model SiteSubscriptionViewModel
 @{
-    var currencyDictionary = Model.Currencies.ToDictionary(x => x.Id);
+    var currencyDictionary = Model.Currencies.ToDictionary(x => x.Currency.Id);
 }
 
 <section class="section--admin">
@@ -46,9 +46,9 @@
                     var currency = currencyDictionary[price.CurrencyId];
 
                     <tr>
-                        <td>@currency.Code</td>
+                        <td>@await Html.PartialAsync("Components/_Currency", currency)</td>
                         <td>@price.Frequency.ToString()</td>
-                        <td>@currency.ToAmountString(price.Amount)</td>
+                        <td>@currency.Currency.ToAmountString(price.Amount)</td>
                         <td>@price.ExternalId</td>
                         <td>
                             <form action="/siteadmin/Subscriptions/@Model.Subscription.Id/Prices/@price.Id/Delete" method="post">
