@@ -16,11 +16,11 @@
 }
 
 .carousel-modal {
-    /* Limit modal height */
+    // Limit modal height
     .modal-dialog {
         max-height: 100dvh;
     }
-    /* Make carousel fill modal body */
+    // Make carousel fill modal body
     .modal-body {
         height: 100dvh;
         display: flex;

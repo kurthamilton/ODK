@@ -134,6 +134,17 @@ two in `COPIES`. A path that moves in an upgrade fails the copy, naming every pa
 Versions are pinned exactly, so `npm outdated` says what has moved on and `npm audit` says what is
 vulnerable — both run from `ODK.Web.Razor`.
 
+**`sass` is deliberately held at 1.101.3 rather than latest.** From 1.101.4 Dart Sass serialises `rgb()` with
+percentage channels — `rgb(5.49%, 17.57%, 30.27%)` rather than `rgb(14, 44.8, 77.2)` — and Bootstrap's
+`escape-svg()` does not escape `%`. The three custom properties whose value is an inline SVG data URI
+(`--bs-form-switch-bg`, `--bs-accordion-btn-icon`, `--bs-accordion-btn-active-icon`) then carry a malformed
+percent escape, the browser rejects the `fill`, and form switches lose their knob and accordions their
+chevron. Recheck when Bootstrap escapes `%` in `$escaped-characters`.
+
+Sass 1.100 and later also need **Node ≥ 20.19** — below that it dies with `ERR_REQUIRE_ESM` from chokidar.
+It is the *developer's* Node that has to satisfy this, since the CSS is compiled locally and committed and CI
+never runs Sass at all.
+
 `ClientLibraryAssetTests` asserts that every `lib/…` path the app references, and every `url(…)` inside a
 copied stylesheet, exists after a build. That is the guard when trimming a package down: an asset the browser
 only asks for at runtime is invisible to the build and to every other test.

@@ -11901,9 +11901,6 @@ cropper-canvas {
 
 .ss-content {
   overflow-y: auto;
-  /*search*/
-  /*fix search border for drop-ups*/
-  /*options*/
 }
 .ss-content.form-select {
   background-image: none;
@@ -12906,10 +12903,6 @@ footer {
     margin-right: 1.75rem;
     margin-left: 1.75rem;
   }
-}
-.carousel-modal {
-  /* Limit modal height */
-  /* Make carousel fill modal body */
 }
 .carousel-modal .modal-dialog {
   max-height: 100dvh;

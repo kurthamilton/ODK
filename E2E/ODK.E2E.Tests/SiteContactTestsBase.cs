@@ -79,7 +79,7 @@ public abstract class SiteContactTestsBase : OdkPageTest
     {
         // Arrange - a member with a thread of their own, opened through the UI.
         var member = await NewMember();
-        var subject = $"E2E site contact {Guid.NewGuid():N}";
+        var subject = TestSiteConversations.NewSubject();
         await LogIn(member);
 
         var conversations = new SiteConversationsPage(Page);

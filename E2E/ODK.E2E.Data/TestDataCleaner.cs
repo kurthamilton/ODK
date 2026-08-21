@@ -22,6 +22,13 @@ namespace ODK.E2E.Data;
 ///
 /// Site questions are likewise not member-scoped - they belong to a platform - so test rows (name prefixed
 /// <see cref="SiteQuestionDataHelper.TestNamePrefix"/>) are removed explicitly. They have no children.
+///
+/// Site conversations are the one thing a test does that writes rows belonging to somebody else: writing to
+/// the site notifies and emails every site admin, real ones included, so those rows are outside the member
+/// cascade. The notifications are found through the conversation they point at (<c>Notifications.EntityId</c>),
+/// which means removing them <em>before</em> the members - once the member goes, so does the conversation that
+/// identifies them. Their emails have no foreign key to be found by, only
+/// <see cref="TestSiteConversations.SubjectPrefix"/> carried through the subject.
 /// </summary>
 public class TestDataCleaner : DataHelperBase
 {
@@ -38,6 +45,7 @@ public class TestDataCleaner : DataHelperBase
         const string sql =
             $"""
             DELETE FROM SentEmails WHERE [To] LIKE @pattern;
+            DELETE FROM SentEmails WHERE Subject LIKE @conversationSubjectPattern;
 
             DELETE ei FROM EventInvites ei
                 INNER JOIN Events e ON e.Id = ei.EventId
@@ -56,6 +64,8 @@ public class TestDataCleaner : DataHelperBase
             DELETE FROM Chapters WHERE OwnerId IN ({memberIdSql});
             DELETE FROM MemberSiteSubscriptionLog WHERE MemberId IN ({memberIdSql});
             DELETE FROM Payments WHERE MemberId IN ({memberIdSql});
+            DELETE FROM Notifications WHERE EntityId IN
+                (SELECT Id FROM SiteConversations WHERE MemberId IN ({memberIdSql}));
             DELETE FROM Members WHERE Id IN ({memberIdSql});
 
             DELETE FROM SiteSubscriptionFeatures WHERE SiteSubscriptionId IN ({siteSubIdSql});
@@ -68,7 +78,8 @@ public class TestDataCleaner : DataHelperBase
         await using var builder = Builder(sql)
             .AddParameter("@pattern", $"%@{TestAccounts.EmailDomain}")
             .AddParameter("@subPattern", $"{SiteSubscriptionDataHelper.TestNamePrefix}%")
-            .AddParameter("@questionPattern", $"{SiteQuestionDataHelper.TestNamePrefix}%");
+            .AddParameter("@questionPattern", $"{SiteQuestionDataHelper.TestNamePrefix}%")
+            .AddParameter("@conversationSubjectPattern", $"%{TestSiteConversations.SubjectPrefix}%");
 
         return await builder.ExecuteNonQuery();
     }
