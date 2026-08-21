@@ -15,6 +15,20 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
+      # The web project's build restores its client-side libraries from npm (see the RestoreClientLibraries
+      # target in ODK.Web.Razor.csproj), so the runner needs Node. Installing them here rather than leaving it
+      # to the build keeps npm's own output out of the MSBuild log and lets setup-node cache the download.
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          cache: npm
+          cache-dependency-path: ODK.Web.Razor/package-lock.json
+
+      - name: Install client libraries
+        working-directory: ODK.Web.Razor
+        run: npm ci
+
       # Unit tests only - the E2E suite is [Explicit] and lives in a separate solution, so it's skipped here.
       - name: Test
         run: dotnet test ODK.slnx -c Release

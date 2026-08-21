@@ -6,6 +6,13 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<UserSecretsId>aspnet-ODK.Web.Razor-885db159-c982-4fde-b49e-baf69b1293fb</UserSecretsId>
 		<DefaultItemExcludes>$(DefaultItemExcludes);node_modules\**</DefaultItemExcludes>
+
+		<!-- wwwroot\lib is a build output - build\copy-client-libs.mjs writes it from node_modules, and it is
+		     gitignored. It must not come from the default Content glob: globs are expanded when the project is
+		     evaluated, before any target has run, so on a clean checkout the directory is still empty and the
+		     libraries would be absent from the build and publish output. RestoreClientLibraries adds them
+		     after the copy instead. -->
+		<DefaultItemExcludes>$(DefaultItemExcludes);wwwroot\lib\**</DefaultItemExcludes>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -19,24 +26,36 @@
 		     must not run alongside dotnet watch (see run.app.bat). -->
 		<Content Update="wwwroot\scss\**" Watch="false" />
 		<Content Update="wwwroot\css\**" Watch="false" />
-
-		<!-- Vendored libraries, restored by LibraryManager.Build as part of the build. Nobody edits them, so
-		     watching them buys no refresh worth having, and it means a build can rewrite files the watcher is
-		     watching - a burst of changes arriving while it is already mid-build. It is also 731 of the 2481
-		     files watched without this, by far the largest share. -->
-		<Content Update="wwwroot\lib\**" Watch="false" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<Compile Remove="Pages\Groups\Admin\**" />
-		<Compile Remove="wwwroot\lib\vanillajs-datepicker\**" />
 		<Content Remove="Pages\Groups\Admin\**" />
-		<Content Remove="wwwroot\lib\vanillajs-datepicker\**" />
 		<EmbeddedResource Remove="Pages\Groups\Admin\**" />
-		<EmbeddedResource Remove="wwwroot\lib\vanillajs-datepicker\**" />
 		<None Remove="Pages\Groups\Admin\**" />
-		<None Remove="wwwroot\lib\vanillajs-datepicker\**" />
 	</ItemGroup>
+
+	<!-- Restores the vendored browser libraries from npm into wwwroot\lib, and hands them to the build as
+	     Content. Runs before the SDK turns Content into static web assets, which is the step that puts them
+	     into the build and the publish output.
+
+	     No Inputs/Outputs: the copy script fingerprints the installed package versions and its own source, so
+	     it is its own up-to-date check, and a build with nothing to do costs one node startup. Skipped for a
+	     design-time build so opening the project in Visual Studio never waits on npm. -->
+	<Target Name="RestoreClientLibraries"
+			BeforeTargets="ResolveProjectStaticWebAssets"
+			Condition="'$(DesignTimeBuild)' != 'true'">
+		<Exec Command="npm ci --no-audit --no-fund"
+			  WorkingDirectory="$(MSBuildProjectDirectory)"
+			  Condition="!Exists('$(MSBuildProjectDirectory)\node_modules\.package-lock.json')" />
+		<Exec Command="node build/copy-client-libs.mjs" WorkingDirectory="$(MSBuildProjectDirectory)" />
+
+		<ItemGroup>
+			<!-- Watch="false" for the same reason as the generated CSS above: nobody edits these, and a build
+			     rewriting files dotnet watch is watching takes the watcher down. -->
+			<Content Include="wwwroot\lib\**" Exclude="wwwroot\lib\.client-libs.json" Watch="false" />
+		</ItemGroup>
+	</Target>
 
 	<ItemGroup>
 		<PackageReference Include="BetterStack.Logs.Serilog" Version="1.2.0" />
@@ -53,7 +72,6 @@
 		<PackageReference Include="Hangfire.InMemory" Version="1.0.0" />
 		<PackageReference Include="Hangfire.SqlServer" Version="1.8.24" />
 		<PackageReference Include="LigerShark.WebOptimizer.Core" Version="3.0.477" />
-		<PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="3.0.114" />
 		<PackageReference Include="Serilog" Version="4.4.0" />
 		<PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
 		<PackageReference Include="Serilog.Enrichers.ClientInfo" Version="2.9.0" />
