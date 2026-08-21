@@ -3,7 +3,6 @@ using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Emails;
 using ODK.Core.Events;
-using ODK.Core.Issues;
 using ODK.Core.Members;
 using ODK.Core.Messages;
 using ODK.Core.Payments;
@@ -485,62 +484,6 @@ public class MemberEmailService : IMemberEmailService
             parameters);
     }
 
-    public async Task SendIssueReply(
-        IServiceRequest request,
-        Issue issue,
-        IssueMessage reply,
-        Member? toMember,
-        IEnumerable<Member> siteAdmins)
-    {
-        var subject = "Re: {issue.title} - issue updated - {title}";
-
-        var isToMember = toMember != null;
-
-        var bodyBuilder = new EmailBodyBuilder();
-
-        if (isToMember)
-        {
-            bodyBuilder
-                .AddParagraph("Your issue {issue.title} has been updated with the following message:");
-        }
-        else
-        {
-            bodyBuilder
-                .AddParagraph("The owner of the issue {issue.title} has sent the following message:");
-        }
-
-        var body = bodyBuilder
-            .AddParagraph("{issue.message}")
-            .AddParagraphLink("issue.url")
-            .ToString();
-
-        var urlProvider = await _urlProviderFactory.Create(request);
-        var url = isToMember
-            ? urlProvider.IssueUrl(issue.Id)
-            : urlProvider.IssueAdminUrl(issue.Id);
-
-        var to = toMember != null
-            ? [toMember.ToEmailAddressee()]
-            : siteAdmins.Select(x => x.ToEmailAddressee()).ToArray();
-
-        var parameters = new CustomEmailParameters
-        {
-            { "issue.title", issue.Title },
-            { "issue.message", reply.Text },
-            { "issue.url", url }
-        };
-
-        await _emailService.SendEmail(
-            request,
-            null,
-            to,
-            subject,
-            body,
-            // Same reply, read by whichever side it is addressed to - the same choice as the url above.
-            toMember != null ? EmailRecipientType.Members : EmailRecipientType.Admins,
-            parameters);
-    }
-
     public async Task SendMemberChapterSubscriptionConfirmationEmail(
         IChapterServiceRequest request,
         ChapterSubscription chapterSubscription,
@@ -789,42 +732,6 @@ public class MemberEmailService : IMemberEmailService
             body,
             EmailRecipientType.Admins,
             parameters);
-    }
-
-    public async Task SendNewIssueEmail(
-        IServiceRequest request,
-        Member member,
-        Issue issue,
-        IssueMessage message,
-        IEnumerable<Member> siteAdmins)
-    {
-        var subject = "{title} - New issue";
-
-        var body = new EmailBodyBuilder()
-            .AddParagraph("A new issue has been created by {member.name}:")
-            .AddParagraph("{issue.title}")
-            .AddParagraph("{issue.message}")
-            .AddParagraphLink("siteadmin.urls.issue")
-            .ToString();
-
-        var urlProvider = await _urlProviderFactory.Create(request);
-        var to = siteAdmins
-            .Select(x => x.ToEmailAddressee())
-            .ToArray();
-
-        await _emailService.SendEmail(
-            request,
-            chapter: null,
-            to,
-            subject,
-            body,
-            EmailRecipientType.Admins,
-            new CustomEmailParameters
-            {
-                { "issue.title", issue.Title },
-                { "member.name", member.FullName },
-                { "siteadmin.urls.issue", urlProvider.IssueAdminUrl(issue.Id) }
-            });
     }
 
     public async Task SendNewMemberAdminEmail(

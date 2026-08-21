@@ -2,7 +2,6 @@
 using ODK.Core.Countries;
 using ODK.Core.Emails;
 using ODK.Core.Events;
-using ODK.Core.Issues;
 using ODK.Core.Members;
 using ODK.Core.Messages;
 using ODK.Core.Payments;
@@ -92,13 +91,6 @@ public interface IMemberEmailService
         IChapterServiceRequest request,
         Member member);
 
-    Task SendIssueReply(
-        IServiceRequest request,
-        Issue issue,
-        IssueMessage reply,
-        Member? toMember,
-        IEnumerable<Member> siteAdmins);
-
     Task SendMemberChapterSubscriptionConfirmationEmail(
         IChapterServiceRequest request,
         ChapterSubscription chapterSubscription,
@@ -134,13 +126,6 @@ public interface IMemberEmailService
 
     Task SendNewGroupEmail(
         IServiceRequest request,
-        IEnumerable<Member> siteAdmins);
-
-    Task SendNewIssueEmail(
-        IServiceRequest request,
-        Member member,
-        Issue issue,
-        IssueMessage message,
         IEnumerable<Member> siteAdmins);
 
     Task SendNewMemberAdminEmail(

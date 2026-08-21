@@ -47,9 +47,6 @@
             ? new MenuItem { Link = OdkRoutes.Account.EmailPreferences(chapter), Text = "Email preferences" }
             : new MenuItem(),
         new MenuItem { Link = OdkRoutes.Account.Notifications(chapter), Text = "Notifications" },
-        platform == PlatformType.DrunkenKnitwits
-            ? new MenuItem()
-            : new MenuItem { Link = OdkRoutes.Account.Issues(), Text = "Issues" },
         new MenuItem { Link = OdkRoutes.Account.Delete(chapter), Text = "Delete account" }
     }.Where(x => !string.IsNullOrEmpty(x.Link)).ToArray();
 

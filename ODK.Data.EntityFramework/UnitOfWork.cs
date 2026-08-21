@@ -52,8 +52,6 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IInstagramFetchLogEntryRepository> _instagramFetchLogEntryRepository;
     private readonly Lazy<IInstagramImageRepository> _instagramImageRepository;
     private readonly Lazy<IInstagramPostRepository> _instagramPostRepository;
-    private readonly Lazy<IIssueMessageRepository> _issueMessageRepository;
-    private readonly Lazy<IIssueRepository> _issueRepository;
     private readonly Lazy<IMemberActivationTokenRepository> _memberActivationTokenRepository;
     private readonly Lazy<IMemberAvatarRepository> _memberAvatarRepository;
     private readonly Lazy<IMemberChapterInviteRepository> _memberChapterInviteRepository;
@@ -146,8 +144,6 @@ public class UnitOfWork : IUnitOfWork
         _instagramFetchLogEntryRepository = new(() => new InstagramFetchLogEntryRepository(_context));
         _instagramImageRepository = new(() => new InstagramImageRepository(_context));
         _instagramPostRepository = new(() => new InstagramPostRepository(_context));
-        _issueMessageRepository = new(() => new IssueMessageRepository(_context));
-        _issueRepository = new(() => new IssueRepository(_context));
         _memberActivationTokenRepository = new(() => new MemberActivationTokenRepository(_context));
         _memberAvatarRepository = new(() => new MemberAvatarRepository(_context));
         _memberChapterNotificationSettingsRepository = new(() => new MemberChapterNotificationSettingsRepository(_context));
@@ -236,8 +232,6 @@ public class UnitOfWork : IUnitOfWork
     public IInstagramFetchLogEntryRepository InstagramFetchLogEntryRepository => _instagramFetchLogEntryRepository.Value;
     public IInstagramImageRepository InstagramImageRepository => _instagramImageRepository.Value;
     public IInstagramPostRepository InstagramPostRepository => _instagramPostRepository.Value;
-    public IIssueMessageRepository IssueMessageRepository => _issueMessageRepository.Value;
-    public IIssueRepository IssueRepository => _issueRepository.Value;
     public IMemberActivationTokenRepository MemberActivationTokenRepository => _memberActivationTokenRepository.Value;
     public IMemberAvatarRepository MemberAvatarRepository => _memberAvatarRepository.Value;
     public IMemberChapterNotificationSettingsRepository MemberChapterNotificationSettingsRepository => _memberChapterNotificationSettingsRepository.Value;

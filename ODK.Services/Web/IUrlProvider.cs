@@ -30,10 +30,6 @@ public interface IUrlProvider
 
     string GroupsUrl();
 
-    string IssueAdminUrl(Guid issueId);
-
-    string IssueUrl(Guid issueId);
-
     /// <summary>The public join page, used as the destination in a referral email.</summary>
     string JoinUrl();
 

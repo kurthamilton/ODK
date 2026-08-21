@@ -73,10 +73,6 @@ public class AccountRoutes : RoutesBase
 
     public string Interests() => AccountPath(null, "/interests");
 
-    public string Issue(Guid issueId) => $"{Issues()}/{issueId}";
-
-    public string Issues() => AccountPath(null, $"/issues");
-
     public string Join(Chapter? chapter) => AccountPath(chapter, "/join");
 
     public string Location() => AccountPath(null, "/location");
