@@ -39,11 +39,11 @@
 }
 
 .ss-deselect {
+    opacity: 0.8;
+
     svg {
         display: none;
     }
-
-    opacity: 0.8;
 
     &:hover {
         opacity: 1;
@@ -60,15 +60,15 @@
         background-image: none;
         padding: 0;
     }
-    /*search*/
+    // search
     .ss-search {
         input {
             background-color: var(--bs-body-bg);
             color: var(--bs-body-color);
         }
     }
-    
-    /*fix search border for drop-ups*/
+
+    // fix search border for drop-ups
     &.ss-dir-above {
         .ss-search {
             border-top: 0;
@@ -76,7 +76,7 @@
         }
     }
 
-    /*options*/
+    // options
     .ss-list {
         .ss-option {
             color: var(--bs-body-color);

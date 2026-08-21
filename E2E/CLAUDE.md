@@ -257,6 +257,13 @@ means a new category and the E2E suite tracks the app's workflows rather than a 
   `[SetUpFixture]` (`E2ETestRunFixture`) provisions the site admin in `[OneTimeSetUp]` and, in
   `[OneTimeTearDown]`, `TestDataCleaner` removes everything on that domain (members, their owned
   chapters/memberships, sent emails) — always, pass or fail. Still, run against a disposable/dev DB.
+  **A test that writes to something shared with real accounts has to leave a way back to its rows.** The
+  email domain only identifies rows the *test member* owns; anything a test causes to be written against
+  somebody else is outside that cascade. Writing to the site is the case that exists today — it notifies and
+  emails every site admin, real ones included — so a conversation's subject comes from
+  `TestSiteConversations.NewSubject()`, and `TestDataCleaner` clears the notifications through the
+  conversation and the emails through that subject prefix. Anything similar needs the same treatment, or it
+  accumulates on a real member for good.
 - **No `Async` suffix** on our own async methods (`LogIn`, `CreateGroup`, `Provisioning.NewAccount`, …).
   Library methods keep their names (Playwright's `GotoAsync`/`ClickAsync`, ADO's `ExecuteReaderAsync`,
   interface `DisposeAsync`).

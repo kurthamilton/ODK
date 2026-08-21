@@ -5,30 +5,30 @@
   "description": "Client-side build pipeline for ODK.Web.Razor: the vendored browser libraries (build/copy-client-libs.mjs) and the SCSS build (Dart Sass).",
   "scripts": {
     "build:lib": "node build/copy-client-libs.mjs",
-    "sass:css": "sass wwwroot/scss/main.scss:wwwroot/css/main.css wwwroot/scss/odk.scss:wwwroot/css/odk.css --style=expanded --no-source-map --quiet-deps --silence-deprecation=import,global-builtin,slash-div,color-functions",
-    "sass:min": "sass wwwroot/scss/main.scss:wwwroot/css/main.min.css wwwroot/scss/odk.scss:wwwroot/css/odk.min.css --style=compressed --no-source-map --quiet-deps --silence-deprecation=import,global-builtin,slash-div,color-functions",
+    "sass:css": "sass wwwroot/scss/main.scss:wwwroot/css/main.css wwwroot/scss/odk.scss:wwwroot/css/odk.css --style=expanded --no-source-map --quiet-deps --silence-deprecation=import,global-builtin,slash-div,color-functions,if-function",
+    "sass:min": "sass wwwroot/scss/main.scss:wwwroot/css/main.min.css wwwroot/scss/odk.scss:wwwroot/css/odk.min.css --style=compressed --no-source-map --quiet-deps --silence-deprecation=import,global-builtin,slash-div,color-functions,if-function",
     "prebuild:css": "npm run build:lib",
     "build:css": "npm run sass:css && npm run sass:min",
-    "watch:css": "sass wwwroot/scss/main.scss:wwwroot/css/main.css wwwroot/scss/odk.scss:wwwroot/css/odk.css --style=expanded --no-source-map --quiet-deps --silence-deprecation=import,global-builtin,slash-div,color-functions --watch --update",
-    "watch:min": "sass wwwroot/scss/main.scss:wwwroot/css/main.min.css wwwroot/scss/odk.scss:wwwroot/css/odk.min.css --style=compressed --no-source-map --quiet-deps --silence-deprecation=import,global-builtin,slash-div,color-functions --watch --update",
+    "watch:css": "sass wwwroot/scss/main.scss:wwwroot/css/main.css wwwroot/scss/odk.scss:wwwroot/css/odk.css --style=expanded --no-source-map --quiet-deps --silence-deprecation=import,global-builtin,slash-div,color-functions,if-function --watch --update",
+    "watch:min": "sass wwwroot/scss/main.scss:wwwroot/css/main.min.css wwwroot/scss/odk.scss:wwwroot/css/odk.min.css --style=compressed --no-source-map --quiet-deps --silence-deprecation=import,global-builtin,slash-div,color-functions,if-function --watch --update",
     "prewatch:sass": "npm run build:lib",
     "watch:sass": "concurrently -k -n css,min -c green,cyan \"npm:watch:css\" \"npm:watch:min\""
   },
   "dependencies": {
     "@eastdesire/jscolor": "2.5.2",
-    "@fortawesome/fontawesome-free": "7.3.0",
-    "ace-builds": "1.43.3",
+    "@fortawesome/fontawesome-free": "7.3.1",
+    "ace-builds": "1.44.0",
     "aspnet-client-validation": "0.11.1",
     "bootstrap": "5.3.8",
     "cookieconsent": "3.1.1",
     "cropperjs": "2.1.1",
     "flatpickr": "4.6.13",
-    "mermaid": "11.16.1",
-    "slim-select": "4.0.7",
-    "tinymce": "8.7.0"
+    "mermaid": "11.17.0",
+    "slim-select": "4.1.0",
+    "tinymce": "8.8.2"
   },
   "devDependencies": {
-    "concurrently": "^9.2.4",
-    "sass": "1.80.0"
+    "concurrently": "^10.0.5",
+    "sass": "1.101.3"
   }
 }
