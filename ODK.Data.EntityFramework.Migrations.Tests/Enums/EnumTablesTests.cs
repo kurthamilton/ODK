@@ -6,7 +6,6 @@ using ODK.Core.DataTypes;
 using ODK.Core.Emails;
 using ODK.Core.Events;
 using ODK.Core.Features;
-using ODK.Core.Issues;
 using ODK.Core.Members;
 using ODK.Core.Notifications;
 using ODK.Core.Platforms;
@@ -40,8 +39,6 @@ public class EnumTablesTests
             typeof(DistanceUnitType),
             typeof(EmailRecipientType),
             typeof(EventResponseType),
-            typeof(IssueStatusType),
-            typeof(IssueType),
             typeof(MemberEmailPreferenceType),
             typeof(NotificationType),
             typeof(PlatformType),

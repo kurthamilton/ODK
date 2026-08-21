@@ -3,7 +3,6 @@ using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.DataTypes;
 using ODK.Core.Events;
-using ODK.Core.Issues;
 using ODK.Core.Members;
 using ODK.Core.Notifications;
 using ODK.Core.Platforms;
@@ -59,16 +58,6 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                 EventResponseType.Waitlist);
             migrationBuilder.AddEnumForeignKey<EventResponseType>("EventResponses", "ResponseTypeId");
 
-            migrationBuilder.RenameEnumIdColumn<IssueStatusType>("IssueStatusTypeId");
-            migrationBuilder.CreateEnumTable<IssueStatusType>();
-            migrationBuilder.InsertAllEnumValues<IssueStatusType>();
-            migrationBuilder.AddEnumForeignKey<IssueStatusType>("Issues", "IssueStatusTypeId");
-
-            migrationBuilder.RenameEnumIdColumn<IssueType>("IssueTypeId");
-            migrationBuilder.CreateEnumTable<IssueType>();
-            migrationBuilder.InsertAllEnumValues<IssueType>();
-            migrationBuilder.AddEnumForeignKey<IssueType>("Issues", "IssueTypeId");
-
             migrationBuilder.RenameEnumIdColumn<MemberEmailPreferenceType>("MemberEmailPreferenceTypeId");
             migrationBuilder.CreateEnumTable<MemberEmailPreferenceType>();
             migrationBuilder.InsertAllEnumValues<MemberEmailPreferenceType>();
@@ -108,8 +97,6 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
             migrationBuilder.RenameColumn(name: "Id", table: "DataTypes", newName: "DataTypeId");
             migrationBuilder.RenameColumn(name: "Id", table: "DistanceUnitTypes", newName: "DistanceUnitTypeId");
             migrationBuilder.RenameColumn(name: "Id", table: "EventResponseTypes", newName: "ResponseTypeId");
-            migrationBuilder.RenameColumn(name: "Id", table: "IssueStatusTypes", newName: "IssueStatusTypeId");
-            migrationBuilder.RenameColumn(name: "Id", table: "IssueTypes", newName: "IssueTypeId");
             migrationBuilder.RenameColumn(
                 name: "Id", table: "MemberEmailPreferenceTypes", newName: "MemberEmailPreferenceTypeId");
             migrationBuilder.RenameColumn(name: "Id", table: "NotificationTypes", newName: "NotificationTypeId");

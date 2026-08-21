@@ -36,7 +36,6 @@ using ODK.Services.Integrations.Payments;
 using ODK.Services.Integrations.Payments.PayPal;
 using ODK.Services.Integrations.Payments.Stripe;
 using ODK.Services.Integrations.Recaptcha;
-using ODK.Services.Issues;
 using ODK.Services.Localization;
 using ODK.Services.Logging;
 using ODK.Services.Members;
@@ -182,8 +181,6 @@ public static class DependencyRegistrar
             .AddScoped<ISiteQuestionAdminService, SiteQuestionAdminService>()
             .AddScoped<ISiteQuestionViewModelService, SiteQuestionViewModelService>()
             .AddScoped<IImageService, ImageService>()
-            .AddScoped<IIssueAdminService, IssueAdminService>()
-            .AddScoped<IIssueService, IssueService>()
             .AddScoped<ILoggingService, LoggingService>()
             .AddSingleton(new LoggingServiceSettings
             {

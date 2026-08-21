@@ -4,7 +4,6 @@ using ODK.Core.DataTypes;
 using ODK.Core.Emails;
 using ODK.Core.Events;
 using ODK.Core.Features;
-using ODK.Core.Issues;
 using ODK.Core.Members;
 using ODK.Core.Notifications;
 using ODK.Core.Platforms;
@@ -42,14 +41,6 @@ public static class EnumTables
         [typeof(EventResponseType)] = new EnumTable
         {
             Name = "EventResponseTypes"
-        },
-        [typeof(IssueStatusType)] = new EnumTable
-        {
-            Name = "IssueStatusTypes"
-        },
-        [typeof(IssueType)] = new EnumTable
-        {
-            Name = "IssueTypes"
         },
         [typeof(MemberEmailPreferenceType)] = new EnumTable
         {

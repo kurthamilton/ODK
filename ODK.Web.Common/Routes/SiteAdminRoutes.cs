@@ -23,8 +23,6 @@ public class SiteAdminRoutes
 
     public SiteAdminRoute Index => new("/siteadmin");
 
-    public SiteAdminRoute Issues => Path("/issues");
-
     public SiteAdminRoute Members => Path("/members");
 
     public SiteAdminRoute MembersFlagged => Members.Child("/flagged");
@@ -71,8 +69,6 @@ public class SiteAdminRoutes
 
     public SiteAdminRoute Group(Guid id) => Groups.Child($"/{id}");
 
-    public SiteAdminRoute Issue(Guid id) => Issues.Child($"/{id}");
-
     public SiteAdminRoute Message(Guid id) => Messages().Child($"/{id}");
 
     public SiteAdminRoute Messages() => Path("/messages");
@@ -94,7 +90,6 @@ public class SiteAdminRoutes
         new(Features, "Features"),
         new(Groups, "Groups"),
         new(Impersonate, "Impersonate"),
-        new(Issues, "Issues"),
         new(Members, "Members")
         {
             Children = [new(MembersFlagged, "Flagged")]
