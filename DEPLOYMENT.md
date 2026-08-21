@@ -15,7 +15,7 @@ Two GitHub Actions workflows:
 
 | Workflow | Trigger | What it does |
 |---|---|---|
-| `.github/workflows/build.yml` | automatic, on push to `master` (or manual) | runs unit tests, publishes the app (artifact `app`), and creates a self-contained EF migration bundle (artifact `efbundle`) |
+| `.github/workflows/build.yml` | automatic, on push to `master` (or manual) | installs the npm client-side libraries, runs unit tests, publishes the app (artifact `app`), and creates a self-contained EF migration bundle (artifact `efbundle`) |
 | `.github/workflows/deploy.yml` | automatic, when a `master` Build **succeeds** (or manual `Run workflow`) | applies migrations once, then deploys the same build to **both** sites |
 
 ```

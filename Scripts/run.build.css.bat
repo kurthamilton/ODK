@@ -10,6 +10,19 @@ cd /d "%~dp0..\ODK.Web.Razor" || (
     exit /b 1
 )
 
+rem npm holds both the SCSS compiler and the browser libraries the app serves, so a clone with no
+rem node_modules has neither. `npm ci` installs exactly what package-lock.json pins.
+if not exist node_modules (
+    echo Installing npm packages...
+    call npm ci
+    if errorlevel 1 (
+        echo.
+        echo npm ci failed - fix the error above and run again.
+        pause
+        exit /b 1
+    )
+)
+
 call npm run build:css
 if errorlevel 1 (
     echo.

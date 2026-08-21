@@ -43,6 +43,12 @@ Tests: `ODK.Core.Tests`, `ODK.Core.Workflows.Tests`, `ODK.Services.Tests`,
   `npm run build:css` from `ODK.Web.Razor`); the run script compiles once before starting. Don't hand-edit
   compiled `.css`, and **don't run a Sass watcher alongside `dotnet watch`** - a stylesheet rewritten while
   MSBuild is evaluating the project takes `dotnet watch` down with it. See the README.
+- **Client-side libraries:** the vendored browser libraries come from npm and are copied into `wwwroot/lib`
+  by `ODK.Web.Razor/build/copy-client-libs.mjs`, which the `RestoreClientLibraries` csproj target runs on
+  every build (so `dotnet build`/`publish` needs Node on the machine). `wwwroot/lib` is generated and
+  gitignored — never edit it, and never reference a path the script's `COPIES` list doesn't produce. Adding
+  or upgrading a library is a `package.json` change plus a `COPIES` line; `ClientLibraryAssetTests` fails
+  when something the app references stops being copied.
 - **Batch scripts live in `Scripts/`, and resolve paths from `%~dp0`, never from the current directory.** A
   `cd ..` is relative to the caller, and a failed `cd` does not stop a batch file - it carries on in the wrong
   directory.

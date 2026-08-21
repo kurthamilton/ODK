@@ -5,6 +5,7 @@
 - [Running locally](#running-locally)
 - [ngrok](#ngrok)
 - [CSS](#css)
+- [Client-side libraries](#client-side-libraries)
 - [Deployment](#deployment)
 - [Subscriptions](#subscriptions)
 - [Workflows](#workflows)
@@ -13,9 +14,11 @@
 
 ## Installation
 1. Install the latest version of .NET
-2. Install the latest version of SQL Server
-3. Take a backup of the prod DB and restore locally
-4. Install [ngrok](https://ngrok.com/download) and create `ngrok.yml` in the repo root (see [ngrok](#ngrok))
+2. Install the latest LTS version of [Node](https://nodejs.org) — the SCSS build and the client-side
+   libraries both come from npm
+3. Install the latest version of SQL Server
+4. Take a backup of the prod DB and restore locally
+5. Install [ngrok](https://ngrok.com/download) and create `ngrok.yml` in the repo root (see [ngrok](#ngrok))
 
 ## Apps
 The project runs two different platforms based on the base URL.
@@ -106,6 +109,34 @@ column, and `upstream`'s own `url` is indented one level further.
 
 To compile, run `Scripts/run.build.css.bat` (or `npm run build:css` from `ODK.Web.Razor`).
 `Scripts/run.app.bat` also compiles once before it starts the app.
+
+`wwwroot/scss` imports Bootstrap's own Sass sources out of `wwwroot/lib`, so the compile needs the
+client-side libraries in place. `build:css` restores them first, so there is no order to remember.
+
+## Client-side libraries
+The browser libraries the app serves — Bootstrap, Font Awesome, TinyMCE, flatpickr and the rest — come from
+npm, and `ODK.Web.Razor/build/copy-client-libs.mjs` copies them into `wwwroot/lib`.
+
+`wwwroot/lib` is **generated and gitignored**. Nothing in it should be edited by hand; it is rebuilt whenever
+a package version changes. The `RestoreClientLibraries` target in the csproj runs the copy on every build, so
+a plain `dotnet build`, `dotnet publish` or `Scripts/run.app.bat` produces a working `wwwroot/lib` with no
+extra command. To run it on its own:
+
+```
+npm run build:lib
+```
+
+`COPIES`, at the top of the copy script, maps each package's npm layout onto the `lib/<library>/<file>` paths
+the views and the bundles in `Program.cs` reference — and is also the list of what gets served, since a file
+it does not name never reaches the deploy. Adding a library means an `npm install --save-exact` plus a line or
+two in `COPIES`. A path that moves in an upgrade fails the copy, naming every path it could not find.
+
+Versions are pinned exactly, so `npm outdated` says what has moved on and `npm audit` says what is
+vulnerable — both run from `ODK.Web.Razor`.
+
+`ClientLibraryAssetTests` asserts that every `lib/…` path the app references, and every `url(…)` inside a
+copied stylesheet, exists after a build. That is the guard when trimming a package down: an asset the browser
+only asks for at runtime is invisible to the build and to every other test.
 
 ## Deployment
 See [DEPLOYMENT.md](DEPLOYMENT.md) for how the app is built and deployed via GitHub Actions, how config

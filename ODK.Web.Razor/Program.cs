@@ -246,7 +246,7 @@ public class Program
                Ace never fetches a module at runtime - that is what would otherwise need basePath set.
 
                Concatenated only, which is why this is AddBundle rather than AddJavaScriptBundle like the
-               others: cdnjs serves Ace already minified, so all the weight in here has been through a
+               others: these are Ace's own minified builds, so all the weight in here has been through a
                minifier already and running another over it saves nothing worth the startup cost. */
             pipeline.AddBundle(
                     "/js/odk.bundle.code-editor.js",
