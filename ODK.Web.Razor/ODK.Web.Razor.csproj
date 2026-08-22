@@ -26,6 +26,11 @@
 		     must not run alongside dotnet watch (see run.app.bat). -->
 		<Content Update="wwwroot\scss\**" Watch="false" />
 		<Content Update="wwwroot\css\**" Watch="false" />
+
+		<!-- The generated bundles, for the same reason. Their sources are deliberately left watched: a build
+		     is what regenerates a bundle, so a script edit has to be able to trigger one. Watching the outputs
+		     as well would make the build's own write look like a further change. -->
+		<Content Update="wwwroot\js\odk.bundle*.js" Watch="false" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -35,13 +40,17 @@
 		<None Remove="Pages\Groups\Admin\**" />
 	</ItemGroup>
 
-	<!-- Restores the vendored browser libraries from npm into wwwroot\lib, and hands them to the build as
-	     Content. Runs before the SDK turns Content into static web assets, which is the step that puts them
-	     into the build and the publish output.
+	<!-- Restores the vendored browser libraries from npm into wwwroot\lib, hands them to the build as
+	     Content, and builds the CSS and JavaScript bundles the layouts reference. Runs before the SDK turns
+	     Content into static web assets, which is the step that puts them into the build and the publish
+	     output.
 
-	     No Inputs/Outputs: the copy script fingerprints the installed package versions and its own source, so
-	     it is its own up-to-date check, and a build with nothing to do costs one node startup. Skipped for a
-	     design-time build so opening the project in Visual Studio never waits on npm. -->
+	     Order is not incidental: some bundles are built from wwwroot\lib, so the copy has to have happened.
+
+	     No Inputs/Outputs: each script is its own up-to-date check - the copy fingerprints the installed
+	     package versions and its own source, and the bundler writes only a file whose contents have changed -
+	     so a build with nothing to do costs two node startups. Skipped for a design-time build so opening the
+	     project in Visual Studio never waits on npm. -->
 	<Target Name="RestoreClientLibraries"
 			BeforeTargets="ResolveProjectStaticWebAssets"
 			Condition="'$(DesignTimeBuild)' != 'true'">
@@ -49,6 +58,7 @@
 			  WorkingDirectory="$(MSBuildProjectDirectory)"
 			  Condition="!Exists('$(MSBuildProjectDirectory)\node_modules\.package-lock.json')" />
 		<Exec Command="node build/copy-client-libs.mjs" WorkingDirectory="$(MSBuildProjectDirectory)" />
+		<Exec Command="node build/build-bundles.mjs" WorkingDirectory="$(MSBuildProjectDirectory)" />
 
 		<ItemGroup>
 			<!-- Watch="false" for the same reason as the generated CSS above: nobody edits these, and a build
@@ -71,7 +81,6 @@
 		</PackageReference>
 		<PackageReference Include="Hangfire.InMemory" Version="1.0.0" />
 		<PackageReference Include="Hangfire.SqlServer" Version="1.8.24" />
-		<PackageReference Include="LigerShark.WebOptimizer.Core" Version="3.0.477" />
 		<PackageReference Include="Serilog" Version="4.4.0" />
 		<PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
 		<PackageReference Include="Serilog.Enrichers.ClientInfo" Version="2.9.0" />

@@ -43,9 +43,18 @@ Tests: `ODK.Core.Tests`, `ODK.Core.Workflows.Tests`, `ODK.Services.Tests`,
   `npm run build:css` from `ODK.Web.Razor`); the run script compiles once before starting. Don't hand-edit
   compiled `.css`, and **don't run a Sass watcher alongside `dotnet watch`** - a stylesheet rewritten while
   MSBuild is evaluating the project takes `dotnet watch` down with it. See the README.
+- **CSS/JS bundles:** the four script bundles and the vendor stylesheet bundle the layouts reference are
+  built by `ODK.Web.Razor/build/build-bundles.mjs` (esbuild) into `wwwroot/js/odk.bundle*.js` and
+  `wwwroot/css/odk.bundle.lib.css`, and are **committed**, like the compiled CSS. `BUNDLES` at the top of
+  that script is the whole definition of what each bundle contains. It concatenates then minifies as one
+  script, and deliberately does **not** use esbuild's `--bundle`: that would wrap the vendored UMD libraries
+  so they assign to `module.exports` instead of `window`, and would take `odk.global.js`'s top-level
+  `setImageError` out of global scope, where an inline `onerror=` calls it. There is no watch mode, for the
+  same reason there is no Sass watcher - see the CSS note above. Any full build rebuilds the bundles, so if
+  `dotnet watch` does not pick a script edit up, `npm run build:bundles` and a hard refresh does.
 - **Client-side libraries:** the vendored browser libraries come from npm and are copied into `wwwroot/lib`
   by `ODK.Web.Razor/build/copy-client-libs.mjs`, which the `RestoreClientLibraries` csproj target runs on
-  every build (so `dotnet build`/`publish` needs Node on the machine). `wwwroot/lib` is generated and
+  every build, followed by the bundle build (so `dotnet build`/`publish` needs Node on the machine). `wwwroot/lib` is generated and
   gitignored — never edit it, and never reference a path the script's `COPIES` list doesn't produce. Adding
   or upgrading a library is a `package.json` change plus a `COPIES` line; `ClientLibraryAssetTests` fails
   when something the app references stops being copied.

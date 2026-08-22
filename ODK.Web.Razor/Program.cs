@@ -76,7 +76,6 @@ public class Program
             });
         }
 
-        app.UseWebOptimizer();
         app.UseHttpsRedirection();
         app.UseStaticFiles();
 
@@ -201,73 +200,6 @@ public class Program
         // register the [OdkInject] attribute for dependency injection in PageModel classes
         builder.Services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IPageModelActivatorProvider, InjectingPageModelActivatorProvider<OdkInjectAttribute>>());
-
-        builder.Services.AddWebOptimizer(pipeline =>
-        {
-            pipeline.AddCssBundle(
-                route: "/css/odk.bundle.lib.css",
-                "lib/font-awesome/css/all.css",
-                "lib/flatpickr/flatpickr.css",
-                "lib/aspnet-client-validation/dist/aspnet-validation.css",
-                "lib/slim-select/slimselect.css");
-            pipeline.AddJavaScriptBundle(
-                route: "/js/odk.bundle.js",
-                "lib/cookieconsent/cookieconsent.min.js",
-                "lib/bootstrap/js/bootstrap.bundle.js",
-                "lib/flatpickr/flatpickr.js",
-                "lib/aspnet-client-validation/dist/aspnet-validation.js",
-                "lib/jscolor/jscolor.js",
-                "lib/slim-select/slimselect.js",
-                "js/odk.js",
-                "js/odk.cookieconsent.js",
-                "js/odk.currency-picker.js",
-                "js/odk.dropdowns.js",
-                "js/odk.forms.js",
-                "js/odk.load.js",
-                "js/odk.notifications.js",
-                "js/odk.pagination.js",
-                "js/odk.slim-select.js",
-                "js/odk.selects.js",
-                "js/odk.tabs.js",
-                "js/odk.tasks.js",
-                "js/odk.topics.js",
-                "js/odk.html-editor.js");
-            // Only the admin layouts load this - the scripts in it have no hooks on member-facing pages.
-            pipeline.AddJavaScriptBundle(
-                route: "/js/odk.bundle.admin.js",
-                "js/odk.admin.js",
-                "js/odk.email-preview.js",
-                "js/odk.field-override.js",
-                "js/odk.lists.js",
-                "js/odk.placeholders.js");
-            /* Its own bundle, pulled in by the three email template pages rather than added to the admin
-               bundle: Ace is by far the largest script here and nothing else uses it, so every other
-               admin page would pay for it. The mode and both themes are bundled alongside the core so
-               Ace never fetches a module at runtime - that is what would otherwise need basePath set.
-
-               Concatenated only, which is why this is AddBundle rather than AddJavaScriptBundle like the
-               others: these are Ace's own minified builds, so all the weight in here has been through a
-               minifier already and running another over it saves nothing worth the startup cost. */
-            pipeline.AddBundle(
-                    "/js/odk.bundle.code-editor.js",
-                    "text/javascript; charset=UTF-8",
-                    "lib/ace/ace.js",
-                    "lib/ace/mode-html.js",
-                    "lib/ace/theme-textmate.js",
-                    "lib/ace/theme-monokai.js",
-                    "js/odk.code-editor.js")
-                .Concatenate();
-            pipeline.AddJavaScriptBundle(
-                route: "/js/odk.bundle.head.js",
-                "js/odk.global.js",
-                "js/odk.themes.js");
-
-            if (!builder.Environment.IsDevelopment())
-            {
-                // pipeline.MinifyCssFiles();
-                // pipeline.MinifyJsFiles();
-            }
-        });
 
         AddHangfire(builder, appSettings);
 

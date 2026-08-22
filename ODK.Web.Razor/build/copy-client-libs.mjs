@@ -1,7 +1,7 @@
 ﻿/*
  * Copies the client-side libraries the app serves out of node_modules into wwwroot/lib.
  *
- * Every package publishes its own layout, while the views and the WebOptimizer bundles in Program.cs
+ * Every package publishes its own layout, while the views and the bundles in build/build-bundles.mjs
  * reference `lib/<library>/<file>`. COPIES maps the former onto the latter, so a served path is a property
  * of this file rather than of whatever shape a package happens to publish - which is what lets a package be
  * upgraded, or swapped for another source of the same library, without touching a Razor file.
@@ -28,7 +28,7 @@ import { fileURLToPath } from 'node:url';
  * them. Adding a library means adding the dependency and a line or two here.
  */
 const COPIES = [
-    /* Only the bundle build is served - it is the one the JavaScript bundle in Program.cs names. scss is
+    /* Only the bundle build is served - it is the one build/build-bundles.mjs names. scss is
        here because wwwroot/scss imports Bootstrap's own sources directly (see scss/bootstrap/main.scss)
        rather than overriding compiled CSS, so the package's compiled dist/css is never asked for. */
     ['bootstrap/dist/js/bootstrap.bundle.js', 'bootstrap/js/bootstrap.bundle.js'],

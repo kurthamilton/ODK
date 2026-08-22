@@ -2,9 +2,11 @@
   "name": "odk.web.razor",
   "version": "1.0.0",
   "private": true,
-  "description": "Client-side build pipeline for ODK.Web.Razor: the vendored browser libraries (build/copy-client-libs.mjs) and the SCSS build (Dart Sass).",
+  "description": "Client-side build pipeline for ODK.Web.Razor: the vendored browser libraries (build/copy-client-libs.mjs), the SCSS build (Dart Sass) and the CSS/JS bundles (build/build-bundles.mjs, esbuild).",
   "scripts": {
     "build:lib": "node build/copy-client-libs.mjs",
+    "prebuild:bundles": "npm run build:lib",
+    "build:bundles": "node build/build-bundles.mjs",
     "sass:css": "sass wwwroot/scss/main.scss:wwwroot/css/main.css wwwroot/scss/odk.scss:wwwroot/css/odk.css --style=expanded --no-source-map --quiet-deps --silence-deprecation=import,global-builtin,slash-div,color-functions,if-function",
     "sass:min": "sass wwwroot/scss/main.scss:wwwroot/css/main.min.css wwwroot/scss/odk.scss:wwwroot/css/odk.min.css --style=compressed --no-source-map --quiet-deps --silence-deprecation=import,global-builtin,slash-div,color-functions,if-function",
     "prebuild:css": "npm run build:lib",
@@ -29,6 +31,7 @@
   },
   "devDependencies": {
     "concurrently": "^10.0.5",
+    "esbuild": "0.28.2",
     "sass": "1.101.3"
   }
 }

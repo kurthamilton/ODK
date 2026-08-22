@@ -88,8 +88,8 @@
     @* Resolves the bare `cropperjs` module specifier for ES module scripts (e.g. odk.imaging.js). The
        content-hashed URL busts the browser cache automatically on upgrade, since asp-append-version
        does not rewrite `import` URLs. *@
-    @* <!script> opts out of the WebOptimizer/ASP.NET script tag helper, which otherwise strips
-       type="importmap" (a .NET script-tag-helper regression). *@
+    @* <!script> opts out of the ASP.NET script tag helper, which otherwise strips type="importmap"
+       (a .NET script-tag-helper regression). *@
     <!script type="importmap">
     { "imports": { "cropperjs": "@cropperModulePath" } }
     </!script>
