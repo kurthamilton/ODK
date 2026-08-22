@@ -95,57 +95,18 @@ public static class MemberEmailServiceTests
     }
 
     [Test]
-    public static async Task SendMemberImportActivationEmail_SendsActivationTemplateWithTheActivationUrl()
+    public static async Task SendMemberImportInviteEmail_SendsInviteTemplateWithTheAcceptUrl()
     {
-        // Arrange
+        /* Arrange - the page where an invitation is accepted, which the template names group.urls.join. The
+           parameter is older than that page being platform-specific, so the two names differ on purpose. */
         var chapter = CreateChapter();
         var member = CreateMember();
 
         var emailService = CreateEmailService();
         var urlProvider = new Mock<IUrlProvider>();
         urlProvider
-            .Setup(x => x.ActivateAccountUrl(chapter, "token-123"))
-            .Returns("https://test.local/activate/token-123");
-
-        var service = CreateService(emailService, urlProvider);
-
-        var request = new MemberChapterServiceRequest
-        {
-            Chapter = chapter,
-            CurrentMember = member,
-            CurrentMemberOrDefault = member,
-            HttpRequestContext = CreateHttpRequestContext(),
-            Platform = PlatformType.Default
-        };
-
-        // Act
-        await service.SendMemberImportActivationEmail(request, "token-123");
-
-        // Assert
-        emailService.Verify(
-            x => x.SendEmail(
-                request,
-                chapter,
-                It.Is<EmailAddressee>(x => x.Address == member.EmailAddress),
-                EmailType.MemberImportActivation,
-                It.Is<IEmailParameters>(x => x.ToDictionary()["account.urls.activate"] == "https://test.local/activate/token-123")),
-            Times.Once);
-    }
-
-    [Test]
-    public static async Task SendMemberImportInviteEmail_SendsInviteTemplateWithTheJoinUrl()
-    {
-        /* Arrange - the join page, which is where an invitation is accepted. This used to be the subscription
-           page, which asked an invited member to pay for a membership they did not have yet, and disagreed with
-           the name of the only parameter the template takes. */
-        var chapter = CreateChapter();
-        var member = CreateMember();
-
-        var emailService = CreateEmailService();
-        var urlProvider = new Mock<IUrlProvider>();
-        urlProvider
-            .Setup(x => x.ChapterJoin(chapter, "invite-token"))
-            .Returns("https://test.local/group/join");
+            .Setup(x => x.AcceptInviteUrl(chapter, "invite-token"))
+            .Returns("https://test.local/group/accept-invite");
 
         var service = CreateService(emailService, urlProvider);
 
@@ -167,7 +128,8 @@ public static class MemberEmailServiceTests
                 chapter,
                 It.Is<EmailAddressee>(x => x.Address == member.EmailAddress),
                 EmailType.MemberImportInvite,
-                It.Is<IEmailParameters>(x => x.ToDictionary()["group.urls.join"] == "https://test.local/group/join")),
+                It.Is<IEmailParameters>(x =>
+                    x.ToDictionary()["group.urls.join"] == "https://test.local/group/accept-invite")),
             Times.Once);
     }
 

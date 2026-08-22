@@ -1,0 +1,20 @@
+﻿@page "/groups/{slug}/accept-invite"
+@using ODK.Services.Chapters
+@using ODK.Web.Razor.Models.Groups
+@model AcceptInviteModel
+@inject IChapterViewModelService ChapterViewModelService
+@{
+    Layout = "_HomeLayout";
+
+    var viewModel = await ChapterViewModelService.GetGroupAcceptInvitePage(
+        Model.ChapterServiceRequest, Model.InviteToken);
+
+    Model.Title = "Accept invitation";
+}
+
+@await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel
+{
+    Title = "Accept your invitation",
+    Content = await Html.PartialAsync("Groups/_GroupAcceptInviteContent", viewModel),
+    Group = viewModel
+})

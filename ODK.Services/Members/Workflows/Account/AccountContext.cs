@@ -25,6 +25,12 @@ public sealed class AccountContext
     private readonly WriteOnce<Member> _newMember = new("The account the transition creates");
 
     /// <summary>
+    /// The invitation an accept-invitation link named, resolved from the token it carried. Distinct from
+    /// <see cref="Invite"/>, which is one of the invitations read off an account a sign-up is discarding.
+    /// </summary>
+    public MemberChapterInvite? AcceptedInvite { get; init; }
+
+    /// <summary>
     /// The token the account will be activated with. Minted by the factory, or carried over from an
     /// unactivated account being discarded and recreated so a link already emailed still works.
     /// </summary>
@@ -74,6 +80,9 @@ public sealed class AccountContext
 
     /// <summary>The row an admin imported. Null for any trigger other than an import.</summary>
     public MemberImportModel? Import { get; init; }
+
+    /// <summary>What the accept-invitation form submitted. Null for any other trigger.</summary>
+    public InvitationAcceptModel? Invitation { get; init; }
 
     /// <summary>Null when no account exists for the address yet.</summary>
     public Member? Member { get; init; }
@@ -159,6 +168,14 @@ public sealed class AccountContext
     /// </summary>
     public Member RequiredAccount => NewMember ?? Member ?? throw new InvalidOperationException(
         "The transition names no account");
+
+    /// <summary>The invitation being accepted, on a transition only an acceptance can reach.</summary>
+    public MemberChapterInvite RequiredAcceptedInvite => AcceptedInvite ?? throw new InvalidOperationException(
+        "The transition accepts an invitation but none was resolved");
+
+    /// <summary>What the accept-invitation form submitted, on a transition only an acceptance can reach.</summary>
+    public InvitationAcceptModel RequiredInvitation => Invitation ?? throw new InvalidOperationException(
+        "The transition is acting on an acceptance that submitted nothing");
 
     /// <summary>The password an activation submitted, on a transition that sets one.</summary>
     public string RequiredNewPassword => NewPassword ?? throw new InvalidOperationException(

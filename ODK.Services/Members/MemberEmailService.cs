@@ -583,28 +583,6 @@ public class MemberEmailService : IMemberEmailService
             parameters);
     }
 
-    public async Task SendMemberImportActivationEmail(
-        IMemberChapterServiceRequest request,
-        string activationToken)
-    {
-        var (chapter, member) = (request.Chapter, request.CurrentMember);
-
-        var urlProvider = await _urlProviderFactory.Create(request);
-        var url = urlProvider.ActivateAccountUrl(chapter, activationToken);
-
-        var parameters = new MemberImportActivationParameters
-        {
-            Url = url
-        };
-
-        await _emailService.SendEmail(
-            request,
-            chapter,
-            member.ToEmailAddressee(),
-            EmailType.MemberImportActivation,
-            parameters);
-    }
-
     public async Task SendMemberImportInviteEmail(
         IChapterServiceRequest request,
         Member member,
@@ -612,11 +590,12 @@ public class MemberEmailService : IMemberEmailService
     {
         var chapter = request.Chapter;
 
-        /* The join page, which is where accepting an invitation happens and what this email's only parameter,
-           group.urls.join, names. The token identifies the invitation to a member who cannot sign in yet, which
-           on Drunken Knitwits is everyone it is sent to - they have no password until they set one. */
+        /* Where accepting an invitation happens, which differs by platform - see GroupRoutes.AcceptInvite.
+           The email's only parameter is named group.urls.join whatever page it resolves to: the name appears in
+           wording a group may have edited, so it is fixed rather than descriptive. The token identifies the
+           invitation to a member who cannot sign in yet, which is everyone it reaches who has no password. */
         var urlProvider = await _urlProviderFactory.Create(request);
-        var url = urlProvider.ChapterJoin(chapter, inviteToken);
+        var url = urlProvider.AcceptInviteUrl(chapter, inviteToken);
 
         var parameters = new MemberImportInviteParameters
         {

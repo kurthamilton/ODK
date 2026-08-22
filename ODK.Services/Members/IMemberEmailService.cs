@@ -109,10 +109,6 @@ public interface IMemberEmailService
         Member member,
         string? reason);
 
-    Task SendMemberImportActivationEmail(
-        IMemberChapterServiceRequest request,
-        string activationToken);
-
     Task SendMemberImportInviteEmail(
         IChapterServiceRequest request,
         Member member,

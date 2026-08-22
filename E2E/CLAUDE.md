@@ -93,13 +93,14 @@ Three axes, composed by the filter:
   "run the tests for the machine I just changed" stays a mechanical question rather than a judgement.
   - **`AccountWorkflows`** — every route to an account that can sign in, on both platforms, applied at
     *fixture* level: `AccountFlowTests` (Group Squirrel sign-up → activate → log in),
-    `DrunkenKnitwitsAccountFlowTests` (where signing up is joining the chapter) and
-    `DrunkenKnitwitsInvitedMemberTests` (an imported member accepting an invitation). Worth isolating because
-    account creation is what nearly every other fixture provisions through, so it is the first thing to run
-    when a change might have broken sign-up — and because the invited flows branch four ways on state a test
-    has to arrange (invited or not, address kept or changed, account or no account).
+    `DrunkenKnitwitsAccountFlowTests` (where signing up is joining the chapter),
+    `DrunkenKnitwitsInvitedMemberTests` and `GroupSquirrelInvitedMemberTests` (an imported member accepting an
+    invitation, which each platform does through a page of its own). Worth isolating because account creation
+    is what nearly every other fixture provisions through, so it is the first thing to run when a change might
+    have broken sign-up — and because the invited flows branch several ways on state a test has to arrange
+    (invited or not, address kept or changed, account or no account).
   - **`ChapterMembershipWorkflows`** — every route into a group. `GroupTests`, `MemberApprovalTests` and the
-    two DrunkenKnitwits fixtures above carry it at *fixture* level; the two `JoinChapter_*` tests in
+    three DrunkenKnitwits/invited-member fixtures above carry it at *fixture* level; the two `JoinChapter_*` tests in
     `MemberProfileTestsBase` carry it at *method* level, because a group's required questions are a step on
     the Join transition while the fixture's other six tests are about the member page.
     `MemberApprovalTests` covers the machine's `PendingApproval` edges — joining a group that vets new
@@ -115,11 +116,14 @@ Three axes, composed by the filter:
   - **`Stripe`** — the four payment fixtures (site/chapter purchase, recurring renewal, cancellation),
     applied at *fixture* level. These are the slow ones — real Stripe calls, webhook round-trips via the
     ngrok tunnel, test clocks — so being able to run or skip them separately matters.
-  - **`Venues`** — the venue-admin scenarios (creation, name normalising, slug collisions) plus the
-    events-list venue filter, which drives the slug through the query string. Applied at *method* level
-    because they live in `EventTestsBase` alongside the event tests. Deliberately only the venue-focused
-    tests: most event and RSVP tests create a venue while arranging, so including everything that touches
-    one would cover most of the suite and the filter would stop meaning anything.
+  - **`Venues`** — the venue-admin scenarios (creation, name normalising, slug collisions), the events-list
+    venue filter, which drives the slug through the query string, and the venues list's column sorting.
+    Applied at *method* level because they live in `EventTestsBase` alongside the event tests. Deliberately
+    only the venue-focused tests: most event and RSVP tests create a venue while arranging, so including
+    everything that touches one would cover most of the suite and the filter would stop meaning anything.
+    The sorting test is the odd one here - it is really coverage for `odk.lists.js`, which also backs the
+    members and payments admin tables, and lives on the venues list only because that is the one of the three
+    whose rows a test can name.
   - **`SiteQuestions`** — site FAQ admin (create, reorder, edit, delete) and the About page that displays
     it, applied at *fixture* level. Group Squirrel only: site questions are per-platform and Drunken
     Knitwits has none, which is exactly why its About page 404s.

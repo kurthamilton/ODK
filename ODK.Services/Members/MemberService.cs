@@ -72,6 +72,36 @@ public class MemberService : IMemberService
         _unitOfWork = unitOfWork;
     }
 
+    public async Task<ServiceResult> AcceptInvitation(
+        IChapterServiceRequest request, InvitationAcceptModel model)
+    {
+        var invite = await _unitOfWork.MemberChapterInviteRepository
+            .GetByToken(model.Token)
+            .Run();
+
+        /* An invitation to another group is refused rather than honoured: the page it was posted to is this
+           group's, and the token names which invitation is being spent. */
+        if (invite == null || invite.ChapterId != request.Chapter.Id)
+        {
+            return ServiceResult.Failure("The link you followed is no longer valid");
+        }
+
+        var context = await _accountContextFactory.CreateForAcceptInvite(request, invite, model);
+
+        var result = await _accountWorkflow.Fire(AccountTrigger.AcceptInvite, context);
+
+        /* Holding an account that can already sign in is not checked here: the machine has no AcceptInvite edge
+           out of Activated, so it reports the trigger as not permitted from there. Only the wording is this
+           method's - the page offers such a member a sign-in prompt instead of this form, so arriving here
+           means the account was activated between the two requests. */
+        if (!result.Success && result.From == AccountState.Activated)
+        {
+            return ServiceResult.Failure("Your account is already active. Sign in to accept your invitation.");
+        }
+
+        return result.ToServiceResult();
+    }
+
     public async Task<ServiceResult> CancelChapterSubscription(Guid memberId, string externalId)
     {
         var (member, memberSubscriptionRecord) = await _unitOfWork.RunAsync(

@@ -19,6 +19,28 @@ public class GroupRoutes
 
     public string About(Chapter chapter) => GroupPath(chapter, "/about");
 
+    /// <summary>
+    /// Where an invitation link lands: the page that identifies who was invited from the token and lets them
+    /// act on it without being able to sign in.
+    /// </summary>
+    /// <remarks>
+    /// The two platforms reach that through different pages, so this is the one place that knows which. Signing
+    /// up on Drunken Knitwits is joining the chapter, so its anonymous sign-up page serves as the invitation
+    /// page too, with the token filling the form in. Group Squirrel's join page requires an account that can
+    /// sign in, which an invited member has not got, so accepting is a page of its own that gives the account
+    /// its first password and joins the group in one submit.
+    /// </remarks>
+    public string AcceptInvite(Chapter chapter, string inviteToken)
+    {
+        var path = Platform switch
+        {
+            PlatformType.DrunkenKnitwits => AccountRoutes.Join(chapter),
+            _ => GroupPath(chapter, "/accept-invite")
+        };
+
+        return $"{path}?token={HttpUtility.UrlEncode(inviteToken)}";
+    }
+
     public string Contact(Chapter chapter) => GroupPath(chapter, "/contact");
 
     public string Conversation(Chapter chapter, Guid conversationId)
@@ -78,26 +100,14 @@ public class GroupRoutes
     /// The two platforms reach that through different pages, so this is the one place that knows which. Signing
     /// up on Drunken Knitwits *is* joining the chapter, so there is no separate join page - it is the chapter's
     /// account sign-up. Group Squirrel has members before they have groups, so joining is its own page and
-    /// assumes an account already exists.
+    /// assumes an account already exists. Someone holding an invitation goes to <see cref="AcceptInvite"/>
+    /// instead, which on Group Squirrel is what supplies the account this page needs.
     /// </remarks>
     public string Join(Chapter chapter) => Platform switch
     {
         PlatformType.DrunkenKnitwits => AccountRoutes.Join(chapter),
         _ => GroupPath(chapter, "/join")
     };
-
-    /// <summary>
-    /// <see cref="Join(Chapter)"/> carrying an invitation token, so the page can identify who was invited and
-    /// fill in what is already known about them.
-    /// </summary>
-    /// <remarks>
-    /// Only Drunken Knitwits can use it: its join page is the chapter's account sign-up and is anonymous, while
-    /// Group Squirrel's requires an account already. The token is still appended there so the link is not
-    /// silently different between platforms, and the page ignores it until Group Squirrel has a page that can
-    /// accept an invitation without one.
-    /// </remarks>
-    public string Join(Chapter chapter, string inviteToken)
-        => $"{Join(chapter)}?token={HttpUtility.UrlEncode(inviteToken)}";
 
     public string Member(Chapter chapter, Guid memberId)
         => $"{Members(chapter)}/{memberId}";

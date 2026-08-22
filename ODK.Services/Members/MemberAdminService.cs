@@ -5,7 +5,6 @@ using ODK.Core.Events;
 using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Notifications;
-using ODK.Core.Platforms;
 using ODK.Core.Workflows;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
@@ -192,6 +191,23 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         AssertMemberIsInChapter(member, request);
 
         return member;
+    }
+
+    public async Task<InvitedMembersAdminPageViewModel> GetInvitedMembersViewModel(
+        IMemberChapterAdminServiceRequest request)
+    {
+        var (platform, chapter) = (request.Platform, request.Chapter);
+
+        var invited = await GetChapterAdminRestrictedContent(
+            request,
+            x => x.MemberChapterInviteRepository.GetDtosByChapterId(chapter.Id));
+
+        return new InvitedMembersAdminPageViewModel
+        {
+            Chapter = chapter,
+            Invited = invited,
+            Platform = platform
+        };
     }
 
     public async Task<MemberApprovalsAdminPageViewModel> GetMemberApprovalsViewModel(
@@ -704,7 +720,6 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         // it calls out to a verifier.
         var validity = await ValidateImportEmailAddresses(distinctMembers);
 
-        var activationEmailMembers = new List<Member>();
         var inviteEmailMembers = new List<Member>();
 
         foreach (var importMember in distinctMembers)
@@ -719,7 +734,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                doing is skipped: an address that already has an account cannot be imported again, and a member
                already invited or already in the group cannot be invited again. */
             var accountContext = _accountContextFactory.CreateForImport(request, importMember, batch);
-            var raised = await _accountWorkflow.Fire(AccountTrigger.Import, accountContext);
+            await _accountWorkflow.Fire(AccountTrigger.Import, accountContext);
 
             var member = accountContext.NewMember ?? accountContext.Member;
             if (member == null)
@@ -737,28 +752,19 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                 continue;
             }
 
-            /* Which email a new member gets is decided by whether they can act on the invitation's link.
-               Signing up on Drunken Knitwits is joining the group, so the link lands on the join page with
-               their details already filled in and the account is created from what they submit - while an
-               activation link would take them straight past that page into an account belonging to no group.
-               Group Squirrel's join page requires an account, so a new member there has to activate first. A
-               member who already had an account can act on it whichever platform they are on. */
-            var canActOnTheInvitation = !raised.Success || platform == PlatformType.DrunkenKnitwits;
-
-            (canActOnTheInvitation ? inviteEmailMembers : activationEmailMembers).Add(member);
+            /* Everybody imported gets the invitation, on either platform and whether or not they already had
+               an account: each platform has a page its link lands on that can be used without signing in. An
+               activation link is never sent for an import - it would take a new member straight past the group
+               they were invited to, into an account belonging to none. */
+            inviteEmailMembers.Add(member);
         }
 
         await _unitOfWork.SaveChanges();
 
-        // Send the activation/invite emails in the background so a large import doesn't block the request,
-        // and so each email is an independently-retryable job. Only ids cross the Hangfire boundary; the
-        // member, chapter and token are reloaded inside each job.
+        // Send the invitation emails in the background so a large import doesn't block the request, and so
+        // each email is an independently-retryable job. Only ids cross the Hangfire boundary; the member,
+        // chapter and token are reloaded inside each job.
         var jobRequest = JobRequest.Create(request);
-
-        foreach (var member in activationEmailMembers)
-        {
-            EnqueueSendImportActivationEmailJob(jobRequest, chapter.Id, member.Id);
-        }
 
         foreach (var member in inviteEmailMembers)
         {
@@ -768,13 +774,9 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         return ServiceResult.Successful();
     }
 
-    /* Public for Hangfire, which needs a method to bind to, and called by nothing else: each turns the
-       job's ids back into a request and hands off to the work. These signatures are a wire format - see
-       JobRequest - so a change to one is a change every queued job of that kind has to survive. */
-    public async Task SendImportActivationEmailJob(JobRequest request, Guid chapterId, Guid memberId)
-        => await SendImportActivationEmail(await _serviceRequestFactory.Create(request), chapterId, memberId);
-
-    /// <inheritdoc cref="SendImportActivationEmailJob" />
+    /* Public for Hangfire, which needs a method to bind to, and called by nothing else: it turns the job's
+       ids back into a request and hands off to the work. This signature is a wire format - see JobRequest -
+       so a change to it is a change every queued job of that kind has to survive. */
     public async Task SendImportInviteEmailJob(JobRequest request, Guid chapterId, Guid memberId)
         => await SendImportInviteEmail(await _serviceRequestFactory.Create(request), chapterId, memberId);
 
@@ -1105,11 +1107,6 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             .Select(g => g.First())
             .ToArray();
 
-    private string EnqueueSendImportActivationEmailJob(JobRequest request, Guid chapterId, Guid memberId)
-        => _backgroundTaskService.Enqueue(
-            () => SendImportActivationEmailJob(request, chapterId, memberId),
-            BackgroundTaskQueueType.Emails);
-
     private string EnqueueSendImportInviteEmailJob(JobRequest request, Guid chapterId, Guid memberId)
         => _backgroundTaskService.Enqueue(
             () => SendImportInviteEmailJob(request, chapterId, memberId),
@@ -1140,27 +1137,6 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         }
     }
 
-    /// <summary>
-    /// Whether each row's address is a usable format, keyed by the address. Soft only - see the callers.
-    /// </summary>
-    private async Task SendImportActivationEmail(IServiceRequest request, Guid chapterId, Guid memberId)
-    {
-        var (member, chapter, activationToken) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(memberId),
-            x => x.ChapterRepository.GetById(request.Platform, chapterId),
-            x => x.MemberActivationTokenRepository.GetByMemberId(memberId));
-
-        // The token is removed once the member activates; there is nothing to send if that has happened.
-        if (activationToken == null)
-        {
-            return;
-        }
-
-        var emailRequest = MemberChapterServiceRequest.Create(chapter, member, request);
-        await _memberEmailService.SendMemberImportActivationEmail(
-            emailRequest, activationToken.ActivationToken);
-    }
-
     private async Task SendImportInviteEmail(IServiceRequest request, Guid chapterId, Guid memberId)
     {
         var (member, chapter, invite) = await _unitOfWork.RunAsync(
@@ -1178,6 +1154,9 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         await _memberEmailService.SendMemberImportInviteEmail(chapterRequest, member, invite.Token);
     }
 
+    /// <summary>
+    /// Whether each row's address is a usable format, keyed by the address. Soft only - see the callers.
+    /// </summary>
     private async Task<IReadOnlyDictionary<string, bool>> ValidateImportEmailAddresses(
         IReadOnlyCollection<MemberImportModel> members)
     {

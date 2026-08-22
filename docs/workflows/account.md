@@ -15,6 +15,7 @@ stateDiagram-v2
     Activated --> Activated: SignUp
     Registered --> Activated: Activate [in a group]
     Registered --> Activated: Activate [not in a group]
+    Registered --> Activated: AcceptInvite
 ```
 
 ## Transitions
@@ -31,3 +32,4 @@ stateDiagram-v2
 | Activated | SignUp | Activated | - | 1. emails the address to say it already has an account (ExternalEffect) |
 | Registered | Activate | Activated | in a group | 1. checks the password is allowed (Decision)<br>2. marks the account activated (Write)<br>3. stores the password (Write)<br>4. spends the activation link (Write)<br>5. notifies the group of a new member (Write)<br>6. commits the changes (Commit)<br>7. emails the group about its new member (ExternalEffect) |
 | Registered | Activate | Activated | not in a group | 1. checks the password is allowed (Decision)<br>2. marks the account activated (Write)<br>3. stores the password (Write)<br>4. spends the activation link (Write)<br>5. commits the changes (Commit)<br>6. emails a welcome (ExternalEffect) |
+| Registered | AcceptInvite | Activated | - | 1. checks the password is allowed (Decision)<br>2. marks the account activated (Write)<br>3. stores the password (Write)<br>4. spends the activation link (Write)<br>5. records the name the member confirmed (Write)<br>6. joins the group the invitation was to (Write)<br>7. commits the changes (Commit)<br>8. emails the group about its new member (ExternalEffect) |

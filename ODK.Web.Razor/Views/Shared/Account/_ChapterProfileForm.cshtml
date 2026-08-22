@@ -1,18 +1,11 @@
-﻿@using ODK.Core.Chapters
-@using ODK.Core.DataTypes
-@using ODK.Core.Members
-@using ODK.Services.Chapters
-@using ODK.Services.Members
+﻿@using ODK.Core.DataTypes
 @using ODK.Services.Users.ViewModels
-@using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
 @model ChapterProfileFormViewModel
 @inject IOdkRoutes OdkRoutes
 @{
-    var memberId = User.MemberIdOrDefault();
-
     var chapterPropertyDictionary = Model.ChapterProperties
         .ToDictionary(x => x.Id);
 
@@ -44,7 +37,7 @@
         continue;
     }
 
-    if (memberId == null && 
+    if (Model.SigningUp &&
         !applicationCheckboxesRendered && 
         chapterProperty.ApplicationOnly && 
         chapterProperty.DataType == DataType.Checkbox)
@@ -174,7 +167,7 @@
     </div>
 }
 
-@if (memberId == null)
+@if (Model.SigningUp)
 {
     if (!imageUploadRendered)
     {

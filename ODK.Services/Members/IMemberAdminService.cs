@@ -14,6 +14,12 @@ public interface IMemberAdminService
 
     Task<BulkEmailAdminPageViewModel> GetBulkEmailViewModel(IMemberChapterAdminServiceRequest request);
 
+    /// <summary>
+    /// Everyone the group has asked to join who has yet to accept, oldest invitation first.
+    /// </summary>
+    Task<InvitedMembersAdminPageViewModel> GetInvitedMembersViewModel(
+        IMemberChapterAdminServiceRequest request);
+
     Task<Member> GetMember(IMemberChapterAdminServiceRequest request, Guid memberId);
 
     Task<MemberApprovalsAdminPageViewModel> GetMemberApprovalsViewModel(

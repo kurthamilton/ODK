@@ -20,8 +20,9 @@ public static class AccountStateMachine
         var toAGroup = new SignUpIsToAGroup();
         var verifiedByOAuth = new SignUpIsVerifiedByOAuth();
 
-        /* The half of activating that both edges do, in the order they must: nothing is written until the
-           password is accepted, and the link is spent alongside the account it activates. */
+        /* The half of activating that every edge does, in the order they must: nothing is written until the
+           password is accepted, and the link is spent alongside the account it activates. Shared by the two
+           edges an activation link reaches and by the one an invitation link does. */
         var activate = (TransitionBuilder<AccountContext> x) => x
             .Then<ValidateNewPassword>()
             .Then<MarkAccountActivated>()
@@ -182,6 +183,22 @@ public static class AccountStateMachine
                 x => activate(x.When(Guard.Not(inAGroup)))
                     .Then<Commit<AccountContext>>()
                     .Then<SendSiteWelcomeEmail>())
+
+            /* Accepting an invitation, which is how an imported member joins on Group Squirrel: its join page
+               needs an account that can sign in, and an imported one has no password until it is given one.
+               Holding the invitation's token proves the link reached the address the import supplied, which is
+               everything an activation email establishes - so the same submit sets the password and joins the
+               group, and there is no separate activation to wait for. Only Registered has this edge: an
+               account that can already sign in accepts by signing in and using the join page. */
+            .Transition(
+                AccountState.Registered,
+                AccountTrigger.AcceptInvite,
+                AccountState.Activated,
+                x => activate(x)
+                    .Then<ConfirmInvitedMemberName>()
+                    .Then<AcceptTheInvitation>()
+                    .Then<Commit<AccountContext>>()
+                    .Then<SendNewMemberEmails>())
             .Build();
     }
 }

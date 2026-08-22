@@ -20,6 +20,62 @@ public sealed class AccountContextFactory : IAccountContextFactory
         _unitOfWork = unitOfWork;
     }
 
+    public async Task<AccountContext> CreateForAcceptInvite(
+        IChapterServiceRequest request, MemberChapterInvite invite, InvitationAcceptModel model)
+    {
+        var (platform, chapter) = (request.Platform, request.Chapter);
+
+        var (
+            adminMembers,
+            notificationSettings,
+            member,
+            memberPassword,
+            pendingActivation,
+            chapterProperties,
+            membershipSettings,
+            ownerSubscription,
+            memberCount
+        ) = await _unitOfWork.RunAsync(
+            x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
+            x => x.MemberNotificationSettingsRepository.GetByChapterId(chapter.Id, NotificationType.NewMember),
+            x => x.MemberRepository.GetById(invite.MemberId),
+            x => x.MemberPasswordRepository.GetByMemberId(invite.MemberId),
+            x => x.MemberActivationTokenRepository.GetByMemberId(invite.MemberId),
+            x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
+            x => x.MemberSiteSubscriptionRecordRepository
+                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active())
+                .SiteSubscription()
+                .WithFeatures()
+                .GetSingleOrDefault(),
+            x => x.MemberRepository.GetCountByChapterId(chapter.Id));
+
+        return new AccountContext
+        {
+            AcceptedInvite = invite,
+            AdminMembers = adminMembers,
+            Chapter = chapter,
+            ChapterProperties = chapterProperties,
+            Invitation = model,
+            Member = member,
+            MemberCount = memberCount,
+            MemberPassword = memberPassword,
+            /* The answers as domain rows, for the email the group's admins get. The membership machine writes
+               its own copies from the same submission - these are read, not written. */
+            MemberProperties = model.Properties.Select(x => x.ToMemberProperty(invite.MemberId)).ToArray(),
+            MembershipSettings = membershipSettings,
+            NewPassword = model.Password,
+            NotificationSettings = notificationSettings,
+            OwnerSubscription = ownerSubscription?.SiteSubscription,
+            OwnerSubscriptionFeatures = ownerSubscription?.Features ?? [],
+            PendingActivation = pendingActivation,
+            Request = request,
+            /* Nothing here is a sign-up, so no provider has vouched for anything - holding the invitation is
+               itself the proof the address was reachable. */
+            VerifiedByOAuth = false
+        };
+    }
+
     public async Task<AccountContext> CreateForChapterActivation(
         IChapterServiceRequest request, MemberActivationToken token, string password)
     {

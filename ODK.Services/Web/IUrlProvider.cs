@@ -4,11 +4,15 @@ namespace ODK.Services.Web;
 
 public interface IUrlProvider
 {
+    /// <summary>
+    /// The page an invitation link lands on, which differs by platform - see
+    /// <c>GroupRoutes.AcceptInvite</c>.
+    /// </summary>
+    string AcceptInviteUrl(Chapter chapter, string inviteToken);
+
     string ActivateAccountUrl(Chapter? chapter, string token);
 
     string BaseUrl();
-
-    string ChapterJoin(Chapter chapter, string inviteToken);
 
     string ChapterSubscription(Chapter chapter);
 

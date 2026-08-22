@@ -18,13 +18,13 @@ public class UrlProvider : IUrlProvider
         _odkRoutes = odkRoutes;
     }
 
+    public string AcceptInviteUrl(Chapter chapter, string inviteToken)
+        => GetUrl(_odkRoutes.Groups.AcceptInvite(chapter, inviteToken));
+
     public string ActivateAccountUrl(Chapter? chapter, string token)
         => GetUrl(_odkRoutes.Account.Activate(chapter, token));
 
     public string BaseUrl() => GetUrl(string.Empty);
-
-    public string ChapterJoin(Chapter chapter, string inviteToken)
-        => GetUrl(_odkRoutes.Groups.Join(chapter, inviteToken));
 
     public string ChapterSubscription(Chapter chapter)
         => GetUrl(_odkRoutes.Groups.Subscription(chapter));

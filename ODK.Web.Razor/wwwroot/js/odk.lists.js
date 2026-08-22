@@ -118,55 +118,17 @@
         }
 
         const $triggers = $header.querySelectorAll('th');
-        
+
         const $rows = $body.querySelectorAll('tr');
-        
-        $triggers.forEach(($trigger, i) => {
-            if (!$trigger.hasAttribute('data-sortable-sort')) {
-                return;
-            }
 
-            $trigger.classList.add('sortable');
-            const options = $trigger.getAttribute('data-sortable-sort').split(',');
-            if (options.indexOf('default') >= 0) {
-                sort($trigger, i);
-            }
-
-            $trigger.addEventListener('click', () => {
-                sort($trigger, i);
-            });
-        });
-
-        function sort($trigger, i) {
-            const direction = getDirection($trigger);
-
-            $triggers.forEach(x => {
-                x.classList.remove(sortDirections.asc.class);
-                x.classList.remove(sortDirections.desc.class);
-            });            
-
-            $trigger.classList.add(sortDirections[direction].class);
-
-            const sorted = [];
-
-            $rows.forEach($row => {
-                const $cell = $row.querySelectorAll('td')[i];
-                const $value = $cell.querySelector('[data-sort-value]');
-                const value = $value ? $value.getAttribute('data-sort-value') : $cell.innerHTML;                
-                sorted.push({ $row: $row, value: value.toString().toLocaleLowerCase().trim() });
-            });
-
-            const compareValue = sortDirections[direction].compare;
-            sorted.sort((a, b) => a.value.localeCompare(b.value) * compareValue * -1);
-
-            $rows.forEach($row => $row.remove());
-
-            sorted.forEach(row => $body.appendChild(row.$row));
-
-            stripeTable($list);
-        }
-
-        function getDirection($trigger) {
+        /* getDirection and sort are consts rather than function declarations, and the order they are declared
+           in is load-bearing. A minifier may rewrite the early return above into a positive
+           `if ($header && $body) { ... }`, which moves every declaration after the guard into that block -
+           while a function *declaration* hoists to the enclosing scope instead, leaving it unable to see the
+           block-scoped $triggers and $rows it closes over. Declared this way they travel with the values they
+           capture whatever the guard is rewritten to; declared before their first caller because a const has
+           no hoisting to fall back on. */
+        const getDirection = $trigger => {
             const existingDirection = $trigger.classList.contains(sortDirections.asc.class)
                 ? 'asc'
                 : $trigger.classList.contains(sortDirections.desc.class)
@@ -185,6 +147,51 @@
 
             const defaultDir = $trigger.getAttribute('data-sortable-dir');
             return defaultDir || 'asc';
-        }
+        };
+
+        const sort = ($trigger, i) => {
+            const direction = getDirection($trigger);
+
+            $triggers.forEach(x => {
+                x.classList.remove(sortDirections.asc.class);
+                x.classList.remove(sortDirections.desc.class);
+            });
+
+            $trigger.classList.add(sortDirections[direction].class);
+
+            const sorted = [];
+
+            $rows.forEach($row => {
+                const $cell = $row.querySelectorAll('td')[i];
+                const $value = $cell.querySelector('[data-sort-value]');
+                const value = $value ? $value.getAttribute('data-sort-value') : $cell.innerHTML;
+                sorted.push({ $row: $row, value: value.toString().toLocaleLowerCase().trim() });
+            });
+
+            const compareValue = sortDirections[direction].compare;
+            sorted.sort((a, b) => a.value.localeCompare(b.value) * compareValue * -1);
+
+            $rows.forEach($row => $row.remove());
+
+            sorted.forEach(row => $body.appendChild(row.$row));
+
+            stripeTable($list);
+        };
+
+        $triggers.forEach(($trigger, i) => {
+            if (!$trigger.hasAttribute('data-sortable-sort')) {
+                return;
+            }
+
+            $trigger.classList.add('sortable');
+            const options = $trigger.getAttribute('data-sortable-sort').split(',');
+            if (options.indexOf('default') >= 0) {
+                sort($trigger, i);
+            }
+
+            $trigger.addEventListener('click', () => {
+                sort($trigger, i);
+            });
+        });
     });
 })();
