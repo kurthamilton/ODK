@@ -1,0 +1,17 @@
+﻿@page "/{chapterName}/admin/members/invited"
+@using ODK.Services.Members
+@using ODK.Web.Razor.Models.Admin
+@model InvitedMembersModel
+@inject IMemberAdminService MemberAdminService
+@{
+    Layout = "_OdkChapterAdminLayout";
+    Model.Title = "Invited members | Admin";
+
+    var viewModel = await MemberAdminService.GetInvitedMembersViewModel(Model.MemberChapterAdminServiceRequest);
+}
+
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    Title = "Invited members",
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_InvitedMembersContent", viewModel)</div>
+})

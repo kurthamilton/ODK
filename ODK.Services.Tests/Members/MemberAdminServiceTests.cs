@@ -330,6 +330,99 @@ public static class MemberAdminServiceTests
     }
 
     [Test]
+    public static async Task GetInvitedMembersViewModel_ReturnsOutstandingInvitationsOldestFirst()
+    {
+        /* Arrange - three invitations raised out of order, so passing cannot be an accident of insertion
+           order. The oldest invitation is the one that has been waiting longest, which is what an admin
+           chasing acceptances wants at the top. */
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(owner: currentMember);
+
+        var now = DateTime.UtcNow;
+        var middle = context.CreateMember(afterCreate: x => x.FirstName = "Middle");
+        var oldest = context.CreateMember(afterCreate: x => x.FirstName = "Oldest");
+        var newest = context.CreateMember(afterCreate: x => x.FirstName = "Newest");
+
+        CreateInvite(context, chapter.Id, middle.Id, now.AddDays(-2));
+        CreateInvite(context, chapter.Id, oldest.Id, now.AddDays(-5));
+        CreateInvite(context, chapter.Id, newest.Id, now.AddDays(-1));
+
+        var service = CreateMemberAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberImport);
+
+        // Act
+        var result = await service.GetInvitedMembersViewModel(request);
+
+        // Assert
+        result.Invited.Select(x => x.Member.FirstName)
+            .Should()
+            .Equal("Oldest", "Middle", "Newest");
+        result.Invited.Select(x => x.CreatedUtc)
+            .Should()
+            .BeInAscendingOrder();
+    }
+
+    [Test]
+    public static async Task GetInvitedMembersViewModel_MemberInvitedToAnotherGroup_IsNotListed()
+    {
+        // Arrange - the page is one group's outstanding invitations, and an invitation is per group.
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(owner: currentMember);
+        var other = context.CreateChapter(owner: currentMember);
+
+        var invited = context.CreateMember(afterCreate: x => x.FirstName = "Invited");
+        var elsewhere = context.CreateMember(afterCreate: x => x.FirstName = "Elsewhere");
+
+        CreateInvite(context, chapter.Id, invited.Id, DateTime.UtcNow);
+        CreateInvite(context, other.Id, elsewhere.Id, DateTime.UtcNow);
+
+        var service = CreateMemberAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberImport);
+
+        // Act
+        var result = await service.GetInvitedMembersViewModel(request);
+
+        // Assert
+        result.Invited.Should().ContainSingle().Which.Member.Id.Should().Be(invited.Id);
+    }
+
+    [Test]
+    public static async Task GetInvitedMembersViewModel_NobodyInvited_ReturnsEmpty()
+    {
+        // Arrange - the ordinary case for a group that has never run an import.
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(owner: currentMember);
+
+        var service = CreateMemberAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberImport);
+
+        // Act
+        var result = await service.GetInvitedMembersViewModel(request);
+
+        // Assert
+        result.Invited.Should().BeEmpty();
+        result.Chapter.Id.Should().Be(chapter.Id);
+    }
+
+    [Test]
     public static async Task GetMemberApprovalsViewModel_ReturnsPendingMembers()
     {
         // Arrange
@@ -757,19 +850,19 @@ public static class MemberAdminServiceTests
             .Be(1);
     }
 
-    [Test]
-    public static async Task ImportMembers_NewMemberOnDrunkenKnitwits_SendsTheInvitationNotAnActivationLink()
+    [TestCase(PlatformType.Default)]
+    [TestCase(PlatformType.DrunkenKnitwits)]
+    public static async Task ImportMembers_NewMember_SendsTheInvitation(PlatformType platform)
     {
-        /* Arrange - signing up on this platform is joining the group, so the invitation's link is the one that
-           lands on the join page with their details filled in. An activation link would take them past it. */
+        /* Arrange - both platforms have a page an invitation's link lands on that a member with no password can
+           use, so both send the invitation. An activation link would take a new member straight past the group
+           they were invited to, into an account belonging to none. */
         using var context = CreateMockOdkContext();
 
         var currentMember = context.CreateMember();
-        var chapter = context.CreateChapter(
-            owner: currentMember,
-            platform: PlatformType.DrunkenKnitwits);
+        var chapter = context.CreateChapter(owner: currentMember, platform: platform);
 
-        SeedDefaultSiteSubscription(context, PlatformType.DrunkenKnitwits);
+        SeedDefaultSiteSubscription(context, platform);
 
         var emailService = new Mock<IMemberEmailService>();
         var service = CreateMemberAdminService(context, memberEmailService: emailService.Object);
@@ -777,7 +870,7 @@ public static class MemberAdminServiceTests
         var request = CreateMemberChapterAdminServiceRequest(
             chapter: chapter,
             currentMember: currentMember,
-            platform: PlatformType.DrunkenKnitwits,
+            platform: platform,
             securable: ChapterAdminSecurable.MemberImport);
 
         var members = new[]
@@ -788,7 +881,8 @@ public static class MemberAdminServiceTests
         // Act
         var result = await service.ImportMembers(request, members);
 
-        // Assert
+        // Assert - the (mock) background task service runs the enqueued job synchronously, which reloads the
+        // member, chapter and invitation and sends the email exactly once.
         result.Success.Should().BeTrue();
 
         emailService.Verify(
@@ -797,55 +891,6 @@ public static class MemberAdminServiceTests
                 It.Is<Member>(m => m.EmailAddress == "new@example.com"),
                 It.IsAny<string>()),
             Times.Once);
-        emailService.Verify(
-            x => x.SendMemberImportActivationEmail(
-                It.IsAny<IMemberChapterServiceRequest>(),
-                It.IsAny<string>()),
-            Times.Never);
-    }
-
-    [Test]
-    public static async Task ImportMembers_NewMemberOnGroupSquirrel_SendsAnActivationLink()
-    {
-        /* Arrange - the pair to the test above. This platform's join page needs an account before an invitation
-           can be accepted, so a member who has none activates first. */
-        using var context = CreateMockOdkContext();
-
-        var currentMember = context.CreateMember();
-        var chapter = context.CreateChapter(owner: currentMember);
-
-        SeedDefaultSiteSubscription(context, PlatformType.Default);
-
-        var emailService = new Mock<IMemberEmailService>();
-        var service = CreateMemberAdminService(context, memberEmailService: emailService.Object);
-
-        var request = CreateMemberChapterAdminServiceRequest(
-            chapter: chapter,
-            currentMember: currentMember,
-            securable: ChapterAdminSecurable.MemberImport);
-
-        var members = new[]
-        {
-            new MemberImportModel { EmailAddress = "new@example.com", FirstName = "New", LastName = "Member" }
-        };
-
-        // Act
-        var result = await service.ImportMembers(request, members);
-
-        // Assert
-        result.Success.Should().BeTrue();
-
-        emailService.Verify(
-            x => x.SendMemberImportActivationEmail(
-                It.IsAny<IMemberChapterServiceRequest>(),
-                It.IsAny<string>()),
-            Times.Once);
-        emailService.Verify(
-            x => x.SendMemberImportInviteEmail(
-                It.IsAny<IChapterServiceRequest>(),
-                It.IsAny<Member>(),
-                It.IsAny<string>()),
-            Times.Never);
     }
 
     [TestCase(PlatformType.Default)]
@@ -926,11 +971,6 @@ public static class MemberAdminServiceTests
                 It.Is<Member>(m => m.Id == existing.Id),
                 It.IsAny<string>()),
             Times.Once);
-        emailService.Verify(
-            x => x.SendMemberImportActivationEmail(
-                It.IsAny<IMemberChapterServiceRequest>(),
-                It.IsAny<string>()),
-            Times.Never);
     }
 
     [Test]
@@ -1007,54 +1047,6 @@ public static class MemberAdminServiceTests
             .Status.Should().Be(MemberImportRowStatus.Invalid);
         result.Rows.Single(x => x.Member.EmailAddress == "good@example.com")
             .Status.Should().Be(MemberImportRowStatus.New);
-    }
-
-    [Test]
-    public static async Task ImportMembers_WhenMemberIsNew_SendsActivationEmail()
-    {
-        // Arrange
-        using var context = CreateMockOdkContext();
-
-        var currentMember = context.CreateMember();
-        var chapter = context.CreateChapter(owner: currentMember);
-
-        context.Create(new SiteSubscription
-        {
-            Id = Guid.NewGuid(),
-            Name = "Default",
-            Description = "",
-            GroupLimit = 10,
-            Enabled = true,
-            Default = true,
-            Platform = PlatformType.Default,
-            SitePaymentSettingId = Guid.NewGuid()
-        });
-
-        var emailService = new Mock<IMemberEmailService>();
-
-        var service = CreateMemberAdminService(context, memberEmailService: emailService.Object);
-
-        var request = CreateMemberChapterAdminServiceRequest(
-            chapter: chapter,
-            currentMember: currentMember,
-            securable: ChapterAdminSecurable.MemberImport);
-
-        var members = new[]
-        {
-            new MemberImportModel { EmailAddress = "new@example.com", FirstName = "New", LastName = "Member" }
-        };
-
-        // Act
-        var result = await service.ImportMembers(request, members);
-
-        // Assert - the (mock) background task service runs the enqueued job synchronously, which reloads
-        // the member/chapter/token and sends the activation email exactly once.
-        result.Success.Should().BeTrue();
-        emailService.Verify(
-            x => x.SendMemberImportActivationEmail(
-                It.Is<IMemberChapterServiceRequest>(x => x.CurrentMember.EmailAddress == "new@example.com"),
-                It.IsAny<string>()),
-            Times.Once);
     }
 
     [Test]
@@ -1237,6 +1229,17 @@ public static class MemberAdminServiceTests
             .Returns(Task.CompletedTask);
         return mock.Object;
     }
+
+    private static MemberChapterInvite CreateInvite(
+        MockOdkContext context, Guid chapterId, Guid memberId, DateTime createdUtc) => context.Create(
+        new MemberChapterInvite
+        {
+            ChapterId = chapterId,
+            CreatedUtc = createdUtc,
+            Id = Guid.NewGuid(),
+            MemberId = memberId,
+            Token = Guid.NewGuid().ToString()
+        });
 
     private static IMemberChapterAdminServiceRequest CreateMemberChapterAdminServiceRequest(
         Chapter chapter,

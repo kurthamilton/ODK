@@ -3,6 +3,7 @@ using FluentAssertions;
 using NUnit.Framework;
 using ODK.Core.Workflows;
 using ODK.Services.Members.Workflows.ChapterMembership;
+using ODK.Services.Members.Workflows.ChapterMembership.Steps;
 
 namespace ODK.Services.Tests.Members.Workflows.ChapterMembership;
 
@@ -100,6 +101,47 @@ public static class ChapterMembershipStateMachineTests
 
         // Assert
         kinds.Should().OnlyContain(x => x == StepKind.Write || x == StepKind.Decision);
+    }
+
+    [Test]
+    public static void Create_Accept_StagesWritesAndNothingElse()
+    {
+        /* Arrange - accepting an invitation activates the account and joins the group in one transaction, which
+           the account machine owns: its AcceptInvite transition runs this machine's as a step, then commits and
+           sends the email. So this edge must stage writes and stop there. A commit here would split the
+           transaction in two, and an email here would be sent before it. The builder cannot check this, because
+           it cannot see inside the step that runs one machine from another. */
+        var definition = ChapterMembershipStateMachine.Create();
+
+        // Act
+        var kinds = definition.Transitions
+            .Where(x => x.Trigger == ChapterMembershipTrigger.Accept)
+            .SelectMany(x => x.Steps)
+            .Select(x => x.Kind)
+            .Distinct()
+            .ToArray();
+
+        // Assert
+        kinds.Should().NotBeEmpty();
+        kinds.Should().OnlyContain(x => x == StepKind.Write || x == StepKind.Decision);
+    }
+
+    [Test]
+    public static void Create_Accept_ConsumesTheInvitationItActedOn()
+    {
+        /* Arrange - the membership row becomes the record that they joined, so an invitation left behind would
+           list a member as invited to a group they are in. Unlike the Join edges, nothing else deletes it here:
+           the account is kept rather than discarded and recreated, so no cascade tidies it away. */
+        var definition = ChapterMembershipStateMachine.Create();
+
+        // Act
+        var steps = definition.Transitions
+            .Single(x => x.Trigger == ChapterMembershipTrigger.Accept)
+            .Steps
+            .Select(x => x.StepType);
+
+        // Assert
+        steps.Should().Contain(typeof(ConsumeInvitation));
     }
 
     [Test]

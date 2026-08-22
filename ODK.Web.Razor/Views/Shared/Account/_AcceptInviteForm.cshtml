@@ -1,0 +1,65 @@
+﻿@using ODK.Services.Authentication
+@using ODK.Services.Users.ViewModels
+@using ODK.Web.Common.Routes
+@model AcceptInviteFormViewModel
+@inject IOdkRoutes OdkRoutes
+@inject IPasswordPolicy PasswordPolicy
+
+@Html.HiddenFor(x => x.Token)
+
+<div class="form-group mb-3">
+    <label class="form-label">Email address</label>
+    <div class="form-control-plaintext">@Model.EmailAddress</div>
+    @await Html.PartialAsync(
+        "Components/_FormLabelSubtitle",
+        "The email address the invite was sent to")
+</div>
+
+<div class="row">
+    <div class="form-group mb-3 required col-md-6">
+        @Html.LabelFor(x => x.FirstName, new { @class = "form-label" })
+        @Html.TextBoxFor(x => x.FirstName, new { @class = "form-control" })
+        @Html.ValidationMessageFor(x => x.FirstName)
+    </div>
+
+    <div class="form-group mb-3 required col-md-6">
+        @Html.LabelFor(x => x.LastName, new { @class = "form-label" })
+        @Html.TextBoxFor(x => x.LastName, new { @class = "form-control" })
+        @Html.ValidationMessageFor(x => x.LastName)
+    </div>
+</div>
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.Password, new { @class = "form-label" })
+    @Html.PasswordFor(x => x.Password, new { @class = "form-control" })
+    @* The minimum length is runtime config, so the hint reads it from the policy rather than from an
+       annotation on the form - which is in a project that cannot see the attribute that emits one. *@
+    @await Html.PartialAsync(
+        "Components/_FormLabelSubtitle",
+        $"At least {PasswordPolicy.MinLength} characters")
+    @Html.ValidationMessageFor(x => x.Password)
+</div>
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.ConfirmPassword, new { @class = "form-label" })
+    @Html.PasswordFor(x => x.ConfirmPassword, new { @class = "form-control" })
+    @Html.ValidationMessageFor(x => x.ConfirmPassword)
+</div>
+
+@* Asked here rather than by the group's questions partial: accepting is the first thing the member does with
+   the account an admin raised for them, so it is where the policy has to be agreed to. *@
+<div class="mb-3 form-check required">
+    @* The data-val attributes are stated rather than inferred: model validation reads [Required] on a
+       non-nullable bool as satisfied by false, so nothing would make the box have to be ticked. *@
+    @Html.CheckBoxFor(x => x.PrivacyPolicy, new
+    {
+        @class = "form-check-input",
+        data_val = "true",
+        data_val_required = "The privacy policy must be accepted"
+    })
+
+    <label for="@Html.IdFor(x => x.PrivacyPolicy)" class="form-check-label">
+        I have read the <a href="@OdkRoutes.Site.Privacy" target="_blank">privacy policy</a>
+    </label>
+    @Html.ValidationMessageFor(x => x.PrivacyPolicy)
+</div>

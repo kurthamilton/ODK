@@ -29,6 +29,9 @@ internal abstract class PlatformRoutes
     /// <summary>Admin: create-venue page (also the POST target - it posts back to itself).</summary>
     public abstract string VenueCreate { get; }
 
+    /// <summary>Admin: the venues list, which is also where a completed venue create redirects.</summary>
+    public abstract string VenuesList { get; }
+
     /// <summary>Member-facing: the chapter/group contact page.</summary>
     public abstract string Contact { get; }
 
@@ -102,6 +105,8 @@ internal abstract class PlatformRoutes
 
         public override string VenueCreate => $"/my/groups/{_chapterId}/events/venues/new";
 
+        public override string VenuesList => $"/my/groups/{_chapterId}/events/venues";
+
         public override string Contact => $"/groups/{_slug}/contact";
 
         public override string EventsList => $"/groups/{_slug}/events";
@@ -156,6 +161,8 @@ internal abstract class PlatformRoutes
         public override string EventSettings => $"/{_shortName}/admin/events/settings";
 
         public override string VenueCreate => $"/{_shortName}/admin/events/venues/create";
+
+        public override string VenuesList => $"/{_shortName}/admin/events/venues";
 
         public override string Contact => $"/{_shortName}/contact";
 

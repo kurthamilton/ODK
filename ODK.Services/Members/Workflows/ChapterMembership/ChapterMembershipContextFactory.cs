@@ -22,6 +22,39 @@ public sealed class ChapterMembershipContextFactory : IChapterMembershipContextF
     }
 
     /// <summary>
+    /// An invited member accepting before their account can sign in. Synchronous and issues no query: the
+    /// account machine's context holds everything, since accepting activates the account in the same act.
+    /// </summary>
+    public ChapterMembershipContext CreateForAcceptInvite(AccountContext context)
+    {
+        var chapter = context.RequiredChapter;
+        var member = context.RequiredMember;
+        var properties = context.RequiredInvitation.Properties.ToArray();
+
+        return new ChapterMembershipContext
+        {
+            AdminMembers = context.AdminMembers,
+            /* The group's setting, which this member is exempt from either way: an invitation is approval, so
+               ApprovedOnJoining reads true whatever it says. Passed rather than hardcoded so the one rule
+               about approval lives in one place. */
+            ApprovalRequired = ApprovalIsRequired(context.OwnerSubscriptionFeatures, context.MembershipSettings),
+            ChapterId = chapter.Id,
+            ChapterProperties = context.ChapterProperties,
+            Invite = context.RequiredAcceptedInvite,
+            Member = member,
+            MemberCount = context.MemberCount,
+            MemberProperties = properties.Select(x => x.ToMemberProperty(member.Id)).ToArray(),
+            MembershipSettings = context.MembershipSettings,
+            NotificationSettings = context.NotificationSettings,
+            OwnerSubscription = context.OwnerSubscription,
+            OwnerSubscriptionFeatures = context.OwnerSubscriptionFeatures,
+            Platform = context.Request.Platform,
+            Properties = properties,
+            Request = ChapterServiceRequest.Create(chapter, context.Request)
+        };
+    }
+
+    /// <summary>
     /// An admin approving a queued member. Synchronous and issues no query: the securable is enforced by the
     /// wrapper that loads the member, so the service loads and this maps.
     /// </summary>

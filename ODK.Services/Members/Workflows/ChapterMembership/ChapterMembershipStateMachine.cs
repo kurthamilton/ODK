@@ -85,6 +85,23 @@ public static class ChapterMembershipStateMachine
                 ChapterMembershipState.Joined,
                 x => join(x))
 
+            /* An invited member accepting before their account can sign in, which is how an imported member
+               joins on Group Squirrel. The account machine runs this as a step of the transition that
+               activates the account, so - like SignUp above - it stages writes and stops there: that machine
+               owns the commit and the email, because an account activated without its membership would have
+               accepted nothing. No guard, for the same reason the Join edge out of Invited carries none: an
+               invitation is approval. */
+            .Transition(
+                ChapterMembershipState.Invited,
+                ChapterMembershipTrigger.Accept,
+                ChapterMembershipState.Joined,
+                x => x
+                    .Then<CheckChapterCapacity>()
+                    .Then<CheckMemberProperties>()
+                    .Then<AddMemberToChapter>()
+                    .Then<ConsumeInvitation>()
+                    .Then<RaiseNewMemberNotifications>())
+
             /* An admin letting a queued member in. Record, commit, then tell them: the approval has to be
                durable before an email says it happened. */
             .Transition(

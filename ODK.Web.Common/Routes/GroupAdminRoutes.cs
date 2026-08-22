@@ -203,6 +203,14 @@ public class GroupAdminRoutes
             Securable = ChapterAdminSecurable.MemberImport
         };
 
+    /// <summary>
+    /// Who the group has asked to join and is waiting on. Keyed to the import securable rather than to
+    /// Members: an invitation exists only because an import raised one, and the people it lists are not
+    /// members yet.
+    /// </summary>
+    public GroupAdminRoute MembersInvited(Chapter chapter)
+        => Members(chapter).Child("/invited", ChapterAdminSecurable.MemberImport);
+
     public GroupAdminRoute MembershipSettings(Chapter chapter)
         => Members(chapter).Child("/membership", ChapterAdminSecurable.MembershipSettings);
 
@@ -276,7 +284,8 @@ public class GroupAdminRoutes
                 new(Subscriptions(chapter), "Subscriptions"),
                 new(MembersEmail(chapter), "Bulk email"),
                 new(MemberApprovals(chapter), "Approvals"),
-                new(MembersImport(chapter), "Import")
+                new(MembersImport(chapter), "Import"),
+                new(MembersInvited(chapter), "Invited")
             ]
         },
         new GroupAdminNavSection

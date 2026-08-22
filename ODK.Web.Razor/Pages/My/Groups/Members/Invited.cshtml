@@ -1,0 +1,18 @@
+﻿@page "/my/groups/{chapterId:guid}/members/invited"
+@using ODK.Services.Members
+@using ODK.Web.Razor.Models.Components
+@model InvitedModel
+@inject IMemberAdminService MemberAdminService
+@{
+    Layout = "_GroupAdminLayout";
+    Model.Title = "Invited members";
+
+    var viewModel = await MemberAdminService.GetInvitedMembersViewModel(Model.MemberChapterAdminServiceRequest);
+}
+
+@await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
+{
+    Title = "Invited members",
+    BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_InvitedMembersContent", viewModel)</div>,
+    MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu")
+})

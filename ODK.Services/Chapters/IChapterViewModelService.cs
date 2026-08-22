@@ -13,6 +13,13 @@ public interface IChapterViewModelService
 
     Task<ChapterCreateViewModel> GetChapterCreateViewModel(IMemberServiceRequest request);
 
+    /// <summary>
+    /// The page an invitation link lands on, for a member who cannot sign in yet. The token is resolved here
+    /// rather than by the page, so the invitation, the member it names and the group's questions are read once.
+    /// </summary>
+    Task<GroupAcceptInvitePageViewModel> GetGroupAcceptInvitePage(
+        IChapterServiceRequest request, string? inviteToken);
+
     Task<GroupConversationsPageViewModel> GetGroupConversationsPage(IMemberChapterServiceRequest request, bool archived);
 
     Task<GroupConversationPageViewModel> GetGroupConversationPage(

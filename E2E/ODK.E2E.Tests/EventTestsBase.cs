@@ -123,6 +123,52 @@ public abstract class EventTestsBase : OdkPageTest
 
     [Test]
     [Category("Venues")]
+    public async Task VenuesList_NameHeadingClicked_ReversesTheRowOrder()
+    {
+        /* Arrange - two venues whose names sort unambiguously either way. The list is already rendered
+           ascending by name server-side, so what the sorting script is observably responsible for is the
+           click that flips it.
+
+           This is coverage for odk.lists.js rather than for venues: the same markup and script back the
+           members and payments admin tables, and the venues list is the only one of the three whose rows a
+           test can name. It earns its place because the failure it catches cannot be caught anywhere else -
+           the minifier once moved the script's declarations into a block its hoisted functions could not see,
+           which is a ReferenceError at runtime and perfectly valid syntax on the way there. Loading the page
+           was enough to break it: the default-sort call throws before any click handler is attached, so the
+           order simply never changes. */
+        var (owner, group) = await ProvisionOwnerChapter(GroupName());
+        var routes = RoutesFor(group);
+        await new LoginPage(Page).LogIn(owner.Email, owner.Password);
+
+        var suffix = Guid.NewGuid().ToString("N");
+        var (firstByName, lastByName) = ($"E2E Aaa {suffix}", $"E2E Zzz {suffix}");
+
+        var venueAdminPage = new VenueAdminPage(Page);
+        await venueAdminPage.CreateVenue(routes.VenueCreate, firstByName);
+        await venueAdminPage.CreateVenue(routes.VenueCreate, lastByName);
+
+        var table = new SortableTable(Page);
+        await table.Open(routes.VenuesList);
+
+        // Assert - both rows are there, ascending by name as rendered.
+        var ascending = (await table.RowIndexOf(firstByName), await table.RowIndexOf(lastByName));
+        ascending.Item1.Should().BeGreaterThanOrEqualTo(0, $"'{firstByName}' should be listed");
+        ascending.Item2.Should().BeGreaterThanOrEqualTo(0, $"'{lastByName}' should be listed");
+        ascending.Item1.Should().BeLessThan(ascending.Item2);
+
+        // Act
+        await table.SortBy("Name");
+
+        // Assert - the same rows, the other way up.
+        (await table.RowIndexOf(lastByName))
+            .Should()
+            .BeLessThan(
+                await table.RowIndexOf(firstByName),
+                "clicking the sorted column reverses it");
+    }
+
+    [Test]
+    [Category("Venues")]
     public async Task CreateVenue_AsOwner_CreatesVenue()
     {
         // Arrange - an owner with a published chapter on this platform.

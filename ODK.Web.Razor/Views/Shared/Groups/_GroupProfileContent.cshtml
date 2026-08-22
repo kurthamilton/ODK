@@ -19,6 +19,7 @@
                     ChapterName = Model.Chapter.GetDisplayName(Model.Platform),
                     ChapterProperties = Model.ChapterProperties,
                     ChapterPropertyOptions = Model.ChapterPropertyOptions,
+                    SigningUp = false,
                     Properties = Model.ChapterProperties
                         .Where(x => !x.ApplicationOnly)
                         .OrderBy(x => x.DisplayOrder)

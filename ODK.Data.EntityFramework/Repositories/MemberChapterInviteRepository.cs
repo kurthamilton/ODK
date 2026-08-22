@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ODK.Core.Members;
 using ODK.Data.Core.Deferred;
+using ODK.Data.Core.Members;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
 
@@ -28,4 +29,16 @@ public class MemberChapterInviteRepository : WriteRepositoryBase<MemberChapterIn
     public IDeferredQuerySingleOrDefault<MemberChapterInvite> GetByToken(string token) => Set()
         .Where(x => x.Token == token)
         .DeferredSingleOrDefault();
+
+    public IDeferredQueryMultiple<MemberChapterInviteDto> GetDtosByChapterId(Guid chapterId) =>
+        (from invite in Set()
+         join member in Set<Member>() on invite.MemberId equals member.Id
+         where invite.ChapterId == chapterId
+         orderby invite.CreatedUtc
+         select new MemberChapterInviteDto
+         {
+             CreatedUtc = invite.CreatedUtc,
+             Member = member
+         })
+        .DeferredMultiple();
 }

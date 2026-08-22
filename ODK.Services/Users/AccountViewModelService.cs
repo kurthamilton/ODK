@@ -90,7 +90,10 @@ public class AccountViewModelService : IAccountViewModelService
                 chapterProperties,
                 chapterPropertyOptions,
                 null,
-                []),
+                [],
+                /* Signing up on this platform is joining the chapter, so an anonymous visitor here is raising
+                   an account. A signed-in member is joining a second chapter and already has one. */
+                signingUp: request.CurrentMemberOrDefault == null),
             Texts = chapterTexts
         };
     }
@@ -153,7 +156,8 @@ public class AccountViewModelService : IAccountViewModelService
                 chapterProperties,
                 chapterPropertyOptions,
                 currentMember,
-                memberProperties)
+                memberProperties,
+                signingUp: false)
         };
     }
 
@@ -235,7 +239,8 @@ public class AccountViewModelService : IAccountViewModelService
         IReadOnlyCollection<ChapterProperty> chapterProperties,
         IReadOnlyCollection<ChapterPropertyOption> chapterPropertyOptions,
         Member? member,
-        IReadOnlyCollection<MemberProperty> memberProperties)
+        IReadOnlyCollection<MemberProperty> memberProperties,
+        bool signingUp)
     {
         var memberPropertyDictionary = memberProperties.ToDictionary(x => x.ChapterPropertyId);
 
@@ -244,6 +249,7 @@ public class AccountViewModelService : IAccountViewModelService
             ChapterName = chapter.GetDisplayName(platform),
             ChapterProperties = chapterProperties,
             ChapterPropertyOptions = chapterPropertyOptions,
+            SigningUp = signingUp,
             Properties = chapterProperties.Select(x => new ChapterProfileFormPropertyViewModel
             {
                 ChapterPropertyId = x.Id,

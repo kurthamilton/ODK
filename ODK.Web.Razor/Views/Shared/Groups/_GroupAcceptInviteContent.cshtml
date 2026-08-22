@@ -1,0 +1,84 @@
+﻿@using ODK.Services.Chapters.ViewModels
+@using ODK.Services.Users.ViewModels
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Components
+@model GroupAcceptInvitePageViewModel
+@inject IOdkRoutes OdkRoutes
+
+@if (Model.InvitedMemberHasAccount)
+{
+    @* Signing back in returns them here, and this page hands a signed-in visitor on to the join page. *@
+    var returnUrl = $"{Context.Request.Path}{Context.Request.QueryString}";
+
+    <p>
+        You already have an account, so sign in to accept your invitation.
+    </p>
+
+    @* data-invite-signin is an E2E selector - no CSS or script reads it. The header renders a "Sign in" link
+       of its own on every anonymous page, so a test matching on the text finds two. *@
+    <a class="btn btn-primary" href="@OdkRoutes.Account.Login(chapter: null, returnUrl)"
+       data-invite-signin>Sign in</a>
+
+    return;
+}
+
+@if (Model.Form == null)
+{
+    <div class="alert alert-danger">
+        This invitation link is no longer valid. It may already have been used.
+    </div>
+
+    <a class="btn btn-primary" href="@OdkRoutes.Groups.Group(Model.Chapter)">Go to the group</a>
+
+    return;
+}
+
+@if (!Model.RegistrationOpen)
+{
+    <div class="alert alert-danger">
+        This group is currently not receiving any new members
+    </div>
+
+    return;
+}
+
+@if (!string.IsNullOrEmpty(Model.Texts?.RegisterText))
+{
+    @await Html.PartialAsync("Components/_Panel", new PanelViewModel
+    {
+        Class = "mb-3",
+        TitleContentFunc = @<h3>Join us</h3>,
+        BodyContentFunc =
+            @<div>
+                @Html.Raw(Model.Texts.RegisterText)
+            </div>
+    })
+}
+
+<section class="section">
+    <form method="post">
+        @Html.AntiForgeryToken()
+
+        <h3 class="content-heading">Your account</h3>
+        @await Html.PartialAsync("Account/_AcceptInviteForm", Model.Form)
+
+        @if (Model.Properties.Count > 0)
+        {
+            <div class="mt-5">
+                <h3 class="content-heading">About you</h3>
+                <p class="text-muted">Questions from the group</p>
+                @await Html.PartialAsync("Account/_ChapterProfileForm", new ChapterProfileFormViewModel
+                {
+                    ChapterName = Model.Chapter.GetDisplayName(Model.Platform),
+                    ChapterProperties = Model.Properties,
+                    ChapterPropertyOptions = Model.PropertyOptions,
+                    SigningUp = false
+                })
+            </div>
+        }
+
+        <button class="btn btn-primary" type="submit">
+            Accept invitation
+        </button>
+    </form>
+</section>

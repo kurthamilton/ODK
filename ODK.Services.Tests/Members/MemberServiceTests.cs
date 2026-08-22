@@ -20,6 +20,7 @@ using ODK.Core.Platforms;
 using ODK.Core.Referrals;
 using ODK.Core.Subscriptions;
 using ODK.Core.Web;
+using ODK.Services.Authentication;
 using ODK.Services.Authentication.OAuth;
 using ODK.Services.Authorization;
 using ODK.Services.Emails;
@@ -763,6 +764,209 @@ public static class MemberServiceTests
         context.Set<MemberChapter>().Any(x => x.MemberId == member.Id).Should().BeFalse();
     }
 
+    [Test]
+    public static async Task AcceptInvitation_InvitedMember_ActivatesTheAccountAndJoinsTheGroup()
+    {
+        /* Arrange - an imported member following their invitation link on the platform whose join page needs an
+           account that can sign in. Holding the token proves they read mail at the invited address, which is
+           the only thing an activation email establishes, so the one submit does both. */
+        using var context = CreateMockOdkContext();
+        SeedDefaultSiteSubscription(context);
+
+        var owner = context.CreateMember();
+        var chapter = context.CreateChapter(owner: owner, siteSubscription: context.CreateSiteSubscription());
+
+        var invited = context.CreateMember(activated: false, afterCreate: x =>
+        {
+            x.EmailAddress = "invited@example.com";
+            x.FirstName = "Imported";
+            x.LastName = "Name";
+        });
+        context.Create(new MemberActivationToken
+        {
+            ActivationToken = "activation-token",
+            MemberId = invited.Id
+        });
+        CreateInvite(context, chapter, invited, "invite-token");
+
+        var emailService = new Mock<IMemberEmailService>();
+        var service = CreateMemberService(context, emailService.Object);
+
+        // Act
+        var result = await service.AcceptInvitation(
+            CreateChapterRequest(chapter, PlatformType.Default),
+            CreateInvitationAcceptModel("invite-token", firstName: "Confirmed"));
+
+        // Assert
+        result.Success.Should().BeTrue();
+
+        var member = context.Set<Member>().Single(x => x.Id == invited.Id);
+        member.Activated.Should().BeTrue();
+        member.FirstName.Should().Be("Confirmed");
+
+        context.Set<MemberPassword>().Should().ContainSingle(x => x.MemberId == invited.Id);
+
+        // An invitation is approval, so the group that asked them in is not asked to approve them.
+        context.Set<MemberChapter>()
+            .Should()
+            .ContainSingle(x => x.MemberId == invited.Id && x.ChapterId == chapter.Id)
+            .Which
+            .Approved
+            .Should()
+            .BeTrue();
+
+        // Both single-use records are spent: the invitation, and the activation it stood in for.
+        context.Set<MemberChapterInvite>().Any(x => x.MemberId == invited.Id).Should().BeFalse();
+        context.Set<MemberActivationToken>().Any(x => x.MemberId == invited.Id).Should().BeFalse();
+    }
+
+    [Test]
+    public static async Task AcceptInvitation_GroupApprovesNewMembers_StillSkipsApproval()
+    {
+        // Arrange - the group asked them in, so approving them would be asking it to confirm its own invitation.
+        using var context = CreateMockOdkContext();
+        SeedDefaultSiteSubscription(context);
+
+        var owner = context.CreateMember();
+        var chapter = context.CreateChapter(owner: owner, siteSubscription: context.CreateSiteSubscription());
+        context.Create(new ChapterMembershipSettings
+        {
+            ApproveNewMembers = true,
+            ChapterId = chapter.Id,
+            Enabled = true
+        });
+
+        var invited = context.CreateMember(activated: false, afterCreate: x =>
+            x.EmailAddress = "invited@example.com");
+        context.Create(new MemberActivationToken
+        {
+            ActivationToken = "activation-token",
+            MemberId = invited.Id
+        });
+        CreateInvite(context, chapter, invited, "invite-token");
+
+        var service = CreateMemberService(
+            context,
+            new Mock<IMemberEmailService>().Object,
+            authorizationService: CreateMockAuthorizationService(chapterHasAccess: true));
+
+        // Act
+        var result = await service.AcceptInvitation(
+            CreateChapterRequest(chapter, PlatformType.Default),
+            CreateInvitationAcceptModel("invite-token"));
+
+        // Assert
+        result.Success.Should().BeTrue();
+        context.Set<MemberChapter>()
+            .Single(x => x.MemberId == invited.Id)
+            .Approved
+            .Should()
+            .BeTrue();
+    }
+
+    [Test]
+    public static async Task AcceptInvitation_InvitationToAnotherGroup_FailsWithoutWritingAnything()
+    {
+        /* Arrange - the token names which invitation is being spent, and the page it was posted to names which
+           group. A token for somewhere else is a link that is not for this page. */
+        using var context = CreateMockOdkContext();
+        SeedDefaultSiteSubscription(context);
+
+        var owner = context.CreateMember();
+        var chapter = context.CreateChapter(owner: owner, siteSubscription: context.CreateSiteSubscription());
+        var other = context.CreateChapter(owner: owner, siteSubscription: context.CreateSiteSubscription());
+
+        var invited = context.CreateMember(activated: false, afterCreate: x =>
+            x.EmailAddress = "invited@example.com");
+        CreateInvite(context, other, invited, "invite-token");
+
+        var service = CreateMemberService(context, new Mock<IMemberEmailService>().Object);
+
+        // Act
+        var result = await service.AcceptInvitation(
+            CreateChapterRequest(chapter, PlatformType.Default),
+            CreateInvitationAcceptModel("invite-token"));
+
+        // Assert
+        result.Success.Should().BeFalse();
+        context.Set<Member>().Single(x => x.Id == invited.Id).Activated.Should().BeFalse();
+        context.Set<MemberChapter>().Any(x => x.MemberId == invited.Id).Should().BeFalse();
+        context.Set<MemberChapterInvite>().Any(x => x.MemberId == invited.Id).Should().BeTrue();
+    }
+
+    [Test]
+    public static async Task AcceptInvitation_MemberAlreadyActivated_FailsAndTellsThemToSignIn()
+    {
+        /* Arrange - the machine has no AcceptInvite edge out of Activated, and the page shows such a member a
+           sign-in prompt rather than this form, so getting here means they activated between the two requests.
+           What matters is that the wording sends them somewhere useful rather than reporting the trigger. */
+        using var context = CreateMockOdkContext();
+        SeedDefaultSiteSubscription(context);
+
+        var owner = context.CreateMember();
+        var chapter = context.CreateChapter(owner: owner, siteSubscription: context.CreateSiteSubscription());
+
+        var invited = context.CreateMember(activated: true, afterCreate: x =>
+            x.EmailAddress = "invited@example.com");
+        CreateInvite(context, chapter, invited, "invite-token");
+
+        var service = CreateMemberService(context, new Mock<IMemberEmailService>().Object);
+
+        // Act
+        var result = await service.AcceptInvitation(
+            CreateChapterRequest(chapter, PlatformType.Default),
+            CreateInvitationAcceptModel("invite-token"));
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.Message.Should().Contain("Sign in");
+        context.Set<MemberChapter>().Any(x => x.MemberId == invited.Id).Should().BeFalse();
+    }
+
+    [Test]
+    public static async Task AcceptInvitation_RefusedPassword_LeavesTheInvitationOutstanding()
+    {
+        /* Arrange - the password check is the first step, so a refusal has to leave the account exactly as it
+           was: still unactivated, and still holding the invitation to try again with. */
+        using var context = CreateMockOdkContext();
+        SeedDefaultSiteSubscription(context);
+
+        var owner = context.CreateMember();
+        var chapter = context.CreateChapter(owner: owner, siteSubscription: context.CreateSiteSubscription());
+
+        var invited = context.CreateMember(activated: false, afterCreate: x =>
+            x.EmailAddress = "invited@example.com");
+        context.Create(new MemberActivationToken
+        {
+            ActivationToken = "activation-token",
+            MemberId = invited.Id
+        });
+        CreateInvite(context, chapter, invited, "invite-token");
+
+        var passwordService = CreateMockMemberPasswordService();
+        passwordService
+            .Setup(x => x.Validate(It.IsAny<string>()))
+            .ReturnsAsync(ServiceResult.Failure("Password is too short"));
+
+        var service = CreateMemberService(
+            context,
+            new Mock<IMemberEmailService>().Object,
+            memberPasswordService: passwordService);
+
+        // Act
+        var result = await service.AcceptInvitation(
+            CreateChapterRequest(chapter, PlatformType.Default),
+            CreateInvitationAcceptModel("invite-token"));
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.Message.Should().Be("Password is too short");
+
+        context.Set<Member>().Single(x => x.Id == invited.Id).Activated.Should().BeFalse();
+        context.Set<MemberChapterInvite>().Any(x => x.MemberId == invited.Id).Should().BeTrue();
+        context.Set<MemberActivationToken>().Any(x => x.MemberId == invited.Id).Should().BeTrue();
+    }
+
     private static IChapterServiceRequest CreateChapterRequest(
         Chapter chapter, PlatformType platform = PlatformType.DrunkenKnitwits) =>
         Mock.Of<IChapterServiceRequest>(x =>
@@ -779,6 +983,27 @@ public static class MemberServiceTests
         LastName = "Member",
         ImageData = [1, 2, 3]
     };
+
+    private static InvitationAcceptModel CreateInvitationAcceptModel(
+        string token, string firstName = "Invited") => new InvitationAcceptModel
+    {
+        FirstName = firstName,
+        LastName = "Member",
+        Password = "a-good-password",
+        Properties = [],
+        Token = token
+    };
+
+    private static MemberChapterInvite CreateInvite(
+        MockOdkContext context, Chapter chapter, Member member, string token) => context.Create(
+        new MemberChapterInvite
+        {
+            ChapterId = chapter.Id,
+            CreatedUtc = DateTime.UtcNow,
+            Id = Guid.NewGuid(),
+            MemberId = member.Id,
+            Token = token
+        });
 
     private static Referral CreateReferral(MockOdkContext context, bool completed = false)
     {
@@ -827,7 +1052,8 @@ public static class MemberServiceTests
         IMemberEmailService memberEmailService,
         IEmailVerifier? emailVerifier = null,
         IAuthorizationService? authorizationService = null,
-        Mock<IRecaptchaService>? recaptchaService = null)
+        Mock<IRecaptchaService>? recaptchaService = null,
+        Mock<IMemberPasswordService>? memberPasswordService = null)
     {
         var memberImageService = new Mock<IMemberImageService>();
         memberImageService
@@ -843,6 +1069,8 @@ public static class MemberServiceTests
         var subscriptionWriter = new MemberChapterSubscriptionWriter(unitOfWork);
         var siteSubscriptionWriter = new MemberSiteSubscriptionWriter(unitOfWork);
         var resolvedRecaptchaService = (recaptchaService ?? CreateMockRecaptchaService()).Object;
+        var resolvedMemberPasswordService =
+            (memberPasswordService ?? CreateMockMemberPasswordService()).Object;
         var emailValidationService = new EmailValidationService(emailVerifier ?? new InconclusiveEmailVerifier());
         var loggingService = Mock.Of<ILoggingService>();
         var geolocationService = Mock.Of<IGeolocationService>();
@@ -864,7 +1092,8 @@ public static class MemberServiceTests
             geolocationService,
             distanceUnitFactory,
             topicService,
-            oauthProviderFactory);
+            oauthProviderFactory,
+            resolvedMemberPasswordService);
 
         return new MemberService(
             unitOfWork,
@@ -902,7 +1131,8 @@ public static class MemberServiceTests
         IGeolocationService geolocationService,
         IDistanceUnitFactory distanceUnitFactory,
         ITopicService topicService,
-        IOAuthProviderFactory oauthProviderFactory)
+        IOAuthProviderFactory oauthProviderFactory,
+        IMemberPasswordService memberPasswordService)
     {
         var membership = ChapterMembershipStateMachine.Create();
         var account = AccountStateMachine.Create();
@@ -922,6 +1152,7 @@ public static class MemberServiceTests
             .AddSingleton(distanceUnitFactory)
             .AddSingleton(topicService)
             .AddSingleton(oauthProviderFactory)
+            .AddSingleton(memberPasswordService)
             .AddSingleton(membership)
             .AddSingleton(account)
             .AddScoped<IChapterMembershipContextFactory, ChapterMembershipContextFactory>()
@@ -962,6 +1193,24 @@ public static class MemberServiceTests
                 It.IsAny<SiteFeatureType>()))
             .Returns(chapterHasAccess);
         return authorizationService.Object;
+    }
+
+    private static Mock<IMemberPasswordService> CreateMockMemberPasswordService()
+    {
+        var memberPasswordService = new Mock<IMemberPasswordService>();
+        memberPasswordService
+            .Setup(x => x.Validate(It.IsAny<string>()))
+            .ReturnsAsync(ServiceResult.Successful());
+        memberPasswordService
+            .Setup(x => x.Apply(It.IsAny<MemberPassword?>(), It.IsAny<string>()))
+            .Returns((MemberPassword? existing, string password) => existing ?? new MemberPassword
+            {
+                Algorithm = "test",
+                Hash = password,
+                Iterations = 1,
+                Salt = "salt"
+            });
+        return memberPasswordService;
     }
 
     private static Mock<IRecaptchaService> CreateMockRecaptchaService()

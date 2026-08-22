@@ -1,8 +1,10 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using FluentAssertions;
 using ODK.Core.Workflows;
 using NUnit.Framework;
 using ODK.Services.Members.Workflows.Account;
+using ODK.Services.Members.Workflows.Account.Steps;
 
 namespace ODK.Services.Tests.Members.Workflows.Account;
 
@@ -114,6 +116,51 @@ public static class AccountStateMachineTests
         // Assert
         firstKinds.Should().HaveCount(2);
         firstKinds.Should().OnlyContain(x => x == StepKind.Decision);
+    }
+
+    [Test]
+    public static void Create_AcceptInvite_OnlyLeavesAnAccountThatCannotSignIn()
+    {
+        /* Arrange - an invitation is accepted by giving the account an import raised its first password, so the
+           only state it can be fired from is the one that has no password. An account that can already sign in
+           accepts by signing in and using the group's join page, which is another machine's business. */
+        var definition = AccountStateMachine.Create();
+
+        // Act
+        var result = definition.Transitions
+            .Where(x => x.Trigger == AccountTrigger.AcceptInvite)
+            .Select(x => $"{x.From} -> {x.To}: {x.Label()}")
+            .ToArray();
+
+        // Assert
+        result.Should().BeEquivalentTo("Registered -> Activated: AcceptInvite");
+    }
+
+    [Test]
+    public static void Create_AcceptInvite_ChecksThePasswordFirstAndJoinsBeforeTheCommit()
+    {
+        /* Arrange - the same two rules the activate edges follow, for the same reasons: a refused password has
+           to leave the account exactly as it was, and the membership has to be in the same commit as the
+           activation, because an account activated without it would have accepted nothing. */
+        var definition = AccountStateMachine.Create();
+
+        // Act
+        var steps = definition.Transitions
+            .Single(x => x.Trigger == AccountTrigger.AcceptInvite)
+            .Steps
+            .ToArray();
+
+        // Assert
+        steps.First().Kind.Should().Be(StepKind.Decision);
+
+        var commit = Array.FindIndex(steps, x => x.Kind == StepKind.Commit);
+        commit.Should().BeGreaterThan(0);
+
+        var joins = Array.FindIndex(steps, x => x.StepType == typeof(AcceptTheInvitation));
+        joins.Should().BeInRange(1, commit - 1);
+
+        // And the group is only told once the membership it is told about is durable.
+        steps.Skip(commit + 1).Should().OnlyContain(x => x.Kind == StepKind.ExternalEffect);
     }
 
     [Test]

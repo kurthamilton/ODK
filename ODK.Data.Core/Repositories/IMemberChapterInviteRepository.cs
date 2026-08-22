@@ -1,5 +1,6 @@
 ﻿using ODK.Core.Members;
 using ODK.Data.Core.Deferred;
+using ODK.Data.Core.Members;
 
 namespace ODK.Data.Core.Repositories;
 
@@ -24,4 +25,11 @@ public interface IMemberChapterInviteRepository : IWriteRepository<MemberChapter
     /// The invitation an emailed link identifies, for a member who cannot sign in yet.
     /// </summary>
     IDeferredQuerySingleOrDefault<MemberChapterInvite> GetByToken(string token);
+
+    /// <summary>
+    /// Every outstanding invitation for the chapter with the member it names, oldest first - the admin list of
+    /// who has been invited and has yet to accept. Projected in one query because the member cannot be batched
+    /// with the query that finds the invitation, and read as a DTO so the token stays behind.
+    /// </summary>
+    IDeferredQueryMultiple<MemberChapterInviteDto> GetDtosByChapterId(Guid chapterId);
 }

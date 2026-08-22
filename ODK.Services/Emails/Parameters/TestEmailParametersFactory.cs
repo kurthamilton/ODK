@@ -116,10 +116,12 @@ public class TestEmailParametersFactory : ITestEmailParametersFactory
             {
                 Url = urlProvider.ActivateAccountUrl(chapter, "TEST")
             },
-            EmailType.MemberImportInvite => new MemberImportInviteParameters
-            {
-                Url = urlProvider.JoinUrl()
-            },
+            EmailType.MemberImportInvite => chapter != null
+                ? new MemberImportInviteParameters
+                {
+                    Url = urlProvider.AcceptInviteUrl(chapter, "TEST")
+                }
+                : null,
             EmailType.NewMember => chapter != null
                 ? new NewMemberParameters
                 {

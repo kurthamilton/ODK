@@ -7,6 +7,12 @@ namespace ODK.Services.Members.Workflows.ChapterMembership;
 public interface IChapterMembershipContextFactory
 {
     /// <summary>
+    /// For an invited member accepting before their account can sign in. Needs no query for the same reason as
+    /// <see cref="CreateForGroupSignUp"/>: the account machine's context already holds everything.
+    /// </summary>
+    ChapterMembershipContext CreateForAcceptInvite(AccountContext context);
+
+    /// <summary>
     /// For an admin approving a queued member. Needs no query: the service has already loaded the member
     /// through the wrapper that enforces the securable.
     /// </summary>

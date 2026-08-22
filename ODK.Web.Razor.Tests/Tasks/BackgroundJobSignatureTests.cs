@@ -40,8 +40,6 @@ public static class BackgroundJobSignatureTests
         new("ODK.Services.Events.EventService", "NotifyWaitlistJob", typeof(JobRequest), typeof(Guid)),
         new("ODK.Services.Events.IEventService", "CompleteEventTicketPurchase", typeof(Guid), typeof(Guid)),
         new("ODK.Services.Members.IMemberLocaleService", "UpdateLocale", typeof(Guid), typeof(string)),
-        new("ODK.Services.Members.MemberAdminService", "SendImportActivationEmailJob",
-            typeof(JobRequest), typeof(Guid), typeof(Guid)),
         new("ODK.Services.Members.MemberAdminService", "SendImportInviteEmailJob",
             typeof(JobRequest), typeof(Guid), typeof(Guid)),
         new("ODK.Services.Payments.PaymentService", "EnsureProductExistsJob", typeof(JobRequest)),

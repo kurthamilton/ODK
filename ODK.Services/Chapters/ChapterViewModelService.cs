@@ -25,6 +25,7 @@ using ODK.Services.Geolocation;
 using ODK.Services.Logging;
 using ODK.Services.SocialMedia;
 using ODK.Services.SocialMedia.ViewModels;
+using ODK.Services.Users.ViewModels;
 
 namespace ODK.Services.Chapters;
 
@@ -272,6 +273,67 @@ public class ChapterViewModelService : IChapterViewModelService
             Platform = platform,
             TopicGroups = topicGroups,
             Topics = topics
+        };
+    }
+
+    public async Task<GroupAcceptInvitePageViewModel> GetGroupAcceptInvitePage(
+        IChapterServiceRequest request, string? inviteToken)
+    {
+        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMemberOrDefault);
+
+        var (
+            isAdmin,
+            hasQuestions,
+            properties,
+            propertyOptions,
+            texts,
+            chapterPages,
+            invite) = await _unitOfWork.RunAsync(
+            x => currentMember != null
+                ? x.ChapterAdminMemberRepository.IsAdmin(platform, chapter.Id, currentMember.Id)
+                : new DefaultDeferredQueryAny(false),
+            x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
+            x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterPropertyOptionRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterTextsRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterPageRepository.GetByChapterId(chapter.Id),
+            x => !string.IsNullOrEmpty(inviteToken)
+                ? x.MemberChapterInviteRepository.GetByToken(inviteToken)
+                : new DefaultDeferredQuerySingleOrDefault<MemberChapterInvite>());
+
+        /* A second round-trip only when there is an invitation to resolve: the member it names cannot be
+           batched with the query that finds it. An invitation to another group is treated as no invitation
+           rather than refused - the link is simply not for this page. */
+        var invitedMember = invite != null && invite.ChapterId == chapter.Id
+            ? await _unitOfWork.MemberRepository.GetByIdOrDefault(invite.MemberId).Run()
+            : null;
+
+        return new GroupAcceptInvitePageViewModel
+        {
+            Chapter = chapter,
+            ChapterPages = chapterPages,
+            CurrentMember = currentMember,
+            /* Only an invitation naming an account that has yet to be activated has a form to fill: one naming
+               an account that can sign in is accepted by signing in, and no invitation at all is a dead link. */
+            Form = invitedMember is { Activated: false }
+                ? new AcceptInviteFormViewModel
+                {
+                    EmailAddress = invitedMember.EmailAddress,
+                    FirstName = invitedMember.FirstName,
+                    LastName = invitedMember.LastName,
+                    Token = inviteToken ?? string.Empty
+                }
+                : null,
+            HasProfiles = properties.Any(),
+            HasQuestions = hasQuestions,
+            InvitedMemberHasAccount = invitedMember?.Activated == true,
+            IsAdmin = isAdmin,
+            IsMember = currentMember?.IsMemberOf(chapter.Id) == true,
+            Platform = platform,
+            Properties = properties,
+            PropertyOptions = propertyOptions,
+            RegistrationOpen = chapter.IsOpenForRegistration(),
+            Texts = texts
         };
     }
 
