@@ -198,9 +198,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
                 }));
         }
 
-        var chapterLimit = memberSubscriptionDto != null
-            ? memberSubscriptionDto.SiteSubscription.GroupLimit
-            : SiteSubscription.DefaultGroupLimit;
+        var siteSubscription = memberSubscriptionDto?.SiteSubscription;
+        var chapterLimit = siteSubscription.GroupLimitOrDefault();
 
         if (memberChapters.Count >= chapterLimit)
         {
