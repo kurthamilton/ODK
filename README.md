@@ -113,21 +113,54 @@ To compile, run `Scripts/run.build.css.bat` (or `npm run build:css` from `ODK.We
 `wwwroot/scss` imports Bootstrap's own Sass sources out of `wwwroot/lib`, so the compile needs the
 client-side libraries in place. `build:css` restores them first, so there is no order to remember.
 
+## CSS and JavaScript bundles
+The layouts reference five bundles — one script bundle for every page, one for the admin area, one loaded in
+`<head>`, one carrying the Ace editor, and one stylesheet bundle of the vendored CSS.
+`ODK.Web.Razor/build/build-bundles.mjs` builds them with [esbuild](https://esbuild.github.io/), and `BUNDLES`
+at the top of that script is the whole definition of what goes into each one.
+
+Unlike `wwwroot/lib`, the outputs are **committed** — the same treatment the compiled CSS gets — so a clean
+checkout serves the app before anything has run. They are still generated: don't edit them by hand.
+
+The csproj runs the build after the client-library copy on every build, so any full build produces current
+bundles. If `dotnet watch` does not pick up a script edit — it may treat one as a static-asset refresh rather
+than a rebuild — run the bundle build yourself and hard-refresh, the way editing a `.scss` needs
+`Scripts/run.build.css.bat`:
+
+```
+npm run build:bundles
+```
+
+Two things about it are deliberate and easy to undo by accident:
+
+- **It concatenates and then minifies; it does not use esbuild's `--bundle`.** `--bundle` resolves a module
+  graph and gives the result a scope. The vendored libraries are UMD builds, which inside a CommonJS wrapper
+  assign to `module.exports` instead of `window` — so `window.bootstrap` would never appear. And
+  `odk.global.js` declares a bare top-level `function setImageError` that `_MemberAvatar.cshtml` calls from an
+  inline `onerror=`; in a scope, that silently stops working.
+- **There is no watch mode**, for the same reason there is no Sass watcher: a process rewriting `wwwroot`
+  while MSBuild is evaluating the project takes `dotnet watch` down with it.
+
+Relative `url()` references in the vendored stylesheets are rewritten to absolute paths as they are
+concatenated, because the bundle is served from a different directory than the file the reference was written
+in — Font Awesome asks for `../webfonts/…` from `/lib/font-awesome/css/`, which resolves to nothing from
+`/css/`.
+
 ## Client-side libraries
 The browser libraries the app serves — Bootstrap, Font Awesome, TinyMCE, flatpickr and the rest — come from
 npm, and `ODK.Web.Razor/build/copy-client-libs.mjs` copies them into `wwwroot/lib`.
 
 `wwwroot/lib` is **generated and gitignored**. Nothing in it should be edited by hand; it is rebuilt whenever
-a package version changes. The `RestoreClientLibraries` target in the csproj runs the copy on every build, so
-a plain `dotnet build`, `dotnet publish` or `Scripts/run.app.bat` produces a working `wwwroot/lib` with no
-extra command. To run it on its own:
+a package version changes. The `RestoreClientLibraries` target in the csproj runs the copy on every build (and
+then the bundle build below), so a plain `dotnet build`, `dotnet publish` or `Scripts/run.app.bat` produces a
+working `wwwroot/lib` with no extra command. To run it on its own:
 
 ```
 npm run build:lib
 ```
 
 `COPIES`, at the top of the copy script, maps each package's npm layout onto the `lib/<library>/<file>` paths
-the views and the bundles in `Program.cs` reference — and is also the list of what gets served, since a file
+the views and `build/build-bundles.mjs` reference — and is also the list of what gets served, since a file
 it does not name never reaches the deploy. Adding a library means an `npm install --save-exact` plus a line or
 two in `COPIES`. A path that moves in an upgrade fails the copy, naming every path it could not find.
 
