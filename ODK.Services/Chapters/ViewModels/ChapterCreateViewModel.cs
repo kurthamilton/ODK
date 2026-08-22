@@ -7,11 +7,9 @@ namespace ODK.Services.Chapters.ViewModels;
 
 public class ChapterCreateViewModel
 {
-    public required int ChapterCount { get; init; }
-
-    public required int? ChapterLimit { get; init; }
-
     public required IReadOnlyCollection<Country> Countries { get; init; }
+
+    public required GroupLimitViewModel GroupLimit { get; init; }
 
     public required Member Member { get; init; }
 

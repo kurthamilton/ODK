@@ -260,13 +260,16 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.MemberTopicRepository.GetByMemberId(currentMember.Id),
             x => x.MemberLocationRepository.GetByMemberIdOrDefault(currentMember.Id));
 
+        var siteSubscription = memberSubscriptionDto?.SiteSubscription;
+
         return new ChapterCreateViewModel
         {
-            ChapterCount = current.Count,
-            ChapterLimit = memberSubscriptionDto?.SiteSubscription != null
-                ? memberSubscriptionDto.SiteSubscription.GroupLimit
-                : SiteSubscription.DefaultGroupLimit,
             Countries = countries,
+            GroupLimit = new GroupLimitViewModel
+            {
+                Count = current.Count,
+                Limit = siteSubscription.GroupLimitOrDefault()
+            },
             Member = currentMember,
             MemberLocation = memberLocation,
             MemberTopics = memberTopics,

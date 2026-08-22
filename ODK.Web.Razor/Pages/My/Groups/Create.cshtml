@@ -1,7 +1,6 @@
 ﻿@page "/my/groups/new"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
-@using ODK.Core.Utils
 @using ODK.Services.Chapters
 @using ODK.Web.Razor.Models.Chapters
 @using ODK.Web.Razor.Models.Components
@@ -26,32 +25,10 @@
     },
     ContentFunc = 
         @<div>
-            @if (viewModel.ChapterCount >= viewModel.ChapterLimit)
-            {
-                <div class="alert alert-danger">
-                    You cannot create another group as you have reached your group limit of @viewModel.ChapterLimit.
-                </div>
+            @await Html.PartialAsync("Groups/_GroupLimit", viewModel.GroupLimit)
 
-                @* Not a feature gate - the subscription allows groups, there are just none left - so this
-                   doesn't go through _RestrictedFeature. It's still the same upgrade action, so it uses the
-                   shared button rather than a second hand-rolled one. *@
-                <div class="mt-3">
-                    @await Html.PartialAsync("Components/_UpgradeButton", new UpgradeButtonViewModel
-                    {
-                        Chapter = null,
-                        Platform = Model.Platform
-                    })
-                </div>
-            }
-            else
+            @if (viewModel.GroupLimit.CanCreate)
             {
-                if (viewModel.ChapterLimit != null && viewModel.ChapterCount >= viewModel.ChapterLimit.Value - 1)
-                {
-                    <div class="alert alert-warning mb-3">
-                        You have @viewModel.ChapterCount of @viewModel.ChapterLimit @StringUtils.Pluralise(viewModel.ChapterLimit.Value, "group").
-                    </div>
-                }
-
                 <form method="post">
 
                     @await Html.PartialAsync("Groups/_GroupCreateForm", new CreateChapterFormViewModel
@@ -65,7 +42,7 @@
                         Topics = viewModel.Topics
                     })
                 </form>
-            }                        
+            }
         </div>    
 })
 
