@@ -250,14 +250,12 @@ public class ChapterViewModelService : IChapterViewModelService
         var (
             current,
             memberSubscriptionDto,
-            countries,
             topicGroups,
             topics,
             memberTopics,
             memberLocation) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetByOwnerId(platform, currentMember.Id),
             x => x.MemberSiteSubscriptionRecordRepository.GetDtoByMemberId(currentMember.Id),
-            x => x.CountryRepository.GetAll(),
             x => x.TopicGroupRepository.GetAll(),
             x => x.TopicRepository.GetAll(),
             x => x.MemberTopicRepository.GetByMemberId(currentMember.Id),
@@ -267,7 +265,6 @@ public class ChapterViewModelService : IChapterViewModelService
 
         return new ChapterCreateViewModel
         {
-            Countries = countries,
             GroupLimit = new GroupLimitViewModel
             {
                 Count = current.Count,

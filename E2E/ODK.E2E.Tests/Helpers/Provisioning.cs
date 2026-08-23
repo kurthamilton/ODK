@@ -345,9 +345,17 @@ internal static class Provisioning
         return joined;
     }
 
+    /// <summary>
+    /// Publishes a group, adding the picture publication requires first - group creation does not ask for
+    /// one, so a freshly created group has none.
+    /// </summary>
     public static async Task PublishGroup(TestAccount owner, Guid chapterId)
     {
-        await RunAs(owner, page => new GroupAdminPage(page).Publish(chapterId));
+        await RunAs(owner, async page =>
+        {
+            await new GroupImageAdminPage(page).SetPicture(chapterId);
+            await new GroupAdminPage(page).Publish(chapterId);
+        });
     }
 
     /// <summary>

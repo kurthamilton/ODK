@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Workflows;
+using ODK.Services.Chapters.Workflows.Guards;
 using ODK.Services.Chapters.Workflows.Steps;
 using ODK.Services.Workflows;
 
@@ -9,8 +10,9 @@ namespace ODK.Services.Chapters.Workflows;
 /// machine.
 /// </summary>
 /// <remarks>
-/// No guards. Which move is legal is decided entirely by the state, so there is nothing for a condition to
-/// add - the two dates on the group say everything.
+/// The state decides which move is legal, so approval carries no condition at all - the two dates on the
+/// group say everything. Publishing has the one guard, because a group also needs a picture before anyone
+/// can be sent to it.
 /// </remarks>
 public static class ChapterPublicationStateMachine
 {
@@ -42,12 +44,14 @@ public static class ChapterPublicationStateMachine
             ChapterPublicationState.Published)
 
         /* Only from Approved: an unapproved group has nothing to publish yet, and a published one is already
-           there. Both are the absence of an edge rather than a check. */
+           there. Both are the absence of an edge rather than a check. The picture is a guard instead, being a
+           row on another table rather than something the state is derived from. */
         .Transition(
             ChapterPublicationState.Approved,
             ChapterPublicationTrigger.Publish,
             ChapterPublicationState.Published,
             x => x
+                .When(new ImageIsPresent())
                 .Then<MarkChapterPublished>()
                 .Then<Commit<ChapterPublicationContext>>())
         .Build();

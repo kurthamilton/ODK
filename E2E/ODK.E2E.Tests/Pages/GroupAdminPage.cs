@@ -1,10 +1,11 @@
-using Microsoft.Playwright;
+﻿using Microsoft.Playwright;
 
 namespace ODK.E2E.Tests.Pages;
 
 /// <summary>
 /// The Group Squirrel group-admin home page (<c>/my/groups/{chapterId}</c>). The Publish control is
-/// only rendered once the group is approved (<c>Chapter.CanBePublished()</c>).
+/// only rendered once the group is approved and has a picture (<c>Chapter.CanBePublished()</c>); until
+/// then the page offers a link to the picture page instead.
 /// </summary>
 internal class GroupAdminPage
 {

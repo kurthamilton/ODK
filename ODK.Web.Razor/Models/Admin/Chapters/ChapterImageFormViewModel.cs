@@ -2,10 +2,9 @@
 
 namespace ODK.Web.Razor.Models.Admin.Chapters;
 
-public class ChapterImageFormViewModel : IChapterImageFormViewModel
+public class ChapterImageFormViewModel
 {
     public ChapterImage? ChapterImage { get; set; }
-
 
     /// <summary>
     /// Dummy form field
@@ -13,6 +12,4 @@ public class ChapterImageFormViewModel : IChapterImageFormViewModel
     public string? Image { get; set; }
 
     public string? ImageDataUrl { get; set; }
-
-    public bool Required { get; set; }
 }

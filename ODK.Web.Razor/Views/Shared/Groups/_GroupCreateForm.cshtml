@@ -1,21 +1,8 @@
 ﻿@using ODK.Core.Countries
-@using ODK.Web.Common.Extensions
-@using ODK.Web.Razor.Models.Admin.Chapters
 @using ODK.Web.Razor.Models.Chapters
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Topics
 @model CreateChapterFormViewModel
-@{
-    var countryOptions = Model.Countries
-        .OrderBy(x => x.Name)
-        .Select(x => new SelectListItem
-        {
-            Value = x.Id.ToString(),
-            Text = x.Name
-        })
-        .Prepend(new SelectListItem { Value = "" })
-        .ToArray();
-}
 
 @await Html.PartialAsync("Components/_Wizard", new WizardViewModel
 {
@@ -71,17 +58,6 @@
     },
         new WizardPageViewModel
         {
-            Title = "Picture",
-            ContentFunc = 
-                @<div>
-                    @await Html.PartialAsync("Admin/Chapter/_ImageForm", new ChapterImageFormViewModel
-                    {
-                        Required = true
-                    })
-                </div>
-        },
-        new WizardPageViewModel
-        {
             Title = "Finish",
             ContentFunc = 
                 @<div>                    
@@ -92,7 +68,8 @@
                         In the meantime you can take a look around and continue setting up your group.
                     </p>
                     <p>
-                        Your group won't be visible to others until you publish it.
+                        Your group won't be visible to others until you publish it, and you'll need to
+                        add a picture before you can.
                     </p>
                     <button type="button" class="btn btn-primary w-100" data-submit="parent">
                         <span>Create group</span>

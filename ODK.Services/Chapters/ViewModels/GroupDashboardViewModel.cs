@@ -12,10 +12,19 @@ public class GroupDashboardViewModel
 {
     public required Chapter Chapter { get; init; }
 
-    /// <summary>Whether the group is approved and unpublished, so publishing is the outstanding action.</summary>
+    /// <summary>
+    /// Whether the group is approved, unpublished and has the picture publication requires, so publishing
+    /// is the outstanding action.
+    /// </summary>
     public required bool CanPublish { get; init; }
 
     public required int? MembersAwaitingApproval { get; init; }
+
+    /// <summary>
+    /// Whether publishing is the outstanding action but the group has no picture, so adding one is what
+    /// stands between it and being published.
+    /// </summary>
+    public required bool NeedsImageToPublish { get; init; }
 
     /// <summary>The next event, so an admin can see what's coming and how the responses look.</summary>
     public required EventSummaryDto? NextEvent { get; init; }
@@ -28,6 +37,7 @@ public class GroupDashboardViewModel
     /// </summary>
     public bool HasAnything =>
         CanPublish ||
+        NeedsImageToPublish ||
         MembersAwaitingApproval > 0 ||
         UnrepliedContactMessages > 0 ||
         NextEvent != null;

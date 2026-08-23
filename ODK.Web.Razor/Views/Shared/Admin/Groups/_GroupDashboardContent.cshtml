@@ -27,6 +27,18 @@
         </form>
     </div>
 }
+else if (Model.NeedsImageToPublish)
+{
+    <div class="alert alert-warning d-flex justify-content-between align-items-center">
+        <span>This group is approved. Add a picture and you can publish it.</span>
+        @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+        {
+            Class = "btn btn-warning ms-3",
+            Route = OdkRoutes.GroupAdmin.Image(Model.Chapter),
+            Text = "Add a picture"
+        })
+    </div>
+}
 
 <div class="list-group mb-3">
     @if (Model.MembersAwaitingApproval > 0)

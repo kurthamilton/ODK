@@ -1,5 +1,4 @@
-﻿using ODK.Core.Countries;
-using ODK.Core.Members;
+﻿using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Core.Topics;
 
@@ -7,8 +6,6 @@ namespace ODK.Services.Chapters.ViewModels;
 
 public class ChapterCreateViewModel
 {
-    public required IReadOnlyCollection<Country> Countries { get; init; }
-
     public required GroupLimitViewModel GroupLimit { get; init; }
 
     public required Member Member { get; init; }

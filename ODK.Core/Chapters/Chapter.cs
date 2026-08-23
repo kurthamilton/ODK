@@ -96,7 +96,12 @@ public class Chapter : IDatabaseEntity, ITimeZoneEntity
 
     public bool CanBeDeleted(int memberCount) => memberCount <= 1;
 
-    public bool CanBePublished() => Approved() && !IsPublished();
+    /// <summary>
+    /// Whether publishing is the outstanding action: the group is approved, not yet published, and has the
+    /// picture publication requires. <paramref name="hasImage"/> comes from the caller, the picture being a
+    /// separate row.
+    /// </summary>
+    public bool CanBePublished(bool hasImage) => Approved() && !IsPublished() && hasImage;
 
     public string GetDisplayName(PlatformType currentPlatform)
         => GetDisplayName(currentPlatform, Platform, Name);

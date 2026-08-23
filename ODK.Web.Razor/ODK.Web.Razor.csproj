@@ -51,12 +51,8 @@
 	     package versions and its own source, and the bundler writes only a file whose contents have changed -
 	     so a build with nothing to do costs two node startups. Skipped for a design-time build so opening the
 	     project in Visual Studio never waits on npm. -->
-	<Target Name="RestoreClientLibraries"
-			BeforeTargets="ResolveProjectStaticWebAssets"
-			Condition="'$(DesignTimeBuild)' != 'true'">
-		<Exec Command="npm ci --no-audit --no-fund"
-			  WorkingDirectory="$(MSBuildProjectDirectory)"
-			  Condition="!Exists('$(MSBuildProjectDirectory)\node_modules\.package-lock.json')" />
+	<Target Name="RestoreClientLibraries" BeforeTargets="ResolveProjectStaticWebAssets" Condition="'$(DesignTimeBuild)' != 'true'">
+		<Exec Command="npm ci --no-audit --no-fund" WorkingDirectory="$(MSBuildProjectDirectory)" Condition="!Exists('$(MSBuildProjectDirectory)\node_modules\.package-lock.json')" />
 		<Exec Command="node build/copy-client-libs.mjs" WorkingDirectory="$(MSBuildProjectDirectory)" />
 		<Exec Command="node build/build-bundles.mjs" WorkingDirectory="$(MSBuildProjectDirectory)" />
 
