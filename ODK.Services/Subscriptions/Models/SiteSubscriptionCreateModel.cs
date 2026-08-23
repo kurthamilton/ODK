@@ -10,6 +10,8 @@ public class SiteSubscriptionCreateModel
 
     public required Guid? FallbackSiteSubscriptionId { get; init; }
 
+    public required bool Free { get; init; }
+
     public required IReadOnlyCollection<SiteFeatureType> Features { get; init; }
 
     public required int? GroupLimit { get; init; }

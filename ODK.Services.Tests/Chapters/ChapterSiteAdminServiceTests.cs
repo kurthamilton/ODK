@@ -11,6 +11,7 @@ using ODK.Core.Platforms;
 using ODK.Core.Workflows;
 using ODK.Data.Core;
 using ODK.Services.Chapters;
+using ODK.Services.Chapters.ViewModels;
 using ODK.Services.Chapters.Workflows;
 using ODK.Services.Members;
 using ODK.Services.Subscriptions;
@@ -72,6 +73,117 @@ public static class ChapterSiteAdminServiceTests
             Times.Never);
     }
 
+    [Test]
+    public static async Task GetSiteAdminChapterViewModel_OffersUsableSubscriptionsAndTheCurrentOne()
+    {
+        /* Arrange - the owner is on a subscription that has since stopped being usable, alongside a free one
+           and one that is neither free nor priced. */
+        using var context = CreateMockOdkContext();
+        var unusableCurrent = context.CreateSiteSubscription();
+        var free = context.CreateSiteSubscription(free: true);
+        var unusable = context.CreateSiteSubscription();
+        var owner = context.CreateMember();
+        var chapter = context.CreateChapter(owner: owner, siteSubscription: unusableCurrent);
+
+        var service = CreateService(context, Mock.Of<IMemberEmailService>());
+
+        // Act
+        var result = await service.GetSiteAdminChapterViewModel(SiteAdminChapterRequest(context, chapter));
+
+        // Assert
+        result.SiteSubscriptions.Select(x => x.Id).Should().BeEquivalentTo(new[] { unusableCurrent.Id, free.Id });
+        result.SiteSubscriptions.Should().NotContain(x => x.Id == unusable.Id);
+    }
+
+    [Test]
+    public static async Task UpdateSiteAdminChapter_FreeSubscription_SetsNoExpiry()
+    {
+        // Arrange - an owner on a paid subscription, moved onto a free one with a date still in the form.
+        using var context = CreateMockOdkContext();
+        var paid = context.CreateSiteSubscription();
+        var free = context.CreateSiteSubscription(free: true);
+        var owner = context.CreateMember();
+        var chapter = context.CreateChapter(owner: owner, siteSubscription: paid);
+
+        var service = CreateService(context, Mock.Of<IMemberEmailService>());
+
+        // Act
+        var result = await service.UpdateSiteAdminChapter(
+            SiteAdminChapterRequest(context, chapter),
+            new SiteAdminChapterUpdateViewModel
+            {
+                SiteSubscriptionId = free.Id,
+                SubscriptionExpiresUtc = DateTime.UtcNow.AddYears(1)
+            });
+
+        // Assert
+        result.Success.Should().BeTrue();
+
+        var current = context.Set<MemberSiteSubscriptionRecord>()
+            .Single(x => x.MemberId == owner.Id && x.IsCurrent);
+        current.SiteSubscriptionId.Should().Be(free.Id);
+        current.ExpiresUtc.Should().BeNull();
+    }
+
+    [Test]
+    public static async Task UpdateSiteAdminChapter_PaidSubscription_SetsTheExpiry()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+        var paid = context.CreateSiteSubscription();
+        var owner = context.CreateMember();
+        var chapter = context.CreateChapter(owner: owner, siteSubscription: paid);
+        var expiresUtc = new DateTime(2027, 4, 1, 12, 0, 0, DateTimeKind.Utc);
+
+        var service = CreateService(context, Mock.Of<IMemberEmailService>());
+
+        // Act
+        var result = await service.UpdateSiteAdminChapter(
+            SiteAdminChapterRequest(context, chapter),
+            new SiteAdminChapterUpdateViewModel
+            {
+                SiteSubscriptionId = paid.Id,
+                SubscriptionExpiresUtc = expiresUtc
+            });
+
+        // Assert
+        result.Success.Should().BeTrue();
+
+        var current = context.Set<MemberSiteSubscriptionRecord>()
+            .Single(x => x.MemberId == owner.Id && x.IsCurrent);
+        current.SiteSubscriptionId.Should().Be(paid.Id);
+        current.ExpiresUtc.Should().Be(expiresUtc);
+    }
+
+    [Test]
+    public static async Task UpdateSiteAdminChapter_UnusableSubscription_Fails()
+    {
+        // Arrange - a subscription that is neither free nor priced is not one an owner can be put on.
+        using var context = CreateMockOdkContext();
+        var free = context.CreateSiteSubscription(free: true);
+        var unusable = context.CreateSiteSubscription();
+        var owner = context.CreateMember();
+        var chapter = context.CreateChapter(owner: owner, siteSubscription: free);
+
+        var service = CreateService(context, Mock.Of<IMemberEmailService>());
+
+        // Act
+        var result = await service.UpdateSiteAdminChapter(
+            SiteAdminChapterRequest(context, chapter),
+            new SiteAdminChapterUpdateViewModel
+            {
+                SiteSubscriptionId = unusable.Id,
+                SubscriptionExpiresUtc = null
+            });
+
+        // Assert
+        result.Success.Should().BeFalse();
+
+        var current = context.Set<MemberSiteSubscriptionRecord>()
+            .Single(x => x.MemberId == owner.Id && x.IsCurrent);
+        current.SiteSubscriptionId.Should().Be(free.Id);
+    }
+
     private static ChapterSiteAdminService CreateService(
         MockOdkContext context, IMemberEmailService memberEmailService)
     {
@@ -118,6 +230,16 @@ public static class ChapterSiteAdminServiceTests
     }
 
     private static MockOdkContext CreateMockOdkContext() => new();
+
+    private static IMemberChapterServiceRequest SiteAdminChapterRequest(MockOdkContext context, Chapter chapter)
+    {
+        var siteAdmin = context.CreateMember(afterCreate: x => x.SiteAdmin = true);
+
+        return Mock.Of<IMemberChapterServiceRequest>(x =>
+            x.Platform == PlatformType.Default &&
+            x.Chapter == chapter &&
+            x.CurrentMember == siteAdmin);
+    }
 
     private static IMemberServiceRequest SiteAdminRequest(MockOdkContext context)
     {

@@ -6,7 +6,9 @@
         .Select(x => new SelectListItem 
         { 
             Value = x.Id.ToString(), 
-            Text = $"{x.Name} [{Model.SitePaymentSettings[x.SitePaymentSettingId].Name}]" 
+            Text = x.Free
+                ? $"{x.Name} [{Model.SitePaymentSettings[x.SitePaymentSettingId].Name}] (free)"
+                : $"{x.Name} [{Model.SitePaymentSettings[x.SitePaymentSettingId].Name}]"
         })
         .OrderBy(x => x.Text)
         .ToArray();
@@ -34,4 +36,6 @@
         <i class="icon" data-clearable-button></i>
     </div>
     @Html.ValidationMessageFor(x => x.SubscriptionExpiresUtc)
+    @await Html.PartialAsync("Components/_FormLabelSubtitle",
+        "A free subscription never expires, so any date entered against one is ignored.")
 </div>

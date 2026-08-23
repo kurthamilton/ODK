@@ -171,6 +171,7 @@ public class SiteAdminController : OdkControllerBase
             Enabled = viewModel.Enabled,
             FallbackSiteSubscriptionId = viewModel.FallbackSiteSubscriptionId,
             Features = viewModel.Features ?? [],
+            Free = viewModel.Free,
             GroupLimit = viewModel.GroupLimit,
             MemberLimit = viewModel.MemberLimit,
             SitePaymentSettingId = viewModel.SitePaymentSettingId ?? Guid.Empty
@@ -191,6 +192,7 @@ public class SiteAdminController : OdkControllerBase
             Enabled = viewModel.Enabled,
             FallbackSiteSubscriptionId = viewModel.FallbackSiteSubscriptionId,
             Features = viewModel.Features ?? [],
+            Free = viewModel.Free,
             GroupLimit = viewModel.GroupLimit,
             MemberLimit = viewModel.MemberLimit,
             SitePaymentSettingId = viewModel.SitePaymentSettingId ?? Guid.Empty
@@ -208,8 +210,8 @@ public class SiteAdminController : OdkControllerBase
     [HttpPost("siteadmin/subscriptions/{id:guid}/default")]
     public async Task<IActionResult> MakeDefault(Guid id)
     {
-        await _siteSubscriptionAdminService.MakeDefault(MemberServiceRequest, id);
-        AddFeedback("Default subscription updated", FeedbackType.Success);
+        var result = await _siteSubscriptionAdminService.MakeDefault(MemberServiceRequest, id);
+        AddFeedback(result, "Default subscription updated");
         return RedirectToReferrer();
     }
 

@@ -16,6 +16,7 @@
             Enabled = Model.Subscription.Enabled,
             FallbackSiteSubscriptionId = Model.Subscription.FallbackSiteSubscriptionId,
             Features = Model.Features.Select(x => x.Feature).ToList(),
+            Free = Model.Subscription.Free,
             GroupLimit = Model.Subscription.GroupLimit,
             MemberLimit = Model.Subscription.MemberLimit,
             Name = Model.Subscription.Name,
@@ -29,6 +30,13 @@
 
 <section class="section--admin">
     <h2 class="content-heading">Prices</h2>
+    @if (Model.Subscription.Free)
+    {
+        <p>
+            This subscription is free, so it needs no price. Any price listed below predates that and is
+            ignored - delete it when convenient.
+        </p>
+    }
     <div class="table-responsive">
         <table class="table table--striped">
             <thead>
@@ -68,23 +76,26 @@
             </tbody>
         </table>
     </div>
-    <div class="mt-3">
-        <form action="/siteadmin/Subscriptions/@Model.Subscription.Id/Prices" method="post">
-            @Html.AntiForgeryToken()
+    @if (!Model.Subscription.Free)
+    {
+        <div class="mt-3">
+            <form action="/siteadmin/Subscriptions/@Model.Subscription.Id/Prices" method="post">
+                @Html.AntiForgeryToken()
 
-            <div class="form-inline">                
-                @await Html.PartialAsync("SiteAdmin/_SubscriptionPriceForm", new SiteSubscriptionPriceFormViewModel
-                {
-                    CurrencyOptions = Model.Currencies.ToList()
-                })
+                <div class="form-inline">
+                    @await Html.PartialAsync("SiteAdmin/_SubscriptionPriceForm", new SiteSubscriptionPriceFormViewModel
+                    {
+                        CurrencyOptions = Model.Currencies.ToList()
+                    })
 
-                <div class="form-group mb-3">
-                    <label class="form-label invisible">Hidden</label>
-                    <div>
-                        <button class="btn btn-primary">Add</button>
+                    <div class="form-group mb-3">
+                        <label class="form-label invisible">Hidden</label>
+                        <div>
+                            <button class="btn btn-primary">Add</button>
+                        </div>
                     </div>
                 </div>
-            </div>            
-        </form>
-    </div>
+            </form>
+        </div>
+    }
 </section>

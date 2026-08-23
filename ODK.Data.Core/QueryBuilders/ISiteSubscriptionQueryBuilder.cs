@@ -8,7 +8,12 @@ namespace ODK.Data.Core.QueryBuilders;
 
 public interface ISiteSubscriptionQueryBuilder : IDatabaseEntityQueryBuilder<SiteSubscription, ISiteSubscriptionQueryBuilder>
 {
-    ISiteSubscriptionQueryBuilder Enabled();
+    /// <summary>
+    /// Usable subscriptions: enabled, and either free or priced. Mirrors
+    /// <see cref="SiteSubscription.IsActive"/>, which decides the same thing for a loaded subscription -
+    /// the two must agree.
+    /// </summary>
+    ISiteSubscriptionQueryBuilder Active();
 
     IQueryBuilder<SiteSubscriptionFeature> Features();
 

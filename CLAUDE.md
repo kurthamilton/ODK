@@ -517,6 +517,16 @@ the request locale and enqueues a background `IMemberLocaleService.UpdateLocale`
   privacy/visibility feature. Member-listing queries filter these out by default (e.g. `InChapter`'s
   `!HideProfile` predicate); include them only where a site-admin view genuinely needs to.
 
+- **Free site subscriptions.** `SiteSubscription.Free` states that a plan costs nothing, so a plan is usable
+  without any price. **A usable plan is `Enabled && (Free || priced)`** - never read `Enabled` alone, and
+  never infer "free" from a zero amount. Go through `SiteSubscription.IsActive(prices, sitePaymentSettings)`
+  for a loaded subscription and `SiteSubscriptionQueryBuilder.Active()` for a query; the two mirror each
+  other and have to agree. A free plan does not require its payment settings to be enabled - it takes no
+  money - whereas a priced one does, since nothing can be bought while the provider is off.
+  A member put on a free plan gets **no expiry**: `MemberSiteSubscriptionRecord.ExpiresUtc` stays null,
+  which every expiry check already reads as never-expiring. Free and a *paid* price are mutually exclusive
+  (`SiteSubscriptionAdminService` refuses both directions); a legacy zero-amount price alongside the flag is
+  tolerated, because that is how a free plan was expressed before the flag existed.
 - **Site subscription cooldown.** An expired site subscription keeps its access for a configured cooldown
   (`Subscriptions:DefaultCooldownMonths`, mapped to the injected `SiteSubscriptionCooldown`). The stored
   `ExpiresUtc` is never moved - the cooldown is applied wherever expiry is *read*, so never compare a site

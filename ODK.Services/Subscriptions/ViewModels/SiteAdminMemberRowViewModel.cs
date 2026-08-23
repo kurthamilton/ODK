@@ -11,7 +11,7 @@ public class SiteAdminMemberRowViewModel
 
     public required Currency? Currency { get; init; }
 
-    public required DateTime ExpiresUtc { get; init; }
+    public required DateTime? ExpiresUtc { get; init; }
 
     public required SiteSubscriptionFrequency Frequency { get; init; }
 

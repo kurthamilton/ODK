@@ -12,6 +12,8 @@ public class SiteSubscriptionSiteAdminListItemViewModel
 
     public required IReadOnlyCollection<SiteFeatureType> Features { get; init; }
 
+    public required bool Free { get; init; }
+
     public required int? GroupLimit { get; init; }
 
     public required Guid Id { get; init; }

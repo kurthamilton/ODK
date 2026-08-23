@@ -58,6 +58,11 @@
                                 continue;    
                             }
 
+                            @if (subscription.Free)
+                            {
+                                <div>Free</div>
+                            }
+
                             @if (prices.Any(x => x.IsPaid) && 
                                 Model.SiteSubscriptions.CurrentMemberSubscription?.SiteSubscriptionPrice?.IsPaid == true)
                             {

@@ -60,11 +60,13 @@ internal class SiteAdminSubscriptionsPage
     /// <summary>
     /// Creates a site subscription. <paramref name="featureIds"/> are the numeric
     /// <c>SiteFeatureType</c> values to select (e.g. 5 = MemberSubscriptions / "Paid subscriptions");
-    /// null/empty selects none. Lands on the created subscription's detail page on success.
+    /// null/empty selects none. Pass <paramref name="free"/> for a subscription that needs no price - a
+    /// subscription that is neither free nor priced is not usable, so nobody can be put on it.
+    /// Lands on the created subscription's detail page on success.
     /// </summary>
     public async Task CreateSubscription(
         string paymentSettingName, string name, string description, int groupLimit, int memberLimit,
-        int[]? featureIds = null)
+        int[]? featureIds = null, bool free = false)
     {
         await _page.Navigate("/siteadmin/subscriptions/new");
 
@@ -76,6 +78,11 @@ internal class SiteAdminSubscriptionsPage
         if (!await _page.IsCheckedAsync("#Enabled"))
         {
             await _page.CheckAsync("#Enabled");
+        }
+
+        if (free)
+        {
+            await _page.CheckAsync("#Free");
         }
 
         await _page.FillAsync("#GroupLimit", groupLimit.ToString());
