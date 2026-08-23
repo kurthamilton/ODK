@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using NUnit.Framework;
 using ODK.E2E.Data;
 using ODK.E2E.Tests.Helpers;
@@ -13,7 +13,7 @@ public class GroupOwnerTests : DefaultPageTest
     [Category("ChapterPublicationWorkflows")]
     public async Task PublishGroup_Approved_SetsPublishedTimestamp()
     {
-        // Arrange - an approved (but not yet published) group.
+        // Arrange - an approved (but not yet published) group, with the picture publishing requires.
         var owner = await Provisioning.NewAccount(SharedAccounts.GroupOwner);
         var group = await Provisioning.CreateGroup(owner, $"E2E {Guid.NewGuid():N}");
         await Provisioning.ApproveGroup(group.ChapterId);
@@ -21,13 +21,39 @@ public class GroupOwnerTests : DefaultPageTest
         var publishedUtc = await ChapterDataHelper.GetPublishedUtc(group.ChapterId);
         publishedUtc.Should().BeNull("group should start unpublished");
 
-        // Act - the owner publishes it through the UI.
         await new LoginPage(Page).LogIn(owner.Email, owner.Password);
+        await new GroupImageAdminPage(Page).SetPicture(group.ChapterId);
+
+        // Act - the owner publishes it through the UI.
         await new GroupAdminPage(Page).Publish(group.ChapterId);
 
         // Assert - publishing stamps Chapters.PublishedUtc.
         publishedUtc = await ChapterDataHelper.GetPublishedUtc(group.ChapterId);
         publishedUtc.Should().NotBeNull();
+    }
+
+    [Test]
+    [Category("ChapterPublicationWorkflows")]
+    public async Task PublishGroup_NoPicture_IsRejected()
+    {
+        // NB the dashboard offers a link to the picture page in place of the Publish button, so this
+        // drives the endpoint directly - the same reason PublishGroup_NotApproved_IsRejected does.
+        // Arrange - an approved group that has no picture, creating one no longer asking for it.
+        var owner = await Provisioning.NewAccount(SharedAccounts.GroupOwner);
+        var group = await Provisioning.CreateGroup(owner, $"E2E {Guid.NewGuid():N}");
+        await Provisioning.ApproveGroup(group.ChapterId);
+
+        // Act - the owner POSTs to the publish endpoint directly.
+        await new LoginPage(Page).LogIn(owner.Email, owner.Password);
+        var status = await ApiRequests.Post(
+            Page,
+            $"/groups/{group.ChapterId}/publish",
+            "/account");
+
+        // Assert - the endpoint ran (antiforgery passed, so not 400) but the group stays unpublished.
+        status.Should().NotBe(400, "antiforgery should have passed so the endpoint actually ran");
+        var publishedUtc = await ChapterDataHelper.GetPublishedUtc(group.ChapterId);
+        publishedUtc.Should().BeNull();
     }
 
     [Test]

@@ -448,29 +448,6 @@ public static class ChapterAdminServiceTests
     }
 
     [Test]
-    public static async Task CreateChapter_WhenImageInvalid_ReturnsFailure()
-    {
-        // Arrange
-        using var context = CreateMockOdkContext();
-
-        var currentMember = context.CreateMember();
-
-        var imageService = CreateMockImageService(isValidImage: false);
-
-        var service = CreateChapterAdminService(context, imageService: imageService);
-
-        var request = CreateMemberServiceRequest(currentMember);
-        var model = CreateChapterCreateModel();
-
-        // Act
-        var result = await service.CreateChapter(request, model);
-
-        // Assert
-        result.Success.Should().BeFalse();
-        result.Message.Should().Be(ErrorMessagesResource.InvalidImage);
-    }
-
-    [Test]
     public static async Task CreateChapter_WhenValid_ReturnsSuccessfulChapter()
     {
         // Arrange
@@ -1342,6 +1319,8 @@ public static class ChapterAdminServiceTests
             approvedUtc: DateTime.UtcNow,
             owner: currentMember);
 
+        context.CreateChapterImage(chapter);
+
         var service = CreateChapterAdminService(context);
 
         var request = CreateMemberChapterAdminServiceRequest(
@@ -1354,6 +1333,63 @@ public static class ChapterAdminServiceTests
 
         // Assert
         result.Success.Should().BeTrue();
+        chapter.IsPublished().Should().BeTrue();
+    }
+
+    [Test]
+    public static async Task PublishChapter_WhenNoImage_ReturnsFailure()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(
+            approvedUtc: DateTime.UtcNow,
+            owner: currentMember);
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.Publish);
+
+        // Act
+        var result = await service.PublishChapter(request);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.Message.Should().Be("This group needs a picture before it can be published");
+        chapter.IsPublished().Should().BeFalse();
+    }
+
+    [Test]
+    public static async Task PublishChapter_WhenNotApproved_ReturnsFailure()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(owner: currentMember);
+
+        context.CreateChapterImage(chapter);
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.Publish);
+
+        // Act
+        var result = await service.PublishChapter(request);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.Message.Should().Be("This group cannot be published");
+        chapter.IsPublished().Should().BeFalse();
     }
 
     private static MockOdkContext CreateMockOdkContext()
@@ -1561,14 +1597,12 @@ public static class ChapterAdminServiceTests
         string? name = null,
         string? locationName = null,
         LatLong? location = null,
-        byte[]? imageData = null,
         IReadOnlyCollection<Guid>? topicIds = null)
         => new ChapterCreateModel
         {
             Name = name ?? "Test Chapter",
             LocationName = locationName ?? "London",
             Location = location ?? new LatLong { Lat = 51.5, Long = -0.1 },
-            ImageData = imageData ?? [],
             NewTopics = [],
             TopicIds = topicIds ?? [Guid.NewGuid()]
         };

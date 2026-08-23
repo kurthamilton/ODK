@@ -5,8 +5,6 @@ namespace ODK.Services.Chapters.Models;
 
 public class ChapterCreateModel
 {
-    public required byte[] ImageData { get; init; }
-
     public required LatLong Location { get; init; }
 
     public required string LocationName { get; init; }

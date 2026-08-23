@@ -1,8 +1,8 @@
 ﻿using System.Linq;
 using FluentAssertions;
 using NUnit.Framework;
-using ODK.Core.Workflows;
 using ODK.Services.Chapters.Workflows;
+using ODK.Services.Chapters.Workflows.Guards;
 
 namespace ODK.Services.Tests.Chapters.Workflows;
 
@@ -24,17 +24,36 @@ public static class ChapterPublicationStateMachineTests
     }
 
     [Test]
-    public static void Create_Definition_NeedsNoGuards()
+    public static void Create_Approve_NeedsNoGuards()
     {
-        /* Arrange - the state decides which move is legal here, so a condition would add nothing. Worth
+        /* Arrange - the state decides whether approving is legal, so a condition would add nothing. Worth
            asserting: it is the evidence that the framework does not require guards to be useful. */
         var definition = ChapterPublicationStateMachine.Create();
 
         // Act
-        var guards = definition.Transitions.SelectMany(x => x.Guards);
+        var guards = definition.Transitions
+            .Where(x => x.Trigger == ChapterPublicationTrigger.Approve)
+            .SelectMany(x => x.Guards);
 
         // Assert
         guards.Should().BeEmpty();
+    }
+
+    [Test]
+    public static void Create_Publish_RequiresAnImage()
+    {
+        /* Arrange - the picture is a row on another table rather than one of the dates the state is
+           derived from, so it is the one condition this machine cannot express as an edge. */
+        var definition = ChapterPublicationStateMachine.Create();
+
+        // Act
+        var guards = definition.Transitions
+            .Where(x => x.Trigger == ChapterPublicationTrigger.Publish)
+            .SelectMany(x => x.Guards)
+            .ToArray();
+
+        // Assert
+        guards.Should().ContainSingle().Which.Should().BeOfType<ImageIsPresent>();
     }
 
     [Test]

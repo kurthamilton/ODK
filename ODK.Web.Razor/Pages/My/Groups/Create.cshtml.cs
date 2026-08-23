@@ -1,6 +1,5 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Countries;
-using ODK.Core.Images;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.Models;
 using ODK.Services.Topics.Models;
@@ -38,21 +37,8 @@ public class CreateModel : OdkPageModel
             return Page();
         }
 
-        if (string.IsNullOrEmpty(viewModel.ImageDataUrl))
-        {
-            AddFeedback("No image provided", FeedbackType.Warning);
-            return Page();
-        }
-
-        if (!ImageHelper.TryParseDataUrl(viewModel.ImageDataUrl, out var bytes))
-        {
-            AddFeedback("Image could not be processed", FeedbackType.Error);
-            return Page();
-        }
-
         var result = await _chapterAdminService.CreateChapter(MemberServiceRequest, new ChapterCreateModel
         {
-            ImageData = bytes,
             Location = new LatLong(viewModel.Lat.Value, viewModel.Long.Value),
             LocationName = viewModel.LocationName,
             Name = viewModel.Name?.Trim() ?? string.Empty,

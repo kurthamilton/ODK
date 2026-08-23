@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
 using NUnit.Framework;
@@ -27,6 +28,20 @@ public static class PublishChapterTaskProviderTests
         var task = tasks.Should().ContainSingle().Subject;
         task.Type.Should().Be(MemberTaskType.PublishChapter);
         task.Chapter.Should().Be(chapter);
+    }
+
+    [Test]
+    public static void GetTasks_ApprovedWithNoImage_ReturnsNoTask()
+    {
+        // Arrange - a group without a picture is not ready to publish, and UploadChapterImageTaskProvider
+        // is what asks for the picture, so prompting to publish here would be the wrong next step.
+        var context = CreateContext(chaptersWithImage: [], CreateChapter(approved: true, published: false));
+
+        // Act
+        var tasks = new PublishChapterTaskProvider().GetTasks(context);
+
+        // Assert
+        tasks.Should().BeEmpty();
     }
 
     [Test]
@@ -103,11 +118,18 @@ public static class PublishChapterTaskProviderTests
         Slug = $"chapter-{Guid.NewGuid():N}"
     };
 
-    private static MemberTaskContext CreateContext(params Chapter[] ownedChapters) => new()
+    // Publishing needs a picture, so the owned chapters have one unless a test says otherwise - the
+    // picture is not what the other cases are about.
+    private static MemberTaskContext CreateContext(params Chapter[] ownedChapters)
+        => CreateContext(ownedChapters.Select(x => x.Id).ToArray(), ownedChapters);
+
+    private static MemberTaskContext CreateContext(
+        IReadOnlyCollection<Guid> chaptersWithImage,
+        params Chapter[] ownedChapters) => new()
     {
         Chapters = [],
         ChapterProperties = [],
-        ChaptersWithImage = [],
+        ChaptersWithImage = chaptersWithImage,
         HasAvatar = true,
         Member = CreateMember(),
         MemberProperties = [],

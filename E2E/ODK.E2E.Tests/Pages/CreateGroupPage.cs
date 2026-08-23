@@ -1,13 +1,14 @@
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using Microsoft.Playwright;
 using ODK.E2E.Tests.Helpers;
 
 namespace ODK.E2E.Tests.Pages;
 
 /// <summary>
-/// The Group Squirrel create-group wizard (<c>/my/groups/new</c>): name, topics, location, picture,
-/// finish. Name, location name (client-side) and lat/long + picture (server-side) are required. A new
-/// group starts unapproved and unpublished.
+/// The Group Squirrel create-group wizard (<c>/my/groups/new</c>): name, topics, location, finish. Name
+/// and location name are required client-side, lat/long server-side. A new group starts unapproved and
+/// unpublished, and with no picture - one is added through <see cref="GroupImageAdminPage"/>, which
+/// publishing requires.
 /// </summary>
 internal class CreateGroupPage
 {
@@ -28,7 +29,7 @@ internal class CreateGroupPage
     {
         await FillWizard(name);
 
-        // Step 5 - finish. On success the app redirects to the new group's admin page (/my/groups/{id}).
+        // Step 4 - finish. On success the app redirects to the new group's admin page (/my/groups/{id}).
         await _page.ClickAsync(SubmitButton);
         try
         {
@@ -107,12 +108,5 @@ internal class CreateGroupPage
         await _page.EvalOnSelectorAsync("[data-location-lat]", "el => el.value = '51.5074'");
         await _page.EvalOnSelectorAsync("[data-location-long]", "el => el.value = '-0.1278'");
         await _page.ClickAsync("#wizard-3 .justify-content-end .btn-primary");
-
-        // Step 4 - picture (required). Uploading the file triggers the Cropper.js pipeline, which
-        // populates the hidden data URL asynchronously - wait for it before advancing.
-        await _page.SetInputFilesAsync("[data-img-input]", TestAssets.GroupImagePath);
-        await _page.WaitForFunctionAsync(
-            "() => { const el = document.querySelector('[data-img-dataurl]'); return !!el && el.value.length > 0; }");
-        await _page.ClickAsync("#wizard-4 .justify-content-end .btn-primary");
     }
 }

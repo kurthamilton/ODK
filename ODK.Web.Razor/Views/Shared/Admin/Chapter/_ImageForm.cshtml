@@ -14,15 +14,9 @@
         { "class", "form-control" },
         { "data-img-input", "" }        
     };
-
-    if (Model.Required)
-    {
-        htmlAttributes["data-val"] = "true";
-        htmlAttributes["data-val-required"] = "An image is required";
-    }
 }
 
-<div class="form-group mb-3 @(Model.Required ? "required" : null)">
+<div class="form-group mb-3">
     <div data-img-container>
         @Html.HiddenFor(x => x.ImageDataUrl, new { data_img_dataurl = "" })
         <input type="hidden" data-img-type value="@Model.ChapterImage?.MimeType" />

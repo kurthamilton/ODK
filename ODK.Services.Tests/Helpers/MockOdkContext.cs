@@ -150,6 +150,13 @@ internal class MockOdkContext : OdkContext
             Role = role ?? ChapterAdminRole.Admin
         });
 
+    internal ChapterImage CreateChapterImage(Chapter chapter) => Create(new ChapterImage
+    {
+        ChapterId = chapter.Id,
+        ImageData = [1, 2, 3],
+        MimeType = ChapterImage.DefaultMimeType
+    });
+
     internal ChapterSubscription CreateChapterSubscription(
         Chapter? chapter = null,
         SitePaymentSettings? sitePaymentSettings = null,

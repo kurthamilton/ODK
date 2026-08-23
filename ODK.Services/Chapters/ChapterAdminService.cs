@@ -223,14 +223,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         var country = await _geolocationService.GetCountryFromLocation(model.Location);
 
-        var image = new ChapterImage();
-
-        var result = UpdateChapterImage(image, model.ImageData);
-        if (!result.Success)
-        {
-            return ServiceResult<Chapter?>.Failure(result.Message ?? string.Empty);
-        }
-
         if (country == null)
         {
             country = await _unitOfWork.CountryRepository.GetByIsoCode(_settings.DefaultCountryCode).Run();
@@ -310,9 +302,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
                 ChapterId = chapter.Id
             });
         }
-
-        image.ChapterId = chapter.Id;
-        _unitOfWork.ChapterImageRepository.Add(image);
 
         await _unitOfWork.SaveChanges();
 
@@ -829,7 +818,12 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         var canSeeMessages = adminMember.HasAccessTo(ChapterAdminSecurable.ContactMessages, currentMember);
         var canSeeEvents = adminMember.HasAccessTo(ChapterAdminSecurable.Events, currentMember);
 
-        var (awaitingApproval, unrepliedMessages, nextEvents) = await _unitOfWork.RunAsync(
+        // Approved and unpublished, so publishing is the outstanding action. Whether it can happen yet
+        // depends on the picture, which is the only reason the dashboard asks for one.
+        var awaitingPublication = chapter.CanBePublished(hasImage: true)
+            && adminMember.HasAccessTo(ChapterAdminSecurable.Publish, currentMember);
+
+        var (awaitingApproval, unrepliedMessages, nextEvents, image) = await _unitOfWork.RunAsync(
             x => canSeeApprovals
                 ? x.MemberChapterRepository.Query(platform).ForChapter(chapter.Id).Approved(false).Count()
                 : new DefaultDeferredQuery<int>(0),
@@ -846,14 +840,17 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
                     .OrderBy(e => e.Event.DateUtc)
                     .Take(1)
                     .GetAll()
-                : new DefaultDeferredQueryMultiple<EventSummaryDto>());
+                : new DefaultDeferredQueryMultiple<EventSummaryDto>(),
+            x => awaitingPublication
+                ? x.ChapterImageRepository.GetVersionDtoByChapterId(chapter.Id)
+                : new DefaultDeferredQuerySingleOrDefault<ChapterImageVersionDto>());
 
         return new GroupDashboardViewModel
         {
             Chapter = chapter,
-            CanPublish = chapter.CanBePublished()
-                && adminMember.HasAccessTo(ChapterAdminSecurable.Publish, currentMember),
+            CanPublish = awaitingPublication && image != null,
             MembersAwaitingApproval = canSeeApprovals ? awaitingApproval : null,
+            NeedsImageToPublish = awaitingPublication && image == null,
             NextEvent = nextEvents.FirstOrDefault(),
             UnrepliedContactMessages = canSeeMessages ? unrepliedMessages : null
         };
@@ -1390,19 +1387,33 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         await AssertMemberIsChapterAdmin(request);
 
+        var chapter = request.Chapter;
+
+        var image = await _unitOfWork.ChapterImageRepository
+            .GetVersionDtoByChapterId(chapter.Id)
+            .Run();
+
         var result = await _chapterPublicationWorkflow.Fire(
             ChapterPublicationTrigger.Publish,
             new ChapterPublicationContext
             {
-                Chapter = request.Chapter,
+                Chapter = chapter,
+                HasImage = image != null,
                 Request = request
             });
 
-        /* Publishing is only legal from approved, so an unapproved group and an already-published one are both
-           the trigger not being permitted. Only the wording is this method's. */
-        return result.Success
-            ? ServiceResult.Successful()
-            : ServiceResult.Failure("This group cannot be published");
+        if (result.Success)
+        {
+            return ServiceResult.Successful();
+        }
+
+        /* Publishing is only legal from approved with a picture, so an unapproved group, an already-published
+           one and one with no picture are all the trigger not being permitted. Only the wording is this
+           method's, and the missing picture earns its own: it is the one an owner can act on. A group that
+           would be publishable with a picture is a group whose only failing condition was the picture. */
+        return ServiceResult.Failure(chapter.CanBePublished(hasImage: true)
+            ? "This group needs a picture before it can be published"
+            : "This group cannot be published");
     }
 
     public async Task<ServiceResult> ReplyToConversation(
