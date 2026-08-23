@@ -94,6 +94,11 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
             x => x.SiteSubscriptionPriceRepository.GetBySiteSubscriptionId(siteSubscriptionId),
             x => x.CurrencyRepository.GetById(model.CurrencyId));
 
+        if (siteSubscription.Free)
+        {
+            return ServiceResult.Failure("A free subscription cannot have prices");
+        }
+
         if (existing.Any(x => x.CurrencyId == model.CurrencyId && x.Frequency == model.Frequency))
         {
             return ServiceResult.Failure($"Subscription already has a price for currency '{currency.Code}'");
@@ -220,7 +225,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
                 var currency = price != null && currenciesById.TryGetValue(price.CurrencyId, out var found)
                     ? found
                     : null;
-                var expiresUtc = dto.MemberSiteSubscription.ExpiresUtc!.Value;
+                var expiresUtc = dto.MemberSiteSubscription.ExpiresUtc;
 
                 return new SiteAdminMemberRowViewModel
                 {
@@ -273,6 +278,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
                 Default = x.SiteSubscription.Default,
                 Enabled = x.SiteSubscription.Enabled,
                 Features = x.Features.Select(x => x.Feature).ToArray(),
+                Free = x.SiteSubscription.Free,
                 GroupLimit = x.SiteSubscription.GroupLimit,
                 Id = x.SiteSubscription.Id,
                 MemberLimit = x.SiteSubscription.MemberLimit,
@@ -321,15 +327,24 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         };
     }
 
-    public async Task MakeDefault(IMemberServiceRequest request, Guid siteSubscriptionId)
+    public async Task<ServiceResult> MakeDefault(IMemberServiceRequest request, Guid siteSubscriptionId)
     {
         var platform = request.Platform;
 
-        var subscriptions = await GetSiteAdminRestrictedContent(request,
-            x => x.SiteSubscriptionRepository.GetAll(platform));
+        var (subscriptions, prices) = await GetSiteAdminRestrictedContent(request,
+            x => x.SiteSubscriptionRepository.GetAll(platform),
+            x => x.SiteSubscriptionPriceRepository.GetAll(platform));
 
         var subscription = subscriptions.FirstOrDefault(x => x.Id == siteSubscriptionId);
         OdkAssertions.Exists(subscription);
+
+        /* Every new account is put on the default, so a default nobody can be on would fail every sign-up.
+           Payment settings are not consulted: the check is about the plan being usable at all, and a paid
+           plan whose provider is switched off is a temporary state rather than a broken default. */
+        if (!subscription.Free && !prices.Any(x => x.SiteSubscriptionId == subscription.Id))
+        {
+            return ServiceResult.Failure("A subscription with no prices must be free to be the default");
+        }
 
         var existingDefaults = subscriptions
             .Where(x => x.Default && x.SitePaymentSettingId == subscription.SitePaymentSettingId)
@@ -345,6 +360,8 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         _unitOfWork.SiteSubscriptionRepository.Update(subscription);
 
         await _unitOfWork.SaveChanges();
+
+        return ServiceResult.Successful();
     }
 
     public async Task<ServiceResult> UpdateSiteSubscription(
@@ -352,18 +369,26 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
     {
         var platform = request.Platform;
 
-        var dtos = await GetSiteAdminRestrictedContent(request,
+        var (dtos, prices) = await GetSiteAdminRestrictedContent(request,
             x => x.SiteSubscriptionRepository
                 .Query()
                 .ForPlatform(platform)
                 .WithFeatures()
-                .GetAll());
+                .GetAll(),
+            x => x.SiteSubscriptionPriceRepository.GetBySiteSubscriptionId(siteSubscriptionId));
 
         var dto = dtos
             .FirstOrDefault(x => x.SiteSubscription.Id == siteSubscriptionId);
         OdkAssertions.Exists(dto);
 
         var (subscription, features) = (dto.SiteSubscription, dto.Features);
+
+        /* Only a paid price conflicts with being free. A zero-amount price does not: that is how a free plan
+           was expressed before this flag, and such a plan has to be flaggable without deleting it first. */
+        if (model.Free && prices.Any(x => x.Amount > 0))
+        {
+            return ServiceResult.Failure("A subscription with a paid price cannot be free");
+        }
 
         if (model.FallbackSiteSubscriptionId != subscription.FallbackSiteSubscriptionId &&
             model.FallbackSiteSubscriptionId != null)
@@ -417,6 +442,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         subscription.Description = model.Description;
         subscription.Enabled = model.Enabled;
         subscription.FallbackSiteSubscriptionId = model.FallbackSiteSubscriptionId;
+        subscription.Free = model.Free;
         subscription.GroupLimit = model.GroupLimit;
         subscription.MemberLimit = model.MemberLimit;
         subscription.Name = model.Name;

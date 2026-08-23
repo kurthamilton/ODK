@@ -17,6 +17,9 @@ public class SiteSubscriptionFormViewModel
 
     public List<SiteFeatureType>? Features { get; set; }
 
+    [DisplayName("Free (no payment required)")]
+    public bool Free { get; set; }
+
     [DisplayName("Group limit")]
     public int? GroupLimit { get; set; }
 

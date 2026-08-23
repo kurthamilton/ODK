@@ -24,7 +24,7 @@ public interface ISiteSubscriptionAdminService
 
     Task<SiteSubscriptionViewModel> GetSubscriptionViewModel(IMemberServiceRequest request, Guid siteSubscriptionId);
 
-    Task MakeDefault(IMemberServiceRequest request, Guid siteSubscriptionId);
+    Task<ServiceResult> MakeDefault(IMemberServiceRequest request, Guid siteSubscriptionId);
 
     Task<ServiceResult> UpdateSiteSubscription(
         IMemberServiceRequest request,

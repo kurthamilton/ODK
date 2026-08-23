@@ -143,18 +143,26 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
 
-        var (subscription, siteSubscriptions, sitePaymentSettings) = await GetSiteAdminRestrictedContent(request,
+        var (subscription, siteSubscriptions, prices, sitePaymentSettings) = await GetSiteAdminRestrictedContent(request,
             x => x.MemberSiteSubscriptionRecordRepository.Query().Current().ForChapterOwner(chapter.Id).ToState().GetSingleOrDefault(),
             x => x.SiteSubscriptionRepository.GetAll(platform),
+            x => x.SiteSubscriptionPriceRepository.GetAll(platform),
             x => x.SitePaymentSettingsRepository.GetAll());
+
+        var sitePaymentSettingsDictionary = sitePaymentSettings.ToDictionary(x => x.Id);
 
         return new SiteAdminChapterViewModel
         {
             Chapter = chapter,
             Platform = platform,
-            SitePaymentSettings = sitePaymentSettings.ToDictionary(x => x.Id),
+            SitePaymentSettings = sitePaymentSettingsDictionary,
+            /* The subscriptions an owner can be put on, plus whichever they are on already - a plan that has
+               since stopped being usable still has to appear, or saving the form would move them off it. */
             SiteSubscriptions = siteSubscriptions
-                .Where(x => x.Enabled || subscription?.SiteSubscriptionId == x.Id)
+                .Where(x => x.IsActive(
+                        prices.Where(price => price.SiteSubscriptionId == x.Id),
+                        sitePaymentSettingsDictionary[x.SitePaymentSettingId]) ||
+                    subscription?.SiteSubscriptionId == x.Id)
                 .ToArray(),
             Subscription = subscription
         };
@@ -164,27 +172,48 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
         IMemberChapterServiceRequest request,
         SiteAdminChapterUpdateViewModel viewModel)
     {
-        var chapter = request.Chapter;
-
-        var currentRecord = await GetSiteAdminRestrictedContent(request,
-            x => x.MemberSiteSubscriptionRecordRepository.Query().Current().ForMember(chapter.OwnerId).GetSingleOrDefault());
+        var (platform, chapter) = (request.Platform, request.Chapter);
 
         if (viewModel.SiteSubscriptionId == null)
         {
             throw new OdkServiceException($"Error updating group '{chapter.Id}': subscription not provided");
         }
 
-        // Only the expiry is edited here; the plan/price/external id carry over from the current record
-        // (or default for a member who has none yet).
+        var (currentRecord, siteSubscriptions, prices, sitePaymentSettings) = await GetSiteAdminRestrictedContent(request,
+            x => x.MemberSiteSubscriptionRecordRepository.Query().Current().ForMember(chapter.OwnerId).GetSingleOrDefault(),
+            x => x.SiteSubscriptionRepository.GetAll(platform),
+            x => x.SiteSubscriptionPriceRepository.GetAll(platform),
+            x => x.SitePaymentSettingsRepository.GetAll());
+
+        var siteSubscription = siteSubscriptions
+            .FirstOrDefault(x => x.Id == viewModel.SiteSubscriptionId.Value);
+        if (siteSubscription == null)
+        {
+            return ServiceResult.Failure("Subscription not found");
+        }
+
+        // Staying on the subscription they are already on is always allowed, however it stands now.
+        var staysOnCurrentSubscription = siteSubscription.Id == currentRecord?.SiteSubscriptionId;
+        if (!staysOnCurrentSubscription &&
+            !siteSubscription.IsActive(
+                prices.Where(x => x.SiteSubscriptionId == siteSubscription.Id),
+                sitePaymentSettings.Single(x => x.Id == siteSubscription.SitePaymentSettingId)))
+        {
+            return ServiceResult.Failure("Subscription is not available");
+        }
+
+        /* A free subscription never expires, so it takes no expiry however the form was filled in. The price
+           and external id belong to the subscription that was bought, so they are left behind when the plan
+           changes - carrying them onto another plan would report a payment against it that was never made. */
         _memberSiteSubscriptionWriter.MakeRecordCurrent(
             newRecord: new MemberSiteSubscriptionRecord
             {
                 CreatedUtc = DateTime.UtcNow,
-                ExpiresUtc = viewModel.SubscriptionExpiresUtc,
-                ExternalId = currentRecord?.ExternalId,
+                ExpiresUtc = siteSubscription.Free ? null : viewModel.SubscriptionExpiresUtc,
+                ExternalId = staysOnCurrentSubscription ? currentRecord?.ExternalId : null,
                 MemberId = chapter.OwnerId,
-                SiteSubscriptionId = currentRecord?.SiteSubscriptionId ?? viewModel.SiteSubscriptionId.Value,
-                SiteSubscriptionPriceId = currentRecord?.SiteSubscriptionPriceId
+                SiteSubscriptionId = siteSubscription.Id,
+                SiteSubscriptionPriceId = staysOnCurrentSubscription ? currentRecord?.SiteSubscriptionPriceId : null
             },
             existingCurrent: currentRecord);
 

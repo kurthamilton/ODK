@@ -78,7 +78,11 @@
                                 }
                             </td>
                             <td>
-                                @if (subscription.Prices.Count > 0)
+                                @if (subscription.Free)
+                                {
+                                    <span class="badge bg-success">Free</span>
+                                }
+                                else if (subscription.Prices.Count > 0)
                                 {
                                     @foreach (var price in subscription.Prices)
                                     {
@@ -89,6 +93,7 @@
                                 }
                                 else
                                 {
+                                    @* Neither free nor priced: nobody can be put on this subscription. *@
                                     <span class="badge bg-danger">None</span>
                                 }
                             </td>

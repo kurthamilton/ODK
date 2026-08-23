@@ -3,6 +3,7 @@ using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Members;
 using ODK.Core.Payments;
+using ODK.Core.Subscriptions;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Members;
@@ -71,7 +72,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             x => x.SitePaymentSettingsRepository.GetAll(),
             x => x.SiteSubscriptionRepository.Query()
                 .ForPlatform(platform)
-                .Enabled()
+                .Active()
                 .WithFeatures()
                 .GetAll(),
             x => x.SiteSubscriptionPriceRepository.GetAllEnabled(platform),
@@ -97,9 +98,8 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             .ToArray();
 
         var priceDictionary = prices
-            .Where(x => currency == null || x.CurrencyId == currency.Id || x.Amount == 0)
             .GroupBy(x => x.SiteSubscriptionId)
-            .ToDictionary(x => x.Key, x => x.ToArray());
+            .ToDictionary(x => x.Key, x => (IReadOnlyCollection<SiteSubscriptionPrice>)x.ToArray());
 
         var sitePaymentSettingsDictionary = sitePaymentSettings
             .ToDictionary(x => x.Id);
@@ -107,14 +107,27 @@ public class SiteSubscriptionService : ISiteSubscriptionService
         var externalSubscription = await GetExternalSubscription(sitePaymentSettings, memberSubscriptionDto);
 
         var siteSubscriptionViewModels = subscriptionDtos
-            .Where(x => x.SiteSubscription.IsEnabled(sitePaymentSettingsDictionary[x.SiteSubscription.SitePaymentSettingId]))
+            .Select(x => new
+            {
+                x.Features,
+                /* Every price the subscription has, which is what decides whether it is active - a paid plan
+                   priced only in another currency is still active, it just has nothing to show this member.
+                   The view model carries only the prices in the member's currency. */
+                Prices = priceDictionary.GetValueOrDefault(x.SiteSubscription.Id, []),
+                x.SiteSubscription
+            })
+            .Where(x => x.SiteSubscription.IsActive(
+                x.Prices,
+                sitePaymentSettingsDictionary[x.SiteSubscription.SitePaymentSettingId]))
             .Select(x => new SiteSubscriptionViewModel
             {
                 Currencies = [],
                 CurrentMemberExternalSubscription = externalSubscription,
                 CurrentMemberSiteSubscription = memberSubscriptionDto?.MemberSiteSubscription,
                 Features = x.Features,
-                Prices = priceDictionary.ContainsKey(x.SiteSubscription.Id) ? priceDictionary[x.SiteSubscription.Id] : [],
+                Prices = x.Prices
+                    .Where(price => currency == null || price.CurrencyId == currency.Id)
+                    .ToArray(),
                 SitePaymentSettings = sitePaymentSettings,
                 Subscription = x.SiteSubscription
             })

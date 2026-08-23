@@ -51,7 +51,16 @@
                                 <span>&mdash;</span>
                             }
                         </td>
-                        <td>@row.ExpiresUtc.ToString("d MMMM yyyy")</td>
+                        <td>
+                            @if (row.ExpiresUtc != null)
+                            {
+                                <span>@row.ExpiresUtc.Value.ToString("d MMMM yyyy")</span>
+                            }
+                            else
+                            {
+                                <span>-</span>
+                            }
+                        </td>
                         <td>
                             @if (row.IsActive)
                             {

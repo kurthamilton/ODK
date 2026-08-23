@@ -23,7 +23,8 @@
         .ToArray();
 }
 
-@if (currency == null)
+@* A currency is only needed to show a price, so a member is asked for one only when there is one to show. *@
+@if (currency == null && subscriptions.Any(x => x.Prices.Count > 0))
 {
     var currencyOptions = Model.Currencies
         .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.ToString() })

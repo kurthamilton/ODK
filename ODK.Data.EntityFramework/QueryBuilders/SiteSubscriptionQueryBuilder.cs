@@ -24,9 +24,10 @@ public class SiteSubscriptionQueryBuilder
 
     protected override ISiteSubscriptionQueryBuilder Builder => this;
 
-    public ISiteSubscriptionQueryBuilder Enabled()
+    public ISiteSubscriptionQueryBuilder Active()
     {
-        Query = Query.Where(x => x.Enabled);
+        Query = Query.Where(x => x.Enabled && (x.Free ||
+            Set<SiteSubscriptionPrice>().Any(price => price.SiteSubscriptionId == x.Id)));
         return this;
     }
 

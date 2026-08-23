@@ -310,19 +310,27 @@ internal class MockOdkContext : OdkContext
     internal SiteSubscription CreateSiteSubscription(
         int? groupLimit = null,
         IEnumerable<SiteFeatureType>? features = null,
-        int? memberLimit = null)
+        bool free = false,
+        int? memberLimit = null,
+        PlatformType platform = PlatformType.Default,
+        SitePaymentSettings? sitePaymentSettings = null)
     {
+        // Created rather than made up: a subscription's payment settings row is a foreign key, so code that
+        // reads a subscription's settings expects to find one.
+        sitePaymentSettings ??= CreateSitePaymentSettings();
+
         var siteSubscription = Create(new SiteSubscription
         {
             Id = Guid.NewGuid(),
             Name = "Test Subscription",
             Description = "Test subscription for testing",
+            Free = free,
             GroupLimit = groupLimit ?? 10,
             MemberLimit = memberLimit,
             Enabled = true,
             Default = false,
-            Platform = PlatformType.Default,
-            SitePaymentSettingId = Guid.NewGuid()
+            Platform = platform,
+            SitePaymentSettingId = sitePaymentSettings.Id
         });
 
         if (features != null)
@@ -343,14 +351,15 @@ internal class MockOdkContext : OdkContext
 
     internal SiteSubscriptionPrice CreateSiteSubscriptionPrice(
         SiteSubscription? siteSubscription = null,
-        Currency? currency = null)
+        Currency? currency = null,
+        decimal amount = 100)
     {
         currency ??= CreateCurrency();
         siteSubscription ??= CreateSiteSubscription();
 
         return Create(new SiteSubscriptionPrice
         {
-            Amount = 100,
+            Amount = amount,
             Currency = currency,
             CurrencyId = currency.Id,
             ExternalId = "external_id",

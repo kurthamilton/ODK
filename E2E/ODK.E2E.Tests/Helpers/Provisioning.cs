@@ -418,7 +418,8 @@ internal static class Provisioning
         // (the site admin logs in via the global /account/login, which DrunkenKnitwits also exposes).
         var admin = await SharedAccounts.Get(SharedAccounts.SiteAdmin);
         await RunAs(admin, page => new SiteAdminSubscriptionsPage(page).CreateSubscription(
-            SitePaymentSettingsDataHelper.Name, "ODK E2E Free", "ODK E2E Free", groupLimit: 1, memberLimit: 20),
+            SitePaymentSettingsDataHelper.Name, "ODK E2E Free", "ODK E2E Free", groupLimit: 1, memberLimit: 20,
+            free: true),
             E2ESettings.DrunkenKnitwitsBaseUrl);
 
         await new SiteSubscriptionDataHelper(E2ESettings.ConnectionString)
