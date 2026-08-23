@@ -12694,6 +12694,8 @@ footer {
 
 .form-inline {
   display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
 }
 .form-inline .form-group {
   margin-right: 1rem;
@@ -12703,6 +12705,23 @@ footer {
 }
 .form-inline .form-select {
   width: auto;
+}
+
+@media (min-width: 768px) {
+  .form-inline-md {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+  }
+  .form-inline-md .form-group {
+    margin-right: 1rem;
+  }
+  .form-inline-md .form-label {
+    margin-right: 0.5rem;
+  }
+  .form-inline-md .form-select {
+    width: auto;
+  }
 }
 
 .form-horizontal .form-label {

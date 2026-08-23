@@ -26,6 +26,18 @@ cd /d "%~dp0..\ODK.Web.Razor" || (
     exit /b 1
 )
 
+rem An ODK.Web.Razor.exe left over from an earlier run holds the DLLs under bin and the two ports below,
+rem so this run dies on a locked file or a failed bind rather than on anything naming a stale process as
+rem the cause. One process serves both platforms, so whatever is already running is stale - stop it.
+rem
+rem Match this image name only. A broad `dotnet.exe` sweep would also take down unrelated builds, other
+rem repos' watchers and IDE language servers.
+tasklist /fi "imagename eq ODK.Web.Razor.exe" | find /i "ODK.Web.Razor.exe" >nul
+if not errorlevel 1 (
+    echo Stopping an ODK.Web.Razor.exe that is already running...
+    taskkill /f /im ODK.Web.Razor.exe >nul 2>&1
+)
+
 rem npm holds both the SCSS compiler and the browser libraries the app serves, so a clone with no
 rem node_modules has neither. `npm ci` installs exactly what package-lock.json pins.
 if not exist node_modules (
