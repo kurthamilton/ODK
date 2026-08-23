@@ -52,7 +52,7 @@ public static class GroupAdminRoutesTests
 
         // Assert
         result.Should().NotBeNull();
-        result!.IsPermitted(adminMember, currentMember, PlatformType.Default).Should().BeTrue();
+        result.IsPermitted(adminMember, currentMember, PlatformType.Default).Should().BeTrue();
     }
 
     [Test]

@@ -100,9 +100,13 @@ public static class MemberAdminServiceTests
 
         // Assert
         result.Success.Should().BeTrue();
-        context.Set<Member>()
+
+        var memberChapter = context.Set<Member>()
             .Single(x => x.Id == member.Id)
-            .MemberChapter(chapter.Id)!.Approved.Should().BeTrue();
+            .MemberChapter(chapter.Id);
+
+        memberChapter.Should().NotBeNull();
+        memberChapter.Approved.Should().BeTrue();
 
         emailService.Verify(
             x => x.SendMemberApprovedEmail(It.IsAny<IChapterServiceRequest>(), It.IsAny<Member>()),

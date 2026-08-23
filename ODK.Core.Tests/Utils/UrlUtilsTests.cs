@@ -35,7 +35,7 @@ public static class UrlUtilsTests
 
         // Assert
         result.Should().Be(new string('a', 8) + "-2");
-        result!.Length.Should().Be(10);
+        result.Length.Should().Be(10);
     }
 
     [Test]

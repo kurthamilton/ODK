@@ -1,4 +1,4 @@
-using ODK.Core.Members;
+﻿using ODK.Core.Members;
 using ODK.Data.Core;
 
 namespace ODK.Services.Subscriptions;
@@ -17,7 +17,7 @@ public class MemberSiteSubscriptionWriter : IMemberSiteSubscriptionWriter
         var existingCurrent = await _unitOfWork.MemberSiteSubscriptionRecordRepository
             .Query()
             .Current()
-            .ForMember(newRecord.MemberId!.Value)
+            .ForMember(newRecord.MemberId)
             .GetSingleOrDefault()
             .Run();
 

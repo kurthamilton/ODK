@@ -25,10 +25,7 @@ public class MemberSiteSubscriptionRecord : IDatabaseEntity
     /// </summary>
     public bool IsCurrent { get; set; }
 
-    // Nullable for now: the log has pre-existing (payment-only) rows without a member. Phase 1 leaves those
-    // null; the backfill populates them (and new records always set it), before a later migration makes it
-    // required.
-    public Guid? MemberId { get; set; }
+    public Guid MemberId { get; set; }
 
     public Guid? PaymentId { get; set; }
 

@@ -36,7 +36,8 @@ public static class ChapterServiceTests
             CreateMemberServiceRequest(member, PlatformType.DrunkenKnitwits));
 
         // Assert
-        result!.Id.Should().Be(first.Id);
+        result.Should().NotBeNull();
+        result.Id.Should().Be(first.Id);
     }
 
     [Test]
@@ -55,7 +56,8 @@ public static class ChapterServiceTests
             CreateMemberServiceRequest(member, PlatformType.DrunkenKnitwits));
 
         // Assert
-        result!.Id.Should().Be(chapter.Id);
+        result.Should().NotBeNull();
+        result.Id.Should().Be(chapter.Id);
     }
 
     [Test]

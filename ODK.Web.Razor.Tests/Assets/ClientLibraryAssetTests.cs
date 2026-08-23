@@ -126,7 +126,7 @@ public static class ClientLibraryAssetTests
             + "odk.slnx was found above {0}",
             AppContext.BaseDirectory);
 
-        return Path.Combine(directory!.FullName, "ODK.Web.Razor");
+        return Path.Combine(directory.FullName, "ODK.Web.Razor");
     }
 
     private static IEnumerable<string> SourceFiles(string directory)

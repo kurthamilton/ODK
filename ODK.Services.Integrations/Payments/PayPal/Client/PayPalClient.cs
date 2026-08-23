@@ -149,7 +149,12 @@ public class PayPalClient
         var response = await client.PostAsync(url, payload);
 
         Authentication = await MapJsonResponse<AuthenticationJsonModel>(response);
-        return Authentication!.AccessToken;
+        if (Authentication == null)
+        {
+            throw new Exception("Response deserialized to null");
+        }
+
+        return Authentication.AccessToken;
     }
 
     private async Task<HttpClient> GetAuthenticatedHttpClient()

@@ -31,7 +31,8 @@ public static class StripePaymentProviderTests
         var result = await CreateProvider().MapSubscription(subscription);
 
         // Assert
-        result!.Status.Should().Be(ExternalSubscriptionStatus.Cancelled);
+        result.Should().NotBeNull();
+        result.Status.Should().Be(ExternalSubscriptionStatus.Cancelled);
         result.CancelDate.Should().Be(subscription.CancelAt);
     }
 
@@ -88,7 +89,7 @@ public static class StripePaymentProviderTests
 
         // Assert
         result.Should().NotBeNull();
-        result!.NextBillingDate.Should().Be(periodEnd);
+        result.NextBillingDate.Should().Be(periodEnd);
         result.LastPaymentDate.Should().Be(periodStart);
         result.ExternalSubscriptionPlanId.Should().Be("price_123");
         result.Status.Should().Be(ExternalSubscriptionStatus.Active);
