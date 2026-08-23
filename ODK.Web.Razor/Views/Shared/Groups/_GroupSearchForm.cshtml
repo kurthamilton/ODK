@@ -1,6 +1,5 @@
 ﻿@using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Razor.Models.Components
-@using ODK.Web.Razor.Models.Topics
 @model GroupsViewModel
 
 <div class="form-group mb-3" data-location-container>
@@ -11,7 +10,7 @@
             </span>
         </span>
         <div class="dropdown flex-grow-1">
-            <input type="text" name="n" value="@Model.Location?.Name" class="form-control" placeholder="Location" 
+            <input type="text" name="n" value="@Model.Location?.Name" class="form-control form-control-sm" placeholder="Location" 
                 data-location
                 data-bs-toggle="dropdown"/>
 
@@ -24,7 +23,7 @@
     <input type="hidden" value="@Model.Location?.LatLong.ToString()" data-location-latlong name="l" />
 </div>
 <div class="form-group mb-3">
-    <div class="d-flex form-inline">
+    <div class="d-flex flex-nowrap form-inline">
         <input type="number" value="@Model.Distance.Value" name="d" class="form-control form-control-sm" />
         <select name="u" class="form-select form-select-sm">
             @foreach (var option in Model.DistanceUnits)

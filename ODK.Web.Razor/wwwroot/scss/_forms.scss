@@ -1,7 +1,15 @@
 @import "odk/_forms";
 
-.form-inline {
+// Lay a form's groups out in a row rather than stacked.
+@mixin odk-form-inline {
     display: flex;
+    // Wrap rather than crush: a group's control shrinks to whatever the row leaves it, so a row that
+    // cannot fit its fields at their natural width squeezes each one until its text wraps inside it.
+    // Spilling the last group onto a second line keeps every field usable at its intended width.
+    flex-wrap: wrap;
+    // Bottom-align, so a group carrying no label - or a taller one whose label wraps to two lines - still
+    // lines its control up with the rest of the row.
+    align-items: flex-end;
 
     .form-group {
         margin-right: 1rem;
@@ -14,6 +22,17 @@
     .form-select {
         // turn off bootstrap's 100% width
         width: auto;
+    }
+}
+
+.form-inline {
+    @include odk-form-inline;
+}
+
+// Stacked below md, inline at or above it, for a form whose fields are too wide to share a row on a phone.
+.form-inline-md {
+    @include media-breakpoint-up(md) {
+        @include odk-form-inline;
     }
 }
 
