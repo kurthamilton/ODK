@@ -272,7 +272,7 @@ public static class EmailTemplateParametersTests
         var property = parametersType.GetProperty("Names", BindingFlags.Public | BindingFlags.Static);
         property.Should().NotBeNull($"{parametersType.Name} should declare a static Names");
 
-        return (IReadOnlyCollection<string>)property!.GetValue(null)!;
+        return (IReadOnlyCollection<string>)property.GetValue(null)!;
     }
 
     private static IEnumerable<PropertyInfo> Settable(Type parametersType) => parametersType

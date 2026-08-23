@@ -91,7 +91,10 @@ public static class ReferralAdminServiceTests
         await service.CreateCampaign(request, CreateModel("Spring drive", DateTime.Parse(expires)));
 
         // Assert
-        return context.Set<ReferralCampaign>().Single().ExpiresUtc!.Value.ToString("yyyy-MM-dd HH:mm");
+        var referralCampaign = context.Set<ReferralCampaign>().Single();
+        referralCampaign.ExpiresUtc.Should().NotBeNull();
+
+        return referralCampaign.ExpiresUtc.Value.ToString("yyyy-MM-dd HH:mm");
     }
 
     [Test]

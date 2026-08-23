@@ -152,7 +152,8 @@ public static class EmailAdminServiceTests
         var result = await service.GetChapterEmails(CreateRequest(chapter, currentMember));
 
         // Assert - the site's titles come through too, since the form shows them beside the group's boxes.
-        result.Settings!.MemberTitle.Should().Be("Our own wording");
+        result.Settings.Should().NotBeNull();
+        result.Settings.MemberTitle.Should().Be("Our own wording");
         result.SiteMemberTitle.Should().Be("Site members");
         result.SiteAdminTitle.Should().Be("Site admins");
         result.CanEdit.Should().BeTrue();

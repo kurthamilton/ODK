@@ -44,8 +44,11 @@ public static class MemberTaskServiceTests
         // Assert
         tasks.Select(x => x.Type).Should().BeEquivalentTo(
             new[] { MemberTaskType.CompleteChapterProfile, MemberTaskType.UploadImage });
-        tasks.Single(x => x.Type == MemberTaskType.CompleteChapterProfile).Chapter!.Id
-            .Should().Be(chapter.Id);
+
+        var taskChapter = tasks.Single(x => x.Type == MemberTaskType.CompleteChapterProfile).Chapter;
+        taskChapter.Should().NotBeNull();
+
+        taskChapter.Id.Should().Be(chapter.Id);
     }
 
     [Test]

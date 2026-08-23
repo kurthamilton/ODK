@@ -49,7 +49,7 @@ public static class DopplerConfigShapeTests
 
         // Assert
         settings.Should().NotBeNull();
-        settings!.Client.Cookies.Should().BeEquivalentTo(new Dictionary<string, string>
+        settings.Client.Cookies.Should().BeEquivalentTo(new Dictionary<string, string>
         {
             ["ds_user_id"] = "1234567890",
             ["sessionid"] = "abc",

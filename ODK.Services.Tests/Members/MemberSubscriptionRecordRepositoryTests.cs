@@ -24,7 +24,8 @@ public static class MemberSubscriptionRecordRepositoryTests
         var result = await GetCurrentChapterSubscription(context, member.Id, chapter.Id);
 
         // Assert
-        result!.IsActiveRecurring().Should().BeFalse();
+        result.Should().NotBeNull();
+        result.IsActiveRecurring().Should().BeFalse();
     }
 
     [Test]
@@ -46,7 +47,8 @@ public static class MemberSubscriptionRecordRepositoryTests
         var result = await GetCurrentChapterSubscription(context, member.Id, chapter.Id);
 
         // Assert
-        result!.IsActiveRecurring().Should().BeFalse();
+        result.Should().NotBeNull();
+        result.IsActiveRecurring().Should().BeFalse();
     }
 
     [Test]
@@ -64,7 +66,8 @@ public static class MemberSubscriptionRecordRepositoryTests
         var result = await GetCurrentChapterSubscription(context, member.Id, chapter.Id);
 
         // Assert
-        result!.IsActiveRecurring().Should().BeFalse();
+        result.Should().NotBeNull();
+        result.IsActiveRecurring().Should().BeFalse();
     }
 
     [Test]
@@ -82,7 +85,8 @@ public static class MemberSubscriptionRecordRepositoryTests
         var result = await GetCurrentChapterSubscription(context, member.Id, chapter.Id);
 
         // Assert
-        result!.IsActiveRecurring().Should().BeTrue();
+        result.Should().NotBeNull();
+        result.IsActiveRecurring().Should().BeTrue();
     }
 
     [Test]

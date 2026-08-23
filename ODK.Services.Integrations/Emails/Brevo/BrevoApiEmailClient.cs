@@ -67,9 +67,14 @@ public class BrevoApiEmailClient : IEmailClient
             }
 
             var response = JsonUtils.Deserialize<BrevoTransactionalEmailResponse>(json);
+            if (response == null)
+            {
+                throw new Exception("Response deserialized to null");
+            }
+
             return new SendEmailResult(true)
             {
-                ExternalId = response!.MessageId
+                ExternalId = response.MessageId
             };
         }
         catch (Exception ex)

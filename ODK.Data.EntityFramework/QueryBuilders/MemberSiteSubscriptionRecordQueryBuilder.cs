@@ -102,7 +102,7 @@ public class MemberSiteSubscriptionRecordQueryBuilder :
                     CancelledUtc = record.CancelledUtc,
                     ExpiresUtc = record.ExpiresUtc,
                     ExternalId = record.ExternalId,
-                    MemberId = record.MemberId!.Value,
+                    MemberId = record.MemberId,
                     SiteSubscriptionId = record.SiteSubscriptionId,
                     SiteSubscriptionPriceId = record.SiteSubscriptionPriceId
                 },
@@ -120,7 +120,7 @@ public class MemberSiteSubscriptionRecordQueryBuilder :
             CancelledUtc = x.CancelledUtc,
             ExpiresUtc = x.ExpiresUtc,
             ExternalId = x.ExternalId,
-            MemberId = x.MemberId!.Value,
+            MemberId = x.MemberId,
             SiteSubscriptionId = x.SiteSubscriptionId,
             SiteSubscriptionPriceId = x.SiteSubscriptionPriceId
         });

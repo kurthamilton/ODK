@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
@@ -42,7 +42,7 @@ public class MemberSiteSubscriptionRecordRepository :
                     CancelledUtc = record.CancelledUtc,
                     ExpiresUtc = record.ExpiresUtc,
                     ExternalId = record.ExternalId,
-                    MemberId = record.MemberId!.Value,
+                    MemberId = record.MemberId,
                     SiteSubscriptionId = record.SiteSubscriptionId,
                     SiteSubscriptionPriceId = record.SiteSubscriptionPriceId
                 },
