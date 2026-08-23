@@ -1,3 +1,5 @@
+using ODK.Core.Subscriptions;
+
 namespace ODK.Core.Members;
 
 /// <summary>
@@ -21,7 +23,9 @@ public class MemberSiteSubscriptionState
 
     public Guid? SiteSubscriptionPriceId { get; init; }
 
-    public bool IsActive() => ExpiresUtc == null || ExpiresUtc > DateTime.UtcNow;
+    public bool IsActive(SiteSubscriptionCooldown cooldown, DateTime utcNow)
+        => cooldown.IsActive(ExpiresUtc, utcNow);
 
-    public bool IsExpired() => ExpiresUtc < DateTime.UtcNow;
+    public bool IsExpired(SiteSubscriptionCooldown cooldown, DateTime utcNow)
+        => !IsActive(cooldown, utcNow);
 }

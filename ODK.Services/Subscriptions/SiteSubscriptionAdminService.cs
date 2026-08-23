@@ -12,16 +12,19 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
 {
     private readonly IHtmlValidator _htmlValidator;
     private readonly IPaymentProviderFactory _paymentProviderFactory;
+    private readonly SiteSubscriptionCooldown _siteSubscriptionCooldown;
     private readonly IUnitOfWork _unitOfWork;
 
     public SiteSubscriptionAdminService(
         IUnitOfWork unitOfWork,
         IHtmlValidator htmlValidator,
-        IPaymentProviderFactory paymentProviderFactory)
+        IPaymentProviderFactory paymentProviderFactory,
+        SiteSubscriptionCooldown siteSubscriptionCooldown)
         : base(unitOfWork)
     {
         _htmlValidator = htmlValidator;
         _paymentProviderFactory = paymentProviderFactory;
+        _siteSubscriptionCooldown = siteSubscriptionCooldown;
         _unitOfWork = unitOfWork;
     }
 
@@ -227,7 +230,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
                     ExpiresUtc = expiresUtc,
                     Frequency = price?.Frequency ?? SiteSubscriptionFrequency.None,
                     FullName = membersById[memberId].FullName,
-                    IsActive = expiresUtc >= now,
+                    IsActive = _siteSubscriptionCooldown.IsActive(expiresUtc, now),
                     SubscriptionName = dto.SiteSubscription.Name
                 };
             })
@@ -250,7 +253,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
 
         var (sitePaymentSettings, siteSubscriptionSummaries, prices) = await GetSiteAdminRestrictedContent(request,
             x => x.SitePaymentSettingsRepository.GetAll(),
-            x => x.SiteSubscriptionRepository.GetSummaries(platform),
+            x => x.SiteSubscriptionRepository.GetSummaries(platform, _siteSubscriptionCooldown),
             x => x.SiteSubscriptionPriceRepository.GetAll(platform));
 
         var priceDictionary = prices

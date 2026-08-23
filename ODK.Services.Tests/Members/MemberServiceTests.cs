@@ -1153,6 +1153,7 @@ public static class MemberServiceTests
             .AddSingleton(topicService)
             .AddSingleton(oauthProviderFactory)
             .AddSingleton(memberPasswordService)
+            .AddSingleton(new SiteSubscriptionCooldown(months: 0))
             .AddSingleton(membership)
             .AddSingleton(account)
             .AddScoped<IChapterMembershipContextFactory, ChapterMembershipContextFactory>()

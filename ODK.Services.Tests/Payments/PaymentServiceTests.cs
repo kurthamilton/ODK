@@ -12,6 +12,7 @@ using ODK.Core.Events;
 using ODK.Core.Members;
 using ODK.Core.Payments;
 using ODK.Core.Platforms;
+using ODK.Core.Subscriptions;
 using ODK.Data.Core;
 using ODK.Services.Events;
 using ODK.Services.Logging;
@@ -912,6 +913,70 @@ public static class PaymentServiceTests
             .Be(2);
     }
 
+    // Lapsed but inside the cooldown - still effectively a subscriber, so the period continues.
+    [TestCase(-5, 1, true)]
+    // Lapsed beyond the cooldown: a returning subscriber starts a new period.
+    [TestCase(-70, 1, false)]
+    // No cooldown configured, so only a live period continues.
+    [TestCase(-5, 0, false)]
+    public static async Task ProcessWebhook_SiteSubscription_ContinuesLapsedPeriodOnlyWithinCooldown(
+        int expiryDaysFromNow,
+        int cooldownMonths,
+        bool continuesExistingPeriod)
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var member = context.CreateMember();
+        var currency = context.CreateCurrency();
+        var siteSubscription = context.CreateSiteSubscription();
+        var siteSubscriptionPrice = context.CreateSiteSubscriptionPrice(
+            siteSubscription: siteSubscription,
+            currency: currency);
+        var payment = context.CreatePayment(
+            member: member,
+            currency: currency,
+            paidUtc: DateTime.UtcNow.AddMonths(-12));
+
+        var originalExpiry = DateTime.UtcNow.AddDays(expiryDaysFromNow);
+        context.CreateMemberSiteSubscription(
+            member,
+            siteSubscription: siteSubscription,
+            expiresUtc: originalExpiry);
+
+        var webhook = CreatePaymentProviderWebhook(
+            id: "wh_lapsed",
+            type: PaymentProviderWebhookType.InvoicePaymentSucceeded,
+            subscriptionId: "sub_123",
+            metadata: new PaymentMetadataModel(
+                PlatformType.Default,
+                PaymentReasonType.SiteSubscription,
+                member,
+                siteSubscriptionPrice,
+                Guid.NewGuid(),
+                payment.Id));
+
+        // The default factory returns no subscription, so there is no next payment date to read and the
+        // expiry is calculated from the current record.
+        var service = CreatePaymentService(
+            context,
+            siteSubscriptionCooldown: new SiteSubscriptionCooldown(cooldownMonths));
+        var request = CreateServiceRequest();
+
+        // Act
+        await service.ProcessWebhook(request, webhook);
+
+        // Assert
+        var currentRecord = context.Set<MemberSiteSubscriptionRecord>()
+            .Single(x => x.MemberId == member.Id && x.IsCurrent);
+
+        var expected = continuesExistingPeriod
+            ? originalExpiry.AddMonths(12)
+            : DateTime.UtcNow.AddMonths(12);
+
+        currentRecord.ExpiresUtc.Should().BeCloseTo(expected, TimeSpan.FromMinutes(5));
+    }
+
     [Test]
     public static async Task ProcessWebhook_RecurringChapterSubscription_WhenProviderHasNoNextPaymentDate_CalculatesExpiry()
     {
@@ -1335,7 +1400,8 @@ public static class PaymentServiceTests
         ILoggingService? loggingService = null,
         IMemberEmailService? memberEmailService = null,
         IPaymentProviderFactory? paymentProviderFactory = null,
-        IEventService? eventService = null)
+        IEventService? eventService = null,
+        SiteSubscriptionCooldown? siteSubscriptionCooldown = null)
     {
         var unitOfWork = CreateMockUnitOfWork(context);
         return new PaymentService(
@@ -1347,7 +1413,8 @@ public static class PaymentServiceTests
             new MockBackgroundTaskService(),
             new MemberChapterSubscriptionWriter(unitOfWork),
             new MemberSiteSubscriptionWriter(unitOfWork),
-            new MockServiceRequestFactory(context));
+            new MockServiceRequestFactory(context),
+            siteSubscriptionCooldown ?? new SiteSubscriptionCooldown(months: 0));
     }
 
     private static IServiceRequest CreateServiceRequest(PlatformType? platform = null)

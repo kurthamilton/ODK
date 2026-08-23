@@ -2,6 +2,7 @@
 using ODK.Core.Features;
 using ODK.Core.Platforms;
 using ODK.Core.SocialMedia;
+using ODK.Core.Subscriptions;
 using ODK.Core.Utils;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
@@ -17,6 +18,7 @@ public class SocialMediaService : ISocialMediaService
     private readonly IInstagramClient _instagramClient;
     private readonly ILoggingService _loggingService;
     private readonly SocialMediaServiceSettings _settings;
+    private readonly SiteSubscriptionCooldown _siteSubscriptionCooldown;
     private readonly IUnitOfWork _unitOfWork;
 
     public SocialMediaService(
@@ -25,13 +27,15 @@ public class SocialMediaService : ISocialMediaService
         ILoggingService loggingService,
         IAuthorizationService authorizationService,
         IInstagramClient instagramClient,
-        IBackgroundTaskService backgroundTaskService)
+        IBackgroundTaskService backgroundTaskService,
+        SiteSubscriptionCooldown siteSubscriptionCooldown)
     {
         _authorizationService = authorizationService;
         _backgroundTaskService = backgroundTaskService;
         _instagramClient = instagramClient;
         _loggingService = loggingService;
         _settings = settings;
+        _siteSubscriptionCooldown = siteSubscriptionCooldown;
         _unitOfWork = unitOfWork;
     }
 
@@ -91,7 +95,7 @@ public class SocialMediaService : ISocialMediaService
 
         var (hasAccess, links) = await _unitOfWork.RunAsync(
             x => x.MemberSiteSubscriptionRecordRepository
-                .Query(x => x.Current().ForChapterOwner(chapterId).Active())
+                .Query(x => x.Current().ForChapterOwner(chapterId).Active(_siteSubscriptionCooldown))
                 .HasFeature(SiteFeatureType.InstagramFeed),
             x => x.ChapterLinksRepository.GetByChapterId(chapterId));
 

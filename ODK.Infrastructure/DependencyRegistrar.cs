@@ -2,6 +2,7 @@
 using ODK.Core.Countries;
 using ODK.Core.Exceptions;
 using ODK.Core.Platforms;
+using ODK.Core.Subscriptions;
 using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Data.EntityFramework;
@@ -369,6 +370,9 @@ public static class DependencyRegistrar
             SiteKey = recaptcha.SiteKey,
             VerifyUrl = recaptcha.VerifyUrl
         });
+
+        // How long an expired site subscription keeps its access (Subscriptions:DefaultCooldownMonths).
+        services.AddSingleton(new SiteSubscriptionCooldown(appSettings.Subscriptions.DefaultCooldownMonths));
     }
 
     /* The web layer's own mapped settings, declared in ODK.Web.Common so this project can see them - the

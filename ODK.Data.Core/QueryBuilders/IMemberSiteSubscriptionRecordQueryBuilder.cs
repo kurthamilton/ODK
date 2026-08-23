@@ -1,5 +1,6 @@
 using ODK.Core.Features;
 using ODK.Core.Members;
+using ODK.Core.Subscriptions;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Members;
 
@@ -8,7 +9,10 @@ namespace ODK.Data.Core.QueryBuilders;
 public interface IMemberSiteSubscriptionRecordQueryBuilder :
     IDatabaseEntityQueryBuilder<MemberSiteSubscriptionRecord, IMemberSiteSubscriptionRecordQueryBuilder>
 {
-    IMemberSiteSubscriptionRecordQueryBuilder Active();
+    /// <summary>
+    /// Records that have not expired, treating one that expired within <paramref name="cooldown"/> as active.
+    /// </summary>
+    IMemberSiteSubscriptionRecordQueryBuilder Active(SiteSubscriptionCooldown cooldown);
 
     IMemberSiteSubscriptionRecordQueryBuilder Current();
 

@@ -1131,7 +1131,8 @@ public static class MemberAdminServiceTests
             workflow.GetRequiredService<StateMachineRunner<
                 ChapterMembershipState, ChapterMembershipTrigger, ChapterMembershipContext>>(),
             workflow.GetRequiredService<IChapterMembershipContextFactory>(),
-            new MockServiceRequestFactory(context));
+            new MockServiceRequestFactory(context),
+            new SiteSubscriptionCooldown(months: 0));
     }
 
     /// <summary>
@@ -1164,6 +1165,7 @@ public static class MemberAdminServiceTests
             .AddSingleton<IEmailValidationService>(
                 new EmailValidationService(new InconclusiveEmailVerifier()))
             .AddSingleton<IMemberChapterSubscriptionWriter>(new MemberChapterSubscriptionWriter(unitOfWork))
+            .AddSingleton(new SiteSubscriptionCooldown(months: 0))
             .AddSingleton(account)
             .AddSingleton(membership)
             .AddScoped<IAccountContextFactory, AccountContextFactory>()

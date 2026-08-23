@@ -53,6 +53,11 @@ public class SiteSubscriptionCancellationTests : DefaultPageTest
         externalId.Should().NotBeNullOrEmpty(
             "the payment webhook should record the provider's subscription id against the member");
 
+        // The confirm page brings the member back here of its own accord once the payment is recorded, so
+        // wait for that rather than racing it - and then re-read the page, since it may have rendered before
+        // the external id landed.
+        await accountPage.WaitForCheckoutHandover();
+
         await accountPage.GoTo();
         (await accountPage.IsCancelButtonShown()).Should().BeTrue(
             "an active subscription should offer cancellation");

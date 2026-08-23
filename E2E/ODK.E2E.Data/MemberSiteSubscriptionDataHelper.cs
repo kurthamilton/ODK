@@ -43,9 +43,12 @@ public class MemberSiteSubscriptionDataHelper : DataHelperBase
 
     /// <summary>
     /// Backdates the member's current subscription so it has lapsed, taking its features with it. Models a
-    /// subscription running out, which is how a group loses a feature it had been using.
+    /// subscription running out, which is how a group loses a feature it had been using. Defaults to years
+    /// ago, which is outside any configured cooldown (<c>Subscriptions:DefaultCooldownMonths</c>) - inside
+    /// one, a lapsed subscription keeps its access. Pass <paramref name="expiresUtc"/> to lapse it to a
+    /// particular date, which is how a test arranges one side of that window or the other.
     /// </summary>
-    public async Task Expire(Guid memberId)
+    public async Task Expire(Guid memberId, DateTime? expiresUtc = null)
     {
         const string sql =
             """
@@ -56,7 +59,7 @@ public class MemberSiteSubscriptionDataHelper : DataHelperBase
 
         await using var builder = Builder(sql)
             .AddParameter("@memberId", memberId)
-            .AddParameter("@expires", DateTime.UtcNow.AddDays(-1));
+            .AddParameter("@expires", expiresUtc ?? DateTime.UtcNow.AddYears(-10));
 
         await builder.ExecuteNonQuery();
     }

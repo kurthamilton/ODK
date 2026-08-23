@@ -35,6 +35,7 @@ public class ChapterViewModelService : IChapterViewModelService
     private readonly IDistanceUnitFactory _distanceUnitFactory;
     private readonly IGeolocationService _geolocationService;
     private readonly ILoggingService _loggingService;
+    private readonly SiteSubscriptionCooldown _siteSubscriptionCooldown;
     private readonly ISocialMediaService _socialMediaService;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -44,12 +45,14 @@ public class ChapterViewModelService : IChapterViewModelService
         ISocialMediaService socialMediaService,
         ILoggingService loggingService,
         IDistanceUnitFactory distanceUnitFactory,
-        IGeolocationService geolocationService)
+        IGeolocationService geolocationService,
+        SiteSubscriptionCooldown siteSubscriptionCooldown)
     {
         _authorizationService = authorizationService;
         _distanceUnitFactory = distanceUnitFactory;
         _geolocationService = geolocationService;
         _loggingService = loggingService;
+        _siteSubscriptionCooldown = siteSubscriptionCooldown;
         _socialMediaService = socialMediaService;
         _unitOfWork = unitOfWork;
     }
@@ -663,7 +666,7 @@ public class ChapterViewModelService : IChapterViewModelService
                     .GetSingleOrDefault()
                 : new DefaultDeferredQuerySingleOrDefault<MemberChapterSubscription>(),
             x => x.MemberSiteSubscriptionRecordRepository
-                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active())
+                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
                 .HasFeature(SiteFeatureType.InstagramFeed),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
@@ -926,7 +929,7 @@ public class ChapterViewModelService : IChapterViewModelService
                     .GetSingleOrDefault()
                 : new DefaultDeferredQuerySingleOrDefault<MemberChapterSubscription>(),
             x => x.MemberSiteSubscriptionRecordRepository
-                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active())
+                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
                 .HasFeature(SiteFeatureType.InstagramFeed),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),

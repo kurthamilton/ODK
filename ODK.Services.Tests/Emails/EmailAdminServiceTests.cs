@@ -9,6 +9,7 @@ using ODK.Core.Emails;
 using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
+using ODK.Core.Subscriptions;
 using ODK.Core.Web;
 using ODK.Services.Authorization;
 using ODK.Services.Emails;
@@ -814,7 +815,8 @@ public static class EmailAdminServiceTests
         // with-the-feature cases into false passes.
         new AuthorizationService(),
         htmlValidator ?? CreateHtmlValidator(ServiceResult.Successful()),
-        CreateUrlProviderFactory());
+        CreateUrlProviderFactory(),
+        new SiteSubscriptionCooldown(months: 0));
 
     // Returns a URL for anything asked of it: a bare mock hands back null, and a null group URL would read
     // as a parameter with no value rather than one this page can resolve.

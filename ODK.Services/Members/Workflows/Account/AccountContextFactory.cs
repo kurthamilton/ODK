@@ -2,6 +2,7 @@
 using ODK.Core.Members;
 using ODK.Core.Notifications;
 using ODK.Core.Referrals;
+using ODK.Core.Subscriptions;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
 using ODK.Services.Authentication.OAuth;
@@ -12,11 +13,16 @@ namespace ODK.Services.Members.Workflows.Account;
 public sealed class AccountContextFactory : IAccountContextFactory
 {
     private readonly IOAuthProviderFactory _oauthProviderFactory;
+    private readonly SiteSubscriptionCooldown _siteSubscriptionCooldown;
     private readonly IUnitOfWork _unitOfWork;
 
-    public AccountContextFactory(IUnitOfWork unitOfWork, IOAuthProviderFactory oauthProviderFactory)
+    public AccountContextFactory(
+        IUnitOfWork unitOfWork,
+        IOAuthProviderFactory oauthProviderFactory,
+        SiteSubscriptionCooldown siteSubscriptionCooldown)
     {
         _oauthProviderFactory = oauthProviderFactory;
+        _siteSubscriptionCooldown = siteSubscriptionCooldown;
         _unitOfWork = unitOfWork;
     }
 
@@ -44,7 +50,7 @@ public sealed class AccountContextFactory : IAccountContextFactory
             x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.MemberSiteSubscriptionRecordRepository
-                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active())
+                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
                 .SiteSubscription()
                 .WithFeatures()
                 .GetSingleOrDefault(),
@@ -202,7 +208,7 @@ public sealed class AccountContextFactory : IAccountContextFactory
             x => x.MemberRepository.GetByEmailAddress(profile.EmailAddress),
             x => x.SiteSubscriptionRepository.GetDefault(platform),
             x => x.MemberSiteSubscriptionRecordRepository
-                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active())
+                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
                 .SiteSubscription()
                 .WithFeatures()
                 .GetSingleOrDefault(),

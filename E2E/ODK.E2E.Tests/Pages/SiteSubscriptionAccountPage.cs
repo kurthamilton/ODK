@@ -13,6 +13,8 @@ internal class SiteSubscriptionAccountPage
 {
     private const string CancelButtonSelector = "button:has-text('Cancel subscription')";
 
+    private const string Path = "/account/subscription";
+
     private readonly IPage _page;
 
     public SiteSubscriptionAccountPage(IPage page)
@@ -40,7 +42,7 @@ internal class SiteSubscriptionAccountPage
     }
 
     /// <summary>Navigates to the page.</summary>
-    public Task GoTo() => _page.Navigate("/account/subscription");
+    public Task GoTo() => _page.Navigate(Path);
 
     /// <summary>
     /// Whether a feedback toast carrying the given message is present. Matched in the DOM rather than on
@@ -58,4 +60,15 @@ internal class SiteSubscriptionAccountPage
 
     /// <summary>Whether the "choose currency" prompt is shown (i.e. the member has no currency yet).</summary>
     public async Task<bool> IsCurrencyPromptShown() => await _page.Locator("#currencyId").CountAsync() > 0;
+
+    /// <summary>
+    /// Waits for the app to land here itself after a checkout. A completed checkout returns to the confirm
+    /// page, which polls the payment status every second and, as soon as the webhook has recorded it,
+    /// reloads itself and redirects here - so a test must not navigate while that page is open: its own
+    /// navigation is aborted by the page's (net::ERR_ABORTED), and the webhook a purchase test waits for is
+    /// exactly what sets the reload off. Matched on the path alone, so the confirm page's own address (which
+    /// starts with it) does not satisfy it.
+    /// </summary>
+    public Task WaitForCheckoutHandover()
+        => _page.WaitForURLAsync(url => new Uri(url).AbsolutePath == Path, new() { Timeout = 30000 });
 }

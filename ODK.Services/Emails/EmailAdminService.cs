@@ -30,6 +30,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
     private readonly IAuthorizationService _authorizationService;
     private readonly IHtmlValidator _htmlValidator;
     private readonly IMemberEmailService _memberEmailService;
+    private readonly SiteSubscriptionCooldown _siteSubscriptionCooldown;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUrlProviderFactory _urlProviderFactory;
 
@@ -38,12 +39,14 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         IMemberEmailService memberEmailService,
         IAuthorizationService authorizationService,
         IHtmlValidator htmlValidator,
-        IUrlProviderFactory urlProviderFactory)
+        IUrlProviderFactory urlProviderFactory,
+        SiteSubscriptionCooldown siteSubscriptionCooldown)
         : base(unitOfWork)
     {
         _authorizationService = authorizationService;
         _htmlValidator = htmlValidator;
         _memberEmailService = memberEmailService;
+        _siteSubscriptionCooldown = siteSubscriptionCooldown;
         _unitOfWork = unitOfWork;
         _urlProviderFactory = urlProviderFactory;
     }
@@ -60,7 +63,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
                 x => x.EmailRepository.GetByType(type),
                 x => x.ChapterEmailSettingsRepository.GetByChapterIdOrDefault(chapter.Id),
                 x => x.SiteEmailSettingsRepository.Get(request.Platform),
-                OwnerSubscriptionFeatures(chapter.Id));
+                OwnerSubscriptionFeatures(chapter.Id, _siteSubscriptionCooldown));
 
         var title = EmailTitle.For(siteSettings, settings, siteEmail.RecipientType);
 
@@ -105,7 +108,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
                 x => x.EmailRepository.GetAll(),
                 x => x.ChapterEmailSettingsRepository.GetByChapterIdOrDefault(chapter.Id),
                 x => x.SiteEmailSettingsRepository.Get(request.Platform),
-                OwnerSubscriptionFeatures(chapter.Id));
+                OwnerSubscriptionFeatures(chapter.Id, _siteSubscriptionCooldown));
 
         var chapterEmailDictionary = chapterEmails.ToDictionary(x => x.Type);
 
@@ -247,7 +250,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
             request,
             x => x.ChapterEmailRepository.GetByChapterId(chapter.Id, type),
             x => x.EmailRepository.GetByType(type),
-            OwnerSubscriptionFeatures(chapter.Id));
+            OwnerSubscriptionFeatures(chapter.Id, _siteSubscriptionCooldown));
 
         if (!siteEmail.Overridable)
         {
@@ -322,7 +325,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         var (settings, ownerSubscriptionFeatures) = await GetChapterAdminRestrictedContent(
             request,
             x => x.ChapterEmailSettingsRepository.GetByChapterIdOrDefault(chapter.Id),
-            OwnerSubscriptionFeatures(chapter.Id));
+            OwnerSubscriptionFeatures(chapter.Id, _siteSubscriptionCooldown));
 
         // The form renders read-only without the feature, but that is presentation - this is what
         // withholds it. Anything already set is left alone and keeps being used.
@@ -393,9 +396,9 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
     /* Batched into whichever query the caller is already running rather than fetched on its own, so
        reading the feature costs no extra round trip. */
     private static Func<IUnitOfWork, IDeferredQueryMultiple<SiteSubscriptionFeature>> OwnerSubscriptionFeatures(
-        Guid chapterId)
+        Guid chapterId, SiteSubscriptionCooldown cooldown)
         => x => x.MemberSiteSubscriptionRecordRepository
-            .Query(x => x.Current().ForChapterOwner(chapterId).Active())
+            .Query(x => x.Current().ForChapterOwner(chapterId).Active(cooldown))
             .SiteSubscription()
             .Features()
             .GetAll();

@@ -516,3 +516,13 @@ the request locale and enqueues a background `IMemberLocaleService.UpdateLocale`
   — usually to test it — without appearing to the group's real members. It is *not* a general
   privacy/visibility feature. Member-listing queries filter these out by default (e.g. `InChapter`'s
   `!HideProfile` predicate); include them only where a site-admin view genuinely needs to.
+
+- **Site subscription cooldown.** An expired site subscription keeps its access for a configured cooldown
+  (`Subscriptions:DefaultCooldownMonths`, mapped to the injected `SiteSubscriptionCooldown`). The stored
+  `ExpiresUtc` is never moved - the cooldown is applied wherever expiry is *read*, so never compare a site
+  subscription's `ExpiresUtc` to `DateTime.UtcNow` directly. Go through
+  `MemberSiteSubscriptionRecordQueryBuilder.Active(cooldown)` for a query and
+  `MemberSiteSubscriptionState.IsActive`/`IsExpired` for a value already loaded.
+  Chapter *membership* has a separate cooldown of its own - per-chapter
+  `ChapterMembershipSettings.MembershipDisabledAfterDaysExpired`, applied in
+  `AuthorizationService.GetSubscriptionStatus` and `PaymentService.RollExpiryForward`.

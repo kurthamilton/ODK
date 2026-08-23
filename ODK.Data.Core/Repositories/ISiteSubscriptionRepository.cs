@@ -14,5 +14,6 @@ public interface ISiteSubscriptionRepository : IReadWriteRepository<SiteSubscrip
 
     IDeferredQuerySingle<SiteSubscription> GetDefault(PlatformType platform);
 
-    IDeferredQueryMultiple<SiteSubscriptionSummaryDto> GetSummaries(PlatformType platform);
+    IDeferredQueryMultiple<SiteSubscriptionSummaryDto> GetSummaries(
+        PlatformType platform, SiteSubscriptionCooldown cooldown);
 }
