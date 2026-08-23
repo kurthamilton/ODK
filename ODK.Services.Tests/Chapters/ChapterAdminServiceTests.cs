@@ -884,6 +884,221 @@ public static class ChapterAdminServiceTests
         result.Questions.First().Name.Should().Be("q1");
     }
 
+    [Test]
+    public static async Task GetGroupDashboardViewModel_WhenGroupHasNoPicture_RequiresOne()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(owner: currentMember);
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        var result = await service.GetGroupDashboardViewModel(request);
+
+        // Assert - the group is not approved, so the picture is outstanding on its own merit.
+        result.NeedsImage.Should().BeTrue();
+        result.NeedsImageToPublish.Should().BeFalse();
+        result.CanPublish.Should().BeFalse();
+        result.HasRequiredActions.Should().BeTrue();
+    }
+
+    [Test]
+    public static async Task GetGroupDashboardViewModel_WhenApprovedGroupHasNoPicture_SaysItBlocksPublication()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(
+            approvedUtc: DateTime.UtcNow,
+            owner: currentMember);
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        var result = await service.GetGroupDashboardViewModel(request);
+
+        // Assert
+        result.NeedsImage.Should().BeTrue();
+        result.NeedsImageToPublish.Should().BeTrue();
+        result.CanPublish.Should().BeFalse();
+    }
+
+    [Test]
+    public static async Task GetGroupDashboardViewModel_WhenPublishedGroupHasNoPicture_StillRequiresOne()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(
+            approvedUtc: DateTime.UtcNow,
+            owner: currentMember,
+            afterCreate: x => x.PublishedUtc = DateTime.UtcNow);
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        var result = await service.GetGroupDashboardViewModel(request);
+
+        // Assert - publishing has already happened, so the picture is outstanding without blocking it.
+        result.NeedsImage.Should().BeTrue();
+        result.NeedsImageToPublish.Should().BeFalse();
+    }
+
+    [Test]
+    public static async Task GetGroupDashboardViewModel_WhenApprovedGroupHasAPicture_CanPublish()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(
+            approvedUtc: DateTime.UtcNow,
+            owner: currentMember);
+
+        context.CreateChapterImage(chapter);
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        var result = await service.GetGroupDashboardViewModel(request);
+
+        // Assert
+        result.CanPublish.Should().BeTrue();
+        result.NeedsImage.Should().BeFalse();
+        result.NeedsImageToPublish.Should().BeFalse();
+    }
+
+    [Test]
+    public static async Task GetGroupDashboardViewModel_WhenNothingIsOutstanding_HasNoRequiredActions()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(
+            approvedUtc: DateTime.UtcNow,
+            owner: currentMember,
+            afterCreate: x => x.PublishedUtc = DateTime.UtcNow);
+
+        context.CreateChapterImage(chapter);
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        var result = await service.GetGroupDashboardViewModel(request);
+
+        // Assert
+        result.HasRequiredActions.Should().BeFalse();
+    }
+
+    [Test]
+    public static async Task GetGroupDashboardViewModel_ReturnsUpcomingEventsSoonestFirst()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(owner: currentMember);
+
+        var venue = context.CreateVenue(chapter);
+
+        context.CreateEvent(chapter, venue, date: DateTime.UtcNow.AddDays(-1));
+        context.CreateEvent(chapter, venue, date: DateTime.UtcNow.AddDays(4));
+        context.CreateEvent(chapter, venue, date: DateTime.UtcNow.AddDays(1));
+        context.CreateEvent(chapter, venue, date: DateTime.UtcNow.AddDays(3));
+        context.CreateEvent(chapter, venue, date: DateTime.UtcNow.AddDays(2));
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        var result = await service.GetGroupDashboardViewModel(request);
+
+        // Assert - the past event is left out, and only as many as the dashboard shows are loaded.
+        result.UpcomingEvents.Should().NotBeNull();
+        result.UpcomingEvents!.Should().HaveCount(3);
+        result.UpcomingEvents!
+            .Select(x => x.Event.DateUtc)
+            .Should()
+            .BeInAscendingOrder();
+        result.UpcomingEvents!.First().Event.DateUtc
+            .Should().BeCloseTo(DateTime.UtcNow.AddDays(1), TimeSpan.FromMinutes(1));
+    }
+
+    [Test]
+    public static async Task GetGroupDashboardViewModel_ReturnsMostRecentlyJoinedMembersFirst()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var members = Enumerable.Range(0, 5)
+            .Select(_ => context.CreateMember())
+            .ToArray();
+
+        var chapter = context.CreateChapter(
+            owner: currentMember,
+            members: members);
+
+        // Joining is what orders this, not signing up, so the join dates are set apart deliberately.
+        for (var i = 0; i < members.Length; i++)
+        {
+            members[i].Chapters.Single(x => x.ChapterId == chapter.Id).CreatedUtc =
+                DateTime.UtcNow.AddDays(-i);
+        }
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        var result = await service.GetGroupDashboardViewModel(request);
+
+        // Assert - the oldest join is dropped, the rest are newest first.
+        result.NewestMembers.Should().NotBeNull();
+        result.NewestMembers!
+            .Select(x => x.Member.Id)
+            .Should()
+            .Equal(members.Take(4).Select(x => x.Id));
+    }
+
     // Has to agree with CreateChapter, which normalises before its own uniqueness check - if this one
     // did not, it would report a name as free and the submit that follows would reject it as taken.
     [TestCase("Test Chapter Two", ExpectedResult = true)]

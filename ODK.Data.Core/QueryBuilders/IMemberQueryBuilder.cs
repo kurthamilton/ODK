@@ -29,4 +29,10 @@ public interface IMemberQueryBuilder : IDatabaseEntityQueryBuilder<Member, IMemb
     IMemberQueryBuilder Latest(int pageSize);
 
     IQueryBuilder<MemberWithAvatarDto> WithAvatar();
+
+    /// <summary>
+    /// Adds the date the member joined <paramref name="chapterId"/>, which lives on the join row rather
+    /// than on the member. Filtering to that chapter stays the caller's job - this only projects.
+    /// </summary>
+    IQueryBuilder<MemberChapterWithAvatarDto> WithChapterAndAvatar(Guid chapterId);
 }

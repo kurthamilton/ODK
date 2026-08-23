@@ -96,6 +96,25 @@ public class MemberQueryBuilder : DatabaseEntityQueryBuilder<Member, IMemberQuer
         return ProjectTo(query);
     }
 
+    public IQueryBuilder<MemberChapterWithAvatarDto> WithChapterAndAvatar(Guid chapterId)
+    {
+        var query =
+            from member in Query
+            from memberChapter in Set<MemberChapter>()
+                .Where(x => x.MemberId == member.Id && x.ChapterId == chapterId)
+            from avatar in Set<MemberAvatar>()
+                .Where(x => x.MemberId == member.Id)
+                .DefaultIfEmpty()
+            select new MemberChapterWithAvatarDto
+            {
+                AvatarVersion = avatar != null ? avatar.VersionInt : null,
+                JoinedUtc = memberChapter.CreatedUtc,
+                Member = member
+            };
+
+        return ProjectTo(query);
+    }
+
     private static IQueryable<Member> BaseQuery(DbContext context)
         => context.Set<Member>()
             .Include(x => x.Chapters);

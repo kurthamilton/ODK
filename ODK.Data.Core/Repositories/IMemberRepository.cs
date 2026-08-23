@@ -24,6 +24,12 @@ public interface IMemberRepository : IReadWriteRepository<Member, IMemberQueryBu
 
     IDeferredQuery<int> GetCountByChapterId(Guid chapterId);
 
+    /// <summary>
+    /// The members who most recently joined a chapter, newest first. Ordered by the date they joined the
+    /// chapter, unlike <see cref="GetLatestWithAvatarByChapterId"/>, which orders by when they signed up.
+    /// </summary>
+    IDeferredQueryMultiple<MemberChapterWithAvatarDto> GetLatestJoinedByChapterId(Guid chapterId, int pageSize);
+
     IDeferredQueryMultiple<MemberWithAvatarDto> GetLatestWithAvatarByChapterId(Guid chapterId, int pageSize);
 
     IDeferredQuerySingle<MemberWithAvatarDto> GetWithAvatarById(Guid memberId);

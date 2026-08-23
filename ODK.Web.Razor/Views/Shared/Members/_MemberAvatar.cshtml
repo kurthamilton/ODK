@@ -3,12 +3,16 @@
 @model MemberAvatarViewModel
 @inject IOdkRoutes OdkRoutes
 @{
-    if (Model.Version == null)
+    const string placeholderUrl = "/assets/img/member.png";
+
+    if (Model.Version == null && !Model.ShowPlaceholder)
     {
-        return;    
+        return;
     }
 
-    var imageUrl = OdkRoutes.Members.Avatar(Model.Member.Id, Model.Version.Value);
+    var imageUrl = Model.Version != null
+        ? OdkRoutes.Members.Avatar(Model.Member.Id, Model.Version.Value)
+        : placeholderUrl;
     var maxWidth = Model.MaxWidth > 0 ? Model.MaxWidth : 75;
 
     var alt = User.Identity?.IsAuthenticated == true
@@ -20,5 +24,5 @@
      class="@(Model.IsTop ? "card-img-top" : "card-img")"
      src="@imageUrl"
      alt="@alt"
-     data-img-fallback="/assets/img/member.png"
+     data-img-fallback="@placeholderUrl"
      onerror="setImageError(this)" />

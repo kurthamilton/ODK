@@ -17,6 +17,7 @@ using ODK.Data.Core;
 using ODK.Data.Core.Chapters;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Events;
+using ODK.Data.Core.Members;
 using ODK.Resources.Resources;
 using ODK.Services.Authorization;
 using ODK.Services.Chapters.Models;
@@ -43,6 +44,12 @@ namespace ODK.Services.Chapters;
 
 public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 {
+    // How much of the group the admin dashboard shows at a glance. Both are a row of cards wide, so the
+    // numbers are what fits rather than what is available.
+    private const int DashboardNewestMemberCount = 4;
+
+    private const int DashboardUpcomingEventCount = 3;
+
     private static readonly Dictionary<PlatformType, IReadOnlyCollection<PageType>> _platformPages =
         new()
         {
@@ -811,19 +818,21 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             .Run();
         AssertMemberIsChapterAdmin(request, adminMember);
 
-        // Each row is gated on the securable for the page it links to, so nothing is counted that the
-        // admin couldn't act on. Skipped counts use DefaultDeferredQuery so an unpermitted row costs no
+        // Each section is gated on the securable for the page it links to, so nothing is shown that the
+        // admin couldn't act on. Skipped sections use DefaultDeferredQuery so an unpermitted one costs no
         // query at all, and the rest still batch into a single round-trip.
         var canSeeApprovals = adminMember.HasAccessTo(ChapterAdminSecurable.MemberApprovals, currentMember);
+        var canSeeImage = adminMember.HasAccessTo(ChapterAdminSecurable.Branding, currentMember);
+        var canSeeMembers = adminMember.HasAccessTo(ChapterAdminSecurable.Members, currentMember);
         var canSeeMessages = adminMember.HasAccessTo(ChapterAdminSecurable.ContactMessages, currentMember);
         var canSeeEvents = adminMember.HasAccessTo(ChapterAdminSecurable.Events, currentMember);
 
         // Approved and unpublished, so publishing is the outstanding action. Whether it can happen yet
-        // depends on the picture, which is the only reason the dashboard asks for one.
+        // depends on the picture.
         var awaitingPublication = chapter.CanBePublished(hasImage: true)
             && adminMember.HasAccessTo(ChapterAdminSecurable.Publish, currentMember);
 
-        var (awaitingApproval, unrepliedMessages, nextEvents, image) = await _unitOfWork.RunAsync(
+        var (awaitingApproval, unrepliedMessages, upcomingEvents, image, newestMembers) = await _unitOfWork.RunAsync(
             x => canSeeApprovals
                 ? x.MemberChapterRepository.Query(platform).ForChapter(chapter.Id).Approved(false).Count()
                 : new DefaultDeferredQuery<int>(0),
@@ -838,21 +847,28 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
                     .Query(q => q.ForChapter(chapter.Id).OnOrAfter(DateTime.UtcNow))
                     .Summary()
                     .OrderBy(e => e.Event.DateUtc)
-                    .Take(1)
+                    .Take(DashboardUpcomingEventCount)
                     .GetAll()
                 : new DefaultDeferredQueryMultiple<EventSummaryDto>(),
-            x => awaitingPublication
+            x => canSeeImage || awaitingPublication
                 ? x.ChapterImageRepository.GetVersionDtoByChapterId(chapter.Id)
-                : new DefaultDeferredQuerySingleOrDefault<ChapterImageVersionDto>());
+                : new DefaultDeferredQuerySingleOrDefault<ChapterImageVersionDto>(),
+            x => canSeeMembers
+                ? x.MemberRepository.GetLatestJoinedByChapterId(chapter.Id, DashboardNewestMemberCount)
+                : new DefaultDeferredQueryMultiple<MemberChapterWithAvatarDto>());
+
+        var hasImage = image != null;
 
         return new GroupDashboardViewModel
         {
             Chapter = chapter,
-            CanPublish = awaitingPublication && image != null,
+            CanPublish = awaitingPublication && hasImage,
             MembersAwaitingApproval = canSeeApprovals ? awaitingApproval : null,
-            NeedsImageToPublish = awaitingPublication && image == null,
-            NextEvent = nextEvents.FirstOrDefault(),
-            UnrepliedContactMessages = canSeeMessages ? unrepliedMessages : null
+            NeedsImage = canSeeImage && !hasImage,
+            NeedsImageToPublish = awaitingPublication && !hasImage,
+            NewestMembers = canSeeMembers ? newestMembers : null,
+            UnrepliedContactMessages = canSeeMessages ? unrepliedMessages : null,
+            UpcomingEvents = canSeeEvents ? upcomingEvents : null
         };
     }
 

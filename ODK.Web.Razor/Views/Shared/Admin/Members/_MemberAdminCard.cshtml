@@ -1,0 +1,35 @@
+﻿@using ODK.Core.Utils
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Admin.Members
+@using ODK.Web.Razor.Models.Members
+@using ODK.Web.Razor.Mvc
+@model MemberAdminCardViewModel
+@inject IOdkRoutes OdkRoutes
+@{
+    var member = Model.Member.Member;
+}
+
+<div class="card h-100 text-center" data-odk-component="_MemberAdminCard">
+    <div class="card-body d-flex flex-column align-items-center gap-2">
+        @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel
+        {
+            Member = member,
+            ShowPlaceholder = true,
+            Version = Model.Member.AvatarVersion
+        })
+
+        @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+        {
+            Route = OdkRoutes.GroupAdmin.Member(Model.Chapter, member.Id),
+            Text = member.GetDisplayName(Model.Chapter.Id)
+        })
+
+        <div class="text-muted mt-auto">
+            Joined @Model.Member.JoinedUtc.ToFriendlyDateString(new FriendlyDateStringOptions
+            {
+                TimeZone = Html.DisplayTimeZone(Model.Chapter.TimeZone)
+            })
+        </div>
+    </div>
+</div>
