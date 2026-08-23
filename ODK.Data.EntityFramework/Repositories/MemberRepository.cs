@@ -62,6 +62,14 @@ public class MemberRepository : ReadWriteRepositoryBase<Member, IMemberQueryBuil
             .InChapter(chapterId)
             .Count();
 
+    public IDeferredQueryMultiple<MemberChapterWithAvatarDto> GetLatestJoinedByChapterId(Guid chapterId, int pageSize)
+        => Query()
+            .InChapter(chapterId)
+            .WithChapterAndAvatar(chapterId)
+            .OrderByDescending(x => x.JoinedUtc)
+            .Take(pageSize)
+            .GetAll();
+
     public IDeferredQueryMultiple<MemberWithAvatarDto> GetLatestWithAvatarByChapterId(Guid chapterId, int pageSize)
         => Query()
             .InChapter(chapterId)

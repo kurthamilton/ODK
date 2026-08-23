@@ -1,0 +1,81 @@
+﻿@using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Components
+@model GroupDashboardViewModel
+@inject IOdkRoutes OdkRoutes
+
+@if (!Model.HasRequiredActions)
+{
+    <p class="text-muted mb-0">
+        Nothing needs your attention right now.
+    </p>
+
+    return;
+}
+
+@* The alerts carry their own spacing, so they are stripped of it and the column spaces every action
+   equally however few of them there are. *@
+<div class="d-flex flex-column gap-3">
+    @if (Model.CanPublish)
+    {
+        <div class="alert alert-success d-flex justify-content-between align-items-center mb-0">
+            <span>This group is approved and ready to publish.</span>
+            <form action="/groups/@Model.Chapter.Id/publish" method="post" class="ms-3">
+                @Html.AntiForgeryToken()
+                <button class="btn btn-success text-nowrap">Publish</button>
+            </form>
+        </div>
+    }
+
+    @if (Model.NeedsImage)
+    {
+        <div class="alert alert-warning d-flex justify-content-between align-items-center mb-0">
+            <span>
+                @if (Model.NeedsImageToPublish)
+                {
+                    <text>This group is approved. Add a picture and you can publish it.</text>
+                }
+                else
+                {
+                    <text>This group has no picture. It is shown on your group page and wherever your group is listed.</text>
+                }
+            </span>
+            @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+            {
+                Class = "btn btn-warning ms-3 text-nowrap",
+                Route = OdkRoutes.GroupAdmin.Image(Model.Chapter),
+                Text = "Add a picture"
+            })
+        </div>
+    }
+
+    @if (Model.MembersAwaitingApproval > 0 || Model.UnrepliedContactMessages > 0)
+    {
+        <div class="list-group">
+            @if (Model.MembersAwaitingApproval > 0)
+            {
+                <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                   href="@OdkRoutes.GroupAdmin.MemberApprovals(Model.Chapter).Path">
+                    <span>
+                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.User))
+                        <span class="ms-2">Members waiting for approval</span>
+                    </span>
+                    <span class="badge bg-danger rounded-pill">@Model.MembersAwaitingApproval</span>
+                </a>
+            }
+
+            @if (Model.UnrepliedContactMessages > 0)
+            {
+                <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                   href="@OdkRoutes.GroupAdmin.Messages(Model.Chapter).Path">
+                    <span>
+                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Envelope))
+                        <span class="ms-2">Unanswered messages</span>
+                    </span>
+                    <span class="badge bg-danger rounded-pill">@Model.UnrepliedContactMessages</span>
+                </a>
+            }
+        </div>
+    }
+</div>

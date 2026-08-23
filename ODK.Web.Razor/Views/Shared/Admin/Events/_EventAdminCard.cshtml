@@ -1,0 +1,43 @@
+﻿@using ODK.Core.Utils
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Admin.Events
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Mvc
+@model EventAdminCardViewModel
+@inject IOdkRoutes OdkRoutes
+@{
+    var summary = Model.Summary;
+    var responses = summary.Responses;
+
+    @* Event times stay in the chapter's timezone so the wall-clock time isn't misread. The label appears
+       only when the viewer is somewhere else. *@
+    var timeZone = Model.Chapter.TimeZone;
+}
+
+<div class="card h-100" data-odk-component="_EventAdminCard">
+    <div class="card-header">
+        @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+        {
+            Route = OdkRoutes.GroupAdmin.Event(Model.Chapter, summary.Event.Id),
+            Text = summary.Event.GetDisplayName()
+        })
+    </div>
+    <div class="card-body d-flex flex-column gap-2">
+        <div class="d-flex align-items-center gap-2">
+            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Calendar))
+            <span>
+                <span>@summary.Event.DateUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions { TimeZone = timeZone })</span>
+                @Html.ChapterTimeZoneLabel(timeZone, summary.Event.DateUtc)
+            </span>
+        </div>
+
+        @await Html.PartialAsync("Components/_Location", summary.Venue.Name)
+
+        <div class="mt-auto">
+            <span class="badge bg-success">@responses.Yes going</span>
+            <span class="badge bg-warning text-dark">@responses.Maybe maybe</span>
+            <span class="badge bg-secondary">@responses.No can't</span>
+        </div>
+    </div>
+</div>
