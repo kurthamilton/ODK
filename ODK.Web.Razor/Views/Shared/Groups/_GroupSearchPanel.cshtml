@@ -1,0 +1,11 @@
+﻿@using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Razor.Models.Components
+@model GroupsViewModel
+
+<div data-odk-component="_GroupSearchPanel">
+    @await Html.PartialAsync("Components/_Panel", new PanelViewModel
+    {
+        Title = "Search",
+        BodyContent = await Html.PartialAsync("Groups/_GroupSearchForm", Model)
+    })
+</div>

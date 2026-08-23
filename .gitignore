@@ -5,6 +5,8 @@ obj
 appsettings.*.json
 /ODK.Web.Razor/Logs
 /ODK.Web.Razor/wwwroot/lib
+/ODK.Web.Razor/wwwroot/css
+/ODK.Web.Razor/wwwroot/js/odk.bundle*.js
 /ODK.Web.Razor/node_modules
 *.pubxml
 app_data

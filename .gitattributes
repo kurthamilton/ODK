@@ -6,18 +6,8 @@
 # It does not stop a local tool writing LF into a working file - only a checkout
 # puts that right - so a scripted edit still wants checking afterwards.
 #
-# The eol=lf pins below deliberately come after this line: later rules win.
+# The eol=lf pin below deliberately comes after this line: later rules win.
 * text=auto
-
-# Dart Sass emits LF line endings. Keep the generated CSS as LF so Git does not
-# rewrite it to CRLF (which caused "LF will be replaced by CRLF" warnings and
-# noisy diffs on every recompile).
-ODK.Web.Razor/wwwroot/css/*.css text eol=lf
-
-# esbuild emits LF, and build-bundles.mjs normalises its inputs to LF so the one
-# bundle it does not minify is deterministic too. Pinned for the same reason as the
-# CSS above - the generated CSS rule already covers css/odk.bundle.lib.css.
-ODK.Web.Razor/wwwroot/js/odk.bundle*.js text eol=lf
 
 # Git hooks are shell scripts run via /bin/sh - keep them LF so the shebang isn't
 # broken by CRLF on Windows checkouts.

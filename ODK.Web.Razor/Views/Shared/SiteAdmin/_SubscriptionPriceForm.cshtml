@@ -3,7 +3,7 @@
 @using ODK.Web.Razor.Mvc
 @model SiteSubscriptionPriceFormViewModel
 
-<div class="form-group mb-3 required">
+<div class="form-group required">
     @Html.LabelFor(x => x.CurrencyId, new { @class = "form-label" })
     @await Html.PartialAsync("Components/_CurrencyPicker", new CurrencyPickerViewModel
     {
@@ -13,13 +13,13 @@
     @Html.ValidationMessageFor(x => x.CurrencyId)
 </div>
 
-<div class="form-group mb-3 required">
+<div class="form-group required">
     @Html.LabelFor(x => x.Frequency, new { @class = "form-label" })
     @Html.OdkEnumDropDownFor(x => x.Frequency, "", new { @class = "form-select" })
     @Html.ValidationMessageFor(x => x.Frequency)
 </div>
 
-<div class="form-group mb-3 required">
+<div class="form-group required">
     @Html.LabelFor(x => x.Amount, new { @class = "form-label" })
     @Html.TextBoxFor(x => x.Amount, new { @class = "form-control", type = "number" })
     @Html.ValidationMessageFor(x => x.Amount)
