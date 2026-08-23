@@ -11,6 +11,7 @@ using ODK.Core.Events;
 using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
+using ODK.Core.Subscriptions;
 using ODK.Data.Core;
 using ODK.Data.Core.Events;
 using ODK.Services.Authorization;
@@ -355,6 +356,7 @@ public static class EventAdminServiceTests
             new EventAdminServiceSettings
             {
                 ShortcodeLength = 8
-            });
+            },
+            new SiteSubscriptionCooldown(months: 0));
     }
 }

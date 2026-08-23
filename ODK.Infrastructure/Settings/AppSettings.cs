@@ -46,5 +46,7 @@ public class AppSettings
 
     public required ScheduledTasksSettings ScheduledTasks { get; init; }
 
+    public required SubscriptionsSettings Subscriptions { get; init; }
+
     public required WhatsAppSettings WhatsApp { get; init; }
 }

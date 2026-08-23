@@ -13,11 +13,16 @@ namespace ODK.Services.Members.Workflows.ChapterMembership;
 public sealed class ChapterMembershipContextFactory : IChapterMembershipContextFactory
 {
     private readonly IAuthorizationService _authorizationService;
+    private readonly SiteSubscriptionCooldown _siteSubscriptionCooldown;
     private readonly IUnitOfWork _unitOfWork;
 
-    public ChapterMembershipContextFactory(IUnitOfWork unitOfWork, IAuthorizationService authorizationService)
+    public ChapterMembershipContextFactory(
+        IUnitOfWork unitOfWork,
+        IAuthorizationService authorizationService,
+        SiteSubscriptionCooldown siteSubscriptionCooldown)
     {
         _authorizationService = authorizationService;
+        _siteSubscriptionCooldown = siteSubscriptionCooldown;
         _unitOfWork = unitOfWork;
     }
 
@@ -150,7 +155,7 @@ public sealed class ChapterMembershipContextFactory : IChapterMembershipContextF
             x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => x.MemberNotificationSettingsRepository.GetByChapterId(chapter.Id, NotificationType.NewMember),
             x => x.MemberSiteSubscriptionRecordRepository
-                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active())
+                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
                 .SiteSubscription()
                 .WithFeatures()
                 .GetSingleOrDefault(),

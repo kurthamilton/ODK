@@ -157,7 +157,7 @@ public class GoogleGeolocationService : IGeolocationService
 
         var country = _unitOfWork.CountryRepository.Add(new Country
         {
-            Continent = "UNKNOWN",
+            Continent = "-",
             CurrencyId = currency.Id,
             IsoCode2 = countryInfo.IsoCode2,
             IsoCode3 = countryInfo.IsoCode3,

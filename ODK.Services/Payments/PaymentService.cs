@@ -25,6 +25,7 @@ public class PaymentService : IPaymentService
     private readonly IMemberSiteSubscriptionWriter _memberSiteSubscriptionWriter;
     private readonly IPaymentProviderFactory _paymentProviderFactory;
     private readonly IServiceRequestFactory _serviceRequestFactory;
+    private readonly SiteSubscriptionCooldown _siteSubscriptionCooldown;
     private readonly IUnitOfWork _unitOfWork;
 
     public PaymentService(
@@ -36,7 +37,8 @@ public class PaymentService : IPaymentService
         IBackgroundTaskService backgroundTaskService,
         IMemberChapterSubscriptionWriter memberChapterSubscriptionWriter,
         IMemberSiteSubscriptionWriter memberSiteSubscriptionWriter,
-        IServiceRequestFactory serviceRequestFactory)
+        IServiceRequestFactory serviceRequestFactory,
+        SiteSubscriptionCooldown siteSubscriptionCooldown)
     {
         _backgroundTaskService = backgroundTaskService;
         _eventService = eventService;
@@ -46,6 +48,7 @@ public class PaymentService : IPaymentService
         _memberSiteSubscriptionWriter = memberSiteSubscriptionWriter;
         _paymentProviderFactory = paymentProviderFactory;
         _serviceRequestFactory = serviceRequestFactory;
+        _siteSubscriptionCooldown = siteSubscriptionCooldown;
         _unitOfWork = unitOfWork;
     }
 
@@ -223,13 +226,6 @@ public class PaymentService : IPaymentService
         }
     }
 
-    // A period that is still live - or lapsed but inside the chapter's cooldown - is continued, so a
-    // membership keeps its anniversary instead of drifting by however late the member renewed. Otherwise the
-    // period starts now. A cooldown of zero therefore continues only a live period.
-    //
-    // A cooldown longer than the subscription's own length can continue a period that has already fully
-    // elapsed, so a calculated expiry that is not in the future starts a new period instead: a payment must
-    // always leave the member current.
     /// <inheritdoc cref="EnsureProductExistsJob" />
     public async Task ProcessWebhookActionJob(JobRequest request, PaymentProviderWebhook webhook)
         => await ProcessWebhookAction(await _serviceRequestFactory.Create(request), webhook);
@@ -238,16 +234,19 @@ public class PaymentService : IPaymentService
     public async Task ProcessWebhookJob(JobRequest request, PaymentProviderWebhook webhook)
         => await ProcessWebhook(await _serviceRequestFactory.Create(request), webhook);
 
+    // A period that is still live - or lapsed but inside the cooldown - is continued, so a subscription
+    // keeps its anniversary instead of drifting by however late the member renewed. Otherwise the period
+    // starts now. A cooldown of zero therefore continues only a live period.
+    //
+    // A cooldown longer than the subscription's own length can continue a period that has already fully
+    // elapsed, so a calculated expiry that is not in the future starts a new period instead: a payment must
+    // always leave the member current.
     private static DateTime RollExpiryForward(
         DateTime? currentExpiresUtc,
         int months,
-        int cooldownDaysAfterExpiry,
+        DateTime cooldownStartUtc,
         DateTime utcNow)
     {
-        // A negative cooldown is meaningless and is treated as none, so it cannot narrow the window to less
-        // than a live period.
-        var cooldownStartUtc = utcNow.AddDays(-Math.Max(0, cooldownDaysAfterExpiry));
-
         var continueFromUtc = currentExpiresUtc >= cooldownStartUtc
             ? currentExpiresUtc.Value
             : utcNow;
@@ -889,12 +888,16 @@ public class PaymentService : IPaymentService
             ? await GetChapterSubscriptionNextPaymentDate(chapterId, externalId)
             : null;
 
+        // A negative cooldown is meaningless and is treated as none, so it cannot narrow the window to less
+        // than a live period.
+        var cooldownDays = Math.Max(0, membershipSettings?.MembershipDisabledAfterDaysExpired ?? 0);
+
         // A one-off has no schedule to read, so its expiry is calculated from the current log record (the
         // source of truth). The value is fixed on the new record at insert.
         var expiresUtc = nextPaymentUtc ?? RollExpiryForward(
             currentRecord?.ExpiresUtc,
             chapterSubscription.Months,
-            membershipSettings?.MembershipDisabledAfterDaysExpired ?? 0,
+            cooldownStartUtc: utcNow.AddDays(-cooldownDays),
             utcNow);
 
         // Append a new current record for this payment (renewals keep the subscription's history).
@@ -966,10 +969,11 @@ public class PaymentService : IPaymentService
 
         // Where the provider has no date to give, roll the expiry forward from the current record's expiry
         // (the log is the source of truth); the value is fixed on the new record at insert.
-        var expiresUtc = nextPaymentUtc
-            ?? (currentRecord?.ExpiresUtc > utcNow
-                ? currentRecord.ExpiresUtc.Value.AddMonths(months)
-                : utcNow.AddMonths(months));
+        var expiresUtc = nextPaymentUtc ?? RollExpiryForward(
+            currentRecord?.ExpiresUtc,
+            months,
+            _siteSubscriptionCooldown.ActiveAfterUtc(utcNow),
+            utcNow);
 
         // Append a new current record for this payment (renewals keep the subscription's history).
         _memberSiteSubscriptionWriter.MakeRecordCurrent(

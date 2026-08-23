@@ -5,6 +5,7 @@ using ODK.Core.Extensions;
 using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Notifications;
+using ODK.Core.Subscriptions;
 using ODK.Core.Utils;
 using ODK.Core.Venues;
 using ODK.Data.Core;
@@ -34,6 +35,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     private readonly IPaymentService _paymentService;
     private readonly IServiceRequestFactory _serviceRequestFactory;
     private readonly EventAdminServiceSettings _settings;
+    private readonly SiteSubscriptionCooldown _siteSubscriptionCooldown;
     private readonly IUnitOfWork _unitOfWork;
 
     public EventAdminService(
@@ -47,7 +49,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         IPaymentService paymentService,
         IEventService eventService,
         IServiceRequestFactory serviceRequestFactory,
-        EventAdminServiceSettings settings)
+        EventAdminServiceSettings settings,
+        SiteSubscriptionCooldown siteSubscriptionCooldown)
         : base(unitOfWork)
     {
         _authorizationService = authorizationService;
@@ -60,6 +63,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         _paymentService = paymentService;
         _serviceRequestFactory = serviceRequestFactory;
         _settings = settings;
+        _siteSubscriptionCooldown = siteSubscriptionCooldown;
         _unitOfWork = unitOfWork;
     }
 
@@ -79,7 +83,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             currency
         ) = await _unitOfWork.RunAsync(
             x => x.MemberSiteSubscriptionRecordRepository
-                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active())
+                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
                 .HasFeature(SiteFeatureType.EventTickets),
             x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => x.VenueRepository.GetById(model.VenueId),
@@ -222,7 +226,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             waitlist) = await GetChapterAdminRestrictedContent(
             request,
             x => x.MemberSiteSubscriptionRecordRepository
-                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active())
+                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
                 .SiteSubscription()
                 .Features()
                 .GetAll(),
@@ -288,7 +292,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.EventRepository.Query(x => x.ById(eventId)).WithVenue().GetSingle(),
             x => x.EventCommentRepository.GetDtosByEventId(eventId, includeHidden: true),
             x => x.MemberSiteSubscriptionRecordRepository
-                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active())
+                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
                 .SiteSubscription()
                 .Features()
                 .GetAll());
@@ -328,7 +332,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.ChapterEventSettingsRepository.GetByChapterId(chapter.Id),
             x => x.CurrencyRepository.GetByChapterId(chapter.Id),
             x => x.MemberSiteSubscriptionRecordRepository
-                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active())
+                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
                 .SiteSubscription()
                 .Features()
                 .GetAll());
@@ -361,7 +365,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             venues
         ) = await _unitOfWork.RunAsync(
             x => x.MemberSiteSubscriptionRecordRepository
-                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active())
+                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
                 .SiteSubscription()
                 .Features()
                 .GetAll(),
@@ -400,7 +404,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         var (ownerSubscriptionFeatures, eventDto, eventEmail, invites) = await GetChapterAdminRestrictedContent(
             request,
             x => x.MemberSiteSubscriptionRecordRepository
-                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active())
+                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
                 .SiteSubscription()
                 .Features()
                 .GetAll(),
@@ -473,7 +477,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         var (ownerSubscriptionFeatures, settings) = await GetChapterAdminRestrictedContent(
             request,
             x => x.MemberSiteSubscriptionRecordRepository
-                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active())
+                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
                 .SiteSubscription()
                 .Features()
                 .GetAll(),
@@ -501,7 +505,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         ) = await GetChapterAdminRestrictedContent(
             request,
             x => x.MemberSiteSubscriptionRecordRepository
-                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active())
+                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
                 .SiteSubscription()
                 .Features()
                 .GetAll(),
@@ -751,7 +755,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             memberSubscriptions
         ) = await _unitOfWork.RunAsync(
             x => x.MemberSiteSubscriptionRecordRepository
-                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active())
+                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
                 .HasFeature(SiteFeatureType.ScheduledEventEmails),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(@event.ChapterId),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(@event.ChapterId),
@@ -837,7 +841,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             attendees
         ) = await _unitOfWork.RunAsync(
             x => x.MemberSiteSubscriptionRecordRepository
-                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active())
+                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
                 .HasFeature(SiteFeatureType.EventTickets),
             x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => x.EventRepository.GetById(id),
@@ -956,7 +960,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         var (hasScheduledEmails, settings) = await GetChapterAdminRestrictedContent(
             request,
             x => x.MemberSiteSubscriptionRecordRepository
-                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active())
+                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
                 .HasFeature(SiteFeatureType.ScheduledEventEmails),
             x => x.ChapterEventSettingsRepository.GetByChapterId(chapter.Id));
 
@@ -1028,7 +1032,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.EventRepository.GetById(eventId),
             x => x.EventEmailRepository.GetByEventId(eventId),
             x => x.MemberSiteSubscriptionRecordRepository
-                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active())
+                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
                 .HasFeature(SiteFeatureType.ScheduledEventEmails));
 
         OdkAssertions.BelongsToChapter(@event, chapter.Id);

@@ -7,6 +7,7 @@ using NUnit.Framework;
 using ODK.Core.Countries;
 using ODK.Core.Members;
 using ODK.Core.Referrals;
+using ODK.Core.Subscriptions;
 using ODK.Services.Authentication;
 using ODK.Services.Emails;
 using ODK.Services.Members;
@@ -197,6 +198,7 @@ public static class AuthenticationServiceReferralTests
             .AddSingleton<IEmailValidationService>(
                 new EmailValidationService(new InconclusiveEmailVerifier()))
             .AddSingleton(Mock.Of<IMemberChapterSubscriptionWriter>())
+            .AddSingleton(new SiteSubscriptionCooldown(months: 0))
             .AddSingleton(ChapterMembershipStateMachine.Create())
             .AddScoped<IAccountContextFactory, AccountContextFactory>()
             .AddScoped<IChapterMembershipContextFactory, ChapterMembershipContextFactory>()

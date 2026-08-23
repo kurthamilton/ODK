@@ -41,15 +41,21 @@ public class SiteSubscriptionRepository
             .Where(x => x.Platform == platform && x.Enabled && x.Default)
             .DeferredSingle();
 
-    public IDeferredQueryMultiple<SiteSubscriptionSummaryDto> GetSummaries(PlatformType platform)
+    public IDeferredQueryMultiple<SiteSubscriptionSummaryDto> GetSummaries(
+        PlatformType platform, SiteSubscriptionCooldown cooldown)
     {
+        // Resolved here rather than in the predicate, which has to translate to SQL.
+        var activeAfterUtc = cooldown.ActiveAfterUtc(DateTime.UtcNow);
+
         var query =
             from siteSubscription in Set()
             where siteSubscription.Platform == platform
             select new SiteSubscriptionSummaryDto
             {
                 ActiveMemberSiteSubscriptionCount = Set<MemberSiteSubscriptionRecord>()
-                    .Where(x => x.IsCurrent && x.SiteSubscriptionId == siteSubscription.Id && x.ExpiresUtc > DateTime.UtcNow)
+                    .Where(x => x.IsCurrent &&
+                        x.SiteSubscriptionId == siteSubscription.Id &&
+                        x.ExpiresUtc > activeAfterUtc)
                     .Count(),
                 Features = Set<SiteSubscriptionFeature>()
                     .Where(x => x.SiteSubscriptionId == siteSubscription.Id)

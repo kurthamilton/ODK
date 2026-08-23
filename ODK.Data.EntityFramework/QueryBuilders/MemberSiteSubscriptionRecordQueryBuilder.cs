@@ -20,9 +20,12 @@ public class MemberSiteSubscriptionRecordQueryBuilder :
 
     protected override MemberSiteSubscriptionRecordQueryBuilder Builder => this;
 
-    public IMemberSiteSubscriptionRecordQueryBuilder Active()
+    public IMemberSiteSubscriptionRecordQueryBuilder Active(SiteSubscriptionCooldown cooldown)
     {
-        Query = Query.Where(x => x.ExpiresUtc == null || x.ExpiresUtc > DateTime.UtcNow);
+        // Resolved here rather than in the predicate, which has to translate to SQL.
+        var activeAfterUtc = cooldown.ActiveAfterUtc(DateTime.UtcNow);
+
+        Query = Query.Where(x => x.ExpiresUtc == null || x.ExpiresUtc > activeAfterUtc);
         return this;
     }
 

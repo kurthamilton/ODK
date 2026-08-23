@@ -17,6 +17,7 @@ using ODK.Core.Emails;
 using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
+using ODK.Core.Subscriptions;
 using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Resources.Resources;
@@ -233,6 +234,40 @@ public static class ChapterAdminServiceTests
         result.Success.Should().BeTrue();
     }
 
+    [TestCase(0, false)]
+    [TestCase(1, true)]
+    public static async Task AddChapterAdminMember_WhenOwnerSubscriptionLapsed_GrantsAccessOnlyWithinCooldown(
+        int cooldownMonths,
+        bool permitted)
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var (owner, otherMember) = (context.CreateMember(), context.CreateMember());
+
+        context.CreateMemberSiteSubscription(
+            owner,
+            context.CreateSiteSubscription(features: [SiteFeatureType.AdminMembers]),
+            expiresUtc: DateTime.UtcNow.AddDays(-1));
+
+        var chapter = context.CreateChapter(owner: owner);
+
+        var service = CreateChapterAdminService(
+            context,
+            siteSubscriptionCooldown: new SiteSubscriptionCooldown(cooldownMonths));
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: owner,
+            securable: ChapterAdminSecurable.AdminMembers);
+
+        // Act
+        var result = await service.AddChapterAdminMember(request, otherMember.Id);
+
+        // Assert
+        result.Success.Should().Be(permitted);
+    }
+
     [Test]
     public static async Task CreateChapter_WhenChapterLimitReached_ReturnsFailure()
     {
@@ -281,6 +316,30 @@ public static class ChapterAdminServiceTests
         // Assert
         result.Success.Should().BeFalse();
         result.Message.Should().Be(ErrorMessagesResource.SubscriptionExpired);
+    }
+
+    [Test]
+    public static async Task CreateChapter_WhenSubscriptionExpiredWithinCooldown_ReturnsSuccess()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember(
+            afterCreate: x => context.CreateMemberSiteSubscription(
+                x, expiresUtc: DateTime.UtcNow.AddDays(-1)));
+
+        var service = CreateChapterAdminService(
+            context,
+            siteSubscriptionCooldown: new SiteSubscriptionCooldown(months: 1));
+
+        var request = CreateMemberServiceRequest(currentMember);
+        var model = CreateChapterCreateModel();
+
+        // Act
+        var result = await service.CreateChapter(request, model);
+
+        // Assert
+        result.Success.Should().BeTrue();
     }
 
     [Test]
@@ -1368,7 +1427,8 @@ public static class ChapterAdminServiceTests
         IPaymentService? paymentService = null,
         IGeolocationService? geolocationService = null,
         ILoggingService? loggingService = null,
-        ChapterAdminServiceSettings? settings = null)
+        ChapterAdminServiceSettings? settings = null,
+        SiteSubscriptionCooldown? siteSubscriptionCooldown = null)
     {
         var unitOfWork = CreateMockUnitOfWork(context);
         return new ChapterAdminService(
@@ -1381,6 +1441,7 @@ public static class ChapterAdminServiceTests
             memberEmailService ?? CreateMockMemberEmailService(),
             topicService ?? CreateMockTopicService(),
             settings ?? CreateChapterAdminServiceSettings(),
+            siteSubscriptionCooldown ?? new SiteSubscriptionCooldown(months: 0),
             siteSubscriptionService ?? new Mock<ISiteSubscriptionService>().Object,
             urlProviderFactory ?? new Mock<IUrlProviderFactory>().Object,
             paymentProviderFactory ?? new Mock<IPaymentProviderFactory>().Object,

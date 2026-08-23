@@ -26,6 +26,15 @@ public static class E2ESettings
     /// <summary>Base URL of the DrunkenKnitwits-platform instance (no trailing slash).</summary>
     public static string DrunkenKnitwitsBaseUrl => GetRequired("DrunkenKnitwitsBaseUrl").TrimEnd('/');
 
+    /// <summary>
+    /// The site-subscription cooldown the app under test runs with (its
+    /// <c>Subscriptions:DefaultCooldownMonths</c>): how long an expired site subscription keeps its access.
+    /// Stated here because the app's own configuration is not readable from these tests, and a test that
+    /// lapses a subscription has to know which side of that window it is arranging - so the two have to
+    /// agree.
+    /// </summary>
+    public static int SiteSubscriptionCooldownMonths => GetRequiredInt("SiteSubscriptionCooldownMonths");
+
     /// <summary>Stripe publishable key for the live payment settings the tests seed.</summary>
     public static string StripeApiPublicKey => GetRequired("Stripe:ApiPublicKey");
 
@@ -51,4 +60,9 @@ public static class E2ESettings
         => Configuration[key]
             ?? throw new InvalidOperationException(
                 $"E2E setting '{key}' is not configured. Set it in appsettings.json, appsettings.Development.json, appsettings.local.json, or the ODK_E2E_{key} environment variable.");
+
+    private static int GetRequiredInt(string key)
+        => int.TryParse(GetRequired(key), out var value)
+            ? value
+            : throw new InvalidOperationException($"E2E setting '{key}' is not a whole number.");
 }

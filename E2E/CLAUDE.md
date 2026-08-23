@@ -32,6 +32,14 @@ console email client (no real mail), HIBP breach check off, in-memory Hangfire, 
 `script.run.app.e2e.bat` binds **both** platform ports in one process — `:8125` (Default) and `:8126`
 (DrunkenKnitwits) — and `PlatformProvider` resolves the platform from the request URL.
 
+**One of that environment's values is asserted against rather than merely assumed.** An expired site
+subscription keeps its access for `Subscriptions:DefaultCooldownMonths`, so a test that lapses one has to
+know which side of that window it is arranging. These tests cannot read the app's configuration, so the same
+number is stated as `SiteSubscriptionCooldownMonths` (`ODK.E2E.Tests/appsettings.json`) and **the two have to
+agree**: `SiteSubscriptionCooldownTests` arranges expiries either side of the window (and skips itself where
+the setting says the app runs with no cooldown), while `MemberSiteSubscriptionDataHelper.Expire` defaults to
+years ago, so every other test lapses a subscription clear of any window.
+
 **One-time prerequisite:** install the Playwright browsers after the first build:
 
 ```
