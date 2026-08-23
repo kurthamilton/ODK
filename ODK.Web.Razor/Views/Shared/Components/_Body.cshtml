@@ -1,10 +1,16 @@
 ﻿@using ODK.Web.Razor.Models.Components
-@model ODK.Web.Razor.Models.Components.BodyViewModel
+@model BodyViewModel
+@{
+    var containerClass = !string.IsNullOrEmpty(Model.ContainerClass) 
+        ? Model.ContainerClass 
+        : BodyViewModel.DefaultContainerClass;
+}
 
 <main id="main">
     @await Html.PartialAsync("Components/_PageTitle", new PageTitleViewModel
     {
-        Content = Model.TitleContent,
+        ContainerClass = Model.ContainerClass,
+        Content = Model.TitleContent,        
         Title = Model.Title,
         WidthClass = Model.WidthClass
     })
@@ -18,7 +24,7 @@
        below the title, so an absolutely positioned child lands on the page edge rather than
        inset by the content column. Inert without such a child. *@
     <div class="preview-label-container">
-        <div class="container-md">
+        <div class="@containerClass" data-site-header-class="@containerClass">
             @await Html.PartialAsync("Components/_ToastAnchor", new ToastAnchorViewModel())
             <div class="row @(Model.WidthClass != null ? "justify-content-center" : null)">
                 <div class="@(Model.WidthClass ?? "col-12")">                

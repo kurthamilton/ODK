@@ -2,50 +2,52 @@
 @using ODK.Web.Razor.Models.Components
 @model GroupsViewModel
 
-<div class="form-group mb-3" data-location-container>
-    <div class="input-group input-group-sm">
-        <span class="input-group-text">
-            <span data-bs-toggle="tooltip" data-bs-title="Location">
-                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.LocationPin))
+<form method="get" data-odk-component="_GroupSearchForm" class="form-inline-md">
+    <div class="form-group" data-location-container>
+        <div class="input-group input-group-sm">
+            <span class="input-group-text">
+                <span data-bs-toggle="tooltip" data-bs-title="Location">
+                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.LocationPin))
+                </span>
             </span>
-        </span>
-        <div class="dropdown flex-grow-1">
-            <input type="text" name="n" value="@Model.Location?.Name" class="form-control form-control-sm" placeholder="Location" 
-                data-location
-                data-bs-toggle="dropdown"/>
+            <div class="dropdown flex-grow-1">
+                <input type="text" name="n" value="@Model.Location?.Name" class="form-control form-control-sm" placeholder="Location"
+                    data-location
+                    data-bs-toggle="dropdown"/>
 
-            <ul class="dropdown-menu google-places-suggestions" data-location-options></ul>
-        </div>        
+                <ul class="dropdown-menu google-places-suggestions" data-location-options></ul>
+            </div>
+        </div>
+
+        <input type="hidden" value="@Model.Location?.LatLong.Lat" data-location-lat />
+        <input type="hidden" value="@Model.Location?.LatLong.Long" data-location-long />
+        <input type="hidden" value="@Model.Location?.LatLong.ToString()" data-location-latlong name="l" />
     </div>
-
-    <input type="hidden" value="@Model.Location?.LatLong.Lat" data-location-lat />
-    <input type="hidden" value="@Model.Location?.LatLong.Long" data-location-long />
-    <input type="hidden" value="@Model.Location?.LatLong.ToString()" data-location-latlong name="l" />
-</div>
-<div class="form-group mb-3">
-    <div class="d-flex flex-nowrap form-inline">
-        <input type="number" value="@Model.Distance.Value" name="d" class="form-control form-control-sm" />
-        <select name="u" class="form-select form-select-sm">
-            @foreach (var option in Model.DistanceUnits)
+    <div class="form-group">
+        <div class="d-flex flex-nowrap">
+            <input type="number" value="@Model.Distance.Value" name="d" class="form-control form-control-sm form-control-inline-mw-5" />
+            <select name="u" class="form-select form-select-sm w-auto">
+                @foreach (var option in Model.DistanceUnits)
+                {
+                    <option selected="@(option.Type == Model.Distance.Unit.Type ? "" : null)" value="@((int)option.Type)">
+                        @option.Abbreviation
+                    </option>
+                }
+            </select>
+        </div>
+    </div>
+    <div class="form-group">
+        <select name="c" class="form-select form-select-sm" data-select data-clearable data-placeholder="Category">
+            <option value=""></option>
+            @foreach (var topicGroup in Model.TopicGroups.OrderBy(x => x.Name))
             {
-                <option selected="@(option.Type == Model.Distance.Unit.Type ? "" : null)" value="@((int)option.Type)">
-                    @option.Abbreviation
+                <option selected="@(Model.TopicGroupId == topicGroup.Id ? "" : null)">
+                    @topicGroup.Name
                 </option>
             }
         </select>
     </div>
-</div>
-<div class="form-group mb-3">
-    <select name="c" class="form-select form-select-sm" data-select data-clearable data-placeholder="Category">
-        <option value=""></option>
-        @foreach (var topicGroup in Model.TopicGroups.OrderBy(x => x.Name))
-        {
-            <option selected="@(Model.TopicGroupId == topicGroup.Id ? "" : null)">
-                @topicGroup.Name
-            </option>
-        }
-    </select>
-</div>
-<div class="form-group d-flex justify-content-end">
-    <button class="btn btn-outline-secondary btn-sm">Update</button>
-</div>
+    <div class="form-group">
+        <button class="btn btn-outline-secondary btn-sm">Update</button>
+    </div>
+</form>

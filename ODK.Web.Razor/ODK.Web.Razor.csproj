@@ -7,12 +7,14 @@
 		<UserSecretsId>aspnet-ODK.Web.Razor-885db159-c982-4fde-b49e-baf69b1293fb</UserSecretsId>
 		<DefaultItemExcludes>$(DefaultItemExcludes);node_modules\**</DefaultItemExcludes>
 
-		<!-- wwwroot\lib is a build output - build\copy-client-libs.mjs writes it from node_modules, and it is
-		     gitignored. It must not come from the default Content glob: globs are expanded when the project is
-		     evaluated, before any target has run, so on a clean checkout the directory is still empty and the
-		     libraries would be absent from the build and publish output. RestoreClientLibraries adds them
-		     after the copy instead. -->
+		<!-- Every generated client asset: the vendored libraries copied out of node_modules, the CSS compiled
+		     from wwwroot\scss, and the script bundles. All three are gitignored, and none may come from the
+		     default Content glob: globs are expanded when the project is evaluated, before any target has run,
+		     so on a clean checkout the files do not exist yet and would be absent from the build and publish
+		     output. BuildClientAssets adds them as Content after generating them instead. -->
 		<DefaultItemExcludes>$(DefaultItemExcludes);wwwroot\lib\**</DefaultItemExcludes>
+		<DefaultItemExcludes>$(DefaultItemExcludes);wwwroot\css\**</DefaultItemExcludes>
+		<DefaultItemExcludes>$(DefaultItemExcludes);wwwroot\js\odk.bundle*.js</DefaultItemExcludes>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -20,17 +22,16 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<!-- Generated output and its source: nothing dotnet watch does should react to either, so a css
-		     rebuild never restarts the app. Note this keeps them out of the watch list only - the build still
-		     enumerates and hashes everything under wwwroot as a static web asset, which is why a sass watcher
-		     must not run alongside dotnet watch (see run.app.bat). -->
-		<Content Update="wwwroot\scss\**" Watch="false" />
-		<Content Update="wwwroot\css\**" Watch="false" />
+		<!-- The SCSS sources. A build compiles them, so nothing dotnet watch does should react to an edit -
+		     see run.build.css.bat, the fast path for recompiling mid-session. Note this keeps them out of the
+		     watch list only - the build still enumerates and hashes everything under wwwroot as a static web
+		     asset, which is why a sass watcher must not run alongside dotnet watch (see run.app.bat).
 
-		<!-- The generated bundles, for the same reason. Their sources are deliberately left watched: a build
-		     is what regenerates a bundle, so a script edit has to be able to trigger one. Watching the outputs
-		     as well would make the build's own write look like a further change. -->
-		<Content Update="wwwroot\js\odk.bundle*.js" Watch="false" />
+		     The generated CSS and bundles need no entry here. They are excluded from the default glob above
+		     and added by BuildClientAssets with Watch="false" already on them. The bundles' *sources* are
+		     deliberately left watched: a build is what regenerates a bundle, so a script edit has to be able
+		     to trigger one. -->
+		<Content Update="wwwroot\scss\**" Watch="false" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -40,26 +41,38 @@
 		<None Remove="Pages\Groups\Admin\**" />
 	</ItemGroup>
 
-	<!-- Restores the vendored browser libraries from npm into wwwroot\lib, hands them to the build as
-	     Content, and builds the CSS and JavaScript bundles the layouts reference. Runs before the SDK turns
-	     Content into static web assets, which is the step that puts them into the build and the publish
-	     output.
+	<!-- Produces every generated client asset and hands it to the build as Content: restores the vendored
+	     browser libraries from npm into wwwroot\lib, compiles wwwroot\scss into wwwroot\css, and builds the
+	     CSS and JavaScript bundles the layouts reference. Runs before the SDK turns Content into static web
+	     assets, which is the step that puts them into the build and the publish output.
 
-	     Order is not incidental: some bundles are built from wwwroot\lib, so the copy has to have happened.
+	     Because every one of those outputs is produced here, a deployed artifact never depends on what a
+	     developer happened to have compiled locally - which is why none of them is committed.
 
-	     No Inputs/Outputs: each script is its own up-to-date check - the copy fingerprints the installed
-	     package versions and its own source, and the bundler writes only a file whose contents have changed -
-	     so a build with nothing to do costs two node startups. Skipped for a design-time build so opening the
-	     project in Visual Studio never waits on npm. -->
-	<Target Name="RestoreClientLibraries" BeforeTargets="ResolveProjectStaticWebAssets" Condition="'$(DesignTimeBuild)' != 'true'">
+	     Order is not incidental: the SCSS imports Bootstrap's own sources out of wwwroot\lib, and some
+	     bundles are built from what is copied there, so the copy has to have happened first.
+
+	     The two sass scripts are run rather than build:css, whose prebuild hook would copy the client
+	     libraries a second time.
+
+	     No Inputs/Outputs: the two node scripts are their own up-to-date check - the copy fingerprints the
+	     installed package versions and its own source, and the bundler writes only a file whose contents
+	     have changed. Sass has no such check and recompiles every time, which is the bulk of what this
+	     target costs when there is nothing to do. Skipped for a design-time build so opening the project in
+	     Visual Studio never waits on npm. -->
+	<Target Name="BuildClientAssets" BeforeTargets="ResolveProjectStaticWebAssets" Condition="'$(DesignTimeBuild)' != 'true'">
 		<Exec Command="npm ci --no-audit --no-fund" WorkingDirectory="$(MSBuildProjectDirectory)" Condition="!Exists('$(MSBuildProjectDirectory)\node_modules\.package-lock.json')" />
 		<Exec Command="node build/copy-client-libs.mjs" WorkingDirectory="$(MSBuildProjectDirectory)" />
+		<Exec Command="npm run sass:css" WorkingDirectory="$(MSBuildProjectDirectory)" />
+		<Exec Command="npm run sass:min" WorkingDirectory="$(MSBuildProjectDirectory)" />
 		<Exec Command="node build/build-bundles.mjs" WorkingDirectory="$(MSBuildProjectDirectory)" />
 
 		<ItemGroup>
-			<!-- Watch="false" for the same reason as the generated CSS above: nobody edits these, and a build
-			     rewriting files dotnet watch is watching takes the watcher down. -->
+			<!-- Watch="false": nobody edits these, and a build rewriting files dotnet watch is watching takes
+			     the watcher down. -->
 			<Content Include="wwwroot\lib\**" Exclude="wwwroot\lib\.client-libs.json" Watch="false" />
+			<Content Include="wwwroot\css\**" Watch="false" />
+			<Content Include="wwwroot\js\odk.bundle*.js" Watch="false" />
 		</ItemGroup>
 	</Target>
 
@@ -87,6 +100,7 @@
 
 	<ItemGroup>
 		<Folder Include="wwwroot\assets\stock\" />
+		<Folder Include="wwwroot\css\" />
 		<Folder Include="wwwroot\lib\" />
 	</ItemGroup>
 

@@ -15,9 +15,11 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      # The web project's build restores its client-side libraries from npm (see the RestoreClientLibraries
-      # target in ODK.Web.Razor.csproj), so the runner needs Node. Installing them here rather than leaving it
-      # to the build keeps npm's own output out of the MSBuild log and lets setup-node cache the download.
+      # The web project's build generates every client asset - it restores the browser libraries from npm,
+      # compiles the SCSS and builds the bundles (see the BuildClientAssets target in ODK.Web.Razor.csproj) -
+      # so the runner needs Node. None of those outputs is committed, so this is where the deployed CSS and
+      # JavaScript come from. Installing the packages here rather than leaving it to the build keeps npm's own
+      # output out of the MSBuild log and lets setup-node cache the download.
       - name: Setup Node
         uses: actions/setup-node@v4
         with:

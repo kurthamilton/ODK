@@ -34,8 +34,8 @@ Run `Scripts/run.app.bat`. One process serves **both** platforms — Group Squir
 [localhost:8123](http://localhost:8123) and ODK on [localhost:8124](http://localhost:8124) — with the
 platform resolved from the request URL (the `Platforms` config in `appsettings.Development.json`).
 
-It compiles the SCSS once, then runs `dotnet watch` in that window. `dotnet watch` owns the console's stdin,
-so its shortcuts work — notably **Ctrl+R** to force a restart when a change isn't picked up or the app doesn't
+It runs `dotnet watch` in that window; the build itself compiles the SCSS and rebuilds the bundles, so there
+is nothing to compile beforehand. `dotnet watch` owns the console's stdin, so its shortcuts work — notably **Ctrl+R** to force a restart when a change isn't picked up or the app doesn't
 recover from an error.
 
 `.cs` and `.cshtml` changes hot-reload as usual. Styles do not — see below.
@@ -56,8 +56,8 @@ file up; hard-refresh (Ctrl+F5) if it doesn't, since the caching headers for sta
 the project builds and a file changed since then can still be served as unmodified.
 
 `build:css` writes all four outputs: `main.css` / `odk.css` and their `.min` counterparts. The app links only
-the minified pair; the expanded pair is committed alongside so the compiled output is readable in a diff. Run
-the whole script rather than `sass:min` alone, or the expanded files go stale.
+the minified pair; the expanded pair is written alongside so the compiled output can be read while you work.
+Run the whole script rather than `sass:min` alone, or the expanded files go stale.
 
 **Do not run a sass watcher alongside `dotnet watch`.** MSBuild enumerates and hashes every file under
 `wwwroot` as a static web asset on each rebuild, so a watcher rewriting `wwwroot/css` while `dotnet watch` is
@@ -107,11 +107,17 @@ column, and `upstream`'s own `url` is indented one level further.
 ## CSS
 `.css` files are compiled into `wwwroot/css` from the `.scss` files in `wwwroot/scss`.
 
-To compile, run `Scripts/run.build.css.bat` (or `npm run build:css` from `ODK.Web.Razor`).
-`Scripts/run.app.bat` also compiles once before it starts the app.
+`wwwroot/css` is **generated and gitignored**, the same as `wwwroot/lib` and the bundles. The
+`BuildClientAssets` target in the csproj compiles it on every build, so a plain `dotnet build`,
+`dotnet publish` or `Scripts/run.app.bat` produces current CSS with no extra command — and a deploy never
+depends on what someone last compiled locally. Don't edit anything in there by hand.
+
+To compile it on its own — which is what you want after editing a `.scss` mid-session, since nothing
+watches `wwwroot/scss` — run `Scripts/run.build.css.bat` (or `npm run build:css` from `ODK.Web.Razor`).
 
 `wwwroot/scss` imports Bootstrap's own Sass sources out of `wwwroot/lib`, so the compile needs the
-client-side libraries in place. `build:css` restores them first, so there is no order to remember.
+client-side libraries in place. `build:css` restores them first, so there is no order to remember; the
+csproj target orders the two itself.
 
 ## CSS and JavaScript bundles
 The layouts reference five bundles — one script bundle for every page, one for the admin area, one loaded in
@@ -119,11 +125,11 @@ The layouts reference five bundles — one script bundle for every page, one for
 `ODK.Web.Razor/build/build-bundles.mjs` builds them with [esbuild](https://esbuild.github.io/), and `BUNDLES`
 at the top of that script is the whole definition of what goes into each one.
 
-Unlike `wwwroot/lib`, the outputs are **committed** — the same treatment the compiled CSS gets — so a clean
-checkout serves the app before anything has run. They are still generated: don't edit them by hand.
+The outputs are **generated and gitignored**, the same treatment `wwwroot/lib` and the compiled CSS get.
+Don't edit them by hand.
 
-The csproj runs the build after the client-library copy on every build, so any full build produces current
-bundles. If `dotnet watch` does not pick up a script edit — it may treat one as a static-asset refresh rather
+`BuildClientAssets` runs the build after the client-library copy on every build, so any full build produces
+current bundles. If `dotnet watch` does not pick up a script edit — it may treat one as a static-asset refresh rather
 than a rebuild — run the bundle build yourself and hard-refresh, the way editing a `.scss` needs
 `Scripts/run.build.css.bat`:
 
@@ -151,9 +157,9 @@ The browser libraries the app serves — Bootstrap, Font Awesome, TinyMCE, flatp
 npm, and `ODK.Web.Razor/build/copy-client-libs.mjs` copies them into `wwwroot/lib`.
 
 `wwwroot/lib` is **generated and gitignored**. Nothing in it should be edited by hand; it is rebuilt whenever
-a package version changes. The `RestoreClientLibraries` target in the csproj runs the copy on every build (and
-then the bundle build below), so a plain `dotnet build`, `dotnet publish` or `Scripts/run.app.bat` produces a
-working `wwwroot/lib` with no extra command. To run it on its own:
+a package version changes. The `BuildClientAssets` target in the csproj runs the copy on every build (and then
+the SCSS compile and the bundle build), so a plain `dotnet build`, `dotnet publish` or `Scripts/run.app.bat`
+produces a working `wwwroot/lib` with no extra command. To run it on its own:
 
 ```
 npm run build:lib
@@ -175,8 +181,8 @@ percent escape, the browser rejects the `fill`, and form switches lose their kno
 chevron. Recheck when Bootstrap escapes `%` in `$escaped-characters`.
 
 Sass 1.100 and later also need **Node ≥ 20.19** — below that it dies with `ERR_REQUIRE_ESM` from chokidar.
-It is the *developer's* Node that has to satisfy this, since the CSS is compiled locally and committed and CI
-never runs Sass at all.
+Every machine that builds has to satisfy this, developer and CI runner alike, since the CSS is compiled by
+the build rather than committed. The workflows pin Node 22.x.
 
 `ClientLibraryAssetTests` asserts that every `lib/…` path the app references, and every `url(…)` inside a
 copied stylesheet, exists after a build. That is the guard when trimming a package down: an asset the browser

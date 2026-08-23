@@ -1,9 +1,23 @@
 ﻿@using ODK.Web.Razor.Models.Components
 @model BodyWithSidebarViewModel
+@{
+    var breakpoint = Model.SidebarBreakpoint;
+    var sidebarAtStart = Model.SidebarPosition == "start";
+
+    var containerClass = !string.IsNullOrEmpty(Model.ContainerClass)
+        ? Model.ContainerClass
+        : BodyViewModel.DefaultContainerClass;
+
+    // The content column comes first in the DOM, so order-1 on the sidebar lifts it above while the two
+    // are stacked. A sidebar on the end swaps that back from the breakpoint up; one on the start keeps it.
+    var contentClass = $"col-xl-9 col-{breakpoint}-8 order-2" + (sidebarAtStart ? null : $" order-{breakpoint}-1");
+    var sidebarClass = $"col-xl-3 col-{breakpoint}-4 order-1" + (sidebarAtStart ? null : $" order-{breakpoint}-2");
+}
 
 <main id="main" class="@Model.Class">
     @await Html.PartialAsync("Components/_PageTitle", new PageTitleViewModel
     {
+        ContainerClass = Model.ContainerClass,
         Content = Model.TitleContent,
         Title = Model.Title,
         WidthClass = Model.WidthClass
@@ -18,7 +32,7 @@
        below the title, so an absolutely positioned child lands on the page edge rather than
        inset by the content column. Inert without such a child. *@
     <div class="preview-label-container">
-        <div class="container-md">
+        <div class="@containerClass" data-site-header-class="@containerClass">
             @await Html.PartialAsync("Components/_ToastAnchor", new ToastAnchorViewModel())
             <div class="row @(Model.WidthClass != null ? "justify-content-center" : null)">
                 <div class="@(Model.WidthClass ?? "col-12")">                
@@ -39,7 +53,7 @@
                         }
             
                         <div class="row">
-                            <div class="col-xl-9 col-md-8 order-2 order-md-1">
+                            <div class="@contentClass">
                                 @if (Model.Content != null)
                                 {
                                     @Model.Content
@@ -47,7 +61,7 @@
 
                                 @Model.ContentFunc?.Invoke(null)
                             </div>
-                            <div class="col-xl-3 col-md-4 order-1 order-md-2">
+                            <div class="@sidebarClass">
                                 @if (Model.SidebarContent != null)
                                 {
                                     @Model.SidebarContent

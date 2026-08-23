@@ -39,13 +39,15 @@ Tests: `ODK.Core.Tests`, `ODK.Core.Workflows.Tests`, `ODK.Services.Tests`,
 - **Test:** `dotnet test ODK.Services.Tests/ODK.Services.Tests.csproj` (or the solution).
 - **Run locally:** `Scripts/run.app.bat`. One process serves both platforms, resolved from the request URL.
   Requires a local SQL Server restored from a prod backup.
-- **CSS:** `.scss` in `wwwroot/scss` compiles to `wwwroot/css` via `Scripts/run.build.css.bat` (or
-  `npm run build:css` from `ODK.Web.Razor`); the run script compiles once before starting. Don't hand-edit
+- **CSS:** `.scss` in `wwwroot/scss` compiles to `wwwroot/css`, which is **generated and gitignored** - the
+  `BuildClientAssets` csproj target compiles it on every build, so nothing deployed depends on a local
+  build being current. `Scripts/run.build.css.bat` (or `npm run build:css` from `ODK.Web.Razor`) recompiles
+  it on its own, which is what you want mid-session, since `wwwroot/scss` is not watched. Don't hand-edit
   compiled `.css`, and **don't run a Sass watcher alongside `dotnet watch`** - a stylesheet rewritten while
   MSBuild is evaluating the project takes `dotnet watch` down with it. See the README.
 - **CSS/JS bundles:** the four script bundles and the vendor stylesheet bundle the layouts reference are
   built by `ODK.Web.Razor/build/build-bundles.mjs` (esbuild) into `wwwroot/js/odk.bundle*.js` and
-  `wwwroot/css/odk.bundle.lib.css`, and are **committed**, like the compiled CSS. `BUNDLES` at the top of
+  `wwwroot/css/odk.bundle.lib.css`, and are generated and gitignored, like the compiled CSS. `BUNDLES` at the top of
   that script is the whole definition of what each bundle contains. It concatenates then minifies as one
   script, and deliberately does **not** use esbuild's `--bundle`: that would wrap the vendored UMD libraries
   so they assign to `module.exports` instead of `window`, and would take `odk.global.js`'s top-level
@@ -53,9 +55,13 @@ Tests: `ODK.Core.Tests`, `ODK.Core.Workflows.Tests`, `ODK.Services.Tests`,
   same reason there is no Sass watcher - see the CSS note above. Any full build rebuilds the bundles, so if
   `dotnet watch` does not pick a script edit up, `npm run build:bundles` and a hard refresh does.
 - **Client-side libraries:** the vendored browser libraries come from npm and are copied into `wwwroot/lib`
-  by `ODK.Web.Razor/build/copy-client-libs.mjs`, which the `RestoreClientLibraries` csproj target runs on
-  every build, followed by the bundle build (so `dotnet build`/`publish` needs Node on the machine). `wwwroot/lib` is generated and
-  gitignored — never edit it, and never reference a path the script's `COPIES` list doesn't produce. Adding
+  by `ODK.Web.Razor/build/copy-client-libs.mjs`, which the `BuildClientAssets` csproj target runs on every
+  build, followed by the SCSS compile and the bundle build (so `dotnet build`/`publish` needs Node on the
+  machine). All three outputs - `wwwroot/lib`, `wwwroot/css` and `wwwroot/js/odk.bundle*.js` - are generated
+  and gitignored, and none may come from the default Content glob: it is expanded before any target runs, so
+  on a clean checkout the files do not exist yet. `DefaultItemExcludes` keeps them out and the target adds
+  them back as `Content`, which is what puts them in the publish output.
+  Never edit `wwwroot/lib`, and never reference a path the script's `COPIES` list doesn't produce. Adding
   or upgrading a library is a `package.json` change plus a `COPIES` line; `ClientLibraryAssetTests` fails
   when something the app references stops being copied.
 - **Batch scripts live in `Scripts/`, and resolve paths from `%~dp0`, never from the current directory.** A

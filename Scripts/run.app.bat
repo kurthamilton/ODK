@@ -3,7 +3,8 @@ rem Hot-reload dev run. Serves BOTH platforms from one process - Group Squirrel 
 rem PlatformProvider resolves the platform from the request URL (see appsettings.Development.json
 rem Platforms).
 rem
-rem Compiles the SCSS once, then runs dotnet watch in this window.
+rem Runs dotnet watch in this window. The build compiles the SCSS and rebuilds the bundles (see the
+rem BuildClientAssets target in the csproj), so there is nothing to compile up front here.
 rem
 rem Do NOT add a sass --watch alongside dotnet watch. MSBuild enumerates and hashes every file under
 rem wwwroot as a static web asset on each rebuild, so a sass watcher rewriting wwwroot\css while dotnet
@@ -49,15 +50,6 @@ if not exist node_modules (
         pause
         exit /b 1
     )
-)
-
-echo Compiling SCSS...
-call npm run build:css
-if errorlevel 1 (
-    echo.
-    echo SCSS compilation failed - fix the error above and run again.
-    pause
-    exit /b 1
 )
 
 dotnet watch run "--urls=http://localhost:8123;http://localhost:8124" --environment=Development

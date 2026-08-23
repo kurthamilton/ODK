@@ -4,21 +4,25 @@ namespace ODK.Web.Razor.Models.Components;
 
 public class BodyViewModel
 {
-    public IReadOnlyCollection<MenuItem>? Breadcrumbs { get; set; }
+    public const string DefaultContainerClass = "container-md";
+
+    public IReadOnlyCollection<MenuItem>? Breadcrumbs { get; init; }
 
     public string? Class { get; init; }
 
-    public IHtmlContent? Content { get; set; }
+    public string? ContainerClass { get; init; }
 
-    public Func<object?, IHtmlContent>? ContentFunc { get; set; }
+    public IHtmlContent? Content { get; init; }
 
-    public bool HideSubscriptionAlert { get; set; }
+    public Func<object?, IHtmlContent>? ContentFunc { get; init; }
 
-    public IHtmlContent? Menu { get; set; }
+    public bool HideSubscriptionAlert { get; init; }
 
-    public string? Title { get; set; }
+    public IHtmlContent? Menu { get; init; }
 
-    public IHtmlContent? TitleContent { get; set; }
+    public string? Title { get; init; }
 
-    public string? WidthClass { get; set; }
+    public IHtmlContent? TitleContent { get; init; }
+
+    public string? WidthClass { get; init; }
 }

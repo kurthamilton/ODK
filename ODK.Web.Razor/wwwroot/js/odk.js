@@ -11,6 +11,7 @@
     bindPopovers();
     bindRedirectTimers();
     bindScroll();
+    bindSiteHeader();
     bindToasts();
     bindTooltips();
 
@@ -358,6 +359,17 @@
                 window.location = url;
             }, seconds * 1000);
         });
+    }
+
+    function bindSiteHeader() {
+        const $siteHeader = document.querySelector('[data-site-header]');
+        if (!$siteHeader) return;
+
+        const $siteHeaderClass = document.querySelector('[data-site-header-class]');
+        if ($siteHeaderClass) {
+            const siteHeaderClass = $siteHeaderClass.getAttribute('data-site-header-class');
+            if (siteHeaderClass) $siteHeader.setAttribute('class', siteHeaderClass);
+        }
     }
 
     function bindScroll() {

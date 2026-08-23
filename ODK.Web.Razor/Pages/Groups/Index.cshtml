@@ -10,11 +10,11 @@
     Model.Title = "Groups";
 
     var filter = new GroupFilter
-    { 
+    {
         Distance = Model.Distance,
         DistanceUnit = Model.DistanceUnit,
-        Location = Model.Lat != null && Model.Long != null 
-            ? new LatLong(Model.Lat.Value, Model.Long.Value) 
+        Location = Model.Lat != null && Model.Long != null
+            ? new LatLong(Model.Lat.Value, Model.Long.Value)
             : default(LatLong?),
         LocationName = Model.LocationName,
         TopicGroup = Model.TopicGroup
@@ -26,38 +26,36 @@
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
     Title = "Groups",
+    ContainerClass = "container-lg",
     ContentFunc =
         @<div>
-            <div>
-                <form method="get">
-                    @await Html.PartialAsync("Groups/_GroupSearchForm", viewModel)
-                </form>
+            <div class="mb-3">
+                @await Html.PartialAsync("Groups/_GroupSearchPanel", viewModel)
             </div>
-            <div class="pt-5">
-                @if (viewModel.Groups.Count > 0)
-                {
-                    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4">
-                        @foreach (var group in viewModel.Groups)
-                        {
-                            <div class="col mb-3">
-                                @await Html.PartialAsync("Chapters/_ChapterWithLocationTile", group)
-                            </div>
-                        }
-                    </div>
-                }
-                else
-                {
-                    <p>
-                        <span>No matching results.</span>
-                        
-                        @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
-                        {
-                            Route = Model.OdkRoutes.GroupAdmin.Create(),
-                            Text = "Create a group"
-                        })
-                    </p>
-                }
-            </div>
+
+            @if (viewModel.Groups.Count > 0)
+            {
+                <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4">
+                    @foreach (var group in viewModel.Groups)
+                    {
+                        <div class="col mb-3">
+                            @await Html.PartialAsync("Chapters/_ChapterWithLocationTile", group)
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <p>
+                    <span>No matching results.</span>
+
+                    @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                    {
+                        Route = Model.OdkRoutes.GroupAdmin.Create(),
+                        Text = "Create a group"
+                    })
+                </p>
+            }
         </div>
 })
 
