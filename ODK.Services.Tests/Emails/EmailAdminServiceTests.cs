@@ -835,7 +835,7 @@ public static class EmailAdminServiceTests
         EmailRecipientType recipientType = EmailRecipientType.Members) => context.Create(new Email
     {
         HtmlContent = "<p>Standard</p>",
-        Overridable = true,
+        IsGroupEmail = true,
         RecipientType = recipientType,
         Subject = "Standard",
         Type = Type

@@ -12,7 +12,7 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
     {
         /* The two emails an import sends were hard-coded in MemberEmailService. The wording below is
            carried over unchanged apart from a "You application" typo, so imported members see what
-           they saw before - but the rows are Overridable, so a group admin can now customise them.
+           they saw before - but the rows are group emails, so a group admin can now customise them.
 
            These templates were written with the {group.*} parameters from the start. At the time
            {chapter.*} also resolved; Emails-ChapterParameters-Rename later dropped that. */
@@ -39,14 +39,14 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                 new Email
                 {
                     HtmlContent = ActivationBody,
-                    Overridable = true,
+                    IsGroupEmail = true,
                     Subject = "{title} - Activate your account",
                     Type = EmailType.MemberImportActivation
                 },
                 new Email
                 {
                     HtmlContent = InviteBody,
-                    Overridable = true,
+                    IsGroupEmail = true,
                     Subject = "{title} - You have been added to the group",
                     Type = EmailType.MemberImportInvite
                 });

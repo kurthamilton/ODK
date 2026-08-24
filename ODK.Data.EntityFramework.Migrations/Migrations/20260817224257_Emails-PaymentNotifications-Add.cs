@@ -28,7 +28,7 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                 new Email
                 {
                     HtmlContent = MemberBody,
-                    Overridable = true,
+                    IsGroupEmail = true,
                     RecipientType = EmailRecipientType.Members,
                     Subject = Subject,
                     Type = EmailType.PaymentNotification

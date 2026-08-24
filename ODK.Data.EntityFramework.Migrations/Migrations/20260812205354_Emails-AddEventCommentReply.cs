@@ -15,7 +15,7 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
             migrationBuilder.InsertEmails(EmailSchemaEra.TypeIdKeyWithRecipientType, new Email
             {
                 HtmlContent = "<p>An event comment has been replied to.</p><p>{comment.text}</p><p><a href=\"{event.url}\">{event.url}</a></p>",
-                Overridable = true,
+                IsGroupEmail = true,
                 RecipientType = EmailRecipientType.Members,
                 Subject = "{title} - New event comment reply",
                 Type = EmailType.EventCommentReply
