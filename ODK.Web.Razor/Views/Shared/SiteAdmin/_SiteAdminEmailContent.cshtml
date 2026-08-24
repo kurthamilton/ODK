@@ -15,9 +15,9 @@
     @Html.AntiForgeryToken()
 
     <div class="form-check mb-3">
-        @Html.CheckBox("overridable", Model.Email.Overridable, new { @class = "form-check-input" })
-        <label class="form-check-label" for="overridable">
-            Overridable
+        @Html.CheckBox("isGroupEmail", Model.Email.IsGroupEmail, new { @class = "form-check-input" })
+        <label class="form-check-label" for="isGroupEmail">
+            Group email
         </label>
     </div>
 
@@ -45,7 +45,7 @@
     @Html.AntiForgeryToken()
 </form>
 
-<div class="mt-3">
+<div class="mt-5">
     <h3 class="content-heading">Placeholders</h3>
     @await Html.PartialAsync("Emails/_EmailParameters", Model.Parameters)
 </div>

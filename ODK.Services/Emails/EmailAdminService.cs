@@ -116,7 +116,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
 
         foreach (var siteEmail in siteEmails.OrderBy(x => x.Type))
         {
-            if (!siteEmail.Overridable)
+            if (!siteEmail.IsGroupEmail)
             {
                 continue;
             }
@@ -252,7 +252,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
             x => x.EmailRepository.GetByType(type),
             OwnerSubscriptionFeatures(chapter.Id, _siteSubscriptionCooldown));
 
-        if (!siteEmail.Overridable)
+        if (!siteEmail.IsGroupEmail)
         {
             return ServiceResult.Failure("This email cannot be customised");
         }
@@ -357,7 +357,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
             x => x.EmailRepository.GetByType(type));
 
         existing.HtmlContent = model.HtmlContent;
-        existing.Overridable = model.Overridable;
+        existing.IsGroupEmail = model.IsGroupEmail;
         existing.Subject = model.Subject;
 
         var validationResult = ValidateEmail(existing);
@@ -372,7 +372,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         return ServiceResult.Successful();
     }
 
-    /* Authorised but deliberately not gated on the custom emails feature or on Overridable, unlike
+    /* Authorised but deliberately not gated on the custom emails feature or on IsGroupEmail, unlike
        UpdateChapterEmail. Those refusals are about whether a template may be saved at all, and the form
        is read-only when either applies, so no request gets this far; answering them here would put
        "This email cannot be customised" under a field as if it were a markup error. */
@@ -515,7 +515,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
 
     /* The layout is exempt. It is the full HTML document every other email is rendered into -
        <html>, <head>, a stylesheet - so the allow-list tuned for rich text would reject it outright.
-       Only the site admin edits it, and it is being made non-overridable. Subjects are not checked
+       Only the site admin edits it, and it is not a group email. Subjects are not checked
        either: they are plain text, so a stray angle bracket is not markup. */
     private ServiceResult ValidateHtml(EmailType type, string? htmlContent) => type == EmailType.Layout
         ? ServiceResult.Successful()

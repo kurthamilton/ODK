@@ -1,0 +1,54 @@
+﻿@using ODK.Core.Emails
+@using ODK.Core.Utils
+@using ODK.Services.Emails
+@using ODK.Web.Common.Routes
+@using ODK.Web.Common.Services
+@inject IEmailAdminService EmailAdminService
+@inject IOdkRoutes OdkRoutes
+@inject IRequestStore RequestStore
+@{
+    var emails = await EmailAdminService.GetEmails(RequestStore.MemberServiceRequest);
+
+    (string Heading, string Description, IEnumerable<Email> Emails)[] tables =
+    [
+        ("Site emails", "Sent by the site itself, and only a site admin edits them.",
+            emails.Where(x => !x.IsGroupEmail)),
+        ("Group emails", "Sent by a group, so a group admin can customise the wording.",
+            emails.Where(x => x.IsGroupEmail))
+    ];
+}
+
+<div class="d-flex flex-column gap-5">
+    @foreach (var table in tables)
+    {
+        <div>
+            <h2 class="content-heading">@table.Heading</h2>
+            <p class="text-muted">@table.Description</p>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>Recipients</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var email in table.Emails.OrderBy(x => x.Name))
+                        {
+                            <tr>
+                                <td>
+                                    <a href="@OdkRoutes.SiteAdmin.Email(email.Type)">
+                                        @email.Name
+                                    </a>
+                                </td>
+                                <td>
+                                    @EnumUtils.GetDisplayValue(email.RecipientType)
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>

@@ -25,7 +25,7 @@ public class EmailModel : SiteAdminPageModel
 
     public async Task<IActionResult> OnPostAsync(EmailType type,
         [FromForm] SiteEmailFormSubmitViewModel viewModel,
-        [FromForm] bool overridable)
+        [FromForm] bool isGroupEmail)
     {
         // Set for the failure path below, which renders the page and so loads the email by this type.
         Type = type;
@@ -33,7 +33,7 @@ public class EmailModel : SiteAdminPageModel
         var result = await _emailAdminService.UpdateEmail(MemberServiceRequest, type, new EmailUpdateModel
         {
             HtmlContent = viewModel.Content,
-            Overridable = overridable,
+            IsGroupEmail = isGroupEmail,
             Subject = viewModel.Subject
         });
 
