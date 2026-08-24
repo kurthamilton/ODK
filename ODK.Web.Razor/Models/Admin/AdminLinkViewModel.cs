@@ -11,6 +11,12 @@ public class AdminLinkViewModel
 
     public IconType? Icon { get; init; }
 
+    /// <summary>
+    /// Renders the link as its icon alone, with <see cref="Text"/> becoming its tooltip and its accessible
+    /// name. For a toolbar; it needs an <see cref="Icon"/> to show.
+    /// </summary>
+    public bool IconOnly { get; init; }
+
     public string? QueryString { get; init; }
 
     public required GroupAdminRoute Route { get; init; }

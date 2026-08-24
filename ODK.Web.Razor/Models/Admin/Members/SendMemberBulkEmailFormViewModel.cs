@@ -1,10 +1,10 @@
-﻿using ODK.Core.Members;
-
-namespace ODK.Web.Razor.Models.Admin.Members;
+﻿namespace ODK.Web.Razor.Models.Admin.Members;
 
 public class SendMemberBulkEmailFormViewModel : SendMemberEmailFormViewModel
 {
-    public List<SubscriptionStatus> Status { get; set; } = [];
-
-    public List<SubscriptionType> Type { get; set; } = [];
+    /// <summary>
+    /// The members the checkbox column has selected. Empty is a valid post - the send is refused with a
+    /// message rather than treated as "everyone".
+    /// </summary>
+    public List<Guid> MemberIds { get; set; } = [];
 }

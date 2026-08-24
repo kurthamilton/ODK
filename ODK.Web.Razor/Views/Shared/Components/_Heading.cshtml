@@ -1,0 +1,31 @@
+﻿@using ODK.Web.Razor.Models.Components
+@model HeadingViewModel
+
+@* A title rendered at the level the caller asks for. It exists so a component holding a title does not have
+   to choose a level for every page that uses it, and so a caller supplying one does not have to reach for
+   an inline markup block to do it. *@
+
+@switch (Model.Type)
+{
+    case HeadingType.H1:
+        <h1 class="@Model.Class">@Model.Title</h1>
+        break;
+    case HeadingType.H2:
+        <h2 class="@Model.Class">@Model.Title</h2>
+        break;
+    case HeadingType.H3:
+        <h3 class="@Model.Class">@Model.Title</h3>
+        break;
+    case HeadingType.H4:
+        <h4 class="@Model.Class">@Model.Title</h4>
+        break;
+    case HeadingType.H5:
+        <h5 class="@Model.Class">@Model.Title</h5>
+        break;
+    case HeadingType.H6:
+        <h6 class="@Model.Class">@Model.Title</h6>
+        break;
+    default:
+        <div class="@Model.Class">@Model.Title</div>
+        break;
+}

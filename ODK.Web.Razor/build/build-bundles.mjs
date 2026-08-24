@@ -69,10 +69,10 @@ const BUNDLES = [
         // Only the admin layouts load this - the scripts in it have no hooks on member-facing pages.
         output: 'js/odk.bundle.admin.js',
         sources: [
-            'js/odk.admin.js',
             'js/odk.email-preview.js',
             'js/odk.field-override.js',
             'js/odk.lists.js',
+            'js/odk.bulk-email.js',
             'js/odk.placeholders.js'
         ]
     },

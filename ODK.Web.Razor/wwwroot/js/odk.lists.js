@@ -53,8 +53,12 @@
 
         const filters = [];
         $filters.forEach($filter => {
+            /* A checkbox reports its value whether or not it is checked, so it is read through `checked`
+               instead - unchecked it contributes an empty value, which is what drops it from the pass. */
             const rawValues = $filter.tagName === 'SELECT'
                 ? Array.from($filter.options).filter(x => x.selected).map(x => x.value)
+                : $filter.type === 'checkbox'
+                ? [$filter.checked ? $filter.value : '']
                 : [$filter.value ?? ''];
 
             filters.push({
@@ -95,7 +99,19 @@
         });
 
         stripeTable($table);
+
+        /* Which rows are on screen is not otherwise observable - the filter inputs are read here rather
+           than by anything else, and a row's visibility is a class. Bulk email's header checkbox reports on
+           the visible rows, so it needs telling. */
+        $table.dispatchEvent(new CustomEvent('odk:table-filtered'));
     }
+
+    /* Runs a filter pass over a table. Exposed because a filter control can be changed by script rather
+       than by the admin - see the show-selected-only switch in odk.bulk-email.js - and a programmatic
+       change raises no event for the listeners above to hear. */
+    window.odk = window.odk || {};
+    window.odk.lists = window.odk.lists || {};
+    window.odk.lists.filter = $table => filterTable($table);
 
     /*SORTING*/
     const sortDirections = {

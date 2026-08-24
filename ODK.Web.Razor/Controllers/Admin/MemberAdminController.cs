@@ -142,15 +142,10 @@ public class MemberAdminController : AdminControllerBase
     public async Task<IActionResult> SendBulkEmail(Guid chapterId,
         [FromForm] SendMemberBulkEmailFormViewModel viewModel)
     {
-        var filter = new MemberFilter
-        {
-            Statuses = viewModel.Status,
-            Types = viewModel.Type
-        };
-
         var request = MemberChapterAdminServiceRequest.Create(
             ChapterAdminSecurable.BulkEmail, MemberChapterServiceRequest);
-        var result = await _memberAdminService.SendBulkEmail(request, filter, viewModel.Subject, viewModel.Body);
+        var result = await _memberAdminService.SendBulkEmail(
+            request, viewModel.MemberIds, viewModel.Subject, viewModel.Body);
         AddFeedback(result);
         return RedirectToReferrer();
     }

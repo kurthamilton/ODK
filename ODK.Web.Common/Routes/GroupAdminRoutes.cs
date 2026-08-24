@@ -12,6 +12,12 @@ namespace ODK.Web.Common.Routes;
 
 public class GroupAdminRoutes
 {
+    /// <summary>
+    /// Marks the members page as opening in bulk email mode. Bulk email is a mode of that page rather than
+    /// a page of its own, so the route for it is the members page carrying this.
+    /// </summary>
+    public const string BulkEmailQueryKey = "email";
+
     public GroupAdminRoutes(PlatformType platform)
     {
         Platform = platform;
@@ -191,7 +197,7 @@ public class GroupAdminRoutes
         => Base(chapter).Child("/members", ChapterAdminSecurable.Members);
 
     public GroupAdminRoute MembersEmail(Chapter chapter) =>
-        Members(chapter).Child("/email", ChapterAdminSecurable.BulkEmail);
+        Members(chapter).Child($"?{BulkEmailQueryKey}", ChapterAdminSecurable.BulkEmail);
 
     public GroupAdminRoute MembersImport(Chapter chapter)
         => Members(chapter).Child("/import", ChapterAdminSecurable.MemberImport);

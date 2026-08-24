@@ -12,8 +12,6 @@ public interface IMemberAdminService
 
     Task<AdminMembersAdminPageViewModel> GetAdminMembersAdminPageViewModel(IMemberChapterAdminServiceRequest request);
 
-    Task<BulkEmailAdminPageViewModel> GetBulkEmailViewModel(IMemberChapterAdminServiceRequest request);
-
     /// <summary>
     /// Everyone the group has asked to join who has yet to accept, oldest invitation first.
     /// </summary>
@@ -70,8 +68,14 @@ public interface IMemberAdminService
 
     Task SendActivationEmail(IMemberChapterAdminServiceRequest request, Guid memberId);
 
+    /// <summary>
+    /// Sends one email to the selected members. An id that names nobody the group can email - someone
+    /// outside it, an account not yet activated, a member who has turned the group's emails off - is
+    /// dropped rather than refused, and the result says how many were actually written to. Only a selection
+    /// that reaches nobody at all fails.
+    /// </summary>
     Task<ServiceResult> SendBulkEmail(
-        IMemberChapterAdminServiceRequest request, MemberFilter filter, string subject, string body);
+        IMemberChapterAdminServiceRequest request, IReadOnlyCollection<Guid> memberIds, string subject, string body);
 
     Task SendMemberSubscriptionReminderEmails(IServiceRequest request);
 
