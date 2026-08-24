@@ -47,7 +47,11 @@
     @await Html.PartialAsync("Components/_Panel", new PanelViewModel
     {
         Class = "mb-3",
-        TitleContentFunc = @<h3>Join us</h3>,
+        Heading = new HeadingViewModel
+        {
+            Title = "Join us",
+            Type = HeadingType.H3
+        },
         BodyContentFunc =
             @<div>
                 @Html.Raw(Model.Texts.RegisterText)

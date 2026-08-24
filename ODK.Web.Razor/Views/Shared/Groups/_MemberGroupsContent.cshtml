@@ -9,7 +9,11 @@
     <section class="section--admin">
         @await Html.PartialAsync("Components/_Panel", new PanelViewModel
         {
-            TitleContentFunc = @<h5><span>Owner</span></h5>,
+            Heading = new HeadingViewModel
+            {
+                Title = "Owner",
+                Type = HeadingType.H5
+            },
             TitleEndContentFunc = 
                 @<div>
                     @if (Model.Owned.Count > 0)
@@ -48,7 +52,11 @@
         <section class="section--admin">
             @await Html.PartialAsync("Components/_Panel", new PanelViewModel
             {
-                TitleContentFunc = @<h5>Manager</h5>,
+                Heading = new HeadingViewModel
+                {
+                    Title = "Manager",
+                    Type = HeadingType.H5
+                },
                 BodyContent = 
                     await Html.PartialAsync("Chapters/_ChapterTiles", Model.Admin.OrderBy(x => x.Chapter.Name))
             })                        
@@ -61,7 +69,11 @@
         <section class="section--admin">
             @await Html.PartialAsync("Components/_Panel", new PanelViewModel
             {
-                TitleContentFunc = @<h5>Member</h5>,
+                Heading = new HeadingViewModel
+                {
+                    Title = "Member",
+                    Type = HeadingType.H5
+                },
                 BodyContentFunc =
                 @<div>
                     @if (Model.Member.Count > 0)

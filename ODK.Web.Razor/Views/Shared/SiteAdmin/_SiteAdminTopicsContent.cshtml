@@ -54,7 +54,11 @@
 
             @await Html.PartialAsync("Components/_Panel", new PanelViewModel
             {
-                TitleContentFunc = @<h5>@topicGroup.Name</h5>,
+                Heading = new HeadingViewModel
+                {
+                    Title = topicGroup.Name,
+                    Type = HeadingType.H5
+                },
                 BodyContentFunc = 
                     @<div>
                         @if (topics != null)

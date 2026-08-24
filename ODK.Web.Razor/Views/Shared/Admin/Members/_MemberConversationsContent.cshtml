@@ -72,7 +72,11 @@
             Feature = SiteFeatureType.SendMemberEmails,
             Content = await Html.PartialAsync("Components/_Panel", new PanelViewModel
             {
-                TitleContentFunc = @<h5>New conversation</h5>,
+                Heading = new HeadingViewModel
+                {
+                    Title = "New conversation",
+                    Type = HeadingType.H5
+                },
                 BodyContentFunc = 
                     @<div>
                         <form action="/admin/groups/@Model.Chapter.Id/conversations" method="post">

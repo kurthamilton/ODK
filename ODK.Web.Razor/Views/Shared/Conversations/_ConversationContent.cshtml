@@ -27,7 +27,11 @@
         <section class="section">
             @await Html.PartialAsync("Components/_Panel", new PanelViewModel
             {
-                TitleContentFunc = @<h5>Messages</h5>,
+                Heading = new HeadingViewModel
+                {
+                    Title = "Messages",
+                    Type = HeadingType.H5
+                },
                 BodyContentFunc = 
                     @<div>
                         @await Html.PartialAsync("Conversations/_ConversationMessages", new ConversationMessagesViewModel
@@ -42,7 +46,11 @@
         <section class="section">
             @await Html.PartialAsync("Components/_Panel", new PanelViewModel
             {
-                TitleContentFunc = @<h5>Reply</h5>,
+                Heading = new HeadingViewModel
+                {
+                    Title = "Reply",
+                    Type = HeadingType.H5
+                },
                 BodyContentFunc = 
                     @<div>
                         <form action="@Model.ReplyUrl" method="post">
@@ -84,7 +92,11 @@
         {
             @await Html.PartialAsync("Components/_Panel", new PanelViewModel
             {
-                TitleContentFunc = @<h5>Other conversations</h5>,
+                Heading = new HeadingViewModel
+                {
+                    Title = "Other conversations",
+                    Type = HeadingType.H5
+                },
                 BodyContentFunc = 
                     @<div class="list-group">
                         @foreach (var conversation in Model.OtherConversations.OrderByDescending(x => x.LastMessageUtc))
