@@ -17,6 +17,7 @@ using ODK.Services.Members.Models;
 using ODK.Services.Members.ViewModels;
 using ODK.Services.Members.Workflows.Account;
 using ODK.Services.Members.Workflows.ChapterMembership;
+using ODK.Services.Security;
 using ODK.Services.Subscriptions;
 using ODK.Services.Tasks;
 using ODK.Services.Workflows;
@@ -162,27 +163,6 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                 .Select(x => x.Feature)
                 .ToArray(),
             Platform = platform
-        };
-    }
-
-    public async Task<BulkEmailAdminPageViewModel> GetBulkEmailViewModel(
-        IMemberChapterAdminServiceRequest request)
-    {
-        var chapter = request.Chapter;
-
-        var ownerSubscriptionFeatures = await GetChapterAdminRestrictedContent(request,
-            x => x.MemberSiteSubscriptionRecordRepository
-                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
-                .SiteSubscription()
-                .Features()
-                .GetAll());
-
-        return new BulkEmailAdminPageViewModel
-        {
-            Chapter = chapter,
-            OwnerSubscriptionFeatures = ownerSubscriptionFeatures
-                .Select(x => x.Feature)
-                .ToArray()
         };
     }
 
@@ -541,24 +521,45 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
     public async Task<MembersAdminPageViewModel> GetMembersViewModel(IMemberChapterAdminServiceRequest request)
     {
-        var (platform, chapter) = (request.Platform, request.Chapter);
+        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
-        var (membershipSettings, members, memberEmailPreferences, subscriptions) = await GetChapterAdminRestrictedContent(
-            request,
+        // The admin member is loaded here rather than through GetChapterAdminRestrictedContent because the
+        // page needs it for more than the access check: bulk email is a mode of this page, and whether to
+        // offer it is the admin member's own securable rather than the one this request carries.
+        var (adminMember,
+            membershipSettings,
+            members,
+            eventEmailPreferences,
+            groupEmailPreferences,
+            subscriptions,
+            ownerSubscriptionFeatures) = await _unitOfWork.RunAsync(
+            x => x.ChapterAdminMemberRepository.GetByMemberId(platform, currentMember.Id, chapter.Id),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.MemberRepository.GetAllWithAvatarByChapterId(chapter.Id),
             x => x.MemberEmailPreferenceRepository.GetByChapterId(chapter.Id, MemberEmailPreferenceType.Events),
+            x => x.MemberEmailPreferenceRepository.GetByChapterId(chapter.Id, MemberEmailPreferenceType.ChapterMessages),
             x => x.MemberSubscriptionRecordRepository
                 .Query()
                 .Current()
                 .ForChapter(chapter.Id)
                 .ToChapterSubscription()
+                .GetAll(),
+            x => x.MemberSiteSubscriptionRecordRepository
+                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
+                .SiteSubscription()
+                .Features()
                 .GetAll());
+
+        AssertMemberIsChapterAdmin(request, adminMember);
 
         return new MembersAdminPageViewModel
         {
+            CanSendBulkEmail = adminMember.HasAccessTo(ChapterAdminSecurable.BulkEmail, currentMember),
             Chapter = chapter,
-            MemberEventEmailPreferences = memberEmailPreferences,
+            EventEmailOptOutMemberIds = OptedOutMemberIds(eventEmailPreferences),
+            GroupEmailOptOutMemberIds = OptedOutMemberIds(groupEmailPreferences),
+            HasBulkEmailFeature = _authorizationService.ChapterHasAccess(
+                ownerSubscriptionFeatures, SiteFeatureType.SendMemberEmails),
             Members = members,
             MembershipSettings = membershipSettings,
             Platform = platform,
@@ -846,26 +847,14 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     }
 
     public async Task<ServiceResult> SendBulkEmail(
-        IMemberChapterAdminServiceRequest request, MemberFilter filter, string subject, string body)
+        IMemberChapterAdminServiceRequest request, IReadOnlyCollection<Guid> memberIds, string subject, string body)
     {
         var chapter = request.Chapter;
 
-        var (members,
-            memberEmailPreferences,
-            memberSubscriptions,
-            membershipSettings,
-            hasAccess)
-        = await GetChapterAdminRestrictedContent(
+        var (members, memberEmailPreferences, hasAccess) = await GetChapterAdminRestrictedContent(
             request,
             x => x.MemberRepository.GetByChapterId(chapter.Id),
             x => x.MemberEmailPreferenceRepository.GetByChapterId(chapter.Id, MemberEmailPreferenceType.ChapterMessages),
-            x => x.MemberSubscriptionRecordRepository
-                .Query()
-                .Current()
-                .ForChapter(chapter.Id)
-                .ToChapterSubscription()
-                .GetAll(),
-            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.MemberSiteSubscriptionRecordRepository
                 .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
                 .HasFeature(SiteFeatureType.SendMemberEmails));
@@ -875,25 +864,27 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             return ServiceResult.Unauthorized(SiteFeatureType.SendMemberEmails);
         }
 
-        var filteredMembers = FilterMembers(members, memberSubscriptions, membershipSettings, filter)
+        // Selected ids are matched against the group's own members rather than trusted: the form posts
+        // whatever the browser sends, and a member of another group must not become a recipient.
+        var selectedMemberIds = memberIds.ToHashSet();
+        var optOutMemberIds = OptedOutMemberIds(memberEmailPreferences);
+
+        var recipients = members
+            .Where(x => selectedMemberIds.Contains(x.Id) && !optOutMemberIds.Contains(x.Id))
             .ToArray();
 
-        var optOutMemberIds = memberEmailPreferences
-            .Where(x => x.Type == MemberEmailPreferenceType.ChapterMessages && x.Disabled == true)
-            .Select(x => x.MemberId)
-            .ToHashSet();
-
-        filteredMembers = filteredMembers
-            .Where(x => !optOutMemberIds.Contains(x.Id))
-            .ToArray();
+        if (recipients.Length == 0)
+        {
+            return ServiceResult.Failure("Select at least one member to email");
+        }
 
         await _memberEmailService.SendBulkEmail(
             request,
-            filteredMembers,
+            recipients,
             subject,
             body);
 
-        return ServiceResult.Successful($"Bulk email sent to {filteredMembers.Length} members");
+        return ServiceResult.Successful($"Bulk email sent to {recipients.Length} members");
     }
 
     public async Task SendMemberSubscriptionReminderEmails(IServiceRequest request)
@@ -1111,35 +1102,16 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             .Select(g => g.First())
             .ToArray();
 
+    // A preference row exists only once a member has expressed one, so an absent row is opted in.
+    private static HashSet<Guid> OptedOutMemberIds(IEnumerable<MemberEmailPreference> preferences) => preferences
+        .Where(x => x.Disabled)
+        .Select(x => x.MemberId)
+        .ToHashSet();
+
     private string EnqueueSendImportInviteEmailJob(JobRequest request, Guid chapterId, Guid memberId)
         => _backgroundTaskService.Enqueue(
             () => SendImportInviteEmailJob(request, chapterId, memberId),
             BackgroundTaskQueueType.Emails);
-
-    private IEnumerable<Member> FilterMembers(
-        IEnumerable<Member> members,
-        IEnumerable<MemberChapterSubscription> memberSubscriptions,
-        ChapterMembershipSettings? membershipSettings,
-        MemberFilter filter)
-    {
-        var memberSubscriptionsDictionary = memberSubscriptions
-            .ToDictionary(x => x.MemberId);
-
-        foreach (var member in members)
-        {
-            memberSubscriptionsDictionary.TryGetValue(member.Id, out var memberSubscription);
-
-            var subscriptionType = memberSubscription?.Type ?? SubscriptionType.Full;
-
-            var status = _authorizationService.GetSubscriptionStatus(member, memberSubscription, membershipSettings);
-            if (filter.Types.Contains(subscriptionType) &&
-                filter.Statuses.Contains(status))
-            {
-                yield return member;
-                continue;
-            }
-        }
-    }
 
     private async Task SendImportInviteEmail(IServiceRequest request, Guid chapterId, Guid memberId)
     {

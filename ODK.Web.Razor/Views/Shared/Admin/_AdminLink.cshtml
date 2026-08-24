@@ -34,11 +34,22 @@
     }
 }
 
-<a href="@href" class="@Model.Class">
-    @if (Model.Icon != null)
-    {
-        @await Html.PartialAsync("Components/_Icon", new IconViewModel(Model.Icon.Value))
-    }
-    
-    <span>@Model.Text</span>
-</a>
+@if (Model.IconOnly && Model.Icon != null)
+{
+    <a href="@href" class="@Model.Class" aria-label="@Model.Text"
+       data-bs-toggle="tooltip" data-bs-title="@Model.Text">
+        @await Html.PartialAsync("Components/_Icon",
+            new IconViewModel(Model.Icon.Value) { Class = "icon--centred" })
+    </a>
+}
+else
+{
+    <a href="@href" class="@Model.Class">
+        @if (Model.Icon != null)
+        {
+            @await Html.PartialAsync("Components/_Icon", new IconViewModel(Model.Icon.Value))
+        }
+
+        <span>@Model.Text</span>
+    </a>
+}

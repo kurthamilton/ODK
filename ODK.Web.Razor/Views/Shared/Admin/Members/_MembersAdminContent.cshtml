@@ -3,6 +3,7 @@
 @using ODK.Services.Members.ViewModels
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Admin.Members
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Members
 @model MembersAdminPageViewModel
@@ -28,24 +29,51 @@
         .Select(x => x?.ToLower() ?? "")
         .ToArray();
 
-    var optOutMemberIds = Model.MemberEventEmailPreferences
-        .Where(x => x.Disabled && x.Type == MemberEmailPreferenceType.Events)
-        .Select(x => x.MemberId)
-        .ToHashSet();
+    // Bulk email is a mode of this page rather than a page of its own, so the menu item for it lands here
+    // carrying the flag. The toolbar's email button turns the same mode on in place.
+    var emailMode = Model.CanSendBulkEmail
+        && Context.Request.Query.ContainsKey(GroupAdminRoutes.BulkEmailQueryKey);
+
+    // The panel and the selection column are rendered whatever the mode and revealed together, so turning
+    // the mode on costs no round-trip and keeps the filters and the sort the admin has already set up.
+    var emailModeClass = emailMode ? null : "d-none";
+
+    // Selecting recipients is pointless where the group cannot send to them, so the column follows the
+    // feature as well as the securable - the panel shows the upgrade prompt in place of the form.
+    var showSelection = Model.CanSendBulkEmail && Model.HasBulkEmailFeature;
 }
 
-@await Html.PartialAsync("Components/_AdminPageDescription",
-    "Everyone who has joined this group. Filter by status to find members whose subscription is active, due to expire or lapsed.")
+@await Html.PartialAsync("Components/_AdminPageDescription", Model.CanSendBulkEmail
+    ? "Everyone who has joined this group. Filter to the members you want, then use the email button to write to whoever you select."
+    : "Everyone who has joined this group. Filter by status to find members whose subscription is active, due to expire or lapsed.")
+
+@if (Model.CanSendBulkEmail)
+{
+    var bulkEmailForm = await Html.PartialAsync("Admin/Members/_SendMemberBulkEmailForm", Model);
+
+    @* Above the toolbar that reveals it, and above the table it selects from. *@
+    <div class="mb-4 @emailModeClass" data-bulk-email-panel>
+        @await Html.PartialAsync("Components/_Panel", new PanelViewModel
+        {
+            BodyContent = bulkEmailForm,
+            Heading = new HeadingViewModel
+            {
+                Title = "Bulk email",
+                Type = HeadingType.H5
+            }
+        })
+    </div>
+}
 
 <p>
     <div class="row row-cols-lg-auto g-3 align-items-center">
         <div class="col-12">
             <label class="form-label" for="name-filter">Name</label>
-            <input class="form-control" id="name-filter" data-table-filter="#members-table" data-table-filter-field="name" />
+            <input class="form-control" id="name-filter" data-table-filter="@BulkEmailElements.MembersTableSelector" data-table-filter-field="name" />
         </div>
         <div class="col-12">
             <label class="form-label" for="type-filter">Type</label>
-            <select class="form-select" id="type-filter" multiple data-table-filter="#members-table" data-table-filter-field="type">
+            <select class="form-select" id="type-filter" multiple data-table-filter="@BulkEmailElements.MembersTableSelector" data-table-filter-field="type">
                 @foreach (var type in Enum.GetValues<SubscriptionType>())
                 {
                     if (type == SubscriptionType.None)
@@ -63,7 +91,9 @@
         </div>
         <div class="col-12">
             <label class="form-label" for="status-filter">Subscription status</label>
-            <select class="form-select" id="status-filter" multiple data-table-filter="#members-table" data-table-filter-field="status">
+            @* Nothing is selected unless the query asks for it. Selecting every status filters nothing out,
+               so an empty filter says the same thing while leaving the control obviously untouched. *@
+            <select class="form-select" id="status-filter" multiple data-table-filter="@BulkEmailElements.MembersTableSelector" data-table-filter-field="status">
                 @foreach (var status in Enum.GetValues<SubscriptionStatus>())
                 {
                     if (status == SubscriptionStatus.None)
@@ -71,36 +101,65 @@
                         continue;
                     }
 
-                    var selected = statuses.Length > 0
-                        ? statuses.Contains(status.ToString().ToLowerInvariant())
-                        : true;
+                    var selected = statuses.Contains(status.ToString().ToLowerInvariant());
 
                     <option selected="@(selected ? "" : null)">@status</option>
                 }
             </select>
         </div>
         <div class="col ms-auto align-self-end">
-            @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
-            {
-                Icon = IconType.Upload,
-                Route = OdkRoutes.GroupAdmin.MembersImport(Model.Chapter),
-                Text = "Import members",
-                UnauthorizedBehaviour = AdminLinkUnauthorizedBehaviour.Hide
-            })
-            @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
-            {
-                Icon = IconType.Excel,
-                Route = OdkRoutes.GroupAdmin.MembersDownload(Model.Chapter),
-                Text = "Download CSV"
-            })
+            <div class="button-container">
+                @if (Model.CanSendBulkEmail)
+                {
+                    @* An anchor rather than a button, so it still reaches bulk email without scripting: it
+                       navigates to this page carrying the flag, which renders the mode the toggle otherwise
+                       turns on in place. The query key travels in the attribute so the address the script
+                       writes and the one the route builds cannot drift apart. *@
+                    <a href="@OdkRoutes.GroupAdmin.MembersEmail(Model.Chapter).Path"
+                       class="btn btn-sm btn-outline-secondary @(emailMode ? "active" : null)"
+                       data-bulk-email-toggle="@GroupAdminRoutes.BulkEmailQueryKey"
+                       data-bs-toggle="tooltip" data-bs-title="Email members"
+                       aria-label="Email members">
+                        @await Html.PartialAsync("Components/_Icon",
+                            new IconViewModel(IconType.EnvelopeOutline) { Class = "icon--centred" })
+                    </a>
+                }
+
+                @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                {
+                    Class = "btn btn-sm btn-outline-secondary",
+                    Icon = IconType.Upload,
+                    IconOnly = true,
+                    Route = OdkRoutes.GroupAdmin.MembersImport(Model.Chapter),
+                    Text = "Import members",
+                    UnauthorizedBehaviour = AdminLinkUnauthorizedBehaviour.Hide
+                })
+                @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                {
+                    Class = "btn btn-sm btn-outline-secondary",
+                    Icon = IconType.Excel,
+                    IconOnly = true,
+                    Route = OdkRoutes.GroupAdmin.MembersDownload(Model.Chapter),
+                    Text = "Download CSV"
+                })
+            </div>
         </div>
     </div>
 </p>
 
 <div class="table-responsive">
-    <table class="table" data-sortable id="members-table" data-table-striped>
+    <table class="table" data-sortable id="@BulkEmailElements.MembersTableId" data-table-striped data-bulk-email-table>
         <thead>
             <tr>
+                @if (showSelection)
+                {
+                    <th class="tcol-narrow @emailModeClass" data-bulk-email-column>
+                        @* Acts on the rows the filters currently leave visible, and on nothing else: a
+                           member the filters hide keeps whatever selection it already had. *@
+                        <input type="checkbox" class="form-check-input" data-bulk-email-select-all
+                               aria-label="Select all visible members" />
+                    </th>
+                }
                 <th class="tcol-narrow"></th>
                 <th data-sortable-sort="default">Name</th>
                 <th data-sortable-sort>Type</th>
@@ -120,6 +179,38 @@
                 <tr data-filter-name="@member.FullName"
                     data-filter-type="@(subscription?.Type ?? SubscriptionType.Full)"
                     data-filter-status="@status">
+                    @if (showSelection)
+                    {
+                        @* The two reasons a member cannot be a recipient, stated here because the send drops
+                           them either way - a selection that silently reaches fewer people than it named is
+                           worse than one that says who it cannot reach. *@
+                        var cannotEmail =
+                            Model.GroupEmailOptOutMemberIds.Contains(member.Id) ? $"{member.FullName} has turned off emails from this group" :
+                            !member.Activated ? $"{member.FullName} has not activated their account yet" :
+                            null;
+
+                        <td class="@emailModeClass" data-bulk-email-column>
+                            @if (cannotEmail != null)
+                            {
+                                @* Wrapped, because a disabled input receives no pointer events and so shows
+                                   no tooltip of its own. It carries no name either, so it posts nothing
+                                   however the page is driven. *@
+                                <span data-bs-toggle="tooltip" data-bs-title="@cannotEmail">
+                                    <input type="checkbox" class="form-check-input" disabled
+                                           aria-label="@cannotEmail" />
+                                </span>
+                            }
+                            else
+                            {
+                                @* Ticking one writes data-filter-selected on the row, which is what the
+                                   form's show-selected-only switch filters on - see odk.bulk-email.js. *@
+                                <input type="checkbox" class="form-check-input" form="@BulkEmailElements.FormId"
+                                       name="@nameof(SendMemberBulkEmailFormViewModel.MemberIds)"
+                                       value="@member.Id" data-bulk-email-select
+                                       aria-label="Email @member.FullName" />
+                            }
+                        </td>
+                    }
                     <td>
                         @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel
                         {
@@ -146,20 +237,27 @@
                         </span>
                     </td>
                     <td>@status</td>
+                    @* Event emails, which is a different preference from the one the selection column reads:
+                       a member can take the group's event emails while refusing its own, and the other way
+                       round. *@
                     <td>
-                        @if (!optOutMemberIds.Contains(member.Id))
+                        @if (!Model.EventEmailOptOutMemberIds.Contains(member.Id))
                         {
-                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.CheckCircle)
-                            {
-                                Class = "text-success"
-                            })
+                            <span data-bs-toggle="tooltip" data-bs-title="Receiving event emails">
+                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.CheckCircle)
+                                {
+                                    Class = "text-success"
+                                })
+                            </span>
                         }
                         else
                         {
-                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.TimesCircle)
-                            {
-                                Class = "text-danger"
-                            })
+                            <span data-bs-toggle="tooltip" data-bs-title="Not receiving event emails">
+                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.TimesCircle)
+                                {
+                                    Class = "text-danger"
+                                })
+                            </span>
                         }
                     </td>
                     <td>

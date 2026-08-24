@@ -230,6 +230,22 @@ identically. Add a matching `GroupAdminRoutes` helper — it resolves the platfo
   unchanged, so the POST still binds. See `ThemeFormSubmitViewModel` / `ThemeFormViewModel`.
 - Partials live in `Views/Shared/**` (e.g. `Admin/Members/_MembersAdminContent`) and are rendered with
   `Html.PartialAsync`. Reusable page chrome goes through `Admin/_AdminBody` and `Admin/_AdminLink`.
+- **Where a component view model offers a plain property and a `...ContentFunc` template for the same slot,
+  pass the plain property.** `PanelViewModel` has `Heading` and `Title` *and* `TitleContentFunc`,
+  `BodyContent` *and* `BodyContentFunc`. The template is for a slot that holds more than the value can
+  express — a badge beside the title, a link, a count — never for wrapping a string in a heading tag, which
+  `Heading` already does: `Heading = new HeadingViewModel { Title = "Bulk email", Type = HeadingType.H5 }`,
+  not `TitleContentFunc = @<h5>Bulk email</h5>`.
+  It is not only verbosity: **Razor allows exactly one level of nested inline markup block**
+  (`@<div>…</div>`), so a template spent on a title is a level unavailable to the content that needs one,
+  and the compiler reports it as `RZ2003` at the inner block rather than at the title that took the level.
+  A panel elsewhere that wraps a bare string in a heading is what this rule is against, not a precedent for
+  the next one.
+- **A title rendered at a caller-chosen level goes through `Components/_Heading`** (`HeadingViewModel`:
+  `Title`, an optional `Type` from `HeadingType`, an optional `Class`). A component that holds a title takes
+  a `HeadingViewModel` rather than picking a level itself, since the right level depends on what the page
+  around it already uses; `Type` left unset renders a div, so a caller with no view on the level gets text
+  rather than a heading the document outline has to account for.
 - **A partial's file name is unique across the whole project** — the directory disambiguates for the
   framework, but nothing else works that way: editor tabs, "go to file", and search results show the file
   name alone, so four `_EmailForm.cshtml` are four indistinguishable results. Qualify the name with the
