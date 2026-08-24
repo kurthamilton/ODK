@@ -4,12 +4,9 @@
 <section class="panel @Model.Class" data-odk-component="_Panel">
     <div class="panel-header">
 
-        @if (Model.Heading != null)
-        {
-            <div class="panel-title">
-                @await Html.PartialAsync("Components/_Heading", Model.Heading)
-            </div>
-        }
+        <div class="panel-title">
+            @await Html.PartialAsync("Components/_Heading", Model.Heading)
+        </div>
 
         @if (Model.TitleEndContentFunc != null)
         {
