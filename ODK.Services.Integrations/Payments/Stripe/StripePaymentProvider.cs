@@ -1,9 +1,12 @@
-﻿using ODK.Core.Payments;
+﻿using ODK.Core.Chapters;
+using ODK.Core.Payments;
+using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
 using ODK.Core.Utils;
 using ODK.Services.Logging;
 using ODK.Services.Payments;
 using ODK.Services.Payments.Models;
+using ODK.Services.Platforms;
 using Stripe;
 using Stripe.Checkout;
 
@@ -14,13 +17,15 @@ public class StripePaymentProvider : IPaymentProvider
     private readonly IStripeClient _client;
     private readonly string? _connectedAccountId;
     private readonly ILoggingService _loggingService;
+    private readonly IPlatformProvider _platformProvider;
     private readonly StripePaymentProviderSettings _settings;
 
     public StripePaymentProvider(
         SitePaymentSettings paymentSettings,
         ILoggingService loggingService,
         string? connectedAccountId,
-        StripePaymentProviderSettings settings)
+        StripePaymentProviderSettings settings,
+        IPlatformProvider platformProvider)
     {
         _client = new StripeClient(new StripeClientOptions
         {
@@ -28,6 +33,7 @@ public class StripePaymentProvider : IPaymentProvider
         });
         _connectedAccountId = connectedAccountId;
         _loggingService = loggingService;
+        _platformProvider = platformProvider;
         _settings = settings;
     }
 
@@ -80,7 +86,7 @@ public class StripePaymentProvider : IPaymentProvider
                 Type = "express",
                 BusinessProfile = new AccountBusinessProfileOptions
                 {
-                    Name = options.Chapter.FullName,
+                    Name = GetConnectedAccountBusinessName(options.Chapter),
                     Url = CleanConnectedAccountUrl(options.ChapterUrl),
                     Mcc = _settings.ConnectedAccountMcc,
                     ProductDescription = _settings.ConnectedAccountProductDescription
@@ -421,6 +427,18 @@ public class StripePaymentProvider : IPaymentProvider
             SubscriptionId = null
         };
     }
+
+    // The name is built from the platform the group belongs to rather than the platform serving the
+    // request, because the business name belongs to the group. Drunken Knitwits groups carry their own
+    // identity in their full name, so the configured template applies only to the other platform.
+    internal string GetConnectedAccountBusinessName(Chapter chapter)
+        => chapter.Platform == PlatformType.DrunkenKnitwits
+            ? chapter.FullName
+            : StringUtils.Interpolate(_settings.ConnectedAccountBusinessName, new Dictionary<string, string>
+            {
+                { "platform.title", _platformProvider.GetName(chapter.Platform) },
+                { "group.name", chapter.Name }
+            });
 
     // The period dates and the plan (price) id live on the subscription's item(s) rather than the
     // top-level Subscription in current Stripe API versions. Standard single-plan subscriptions have

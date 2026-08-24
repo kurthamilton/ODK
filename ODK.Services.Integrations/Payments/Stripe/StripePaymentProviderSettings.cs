@@ -4,6 +4,8 @@ public class StripePaymentProviderSettings
 {
     public required string ConnectedAccountBaseUrl { get; init; }
 
+    public required string ConnectedAccountBusinessName { get; init; }
+
     public required decimal ConnectedAccountCommissionPercentage { get; init; }
 
     /// <summary>
