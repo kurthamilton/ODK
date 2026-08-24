@@ -19,7 +19,11 @@
 
     @await Html.PartialAsync("Components/_Panel", new PanelViewModel
     {
-        TitleContentFunc = @<h5>Organisers</h5>,
+        Heading = new HeadingViewModel
+        {
+            Title = "Organisers",
+            Type = HeadingType.H5
+        },
         TitleEndContentFunc = 
             @<a class="d-flex align-items-center gap-1" href="@contactUrl">
                 @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Contact))
@@ -49,7 +53,11 @@
     {
         @await Html.PartialAsync("Components/_Panel", new PanelViewModel
         {
-            TitleContentFunc = @<h5>Latest from Instagram</h5>,
+            Heading = new HeadingViewModel
+            {
+                Title = "Latest from Instagram",
+                Type = HeadingType.H5
+            },
             BodyContentFunc = 
                 @<div>
                     @await Html.PartialAsync("Components/Instagram/_InstagramPosts", Model.InstagramPosts)
@@ -75,7 +83,11 @@
     {
         @await Html.PartialAsync("Components/_Panel", new PanelViewModel
         {
-            TitleContentFunc = @<h5>Follow us</h5>,
+            Heading = new HeadingViewModel
+            {
+                Title = "Follow us",
+                Type = HeadingType.H5
+            },
             BodyContentFunc =
                 @<div class="d-flex gap-3">
                     @await Html.PartialAsync("Components/_SocialMediaLinks", new SocialMediaLinksViewModel

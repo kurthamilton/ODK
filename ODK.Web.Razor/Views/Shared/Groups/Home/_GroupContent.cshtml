@@ -1,10 +1,7 @@
-﻿@using ODK.Core.Chapters
-@using ODK.Core.Events
+﻿@using ODK.Core.Events
 @using ODK.Services.Chapters.ViewModels
-@using ODK.Services.Events
 @using ODK.Services.Events.ViewModels
 @using ODK.Web.Common.Routes
-@using ODK.Web.Razor.Models.Chapters
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Events
 @model GroupHomePageViewModel
@@ -17,7 +14,11 @@
             {
                 @await Html.PartialAsync("Components/_Panel", new PanelViewModel
                 {
-                    TitleContentFunc = @<h3>About</h3>,
+                    Heading = new HeadingViewModel
+                    {
+                        Title = "About",
+                        Type = HeadingType.H3
+                    },
                     BodyContentFunc = 
                         @<div>
                             @Html.Raw(Model.Texts?.Description)
@@ -27,29 +28,38 @@
             
             @if (!Model.IsMember)
             {
-                <section class="panel">
-                    <div class="panel-header">
-                        <h3 class="panel-title">Join us</h3>
-                    </div>
-
-                    @if (!string.IsNullOrEmpty(Model.Texts?.WelcomeText))
+                @await Html.PartialAsync("Components/_Panel", new PanelViewModel
+                {
+                    Heading = new HeadingViewModel
                     {
-                        <div class="mb-3">
-                            @Html.Raw(Model.Texts.WelcomeText)
-                        </div>
-                    }                    
+                        Title = "Join us",
+                        Type = HeadingType.H3
+                    },
+                    BodyContentFunc =
+                        @<div>
+                            @if (!string.IsNullOrEmpty(Model.Texts?.WelcomeText))
+                            {
+                                <div class="mb-3">
+                                    @Html.Raw(Model.Texts.WelcomeText)
+                                </div>
+                            }
 
-                    <a href="@OdkRoutes.Groups.Join(Model.Chapter)" class="btn btn-success">
-                        Join
-                    </a>
-                </section>
+                            <a href="@OdkRoutes.Groups.Join(Model.Chapter)" class="btn btn-success">
+                                Join
+                            </a>
+                        </div>
+                })
             }
 
             @if (Model.UpcomingEvents.Count > 0)
             {
                 @await Html.PartialAsync("Components/_Panel", new PanelViewModel
                 {
-                    TitleContentFunc = @<h3>Upcoming events</h3>,
+                    Heading = new HeadingViewModel
+                    {
+                        Title = "Upcoming events",
+                        Type = HeadingType.H3
+                    },
                     TitleEndContentFunc = @<a href="@OdkRoutes.Groups.Events(Model.Chapter)">See all</a>,
                     BodyContentFunc = 
                         @<div>
@@ -75,7 +85,11 @@
             {
                 @await Html.PartialAsync("Components/_Panel", new PanelViewModel
                 {
-                    TitleContentFunc = @<h3>Recent events</h3>,
+                    Heading = new HeadingViewModel
+                    {
+                        Title = "Recent events",
+                        Type = HeadingType.H3
+                    },
                     TitleEndContentFunc = @<a href="@OdkRoutes.Groups.PastEvents(Model.Chapter)">See all</a>,
                     BodyContentFunc = 
                         @<div>

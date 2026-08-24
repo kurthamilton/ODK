@@ -1,24 +1,13 @@
 ﻿@using ODK.Web.Razor.Models.Components
 @model PanelViewModel
-@{
-    var heading = Model.Heading ?? (!string.IsNullOrEmpty(Model.Title)
-        ? new HeadingViewModel { Title = Model.Title }
-        : null);
-}
 
 <section class="panel @Model.Class" data-odk-component="_Panel">
     <div class="panel-header">
 
-        @if (Model.TitleContentFunc != null)
+        @if (Model.Heading != null)
         {
             <div class="panel-title">
-                @Model.TitleContentFunc.Invoke(null)
-            </div>
-        }
-        else if (heading != null)
-        {
-            <div class="panel-title">
-                @await Html.PartialAsync("Components/_Heading", heading)
+                @await Html.PartialAsync("Components/_Heading", Model.Heading)
             </div>
         }
 

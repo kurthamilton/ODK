@@ -231,16 +231,17 @@ identically. Add a matching `GroupAdminRoutes` helper — it resolves the platfo
 - Partials live in `Views/Shared/**` (e.g. `Admin/Members/_MembersAdminContent`) and are rendered with
   `Html.PartialAsync`. Reusable page chrome goes through `Admin/_AdminBody` and `Admin/_AdminLink`.
 - **Where a component view model offers a plain property and a `...ContentFunc` template for the same slot,
-  pass the plain property.** `PanelViewModel` has `Heading` and `Title` *and* `TitleContentFunc`,
-  `BodyContent` *and* `BodyContentFunc`. The template is for a slot that holds more than the value can
-  express — a badge beside the title, a link, a count — never for wrapping a string in a heading tag, which
-  `Heading` already does: `Heading = new HeadingViewModel { Title = "Bulk email", Type = HeadingType.H5 }`,
-  not `TitleContentFunc = @<h5>Bulk email</h5>`.
+  pass the plain property.** `PanelViewModel` has `BodyContent` *and* `BodyContentFunc`. The template is for
+  a slot that holds more than the value can express — a badge beside the title, a link, a count — never for
+  wrapping a string in a tag the plain property already emits.
   It is not only verbosity: **Razor allows exactly one level of nested inline markup block**
   (`@<div>…</div>`), so a template spent on a title is a level unavailable to the content that needs one,
   and the compiler reports it as `RZ2003` at the inner block rather than at the title that took the level.
-  A panel elsewhere that wraps a bare string in a heading is what this rule is against, not a precedent for
-  the next one.
+- **A panel titles itself through `Heading`, and that is the only way it can.** `PanelViewModel` offers no
+  plain `Title` string and no title template: `Heading = new HeadingViewModel { Title = "Bulk email",
+  Type = HeadingType.H5 }` is the whole surface, so every panel title carries the level its page needs and
+  none of them hand-roll a heading tag. Anything that sits *beside* the title — a link, a badge, a count —
+  goes in `TitleEndContentFunc`, which is why no template belongs on the title itself.
 - **A title rendered at a caller-chosen level goes through `Components/_Heading`** (`HeadingViewModel`:
   `Title`, an optional `Type` from `HeadingType`, an optional `Class`). A component that holds a title takes
   a `HeadingViewModel` rather than picking a level itself, since the right level depends on what the page

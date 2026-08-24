@@ -21,7 +21,11 @@
 <section class="section">
     @await Html.PartialAsync("Components/_Panel", new PanelViewModel
     {
-        TitleContentFunc = @<h5>Messages</h5>,
+        Heading = new HeadingViewModel
+        {
+            Title = "Messages",
+            Type = HeadingType.H5
+        },
         BodyContentFunc =
             @<div>
                 @* The member is the other side of this thread, so the messages render from their point of
@@ -38,7 +42,11 @@
 <section class="section">
     @await Html.PartialAsync("Components/_Panel", new PanelViewModel
     {
-        TitleContentFunc = @<h5>Reply</h5>,
+        Heading = new HeadingViewModel
+        {
+            Title = "Reply",
+            Type = HeadingType.H5
+        },
         BodyContentFunc =
             @<div>
                 <form action="/siteadmin/conversations/@Model.Conversation.Id/reply" method="post">

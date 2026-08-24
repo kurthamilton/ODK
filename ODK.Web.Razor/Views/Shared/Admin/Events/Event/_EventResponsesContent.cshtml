@@ -90,7 +90,11 @@
 
         @await Html.PartialAsync("Components/_Panel", new PanelViewModel
         {
-            TitleContentFunc = @<h5>@responseTitles[responseType]</h5>,
+            Heading = new HeadingViewModel
+            {
+                Title = responseTitles[responseType],
+                Type = HeadingType.H5
+            },
             BodyContentFunc = 
                 @<div>
                     <div class="row row-cols-3 row-cols-md-6">

@@ -12,7 +12,11 @@
 <div class="d-flex flex-column gap-5">
     @await Html.PartialAsync("Components/_Panel", new PanelViewModel
     {
-        Title = "Needs your attention",
+        Heading = new HeadingViewModel
+        {
+            Title = "Needs your attention",
+            Type = HeadingType.H5
+        },
         BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Groups/_GroupDashboardActions", Model)</div>
     })
 
@@ -25,7 +29,11 @@
 
         @await Html.PartialAsync("Components/_Panel", new PanelViewModel
         {
-            Title = "Upcoming events",
+            Heading = new HeadingViewModel
+            {
+                Title = "Upcoming events",
+                Type = HeadingType.H5
+            },
             TitleEndContentFunc = @<a href="@OdkRoutes.GroupAdmin.Events(Model.Chapter).Path">See all</a>,
             BodyContentFunc =
                 @<div>
@@ -67,7 +75,11 @@
 
         @await Html.PartialAsync("Components/_Panel", new PanelViewModel
         {
-            Title = "Newest members",
+            Heading = new HeadingViewModel
+            {
+                Title = "Newest members",
+                Type = HeadingType.H5
+            },
             TitleEndContentFunc = @<a href="@OdkRoutes.GroupAdmin.Members(Model.Chapter).Path">See all</a>,
             BodyContentFunc =
                 @<div>

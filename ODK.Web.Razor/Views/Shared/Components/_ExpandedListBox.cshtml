@@ -37,7 +37,11 @@
 
         @await Html.PartialAsync("Components/_Panel", new PanelViewModel
         {
-            TitleContentFunc = @<h6>@group.Name</h6>,
+            Heading = new HeadingViewModel
+            {
+                Title = group.Name,
+                Type = HeadingType.H6
+            },
             BodyContentFunc = 
                 @<div class="expanded-select-group" data-expanded-select-group="@group.Name">
                     <div class="d-flex gap-2 flex-wrap">

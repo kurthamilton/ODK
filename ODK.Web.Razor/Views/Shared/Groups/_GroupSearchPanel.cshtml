@@ -5,7 +5,11 @@
 <div data-odk-component="_GroupSearchPanel">
     @await Html.PartialAsync("Components/_Panel", new PanelViewModel
     {
-        Title = "Search",
+        Heading = new HeadingViewModel
+        {
+            Title = "Search",
+            Type = HeadingType.H3
+        },
         BodyContent = await Html.PartialAsync("Groups/_GroupSearchForm", Model)
     })
 </div>
