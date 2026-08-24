@@ -13,7 +13,7 @@ public class PanelViewModel
     /// <summary>
     /// The panel's title, as a heading of the level the caller wants.
     /// </summary>
-    public HeadingViewModel? Heading { get; init; }
+    public required HeadingViewModel Heading { get; init; }
 
     public Func<object?, IHtmlContent>? TitleEndContentFunc { get; init; }
 }
