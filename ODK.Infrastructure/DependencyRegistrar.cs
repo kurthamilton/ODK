@@ -122,6 +122,7 @@ public static class DependencyRegistrar
         services.AddSingleton(new StripePaymentProviderSettings
         {
             ConnectedAccountBaseUrl = payments.Stripe.ConnectedAccountBaseUrl,
+            ConnectedAccountBusinessName = payments.Stripe.ConnectedAccountBusinessName,
             ConnectedAccountCommissionPercentage = payments.Stripe.ConnectedAccountCommissionPercentage,
             ConnectedAccountMcc = payments.Stripe.ConnectedAccountMcc,
             ConnectedAccountProductDescription = payments.Stripe.ConnectedAccountProductDescription

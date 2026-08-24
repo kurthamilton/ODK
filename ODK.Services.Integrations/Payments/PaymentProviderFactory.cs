@@ -3,19 +3,23 @@ using ODK.Core.Payments;
 using ODK.Services.Integrations.Payments.Stripe;
 using ODK.Services.Logging;
 using ODK.Services.Payments;
+using ODK.Services.Platforms;
 
 namespace ODK.Services.Integrations.Payments;
 
 public class PaymentProviderFactory : IPaymentProviderFactory
 {
     private readonly ILoggingService _loggingService;
+    private readonly IPlatformProvider _platformProvider;
     private readonly StripePaymentProviderSettings _stripeSettings;
 
     public PaymentProviderFactory(
         ILoggingService loggingService,
-        StripePaymentProviderSettings stripeSettings)
+        StripePaymentProviderSettings stripeSettings,
+        IPlatformProvider platformProvider)
     {
         _loggingService = loggingService;
+        _platformProvider = platformProvider;
         _stripeSettings = stripeSettings;
     }
 
@@ -51,7 +55,8 @@ public class PaymentProviderFactory : IPaymentProviderFactory
                     settings,
                     _loggingService,
                     connectedAccountId: connectedAccountId,
-                    _stripeSettings);
+                    _stripeSettings,
+                    _platformProvider);
 
             default:
                 throw new InvalidOperationException($"Payment provider type {settings.Provider} not supported");
