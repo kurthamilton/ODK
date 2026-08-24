@@ -370,6 +370,11 @@ public class StripePaymentProvider : IPaymentProvider
 
         var isPrice = !string.IsNullOrEmpty(subscriptionPlan.ExternalId);
 
+        /* A group's payments settle against its own connected account: OnBehalfOf makes that account the
+           settlement merchant, so the customer's statement carries the group's business name rather than the
+           platform's, and the charge settles in the group's country and currency. */
+        var isGroupPayment = !string.IsNullOrEmpty(_connectedAccountId);
+
         var session = await service.CreateAsync(new SessionCreateOptions
         {
             // "elements" renders the payment fields as Stripe Elements inside our own page (see the
@@ -397,19 +402,21 @@ public class StripePaymentProvider : IPaymentProvider
             CustomerEmail = emailAddress,
             PaymentIntentData = !subscriptionPlan.Recurring ? new SessionPaymentIntentDataOptions
             {
-                ApplicationFeeAmount = CalculateCommission(stripeAmount),
+                ApplicationFeeAmount = isGroupPayment ? CalculateCommission(stripeAmount) : null,
                 Metadata = metadataDictionary,
-                TransferData = !string.IsNullOrEmpty(_connectedAccountId)
+                OnBehalfOf = _connectedAccountId,
+                TransferData = isGroupPayment
                     ? new SessionPaymentIntentDataTransferDataOptions { Destination = _connectedAccountId }
                     : null
             } : null,
             SubscriptionData = subscriptionPlan.Recurring ? new SessionSubscriptionDataOptions
             {
-                ApplicationFeePercent = !string.IsNullOrEmpty(_connectedAccountId)
+                ApplicationFeePercent = isGroupPayment
                     ? _settings.ConnectedAccountCommissionPercentage
                     : null,
                 Metadata = metadataDictionary,
-                TransferData = !string.IsNullOrEmpty(_connectedAccountId)
+                OnBehalfOf = _connectedAccountId,
+                TransferData = isGroupPayment
                     ? new SessionSubscriptionDataTransferDataOptions { Destination = _connectedAccountId }
                     : null
             } : null
@@ -477,15 +484,8 @@ public class StripePaymentProvider : IPaymentProvider
 
     private static long ToStripeAmount(decimal amount) => (long)Math.Round(amount * 100m, MidpointRounding.AwayFromZero);
 
-    private long? CalculateCommission(long stripeAmount)
-    {
-        if (string.IsNullOrEmpty(_connectedAccountId))
-        {
-            return null;
-        }
-
-        return (long)(stripeAmount * _settings.ConnectedAccountCommissionPercentage / 100);
-    }
+    private long CalculateCommission(long stripeAmount)
+        => (long)(stripeAmount * _settings.ConnectedAccountCommissionPercentage / 100);
 
     private string? CleanConnectedAccountUrl(string url)
     {

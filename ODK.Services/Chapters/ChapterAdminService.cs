@@ -1188,6 +1188,15 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
                 remainingSteps.Add("Provide identity document");
             }
 
+            /* Stamped once, because it records when the capability was first seen active. Card payments are
+               what lets a group be the settlement merchant for its own charges, so the date is worth having
+               when a group's payments are being investigated. */
+            if (remoteAccount?.CardPaymentsEnabled == true && paymentAccount.CardPaymentsEnabledUtc == null)
+            {
+                paymentAccount.CardPaymentsEnabledUtc = DateTime.UtcNow;
+                _unitOfWork.ChapterPaymentAccountRepository.Update(paymentAccount);
+            }
+
             await _unitOfWork.SaveChanges();
         }
 
