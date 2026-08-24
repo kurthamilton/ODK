@@ -304,6 +304,22 @@ internal class MockOdkContext : OdkContext
         });
     }
 
+    internal SitePaymentProduct CreateSitePaymentProduct(
+        SitePaymentSettings? sitePaymentSettings = null,
+        PlatformType platform = PlatformType.Default,
+        string externalId = "product-external-id")
+    {
+        sitePaymentSettings ??= CreateSitePaymentSettings();
+
+        return Create(new SitePaymentProduct
+        {
+            ExternalId = externalId,
+            Id = Guid.NewGuid(),
+            Platform = platform,
+            SitePaymentSettingId = sitePaymentSettings.Id
+        });
+    }
+
     internal SitePaymentSettings CreateSitePaymentSettings()
     {
         return Create(new SitePaymentSettings
@@ -320,6 +336,7 @@ internal class MockOdkContext : OdkContext
         bool free = false,
         int? memberLimit = null,
         PlatformType platform = PlatformType.Default,
+        SitePaymentProduct? sitePaymentProduct = null,
         SitePaymentSettings? sitePaymentSettings = null)
     {
         // Created rather than made up: a subscription's payment settings row is a foreign key, so code that
@@ -337,6 +354,7 @@ internal class MockOdkContext : OdkContext
             Enabled = true,
             Default = false,
             Platform = platform,
+            SitePaymentProductId = sitePaymentProduct?.Id,
             SitePaymentSettingId = sitePaymentSettings.Id
         });
 

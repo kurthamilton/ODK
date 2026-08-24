@@ -1,8 +1,11 @@
 ﻿using ODK.Core;
+using ODK.Core.Payments;
+using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
 using ODK.Data.Core;
 using ODK.Services.Html;
 using ODK.Services.Payments;
+using ODK.Services.Platforms;
 using ODK.Services.Subscriptions.Models;
 using ODK.Services.Subscriptions.ViewModels;
 
@@ -12,6 +15,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
 {
     private readonly IHtmlValidator _htmlValidator;
     private readonly IPaymentProviderFactory _paymentProviderFactory;
+    private readonly IPlatformProvider _platformProvider;
     private readonly SiteSubscriptionCooldown _siteSubscriptionCooldown;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -19,11 +23,13 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         IUnitOfWork unitOfWork,
         IHtmlValidator htmlValidator,
         IPaymentProviderFactory paymentProviderFactory,
+        IPlatformProvider platformProvider,
         SiteSubscriptionCooldown siteSubscriptionCooldown)
         : base(unitOfWork)
     {
         _htmlValidator = htmlValidator;
         _paymentProviderFactory = paymentProviderFactory;
+        _platformProvider = platformProvider;
         _siteSubscriptionCooldown = siteSubscriptionCooldown;
         _unitOfWork = unitOfWork;
     }
@@ -33,9 +39,10 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
     {
         var platform = request.Platform;
 
-        var (paymentSettings, existing) = await GetSiteAdminRestrictedContent(request,
+        var (paymentSettings, existing, existingProduct) = await GetSiteAdminRestrictedContent(request,
             x => x.SitePaymentSettingsRepository.GetById(model.SitePaymentSettingId),
-            x => x.SiteSubscriptionRepository.GetAll(platform));
+            x => x.SiteSubscriptionRepository.GetAll(platform),
+            x => x.SitePaymentProductRepository.GetByPlatform(platform, model.SitePaymentSettingId));
 
         if (existing.Any(x =>
             x.Platform == platform &&
@@ -57,18 +64,40 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
             return ServiceResult<Guid>.Failure(htmlResult.Message ?? string.Empty);
         }
 
+        /* Every one of a platform's prices sits under one product, so a new subscription joins the
+           product its payment settings account already has, and only the first creates one. */
+        var sitePaymentProduct = existingProduct;
+        if (sitePaymentProduct == null)
+        {
+            var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(paymentSettings);
+            var externalProductId = await paymentProvider.CreateProduct(
+                $"{_platformProvider.GetName(platform)} Platform");
+            if (string.IsNullOrEmpty(externalProductId))
+            {
+                return ServiceResult<Guid>.Failure("Error creating payment provider product");
+            }
+
+            sitePaymentProduct = new SitePaymentProduct
+            {
+                ExternalId = externalProductId,
+                Id = _unitOfWork.NewId(),
+                Platform = platform,
+                SitePaymentSettingId = paymentSettings.Id
+            };
+
+            _unitOfWork.SitePaymentProductRepository.Add(sitePaymentProduct);
+        }
+
         var subscription = new SiteSubscription
         {
+            ExternalProductId = sitePaymentProduct.ExternalId,
             Id = _unitOfWork.NewId(),
             Platform = platform,
+            SitePaymentProductId = sitePaymentProduct.Id,
             SitePaymentSettingId = paymentSettings.Id
         };
 
         UpdateSiteSubscription(model, subscription, []);
-
-        var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(paymentSettings);
-
-        subscription.ExternalProductId = await paymentProvider.CreateProduct(subscription.Name);
 
         _unitOfWork.SiteSubscriptionRepository.Add(subscription);
 
@@ -121,7 +150,14 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
             sitePaymentSettings,
             siteSubscription.SitePaymentSettingId);
 
-        if (!string.IsNullOrEmpty(siteSubscription.ExternalProductId) && model.Amount > 0)
+        var sitePaymentProduct = siteSubscription.SitePaymentProductId != null
+            ? await GetSiteAdminRestrictedContent(request,
+                x => x.SitePaymentProductRepository.GetById(siteSubscription.SitePaymentProductId.Value))
+            : null;
+
+        var externalProductId = sitePaymentProduct?.ExternalId ?? siteSubscription.ExternalProductId;
+
+        if (!string.IsNullOrEmpty(externalProductId) && model.Amount > 0)
         {
             price.ExternalId = await paymentProvider.CreateSubscriptionPlan(
                 new ExternalSubscriptionPlan
@@ -129,7 +165,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
                     Amount = model.Amount,
                     CurrencyCode = currency.Code,
                     ExternalId = string.Empty,
-                    ExternalProductId = siteSubscription.ExternalProductId,
+                    ExternalProductId = externalProductId,
                     Frequency = model.Frequency,
                     Name = $"{siteSubscription.Name} - {model.Frequency} [{currency.Code}]",
                     NumberOfMonths = model.Frequency == SiteSubscriptionFrequency.Yearly ? 12 : 1,
