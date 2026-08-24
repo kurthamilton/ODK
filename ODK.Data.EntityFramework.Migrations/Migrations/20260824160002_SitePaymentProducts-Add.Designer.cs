@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 using ODK.Data.EntityFramework;
@@ -12,9 +13,11 @@ using ODK.Data.EntityFramework;
 namespace ODK.Data.EntityFramework.Migrations.Migrations
 {
     [DbContext(typeof(OdkContext))]
-    partial class OdkContextModelSnapshot : ModelSnapshot
+    [Migration("20260824160002_SitePaymentProducts-Add")]
+    partial class SitePaymentProductsAdd
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2452,17 +2455,12 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                         .HasColumnType("int")
                         .HasColumnName("PlatformTypeId");
 
-                    b.Property<Guid?>("SitePaymentProductId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<Guid>("SitePaymentSettingId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
                     b.HasIndex("FallbackSiteSubscriptionId");
-
-                    b.HasIndex("SitePaymentProductId");
 
                     b.HasIndex("SitePaymentSettingId");
 
@@ -3570,10 +3568,6 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                     b.HasOne("ODK.Core.Subscriptions.SiteSubscription", null)
                         .WithMany()
                         .HasForeignKey("FallbackSiteSubscriptionId");
-
-                    b.HasOne("ODK.Core.Payments.SitePaymentProduct", null)
-                        .WithMany()
-                        .HasForeignKey("SitePaymentProductId");
 
                     b.HasOne("ODK.Core.Payments.SitePaymentSettings", null)
                         .WithMany()
