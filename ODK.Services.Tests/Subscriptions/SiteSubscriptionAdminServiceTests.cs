@@ -43,9 +43,8 @@ public static class SiteSubscriptionAdminServiceTests
         context.Set<SitePaymentProduct>().Should().HaveCount(1);
         paymentProvider.Verify(x => x.CreateProduct(It.IsAny<string>()), Times.Never);
 
-        var subscription = context.Set<SiteSubscription>().Single(x => x.Id == result.Value);
-        subscription.SitePaymentProductId.Should().Be(product.Id);
-        subscription.ExternalProductId.Should().Be(product.ExternalId);
+        context.Set<SiteSubscription>()
+            .Single(x => x.Id == result.Value).SitePaymentProductId.Should().Be(product.Id);
     }
 
     [Test]
@@ -70,10 +69,8 @@ public static class SiteSubscriptionAdminServiceTests
         product.Platform.Should().Be(PlatformType.Default);
         product.SitePaymentSettingId.Should().Be(paymentSettings.Id);
 
-        // Both columns name the product while ExternalProductId is still written.
-        var subscription = context.Set<SiteSubscription>().Single(x => x.Id == result.Value);
-        subscription.SitePaymentProductId.Should().Be(product.Id);
-        subscription.ExternalProductId.Should().Be("new-product");
+        context.Set<SiteSubscription>()
+            .Single(x => x.Id == result.Value).SitePaymentProductId.Should().Be(product.Id);
     }
 
     [Test]
@@ -108,7 +105,8 @@ public static class SiteSubscriptionAdminServiceTests
         using var context = CreateMockOdkContext();
         var currency = context.CreateCurrency();
         var subscription = context.CreateSiteSubscription();
-        var service = CreateService(context);
+        var service = CreateService(
+            context, CreatePaymentProviderFactory(CreatePaymentProvider(createdProductId: null).Object));
 
         // Act
         var result = await service.AddSiteSubscriptionPrice(
@@ -128,7 +126,7 @@ public static class SiteSubscriptionAdminServiceTests
     }
 
     [Test]
-    public static async Task AddSiteSubscriptionPrice_SubscriptionLinkedToProduct_CreatesThePlanUnderIt()
+    public static async Task AddSiteSubscriptionPrice_PaidSubscription_CreatesThePlanUnderTheProduct()
     {
         // Arrange
         using var context = CreateMockOdkContext();

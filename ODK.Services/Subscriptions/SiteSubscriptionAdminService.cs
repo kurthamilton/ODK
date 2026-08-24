@@ -90,7 +90,6 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
 
         var subscription = new SiteSubscription
         {
-            ExternalProductId = sitePaymentProduct.ExternalId,
             Id = _unitOfWork.NewId(),
             Platform = platform,
             SitePaymentProductId = sitePaymentProduct.Id,
@@ -150,22 +149,18 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
             sitePaymentSettings,
             siteSubscription.SitePaymentSettingId);
 
-        var sitePaymentProduct = siteSubscription.SitePaymentProductId != null
-            ? await GetSiteAdminRestrictedContent(request,
-                x => x.SitePaymentProductRepository.GetById(siteSubscription.SitePaymentProductId.Value))
-            : null;
-
-        var externalProductId = sitePaymentProduct?.ExternalId ?? siteSubscription.ExternalProductId;
-
-        if (!string.IsNullOrEmpty(externalProductId) && model.Amount > 0)
+        if (model.Amount > 0)
         {
+            var sitePaymentProduct = await GetSiteAdminRestrictedContent(request,
+                x => x.SitePaymentProductRepository.GetById(siteSubscription.SitePaymentProductId));
+
             price.ExternalId = await paymentProvider.CreateSubscriptionPlan(
                 new ExternalSubscriptionPlan
                 {
                     Amount = model.Amount,
                     CurrencyCode = currency.Code,
                     ExternalId = string.Empty,
-                    ExternalProductId = externalProductId,
+                    ExternalProductId = sitePaymentProduct.ExternalId,
                     Frequency = model.Frequency,
                     Name = $"{siteSubscription.Name} - {model.Frequency} [{currency.Code}]",
                     NumberOfMonths = model.Frequency == SiteSubscriptionFrequency.Yearly ? 12 : 1,
