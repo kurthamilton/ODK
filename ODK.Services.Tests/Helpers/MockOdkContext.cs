@@ -339,9 +339,10 @@ internal class MockOdkContext : OdkContext
         SitePaymentProduct? sitePaymentProduct = null,
         SitePaymentSettings? sitePaymentSettings = null)
     {
-        // Created rather than made up: a subscription's payment settings row is a foreign key, so code that
-        // reads a subscription's settings expects to find one.
+        /* Created rather than made up: a subscription's payment settings and product rows are both foreign
+           keys, so code that reads either expects to find one. */
         sitePaymentSettings ??= CreateSitePaymentSettings();
+        sitePaymentProduct ??= CreateSitePaymentProduct(sitePaymentSettings, platform);
 
         var siteSubscription = Create(new SiteSubscription
         {
@@ -354,7 +355,7 @@ internal class MockOdkContext : OdkContext
             Enabled = true,
             Default = false,
             Platform = platform,
-            SitePaymentProductId = sitePaymentProduct?.Id,
+            SitePaymentProductId = sitePaymentProduct.Id,
             SitePaymentSettingId = sitePaymentSettings.Id
         });
 

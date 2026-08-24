@@ -17,9 +17,12 @@ public class SiteSubscriptionMap : IEntityTypeConfiguration<SiteSubscription>
             .HasColumnName("PlatformTypeId")
             .HasConversion<int>();
 
+        /* Restricted rather than the cascade a required relationship gets by default: one product is
+           shared by every subscription on the platform, so cascading its delete would take all of them. */
         builder.HasOne<SitePaymentProduct>()
             .WithMany()
-            .HasForeignKey(x => x.SitePaymentProductId);
+            .HasForeignKey(x => x.SitePaymentProductId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne<SitePaymentSettings>()
             .WithMany()

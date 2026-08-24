@@ -15,8 +15,6 @@ public class SiteSubscription : IDatabaseEntity
 
     public bool Enabled { get; set; }
 
-    public string? ExternalProductId { get; set; }
-
     public Guid? FallbackSiteSubscriptionId { get; set; }
 
     /// <summary>
@@ -35,7 +33,7 @@ public class SiteSubscription : IDatabaseEntity
 
     public PlatformType Platform { get; set; }
 
-    public Guid? SitePaymentProductId { get; set; }
+    public Guid SitePaymentProductId { get; set; }
 
     public Guid SitePaymentSettingId { get; set; }
 
