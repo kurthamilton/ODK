@@ -35,6 +35,8 @@ public class SiteSubscription : IDatabaseEntity
 
     public PlatformType Platform { get; set; }
 
+    public Guid? SitePaymentProductId { get; set; }
+
     public Guid SitePaymentSettingId { get; set; }
 
     public bool HasCapacity(int memberCount) => MemberLimit == null || memberCount < MemberLimit;

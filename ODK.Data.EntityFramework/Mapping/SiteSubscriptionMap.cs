@@ -17,6 +17,10 @@ public class SiteSubscriptionMap : IEntityTypeConfiguration<SiteSubscription>
             .HasColumnName("PlatformTypeId")
             .HasConversion<int>();
 
+        builder.HasOne<SitePaymentProduct>()
+            .WithMany()
+            .HasForeignKey(x => x.SitePaymentProductId);
+
         builder.HasOne<SitePaymentSettings>()
             .WithMany()
             .HasForeignKey(x => x.SitePaymentSettingId);
