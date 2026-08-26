@@ -285,6 +285,8 @@ public class Program
             .AddControllers(options =>
             {
                 options.Filters.Add<AutoValidateAntiforgeryTokenAttribute>();
+                options.Filters.Add<AntiforgeryValidationFailedResultFilter>(
+                    AntiforgeryValidationFailedResultFilter.FilterOrder);
                 options.Filters.Add<RequestCultureResultFilter>();
             })
             .AddJsonOptions(options =>

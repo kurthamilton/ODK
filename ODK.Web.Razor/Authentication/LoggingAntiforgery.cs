@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Net.Http.Headers;
 using ODK.Services.Logging;
+using ODK.Web.Common.Extensions;
 using ODK.Web.Razor.Services;
 
 namespace ODK.Web.Razor.Authentication;
@@ -122,13 +123,17 @@ public class LoggingAntiforgery : IAntiforgery
             return;
         }
 
+        // The member id rather than Identity.Name: sign-in issues only NameIdentifier and Role claims, so
+        // Name is null for a signed-in member and reads the same as an anonymous one. The commonest failure
+        // is a token rendered under one identity and posted under another ("meant for a different
+        // claims-based user"), and which identity posted it is the whole diagnosis.
         _logger.LogError(
             exception,
-            "Antiforgery (CSRF) validation failed for {Method} {Path}. User={User}, Origin={Origin}, " +
+            "Antiforgery (CSRF) validation failed for {Method} {Path}. Member={Member}, Origin={Origin}, " +
             "SecFetchSite={SecFetchSite}, Referer={Referer}",
             request.Method,
             request.Path,
-            httpContext.User.Identity?.Name ?? "(anonymous)",
+            httpContext.User.MemberIdOrDefault()?.ToString() ?? "(anonymous)",
             Display(origin),
             Display(secFetchSite),
             Display(GetHeaderOrDefault(request.Headers, HeaderNames.Referer)));
