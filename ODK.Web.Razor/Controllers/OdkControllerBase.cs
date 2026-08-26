@@ -87,13 +87,8 @@ public abstract class OdkControllerBase : Controller
 
     protected IActionResult RedirectToReferrer(string? fallback = null)
     {
-        var referer = Request.Headers.Referer.ToString();
-
-        // Only follow the Referer when it points back to this host - an off-site Referer would be an
-        // open-redirect vector.
-        if (!string.IsNullOrEmpty(referer)
-            && Uri.TryCreate(referer, UriKind.Absolute, out var refererUri)
-            && string.Equals(refererUri.Host, Request.Host.Host, StringComparison.OrdinalIgnoreCase))
+        var referer = Request.LocalRefererOrDefault();
+        if (referer != null)
         {
             return Redirect(referer);
         }
