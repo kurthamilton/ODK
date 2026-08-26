@@ -22,7 +22,7 @@ public class TopicService : ITopicService
     {
         var chapter = request.Chapter;
 
-        var (topics, chapterNewTopics, siteAdmins) = await _unitOfWork.RunAsync(
+        var (topics, chapterNewTopics, siteAdmins) = await _unitOfWork.Run(
             x => x.TopicRepository.GetAll(),
             x => x.NewChapterTopicRepository.GetByChapterId(chapter.Id),
             x => x.MemberRepository
@@ -92,7 +92,7 @@ public class TopicService : ITopicService
     {
         var currentMember = request.CurrentMember;
 
-        var (topics, memberNewTopics, siteAdmins) = await _unitOfWork.RunAsync(
+        var (topics, memberNewTopics, siteAdmins) = await _unitOfWork.Run(
             x => x.TopicRepository.GetAll(),
             x => x.NewMemberTopicRepository.GetByMemberId(currentMember.Id),
             x => x.MemberRepository

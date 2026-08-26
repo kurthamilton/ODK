@@ -34,7 +34,7 @@ public class ChapterService : IChapterService
 
     public async Task<ChapterLayoutViewModel> GetChapterLayoutViewModel(Guid chapterId)
     {
-        var (links, pages) = await _unitOfWork.RunAsync(
+        var (links, pages) = await _unitOfWork.Run(
             x => x.ChapterLinksRepository.GetByChapterId(chapterId),
             x => x.ChapterPageRepository.GetByChapterId(chapterId));
 
@@ -57,7 +57,7 @@ public class ChapterService : IChapterService
             sitePaymentSettings,
             memberSubscriptionRecord,
             membershipSettings
-        ) = await _unitOfWork.RunAsync(
+        ) = await _unitOfWork.Run(
             x => x.MemberSubscriptionRecordRepository
                 .Query()
                 .Current()
@@ -116,7 +116,7 @@ public class ChapterService : IChapterService
 
     public async Task<OdkHomeHeaderViewModel> GetOdkHomeHeaderViewModel()
     {
-        var (chapters, countries) = await _unitOfWork.RunAsync(
+        var (chapters, countries) = await _unitOfWork.Run(
             x => x.ChapterRepository.GetAll(PlatformType.DrunkenKnitwits, includeUnpublished: false),
             x => x.CountryRepository.GetAll());
 

@@ -41,7 +41,7 @@ public sealed class AccountContextFactory : IAccountContextFactory
             membershipSettings,
             ownerSubscription,
             memberCount
-        ) = await _unitOfWork.RunAsync(
+        ) = await _unitOfWork.Run(
             x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => x.MemberNotificationSettingsRepository.GetByChapterId(chapter.Id, NotificationType.NewMember),
             x => x.MemberRepository.GetById(invite.MemberId),
@@ -88,7 +88,7 @@ public sealed class AccountContextFactory : IAccountContextFactory
         var (platform, chapter) = (request.Platform, request.Chapter);
 
         var (adminMembers, notificationSettings, member, memberPassword, chapterProperties, memberProperties) =
-            await _unitOfWork.RunAsync(
+            await _unitOfWork.Run(
                 x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
                 x => x.MemberNotificationSettingsRepository.GetByChapterId(chapter.Id, NotificationType.NewMember),
                 x => x.MemberRepository.GetById(token.MemberId),
@@ -117,7 +117,7 @@ public sealed class AccountContextFactory : IAccountContextFactory
     public async Task<AccountContext> CreateForSiteActivation(
         IServiceRequest request, MemberActivationToken token, string password)
     {
-        var (member, memberPassword) = await _unitOfWork.RunAsync(
+        var (member, memberPassword) = await _unitOfWork.Run(
             x => x.MemberRepository.GetById(token.MemberId),
             x => x.MemberPasswordRepository.GetByMemberId(token.MemberId));
 
@@ -159,7 +159,7 @@ public sealed class AccountContextFactory : IAccountContextFactory
         IServiceRequest request,
         AccountCreateModel profile)
     {
-        var (existing, siteSubscription, topics, referral) = await _unitOfWork.RunAsync(
+        var (existing, siteSubscription, topics, referral) = await _unitOfWork.Run(
             x => x.MemberRepository.GetByEmailAddress(profile.EmailAddress),
             x => x.SiteSubscriptionRepository.GetDefault(request.Platform),
             x => x.TopicRepository.GetByIds(profile.TopicIds),
@@ -202,7 +202,7 @@ public sealed class AccountContextFactory : IAccountContextFactory
             ownerSubscription,
             chapterLocation,
             memberCount
-        ) = await _unitOfWork.RunAsync(
+        ) = await _unitOfWork.Run(
             x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.MemberRepository.GetByEmailAddress(profile.EmailAddress),
@@ -250,7 +250,7 @@ public sealed class AccountContextFactory : IAccountContextFactory
             return (null, []);
         }
 
-        var (token, invites) = await _unitOfWork.RunAsync(
+        var (token, invites) = await _unitOfWork.Run(
             x => x.MemberActivationTokenRepository.GetByMemberId(existing.Id),
             x => x.MemberChapterInviteRepository.GetByMemberId(existing.Id));
 

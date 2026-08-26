@@ -203,7 +203,7 @@ public class ContactAdminService : OdkAdminServiceBase, IContactAdminService
 
         /* The member hears about it, and the settings are theirs to have turned off. Staged with the message
            so a notification never outlives a reply that failed to save. */
-        var (member, notificationSettings) = await _unitOfWork.RunAsync(
+        var (member, notificationSettings) = await _unitOfWork.Run(
             x => x.MemberRepository.GetById(conversation.MemberId),
             x => x.MemberNotificationSettingsRepository.GetByMemberIds(
                 [conversation.MemberId], NotificationType.SiteConversationReplies));

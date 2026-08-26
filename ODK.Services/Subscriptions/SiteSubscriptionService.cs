@@ -30,7 +30,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
     {
         var currentMember = request.CurrentMember;
 
-        var (memberSubscriptionDto, sitePaymentSettings) = await _unitOfWork.RunAsync(
+        var (memberSubscriptionDto, sitePaymentSettings) = await _unitOfWork.Run(
             x => x.MemberSiteSubscriptionRecordRepository.GetDtoByMemberId(currentMember.Id),
             x => x.SitePaymentSettingsRepository.GetAll());
 
@@ -68,7 +68,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             currentMember,
             memberSubscriptionDto,
             memberCurrency,
-            chapterCurrency) = await _unitOfWork.RunAsync(
+            chapterCurrency) = await _unitOfWork.Run(
             x => x.SitePaymentSettingsRepository.GetAll(),
             x => x.SiteSubscriptionRepository.Query()
                 .ForPlatform(platform)
@@ -155,7 +155,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
     {
         var (platform, currentMember) = (request.Platform, request.CurrentMember);
 
-        var (siteSubscription, price, chapter) = await _unitOfWork.RunAsync(
+        var (siteSubscription, price, chapter) = await _unitOfWork.Run(
             x => x.SiteSubscriptionRepository.GetByPriceId(priceId),
             x => x.SiteSubscriptionPriceRepository.GetById(priceId),
             x => chapterId != null

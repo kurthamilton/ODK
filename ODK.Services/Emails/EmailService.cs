@@ -66,7 +66,7 @@ public class EmailService : IEmailService
         var platform = request.Platform;
         var chapterId = options.Chapter?.Id;
 
-        var (templates, siteSettings, chapterEmailSettings) = await _unitOfWork.RunAsync(
+        var (templates, siteSettings, chapterEmailSettings) = await _unitOfWork.Run(
             x => x.ChapterEmailRepository.GetDto(chapterId, options.Type),
             x => x.SiteEmailSettingsRepository.Get(platform),
             x => chapterId != null
@@ -159,7 +159,7 @@ public class EmailService : IEmailService
     {
         var platform = request.Platform;
 
-        var (chapterAdminMembers, replyToMemberEmailPreference) = await _unitOfWork.RunAsync(
+        var (chapterAdminMembers, replyToMemberEmailPreference) = await _unitOfWork.Run(
             x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => replyToMember != null
                 ? x.MemberEmailPreferenceRepository.GetByMemberId(replyToMember.Id, MemberEmailPreferenceType.EventMessages)
@@ -279,7 +279,7 @@ public class EmailService : IEmailService
     // Public for Hangfire
     public async Task SendQueuedEmailTask(Guid queuedEmailId)
     {
-        var (queuedEmail, recipients) = await _unitOfWork.RunAsync(
+        var (queuedEmail, recipients) = await _unitOfWork.Run(
             x => x.QueuedEmailRepository.GetById(queuedEmailId),
             x => x.QueuedEmailRecipientRepository.GetByQueuedEmailId(queuedEmailId));
 

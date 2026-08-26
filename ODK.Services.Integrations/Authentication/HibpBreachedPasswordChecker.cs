@@ -26,7 +26,7 @@ public class HibpBreachedPasswordChecker : IBreachedPasswordChecker
         _settings = settings;
     }
 
-    public async Task<bool> IsBreachedAsync(string password)
+    public async Task<bool> IsBreached(string password)
     {
         if (!_settings.Enabled || string.IsNullOrEmpty(password))
         {

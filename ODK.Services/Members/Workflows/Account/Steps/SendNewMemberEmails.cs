@@ -21,7 +21,7 @@ public sealed class SendNewMemberEmails : IStep<AccountContext>
 
     public async Task<StepOutcome> Execute(AccountContext context, CancellationToken cancellationToken)
     {
-        await _memberEmailService.SendNewMemberEmailsAsync(
+        await _memberEmailService.SendNewMemberEmails(
             ChapterServiceRequest.Create(context.RequiredChapter, context.Request),
             context.AdminMembers,
             context.RequiredMember,

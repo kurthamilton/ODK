@@ -40,14 +40,14 @@ public static class AuthenticationServiceReferralTests
     private const string Password = "correct-horse";
 
     [Test]
-    public static async Task GetMemberAsync_FirstLoginOfAReferredMember_CompletesTheReferral()
+    public static async Task GetMember_FirstLoginOfAReferredMember_CompletesTheReferral()
     {
         // Arrange
         var (context, member, referral) = CreateReferredMember();
         var service = CreateService(context);
 
         // Act
-        var result = await service.GetMemberAsync(member.EmailAddress, Password);
+        var result = await service.GetMember(member.EmailAddress, Password);
 
         // Assert
         result.Should().NotBeNull();
@@ -55,14 +55,14 @@ public static class AuthenticationServiceReferralTests
     }
 
     [Test]
-    public static async Task GetMemberAsync_FailedLogin_LeavesTheReferralIncomplete()
+    public static async Task GetMember_FailedLogin_LeavesTheReferralIncomplete()
     {
         // Arrange - completion hangs off a *successful* login, so a wrong password must not trigger it.
         var (context, member, referral) = CreateReferredMember();
         var service = CreateService(context);
 
         // Act
-        var result = await service.GetMemberAsync(member.EmailAddress, "wrong-password");
+        var result = await service.GetMember(member.EmailAddress, "wrong-password");
 
         // Assert
         result.Should().BeNull();
@@ -70,7 +70,7 @@ public static class AuthenticationServiceReferralTests
     }
 
     [Test]
-    public static async Task GetMemberAsync_MemberWithNoReferral_Succeeds()
+    public static async Task GetMember_MemberWithNoReferral_Succeeds()
     {
         // Arrange - the overwhelming majority of logins. Nothing to complete, and nothing should break.
         var context = new MockOdkContext();
@@ -78,7 +78,7 @@ public static class AuthenticationServiceReferralTests
         var service = CreateService(context);
 
         // Act
-        var result = await service.GetMemberAsync(member.EmailAddress, Password);
+        var result = await service.GetMember(member.EmailAddress, Password);
 
         // Assert
         result.Should().NotBeNull();
@@ -86,16 +86,16 @@ public static class AuthenticationServiceReferralTests
     }
 
     [Test]
-    public static async Task GetMemberAsync_SecondLogin_KeepsTheOriginalCompletionTime()
+    public static async Task GetMember_SecondLogin_KeepsTheOriginalCompletionTime()
     {
         // Arrange - the timestamp records the *first* login, so a later one must not move it.
         var (context, member, referral) = CreateReferredMember();
         var service = CreateService(context);
 
         // Act
-        await service.GetMemberAsync(member.EmailAddress, Password);
+        await service.GetMember(member.EmailAddress, Password);
         var firstCompletedUtc = context.Set<Referral>().Single(x => x.Id == referral.Id).CompletedUtc;
-        await service.GetMemberAsync(member.EmailAddress, Password);
+        await service.GetMember(member.EmailAddress, Password);
 
         // Assert
         firstCompletedUtc.Should().NotBeNull();

@@ -53,7 +53,7 @@ public class EventViewModelService : IEventViewModelService
             isAdmin,
             eventTicketPayments,
             membershipSettings,
-            privacySettings) = await _unitOfWork.RunAsync(
+            privacySettings) = await _unitOfWork.Run(
             x => x.ChapterPageRepository.GetByChapterId(chapter.Id),
             x => x.EventRepository.Query(x => x.ForShortcode(shortcode)).WithVenue().GetSingle(),
             x => x.MemberSubscriptionRecordRepository
@@ -237,7 +237,7 @@ public class EventViewModelService : IEventViewModelService
             isAdmin,
             chapterPages,
             payments,
-            waitlist) = await _unitOfWork.RunAsync(
+            waitlist) = await _unitOfWork.Run(
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.EventRepository.Query(x => x.ForShortcode(shortcode)).WithVenue().GetSingle(),
             x => currentMember != null
@@ -392,7 +392,7 @@ public class EventViewModelService : IEventViewModelService
         var currentTime = chapter.CurrentTime();
         var afterUtc = currentTime.StartOfDay();
 
-        var (chapterPrivacySettings, membershipSettings, memberSubscription, eventDtos) = await _unitOfWork.RunAsync(
+        var (chapterPrivacySettings, membershipSettings, memberSubscription, eventDtos) = await _unitOfWork.Run(
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => currentMember != null
@@ -420,7 +420,7 @@ public class EventViewModelService : IEventViewModelService
 
         if (eventIds.Length > 0 && currentMember?.IsMemberOf(chapter.Id) == true)
         {
-            (memberResponses, invites, responseSummaries) = await _unitOfWork.RunAsync(
+            (memberResponses, invites, responseSummaries) = await _unitOfWork.Run(
                 x => x.EventResponseRepository.GetByMemberId(currentMember.Id, eventIds),
                 x => x.EventInviteRepository.GetByMemberId(currentMember.Id, eventIds),
                 x => x.EventResponseRepository.GetResponseSummaries(eventIds));

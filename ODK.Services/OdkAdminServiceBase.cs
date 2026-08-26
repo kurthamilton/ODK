@@ -54,7 +54,7 @@ public abstract class OdkAdminServiceBase
     {
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
-        var (chapterAdminMember, result1) = await _unitOfWork.RunAsync(
+        var (chapterAdminMember, result1) = await _unitOfWork.Run(
             x => x.ChapterAdminMemberRepository.GetByMemberId(platform, currentMember.Id, chapter.Id),
             query);
 
@@ -70,7 +70,7 @@ public abstract class OdkAdminServiceBase
     {
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
-        var (chapterAdminMember, result1, result2) = await _unitOfWork.RunAsync(
+        var (chapterAdminMember, result1, result2) = await _unitOfWork.Run(
             x => x.ChapterAdminMemberRepository.GetByMemberId(platform, currentMember.Id, chapter.Id),
             query1,
             query2);
@@ -88,7 +88,7 @@ public abstract class OdkAdminServiceBase
     {
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
-        var (chapterAdminMember, result1, result2, result3) = await _unitOfWork.RunAsync(
+        var (chapterAdminMember, result1, result2, result3) = await _unitOfWork.Run(
             x => x.ChapterAdminMemberRepository.GetByMemberId(platform, currentMember.Id, chapter.Id),
             query1,
             query2,
@@ -108,7 +108,7 @@ public abstract class OdkAdminServiceBase
     {
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
-        var (chapterAdminMember, result1, result2, result3, result4) = await _unitOfWork.RunAsync(
+        var (chapterAdminMember, result1, result2, result3, result4) = await _unitOfWork.Run(
             x => x.ChapterAdminMemberRepository.GetByMemberId(platform, currentMember.Id, chapter.Id),
             query1,
             query2,
@@ -130,7 +130,7 @@ public abstract class OdkAdminServiceBase
     {
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
-        var (chapterAdminMember, result1, result2, result3, result4, result5) = await _unitOfWork.RunAsync(
+        var (chapterAdminMember, result1, result2, result3, result4, result5) = await _unitOfWork.Run(
             x => x.ChapterAdminMemberRepository.GetByMemberId(platform, currentMember.Id, chapter.Id),
             query1,
             query2,
@@ -154,7 +154,7 @@ public abstract class OdkAdminServiceBase
     {
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
-        var (chapterAdminMember, result1, result2, result3, result4, result5, result6) = await _unitOfWork.RunAsync(
+        var (chapterAdminMember, result1, result2, result3, result4, result5, result6) = await _unitOfWork.Run(
             x => x.ChapterAdminMemberRepository.GetByMemberId(platform, currentMember.Id, chapter.Id),
             query1,
             query2,
@@ -180,7 +180,7 @@ public abstract class OdkAdminServiceBase
     {
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
-        var (chapterAdminMember, result1, result2, result3, result4, result5, result6, result7) = await _unitOfWork.RunAsync(
+        var (chapterAdminMember, result1, result2, result3, result4, result5, result6, result7) = await _unitOfWork.Run(
             x => x.ChapterAdminMemberRepository.GetByMemberId(platform, currentMember.Id, chapter.Id),
             query1,
             query2,
@@ -216,7 +216,7 @@ public abstract class OdkAdminServiceBase
             result5,
             result6,
             result7,
-            result8) = await _unitOfWork.RunAsync(
+            result8) = await _unitOfWork.Run(
             x => x.ChapterAdminMemberRepository.GetByMemberId(platform, currentMember.Id, chapter.Id),
             query1,
             query2,
@@ -256,7 +256,7 @@ public abstract class OdkAdminServiceBase
             result6,
             result7,
             result8,
-            result9) = await _unitOfWork.RunAsync(
+            result9) = await _unitOfWork.Run(
             x => x.ChapterAdminMemberRepository.GetByMemberId(platform, currentMember.Id, chapter.Id),
             query1,
             query2,
@@ -298,7 +298,7 @@ public abstract class OdkAdminServiceBase
             result7,
             result8,
             result9,
-            result10) = await _unitOfWork.RunAsync(
+            result10) = await _unitOfWork.Run(
             x => x.ChapterAdminMemberRepository.GetByMemberId(platform, currentMember.Id, chapter.Id),
             query1,
             query2,
@@ -332,7 +332,7 @@ public abstract class OdkAdminServiceBase
         Func<IUnitOfWork, IDeferredQuery<T1>> query1,
         Func<IUnitOfWork, IDeferredQuery<T2>> query2)
     {
-        var (result1, result2) = await _unitOfWork.RunAsync(
+        var (result1, result2) = await _unitOfWork.Run(
             query1,
             query2);
 
@@ -347,7 +347,7 @@ public abstract class OdkAdminServiceBase
         Func<IUnitOfWork, IDeferredQuery<T2>> query2,
         Func<IUnitOfWork, IDeferredQuery<T3>> query3)
     {
-        var (result1, result2, result3) = await _unitOfWork.RunAsync(
+        var (result1, result2, result3) = await _unitOfWork.Run(
             query1,
             query2,
             query3);
@@ -364,7 +364,7 @@ public abstract class OdkAdminServiceBase
         Func<IUnitOfWork, IDeferredQuery<T3>> query3,
         Func<IUnitOfWork, IDeferredQuery<T4>> query4)
     {
-        var (result1, result2, result3, result4) = await _unitOfWork.RunAsync(
+        var (result1, result2, result3, result4) = await _unitOfWork.Run(
             query1,
             query2,
             query3,
@@ -383,7 +383,7 @@ public abstract class OdkAdminServiceBase
         Func<IUnitOfWork, IDeferredQuery<T4>> query4,
         Func<IUnitOfWork, IDeferredQuery<T5>> query5)
     {
-        var (result1, result2, result3, result4, result5) = await _unitOfWork.RunAsync(
+        var (result1, result2, result3, result4, result5) = await _unitOfWork.Run(
             query1,
             query2,
             query3,
@@ -404,7 +404,7 @@ public abstract class OdkAdminServiceBase
         Func<IUnitOfWork, IDeferredQuery<T5>> query5,
         Func<IUnitOfWork, IDeferredQuery<T6>> query6)
     {
-        var (result1, result2, result3, result4, result5, result6) = await _unitOfWork.RunAsync(
+        var (result1, result2, result3, result4, result5, result6) = await _unitOfWork.Run(
             query1,
             query2,
             query3,

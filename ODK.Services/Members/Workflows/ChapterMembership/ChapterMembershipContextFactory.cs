@@ -151,7 +151,7 @@ public sealed class ChapterMembershipContextFactory : IChapterMembershipContextF
             chapterProperties,
             membershipSettings,
             invite
-        ) = await _unitOfWork.RunAsync(
+        ) = await _unitOfWork.Run(
             x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => x.MemberNotificationSettingsRepository.GetByChapterId(chapter.Id, NotificationType.NewMember),
             x => x.MemberSiteSubscriptionRecordRepository

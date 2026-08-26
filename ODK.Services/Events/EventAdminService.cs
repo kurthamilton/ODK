@@ -81,7 +81,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             notificationSettings,
             chapterTopics,
             currency
-        ) = await _unitOfWork.RunAsync(
+        ) = await _unitOfWork.Run(
             x => x.MemberSiteSubscriptionRecordRepository
                 .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
                 .HasFeature(SiteFeatureType.EventTickets),
@@ -363,7 +363,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             currency,
             hosts,
             venues
-        ) = await _unitOfWork.RunAsync(
+        ) = await _unitOfWork.Run(
             x => x.MemberSiteSubscriptionRecordRepository
                 .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
                 .SiteSubscription()
@@ -572,7 +572,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             return;
         }
 
-        var (venue, members, notificationSettings) = await _unitOfWork.RunAsync(
+        var (venue, members, notificationSettings) = await _unitOfWork.Run(
             x => x.VenueRepository.GetById(@event.VenueId),
             x => x.MemberRepository.GetAllByChapterId(@event.ChapterId),
             x => x.MemberNotificationSettingsRepository.GetByChapterId(@event.ChapterId, NotificationType.NewEvent));
@@ -681,7 +681,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             return ServiceResult.Successful();
         }
 
-        var (membershipSettings, privacySettings, memberSubscriptions) = await _unitOfWork.RunAsync(
+        var (membershipSettings, privacySettings, memberSubscriptions) = await _unitOfWork.Run(
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
             x => x.MemberSubscriptionRecordRepository.Query().Current().ForChapter(chapter.Id).ToChapterSubscription().GetAll());
@@ -753,7 +753,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             members,
             memberEmailPreferences,
             memberSubscriptions
-        ) = await _unitOfWork.RunAsync(
+        ) = await _unitOfWork.Run(
             x => x.MemberSiteSubscriptionRecordRepository
                 .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
                 .HasFeature(SiteFeatureType.ScheduledEventEmails),
@@ -839,7 +839,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             venue,
             currency,
             attendees
-        ) = await _unitOfWork.RunAsync(
+        ) = await _unitOfWork.Run(
             x => x.MemberSiteSubscriptionRecordRepository
                 .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
                 .HasFeature(SiteFeatureType.EventTickets),

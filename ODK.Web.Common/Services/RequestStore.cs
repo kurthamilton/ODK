@@ -209,7 +209,7 @@ public class RequestStore : IRequestStore
         // Set the platform directly to persist when resetting other state
         Platform = platform;
 
-        var (chapter, currentMember, memberPreferences, activeReferralCampaign) = await _unitOfWork.RunAsync(
+        var (chapter, currentMember, memberPreferences, activeReferralCampaign) = await _unitOfWork.Run(
             chapterQuery,
             x => currentMemberIdOrDefault != null
                 ? x.MemberRepository.GetByIdOrDefault(currentMemberIdOrDefault.Value)

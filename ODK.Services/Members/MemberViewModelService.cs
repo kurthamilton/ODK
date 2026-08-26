@@ -27,7 +27,7 @@ public class MemberViewModelService : IMemberViewModelService
             .GetSingle()
             .Run();
 
-        var (dtos, messages) = await _unitOfWork.RunAsync(
+        var (dtos, messages) = await _unitOfWork.Run(
             x => x.ChapterConversationRepository
                 .Query()
                 .ForMember(currentMember.Id)
@@ -56,7 +56,7 @@ public class MemberViewModelService : IMemberViewModelService
     {
         var (platform, currentMember) = (request.Platform, request.CurrentMember);
 
-        var (conversations, otherConversationCount) = await _unitOfWork.RunAsync(
+        var (conversations, otherConversationCount) = await _unitOfWork.Run(
             x => x.ChapterConversationRepository
                 .Query()
                 .ForMember(currentMember.Id)
@@ -96,7 +96,7 @@ public class MemberViewModelService : IMemberViewModelService
     {
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
-        var (conversations, otherConversationCount) = await _unitOfWork.RunAsync(
+        var (conversations, otherConversationCount) = await _unitOfWork.Run(
             x => x.ChapterConversationRepository
                 .Query()
                 .ForMember(currentMember.Id)
@@ -128,7 +128,7 @@ public class MemberViewModelService : IMemberViewModelService
     {
         var currentMember = request.CurrentMember;
 
-        var (topicGroups, topics, memberTopics, newTopics) = await _unitOfWork.RunAsync(
+        var (topicGroups, topics, memberTopics, newTopics) = await _unitOfWork.Run(
             x => x.TopicGroupRepository.GetAll(),
             x => x.TopicRepository.GetAll(),
             x => x.MemberTopicRepository.GetByMemberId(currentMember.Id),
@@ -153,7 +153,7 @@ public class MemberViewModelService : IMemberViewModelService
             memberProperties,
             hasQuestions,
             isAdmin,
-            chapterPages) = await _unitOfWork.RunAsync(
+            chapterPages) = await _unitOfWork.Run(
             x => x.MemberRepository.GetWithAvatarById(memberId),
             x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
             x => x.MemberPropertyRepository.GetByMemberId(memberId, chapter.Id),
@@ -200,7 +200,7 @@ public class MemberViewModelService : IMemberViewModelService
             hasQuestions,
             isAdmin,
             chapterPages) =
-            await _unitOfWork.RunAsync(
+            await _unitOfWork.Run(
             x => x.MemberRepository.GetAllWithAvatarByChapterId(chapter.Id),
             x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),

@@ -75,7 +75,7 @@ public class PaymentService : IPaymentService
     public async Task<PaymentStatusType> GetMemberChapterPaymentCheckoutSessionStatus(
         IMemberServiceRequest request, Guid chapterId, string externalSessionId)
     {
-        var (chapterPaymentAccountDto, checkoutSession) = await _unitOfWork.RunAsync(
+        var (chapterPaymentAccountDto, checkoutSession) = await _unitOfWork.Run(
             x => x.ChapterPaymentAccountRepository.Query().ForChapter(chapterId).ToDto().GetSingle(),
             x => x.PaymentCheckoutSessionRepository.GetByMemberId(request.CurrentMember.Id, externalSessionId));
 
@@ -104,7 +104,7 @@ public class PaymentService : IPaymentService
     public async Task<PaymentStatusType> GetMemberSitePaymentCheckoutSessionStatus(
         IMemberServiceRequest request, string externalSessionId)
     {
-        var (checkoutSession, sitePaymentSettings) = await _unitOfWork.RunAsync(
+        var (checkoutSession, sitePaymentSettings) = await _unitOfWork.Run(
             x => x.PaymentCheckoutSessionRepository.GetByMemberId(request.CurrentMember.Id, externalSessionId),
             x => x.SitePaymentSettingsRepository.GetAll());
 
@@ -243,7 +243,7 @@ public class PaymentService : IPaymentService
     {
         var chapter = request.Chapter;
 
-        var (chapterPaymentSettings, sitePaymentSettings) = await _unitOfWork.RunAsync(
+        var (chapterPaymentSettings, sitePaymentSettings) = await _unitOfWork.Run(
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPaymentAccountRepository.Query().ForChapter(chapter.Id).ToSitePaymentSettings().GetSingle());
 
@@ -288,7 +288,7 @@ public class PaymentService : IPaymentService
     private async Task<DateTime?> GetChapterSubscriptionNextPaymentDate(
         Guid chapterId, string externalId)
     {
-        var chapterPaymentAccountDto = await _unitOfWork.RunAsync(
+        var chapterPaymentAccountDto = await _unitOfWork.Run(
             x => x.ChapterPaymentAccountRepository.Query().ForChapter(chapterId).ToDto().GetSingle());
 
         var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
@@ -341,7 +341,7 @@ public class PaymentService : IPaymentService
         }
 
         // Load basic metadata objects
-        var (member, chapter, chapterSubscription, payment, paymentCheckoutSession) = await _unitOfWork.RunAsync(
+        var (member, chapter, chapterSubscription, payment, paymentCheckoutSession) = await _unitOfWork.Run(
             x => x.MemberRepository.GetById(metadata.MemberId.Value),
             x => x.ChapterRepository.GetById(platform, metadata.ChapterId.Value),
             x => x.ChapterSubscriptionRepository.GetById(metadata.ChapterSubscriptionId.Value),
@@ -435,7 +435,7 @@ public class PaymentService : IPaymentService
         }
 
         // Load basic metadata objects
-        var (member, payment, paymentCheckoutSession) = await _unitOfWork.RunAsync(
+        var (member, payment, paymentCheckoutSession) = await _unitOfWork.Run(
             x => x.MemberRepository.GetById(metadata.MemberId.Value),
             x => x.PaymentRepository.GetById(metadata.PaymentId.Value),
             x => x.PaymentCheckoutSessionRepository.GetById(metadata.PaymentCheckoutSessionId.Value));
@@ -484,7 +484,7 @@ public class PaymentService : IPaymentService
                 () => _eventService.CompleteEventTicketPurchase(@event.Id, member.Id),
                 BackgroundTaskQueueType.Payments);
 
-            var (chapter, currency) = await _unitOfWork.RunAsync(
+            var (chapter, currency) = await _unitOfWork.Run(
                 /* Default, which ForPlatform reads as no platform filter, so this is a lookup by id alone.
                    Not the payment's own platform: the event already names its chapter, so a platform can only
                    exclude it - and metadata carrying no platform resolves to Drunken Knitwits, which would
@@ -530,7 +530,7 @@ public class PaymentService : IPaymentService
         }
 
         // Load basic metadata objects
-        var (member, siteSubscription, siteSubscriptionPrice, payment, paymentCheckoutSession) = await _unitOfWork.RunAsync(
+        var (member, siteSubscription, siteSubscriptionPrice, payment, paymentCheckoutSession) = await _unitOfWork.Run(
             x => x.MemberRepository.GetById(metadata.MemberId.Value),
             x => x.SiteSubscriptionRepository.GetByPriceId(metadata.SiteSubscriptionPriceId.Value),
             x => x.SiteSubscriptionPriceRepository.GetById(metadata.SiteSubscriptionPriceId.Value),
@@ -817,7 +817,7 @@ public class PaymentService : IPaymentService
 
         var platform = metadata.PlatformOrDrunkenKnitwits;
 
-        var (chapter, chapterSubscription) = await _unitOfWork.RunAsync(
+        var (chapter, chapterSubscription) = await _unitOfWork.Run(
             x => x.ChapterRepository.GetById(platform, metadata.ChapterId.Value),
             x => x.ChapterSubscriptionRepository.GetById(metadata.ChapterSubscriptionId.Value));
 
@@ -842,7 +842,7 @@ public class PaymentService : IPaymentService
 
         var (chapterId, memberId) = (chapter.Id, member.Id);
 
-        var (currentRecord, recordForInitiator, membershipSettings) = await _unitOfWork.RunAsync(
+        var (currentRecord, recordForInitiator, membershipSettings) = await _unitOfWork.Run(
             x => x.MemberSubscriptionRecordRepository.Query().Current().ForMember(memberId).ForChapter(chapterId).GetSingleOrDefault(),
             x => !string.IsNullOrEmpty(initiatorId)
                 ? x.MemberSubscriptionRecordRepository
@@ -922,7 +922,7 @@ public class PaymentService : IPaymentService
     {
         var memberId = member.Id;
 
-        var (recordForInitiator, currentRecord, sitePaymentSettings) = await _unitOfWork.RunAsync(
+        var (recordForInitiator, currentRecord, sitePaymentSettings) = await _unitOfWork.Run(
             x => !string.IsNullOrEmpty(initiatorId)
                 ? x.MemberSiteSubscriptionRecordRepository.Query().ForInitiator(initiatorId).GetSingleOrDefault()
                 : new DefaultDeferredQuerySingleOrDefault<MemberSiteSubscriptionRecord>(),

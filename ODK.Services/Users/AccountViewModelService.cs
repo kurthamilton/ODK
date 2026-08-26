@@ -27,7 +27,7 @@ public class AccountViewModelService : IAccountViewModelService
 
     public async Task<AccountCreatePageViewModel> GetAccountCreatePage(IServiceRequest request)
     {
-        var topicsTask = _unitOfWork.RunAsync(
+        var topicsTask = _unitOfWork.Run(
             x => x.TopicGroupRepository.GetAll(),
             x => x.TopicRepository.GetAll());
 
@@ -56,7 +56,7 @@ public class AccountViewModelService : IAccountViewModelService
             chapterProperties,
             chapterPropertyOptions,
             chapterTexts,
-            invite) = await _unitOfWork.RunAsync(
+            invite) = await _unitOfWork.Run(
             x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPropertyOptionRepository.GetByChapterId(chapter.Id),
             x => x.ChapterTextsRepository.GetByChapterId(chapter.Id),
@@ -134,7 +134,7 @@ public class AccountViewModelService : IAccountViewModelService
                 chapterProperties,
                 chapterPropertyOptions,
                 memberProperties
-            ) = await _unitOfWork.RunAsync(
+            ) = await _unitOfWork.Run(
                 x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
                 x => x.ChapterPropertyOptionRepository.GetByChapterId(chapter.Id),
                 x => x.MemberPropertyRepository.GetByMemberId(currentMember.Id, chapter.Id));
@@ -198,7 +198,7 @@ public class AccountViewModelService : IAccountViewModelService
     {
         var (currentMember, platform) = (request.CurrentMember, request.Platform);
 
-        var (chapterPayments, sitePayments) = await _unitOfWork.RunAsync(
+        var (chapterPayments, sitePayments) = await _unitOfWork.Run(
             x => x.PaymentRepository.GetChapterDtosByMemberId(currentMember.Id),
             x => x.PaymentRepository.GetSitePaymentsByMemberId(currentMember.Id));
 
@@ -223,7 +223,7 @@ public class AccountViewModelService : IAccountViewModelService
 
     public async Task<SitePicturePageViewModel> GetSitePicturePage(Member currentMember)
     {
-        var avatar = await _unitOfWork.RunAsync(
+        var avatar = await _unitOfWork.Run(
              x => x.MemberAvatarRepository.GetVersionDtoByMemberId(currentMember.Id));
 
         return new SitePicturePageViewModel
