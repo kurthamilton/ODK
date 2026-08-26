@@ -5,17 +5,15 @@
 @model SiteSubscriptionsViewModel
 @{
     var (
-        currency, 
-        currentMember, 
-        memberSubscription, 
-        subscriptions, 
-        paymentSettings,
+        currency,
+        currentMember,
+        memberSubscription,
+        subscriptions,
         externalSubscription) = (
-        Model.Currency, 
-        Model.CurrentMember, 
-        Model.CurrentMemberSubscription, 
-        Model.Subscriptions, 
-        Model.SitePaymentSettings,
+        Model.Currency,
+        Model.CurrentMember,
+        Model.CurrentMemberSubscription,
+        Model.Subscriptions,
         Model.CurrentMemberExternalSubscription);
 
     subscriptions = subscriptions

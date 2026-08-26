@@ -2,14 +2,15 @@
 using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Cryptography;
-using ODK.Core.Exceptions;
 using ODK.Core.Members;
 using ODK.Core.Payments;
+using ODK.Core.Platforms;
 using ODK.Core.Workflows;
 using ODK.Data.Core;
 using ODK.Data.Core.Countries;
 using ODK.Services.Emails;
 using ODK.Services.Emails.Validation;
+using ODK.Services.Exceptions;
 using ODK.Services.Geolocation;
 using ODK.Services.Logging;
 using ODK.Services.Members.Models;
@@ -102,22 +103,20 @@ public class MemberService : IMemberService
         return result.ToServiceResult();
     }
 
-    public async Task<ServiceResult> CancelChapterSubscription(Guid memberId, string externalId)
+    public async Task<ServiceResult> CancelChapterSubscription(
+        IMemberServiceRequest request, string externalId)
     {
-        var (member, memberSubscriptionRecord) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(memberId),
+        var (platform, member) = (request.Platform, request.CurrentMember);
+
+        var memberSubscriptionRecord = await _unitOfWork.RunAsync(
             x => x.MemberSubscriptionRecordRepository
                 .Query()
                 .ForExternalId(externalId)
+                .ForMember(member.Id)
                 .OrderByDescending(x => x.PurchasedUtc)
-                .GetSingleOrDefault());
+                .GetSingle());
 
-        if (memberSubscriptionRecord == null || memberSubscriptionRecord.MemberId != member.Id)
-        {
-            throw new OdkNotFoundException();
-        }
-
-        return await CancelSubscription(memberSubscriptionRecord);
+        return await CancelSubscription(platform, memberSubscriptionRecord);
     }
 
     public async Task<ServiceResult> ConfirmEmailAddressUpdate(Guid memberId, string confirmationToken)
@@ -367,7 +366,7 @@ public class MemberService : IMemberService
 
         if (subscription != null)
         {
-            await CancelSubscription(subscription);
+            await CancelSubscription(platform, subscription);
         }
 
         await _memberEmailService.SendMemberLeftChapterEmail(
@@ -435,23 +434,26 @@ public class MemberService : IMemberService
     {
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
-        var (sitePaymentSettings,
-            chapterPaymentAccount,
+        var (chapterPaymentAccountDto,
             chapterSubscription) = await _unitOfWork.RunAsync(
-            x => x.SitePaymentSettingsRepository.GetActive(),
-            x => x.ChapterPaymentAccountRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterPaymentAccountRepository.Query().ForChapter(chapter.Id).ToDto().GetSingleOrDefault(),
             x => x.ChapterSubscriptionRepository.GetById(chapterSubscriptionId));
 
         OdkAssertions.BelongsToChapter(chapterSubscription, chapter.Id);
 
         if (string.IsNullOrEmpty(chapterSubscription.ExternalId))
         {
-            throw new Exception("Error starting checkout session: chapterSubscription.ExternalId missing");
+            throw new OdkServiceException("Error starting checkout session: ExternalId missing");
+        }
+
+        if (chapterPaymentAccountDto == null)
+        {
+            throw new OdkServiceException("Error starting checkout session: Chapter Payment Account not set up");
         }
 
         var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
-            sitePaymentSettings,
-            chapterPaymentAccount);
+            chapterPaymentAccountDto.SitePaymentSettings,
+            chapterPaymentAccountDto.ChapterPaymentAccount);
 
         var subscriptionPlan = await paymentProvider.GetSubscriptionPlan(chapterSubscription.ExternalId);
         if (subscriptionPlan == null)
@@ -507,7 +509,7 @@ public class MemberService : IMemberService
             Chapter = chapter,
             ChapterSubscription = chapterSubscription,
             ClientSecret = externalCheckoutSession.ClientSecret,
-            PaymentSettings = sitePaymentSettings,
+            PaymentSettings = chapterPaymentAccountDto.SitePaymentSettings,
             Platform = platform
         };
     }
@@ -771,22 +773,29 @@ public class MemberService : IMemberService
             .Select(x => x.GetDisplayText());
     }
 
-    private async Task<ServiceResult> CancelSubscription(MemberSubscriptionRecord memberSubscriptionRecord)
+    private async Task<ServiceResult> CancelSubscription(
+        PlatformType platform, MemberSubscriptionRecord memberSubscriptionRecord)
     {
+        var chapterId = memberSubscriptionRecord.ChapterId;
+
         if (memberSubscriptionRecord.ChapterSubscriptionId == null ||
             string.IsNullOrEmpty(memberSubscriptionRecord.ExternalId))
         {
             return ServiceResult.Failure("Error cancelling subscription");
         }
 
-        var (chapterSubscription, sitePaymentSettings, connectedAccount) = await _unitOfWork.RunAsync(
+        var (chapterSubscription, chapterPaymentAccountDto) = await _unitOfWork.RunAsync(
             x => x.ChapterSubscriptionRepository.GetById(memberSubscriptionRecord.ChapterSubscriptionId.Value),
-            x => x.SitePaymentSettingsRepository.GetActive(),
-            x => x.ChapterPaymentAccountRepository.GetByChapterId(memberSubscriptionRecord.ChapterId));
+            x => x.ChapterPaymentAccountRepository.Query().ForChapter(chapterId).ToDto().GetSingleOrDefault());
+
+        if (chapterPaymentAccountDto == null)
+        {
+            throw new OdkServiceException("Error cancelling subscription: payment account not set up");
+        }
 
         var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
-            sitePaymentSettings,
-            connectedAccount);
+            chapterPaymentAccountDto.SitePaymentSettings,
+            chapterPaymentAccountDto.ChapterPaymentAccount);
 
         var success = await paymentProvider.CancelSubscription(memberSubscriptionRecord.ExternalId);
         if (success)

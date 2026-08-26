@@ -1,24 +1,20 @@
-﻿using ODK.Core.Members;
-using ODK.Core.Payments;
+﻿using ODK.Core.Payments;
 using ODK.Core.Subscriptions;
 using ODK.Data.Core.Countries;
-using ODK.Services.Payments;
 
 namespace ODK.Services.Subscriptions.ViewModels;
 
-public class SiteSubscriptionViewModel
+public class SiteSubscriptionEditViewModel
 {
     public required IReadOnlyCollection<CurrencyDto> Currencies { get; init; }
 
-    public required ExternalSubscription? CurrentMemberExternalSubscription { get; init; }
-
-    public required MemberSiteSubscriptionState? CurrentMemberSiteSubscription { get; init; }
-
     public required IReadOnlyCollection<SiteSubscriptionFeature> Features { get; init; }
 
-    public required IReadOnlyCollection<SiteSubscriptionPrice> Prices { get; init; }
+    public required IReadOnlyCollection<SiteSubscriptionEditPriceViewModel> Prices { get; init; }
 
     public required IReadOnlyCollection<SitePaymentSettings> SitePaymentSettings { get; init; }
 
     public required SiteSubscription Subscription { get; init; }
+
+    public required IReadOnlyCollection<SiteSubscription> Subscriptions { get; init; }
 }

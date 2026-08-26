@@ -1,4 +1,6 @@
-﻿namespace ODK.Core.Payments;
+﻿using ODK.Core.Platforms;
+
+namespace ODK.Core.Payments;
 
 public class SitePaymentSettings : IDatabaseEntity
 {
@@ -12,11 +14,15 @@ public class SitePaymentSettings : IDatabaseEntity
 
     public bool Enabled { get; set; }
 
-    public bool HasApiKey => !string.IsNullOrEmpty(ApiPublicKey) && !string.IsNullOrEmpty(ApiSecretKey);
+    public string? ExternalId { get; set; }
+
+    public string? ExternalUrl { get; set; }
 
     public Guid Id { get; set; }
 
     public string Name { get; set; } = string.Empty;
+
+    public PlatformType Platform { get; set; }
 
     public PaymentProviderType Provider { get; set; }
 

@@ -9,13 +9,7 @@ public interface ISettingsService
     Task<ServiceResult> ActivatePaymentSettings(IMemberServiceRequest request, Guid id);
 
     Task<ServiceResult> CreatePaymentSettings(
-        IMemberServiceRequest request,
-        PaymentProviderType provider,
-        string name,
-        string publicKey,
-        string secretKey,
-        decimal commission,
-        bool enabled);
+        IMemberServiceRequest request, SitePaymentSettingsCreateModel model);
 
     Task<SiteEmailSettings> GetSiteEmailSettings(IMemberServiceRequest request);
 
@@ -26,11 +20,5 @@ public interface ISettingsService
     Task<ServiceResult> UpdateEmailSettings(IMemberServiceRequest request, EmailSettingsUpdateModel model);
 
     Task<ServiceResult> UpdatePaymentSettings(
-        IMemberServiceRequest request,
-        Guid id,
-        string name,
-        string publicKey,
-        string secretKey,
-        decimal commission,
-        bool enabled);
+        IMemberServiceRequest request, Guid id, SitePaymentSettingsUpdateModel model);
 }

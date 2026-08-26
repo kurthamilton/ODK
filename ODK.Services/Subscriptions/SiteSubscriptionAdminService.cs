@@ -179,15 +179,80 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         return ServiceResult.Successful();
     }
 
-    public async Task DeleteSiteSubscriptionPrice(
+    public async Task<ServiceResult> DeleteSiteSubscription(
+        IMemberServiceRequest request, Guid siteSubscriptionId)
+    {
+        var (siteSubscription, prices, hasMemberRecords, fallbackDependents) =
+            await GetSiteAdminRestrictedContent(request,
+                x => x.SiteSubscriptionRepository.GetById(siteSubscriptionId),
+                x => x.SiteSubscriptionPriceRepository.GetBySiteSubscriptionId(siteSubscriptionId),
+                x => x.MemberSiteSubscriptionRecordRepository
+                    .Query()
+                    .ForSiteSubscription(siteSubscriptionId)
+                    .Any(),
+                x => x.SiteSubscriptionRepository
+                    .Query()
+                    .ForFallback(siteSubscriptionId)
+                    .GetAll());
+
+        OdkAssertions.MeetsCondition(siteSubscription, x => x.Platform == request.Platform);
+
+        if (siteSubscription.Default)
+        {
+            return ServiceResult.Failure(
+                "The default subscription cannot be deleted. Make another subscription the default first");
+        }
+
+        if (hasMemberRecords)
+        {
+            return ServiceResult.Failure(
+                "A subscription that members have been on cannot be deleted");
+        }
+
+        if (prices.Count > 0)
+        {
+            return ServiceResult.Failure(
+                "A subscription with prices cannot be deleted. Delete its prices first");
+        }
+
+        /* Nothing cascades this one: another subscription's fallback is a column on that subscription, so
+           deleting the row it names would fail on the foreign key rather than clear it. */
+        if (fallbackDependents.Count > 0)
+        {
+            var names = string.Join(", ", fallbackDependents.Select(x => x.Name).Order());
+            return ServiceResult.Failure(
+                $"This subscription is the fallback for {names}. Change their fallback first");
+        }
+
+        // The subscription's features go with it - the database cascades them.
+        _unitOfWork.SiteSubscriptionRepository.Delete(siteSubscription);
+        await _unitOfWork.SaveChanges();
+
+        return ServiceResult.Successful();
+    }
+
+    public async Task<ServiceResult> DeleteSiteSubscriptionPrice(
         IMemberServiceRequest request, Guid siteSubscriptionId, Guid siteSubscriptionPriceId)
     {
-        var (sitePaymentSettings, siteSubscription, price) = await GetSiteAdminRestrictedContent(request,
-            x => x.SitePaymentSettingsRepository.GetAll(),
-            x => x.SiteSubscriptionRepository.GetById(siteSubscriptionId),
-            x => x.SiteSubscriptionPriceRepository.GetById(siteSubscriptionPriceId));
+        var (sitePaymentSettings, siteSubscription, price, hasMemberRecords) =
+            await GetSiteAdminRestrictedContent(request,
+                x => x.SitePaymentSettingsRepository.GetAll(),
+                x => x.SiteSubscriptionRepository.GetById(siteSubscriptionId),
+                x => x.SiteSubscriptionPriceRepository.GetById(siteSubscriptionPriceId),
+                x => x.MemberSiteSubscriptionRecordRepository
+                    .Query()
+                    .ForSiteSubscriptionPrice(siteSubscriptionPriceId)
+                    .Any());
 
         OdkAssertions.MeetsCondition(price, x => x.SiteSubscriptionId == siteSubscriptionId);
+
+        /* Nothing cascades this one: a record names the price the member paid, so deleting the price would
+           fail on the foreign key rather than clear it - and the record would be the poorer for it either
+           way, since the amount paid is only recoverable through the price. */
+        if (hasMemberRecords)
+        {
+            return ServiceResult.Failure("A price with member subscription records cannot be deleted");
+        }
 
         _unitOfWork.SiteSubscriptionPriceRepository.Delete(price);
         await _unitOfWork.SaveChanges();
@@ -199,6 +264,8 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
                 siteSubscription.SitePaymentSettingId);
             await paymentProvider.DeactivateSubscriptionPlan(price.ExternalId);
         }
+
+        return ServiceResult.Successful();
     }
 
     public async Task<IReadOnlyCollection<SiteSubscription>> GetAllSubscriptions(
@@ -296,16 +363,26 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
             .GroupBy(x => x.SiteSubscriptionId)
             .ToDictionary(x => x.Key, x => x.ToArray());
 
-        var siteSubscriptionDictionary = siteSubscriptionSummaries
-            .ToDictionary(x => x.SiteSubscription.Id);
-
         var sitePaymentSettingsDictionary = sitePaymentSettings
             .ToDictionary(x => x.Id);
+
+        /* The subscriptions another one falls back to, which cannot be deleted while it does. Read from the
+           summaries rather than queried: they are every one of the platform's subscriptions, and a fallback
+           can only be another of them. */
+        var fallbackSiteSubscriptionIds = siteSubscriptionSummaries
+            .Select(x => x.SiteSubscription.FallbackSiteSubscriptionId)
+            .OfType<Guid>()
+            .ToHashSet();
 
         return siteSubscriptionSummaries
             .Select(x => new SiteSubscriptionSiteAdminListItemViewModel
             {
                 ActiveCount = x.ActiveMemberSiteSubscriptionCount,
+                CanDelete =
+                    !x.SiteSubscription.Default &&
+                    x.MemberSiteSubscriptionCount == 0 &&
+                    !priceDictionary.ContainsKey(x.SiteSubscription.Id) &&
+                    !fallbackSiteSubscriptionIds.Contains(x.SiteSubscription.Id),
                 Default = x.SiteSubscription.Default,
                 Enabled = x.SiteSubscription.Enabled,
                 Features = x.Features.Select(x => x.Feature).ToArray(),
@@ -314,7 +391,11 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
                 Id = x.SiteSubscription.Id,
                 MemberLimit = x.SiteSubscription.MemberLimit,
                 Name = x.SiteSubscription.Name,
+                PaymentSettingsId = sitePaymentSettingsDictionary[x.SiteSubscription.SitePaymentSettingId].Id,
                 PaymentSettingsName = sitePaymentSettingsDictionary[x.SiteSubscription.SitePaymentSettingId].Name,
+                PaymentSettingsOnAnotherPlatform =
+                    sitePaymentSettingsDictionary[x.SiteSubscription.SitePaymentSettingId].Platform != platform,
+                PaymentSettingsPlatform = sitePaymentSettingsDictionary[x.SiteSubscription.SitePaymentSettingId].Platform,
                 Prices = priceDictionary.TryGetValue(x.SiteSubscription.Id, out var prices)
                     ? prices
                         .Select(x => new SiteSubscriptionSiteAdminListItemPriceViewModel
@@ -333,28 +414,64 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
             .ToArray();
     }
 
-    public async Task<SiteSubscriptionViewModel> GetSubscriptionViewModel(
+    public async Task<SiteSubscriptionCreateViewModel> GetSubscriptionCreateViewModel(IMemberServiceRequest request)
+    {
+        var platform = request.Platform;
+
+        var (sitePaymentSettings, subscriptions) = await GetSiteAdminRestrictedContent(request,
+            x => x.SitePaymentSettingsRepository.GetAll(platform),
+            x => x.SiteSubscriptionRepository.GetAll(platform));
+
+        return new SiteSubscriptionCreateViewModel
+        {
+            SitePaymentSettings = sitePaymentSettings,
+            Subscriptions = subscriptions
+        };
+    }
+
+    public async Task<SiteSubscriptionEditViewModel> GetSubscriptionEditViewModel(
         IMemberServiceRequest request, Guid siteSubscriptionId)
     {
-        var (siteSubscriptionDto, prices, currencies, sitePaymentSettings) = await GetSiteAdminRestrictedContent(request,
-            x => x.SiteSubscriptionRepository
-                .Query()
-                .ById(siteSubscriptionId)
-                .WithFeatures()
-                .GetSingle(),
-            x => x.SiteSubscriptionPriceRepository.GetBySiteSubscriptionId(siteSubscriptionId),
-            x => x.CurrencyRepository.GetAllDtos(),
-            x => x.SitePaymentSettingsRepository.GetAll());
+        var (siteSubscriptionDto, prices, pricesInUse, currencies, sitePaymentSettings, subscriptions) =
+            await GetSiteAdminRestrictedContent(request,
+                x => x.SiteSubscriptionRepository
+                    .Query()
+                    .ById(siteSubscriptionId)
+                    .WithFeatures()
+                    .GetSingle(),
+                x => x.SiteSubscriptionPriceRepository.GetBySiteSubscriptionId(siteSubscriptionId),
+                /* The subscription's prices that a member record names, which are the ones that cannot be
+                   deleted. One row per price rather than per record, so a subscription thousands of members
+                   have been on costs no more to ask about than one nobody has. */
+                x => x.MemberSiteSubscriptionRecordRepository
+                    .Query()
+                    .ForSiteSubscription(siteSubscriptionId)
+                    .SiteSubscriptionPrices()
+                    .GetAll(),
+                x => x.CurrencyRepository.GetAllDtos(),
+                x => x.SitePaymentSettingsRepository.GetAll(),
+                x => x.SiteSubscriptionRepository.GetAll(request.Platform));
 
-        return new SiteSubscriptionViewModel
+        var pricesInUseIds = pricesInUse.Select(x => x.Id).ToHashSet();
+
+        return new SiteSubscriptionEditViewModel
         {
             Currencies = currencies,
-            CurrentMemberExternalSubscription = null,
-            CurrentMemberSiteSubscription = null,
             Features = siteSubscriptionDto.Features,
-            Prices = prices,
+            Prices = prices
+                .Select(x => new SiteSubscriptionEditPriceViewModel
+                {
+                    Amount = x.Amount,
+                    CanDelete = !pricesInUseIds.Contains(x.Id),
+                    CurrencyId = x.CurrencyId,
+                    ExternalId = x.ExternalId,
+                    Frequency = x.Frequency,
+                    Id = x.Id
+                })
+                .ToArray(),
             SitePaymentSettings = sitePaymentSettings,
-            Subscription = siteSubscriptionDto.SiteSubscription
+            Subscription = siteSubscriptionDto.SiteSubscription,
+            Subscriptions = subscriptions
         };
     }
 
@@ -362,7 +479,8 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
     {
         var platform = request.Platform;
 
-        var (subscriptions, prices) = await GetSiteAdminRestrictedContent(request,
+        var (sitePaymentSettings, subscriptions, prices) = await GetSiteAdminRestrictedContent(request,
+            x => x.SitePaymentSettingsRepository.GetAll(),
             x => x.SiteSubscriptionRepository.GetAll(platform),
             x => x.SiteSubscriptionPriceRepository.GetAll(platform));
 
@@ -377,8 +495,11 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
             return ServiceResult.Failure("A subscription with no prices must be free to be the default");
         }
 
+        var sitePaymentSettingsDictionary = sitePaymentSettings
+            .ToDictionary(x => x.Id);
+
         var existingDefaults = subscriptions
-            .Where(x => x.Default && x.SitePaymentSettingId == subscription.SitePaymentSettingId)
+            .Where(x => x.Default && sitePaymentSettingsDictionary[x.SitePaymentSettingId].Enabled)
             .ToArray();
 
         foreach (var existingDefault in existingDefaults)

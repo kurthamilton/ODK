@@ -1,10 +1,16 @@
-﻿@using ODK.Services.Settings
+﻿@using ODK.Services.Subscriptions
 @using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.SiteAdmin
-@inject ISettingsService SettingsService
 @inject IRequestStore RequestStore
-@{    
-    var sitePaymentSettings = await SettingsService.GetSitePaymentSettings(RequestStore.MemberServiceRequest);
+@inject ISiteSubscriptionAdminService SiteSubscriptionAdminService
+@{
+    var request = RequestStore.MemberServiceRequest;
+    var viewModel = await SiteSubscriptionAdminService.GetSubscriptionCreateViewModel(request);
+
+    var defaultSitePaymentSettingsId = viewModel.SitePaymentSettings
+        .Where(x => x.Active && x.Platform == request.Platform)
+        .FirstOrDefault()
+        ?.Id;
 }
 
 <h2 class="content-heading">Create subscription</h2>
@@ -14,8 +20,10 @@
         @Html.AntiForgeryToken()
         @await Html.PartialAsync("SiteAdmin/_SiteAdminSubscriptionForm", new SiteSubscriptionFormViewModel
         {
-            SitePaymentSettingId = sitePaymentSettings.FirstOrDefault(x => x.Active)?.Id,
-            SitePaymentSettings = sitePaymentSettings
+            SitePaymentSettingId = defaultSitePaymentSettingsId,
+            SitePaymentSettings = viewModel.SitePaymentSettings,
+            SiteSubscriptionId = null,
+            SiteSubscriptions = viewModel.Subscriptions
         })
         <button class="btn btn-primary">Create</button>
     </form>

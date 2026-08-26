@@ -1,39 +1,13 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using ODK.Core.Features;
-using ODK.Core.Payments;
+﻿using ODK.Core.Payments;
+using ODK.Core.Subscriptions;
 
 namespace ODK.Web.Razor.Models.SiteAdmin;
 
-public class SiteSubscriptionFormViewModel
+public class SiteSubscriptionFormViewModel : SiteSubscriptionFormSubmitViewModel
 {
-    [Required]
-    public string Description { get; set; } = string.Empty;
+    public required IReadOnlyCollection<SitePaymentSettings> SitePaymentSettings { get; init; }
 
-    public bool Enabled { get; set; }
+    public required Guid? SiteSubscriptionId { get; init; }
 
-    [DisplayName("Fallback")]
-    public Guid? FallbackSiteSubscriptionId { get; set; }
-
-    public List<SiteFeatureType>? Features { get; set; }
-
-    [DisplayName("Free (no payment required)")]
-    public bool Free { get; set; }
-
-    [DisplayName("Group limit")]
-    public int? GroupLimit { get; set; }
-
-    [DisplayName("Member limit")]
-    public int? MemberLimit { get; set; }
-
-    [Required]
-    public string Name { get; set; } = string.Empty;
-
-    [Required]
-    [DisplayName("Site payment settings")]
-    public Guid? SitePaymentSettingId { get; set; }
-
-    public IReadOnlyCollection<SitePaymentSettings> SitePaymentSettings { get; set; } = [];
-
-    public Guid? SiteSubscriptionId { get; set; }
+    public required IReadOnlyCollection<SiteSubscription> SiteSubscriptions { get; init; }
 }

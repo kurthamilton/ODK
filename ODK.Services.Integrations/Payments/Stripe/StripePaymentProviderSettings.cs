@@ -1,8 +1,10 @@
-﻿namespace ODK.Services.Integrations.Payments.Stripe;
+﻿using ODK.Core.Platforms;
+
+namespace ODK.Services.Integrations.Payments.Stripe;
 
 public class StripePaymentProviderSettings
 {
-    public required string ConnectedAccountBaseUrl { get; init; }
+    public required IReadOnlyDictionary<PlatformType, string> ConnectedAccountBaseUrls { get; init; }
 
     public required string ConnectedAccountBusinessName { get; init; }
 

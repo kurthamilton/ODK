@@ -11,7 +11,11 @@ namespace ODK.Services.Tests.Helpers;
 /// </summary>
 internal static class TestPlatformProvider
 {
+    internal const string DefaultBaseUrl = "https://default.example.com";
+
     internal const string DefaultName = "Default platform";
+
+    internal const string DrunkenKnitwitsBaseUrl = "https://drunkenknitwits.example.com";
 
     internal const string DrunkenKnitwitsName = "Drunken Knitwits platform";
 
@@ -26,6 +30,10 @@ internal static class TestPlatformProvider
                 { PlatformType.Default, defaultName ?? DefaultName },
                 { PlatformType.DrunkenKnitwits, DrunkenKnitwitsName }
             },
-            Urls = new Dictionary<PlatformType, IReadOnlyCollection<string>>()
+            Urls = new Dictionary<PlatformType, IReadOnlyCollection<string>>
+            {
+                { PlatformType.Default, [DefaultBaseUrl] },
+                { PlatformType.DrunkenKnitwits, [DrunkenKnitwitsBaseUrl] }
+            }
         });
 }

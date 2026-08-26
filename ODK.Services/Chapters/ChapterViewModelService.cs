@@ -352,8 +352,7 @@ public class ChapterViewModelService : IChapterViewModelService
             otherConversationCount,
             membershipSettings,
             privacySettings,
-            chapterPages,
-            sitePaymentSettings
+            chapterPages
         ) = await _unitOfWork.RunAsync(
             x => currentMember != null
                 ? x.ChapterAdminMemberRepository.IsAdmin(platform, chapter.Id, currentMember.Id)
@@ -375,8 +374,7 @@ public class ChapterViewModelService : IChapterViewModelService
                 .Count(),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterPageRepository.GetByChapterId(chapter.Id),
-            x => x.SitePaymentSettingsRepository.GetActive());
+            x => x.ChapterPageRepository.GetByChapterId(chapter.Id));
 
         return new GroupConversationsPageViewModel
         {

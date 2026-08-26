@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Configuration;
+using ODK.E2E.Data;
 
 namespace ODK.E2E.Tests.Config;
 
@@ -35,18 +36,23 @@ public static class E2ESettings
     /// </summary>
     public static int SiteSubscriptionCooldownMonths => GetRequiredInt("SiteSubscriptionCooldownMonths");
 
-    /// <summary>Stripe publishable key for the live payment settings the tests seed.</summary>
-    public static string StripeApiPublicKey => GetRequired("Stripe:ApiPublicKey");
-
-    /// <summary>Stripe secret key for the live payment settings the tests seed.</summary>
-    public static string StripeApiSecretKey => GetRequired("Stripe:ApiSecretKey");
+    /// <summary>
+    /// The Stripe account the platform transacts through, named by its account id (<c>acct_...</c>). It
+    /// identifies which <c>SitePaymentSettings</c> row the tests use - the row whose <c>ExternalId</c> is
+    /// this - so the API keys come from the row rather than from here, and cannot drift from
+    /// <see cref="StripeConnectedAccountId"/>, which only exists under this account.
+    /// </summary>
+    public static string StripeAccountId(int platformTypeId)
+        => GetRequired($"Stripe:Platforms:{PlatformTypeIds.Name(platformTypeId)}:AccountId");
 
     /// <summary>
     /// A pre-onboarded Stripe sandbox connected account id (<c>acct_...</c>) used as the transfer
-    /// destination for chapter-subscription purchases. Blank until a sandbox account has been onboarded;
-    /// tests that seed a <c>ChapterPaymentAccount</c> for a real purchase require it.
+    /// destination for chapter-subscription purchases, created under the platform's own
+    /// <see cref="StripeAccountId"/>. Blank until a sandbox account has been onboarded; tests that seed a
+    /// <c>ChapterPaymentAccount</c> for a real purchase require it.
     /// </summary>
-    public static string StripeConnectedAccountId => GetOptional("Stripe:ConnectedAccountId");
+    public static string StripeConnectedAccountId(int platformTypeId)
+        => GetOptional($"Stripe:Platforms:{PlatformTypeIds.Name(platformTypeId)}:ConnectedAccountId");
 
     /// <summary>
     /// Base URL (an ngrok tunnel) Stripe delivers webhooks to. Blank when no

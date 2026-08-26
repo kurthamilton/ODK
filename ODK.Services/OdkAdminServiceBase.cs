@@ -375,6 +375,48 @@ public abstract class OdkAdminServiceBase
         return (result1, result2, result3, result4);
     }
 
+    protected async Task<(T1, T2, T3, T4, T5)> GetSiteAdminRestrictedContent<T1, T2, T3, T4, T5>(
+        IMemberServiceRequest request,
+        Func<IUnitOfWork, IDeferredQuery<T1>> query1,
+        Func<IUnitOfWork, IDeferredQuery<T2>> query2,
+        Func<IUnitOfWork, IDeferredQuery<T3>> query3,
+        Func<IUnitOfWork, IDeferredQuery<T4>> query4,
+        Func<IUnitOfWork, IDeferredQuery<T5>> query5)
+    {
+        var (result1, result2, result3, result4, result5) = await _unitOfWork.RunAsync(
+            query1,
+            query2,
+            query3,
+            query4,
+            query5);
+
+        AssertMemberIsSiteAdmin(request.CurrentMember);
+
+        return (result1, result2, result3, result4, result5);
+    }
+
+    protected async Task<(T1, T2, T3, T4, T5, T6)> GetSiteAdminRestrictedContent<T1, T2, T3, T4, T5, T6>(
+        IMemberServiceRequest request,
+        Func<IUnitOfWork, IDeferredQuery<T1>> query1,
+        Func<IUnitOfWork, IDeferredQuery<T2>> query2,
+        Func<IUnitOfWork, IDeferredQuery<T3>> query3,
+        Func<IUnitOfWork, IDeferredQuery<T4>> query4,
+        Func<IUnitOfWork, IDeferredQuery<T5>> query5,
+        Func<IUnitOfWork, IDeferredQuery<T6>> query6)
+    {
+        var (result1, result2, result3, result4, result5, result6) = await _unitOfWork.RunAsync(
+            query1,
+            query2,
+            query3,
+            query4,
+            query5,
+            query6);
+
+        AssertMemberIsSiteAdmin(request.CurrentMember);
+
+        return (result1, result2, result3, result4, result5, result6);
+    }
+
     protected void AssertMemberIsSiteAdmin(Member member)
     {
         if (!member.SiteAdmin)

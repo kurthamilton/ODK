@@ -672,6 +672,7 @@ public static class PaymentServiceTests
 
         var member = context.CreateMember();
         var chapter = context.CreateChapter(members: [member]);
+        context.CreateChapterPaymentAccount(chapter);
         var chapterSubscription = context.CreateChapterSubscription(chapter: chapter);
         chapterSubscription.Months = 1;
         chapterSubscription.Recurring = recurring;
@@ -714,6 +715,7 @@ public static class PaymentServiceTests
 
         var member = context.CreateMember();
         var chapter = context.CreateChapter(members: [member]);
+        context.CreateChapterPaymentAccount(chapter);
         var chapterSubscription = context.CreateChapterSubscription(chapter: chapter);
         chapterSubscription.Months = 1;
         chapterSubscription.Recurring = recurring;
@@ -986,6 +988,7 @@ public static class PaymentServiceTests
 
         var member = context.CreateMember();
         var chapter = context.CreateChapter(members: [member]);
+        context.CreateChapterPaymentAccount(chapter);
         var chapterSubscription = context.CreateChapterSubscription(chapter: chapter);
         chapterSubscription.Months = 1;
         chapterSubscription.Recurring = true;
@@ -1097,6 +1100,52 @@ public static class PaymentServiceTests
         Mock.Get(memberEmailService).Verify(
             x => x.SendPaymentNotification(
                 It.Is<IServiceRequest>(x => x.Platform == PlatformType.Default),
+                It.Is<Member>(x => x.Id == member.Id),
+                It.Is<Chapter>(x => x.Id == chapter.Id),
+                It.IsAny<Payment>(),
+                It.IsAny<Currency>()),
+            Times.Once);
+    }
+
+    [Test]
+    public static async Task ProcessWebhook_ChapterSubscriptionOnAnotherPlatform_NotifiesAsThePaymentsPlatform()
+    {
+        /* Arrange - a payment provider posts to whichever endpoint was registered with it, which may be one
+           site's for both platforms, so the webhook arrives on the Default platform for a Drunken Knitwits
+           payment. The receipt has to be sent as the platform the payment was made on: that decides the site
+           email settings it comes from and the site its links point at. */
+        using var context = CreateMockOdkContext();
+
+        var member = context.CreateMember();
+        var chapter = context.CreateChapter(platform: PlatformType.DrunkenKnitwits, members: [member]);
+        var chapterSubscription = context.CreateChapterSubscription(chapter: chapter);
+        var paymentCheckoutSession = context.CreatePaymentCheckoutSession();
+
+        var webhook = CreatePaymentProviderWebhook(
+            id: "wh_chapter_notify_platform",
+            type: PaymentProviderWebhookType.CheckoutSessionCompleted,
+            subscriptionId: "sub_123",
+            metadata: new PaymentMetadataModel(
+                PlatformType.DrunkenKnitwits,
+                PaymentReasonType.ChapterSubscription,
+                member,
+                chapterSubscription,
+                paymentCheckoutSession.Id,
+                paymentCheckoutSession.PaymentId));
+
+        var memberEmailService = CreateMockMemberEmailService();
+        var service = CreatePaymentService(context, memberEmailService: memberEmailService);
+        var request = CreateServiceRequest(PlatformType.Default);
+
+        // Act
+        await service.ProcessWebhook(request, webhook);
+
+        // Assert
+        Mock.Get(memberEmailService).Verify(
+            x => x.SendPaymentNotification(
+                It.Is<IServiceRequest>(x =>
+                    x.Platform == PlatformType.DrunkenKnitwits &&
+                    x.HttpRequestContext.BaseUrl == TestPlatformProvider.DrunkenKnitwitsBaseUrl),
                 It.Is<Member>(x => x.Id == member.Id),
                 It.Is<Chapter>(x => x.Id == chapter.Id),
                 It.IsAny<Payment>(),
@@ -1413,6 +1462,7 @@ public static class PaymentServiceTests
             new MockBackgroundTaskService(),
             new MemberChapterSubscriptionWriter(unitOfWork),
             new MemberSiteSubscriptionWriter(unitOfWork),
+            TestPlatformProvider.Create(),
             new MockServiceRequestFactory(context),
             siteSubscriptionCooldown ?? new SiteSubscriptionCooldown(months: 0));
     }

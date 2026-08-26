@@ -417,9 +417,8 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
         var (ownerSubscriptionFeatures,
             chapterPaymentSettings,
-            chapterPaymentAccount,
-            currency,
-            sitePaymentSettings) = await GetChapterAdminRestrictedContent(
+            chapterPaymentAccountDto,
+            currency) = await GetChapterAdminRestrictedContent(
             request,
             x => x.MemberSiteSubscriptionRecordRepository
                 .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
@@ -427,21 +426,20 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                 .Features()
                 .GetAll(),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterPaymentAccountRepository.GetByChapterId(chapter.Id),
-            x => x.CurrencyRepository.GetByChapterId(chapter.Id),
-            x => x.SitePaymentSettingsRepository.GetActive());
+            x => x.ChapterPaymentAccountRepository.Query().ForChapter(chapter.Id).ToDto().GetSingleOrDefault(),
+            x => x.CurrencyRepository.GetByChapterId(chapter.Id));
 
         return new SubscriptionCreateAdminPageViewModel
         {
             Chapter = chapter,
             Currency = currency,
             CurrentMember = currentMember,
-            HasPaymentAccount = chapterPaymentAccount?.SetupComplete() == true,
+            HasPaymentAccount = chapterPaymentAccountDto?.ChapterPaymentAccount.SetupComplete() == true,
             OwnerSubscriptionFeatures = ownerSubscriptionFeatures
                 .Select(x => x.Feature)
                 .ToArray(),
             Platform = platform,
-            SupportsRecurringPayments = sitePaymentSettings.SupportsRecurringPayments
+            SupportsRecurringPayments = chapterPaymentAccountDto?.SitePaymentSettings.SupportsRecurringPayments == true
         };
     }
 
@@ -486,23 +484,23 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
         var (ownerSubscriptionFeatures,
-            chapterPaymentAccount,
-            subscription,
-            defaultSitePaymentSettings) = await GetChapterAdminRestrictedContent(request,
+            chapterPaymentAccountDto,
+            subscription) = await GetChapterAdminRestrictedContent(request,
             x => x.MemberSiteSubscriptionRecordRepository
                 .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
                 .SiteSubscription()
                 .Features()
                 .GetAll(),
-            x => x.ChapterPaymentAccountRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterSubscriptionRepository.GetById(subscriptionId),
-            x => x.SitePaymentSettingsRepository.GetActive());
+            x => x.ChapterPaymentAccountRepository.Query().ForChapter(chapter.Id).ToDto().GetSingleOrDefault(),
+            x => x.ChapterSubscriptionRepository.GetById(subscriptionId));
 
         OdkAssertions.BelongsToChapter(subscription, chapter.Id);
 
         var sitePaymentSettings = subscription.SitePaymentSettingId != null
             ? await _unitOfWork.SitePaymentSettingsRepository.GetById(subscription.SitePaymentSettingId.Value).Run()
-            : defaultSitePaymentSettings;
+            : chapterPaymentAccountDto?.SitePaymentSettings;
+
+        var chapterPaymentAccount = chapterPaymentAccountDto?.ChapterPaymentAccount;
 
         return new SubscriptionAdminPageViewModel
         {
@@ -515,7 +513,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                 .ToArray(),
             Platform = platform,
             Subscription = subscription,
-            SupportsRecurringPayments = sitePaymentSettings.SupportsRecurringPayments
+            SupportsRecurringPayments = sitePaymentSettings?.SupportsRecurringPayments == true
         };
     }
 

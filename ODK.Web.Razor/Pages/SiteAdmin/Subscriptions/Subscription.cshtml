@@ -9,7 +9,7 @@
     Layout = "_SiteAdminLayout";
     Model.Title = "Subscription | SiteAdmin";
 
-    var viewModel = await SiteSubscriptionAdminService.GetSubscriptionViewModel(Model.MemberServiceRequest, Model.SubscriptionId);
+    var viewModel = await SiteSubscriptionAdminService.GetSubscriptionEditViewModel(Model.MemberServiceRequest, Model.SubscriptionId);
 }
 
 @await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
@@ -21,4 +21,4 @@
     }
 })
 
-@await Html.PartialAsync("SiteAdmin/_SubscriptionContent", viewModel)
+@await Html.PartialAsync("SiteAdmin/_SiteAdminSubscriptionContent", viewModel)

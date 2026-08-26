@@ -1,7 +1,7 @@
 ﻿@using ODK.Services.Subscriptions.ViewModels
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.SiteAdmin
-@model SiteSubscriptionViewModel
+@model SiteSubscriptionEditViewModel
 @{
     var currencyDictionary = Model.Currencies.ToDictionary(x => x.Currency.Id);
 }
@@ -22,7 +22,8 @@
             Name = Model.Subscription.Name,
             SitePaymentSettingId = Model.Subscription.SitePaymentSettingId,
             SitePaymentSettings = Model.SitePaymentSettings,
-            SiteSubscriptionId = Model.Subscription.Id
+            SiteSubscriptionId = Model.Subscription.Id,
+            SiteSubscriptions = Model.Subscriptions
         })
         <button class="btn btn-primary">Update</button>
     </form>
@@ -59,17 +60,20 @@
                         <td>@currency.Currency.ToAmountString(price.Amount)</td>
                         <td>@price.ExternalId</td>
                         <td>
-                            <form action="/siteadmin/Subscriptions/@Model.Subscription.Id/Prices/@price.Id/Delete" method="post">
-                                @Html.AntiForgeryToken()
-                                @await Html.PartialAsync("Components/_Confirm", new ConfirmViewModel
-                                {
-                                    Message = "Are you sure you want to delete this price?",
-                                    Title = "Delete price"
-                                })
-                                <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger">
-                                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Times))
-                                </button>
-                            </form>
+                            @if (price.CanDelete)
+                            {
+                                <form action="/siteadmin/Subscriptions/@Model.Subscription.Id/Prices/@price.Id/Delete" method="post">
+                                    @Html.AntiForgeryToken()
+                                    @await Html.PartialAsync("Components/_Confirm", new ConfirmViewModel
+                                    {
+                                        Message = "Are you sure you want to delete this price?",
+                                        Title = "Delete price"
+                                    })
+                                    <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger">
+                                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Times))
+                                    </button>
+                                </form>
+                            }
                         </td>
                     </tr>
                 }            

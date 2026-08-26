@@ -121,7 +121,7 @@ public static class DependencyRegistrar
         });
         services.AddSingleton(new StripePaymentProviderSettings
         {
-            ConnectedAccountBaseUrl = payments.Stripe.ConnectedAccountBaseUrl,
+            ConnectedAccountBaseUrls = payments.Stripe.Platforms.ToDictionary(x => x.Key, x => x.Value.ConnectedAccountBaseUrl),
             ConnectedAccountBusinessName = payments.Stripe.ConnectedAccountBusinessName,
             ConnectedAccountCommissionPercentage = payments.Stripe.ConnectedAccountCommissionPercentage,
             ConnectedAccountMcc = payments.Stripe.ConnectedAccountMcc,
@@ -130,8 +130,8 @@ public static class DependencyRegistrar
         services.AddScoped<IStripeWebhookParser, StripeWebhookParser>();
         services.AddSingleton(new StripeWebhookParserSettings
         {
-            WebhookSecretV1 = appSettings.Payments.Stripe.WebhookSecretV1,
-            WebhookSecretV2 = appSettings.Payments.Stripe.WebhookSecretV2
+            WebhookSecretsV1 = appSettings.Payments.Stripe.Platforms.ToDictionary(x => x.Key, x => x.Value.WebhookSecretV1),
+            WebhookSecretsV2 = appSettings.Payments.Stripe.Platforms.ToDictionary(x => x.Key, x => x.Value.WebhookSecretV2)
         });
     }
 
@@ -287,28 +287,8 @@ public static class DependencyRegistrar
             .AddScoped<IPlatformProvider, PlatformProvider>()
             .AddSingleton(new PlatformProviderSettings
             {
-                Names = new Dictionary<PlatformType, string>
-                {
-                    { PlatformType.Default, appSettings.PlatformNames.Default },
-                    { PlatformType.DrunkenKnitwits, appSettings.PlatformNames.DrunkenKnitwits }
-                },
-                Urls = new Dictionary<PlatformType, IReadOnlyCollection<string>>
-                {
-                    {
-                        PlatformType.Default,
-                        appSettings.Platforms
-                            .Where(x => x.Type == PlatformType.Default.ToString())
-                            .Select(x => x.BaseUrl)
-                            .ToArray()
-                    },
-                    {
-                        PlatformType.DrunkenKnitwits,
-                        appSettings.Platforms
-                            .Where(x => x.Type == PlatformType.DrunkenKnitwits.ToString())
-                            .Select(x => x.BaseUrl)
-                            .ToArray()
-                    }
-                }
+                Names = appSettings.Platforms.ToDictionary(x => x.Key, x => x.Value.Name),
+                Urls = appSettings.Platforms.ToDictionary(x => x.Key, x => (IReadOnlyCollection<string>)x.Value.Urls)
             })
             .AddScoped<ICountryAdminService, CountryAdminService>()
             .AddScoped<ILocaleService, LocaleService>()

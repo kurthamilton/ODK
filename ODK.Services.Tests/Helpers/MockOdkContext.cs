@@ -157,14 +157,38 @@ internal class MockOdkContext : OdkContext
         MimeType = ChapterImage.DefaultMimeType
     });
 
+    internal ChapterPaymentAccount CreateChapterPaymentAccount(
+        Chapter? chapter = null,
+        SitePaymentSettings? sitePaymentSettings = null,
+        bool setupComplete = true)
+    {
+        chapter ??= CreateChapter();
+        sitePaymentSettings ??= CreateSitePaymentSettings(chapter.Platform);
+
+        var utcNow = DateTime.UtcNow;
+
+        return Create(new ChapterPaymentAccount
+        {
+            ChapterId = chapter.Id,
+            CreatedUtc = utcNow,
+            ExternalId = "acct_test",
+            Id = Guid.NewGuid(),
+            IdentityDocumentsProvidedUtc = setupComplete ? utcNow : null,
+            OnboardingCompletedUtc = setupComplete ? utcNow : null,
+            OnboardingUrl = null,
+            OwnerId = chapter.OwnerId,
+            SitePaymentSettingId = sitePaymentSettings.Id
+        });
+    }
+
     internal ChapterSubscription CreateChapterSubscription(
         Chapter? chapter = null,
         SitePaymentSettings? sitePaymentSettings = null,
         Currency? currency = null)
     {
         currency ??= CreateCurrency();
-        sitePaymentSettings ??= CreateSitePaymentSettings();
         chapter ??= CreateChapter();
+        sitePaymentSettings ??= CreateSitePaymentSettings(chapter.Platform);
 
         return Create(new ChapterSubscription
         {
@@ -246,7 +270,8 @@ internal class MockOdkContext : OdkContext
     internal void CreateMemberSiteSubscription(
         Member member,
         SiteSubscription? siteSubscription = null,
-        DateTime? expiresUtc = null)
+        DateTime? expiresUtc = null,
+        SiteSubscriptionPrice? siteSubscriptionPrice = null)
     {
         siteSubscription ??= CreateSiteSubscription();
 
@@ -258,7 +283,8 @@ internal class MockOdkContext : OdkContext
             Id = Guid.NewGuid(),
             IsCurrent = true,
             MemberId = member.Id,
-            SiteSubscriptionId = siteSubscription.Id
+            SiteSubscriptionId = siteSubscription.Id,
+            SiteSubscriptionPriceId = siteSubscriptionPrice?.Id
         });
     }
 
@@ -309,7 +335,7 @@ internal class MockOdkContext : OdkContext
         PlatformType platform = PlatformType.Default,
         string externalId = "product-external-id")
     {
-        sitePaymentSettings ??= CreateSitePaymentSettings();
+        sitePaymentSettings ??= CreateSitePaymentSettings(platform);
 
         return Create(new SitePaymentProduct
         {
@@ -320,14 +346,21 @@ internal class MockOdkContext : OdkContext
         });
     }
 
-    internal SitePaymentSettings CreateSitePaymentSettings()
+    internal SitePaymentSettings CreateSitePaymentSettings(
+        PlatformType platform = PlatformType.Default,
+        Action<SitePaymentSettings>? afterCreate = null)
     {
-        return Create(new SitePaymentSettings
+        var sitePaymentSettings = Create(new SitePaymentSettings
         {
             Active = true,
             Enabled = true,
-            Id = Guid.NewGuid()
+            Id = Guid.NewGuid(),
+            Platform = platform
         });
+
+        afterCreate?.Invoke(sitePaymentSettings);
+
+        return sitePaymentSettings;
     }
 
     internal SiteSubscription CreateSiteSubscription(
@@ -341,7 +374,7 @@ internal class MockOdkContext : OdkContext
     {
         /* Created rather than made up: a subscription's payment settings and product rows are both foreign
            keys, so code that reads either expects to find one. */
-        sitePaymentSettings ??= CreateSitePaymentSettings();
+        sitePaymentSettings ??= CreateSitePaymentSettings(platform);
         sitePaymentProduct ??= CreateSitePaymentProduct(sitePaymentSettings, platform);
 
         var siteSubscription = Create(new SiteSubscription

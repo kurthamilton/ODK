@@ -1,10 +1,13 @@
 ﻿@using ODK.Core.Features
 @using ODK.Core.Subscriptions
+@using ODK.Services.Platforms
 @using ODK.Services.Subscriptions
 @using ODK.Web.Common.Routes
 @using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Components
 @inject IOdkRoutes OdkRoutes
+@inject IOdkRoutesFactory OdkRoutesFactory
+@inject IPlatformProvider PlatformProvider
 @inject IRequestStore RequestStore
 @inject ISiteSubscriptionAdminService SiteSubscriptionAdminService
 @{
@@ -45,9 +48,32 @@
                                 <a href="@OdkRoutes.SiteAdmin.Subscription(subscription.Id)">@subscription.Name</a>
                             </td>
                             <td>
-                                <span>
-                                    @subscription.PaymentSettingsName
-                                </span>                                
+                                @if (subscription.PaymentSettingsOnAnotherPlatform)
+                                {
+                                    var platform = subscription.PaymentSettingsPlatform;
+                                    var platformName = PlatformProvider.GetName(platform);
+                                    var baseUrl = PlatformProvider.GetBaseUrl(platform);
+                                    var odkRoutes = await OdkRoutesFactory.Create(platform);
+                                    var route = odkRoutes.SiteAdmin.Payment(subscription.PaymentSettingsId);
+                                    var url = $"{baseUrl}{route}";
+
+                                    <a href="@url" target="_blank">
+                                        @subscription.PaymentSettingsName
+                                    </a>
+                                    <span data-bs-toggle="tooltip"
+                                          data-bs-title="These payment settings belong to @platformName">
+                                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.ExclamationTriangle)
+                                        {
+                                            Class = "text-danger"
+                                        })
+                                    </span>
+                                }
+                                else
+                                {
+                                    <a href="@OdkRoutes.SiteAdmin.Payment(subscription.PaymentSettingsId)">
+                                        @subscription.PaymentSettingsName
+                                    </a>
+                                }
                             </td>
                             <td>
                                 @if (subscription.Enabled)
@@ -69,9 +95,9 @@
                                         @Html.AntiForgeryToken()
                                         <button class="btn btn-icon"
                                                 data-bs-toggle="tooltip" data-bs-title="Enable">
-                                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.TimesCircleOutline)
+                                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.CheckCircleOutline)
                                             {
-                                                Class = "text-danger"
+                                                Class = "text-secondary"
                                             })
                                         </button>
                                     </form>                                
@@ -126,10 +152,27 @@
                                 }
                                 else
                                 {
-                                    <form action="/siteadmin/subscriptions/@subscription.Id/default" method="post">
-                                        @Html.AntiForgeryToken()
-                                        <button class="btn btn-primary btn-sm">Set default</button>
-                                    </form>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <form action="/siteadmin/subscriptions/@subscription.Id/default" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <button class="btn btn-primary btn-sm">Set default</button>
+                                        </form>
+                                        @if (subscription.CanDelete)
+                                        {
+                                            <form action="/siteadmin/subscriptions/@subscription.Id/delete" method="post">
+                                                @Html.AntiForgeryToken()
+                                                @await Html.PartialAsync("Components/_Confirm", new ConfirmViewModel
+                                                {
+                                                    Message = "Are you sure you want to delete this subscription?",
+                                                    Title = "Delete subscription"
+                                                })
+                                                <button data-bs-toggle="tooltip" data-bs-title="Delete"
+                                                        class="btn-icon text-danger">
+                                                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Times))
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
                                 }
                             </td>
                         </tr>

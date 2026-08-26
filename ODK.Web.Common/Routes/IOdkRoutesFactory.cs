@@ -1,9 +1,9 @@
 ﻿using System.Threading.Tasks;
-using ODK.Services;
+using ODK.Core.Platforms;
 
 namespace ODK.Web.Common.Routes;
 
 public interface IOdkRoutesFactory
 {
-    Task<IOdkRoutes> Create(IServiceRequest request);
+    Task<IOdkRoutes> Create(PlatformType platform);
 }

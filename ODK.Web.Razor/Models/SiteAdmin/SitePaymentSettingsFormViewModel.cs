@@ -1,27 +1,16 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using ODK.Core.Payments;
+﻿namespace ODK.Web.Razor.Models.SiteAdmin;
 
-namespace ODK.Web.Razor.Models.SiteAdmin;
-
-public class SitePaymentSettingsFormViewModel
+public class SitePaymentSettingsFormViewModel : SitePaymentSettingsFormSubmitViewModel
 {
-    [DisplayName("Commission (%)")]
-    public decimal Commission { get; set; }
+    /// <summary>
+    /// Whether these are the settings the platform is transacting through. Render-only: an active row
+    /// cannot be switched off, so the form shows its enabled state rather than offering it.
+    /// </summary>
+    public required bool Active { get; init; }
 
-    [Required]
-    public bool Enabled { get; set; }
-
-    [Required]
-    public string? Name { get; set; }
-
-    public PaymentProviderType? Provider { get; set; }
-
-    [Required]
-    [DisplayName("Public key")]
-    public string? PublicKey { get; set; }
-
-    [Required]
-    [DisplayName("Secret key")]
-    public string? SecretKey { get; set; }
+    /// <summary>
+    /// The settings being edited, or null when the form creates a new row. Render-only: it says which
+    /// fields are still open, since a row's provider is fixed once anything has been transacted under it.
+    /// </summary>
+    public required Guid? SitePaymentSettingId { get; init; }
 }

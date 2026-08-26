@@ -10,6 +10,7 @@ using ODK.Services.Events;
 using ODK.Services.Logging;
 using ODK.Services.Members;
 using ODK.Services.Payments.Models;
+using ODK.Services.Platforms;
 using ODK.Services.Subscriptions;
 using ODK.Services.Tasks;
 
@@ -24,6 +25,7 @@ public class PaymentService : IPaymentService
     private readonly IMemberEmailService _memberEmailService;
     private readonly IMemberSiteSubscriptionWriter _memberSiteSubscriptionWriter;
     private readonly IPaymentProviderFactory _paymentProviderFactory;
+    private readonly IPlatformProvider _platformProvider;
     private readonly IServiceRequestFactory _serviceRequestFactory;
     private readonly SiteSubscriptionCooldown _siteSubscriptionCooldown;
     private readonly IUnitOfWork _unitOfWork;
@@ -37,6 +39,7 @@ public class PaymentService : IPaymentService
         IBackgroundTaskService backgroundTaskService,
         IMemberChapterSubscriptionWriter memberChapterSubscriptionWriter,
         IMemberSiteSubscriptionWriter memberSiteSubscriptionWriter,
+        IPlatformProvider platformProvider,
         IServiceRequestFactory serviceRequestFactory,
         SiteSubscriptionCooldown siteSubscriptionCooldown)
     {
@@ -47,6 +50,7 @@ public class PaymentService : IPaymentService
         _memberEmailService = memberEmailService;
         _memberSiteSubscriptionWriter = memberSiteSubscriptionWriter;
         _paymentProviderFactory = paymentProviderFactory;
+        _platformProvider = platformProvider;
         _serviceRequestFactory = serviceRequestFactory;
         _siteSubscriptionCooldown = siteSubscriptionCooldown;
         _unitOfWork = unitOfWork;
@@ -71,9 +75,8 @@ public class PaymentService : IPaymentService
     public async Task<PaymentStatusType> GetMemberChapterPaymentCheckoutSessionStatus(
         IMemberServiceRequest request, Guid chapterId, string externalSessionId)
     {
-        var (sitePaymentSettings, paymentAccount, checkoutSession) = await _unitOfWork.RunAsync(
-            x => x.SitePaymentSettingsRepository.GetActive(),
-            x => x.ChapterPaymentAccountRepository.GetByChapterId(chapterId),
+        var (chapterPaymentAccountDto, checkoutSession) = await _unitOfWork.RunAsync(
+            x => x.ChapterPaymentAccountRepository.Query().ForChapter(chapterId).ToDto().GetSingle(),
             x => x.PaymentCheckoutSessionRepository.GetByMemberId(request.CurrentMember.Id, externalSessionId));
 
         OdkAssertions.Exists(checkoutSession);
@@ -84,8 +87,8 @@ public class PaymentService : IPaymentService
         }
 
         var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
-            sitePaymentSettings,
-            paymentAccount);
+            chapterPaymentAccountDto.SitePaymentSettings,
+            chapterPaymentAccountDto.ChapterPaymentAccount);
 
         // Completion is driven solely by the payment provider webhook; this status check only reports
         // progress. An expired remote session is surfaced so the UI can stop polling.
@@ -128,39 +131,17 @@ public class PaymentService : IPaymentService
         return PaymentStatusType.Pending;
     }
 
-    // Public for Hangfire. This parameterless-initiator overload preserves the method signature for jobs
-    // that were enqueued before initiatorId was introduced, so a deployment can't orphan in-flight jobs.
-    public Task<PaymentWebhookProcessingResult> ProcessCompletedChapterSubscription(
-        PlatformType platform,
-        IReadOnlyDictionary<string, string> metadataDictionary,
-        DateTime completedUtc,
-        PaymentProviderType paymentProvider,
-        string externalId)
-        => ProcessCompletedChapterSubscription(
-            platform, metadataDictionary, completedUtc, paymentProvider, externalId, initiatorId: null);
-
-    // Public for Hangfire. This parameterless-initiator overload preserves the method signature for jobs
-    // that were enqueued before initiatorId was introduced, so a deployment can't orphan in-flight jobs.
-    public Task<PaymentWebhookProcessingResult> ProcessCompletedPayment(
-        IReadOnlyDictionary<string, string> metadataDictionary,
-        DateTime completedUtc,
-        PaymentProviderType paymentProvider,
-        string externalId)
-        => ProcessCompletedPayment(
-            metadataDictionary, completedUtc, paymentProvider, externalId, initiatorId: null);
-
-    // Public for Hangfire. This parameterless-initiator overload preserves the method signature for jobs
-    // that were enqueued before initiatorId was introduced, so a deployment can't orphan in-flight jobs.
-    public Task<PaymentWebhookProcessingResult> ProcessCompletedSiteSubscription(
-        IReadOnlyDictionary<string, string> metadataDictionary,
-        DateTime completedUtc,
-        PaymentProviderType paymentProvider,
-        string externalId)
-        => ProcessCompletedSiteSubscription(
-            metadataDictionary, completedUtc, paymentProvider, externalId, initiatorId: null);
-
     public async Task ProcessWebhook(IServiceRequest request, PaymentProviderWebhook webhook)
     {
+        /* The actioning runs as the platform the payment was made on, not the one the webhook arrived at: a
+           provider posts every platform's events to whichever endpoint was registered with it, so the host
+           that received one says nothing about the payment it describes. That platform decides which site the
+           receipt is sent as and which site its links point at, so it is settled here, before the event is
+           recorded - a platform with no configured URL throws while the provider will still redeliver. */
+        var platform = PaymentMetadataModel.FromDictionary(webhook.Metadata).PlatformOrDrunkenKnitwits;
+        var actionRequest = JobRequest.Create(request)
+            .ForPlatform(platform, _platformProvider.GetBaseUrl(platform));
+
         var existingEvent = await _unitOfWork.PaymentProviderWebhookEventRepository
             .GetByExternalId(webhook.PaymentProviderType, webhook.Id).Run();
 
@@ -182,7 +163,7 @@ public class PaymentService : IPaymentService
         // Run the actioning of the webhook itself in a new task so that we can persist the event as quickly as possible
         // and make the actual processing retryable.
         _backgroundTaskService.Enqueue(
-            () => ProcessWebhookActionJob(JobRequest.Create(request), webhook),
+            () => ProcessWebhookActionJob(actionRequest, webhook),
             BackgroundTaskQueueType.Payments);
     }
 
@@ -203,7 +184,7 @@ public class PaymentService : IPaymentService
 
             case PaymentProviderWebhookType.InvoicePaymentSucceeded:
             case PaymentProviderWebhookType.SubscriptionCancelled:
-                result = await ProcessWebhookSubscription(request.Platform, webhook);
+                result = await ProcessWebhookSubscription(webhook);
                 break;
 
             default:
@@ -264,7 +245,7 @@ public class PaymentService : IPaymentService
 
         var (chapterPaymentSettings, sitePaymentSettings) = await _unitOfWork.RunAsync(
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapter.Id),
-            x => x.SitePaymentSettingsRepository.GetActive());
+            x => x.ChapterPaymentAccountRepository.Query().ForChapter(chapter.Id).ToSitePaymentSettings().GetSingle());
 
         if (!string.IsNullOrEmpty(chapterPaymentSettings?.ExternalProductId))
         {
@@ -304,13 +285,14 @@ public class PaymentService : IPaymentService
         await _unitOfWork.SaveChanges();
     }
 
-    private async Task<DateTime?> GetChapterSubscriptionNextPaymentDate(Guid chapterId, string externalId)
+    private async Task<DateTime?> GetChapterSubscriptionNextPaymentDate(
+        Guid chapterId, string externalId)
     {
-        var (sitePaymentSettings, paymentAccount) = await _unitOfWork.RunAsync(
-            x => x.SitePaymentSettingsRepository.GetActive(),
-            x => x.ChapterPaymentAccountRepository.GetByChapterId(chapterId));
+        var chapterPaymentAccountDto = await _unitOfWork.RunAsync(
+            x => x.ChapterPaymentAccountRepository.Query().ForChapter(chapterId).ToDto().GetSingle());
 
-        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(sitePaymentSettings, paymentAccount);
+        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
+            chapterPaymentAccountDto.SitePaymentSettings, chapterPaymentAccountDto.ChapterPaymentAccount);
 
         return await GetNextPaymentDate(paymentProvider, externalId);
     }
@@ -331,14 +313,13 @@ public class PaymentService : IPaymentService
     }
 
     private async Task<PaymentWebhookProcessingResult> ProcessCompletedChapterSubscription(
-        PlatformType platform,
-        IReadOnlyDictionary<string, string> metadataDictionary,
+        PaymentMetadataModel metadata,
         DateTime completedUtc,
         PaymentProviderType paymentProvider,
         string externalId,
         string? initiatorId)
     {
-        var metadata = PaymentMetadataModel.FromDictionary(metadataDictionary);
+        var platform = metadata.PlatformOrDrunkenKnitwits;
 
         if (metadata.MemberId == null ||
             metadata.ChapterId == null ||
@@ -428,15 +409,12 @@ public class PaymentService : IPaymentService
     }
 
     private async Task<PaymentWebhookProcessingResult> ProcessCompletedPayment(
-        IReadOnlyDictionary<string, string> metadataDictionary,
+        PaymentMetadataModel metadata,
         DateTime completedUtc,
         PaymentProviderType paymentProvider,
         string externalId,
         string? initiatorId)
     {
-        // Validate basic metadata
-        var metadata = PaymentMetadataModel.FromDictionary(metadataDictionary);
-
         if (metadata.MemberId == null ||
             metadata.PaymentId == null ||
             metadata.PaymentCheckoutSessionId == null)
@@ -507,6 +485,10 @@ public class PaymentService : IPaymentService
                 BackgroundTaskQueueType.Payments);
 
             var (chapter, currency) = await _unitOfWork.RunAsync(
+                /* Default, which ForPlatform reads as no platform filter, so this is a lookup by id alone.
+                   Not the payment's own platform: the event already names its chapter, so a platform can only
+                   exclude it - and metadata carrying no platform resolves to Drunken Knitwits, which would
+                   then miss a Group Squirrel chapter. */
                 x => x.ChapterRepository.GetById(PlatformType.Default, @event.ChapterId),
                 x => x.CurrencyRepository.GetById(payment.CurrencyId));
 
@@ -524,14 +506,12 @@ public class PaymentService : IPaymentService
     }
 
     private async Task<PaymentWebhookProcessingResult> ProcessCompletedSiteSubscription(
-        IReadOnlyDictionary<string, string> metadataDictionary,
+        PaymentMetadataModel metadata,
         DateTime completedUtc,
         PaymentProviderType paymentProvider,
         string externalId,
         string? initiatorId)
     {
-        var metadata = PaymentMetadataModel.FromDictionary(metadataDictionary);
-
         if (metadata.MemberId == null ||
             metadata.SiteSubscriptionPriceId == null)
         {
@@ -696,7 +676,7 @@ public class PaymentService : IPaymentService
         }
 
         return await ProcessCompletedPayment(
-            webhook.Metadata,
+            PaymentMetadataModel.FromDictionary(webhook.Metadata),
             webhook.OriginatedUtc,
             webhook.PaymentProviderType,
             webhook.PaymentId,
@@ -704,7 +684,6 @@ public class PaymentService : IPaymentService
     }
 
     private async Task<PaymentWebhookProcessingResult> ProcessWebhookChapterSubscription(
-        PlatformType platform,
         PaymentProviderWebhook webhook,
         PaymentMetadataModel metadata)
     {
@@ -744,8 +723,7 @@ public class PaymentService : IPaymentService
         }
 
         return await ProcessCompletedChapterSubscription(
-            platform,
-            metadata.ToDictionary(),
+            metadata,
             webhook.OriginatedUtc,
             webhook.PaymentProviderType,
             webhook.SubscriptionId,
@@ -767,15 +745,19 @@ public class PaymentService : IPaymentService
         }
 
         return await ProcessCompletedSiteSubscription(
-            metadata.ToDictionary(),
+            metadata,
             completedUtc: webhook.OriginatedUtc,
             webhook.PaymentProviderType,
             webhook.SubscriptionId,
             initiatorId: webhook.Id);
     }
 
+    /* The platform comes from the webhook's own metadata rather than from the request, because a provider
+       posts every platform's events to whichever endpoint was registered with it - one endpoint may serve
+       both, and the host it was reached on says nothing about the payment. The checkout that created the
+       subscription wrote the platform into the provider's subscription metadata, which is carried by every
+       later event on it. */
     private async Task<PaymentWebhookProcessingResult> ProcessWebhookSubscription(
-        PlatformType platform,
         PaymentProviderWebhook webhook)
     {
         if (string.IsNullOrEmpty(webhook.SubscriptionId))
@@ -801,7 +783,7 @@ public class PaymentService : IPaymentService
 
         if (metadata.ChapterSubscriptionId != null)
         {
-            return await ProcessWebhookChapterSubscription(platform, webhook, metadata);
+            return await ProcessWebhookChapterSubscription(webhook, metadata);
         }
 
         if (metadata.SiteSubscriptionPriceId != null)
@@ -833,7 +815,7 @@ public class PaymentService : IPaymentService
             return PaymentWebhookProcessingResult.Failure();
         }
 
-        var platform = metadata.Platform ?? PlatformType.DrunkenKnitwits;
+        var platform = metadata.PlatformOrDrunkenKnitwits;
 
         var (chapter, chapterSubscription) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(platform, metadata.ChapterId.Value),

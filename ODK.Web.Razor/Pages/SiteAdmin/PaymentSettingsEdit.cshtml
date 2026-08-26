@@ -1,6 +1,5 @@
 ﻿@page "/siteadmin/payments/{id:guid}"
 @using ODK.Services.Settings
-@using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.SiteAdmin
 @model PaymentSettingsEditModel
@@ -26,12 +25,16 @@
         @Html.AntiForgeryToken()
         @await Html.PartialAsync("SiteAdmin/_SitePaymentSettingsForm", new SitePaymentSettingsFormViewModel
         {         
+            Active = settings.Active,
             Commission = 100 * settings.Commission,
             Enabled = settings.Enabled,
+            ExternalId = settings.ExternalId,
+            ExternalUrl = settings.ExternalUrl,
             Name = settings.Name,
             Provider = settings.Provider,
             PublicKey = settings.ApiPublicKey,
-            SecretKey = settings.ApiSecretKey            
+            SecretKey = settings.ApiSecretKey,
+            SitePaymentSettingId = settings.Id
         })
         <button class="btn btn-primary">Update</button>
     </form>

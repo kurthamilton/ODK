@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using NUnit.Framework;
 using ODK.E2E.Data;
 using ODK.E2E.Tests.Config;
@@ -33,8 +33,8 @@ public class ChapterSubscriptionTests : DefaultPageTest
     {
         // Arrange - a chapter whose owner has the MemberSubscriptions site feature and a set-up payment
         // account (both seeded). The chapter is local: the test mutates it by adding a subscription.
-        var settingsId = await PaymentSettings.EnsureStripeSettings(
-            E2ESettings.StripeApiPublicKey, E2ESettings.StripeApiSecretKey);
+        var paymentSettings = await PaymentSettings.GetStripeSettings(
+            PlatformTypeId, E2ESettings.StripeAccountId(PlatformTypeId));
         var siteSubscription = await Provisioning.EnsurePurchasableSiteSubscription();
 
         var owner = await Provisioning.NewAccount("chapter-subscription-owner");
@@ -42,7 +42,7 @@ public class ChapterSubscriptionTests : DefaultPageTest
         var ownerId = await Members.GetMemberId(owner.Email);
 
         await MemberSubscriptions.EnsureActive(ownerId, siteSubscription.Id, siteSubscription.PriceId);
-        await ChapterPaymentAccounts.EnsureSetupComplete(group.ChapterId, ownerId, settingsId, "acct_e2e_fake");
+        await ChapterPaymentAccounts.EnsureSetupComplete(group.ChapterId, ownerId, paymentSettings.Id, "acct_e2e_fake");
 
         await new LoginPage(Page).LogIn(owner.Email, owner.Password);
 

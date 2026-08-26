@@ -16,8 +16,6 @@ namespace ODK.Services.Tests.Helpers;
 /// </summary>
 internal class MockServiceRequestFactory : IServiceRequestFactory
 {
-    private const string BaseUrl = "https://example.com";
-
     private readonly MockOdkContext _context;
 
     // Defaulted the way MockUnitOfWorkFactory does, so a test that passes no context still gets a factory
@@ -44,7 +42,7 @@ internal class MockServiceRequestFactory : IServiceRequestFactory
         CurrentMemberOrDefault = request.CurrentMemberId != null
             ? _context.Set<Member>().SingleOrDefault(x => x.Id == request.CurrentMemberId)
             : null,
-        HttpRequestContext = new JobHttpRequestContext { BaseUrl = BaseUrl },
+        HttpRequestContext = new JobHttpRequestContext { BaseUrl = request.BaseUrl },
         Platform = request.Platform
     };
 }

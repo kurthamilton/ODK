@@ -54,6 +54,12 @@ public class SiteSubscriptionQueryBuilder
         return query.DeferredAny();
     }
 
+    public ISiteSubscriptionQueryBuilder ForFallback(Guid siteSubscriptionId)
+    {
+        Query = Query.Where(x => x.FallbackSiteSubscriptionId == siteSubscriptionId);
+        return this;
+    }
+
     public ISiteSubscriptionQueryBuilder ForPlatform(PlatformType platform)
     {
         Query = Query.Where(x => x.Platform == platform);

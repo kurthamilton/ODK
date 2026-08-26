@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ODK.Core.Payments;
+using ODK.Core.Platforms;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
@@ -13,12 +14,17 @@ public class SitePaymentSettingsRepository : ReadWriteRepositoryBase<SitePayment
     {
     }
 
-    public IDeferredQuerySingle<SitePaymentSettings> GetActive()
+    public IDeferredQuerySingle<SitePaymentSettings> GetActive(PlatformType platform)
         => Set()
-            .Where(x => x.Active)
+            .Where(x => x.Active && x.Platform == platform)
             .DeferredSingle();
 
     public IDeferredQueryMultiple<SitePaymentSettings> GetAll()
         => Set()
            .DeferredMultiple();
+
+    public IDeferredQueryMultiple<SitePaymentSettings> GetAll(PlatformType platform)
+        => Set()
+            .Where(x => x.Platform == platform)
+            .DeferredMultiple();
 }

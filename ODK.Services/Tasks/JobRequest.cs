@@ -46,4 +46,18 @@ public sealed class JobRequest
         CurrentMemberId = request.CurrentMemberIdOrDefault,
         Platform = request.Platform
     };
+
+    /// <summary>
+    /// The same job on a different platform, for work whose platform is decided by what it is about rather
+    /// than by the request that triggered it. The base URL moves with the platform because the two together
+    /// are what say which site a job runs as - one platform's URL under another's name would build links
+    /// against the wrong site.
+    /// </summary>
+    public JobRequest ForPlatform(PlatformType platform, string baseUrl) => new()
+    {
+        BaseUrl = baseUrl,
+        ChapterId = ChapterId,
+        CurrentMemberId = CurrentMemberId,
+        Platform = platform
+    };
 }

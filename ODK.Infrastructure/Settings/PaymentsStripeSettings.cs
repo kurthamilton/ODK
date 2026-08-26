@@ -1,9 +1,9 @@
-﻿namespace ODK.Infrastructure.Settings;
+﻿using ODK.Core.Platforms;
+
+namespace ODK.Infrastructure.Settings;
 
 public class PaymentsStripeSettings
 {
-    public required string ConnectedAccountBaseUrl { get; init; }
-
     public required string ConnectedAccountBusinessName { get; init; }
 
     public required decimal ConnectedAccountCommissionPercentage { get; init; }
@@ -12,7 +12,5 @@ public class PaymentsStripeSettings
 
     public required string ConnectedAccountProductDescription { get; init; }
 
-    public required string WebhookSecretV1 { get; init; }
-
-    public required string WebhookSecretV2 { get; init; }
+    public required Dictionary<PlatformType, PaymentsStripePlatformSettings> Platforms { get; init; }
 }

@@ -1,4 +1,4 @@
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using ODK.E2E.Data;
 using ODK.E2E.Tests.Config;
 using ODK.E2E.Tests.Helpers;
@@ -37,9 +37,5 @@ public class E2ETestRunFixture
         var deleted = await new TestDataCleaner(E2ESettings.ConnectionString)
             .DeleteTestData();
         TestContext.Progress.WriteLine($"E2E cleanup: removed {deleted} test row(s) (members, groups, sent emails).");
-
-        // Leave the seeded Stripe payment settings in place but deactivated (Active = 0) so they don't
-        // affect normal app behaviour between runs.
-        await new SitePaymentSettingsDataHelper(E2ESettings.ConnectionString).Deactivate();
     }
 }
