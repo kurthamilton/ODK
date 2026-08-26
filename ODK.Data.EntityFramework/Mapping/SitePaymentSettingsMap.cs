@@ -16,7 +16,18 @@ public class SitePaymentSettingsMap : IEntityTypeConfiguration<SitePaymentSettin
         builder.Property(x => x.Commission)
             .HasPrecision(19, 4);
 
+        builder.Property(x => x.ExternalId)
+            .HasMaxLength(255);
+
+        builder.Property(x => x.ExternalUrl)
+            .HasMaxLength(1024);
+
+        builder.Property(x => x.Platform)
+            .HasColumnName("PlatformTypeId")
+            .HasConversion<int>();
+
         builder.Property(x => x.Provider)
-            .HasConversion<EnumStringConverter<PaymentProviderType>>();
+            .HasConversion<EnumStringConverter<PaymentProviderType>>()
+            .HasMaxLength(255);
     }
 }

@@ -23,6 +23,8 @@
     <File Path="docs/workflows/README.md" />
   </Folder>
   <Folder Name="/Solution Items/E2E/">
+    <File Path="E2E/script.run.app.e2e.bat" />
+    <File Path="E2E/script.run.ngrok.e2e.bat" />
     <File Path="E2E/script.run.tests.bat" />
   </Folder>
   <Folder Name="/Solution Items/Github/" />

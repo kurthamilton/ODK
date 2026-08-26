@@ -17,6 +17,9 @@ public interface ISiteSubscriptionQueryBuilder : IDatabaseEntityQueryBuilder<Sit
 
     IQueryBuilder<SiteSubscriptionFeature> Features();
 
+    /// <summary>Subscriptions that fall back to the named one when they lapse.</summary>
+    ISiteSubscriptionQueryBuilder ForFallback(Guid siteSubscriptionId);
+
     IDeferredQuery<bool> HasFeature(SiteFeatureType feature);
 
     ISiteSubscriptionQueryBuilder ForPlatform(PlatformType platform);

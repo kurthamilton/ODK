@@ -16,7 +16,7 @@ public class UrlProviderFactory : IUrlProviderFactory
 
     public async Task<IUrlProvider> Create(IServiceRequest request)
     {
-        var odkRoutes = await _odkRoutesFactory.Create(request);
+        var odkRoutes = await _odkRoutesFactory.Create(request.Platform);
 
         return new UrlProvider(request, odkRoutes);
     }

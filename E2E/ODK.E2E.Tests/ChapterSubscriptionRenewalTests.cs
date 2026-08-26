@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using NUnit.Framework;
 using ODK.E2E.Data;
 using ODK.E2E.Tests.Config;
@@ -38,15 +38,15 @@ public class ChapterSubscriptionRenewalTests : DefaultPageTest
     {
         // Arrange - renewals arrive as real Stripe webhooks over the tunnel.
         await StripeWebhookTunnel.EnsureReachable(E2ESettings.StripeWebhookBaseUrl);
-        var settingsId = await PaymentSettings.EnsureStripeSettings(
-            E2ESettings.StripeApiPublicKey, E2ESettings.StripeApiSecretKey);
+        var paymentSettings = await PaymentSettings.GetStripeSettings(
+            PlatformTypeId, E2ESettings.StripeAccountId(PlatformTypeId));
         var siteSubscription = await Provisioning.EnsurePurchasableSiteSubscription();
 
         var owner = await Provisioning.NewAccount("chapter-renewal-owner");
         var group = await Provisioning.CreatePublishedGroup(owner, $"e2echaprenew{Guid.NewGuid():N}");
         var ownerId = await Members.GetMemberId(owner.Email);
         await MemberSubscriptions.EnsureActive(ownerId, siteSubscription.Id, siteSubscription.PriceId);
-        await ChapterPaymentAccounts.EnsureSetupComplete(group.ChapterId, ownerId, settingsId, "acct_e2e_fake");
+        await ChapterPaymentAccounts.EnsureSetupComplete(group.ChapterId, ownerId, paymentSettings.Id, "acct_e2e_fake");
 
         // The owner creates a recurring chapter subscription; its Stripe recurring price (on the platform
         // account) is what the SDK subscribes the test-clock customer to.
@@ -71,7 +71,8 @@ public class ChapterSubscriptionRenewalTests : DefaultPageTest
             ["Platform"] = "Default"
         };
 
-        await using var clock = await StripeTestClock.CreateSubscription(priceExternalId, metadata);
+        await using var clock = await StripeTestClock.CreateSubscription(
+            paymentSettings.ApiSecretKey, priceExternalId, metadata);
 
         // Assert - the first invoice's webhook records the expiry as the date Stripe will next charge, read
         // from the provider rather than calculated, so the two cannot disagree.

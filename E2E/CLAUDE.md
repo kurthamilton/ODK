@@ -40,6 +40,15 @@ agree**: `SiteSubscriptionCooldownTests` arranges expiries either side of the wi
 the setting says the app runs with no cooldown), while `MemberSiteSubscriptionDataHelper.Expire` defaults to
 years ago, so every other test lapses a subscription clear of any window.
 
+**The Stripe payment tests run against payment settings the database already holds, not ones they seed.**
+A `SitePaymentSettings` row carries live Stripe API keys, and the connected account a purchase pays into
+exists only inside the Stripe account those keys belong to - so seeding half of that pairing from test config
+guarantees the two can drift, and a mismatch surfaces from Stripe as `No such on_behalf_of`. Instead each
+platform's `Stripe:Platforms:<platform>:AccountId` names a Stripe account, `SitePaymentSettingsDataHelper`
+finds the enabled row whose `ExternalId` is it, and everything - the app's keys, the connected account, and
+the key a test clock talks to Stripe with - comes from that one row. Curating the row is a manual database
+step; the tests fail naming the missing row rather than inventing one.
+
 **One-time prerequisite:** install the Playwright browsers after the first build:
 
 ```
@@ -282,7 +291,11 @@ means a new category and the E2E suite tracks the app's workflows rather than a 
 - **Naming:** `Method_Scenario_ExpectedResult`; Arrange/Act/Assert with comments; FluentAssertions
   (`x.Should()...`); one top-level type per file; `required` init props for models.
 - **Config:** `ODK.E2E.Tests/appsettings.json` holds `DefaultBaseUrl`, `DrunkenKnitwitsBaseUrl`,
-  `ConnectionString`; override per-machine via git-ignored `appsettings.local.json` or `ODK_E2E_*` env vars.
+  `ConnectionString`, `SiteSubscriptionCooldownMonths` and a `Stripe` section; override per-machine via
+  git-ignored `appsettings.local.json` or `ODK_E2E_*` env vars. The `Stripe` section holds no API keys - per
+  platform it names the Stripe account (`AccountId`) whose `SitePaymentSettings` row the tests use and the
+  connected account created under it, plus the shared ngrok `WebhookBaseUrl`. See the payment-settings note
+  under *Running the app for E2E*.
 
 ## Test isolation: shared vs local provisioning
 

@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using ODK.E2E.Data;
 using ODK.E2E.Tests.Config;
 
 namespace ODK.E2E.Tests;
@@ -13,4 +14,10 @@ namespace ODK.E2E.Tests;
 public abstract class DrunkenKnitwitsPageTest : OdkPageTest
 {
     protected override string PlatformBaseUrl => E2ESettings.DrunkenKnitwitsBaseUrl;
+
+    /// <summary>
+    /// This platform as the database stores it, for arranging rows on the platform whose pages the
+    /// fixture drives.
+    /// </summary>
+    protected int PlatformTypeId => PlatformTypeIds.DrunkenKnitwits;
 }

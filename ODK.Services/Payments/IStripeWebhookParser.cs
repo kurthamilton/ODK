@@ -1,8 +1,9 @@
-﻿using ODK.Services.Payments.Models;
+﻿using ODK.Core.Platforms;
+using ODK.Services.Payments.Models;
 
 namespace ODK.Services.Payments;
 
 public interface IStripeWebhookParser
 {
-    Task<PaymentProviderWebhook?> ParseWebhook(string json, string? signature, int version);
+    Task<PaymentProviderWebhook?> ParseWebhook(PlatformType platform, string json, string? signature, int version);
 }

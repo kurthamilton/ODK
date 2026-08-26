@@ -106,10 +106,13 @@ public class SiteSubscriptionService : ISiteSubscriptionService
 
         var externalSubscription = await GetExternalSubscription(sitePaymentSettings, memberSubscriptionDto);
 
+        var subscriptions = subscriptionDtos
+            .Select(x => x.SiteSubscription)
+            .ToArray();
+
         var siteSubscriptionViewModels = subscriptionDtos
             .Select(x => new
             {
-                x.Features,
                 /* Every price the subscription has, which is what decides whether it is active - a paid plan
                    priced only in another currency is still active, it just has nothing to show this member.
                    The view model carries only the prices in the member's currency. */
@@ -119,16 +122,14 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             .Where(x => x.SiteSubscription.IsActive(
                 x.Prices,
                 sitePaymentSettingsDictionary[x.SiteSubscription.SitePaymentSettingId]))
-            .Select(x => new SiteSubscriptionViewModel
+            .Select(x => new SiteSubscriptionListItemViewModel
             {
-                Currencies = [],
-                CurrentMemberExternalSubscription = externalSubscription,
-                CurrentMemberSiteSubscription = memberSubscriptionDto?.MemberSiteSubscription,
-                Features = x.Features,
+                IsCurrentMemberActiveSubscription =
+                    memberSubscriptionDto?.MemberSiteSubscription.SiteSubscriptionId == x.SiteSubscription.Id &&
+                    externalSubscription?.Status == ExternalSubscriptionStatus.Active,
                 Prices = x.Prices
                     .Where(price => currency == null || price.CurrencyId == currency.Id)
                     .ToArray(),
-                SitePaymentSettings = sitePaymentSettings,
                 Subscription = x.SiteSubscription
             })
             .ToArray();
@@ -140,8 +141,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             CurrentMember = currentMember,
             CurrentMemberSubscription = memberSubscriptionDto,
             CurrentMemberExternalSubscription = externalSubscription,
-            SitePaymentSettings = subscriptionDtos
-                .Select(x => x.SiteSubscription)
+            SitePaymentSettings = subscriptions
                 .Select(x => sitePaymentSettingsDictionary[x.SitePaymentSettingId])
                 .GroupBy(x => x.Id)
                 .Select(x => x.First())

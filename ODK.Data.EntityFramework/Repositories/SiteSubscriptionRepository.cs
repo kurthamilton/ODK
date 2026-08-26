@@ -60,6 +60,9 @@ public class SiteSubscriptionRepository
                 Features = Set<SiteSubscriptionFeature>()
                     .Where(x => x.SiteSubscriptionId == siteSubscription.Id)
                     .ToArray(),
+                MemberSiteSubscriptionCount = Set<MemberSiteSubscriptionRecord>()
+                    .Where(x => x.SiteSubscriptionId == siteSubscription.Id)
+                    .Count(),
                 SiteSubscription = siteSubscription
             };
 

@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using ODK.Core.Payments;
+using ODK.Core.Platforms;
 using ODK.Services.Exceptions;
 using ODK.Services.Logging;
 using ODK.Services.Payments;
@@ -22,18 +23,18 @@ public class StripeWebhookParser : IStripeWebhookParser
         _settings = settings;
     }
 
-    public async Task<PaymentProviderWebhook?> ParseWebhook(string json, string? signature, int version)
+    public async Task<PaymentProviderWebhook?> ParseWebhook(PlatformType platform, string json, string? signature, int version)
     {
-        var secret = version == 2
-            ? _settings.WebhookSecretV2
-            : _settings.WebhookSecretV1;
+        var webhookSecrets = version == 2
+            ? _settings.WebhookSecretsV2
+            : _settings.WebhookSecretsV1;
 
-        if (string.IsNullOrWhiteSpace(secret))
+        if (!webhookSecrets.TryGetValue(platform, out var secret) || string.IsNullOrWhiteSpace(secret))
         {
             // Configuration error: throw (rather than returning null, which the controller turns into a 200)
             // so the endpoint returns a 5xx and Stripe re-delivers the event once the secret is configured,
             // instead of silently and permanently dropping a genuine event.
-            throw new OdkServiceException($"Stripe webhook secret v{version} not set");
+            throw new OdkServiceException($"Stripe webhook secret v{version} not set for platform {platform}");
         }
 
         try

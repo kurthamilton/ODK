@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using NUnit.Framework;
 using ODK.E2E.Data;
 using ODK.E2E.Tests.Config;
@@ -38,15 +38,17 @@ public class ChapterSubscriptionPurchaseTests : DefaultPageTest
     {
         // Arrange - a purchase needs the webhook tunnel up and a real onboarded connected account.
         await StripeWebhookTunnel.EnsureReachable(E2ESettings.StripeWebhookBaseUrl);
-        if (string.IsNullOrWhiteSpace(E2ESettings.StripeConnectedAccountId))
+        if (string.IsNullOrWhiteSpace(E2ESettings.StripeConnectedAccountId(PlatformTypeId)))
         {
             Assert.Fail(
-                "Set 'Stripe:ConnectedAccountId' to a pre-onboarded Stripe sandbox connected account (acct_...). " +
-                "A chapter-subscription purchase transfers funds to it, and Stripe rejects an un-onboarded destination.");
+                $"Set 'Stripe:Platforms:{PlatformTypeIds.Name(PlatformTypeId)}:ConnectedAccountId' to a " +
+                "pre-onboarded Stripe sandbox connected account (acct_...), created under that platform's " +
+                "own Stripe account. A chapter-subscription purchase transfers funds to it, and Stripe " +
+                "rejects an un-onboarded destination.");
         }
 
-        var settingsId = await PaymentSettings.EnsureStripeSettings(
-            E2ESettings.StripeApiPublicKey, E2ESettings.StripeApiSecretKey);
+        var paymentSettings = await PaymentSettings.GetStripeSettings(
+            PlatformTypeId, E2ESettings.StripeAccountId(PlatformTypeId));
         var siteSubscription = await Provisioning.EnsurePurchasableSiteSubscription();
 
         var owner = await Provisioning.NewAccount("chapter-subscription-owner");
@@ -54,7 +56,7 @@ public class ChapterSubscriptionPurchaseTests : DefaultPageTest
         var ownerId = await Members.GetMemberId(owner.Email);
         await MemberSubscriptions.EnsureActive(ownerId, siteSubscription.Id, siteSubscription.PriceId);
         await ChapterPaymentAccounts.EnsureSetupComplete(
-            group.ChapterId, ownerId, settingsId, E2ESettings.StripeConnectedAccountId);
+            group.ChapterId, ownerId, paymentSettings.Id, E2ESettings.StripeConnectedAccountId(PlatformTypeId));
 
         // The owner creates a non-recurring chapter subscription (real Stripe product/price), on a throwaway
         // browser so this test's own browser is free for the buyer.

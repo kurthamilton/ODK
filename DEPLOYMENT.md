@@ -40,21 +40,28 @@ Windows binaries.
 
 ## 2. Where each value lives
 
-At deploy time the pipeline builds `appsettings.Production.json` from three sources, which layer over the
+At deploy time the pipeline builds `appsettings.Production.json` from two sources, which layer over the
 committed base `appsettings.json`:
 
 | Kind of value | Home | Example |
 |---|---|---|
-| Non-sensitive config, same for every site | committed `ODK.Web.Razor/config.production.json` (public) | `Platforms` (your live domains) |
+| Public, and identical in every environment | committed `ODK.Web.Razor/appsettings.json` | `Platforms:*:Name` |
+| Anything environment-specific, sensitive or not | Doppler (leaf secret) | `Platforms:Default:Urls`, `ConnectionStrings:Default`, `Payments:Stripe:Platforms:Default:WebhookSecretV1` |
 | Non-sensitive config that differs per site | GitHub **environment Variable** (`vars.*`, viewable, scoped per environment) | `Logging:Path` |
-| Credentials | Doppler (leaf secret) | `ConnectionStrings:Default`, `Payments:Stripe:WebhookSecretV1` |
-| Sensitive **string list** you don't want public | Doppler (secret whose value is a **newline-delimited list**) | `RateLimiting:BlockPatterns` |
-| Sensitive **structured** config (array of objects) | Doppler (secret whose **value is JSON**) | `Logging:IgnoreExceptions` |
-| Sensitive **dictionary** (keys are data, not a config path) | Doppler (**one** secret for the whole dictionary, **value is a JSON object**) | `Instagram:Client:Cookies` |
+| **String list** | Doppler (secret whose value is a **newline-delimited list**) | `RateLimiting:BlockPatterns` |
+| **Structured** config, and any **array** | Doppler (secret whose **value is JSON**) | `Platforms:Default:Urls`, `Logging:IgnoreExceptions` |
+| **Dictionary** (keys are data, not a config path) | Doppler (**one** secret for the whole dictionary, **value is a JSON object**) | `Instagram:Client:Cookies` |
 
-**Decision rule for any value:** would I mind it being on public GitHub? **Yes → Doppler.** No → is it the
-same on every site? **Same everywhere → `config.production.json`; differs per site → a GitHub environment
-Variable** (`vars.*`).
+**Decision rule for any value:** does it differ per site? **Yes → a GitHub environment Variable** (`vars.*`),
+and only if it is non-sensitive. **No →** is it public and the same in *every* environment, production and local
+alike? **Yes → the committed `appsettings.json`; otherwise → Doppler**, which is the single source of everything
+the deploy injects, so there is one place to look and one place to change.
+
+> **`Platforms` is split between the two on purpose.** A platform's `Name` is the same everywhere, so it is
+> committed. Its `Urls` are not — production has the live domains, local has `localhost` ports — so the
+> committed file declares `"Urls": []` and each environment states its own: Doppler for production, the
+> git-ignored `appsettings.<env>.json` for everything else. Leaving base empty also matters mechanically: see
+> the array-merge note below.
 
 > **Variables vs secrets.** GitHub *secrets* are write-only (see §3). GitHub *Variables* are plaintext and
 > **viewable/editable in the UI**, so they're the right home for non-sensitive per-site config — you can read
@@ -66,16 +73,18 @@ Key points:
   can't affect a running or restarting site.
 - **The app is unchanged** — it still reads `appsettings.json` + `appsettings.Production.json`. The latter is
   gitignored and only ever built inside the deploy runner (never committed, never hand-placed on the server).
-- **A key must have exactly one home** across `config.production.json`, Doppler, and the GitHub Variables — if
-  the same key comes from two of them the merged file contains a duplicate key and .NET's JSON provider throws
-  on load.
+- **A key must have exactly one home** across Doppler and the GitHub Variables — if the same key comes from
+  both the merged file contains a duplicate key and .NET's JSON provider throws on load.
 
 ### How the merge works (reference)
 
 - Doppler stores flat keys. Its JSON import delimits config levels with a single underscore, so
-  `Payments:Stripe:WebhookSecretV1` becomes `PAYMENTS_STRIPE_WEBHOOKSECRETV1`. The pipeline converts `_` → `:`.
-  Case doesn't matter for a *settings* key — .NET matches config keys case-insensitively, so
-  `PAYMENTS:STRIPE:WEBHOOKSECRETV1` overrides the nested key from the base `appsettings.json`.
+  `Payments:Stripe:Platforms:Default:WebhookSecretV1` becomes
+  `PAYMENTS_STRIPE_PLATFORMS_DEFAULT_WEBHOOKSECRETV1`. The pipeline converts `_` → `:`. Case doesn't matter
+  for a *settings* key — .NET matches config keys case-insensitively, so
+  `PAYMENTS:STRIPE:PLATFORMS:DEFAULT:WEBHOOKSECRETV1` overrides the nested key from the base
+  `appsettings.json`. The platform name is a config *level* here, not data, which is why it survives the
+  upper-casing intact - see the dictionary rule below for the case that does not.
 - **A Doppler key name cannot carry a literal underscore, hyphen, or lower-case letter into a config segment.**
   The `_` → `:` conversion is unconditional, so an underscore *within* a name splits it into another level, and
   Doppler names are upper-snake-case, so nothing lower-case survives. That's invisible for ordinary settings
@@ -100,7 +109,15 @@ Key points:
     `{"ds_user_id":"…","sessionid":"…"}` binds to the exact names. Same for `Instagram:Client:Headers`, whose
     names contain hyphens that a Doppler key can't hold at all.
   - Either way the config binds to a real array, not a single string. To make a *new* key a newline list, add it
-    to `$stringListKeys` in `deploy.yml`'s build step.
+    to `$stringListKeys` in `deploy.yml`'s build step. The two forms are mutually exclusive: `$stringListKeys` is
+    applied first, so a key in that list can never carry JSON, and a key not in it must be JSON to become an
+    array. A plain string where an array is expected binds the property to **null** rather than to an empty
+    array, and the failure lands wherever the collection is first enumerated.
+- **An array in the base `appsettings.json` is merged into, not replaced.** Every provider is flattened to
+  indexed keys (`Platforms:Default:Urls:0`), so a later source only overrides the indices it states and longer
+  base arrays keep their tail. That is why the committed `Platforms` declares `"Urls": []` — an environment
+  stating one URL against a base of two would otherwise inherit the second. The rule for any array config might
+  override: **leave it empty in the base file**, so the environment's value is the whole value.
 - Finally, any per-environment GitHub Variable the step reads (currently `LOGGING_PATH` → `Logging:Path`) is
   injected — but only when set, so it stays optional. It's added by its full config key (e.g. `Logging:Path`),
   which overrides the nested key from the base `appsettings.json` the same way the Doppler keys do.
@@ -111,9 +128,7 @@ Do this once (it already exists today; documented here for completeness / disast
 
 1. **Workflow files** — `.github/workflows/build.yml` and `deploy.yml` are committed on `master`. They only
    become active (triggers fire, the `Run workflow` button appears) once they're on the default branch.
-2. **Public prod config** — `ODK.Web.Razor/config.production.json` holds the non-sensitive prod config. It is
-   *not* named `appsettings.*.json`, so it isn't caught by `.gitignore` and commits normally.
-3. **Shared repo secrets** (Settings → Secrets and variables → Actions → *Repository secrets*):
+2. **Shared repo secrets** (Settings → Secrets and variables → Actions → *Repository secrets*):
    - `HOSTING_USER` — the hosting provider's Web Deploy username (shared across sites on one hosting account).
    - `HOSTING_PASSWORD` — its password.
    - `DOPPLER_TOKEN` — a **read-only** Doppler service token scoped to the prod config.
@@ -121,7 +136,7 @@ Do this once (it already exists today; documented here for completeness / disast
    > GitHub secrets are write-only — you can never read a value back in the UI, only overwrite it. That's
    > expected. The real secret values live in Doppler where they're viewable/auditable; `DOPPLER_TOKEN` is the
    > only value you can't see, and you can regenerate it from Doppler at any time.
-4. **Doppler** — create a project (e.g. `odk`), use its `prd` config, and add the secrets (see §5). Generate a
+3. **Doppler** — create a project (e.g. `odk`), use its `prd` config, and add the secrets (see §5). Generate a
    read-only service token for `prd` and store it as `DOPPLER_TOKEN` above. The `prd` config must include
    `CONNECTIONSTRINGS_DEFAULT` (the migrate job reads it to apply migrations).
 5. **Environments** (Settings → *Environments*): `prod-odk` and `prod-gs` (one per site, holding that site's
@@ -158,35 +173,36 @@ deploy matrix so the pipeline ships to it: in `deploy.yml`, add `prod-<platform>
   If this site uses different credentials, also add `HOSTING_USER` / `HOSTING_PASSWORD` here — an environment
   secret overrides the shared repo secret of the same name. Otherwise leave them at repo level.
 
-**Step 5 — Map the domain to the platform.** Add an entry to `Platforms` in
-`ODK.Web.Razor/config.production.json` so the running app routes the new domain to the right platform:
+**Step 5 — Map the domain to the platform.** The platform's live domains live in Doppler, in a secret named
+for its config path — `PLATFORMS_DEFAULT_URLS` for `Platforms:Default:Urls`. Its value must be a **JSON array**:
 
 ```json
-{
-  "Platforms": [
-    { "BaseUrl": "https://<group-squirrel-domain>",  "Type": "Default" },
-    { "BaseUrl": "https://<drunken-knitwits-domain>", "Type": "DrunkenKnitwits" }
-  ]
-}
+[ "https://<group-squirrel-domain>", "https://www.<group-squirrel-domain>" ]
 ```
 
-`Type` is the `PlatformType` name (`Default` or `DrunkenKnitwits`); `BaseUrl` is the site's public domain.
-Commit this change to `master` (it triggers a build).
+A platform may list several URLs (an apex domain and its `www.`); every one of them resolves to the platform, and
+the **first** is the one the app builds links against, so put the canonical domain first. Its `Name` comes from
+the committed `appsettings.json`, which is the only part of `Platforms` that lives there. The change ships with
+the next deploy — no commit needed.
+
+> **It has to be JSON, not a newline-delimited list.** A newline list would bind `Urls` to **null** rather than
+> to an array, and `PlatformProvider.GetPlatform` enumerates it on every request — so the whole site would 500.
+> The newline form is only for the keys named in `$stringListKeys` in `deploy.yml`, and it is deliberately not
+> available here: that handling runs before the JSON detection, so a key in that list can never carry JSON.
 
 **Step 6 — (Optional) platform-specific config/secrets.** If the new platform needs *different* values from
 the others:
 
 - **Non-sensitive** (e.g. a distinct `Logging:Path`): add it as an **environment Variable** in `prod-<platform>`
   (Settings → Environments → the environment → *Variables*). The pipeline reads `vars.LOGGING_PATH` and injects
-  it as `Logging:Path` only when set. Ensure the same key isn't also in `config.production.json` or Doppler
-  (one home per key). To wire up a *new* per-site key beyond `LOGGING_PATH`, add it to the env block and the
+  it as `Logging:Path` only when set. Ensure the same key isn't also in Doppler (one home per key). To wire up a *new* per-site key beyond `LOGGING_PATH`, add it to the env block and the
   inject line in `deploy.yml`'s "Build appsettings.Production.json" step, mirroring `LOGGING_PATH`.
 - **Sensitive**: create a Doppler **branch config** (e.g. `prd_<platform>`) with the differing secrets, generate
   a service token for it, and add that token as a `DOPPLER_TOKEN` **environment** secret in `prod-<platform>`
   (it overrides the repo one).
 
 Nothing else in the workflows changes. If the platform shares config (the default today), skip this — it uses
-the shared `config.production.json`, the shared `prd` Doppler config, and the repo `DOPPLER_TOKEN`.
+the shared `prd` Doppler config and the repo `DOPPLER_TOKEN`.
 
 **Step 7 — Ship it.** Merge to `master`. Build runs, and on success Deploy automatically migrates the shared DB
 once and deploys every site in the matrix — including the new one. (Or trigger Deploy manually via **Run
@@ -206,8 +222,9 @@ workflow**; see §6.)
   .*\.php$
   wp-login
   ```
-- For **structured** sensitive config (an array of objects, e.g. `Logging:IgnoreExceptions`), set the value to
-  **JSON** (`[…]`/`{…}`). JSON strings must be validly escaped — every backslash doubled.
+- For **structured** config and for any plain array (an array of objects like `Logging:IgnoreExceptions`, or a
+  list of strings like `Platforms:Default:Urls` → `PLATFORMS_DEFAULT_URLS`), set the value to **JSON**
+  (`[…]`/`{…}`). JSON strings must be validly escaped — every backslash doubled.
 - For a **dictionary** (`Instagram:Client:Cookies`, `Instagram:Client:Headers`), use **one secret for the whole
   dictionary**, with a JSON object as its value — never one secret per entry:
   ```
@@ -219,10 +236,6 @@ workflow**; see §6.)
   the config loads fine and the request just goes out with the wrong names.
 - Changes take effect on the **next deploy** (the app doesn't read Doppler live). Re-run Deploy to apply.
 
-### Adding / changing public config
-
-- Edit `ODK.Web.Razor/config.production.json` and commit to `master`. It ships with the next build/deploy.
-
 ### Adding / changing per-site non-sensitive config (GitHub Variables)
 
 - Settings → Environments → the environment (`prod-odk` / `prod-gs`) → *Variables*. Values are viewable and
@@ -233,10 +246,9 @@ workflow**; see §6.)
 
 ### The one rule
 
-A key must live in **exactly one** of `config.production.json`, Doppler, or a GitHub environment Variable —
-never two, or the merged `appsettings.Production.json` has a duplicate key and fails to load. The empty
-defaults in the committed `appsettings.json` are fine (different file/provider); the deploy-time sources
-override them.
+A key must live in **exactly one** of Doppler or a GitHub environment Variable — never both, or the merged
+`appsettings.Production.json` has a duplicate key and fails to load. The empty defaults in the committed
+`appsettings.json` are fine (different file/provider); the deploy-time sources override them.
 
 ## 6. Deploying (routine)
 
@@ -248,7 +260,7 @@ site in the matrix. Nothing to click.
 resolves the latest successful `master` Build and runs the identical migrate + deploy-both flow. There's no
 per-site picker — it always does both; adjust the `deploy` matrix in `deploy.yml` if you ever need to scope it.
 
-Under the hood, each site's deploy builds its own `appsettings.Production.json` (public config + Doppler, plus
+Under the hood, each site's deploy builds its own `appsettings.Production.json` (everything from Doppler, plus
 any env `LOGGING_PATH`) and Web Deploys with `-enableRule:DoNotDeleteRule` (won't delete server files missing
 from the publish — logs, uploads, `App_Data`) and `-enableRule:AppOffline` (drops `app_offline.htm` during the
 copy so IIS releases the DLL lock, then removes it). The two sites deploy in parallel (`fail-fast: false`), so
@@ -260,9 +272,9 @@ one failing doesn't abort the other.
   or run **Build** manually (`Run workflow`), then deploy.
 - **Deploy can't find the artifact / it expired.** Build artifacts are kept 7 days (`retention-days` in
   `build.yml`). If you haven't deployed in over a week, run **Build** first to produce a fresh one.
-- **`A duplicate key '…' was found`** on the site after deploy. A key is in *both* `config.production.json` and
-  Doppler. Remove it from one.
-- **A sensitive list deployed as a single string.** For a **newline list** (`BlockPatterns` etc.), the key must
+- **`A duplicate key '…' was found`** on the site after deploy. A key is in *both* Doppler and a GitHub
+  environment Variable. Remove it from one.
+- **A list deployed as a single string.** For a **newline list** (`BlockPatterns` etc.), the key must
   be in `$stringListKeys` in `deploy.yml` and each entry on its own line. For a **JSON** value it must start with
   `[`/`{` and be valid JSON (backslashes doubled) — an invalid escape (e.g. a lone `\.`) fails to parse and
   silently falls back to a string.

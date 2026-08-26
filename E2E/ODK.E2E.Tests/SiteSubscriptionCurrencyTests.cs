@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using NUnit.Framework;
 using ODK.E2E.Data;
 using ODK.E2E.Tests.Config;
@@ -23,7 +23,8 @@ public class SiteSubscriptionCurrencyTests : DefaultPageTest
     {
         // Arrange - a purchasable site subscription so the currency dropdown has an option, and a fresh
         // member who has no currency yet (a stubbed-geolocation signup has a location but no country).
-        await PaymentSettings.EnsureStripeSettings(E2ESettings.StripeApiPublicKey, E2ESettings.StripeApiSecretKey);
+        var paymentSettings = await PaymentSettings.GetStripeSettings(
+            PlatformTypeId, E2ESettings.StripeAccountId(PlatformTypeId));
         await Provisioning.EnsurePurchasableSiteSubscription();
         var member = await Provisioning.NewAccount("currency-member");
         await new LoginPage(Page).LogIn(member.Email, member.Password);

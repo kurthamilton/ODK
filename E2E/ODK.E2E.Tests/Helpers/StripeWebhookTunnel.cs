@@ -1,12 +1,13 @@
-using NUnit.Framework;
+﻿using NUnit.Framework;
 
 namespace ODK.E2E.Tests.Helpers;
 
 /// <summary>
 /// Preflight guard for Stripe tests that depend on a completion webhook. Stripe delivers subscription /
-/// payment webhooks to a single ngrok tunnel that forwards to the locally-running app (the app resolves
-/// the platform from the webhook payload, so one tunnel serves both platforms) - an out-of-band, manual
-/// dependency (the developer starts ngrok and points the Stripe sandbox webhook at it). Before a test
+/// payment webhooks to a single ngrok tunnel that forwards to the locally-running app - one tunnel serves
+/// both platforms, because each Stripe account's endpoint names its own platform in the URL's query string
+/// (<c>?v=..&amp;p=..</c>), which is what selects the signing secret. An out-of-band, manual dependency (the
+/// developer starts ngrok and points each Stripe sandbox webhook at it). Before a test
 /// waits on such a webhook, it calls <see cref="EnsureReachable"/> to confirm the tunnel is up and reaches
 /// the app; if not, the test fails immediately with an actionable message rather than hanging until timeout
 /// waiting for a webhook that can never arrive.

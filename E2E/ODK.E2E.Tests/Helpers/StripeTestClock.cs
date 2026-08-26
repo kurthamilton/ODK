@@ -1,4 +1,4 @@
-using ODK.E2E.Tests.Config;
+﻿using ODK.E2E.Tests.Config;
 using Stripe;
 
 namespace ODK.E2E.Tests.Helpers;
@@ -34,9 +34,12 @@ internal sealed class StripeTestClock : IAsyncDisposable
     /// invoice.payment_succeeded. Throws if the first invoice doesn't pay (no webhook would ever arrive).
     /// </summary>
     public static async Task<StripeTestClock> CreateSubscription(
-        string priceExternalId, IReadOnlyDictionary<string, string> metadata)
+        string apiSecretKey, string priceExternalId, IReadOnlyDictionary<string, string> metadata)
     {
-        var client = new StripeClient(E2ESettings.StripeApiSecretKey);
+        /* The key comes from the payment settings the app is transacting through rather than from test
+           config: a clock, its customer and its subscription only exist inside one Stripe account, and the
+           subscription has to be the one the app's webhook processing will be told about. */
+        var client = new StripeClient(apiSecretKey);
         var frozenStart = DateTime.UtcNow;
 
         var clock = await new Stripe.TestHelpers.TestClockService(client).CreateAsync(

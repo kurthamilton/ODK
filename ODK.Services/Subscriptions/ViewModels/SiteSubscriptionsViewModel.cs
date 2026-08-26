@@ -20,5 +20,5 @@ public class SiteSubscriptionsViewModel
 
     public required IReadOnlyCollection<SitePaymentSettings> SitePaymentSettings { get; init; }
 
-    public required IReadOnlyCollection<SiteSubscriptionViewModel> Subscriptions { get; init; }
+    public required IReadOnlyCollection<SiteSubscriptionListItemViewModel> Subscriptions { get; init; }
 }

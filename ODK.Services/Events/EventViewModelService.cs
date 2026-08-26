@@ -47,8 +47,7 @@ public class EventViewModelService : IEventViewModelService
             eventDto,
             memberSubscription,
             chapterPaymentSettings,
-            chapterPaymentAccount,
-            sitePaymentSettings,
+            chapterPaymentAccountDto,
             hasProfiles,
             hasQuestions,
             isAdmin,
@@ -65,8 +64,7 @@ public class EventViewModelService : IEventViewModelService
                 .ToChapterSubscription()
                 .GetSingleOrDefault(),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterPaymentAccountRepository.GetByChapterId(chapter.Id),
-            x => x.SitePaymentSettingsRepository.GetActive(),
+            x => x.ChapterPaymentAccountRepository.Query().ForChapter(chapter.Id).ToDto().GetSingleOrDefault(),
             x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
             x => x.ChapterAdminMemberRepository.IsAdmin(platform, chapter.Id, currentMember.Id),
@@ -83,8 +81,13 @@ public class EventViewModelService : IEventViewModelService
             throw new OdkServiceException("Event is not ticketed");
         }
 
+        if (chapterPaymentAccountDto == null)
+        {
+            throw new OdkServiceException("Chapter payment account not set up");
+        }
+
         var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
-            sitePaymentSettings, chapterPaymentAccount);
+            chapterPaymentAccountDto.SitePaymentSettings, chapterPaymentAccountDto.ChapterPaymentAccount);
 
         var externalProductId = chapterPaymentSettings?.ExternalProductId;
         if (string.IsNullOrEmpty(externalProductId))
@@ -210,7 +213,7 @@ public class EventViewModelService : IEventViewModelService
             HasQuestions = hasQuestions,
             IsAdmin = isAdmin,
             IsMember = currentMember.IsMemberOf(chapter.Id),
-            PaymentSettings = sitePaymentSettings,
+            PaymentSettings = chapterPaymentAccountDto.SitePaymentSettings,
             Platform = platform,
             Venue = canViewVenue ? venue : null,
         };

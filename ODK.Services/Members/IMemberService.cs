@@ -1,5 +1,6 @@
 ﻿using ODK.Core.Countries;
 using ODK.Core.Members;
+using ODK.Core.Platforms;
 using ODK.Services.Members.Models;
 using ODK.Services.Members.ViewModels;
 using ODK.Services.Topics.Models;
@@ -15,7 +16,8 @@ public interface IMemberService
     /// </summary>
     Task<ServiceResult> AcceptInvitation(IChapterServiceRequest request, InvitationAcceptModel model);
 
-    Task<ServiceResult> CancelChapterSubscription(Guid memberId, string externalId);
+    Task<ServiceResult> CancelChapterSubscription(
+        IMemberServiceRequest request, string externalId);
 
     Task<ServiceResult> ConfirmEmailAddressUpdate(Guid memberId, string confirmationToken);
 

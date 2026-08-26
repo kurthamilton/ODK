@@ -7,6 +7,7 @@ using ODK.Services.Features;
 using ODK.Services.Logging;
 using ODK.Services.Payments;
 using ODK.Services.Settings;
+using ODK.Services.Settings.Models;
 using ODK.Services.SocialMedia;
 using ODK.Services.Subscriptions;
 using ODK.Services.Subscriptions.Models;
@@ -119,15 +120,22 @@ public class SiteAdminController : OdkControllerBase
     }
 
     [HttpPost("siteadmin/payments")]
-    public async Task<IActionResult> CreatePaymentSettings([FromForm] SitePaymentSettingsFormViewModel viewModel)
+    public async Task<IActionResult> CreatePaymentSettings(
+        [FromForm] SitePaymentSettingsFormSubmitViewModel viewModel)
     {
-        var result = await _settingsService.CreatePaymentSettings(MemberServiceRequest,
-            viewModel.Provider ?? PaymentProviderType.None,
-            viewModel.Name ?? string.Empty,
-            viewModel.PublicKey ?? string.Empty,
-            viewModel.SecretKey ?? string.Empty,
-            viewModel.Commission / 100,
-            enabled: viewModel.Enabled);
+        var result = await _settingsService.CreatePaymentSettings(
+            MemberServiceRequest,
+            new SitePaymentSettingsCreateModel
+            {
+                ApiPublicKey = viewModel.PublicKey ?? string.Empty,
+                ApiSecretKey = viewModel.SecretKey ?? string.Empty,
+                Commission = viewModel.Commission / 100,
+                Enabled = viewModel.Enabled,
+                ExternalId = viewModel.ExternalId,
+                ExternalUrl = viewModel.ExternalUrl,
+                Name = viewModel.Name ?? string.Empty,
+                Provider = viewModel.Provider ?? PaymentProviderType.None
+            });
 
         AddFeedback(result, "Payment settings created");
 
@@ -136,15 +144,21 @@ public class SiteAdminController : OdkControllerBase
 
     [HttpPost("siteadmin/payments/{id:guid}")]
     public async Task<IActionResult> UpdatePaymentSettings(Guid id,
-        [FromForm] SitePaymentSettingsFormViewModel viewModel)
+        [FromForm] SitePaymentSettingsFormSubmitViewModel viewModel)
     {
-        var result = await _settingsService.UpdatePaymentSettings(MemberServiceRequest,
+        var result = await _settingsService.UpdatePaymentSettings(
+            MemberServiceRequest,
             id,
-            viewModel.Name ?? string.Empty,
-            viewModel.PublicKey ?? string.Empty,
-            viewModel.SecretKey ?? string.Empty,
-            viewModel.Commission / 100,
-            enabled: viewModel.Enabled);
+            new SitePaymentSettingsUpdateModel
+            {
+                ApiPublicKey = viewModel.PublicKey ?? string.Empty,
+                ApiSecretKey = viewModel.SecretKey ?? string.Empty,
+                Commission = viewModel.Commission / 100,
+                Enabled = viewModel.Enabled,
+                ExternalId = viewModel.ExternalId,
+                ExternalUrl = viewModel.ExternalUrl,
+                Name = viewModel.Name ?? string.Empty
+            });
 
         AddFeedback(result, "Payment settings updated");
 
@@ -162,7 +176,7 @@ public class SiteAdminController : OdkControllerBase
     }
 
     [HttpPost("siteadmin/subscriptions")]
-    public async Task<IActionResult> CreateSubscription(SiteSubscriptionFormViewModel viewModel)
+    public async Task<IActionResult> CreateSubscription(SiteSubscriptionFormSubmitViewModel viewModel)
     {
         var result = await _siteSubscriptionAdminService.AddSiteSubscription(MemberServiceRequest, new SiteSubscriptionCreateModel
         {
@@ -183,7 +197,7 @@ public class SiteAdminController : OdkControllerBase
     }
 
     [HttpPost("siteadmin/subscriptions/{id:guid}")]
-    public async Task<IActionResult> UpdateSubscription(Guid id, SiteSubscriptionFormViewModel viewModel)
+    public async Task<IActionResult> UpdateSubscription(Guid id, SiteSubscriptionFormSubmitViewModel viewModel)
     {
         var result = await _siteSubscriptionAdminService.UpdateSiteSubscription(MemberServiceRequest, id, new SiteSubscriptionCreateModel
         {
@@ -213,6 +227,14 @@ public class SiteAdminController : OdkControllerBase
         var result = await _siteSubscriptionAdminService.MakeDefault(MemberServiceRequest, id);
         AddFeedback(result, "Default subscription updated");
         return RedirectToReferrer();
+    }
+
+    [HttpPost("siteadmin/subscriptions/{id:guid}/delete")]
+    public async Task<IActionResult> DeleteSubscription(Guid id)
+    {
+        var result = await _siteSubscriptionAdminService.DeleteSiteSubscription(MemberServiceRequest, id);
+        AddFeedback(result, "Subscription deleted");
+        return Redirect(OdkRoutes.SiteAdmin.Subscriptions.Path);
     }
 
     [HttpPost("siteadmin/subscriptions/{id:guid}/disable")]
@@ -257,8 +279,9 @@ public class SiteAdminController : OdkControllerBase
     [HttpPost("siteadmin/subscriptions/{siteSubscriptionId:guid}/Prices/{id:guid}/Delete")]
     public async Task<IActionResult> DeleteSiteSubscriptionPrice(Guid siteSubscriptionId, Guid id)
     {
-        await _siteSubscriptionAdminService.DeleteSiteSubscriptionPrice(MemberServiceRequest, siteSubscriptionId, id);
-        AddFeedback("Subscription price deleted", FeedbackType.Success);
+        var result = await _siteSubscriptionAdminService.DeleteSiteSubscriptionPrice(
+            MemberServiceRequest, siteSubscriptionId, id);
+        AddFeedback(result, "Subscription price deleted");
         return RedirectToReferrer();
     }
 

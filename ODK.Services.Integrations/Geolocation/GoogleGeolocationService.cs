@@ -213,9 +213,13 @@ public class GoogleGeolocationService : IGeolocationService
                 .Build();
 
             var response = await client.GetAsync(url);
-            response.EnsureSuccessStatusCode();
-
             var json = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode)
+            {
+                await _loggingService.Error($"Error retrieving region for lat/long {location} from Google Places API: {json}");
+                return null;
+            }
+
             var result = JsonUtils.Deserialize<GeocodeResponse>(json);
 
             var countryComponent = result?

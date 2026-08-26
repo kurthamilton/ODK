@@ -87,7 +87,7 @@ public class StripePaymentProvider : IPaymentProvider
                 BusinessProfile = new AccountBusinessProfileOptions
                 {
                     Name = GetConnectedAccountBusinessName(options.Chapter),
-                    Url = CleanConnectedAccountUrl(options.ChapterUrl),
+                    Url = CleanConnectedAccountUrl(options.Chapter.Platform, options.ChapterUrl),
                     Mcc = _settings.ConnectedAccountMcc,
                     ProductDescription = _settings.ConnectedAccountProductDescription
                 },
@@ -487,13 +487,14 @@ public class StripePaymentProvider : IPaymentProvider
     private long CalculateCommission(long stripeAmount)
         => (long)(stripeAmount * _settings.ConnectedAccountCommissionPercentage / 100);
 
-    private string? CleanConnectedAccountUrl(string url)
+    private string? CleanConnectedAccountUrl(PlatformType platform, string url)
     {
         // do not send localhost to Stripe
         var baseUrl = UrlUtils.BaseUrl(url);
-        if (!string.IsNullOrEmpty(_settings.ConnectedAccountBaseUrl))
+        _settings.ConnectedAccountBaseUrls.TryGetValue(platform, out var connectedAccountBaseUrl);
+        if (!string.IsNullOrEmpty(connectedAccountBaseUrl))
         {
-            return url.Replace(baseUrl, _settings.ConnectedAccountBaseUrl, StringComparison.OrdinalIgnoreCase);
+            return url.Replace(baseUrl, connectedAccountBaseUrl, StringComparison.OrdinalIgnoreCase);
         }
 
         return baseUrl.Contains("localhost", StringComparison.OrdinalIgnoreCase)

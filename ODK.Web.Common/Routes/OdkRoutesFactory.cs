@@ -1,28 +1,24 @@
 ﻿using System.Threading.Tasks;
-using ODK.Services;
-using ODK.Web.Common.Services;
+using ODK.Core.Platforms;
 
 namespace ODK.Web.Common.Routes;
 
 public class OdkRoutesFactory : IOdkRoutesFactory
 {
     private IOdkRoutes? _odkRoutes;
-    private readonly IRequestStoreFactory _requestStoreFactory;
 
-    public OdkRoutesFactory(IRequestStoreFactory requestStoreFactory)
+    public OdkRoutesFactory()
     {
-        _requestStoreFactory = requestStoreFactory;
     }
 
-    public async Task<IOdkRoutes> Create(IServiceRequest request)
+    public Task<IOdkRoutes> Create(PlatformType platform)
     {
         if (_odkRoutes != null)
         {
-            return _odkRoutes;
+            return Task.FromResult(_odkRoutes);
         }
 
-        var requestStore = await _requestStoreFactory.Create(request);
-        _odkRoutes = new OdkRoutes(requestStore);
-        return _odkRoutes;
+        _odkRoutes = new OdkRoutes(platform);
+        return Task.FromResult(_odkRoutes);
     }
 }

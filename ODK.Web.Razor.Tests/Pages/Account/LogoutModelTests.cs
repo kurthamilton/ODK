@@ -150,7 +150,7 @@ public static class LogoutModelTests
 
         return new LogoutModel(chapterService.Object, loginHandler.Object)
         {
-            OdkRoutes = new OdkRoutes(requestStore.Object),
+            OdkRoutes = new OdkRoutes(platform),
             RequestStore = requestStore.Object
         };
     }

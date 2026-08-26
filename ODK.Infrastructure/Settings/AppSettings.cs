@@ -1,4 +1,6 @@
-﻿namespace ODK.Infrastructure.Settings;
+﻿using ODK.Core.Platforms;
+
+namespace ODK.Infrastructure.Settings;
 
 public class AppSettings
 {
@@ -34,9 +36,7 @@ public class AppSettings
 
     public required PaymentsSettings Payments { get; init; }
 
-    public required PlatformNamesSettings PlatformNames { get; init; }
-
-    public required PlatformSettings[] Platforms { get; init; }
+    public required Dictionary<PlatformType, PlatformSettings> Platforms { get; init; }
 
     public required RateLimitingSettings RateLimiting { get; init; }
 

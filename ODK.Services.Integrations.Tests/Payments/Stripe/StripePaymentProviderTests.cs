@@ -190,7 +190,7 @@ public static class StripePaymentProviderTests
             connectedAccountId: null,
             new StripePaymentProviderSettings
             {
-                ConnectedAccountBaseUrl = string.Empty,
+                ConnectedAccountBaseUrls = new Dictionary<PlatformType, string>(),
                 ConnectedAccountBusinessName = connectedAccountBusinessName ?? "{platform.title} - {group.name}",
                 ConnectedAccountCommissionPercentage = 0,
                 ConnectedAccountMcc = string.Empty,

@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using NUnit.Framework;
 using ODK.E2E.Data;
 using ODK.E2E.Tests.Config;
@@ -31,7 +31,8 @@ public class SiteSubscriptionTests : DefaultPageTest
     public async Task CreateSubscription_WithMemberSubscriptionsFeatureAndPrice_Persists()
     {
         // Arrange - live Stripe payment settings (create calls the real Stripe API) and the site admin.
-        await PaymentSettings.EnsureStripeSettings(E2ESettings.StripeApiPublicKey, E2ESettings.StripeApiSecretKey);
+        var paymentSettings = await PaymentSettings.GetStripeSettings(
+            PlatformTypeId, E2ESettings.StripeAccountId(PlatformTypeId));
         var admin = await SharedAccounts.Get(SharedAccounts.SiteAdmin);
         var name = $"{SiteSubscriptionDataHelper.TestNamePrefix}{Guid.NewGuid():N}";
         await new LoginPage(Page).LogIn(admin.Email, admin.Password);
@@ -39,7 +40,7 @@ public class SiteSubscriptionTests : DefaultPageTest
         // Act - create the subscription with the "Paid subscriptions" feature, then add a monthly price.
         var page = new SiteAdminSubscriptionsPage(Page);
         await page.CreateSubscription(
-            SitePaymentSettingsDataHelper.Name, name, "E2E paid subscription", groupLimit: 1, memberLimit: 10,
+            paymentSettings.Name, name, "E2E paid subscription", groupLimit: 1, memberLimit: 10,
             featureIds: new[] { SiteFeatureMemberSubscriptions });
         await page.AddPrice("GBP", "Monthly", 5m);
 

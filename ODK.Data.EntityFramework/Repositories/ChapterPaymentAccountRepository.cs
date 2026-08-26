@@ -1,12 +1,15 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ODK.Core.Chapters;
+using ODK.Data.Core.Chapters;
 using ODK.Data.Core.Deferred;
+using ODK.Data.Core.QueryBuilders;
 using ODK.Data.Core.Repositories;
-using ODK.Data.EntityFramework.Extensions;
+using ODK.Data.EntityFramework.QueryBuilders;
 
 namespace ODK.Data.EntityFramework.Repositories;
 
-public class ChapterPaymentAccountRepository : ReadWriteRepositoryBase<ChapterPaymentAccount>, IChapterPaymentAccountRepository
+public class ChapterPaymentAccountRepository :
+    ReadWriteRepositoryBase<ChapterPaymentAccount, IChapterPaymentAccountQueryBuilder>, IChapterPaymentAccountRepository
 {
     public ChapterPaymentAccountRepository(DbContext context)
         : base(context)
@@ -14,7 +17,10 @@ public class ChapterPaymentAccountRepository : ReadWriteRepositoryBase<ChapterPa
     }
 
     public IDeferredQuerySingleOrDefault<ChapterPaymentAccount> GetByChapterId(Guid chapterId)
-        => Set()
-            .Where(x => x.ChapterId == chapterId)
-            .DeferredSingleOrDefault();
+        => Query()
+            .ForChapter(chapterId)
+            .GetSingleOrDefault();
+
+    public override IChapterPaymentAccountQueryBuilder Query()
+        => CreateQueryBuilder(context => new ChapterPaymentAccountQueryBuilder(context));
 }

@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using ODK.Core.Chapters;
 using ODK.Core.Features;
 using ODK.Core.Members;
@@ -71,8 +71,32 @@ public class MemberSiteSubscriptionRecordQueryBuilder :
         return this;
     }
 
+    public IMemberSiteSubscriptionRecordQueryBuilder ForSiteSubscription(Guid siteSubscriptionId)
+    {
+        Query = Query.Where(x => x.SiteSubscriptionId == siteSubscriptionId);
+        return this;
+    }
+
+    public IMemberSiteSubscriptionRecordQueryBuilder ForSiteSubscriptionPrice(Guid siteSubscriptionPriceId)
+    {
+        Query = Query.Where(x => x.SiteSubscriptionPriceId == siteSubscriptionPriceId);
+        return this;
+    }
+
     public IDeferredQuery<bool> HasFeature(SiteFeatureType feature)
         => SiteSubscription().HasFeature(feature);
+
+    public IQueryBuilder<SiteSubscriptionPrice> SiteSubscriptionPrices()
+    {
+        var query =
+            from record in Query
+            from price in Set<SiteSubscriptionPrice>()
+                .Where(x => x.Id == record.SiteSubscriptionPriceId)
+            select price;
+
+        // Distinct because the join is one row per record, and the caller wants the prices.
+        return ProjectTo(query.Distinct());
+    }
 
     public ISiteSubscriptionQueryBuilder SiteSubscription()
     {

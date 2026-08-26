@@ -1,5 +1,4 @@
-﻿@using ODK.Core.Payments
-@using ODK.Web.Razor.Models.SiteAdmin
+﻿@using ODK.Web.Razor.Models.SiteAdmin
 @using ODK.Web.Razor.Mvc
 @model SitePaymentSettingsFormViewModel
 
@@ -11,7 +10,12 @@
 
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.Provider, new { @class = "form-label" })
-    @Html.OdkEnumDropDownFor(x => x.Provider, new { @class = "form-select" })
+    @* Fixed once the settings exist: the provider decides how the keys are read, and everything already
+       transacted through the row was transacted under it. Nothing posts back, which is what the update
+       expects - unlike the enabled switch, whose value is still applied. *@
+    @Html.OdkEnumDropDownFor(x => x.Provider, Model.SitePaymentSettingId != null
+        ? new { @class = "form-select", disabled = "" }
+        : new { @class = "form-select" })
 </div>
 
 <div class="form-group mb-3 required">
@@ -26,6 +30,18 @@
     @Html.ValidationMessageFor(x => x.SecretKey)
 </div>
 
+<div class="form-group mb-3">
+    @Html.LabelFor(x => x.ExternalId, new { @class = "form-label" })
+    @Html.TextBoxFor(x => x.ExternalId, new { @class = "form-control" })
+    @Html.ValidationMessageFor(x => x.ExternalId)
+</div>
+
+<div class="form-group mb-3">
+    @Html.LabelFor(x => x.ExternalUrl, new { @class = "form-label" })
+    @Html.TextBoxFor(x => x.ExternalUrl, new { @class = "form-control" })
+    @Html.ValidationMessageFor(x => x.ExternalUrl)
+</div>
+
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.Commission, new { @class = "form-label" })
     @Html.TextBoxFor(x => x.Commission, new { @class = "form-control" })
@@ -33,6 +49,20 @@
 </div>
 
 <div class="form-check form-switch mb-3">
-    @Html.CheckBoxFor(x => x.Enabled, new { @class = "form-check-input", role = "switch" })
-    @Html.LabelFor(x => x.Enabled, new { @class = "form-check-label" })
+    @if (Model.Active)
+    {
+        @* The switch is rendered rather than bound, because the settings the platform is transacting
+           through cannot be switched off. The value still posts, so saving any other field leaves it
+           alone - a disabled checkbox posts nothing, which the binder would read as false. The label
+           names the switch rather than the hidden field, which is the control a reader can see. *@
+        <input class="form-check-input" type="checkbox" role="switch" disabled
+               id="enabled-display" checked="@(Model.Enabled ? "checked" : null)" />
+        @Html.HiddenFor(x => x.Enabled)
+        <label class="form-check-label" for="enabled-display">@Html.DisplayNameFor(x => x.Enabled)</label>
+    }
+    else
+    {
+        @Html.CheckBoxFor(x => x.Enabled, new { @class = "form-check-input", role = "switch" })
+        @Html.LabelFor(x => x.Enabled, new { @class = "form-check-label" })
+    }
 </div>

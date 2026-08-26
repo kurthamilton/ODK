@@ -1,53 +1,23 @@
+using ODK.E2E.Data.Models;
+
 namespace ODK.E2E.Data;
 
 /// <summary>
-/// Direct-to-DB setup of the live Stripe payment settings the tests need. Creating a site subscription
-/// (which a DrunkenKnitwits chapter account depends on) requires an active <c>SitePaymentSettings</c>
-/// row, and creating the subscription through the UI calls the real Stripe API - so the settings carry
-/// real Stripe keys and are "live", ready for payment-integration tests. Cleanup deactivates them.
+/// Reads the <c>SitePaymentSettings</c> row a platform transacts through. The row is not created here: it
+/// carries live Stripe API keys, and the connected account the payment tests pay into exists only under the
+/// Stripe account those keys belong to, so the two have to be curated together in the database rather than
+/// half of each seeded from test config. Config names the Stripe account
+/// (<c>Stripe:Platforms:&lt;platform&gt;:AccountId</c>) and the tests find the row whose <c>ExternalId</c>
+/// is it.
+///
+/// Settings are per platform: the app resolves them for the platform serving the request, so a row set up
+/// for one platform is invisible to the other.
 /// </summary>
 public class SitePaymentSettingsDataHelper : DataHelperBase
 {
-    public const string Name = "Stripe-E2E";
-
     public SitePaymentSettingsDataHelper(string connectionString)
         : base(connectionString)
     {
-    }
-
-    public async Task Deactivate()
-    {
-        const string sql = "UPDATE SitePaymentSettings SET Active = 0 WHERE Name = @name";
-
-        await using var builder = Builder(sql).AddParameter("@name", Name);
-        await builder.ExecuteNonQuery();
-    }
-
-    /// <summary>
-    /// Ensures a live, active "Stripe-E2E" payment settings row exists (inserting it if missing, and
-    /// refreshing the keys + activating it if present). Returns its id.
-    /// </summary>
-    public async Task<Guid> EnsureStripeSettings(string apiPublicKey, string apiSecretKey)
-    {
-        const string sql =
-            """
-            IF NOT EXISTS (SELECT 1 FROM SitePaymentSettings WHERE Name = @name)
-                INSERT INTO SitePaymentSettings (Id, Provider, ApiPublicKey, ApiSecretKey, Active, Name, Commission, Enabled)
-                VALUES (NEWID(), 'Stripe', @public, @secret, 1, @name, 0.05, 1);
-            ELSE
-                UPDATE SitePaymentSettings
-                SET Active = 1, Enabled = 1, Provider = 'Stripe', ApiPublicKey = @public, ApiSecretKey = @secret
-                WHERE Name = @name;
-
-            SELECT Id FROM SitePaymentSettings WHERE Name = @name;
-            """;
-
-        await using var builder = Builder(sql)
-            .AddParameter("@name", Name)
-            .AddParameter("@public", apiPublicKey)
-            .AddParameter("@secret", apiSecretKey);
-
-        return await builder.ExecuteScalar<Guid>();
     }
 
     /// <summary>Whether a DrunkenKnitwits site subscription already exists for the given payment settings.</summary>
@@ -62,5 +32,37 @@ public class SitePaymentSettingsDataHelper : DataHelperBase
 
         await using var builder = Builder(sql).AddParameter("@id", sitePaymentSettingId);
         return await builder.ExecuteScalar<int>() > 0;
+    }
+
+    /// <summary>
+    /// The platform's payment settings for the given Stripe account id, throwing when the database has no
+    /// such row. Throws rather than seeding one, because a row invented here would carry no usable keys -
+    /// see the note on this class.
+    /// </summary>
+    public async Task<TestSitePaymentSettings> GetStripeSettings(int platformTypeId, string stripeAccountId)
+    {
+        const string sql =
+            """
+            SELECT Id, Name, ApiSecretKey
+            FROM SitePaymentSettings
+            WHERE ExternalId = @accountId AND PlatformTypeId = @platform AND Enabled = 1
+            """;
+
+        await using var builder = Builder(sql)
+            .AddParameter("@accountId", stripeAccountId)
+            .AddParameter("@platform", platformTypeId);
+
+        var settings = await builder.ReadMany(x => new TestSitePaymentSettings(
+            x.GetGuid(0),
+            x.GetString(1),
+            x.GetString(2)));
+
+        return settings.Count == 1
+            ? settings.First()
+            : throw new InvalidOperationException(
+                $"Expected exactly one enabled SitePaymentSettings row for platform " +
+                $"{PlatformTypeIds.Name(platformTypeId)} with ExternalId '{stripeAccountId}', found " +
+                $"{settings.Count}. Check the row exists and that " +
+                $"'Stripe:Platforms:{PlatformTypeIds.Name(platformTypeId)}:AccountId' names its Stripe account.");
     }
 }

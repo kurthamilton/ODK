@@ -22,10 +22,7 @@ public class ChapterPaymentAccount : IDatabaseEntity, IChapterEntity
 
     public Guid SitePaymentSettingId { get; set; }
 
-    public bool SetupComplete()
-    {
-        return
-            OnboardingCompletedUtc != null &&
-            IdentityDocumentsProvidedUtc != null;
-    }
+    public bool SetupComplete() =>
+        OnboardingCompletedUtc != null &&
+        IdentityDocumentsProvidedUtc != null;
 }

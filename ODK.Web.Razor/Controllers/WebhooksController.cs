@@ -6,12 +6,10 @@ using ODK.Services.Emails;
 using ODK.Services.Exceptions;
 using ODK.Services.Logging;
 using ODK.Services.Payments;
-using ODK.Services.Payments.Models;
 using ODK.Services.Tasks;
 using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
 using ODK.Web.Common.Settings;
-using ServiceRequestImpl = ODK.Services.ServiceRequest;
 
 namespace ODK.Web.Razor.Controllers;
 
@@ -20,7 +18,6 @@ namespace ODK.Web.Razor.Controllers;
 public class WebhooksController : OdkControllerBase
 {
     private readonly WebhooksControllerSettings _settings;
-    private readonly IBackgroundTaskService _backgroundTaskService;
     private readonly IEmailService _emailService;
     private readonly ILoggingService _loggingService;
     private readonly IPaymentService _paymentService;
@@ -28,8 +25,6 @@ public class WebhooksController : OdkControllerBase
 
     public WebhooksController(
         ILoggingService loggingService,
-        IPaymentProviderFactory paymentProviderFactory,
-        IBackgroundTaskService backgroundTaskService,
         IPaymentService paymentService,
         IStripeWebhookParser stripeWebhookParser,
         IRequestStore requestStore,
@@ -39,7 +34,6 @@ public class WebhooksController : OdkControllerBase
         : base(requestStore, odkRoutes)
     {
         _settings = settings;
-        _backgroundTaskService = backgroundTaskService;
         _emailService = emailService;
         _loggingService = loggingService;
         _paymentService = paymentService;
@@ -85,28 +79,31 @@ public class WebhooksController : OdkControllerBase
     /// <summary>
     /// v = 1 for site webhooks.
     /// v = 2 for connected account webhooks.
+    /// p = the platform whose Stripe account the endpoint belongs to, as registered in its dashboard.
     /// </summary>
     [HttpPost("webhooks/stripe")]
-    public async Task Stripe(int v)
+    public async Task Stripe(int v, PlatformType? p)
     {
         var signature = Request.Headers["Stripe-Signature"];
         var json = await ReadBodyText();
 
-        var webhook = await _stripeWebhookParser.ParseWebhook(json, signature, v);
+        /* The platform arrives on the URL because it cannot be read from the payload: validating the payload
+           needs the signing secret, and each platform's Stripe account has its own, so the platform has to be
+           known first. It grants nothing - it only chooses which secret to verify against, and a call naming
+           the wrong one fails that check. An endpoint registered before the platform was on the URL is Drunken
+           Knitwits', which is also where an unusable value lands, so it fails the check rather than the
+           lookup. */
+        var platform = p is null or PlatformType.None ? PlatformType.DrunkenKnitwits : p.Value;
+
+        var webhook = await _stripeWebhookParser.ParseWebhook(platform, json, signature, v);
         if (webhook == null)
         {
             return;
         }
 
-        var metadata = PaymentMetadataModel.FromDictionary(webhook.Metadata);
-
         // Only log our parsed data to avoid logging any PII in the raw JSON
         await _loggingService.Info($"Received Stripe webhook: {JsonUtils.Serialize(webhook)}");
 
-        // Webhooks are only set up for one platform to avoid sending redundant webhooks to all.
-        // Webhooks without platforms are for older DrunkenKnitwits subscriptions.
-        var request = ServiceRequestImpl.Create(ServiceRequest, metadata.Platform ?? PlatformType.DrunkenKnitwits);
-
-        _paymentService.EnqueueProcessWebhookJob(JobRequest.Create(request), webhook);
+        _paymentService.EnqueueProcessWebhookJob(JobRequest.Create(ServiceRequest), webhook);
     }
 }
