@@ -759,7 +759,7 @@ public class MemberEmailService : IMemberEmailService
             parameters);
     }
 
-    public async Task SendNewMemberEmailsAsync(
+    public async Task SendNewMemberEmails(
         IChapterServiceRequest request,
         IReadOnlyCollection<ChapterAdminMember> adminMembers,
         Member member,

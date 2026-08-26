@@ -49,7 +49,7 @@ public class EventService : IEventService
     {
         var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
 
-        var (@event, settings) = await _unitOfWork.RunAsync(
+        var (@event, settings) = await _unitOfWork.Run(
             x => x.EventRepository.GetById(eventId),
             x => x.ChapterEventSettingsRepository.GetByChapterId(chapter.Id));
 
@@ -106,7 +106,7 @@ public class EventService : IEventService
 
     public async Task CompleteEventTicketPurchase(Guid eventId, Guid memberId)
     {
-        var (@event, response, payments) = await _unitOfWork.RunAsync(
+        var (@event, response, payments) = await _unitOfWork.Run(
             x => x.EventRepository.GetById(eventId),
             x => x.EventResponseRepository.GetByMemberId(memberId, eventId),
             x => x.EventTicketPaymentRepository.GetConfirmedPayments(memberId, eventId));
@@ -161,7 +161,7 @@ public class EventService : IEventService
 
     public async Task<ServiceResult> JoinWaitlist(Guid eventId, Guid memberId)
     {
-        var (@event, member, isOnWaitlist) = await _unitOfWork.RunAsync(
+        var (@event, member, isOnWaitlist) = await _unitOfWork.Run(
             x => x.EventRepository.GetById(eventId),
             x => x.MemberRepository.GetById(memberId),
             x => x.EventWaitlistMemberRepository.IsOnWaitlist(memberId, eventId));
@@ -190,7 +190,7 @@ public class EventService : IEventService
 
     public async Task<ServiceResult> LeaveWaitlist(Guid eventId, Guid memberId)
     {
-        var (@event, member, waitlistMember) = await _unitOfWork.RunAsync(
+        var (@event, member, waitlistMember) = await _unitOfWork.Run(
             x => x.EventRepository.GetById(eventId),
             x => x.MemberRepository.GetById(memberId),
             x => x.EventWaitlistMemberRepository.GetByMemberId(memberId, eventId));
@@ -220,7 +220,7 @@ public class EventService : IEventService
     {
         var currentMember = request.CurrentMember;
 
-        var (@event, memberResponse, waitlist) = await _unitOfWork.RunAsync(
+        var (@event, memberResponse, waitlist) = await _unitOfWork.Run(
             x => x.EventRepository.GetById(eventId),
             x => x.EventResponseRepository.GetByMemberId(currentMember.Id, eventId),
             x => x.EventWaitlistMemberRepository.GetByEventId(eventId));
@@ -239,7 +239,7 @@ public class EventService : IEventService
     {
         var currentMember = request.CurrentMember;
 
-        var (@event, memberResponse, waitlist) = await _unitOfWork.RunAsync(
+        var (@event, memberResponse, waitlist) = await _unitOfWork.Run(
             x => x.EventRepository.GetByShortcode(shortcode),
             x => x.EventResponseRepository.GetByMemberId(currentMember.Id, shortcode),
             x => x.EventWaitlistMemberRepository.GetByEventShortcode(shortcode));
@@ -328,7 +328,7 @@ public class EventService : IEventService
     {
         var platform = request.Platform;
 
-        var (chapter, @event, waitlist, responses) = await _unitOfWork.RunAsync(
+        var (chapter, @event, waitlist, responses) = await _unitOfWork.Run(
             x => x.ChapterRepository.GetByEventId(platform, eventId),
             x => x.EventRepository.GetById(@eventId),
             x => x.EventWaitlistMemberRepository.GetByEventId(eventId),
@@ -398,7 +398,7 @@ public class EventService : IEventService
             .Select(x => x.MemberId)
             .ToArray();
 
-        var (members, notificationSettings) = await _unitOfWork.RunAsync(
+        var (members, notificationSettings) = await _unitOfWork.Run(
             x => x.MemberRepository.GetByIds(memberIds),
             x => x.MemberNotificationSettingsRepository.GetByMemberIds(memberIds, NotificationType.EventWaitlistPromotion));
 
@@ -438,7 +438,7 @@ public class EventService : IEventService
             return ServiceResult.Failure("Ticketed events cannot be responded to");
         }
 
-        var (membershipSettings, privacySettings, memberSubscription, numberOfAttendees) = await _unitOfWork.RunAsync(
+        var (membershipSettings, privacySettings, memberSubscription, numberOfAttendees) = await _unitOfWork.Run(
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(@event.ChapterId),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(@event.ChapterId),
             x => x.MemberSubscriptionRecordRepository

@@ -54,7 +54,7 @@ public class LoginHandler : ILoginHandler
     public async Task<AuthenticationResult> Login(
         IServiceRequest request, string username, string password, bool rememberMe)
     {
-        var member = await _authenticationService.GetMemberAsync(username, password);
+        var member = await _authenticationService.GetMember(username, password);
         return await Login(request, member);
     }
 
@@ -91,9 +91,9 @@ public class LoginHandler : ILoginHandler
             return new AuthenticationResult();
         }
 
-        var claims = await _authenticationService.GetClaimsAsync(
+        var claims = await _authenticationService.GetClaims(
             MemberServiceRequest.Create(member, request));
-        await SetAuthCookieAsync(httpContext, claims);
+        await SetAuthCookie(httpContext, claims);
         return new AuthenticationResult
         {
             Member = member,
@@ -101,7 +101,7 @@ public class LoginHandler : ILoginHandler
         };
     }
 
-    private async Task SetAuthCookieAsync(HttpContext httpContext, IReadOnlyCollection<Claim> claims)
+    private async Task SetAuthCookie(HttpContext httpContext, IReadOnlyCollection<Claim> claims)
     {
         if (claims.Count == 0)
         {

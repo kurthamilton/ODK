@@ -93,7 +93,7 @@ public class SocialMediaService : ISocialMediaService
 
         var chapterId = chapterIds.Dequeue();
 
-        var (hasAccess, links) = await _unitOfWork.RunAsync(
+        var (hasAccess, links) = await _unitOfWork.Run(
             x => x.MemberSiteSubscriptionRecordRepository
                 .Query(x => x.Current().ForChapterOwner(chapterId).Active(_siteSubscriptionCooldown))
                 .HasFeature(SiteFeatureType.InstagramFeed),
@@ -250,7 +250,7 @@ public class SocialMediaService : ISocialMediaService
             return;
         }
 
-        var (recentSuccessful, last) = await _unitOfWork.RunAsync(
+        var (recentSuccessful, last) = await _unitOfWork.Run(
             x => x.InstagramFetchLogEntryRepository.GetRecentSuccessful(10),
             x => x.InstagramFetchLogEntryRepository.GetLast());
 

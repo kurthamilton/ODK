@@ -108,7 +108,7 @@ public class MemberService : IMemberService
     {
         var (platform, member) = (request.Platform, request.CurrentMember);
 
-        var memberSubscriptionRecord = await _unitOfWork.RunAsync(
+        var memberSubscriptionRecord = await _unitOfWork.Run(
             x => x.MemberSubscriptionRecordRepository
                 .Query()
                 .ForExternalId(externalId)
@@ -121,7 +121,7 @@ public class MemberService : IMemberService
 
     public async Task<ServiceResult> ConfirmEmailAddressUpdate(Guid memberId, string confirmationToken)
     {
-        var (member, token) = await _unitOfWork.RunAsync(
+        var (member, token) = await _unitOfWork.Run(
             x => x.MemberRepository.GetById(memberId),
             x => x.MemberEmailAddressUpdateTokenRepository.GetByMemberId(memberId));
         if (token == null)
@@ -211,7 +211,7 @@ public class MemberService : IMemberService
     {
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
-        var (chapterAdminMembers, memberProperties, notifications) = await _unitOfWork.RunAsync(
+        var (chapterAdminMembers, memberProperties, notifications) = await _unitOfWork.Run(
             x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => x.MemberPropertyRepository.GetByMemberId(currentMember.Id, chapter.Id),
             x => x.NotificationRepository.GetByMemberId(currentMember.Id, chapter.Id));
@@ -292,7 +292,7 @@ public class MemberService : IMemberService
     {
         var currentMember = request.CurrentMember;
 
-        var (memberPreferences, memberLocation) = await _unitOfWork.RunAsync(
+        var (memberPreferences, memberLocation) = await _unitOfWork.Run(
             x => x.MemberPreferencesRepository.GetByMemberIdOrDefault(currentMember.Id),
             x => x.MemberLocationRepository.GetByMemberIdOrDefault(currentMember.Id));
 
@@ -309,7 +309,7 @@ public class MemberService : IMemberService
     public async Task<MemberSubscriptionAlertViewModel> GetMemberSubscriptionAlertViewModel(
         Guid memberId, Guid chapterId)
     {
-        var (memberSubscription, chapterMembershipSettings) = await _unitOfWork.RunAsync(
+        var (memberSubscription, chapterMembershipSettings) = await _unitOfWork.Run(
             x => x.MemberSubscriptionRecordRepository
                 .Query()
                 .Current()
@@ -349,7 +349,7 @@ public class MemberService : IMemberService
     {
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
-        var (adminMembers, subscription) = await _unitOfWork.RunAsync(
+        var (adminMembers, subscription) = await _unitOfWork.Run(
             x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => x.MemberSubscriptionRecordRepository
                 .Query()
@@ -411,7 +411,7 @@ public class MemberService : IMemberService
 
     public async Task RotateMemberImage(Guid memberId)
     {
-        var (member, avatar) = await _unitOfWork.RunAsync(
+        var (member, avatar) = await _unitOfWork.Run(
             x => x.MemberRepository.GetById(memberId),
             x => x.MemberAvatarRepository.GetByMemberId(memberId));
 
@@ -435,7 +435,7 @@ public class MemberService : IMemberService
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
         var (chapterPaymentAccountDto,
-            chapterSubscription) = await _unitOfWork.RunAsync(
+            chapterSubscription) = await _unitOfWork.Run(
             x => x.ChapterPaymentAccountRepository.Query().ForChapter(chapter.Id).ToDto().GetSingleOrDefault(),
             x => x.ChapterSubscriptionRepository.GetById(chapterSubscriptionId));
 
@@ -564,7 +564,7 @@ public class MemberService : IMemberService
     {
         var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
 
-        var (chapterProperties, memberProperties) = await _unitOfWork.RunAsync(
+        var (chapterProperties, memberProperties) = await _unitOfWork.Run(
             x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
             x => x.MemberPropertyRepository.GetByMemberId(currentMember.Id, chapter.Id));
 
@@ -615,7 +615,7 @@ public class MemberService : IMemberService
 
     public async Task<ServiceResult> UpdateMemberCurrency(Guid id, Guid currencyId)
     {
-        var (currency, paymentSettings) = await _unitOfWork.RunAsync(
+        var (currency, paymentSettings) = await _unitOfWork.Run(
             x => x.CurrencyRepository.GetByIdOrDefault(currencyId),
             x => x.MemberPaymentSettingsRepository.GetByMemberId(id));
 
@@ -645,7 +645,7 @@ public class MemberService : IMemberService
 
     public async Task<ServiceResult> UpdateMemberImage(Guid id, byte[] imageData)
     {
-        var (member, avatar) = await _unitOfWork.RunAsync(
+        var (member, avatar) = await _unitOfWork.Run(
             x => x.MemberRepository.GetById(id),
             x => x.MemberAvatarRepository.GetByMemberId(id));
 
@@ -674,7 +674,7 @@ public class MemberService : IMemberService
 
     public async Task<ServiceResult> UpdateMemberLocation(Guid id, LatLong? location, string? name, DistanceUnitType? distanceUnit)
     {
-        var (memberLocation, memberPreferences) = await _unitOfWork.RunAsync(
+        var (memberLocation, memberPreferences) = await _unitOfWork.Run(
             x => x.MemberLocationRepository.GetByMemberIdOrDefault(id),
             x => x.MemberPreferencesRepository.GetByMemberIdOrDefault(id));
 
@@ -784,7 +784,7 @@ public class MemberService : IMemberService
             return ServiceResult.Failure("Error cancelling subscription");
         }
 
-        var (chapterSubscription, chapterPaymentAccountDto) = await _unitOfWork.RunAsync(
+        var (chapterSubscription, chapterPaymentAccountDto) = await _unitOfWork.Run(
             x => x.ChapterSubscriptionRepository.GetById(memberSubscriptionRecord.ChapterSubscriptionId.Value),
             x => x.ChapterPaymentAccountRepository.Query().ForChapter(chapterId).ToDto().GetSingleOrDefault());
 

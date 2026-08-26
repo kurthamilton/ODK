@@ -123,7 +123,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         var (platform, chapterId, currentMemberId) = (request.Platform, request.Chapter.Id, request.CurrentMember.Id);
 
-        var (chapterAdminMembers, currentMember, member, hasAccess) = await _unitOfWork.RunAsync(
+        var (chapterAdminMembers, currentMember, member, hasAccess) = await _unitOfWork.Run(
             x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapterId),
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.MemberRepository.GetById(memberId),
@@ -188,7 +188,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             memberChapters,
             nameExists,
             siteAdmins
-        ) = await _unitOfWork.RunAsync(
+        ) = await _unitOfWork.Run(
             x => x.MemberSiteSubscriptionRecordRepository.GetDtoByMemberId(currentMember.Id),
             x => x.ChapterRepository.GetByOwnerId(platform, currentMember.Id),
             x => x.ChapterRepository.NameExists(name),
@@ -825,7 +825,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         var awaitingPublication = chapter.CanBePublished(hasImage: true)
             && adminMember.HasAccessTo(ChapterAdminSecurable.Publish, currentMember);
 
-        var (awaitingApproval, unrepliedMessages, upcomingEvents, image, newestMembers) = await _unitOfWork.RunAsync(
+        var (awaitingApproval, unrepliedMessages, upcomingEvents, image, newestMembers) = await _unitOfWork.Run(
             x => canSeeApprovals
                 ? x.MemberChapterRepository.Query(platform).ForChapter(chapter.Id).Approved(false).Count()
                 : new DefaultDeferredQuery<int>(0),
@@ -911,7 +911,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         OdkAssertions.BelongsToChapter(conversation, chapter.Id);
 
-        var (member, otherConversations) = await _unitOfWork.RunAsync(
+        var (member, otherConversations) = await _unitOfWork.Run(
             x => x.MemberRepository.GetById(conversation.MemberId),
             x => x.ChapterConversationRepository.GetDtosByMemberId(conversation.MemberId, chapter.Id));
 
@@ -1462,7 +1462,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             return ServiceResult.Failure("Not permitted");
         }
 
-        var (member, notificationSettings) = await _unitOfWork.RunAsync(
+        var (member, notificationSettings) = await _unitOfWork.Run(
             x => x.MemberRepository.GetById(conversation.MemberId),
             x => x.MemberNotificationSettingsRepository.GetByMemberId(conversation.MemberId, NotificationType.ConversationReplies));
 

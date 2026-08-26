@@ -39,7 +39,7 @@ public class MemberPasswordService : IMemberPasswordService
             return ServiceResult.Failure(error);
         }
 
-        if (await _breachedPasswordChecker.IsBreachedAsync(password))
+        if (await _breachedPasswordChecker.IsBreached(password))
         {
             return ServiceResult.Failure(
                 "This password has appeared in a known data breach. Please choose a different password.");

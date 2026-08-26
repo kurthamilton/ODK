@@ -160,7 +160,7 @@ public class NotificationService : INotificationService
     {
         var (platform, currentMember) = (request.Platform, request.CurrentMember);
 
-        var (settings, chapterSettings, adminChapters, memberChapters) = await _unitOfWork.RunAsync(
+        var (settings, chapterSettings, adminChapters, memberChapters) = await _unitOfWork.Run(
             x => x.MemberNotificationSettingsRepository.GetByMemberId(currentMember.Id),
             x => x.MemberChapterNotificationSettingsRepository.Query().ForMember(currentMember.Id).GetAll(),
             x => x.ChapterAdminMemberRepository.Query(platform).ForMember(currentMember.Id).ToDto().GetAll(),
@@ -180,7 +180,7 @@ public class NotificationService : INotificationService
     {
         var (platform, currentMember) = (request.Platform, request.CurrentMember);
 
-        var (notifications, chapter) = await _unitOfWork.RunAsync(
+        var (notifications, chapter) = await _unitOfWork.Run(
             x => x.NotificationRepository.GetUnreadDtosByMemberId(currentMember.Id),
             x => platform == PlatformType.DrunkenKnitwits
                 ? x.ChapterRepository.Query(platform).ForMember(currentMember.Id).GetSingleOrDefault()

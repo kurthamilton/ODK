@@ -89,7 +89,7 @@ public class ContactService : IContactService
     {
         var conversation = await GetOwnSiteConversation(request, conversationId);
 
-        var (messages, otherConversations) = await _unitOfWork.RunAsync(
+        var (messages, otherConversations) = await _unitOfWork.Run(
             x => x.SiteConversationMessageRepository.GetDtosByConversationId(conversationId),
             x => x.SiteConversationRepository.GetDtosByMemberId(request.CurrentMember.Id));
 
@@ -136,7 +136,7 @@ public class ContactService : IContactService
 
         OdkAssertions.BelongsToMember(conversation, currentMember.Id);
 
-        var (chapter, adminMembers, notificationSettings) = await _unitOfWork.RunAsync(
+        var (chapter, adminMembers, notificationSettings) = await _unitOfWork.Run(
             x => x.ChapterRepository.GetById(platform, conversation.ChapterId),
             x => x.ChapterAdminMemberRepository.GetByChapterId(platform, conversation.ChapterId),
             x => x.MemberNotificationSettingsRepository.GetByChapterId(
@@ -217,7 +217,7 @@ public class ContactService : IContactService
             message = $"[FLAGGED AS SPAM: {result.Score} / 1.0] {message}";
         }
 
-        var (adminMembers, notificationSettings) = await _unitOfWork.RunAsync(
+        var (adminMembers, notificationSettings) = await _unitOfWork.Run(
             x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => x.MemberNotificationSettingsRepository.GetByChapterId(chapter.Id, NotificationType.ChapterContactMessage));
 
@@ -300,7 +300,7 @@ public class ContactService : IContactService
             privacySettings,
             membershipSettings,
             adminMembers,
-            notificationSettings) = await _unitOfWork.RunAsync(
+            notificationSettings) = await _unitOfWork.Run(
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),

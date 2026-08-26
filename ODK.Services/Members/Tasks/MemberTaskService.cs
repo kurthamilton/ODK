@@ -17,7 +17,7 @@ public class MemberTaskService : IMemberTaskService
     {
         var (platform, member) = (request.Platform, request.CurrentMember);
 
-        var (chapters, ownedChapters, avatarVersion) = await _unitOfWork.RunAsync(
+        var (chapters, ownedChapters, avatarVersion) = await _unitOfWork.Run(
             x => x.ChapterRepository.GetByMemberId(platform, member.Id),
             x => x.ChapterRepository.GetByOwnerId(platform, member.Id),
             x => x.MemberAvatarRepository.GetVersionDtoByMemberId(member.Id));
@@ -25,7 +25,7 @@ public class MemberTaskService : IMemberTaskService
         var chapterIds = chapters.Select(x => x.Id).ToArray();
         var ownedChapterIds = ownedChapters.Select(x => x.Id).ToArray();
 
-        var (chapterProperties, memberProperties, chapterImages) = await _unitOfWork.RunAsync(
+        var (chapterProperties, memberProperties, chapterImages) = await _unitOfWork.Run(
             x => x.ChapterPropertyRepository.GetByChapterIds(chapterIds),
             x => x.MemberPropertyRepository.GetByMemberId(member.Id),
             x => x.ChapterImageRepository.GetVersionDtosByChapterIds(ownedChapterIds));

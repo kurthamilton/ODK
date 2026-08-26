@@ -131,7 +131,7 @@ public interface IMemberEmailService
         IReadOnlyCollection<ChapterProperty> chapterProperties,
         IReadOnlyCollection<MemberProperty> memberProperties);
 
-    Task SendNewMemberEmailsAsync(
+    Task SendNewMemberEmails(
         IChapterServiceRequest request,
         IReadOnlyCollection<ChapterAdminMember> adminMembers,
         Member member,

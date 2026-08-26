@@ -42,7 +42,7 @@ public class ReferralService : IReferralService
             return ServiceResult.Failure("You cannot refer yourself");
         }
 
-        var (campaign, existingMember) = await _unitOfWork.RunAsync(
+        var (campaign, existingMember) = await _unitOfWork.Run(
             x => x.ReferralCampaignRepository.GetMostRecentActive(DateTime.UtcNow),
             x => x.MemberRepository.GetByEmailAddress(emailAddress));
 

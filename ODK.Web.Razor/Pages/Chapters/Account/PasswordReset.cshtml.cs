@@ -25,7 +25,7 @@ public class PasswordResetModel : OdkPageModel
 
     public async Task<IActionResult> OnPostAsync(ResetPasswordFormViewModel viewModel)
     {
-        ServiceResult result = await _authenticationService.ResetPasswordAsync(viewModel.Token, viewModel.NewPassword);
+        ServiceResult result = await _authenticationService.ResetPassword(viewModel.Token, viewModel.NewPassword);
         if (result.Success)
         {
             AddFeedback("Your password has been updated.", FeedbackType.Success);

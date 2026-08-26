@@ -61,7 +61,7 @@ public class AuthenticationService : IAuthenticationService
         });
     }
 
-    public async Task<ServiceResult> ActivateChapterAccountAsync(
+    public async Task<ServiceResult> ActivateChapterAccount(
         IChapterServiceRequest request,
         string activationToken,
         string password)
@@ -87,7 +87,7 @@ public class AuthenticationService : IAuthenticationService
         return result.ToServiceResult();
     }
 
-    public async Task<ServiceResult> ActivateSiteAccountAsync(
+    public async Task<ServiceResult> ActivateSiteAccount(
         IServiceRequest request,
         string activationToken,
         string password)
@@ -110,7 +110,7 @@ public class AuthenticationService : IAuthenticationService
         return result.ToServiceResult();
     }
 
-    public async Task<ServiceResult> ChangePasswordAsync(Guid memberId, string currentPassword, string newPassword)
+    public async Task<ServiceResult> ChangePassword(Guid memberId, string currentPassword, string newPassword)
     {
         var memberPassword = await _unitOfWork.MemberPasswordRepository
             .GetByMemberId(memberId)
@@ -135,7 +135,15 @@ public class AuthenticationService : IAuthenticationService
         return ServiceResult.Successful();
     }
 
-    public async Task<Member?> GetMemberAsync(string username, string password)
+    public Task<IReadOnlyCollection<Claim>> GetClaims(IMemberServiceRequest request)
+    {
+        var claimsUser = new OdkClaimsUser(request.CurrentMember);
+        return Task.FromResult<IReadOnlyCollection<Claim>>(claimsUser
+            .GetClaims()
+            .ToArray());
+    }
+
+    public async Task<Member?> GetMember(string username, string password)
     {
         var member = await _unitOfWork.MemberRepository
             .GetByEmailAddress(username)
@@ -175,15 +183,7 @@ public class AuthenticationService : IAuthenticationService
         return member;
     }
 
-    public async Task<IReadOnlyCollection<Claim>> GetClaimsAsync(IMemberServiceRequest request)
-    {
-        var claimsUser = new OdkClaimsUser(request.CurrentMember);
-        return claimsUser
-            .GetClaims()
-            .ToArray();
-    }
-
-    public async Task<ServiceResult> RequestPasswordResetAsync(
+    public async Task<ServiceResult> RequestPasswordReset(
         IServiceRequest request,
         Chapter? chapter,
         string emailAddress)
@@ -244,14 +244,14 @@ public class AuthenticationService : IAuthenticationService
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> RequestPasswordResetAsync(
+    public async Task<ServiceResult> RequestPasswordReset(
         IServiceRequest request,
         string emailAddress)
     {
-        return await RequestPasswordResetAsync(request, null, emailAddress);
+        return await RequestPasswordReset(request, null, emailAddress);
     }
 
-    public async Task<ServiceResult> ResetPasswordAsync(string token, string password)
+    public async Task<ServiceResult> ResetPassword(string token, string password)
     {
         var validationResult = await _memberPasswordService.Validate(password);
         if (!validationResult.Success)

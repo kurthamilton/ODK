@@ -101,32 +101,32 @@ public interface IUnitOfWork
     /// </summary>
     Guid NewId();
 
-    Task<T1> RunAsync<T1>(
+    Task<T1> Run<T1>(
         Func<IUnitOfWork, IDeferredQuery<T1>> query1);
 
-    Task<(T1, T2)> RunAsync<T1, T2>(
+    Task<(T1, T2)> Run<T1, T2>(
         Func<IUnitOfWork, IDeferredQuery<T1>> query1,
         Func<IUnitOfWork, IDeferredQuery<T2>> query2);
 
-    Task<(T1, T2, T3)> RunAsync<T1, T2, T3>(
+    Task<(T1, T2, T3)> Run<T1, T2, T3>(
         Func<IUnitOfWork, IDeferredQuery<T1>> query1,
         Func<IUnitOfWork, IDeferredQuery<T2>> query2,
         Func<IUnitOfWork, IDeferredQuery<T3>> query3);
 
-    Task<(T1, T2, T3, T4)> RunAsync<T1, T2, T3, T4>(
+    Task<(T1, T2, T3, T4)> Run<T1, T2, T3, T4>(
         Func<IUnitOfWork, IDeferredQuery<T1>> query1,
         Func<IUnitOfWork, IDeferredQuery<T2>> query2,
         Func<IUnitOfWork, IDeferredQuery<T3>> query3,
         Func<IUnitOfWork, IDeferredQuery<T4>> query4);
 
-    Task<(T1, T2, T3, T4, T5)> RunAsync<T1, T2, T3, T4, T5>(
+    Task<(T1, T2, T3, T4, T5)> Run<T1, T2, T3, T4, T5>(
         Func<IUnitOfWork, IDeferredQuery<T1>> query1,
         Func<IUnitOfWork, IDeferredQuery<T2>> query2,
         Func<IUnitOfWork, IDeferredQuery<T3>> query3,
         Func<IUnitOfWork, IDeferredQuery<T4>> query4,
         Func<IUnitOfWork, IDeferredQuery<T5>> query5);
 
-    Task<(T1, T2, T3, T4, T5, T6)> RunAsync<T1, T2, T3, T4, T5, T6>(
+    Task<(T1, T2, T3, T4, T5, T6)> Run<T1, T2, T3, T4, T5, T6>(
         Func<IUnitOfWork, IDeferredQuery<T1>> query1,
         Func<IUnitOfWork, IDeferredQuery<T2>> query2,
         Func<IUnitOfWork, IDeferredQuery<T3>> query3,
@@ -134,7 +134,7 @@ public interface IUnitOfWork
         Func<IUnitOfWork, IDeferredQuery<T5>> query5,
         Func<IUnitOfWork, IDeferredQuery<T6>> query6);
 
-    Task<(T1, T2, T3, T4, T5, T6, T7)> RunAsync<T1, T2, T3, T4, T5, T6, T7>(
+    Task<(T1, T2, T3, T4, T5, T6, T7)> Run<T1, T2, T3, T4, T5, T6, T7>(
         Func<IUnitOfWork, IDeferredQuery<T1>> query1,
         Func<IUnitOfWork, IDeferredQuery<T2>> query2,
         Func<IUnitOfWork, IDeferredQuery<T3>> query3,
@@ -143,7 +143,7 @@ public interface IUnitOfWork
         Func<IUnitOfWork, IDeferredQuery<T6>> query6,
         Func<IUnitOfWork, IDeferredQuery<T7>> query7);
 
-    Task<(T1, T2, T3, T4, T5, T6, T7, T8)> RunAsync<T1, T2, T3, T4, T5, T6, T7, T8>(
+    Task<(T1, T2, T3, T4, T5, T6, T7, T8)> Run<T1, T2, T3, T4, T5, T6, T7, T8>(
         Func<IUnitOfWork, IDeferredQuery<T1>> query1,
         Func<IUnitOfWork, IDeferredQuery<T2>> query2,
         Func<IUnitOfWork, IDeferredQuery<T3>> query3,
@@ -153,7 +153,7 @@ public interface IUnitOfWork
         Func<IUnitOfWork, IDeferredQuery<T7>> query7,
         Func<IUnitOfWork, IDeferredQuery<T8>> query8);
 
-    Task<(T1, T2, T3, T4, T5, T6, T7, T8, T9)> RunAsync<T1, T2, T3, T4, T5, T6, T7, T8, T9>(
+    Task<(T1, T2, T3, T4, T5, T6, T7, T8, T9)> Run<T1, T2, T3, T4, T5, T6, T7, T8, T9>(
         Func<IUnitOfWork, IDeferredQuery<T1>> query1,
         Func<IUnitOfWork, IDeferredQuery<T2>> query2,
         Func<IUnitOfWork, IDeferredQuery<T3>> query3,
@@ -164,7 +164,7 @@ public interface IUnitOfWork
         Func<IUnitOfWork, IDeferredQuery<T8>> query8,
         Func<IUnitOfWork, IDeferredQuery<T9>> query9);
 
-    Task<(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10)> RunAsync<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(
+    Task<(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10)> Run<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(
         Func<IUnitOfWork, IDeferredQuery<T1>> query1,
         Func<IUnitOfWork, IDeferredQuery<T2>> query2,
         Func<IUnitOfWork, IDeferredQuery<T3>> query3,
@@ -176,7 +176,7 @@ public interface IUnitOfWork
         Func<IUnitOfWork, IDeferredQuery<T9>> query9,
         Func<IUnitOfWork, IDeferredQuery<T10>> query10);
 
-    Task<(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11)> RunAsync<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(
+    Task<(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11)> Run<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(
         Func<IUnitOfWork, IDeferredQuery<T1>> query1,
         Func<IUnitOfWork, IDeferredQuery<T2>> query2,
         Func<IUnitOfWork, IDeferredQuery<T3>> query3,
@@ -189,7 +189,7 @@ public interface IUnitOfWork
         Func<IUnitOfWork, IDeferredQuery<T10>> query10,
         Func<IUnitOfWork, IDeferredQuery<T11>> query11);
 
-    Task<(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12)> RunAsync<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(
+    Task<(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12)> Run<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(
         Func<IUnitOfWork, IDeferredQuery<T1>> query1,
         Func<IUnitOfWork, IDeferredQuery<T2>> query2,
         Func<IUnitOfWork, IDeferredQuery<T3>> query3,
@@ -203,7 +203,7 @@ public interface IUnitOfWork
         Func<IUnitOfWork, IDeferredQuery<T11>> query11,
         Func<IUnitOfWork, IDeferredQuery<T12>> query12);
 
-    Task<(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13)> RunAsync<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(
+    Task<(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13)> Run<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(
         Func<IUnitOfWork, IDeferredQuery<T1>> query1,
         Func<IUnitOfWork, IDeferredQuery<T2>> query2,
         Func<IUnitOfWork, IDeferredQuery<T3>> query3,
@@ -218,7 +218,7 @@ public interface IUnitOfWork
         Func<IUnitOfWork, IDeferredQuery<T12>> query12,
         Func<IUnitOfWork, IDeferredQuery<T13>> query13);
 
-    Task<(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14)> RunAsync<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(
+    Task<(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14)> Run<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(
         Func<IUnitOfWork, IDeferredQuery<T1>> query1,
         Func<IUnitOfWork, IDeferredQuery<T2>> query2,
         Func<IUnitOfWork, IDeferredQuery<T3>> query3,
@@ -234,7 +234,7 @@ public interface IUnitOfWork
         Func<IUnitOfWork, IDeferredQuery<T13>> query13,
         Func<IUnitOfWork, IDeferredQuery<T14>> query14);
 
-    Task<(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15)> RunAsync<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(
+    Task<(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15)> Run<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(
         Func<IUnitOfWork, IDeferredQuery<T1>> query1,
         Func<IUnitOfWork, IDeferredQuery<T2>> query2,
         Func<IUnitOfWork, IDeferredQuery<T3>> query3,
@@ -251,7 +251,7 @@ public interface IUnitOfWork
         Func<IUnitOfWork, IDeferredQuery<T14>> query14,
         Func<IUnitOfWork, IDeferredQuery<T15>> query15);
 
-    Task<(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16)> RunAsync<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(
+    Task<(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16)> Run<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(
         Func<IUnitOfWork, IDeferredQuery<T1>> query1,
         Func<IUnitOfWork, IDeferredQuery<T2>> query2,
         Func<IUnitOfWork, IDeferredQuery<T3>> query3,
@@ -269,7 +269,7 @@ public interface IUnitOfWork
         Func<IUnitOfWork, IDeferredQuery<T15>> query15,
         Func<IUnitOfWork, IDeferredQuery<T16>> query16);
 
-    Task<(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17)> RunAsync<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(
+    Task<(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17)> Run<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(
         Func<IUnitOfWork, IDeferredQuery<T1>> query1,
         Func<IUnitOfWork, IDeferredQuery<T2>> query2,
         Func<IUnitOfWork, IDeferredQuery<T3>> query3,
@@ -288,7 +288,7 @@ public interface IUnitOfWork
         Func<IUnitOfWork, IDeferredQuery<T16>> query16,
         Func<IUnitOfWork, IDeferredQuery<T17>> query17);
 
-    Task<(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18)> RunAsync<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(
+    Task<(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18)> Run<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(
         Func<IUnitOfWork, IDeferredQuery<T1>> query1,
         Func<IUnitOfWork, IDeferredQuery<T2>> query2,
         Func<IUnitOfWork, IDeferredQuery<T3>> query3,

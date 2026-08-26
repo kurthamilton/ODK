@@ -62,7 +62,7 @@ public class ErrorHandlingMiddleware
                 _ => 500
             };
 
-            await HandleAsync(context, requestStore, unitOfWork, odkRoutes);
+            await Handle(context, requestStore, unitOfWork, odkRoutes);
         }
     }
 
@@ -136,7 +136,7 @@ public class ErrorHandlingMiddleware
         return null;
     }
 
-    private async Task HandleAsync(
+    private async Task Handle(
         HttpContext httpContext,
         IRequestStore requestStore,
         IUnitOfWork unitOfWork,

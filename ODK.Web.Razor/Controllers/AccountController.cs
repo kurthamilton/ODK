@@ -53,7 +53,7 @@ public class AccountController : OdkControllerBase
     public async Task<IActionResult> ActivateAccount(
         [FromForm] ActivateFormViewModel viewModel)
     {
-        var result = await _authenticationService.ActivateSiteAccountAsync(
+        var result = await _authenticationService.ActivateSiteAccount(
             ServiceRequest,
             viewModel.Token,
             viewModel.Password);
@@ -72,7 +72,7 @@ public class AccountController : OdkControllerBase
     public async Task<IActionResult> ActivateChapterAccount(
         Guid chapterId, [FromForm] ActivateFormViewModel viewModel)
     {
-        var result = await _authenticationService.ActivateChapterAccountAsync(
+        var result = await _authenticationService.ActivateChapterAccount(
             ChapterServiceRequest,
             viewModel.Token,
             viewModel.Password);
@@ -328,7 +328,7 @@ public class AccountController : OdkControllerBase
     [HttpPost("account/password/change")]
     public async Task<IActionResult> ChangePassword([FromForm] ChangePasswordFormViewModel viewModel)
     {
-        var result = await _authenticationService.ChangePasswordAsync(CurrentMember.Id,
+        var result = await _authenticationService.ChangePassword(CurrentMember.Id,
             viewModel.CurrentPassword ?? string.Empty, viewModel.NewPassword ?? string.Empty);
         AddFeedback(result, "Password changed");
         return RedirectToReferrer();
@@ -338,7 +338,7 @@ public class AccountController : OdkControllerBase
     [HttpPost("/account/password/forgotten")]
     public async Task<IActionResult> ForgottenPassword([FromForm] ForgottenPasswordFormViewModel viewModel)
     {
-        var result = await _authenticationService.RequestPasswordResetAsync(
+        var result = await _authenticationService.RequestPasswordReset(
             ServiceRequest, viewModel.EmailAddress ?? string.Empty);
         string successMessage =
             "An email containing password reset instructions has been sent to that email address " +
@@ -354,7 +354,7 @@ public class AccountController : OdkControllerBase
     public async Task<IActionResult> ForgottenPassword(Guid chapterId, [FromForm] ForgottenPasswordFormViewModel viewModel)
     {
         var chapter = Chapter;
-        var result = await _authenticationService.RequestPasswordResetAsync(
+        var result = await _authenticationService.RequestPasswordReset(
             ServiceRequest,
             chapter,
             viewModel.EmailAddress ?? string.Empty);

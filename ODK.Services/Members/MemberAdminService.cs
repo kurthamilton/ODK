@@ -141,7 +141,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     {
         var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
 
-        var (adminMembers, members, ownerSubscriptionFeatures) = await _unitOfWork.RunAsync(
+        var (adminMembers, members, ownerSubscriptionFeatures) = await _unitOfWork.Run(
             x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => x.MemberRepository.GetByChapterId(chapter.Id),
             x => x.MemberSiteSubscriptionRecordRepository
@@ -530,7 +530,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             eventEmailPreferences,
             groupEmailPreferences,
             subscriptions,
-            ownerSubscriptionFeatures) = await _unitOfWork.RunAsync(
+            ownerSubscriptionFeatures) = await _unitOfWork.Run(
             x => x.ChapterAdminMemberRepository.GetByMemberId(platform, currentMember.Id, chapter.Id),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.MemberRepository.GetAllWithAvatarByChapterId(chapter.Id),
@@ -897,7 +897,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
         // Load members, subscriptions and settings for every chapter in a single round-trip rather than
         // querying per chapter (which was N round-trips - an N+1).
-        var (members, memberSubscriptions, allMembershipSettings) = await _unitOfWork.RunAsync(
+        var (members, memberSubscriptions, allMembershipSettings) = await _unitOfWork.Run(
             x => x.MemberRepository.GetByChapterIds(chapterIds),
             x => x.MemberSubscriptionRecordRepository
                 .Query()
@@ -1113,7 +1113,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
     private async Task SendImportInviteEmail(IServiceRequest request, Guid chapterId, Guid memberId)
     {
-        var (member, chapter, invite) = await _unitOfWork.RunAsync(
+        var (member, chapter, invite) = await _unitOfWork.Run(
             x => x.MemberRepository.GetById(memberId),
             x => x.ChapterRepository.GetById(request.Platform, chapterId),
             x => x.MemberChapterInviteRepository.GetByMemberId(memberId, chapterId));

@@ -22,7 +22,7 @@ public class PasswordResetModel : OdkSiteAccountPageModel
 
     public async Task<IActionResult> OnPostAsync(ResetPasswordFormViewModel viewModel)
     {
-        var result = await _authenticationService.ResetPasswordAsync(viewModel.Token, viewModel.NewPassword);
+        var result = await _authenticationService.ResetPassword(viewModel.Token, viewModel.NewPassword);
         AddFeedback(result, "Your password has been updated.");
 
         if (!result.Success)
