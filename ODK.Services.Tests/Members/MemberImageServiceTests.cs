@@ -11,7 +11,6 @@ namespace ODK.Services.Tests.Members;
 [Parallelizable]
 public static class MemberImageServiceTests
 {
-    private const int MaxImageSize = 250;
     private const int MemberAvatarSize = 75;
 
     //// Rotate a 100x100 square 4 ways with a 50x50 crop area starting in top-left
@@ -158,7 +157,6 @@ public static class MemberImageServiceTests
             imageService ?? CreateMockImageService(),
             new MemberImageServiceSettings
             {
-                MaxImageSize = MaxImageSize,
                 MemberAvatarSize = MemberAvatarSize
             });
     }

@@ -1,13 +1,24 @@
 ﻿using ODK.Core.Images;
+using ODK.Services.Exceptions;
 using ODK.Services.Imaging;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats;
+using SixLabors.ImageSharp.Formats.Jpeg;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.Formats.Webp;
 using SixLabors.ImageSharp.Processing;
 
 namespace ODK.Services.Integrations.Imaging;
 
 public class ImageService : IImageService
 {
+    private readonly ImageServiceSettings _settings;
+
+    public ImageService(ImageServiceSettings settings)
+    {
+        _settings = settings;
+    }
+
     public byte[] Crop(byte[] data, int width, int height, int x, int y)
     {
         return ProcessImage(data, image =>
@@ -61,16 +72,22 @@ public class ImageService : IImageService
 
     public bool IsImage(byte[] data)
     {
-        var image = TryLoadImage(data);
-        return image != null;
+        try
+        {
+            using var image = LoadImage(data);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     public string? MimeType(byte[] data)
     {
         try
         {
-            var imageInfo = Image.DetectFormat(data);
-            return imageInfo.DefaultMimeType;
+            return Image.DetectFormat(data).DefaultMimeType;
         }
         catch
         {
@@ -80,22 +97,7 @@ public class ImageService : IImageService
 
     public byte[] Pad(byte[] data, int width, int height)
     {
-        return ProcessImage(data, image =>
-        {
-            image.Mutate(context =>
-            {
-                try
-                {
-                    context
-                        .AutoOrient()
-                        .Pad(width, height, Color.Transparent);
-                }
-                catch
-                {
-                    // do nothing
-                }
-            });
-        });
+        return ProcessImage(data, image => PadImage(image, width, height));
     }
 
     public byte[] Process(byte[] data, ImageProcessingOptions options)
@@ -106,13 +108,15 @@ public class ImageService : IImageService
 
             var imageFormat = Image.DetectFormat(data);
 
+            /* A requested mime type only chooses the format the single encode at the end writes. Converting
+               up front would mean encoding to bytes and immediately decoding them again, so the operations
+               below run on the image that was decoded once, whatever format it is going to be saved as. */
             if (!string.IsNullOrEmpty(options.MimeType))
             {
-                var converted = ConvertImage(image, options.MimeType);
-                if (converted != null)
+                var targetFormat = TryFindFormat(options.MimeType);
+                if (targetFormat != null)
                 {
-                    image = Image.Load(converted);
-                    imageFormat = Image.DetectFormat(converted);
+                    imageFormat = targetFormat;
                     processed = true;
                 }
             }
@@ -124,7 +128,7 @@ public class ImageService : IImageService
 
             if (options.MaxWidth != null)
             {
-                ReduceImage(image, options.MaxWidth.Value, image.Size.Height);
+                processed = ReduceImage(image, options.MaxWidth.Value, image.Size.Height) || processed;
             }
 
             return processed
@@ -164,32 +168,8 @@ public class ImageService : IImageService
 
     public ImageSize Size(byte[] data)
     {
-        var image = TryLoadImage(data);
-        return new ImageSize(image?.Width ?? 0, image?.Height ?? 0);
-    }
-
-    private static byte[]? ConvertImage(Image image, string mimeType)
-    {
-        using var ms = new MemoryStream();
-        switch (mimeType)
-        {
-            case "image/jpeg":
-                image.SaveAsJpeg(ms);
-                break;
-
-            case "image/png":
-                image.SaveAsPng(ms);
-                break;
-
-            case "image/webp":
-                image.SaveAsWebp(ms);
-                break;
-
-            default:
-                return null;
-        }
-
-        return ms.ToArray();
+        var info = TryIdentify(data);
+        return new ImageSize(info?.Width ?? 0, info?.Height ?? 0);
     }
 
     private static Size GetRescaledSize(Size current, Size maxSize, Func<double, double, double> chooseRatio)
@@ -248,30 +228,15 @@ public class ImageService : IImageService
         });
     }
 
-    private static byte[] ProcessImage(byte[] data, Action<Image> action)
-    {
-        return ProcessImage(data, image =>
-        {
-            var imageInfo = Image.DetectFormat(data);
-            action(image);
-            return ImageToBytes(image, imageInfo);
-        });
-    }
-
-    private static byte[] ProcessImage(byte[] data, Func<Image, byte[]> action)
-    {
-        using var image = Image.Load(data);
-        return action(image);
-    }
-
-    private static void ReduceImage(Image image, int maxWidth, int maxHeight)
+    private static bool ReduceImage(Image image, int maxWidth, int maxHeight)
     {
         if (image.Width <= maxWidth && image.Height <= maxHeight)
         {
-            return;
+            return false;
         }
 
         RescaleImage(image, maxWidth, maxHeight);
+        return true;
     }
 
     private static void RescaleImage(Image image, int maxWidth, int maxHeight)
@@ -285,17 +250,58 @@ public class ImageService : IImageService
         });
     }
 
-    private static Image? TryLoadImage(byte[] data)
+    // The formats an image may be converted to. A mime type outside this set leaves the format unchanged.
+    private static IImageFormat? TryFindFormat(string mimeType) => mimeType switch
+    {
+        "image/jpeg" => JpegFormat.Instance,
+        "image/png" => PngFormat.Instance,
+        "image/webp" => WebpFormat.Instance,
+        _ => null
+    };
+
+    private static ImageInfo? TryIdentify(byte[] data)
     {
         try
         {
-            var imageInfo = Image.DetectFormat(data);
-            using var image = Image.Load(data);
-            return image;
+            return Image.Identify(data);
         }
         catch
         {
             return null;
         }
+    }
+
+    /* Every decode goes through here, so a new entry point cannot bypass the size cap. The cap counts pixels
+       rather than encoded bytes because pixels are what allocates: a decoded frame costs several bytes per
+       pixel however small the file carrying it compresses to, so a few megabytes of input can ask for
+       hundreds of megabytes of output. */
+    private Image LoadImage(byte[] data)
+    {
+        var info = Image.Identify(data);
+
+        var pixels = (long)info.Width * info.Height;
+        if (pixels > _settings.MaxPixels)
+        {
+            throw new OdkServiceException(
+                $"Image is too large to process: {info.Width}x{info.Height} exceeds {_settings.MaxPixels} pixels");
+        }
+
+        return Image.Load(data);
+    }
+
+    private byte[] ProcessImage(byte[] data, Action<Image> action)
+    {
+        return ProcessImage(data, image =>
+        {
+            var imageInfo = Image.DetectFormat(data);
+            action(image);
+            return ImageToBytes(image, imageInfo);
+        });
+    }
+
+    private byte[] ProcessImage(byte[] data, Func<Image, byte[]> action)
+    {
+        using var image = LoadImage(data);
+        return action(image);
     }
 }

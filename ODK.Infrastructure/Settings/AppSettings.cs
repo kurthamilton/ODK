@@ -24,6 +24,8 @@ public class AppSettings
 
     public required HibpSettings Hibp { get; init; }
 
+    public required ImagingSettings Imaging { get; init; }
+
     public required InstagramSettings Instagram { get; init; }
 
     public required LocalisationSettings Localisation { get; init; }

@@ -3,9 +3,14 @@
 }
 
 // Cropper.js v2 renders a <cropper-canvas> custom element with no intrinsic size, so give it a
-// display box. Tune the height to taste - this is a starting point pending in-browser review.
+// display box.
 cropper-canvas {
     display: block;
     width: 100%;
-    height: 320px;
+
+    /* Taller than the picture is drawn: odk.imaging.js insets the image by IMAGE_INSET on each side so
+       a selection taken past the image bounds still has canvas to draw its border on. The height is
+       the picture plus that gap top and bottom, so raising IMAGE_INSET without raising this shrinks
+       the picture rather than the gap. */
+    height: 400px;
 }

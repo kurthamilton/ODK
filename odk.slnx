@@ -39,6 +39,9 @@
     <File Path="Scripts/ef-update-database-version.bat" />
     <File Path="Scripts/ef-update-database.bat" />
   </Folder>
+  <Folder Name="/Solution Items/npm/">
+    <File Path="Scripts/npm.outdated.bat" />
+  </Folder>
   <Folder Name="/Solution Items/Scripts/">
     <File Path="Scripts/dotnet-tool-restore.bat" />
     <File Path="Scripts/run.app.bat" />
