@@ -218,7 +218,7 @@ public class GroupAdminRoutes
         => Members(chapter).Child("/invited", ChapterAdminSecurable.MemberImport);
 
     public GroupAdminRoute MembershipSettings(Chapter chapter)
-        => Members(chapter).Child("/membership", ChapterAdminSecurable.MembershipSettings);
+        => Base(chapter).Child("/membership", ChapterAdminSecurable.MembershipSettings);
 
     public GroupAdminRoute MembersSubscription(Chapter chapter, ChapterSubscription subscription)
         => Subscriptions(chapter).Child($"/{subscription.Id}");
@@ -285,13 +285,20 @@ public class GroupAdminRoutes
             Items =
             [
                 new(AdminMembers(chapter), "Admins"),
-                new(MembershipSettings(chapter), "Membership"),
                 new(MemberProperties(chapter), "Profile questions"),
-                new(Subscriptions(chapter), "Subscriptions"),
                 new(MembersEmail(chapter), "Bulk email"),
                 new(MemberApprovals(chapter), "Approvals"),
                 new(MembersImport(chapter), "Import"),
                 new(MembersInvited(chapter), "Invited")
+            ]
+        },
+        new GroupAdminNavSection
+        {
+            Route = MembershipSettings(chapter),
+            Text = "Membership",
+            Items =
+            [
+                new(Subscriptions(chapter), "Subscriptions")
             ]
         },
         new GroupAdminNavSection
@@ -413,6 +420,9 @@ public class GroupAdminRoutes
     public GroupAdminRoute SubscriptionConfirm(Chapter chapter)
         => Subscription(chapter).Child("/confirm?sessionId={sessionId}");
 
+    public GroupAdminRoute Subscriptions(Chapter chapter)
+        => MembershipSettings(chapter).Child("/subscriptions", ChapterAdminSecurable.Subscriptions);
+
     public GroupAdminRoute Texts(Chapter chapter)
         => Group(chapter).Child("/texts", ChapterAdminSecurable.Texts);
 
@@ -427,9 +437,6 @@ public class GroupAdminRoutes
         PlatformType.DrunkenKnitwits => GroupAdminRoute.Default,
         _ => Group(chapter).Child("/topics", ChapterAdminSecurable.Topics, PlatformType.Default)
     };
-
-    public GroupAdminRoute Subscriptions(Chapter chapter)
-        => Members(chapter).Child("/subscriptions", ChapterAdminSecurable.Subscriptions);
 
     public GroupAdminRoute Venue(Chapter chapter, Guid venueId) =>
         Venues(chapter).Child($"/{venueId}");

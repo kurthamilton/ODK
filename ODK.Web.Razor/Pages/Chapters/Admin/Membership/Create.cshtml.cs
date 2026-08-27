@@ -3,15 +3,15 @@ using ODK.Services.Chapters;
 using ODK.Services.Chapters.Models;
 using ODK.Services.Security;
 using ODK.Web.Razor.Models.Admin.Members;
+using ODK.Web.Razor.Models.Feedback;
 
-namespace ODK.Web.Razor.Pages.My.Groups.Members.Subscriptions;
+namespace ODK.Web.Razor.Pages.Chapters.Admin.Membership;
 
-public class CreateModel : OdkGroupAdminPageModel
+public class CreateModel : AdminPageModel
 {
     private readonly IChapterAdminService _chapterAdminService;
 
-    public CreateModel(
-        IChapterAdminService chapterAdminService)
+    public CreateModel(IChapterAdminService chapterAdminService)
     {
         _chapterAdminService = chapterAdminService;
     }
@@ -24,8 +24,8 @@ public class CreateModel : OdkGroupAdminPageModel
 
     public async Task<IActionResult> OnPostAsync(SubscriptionFormSubmitViewModel viewModel)
     {
-        var request = MemberChapterAdminServiceRequest;
-        var result = await _chapterAdminService.CreateChapterSubscription(request, new ChapterSubscriptionCreateModel
+        var serviceRequest = MemberChapterAdminServiceRequest;
+        var result = await _chapterAdminService.CreateChapterSubscription(serviceRequest, new ChapterSubscriptionCreateModel
         {
             Amount = viewModel.Amount ?? 0,
             Description = viewModel.Description,
@@ -36,14 +36,13 @@ public class CreateModel : OdkGroupAdminPageModel
             Title = viewModel.Title
         });
 
-        AddFeedback(result, "Subscription created");
-
-        if (!result.Success)
+        if (result.Success)
         {
-            return Page();
+            AddFeedback("Subscription created", FeedbackType.Success);
+            return Redirect(AdminRoutes.Subscriptions(Chapter).Path);
         }
 
-        var path = OdkRoutes.GroupAdmin.Subscriptions(Chapter).Path;
-        return Redirect(path);
+        AddFeedback(result);
+        return Page();
     }
 }

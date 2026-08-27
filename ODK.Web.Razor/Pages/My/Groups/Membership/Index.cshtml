@@ -1,8 +1,7 @@
-﻿@page "/my/groups/{chapterId:guid}/members/membership"
+﻿@page "/my/groups/{chapterId:guid}/membership"
 @using ODK.Services.Chapters
-@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
-@model MembershipModel
+@model IndexModel
 @inject IChapterAdminService ChapterAdminService
 @{
     Layout = "_GroupAdminLayout";
@@ -15,6 +14,6 @@
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
 {
     Title = "Membership settings",
-    BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_MembershipSettingsContent", viewModel)</div>,
+    BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Membership/_MembershipSettingsContent", viewModel)</div>,
     MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu")
 })

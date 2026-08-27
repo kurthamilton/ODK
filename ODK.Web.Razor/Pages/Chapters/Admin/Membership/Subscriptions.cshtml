@@ -1,8 +1,6 @@
-﻿@page "/{chapterName}/Admin/Members/Subscriptions"
-@using ODK.Services
+﻿@page "/{chapterName}/admin/membership/subscriptions"
 @using ODK.Services.Members
 @using ODK.Web.Razor.Models.Admin
-@using ODK.Web.Razor.Models.Components
 @model SubscriptionsModel
 @inject IMemberAdminService MemberAdminService
 @{
@@ -16,5 +14,5 @@
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
     Title = "Subscriptions",
-    ContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_SubscriptionsContent", viewModel)</div>
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Membership/_SubscriptionsContent", viewModel)</div>
 })

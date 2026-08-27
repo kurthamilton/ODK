@@ -1,7 +1,5 @@
-﻿@page "/my/groups/{chapterId:guid}/members/subscriptions/{subscriptionId:guid}"
+﻿@page "/my/groups/{chapterId:guid}/membership/subscriptions/{subscriptionId:guid}"
 @using ODK.Services.Members
-@using ODK.Web.Common.Routes
-@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model EditModel
 @inject IMemberAdminService MemberAdminService
@@ -28,6 +26,6 @@
             }
         }
     },
-    BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_SubscriptionEditContent", viewModel)</div>,
+    BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Membership/_SubscriptionEditContent", viewModel)</div>,
     MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu")
 })

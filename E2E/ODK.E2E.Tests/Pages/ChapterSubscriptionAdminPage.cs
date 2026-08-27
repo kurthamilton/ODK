@@ -4,7 +4,7 @@ using Microsoft.Playwright;
 namespace ODK.E2E.Tests.Pages;
 
 /// <summary>
-/// The chapter-admin create-subscription page (Default <c>.../members/subscriptions/new</c>, DrunkenKnitwits
+/// The chapter-admin create-subscription page (Default <c>.../membership/subscriptions/new</c>, DrunkenKnitwits
 /// <c>.../create</c>). The form posts back to itself and, on success, redirects to the subscriptions list.
 /// Requires the chapter owner to have the MemberSubscriptions site feature and a set-up payment account
 /// (the test seeds both). Description is a TinyMCE editor; recurring is a checkbox - leave it unchecked for a
@@ -52,7 +52,7 @@ internal class ChapterSubscriptionAdminPage
         try
         {
             await _page.WaitForURLAsync(
-                url => url.Contains("/members/subscriptions") && !url.Contains("/new") && !url.Contains("/create"),
+                url => url.Contains("/membership/subscriptions") && !url.Contains("/new") && !url.Contains("/create"),
                 new() { Timeout = 20000 });
         }
         catch (TimeoutException)

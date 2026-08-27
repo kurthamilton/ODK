@@ -125,9 +125,9 @@ internal abstract class PlatformRoutes
 
         public override string ProfileUpdate => $"/groups/{_slug}/profile";
 
-        public override string SubscriptionCreate => $"/my/groups/{_chapterId}/members/subscriptions/new";
+        public override string SubscriptionCreate => $"/my/groups/{_chapterId}/membership/subscriptions/new";
 
-        public override string SubscriptionsList => $"/my/groups/{_chapterId}/members/subscriptions";
+        public override string SubscriptionsList => $"/my/groups/{_chapterId}/membership/subscriptions";
 
         public override string EventEdit(Guid eventId) => $"/my/groups/{_chapterId}/events/{eventId}";
 
@@ -182,9 +182,9 @@ internal abstract class PlatformRoutes
 
         public override string ProfileUpdate => $"/{_shortName}/account/profile";
 
-        public override string SubscriptionCreate => $"/{_shortName}/admin/members/subscriptions/create";
+        public override string SubscriptionCreate => $"/{_shortName}/admin/membership/subscriptions/create";
 
-        public override string SubscriptionsList => $"/{_shortName}/admin/members/subscriptions";
+        public override string SubscriptionsList => $"/{_shortName}/admin/membership/subscriptions";
 
         public override string EventEdit(Guid eventId) => $"/{_shortName}/admin/events/{eventId}";
 

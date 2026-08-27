@@ -1,7 +1,5 @@
 ﻿@using ODK.Services.Members.ViewModels
-@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin.Members
-@using ODK.Web.Razor.Models.Components
 @model SubscriptionAdminPageViewModel
 
 @await Html.PartialAsync("Components/_AdminPageDescription",
@@ -9,7 +7,7 @@
 
 <form method="post">
     @Html.AntiForgeryToken()
-    @await Html.PartialAsync("Admin/Members/_MemberAdminSubscriptionForm", new SubscriptionFormViewModel
+    @await Html.PartialAsync("Admin/Membership/_MemberAdminSubscriptionForm", new SubscriptionFormViewModel
     {
         Amount = Model.Subscription.Amount,
         Currency = Model.Subscription.Currency,

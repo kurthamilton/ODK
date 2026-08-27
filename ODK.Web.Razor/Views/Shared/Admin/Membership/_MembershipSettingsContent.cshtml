@@ -17,7 +17,7 @@
     ContentFunc =
         @<form action="/groups/@Model.Chapter.Id/membership" method="post">
             @Html.AntiForgeryToken()
-            @await Html.PartialAsync("Admin/Members/_MembershipSettingsForm", new MembershipSettingsFormViewModel
+            @await Html.PartialAsync("Admin/Membership/_MembershipSettingsForm", new MembershipSettingsFormViewModel
             {
                 ApproveNewMembers = membershipSettings?.ApproveNewMembers ?? false,
                 CanApproveMembers = Model.OwnerSubscriptionFeatures.Contains(SiteFeatureType.ApproveMembers),

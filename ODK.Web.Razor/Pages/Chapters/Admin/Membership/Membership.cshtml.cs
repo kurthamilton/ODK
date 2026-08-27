@@ -1,6 +1,6 @@
 using ODK.Services.Security;
 
-namespace ODK.Web.Razor.Pages.Chapters.Admin.Members;
+namespace ODK.Web.Razor.Pages.Chapters.Admin.Membership;
 
 public class MembershipModel : AdminPageModel
 {
