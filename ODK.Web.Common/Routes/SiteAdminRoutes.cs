@@ -31,6 +31,12 @@ public class SiteAdminRoutes
 
     public SiteAdminRoute Payments => Path("/payments");
 
+    /// <summary>
+    /// The webhook endpoints registered against the platform's payment provider accounts. Its own page
+    /// rather than part of <see cref="Payments"/>: rendering it calls out to every account.
+    /// </summary>
+    public SiteAdminRoute PaymentWebhooks => Payments.Child("/webhooks");
+
     public SiteAdminRoute QuestionCreate => Questions.Child("/new");
 
     public SiteAdminRoute Questions => Path("/questions");
@@ -95,7 +101,10 @@ public class SiteAdminRoutes
             Children = [new(MembersFlagged, "Flagged")]
         },
         new(Messages(), "Messages"),
-        new(Payments, "Payments"),
+        new(Payments, "Payments")
+        {
+            Children = [new(PaymentWebhooks, "Webhooks")]
+        },
         new(Referrals, "Referrals"),
         new(Subscriptions, "Subscriptions"),
         new(Topics, "Topics"),

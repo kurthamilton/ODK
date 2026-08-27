@@ -20,6 +20,7 @@
                     <tr>
                         <th data-sortable-sort="default">Name</th>
                         <th>Provider</th>
+                        <th>Environment</th>
                         <th>External Id</th>
                         <th>Enabled</th>
                         <th></th>
@@ -36,6 +37,7 @@
                                 <a href="@OdkRoutes.SiteAdmin.Payment(paymentSetting.Id)">@paymentSetting.Name</a>
                             </td>
                             <td>@paymentSetting.Provider</td>
+                            <td>@paymentSetting.Environment</td>
                             <td>
                                 @* Sorting falls back to the cell's HTML, which would put a link's href ahead
                                    of the id, so the id is stated for it explicitly. *@

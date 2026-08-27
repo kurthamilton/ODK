@@ -1,0 +1,22 @@
+﻿@page "/siteadmin/payments/webhooks"
+@using ODK.Services.Payments
+@using ODK.Web.Razor.Models.Components
+@model PaymentWebhooksModel
+@inject IStripeWebhookAdminService StripeWebhookAdminService
+@{
+    Layout = "_SiteAdminLayout";
+    Model.Title = "Webhooks | SiteAdmin";
+
+    var viewModel = await StripeWebhookAdminService.GetStripeWebhooksViewModel(Model.MemberServiceRequest);
+}
+
+@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+{
+    Breadcrumbs = new[]
+    {
+        new MenuItem { Link = Model.OdkRoutes.SiteAdmin.Payments.Path, Text = "Payments" },
+        new MenuItem { Text = "Webhooks" }
+    }
+})
+
+@await Html.PartialAsync("SiteAdmin/_SiteAdminStripeWebhooksContent", viewModel)

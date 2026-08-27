@@ -46,6 +46,14 @@ public class PaymentProviderFactory : IPaymentProviderFactory
         return GetPaymentProvider(paymentSettings, connectedAccountId: null);
     }
 
+    /* Guarded on the provider type rather than constructing and testing the result, because
+       GetPaymentProvider throws for a type it does not support - and a record on another provider is a
+       caller asking a fair question, not a fault. */
+    public IStripeWebhookProvider? GetStripeWebhookProvider(SitePaymentSettings sitePaymentSettings)
+        => sitePaymentSettings.Provider == PaymentProviderType.Stripe
+            ? GetPaymentProvider(sitePaymentSettings, connectedAccountId: null) as IStripeWebhookProvider
+            : null;
+
     private IPaymentProvider GetPaymentProvider(SitePaymentSettings settings, string? connectedAccountId)
     {
         switch (settings.Provider)

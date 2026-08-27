@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Payments;
+using ODK.Core.Platforms;
 
 namespace ODK.Services.Settings.Models;
 
@@ -11,6 +12,8 @@ public class SitePaymentSettingsCreateModel
     public required decimal Commission { get; init; }
 
     public required bool Enabled { get; init; }
+
+    public required EnvironmentType? Environment { get; init; }
 
     public required string? ExternalId { get; init; }
 

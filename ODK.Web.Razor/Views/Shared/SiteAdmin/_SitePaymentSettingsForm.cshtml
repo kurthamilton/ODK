@@ -18,6 +18,13 @@
         : new { @class = "form-select" })
 </div>
 
+<div class="form-group mb-3">
+    @Html.LabelFor(x => x.Environment, new { @class = "form-label" })
+    @* Optional, and left blank rather than defaulted: a row whose environment nobody has stated is
+       something the webhook overview reports, and guessing one would hide it. *@
+    @Html.OdkEnumDropDownFor(x => x.Environment, string.Empty, new { @class = "form-select" })
+</div>
+
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.PublicKey, new { @class = "form-label" })
     @Html.TextBoxFor(x => x.PublicKey, new { @class = "form-control" })
