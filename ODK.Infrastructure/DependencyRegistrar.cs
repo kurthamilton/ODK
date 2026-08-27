@@ -183,6 +183,10 @@ public static class DependencyRegistrar
             .AddScoped<ISiteQuestionAdminService, SiteQuestionAdminService>()
             .AddScoped<ISiteQuestionViewModelService, SiteQuestionViewModelService>()
             .AddScoped<IImageService, ImageService>()
+            .AddSingleton(new ImageServiceSettings
+            {
+                MaxPixels = appSettings.Imaging.MaxPixels
+            })
             .AddScoped<ILoggingService, LoggingService>()
             .AddSingleton(new LoggingServiceSettings
             {
@@ -248,7 +252,6 @@ public static class DependencyRegistrar
             .AddScoped<IMemberLocaleService, MemberLocaleService>()
             .AddSingleton(new MemberImageServiceSettings
             {
-                MaxImageSize = appSettings.Members.MaxImageSize,
                 MemberAvatarSize = appSettings.Members.AvatarSize
             })
             .AddScoped<IMemberService, MemberService>()
