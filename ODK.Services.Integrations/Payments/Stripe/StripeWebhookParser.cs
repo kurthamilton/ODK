@@ -40,15 +40,7 @@ public class StripeWebhookParser : IStripeWebhookParser
         try
         {
             // Constructing the event validates the payload signature against the secret.
-            // A direct parse skips signature validation and must only ever be used in tests, so it is gated to
-            // debug builds behind an explicit sentinel - production (release) builds are always fail-closed.
-            var skipValidation = false;
-#if DEBUG
-            skipValidation = secret == "IGNORE";
-#endif
-            var stripeEvent = skipValidation
-                ? EventUtility.ParseEvent(json)
-                : EventUtility.ConstructEvent(json, signature, secret);
+            var stripeEvent = EventUtility.ConstructEvent(json, signature, secret);
 
             // Log receipt of every validated event (id and type only - no PII) so that unhandled or
             // dropped event types remain traceable.
