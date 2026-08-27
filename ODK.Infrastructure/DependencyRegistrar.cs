@@ -224,11 +224,11 @@ public static class DependencyRegistrar
                 DefaultHeaderBackground = appSettings.Emails.Theme.Header.Background,
                 DefaultHeaderColor = appSettings.Emails.Theme.Header.Color
             })
-            .AddScoped<IGeolocationService, GoogleGeolocationService>()
-            .AddSingleton(new GoogleGeolocationServiceSettings
+            .AddScoped<IGeolocationService, GeolocationService>()
+            .AddSingleton(new GeolocationServiceSettings
             {
-                ApiKey = appSettings.Google.Geolocation.ApiKey,
-                Disabled = appSettings.Google.Geolocation.Disabled
+                GoogleApiKey = appSettings.Google.Geolocation.ApiKey,
+                GoogleDisabled = appSettings.Google.Geolocation.Disabled
             })
             .AddScoped<IInstagramClient, InstagramClient>()
             .AddSingleton(new InstagramClientSettings
@@ -240,6 +240,7 @@ public static class DependencyRegistrar
                 Headers = appSettings.Instagram.Client.Headers ?? [],
                 PostsGraphQlDocId = appSettings.Instagram.Client.GraphQL.PostsDocId
             })
+            .AddScoped<ILatLongCalculator, LatLongCalculator>()
             .AddScoped<IMemberAdminService, MemberAdminService>()
             .AddSingleton(new MemberAdminServiceSettings
             {

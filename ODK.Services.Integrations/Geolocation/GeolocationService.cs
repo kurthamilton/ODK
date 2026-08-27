@@ -11,17 +11,17 @@ using ODK.Services.Logging;
 
 namespace ODK.Services.Integrations.Geolocation;
 
-public class GoogleGeolocationService : IGeolocationService
+public class GeolocationService : IGeolocationService
 {
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILoggingService _loggingService;
-    private readonly GoogleGeolocationServiceSettings _settings;
+    private readonly GeolocationServiceSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
 
-    public GoogleGeolocationService(
+    public GeolocationService(
         IUnitOfWork unitOfWork,
         ILoggingService loggingService,
-        GoogleGeolocationServiceSettings settings,
+        GeolocationServiceSettings settings,
         IHttpClientFactory httpClientFactory)
     {
         _httpClientFactory = httpClientFactory;
@@ -32,7 +32,7 @@ public class GoogleGeolocationService : IGeolocationService
 
     public async Task<Country?> GetCountryFromLocation(LatLong location)
     {
-        if (_settings.Disabled)
+        if (_settings.GoogleDisabled)
         {
             await _loggingService.Warn("Skipping Google country location: disabled");
             return null;
@@ -66,7 +66,7 @@ public class GoogleGeolocationService : IGeolocationService
 
     public async Task<Location?> GetLocationFromIpAddress(string ipAddress)
     {
-        if (_settings.Disabled)
+        if (_settings.GoogleDisabled)
         {
             await _loggingService.Warn("Skipping Google IP location: disabled");
             return null;
@@ -197,7 +197,7 @@ public class GoogleGeolocationService : IGeolocationService
     {
         try
         {
-            var apiKey = _settings.ApiKey;
+            var apiKey = _settings.GoogleApiKey;
             if (string.IsNullOrEmpty(apiKey))
             {
                 return null;

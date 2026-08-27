@@ -34,6 +34,7 @@ public class ChapterViewModelService : IChapterViewModelService
     private readonly IAuthorizationService _authorizationService;
     private readonly IDistanceUnitFactory _distanceUnitFactory;
     private readonly IGeolocationService _geolocationService;
+    private readonly ILatLongCalculator _latLongCalculator;
     private readonly ILoggingService _loggingService;
     private readonly SiteSubscriptionCooldown _siteSubscriptionCooldown;
     private readonly ISocialMediaService _socialMediaService;
@@ -46,11 +47,13 @@ public class ChapterViewModelService : IChapterViewModelService
         ILoggingService loggingService,
         IDistanceUnitFactory distanceUnitFactory,
         IGeolocationService geolocationService,
+        ILatLongCalculator latLongCalculator,
         SiteSubscriptionCooldown siteSubscriptionCooldown)
     {
         _authorizationService = authorizationService;
         _distanceUnitFactory = distanceUnitFactory;
         _geolocationService = geolocationService;
+        _latLongCalculator = latLongCalculator;
         _loggingService = loggingService;
         _siteSubscriptionCooldown = siteSubscriptionCooldown;
         _socialMediaService = socialMediaService;
@@ -161,7 +164,7 @@ public class ChapterViewModelService : IChapterViewModelService
             var chapterId = result.Chapter.Id;
 
             var chapterDistance = result.Location != null && location != null
-                ? result.Location.LatLong.DistanceFrom(location.LatLong, distanceUnit)
+                ? _latLongCalculator.CalculateDistanceBetween(result.Location.LatLong, location.LatLong, distanceUnit)
                 : default(double?);
 
             groups.Add(new ChapterWithDistanceViewModel
