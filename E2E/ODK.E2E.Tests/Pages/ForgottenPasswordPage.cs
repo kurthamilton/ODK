@@ -1,4 +1,4 @@
-using Microsoft.Playwright;
+﻿using Microsoft.Playwright;
 
 namespace ODK.E2E.Tests.Pages;
 
@@ -26,17 +26,10 @@ internal class ForgottenPasswordPage
         await _page.Navigate(forgottenPasswordUrl);
         await _page.FillAsync("#EmailAddress", emailAddress);
 
-        /* Post/Redirect/Get onto the same URL, so there is no address change to wait for - settle the
-           network instead, or the caller's next navigation collides with the redirect still in flight. */
-        var rendered = _page.WaitForResponseAsync(
-            r => r.Request.Method == "GET" && r.Request.ResourceType == "document");
-
-        await _page.RunAndWaitForResponseAsync(
+        // Post/Redirect/Get onto the same URL, so there is no address change to wait for.
+        await _page.RunAndWaitForDocument(() => _page.RunAndWaitForResponseAsync(
             () => _page.ClickAsync("form[action$='Password/Forgotten'] button"),
-            r => r.Request.Method == "POST" && r.Request.ResourceType == "document");
-
-        await rendered;
-        await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            r => r.Request.Method == "POST" && r.Request.ResourceType == "document"));
     }
 
     /// <summary>

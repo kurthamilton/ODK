@@ -4,6 +4,9 @@ namespace ODK.E2E.Tests.Pages;
 
 internal static class PageExtensions
 {
+    // Stamped on the document before something navigates, to tell it apart from the one that replaces it.
+    private const string NavigationMarker = "__odkNavigationMarker";
+
     /// <summary>
     /// Accepts the shared confirmation dialog - the _Confirm component plus _ConfirmModal, which replaced
     /// the native <c>window.confirm</c>. A form rendering _Confirm does not submit when its button is
@@ -13,6 +16,42 @@ internal static class PageExtensions
     /// </summary>
     internal static Task AcceptConfirm(this IPage page)
         => page.ClickAsync("#confirm-modal [data-odk-confirm-accept]");
+
+    /// <inheritdoc cref="RunAndWaitForDocument" />
+    internal static Task ClickAndWaitForDocument(this IPage page, string selector)
+        => page.RunAndWaitForDocument(() => page.ClickAsync(selector));
+
+    /// <summary>
+    /// Runs <paramref name="action"/> - whatever releases a form, or follows a link - and returns only once
+    /// the document it lands on has been committed. Anything that submits and is then read back, from the
+    /// database or by navigating again, has to go through this.
+    /// </summary>
+    /// <remarks>
+    /// The document is stamped before the action and waited on until the stamp has gone: a window property
+    /// does not survive a navigation, so its absence is the new document having replaced the one that acted.
+    /// <para>
+    /// Not <c>WaitForLoadStateAsync</c>, which looks like it does this and does not: a load state resolves
+    /// against whichever document is current when it is called, and until the navigation commits that is
+    /// still the document that submitted - which reached every state long before the click - so the wait
+    /// returns at once and guards nothing. The caller then reads the database before the POST has been
+    /// handled, or navigates and has its navigation cut short by the one already running
+    /// ("Navigation to X is interrupted by another navigation to X", or <c>net::ERR_ABORTED</c>).
+    /// </para>
+    /// <para>
+    /// Nor is waiting for the POST's own response enough on its own: every form here is Post/Redirect/Get,
+    /// so that response is the 302 and arrives while the redirected GET is still in flight. Keep such a
+    /// waiter where the test needs to assert the form actually posted, and wrap it in this.
+    /// </para>
+    /// </remarks>
+    internal static async Task RunAndWaitForDocument(this IPage page, Func<Task> action)
+    {
+        await page.EvaluateAsync($"() => {{ window.{NavigationMarker} = true; }}");
+
+        await action();
+
+        await page.WaitForFunctionAsync($"() => !window.{NavigationMarker}");
+        await page.WaitForLoadStateAsync();
+    }
 
     /// <summary>
     /// Dismisses the cookie banner, as a visitor has to before they can use the bottom of a page: it is

@@ -67,8 +67,7 @@ internal class ChapterEmailAdminPage
     public async Task<string> OpenFirstEmail(string listUrl)
     {
         await _page.Navigate(listUrl);
-        await _page.ClickAsync("tbody tr:first-child td:first-child a");
-        await _page.WaitForLoadStateAsync();
+        await _page.ClickAndWaitForDocument("tbody tr:first-child td:first-child a");
 
         return new Uri(_page.Url).PathAndQuery;
     }
@@ -242,26 +241,20 @@ internal class ChapterEmailAdminPage
         }
     }
 
-    /* Clicks something that posts, and returns only once the page it redirects to has rendered. Waiting on the
-       POST response alone is not enough: every form here is Post/Redirect/Get, and that response is the 302 -
-       so it arrives while the redirected GET is still in flight. A caller that then navigates to the same URL
-       has its navigation cut short by the one already running, which Playwright reports as "Navigation to X is
-       interrupted by another navigation to X". The GET waiter is registered before the click so it cannot be
-       missed. */
-    private async Task Submit(string selector, Func<IResponse, bool> posted)
-    {
-        var rendered = _page.WaitForResponseAsync(
-            r => r.Request.Method == "GET" && r.Request.ResourceType == "document");
+    /* Clicks something that posts, and returns only once the document it redirects to has been committed.
+       Waiting on the POST response alone is not enough: every form here is Post/Redirect/Get, and that
+       response is the 302 - so it arrives while the redirected GET is still in flight. A caller that then
+       navigates to the same URL has its navigation cut short by the one already running, which Playwright
+       reports as "Navigation to X is interrupted by another navigation to X".
 
-        await _page.RunAndWaitForResponseAsync(() => _page.ClickAsync(selector), posted);
+       The document is stamped before the click and waited on until the stamp has gone: a window property does
+       not survive a navigation, so its absence is the redirected document having replaced the one that posted.
 
-        await rendered;
-
-        /* Every form here is Post/Redirect/Get and posts to its own URL, so the address never changes across
-           a save - there is nothing to wait for it to become, and the redirected GET arriving is not the
-           browser having committed the document it carries. Settling the network is what covers that last
-           step. Without it a caller that navigates to the same URL has its navigation cut short by the one
-           still in flight ("Navigation to X is interrupted by another navigation to X"). */
-        await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-    }
+       Not a load-state wait, and not waiting for the redirected GET's response: a load state resolves against
+       whichever document is current when it is called, and until the redirect commits that is still the
+       document that posted - which reached every state long before the click - so the wait returns at once and
+       guards nothing. The response arriving is likewise not the browser having committed what it carries. */
+    private Task Submit(string selector, Func<IResponse, bool> posted)
+        => _page.RunAndWaitForDocument(
+            () => _page.RunAndWaitForResponseAsync(() => _page.ClickAsync(selector), posted));
 }

@@ -26,7 +26,6 @@ internal class GroupImageAdminPage
         await _page.WaitForFunctionAsync(
             "() => { const el = document.querySelector('[data-img-dataurl]'); return !!el && el.value.length > 0; }");
 
-        await _page.ClickAsync($"form[action='/groups/{chapterId}/image'] button");
-        await _page.WaitForLoadStateAsync();
+        await _page.ClickAndWaitForDocument($"form[action='/groups/{chapterId}/image'] button");
     }
 }

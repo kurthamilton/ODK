@@ -24,8 +24,7 @@ internal class SiteAdminQuestionsPage
         await _page.FillAsync("#Question", question);
         await FillAnswer(answer);
 
-        await _page.ClickAsync("form[action='/siteadmin/questions/new'] button[type='submit']");
-        await _page.WaitForLoadStateAsync();
+        await _page.ClickAndWaitForDocument("form[action='/siteadmin/questions/new'] button[type='submit']");
     }
 
     public async Task Delete(Guid questionId)
@@ -33,9 +32,11 @@ internal class SiteAdminQuestionsPage
         await _page.Navigate("/siteadmin/questions");
 
         // The delete button is wrapped in a confirm modal, so the submit only happens once it's accepted.
-        await _page.ClickAsync($"form[action='/siteadmin/questions/{questionId}/delete'] button");
-        await _page.AcceptConfirm();
-        await _page.WaitForLoadStateAsync();
+        await _page.RunAndWaitForDocument(async () =>
+        {
+            await _page.ClickAsync($"form[action='/siteadmin/questions/{questionId}/delete'] button");
+            await _page.AcceptConfirm();
+        });
     }
 
     public async Task<bool> IsListed(string question)
@@ -48,8 +49,7 @@ internal class SiteAdminQuestionsPage
     {
         await _page.Navigate("/siteadmin/questions");
 
-        await _page.ClickAsync($"form[action='/siteadmin/questions/{questionId}/move/up'] button");
-        await _page.WaitForLoadStateAsync();
+        await _page.ClickAndWaitForDocument($"form[action='/siteadmin/questions/{questionId}/move/up'] button");
     }
 
     public async Task Update(Guid questionId, string question, string answer)
@@ -59,8 +59,7 @@ internal class SiteAdminQuestionsPage
         await _page.FillAsync("#Question", question);
         await FillAnswer(answer);
 
-        await _page.ClickAsync($"form[action='/siteadmin/questions/{questionId}'] button[type='submit']");
-        await _page.WaitForLoadStateAsync();
+        await _page.ClickAndWaitForDocument($"form[action='/siteadmin/questions/{questionId}'] button[type='submit']");
     }
 
     private Task FillAnswer(string answer) => _page.SetHtmlEditor("Answer", answer);

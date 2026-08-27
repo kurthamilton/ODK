@@ -1,4 +1,4 @@
-using Microsoft.Playwright;
+﻿using Microsoft.Playwright;
 
 namespace ODK.E2E.Tests.Pages;
 
@@ -24,7 +24,6 @@ internal class SiteAdminGroupsPage
         await _page.ClickAsync("button[data-bs-target='#pending-tab-pane']");
 
         // The approve form's action embeds the group id, so it's a unique, stable locator.
-        await _page.ClickAsync($"form[action='/siteadmin/groups/{chapterId}/approve'] button");
-        await _page.WaitForLoadStateAsync();
+        await _page.ClickAndWaitForDocument($"form[action='/siteadmin/groups/{chapterId}/approve'] button");
     }
 }

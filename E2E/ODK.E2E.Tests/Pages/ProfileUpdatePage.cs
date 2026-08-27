@@ -1,4 +1,4 @@
-using Microsoft.Playwright;
+﻿using Microsoft.Playwright;
 
 namespace ODK.E2E.Tests.Pages;
 
@@ -29,9 +29,8 @@ internal class ProfileUpdatePage
         await _page.Navigate(profileUrl);
         await _page.FillChapterProperty(chapterPropertyId, value);
 
-        await _page.RunAndWaitForResponseAsync(
+        await _page.RunAndWaitForDocument(() => _page.RunAndWaitForResponseAsync(
             () => _page.ClickAsync("button:has-text('Update')"),
-            r => r.Request.Method == "POST" && r.Url.Contains("/profile"));
-        await _page.WaitForLoadStateAsync();
+            r => r.Request.Method == "POST" && r.Url.Contains("/profile")));
     }
 }

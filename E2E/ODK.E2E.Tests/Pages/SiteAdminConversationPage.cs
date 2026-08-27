@@ -1,4 +1,4 @@
-using Microsoft.Playwright;
+﻿using Microsoft.Playwright;
 
 namespace ODK.E2E.Tests.Pages;
 
@@ -27,14 +27,8 @@ internal class SiteAdminConversationPage
         /* Post/Redirect/Get, so the POST response is the 302 and arrives while the redirected GET is still
            in flight - the GET waiter is registered before the click so it cannot be missed, and the network
            is settled afterwards so the reply has certainly been committed by the time this returns. */
-        var reloaded = _page.WaitForResponseAsync(
-            r => r.Request.Method == "GET" && r.Request.ResourceType == "document");
-
-        await _page.RunAndWaitForResponseAsync(
+        await _page.RunAndWaitForDocument(() => _page.RunAndWaitForResponseAsync(
             () => _page.ClickAsync($"form[action='{replyUrl}'] button:has-text('Send')"),
-            r => r.Request.Method == "POST" && r.Request.ResourceType == "document");
-
-        await reloaded;
-        await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            r => r.Request.Method == "POST" && r.Request.ResourceType == "document"));
     }
 }

@@ -1,4 +1,4 @@
-using Microsoft.Playwright;
+﻿using Microsoft.Playwright;
 
 namespace ODK.E2E.Tests.Pages;
 
@@ -26,15 +26,9 @@ internal class MemberApprovalsAdminPage
         // that another test's member could share.
         var form = $"form[action='/groups/{chapterId}/members/{memberId}/approve']";
 
-        var rendered = _page.WaitForResponseAsync(
-            r => r.Request.Method == "GET" && r.Request.ResourceType == "document");
-
-        await _page.RunAndWaitForResponseAsync(
+        await _page.RunAndWaitForDocument(() => _page.RunAndWaitForResponseAsync(
             () => _page.ClickAsync($"{form} button"),
-            r => r.Request.Method == "POST" && r.Request.ResourceType == "document");
-
-        await rendered;
-        await _page.WaitForLoadStateAsync();
+            r => r.Request.Method == "POST" && r.Request.ResourceType == "document"));
     }
 
     /// <summary>Whether the member is listed as waiting for approval.</summary>

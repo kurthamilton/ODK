@@ -1,4 +1,4 @@
-using Microsoft.Playwright;
+﻿using Microsoft.Playwright;
 
 namespace ODK.E2E.Tests.Pages;
 
@@ -30,9 +30,8 @@ internal class ChangeEmailPage
         await _page.Navigate(changeEmailUrl);
 
         await _page.FillAsync("#Email", newEmail);
-        await _page.RunAndWaitForResponseAsync(
+        await _page.RunAndWaitForDocument(() => _page.RunAndWaitForResponseAsync(
             () => _page.ClickAsync("form[action$='/email/change'] button"),
-            r => r.Request.Method == "POST" && r.Url.Contains("/email/change"));
-        await _page.WaitForLoadStateAsync();
+            r => r.Request.Method == "POST" && r.Url.Contains("/email/change")));
     }
 }

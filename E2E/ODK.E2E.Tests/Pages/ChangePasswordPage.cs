@@ -1,4 +1,4 @@
-using Microsoft.Playwright;
+﻿using Microsoft.Playwright;
 
 namespace ODK.E2E.Tests.Pages;
 
@@ -25,9 +25,8 @@ internal class ChangePasswordPage
         await _page.FillAsync("#NewPassword", newPassword);
         await _page.FillAsync("#ConfirmNewPassword", newPassword);
 
-        await _page.RunAndWaitForResponseAsync(
+        await _page.RunAndWaitForDocument(() => _page.RunAndWaitForResponseAsync(
             () => _page.ClickAsync("form[action$='Password/Change'] button"),
-            r => r.Request.Method == "POST" && r.Url.Contains("/password/change", StringComparison.OrdinalIgnoreCase));
-        await _page.WaitForLoadStateAsync();
+            r => r.Request.Method == "POST" && r.Url.Contains("/password/change", StringComparison.OrdinalIgnoreCase)));
     }
 }
