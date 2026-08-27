@@ -33,7 +33,7 @@
                 {
                     <form method="post">
                         @Html.AntiForgeryToken()
-                        @await Html.PartialAsync("Admin/Members/_MemberAdminSubscriptionForm", new SubscriptionFormViewModel
+                        @await Html.PartialAsync("Admin/Membership/_MemberAdminSubscriptionForm", new SubscriptionFormViewModel
                         {
                             Currency = Model.Currency,
                             OwnerSubscriptionFeatures = Model.OwnerSubscriptionFeatures,

@@ -1,6 +1,5 @@
-﻿@page "/my/groups/{chapterId:guid}/members/subscriptions"
+﻿@page "/my/groups/{chapterId:guid}/membership/subscriptions"
 @using ODK.Services.Members
-@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model IndexModel
 @inject IMemberAdminService MemberAdminService
@@ -15,6 +14,6 @@
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
 {
     Title = "Subscriptions",
-    BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_SubscriptionsContent", viewModel)</div>,
+    BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Membership/_SubscriptionsContent", viewModel)</div>,
     MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu")
 })

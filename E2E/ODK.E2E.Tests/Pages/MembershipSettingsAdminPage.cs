@@ -3,7 +3,7 @@
 namespace ODK.E2E.Tests.Pages;
 
 /// <summary>
-/// The Group Squirrel membership settings page (<c>/my/groups/{chapterId}/members/membership</c>), where an
+/// The Group Squirrel membership settings page (<c>/my/groups/{chapterId}/membership</c>), where an
 /// owner says whether new members need approving. Group Squirrel only, which is why this composes the path
 /// itself rather than taking one from <see cref="PlatformRoutes"/>.
 /// </summary>
@@ -28,7 +28,7 @@ internal class MembershipSettingsAdminPage
     /// </summary>
     public async Task RequireApproval(Guid chapterId)
     {
-        await _page.Navigate($"/my/groups/{chapterId}/members/membership");
+        await _page.Navigate($"/my/groups/{chapterId}/membership");
 
         // Absent rather than merely unchecked when the owner's subscription does not carry the feature, so
         // say which it is - a bare timeout here looks like a slow page rather than a mis-provisioned group.

@@ -1,6 +1,6 @@
 using ODK.Services.Security;
 
-namespace ODK.Web.Razor.Pages.My.Groups.Members.Subscriptions;
+namespace ODK.Web.Razor.Pages.My.Groups.Membership.Subscriptions;
 
 public class IndexModel : OdkGroupAdminPageModel
 {

@@ -1,9 +1,6 @@
-﻿@page "/{chapterName}/admin/members/membership"
-@using ODK.Services
+﻿@page "/{chapterName}/admin/membership"
 @using ODK.Services.Chapters
-@using ODK.Services.Security
 @using ODK.Web.Razor.Models.Admin
-@using ODK.Web.Razor.Models.Components
 @model MembershipModel
 @inject IChapterAdminService ChapterAdminService
 @{
@@ -17,5 +14,5 @@
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
     Title = "Membership settings",
-    ContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_MembershipSettingsContent", viewModel)</div>
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Membership/_MembershipSettingsContent", viewModel)</div>
 })

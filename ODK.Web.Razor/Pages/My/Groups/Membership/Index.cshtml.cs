@@ -1,8 +1,8 @@
 using ODK.Services.Security;
 
-namespace ODK.Web.Razor.Pages.My.Groups.Members;
+namespace ODK.Web.Razor.Pages.My.Groups.Membership;
 
-public class MembershipModel : OdkGroupAdminPageModel
+public class IndexModel : OdkGroupAdminPageModel
 {
     public override ChapterAdminSecurable Securable => ChapterAdminSecurable.MembershipSettings;
 
