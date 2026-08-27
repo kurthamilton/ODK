@@ -1,4 +1,4 @@
-using Microsoft.Playwright;
+﻿using Microsoft.Playwright;
 
 namespace ODK.E2E.Tests.Pages;
 
@@ -28,17 +28,18 @@ internal class SiteSubscriptionAccountPage
     /// </summary>
     public async Task CancelSubscription()
     {
-        await _page.ClickAsync(CancelButtonSelector);
-        await _page.AcceptConfirm();
-        await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        await _page.RunAndWaitForDocument(async () =>
+        {
+            await _page.ClickAsync(CancelButtonSelector);
+            await _page.AcceptConfirm();
+        });
     }
 
     /// <summary>Selects the first available currency and submits, waiting for the redirect back to settle.</summary>
     public async Task ChooseFirstCurrency()
     {
         await _page.SelectOptionAsync("#currencyId", new SelectOptionValue { Index = 1 });
-        await _page.ClickAsync("button:has-text('Update')");
-        await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        await _page.ClickAndWaitForDocument("button:has-text('Update')");
     }
 
     /// <summary>Navigates to the page.</summary>

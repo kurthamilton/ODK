@@ -1,4 +1,4 @@
-using Microsoft.Playwright;
+﻿using Microsoft.Playwright;
 
 namespace ODK.E2E.Tests.Pages;
 
@@ -67,21 +67,22 @@ internal class EventAdminPage
 
         await _page.FillAsync("#Name", newName);
 
-        var responseTask = _page.WaitForResponseAsync(
-            r => r.Request.Method == "POST" && r.Request.IsNavigationRequest,
-            new() { Timeout = 15000 });
-        await _page.ClickAsync("button:has-text('Update')");
-        var response = await responseTask;
-
-        if (response.Status >= 400)
+        await _page.RunAndWaitForDocument(async () =>
         {
-            var body = await _page.InnerTextAsync("body");
-            throw new InvalidOperationException(
-                $"Update event POST failed with HTTP {response.Status}. URL='{response.Url}'. " +
-                $"Body: {body[..Math.Min(500, body.Length)]}");
-        }
+            var responseTask = _page.WaitForResponseAsync(
+                r => r.Request.Method == "POST" && r.Request.IsNavigationRequest,
+                new() { Timeout = 15000 });
+            await _page.ClickAsync("button:has-text('Update')");
+            var response = await responseTask;
 
-        await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            if (response.Status >= 400)
+            {
+                var body = await _page.InnerTextAsync("body");
+                throw new InvalidOperationException(
+                    $"Update event POST failed with HTTP {response.Status}. URL='{response.Url}'. " +
+                    $"Body: {body[..Math.Min(500, body.Length)]}");
+            }
+        });
     }
 
     /// <summary>

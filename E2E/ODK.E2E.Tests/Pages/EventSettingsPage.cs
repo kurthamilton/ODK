@@ -1,4 +1,4 @@
-using Microsoft.Playwright;
+﻿using Microsoft.Playwright;
 
 namespace ODK.E2E.Tests.Pages;
 
@@ -25,24 +25,26 @@ internal class EventSettingsPage
         await _page.SetEnhancedSelect("#DefaultDayOfWeek", ((int)defaultDayOfWeek).ToString());
         await _page.FillAsync("#DefaultStartTime", defaultStartTime);
 
-        try
+        // The controller redirects back to the settings page with a feedback alert, and a caller reading the
+        // settings straight after has to see the committed values - hence waiting for the document rather
+        // than for the POST alone.
+        await _page.RunAndWaitForDocument(async () =>
         {
-            await _page.RunAndWaitForResponseAsync(
-                () => _page.ClickAsync("button:has-text('Update')"),
-                r => r.Request.Method == "POST" && r.Url.Contains("/events/settings"),
-                new() { Timeout = 15000 });
-        }
-        catch (TimeoutException)
-        {
-            var errors = await _page.Locator(
-                ".field-validation-error, .text-danger, .validation-summary-errors, .alert").AllInnerTextsAsync();
-            throw new InvalidOperationException(
-                $"Update event settings did not post. URL='{_page.Url}'. " +
-                $"Validation/alerts=[{string.Join(" | ", errors.Where(x => !string.IsNullOrWhiteSpace(x)))}].");
-        }
-
-        // The controller redirects back to the settings page with a feedback alert - wait for it so a
-        // caller reading the settings straight after sees the committed values.
-        await _page.WaitForLoadStateAsync();
+            try
+            {
+                await _page.RunAndWaitForResponseAsync(
+                    () => _page.ClickAsync("button:has-text('Update')"),
+                    r => r.Request.Method == "POST" && r.Url.Contains("/events/settings"),
+                    new() { Timeout = 15000 });
+            }
+            catch (TimeoutException)
+            {
+                var errors = await _page.Locator(
+                    ".field-validation-error, .text-danger, .validation-summary-errors, .alert").AllInnerTextsAsync();
+                throw new InvalidOperationException(
+                    $"Update event settings did not post. URL='{_page.Url}'. " +
+                    $"Validation/alerts=[{string.Join(" | ", errors.Where(x => !string.IsNullOrWhiteSpace(x)))}].");
+            }
+        });
     }
 }

@@ -20,7 +20,6 @@ internal class GroupAdminPage
     {
         await _page.Navigate($"/my/groups/{chapterId}");
 
-        await _page.ClickAsync($"form[action='/groups/{chapterId}/publish'] button");
-        await _page.WaitForLoadStateAsync();
+        await _page.ClickAndWaitForDocument($"form[action='/groups/{chapterId}/publish'] button");
     }
 }

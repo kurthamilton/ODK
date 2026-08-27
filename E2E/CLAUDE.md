@@ -210,20 +210,27 @@ means a new category and the E2E suite tracks the app's workflows rather than a 
   member-facing URLs (Default `/my/groups/{chapterId}/...` vs DrunkenKnitwits `/{chapterName}/admin/...`,
   whose leaf segments even differ — `/new` vs `/create`). Add a route here rather than composing paths in
   a page object or test. Mirrors the app's `GroupAdminRoutes`/`GroupRoutes`.
-- **Waiting for a form submit takes three waits, not one.** Match the POST that **navigates**
-  (`r.Request.ResourceType == "document"`), not any POST: a page whose fields are validated by an XHR - the
-  email template body posts itself to a validate endpoint on change - fires a POST of its own, so an
-  any-POST wait returns before the form has submitted and the assertions then read the database as it was.
-  **Then wait for the document `GET` that follows**, registering that waiter *before* the click so it cannot
-  be missed: every form here is Post/Redirect/Get, so the POST response *is* the 302 and arrives while the
-  redirected GET is still in flight.
-  **Then settle the network** (`WaitForLoadStateAsync(LoadState.NetworkIdle)`). The GET response arriving is
-  not the browser having committed the document it carries, and a plain `WaitForLoadStateAsync` reports on
-  whichever document is current - in that window, still the one being left. A caller that then navigates to
-  the same URL has its navigation cut short by the one already running: `Navigation to X is interrupted by
-  another navigation to X`. **Waiting on the URL does not work here** and looks like it does: these forms
-  post to their own address and redirect back to it, so `WaitForURLAsync` is satisfied before the submit even
-  starts. `ChapterEmailAdminPage.Submit` is the pattern.
+- **Anything that submits goes through `page.RunAndWaitForDocument` / `page.ClickAndWaitForDocument`**
+  (`PageExtensions`), never a load-state wait. Those helpers stamp a window property on the document before
+  the submit and wait for it to disappear, which is the new document having replaced the one that posted.
+  **No load state can express this**: `WaitForLoadStateAsync` - `Load` or `NetworkIdle`, it makes no
+  difference - resolves against whichever document is current when it is called, and until the navigation
+  commits that is still the document that submitted, which reached every state long before the click. It
+  therefore returns in a couple of milliseconds and guards nothing. The caller then reads the database before
+  the POST has been handled, or navigates and has its navigation cut short by the one already running -
+  `Navigation to X is interrupted by another navigation to X` when the URL is the same,
+  `net::ERR_ABORTED` or a 30s navigation timeout when it is not.
+  **Waiting on the URL does not work either**, and looks like it does: these forms post to their own address
+  and redirect back to it, so `WaitForURLAsync` is satisfied before the submit even starts. (Where a submit
+  genuinely lands on a *different* address, `WaitForURLAsync` does commit the navigation and is sound -
+  `AcceptInvitePage` relies on that.)
+  **Keep a POST waiter inside the helper where the test needs to prove the form posted**, and match the POST
+  that **navigates** (`r.Request.ResourceType == "document"`), not any POST: a page whose fields are validated
+  by an XHR - the email template body posts itself to a validate endpoint on change - fires a POST of its own,
+  so an any-POST wait returns before the form has submitted.
+  A load-state wait here does not fail, it just stops guarding, so a suite full of them passes for as long as
+  the race happens to go the test's way - and a faster Playwright, machine or database is enough to turn every
+  one of them red at once. Treat a green run as no evidence that a submit is waited on correctly.
 - **Select what a user perceives; add markup only when nothing user-facing distinguishes the element.** The
   test is a claim about what somebody sees, so the locator should read like one - the words on the control,
   and where on the page it is. Ambiguity is the usual reason to reach for something else, and the order to

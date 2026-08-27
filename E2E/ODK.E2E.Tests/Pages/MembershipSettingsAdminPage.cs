@@ -1,4 +1,4 @@
-using Microsoft.Playwright;
+﻿using Microsoft.Playwright;
 
 namespace ODK.E2E.Tests.Pages;
 
@@ -42,16 +42,8 @@ internal class MembershipSettingsAdminPage
 
         await approve.CheckAsync();
 
-        // Post/Redirect/Get, so the POST response is the 302 - wait for the redirected GET as well, or the
-        // next navigation is cut short by the one still in flight.
-        var rendered = _page.WaitForResponseAsync(
-            r => r.Request.Method == "GET" && r.Request.ResourceType == "document");
-
-        await _page.RunAndWaitForResponseAsync(
+        await _page.RunAndWaitForDocument(() => _page.RunAndWaitForResponseAsync(
             () => _page.ClickAsync("button:has-text('Update')"),
-            r => r.Request.Method == "POST" && r.Request.ResourceType == "document");
-
-        await rendered;
-        await _page.WaitForLoadStateAsync();
+            r => r.Request.Method == "POST" && r.Request.ResourceType == "document"));
     }
 }

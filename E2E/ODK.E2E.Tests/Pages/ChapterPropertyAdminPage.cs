@@ -1,4 +1,4 @@
-using Microsoft.Playwright;
+﻿using Microsoft.Playwright;
 
 namespace ODK.E2E.Tests.Pages;
 
@@ -76,9 +76,8 @@ internal class ChapterPropertyAdminPage
                 $"No move-{direction} control for property '{propertyId}' on '{_page.Url}'.");
         }
 
-        await _page.RunAndWaitForResponseAsync(
+        await _page.RunAndWaitForDocument(() => _page.RunAndWaitForResponseAsync(
             () => _page.ClickAsync(button),
-            r => r.Request.Method == "POST" && r.Url.Contains($"/move/{direction}"));
-        await _page.WaitForLoadStateAsync();
+            r => r.Request.Method == "POST" && r.Url.Contains($"/move/{direction}")));
     }
 }
