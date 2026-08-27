@@ -1,20 +1,12 @@
-﻿@using ODK.Core.Chapters
-@using ODK.Core.Platforms
-@using ODK.Web.Common.Extensions
-@using ODK.Web.Common.Routes
-@using ODK.Web.Razor.Models
-@using ODK.Web.Razor.Models.Admin.Venues
-@using ODK.Web.Razor.Models.Components
+﻿@using ODK.Web.Razor.Models.Admin.Venues
 
 @await Html.PartialAsync("Components/_AdminPageDescription",
     "A new venue you can then pick when creating an event.")
 
-<section class="section">
-    <form method="post">
-        @Html.AntiForgeryToken()
+<form method="post">
+    @Html.AntiForgeryToken()
 
-        @await Html.PartialAsync("Admin/Venues/_VenueForm", new VenueFormViewModel())
+    @await Html.PartialAsync("Admin/Venues/_VenueForm", new VenueFormViewModel())
 
-        <button type="submit" class="btn btn-primary">Create</button>
-    </form>
-</section>
+    <button type="submit" class="btn btn-primary">Create</button>
+</form>

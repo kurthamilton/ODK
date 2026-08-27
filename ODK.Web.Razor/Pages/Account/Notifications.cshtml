@@ -23,9 +23,7 @@
         Title = "Notification preferences",
         Content =
             @<div>
-                <section class="section">
-                    @await Html.PartialAsync("Account/_AccountNotificationsContent", viewModel)
-                </section>
+                @await Html.PartialAsync("Account/_AccountNotificationsContent", viewModel)
             </div>
     })
 })

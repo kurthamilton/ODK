@@ -1,66 +1,36 @@
+// A division of a page's own content, introduced by its own heading. The default block on a page; a .panel
+// is the opt-in raised look for a self-contained group that needs separating from what surrounds it.
+//
+// The heading keeps Bootstrap's own margin rather than being given a larger one: a section title sits
+// directly on the content it introduces, so the space below it has to stay well short of the gap above it
+// or the heading reads as floating between the two blocks rather than belonging to the one it names.
 .section {
-    background: var(--bs-body-bg);
-    color: var(--bs-body-color);
-}
+    .section-header {
+        display: flex;
+        align-items: end;
+    }
 
-.mt-section {
-    margin-top: 2rem;
-}
-
-.section--main {
-    padding-top: 2rem;
-    padding-bottom: 2rem;
-}
-
-.section--header,
-.section--footer {
-    padding: 1rem 0;
-}
-
-.section--header {
-    h1 {
-        font-size: 2rem;
-        margin-bottom: 0;
+    // The heading is the flex item itself - it needs no wrapper, since align-items lines the two up by
+    // their margin boxes and the heading's own bottom margin is part of its.
+    .section-title-end {
+        margin-left: auto;
+        // Matches the heading's own bottom margin so the two line up along the bottom of the header.
+        padding-bottom: $headings-margin-bottom;
     }
 }
 
-.section--hero {
-    background-position-y: 0;
-    padding: 50px 20px;
-    align-items: center;
-    text-align: center;
+// The gap between adjacent sections, owned by the stack rather than by any section, so a section carries no
+// margin of its own and composes anywhere. Not `.section + .section`: that needs no wrapper and survives
+// Razor conditionals, but silently stops matching the moment anything sits between two sections, and an
+// intro paragraph or a tab strip between them is common.
+.section-stack {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    gap: var(--odk-section-gap);
 }
 
-.section--hero__content {
-    font-size: 1.4rem;
-    max-width: 760px;
-
-    h1 {
-        font-size: 3rem;
-
-        &:not(:first-child) {
-            margin-top: 4rem;
-        }
-    }
-}
-
-.section--chapters {
-    padding-top: 1rem;
-    padding-bottom: 1rem;
-}
-
-.section--dark {
-}
-
-.section--light {
-}
-
-.section--grey {
-    background-color: hsla(0,0%,88%,.6);
-}
-
-.section--admin {
-    margin-bottom: 3rem;
+// One section's worth of separation for something a stack cannot reach: a column that stacks below its
+// sibling only on a narrow viewport, or a block deliberately set apart from the stack above it.
+.mt-section {
+    margin-top: var(--odk-section-gap);
 }

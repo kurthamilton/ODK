@@ -1,10 +1,7 @@
 ﻿@page "/account/picture"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
-@using ODK.Services.Members
 @using ODK.Services.Users
-@using ODK.Services.Users.ViewModels
-@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
 @model PictureModel
@@ -27,14 +24,12 @@
             @<div>
                 @await Html.PartialAsync("Account/_AccountPersonalDetailsMenu")
 
-                <section class="section">
-                    @await Html.PartialAsync("Account/_UpdatePictureContent", new UpdatePictureViewModel
-                    {
-                        AvatarVersion = viewModel.AvatarVersion,
-                        Chapter = null,
-                        Member = viewModel.CurrentMember                    
-                    })
-                </section>
+                @await Html.PartialAsync("Account/_UpdatePictureContent", new UpdatePictureViewModel
+                {
+                    AvatarVersion = viewModel.AvatarVersion,
+                    Chapter = null,
+                    Member = viewModel.CurrentMember
+                })
             </div>
     })
 })

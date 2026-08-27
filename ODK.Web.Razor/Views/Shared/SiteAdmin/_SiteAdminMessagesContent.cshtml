@@ -6,7 +6,7 @@
 @model MessagesAdminPageViewModel
 @inject IOdkRoutes OdkRoutes
 
-<section class="section section--admin">
+<div data-odk-component="_SiteAdminMessagesContent">
     <h2 class="content-heading">Messages</h2>
 
     @await Html.PartialAsync("SiteAdmin/_SiteAdminMessagesTabs", Model)
@@ -45,10 +45,10 @@
             {
                 <tr>
                     <td>
-                        @message.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions 
-                        { 
-                            IncludeDayOfWeek = true, 
-                            TimeZone = Model.CurrentMember.TimeZone 
+                        @message.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions
+                        {
+                            IncludeDayOfWeek = true,
+                            TimeZone = Model.CurrentMember.TimeZone
                         })
                     </td>
                     <td>@message.FromAddress</td>
@@ -83,4 +83,4 @@
             </tbody>
         </table>
     </div>
-</section>
+</div>

@@ -2,7 +2,6 @@
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Services.Notifications
-@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
 @model NotificationPreferencesModel
@@ -26,11 +25,9 @@
         {
             Chapter = chapter
         }),
-        BodyContentFunc = 
+        BodyContentFunc =
             @<div>
-                <section class="section">
-                    @await Html.PartialAsync("Account/_AccountNotificationsContent", viewModel)
-                </section>
+                @await Html.PartialAsync("Account/_AccountNotificationsContent", viewModel)
             </div>
     })
 })

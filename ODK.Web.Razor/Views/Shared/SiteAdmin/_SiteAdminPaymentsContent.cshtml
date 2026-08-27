@@ -7,7 +7,7 @@
 <div data-odk-component="_SiteAdminPaymentsContent">
     <h2 class="content-heading d-none d-md-block">Payment settings</h2>
 
-    <section class="section">
+    <div>
         <p>
             <a class="btn btn-primary" href="@OdkRoutes.SiteAdmin.PaymentCreate">
                 @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Plus))
@@ -77,6 +77,6 @@
                     }
                 </tbody>
             </table>
-        </div>        
-    </section>
+        </div>
+    </div>
 </div>

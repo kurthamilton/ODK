@@ -3,13 +3,11 @@
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Services.Contact
 @using ODK.Services.Platforms
-@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Conversations
 @using ODK.Web.Razor.Models.Messages
 @model ConversationModel
 @inject IContactService ContactService
-@inject IOdkRoutes OdkRoutes
 @inject IPlatformProvider PlatformProvider
 @{
     // _AccountLayout for the Drunken Knitwits header it carries, not because this is an account page.
@@ -26,29 +24,27 @@
     Title = viewModel.Conversation.Subject,
     ContentFunc =
         @<div>
-            <section class="section">
-                @await Html.PartialAsync("Conversations/_ConversationContent", new ConversationViewModel
-                {
-                    ArchivedUtc = viewModel.Conversation.ArchivedUtc,
-                    ArchiveUrl = $"/site-conversations/{viewModel.Conversation.Id}/archive",
-                    Breadcrumbs =
-                    [
-                        new MenuItem
-                        {
-                            Link = OdkRoutes.Account.SiteConversations(viewModel.Conversation.ArchivedUtc != null),
-                            Text = "My conversations"
-                        },
-                        new MenuItem { Text = viewModel.Conversation.Subject }
-                    ],
-                    ConversationId = viewModel.Conversation.Id,
-                    ConversationUrlFunc = id => OdkRoutes.Account.SiteConversation(id),
-                    CurrentMember = Model.CurrentMember,
-                    Messages = viewModel.Messages.ToMemberViewModels(viewModel.Conversation, platformName),
-                    OtherConversations = viewModel.OtherConversations.ToViewModels(),
-                    ReplyUrl = $"/site-conversations/{viewModel.Conversation.Id}/reply",
-                    RestoreUrl = $"/site-conversations/{viewModel.Conversation.Id}/restore",
-                    Subject = viewModel.Conversation.Subject
-                })
-            </section>
+            @await Html.PartialAsync("Conversations/_ConversationContent", new ConversationViewModel
+            {
+                ArchivedUtc = viewModel.Conversation.ArchivedUtc,
+                ArchiveUrl = $"/site-conversations/{viewModel.Conversation.Id}/archive",
+                Breadcrumbs =
+                [
+                    new MenuItem
+                    {
+                        Link = Model.OdkRoutes.Account.SiteConversations(viewModel.Conversation.ArchivedUtc != null),
+                        Text = "My conversations"
+                    },
+                    new MenuItem { Text = viewModel.Conversation.Subject }
+                ],
+                ConversationId = viewModel.Conversation.Id,
+                ConversationUrlFunc = id => Model.OdkRoutes.Account.SiteConversation(id),
+                CurrentMember = Model.CurrentMember,
+                Messages = viewModel.Messages.ToMemberViewModels(viewModel.Conversation, platformName),
+                OtherConversations = viewModel.OtherConversations.ToViewModels(),
+                ReplyUrl = $"/site-conversations/{viewModel.Conversation.Id}/reply",
+                RestoreUrl = $"/site-conversations/{viewModel.Conversation.Id}/restore",
+                Subject = viewModel.Conversation.Subject
+            })
         </div>
 })

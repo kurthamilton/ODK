@@ -1,18 +1,15 @@
 ﻿@page "/{chapterName}/events/{shortcode}/checkout/confirm"
-@using ODK.Core.Payments
 @using ODK.Services.Events
-@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Events
 @using ODK.Web.Razor.Models.Payments
 @model EventCheckoutConfirmModel
 @inject IEventViewModelService EventViewModelService
-@inject IOdkRoutes OdkRoutes
 @{
     Layout = "_OdkChapterLayout";
     Model.Title = "Ticket purchase pending confirmation";
 
-    var eventUrl = OdkRoutes.Groups.Event(Model.Chapter, Model.Shortcode);
+    var eventUrl = Model.OdkRoutes.Groups.Event(Model.Chapter, Model.Shortcode);
 
     var viewModel = await EventViewModelService.GetEventPageViewModel(
         Model.ChapterServiceRequest, Model.Shortcode);
@@ -30,7 +27,7 @@
             Text = "Back to event"
         }
     },
-    ContentFunc = 
+    ContentFunc =
         @<div>
             @await Html.PartialAsync("Events/_EventHeader", new EventHeaderViewModel
             {
@@ -38,17 +35,15 @@
                 Event = viewModel.Event,
                 Venue = viewModel.Venue
             })
-            <section class="section">
-                @await Html.PartialAsync("Payments/_PaymentConfirmContent", new PaymentConfirmViewModel
-                {
-                    Chapter = viewModel.Chapter,
-                    SessionId = Model.SessionId
-                })
-            </section>
+            @await Html.PartialAsync("Payments/_PaymentConfirmContent", new PaymentConfirmViewModel
+            {
+                Chapter = viewModel.Chapter,
+                SessionId = Model.SessionId
+            })
         </div>
 })
 
-@section scripts 
+@section scripts
 {
     @await Html.PartialAsync("Payments/_PaymentConfirmScripts")
 }

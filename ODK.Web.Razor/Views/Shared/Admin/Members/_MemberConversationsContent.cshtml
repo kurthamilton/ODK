@@ -15,9 +15,9 @@
 
 @await Html.PartialAsync("Admin/Members/_MemberAdminTabs", Model)
 
-@if (Model.Conversations.Count > 0)
-{
-    <section class="section">
+<div class="section-stack">
+    @if (Model.Conversations.Count > 0)
+    {
         <div class="table-responsive">
             <table class="table table-striped">
                 <thead>
@@ -38,13 +38,13 @@
                                 {
                                     Route = OdkRoutes.GroupAdmin.Conversation(Model.Chapter, conversation.Id),
                                     Text = conversation.Subject
-                                })                                
+                                })
                             </td>
                             <td>
-                                @conversation.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions 
-                                { 
-                                    IncludeDayOfWeek = true, 
-                                    TimeZone = Html.DisplayTimeZone(Model.Chapter.TimeZone) 
+                                @conversation.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions
+                                {
+                                    IncludeDayOfWeek = true,
+                                    TimeZone = Html.DisplayTimeZone(Model.Chapter.TimeZone)
                                 })
                             </td>
                             <td>
@@ -63,9 +63,7 @@
                 </tbody>
             </table>
         </div>
-    </section>    
 
-    <section class="section">
         @await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.OwnerSubscriptionFeatures)
         {
             Chapter = Model.Chapter,
@@ -75,38 +73,43 @@
                 Heading = new HeadingViewModel
                 {
                     Title = "New conversation",
-                    Type = HeadingType.H5
+                    Type = HeadingType.H3
                 },
-                BodyContentFunc = 
+                BodyContentFunc =
                     @<div>
                         <form action="/admin/groups/@Model.Chapter.Id/conversations" method="post">
                             @Html.AntiForgeryToken()
-                @Html.Hidden(nameof(ChapterAdminStartConversationFormViewModel.MemberId), Model.Member.Id)
+                            @Html.Hidden(nameof(ChapterAdminStartConversationFormViewModel.MemberId), Model.Member.Id)
                             @await Html.PartialAsync("Contact/_ConversationForm", new ConversationFormViewModel())
                             <button class="btn btn-primary">Send</button>
                         </form>
                     </div>
             })
         })
-    </section>
-}
-else
-{
-    <h2 class="content-heading">Start new conversation</h2>
-    <section class="section">
-        @await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.OwnerSubscriptionFeatures)
+    }
+    else
+    {
+        @await Html.PartialAsync("Components/_Section", new SectionViewModel
         {
-            Chapter = Model.Chapter,
-            Feature = SiteFeatureType.SendMemberEmails,
-            ContentFunc = 
-                @<div>
-                    <form action="/admin/groups/@Model.Chapter.Id/conversations" method="post">
-                        @Html.AntiForgeryToken()
-                        @Html.Hidden(nameof(ChapterAdminStartConversationFormViewModel.MemberId), Model.Member.Id)
-                        @await Html.PartialAsync("Contact/_ConversationForm", new ConversationFormViewModel())
-                        <button class="btn btn-primary">Send</button>
-                    </form>
-                </div>
+            Heading = new HeadingViewModel
+            {
+                Title = "Start new conversation",
+                Type = HeadingType.H3
+            },
+            BodyContent = await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.OwnerSubscriptionFeatures)
+            {
+                Chapter = Model.Chapter,
+                Feature = SiteFeatureType.SendMemberEmails,
+                ContentFunc =
+                    @<div>
+                        <form action="/admin/groups/@Model.Chapter.Id/conversations" method="post">
+                            @Html.AntiForgeryToken()
+                            @Html.Hidden(nameof(ChapterAdminStartConversationFormViewModel.MemberId), Model.Member.Id)
+                            @await Html.PartialAsync("Contact/_ConversationForm", new ConversationFormViewModel())
+                            <button class="btn btn-primary">Send</button>
+                        </form>
+                    </div>
+            })
         })
-    </section>
-}
+    }
+</div>

@@ -1,19 +1,15 @@
 ﻿@page "/account/location"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
-@using ODK.Core.Members
 @using ODK.Services.Members
-@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
-@using ODK.Web.Razor.Services
 @model LocationModel
-@inject IOdkRoutes OdkRoutes
 @inject IMemberService MemberService
 @{
     Layout = "_AccountLayout";
     Model.Title = "Location";
-
+    
     var viewModel = await MemberService.GetMemberLocationViewModel(Model.MemberServiceRequest);
 }
 
@@ -24,22 +20,20 @@
     {
         Active = Model.OdkRoutes.Account.Location(),
         Title = "Location",
-        Content = 
+        Content =
             @<div>
-                <section class="section">
-                    <form action="/account/location" method="post">
-                        @Html.AntiForgeryToken()
-                        @await Html.PartialAsync("Account/_AccountLocationForm", new LocationFormViewModel
-                        {
-                            DistanceUnit = viewModel.MemberPreferences?.DistanceUnit,
-                            DistanceUnitOptions = viewModel.DistanceUnits,
-                            Lat = viewModel.MemberLocation?.LatLong.Lat,
-                            Long = viewModel.MemberLocation?.LatLong.Long,
-                            LocationName = viewModel.MemberLocation?.Name ?? string.Empty
-                        })                        
-                        <button class="btn btn-primary">Update</button>
-                    </form>
-                </section>                
+                <form action="/account/location" method="post">
+                    @Html.AntiForgeryToken()
+                    @await Html.PartialAsync("Account/_AccountLocationForm", new LocationFormViewModel
+                    {
+                        DistanceUnit = viewModel.MemberPreferences?.DistanceUnit,
+                        DistanceUnitOptions = viewModel.DistanceUnits,
+                        Lat = viewModel.MemberLocation?.LatLong.Lat,
+                        Long = viewModel.MemberLocation?.LatLong.Long,
+                        LocationName = viewModel.MemberLocation?.Name ?? string.Empty
+                    })
+                    <button class="btn btn-primary">Update</button>
+                </form>
             </div>
     })
 })

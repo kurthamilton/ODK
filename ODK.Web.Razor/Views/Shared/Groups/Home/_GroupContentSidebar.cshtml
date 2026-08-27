@@ -1,6 +1,4 @@
-﻿@using ODK.Core.Features
-@using ODK.Core.Utils
-@using ODK.Services.Chapters.ViewModels
+﻿@using ODK.Services.Chapters.ViewModels
 @using ODK.Services.SocialMedia
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
@@ -14,7 +12,7 @@
         : OdkRoutes.Groups.Conversations(Model.Chapter);
 }
 
-<div class="sidebar sidebar--cards">
+<div class="sidebar section-stack">
     @await Html.PartialAsync("Groups/Home/_GroupInfo", Model)
 
     @await Html.PartialAsync("Components/_Panel", new PanelViewModel
@@ -24,12 +22,12 @@
             Title = "Organisers",
             Type = HeadingType.H5
         },
-        TitleEndContentFunc = 
+        TitleEndContentFunc =
             @<a class="d-flex align-items-center gap-1" href="@contactUrl">
                 @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Contact))
                 <span>Contact</span>
             </a>,
-        BodyContentFunc = 
+        BodyContentFunc =
             @<div>
                 @await Html.PartialAsync("Members/_MemberList", new MemberListViewModel
                 {
@@ -40,14 +38,14 @@
                             AvatarVersion = x.AvatarVersion,
                             Chapter = Model.Chapter,
                             Member = x.Member,
-                            Platform = Model.Platform                            
+                            Platform = Model.Platform
                         }).ToArray(),
                     Platform = Model.Platform,
                     Size = "xs",
                     Cols = 4
                 })
             </div>
-    })    
+    })
 
     @if (Model.InstagramPosts.Posts.Count > 0)
     {
@@ -58,7 +56,7 @@
                 Title = "Latest from Instagram",
                 Type = HeadingType.H5
             },
-            BodyContentFunc = 
+            BodyContentFunc =
                 @<div>
                     @await Html.PartialAsync("Components/Instagram/_InstagramPosts", Model.InstagramPosts)
 
@@ -76,7 +74,7 @@
                         </div>
                     }
                 </div>
-        })   
+        })
     }
 
     @if (Model.Links?.HasLinks == true)
@@ -98,6 +96,6 @@
                         Twitter = Model.Links.TwitterName
                     })
                 </div>
-        }) 
+        })
     }
 </div>

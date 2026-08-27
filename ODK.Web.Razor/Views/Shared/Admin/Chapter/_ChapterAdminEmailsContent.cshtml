@@ -17,81 +17,95 @@
     };
 }
 
-@* h3 rather than h2: the page shell renders the page title as an h2, so these sit below it. *@
-<section class="section--admin">
-    <h3 class="content-heading">Settings</h3>
-
-    @* DisabledContentFunc rather than hiding it, matching the template form: a group that set a title
-       before its subscription changed keeps sending it, so it needs to see what is set even when it can no
-       longer change it. UpdateChapterEmailSettings enforces this too - the read-only markup is
-       presentation, not the guard. *@
-    @await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.CanEdit)
+<div class="section-stack">
+    @await Html.PartialAsync("Components/_Section", new SectionViewModel
     {
-        Chapter = Model.Chapter,
-        Feature = SiteFeatureType.CustomEmails,
-        ContentFunc =
-            @<form method="post" action="/groups/@Model.Chapter.Id/emails/settings">
-                @Html.AntiForgeryToken()
+        Heading = new HeadingViewModel
+        {
+            Title = "Email settings",
+            Type = HeadingType.H3
+        },
+        @* DisabledContentFunc rather than hiding it, matching the template form: a group that set a title
+           before its subscription changed keeps sending it, so it needs to see what is set even when it can no
+           longer change it. UpdateChapterEmailSettings enforces this too - the read-only markup is
+           presentation, not the guard. *@
+        BodyContent = await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.CanEdit)
+        {
+            Chapter = Model.Chapter,
+            Feature = SiteFeatureType.CustomEmails,
+            ContentFunc =
+                @<form method="post" action="/groups/@Model.Chapter.Id/emails/settings">
+                    @Html.AntiForgeryToken()
 
-                @await Html.PartialAsync("Admin/Chapter/_ChapterAdminEmailSettingsForm", SettingsViewModel(readOnly: false))
+                    @await Html.PartialAsync("Admin/Chapter/_ChapterAdminEmailSettingsForm", SettingsViewModel(readOnly: false))
 
-                <button class="btn btn-primary" type="submit">Update</button>
-            </form>,
-        DisabledContentFunc =
-            @<div class="mt-3">
-                @await Html.PartialAsync("Admin/Chapter/_ChapterAdminEmailSettingsForm", SettingsViewModel(readOnly: true))
+                    <button class="btn btn-primary" type="submit">Update</button>
+                </form>,
+            DisabledContentFunc =
+                @<div class="mt-3">
+                    @await Html.PartialAsync("Admin/Chapter/_ChapterAdminEmailSettingsForm", SettingsViewModel(readOnly: true))
+                </div>
+        })
+    })
+
+    @await Html.PartialAsync("Components/_Section", new SectionViewModel
+    {
+        Heading = new HeadingViewModel
+        {
+            Title = "Templates",
+            Type = HeadingType.H3
+        },
+        BodyContentFunc =
+            @<div>
+                @await Html.PartialAsync("Components/_AdminPageDescription",
+                    "Templates for the emails your group sends. Each has a default you can override to add your own wording.")
+
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Email</th>
+                                <th>Recipients</th>
+                                <th>Custom</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Emails.OrderBy(x => x.Email.Name))
+                            {
+                                <tr>
+                                    <td>
+                                        @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                                        {
+                                            Route = OdkRoutes.GroupAdmin.Email(Model.Chapter, item.Email.Type),
+                                            Text = item.Email.Name
+                                        })
+                                    </td>
+                                    <td>
+                                        @EnumUtils.GetDisplayValue(item.RecipientType)
+                                    </td>
+                                    @* Named rather than ticked: subject and body are overridden independently,
+                                       so which of them a group has customised is the useful part. *@
+                                    <td>
+                                        @if (!item.Email.OverridesAnything())
+                                        {
+                                            <span class="text-muted">Default</span>
+                                        }
+                                        else
+                                        {
+                                            var overridden = new[]
+                                            {
+                                                item.Email.OverridesSubject ? "Subject" : null,
+                                                item.Email.OverridesContent ? "Body" : null
+                                            }.Where(x => x != null);
+
+                                            <span>@string.Join(", ", overridden)</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
             </div>
     })
-</section>
-
-<h3 class="content-heading">Emails</h3>
-
-@await Html.PartialAsync("Components/_AdminPageDescription",
-    "Templates for the emails your group sends. Each has a default you can override to add your own wording.")
-
-<div class="table-responsive">
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Email</th>
-                <th>Recipients</th>
-                <th>Custom</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model.Emails.OrderBy(x => x.Email.Name))
-            {
-                <tr>
-                    <td>
-                        @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
-                        {
-                            Route = OdkRoutes.GroupAdmin.Email(Model.Chapter, item.Email.Type),
-                            Text = item.Email.Name
-                        })
-                    </td>
-                    <td>
-                        @EnumUtils.GetDisplayValue(item.RecipientType)
-                    </td>
-                    @* Named rather than ticked: subject and body are overridden independently, so which of
-                       them a group has customised is the useful part. *@
-                    <td>
-                        @if (!item.Email.OverridesAnything())
-                        {
-                            <span class="text-muted">Default</span>
-                        }
-                        else
-                        {
-                            var overridden = new[]
-                            {
-                                item.Email.OverridesSubject ? "Subject" : null,
-                                item.Email.OverridesContent ? "Body" : null
-                            }.Where(x => x != null);
-
-                            <span>@string.Join(", ", overridden)</span>
-                        }
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
 </div>

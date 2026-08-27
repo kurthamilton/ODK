@@ -1,5 +1,6 @@
 ﻿@using ODK.Services.Members.ViewModels
 @using ODK.Web.Razor.Models.Account
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Members
 @model MemberImageAdminPageViewModel
 
@@ -8,24 +9,40 @@
 
 @await Html.PartialAsync("Admin/Members/_MemberAdminTabs", Model)
 
-<section class="section--admin">
-    <h3>Picture</h3>
-    @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel
+<div class="section-stack">
+    @await Html.PartialAsync("Components/_Section", new SectionViewModel
     {
-        Member = Model.Member,
-        Version = Model.AvatarVersion
+        Heading = new HeadingViewModel
+        {
+            Title = "Picture",
+            Type = HeadingType.H3
+        },
+        BodyContent = await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel
+        {
+            Member = Model.Member,
+            Version = Model.AvatarVersion
+        })
     })
-</section>
-<section class="section--admin">
-    <h3>Upload</h3>
-    <div class="alert alert-warning">
-        Only use for fixing squished images
-    </div>
-    <form action="/groups/@Model.Chapter.Id/members/@Model.Member.Id/picture" method="post">
-        @Html.AntiForgeryToken()
-        <div class="form-group mb-3">
-            @await Html.PartialAsync("Account/_PictureUpload", new PictureUploadViewModel())
-        </div>
-        <button class="btn btn-primary">Update</button>
-    </form>
-</section>
+
+    @await Html.PartialAsync("Components/_Section", new SectionViewModel
+    {
+        Heading = new HeadingViewModel
+        {
+            Title = "Upload",
+            Type = HeadingType.H3
+        },
+        BodyContentFunc =
+            @<div>
+                <div class="alert alert-warning">
+                    Only use for fixing squished images
+                </div>
+                <form action="/groups/@Model.Chapter.Id/members/@Model.Member.Id/picture" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="form-group mb-3">
+                        @await Html.PartialAsync("Account/_PictureUpload", new PictureUploadViewModel())
+                    </div>
+                    <button class="btn btn-primary">Update</button>
+                </form>
+            </div>
+    })
+</div>

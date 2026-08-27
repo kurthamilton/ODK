@@ -15,16 +15,14 @@
 
 <h2 class="content-heading">Create subscription</h2>
 
-<section class="section">
-    <form action="/siteadmin/subscriptions" method="post">
-        @Html.AntiForgeryToken()
-        @await Html.PartialAsync("SiteAdmin/_SiteAdminSubscriptionForm", new SiteSubscriptionFormViewModel
-        {
-            SitePaymentSettingId = defaultSitePaymentSettingsId,
-            SitePaymentSettings = viewModel.SitePaymentSettings,
-            SiteSubscriptionId = null,
-            SiteSubscriptions = viewModel.Subscriptions
-        })
-        <button class="btn btn-primary">Create</button>
-    </form>
-</section>
+<form action="/siteadmin/subscriptions" method="post">
+    @Html.AntiForgeryToken()
+    @await Html.PartialAsync("SiteAdmin/_SiteAdminSubscriptionForm", new SiteSubscriptionFormViewModel
+    {
+        SitePaymentSettingId = defaultSitePaymentSettingsId,
+        SitePaymentSettings = viewModel.SitePaymentSettings,
+        SiteSubscriptionId = null,
+        SiteSubscriptions = viewModel.Subscriptions
+    })
+    <button class="btn btn-primary">Create</button>
+</form>

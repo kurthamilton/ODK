@@ -94,6 +94,7 @@ public static class DependencyRegistrar
     {
         services
             .AddScoped<IDistanceUnitFactory, DistanceUnitFactory>()
+            .AddSingleton<IHtmlTextExtractor>(new HtmlTextExtractor())
             .AddSingleton<IHtmlValidator>(new HtmlValidator())
             .AddSingleton<ICsvReader, CsvReader>()
             .AddSingleton<ICsvWriter, CsvWriter>()

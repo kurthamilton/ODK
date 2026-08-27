@@ -55,7 +55,7 @@
         </p>
     }
 
-    <div class="d-flex flex-column gap-3">
+    <div class="section-stack">
         @foreach (var account in Model.Accounts)
         {
             var paymentSettings = account.PaymentSettings;
@@ -65,7 +65,7 @@
                 Heading = new HeadingViewModel
                 {
                     Title = paymentSettings.Name,
-                    Type = HeadingType.H5
+                    Type = HeadingType.H3
                 },
                 TitleEndContentFunc =
                     @<a href="@OdkRoutes.SiteAdmin.Payment(paymentSettings.Id)">Settings</a>,

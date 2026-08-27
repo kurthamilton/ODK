@@ -16,54 +16,52 @@
 
 <h2 class="content-heading">Flagged members</h2>
 
-<section class="section">
-    <p class="text-muted">
-        Accounts whose signup looked automated, newest first. Each was flagged against the score threshold
-        in force at the time it was created, so changing the threshold doesn't alter this list. Flagging
-        never blocked the account being created.
-    </p>
+<p class="text-muted">
+    Accounts whose signup looked automated, newest first. Each was flagged against the score threshold
+    in force at the time it was created, so changing the threshold doesn't alter this list. Flagging
+    never blocked the account being created.
+</p>
 
-    @if (rows.Count == 0)
-    {
-        <p class="text-muted">No members have been flagged.</p>
-    }
-    else
-    {
-        <p>@rows.Count flagged</p>
+@if (rows.Count == 0)
+{
+    <p class="text-muted">No members have been flagged.</p>
+}
+else
+{
+    <p>@rows.Count flagged</p>
 
-        <div class="table-responsive">
-            <table class="table table-striped">
-                <thead>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Score</th>
+                <th>Created</th>
+                <th>Status</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var row in rows)
+            {
                 <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Score</th>
-                    <th>Created</th>
-                    <th>Status</th>
+                    <td>@row.FullName</td>
+                    <td>@row.EmailAddress</td>
+                    <td>@row.RecaptchaScore.ToString("0.00")</td>
+                    <td>@row.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions { TimeZone = timeZone })</td>
+                    <td>
+                        @if (row.Activated)
+                        {
+                            <span class="badge text-bg-warning">Activated</span>
+                        }
+                        else
+                        {
+                            <span class="badge text-bg-secondary">Not activated</span>
+                        }
+                    </td>
                 </tr>
-                </thead>
-                <tbody>
-                @foreach (var row in rows)
-                {
-                    <tr>
-                        <td>@row.FullName</td>
-                        <td>@row.EmailAddress</td>
-                        <td>@row.RecaptchaScore.ToString("0.00")</td>
-                        <td>@row.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions { TimeZone = timeZone })</td>
-                        <td>
-                            @if (row.Activated)
-                            {
-                                <span class="badge text-bg-warning">Activated</span>
-                            }
-                            else
-                            {
-                                <span class="badge text-bg-secondary">Not activated</span>
-                            }
-                        </td>
-                    </tr>
-                }
-                </tbody>
-            </table>
-        </div>
-    }
-</section>
+            }
+            </tbody>
+        </table>
+    </div>
+}

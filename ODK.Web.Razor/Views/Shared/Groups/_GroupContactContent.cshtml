@@ -5,8 +5,8 @@
 @inject IOdkRoutes OdkRoutes
 
 <h2 class="content-heading">Send us a message</h2>
-    
-<section class="section mt-3">
+
+<div class="mt-3">
     <p>
         If the <a href="@OdkRoutes.Groups.About(Model.Chapter)">FAQ</a> page hasn't answered your questions,
         please don't hesitate to get in touch. We'll get back to you as soon as possible.
@@ -17,4 +17,4 @@
         @await Html.PartialAsync("Contact/_ContactForm", new ContactFormViewModel())
         <button class="btn btn-primary">Send</button>
     </form>
-</section>
+</div>

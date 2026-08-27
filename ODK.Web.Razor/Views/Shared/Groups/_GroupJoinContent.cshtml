@@ -29,25 +29,23 @@
             Title = "Join us",
             Type = HeadingType.H3
         },
-        BodyContentFunc = 
+        BodyContentFunc =
             @<div>
                 @Html.Raw(Model.Texts.RegisterText)
             </div>
     })
 }
 
-<section class="section">
-    <form method="post">
-        @Html.AntiForgeryToken()
-        @await Html.PartialAsync("Account/_ChapterProfileForm", new ChapterProfileFormViewModel
-        {
-            ChapterName = "",
-            ChapterProperties = Model.Properties,
-            ChapterPropertyOptions = Model.PropertyOptions,
-            SigningUp = false
-        })
-        <button class="btn btn-primary" type="submit">
-            Join group
-        </button>
-    </form>
-</section>
+<form method="post">
+    @Html.AntiForgeryToken()
+    @await Html.PartialAsync("Account/_ChapterProfileForm", new ChapterProfileFormViewModel
+    {
+        ChapterName = "",
+        ChapterProperties = Model.Properties,
+        ChapterPropertyOptions = Model.PropertyOptions,
+        SigningUp = false
+    })
+    <button class="btn btn-primary" type="submit">
+        Join group
+    </button>
+</form>

@@ -11,11 +11,9 @@
             Breadcrumbs = Model.Breadcrumbs
         }
         : null,
-    BodyContentFunc = 
-        @<div>            
-            <section class="section">
-                @Model.ContentFunc.Invoke(null)
-            </section>
+    BodyContentFunc =
+        @<div>
+            @Model.ContentFunc.Invoke(null)
         </div>,
     MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu")
 })

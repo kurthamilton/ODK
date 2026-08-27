@@ -9,7 +9,7 @@
 
 <div class="row">
     <div class="col-lg-7">
-        <div class="d-flex flex-column gap-5">
+        <div class="section-stack">
             @if (!string.IsNullOrEmpty(Model.Texts?.Description))
             {
                 @await Html.PartialAsync("Components/_Panel", new PanelViewModel
@@ -17,15 +17,15 @@
                     Heading = new HeadingViewModel
                     {
                         Title = "About",
-                        Type = HeadingType.H3
+                        Type = HeadingType.H4
                     },
-                    BodyContentFunc = 
+                    BodyContentFunc =
                         @<div>
                             @Html.Raw(Model.Texts?.Description)
                         </div>
                 })
             }
-            
+
             @if (!Model.IsMember)
             {
                 @await Html.PartialAsync("Components/_Panel", new PanelViewModel
@@ -33,7 +33,7 @@
                     Heading = new HeadingViewModel
                     {
                         Title = "Join us",
-                        Type = HeadingType.H3
+                        Type = HeadingType.H4
                     },
                     BodyContentFunc =
                         @<div>
@@ -58,19 +58,19 @@
                     Heading = new HeadingViewModel
                     {
                         Title = "Upcoming events",
-                        Type = HeadingType.H3
+                        Type = HeadingType.H4
                     },
                     TitleEndContentFunc = @<a href="@OdkRoutes.Groups.Events(Model.Chapter)">See all</a>,
-                    BodyContentFunc = 
+                    BodyContentFunc =
                         @<div>
                             @await Html.PartialAsync("Events/_EventList", new EventListViewModel
                             {
                                 Chapter = Model.Chapter,
                                 Events = Model.UpcomingEvents
                                     .Select(x => new EventResponseViewModel(
-                                        @event: x.Event, 
-                                        venue: x.Venue, 
-                                        response: x.Response?.Type ?? EventResponseType.None, 
+                                        @event: x.Event,
+                                        venue: x.Venue,
+                                        response: x.Response?.Type ?? EventResponseType.None,
                                         invited: false,
                                         responseSummary: x.ResponseSummary))
                                     .ToArray(),
@@ -78,7 +78,7 @@
                                 TimeZone = Model.Chapter.TimeZone
                             })
                         </div>
-                })                
+                })
             }
 
             @if (Model.RecentEvents.Count > 0)
@@ -88,19 +88,19 @@
                     Heading = new HeadingViewModel
                     {
                         Title = "Recent events",
-                        Type = HeadingType.H3
+                        Type = HeadingType.H4
                     },
                     TitleEndContentFunc = @<a href="@OdkRoutes.Groups.PastEvents(Model.Chapter)">See all</a>,
-                    BodyContentFunc = 
+                    BodyContentFunc =
                         @<div>
                             @await Html.PartialAsync("Events/_EventList", new EventListViewModel
                             {
                                 Chapter = Model.Chapter,
                                 Events = Model.RecentEvents
                                     .Select(x => new EventResponseViewModel(
-                                        @event: x.Event, 
-                                        venue: x.Venue, 
-                                        response: x.Response?.Type ?? EventResponseType.None, 
+                                        @event: x.Event,
+                                        venue: x.Venue,
+                                        response: x.Response?.Type ?? EventResponseType.None,
                                         invited: false,
                                         responseSummary: x.ResponseSummary))
                                     .ToArray(),
@@ -109,9 +109,9 @@
                             })
                         </div>
                 })
-            } 
-        </div>               
-    </div>    
+            }
+        </div>
+    </div>
     <div class="col-lg-4 offset-lg-1">
         @await Html.PartialAsync("Groups/Home/_GroupContentSidebar", Model)
     </div>

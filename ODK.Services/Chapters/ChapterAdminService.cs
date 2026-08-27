@@ -2354,10 +2354,18 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         texts ??= new ChapterTexts();
 
-        foreach (var html in new[]
-            { model.Description, model.RegisterText, model.ShortDescription, model.WelcomeText })
+        // only validate changed texts to avoid blocking an update for an existing field
+        var validateTexts = new[]
         {
-            var fieldResult = _htmlValidator.Validate(html, DefaultHtmlValidatorOptions);
+            model.Description != texts.Description ? model.Description : null,
+            model.RegisterText != texts.RegisterText ? model.RegisterText : null,
+            model.ShortDescription != texts.ShortDescription ? model.RegisterText : null,
+            model.WelcomeText != texts.WelcomeText ? model.WelcomeText : null
+        };
+
+        foreach (var validateText in validateTexts)
+        {
+            var fieldResult = _htmlValidator.Validate(validateText, DefaultHtmlValidatorOptions);
             if (!fieldResult.Success)
             {
                 return fieldResult;

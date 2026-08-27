@@ -22,10 +22,8 @@
     }
 })
 
-<section class="section">
-    @await Html.PartialAsync("SiteAdmin/_SiteAdminEmailContent",
-        new EmailContentViewModel(email.Email, email.Parameters, email.Title))
-</section>
+@await Html.PartialAsync("SiteAdmin/_SiteAdminEmailContent",
+    new EmailContentViewModel(email.Email, email.Parameters, email.Title))
 
 @section scripts {
     <script src="~/js/odk.bundle.code-editor.js" asp-append-version="true"></script>

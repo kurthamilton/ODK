@@ -26,11 +26,9 @@
         {
             Chapter = chapter
         }),
-        BodyContentFunc = 
+        BodyContentFunc =
             @<div>
-                <section class="section">
-                    @await Html.PartialAsync("Account/_ChapterSubscriptionContent", viewModel)
-                </section>
+                @await Html.PartialAsync("Account/_ChapterSubscriptionContent", viewModel)
             </div>
     })
 })

@@ -30,9 +30,7 @@
         Title = "My subscription",
         Content =
             @<div>
-                <section class="section">
-                    @await Html.PartialAsync("Account/_SiteSubscriptionContent", viewModel)
-                </section>
+                @await Html.PartialAsync("Account/_SiteSubscriptionContent", viewModel)
             </div>
     })
 })

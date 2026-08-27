@@ -33,11 +33,11 @@
         @Html.AntiForgeryToken()
         <div class="form-group mb-3 required">
             @Html.Label("currencyId", "Choose currency", new { @class = "form-label" })
-            @Html.DropDownList("currencyId", currencyOptions, "", new 
-            { 
-                @class = "form-select", 
-                data_val = "true", 
-                data_val_required = "The Currency field is required" 
+            @Html.DropDownList("currencyId", currencyOptions, "", new
+            {
+                @class = "form-select",
+                data_val = "true",
+                data_val_required = "The Currency field is required"
             })
             @Html.ValidationMessage("currencyId")
         </div>
@@ -47,7 +47,7 @@
     return;
 }
 
-<div data-odk-component="_SiteSubscriptionContent">
+<div class="section-stack" data-odk-component="_SiteSubscriptionContent">
     <div class="form-group mb-3">
         <label class="form-label">Current subscription</label>
         <div class="form-control-plaintext">
@@ -61,10 +61,10 @@
             }
         </div>
     </div>
-
-    <div class="form-group mb-3">
-        @if (externalSubscription?.Status == ExternalSubscriptionStatus.Cancelled)
-        {
+    
+    @if (externalSubscription?.Status == ExternalSubscriptionStatus.Cancelled)
+    {
+        <div class="form-group mb-3">
             <label class="form-label">Expiry date</label>
             <div class="form-control-plaintext">
                 @if (memberSubscription?.MemberSiteSubscription.ExpiresUtc != null)
@@ -78,22 +78,24 @@
                     <span>-</span>
                 }
             </div>
-        }
-        else if (externalSubscription?.Status == ExternalSubscriptionStatus.Active)
-        {
-            @* An active subscription's stored expiry is the provider's next billing date, so only one of the
-               two is worth showing - and it is read live from the provider, which is authoritative if a
-               renewal webhook has yet to arrive. *@
+        </div>
+    }
+    else if (externalSubscription?.Status == ExternalSubscriptionStatus.Active)
+    {
+        @* An active subscription's stored expiry is the provider's next billing date, so only one of the
+            two is worth showing - and it is read live from the provider, which is authoritative if a
+            renewal webhook has yet to arrive. *@
+        <div class="form-group mb-3">
             <label class="form-label">Next payment date</label>
             <div class="form-control-plaintext">
                 @if (externalSubscription.NextBillingDate != null && currentMember != null)
                 {
                     <span>
                         @externalSubscription.NextBillingDate.Value.ToFriendlyDateString(new FriendlyDateStringOptions
-                        { 
-                            FullMonthName = true, 
-                            ForceIncludeYear = true, 
-                            TimeZone = currentMember.TimeZone 
+                        {
+                            FullMonthName = true,
+                            ForceIncludeYear = true,
+                            TimeZone = currentMember.TimeZone
                         })
                     </span>
                 }
@@ -102,11 +104,12 @@
                     <span>-</span>
                 }
             </div>
-        }
-    </div>
+        </div>
+    }
+    
 
     @if (currentMember != null &&
-         memberSubscription != null && 
+         memberSubscription != null &&
          externalSubscription?.Status == ExternalSubscriptionStatus.Active)
     {
         <div class="mb-3">
@@ -122,31 +125,38 @@
                     <button class="btn btn-danger">
                         Cancel subscription
                     </button>
-                </p>       
+                </p>
                 <p>
-                    @await Html.PartialAsync("Components/_FormLabelSubtitle", 
-                        "Your subscription will remain active until the expiry date, " + 
+                    @await Html.PartialAsync("Components/_FormLabelSubtitle",
+                        "Your subscription will remain active until the expiry date, " +
                         "but payment will not be taken when due for renewal.")
                 </p>
             </form>
         </div>
     }
 
-    @if (!subscriptions.Any(x => x.Subscription.Id != Model.CurrentMemberSubscription?.SiteSubscription.Id) && 
+    @if (!subscriptions.Any(x => x.Subscription.Id != Model.CurrentMemberSubscription?.SiteSubscription.Id) &&
         externalSubscription?.Status == ExternalSubscriptionStatus.Active)
     {
         @*Don't show upgrade options if there are no other subscription options than the current active subscription*@
         return;
     }
 
-    <h3>Purchase</h3>
-
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
-        @foreach (var subscription in subscriptions)
+    @await Html.PartialAsync("Components/_Section", new SectionViewModel
+    {
+        Heading = new HeadingViewModel
         {
-            <div class="mb-3 col">
-                @await Html.PartialAsync("Account/_SiteSubscriptionCard", subscription)
+            Title = "Purchase",
+            Type = HeadingType.H3
+        },
+        BodyContentFunc =
+            @<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
+                @foreach (var subscription in subscriptions)
+                {
+                    <div class="mb-3 col">
+                        @await Html.PartialAsync("Account/_SiteSubscriptionCard", subscription)
+                    </div>
+                }
             </div>
-        }
-    </div>
+    })
 </div>

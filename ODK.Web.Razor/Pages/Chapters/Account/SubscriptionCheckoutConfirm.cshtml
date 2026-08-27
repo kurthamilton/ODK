@@ -1,9 +1,7 @@
 ﻿@page "/{chapterName}/account/subscription/confirm"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
-@using ODK.Core.Payments
 @using ODK.Services.Members
-@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Payments
@@ -37,20 +35,18 @@
         {
             Chapter = Model.Chapter
         }),
-        BodyContentFunc = 
+        BodyContentFunc =
             @<div>
-                <section class="section">
-                    @await Html.PartialAsync("Payments/_PaymentConfirmContent", new PaymentConfirmViewModel
-                    {
-                        Chapter = Model.Chapter,
-                        SessionId = Model.SessionId
-                    })
-                </section>
+                @await Html.PartialAsync("Payments/_PaymentConfirmContent", new PaymentConfirmViewModel
+                {
+                    Chapter = Model.Chapter,
+                    SessionId = Model.SessionId
+                })
             </div>
     })
 })
 
-@section scripts 
+@section scripts
 {
     @await Html.PartialAsync("Payments/_PaymentConfirmScripts")
 }

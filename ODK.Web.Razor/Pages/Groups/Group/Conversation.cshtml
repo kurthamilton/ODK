@@ -1,15 +1,13 @@
 ﻿@page "/groups/{slug}/conversations/{id:guid}"
 @attribute [Authorize]
-@using ODK.Web.Razor.Models.Conversations
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Services.Chapters
-@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Chapters
 @using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Conversations
 @using ODK.Web.Razor.Models.Groups
 @model ConversationModel
 @inject IChapterViewModelService ChapterViewModelService
-@inject IOdkRoutes OdkRoutes
 @{
     Layout = "_HomeLayout";
 
@@ -26,13 +24,13 @@
     {
         Breadcrumbs =
         [
-            new MenuItem { Text = "My conversations", Link = OdkRoutes.Groups.Conversations(Model.Chapter) },
+            new MenuItem { Text = "My conversations", Link = Model.OdkRoutes.Groups.Conversations(Model.Chapter) },
             new MenuItem { Text = viewModel.Conversation.Subject }
         ],
         ArchivedUtc = viewModel.Conversation.ArchivedUtc,
         ArchiveUrl = $"/conversations/{viewModel.Conversation.Id}/archive",
         ConversationId = viewModel.Conversation.Id,
-        ConversationUrlFunc = id => OdkRoutes.Groups.Conversation(chapter: Model.Chapter, id),
+        ConversationUrlFunc = id => Model.OdkRoutes.Groups.Conversation(chapter: Model.Chapter, id),
         CurrentMember = Model.CurrentMember,
         Messages = viewModel.Messages.ToViewModels(),
         OtherConversations = viewModel.OtherConversations.ToViewModels(),

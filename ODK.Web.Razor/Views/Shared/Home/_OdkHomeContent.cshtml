@@ -1,10 +1,7 @@
-﻿@using ODK.Services.Chapters
-@using ODK.Services.Chapters.ViewModels
+﻿@using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Services
-@using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Home
-@using ODK.Web.Razor.Services
 @model OdkHomeHeaderViewModel
 @inject IRequestStore RequestStore
 @{
@@ -19,7 +16,7 @@
 
 <main id="main">
     @await Html.PartialAsync("Components/_ToastAnchor", new ToastAnchorViewModel { PseudoContainer = true })
-    @await Html.PartialAsync("Home/_ChaptersSection", new ChaptersSectionViewModel
+    @await Html.PartialAsync("Home/_ChaptersBand", new ChaptersBandViewModel
     {
         Chapters = chapters,
         Countries = countries
@@ -27,7 +24,7 @@
 
     <img class="img--hero" src="/assets/img/home-hero.jpg" />
 
-    @await Html.PartialAsync("Components/_Section", new SectionViewModel
+    @await Html.PartialAsync("Components/_Band", new BandViewModel
     {
         Content = 
             @<p>
@@ -38,13 +35,13 @@
                 If you want to follow us on our path, we can show you the way...
             </p>,
         Hero = true,
-        Theme = SectionThemeType.Dark,
+        Theme = BandThemeType.Dark,
         Title = "The Drunken Knitifesto"
     })
 
-    @await Html.PartialAsync("Home/_ThreeTenetsSection", null)
+    @await Html.PartialAsync("Home/_ThreeTenetsBand", null)
 
-    @await Html.PartialAsync("Components/_Section", new SectionViewModel
+    @await Html.PartialAsync("Components/_Band", new BandViewModel
     {
         Content =
             @<div>
@@ -60,13 +57,13 @@
                 </p>
             </div>,
         Hero = true,
-        Theme = SectionThemeType.Grey,
+        Theme = BandThemeType.Grey,
         Title = "About the Drunken Knitwits"
     })
 
     <img class="img--hero" src="assets/img/home-timeline.png" />
 
-    @await Html.PartialAsync("Components/_Section", new SectionViewModel
+    @await Html.PartialAsync("Components/_Band", new BandViewModel
     {
         Content = 
             @<div>
@@ -78,6 +75,6 @@
                 <div class="small">3. Drinking is optional; crafting is not.</div>
             </div>,
         Hero = true,
-        Theme = SectionThemeType.Dark
+        Theme = BandThemeType.Dark
     })
 </main>

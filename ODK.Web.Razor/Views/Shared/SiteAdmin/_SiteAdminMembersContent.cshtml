@@ -10,71 +10,69 @@
 
 <h2 class="content-heading">Members</h2>
 
-<section class="section">
-    @if (rows.Count == 0)
-    {
-        <p class="text-muted">No members have a site subscription with an expiry date.</p>
-    }
-    else
-    {
-        <div class="table-responsive">
-            <table class="table table-striped">
-                <thead>
+@if (rows.Count == 0)
+{
+    <p class="text-muted">No members have a site subscription with an expiry date.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Groups</th>
+                <th>Subscription</th>
+                <th>Price</th>
+                <th>Expires</th>
+                <th>Status</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var row in rows)
+            {
                 <tr>
-                    <th>Name</th>
-                    <th>Groups</th>
-                    <th>Subscription</th>
-                    <th>Price</th>
-                    <th>Expires</th>
-                    <th>Status</th>
+                    <td>@row.FullName</td>
+                    <td>@string.Join(", ", row.ChapterNames)</td>
+                    <td>@row.SubscriptionName</td>
+                    <td>
+                        @if (row.Currency != null && row.Amount != null)
+                        {
+                            <span>@row.Currency.ToAmountString(row.Amount.Value)</span><span class="text-muted">@(row.Frequency switch
+                            {
+                                SiteSubscriptionFrequency.Monthly => " / month",
+                                SiteSubscriptionFrequency.Yearly => " / year",
+                                _ => ""
+                            })</span>
+                        }
+                        else
+                        {
+                            <span>&mdash;</span>
+                        }
+                    </td>
+                    <td>
+                        @if (row.ExpiresUtc != null)
+                        {
+                            <span>@row.ExpiresUtc.Value.ToString("d MMMM yyyy")</span>
+                        }
+                        else
+                        {
+                            <span>-</span>
+                        }
+                    </td>
+                    <td>
+                        @if (row.IsActive)
+                        {
+                            <span class="badge text-bg-success">Active</span>
+                        }
+                        else
+                        {
+                            <span class="badge text-bg-secondary">Expired</span>
+                        }
+                    </td>
                 </tr>
-                </thead>
-                <tbody>
-                @foreach (var row in rows)
-                {
-                    <tr>
-                        <td>@row.FullName</td>
-                        <td>@string.Join(", ", row.ChapterNames)</td>
-                        <td>@row.SubscriptionName</td>
-                        <td>
-                            @if (row.Currency != null && row.Amount != null)
-                            {
-                                <span>@row.Currency.ToAmountString(row.Amount.Value)</span><span class="text-muted">@(row.Frequency switch
-                                {
-                                    SiteSubscriptionFrequency.Monthly => " / month",
-                                    SiteSubscriptionFrequency.Yearly => " / year",
-                                    _ => ""
-                                })</span>
-                            }
-                            else
-                            {
-                                <span>&mdash;</span>
-                            }
-                        </td>
-                        <td>
-                            @if (row.ExpiresUtc != null)
-                            {
-                                <span>@row.ExpiresUtc.Value.ToString("d MMMM yyyy")</span>
-                            }
-                            else
-                            {
-                                <span>-</span>
-                            }
-                        </td>
-                        <td>
-                            @if (row.IsActive)
-                            {
-                                <span class="badge text-bg-success">Active</span>
-                            }
-                            else
-                            {
-                                <span class="badge text-bg-secondary">Expired</span>
-                            }
-                        </td>
-                    </tr>
-                }
-                </tbody>
-            </table>
-        </div>
-    }
-</section>
+            }
+            </tbody>
+        </table>
+    </div>
+}

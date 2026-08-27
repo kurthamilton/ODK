@@ -6,7 +6,7 @@
 @using ODK.Web.Razor.Models.Components
 @model AdminMembersAdminPageViewModel
 @inject IOdkRoutes OdkRoutes
-@{    
+@{
     var adminMemberDictionary = Model.AdminMembers
         .ToDictionary(x => x.MemberId);
     var memberDictionary = Model.Members
@@ -23,117 +23,115 @@
 @await Html.PartialAsync("Components/_AdminPageDescription",
     "Members who can administer this group, and how much each of them can do.")
 
-<section class="section">
-    @if (Model.AdminMembers.Count == 1)
-    {
-        <p>
-            Allow other members to help you run the group. 
-            Granting admin permissions to a member will give them access to all admin pages.
-        </p>
-    }
+@if (Model.AdminMembers.Count == 1)
+{
+    <p>
+        Allow other members to help you run the group.
+        Granting admin permissions to a member will give them access to all admin pages.
+    </p>
+}
 
-    @await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.OwnerSubscriptionFeatures)
-    {
-    Chapter = Model.Chapter,
-        Feature = SiteFeatureType.AdminMembers,
-        ContentFunc = 
-            @<div>
-                <form method="post" action="/groups/@Model.Chapter.Id/members/admins"
-                      class="row g-3 mb-3">
-                    @Html.AntiForgeryToken()
-                    <div class="col-lg-6 col-12 d-flex gap-1">
-                        <div class="flex-grow-1">
-                            @await Html.PartialAsync("Admin/Members/_AdminMemberAddForm", new AdminMemberAddFormViewModel
-                            {
-                                AdminMemberOptions = adminMemberOptions.ToArray()
-                            })
-                        </div>
-
-                        <button class="btn btn-primary">Add</button>
-                    </div>    
-                </form>
-
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Admin email address</th>
-                            <th>Receive contact emails</th>
-                            <th>Receive new member emails</th>
-                            <th>Receive event comment emails</th>
-                            <th>Role</th>
-                            <th></th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        @foreach (var adminMember in Model.AdminMembers.OrderBy(x => x.Member.FullName))
+@await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.OwnerSubscriptionFeatures)
+{
+Chapter = Model.Chapter,
+    Feature = SiteFeatureType.AdminMembers,
+    ContentFunc =
+        @<div>
+            <form method="post" action="/groups/@Model.Chapter.Id/members/admins"
+                  class="row g-3 mb-3">
+                @Html.AntiForgeryToken()
+                <div class="col-lg-6 col-12 d-flex gap-1">
+                    <div class="flex-grow-1">
+                        @await Html.PartialAsync("Admin/Members/_AdminMemberAddForm", new AdminMemberAddFormViewModel
                         {
-                            var member = adminMember.Member;
+                            AdminMemberOptions = adminMemberOptions.ToArray()
+                        })
+                    </div>
 
-                            <tr>
-                                <td>
-                                    @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
-                                    {
-                                        Route = OdkRoutes.GroupAdmin.AdminMember(Model.Chapter, adminMember),
-                                        Text = member.FullName
-                                    })
-                                </td>
-                                <td class="text-break">
-                                    @adminMember.AdminEmailAddress
-                                </td>
-                                <td>
-                                    @if (adminMember.ReceiveContactEmails)
-                                    {
-                                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Check))
-                                    }
-                                </td>
-                                <td>
-                                    @if (adminMember.ReceiveNewMemberEmails)
-                                    {
-                                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Check))
-                                    }
-                                </td>
-                                <td>
-                                    @if (adminMember.ReceiveEventCommentEmails)
-                                    {
-                                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Check))
-                                    }
-                                </td>
-                                <td>
-                                    @adminMember.Role
-                                </td>
-                                <td>
-                                    @if (Model.Chapter.OwnerId != adminMember.MemberId)
-                                    {
-                                        <form method="post" action="/groups/@Model.Chapter.Id/members/admins/@member.Id/delete">
-                                            @Html.AntiForgeryToken()
-                                            @await Html.PartialAsync("Components/_Confirm", new ConfirmViewModel
-                                            {
-                                                Message = "Are you sure you want to remove admin access for this member?",
-                                                Title = "Remove admin access"
-                                            })
-                                            <button data-bs-toggle="tooltip" data-bs-title="Remove"
-                                                    class="btn-icon text-danger">
-                                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Times))
-                                            </button>
-                                        </form>
-                                    }          
-                                    else
-                                    {
-                                        <span data-bs-toggle="tooltip" data-bs-title="Owner">
-                                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Star)
-                                            {
-                                                Class = "text-warning"
-                                            })
-                                        </span>                                        
-                                    }
-                                </td>
-                            </tr>
-                        }
-                        </tbody>
-                    </table>
+                    <button class="btn btn-primary">Add</button>
                 </div>
+            </form>
+
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Admin email address</th>
+                        <th>Receive contact emails</th>
+                        <th>Receive new member emails</th>
+                        <th>Receive event comment emails</th>
+                        <th>Role</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var adminMember in Model.AdminMembers.OrderBy(x => x.Member.FullName))
+                    {
+                        var member = adminMember.Member;
+
+                        <tr>
+                            <td>
+                                @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                                {
+                                    Route = OdkRoutes.GroupAdmin.AdminMember(Model.Chapter, adminMember),
+                                    Text = member.FullName
+                                })
+                            </td>
+                            <td class="text-break">
+                                @adminMember.AdminEmailAddress
+                            </td>
+                            <td>
+                                @if (adminMember.ReceiveContactEmails)
+                                {
+                                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Check))
+                                }
+                            </td>
+                            <td>
+                                @if (adminMember.ReceiveNewMemberEmails)
+                                {
+                                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Check))
+                                }
+                            </td>
+                            <td>
+                                @if (adminMember.ReceiveEventCommentEmails)
+                                {
+                                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Check))
+                                }
+                            </td>
+                            <td>
+                                @adminMember.Role
+                            </td>
+                            <td>
+                                @if (Model.Chapter.OwnerId != adminMember.MemberId)
+                                {
+                                    <form method="post" action="/groups/@Model.Chapter.Id/members/admins/@member.Id/delete">
+                                        @Html.AntiForgeryToken()
+                                        @await Html.PartialAsync("Components/_Confirm", new ConfirmViewModel
+                                        {
+                                            Message = "Are you sure you want to remove admin access for this member?",
+                                            Title = "Remove admin access"
+                                        })
+                                        <button data-bs-toggle="tooltip" data-bs-title="Remove"
+                                                class="btn-icon text-danger">
+                                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Times))
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <span data-bs-toggle="tooltip" data-bs-title="Owner">
+                                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Star)
+                                        {
+                                            Class = "text-warning"
+                                        })
+                                    </span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
             </div>
-    })
-</section>
+        </div>
+})

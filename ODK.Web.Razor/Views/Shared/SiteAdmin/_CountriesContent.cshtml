@@ -12,28 +12,26 @@
 
 <h2 class="content-heading">Countries</h2>
 
-<section class="section">
-    <div class="table-responsive">
-        <table class="table table-striped">
-            <thead>
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>ISO</th>
+            <th>Continent</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var country in countries)
+        {
             <tr>
-                <th>Name</th>
-                <th>ISO</th>
-                <th>Continent</th>
+                <td>
+                    <a href="@OdkRoutes.SiteAdmin.Country(country.Id)">@country.Name</a>
+                </td>
+                <td>@country.IsoCode2</td>
+                <td>@country.Continent</td>
             </tr>
-            </thead>
-            <tbody>
-            @foreach (var country in countries)
-            {
-                <tr>
-                    <td>
-                        <a href="@OdkRoutes.SiteAdmin.Country(country.Id)">@country.Name</a>
-                    </td>
-                    <td>@country.IsoCode2</td>
-                    <td>@country.Continent</td>
-                </tr>
-            }
-            </tbody>
-        </table>
-    </div>
-</section>
+        }
+        </tbody>
+    </table>
+</div>

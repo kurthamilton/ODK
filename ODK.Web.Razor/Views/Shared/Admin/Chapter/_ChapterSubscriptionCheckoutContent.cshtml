@@ -5,7 +5,7 @@
 @await Html.PartialAsync("Components/_AdminPageDescription",
     "Complete payment for this membership tier.")
 
-<section class="section" data-odk-component="_ChapterSubscriptionCheckoutContent">
+<section data-odk-component="_ChapterSubscriptionCheckoutContent">
     @await Html.PartialAsync("Components/_StripeCheckout", new StripeCheckoutViewModel
     {
         ApiPublicKey = Model.PaymentSettings.ApiPublicKey,

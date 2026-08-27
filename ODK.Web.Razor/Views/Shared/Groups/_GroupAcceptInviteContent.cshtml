@@ -42,47 +42,65 @@
     return;
 }
 
-@if (!string.IsNullOrEmpty(Model.Texts?.RegisterText))
-{
-    @await Html.PartialAsync("Components/_Panel", new PanelViewModel
+<div class="section-stack">
+    @if (!string.IsNullOrEmpty(Model.Texts?.RegisterText))
     {
-        Class = "mb-3",
-        Heading = new HeadingViewModel
+        @await Html.PartialAsync("Components/_Panel", new PanelViewModel
         {
-            Title = "Join us",
-            Type = HeadingType.H3
-        },
-        BodyContentFunc =
-            @<div>
-                @Html.Raw(Model.Texts.RegisterText)
-            </div>
-    })
-}
+            Heading = new HeadingViewModel
+            {
+                Title = "Join us",
+                Type = HeadingType.H3
+            },
+            BodyContentFunc =
+                @<div>
+                    @Html.Raw(Model.Texts.RegisterText)
+                </div>
+        })
+    }
 
-<section class="section">
     <form method="post">
         @Html.AntiForgeryToken()
 
-        <h3 class="content-heading">Your account</h3>
-        @await Html.PartialAsync("Account/_AcceptInviteForm", Model.Form)
-
-        @if (Model.Properties.Count > 0)
-        {
-            <div class="mt-5">
-                <h3 class="content-heading">About you</h3>
-                <p class="text-muted">Questions from the group</p>
-                @await Html.PartialAsync("Account/_ChapterProfileForm", new ChapterProfileFormViewModel
+        <div class="section-stack">
+            @await Html.PartialAsync("Components/_Section", new SectionViewModel
+            {
+                Heading = new HeadingViewModel
                 {
-                    ChapterName = Model.Chapter.GetDisplayName(Model.Platform),
-                    ChapterProperties = Model.Properties,
-                    ChapterPropertyOptions = Model.PropertyOptions,
-                    SigningUp = false
-                })
-            </div>
-        }
+                    Title = "Your account",
+                    Type = HeadingType.H3
+                },
+                BodyContent = await Html.PartialAsync("Account/_AcceptInviteForm", Model.Form)
+            })
 
-        <button class="btn btn-primary" type="submit">
-            Accept invitation
-        </button>
+            @if (Model.Properties.Count > 0)
+            {
+                @await Html.PartialAsync("Components/_Section", new SectionViewModel
+                {
+                    Heading = new HeadingViewModel
+                    {
+                        Title = "About you",
+                        Type = HeadingType.H3
+                    },
+                    BodyContentFunc =
+                        @<div>
+                            <p class="text-muted">Questions from the group</p>
+                            @await Html.PartialAsync("Account/_ChapterProfileForm", new ChapterProfileFormViewModel
+                            {
+                                ChapterName = Model.Chapter.GetDisplayName(Model.Platform),
+                                ChapterProperties = Model.Properties,
+                                ChapterPropertyOptions = Model.PropertyOptions,
+                                SigningUp = false
+                            })
+                        </div>
+                })
+            }
+        </div>
+
+        <div class="mt-section">
+            <button class="btn btn-primary" type="submit">
+                Accept invitation
+            </button>
+        </div>
     </form>
-</section>
+</div>

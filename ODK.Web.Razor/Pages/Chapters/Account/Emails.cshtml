@@ -2,7 +2,6 @@
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Services.Users
-@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
 @model EmailsModel
@@ -25,11 +24,9 @@
         {
             Chapter = chapter
         }),
-        BodyContentFunc = 
+        BodyContentFunc =
             @<div>
-                <section class="section">
-                    @await Html.PartialAsync("Account/_EmailPreferencesContent", viewModel)
-                </section>
+                @await Html.PartialAsync("Account/_EmailPreferencesContent", viewModel)
             </div>
     })
 })

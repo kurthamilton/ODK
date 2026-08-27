@@ -1,0 +1,44 @@
+// A full-width strip down a marketing page: its own background, its own light/dark treatment, and a
+// centred column of copy. Only the home pages use one - a band divides a *page* into strips, where a
+// .section divides a page's content into parts.
+.band {
+    background: var(--bs-body-bg);
+    color: var(--bs-body-color);
+}
+
+.band--hero {
+    background-position-y: 0;
+    padding: 50px 20px;
+    align-items: center;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+}
+
+.band--hero__content {
+    font-size: 1.4rem;
+    max-width: 760px;
+
+    h1 {
+        font-size: 3rem;
+
+        &:not(:first-child) {
+            margin-top: 4rem;
+        }
+    }
+}
+
+.band--chapters {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+.band--dark {
+}
+
+.band--light {
+}
+
+.band--grey {
+    background-color: hsla(0,0%,88%,.6);
+}

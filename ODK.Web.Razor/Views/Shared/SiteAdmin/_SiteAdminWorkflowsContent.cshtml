@@ -1,4 +1,5 @@
 ﻿@using ODK.Core.Workflows
+@using ODK.Web.Razor.Models.Components
 @inject IEnumerable<IStateMachineDiagram> StateMachines
 
 <div data-odk-component="_SiteAdminWorkflowsContent">
@@ -10,11 +11,18 @@
         <code>docs/workflows</code>.
     </p>
 
-    @foreach (var stateMachine in StateMachines.OrderBy(x => x.Name))
-    {
-        <section class="section">
-            <h3>@stateMachine.Name</h3>
-            <pre class="mermaid">@stateMachine.ToMermaid()</pre>
-        </section>
-    }
+    <div class="section-stack">
+        @foreach (var stateMachine in StateMachines.OrderBy(x => x.Name))
+        {
+            @await Html.PartialAsync("Components/_Section", new SectionViewModel
+            {
+                Heading = new HeadingViewModel
+                {
+                    Title = stateMachine.Name,
+                    Type = HeadingType.H3
+                },
+                BodyContentFunc = @<pre class="mermaid">@stateMachine.ToMermaid()</pre>
+            })
+        }
+    </div>
 </div>

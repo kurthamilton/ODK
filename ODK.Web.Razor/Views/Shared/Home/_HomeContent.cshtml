@@ -4,12 +4,12 @@
 @using ODK.Web.Razor.Models.Components
 @inject IOdkRoutes OdkRoutes
 @{
-    var themes = new[] { SectionThemeType.Dark, SectionThemeType.Light };
+    var themes = new[] { BandThemeType.Dark, BandThemeType.Light };
     var i = 0;
 }
 <main id="main">
     @await Html.PartialAsync("Components/_ToastAnchor", new ToastAnchorViewModel { PseudoContainer = true })
-    @await Html.PartialAsync("Components/_Section", new SectionViewModel
+    @await Html.PartialAsync("Components/_Band", new BandViewModel
     {
         Content = 
             @<div>
@@ -29,7 +29,7 @@
         Title = $"{HomePageResources.BuildYourCommunity}."
     })
 
-    @await Html.PartialAsync("Components/_Section", new SectionViewModel
+    @await Html.PartialAsync("Components/_Band", new BandViewModel
     {
         Content = 
             @<div>
@@ -48,7 +48,7 @@
         Title = $"{HomePageResources.HowWeEnableYou}."
     })
 
-    @await Html.PartialAsync("Components/_Section", new SectionViewModel
+    @await Html.PartialAsync("Components/_Band", new BandViewModel
     {
         Content = 
             @<div>
@@ -66,7 +66,7 @@
         Title = $"{HomePageResources.BuiltWithOrganisersInMind}."
     })
 
-    @await Html.PartialAsync("Components/_Section", new SectionViewModel
+    @await Html.PartialAsync("Components/_Band", new BandViewModel
     {
         Content = 
             @<div>
@@ -87,7 +87,7 @@
         Title = $"{HomePageResources.MovingFromAnotherPlatform}"
     })
 
-    @await Html.PartialAsync("Components/_Section", new SectionViewModel
+    @await Html.PartialAsync("Components/_Band", new BandViewModel
     {
         Content = 
             @<div>

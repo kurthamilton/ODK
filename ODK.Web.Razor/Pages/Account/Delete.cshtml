@@ -1,7 +1,6 @@
 ﻿@page "/account/delete"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
-@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
 @model DeleteModel
@@ -17,11 +16,9 @@
     {
         Active = Model.OdkRoutes.Account.Delete(null),
         Title = "Delete account",
-        Content = 
+        Content =
             @<div>
-                <section class="section">
-                    @await Html.PartialAsync("Account/_DeleteAccountContent")
-                </section>
+                @await Html.PartialAsync("Account/_DeleteAccountContent")
             </div>
     })
 })

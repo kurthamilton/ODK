@@ -1,12 +1,10 @@
 ﻿@page "/{chapterName}/account/conversations"
 @using ODK.Services.Members
-@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Chapters
 @using ODK.Web.Razor.Models.Components
 @model ConversationsModel
 @inject IMemberViewModelService MemberViewModelService
-@inject IOdkRoutes OdkRoutes
 @{
     Layout = "_OdkChapterLayout";
 
@@ -25,22 +23,20 @@
         {
             Chapter = Model.Chapter
         }),
-        BodyContentFunc = 
+        BodyContentFunc =
             @<div>
-                <section class="section">
-                    @await Html.PartialAsync("Conversations/_ChapterConversationsContent", new ChapterConversationsViewModel
-                    {
-                        ActiveConversationCount = viewModel.ActiveConversationCount,
-                        Archived = viewModel.Archived,
-                        ArchivedConversationCount = viewModel.ArchivedConversationCount,
-                        Chapter = Model.Chapter,
-                        Chapters = null,
-                        Conversations = viewModel.Conversations,
-                        ConversationsUrlFunc = archived => OdkRoutes.Account.Conversations(Model.Chapter, archived),
-                        ConversationUrlFunc = id => OdkRoutes.Account.Conversation(Model.Chapter, id),
-                        CurrentMember = Model.CurrentMember
-                    })
-                </section>
+                @await Html.PartialAsync("Conversations/_ChapterConversationsContent", new ChapterConversationsViewModel
+                {
+                    ActiveConversationCount = viewModel.ActiveConversationCount,
+                    Archived = viewModel.Archived,
+                    ArchivedConversationCount = viewModel.ArchivedConversationCount,
+                    Chapter = Model.Chapter,
+                    Chapters = null,
+                    Conversations = viewModel.Conversations,
+                    ConversationsUrlFunc = archived => Model.OdkRoutes.Account.Conversations(Model.Chapter, archived),
+                    ConversationUrlFunc = id => Model.OdkRoutes.Account.Conversation(Model.Chapter, id),
+                    CurrentMember = Model.CurrentMember
+                })
             </div>
     })
 })

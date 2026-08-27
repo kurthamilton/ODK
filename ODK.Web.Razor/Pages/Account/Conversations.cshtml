@@ -27,23 +27,21 @@
         Title = title,
         Content =
             @<div>
-                <section class="section">
-                    @await Html.PartialAsync("Conversations/_ConversationInboxTabs", new object(),
-                        new ViewDataDictionary(ViewData) { ["SiteConversationsActive"] = false })
+                @await Html.PartialAsync("Conversations/_ConversationInboxTabs", new object(),
+                    new ViewDataDictionary(ViewData) { ["SiteConversationsActive"] = false })
 
-                    @await Html.PartialAsync("Conversations/_ChapterConversationsContent", new ChapterConversationsViewModel
-                    {
-                        ActiveConversationCount = viewModel.ActiveConversationCount,
-                        Archived = Model.Archived,
-                        ArchivedConversationCount = viewModel.ArchivedConversationCount,
-                        Chapter = null,
-                        Chapters = viewModel.Chapters,
-                        Conversations = viewModel.Conversations,
-                        ConversationsUrlFunc = archived => OdkRoutes.Account.Conversations(chapter: null, archived),
-                        ConversationUrlFunc = id => OdkRoutes.Account.Conversation(chapter: null, id),
-                        CurrentMember = Model.CurrentMember
-                    })
-                </section>
+                @await Html.PartialAsync("Conversations/_ChapterConversationsContent", new ChapterConversationsViewModel
+                {
+                    ActiveConversationCount = viewModel.ActiveConversationCount,
+                    Archived = Model.Archived,
+                    ArchivedConversationCount = viewModel.ArchivedConversationCount,
+                    Chapter = null,
+                    Chapters = viewModel.Chapters,
+                    Conversations = viewModel.Conversations,
+                    ConversationsUrlFunc = archived => OdkRoutes.Account.Conversations(chapter: null, archived),
+                    ConversationUrlFunc = id => OdkRoutes.Account.Conversation(chapter: null, id),
+                    CurrentMember = Model.CurrentMember
+                })
             </div>
     })
 })

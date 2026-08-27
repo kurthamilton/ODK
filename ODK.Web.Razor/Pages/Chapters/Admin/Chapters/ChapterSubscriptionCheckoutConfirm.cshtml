@@ -1,14 +1,10 @@
 ﻿@page "/{chapterName}/admin/chapter/subscription/confirm"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
-@using ODK.Core.Payments
-@using ODK.Web.Common.Routes
-@using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Payments
 @model ChapterSubscriptionCheckoutConfirmModel
-@inject IOdkRoutes OdkRoutes
 @{
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Subscription pending confirmation";
@@ -25,23 +21,21 @@
         {
             Icon = IconType.ArrowLeft,
             Text = "Back to subscription",
-            Link = OdkRoutes.GroupAdmin.Subscription(Model.Chapter).Path
+            Link = Model.OdkRoutes.GroupAdmin.Subscription(Model.Chapter).Path
         }
     },
-    ContentFunc = 
+    ContentFunc =
         @<div>
-            <section class="section">
-                @await Html.PartialAsync("Payments/_PaymentConfirmContent", new PaymentConfirmViewModel
-                {
-                    Chapter = null,
-                    SessionId = Model.SessionId,
-                    StatusUrl = $"/groups/{Model.Chapter.Id}/payments/sessions/{Model.SessionId}/status"
-                })
-            </section>
+            @await Html.PartialAsync("Payments/_PaymentConfirmContent", new PaymentConfirmViewModel
+            {
+                Chapter = null,
+                SessionId = Model.SessionId,
+                StatusUrl = $"/groups/{Model.Chapter.Id}/payments/sessions/{Model.SessionId}/status"
+            })
         </div>
 })
 
-@section scripts 
+@section scripts
 {
     @await Html.PartialAsync("Payments/_PaymentConfirmScripts")
 }

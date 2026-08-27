@@ -3,12 +3,10 @@
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Core.Exceptions
 @using ODK.Core.Platforms
-@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Payments
 @model SubscriptionConfirmModel
-@inject IOdkRoutes OdkRoutes
 @{
     Layout = "_AccountLayout";
     Model.Title = "Subscription confirm";
@@ -33,23 +31,21 @@
                 {
                     Breadcrumbs = new[]
                     {
-                        new MenuItem { Text = "My subscription", Link = OdkRoutes.Account.Subscription(chapter: null) },
+                        new MenuItem { Text = "My subscription", Link = Model.OdkRoutes.Account.Subscription(chapter: null) },
                         new MenuItem { Text = "Checkout" }
                     }
                 })
 
-                <section class="section">
-                    @await Html.PartialAsync("Payments/_PaymentConfirmContent", new PaymentConfirmViewModel
-                    {
-                        Chapter = null,
-                        SessionId = Model.SessionId
-                    })
-                </section>
+                @await Html.PartialAsync("Payments/_PaymentConfirmContent", new PaymentConfirmViewModel
+                {
+                    Chapter = null,
+                    SessionId = Model.SessionId
+                })
             </div>
     })
 })
 
-@section scripts 
+@section scripts
 {
     @await Html.PartialAsync("Payments/_PaymentConfirmScripts")
 }

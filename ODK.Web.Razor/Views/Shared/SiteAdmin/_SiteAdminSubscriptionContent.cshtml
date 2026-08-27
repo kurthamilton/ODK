@@ -6,8 +6,10 @@
     var currencyDictionary = Model.Currencies.ToDictionary(x => x.Currency.Id);
 }
 
-<section class="section--admin">
-    <h2 class="content-heading">@Model.Subscription.Name</h2>
+@* The subscription's name is the page title, so the form below it needs no heading of its own. *@
+<h2 class="content-heading">@Model.Subscription.Name</h2>
+
+<div class="section-stack">
     <form action="/siteadmin/Subscriptions/@Model.Subscription.Id" method="post">
         @Html.AntiForgeryToken()
         @await Html.PartialAsync("SiteAdmin/_SiteAdminSubscriptionForm", new SiteSubscriptionFormViewModel
@@ -27,76 +29,84 @@
         })
         <button class="btn btn-primary">Update</button>
     </form>
-</section>
 
-<section class="section--admin">
-    <h2 class="content-heading">Prices</h2>
-    @if (Model.Subscription.Free)
+    @await Html.PartialAsync("Components/_Section", new SectionViewModel
     {
-        <p>
-            This subscription is free, so it needs no price. Any price listed below predates that and is
-            ignored - delete it when convenient.
-        </p>
-    }
-    <div class="table-responsive">
-        <table class="table table--striped">
-            <thead>
-                <tr>
-                    <th>Currency</th>
-                    <th>Frequency</th>
-                    <th>Amount</th>
-                    <th>External Id</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var price in Model.Prices.OrderBy(x => x.Amount))
+        Heading = new HeadingViewModel
+        {
+            Title = "Prices",
+            Type = HeadingType.H3
+        },
+        BodyContentFunc =
+            @<div>
+                @if (Model.Subscription.Free)
                 {
-                    var currency = currencyDictionary[price.CurrencyId];
-
-                    <tr>
-                        <td>@await Html.PartialAsync("Components/_Currency", currency)</td>
-                        <td>@price.Frequency.ToString()</td>
-                        <td>@currency.Currency.ToAmountString(price.Amount)</td>
-                        <td>@price.ExternalId</td>
-                        <td>
-                            @if (price.CanDelete)
+                    <p>
+                        This subscription is free, so it needs no price. Any price listed below predates that
+                        and is ignored - delete it when convenient.
+                    </p>
+                }
+                <div class="table-responsive">
+                    <table class="table table--striped">
+                        <thead>
+                            <tr>
+                                <th>Currency</th>
+                                <th>Frequency</th>
+                                <th>Amount</th>
+                                <th>External Id</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var price in Model.Prices.OrderBy(x => x.Amount))
                             {
-                                <form action="/siteadmin/Subscriptions/@Model.Subscription.Id/Prices/@price.Id/Delete" method="post">
-                                    @Html.AntiForgeryToken()
-                                    @await Html.PartialAsync("Components/_Confirm", new ConfirmViewModel
-                                    {
-                                        Message = "Are you sure you want to delete this price?",
-                                        Title = "Delete price"
-                                    })
-                                    <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger">
-                                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Times))
-                                    </button>
-                                </form>
+                                var currency = currencyDictionary[price.CurrencyId];
+
+                                <tr>
+                                    <td>@await Html.PartialAsync("Components/_Currency", currency)</td>
+                                    <td>@price.Frequency.ToString()</td>
+                                    <td>@currency.Currency.ToAmountString(price.Amount)</td>
+                                    <td>@price.ExternalId</td>
+                                    <td>
+                                        @if (price.CanDelete)
+                                        {
+                                            <form action="/siteadmin/Subscriptions/@Model.Subscription.Id/Prices/@price.Id/Delete" method="post">
+                                                @Html.AntiForgeryToken()
+                                                @await Html.PartialAsync("Components/_Confirm", new ConfirmViewModel
+                                                {
+                                                    Message = "Are you sure you want to delete this price?",
+                                                    Title = "Delete price"
+                                                })
+                                                <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger">
+                                                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Times))
+                                                </button>
+                                            </form>
+                                        }
+                                    </td>
+                                </tr>
                             }
-                        </td>
-                    </tr>
-                }            
-            </tbody>
-        </table>
-    </div>
-    @if (!Model.Subscription.Free)
-    {
-        <div class="mt-3">
-            <form action="/siteadmin/Subscriptions/@Model.Subscription.Id/Prices" method="post">
-                @Html.AntiForgeryToken()
-
-                <div class="form-inline-md">
-                    @await Html.PartialAsync("SiteAdmin/_SubscriptionPriceForm", new SiteSubscriptionPriceFormViewModel
-                    {
-                        CurrencyOptions = Model.Currencies.ToList()
-                    })
-
-                    <div class="form-group">
-                        <button class="btn btn-primary">Add</button>
-                    </div>
+                        </tbody>
+                    </table>
                 </div>
-            </form>
-        </div>
-    }
-</section>
+                @if (!Model.Subscription.Free)
+                {
+                    <div class="mt-3">
+                        <form action="/siteadmin/Subscriptions/@Model.Subscription.Id/Prices" method="post">
+                            @Html.AntiForgeryToken()
+
+                            <div class="form-inline-md">
+                                @await Html.PartialAsync("SiteAdmin/_SubscriptionPriceForm", new SiteSubscriptionPriceFormViewModel
+                                {
+                                    CurrencyOptions = Model.Currencies.ToList()
+                                })
+
+                                <div class="form-group">
+                                    <button class="btn btn-primary">Add</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                }
+            </div>
+    })
+</div>
