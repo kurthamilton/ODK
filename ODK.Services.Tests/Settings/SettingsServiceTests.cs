@@ -113,6 +113,7 @@ public static class SettingsServiceTests
                 ApiSecretKey = "sk",
                 Commission = 0.05m,
                 Enabled = true,
+                Environment = EnvironmentType.Prod,
                 ExternalId = "acct_test",
                 ExternalUrl = "https://dashboard.stripe.com/acct_test",
                 Name = "New",
@@ -144,6 +145,7 @@ public static class SettingsServiceTests
                 ApiSecretKey = "sk",
                 Commission = 0.05m,
                 Enabled = false,
+                Environment = EnvironmentType.Prod,
                 ExternalId = "acct_test",
                 ExternalUrl = "https://dashboard.stripe.com/acct_test",
                 Name = "Updated"
@@ -175,6 +177,7 @@ public static class SettingsServiceTests
                 ApiSecretKey = "sk",
                 Commission = 0.05m,
                 Enabled = false,
+                Environment = EnvironmentType.Prod,
                 ExternalId = "acct_test",
                 ExternalUrl = "https://dashboard.stripe.com/acct_test",
                 Name = "Updated"

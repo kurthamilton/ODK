@@ -1,0 +1,270 @@
+﻿@using ODK.Services.Payments.Models
+@using ODK.Services.Payments.ViewModels
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Components
+@model SiteAdminStripeWebhooksViewModel
+@inject IOdkRoutes OdkRoutes
+
+@{
+    var kindTitles = new Dictionary<StripeWebhookKind, string>
+    {
+        { StripeWebhookKind.None, "Unroutable" },
+        { StripeWebhookKind.Site, "Site" },
+        { StripeWebhookKind.ConnectedAccount, "Connected account" }
+    };
+
+    var checkTitles = new Dictionary<StripeWebhookCheckType, string>
+    {
+        { StripeWebhookCheckType.None, "Unknown" },
+        { StripeWebhookCheckType.Events, "Events" },
+        { StripeWebhookCheckType.Host, "Host" },
+        { StripeWebhookCheckType.LiveMode, "Live mode" },
+        { StripeWebhookCheckType.Path, "Path" },
+        { StripeWebhookCheckType.Platform, "Platform" },
+        { StripeWebhookCheckType.Query, "Query" },
+        { StripeWebhookCheckType.Version, "Version" }
+    };
+
+    var severityClasses = new Dictionary<StripeWebhookCheckSeverity, string>
+    {
+        { StripeWebhookCheckSeverity.None, "text-bg-secondary" },
+        { StripeWebhookCheckSeverity.Info, "text-bg-info" },
+        { StripeWebhookCheckSeverity.Warning, "text-bg-warning" },
+        { StripeWebhookCheckSeverity.Error, "text-bg-danger" }
+    };
+}
+
+<div data-odk-component="_SiteAdminStripeWebhooksContent">
+    <h2 class="content-heading d-none d-md-block">Webhooks</h2>
+
+    @await Html.PartialAsync("Components/_AdminPageDescription",
+        "Every Stripe webhook endpoint registered against this platform's payment settings, checked against " +
+        "what the app expects of one. Signing secrets are not among the checks - Stripe returns an endpoint's " +
+        "secret when it is created and never again, so a mismatched secret looks exactly like a correct one " +
+        "from here.")
+
+    @if (Model.Accounts.Count == 0)
+    {
+        <p>No Stripe payment settings on this platform.</p>
+    }
+    else if (!Model.HasFindings)
+    {
+        <p class="text-success">
+            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Check))
+            <span>Every endpoint matches what is expected of it.</span>
+        </p>
+    }
+
+    <div class="d-flex flex-column gap-3">
+        @foreach (var account in Model.Accounts)
+        {
+            var paymentSettings = account.PaymentSettings;
+
+            @await Html.PartialAsync("Components/_Panel", new PanelViewModel
+            {
+                Heading = new HeadingViewModel
+                {
+                    Title = paymentSettings.Name,
+                    Type = HeadingType.H5
+                },
+                TitleEndContentFunc =
+                    @<a href="@OdkRoutes.SiteAdmin.Payment(paymentSettings.Id)">Settings</a>,
+                BodyContentFunc =
+                    @<div>
+                        <dl class="row mb-3">
+                            <dt class="col-sm-3">Environment</dt>
+                            <dd class="col-sm-9">
+                                @if (account.EnvironmentNotSet)
+                                {
+                                    <span class="badge text-bg-warning">Not set</span>
+                                    <span class="text-muted">
+                                        - the host and live mode checks need one, so neither was made
+                                    </span>
+                                }
+                                else
+                                {
+                                    @paymentSettings.Environment
+                                }
+                            </dd>
+                            <dt class="col-sm-3">Account</dt>
+                            <dd class="col-sm-9">
+                                @if (!string.IsNullOrEmpty(paymentSettings.ExternalId))
+                                {
+                                    <code>@paymentSettings.ExternalId</code>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Not set - no link into Stripe can be built</span>
+                                }
+                            </dd>
+                        </dl>
+
+                        @if (account.Error != null)
+                        {
+                            <div class="alert alert-danger">
+                                <p class="mb-0">
+                                    <strong>Could not be read.</strong> @account.Error
+                                </p>
+                                <p class="mb-0 mt-2">
+                                    Nothing below was compared, so nothing is reported either way.
+                                </p>
+                            </div>
+                        }
+
+                        @foreach (var kind in account.MissingKinds)
+                        {
+                            <p>
+                                <span class="badge text-bg-danger">No endpoint</span>
+                                <span>
+                                    Nothing is registered for <strong>@kindTitles[kind]</strong>
+                                    (<code>v=@((int)kind)</code>), so those events are not being delivered.
+                                </span>
+                            </p>
+                        }
+
+                        @foreach (var kind in account.DuplicateKinds)
+                        {
+                            <p>
+                                <span class="badge text-bg-danger">Duplicate</span>
+                                <span>
+                                    More than one endpoint claims <strong>@kindTitles[kind]</strong>. Only one
+                                    can hold the signing secret the app verifies against, so the others are
+                                    delivering events that fail validation.
+                                </span>
+                            </p>
+                        }
+
+                        @if (account.MixedApiVersions)
+                        {
+                            <p>
+                                <span class="badge text-bg-info">API versions</span>
+                                <span>
+                                    The endpoints do not all render events as the same Stripe API version.
+                                </span>
+                            </p>
+                        }
+
+                        @if (account.Webhooks.Count > 0)
+                        {
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Kind</th>
+                                            <th>URL</th>
+                                            <th>Events</th>
+                                            <th>API version</th>
+                                            <th>Checks</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var webhook in account.Webhooks)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    @kindTitles[webhook.Kind]
+                                                    @if (webhook.DashboardUrl != null)
+                                                    {
+                                                        <div>
+                                                            <a href="@webhook.DashboardUrl" target="_blank">
+                                                                Open in Stripe
+                                                            </a>
+                                                        </div>
+                                                    }
+                                                </td>
+                                                <td class="text-break"><code>@webhook.Url</code></td>
+                                                <td>
+                                                    <div>@webhook.Events.Count</div>
+                                                    @if (webhook.MissingEvents.Count > 0)
+                                                    {
+                                                        <div class="text-danger">
+                                                            Missing: @string.Join(", ", webhook.MissingEvents)
+                                                        </div>
+                                                    }
+                                                    @if (webhook.ExtraEvents.Count > 0)
+                                                    {
+                                                        <div class="text-muted">
+                                                            Extra: @string.Join(", ", webhook.ExtraEvents)
+                                                        </div>
+                                                    }
+                                                </td>
+                                                <td>@(webhook.ApiVersion ?? "Account default")</td>
+                                                <td>
+                                                    @{
+                                                        var reportable = webhook.Checks
+                                                            .Where(x => x.State != StripeWebhookCheckState.Met)
+                                                            .OrderBy(x => x.State)
+                                                            .ToArray();
+                                                    }
+
+                                                    @if (reportable.Length == 0)
+                                                    {
+                                                        <span class="badge text-bg-success">All met</span>
+                                                    }
+
+                                                    @foreach (var check in reportable)
+                                                    {
+                                                        var notComparable =
+                                                            check.State == StripeWebhookCheckState.NotComparable;
+
+                                                        <div>
+                                                            <span class="badge @(notComparable
+                                                                ? "text-bg-secondary"
+                                                                : severityClasses[check.Severity])">
+                                                                @checkTitles[check.Type]
+                                                            </span>
+                                                            @if (notComparable)
+                                                            {
+                                                                <span class="text-muted">not configured</span>
+                                                            }
+                                                            else if (check.Expected != null || check.Actual != null)
+                                                            {
+                                                                <span>
+                                                                    @if (check.Expected != null)
+                                                                    {
+                                                                        <text>expected <code>@check.Expected</code>,</text>
+                                                                    }
+                                                                    found
+                                                                    <code>@(string.IsNullOrEmpty(check.Actual)
+                                                                        ? "nothing"
+                                                                        : check.Actual)</code>
+                                                                </span>
+                                                            }
+                                                        </div>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else if (account.Error == null)
+                        {
+                            <p>The account has no webhook endpoints Stripe will deliver to.</p>
+                        }
+
+                        @if (account.DisabledWebhooks.Count > 0)
+                        {
+                            <p class="text-muted mb-1">
+                                Disabled in Stripe, so checked against nothing - superseded rather than
+                                broken. Worth removing once nothing needs them.
+                            </p>
+                            <ul class="text-muted">
+                                @foreach (var webhook in account.DisabledWebhooks)
+                                {
+                                    <li class="text-break">
+                                        <code>@webhook.Url</code>
+                                        @if (webhook.DashboardUrl != null)
+                                        {
+                                            <a href="@webhook.DashboardUrl" target="_blank">Open in Stripe</a>
+                                        }
+                                    </li>
+                                }
+                            </ul>
+                        }
+                    </div>
+            })
+        }
+    </div>
+</div>

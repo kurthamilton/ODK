@@ -127,6 +127,17 @@ public static class DependencyRegistrar
             ConnectedAccountMcc = payments.Stripe.ConnectedAccountMcc,
             ConnectedAccountProductDescription = payments.Stripe.ConnectedAccountProductDescription
         });
+        services.AddScoped<IStripeWebhookAdminService, StripeWebhookAdminService>();
+        services.AddSingleton(new StripeWebhookAdminServiceSettings
+        {
+            Events = payments.Stripe.Webhooks.Events,
+            Hosts = (payments.Stripe.Webhooks.Hosts ?? []).ToDictionary(
+                x => x.Key,
+                x => (IReadOnlyDictionary<PlatformType, string>)(x.Value ?? [])),
+            LiveDashboardUrlFormat = payments.Stripe.Webhooks.LiveDashboardUrlFormat,
+            Path = payments.Stripe.Webhooks.Path,
+            TestDashboardUrlFormat = payments.Stripe.Webhooks.TestDashboardUrlFormat
+        });
         services.AddScoped<IStripeWebhookParser, StripeWebhookParser>();
         services.AddSingleton(new StripeWebhookParserSettings
         {

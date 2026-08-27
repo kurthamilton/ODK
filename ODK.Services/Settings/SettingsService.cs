@@ -56,6 +56,7 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
             ApiSecretKey = model.ApiSecretKey,
             Commission = model.Commission,
             Enabled = model.Enabled,
+            Environment = model.Environment,
             ExternalId = model.ExternalId,
             ExternalUrl = model.ExternalUrl,
             Name = model.Name,
@@ -117,6 +118,7 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
         settings.ApiSecretKey = model.ApiSecretKey;
         settings.Commission = model.Commission;
         settings.Enabled = model.Enabled;
+        settings.Environment = model.Environment;
         settings.ExternalId = model.ExternalId;
         settings.ExternalUrl = model.ExternalUrl;
         settings.Name = model.Name;

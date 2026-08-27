@@ -472,6 +472,17 @@ the request locale and enqueues a background `IMemberLocaleService.UpdateLocale`
   reflectively, so a key missing from `appsettings.json` arrives as `null` (or `0`, or `false`) whatever the
   declaration says — `required` only binds C# code using an object initialiser. So the code reading a settings
   value must still cope with absence; `DependencyRegistrar` coalescing `x.Paths ?? []` is not redundant.
+- **A value kept out of git still has its structure committed to `appsettings.json`, emptied.** `""` for a
+  string, `[]` for an array, and never an omitted section — the real value goes in the git-ignored
+  `appsettings.Development.json` and in Doppler (`Payments:Stripe:Platforms:*:WebhookSecretV1`,
+  `Recaptcha:SecretKey`, `Platforms:*:Urls`). The tracked file then doubles as the template for a new
+  environment while giving nothing away, and `AppSettingsTests` keeps working: it binds the tracked file and
+  skips nullable properties, so an omitted section is a nullable property it walks straight past, taking every
+  non-nullable value inside it out of coverage too.
+  Empty **only** what is actually sensitive — a value already public elsewhere in the same file stays stated.
+  And read an empty value as *unstated*, never as "expected to be empty": a check with no expectation is
+  neither met nor unmet, and code that conflates the two reports a failure it has no grounds for. See
+  `StripeWebhookParser`, which reads a blank webhook secret as unconfigured.
 - **Declare a setting nullable when config genuinely cannot state it, and coalesce at the mapping.** Two cases,
   both of which the binder resolves to `null` rather than to something empty: a **dictionary**, because `{}`
   produces no config keys at all (`Instagram:Client:Cookies`); and any property an **array element** leaves out,

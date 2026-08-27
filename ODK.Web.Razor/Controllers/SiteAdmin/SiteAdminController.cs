@@ -131,6 +131,7 @@ public class SiteAdminController : OdkControllerBase
                 ApiSecretKey = viewModel.SecretKey ?? string.Empty,
                 Commission = viewModel.Commission / 100,
                 Enabled = viewModel.Enabled,
+                Environment = viewModel.Environment,
                 ExternalId = viewModel.ExternalId,
                 ExternalUrl = viewModel.ExternalUrl,
                 Name = viewModel.Name ?? string.Empty,
@@ -155,6 +156,7 @@ public class SiteAdminController : OdkControllerBase
                 ApiSecretKey = viewModel.SecretKey ?? string.Empty,
                 Commission = viewModel.Commission / 100,
                 Enabled = viewModel.Enabled,
+                Environment = viewModel.Environment,
                 ExternalId = viewModel.ExternalId,
                 ExternalUrl = viewModel.ExternalUrl,
                 Name = viewModel.Name ?? string.Empty

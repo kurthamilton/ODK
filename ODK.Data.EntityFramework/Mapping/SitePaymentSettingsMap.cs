@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ODK.Core.Payments;
+using ODK.Core.Platforms;
 using ODK.Data.EntityFramework.Converters;
 
 namespace ODK.Data.EntityFramework.Mapping;
@@ -15,6 +16,10 @@ public class SitePaymentSettingsMap : IEntityTypeConfiguration<SitePaymentSettin
 
         builder.Property(x => x.Commission)
             .HasPrecision(19, 4);
+
+        builder.Property(x => x.Environment)
+            .HasConversion<NullableEnumStringConverter<EnvironmentType>>()
+            .HasMaxLength(50);
 
         builder.Property(x => x.ExternalId)
             .HasMaxLength(255);

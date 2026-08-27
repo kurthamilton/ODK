@@ -12,7 +12,7 @@ using Stripe.Checkout;
 
 namespace ODK.Services.Integrations.Payments.Stripe;
 
-public class StripePaymentProvider : IPaymentProvider
+public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
 {
     private readonly IStripeClient _client;
     private readonly string? _connectedAccountId;
@@ -351,6 +351,32 @@ public class StripePaymentProvider : IPaymentProvider
         }
     }
 
+    public async Task<IReadOnlyCollection<StripeWebhookEndpoint>> ListWebhooks()
+    {
+        var service = CreateWebhookEndpointService();
+
+        var endpoints = new List<StripeWebhookEndpoint>();
+
+        /* Auto-paged rather than a single call with a limit: an account is expected to have two endpoints, so
+           a page boundary is not a real prospect, but a cap that silently drops the rest would read as an
+           account having fewer endpoints than it does. */
+        await foreach (var endpoint in service.ListAutoPagingAsync())
+        {
+            endpoints.Add(new StripeWebhookEndpoint
+            {
+                ApiVersion = endpoint.ApiVersion,
+                Description = endpoint.Description,
+                Enabled = endpoint.Status == StripeWebhookEndpointStatuses.Enabled,
+                Events = endpoint.EnabledEvents?.ToArray() ?? [],
+                Id = endpoint.Id,
+                LiveMode = endpoint.Livemode,
+                Url = endpoint.Url
+            });
+        }
+
+        return endpoints;
+    }
+
     public async Task<ExternalCheckoutSession> StartCheckout(
         IServiceRequest request,
         string emailAddress,
@@ -513,4 +539,6 @@ public class StripePaymentProvider : IPaymentProvider
     private SessionService CreateSessionService() => new(_client);
 
     private SubscriptionService CreateSubscriptionService() => new(_client);
+
+    private WebhookEndpointService CreateWebhookEndpointService() => new(_client);
 }

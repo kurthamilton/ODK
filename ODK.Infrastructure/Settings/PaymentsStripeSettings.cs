@@ -13,4 +13,6 @@ public class PaymentsStripeSettings
     public required string ConnectedAccountProductDescription { get; init; }
 
     public required Dictionary<PlatformType, PaymentsStripePlatformSettings> Platforms { get; init; }
+
+    public required PaymentsStripeWebhooksSettings Webhooks { get; init; }
 }
