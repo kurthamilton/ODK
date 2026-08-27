@@ -1,6 +1,6 @@
 ﻿namespace ODK.Web.Razor.Models.Components;
 
-public enum SectionThemeType
+public enum BandThemeType
 {
     None,
     Dark,

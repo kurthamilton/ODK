@@ -13,25 +13,23 @@
 
 @if (Model.Invites.SentUtc != null)
 {
-    var sent = @Model.Invites.SentUtc.Value.ToFriendlyDateString(new FriendlyDateStringOptions 
-    { 
-        IncludeDayOfWeek = true, 
-        FullMonthName = true, 
-        ForceIncludeYear = true, 
-        TimeZone = Model.CurrentMember.TimeZone 
+    var sent = @Model.Invites.SentUtc.Value.ToFriendlyDateString(new FriendlyDateStringOptions
+    {
+        IncludeDayOfWeek = true,
+        FullMonthName = true,
+        ForceIncludeYear = true,
+        TimeZone = Model.CurrentMember.TimeZone
     });
 
     <p>
         @Model.Invites.Sent invites were sent on @sent
     </p>
 
-    <section class="section">
-        @await Html.PartialAsync("Admin/Events/Event/_EventInviteeUpdate", new EventUpdateViewModel
-        {
-            Chapter = Model.Chapter,
-            EventId = Model.Event.Id
-        })
-    </section>
+    @await Html.PartialAsync("Admin/Events/Event/_EventInviteeUpdate", new EventUpdateViewModel
+    {
+        Chapter = Model.Chapter,
+        EventId = Model.Event.Id
+    })
 
     return;
 }
@@ -55,20 +53,20 @@
                 @Html.AntiForgeryToken()
                 <button type="submit" class="btn btn-secondary">Send test</button>
             </form>
-        </div>        
+        </div>
         <p>
             @{
-                var subtitle = 
+                var subtitle =
                     "Emails are batched and sent to your admin email address with members included on BCC. " +
                     "You will receive 1 email per batch as the admin recipient + your member invite.";
             }
             @await Html.PartialAsync("Components/_FormLabelSubtitle", subtitle)
         </p>
-    </div>    
+    </div>
 
     <div>
         <h4>Scheduled</h4>
-            
+
         @await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.OwnerSubscriptionFeatures)
         {
             Chapter = Model.Chapter,
@@ -80,5 +78,5 @@
                 ScheduledEmailDate = Model.Chapter.ToChapterTime(Model.Invites.ScheduledUtc)
             })
         })
-    </div>   
+    </div>
 </div>

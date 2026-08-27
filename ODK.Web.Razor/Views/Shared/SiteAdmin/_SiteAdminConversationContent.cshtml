@@ -18,13 +18,13 @@
 
 <p>Started by @Model.Member.FullName</p>
 
-<section class="section">
+<div class="section-stack">
     @await Html.PartialAsync("Components/_Panel", new PanelViewModel
     {
         Heading = new HeadingViewModel
         {
             Title = "Messages",
-            Type = HeadingType.H5
+            Type = HeadingType.H3
         },
         BodyContentFunc =
             @<div>
@@ -37,15 +37,13 @@
                 })
             </div>
     })
-</section>
 
-<section class="section">
     @await Html.PartialAsync("Components/_Panel", new PanelViewModel
     {
         Heading = new HeadingViewModel
         {
             Title = "Reply",
-            Type = HeadingType.H5
+            Type = HeadingType.H3
         },
         BodyContentFunc =
             @<div>
@@ -56,4 +54,4 @@
                 </form>
             </div>
     })
-</section>
+</div>

@@ -31,29 +31,27 @@
         {
             Chapter = viewModel.Chapter
         }),
-        BodyContentFunc = 
+        BodyContentFunc =
             @<div>
-                <section class="section">
-                    <form method="post" action="/groups/@viewModel.Chapter.Id/profile">
-                        @Html.AntiForgeryToken()
+                <form method="post" action="/groups/@viewModel.Chapter.Id/profile">
+                    @Html.AntiForgeryToken()
 
-                        @await Html.PartialAsync("Account/_ChapterProfileForm", viewModel.ChapterProfile)
+                    @await Html.PartialAsync("Account/_ChapterProfileForm", viewModel.ChapterProfile)
 
-                        <div class="form-group mb-3">
-                            <label class="form-label">Date joined</label>
-                            <div class="form-control-plaintext">
-                                <span>@dateJoined.ToFriendlyDateString(new FriendlyDateStringOptions 
-                                    { 
-                                        FullMonthName = true,
-                                        ForceIncludeYear = true,
-                                        TimeZone = viewModel.CurrentMember.TimeZone
-                                    })</span>
-                            </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">Date joined</label>
+                        <div class="form-control-plaintext">
+                            <span>@dateJoined.ToFriendlyDateString(new FriendlyDateStringOptions
+                                {
+                                    FullMonthName = true,
+                                    ForceIncludeYear = true,
+                                    TimeZone = viewModel.CurrentMember.TimeZone
+                                })</span>
                         </div>
+                    </div>
 
-                        <button type="submit" class="btn btn-primary">Update</button>
-                    </form>
-                </section>
+                    <button type="submit" class="btn btn-primary">Update</button>
+                </form>
             </div>
     })
 })

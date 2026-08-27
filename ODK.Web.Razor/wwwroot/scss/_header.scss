@@ -2,29 +2,11 @@
     height: 40px;
 }
 
-// The heading a content partial leads with, before its body. Bootstrap's default heading margin (0.5rem)
-// reads as cramped at this level, and the gap used to be ad hoc - a few partials put mt-3 on the body, most
-// left it to the default. Defined once here so every page separates the two the same way.
+// The page title a content partial leads with, before the rest of the page. Bootstrap's default heading
+// margin (0.5rem) reads as cramped at this level. Only ever a page title - a section titles itself through
+// _Section, which carries its own heading spacing.
 .content-heading {
     margin-bottom: 1rem;
-}
-
-
-.section--header,
-.section--footer {
-    padding: 1rem 0;
-}
-
-.section--header {
-    --bg-section-header: var(--theme-bg, #FF0000);
-    --color-section-header: var(--theme-color, #FFF);
-    color: var(--color-section-header);
-    background-color: var(--bg-section-header);
-
-    h1 {
-        font-size: 2rem;
-        margin-bottom: 0;
-    }
 }
 
 @include media-breakpoint-up(md) {

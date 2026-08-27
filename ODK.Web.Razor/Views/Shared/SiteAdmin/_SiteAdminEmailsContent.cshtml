@@ -1,31 +1,44 @@
-﻿@using ODK.Services.Settings
+﻿@using ODK.Services.Platforms
+@using ODK.Services.Settings
 @using ODK.Web.Common.Services
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.SiteAdmin
+@inject IPlatformProvider PlatformProvider
 @inject IRequestStore RequestStore
 @inject ISettingsService SettingsService
 @{
     var request = RequestStore.MemberServiceRequest;
     var settings = await SettingsService.GetSiteEmailSettings(request);
+    var platformName = PlatformProvider.GetName(request.Platform);
 }
 
-<section class="section--admin">
-    <h2 class="content-heading">Settings</h2>
-    <p class="text-muted">
-        These apply to <strong>@request.Platform</strong> only. Each platform has its own settings, chosen
-        by the address the site is reached on, so editing here leaves the other platform alone.
-    </p>
-    <form action="/siteadmin/emails/settings" method="post">
-        @Html.AntiForgeryToken()
-        @await Html.PartialAsync("SiteAdmin/_SiteAdminEmailSettingsForm", new SiteEmailSettingsViewModel
+<div class="section-stack">
+    @await Html.PartialAsync("Components/_Section", new SectionViewModel
+    {
+        Heading = new HeadingViewModel
         {
-            AdminTitle = settings.AdminTitle,
-            FromEmailAddress = settings.FromEmailAddress,
-            MemberTitle = settings.MemberTitle
-        })
-        <button class="btn btn-primary" type="submit">Update</button>
-    </form>
-</section>
+            Title = "Email settings",
+            Type = HeadingType.H3
+        },
+        BodyContentFunc =
+            @<div>
+                <p class="text-muted">
+                    These apply to <strong>@platformName</strong> only. Each platform has its own settings,
+                    chosen by the address the site is reached on, so editing here leaves the other platform
+                    alone.
+                </p>
+                <form action="/siteadmin/emails/settings" method="post">
+                    @Html.AntiForgeryToken()
+                    @await Html.PartialAsync("SiteAdmin/_SiteAdminEmailSettingsForm", new SiteEmailSettingsViewModel
+                    {
+                        AdminTitle = settings.AdminTitle,
+                        FromEmailAddress = settings.FromEmailAddress,
+                        MemberTitle = settings.MemberTitle
+                    })
+                    <button class="btn btn-primary" type="submit">Update</button>
+                </form>
+            </div>
+    })
 
-<section class="section--admin">
     @await Html.PartialAsync("SiteAdmin/_SiteAdminEmailsTables")
-</section>
+</div>

@@ -2,20 +2,18 @@
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Services.Members
-@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Payments
 @model SubscriptionCheckoutModel
 @inject IMemberService MemberService
-@inject IOdkRoutes OdkRoutes
 @{
     Layout = "_OdkChapterLayout";
     Model.Title = "Subscription checkout";
 
     var chapter = Model.Chapter;
     var request = Model.MemberChapterServiceRequest;
-    var returnPath = OdkRoutes.Groups.SubscriptionConfirm(chapter);
+    var returnPath = Model.OdkRoutes.Groups.SubscriptionConfirm(chapter);
     var viewModel = await MemberService.StartChapterSubscriptionCheckoutSession(
         request, Model.SubscriptionId, returnPath);
 }
@@ -43,15 +41,13 @@
         {
             Chapter = chapter
         }),
-        BodyContentFunc = 
+        BodyContentFunc =
             @<div>
-                <section class="section">
-                    @await Html.PartialAsync("Components/_StripeCheckout", new StripeCheckoutViewModel
-                    {
-                        ApiPublicKey = viewModel.PaymentSettings.ApiPublicKey,
-                        ClientSecret = viewModel.ClientSecret
-                    })                    
-                </section>
+                @await Html.PartialAsync("Components/_StripeCheckout", new StripeCheckoutViewModel
+                {
+                    ApiPublicKey = viewModel.PaymentSettings.ApiPublicKey,
+                    ClientSecret = viewModel.ClientSecret
+                })
             </div>
     })
 })

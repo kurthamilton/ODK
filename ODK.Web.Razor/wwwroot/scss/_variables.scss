@@ -26,6 +26,10 @@ $odk-bg-dark-level-2-rgb: to-rgb($odk-bg-dark-level-2);
     --odk-bg-level-2-rgb: #{$odk-bg-light-level-2-rgb};
     --odk-bg-level-2-hover: #{lighten($odk-bg-light-level-2, 5%)};
     --odk-color-placeholder: var(--bs-secondary-color);
+
+    // The space between adjacent sections. A custom property rather than a Sass variable so a page or a
+    // narrower container can override it in place, and so it is inspectable in dev tools.
+    --odk-section-gap: 3rem;
 }
 
 [data-bs-theme="dark"] {

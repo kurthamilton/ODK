@@ -1,10 +1,11 @@
 ﻿@page "/{chapterName:regex(^[A-Za-z-]+$)}"
 @using ODK.Core.Platforms
 @using ODK.Services.Chapters
-@using ODK.Web.Common.Routes
+@using ODK.Services.Html
 @using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.Chapters.ChapterModel
 @inject IChapterViewModelService ChapterViewModelService
+@inject IHtmlTextExtractor HtmlTextExtractor
 @{
     Layout = "_OdkChapterLayout";
 
@@ -12,9 +13,12 @@
 
     var description = viewModel.Chapter.GetDisplayName(Model.Platform);
 
-    if (!string.IsNullOrEmpty(viewModel.Texts?.Description))
+    // The description is rich text, and a meta tag takes none - without this the tag carries the markup.
+    var descriptionText = HtmlTextExtractor.ToPlainText(viewModel.Texts?.Description);
+
+    if (!string.IsNullOrEmpty(descriptionText))
     {
-        description += ". " + viewModel.Texts.Description;
+        description += ". " + descriptionText;
     }
     else if (Model.Platform == PlatformType.DrunkenKnitwits)
     {

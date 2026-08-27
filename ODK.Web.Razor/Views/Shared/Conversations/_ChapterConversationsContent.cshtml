@@ -46,7 +46,7 @@
         </div>
     }
 
-    <section class="section mt-3">
+    <div class="mt-3">
         @if (Model.Conversations.Count > 0)
         {
             <div class="table-responsive">
@@ -137,7 +137,7 @@
                 }
             </p>
         }
-    </section>
+    </div>
 
     @if (Model.Chapter != null)
     {
@@ -158,11 +158,11 @@
 }
 else
 {
-    <section class="section mt-3">
+    <div class="mt-3">
         <form action="/groups/@Model.Chapter.Id/conversations" method="post">
             @Html.AntiForgeryToken()
             @await Html.PartialAsync("Contact/_ConversationForm", new ConversationFormViewModel())
             <button class="btn btn-primary">Send</button>
         </form>
-    </section>
+    </div>
 }

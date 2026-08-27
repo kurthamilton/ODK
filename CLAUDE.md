@@ -215,6 +215,54 @@ shared partial. Never put feature markup directly in a page. Handlers that must 
 identically. Add a matching `GroupAdminRoutes` helper — it resolves the platform-correct URL via
 `Base(chapter)`, so callers and links are platform-agnostic.
 
+### Sections, panels and bands
+
+Three components divide a page, and they are not interchangeable:
+
+- **`Components/_Section`** — a division of a page's own content, introduced by its own heading. **The
+  default.** Two things a page presents side by side under their own titles are two sections.
+- **`Components/_Panel`** — the same shape with a raised look (background, padding, underlined title).
+  **Opt-in**, for a self-contained group that needs visual separation from what surrounds it: a dashboard
+  tile, a sidebar card. Never reach for it merely to give a section a title.
+- **`Components/_Band`** — a full-width strip down a marketing page, with its own background and light/dark
+  treatment. Home pages only. A band divides a *page* into strips; a section divides a page's *content*.
+
+`SectionViewModel` and `PanelViewModel` are deliberately the same surface (`Heading`, `BodyContent` /
+`BodyContentFunc`, `TitleEndContentFunc`, `Class`), so promoting a section to a panel is a one-word change at
+the call site rather than a rewrite.
+
+**A stack owns the gap between adjacent sections, and nothing else may.** Wrap them in
+`<div class="section-stack">`; a section never carries its own `margin`, `mt-*`, `mb-*` or `gap-*`, which is
+what stops a per-page spacing value creeping back in. Where the space between two things has to differ from
+every other page, that is a reason to look again at what they are, not to add a margin. The value is
+`--odk-section-gap` (`_variables.scss`) - a custom property rather than a Sass variable, so a page or a
+narrower container can override it in place and dev tools can show what is actually applied. `.mt-section`
+uses the same property, for the cases a stack cannot reach.
+
+**A section heading keeps Bootstrap's own margin - do not give it a larger one.** A section title sits
+directly on the content it introduces, so the space below it has to stay well short of the gap above it, or
+the heading reads as floating between two blocks rather than belonging to the one it names. `.content-heading`
+adds `1rem` for the opposite case, a *page* title with a whole page under it; that value does not transfer.
+Note the two platforms scale differently - Drunken Knitwits sets a `21px` root above `lg` and Group Squirrel
+falls back to `16px`, so every `rem` reads about a third larger on DK. Check spacing there, not only on GS.
+
+**A section's heading is `H3`, and a section nested inside one is `H4`.** That is the convention rather than
+a derivation: the `h1` above a page is not a reliable guide, because `_PageTitle` renders the *chapter or
+group* name on chapter pages - the same heading on every page of that group, so page chrome - and the page's
+own name only on standalone pages like Privacy. So use `H3` and do not compute a level from the shell.
+
+Two things follow. A **panel** sitting where a section would sit takes the same level, which is why no panel
+is `H5` any more - a level was being picked for how large it rendered, and `H5` is what "small bold" looked
+like. And a heading that reads too large is a `font-size` in `_sections.scss` / `_panels.scss`, never a lower
+`HeadingType`: the level is what the document outline is built from, and picking it by appearance is the
+habit this convention exists to break.
+
+`Privacy/_PrivacyBody` is the one place sections are `H2` - its numbered clauses are the document's own
+top-level divisions, under an `h1` that genuinely names the page and nothing in between. Making the whole
+site's heading outline strictly correct is deliberately **not** done here; the point of `_Section` is that
+the level is now stated in one place per section and can be found, so a standardisation pass becomes
+possible later.
+
 ### View models
 
 - **Service-layer view models** live in `ODK.Services/**/ViewModels` and are built by services
@@ -237,11 +285,11 @@ identically. Add a matching `GroupAdminRoutes` helper — it resolves the platfo
   It is not only verbosity: **Razor allows exactly one level of nested inline markup block**
   (`@<div>…</div>`), so a template spent on a title is a level unavailable to the content that needs one,
   and the compiler reports it as `RZ2003` at the inner block rather than at the title that took the level.
-- **A panel titles itself through `Heading`, and that is the only way it can.** `PanelViewModel` offers no
-  plain `Title` string and no title template: `Heading = new HeadingViewModel { Title = "Bulk email",
-  Type = HeadingType.H5 }` is the whole surface, so every panel title carries the level its page needs and
-  none of them hand-roll a heading tag. Anything that sits *beside* the title — a link, a badge, a count —
-  goes in `TitleEndContentFunc`, which is why no template belongs on the title itself.
+- **A section or panel titles itself through `Heading`, and that is the only way it can.** `SectionViewModel`
+  and `PanelViewModel` offer no plain `Title` string and no title template: `Heading = new HeadingViewModel
+  { Title = "Bulk email", Type = HeadingType.H3 }` is the whole surface, so every title carries the level its
+  page needs and none of them hand-roll a heading tag. Anything that sits *beside* the title — a link, a
+  badge, a count — goes in `TitleEndContentFunc`, which is why no template belongs on the title itself.
 - **A title rendered at a caller-chosen level goes through `Components/_Heading`** (`HeadingViewModel`:
   `Title`, an optional `Type` from `HeadingType`, an optional `Class`). A component that holds a title takes
   a `HeadingViewModel` rather than picking a level itself, since the right level depends on what the page

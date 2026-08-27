@@ -74,13 +74,18 @@
     @Html.AntiForgeryToken()
 </form>
 
-<div class="mt-3">
-    @* At the bottom because it is reference material: an author consults it while writing the wording above,
-       rather than reading it first. The insertable buttons beside the body field are the quick way to use one;
-       this is where to find out what each of them does. *@
-    <h3 class="content-heading">Placeholders</h3>
-
-    @await Html.PartialAsync("Emails/_EmailParameters", Model.Parameters)
-</div>
+@* At the bottom because it is reference material: an author consults it while writing the wording above,
+   rather than reading it first. The insertable buttons beside the body field are the quick way to use one;
+   this is where to find out what each of them does. *@
+@await Html.PartialAsync("Components/_Section", new SectionViewModel
+{
+    Class = "mt-section",
+    Heading = new HeadingViewModel
+    {
+        Title = "Placeholders",
+        Type = HeadingType.H3
+    },
+    BodyContent = await Html.PartialAsync("Emails/_EmailParameters", Model.Parameters)
+})
 
 @await Html.PartialAsync("Emails/_EmailPreviewModal")

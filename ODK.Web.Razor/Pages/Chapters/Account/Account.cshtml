@@ -1,4 +1,4 @@
-﻿@page "/{chapterName}/Account"
+﻿@page "/{chapterName}/account"
 @using ODK.Services.Users.ViewModels
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
@@ -21,22 +21,20 @@
         {
             Chapter = chapter
         }),
-        BodyContentFunc = 
+        BodyContentFunc =
             @<div>
 
-                <section class="section">
-                    <form action="/Account/PersonalDetails" method="post">
-                        @Html.AntiForgeryToken()
-                        @await Html.PartialAsync("Account/_PersonalDetailsForm", new PersonalDetailsFormViewModel
-                        {
-                            Chapter = chapter,
-                            EmailAddress = member.EmailAddress,
-                            FirstName = member.FirstName,
-                            LastName = member.LastName
-                        })
-                        <button class="btn btn-primary">Update</button>
-                    </form>
-                </section>
+                <form action="/Account/PersonalDetails" method="post">
+                    @Html.AntiForgeryToken()
+                    @await Html.PartialAsync("Account/_PersonalDetailsForm", new PersonalDetailsFormViewModel
+                    {
+                        Chapter = chapter,
+                        EmailAddress = member.EmailAddress,
+                        FirstName = member.FirstName,
+                        LastName = member.LastName
+                    })
+                    <button class="btn btn-primary">Update</button>
+                </form>
             </div>
     })
 })

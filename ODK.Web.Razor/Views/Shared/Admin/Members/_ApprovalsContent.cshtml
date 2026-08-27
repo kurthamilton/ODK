@@ -26,50 +26,48 @@
     }
 }
 
-<section class="section">
-    @if (Model.Pending.Count > 0)
-    {
-        <div class="table-responsive">
-            <table class="table table-striped">
-                <thead>
+@if (Model.Pending.Count > 0)
+{
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Member</th>
+                    <th>Joined</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var member in Model.Pending.OrderBy(x => x.FullName))
+                {
                     <tr>
-                        <th>Member</th>
-                        <th>Joined</th>
-                        <th></th>
+                        <td>
+                            @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                            {
+                                Route = OdkRoutes.GroupAdmin.Member(Model.Chapter, member.Id),
+                                Text = member.FullName
+                            })
+                        </td>
+                        <td>
+                            @member.MemberChapter(Model.Chapter.Id)?.CreatedUtc.ToFriendlyDateString(new FriendlyDateStringOptions
+                            {
+                                IncludeDayOfWeek = true,
+                                TimeZone = Html.DisplayTimeZone(Model.Chapter.TimeZone)
+                            })
+                        </td>
+                        <td>
+                            <form action="/groups/@Model.Chapter.Id/members/@member.Id/approve" method="post">
+                                @Html.AntiForgeryToken()
+                                <button class="btn btn-success">Approve</button>
+                            </form>
+                        </td>
                     </tr>
-                </thead>
-                <tbody>
-                    @foreach (var member in Model.Pending.OrderBy(x => x.FullName))
-                    {
-                        <tr>
-                            <td>
-                                @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
-                                {
-                                    Route = OdkRoutes.GroupAdmin.Member(Model.Chapter, member.Id),
-                                    Text = member.FullName
-                                })
-                            </td>
-                            <td>
-                                @member.MemberChapter(Model.Chapter.Id)?.CreatedUtc.ToFriendlyDateString(new FriendlyDateStringOptions 
-                                { 
-                                    IncludeDayOfWeek = true, 
-                                    TimeZone = Html.DisplayTimeZone(Model.Chapter.TimeZone) 
-                                })
-                            </td>
-                            <td>
-                                <form action="/groups/@Model.Chapter.Id/members/@member.Id/approve" method="post">
-                                    @Html.AntiForgeryToken()
-                                    <button class="btn btn-success">Approve</button>
-                                </form>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    }
-    else
-    {
-        <p>There are no members waiting for approval</p>
-    }
-</section>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <p>There are no members waiting for approval</p>
+}

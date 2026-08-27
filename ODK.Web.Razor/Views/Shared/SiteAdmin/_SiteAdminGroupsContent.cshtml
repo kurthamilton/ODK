@@ -22,101 +22,97 @@
 <div class="tab-content">
     @*Approved*@
     <div class="tab-pane fade" id="approved-tab-pane" role="tabpanel" tabindex="0">
-        <section class="section">
-            <div class="table-responsive">
-                <table class="table table--striped">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Created</th>
-                            <th>Published</th>
-                            <th>Subscription</th>
-                            <th>Expires</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var row in Model.Approved)
-                        {
-                            var chapter = row.Chapter;
+        <div class="table-responsive">
+            <table class="table table--striped">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Created</th>
+                        <th>Published</th>
+                        <th>Subscription</th>
+                        <th>Expires</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model.Approved)
+                    {
+                        var chapter = row.Chapter;
 
-                            <tr>
-                                <td>
-                                    <a href="@OdkRoutes.SiteAdmin.Group(chapter.Id)">
-                                        @chapter.GetDisplayName(Model.Platform)
-                                    </a>                                    
-                                </td>
-                                <td>@chapter.CreatedUtc.ToString("yyyy-MM-dd HH:mm:ss")</td>
-                                <td>@chapter.PublishedUtc?.ToString("yyyy-MM-dd HH:mm:ss")</td>
-                                <td>@row.SiteSubscriptionName</td>
-                                <td>@row.SiteSubscriptionExpiresUtc?.ToString("yyyy-MM-dd HH:mm:ss")</td>
-                                <td>
-                                    @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
-                                    {
-                                        Route = OdkRoutes.GroupAdmin.Events(chapter),
-                                        Text = "Admin"
-                                    })
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </section>
+                        <tr>
+                            <td>
+                                <a href="@OdkRoutes.SiteAdmin.Group(chapter.Id)">
+                                    @chapter.GetDisplayName(Model.Platform)
+                                </a>
+                            </td>
+                            <td>@chapter.CreatedUtc.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                            <td>@chapter.PublishedUtc?.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                            <td>@row.SiteSubscriptionName</td>
+                            <td>@row.SiteSubscriptionExpiresUtc?.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                            <td>
+                                @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                                {
+                                    Route = OdkRoutes.GroupAdmin.Events(chapter),
+                                    Text = "Admin"
+                                })
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
 
     @*Pending*@
     <div class="tab-pane fade" id="pending-tab-pane" role="tabpanel" tabindex="0">
-        <section class="section">
-            <div class="table-responsive">
-                <table class="table table--striped">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Created</th>
-                            <th></th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var row in Model.Pending)
-                        {
-                            var chapter = row.Chapter;
+        <div class="table-responsive">
+            <table class="table table--striped">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Created</th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model.Pending)
+                    {
+                        var chapter = row.Chapter;
 
-                            <tr>
-                                <td>@chapter.GetDisplayName(Model.Platform)</td>
-                                <td>@chapter.CreatedUtc.ToString("yyyy-MM-dd HH:mm:ss")</td>
-                                <td>
-                                    @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
-                                    {
-                                        Route = OdkRoutes.GroupAdmin.Events(chapter),
-                                        Text = "Admin"
-                                    })
-                                </td>
-                                <td>
-                                    <div class="button-container">
-                                        <form action="/siteadmin/groups/@chapter.Id/approve" method="post">
-                                            @Html.AntiForgeryToken()
-                                            <button class="btn btn-success btn-sm">Approve</button>
-                                        </form>
-                                        <form action="/siteadmin/groups/@chapter.Id/delete" method="post">
-                                            @Html.AntiForgeryToken()
-                                            @await Html.PartialAsync("Components/_Confirm", new ConfirmViewModel
-                                            {
-                                                Message = "Are you sure you want to delete this group?",
-                                                Title = "Delete group"
-                                            })
-                                            <button class="btn btn-danger btn-sm">
-                                                Delete
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </section>
+                        <tr>
+                            <td>@chapter.GetDisplayName(Model.Platform)</td>
+                            <td>@chapter.CreatedUtc.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                            <td>
+                                @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                                {
+                                    Route = OdkRoutes.GroupAdmin.Events(chapter),
+                                    Text = "Admin"
+                                })
+                            </td>
+                            <td>
+                                <div class="button-container">
+                                    <form action="/siteadmin/groups/@chapter.Id/approve" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <button class="btn btn-success btn-sm">Approve</button>
+                                    </form>
+                                    <form action="/siteadmin/groups/@chapter.Id/delete" method="post">
+                                        @Html.AntiForgeryToken()
+                                        @await Html.PartialAsync("Components/_Confirm", new ConfirmViewModel
+                                        {
+                                            Message = "Are you sure you want to delete this group?",
+                                            Title = "Delete group"
+                                        })
+                                        <button class="btn btn-danger btn-sm">
+                                            Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
-</div>       
+</div>

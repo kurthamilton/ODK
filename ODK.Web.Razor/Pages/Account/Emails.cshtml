@@ -1,8 +1,8 @@
 ﻿@page "/account/emails"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Html
 @using ODK.Services.Users
-@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
 @model EmailsModel
@@ -13,6 +13,19 @@
 
     var viewModel = await AccountViewModelService.GetMemberEmailPreferencesPage(Model.MemberServiceRequest);
     var member = viewModel.CurrentMember;
+
+    // Declared here rather than inline below: the page content is already one inline markup block, and Razor
+    // allows only one level of nesting.
+    Func<object?, IHtmlContent> changeEmail = @<form method="post" action="/account/email/change">
+        @Html.AntiForgeryToken()
+
+        @await Html.PartialAsync("Account/_ChangeEmailForm", new ChangeEmailFormViewModel
+        {
+            Current = member.EmailAddress
+        })
+
+        <button type="submit" class="btn btn-primary">Update</button>
+    </form>;
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -26,23 +39,19 @@
             @<div>
                 @await Html.PartialAsync("Account/_AccountPersonalDetailsMenu")
 
-                <section class="section">
+                <div class="section-stack">
                     @await Html.PartialAsync("Account/_EmailPreferencesContent", viewModel)
-                </section>
-                                              
-                <section class="section">                                        
-                    <h3 class="mb-3">Change email</h3>
-                    <form method="post" action="/account/email/change">
-                        @Html.AntiForgeryToken()        
-    
-                        @await Html.PartialAsync("Account/_ChangeEmailForm", new ChangeEmailFormViewModel
-                        {
-                            Current = member.EmailAddress
-                        })
 
-                        <button type="submit" class="btn btn-primary">Update</button>
-                    </form>
-                </section>
+                    @await Html.PartialAsync("Components/_Section", new SectionViewModel
+                    {
+                        Heading = new HeadingViewModel
+                        {
+                            Title = "Change email",
+                            Type = HeadingType.H3
+                        },
+                        BodyContentFunc = changeEmail
+                    })
+                </div>
             </div>
     })
 })

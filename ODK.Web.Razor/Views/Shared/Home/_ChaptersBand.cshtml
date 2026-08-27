@@ -2,10 +2,9 @@
 @using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Home
-@using ODK.Web.Razor.Services
 @inject IOdkRoutes OdkRoutes
 @inject IRequestStore RequestStore
-@model ChaptersSectionViewModel
+@model ChaptersBandViewModel
 @{
     var platform = RequestStore.Platform;
 
@@ -26,9 +25,9 @@
         .ToDictionary(x => x.Key, x => x.OrderBy(y => y.Name).ToArray());
 }
 
-@await Html.PartialAsync("Components/_Section", new SectionViewModel
+@await Html.PartialAsync("Components/_Band", new BandViewModel
 {
-   Class = "section--chapters d-none d-md-flex",
+   Class = "band--chapters d-none d-md-flex",
    Content = 
     @<div class="container navbar--home">
         <div class="d-none d-md-block">
@@ -92,5 +91,5 @@
         </div>,
    Hero = true,
    Id = "chapters",
-   Theme = SectionThemeType.Dark
+   Theme = BandThemeType.Dark
 })

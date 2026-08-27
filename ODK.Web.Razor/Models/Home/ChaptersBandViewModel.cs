@@ -3,7 +3,7 @@ using ODK.Core.Countries;
 
 namespace ODK.Web.Razor.Models.Home;
 
-public class ChaptersSectionViewModel
+public class ChaptersBandViewModel
 {
     public required IReadOnlyCollection<Chapter> Chapters { get; init; }
 

@@ -24,15 +24,15 @@
             </div>
         }
 
-        <section class="section">
+        <div class="section-stack">
             @await Html.PartialAsync("Components/_Panel", new PanelViewModel
             {
                 Heading = new HeadingViewModel
                 {
                     Title = "Messages",
-                    Type = HeadingType.H5
+                    Type = HeadingType.H3
                 },
-                BodyContentFunc = 
+                BodyContentFunc =
                     @<div>
                         @await Html.PartialAsync("Conversations/_ConversationMessages", new ConversationMessagesViewModel
                         {
@@ -40,23 +40,21 @@
                             Messages = Model.Messages
                         })
                     </div>
-            })    
-        </section>
+            })
 
-        <section class="section">
             @await Html.PartialAsync("Components/_Panel", new PanelViewModel
             {
                 Heading = new HeadingViewModel
                 {
                     Title = "Reply",
-                    Type = HeadingType.H5
+                    Type = HeadingType.H3
                 },
-                BodyContentFunc = 
+                BodyContentFunc =
                     @<div>
                         <form action="@Model.ReplyUrl" method="post">
                             @Html.AntiForgeryToken()
                             @await Html.PartialAsync("Conversations/_ChapterConversationReplyForm", new ChapterConversationReplyFormViewModel())
-                            
+
                             <div class="d-flex">
                                 <button class="btn btn-primary" type="submit">Send</button>
 
@@ -68,7 +66,7 @@
                                         <span>Archive</span>
                                     </button>
                                 }
-                            </div>                            
+                            </div>
                         </form>
 
                         @if (Model.ArchivedUtc == null)
@@ -81,10 +79,10 @@
                                     Title = "Archive conversation"
                                 })
                             </form>
-                        }                        
+                        }
                     </div>
             })
-        </section>        
+        </div>
     </div>
 
     <div class="col-md-4 mt-section mt-md-0">
@@ -95,9 +93,9 @@
                 Heading = new HeadingViewModel
                 {
                     Title = "Other conversations",
-                    Type = HeadingType.H5
+                    Type = HeadingType.H3
                 },
-                BodyContentFunc = 
+                BodyContentFunc =
                     @<div class="list-group">
                         @foreach (var conversation in Model.OtherConversations.OrderByDescending(x => x.LastMessageUtc))
                         {
@@ -109,10 +107,10 @@
                                 </div>
                                 <div class="small d-flex">
                                     <span class="me-auto">
-                                        @conversation.LastMessageUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions 
-                                        { 
-                                            IncludeDayOfWeek = true, 
-                                            TimeZone = Model.TimeZone 
+                                        @conversation.LastMessageUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions
+                                        {
+                                            IncludeDayOfWeek = true,
+                                            TimeZone = Model.TimeZone
                                         })
                                     </span>
                                     <span>

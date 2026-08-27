@@ -13,7 +13,7 @@
 @await Html.PartialAsync("Components/_AdminPageDescription",
     "A conversation with a member. Replies are emailed to them and kept here.")
 
-<h5>@Model.Conversation.Subject</h5>
+<h3 class="content-heading">@Model.Conversation.Subject</h3>
 
 <p>
     @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
@@ -25,15 +25,15 @@
 
 <div class="row">
     <div class="col-md-8">
-        <section class="section">
+        <div class="section-stack">
             @await Html.PartialAsync("Components/_Panel", new PanelViewModel
             {
                 Heading = new HeadingViewModel
                 {
                     Title = "Messages",
-                    Type = HeadingType.H5
+                    Type = HeadingType.H4
                 },
-                BodyContentFunc = 
+                BodyContentFunc =
                     @<div>
                         @await Html.PartialAsync("Conversations/_ConversationMessages", new ConversationMessagesViewModel
                         {
@@ -41,28 +41,26 @@
                             Messages = Model.Messages.ToViewModels()
                         })
                     </div>
-            })    
-        </section>
+            })
 
-        <section class="section">
             @await Html.PartialAsync("Components/_Panel", new PanelViewModel
             {
                 Heading = new HeadingViewModel
                 {
                     Title = "Reply",
-                    Type = HeadingType.H5
+                    Type = HeadingType.H4
                 },
-                BodyContentFunc = 
-                    @<div>                        
+                BodyContentFunc =
+                    @<div>
                         @if (Model.CanReply)
                         {
                             <form action="/admin/groups/@Model.Chapter.Id/conversations/@Model.Conversation.Id/reply" method="post">
                                 @Html.AntiForgeryToken()
-                                @await Html.PartialAsync("Admin/Chapter/Conversations/_ChapterAdminConversationReplyForm", 
+                                @await Html.PartialAsync("Admin/Chapter/Conversations/_ChapterAdminConversationReplyForm",
                                     new ChapterConversationReplyFormViewModel())
                                 <button class="btn btn-primary">Send</button>
                             </form>
-                        }          
+                        }
                         else
                         {
                             <p>You have already replied to this conversation</p>
@@ -74,7 +72,7 @@
                         }
                     </div>
             })
-        </section>
+        </div>
     </div>
     <div class="col-md-4 mt-section mt-md-0">
         @await Html.PartialAsync("Components/_Panel", new PanelViewModel
@@ -82,17 +80,17 @@
             Heading = new HeadingViewModel
             {
                 Title = "Other conversations",
-                Type = HeadingType.H5
+                Type = HeadingType.H4
             },
-            BodyContentFunc = 
+            BodyContentFunc =
                 @<div class="list-group">
                     @foreach (var dto in Model.OtherConversations.OrderByDescending(x => x.LastMessage.Message.CreatedUtc))
                     {
                         var conversation = dto.Conversation;
-                        var created = dto.LastMessage.Message.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions 
-                        { 
-                            IncludeDayOfWeek = true, 
-                            TimeZone = Html.DisplayTimeZone(Model.Chapter.TimeZone) 
+                        var created = dto.LastMessage.Message.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions
+                        {
+                            IncludeDayOfWeek = true,
+                            TimeZone = Html.DisplayTimeZone(Model.Chapter.TimeZone)
                         });
 
                         <div class="list-group-item">
@@ -101,7 +99,7 @@
                                 {
                                     Route = OdkRoutes.GroupAdmin.Conversation(Model.Chapter, conversation.Id),
                                     Text = conversation.Subject
-                                })                                
+                                })
                             </div>
                             <div>
                                 @created

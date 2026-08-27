@@ -11,103 +11,130 @@
     return;
 }
 
-@await Html.PartialAsync("Events/_EventHeader", new EventHeaderViewModel
-{
-    Chapter = Model.Chapter,
-    Event = Model.Event,
-    Venue = Model.Venue
-})
-
-@if (!string.IsNullOrEmpty(Model.Event.Description))
-{
-    <div>
-        @Html.Raw(Model.Event.Description)
-    </div>
-}
-
-@if (!string.IsNullOrEmpty(Model.Event.ImageUrl))
-{
-    <p>
-        <img src="@Model.Event.ImageUrl" style="max-height: 500px;" />
-    </p>
-}
-
-@if (Model.CanRespond && Model.Event.CanComment && Model.Comments.Comments != null)
-{
-    var memberDictionary = Model.Comments.Members != null
-        ? Model.Comments.Members.ToDictionary(x => x.Id)
-        : new Dictionary<Guid, Member>();
-
-    <h3 class="mt-5">
-        Comments        
-    </h3>
-
-    @foreach (var comment in Model.Comments.Comments)
+<div class="section-stack">
+    @await Html.PartialAsync("Components/_Section", new SectionViewModel
     {
-        if (!memberDictionary.TryGetValue(comment.MemberId, out var member))
-        {
-            continue;
-        }
+        Heading = null,
+        BodyContentFunc = 
+            @<div>
+                @await Html.PartialAsync("Events/_EventHeader", new EventHeaderViewModel
+                {
+                    Chapter = Model.Chapter,
+                    Event = Model.Event,
+                    Venue = Model.Venue
+                })
 
-        <div class="mb-3">
-            <div>
-                <strong>@member.FullName</strong>
-                <span>
-                    @comment.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions
-                    {
-                        IncludeDayOfWeek = true,
-                        TimeZone = Model.TimeZone
-                    })
-                </span>
-                <span>
-                    <a data-bs-toggle="collapse" href="#comment-reply-@comment.Id" role="button" aria-expanded="false" aria-controls="collapseExample">
-                        Reply
-                    </a>
-                </span>
+                @if (!string.IsNullOrEmpty(Model.Event.Description) || !string.IsNullOrEmpty(Model.Event.ImageUrl))
+                {
+                    <div class="mt-4 d-flex flex-column gap-3">
+                        @if (!string.IsNullOrEmpty(Model.Event.Description))
+                        {
+                            <div>
+                                @Html.Raw(Model.Event.Description)
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(Model.Event.ImageUrl))
+                        {
+                            <p>
+                                <img src="@Model.Event.ImageUrl" style="max-height: 500px;" />
+                            </p>
+                        }
+                    </div>
+                }                
             </div>
-            <div>
-                @comment.Text
-            </div>
-            <div class="collapse" id="comment-reply-@comment.Id">
-                <form action="/groups/@Model.Chapter.Id/events/@Model.Event.Id/comments" method="post">
-                    @Html.AntiForgeryToken()
-                    @await Html.PartialAsync("Events/_EventCommentForm", new EventCommentFormViewModel
+    })    
+
+    @if (Model.CanRespond && Model.Event.CanComment && Model.Comments.Comments != null)
+    {
+        var memberDictionary = Model.Comments.Members != null
+            ? Model.Comments.Members.ToDictionary(x => x.Id)
+            : new Dictionary<Guid, Member>();
+
+        @await Html.PartialAsync("Components/_Section", new SectionViewModel
+        {
+            Heading = new HeadingViewModel
+            {
+                Title = "Comments",
+                Type = HeadingType.H3
+            },
+            BodyContentFunc =
+                @<div>
+                    @foreach (var comment in Model.Comments.Comments)
                     {
-                        Parent  = comment.Id,
-                        Text = ""
-                    })
-                    <button class="btn btn-primary">Submit</button>
-                </form>
-            </div>            
-        </div>
+                        if (!memberDictionary.TryGetValue(comment.MemberId, out var member))
+                        {
+                            continue;
+                        }
+
+                        <div class="mb-3">
+                            <div>
+                                <strong>@member.FullName</strong>
+                                <span>
+                                    @comment.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions
+                                    {
+                                        IncludeDayOfWeek = true,
+                                        TimeZone = Model.TimeZone
+                                    })
+                                </span>
+                                <span>
+                                    <a data-bs-toggle="collapse" href="#comment-reply-@comment.Id" role="button" aria-expanded="false" aria-controls="collapseExample">
+                                        Reply
+                                    </a>
+                                </span>
+                            </div>
+                            <div>
+                                @comment.Text
+                            </div>
+                            <div class="collapse" id="comment-reply-@comment.Id">
+                                <form action="/groups/@Model.Chapter.Id/events/@Model.Event.Id/comments" method="post">
+                                    @Html.AntiForgeryToken()
+                                    @await Html.PartialAsync("Events/_EventCommentForm", new EventCommentFormViewModel
+                                    {
+                                        Parent = comment.Id,
+                                        Text = string.Empty
+                                    })
+                                    <button class="btn btn-primary">Submit</button>
+                                </form>
+                            </div>
+                        </div>
+                    }
+
+                    <div>
+                        <form action="/groups/@Model.Chapter.Id/events/@Model.Event.Id/comments" method="post">
+                            @Html.AntiForgeryToken()
+                            @await Html.PartialAsync("Events/_EventCommentForm", new EventCommentFormViewModel
+                            {
+                                Text = string.Empty
+                            })
+                            <button class="btn btn-primary">Submit</button>
+                        </form>
+                    </div>
+                </div>
+        })
     }
 
-    <div>
-        <form action="/groups/@Model.Chapter.Id/events/@Model.Event.Id/comments" method="post">
-            @Html.AntiForgeryToken()
-            @await Html.PartialAsync("Events/_EventCommentForm", new EventCommentFormViewModel
+    @if (Model.Venue != null && !string.IsNullOrEmpty(Model.Venue.MapQuery))
+    {
+        var mapQuery = Model.VenueLocation?.Name ?? Model.Venue.MapQuery;
+
+        @await Html.PartialAsync("Components/_Section", new SectionViewModel
+        {
+            Heading = new HeadingViewModel
             {
-                Text = ""
-            })
-            <button class="btn btn-primary">Submit</button>
-        </form>
-    </div>
-}
-
-@if (Model.Venue != null && !string.IsNullOrEmpty(Model.Venue.MapQuery))
-{
-    var mapQuery = Model.VenueLocation?.Name ?? Model.Venue.MapQuery;
-
-    <h3 class="mt-5">Location</h3>
-    <hr/>
-    @await Html.PartialAsync("Components/_GoogleMap", new GoogleMapViewModel
-    {
-        Query = mapQuery
-    })
-    @if (!string.IsNullOrEmpty(Model.Venue.MapQuery))
-    {
-        <p>
-            <a href="https://maps.google.com?q=@mapQuery" target="_blank">View in Google maps</a>
-        </p>
-    }    
-}
+                Title = "Location",
+                Type = HeadingType.H3
+            },
+            BodyContentFunc =
+                @<div>
+                    @await Html.PartialAsync("Components/_GoogleMap", new GoogleMapViewModel
+                    {
+                        Query = mapQuery
+                    })
+                    <p>
+                        <a href="https://maps.google.com?q=@mapQuery" target="_blank">View in Google maps</a>
+                    </p>
+                </div>
+        })
+    }
+</div>

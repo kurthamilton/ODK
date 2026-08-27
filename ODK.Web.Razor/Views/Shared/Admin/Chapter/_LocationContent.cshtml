@@ -1,10 +1,6 @@
-﻿@using ODK.Core.Chapters
-@using ODK.Core.Platforms
-@using ODK.Services
-@using ODK.Services.Chapters
+﻿@using ODK.Core.Platforms
 @using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Services
-@using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.SiteAdmin
 @model ChapterLocationAdminPageViewModel
@@ -17,9 +13,9 @@
         ? "Where this group is based."
         : "Where your group is based. Used when people browse for groups near them.")
 
-<section class="section--admin">        
-    <form action="/groups/@Model.Chapter.Id/location" method="post">        
-        @Html.AntiForgeryToken()                
+<div>
+    <form action="/groups/@Model.Chapter.Id/location" method="post">
+        @Html.AntiForgeryToken()
         @if (Model.Country != null)
         {
             <div class="form-group mb-3">
@@ -32,7 +28,7 @@
             <label for="TimeZone" class="form-label">Time zone</label>
             <input id="TimeZone" type="text" readonly class="form-control-plaintext" value="@Model.Chapter.TimeZone.DisplayName" />
         </div>
-      
+
 
         @await Html.PartialAsync("Admin/Chapter/_ChapterAdminLocationForm", new ChapterLocationFormViewModel
         {
@@ -55,5 +51,5 @@
                 QuerySource = $"#{nameof(ChapterLocationFormViewModel.LocationName)}"
             })
         </div>
-    }    
-</section>
+    }
+</div>

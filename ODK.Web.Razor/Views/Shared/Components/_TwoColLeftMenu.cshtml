@@ -30,6 +30,9 @@
                     data-bs-toggle="offcanvas" data-bs-target="#side-menu-nav" aria-controls="side-menu-nav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
+        </div>        
+        <div>
+            @Model.BodyContentFunc.Invoke(null)
         </div>
         @await Html.PartialAsync("Components/_Offcanvas", new OffcanvasViewModel
         {
@@ -39,8 +42,5 @@
             Class = "d-md-none",
             Content = await Model.MenuContentFunc.Invoke(null)
         })
-        <div class="@(hasTitle ? "mt-3" : null)">
-            @Model.BodyContentFunc.Invoke(null)
-        </div>        
     </div>
 </div>

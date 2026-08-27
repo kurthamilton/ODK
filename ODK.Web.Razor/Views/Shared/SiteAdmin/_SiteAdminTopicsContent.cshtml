@@ -12,88 +12,101 @@
         .ToDictionary(x => x.Key, x => x.ToArray());
 }
 
-@if (Model.NewMemberTopics.Count > 0 || Model.NewChapterTopics.Count > 0)
-{
-    <h2 class="content-heading">New topics</h2>
-    <section class="section section--admin">
-        <form action="/siteadmin/topics/approve" method="post">
-            @Html.AntiForgeryToken()
-            @await Html.PartialAsync("SiteAdmin/_NewTopicsForm", new NewTopicsFormViewModel
-            {
-                Chapters = Model.NewChapterTopics
-                    .OrderBy(x => x.Topic)
-                    .Select(x => new NewTopicsFormItemViewModel
-                    {
-                        NewTopicId = x.Id,
-                        Topic = x.Topic,
-                        TopicGroup = x.TopicGroup
-                    })
-                    .ToList(),
-                Members = Model.NewMemberTopics
-                    .OrderBy(x => x.Topic)
-                    .Select(x => new NewTopicsFormItemViewModel
-                    {
-                        NewTopicId = x.Id,
-                        Topic = x.Topic,
-                        TopicGroup = x.TopicGroup
-                    })
-                    .ToList()
-            })
-            <button class="btn btn-primary">Approve</button>
-        </form>
-    </section>
-}
-
 <h2 class="content-heading">Topics</h2>
 
-<section class="section">
-    <div class="d-flex flex-column gap-4">
-        @foreach (var topicGroup in Model.TopicGroups.OrderBy(x => x.Name))
+<div class="section-stack">
+    @if (Model.NewMemberTopics.Count > 0 || Model.NewChapterTopics.Count > 0)
+    {
+        @await Html.PartialAsync("Components/_Section", new SectionViewModel
         {
-            topicDictionary.TryGetValue(topicGroup.Id, out var topics);
-
-            @await Html.PartialAsync("Components/_Panel", new PanelViewModel
+            Heading = new HeadingViewModel
             {
-                Heading = new HeadingViewModel
-                {
-                    Title = topicGroup.Name,
-                    Type = HeadingType.H5
-                },
-                BodyContentFunc = 
-                    @<div>
-                        @if (topics != null)
-                        {
-                            @foreach (var topic in topics.OrderBy(x => x.Name))
+                Title = "New topics",
+                Type = HeadingType.H3
+            },
+            BodyContentFunc =
+                @<form action="/siteadmin/topics/approve" method="post">
+                    @Html.AntiForgeryToken()
+                    @await Html.PartialAsync("SiteAdmin/_NewTopicsForm", new NewTopicsFormViewModel
+                    {
+                        Chapters = Model.NewChapterTopics
+                            .OrderBy(x => x.Topic)
+                            .Select(x => new NewTopicsFormItemViewModel
                             {
-                                <a class="badge text-bg-secondary" href="@OdkRoutes.SiteAdmin.Topic(topic.Id)">
-                                    @topic.Name
-                                </a>
-                            }
+                                NewTopicId = x.Id,
+                                Topic = x.Topic,
+                                TopicGroup = x.TopicGroup
+                            })
+                            .ToList(),
+                        Members = Model.NewMemberTopics
+                            .OrderBy(x => x.Topic)
+                            .Select(x => new NewTopicsFormItemViewModel
+                            {
+                                NewTopicId = x.Id,
+                                Topic = x.Topic,
+                                TopicGroup = x.TopicGroup
+                            })
+                            .ToList()
+                    })
+                    <button class="btn btn-primary">Approve</button>
+                </form>
+        })
+    }
+
+    @* A panel rather than a section: a topic group is a self-contained thing to edit, listed alongside its
+       siblings, not a division of this page's own content. *@
+    @foreach (var topicGroup in Model.TopicGroups.OrderBy(x => x.Name))
+    {
+        topicDictionary.TryGetValue(topicGroup.Id, out var topics);
+
+        @await Html.PartialAsync("Components/_Panel", new PanelViewModel
+        {
+            Heading = new HeadingViewModel
+            {
+                Title = topicGroup.Name,
+                Type = HeadingType.H3
+            },
+            BodyContentFunc =
+                @<div>
+                    @if (topics != null)
+                    {
+                        @foreach (var topic in topics.OrderBy(x => x.Name))
+                        {
+                            <a class="badge text-bg-secondary" href="@OdkRoutes.SiteAdmin.Topic(topic.Id)">
+                                @topic.Name
+                            </a>
                         }
+                    }
 
-                        <form action="/siteadmin/topics" method="post">
-                            @Html.AntiForgeryToken()
-                            @Html.Hidden("TopicGroupId", topicGroup.Id.ToString())
+                    <form action="/siteadmin/topics" method="post">
+                        @Html.AntiForgeryToken()
+                        @Html.Hidden("TopicGroupId", topicGroup.Id.ToString())
 
-                            <div class="input-group mt-3">
-                                <input type="text" class="form-control" placeholder="Add topic" aria-label="Add topic" name="Name" />
-                                <button class="btn btn-primary">Add</button>
-                            </div>
-                        </form>
-                    </div>
-            })
-        }
-    </div>
-</section>
-<section class="mt-3">
-    <h3>Add topic group</h3>
-    <form action="/siteadmin/topic-groups" method="post">
-        @Html.AntiForgeryToken()
-        
-        <div class="form-group mb-3">
-            <input type="text" class="form-control" name="Name" />            
-        </div>
+                        <div class="input-group mt-3">
+                            <input type="text" class="form-control" placeholder="Add topic" aria-label="Add topic" name="Name" />
+                            <button class="btn btn-primary">Add</button>
+                        </div>
+                    </form>
+                </div>
+        })
+    }
 
-        <button class="btn btn-primary">Add</button>
-    </form>
-</section>
+    @await Html.PartialAsync("Components/_Section", new SectionViewModel
+    {
+        Heading = new HeadingViewModel
+        {
+            Title = "Add topic group",
+            Type = HeadingType.H3
+        },
+        BodyContentFunc =
+            @<form action="/siteadmin/topic-groups" method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="form-group mb-3">
+                    <input type="text" class="form-control" name="Name" />
+                </div>
+
+                <button class="btn btn-primary">Add</button>
+            </form>
+    })
+</div>

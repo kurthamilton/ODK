@@ -1,0 +1,79 @@
+﻿@using ODK.Web.Razor.Models.Components
+@model BandViewModel
+@{
+    var bsTheme = Model.Theme == BandThemeType.Dark ? "dark" : "light";
+
+    var classes = new List<string>
+    {
+        "band"
+    };
+
+    if (Model.Hero)
+    {
+        classes.Add("band--hero");
+    }
+
+    if (Model.Theme == BandThemeType.Dark)
+    {
+        classes.Add("band--dark");
+    }
+    else if (Model.Theme == BandThemeType.Light)
+    {
+        classes.Add("band--light");
+    }
+    else if (Model.Theme == BandThemeType.Grey)
+    {
+        classes.Add("band--grey");
+    }
+
+    if (!string.IsNullOrEmpty(Model.Class))
+    {
+        classes.Add(Model.Class);
+    }
+}
+
+<section class="@string.Join(' ', classes)"
+         id="@Model.Id"
+         data-bs-theme="@bsTheme"
+         data-odk-component="_Band">
+    @if (Model.Hero)
+    {
+        <div class="band--hero__content">
+            <div class="d-flex flex-column gap-3">
+                @if (!string.IsNullOrEmpty(Model.Title))
+                {
+                    <h1>@Model.Title</h1>
+                }
+                @if (!string.IsNullOrEmpty(Model.Subtitle))
+                {
+                    <h3>@Model.Subtitle</h3>
+                }
+                @if (Model.Content != null)
+                {
+                    <div>
+                        @Model.Content.Invoke(null)
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="d-flex flex-column gap-3">
+            @if (!string.IsNullOrEmpty(Model.Title))
+            {
+                <h1>@Model.Title</h1>
+            }
+            @if (!string.IsNullOrEmpty(Model.Subtitle))
+            {
+                <h3>@Model.Subtitle</h3>
+            }
+            @if (Model.Content != null)
+            {
+                <div>
+                    @Model.Content.Invoke(null)
+                </div>
+            }
+        </div>
+    }
+</section>

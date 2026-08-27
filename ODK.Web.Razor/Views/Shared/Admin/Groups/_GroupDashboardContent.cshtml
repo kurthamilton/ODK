@@ -9,13 +9,13 @@
 @model GroupDashboardViewModel
 @inject IOdkRoutes OdkRoutes
 
-<div class="d-flex flex-column gap-5">
+<div class="section-stack">
     @await Html.PartialAsync("Components/_Panel", new PanelViewModel
     {
         Heading = new HeadingViewModel
         {
             Title = "Needs your attention",
-            Type = HeadingType.H5
+            Type = HeadingType.H3
         },
         BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Groups/_GroupDashboardActions", Model)</div>
     })
@@ -32,7 +32,7 @@
             Heading = new HeadingViewModel
             {
                 Title = "Upcoming events",
-                Type = HeadingType.H5
+                Type = HeadingType.H3
             },
             TitleEndContentFunc = @<a href="@OdkRoutes.GroupAdmin.Events(Model.Chapter).Path">See all</a>,
             BodyContentFunc =
@@ -78,7 +78,7 @@
             Heading = new HeadingViewModel
             {
                 Title = "Newest members",
-                Type = HeadingType.H5
+                Type = HeadingType.H3
             },
             TitleEndContentFunc = @<a href="@OdkRoutes.GroupAdmin.Members(Model.Chapter).Path">See all</a>,
             BodyContentFunc =

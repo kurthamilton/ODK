@@ -1,5 +1,4 @@
 ﻿@using ODK.Core.Events
-@using ODK.Core.Members
 @using ODK.Data.Core.Members
 @using ODK.Services.Events.ViewModels
 @using ODK.Web.Common.Routes
@@ -32,7 +31,7 @@
         EventResponseType.Waitlist,
         EventResponseType.Maybe,
         EventResponseType.No,
-        EventResponseType.None        
+        EventResponseType.None
     };
 
     var responseTitles = new Dictionary<EventResponseType, string>
@@ -93,9 +92,9 @@
             Heading = new HeadingViewModel
             {
                 Title = responseTitles[responseType],
-                Type = HeadingType.H5
+                Type = HeadingType.H3
             },
-            BodyContentFunc = 
+            BodyContentFunc =
                 @<div>
                     <div class="row row-cols-3 row-cols-md-6">
                         @foreach (var dto in members)
@@ -111,7 +110,7 @@
                                         {
                                             Member = member,
                                             Version = dto.AvatarVersion
-                                        })  
+                                        })
                                     </div>
                                     <div>
                                         @member.GetDisplayName(Model.Chapter.Id)
@@ -144,11 +143,11 @@
                                                     ReadOnly = false
                                                 })
                                             </form>
-                                        }                                    
+                                        }
                                     </div>
                                 }
                             </div>
-                        }                    
+                        }
                     </div>
                 </div>
         })

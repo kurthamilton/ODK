@@ -1,0 +1,24 @@
+// The three page-chrome strips every page is built from - the title bar, the content area and the footer.
+// Each is emitted by exactly one component (_PageTitle, _Body/_BodyWithSidebar, _OdkFooter/_SiteFooter),
+// so they live together here rather than beside whichever component happens to own one.
+.page-main {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+.page-header,
+.page-footer {
+    padding: 1rem 0;
+}
+
+.page-header {
+    --bg-page-header: var(--theme-bg, #FF0000);
+    --color-page-header: var(--theme-color, #FFF);
+    color: var(--color-page-header);
+    background-color: var(--bg-page-header);
+
+    h1 {
+        font-size: 2rem;
+        margin-bottom: 0;
+    }
+}

@@ -7,40 +7,38 @@
     "People an import has asked to join who have yet to accept. They become members when they accept, so " +
     "they are not in the members list until then.")
 
-<section class="section">
-    @if (Model.Invited.Count > 0)
-    {
-        <div class="table-responsive">
-            <table class="table table-striped">
-                <thead>
+@if (Model.Invited.Count > 0)
+{
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Member</th>
+                    <th>Invited</th>
+                </tr>
+            </thead>
+            <tbody>
+                @* Already ordered oldest first by the query that read them - see the view model. *@
+                @foreach (var invite in Model.Invited)
+                {
                     <tr>
-                        <th>Member</th>
-                        <th>Invited</th>
+                        @* Not linked to the member admin page: that page is about a member of the group,
+                           and someone who has only been invited is not one yet. *@
+                        <td>@invite.Member.FullName</td>
+                        <td>
+                            @invite.CreatedUtc.ToFriendlyDateString(new FriendlyDateStringOptions
+                            {
+                                IncludeDayOfWeek = true,
+                                TimeZone = Html.DisplayTimeZone(Model.Chapter.TimeZone)
+                            })
+                        </td>
                     </tr>
-                </thead>
-                <tbody>
-                    @* Already ordered oldest first by the query that read them - see the view model. *@
-                    @foreach (var invite in Model.Invited)
-                    {
-                        <tr>
-                            @* Not linked to the member admin page: that page is about a member of the group,
-                               and someone who has only been invited is not one yet. *@
-                            <td>@invite.Member.FullName</td>
-                            <td>
-                                @invite.CreatedUtc.ToFriendlyDateString(new FriendlyDateStringOptions
-                                {
-                                    IncludeDayOfWeek = true,
-                                    TimeZone = Html.DisplayTimeZone(Model.Chapter.TimeZone)
-                                })
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    }
-    else
-    {
-        <p>Nobody is waiting to accept an invitation</p>
-    }
-</section>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <p>Nobody is waiting to accept an invitation</p>
+}

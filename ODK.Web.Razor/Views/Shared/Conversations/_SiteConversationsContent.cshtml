@@ -37,7 +37,7 @@
         </div>
     }
 
-    <section class="section mt-3">
+    <div class="mt-3">
         @if (Model.Conversations.Count > 0)
         {
             <div class="table-responsive">
@@ -104,7 +104,7 @@
                 }
             </p>
         }
-    </section>
+    </div>
 
     @await Html.PartialAsync("Components/_Modal", new ModalViewModel
     {
@@ -121,9 +121,9 @@ else
     @* Nothing to list yet, so the form is the page rather than something behind a button - and it carries
        its own description, because the heading above it is the same on both tabs and says only whose
        conversations these are. *@
-    <section class="section mt-3">
+    <div class="mt-3">
         <p>Send a message to the site admins. Their replies will appear here, so you can pick the conversation up later.</p>
 
         @await Html.PartialAsync("Conversations/_SiteConversationForm", new SiteConversationFormViewModel())
-    </section>
+    </div>
 }

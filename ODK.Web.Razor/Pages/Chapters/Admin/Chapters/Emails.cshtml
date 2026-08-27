@@ -23,6 +23,6 @@
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
-    Title = "Email templates",
+    Title = null,
     ContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_ChapterAdminEmailsContent", viewModel)</div>
 })

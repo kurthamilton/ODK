@@ -1,6 +1,7 @@
 ﻿@using ODK.Core.Emails
 @using ODK.Services.Emails.Parameters
 @using ODK.Web.Razor.Models.Admin.Emails
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.SiteAdmin
 @model EmailContentViewModel
 
@@ -45,9 +46,15 @@
     @Html.AntiForgeryToken()
 </form>
 
-<div class="mt-5">
-    <h3 class="content-heading">Placeholders</h3>
-    @await Html.PartialAsync("Emails/_EmailParameters", Model.Parameters)
-</div>
+@await Html.PartialAsync("Components/_Section", new SectionViewModel
+{
+    Class = "mt-section",
+    Heading = new HeadingViewModel
+    {
+        Title = "Placeholders",
+        Type = HeadingType.H3
+    },
+    BodyContent = await Html.PartialAsync("Emails/_EmailParameters", Model.Parameters)
+})
 
 @await Html.PartialAsync("Emails/_EmailPreviewModal")

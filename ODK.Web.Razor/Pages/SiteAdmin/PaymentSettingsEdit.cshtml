@@ -20,23 +20,21 @@
     }
 })
 
-<section class="section">
-    <form action="/siteadmin/payments/@settings.Id" method="post">
-        @Html.AntiForgeryToken()
-        @await Html.PartialAsync("SiteAdmin/_SitePaymentSettingsForm", new SitePaymentSettingsFormViewModel
-        {         
-            Active = settings.Active,
-            Commission = 100 * settings.Commission,
-            Enabled = settings.Enabled,
-            Environment = settings.Environment,
-            ExternalId = settings.ExternalId,
-            ExternalUrl = settings.ExternalUrl,
-            Name = settings.Name,
-            Provider = settings.Provider,
-            PublicKey = settings.ApiPublicKey,
-            SecretKey = settings.ApiSecretKey,
-            SitePaymentSettingId = settings.Id
-        })
-        <button class="btn btn-primary">Update</button>
-    </form>
-</section>
+<form action="/siteadmin/payments/@settings.Id" method="post">
+    @Html.AntiForgeryToken()
+    @await Html.PartialAsync("SiteAdmin/_SitePaymentSettingsForm", new SitePaymentSettingsFormViewModel
+    {
+        Active = settings.Active,
+        Commission = 100 * settings.Commission,
+        Enabled = settings.Enabled,
+        Environment = settings.Environment,
+        ExternalId = settings.ExternalId,
+        ExternalUrl = settings.ExternalUrl,
+        Name = settings.Name,
+        Provider = settings.Provider,
+        PublicKey = settings.ApiPublicKey,
+        SecretKey = settings.ApiSecretKey,
+        SitePaymentSettingId = settings.Id
+    })
+    <button class="btn btn-primary">Update</button>
+</form>
