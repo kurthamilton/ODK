@@ -16,14 +16,38 @@ public class PaymentMap : IEntityTypeConfiguration<Payment>
 
         builder.HasKey(x => x.Id);
 
+        builder.Property(x => x.ActualAmount)
+            .IsMoneyType();
+
+        builder.Property(x => x.ActualCommissionAmount)
+            .IsMoneyType();
+
+        builder.Property(x => x.ActualConnectedAccountAmount)
+            .IsMoneyType();
+
+        builder.Property(x => x.ActualFeeAmount)
+            .IsMoneyType();
+
+        builder.Property(x => x.ActualNetAmount)
+            .IsMoneyType();
+
         builder.Property(x => x.Amount)
             .IsMoneyType();
 
         builder.Property(x => x.CreatedUtc)
             .HasConversion<NullableUtcDateTimeConverter>();
 
+        builder.Property(x => x.ExternalChargeId)
+            .HasMaxLength(100);
+
         builder.Property(x => x.PaidUtc)
             .HasConversion<UtcDateTimeConverter>();
+
+        builder.Property(x => x.SettlementCurrencyCode)
+            .HasMaxLength(3);
+
+        builder.Property(x => x.TransferredUtc)
+            .HasConversion<NullableUtcDateTimeConverter>();
 
         builder.HasOne(x => x.Currency)
             .WithMany()

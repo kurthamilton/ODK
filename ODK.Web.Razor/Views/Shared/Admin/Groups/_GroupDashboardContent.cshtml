@@ -15,7 +15,7 @@
         Heading = new HeadingViewModel
         {
             Title = "Needs your attention",
-            Type = HeadingType.H3
+            Type = HeadingType.H4
         },
         BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Groups/_GroupDashboardActions", Model)</div>
     })
@@ -32,7 +32,7 @@
             Heading = new HeadingViewModel
             {
                 Title = "Upcoming events",
-                Type = HeadingType.H3
+                Type = HeadingType.H4
             },
             TitleEndContentFunc = @<a href="@OdkRoutes.GroupAdmin.Events(Model.Chapter).Path">See all</a>,
             BodyContentFunc =
@@ -78,7 +78,7 @@
             Heading = new HeadingViewModel
             {
                 Title = "Newest members",
-                Type = HeadingType.H3
+                Type = HeadingType.H4
             },
             TitleEndContentFunc = @<a href="@OdkRoutes.GroupAdmin.Members(Model.Chapter).Path">See all</a>,
             BodyContentFunc =

@@ -113,6 +113,7 @@ public static class BackgroundJobPayloadTests
             Amount = 12.34m,
             Complete = true,
             Id = "wh_1",
+            InvoiceId = "in_1",
             Metadata = new Dictionary<string, string> { ["reason"] = "chapterSubscription" },
             OriginatedUtc = new DateTime(2026, 8, 20, 9, 30, 0, DateTimeKind.Utc),
             PaymentId = "pi_1",
@@ -128,10 +129,30 @@ public static class BackgroundJobPayloadTests
         // Assert
         result.Amount.Should().Be(webhook.Amount);
         result.Id.Should().Be(webhook.Id);
+        result.InvoiceId.Should().Be(webhook.InvoiceId);
         result.Metadata.Should().BeEquivalentTo(webhook.Metadata);
         result.OriginatedUtc.Should().Be(webhook.OriginatedUtc);
         result.PaymentProviderType.Should().Be(webhook.PaymentProviderType);
         result.Type.Should().Be(webhook.Type);
+    }
+
+    [Test]
+    public static void PaymentProviderWebhook_PayloadWithoutInvoiceId_Deserialises()
+    {
+        /* Arrange - what a job queued before InvoiceId existed holds. The property is `required`, which the
+           compiler enforces and the serialiser does not, so an absent one has to arrive as null rather than
+           throw - otherwise every webhook in the queue at deploy time is lost. */
+        const string json =
+            "{\"Amount\":12.34,\"Complete\":true,\"Id\":\"wh_1\",\"Metadata\":{}," +
+            "\"OriginatedUtc\":\"2026-08-20T09:30:00Z\",\"PaymentId\":\"pi_1\"," +
+            "\"PaymentProviderType\":1,\"SubscriptionId\":null,\"Type\":1}";
+
+        // Act
+        var result = SerializationHelper.Deserialize<PaymentProviderWebhook>(json, SerializationOption.User);
+
+        // Assert
+        result.InvoiceId.Should().BeNull();
+        result.PaymentId.Should().Be("pi_1");
     }
 
     private static JobRequest CreateJobRequest() => new()

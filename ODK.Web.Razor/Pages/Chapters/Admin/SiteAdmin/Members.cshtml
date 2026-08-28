@@ -1,15 +1,12 @@
 ﻿@page "/{chapterName}/admin/siteadmin/members"
-@using ODK.Core.Chapters
 @using ODK.Services.Chapters
-@using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Admin.Members
-@using ODK.Web.Razor.Models.Components
 @model MembersModel
 @inject IChapterAdminService ChapterAdminService
 @{
     Layout = "_OdkChapterAdminLayout";
-    Model.Title = "Members | SiteAdmin";
+    Model.Title = "Members | Site Admin";
 
     var request = Model.MemberChapterAdminServiceRequest;
     var adminMembers = await ChapterAdminService.GetChapterAdminMembers(request);

@@ -53,6 +53,7 @@ public static class StripeWebhookParserTests
         result.Amount.Should().Be(25);
         result.Complete.Should().BeTrue();
         result.Id.Should().Be(EventId);
+        result.InvoiceId.Should().BeNull();
         result.Metadata.Should().BeEquivalentTo(new Dictionary<string, string> { ["memberId"] = "member-1" });
         result.OriginatedUtc.Should().Be(CreatedUtc);
         result.PaymentId.Should().Be("pi_123");
@@ -93,6 +94,7 @@ public static class StripeWebhookParserTests
         result.Amount.Should().Be(0);
         result.Complete.Should().BeTrue();
         result.Id.Should().Be(EventId);
+        result.InvoiceId.Should().BeNull();
         result.Metadata.Should().BeEquivalentTo(new Dictionary<string, string> { ["memberId"] = "member-1" });
         result.OriginatedUtc.Should().Be(CreatedUtc);
         result.PaymentId.Should().Be("pi_123");
@@ -114,6 +116,7 @@ public static class StripeWebhookParserTests
         result.Amount.Should().Be(0);
         result.Complete.Should().BeTrue();
         result.Id.Should().Be(EventId);
+        result.InvoiceId.Should().BeNull();
         result.Metadata.Should().BeEquivalentTo(new Dictionary<string, string> { ["memberId"] = "member-1" });
         result.OriginatedUtc.Should().Be(CreatedUtc);
         result.PaymentId.Should().BeNull();
@@ -152,25 +155,12 @@ public static class StripeWebhookParserTests
         result.Complete.Should().BeTrue();
         result.Id.Should().Be(EventId);
         result.Metadata.Should().BeEquivalentTo(new Dictionary<string, string> { ["memberId"] = "member-1" });
+        result.InvoiceId.Should().Be("in_123");
         result.OriginatedUtc.Should().Be(CreatedUtc);
-        result.PaymentId.Should().Be("pi_456");
-        result.SubscriptionId.Should().Be("sub_123");
-        result.Type.Should().Be(PaymentProviderWebhookType.InvoicePaymentSucceeded);
-    }
-
-    [Test]
-    public static async Task ParseWebhook_InvoicePaymentSucceeded_NoPaymentIntent_PaymentIdNull()
-    {
-        // Arrange - payment_intent is read off the raw JSON, so its absence has to be handled there
-        var json = CreateEventJson(EventTypes.InvoicePaymentSucceeded, InvoiceWithNoPaymentIntentJson());
-
-        // Act
-        var result = await ParseSigned(CreateParser(), json);
-
-        // Assert
-        result.Should().NotBeNull();
+        // An invoice names no payment - the invoice id is the handle on what it charged
         result.PaymentId.Should().BeNull();
         result.SubscriptionId.Should().Be("sub_123");
+        result.Type.Should().Be(PaymentProviderWebhookType.InvoicePaymentSucceeded);
     }
 
     [Test]
@@ -286,24 +276,6 @@ public static class StripeWebhookParserTests
           "id": "in_123",
           "object": "invoice",
           "amount_paid": 1200,
-          "payment_intent": "pi_456",
-          "status": "paid",
-          "parent": {
-            "type": "subscription_details",
-            "subscription_details": {
-              "subscription": "sub_123",
-              "metadata": { "memberId": "member-1" }
-            }
-          }
-        }
-        """;
-
-    private static string InvoiceWithNoPaymentIntentJson() =>
-        """
-        {
-          "id": "in_123",
-          "object": "invoice",
-          "amount_paid": 1200,
           "status": "paid",
           "parent": {
             "type": "subscription_details",
@@ -321,7 +293,6 @@ public static class StripeWebhookParserTests
           "id": "in_123",
           "object": "invoice",
           "amount_paid": 1200,
-          "payment_intent": "pi_456",
           "status": "paid"
         }
         """;

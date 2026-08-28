@@ -6,7 +6,7 @@
 @inject ISettingsService SettingsService
 @{
     Layout = "_SiteAdminLayout";
-    Model.Title = "Payments | SiteAdmin";
+    Model.Title = "Payments | Site Admin";
 
     var settings = await SettingsService.GetSitePaymentSettings(Model.MemberServiceRequest);
 }

@@ -46,6 +46,11 @@ public class PaymentProviderFactory : IPaymentProviderFactory
         return GetPaymentProvider(paymentSettings, connectedAccountId: null);
     }
 
+    public IPaymentProvider? GetSitePaymentProviderOrDefault(SitePaymentSettings sitePaymentSettings)
+        => sitePaymentSettings.Provider == PaymentProviderType.Stripe
+            ? GetPaymentProvider(sitePaymentSettings, connectedAccountId: null)
+            : null;
+
     /* Guarded on the provider type rather than constructing and testing the result, because
        GetPaymentProvider throws for a type it does not support - and a record on another provider is a
        caller asking a fair question, not a fault. */

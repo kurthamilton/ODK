@@ -34,6 +34,18 @@ public class PaymentQueryBuilder : DatabaseEntityQueryBuilder<Payment, IPaymentQ
         return this;
     }
 
+    public IPaymentQueryBuilder Paid()
+    {
+        Query = Query.Where(x => x.PaidUtc != null);
+        return this;
+    }
+
+    public IPaymentQueryBuilder WithoutSettlement()
+    {
+        Query = Query.Where(x => x.ActualAmount == null);
+        return this;
+    }
+
     public IQueryBuilder<PaymentChapterDto> WithChapter()
     {
         var query =

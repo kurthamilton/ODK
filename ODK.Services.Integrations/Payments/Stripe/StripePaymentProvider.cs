@@ -14,6 +14,10 @@ namespace ODK.Services.Integrations.Payments.Stripe;
 
 public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
 {
+    /* Wide enough to absorb the gap between an invoice being paid and the webhook that recorded it, and far
+       narrower than the shortest billing period, so it cannot span two invoices of one subscription. */
+    private static readonly TimeSpan SubscriptionInvoiceMatchWindow = TimeSpan.FromHours(6);
+
     private readonly IStripeClient _client;
     private readonly string? _connectedAccountId;
     private readonly ILoggingService _loggingService;
@@ -36,6 +40,10 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
         _platformProvider = platformProvider;
         _settings = settings;
     }
+
+    public decimal CommissionPercentage => _settings.ConnectedAccountCommissionPercentage;
+
+    public TimeSpan SettlementReadDelay => _settings.SettlementReadDelay;
 
     public PaymentProviderType Type => PaymentProviderType.Stripe;
 
@@ -184,6 +192,43 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
         return result.Id;
     }
 
+    public async Task<ServiceResult> CreateTransfer(ExternalTransfer transfer)
+    {
+        var service = CreateTransferService();
+
+        try
+        {
+            /* SourceTransaction ties the transfer to the charge it comes out of, which lets Stripe move
+               funds that have not finished clearing and keeps the pair reconcilable at their end.
+
+               The idempotency key is what makes a retry safe: Stripe returns the transfer it already made
+               rather than making a second one, so a job that fails after the money moved cannot pay twice. */
+            await service.CreateAsync(
+                new TransferCreateOptions
+                {
+                    Amount = ToStripeAmount(transfer.Amount),
+                    Currency = transfer.CurrencyCode.ToLowerInvariant(),
+                    Destination = transfer.ConnectedAccountId,
+                    SourceTransaction = transfer.ExternalChargeId
+                },
+                new RequestOptions
+                {
+                    IdempotencyKey = transfer.IdempotencyKey
+                });
+
+            return ServiceResult.Successful();
+        }
+        catch (Exception ex)
+        {
+            var message =
+                $"Error transferring {transfer.Amount} {transfer.CurrencyCode} from Stripe charge " +
+                $"'{transfer.ExternalChargeId}' to connected account '{transfer.ConnectedAccountId}'";
+
+            await _loggingService.Error(message, ex);
+            return ServiceResult.Failure(message);
+        }
+    }
+
     public async Task<ServiceResult> DeactivateSubscriptionPlan(string externalId)
     {
         var service = CreatePriceService();
@@ -279,6 +324,136 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
             IdentityDocumentsProvided = identityDocumentsProvided,
             InitialOnboardingComplete = initialOnboardingComplete
         };
+    }
+
+    public async Task<string?> GetPaymentIdForReference(string reference, DateTime paidUtc)
+    {
+        if (reference.StartsWith(StripeIdPrefixes.PaymentIntent, StringComparison.Ordinal))
+        {
+            return reference;
+        }
+
+        if (!reference.StartsWith(StripeIdPrefixes.Subscription, StringComparison.Ordinal))
+        {
+            await _loggingService.Warn(
+                $"Stripe reference '{reference}' names neither a payment nor a subscription");
+            return null;
+        }
+
+        var service = CreateInvoiceService();
+
+        try
+        {
+            /* A subscription bills months apart, so the invoice paid when the payment was recorded is the
+               one that produced it. Matched on time rather than amount, which repeats every renewal, and
+               required to be the only one in the window: two candidates mean the wrong one could be picked,
+               and a wrong figure in an accounting column is worse than an absent one. */
+            var invoices = await service.ListAsync(new InvoiceListOptions
+            {
+                Subscription = reference,
+                Limit = 100
+            });
+
+            var matches = invoices.Data
+                .Where(x => x.StatusTransitions?.PaidAt != null &&
+                    (x.StatusTransitions.PaidAt.Value - paidUtc).Duration() < SubscriptionInvoiceMatchWindow)
+                .ToArray();
+
+            if (matches.Length != 1)
+            {
+                await _loggingService.Warn(
+                    $"Stripe subscription '{reference}' has {matches.Length} invoices paid within " +
+                    $"{SubscriptionInvoiceMatchWindow} of {paidUtc:o}; cannot identify one payment");
+                return null;
+            }
+
+            return await GetInvoicePaymentId(matches[0].Id);
+        }
+        catch (Exception ex)
+        {
+            /* Warned rather than logged as an error, because the caller reads null as "not here" and
+               carries on. A failure that genuinely matters is thrown by the caller and recorded once, on
+               the final retry, by HangfireJobFailureLoggerAttribute - see PaymentService. The message
+               carries the provider's own reason, which is the part worth keeping. */
+            await _loggingService.Warn(
+                $"Could not list invoices for Stripe subscription '{reference}': {ex.Message}");
+            return null;
+        }
+    }
+
+    public async Task<string?> GetInvoicePaymentId(string externalInvoiceId)
+    {
+        var service = CreateInvoiceService();
+
+        try
+        {
+            /* The payments an invoice was settled by are not on the invoice unless asked for, and the
+               payment intent sits two levels inside them, so this cannot be read off the webhook the
+               invoice arrived on. */
+            var invoice = await service.GetAsync(externalInvoiceId, new InvoiceGetOptions
+            {
+                Expand = ["payments"]
+            });
+
+            var paymentId = invoice.Payments?.Data
+                .Where(x => x.Status == StripeInvoicePaymentStatuses.Paid)
+                .Select(x => x.Payment?.PaymentIntentId)
+                .FirstOrDefault(x => !string.IsNullOrEmpty(x));
+
+            if (string.IsNullOrEmpty(paymentId))
+            {
+                await _loggingService.Warn(
+                    $"Stripe invoice '{externalInvoiceId}' names no paid payment intent");
+            }
+
+            return paymentId;
+        }
+        catch (Exception ex)
+        {
+            /* Warned rather than logged as an error, because the caller reads null as "not here" and
+               carries on. A failure that genuinely matters is thrown by the caller and recorded once, on
+               the final retry, by HangfireJobFailureLoggerAttribute - see PaymentService. The message
+               carries the provider's own reason, which is the part worth keeping. */
+            await _loggingService.Warn(
+                $"Could not retrieve Stripe invoice '{externalInvoiceId}': {ex.Message}");
+            return null;
+        }
+    }
+
+    public async Task<ExternalPaymentSettlement?> GetPaymentSettlement(string externalPaymentId)
+    {
+        var service = CreatePaymentIntentService();
+
+        try
+        {
+            var paymentIntent = await service.GetAsync(externalPaymentId, new PaymentIntentGetOptions
+            {
+                Expand =
+                [
+                    "latest_charge.balance_transaction",
+                    "latest_charge.transfer"
+                ]
+            });
+
+            if (paymentIntent.LatestCharge == null)
+            {
+                await _loggingService.Warn(
+                    $"Stripe payment intent '{externalPaymentId}' has no charge; cannot read what it settled");
+                return null;
+            }
+
+            return MapSettlement(paymentIntent.LatestCharge);
+        }
+        catch (Exception ex)
+        {
+            /* Warned rather than logged as an error, because the caller reads null as "not here" and
+               carries on. A failure that genuinely matters is thrown by the caller and recorded once, on
+               the final retry, by HangfireJobFailureLoggerAttribute - see PaymentService. The message
+               carries the provider's own reason, which is the part worth keeping. */
+            await _loggingService.Warn(
+                $"Could not retrieve Stripe payment intent '{externalPaymentId}': {ex.Message}");
+            return null;
+        }
     }
 
     public async Task<string?> GetProductId(string name)
@@ -398,8 +573,12 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
 
         /* A group's payments settle against its own connected account: OnBehalfOf makes that account the
            settlement merchant, so the customer's statement carries the group's business name rather than the
-           platform's, and the charge settles in the group's country and currency. */
-        var isGroupPayment = !string.IsNullOrEmpty(_connectedAccountId);
+           platform's, and the charge settles in the group's country and currency.
+
+           Deliberately no TransferData and no application fee. Those would move the money as the charge is
+           made, before Stripe has said what the charge cost - and our commission comes out of the net, which
+           is not knowable until then, because the fee depends on the card the member chooses. So the whole
+           charge is collected here and PaymentService transfers the group's share once the fee is known. */
 
         var session = await service.CreateAsync(new SessionCreateOptions
         {
@@ -428,23 +607,13 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
             CustomerEmail = emailAddress,
             PaymentIntentData = !subscriptionPlan.Recurring ? new SessionPaymentIntentDataOptions
             {
-                ApplicationFeeAmount = isGroupPayment ? CalculateCommission(stripeAmount) : null,
                 Metadata = metadataDictionary,
-                OnBehalfOf = _connectedAccountId,
-                TransferData = isGroupPayment
-                    ? new SessionPaymentIntentDataTransferDataOptions { Destination = _connectedAccountId }
-                    : null
+                OnBehalfOf = _connectedAccountId
             } : null,
             SubscriptionData = subscriptionPlan.Recurring ? new SessionSubscriptionDataOptions
             {
-                ApplicationFeePercent = isGroupPayment
-                    ? _settings.ConnectedAccountCommissionPercentage
-                    : null,
                 Metadata = metadataDictionary,
-                OnBehalfOf = _connectedAccountId,
-                TransferData = isGroupPayment
-                    ? new SessionSubscriptionDataTransferDataOptions { Destination = _connectedAccountId }
-                    : null
+                OnBehalfOf = _connectedAccountId
             } : null
         });
 
@@ -458,6 +627,36 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
             PaymentId = null,
             SessionId = session.Id,
             SubscriptionId = null
+        };
+    }
+
+    /* The fee and the net live on the charge's balance transaction, in the currency the money settled into
+       - which is not necessarily the currency charged, so the code travels with them. An absent balance
+       transaction means Stripe has not settled the charge yet, which is a state to wait out rather than a
+       charge that cost nothing, so the two amounts stay null instead of reading as zero. A balance
+       transaction of status "pending" is settled for this purpose: pending is about when the funds become
+       available to pay out, and the fee is known from the start.
+
+       A charge is collected whole and the group's share transferred afterwards, so ordinarily nothing here
+       says what either party keeps. A charge made before that changed carries an application fee and a
+       transfer of its own, and those are reported rather than recomputed: what happened to it is a matter
+       of record, not something a current commission rate can be applied to. */
+    internal static ExternalPaymentSettlement MapSettlement(Charge charge)
+    {
+        var balanceTransaction = charge.BalanceTransaction;
+
+        return new ExternalPaymentSettlement
+        {
+            Amount = FromStripeAmount(charge.Amount),
+            ChargeId = charge.Id,
+            CollectedCommissionAmount = charge.ApplicationFeeAmount != null
+                ? FromStripeAmount(charge.ApplicationFeeAmount)
+                : null,
+            CurrencyCode = charge.Currency,
+            FeeAmount = balanceTransaction != null ? FromStripeAmount(balanceTransaction.Fee) : null,
+            NetAmount = balanceTransaction != null ? FromStripeAmount(balanceTransaction.Net) : null,
+            SettlementCurrencyCode = balanceTransaction?.Currency,
+            TransferredUtc = charge.Transfer?.Created
         };
     }
 
@@ -510,9 +709,6 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
 
     private static long ToStripeAmount(decimal amount) => (long)Math.Round(amount * 100m, MidpointRounding.AwayFromZero);
 
-    private long CalculateCommission(long stripeAmount)
-        => (long)(stripeAmount * _settings.ConnectedAccountCommissionPercentage / 100);
-
     private string? CleanConnectedAccountUrl(PlatformType platform, string url)
     {
         // do not send localhost to Stripe
@@ -532,6 +728,10 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
 
     private AccountService CreateAccountService() => new(_client);
 
+    private InvoiceService CreateInvoiceService() => new(_client);
+
+    private PaymentIntentService CreatePaymentIntentService() => new(_client);
+
     private PriceService CreatePriceService() => new(_client);
 
     private ProductService CreateProductService() => new(_client);
@@ -539,6 +739,8 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
     private SessionService CreateSessionService() => new(_client);
 
     private SubscriptionService CreateSubscriptionService() => new(_client);
+
+    private TransferService CreateTransferService() => new(_client);
 
     private WebhookEndpointService CreateWebhookEndpointService() => new(_client);
 }

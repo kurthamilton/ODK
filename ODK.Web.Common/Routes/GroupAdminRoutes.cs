@@ -314,11 +314,12 @@ public class GroupAdminRoutes
         {
             RequiresSiteAdmin = true,
             Route = SiteAdmin(chapter),
-            Text = "SiteAdmin",
+            Text = "Site Admin",
             Items =
             [
                 new(SiteAdminMembers(chapter), "Members"),
                 new(SiteAdminPayments(chapter), "Payments"),
+                new(SiteAdminSubscriptions(chapter), "Subscriptions"),
                 new(SiteAdminLocation(chapter), "Location"),
                 new(SiteAdminInstagram(chapter), "Instagram"),
                 new(SiteAdminRedirect(chapter), "Redirect"),
@@ -404,6 +405,9 @@ public class GroupAdminRoutes
 
     public GroupAdminRoute SiteAdminRedirect(Chapter chapter)
         => SiteAdmin(chapter).Child("/redirect", platform: PlatformType.DrunkenKnitwits);
+
+    public GroupAdminRoute SiteAdminSubscriptions(Chapter chapter)
+        => SiteAdmin(chapter).Child("/subscriptions", platform: PlatformType.DrunkenKnitwits);
 
     public GroupAdminRoute SiteAdminTheme(Chapter chapter)
         => SiteAdmin(chapter).Child("/theme", platform: PlatformType.DrunkenKnitwits);

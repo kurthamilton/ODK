@@ -11,6 +11,16 @@ public interface IPaymentQueryBuilder : IDatabaseEntityQueryBuilder<Payment, IPa
 
     IPaymentQueryBuilder ForSite();
 
+    /// <summary>
+    /// Payments the member has paid for.
+    /// </summary>
+    IPaymentQueryBuilder Paid();
+
+    /// <summary>
+    /// Payments whose settlement has never been read back from the payment provider.
+    /// </summary>
+    IPaymentQueryBuilder WithoutSettlement();
+
     IQueryBuilder<PaymentChapterDto> WithChapter();
 
     IQueryBuilder<PaymentMemberDto> WithMember();

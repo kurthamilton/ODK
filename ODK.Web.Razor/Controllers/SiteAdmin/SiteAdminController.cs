@@ -28,6 +28,7 @@ public class SiteAdminController : OdkControllerBase
     private readonly IContactAdminService _contactAdminService;
     private readonly IFeatureService _featureService;
     private readonly ILoggingService _loggingService;
+    private readonly IPaymentAdminService _paymentAdminService;
     private readonly ISettingsService _settingsService;
     private readonly ISiteSubscriptionAdminService _siteSubscriptionAdminService;
     private readonly ISocialMediaService _socialMediaService;
@@ -49,6 +50,7 @@ public class SiteAdminController : OdkControllerBase
         _contactAdminService = contactAdminService;
         _featureService = featureService;
         _loggingService = loggingService;
+        _paymentAdminService = paymentAdminService;
         _settingsService = settingsService;
         _siteSubscriptionAdminService = siteSubscriptionAdminService;
         _socialMediaService = socialMediaService;
@@ -173,6 +175,22 @@ public class SiteAdminController : OdkControllerBase
         var result = await _settingsService.ActivatePaymentSettings(MemberServiceRequest, id);
 
         AddFeedback(result, "Active payment settings updated");
+
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("siteadmin/payments/reconcile")]
+    public async Task<IActionResult> ReconcilePaymentSettlements()
+    {
+        var result = await _paymentAdminService.ReconcilePaymentSettlements(MemberServiceRequest);
+
+        /* Reports what was queued rather than what was settled: each payment is read back in its own job,
+           so nothing is known about the outcome yet. A payment that cannot be read fails its own job and is
+           reported there. */
+        AddFeedback(
+            $"Reconciling {result.Queued} payments. " +
+            $"{result.Unidentifiable} cannot be identified at the payment provider and were skipped.",
+            FeedbackType.Success);
 
         return RedirectToReferrer();
     }

@@ -15,6 +15,7 @@ using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
 using ODK.Data.Core;
 using ODK.Services.Events;
+using ODK.Services.Exceptions;
 using ODK.Services.Logging;
 using ODK.Services.Members;
 using ODK.Services.Payments;
@@ -1367,6 +1368,516 @@ public static class PaymentServiceTests
             .Verify(x => x.Warn(It.Is<string>(s => s.Contains("already expired"))), Times.Once);
     }
 
+    [Test]
+    public static async Task ProcessWebhook_PaymentSucceeded_RecordsWhatTheProviderSettled()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var member = context.CreateMember();
+        var chapter = context.CreateChapter(members: [member]);
+        var chapterSubscription = context.CreateChapterSubscription(chapter);
+
+        var payment = context.CreatePayment(member: member);
+        var paymentCheckoutSession = context.CreatePaymentCheckoutSession(payment: payment);
+
+        var webhook = CreatePaymentProviderWebhook(
+            paymentId: "pi_123",
+            metadata: new PaymentMetadataModel(
+                PlatformType.Default,
+                PaymentReasonType.None,
+                member,
+                chapterSubscription,
+                paymentCheckoutSession.Id,
+                payment.Id));
+
+        var service = CreatePaymentService(context);
+        var request = CreateServiceRequest();
+
+        // Act
+        await service.ProcessWebhook(request, webhook);
+
+        // Assert - processing a payment queues the settlement read, which fills in what actually moved
+        payment = context.Set<Payment>().Single(x => x.Id == payment.Id);
+
+        payment.ActualAmount.Should().Be(100m);
+        payment.ActualFeeAmount.Should().Be(1.70m);
+        payment.ActualNetAmount.Should().Be(98.30m);
+        payment.SettlementCurrencyCode.Should().Be("GBP");
+    }
+
+    [Test]
+    public static async Task ProcessWebhook_PaymentSucceeded_SchedulesTheSettlementReadForTheProvidersDelay()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var member = context.CreateMember();
+        var chapter = context.CreateChapter(members: [member]);
+        var chapterSubscription = context.CreateChapterSubscription(chapter);
+
+        var payment = context.CreatePayment(member: member);
+        var paymentCheckoutSession = context.CreatePaymentCheckoutSession(payment: payment);
+
+        var webhook = CreatePaymentProviderWebhook(
+            paymentId: "pi_123",
+            metadata: new PaymentMetadataModel(
+                PlatformType.Default,
+                PaymentReasonType.None,
+                member,
+                chapterSubscription,
+                paymentCheckoutSession.Id,
+                payment.Id));
+
+        var paymentProvider = CreateMockPaymentProvider();
+        paymentProvider
+            .Setup(x => x.SettlementReadDelay)
+            .Returns(TimeSpan.FromMinutes(2));
+
+        var scheduledFor = new List<DateTime>();
+
+        var service = CreatePaymentService(
+            context,
+            paymentProviderFactory: CreateMockPaymentProviderFactory(paymentProvider.Object),
+            backgroundTaskService: new MockBackgroundTaskService(onSchedule: scheduledFor.Add));
+
+        // Act
+        await service.ProcessWebhook(CreateServiceRequest(), webhook);
+
+        /* Assert - the wait before the first read is the provider's to state, since it is the one that knows
+           how long after taking the money it finishes moving it. */
+        scheduledFor.Should().ContainSingle();
+        scheduledFor[0].Should().BeCloseTo(DateTime.UtcNow.AddMinutes(2), TimeSpan.FromSeconds(30));
+    }
+
+    [Test]
+    public static async Task ResolvePaymentSettlementJob_ReconcilingPaymentWithNoSettings_RecordsTheAccountThatHoldsIt()
+    {
+        /* Arrange - reconciling, so no ids are handed in and the payment names no account. The one holding
+           its reference is found by asking, and recorded because asking proved it. */
+        using var context = CreateMockOdkContext();
+
+        var sitePaymentSettings = context.CreateSitePaymentSettings();
+        var payment = context.CreatePayment(sitePaymentSettings: sitePaymentSettings);
+        payment.ExternalId = "sub_123";
+        payment.PaidUtc = DateTime.UtcNow;
+        payment.SitePaymentSettingId = null;
+
+        var paymentProvider = CreateMockPaymentProvider();
+        paymentProvider
+            .Setup(x => x.GetPaymentIdForReference("sub_123", It.IsAny<DateTime>()))
+            .ReturnsAsync("pi_456");
+
+        var service = CreatePaymentService(
+            context,
+            paymentProviderFactory: CreateMockPaymentProviderFactory(paymentProvider.Object));
+
+        // Act
+        await service.ResolvePaymentSettlementJob(payment.Id, externalPaymentId: null, externalInvoiceId: null);
+
+        // Assert
+        var stored = context.Set<Payment>().Single(x => x.Id == payment.Id);
+        stored.SitePaymentSettingId.Should().Be(sitePaymentSettings.Id);
+        stored.ActualAmount.Should().Be(100m);
+
+        paymentProvider.Verify(x => x.GetPaymentSettlement("pi_456"), Times.Once);
+    }
+
+    [Test]
+    public static async Task ResolvePaymentSettlementJob_ReconcilingWithDisabledAccounts_DoesNotAskThem()
+    {
+        /* Arrange - the only account configured is disabled. Locally that is the live one, whose key the
+           database carries because it is restored from production, and a reconcile must not reach for it. */
+        using var context = CreateMockOdkContext();
+
+        var sitePaymentSettings = context.CreateSitePaymentSettings(
+            afterCreate: x => x.Enabled = false);
+
+        var payment = context.CreatePayment(sitePaymentSettings: sitePaymentSettings);
+        payment.ExternalId = "sub_123";
+        payment.PaidUtc = DateTime.UtcNow;
+        payment.SitePaymentSettingId = null;
+
+        var paymentProvider = CreateMockPaymentProvider();
+
+        var service = CreatePaymentService(
+            context,
+            paymentProviderFactory: CreateMockPaymentProviderFactory(paymentProvider.Object));
+
+        // Act
+        await service.ResolvePaymentSettlementJob(payment.Id, externalPaymentId: null, externalInvoiceId: null);
+
+        // Assert
+        paymentProvider.Verify(
+            x => x.GetPaymentIdForReference(It.IsAny<string>(), It.IsAny<DateTime>()), Times.Never);
+
+        context.Set<Payment>().Single(x => x.Id == payment.Id)
+            .ActualAmount.Should().BeNull();
+    }
+
+    [Test]
+    public static async Task ResolvePaymentSettlementJob_ReconcilingPaymentIntentNoAccountHolds_SkipsWithoutThrowing()
+    {
+        /* Arrange - a reference naming a payment directly, which no enabled account holds. Resolving such a
+           reference to an id proves nothing, since it is answered without asking the provider; only reading
+           the settlement does, and that is what has to decide whether the account is the right one. */
+        using var context = CreateMockOdkContext();
+
+        var payment = context.CreatePayment();
+        payment.ExternalId = "pi_gone";
+        payment.PaidUtc = DateTime.UtcNow;
+        payment.SitePaymentSettingId = null;
+
+        var paymentProvider = CreateMockPaymentProvider();
+        paymentProvider
+            .Setup(x => x.GetPaymentIdForReference("pi_gone", It.IsAny<DateTime>()))
+            .ReturnsAsync("pi_gone");
+        paymentProvider
+            .Setup(x => x.GetPaymentSettlement(It.IsAny<string>()))
+            .ReturnsAsync((ExternalPaymentSettlement?)null);
+
+        var loggingService = CreateMockLoggingService();
+
+        var service = CreatePaymentService(
+            context,
+            loggingService: loggingService,
+            paymentProviderFactory: CreateMockPaymentProviderFactory(paymentProvider.Object));
+
+        // Act
+        await service.ResolvePaymentSettlementJob(payment.Id, externalPaymentId: null, externalInvoiceId: null);
+
+        // Assert - no throw, so no retry, and nothing recorded against an account that does not hold it
+        var stored = context.Set<Payment>().Single(x => x.Id == payment.Id);
+        stored.ActualAmount.Should().BeNull();
+        stored.SitePaymentSettingId.Should().BeNull();
+
+        Mock.Get(loggingService)
+            .Verify(x => x.Warn(It.Is<string>(m => m.Contains("pi_gone"))), Times.Once);
+    }
+
+    [Test]
+    public static async Task ResolvePaymentSettlementJob_ReconcilingPaymentNoAccountHolds_SkipsWithoutThrowing()
+    {
+        /* Arrange - a reference no configured account knows about, which is what a payment taken through an
+           account since replaced looks like. */
+        using var context = CreateMockOdkContext();
+
+        var payment = context.CreatePayment();
+        payment.ExternalId = "sub_gone";
+        payment.PaidUtc = DateTime.UtcNow;
+
+        var paymentProvider = CreateMockPaymentProvider();
+        paymentProvider
+            .Setup(x => x.GetPaymentIdForReference(It.IsAny<string>(), It.IsAny<DateTime>()))
+            .ReturnsAsync((string?)null);
+
+        var loggingService = CreateMockLoggingService();
+
+        var service = CreatePaymentService(
+            context,
+            loggingService: loggingService,
+            paymentProviderFactory: CreateMockPaymentProviderFactory(paymentProvider.Object));
+
+        // Act
+        await service.ResolvePaymentSettlementJob(payment.Id, externalPaymentId: null, externalInvoiceId: null);
+
+        /* Assert - no throw, so the job is not retried: no number of attempts changes which account holds
+           an id. Warned rather than errored, since this is a fact about the data. */
+        context.Set<Payment>().Single(x => x.Id == payment.Id)
+            .ActualAmount.Should().BeNull();
+
+        Mock.Get(loggingService)
+            .Verify(x => x.Warn(It.Is<string>(m => m.Contains("sub_gone"))), Times.Once);
+
+        paymentProvider.Verify(x => x.GetPaymentSettlement(It.IsAny<string>()), Times.Never);
+    }
+
+    [Test]
+    public static async Task ResolvePaymentSettlementJob_AlreadyResolved_DoesNotAskTheProviderAgain()
+    {
+        // Arrange - a redelivered webhook queues the job a second time
+        using var context = CreateMockOdkContext();
+
+        var payment = context.CreatePayment();
+        payment.ActualAmount = 100m;
+
+        var paymentProvider = CreateMockPaymentProvider();
+
+        var service = CreatePaymentService(
+            context,
+            paymentProviderFactory: CreateMockPaymentProviderFactory(paymentProvider.Object));
+
+        // Act
+        await service.ResolvePaymentSettlementJob(payment.Id, "pi_123", externalInvoiceId: null);
+
+        // Assert
+        paymentProvider.Verify(x => x.GetPaymentSettlement(It.IsAny<string>()), Times.Never);
+    }
+
+    [Test]
+    public static async Task ResolvePaymentSettlementJob_GroupPayment_SplitsTheNetAndTransfersTheGroupsShare()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var currency = context.CreateCurrency();
+        var chapter = context.CreateChapter();
+        context.CreateChapterPaymentAccount(chapter, externalId: "acct_123");
+
+        var payment = context.CreatePayment(chapter: chapter, currency: currency);
+
+        var paymentProvider = CreateMockPaymentProvider();
+
+        var service = CreatePaymentService(
+            context,
+            paymentProviderFactory: CreateMockPaymentProviderFactory(paymentProvider.Object));
+
+        // Act
+        await service.ResolvePaymentSettlementJob(payment.Id, "pi_123", externalInvoiceId: null);
+
+        // Assert - our commission comes out of the net, so the provider's fee is met before we take a cut
+        var stored = context.Set<Payment>().Single(x => x.Id == payment.Id);
+        stored.ActualNetAmount.Should().Be(98.30m);
+        stored.ActualCommissionAmount.Should().Be(9.83m);
+        stored.ActualConnectedAccountAmount.Should().Be(88.47m);
+        stored.TransferredUtc.Should().NotBeNull();
+
+        paymentProvider.Verify(
+            x => x.CreateTransfer(It.Is<ExternalTransfer>(t =>
+                t.Amount == 88.47m &&
+                t.ConnectedAccountId == "acct_123" &&
+                t.ExternalChargeId == "ch_123")),
+            Times.Once);
+    }
+
+    [Test]
+    public static async Task ResolvePaymentSettlementJob_ProviderAlreadySplitTheCharge_RecordsWhatItDid()
+    {
+        /* Arrange - a payment taken before the transfer was decoupled: the provider collected our commission
+           as part of the charge and made the transfer itself. */
+        using var context = CreateMockOdkContext();
+
+        var currency = context.CreateCurrency();
+        var chapter = context.CreateChapter();
+        context.CreateChapterPaymentAccount(chapter, externalId: "acct_123");
+
+        var payment = context.CreatePayment(chapter: chapter, currency: currency);
+        var transferredUtc = new DateTime(2026, 5, 7, 16, 30, 0, DateTimeKind.Utc);
+
+        var paymentProvider = CreateMockPaymentProvider();
+        paymentProvider
+            .Setup(x => x.GetPaymentSettlement(It.IsAny<string>()))
+            .ReturnsAsync(CreateExternalPaymentSettlement(
+                collectedCommissionAmount: 5m, transferredUtc: transferredUtc));
+
+        var service = CreatePaymentService(
+            context,
+            paymentProviderFactory: CreateMockPaymentProviderFactory(paymentProvider.Object));
+
+        // Act
+        await service.ResolvePaymentSettlementJob(payment.Id, "pi_123", externalInvoiceId: null);
+
+        /* Assert - the group kept the charge less the commission the provider collected, and we kept the
+           rest of the net. The current commission rate does not come into it: this is a record of what
+           happened, not a split to be made. */
+        var stored = context.Set<Payment>().Single(x => x.Id == payment.Id);
+        stored.ActualNetAmount.Should().Be(98.30m);
+        stored.ActualConnectedAccountAmount.Should().Be(95m);
+        stored.ActualCommissionAmount.Should().Be(3.30m);
+        stored.TransferredUtc.Should().Be(transferredUtc);
+
+        // And nothing is transferred: that money moved when the charge was made
+        paymentProvider.Verify(x => x.CreateTransfer(It.IsAny<ExternalTransfer>()), Times.Never);
+    }
+
+    [Test]
+    public static async Task ResolvePaymentSettlementJob_GroupPaymentAlreadyTransferred_DoesNotTransferAgain()
+    {
+        // Arrange - a redelivered webhook, or a retry after the transfer went through
+        using var context = CreateMockOdkContext();
+
+        var currency = context.CreateCurrency();
+        var chapter = context.CreateChapter();
+        context.CreateChapterPaymentAccount(chapter, externalId: "acct_123");
+
+        var payment = context.CreatePayment(chapter: chapter, currency: currency);
+        payment.ActualAmount = 100m;
+        payment.ActualConnectedAccountAmount = 88.47m;
+        payment.TransferredUtc = DateTime.UtcNow.AddMinutes(-5);
+
+        var paymentProvider = CreateMockPaymentProvider();
+
+        var service = CreatePaymentService(
+            context,
+            paymentProviderFactory: CreateMockPaymentProviderFactory(paymentProvider.Object));
+
+        // Act
+        await service.ResolvePaymentSettlementJob(payment.Id, "pi_123", externalInvoiceId: null);
+
+        // Assert - paying a group twice is the one failure this whole path exists to avoid
+        paymentProvider.Verify(x => x.CreateTransfer(It.IsAny<ExternalTransfer>()), Times.Never);
+    }
+
+    [Test]
+    public static async Task ResolvePaymentSettlementJob_GroupPaymentTransferFails_ThrowsAndLeavesItOwed()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var currency = context.CreateCurrency();
+        var chapter = context.CreateChapter();
+        context.CreateChapterPaymentAccount(chapter, externalId: "acct_123");
+
+        var payment = context.CreatePayment(chapter: chapter, currency: currency);
+
+        var paymentProvider = CreateMockPaymentProvider();
+        paymentProvider
+            .Setup(x => x.CreateTransfer(It.IsAny<ExternalTransfer>()))
+            .ReturnsAsync(ServiceResult.Failure("no such account"));
+
+        var service = CreatePaymentService(
+            context,
+            paymentProviderFactory: CreateMockPaymentProviderFactory(paymentProvider.Object));
+
+        // Act
+        var act = async () => await service.ResolvePaymentSettlementJob(
+            payment.Id, "pi_123", externalInvoiceId: null);
+
+        /* Assert - the settlement stands, so the row states what is owed, and no transfer date is written.
+           A payment with a chapter, a settlement and no date is money still to pay. */
+        await act.Should().ThrowAsync<OdkServiceException>();
+
+        var stored = context.Set<Payment>().Single(x => x.Id == payment.Id);
+        stored.ActualConnectedAccountAmount.Should().Be(88.47m);
+        stored.TransferredUtc.Should().BeNull();
+    }
+
+    [Test]
+    public static async Task ResolvePaymentSettlementJob_SitePayment_KeepsTheNetAndTransfersNothing()
+    {
+        // Arrange - a payment to the site has no connected account to split with
+        using var context = CreateMockOdkContext();
+
+        var payment = context.CreatePayment();
+
+        var paymentProvider = CreateMockPaymentProvider();
+
+        var service = CreatePaymentService(
+            context,
+            paymentProviderFactory: CreateMockPaymentProviderFactory(paymentProvider.Object));
+
+        // Act
+        await service.ResolvePaymentSettlementJob(payment.Id, "pi_123", externalInvoiceId: null);
+
+        // Assert
+        var stored = context.Set<Payment>().Single(x => x.Id == payment.Id);
+        stored.ActualNetAmount.Should().Be(98.30m);
+        stored.ActualCommissionAmount.Should().BeNull();
+        stored.ActualConnectedAccountAmount.Should().BeNull();
+        stored.TransferredUtc.Should().BeNull();
+
+        paymentProvider.Verify(x => x.CreateTransfer(It.IsAny<ExternalTransfer>()), Times.Never);
+    }
+
+    [Test]
+    public static async Task ResolvePaymentSettlementJob_InvoiceWithNoPayment_Throws()
+    {
+        // Arrange - an invoice naming no payment leaves nothing to read a settlement off
+        using var context = CreateMockOdkContext();
+
+        var payment = context.CreatePayment();
+
+        var paymentProvider = CreateMockPaymentProvider();
+        paymentProvider
+            .Setup(x => x.GetInvoicePaymentId(It.IsAny<string>()))
+            .ReturnsAsync((string?)null);
+
+        var service = CreatePaymentService(
+            context,
+            paymentProviderFactory: CreateMockPaymentProviderFactory(paymentProvider.Object));
+
+        // Act
+        var act = async () => await service.ResolvePaymentSettlementJob(
+            payment.Id, externalPaymentId: null, externalInvoiceId: "in_123");
+
+        // Assert
+        await act.Should().ThrowAsync<OdkServiceException>();
+    }
+
+    [Test]
+    public static async Task ResolvePaymentSettlementJob_NotSettledYet_Throws()
+    {
+        // Arrange - the charge exists but its balance transaction does not
+        using var context = CreateMockOdkContext();
+
+        var payment = context.CreatePayment();
+
+        var paymentProvider = CreateMockPaymentProvider();
+        paymentProvider
+            .Setup(x => x.GetPaymentSettlement(It.IsAny<string>()))
+            .ReturnsAsync(CreateExternalPaymentSettlement(settled: false));
+
+        var service = CreatePaymentService(
+            context,
+            paymentProviderFactory: CreateMockPaymentProviderFactory(paymentProvider.Object));
+
+        // Act
+        var act = async () => await service.ResolvePaymentSettlementJob(
+            payment.Id, "pi_123", externalInvoiceId: null);
+
+        /* Assert - throwing is what earns the job a retry, and nothing is written in the meantime: a
+           half-filled row would satisfy the already-resolved guard and never be completed. */
+        await act.Should().ThrowAsync<OdkServiceException>();
+
+        context.Set<Payment>().Single(x => x.Id == payment.Id)
+            .ActualAmount.Should().BeNull();
+    }
+
+    [Test]
+    public static async Task ResolvePaymentSettlementJob_SubscriptionRenewal_ReadsThePaymentOffTheInvoice()
+    {
+        // Arrange - a renewal's webhook names its invoice and no payment
+        using var context = CreateMockOdkContext();
+
+        var payment = context.CreatePayment();
+
+        var paymentProvider = CreateMockPaymentProvider();
+        paymentProvider
+            .Setup(x => x.GetInvoicePaymentId("in_123"))
+            .ReturnsAsync("pi_456");
+
+        var service = CreatePaymentService(
+            context,
+            paymentProviderFactory: CreateMockPaymentProviderFactory(paymentProvider.Object));
+
+        // Act
+        await service.ResolvePaymentSettlementJob(
+            payment.Id, externalPaymentId: null, externalInvoiceId: "in_123");
+
+        // Assert
+        paymentProvider.Verify(x => x.GetPaymentSettlement("pi_456"), Times.Once);
+
+        context.Set<Payment>().Single(x => x.Id == payment.Id)
+            .ActualAmount.Should().Be(100m);
+    }
+
+    private static ExternalPaymentSettlement CreateExternalPaymentSettlement(
+        decimal? amount = null,
+        bool settled = true,
+        decimal? collectedCommissionAmount = null,
+        DateTime? transferredUtc = null)
+        => new ExternalPaymentSettlement
+        {
+            Amount = amount ?? 100m,
+            ChargeId = "ch_123",
+            CollectedCommissionAmount = collectedCommissionAmount,
+            CurrencyCode = "GBP",
+            FeeAmount = settled ? 1.70m : null,
+            NetAmount = settled ? (amount ?? 100m) - 1.70m : null,
+            SettlementCurrencyCode = settled ? "GBP" : null,
+            TransferredUtc = transferredUtc
+        };
+
     private static IEventService CreateMockEventService()
     {
         var mock = new Mock<IEventService>();
@@ -1408,7 +1919,7 @@ public static class PaymentServiceTests
 
     // Returning no subscription by default leaves a recurring expiry falling back to the calculated date,
     // which is what most tests here assert. Pass a date to exercise the provider lookup.
-    private static IPaymentProviderFactory CreateMockPaymentProviderFactory(DateTime? nextBillingDate = null)
+    private static Mock<IPaymentProvider> CreateMockPaymentProvider(DateTime? nextBillingDate = null)
     {
         var paymentProvider = new Mock<IPaymentProvider>();
 
@@ -1428,16 +1939,52 @@ public static class PaymentServiceTests
                 }
                 : null);
 
+        /* Settling by default, because every processed payment queues a settlement read - one that throws
+           to earn a retry while the provider has nothing to give, so a provider that never settles would
+           fail every test here rather than only the ones about settling. */
+        paymentProvider
+            .Setup(x => x.GetPaymentSettlement(It.IsAny<string>()))
+            .ReturnsAsync(CreateExternalPaymentSettlement());
+
+        paymentProvider
+            .Setup(x => x.CommissionPercentage)
+            .Returns(10m);
+
+        paymentProvider
+            .Setup(x => x.CreateTransfer(It.IsAny<ExternalTransfer>()))
+            .ReturnsAsync(ServiceResult.Successful());
+
+        // Read immediately, so a test's assertions do not depend on when the job was scheduled for.
+        paymentProvider
+            .Setup(x => x.SettlementReadDelay)
+            .Returns(TimeSpan.Zero);
+
+        paymentProvider
+            .Setup(x => x.Type)
+            .Returns(PaymentProviderType.Stripe);
+
+        return paymentProvider;
+    }
+
+    private static IPaymentProviderFactory CreateMockPaymentProviderFactory(DateTime? nextBillingDate = null)
+        => CreateMockPaymentProviderFactory(CreateMockPaymentProvider(nextBillingDate).Object);
+
+    private static IPaymentProviderFactory CreateMockPaymentProviderFactory(IPaymentProvider paymentProvider)
+    {
         var factory = new Mock<IPaymentProviderFactory>();
 
         factory
             .Setup(x => x.GetPaymentProvider(It.IsAny<SitePaymentSettings>(), It.IsAny<ChapterPaymentAccount?>()))
-            .Returns(paymentProvider.Object);
+            .Returns(paymentProvider);
 
         factory
             .Setup(x => x.GetSitePaymentProvider(
                 It.IsAny<IReadOnlyCollection<SitePaymentSettings>>(), It.IsAny<Guid?>()))
-            .Returns(paymentProvider.Object);
+            .Returns(paymentProvider);
+
+        factory
+            .Setup(x => x.GetSitePaymentProviderOrDefault(It.IsAny<SitePaymentSettings>()))
+            .Returns(paymentProvider);
 
         return factory.Object;
     }
@@ -1450,7 +1997,8 @@ public static class PaymentServiceTests
         IMemberEmailService? memberEmailService = null,
         IPaymentProviderFactory? paymentProviderFactory = null,
         IEventService? eventService = null,
-        SiteSubscriptionCooldown? siteSubscriptionCooldown = null)
+        SiteSubscriptionCooldown? siteSubscriptionCooldown = null,
+        IBackgroundTaskService? backgroundTaskService = null)
     {
         var unitOfWork = CreateMockUnitOfWork(context);
         return new PaymentService(
@@ -1459,7 +2007,7 @@ public static class PaymentServiceTests
             memberEmailService ?? CreateMockMemberEmailService(),
             paymentProviderFactory ?? CreateMockPaymentProviderFactory(),
             eventService ?? CreateMockEventService(),
-            new MockBackgroundTaskService(),
+            backgroundTaskService ?? new MockBackgroundTaskService(),
             new MemberChapterSubscriptionWriter(unitOfWork),
             new MemberSiteSubscriptionWriter(unitOfWork),
             TestPlatformProvider.Create(),
@@ -1487,6 +2035,7 @@ public static class PaymentServiceTests
         bool complete = true,
         string? paymentId = null,
         string? subscriptionId = null,
+        string? invoiceId = null,
         PaymentMetadataModel? metadata = null,
         IReadOnlyDictionary<string, string>? metadataDictionary = null,
         decimal? amount = null)
@@ -1495,6 +2044,7 @@ public static class PaymentServiceTests
             Id = id ?? "wh_123",
             Type = type ?? PaymentProviderWebhookType.CheckoutSessionCompleted,
             Complete = complete,
+            InvoiceId = invoiceId,
             PaymentId = paymentId ?? "pi_123",
             SubscriptionId = subscriptionId,
             Metadata = metadata?.ToDictionary() ?? metadataDictionary ?? new Dictionary<string, string>(),

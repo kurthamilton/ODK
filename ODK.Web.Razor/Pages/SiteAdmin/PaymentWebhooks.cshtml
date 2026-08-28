@@ -5,7 +5,7 @@
 @inject IStripeWebhookAdminService StripeWebhookAdminService
 @{
     Layout = "_SiteAdminLayout";
-    Model.Title = "Webhooks | SiteAdmin";
+    Model.Title = "Webhooks | Site Admin";
 
     var viewModel = await StripeWebhookAdminService.GetStripeWebhooksViewModel(Model.MemberServiceRequest);
 }

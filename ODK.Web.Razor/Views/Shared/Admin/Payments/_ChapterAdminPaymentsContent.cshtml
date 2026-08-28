@@ -4,8 +4,11 @@
 @model ChapterPaymentsViewModel
 @inject IOdkRoutes OdkRoutes
 
+@* Neither the provider nor the platform is named: the wording is shared by both platforms, and which
+   provider took the fee is not something a group has any say in. *@
 @await Html.PartialAsync("Components/_AdminPageDescription",
-    "Money your group has taken, including what each payment was for.")
+    "Money your group has taken, including what each payment was for. Paid is what the member was " +
+    "charged; Received is your share of it, minus fees.")
 
 <div data-odk-component="_ChapterAdminPaymentsContent">
     <div class="table-responsive">
@@ -15,7 +18,8 @@
                     <th data-sortable-sort="default" data-sortable-dir="desc">Date</th>
                     <th data-sortable-sort>Member</th>
                     <th>Reference</th>
-                    <th>Amount</th>
+                    <th>Paid</th>
+                    <th>Received</th>
                 </tr>
             </thead>
             <tbody>
@@ -50,7 +54,14 @@
                         <td>@payment.Reference</td>
                         <td>
                             @currency.ToAmountString(payment.Amount)
-                        </td>                        
+                        </td>
+                        <td>
+                            @* A dash rather than a zero: nothing has been read back from the payment
+                               provider for this one yet, which is not the same as receiving nothing. *@
+                            @(payment.ActualConnectedAccountAmount != null
+                                ? currency.ToAmountString(payment.ActualConnectedAccountAmount.Value)
+                                : "-")
+                        </td>
                     </tr>
                 }
             </tbody>

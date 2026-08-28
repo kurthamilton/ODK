@@ -84,6 +84,36 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
         };
     }
 
+    public async Task<ChapterSubscriptionsAdminPageViewModel> GetChapterSubscriptionsViewModel(
+        IMemberChapterServiceRequest request)
+    {
+        var chapter = request.Chapter;
+
+        /* Disabled subscriptions included, and nothing filtered by payment settings: a site admin is here
+           precisely to see what a group admin cannot. The group's own page drops any subscription whose
+           settings are missing or disabled, so from there it is indistinguishable from one that was never
+           created. */
+        var (subscriptions, sitePaymentSettings) = await GetSiteAdminRestrictedContent(request,
+            x => x.ChapterSubscriptionRepository.GetAdminDtosByChapterId(chapter.Id, includeDisabled: true),
+            x => x.SitePaymentSettingsRepository.GetAll());
+
+        return new ChapterSubscriptionsAdminPageViewModel
+        {
+            Chapter = chapter,
+            Subscriptions = subscriptions
+                .Select(x => x.ChapterSubscription)
+                .OrderBy(x => x.Name)
+                .Select(x => new ChapterSubscriptionSiteAdminViewModel
+                {
+                    ChapterSubscription = x,
+                    SitePaymentSettings = sitePaymentSettings
+                        .FirstOrDefault(setting => setting.Id == x.SitePaymentSettingId),
+                    VisibleToGroupAdmins = x.IsVisibleToAdmins(sitePaymentSettings)
+                })
+                .ToArray()
+        };
+    }
+
     public async Task<SiteAdminChaptersViewModel> GetSiteAdminChaptersViewModel(IMemberServiceRequest request)
     {
         var platform = request.Platform;

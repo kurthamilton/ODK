@@ -5,7 +5,7 @@
 @inject IChapterSiteAdminService ChapterSiteAdminService
 @{
     Layout = "_OdkChapterAdminLayout";
-    Model.Title = "Payments | SiteAdmin";
+    Model.Title = "Payments | Site Admin";
 
     var request = Model.MemberChapterServiceRequest;
     var viewModel = await ChapterSiteAdminService.GetChapterPaymentSettingsViewModel(request);

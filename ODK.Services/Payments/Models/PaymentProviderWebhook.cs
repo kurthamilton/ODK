@@ -10,6 +10,12 @@ public class PaymentProviderWebhook
 
     public required string Id { get; init; }
 
+    /// <summary>
+    /// The invoice the event describes, where it describes one. A recurring subscription's payment names
+    /// only its invoice, so this is the handle on what it charged.
+    /// </summary>
+    public required string? InvoiceId { get; init; }
+
     public required IReadOnlyDictionary<string, string> Metadata { get; init; }
 
     public required DateTime OriginatedUtc { get; init; }

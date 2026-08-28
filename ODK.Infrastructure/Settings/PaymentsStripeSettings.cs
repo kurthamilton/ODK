@@ -14,5 +14,7 @@ public class PaymentsStripeSettings
 
     public required Dictionary<PlatformType, PaymentsStripePlatformSettings> Platforms { get; init; }
 
+    public required int SettlementReadDelaySeconds { get; init; }
+
     public required PaymentsStripeWebhooksSettings Webhooks { get; init; }
 }
