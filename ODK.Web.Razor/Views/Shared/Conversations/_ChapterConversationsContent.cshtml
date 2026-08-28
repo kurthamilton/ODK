@@ -11,9 +11,34 @@
     var platform = RequestStore.Platform;
 
     var chapterDictionary = Model.Chapters?.ToDictionary(x => x.Id) ?? new();
+
+    var groupName = Model.Chapter?.FullName;
+
+    var showingList = Model.Conversations.Count > 0 || Model.Chapter == null || Model.Archived;
 }
 
-@if (Model.Conversations.Count > 0 || Model.Chapter == null || Model.Archived)
+@* Neither a bare form nor a table of subjects says who is on the other end of a conversation, so the page
+   says it. A member reading a list already has the feature in front of them and needs only that line; a
+   member whose page is the form and nothing else gets the whole description. *@
+<p class="mt-3">
+    @if (!showingList)
+    {
+        <span>
+            Send a message to the organisers of @groupName. Only they can see it, and their replies will
+            appear here so you can pick the conversation up later.
+        </span>
+    }
+    else if (Model.Chapter == null)
+    {
+        <span>Your private conversations with the organisers of the groups you belong to.</span>
+    }
+    else
+    {
+        <span>Your private conversations with the organisers of @groupName.</span>
+    }
+</p>
+
+@if (showingList)
 {
     <div class="mt-3">
         @await Html.PartialAsync("Components/_Tabs", new TabsViewModel
@@ -158,8 +183,10 @@
 }
 else
 {
+    @* A member with no chapter is looking at every group's conversations, which is a list however empty
+       it is, so this branch always has one. *@
     <div class="mt-3">
-        <form action="/groups/@Model.Chapter.Id/conversations" method="post">
+        <form action="/groups/@Model.Chapter!.Id/conversations" method="post">
             @Html.AntiForgeryToken()
             @await Html.PartialAsync("Contact/_ConversationForm", new ConversationFormViewModel())
             <button class="btn btn-primary">Send</button>

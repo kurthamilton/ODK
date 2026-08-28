@@ -6,6 +6,10 @@
 
 @if (Model.TotalConversationCount > 0)
 {
+    @* The line the empty branch's description shortens to. Both inboxes sit as tabs on one screen, so a
+       member switching between them meets the same kind of line on each. *@
+    <p class="mt-3">Your private conversations with the site admins.</p>
+
     <div class="mt-3">
         @await Html.PartialAsync("Components/_Tabs", new TabsViewModel
         {
