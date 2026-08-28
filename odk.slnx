@@ -29,7 +29,7 @@
   <Folder Name="/Solution Items/dotnet/">
     <File Path="Scripts/dotnet/tool-restore.bat" />
   </Folder>
-  <Folder Name="/Solution Items/e2e-temp/">
+  <Folder Name="/Solution Items/e2e/">
     <File Path="E2E/script.run.app.e2e.bat" />
     <File Path="E2E/script.run.ngrok.e2e.bat" />
     <File Path="E2E/script.run.tests.bat" />
@@ -40,8 +40,8 @@
     <File Path="Scripts/ef-migrations/update-database-version.bat" />
     <File Path="Scripts/ef-migrations/update-database.bat" />
   </Folder>
-  <Folder Name="/Solution Items/github-temp/" />
-  <Folder Name="/Solution Items/github-temp/workflows-temp/">
+  <Folder Name="/Solution Items/github/" />
+  <Folder Name="/Solution Items/github/workflows/">
     <File Path=".github/workflows/build.yml" />
     <File Path=".github/workflows/ci.yml" />
     <File Path=".github/workflows/deploy.yml" />
