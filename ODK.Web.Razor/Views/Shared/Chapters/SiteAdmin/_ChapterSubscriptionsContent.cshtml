@@ -1,0 +1,114 @@
+﻿@using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Components
+@model ChapterSubscriptionsAdminPageViewModel
+@inject IOdkRoutes OdkRoutes
+
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "Every subscription this group has, and the payment settings each one takes money through. Active marks the settings the platform is currently transacting through, so anything else is pointed at an older account. The group's own subscriptions page hides any subscription whose settings are missing or disabled; this one shows them.")
+
+<div data-odk-component="_ChapterSubscriptionsContent">
+    <div class="table-responsive">
+        <table class="table" data-sortable id="site-admin-subscriptions-table" data-table-striped>
+            <thead>
+                <tr>
+                    <th class="tcol-narrow"></th>
+                    <th data-sortable-sort="default">Name</th>
+                    <th>Amount</th>
+                    <th>Months</th>
+                    <th>Enabled</th>
+                    @* Payment settings, and the two of its properties that say which account a
+                       subscription is actually pointed at. Enabled above belongs to the subscription. *@
+                    <th>Payment settings</th>
+                    <th>Environment</th>
+                    <th>Active</th>
+                    <th>Visible to group</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Subscriptions.Count == 0)
+                {
+                    <tr>
+                        <td colspan="9" class="text-muted">This group has no subscriptions.</td>
+                    </tr>
+                }
+
+                @foreach (var row in Model.Subscriptions)
+                {
+                    var (subscription, paymentSettings) = (row.ChapterSubscription, row.SitePaymentSettings);
+
+                    <tr>
+                        <td>
+                            @if (subscription.Recurring)
+                            {
+                                <span data-bs-toggle="tooltip" title="Recurring subscription">
+                                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.ArrowsSpin))
+                                </span>
+                            }
+                        </td>
+                        <td>
+                            @* Sorting falls back to the cell's HTML, which would put the link's href ahead
+                               of the text, so the name is stated for it explicitly. *@
+                            <span class="d-none" data-sort-value="@subscription.Name"></span>
+                            @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                            {
+                                Route = OdkRoutes.GroupAdmin.MembersSubscription(Model.Chapter, subscription),
+                                Text = subscription.Name
+                            })
+                        </td>
+                        <td>@subscription.Currency.ToAmountString(subscription.Amount)</td>
+                        <td>@subscription.Months</td>
+                        <td>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" role="switch" disabled
+                                       checked="@(!subscription.Disabled ? "" : null)" />
+                            </div>
+                        </td>
+                        <td>
+                            @if (paymentSettings != null)
+                            {
+                                <span class="d-none" data-sort-value="@paymentSettings.Name"></span>
+                                <a href="@OdkRoutes.SiteAdmin.Payment(paymentSettings.Id)">@paymentSettings.Name</a>
+                            }
+                            else
+                            {
+                                <span class="text-danger">None</span>
+                            }
+                        </td>
+                        <td>@paymentSettings?.Environment</td>
+                        <td>
+                            @* No switch at all where there are no settings: an unchecked one would read as
+                               settings that exist and are inactive. *@
+                            @if (paymentSettings != null)
+                            {
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" disabled
+                                           checked="@(paymentSettings.Active ? "" : null)" />
+                                </div>
+                            }
+                        </td>
+                        <td>
+                            @* Sorted on a stated value rather than the icon markup, which is identical for
+                               every row that has one. *@
+                            <span class="d-none" data-sort-value="@(row.VisibleToGroupAdmins ? 1 : 0)"></span>
+                            @if (row.VisibleToGroupAdmins)
+                            {
+                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Check))
+                            }
+                            else
+                            {
+                                <span class="text-danger" data-bs-toggle="tooltip"
+                                      title="@(paymentSettings == null
+                                          ? "No payment settings, so this cannot be bought"
+                                          : "The payment settings are disabled, so this cannot be bought")">
+                                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.ExclamationTriangle))
+                                </span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

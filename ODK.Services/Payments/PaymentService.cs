@@ -7,6 +7,7 @@ using ODK.Core.Subscriptions;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
 using ODK.Services.Events;
+using ODK.Services.Exceptions;
 using ODK.Services.Logging;
 using ODK.Services.Members;
 using ODK.Services.Payments.Models;
@@ -64,6 +65,11 @@ public class PaymentService : IPaymentService
     public string EnqueueProcessWebhookJob(JobRequest request, PaymentProviderWebhook webhook)
         => _backgroundTaskService.Enqueue(
             () => ProcessWebhookJob(request, webhook),
+            BackgroundTaskQueueType.Payments);
+
+    public string EnqueueResolvePaymentSettlementJob(Guid paymentId)
+        => _backgroundTaskService.Enqueue(
+            () => ResolvePaymentSettlementJob(paymentId, null, null),
             BackgroundTaskQueueType.Payments);
 
     /* Public for Hangfire, which needs a method to bind to, and called by nothing else: it turns the job's
@@ -197,8 +203,30 @@ public class PaymentService : IPaymentService
             return;
         }
 
-        if (result.Payment != null &&
-            result.Currency != null &&
+        if (result.Payment == null)
+        {
+            return;
+        }
+
+        /* Reading back what actually moved is its own job: it is a further call to the provider, and a
+           member's access must neither wait on it nor be lost to it failing. Its own job also gets its own
+           retries, which is what waits out a payment the provider has not finished settling.
+
+           Scheduled rather than enqueued, so the ordinary payment is read once and needs no retry. The wait
+           is the provider's to state - it is the one that knows how long after taking the money it finishes
+           moving it - and it is not what makes the settlement correct, only what keeps it quiet. */
+        var paymentId = result.Payment.Id;
+        var sitePaymentSettings = await _unitOfWork.SitePaymentSettingsRepository.GetAll().Run();
+        var settlementReadDelay = _paymentProviderFactory
+            .GetSitePaymentProvider(sitePaymentSettings, result.Payment.SitePaymentSettingId)
+            .SettlementReadDelay;
+
+        _backgroundTaskService.Schedule(
+            () => ResolvePaymentSettlementJob(paymentId, webhook.PaymentId, webhook.InvoiceId),
+            DateTime.UtcNow.Add(settlementReadDelay),
+            BackgroundTaskQueueType.Payments);
+
+        if (result.Currency != null &&
             result.Member != null)
         {
             var (member, chapter, currency, payment) = (result.Member, result.Chapter, result.Currency, result.Payment);
@@ -215,6 +243,11 @@ public class PaymentService : IPaymentService
     public async Task ProcessWebhookJob(JobRequest request, PaymentProviderWebhook webhook)
         => await ProcessWebhook(await _serviceRequestFactory.Create(request), webhook);
 
+    /// <inheritdoc cref="EnsureProductExistsJob" />
+    public async Task ResolvePaymentSettlementJob(
+        Guid paymentId, string? externalPaymentId, string? externalInvoiceId)
+        => await ResolvePaymentSettlement(paymentId, externalPaymentId, externalInvoiceId);
+
     // A period that is still live - or lapsed but inside the cooldown - is continued, so a subscription
     // keeps its anniversary instead of drifting by however late the member renewed. Otherwise the period
     // starts now. A cooldown of zero therefore continues only a live period.
@@ -222,6 +255,9 @@ public class PaymentService : IPaymentService
     // A cooldown longer than the subscription's own length can continue a period that has already fully
     // elapsed, so a calculated expiry that is not in the future starts a new period instead: a payment must
     // always leave the member current.
+    private static string ToTransferIdempotencyKey(Guid paymentId)
+        => $"payment-transfer-{paymentId}";
+
     private static DateTime RollExpiryForward(
         DateTime? currentExpiresUtc,
         int months,
@@ -796,6 +832,257 @@ public class PaymentService : IPaymentService
             $"subscription metadata not set");
 
         return PaymentWebhookProcessingResult.Failure();
+    }
+
+    /* Which account a payment was taken through, asked rather than inferred: the account that can produce
+       a settlement for the reference is the one holding it, and one that cannot says so plainly. The
+       settlement is kept rather than discarded, so proving where the payment lives and reading what it did
+       are the same call. Only the payment's own account is asked where it names one; a payment naming none
+       is swept against every enabled account, which is what lets one be recorded for it.
+
+       Nothing about the shape of an id is read here. Stripe ids do embed something of the account, but that
+       is undocumented and demonstrably unreliable on this data - nine payments already carry references
+       from accounts other than the one they name. Asking cannot be wrong in the same way. */
+    private async Task<(Guid SitePaymentSettingId, IPaymentProvider Provider, ExternalPaymentSettlement Settlement)?>
+        LocatePayment(Payment payment, IReadOnlyCollection<SitePaymentSettings> sitePaymentSettings)
+    {
+        if (string.IsNullOrEmpty(payment.ExternalId) || payment.PaidUtc == null)
+        {
+            return null;
+        }
+
+        /* Only accounts we are meant to be transacting through are asked. A disabled record is one we are
+           not, and in development that is what keeps a live key - which the database holds, being restored
+           from production - out of a reconcile run. A payment only a disabled account holds is left alone. */
+        var candidates = sitePaymentSettings.Where(x => x.Enabled);
+
+        if (payment.SitePaymentSettingId != null)
+        {
+            candidates = candidates.Where(x => x.Id == payment.SitePaymentSettingId);
+        }
+
+        foreach (var candidate in candidates)
+        {
+            var paymentProvider = _paymentProviderFactory.GetSitePaymentProviderOrDefault(candidate);
+            if (paymentProvider == null)
+            {
+                continue;
+            }
+
+            var externalPaymentId = await paymentProvider.GetPaymentIdForReference(
+                payment.ExternalId, payment.PaidUtc.Value);
+
+            if (string.IsNullOrEmpty(externalPaymentId))
+            {
+                continue;
+            }
+
+            var settlement = await paymentProvider.GetPaymentSettlement(externalPaymentId);
+            if (settlement != null)
+            {
+                return (candidate.Id, paymentProvider, settlement);
+            }
+        }
+
+        return null;
+    }
+
+    /* Throws wherever the payment cannot be read, so the job is retried and only one that never becomes
+       readable is logged. Used on the webhook path, where the provider has just said the payment exists and
+       a failure to read it is therefore a passing one. Reconciling takes the other route - see
+       LocatePayment - because there an unreadable payment is a permanent state, not a passing one. */
+    private async Task<ExternalPaymentSettlement> ReadPaymentSettlement(
+        Payment payment,
+        IPaymentProvider paymentProvider,
+        string? externalPaymentId,
+        string? externalInvoiceId)
+    {
+        // A recurring subscription's webhook names its invoice and no payment, so the invoice is asked.
+        if (string.IsNullOrEmpty(externalPaymentId) && !string.IsNullOrEmpty(externalInvoiceId))
+        {
+            externalPaymentId = await paymentProvider.GetInvoicePaymentId(externalInvoiceId);
+        }
+
+        if (string.IsNullOrEmpty(externalPaymentId))
+        {
+            throw new OdkServiceException(
+                $"Cannot read what Payment {payment.Id} settled: neither the webhook nor invoice " +
+                $"'{externalInvoiceId}' names a {paymentProvider.Type} payment");
+        }
+
+        var settlement = await paymentProvider.GetPaymentSettlement(externalPaymentId);
+        if (settlement == null)
+        {
+            throw new OdkServiceException(
+                $"Could not read {paymentProvider.Type} payment '{externalPaymentId}' for Payment {payment.Id}");
+        }
+
+        return settlement;
+    }
+
+    private async Task RecordPaymentSettlement(
+        Payment payment,
+        IPaymentProvider paymentProvider,
+        ChapterPaymentAccount? connectedAccount,
+        ExternalPaymentSettlement settlement)
+    {
+        if (settlement.NetAmount == null)
+        {
+            throw new OdkServiceException(
+                $"{paymentProvider.Type} charge '{settlement.ChargeId}' for Payment {payment.Id} " +
+                $"has not settled yet");
+        }
+
+        var netAmount = settlement.NetAmount.Value;
+
+        decimal? connectedAccountAmount;
+
+        if (settlement.CollectedCommissionAmount != null)
+        {
+            /* A charge the provider split and transferred itself, taken before that became ours to do. What
+               happened to it is a matter of record: the group was left with the amount less the commission
+               the provider collected, and we were left with the rest of the net. Recomputing it from the
+               current rate would state figures that never occurred. */
+            connectedAccountAmount = settlement.Amount - settlement.CollectedCommissionAmount;
+            payment.TransferredUtc = settlement.TransferredUtc;
+        }
+        else if (connectedAccount != null)
+        {
+            /* The commission comes out of the net, so the provider's fee is met before we take a cut - which
+               is why it cannot be applied when the charge is made, the fee not being knowable until the
+               member has chosen a card. */
+            var commissionAmount = Math.Round(
+                netAmount * paymentProvider.CommissionPercentage / 100, 2, MidpointRounding.AwayFromZero);
+            connectedAccountAmount = netAmount - commissionAmount;
+        }
+        else
+        {
+            connectedAccountAmount = null;
+        }
+
+        payment.ActualAmount = settlement.Amount;
+        payment.ActualCommissionAmount = connectedAccountAmount != null
+            ? netAmount - connectedAccountAmount
+            : null;
+        payment.ActualConnectedAccountAmount = connectedAccountAmount;
+        payment.ActualFeeAmount = settlement.FeeAmount;
+        payment.ActualNetAmount = netAmount;
+        payment.ExternalChargeId = settlement.ChargeId;
+        payment.SettlementCurrencyCode = settlement.SettlementCurrencyCode;
+
+        _unitOfWork.PaymentRepository.Update(payment);
+        await _unitOfWork.SaveChanges();
+    }
+
+    private async Task ResolvePaymentSettlement(
+        Guid paymentId, string? externalPaymentId, string? externalInvoiceId)
+    {
+        var (payment, sitePaymentSettings) = await _unitOfWork.Run(
+            x => x.PaymentRepository.GetById(paymentId),
+            x => x.SitePaymentSettingsRepository.GetAll());
+
+        var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(
+            sitePaymentSettings, payment.SitePaymentSettingId);
+
+        /* What decides whether anything is owed onward is a connected account to owe it to, not the payment
+           belonging to a group: a group that has never finished setting up payments has no account, and
+           there is then nothing to transfer and no commission to take. */
+        var connectedAccount = payment.ChapterId != null
+            ? await _unitOfWork.ChapterPaymentAccountRepository
+                .Query()
+                .ForChapter(payment.ChapterId.Value)
+                .GetSingleOrDefault()
+                .Run()
+            : null;
+
+        // Already read, and what moved cannot move differently the second time; only the transfer is left.
+        if (payment.ActualAmount == null)
+        {
+            ExternalPaymentSettlement settlement;
+
+            /* Reconciling, rather than acting on a webhook: no ids were handed in, so the reference
+               recorded when the payment was taken is all there is to go on, and the account holding it has
+               to be found before anything can be asked about it. */
+            if (string.IsNullOrEmpty(externalPaymentId) && string.IsNullOrEmpty(externalInvoiceId))
+            {
+                var located = await LocatePayment(payment, sitePaymentSettings);
+
+                if (located == null)
+                {
+                    /* Skipped rather than thrown: no configured account holds it, and no number of retries
+                       will change which account does. A warning rather than an error, because a payment
+                       taken through an account no longer configured is a fact about the data, not a fault. */
+                    await _loggingService.Warn(
+                        $"Not reconciling Payment {payment.Id}: no configured account holds " +
+                        $"'{payment.ExternalId}'");
+                    return;
+                }
+
+                (var sitePaymentSettingId, paymentProvider, settlement) = located.Value;
+
+                if (payment.SitePaymentSettingId != sitePaymentSettingId)
+                {
+                    /* Recorded because it has been proven, not guessed: the account that produced a
+                       settlement for the reference is the one the payment was taken through. */
+                    payment.SitePaymentSettingId = sitePaymentSettingId;
+                }
+            }
+            else
+            {
+                settlement = await ReadPaymentSettlement(
+                    payment, paymentProvider, externalPaymentId, externalInvoiceId);
+            }
+
+            await RecordPaymentSettlement(payment, paymentProvider, connectedAccount, settlement);
+        }
+
+        if (connectedAccount != null)
+        {
+            await TransferConnectedAccountShare(payment, paymentProvider, connectedAccount);
+        }
+    }
+
+    /* The group's share, moved once the settlement says what there is to share. Idempotent twice over: the
+       date below stops a second attempt starting, and the provider is given a key derived from the payment,
+       so an attempt that moved the money but failed before recording it cannot move it again. */
+    private async Task TransferConnectedAccountShare(
+        Payment payment, IPaymentProvider paymentProvider, ChapterPaymentAccount connectedAccount)
+    {
+        if (payment.ActualConnectedAccountAmount == null || payment.TransferredUtc != null)
+        {
+            return;
+        }
+
+        var currency = await _unitOfWork.CurrencyRepository.GetById(payment.CurrencyId).Run();
+
+        /* The share was worked out from a net stated in the settlement currency, so paying it in the
+           currency charged would silently pay the wrong amount whenever the two differ. */
+        if (!string.Equals(payment.SettlementCurrencyCode, currency.Code, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new OdkServiceException(
+                $"Cannot transfer the group's share of Payment {payment.Id}: it settled in " +
+                $"'{payment.SettlementCurrencyCode}' but is denominated in '{currency.Code}'");
+        }
+
+        var result = await paymentProvider.CreateTransfer(new ExternalTransfer
+        {
+            Amount = payment.ActualConnectedAccountAmount.Value,
+            ConnectedAccountId = connectedAccount.ExternalId,
+            CurrencyCode = currency.Code,
+            ExternalChargeId = payment.ExternalChargeId ?? string.Empty,
+            IdempotencyKey = ToTransferIdempotencyKey(payment.Id)
+        });
+
+        if (!result.Success)
+        {
+            throw new OdkServiceException(
+                $"Could not transfer {payment.ActualConnectedAccountAmount} {currency.Code} to the group " +
+                $"for Payment {payment.Id}: {result.Message}");
+        }
+
+        payment.TransferredUtc = DateTime.UtcNow;
+        _unitOfWork.PaymentRepository.Update(payment);
+        await _unitOfWork.SaveChanges();
     }
 
     private async Task<PaymentWebhookProcessingResult> UpdateMemberChapterSubscription(

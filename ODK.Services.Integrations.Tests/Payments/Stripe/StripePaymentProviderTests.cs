@@ -105,6 +105,63 @@ public static class StripePaymentProviderTests
     }
 
     [Test]
+    public static void MapSettlement_BalanceTransactionNotSettled_FeeAndNetNull()
+    {
+        // Arrange - a charge Stripe has not settled has no balance transaction to read a fee off
+        var charge = new Charge
+        {
+            Id = "ch_123",
+            Amount = 2500,
+            Currency = "gbp"
+        };
+
+        // Act
+        var result = StripePaymentProvider.MapSettlement(charge);
+
+        // Assert - null rather than zero: nothing is known yet, which is not the same as costing nothing
+        result.Amount.Should().Be(25m);
+        result.FeeAmount.Should().BeNull();
+        result.NetAmount.Should().BeNull();
+        result.SettlementCurrencyCode.Should().BeNull();
+        result.Complete.Should().BeFalse();
+    }
+
+    [Test]
+    public static void MapSettlement_SettledCharge_ReadsWhatTheChargeLeftUsWith()
+    {
+        // Arrange
+        var charge = CreateSettledCharge();
+
+        // Act
+        var result = StripePaymentProvider.MapSettlement(charge);
+
+        /* Assert - the charge is collected whole, so the net is the amount less Stripe's fee and nothing
+           here says what the group will get; that split is made when the transfer is. */
+        result.Amount.Should().Be(25m);
+        result.ChargeId.Should().Be("ch_123");
+        result.CurrencyCode.Should().Be("gbp");
+        result.FeeAmount.Should().Be(0.45m);
+        result.NetAmount.Should().Be(24.55m);
+        result.Complete.Should().BeTrue();
+    }
+
+    [Test]
+    public static void MapSettlement_SettlementCurrencyDiffersFromCharge_CarriesSettlementCurrency()
+    {
+        // Arrange - a euro charge settling into a sterling balance; the fee and net are in sterling
+        var charge = CreateSettledCharge();
+        charge.Currency = "eur";
+        charge.BalanceTransaction!.Currency = "gbp";
+
+        // Act
+        var result = StripePaymentProvider.MapSettlement(charge);
+
+        // Assert - the code travels with the amounts it applies to, so nothing can render them as euros
+        result.CurrencyCode.Should().Be("eur");
+        result.SettlementCurrencyCode.Should().Be("gbp");
+    }
+
+    [Test]
     public static async Task MapSubscription_NoItems_ReturnsNullAndLogsError()
     {
         // Arrange - a subscription with no item cannot carry the plan or billing dates, so it is useless.
@@ -194,7 +251,23 @@ public static class StripePaymentProviderTests
                 ConnectedAccountBusinessName = connectedAccountBusinessName ?? "{platform.title} - {group.name}",
                 ConnectedAccountCommissionPercentage = 0,
                 ConnectedAccountMcc = string.Empty,
-                ConnectedAccountProductDescription = string.Empty
+                ConnectedAccountProductDescription = string.Empty,
+                SettlementReadDelay = TimeSpan.Zero
             },
             platformProvider ?? CreateMockPlatformProvider("Platform").Object);
+
+    // £25.00 charged, 45p taken by Stripe, £24.55 landing in our balance.
+    private static Charge CreateSettledCharge() => new Charge
+    {
+        Id = "ch_123",
+        Amount = 2500,
+        Currency = "gbp",
+        BalanceTransaction = new BalanceTransaction
+        {
+            Amount = 2500,
+            Currency = "gbp",
+            Fee = 45,
+            Net = 2455
+        }
+    };
 }

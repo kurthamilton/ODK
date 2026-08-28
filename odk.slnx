@@ -10,6 +10,10 @@
     <File Path="DEPLOYMENT.md" />
     <File Path="README.md" />
   </Folder>
+  <Folder Name="/Solution Items/app/">
+    <File Path="Scripts/app/build-css.bat" />
+    <File Path="Scripts/app/run.bat" />
+  </Folder>
   <Folder Name="/Solution Items/docs/">
     <File Path="docs/workflows/account.md" />
     <File Path="docs/workflows/chapter-membership.md" />
@@ -22,31 +26,31 @@
     <File Path="docs/workflows/chapter-publication.md" />
     <File Path="docs/workflows/README.md" />
   </Folder>
-  <Folder Name="/Solution Items/E2E/">
+  <Folder Name="/Solution Items/dotnet/">
+    <File Path="Scripts/dotnet/tool-restore.bat" />
+  </Folder>
+  <Folder Name="/Solution Items/e2e/">
     <File Path="E2E/script.run.app.e2e.bat" />
     <File Path="E2E/script.run.ngrok.e2e.bat" />
     <File Path="E2E/script.run.tests.bat" />
   </Folder>
-  <Folder Name="/Solution Items/Github/" />
-  <Folder Name="/Solution Items/Github/Workflows/">
+  <Folder Name="/Solution Items/ef-migrations/">
+    <File Path="Scripts/ef-migrations/add.bat" />
+    <File Path="Scripts/ef-migrations/remove.bat" />
+    <File Path="Scripts/ef-migrations/update-database-version.bat" />
+    <File Path="Scripts/ef-migrations/update-database.bat" />
+  </Folder>
+  <Folder Name="/Solution Items/github/" />
+  <Folder Name="/Solution Items/github/workflows/">
     <File Path=".github/workflows/build.yml" />
     <File Path=".github/workflows/ci.yml" />
     <File Path=".github/workflows/deploy.yml" />
   </Folder>
-  <Folder Name="/Solution Items/Migrations/">
-    <File Path="Scripts/ef-add-migration.bat" />
-    <File Path="Scripts/ef-remove-migration.bat" />
-    <File Path="Scripts/ef-update-database-version.bat" />
-    <File Path="Scripts/ef-update-database.bat" />
+  <Folder Name="/Solution Items/ngrok/">
+    <File Path="Scripts/ngrok/odk.bat" />
   </Folder>
   <Folder Name="/Solution Items/npm/">
-    <File Path="Scripts/npm.outdated.bat" />
-  </Folder>
-  <Folder Name="/Solution Items/Scripts/">
-    <File Path="Scripts/dotnet-tool-restore.bat" />
-    <File Path="Scripts/run.app.bat" />
-    <File Path="Scripts/run.build.css.bat" />
-    <File Path="Scripts/run.ngrok.odk.bat" />
+    <File Path="Scripts/npm/outdated.bat" />
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="ODK.Core.Tests/ODK.Core.Tests.csproj" />

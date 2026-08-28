@@ -1,0 +1,17 @@
+﻿@page "/{chapterName}/admin/siteadmin/subscriptions"
+@using ODK.Services.Chapters
+@using ODK.Web.Razor.Models.Admin
+@model SubscriptionsModel
+@inject IChapterSiteAdminService ChapterSiteAdminService
+@{
+    Layout = "_OdkChapterAdminLayout";
+    Model.Title = "Subscriptions | Site Admin";
+
+    var request = Model.MemberChapterServiceRequest;
+    var viewModel = await ChapterSiteAdminService.GetChapterSubscriptionsViewModel(request);
+}
+
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    ContentFunc = @<div>@await Html.PartialAsync("Chapters/SiteAdmin/_ChapterSubscriptionsContent", viewModel)</div>
+})

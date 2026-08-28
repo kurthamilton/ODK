@@ -1,49 +1,54 @@
 ﻿using Hangfire.Common;
 using Hangfire.States;
 using Hangfire.Storage;
-using Serilog;
+using ODK.Services.Logging;
 
 namespace ODK.Web.Razor.Attributes;
 
 /// <summary>
-/// Custom Hangfire filter to log job failures after final retry attempt
+/// Records a Hangfire job that has failed its final retry attempt.
 /// </summary>
+/// <remarks>
+/// Reported through <see cref="ILoggingService"/> rather than to Serilog directly, so a failed job lands in
+/// the Errors table with its properties and shows up where every other error does. That service is scoped
+/// and this filter is built once, when Hangfire is configured, so a scope is opened per failure - which is
+/// rare by definition.
+/// </remarks>
 public class HangfireJobFailureLoggerAttribute : JobFilterAttribute, IApplyStateFilter
 {
+    private readonly IServiceScopeFactory _scopeFactory;
+
+    public HangfireJobFailureLoggerAttribute(IServiceScopeFactory scopeFactory)
+    {
+        _scopeFactory = scopeFactory;
+    }
+
     public void OnStateApplied(ApplyStateContext context, IWriteOnlyTransaction transaction)
     {
-        // Only log when job is transitioning to Failed state (after all retries)
-        if (context.NewState.Name == "Failed")
+        // Every state transition arrives here; only the move to Failed is the end of the retries.
+        if (context.NewState is not FailedState { Exception: { } exception })
         {
-            var argArray = context.BackgroundJob.Job?.Args?.Select(a => a?.ToString()).ToArray()
-                    ?? Array.Empty<string>();
-            var jobArguments =
-                string.Join(", ", argArray);
-
-            var jobDetails = new Dictionary<string, object?>
-            {
-                ["JobId"] = context.BackgroundJob.Id,
-                ["JobMethod"] = context.BackgroundJob.Job?.Method?.Name,
-                ["JobType"] = context.BackgroundJob.Job?.Type?.FullName,
-                ["JobQueue"] = context.BackgroundJob.Job?.Queue,
-                ["JobArguments"] = jobArguments,
-                ["JobMaxRetryCount"] = context.BackgroundJob.ParametersSnapshot["RetryCount"]
-            };
-
-            var failedState = context.NewState as FailedState;
-            var exception = failedState?.Exception;
-
-            var shortTypeAndMethod =
-                $"{context.BackgroundJob.Job?.Type?.Name}.{context.BackgroundJob.Job?.Method?.Name}";
-
-            // Use Serilog directly as a workaround for being unable to
-            // inject the scoped logging service into this class, which is created as a singleton
-            // when configuring Hangfire
-            Log.Logger.Error(
-                $"Hangfire job {context.BackgroundJob.Id} failed after all retries calling {shortTypeAndMethod}",
-                exception,
-                jobDetails);
+            return;
         }
+
+        var job = context.BackgroundJob.Job;
+
+        var properties = new Dictionary<string, string?>
+        {
+            ["HANGFIRE.JOBID"] = context.BackgroundJob.Id,
+            ["HANGFIRE.JOBTYPE"] = job?.Type?.Name,
+            ["HANGFIRE.JOBMETHOD"] = job?.Method?.Name,
+            ["HANGFIRE.QUEUE"] = job?.Queue,
+            ["HANGFIRE.ARGUMENTS"] = string.Join(", ", job?.Args?.Select(x => x?.ToString()) ?? [])
+        };
+
+        using var scope = _scopeFactory.CreateScope();
+        var loggingService = scope.ServiceProvider.GetRequiredService<ILoggingService>();
+
+        /* Blocking, because Hangfire's state filters are synchronous and there is no async form to
+           implement. A worker thread carries no synchronisation context, so there is nothing to deadlock
+           against, and the alternative - not awaiting - would race the scope's disposal. */
+        loggingService.Error(exception, properties).GetAwaiter().GetResult();
     }
 
     public void OnStateUnapplied(ApplyStateContext context, IWriteOnlyTransaction transaction)

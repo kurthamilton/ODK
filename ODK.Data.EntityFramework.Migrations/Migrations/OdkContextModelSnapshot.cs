@@ -2086,6 +2086,21 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<decimal?>("ActualAmount")
+                        .HasColumnType("money");
+
+                    b.Property<decimal?>("ActualCommissionAmount")
+                        .HasColumnType("money");
+
+                    b.Property<decimal?>("ActualConnectedAccountAmount")
+                        .HasColumnType("money");
+
+                    b.Property<decimal?>("ActualFeeAmount")
+                        .HasColumnType("money");
+
+                    b.Property<decimal?>("ActualNetAmount")
+                        .HasColumnType("money");
+
                     b.Property<decimal>("Amount")
                         .HasColumnType("money");
 
@@ -2097,6 +2112,10 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
 
                     b.Property<Guid>("CurrencyId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ExternalChargeId")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("ExternalId")
                         .HasColumnType("nvarchar(max)");
@@ -2111,8 +2130,15 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("SettlementCurrencyCode")
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
                     b.Property<Guid?>("SitePaymentSettingId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("TransferredUtc")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 

@@ -151,7 +151,8 @@ public class Program
             .UseRecommendedSerializerSettings();
 
         // Add job failure logging filter to log when jobs fail after all retry attempts
-        configuration.UseFilter(new HangfireJobFailureLoggerAttribute());
+        configuration.UseFilter(
+            new HangfireJobFailureLoggerAttribute(provider.GetRequiredService<IServiceScopeFactory>()));
         configuration.UseFilter(new AutomaticRetryAttribute
         {
             Attempts = settings.RetryAttempts

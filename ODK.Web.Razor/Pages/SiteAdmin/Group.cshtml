@@ -2,12 +2,11 @@
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Services.Chapters
-@using ODK.Web.Razor.Models.Components
 @model GroupModel
 @inject IChapterSiteAdminService ChapterSiteAdminService
 @{
     Layout = "_SiteAdminLayout";
-    Model.Title = "Group | SiteAdmin";
+    Model.Title = "Group | Site Admin";
 
     var request = Model.MemberChapterServiceRequest;
     var viewModel = await ChapterSiteAdminService.GetSiteAdminChapterViewModel(request);

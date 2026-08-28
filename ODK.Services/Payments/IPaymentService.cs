@@ -18,6 +18,13 @@ public interface IPaymentService
     /// </summary>
     string EnqueueProcessWebhookJob(JobRequest request, PaymentProviderWebhook webhook);
 
+    /// <summary>
+    /// Queues the reading of what a payment settled at, for a payment whose settlement is not already
+    /// recorded. The ids the webhook would have supplied are not known here, so the job falls back to the
+    /// reference recorded when the payment was taken.
+    /// </summary>
+    string EnqueueResolvePaymentSettlementJob(Guid paymentId);
+
     Task<PaymentStatusType> GetMemberChapterPaymentCheckoutSessionStatus(
         IMemberServiceRequest request, Guid chapterId, string externalSessionId);
 

@@ -1,16 +1,11 @@
 ﻿@page "/{chapterName}/admin/siteadmin/location"
-@using ODK.Core.Chapters
-@using ODK.Services
 @using ODK.Services.Chapters
-@using ODK.Services.Security
-@using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Admin
-@using ODK.Web.Razor.Models.Components
 @model LocationModel
 @inject IChapterAdminService ChapterAdminService
 @{
     Layout = "_OdkChapterAdminLayout";
-    Model.Title = "Location | SiteAdmin";
+    Model.Title = "Location | Site Admin";
 
     var request = Model.MemberChapterAdminServiceRequest;
     var viewModel = await ChapterAdminService.GetChapterLocationViewModel(request);

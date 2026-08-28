@@ -114,6 +114,37 @@ public static class GroupAdminRoutesTests
     }
 
     [Test]
+    public static void PermittedNavigation_SiteAdminOnDefaultPlatform_ExcludesSiteAdminSubscriptions()
+    {
+        // Arrange - the whole site-admin area is Drunken Knitwits only, and there is no Group Squirrel page
+        var routes = new GroupAdminRoutes(PlatformType.Default);
+        var chapter = CreateChapter();
+
+        // Act
+        var result = routes.PermittedNavigation(chapter, adminMember: null, CreateMember(siteAdmin: true));
+
+        // Assert - a menu item on the platform that has no such page is a link to a 404
+        result.SelectMany(x => x.Items).Select(x => x.Route.Path)
+            .Should().NotContain(routes.SiteAdminSubscriptions(chapter).Path);
+    }
+
+    [Test]
+    public static void PermittedNavigation_SiteAdmin_IncludesSiteAdminSubscriptions()
+    {
+        /* Arrange - registering the route is not enough on its own: a page missing from Navigation exists
+           but is unreachable from the menu. */
+        var routes = new GroupAdminRoutes(PlatformType.DrunkenKnitwits);
+        var chapter = CreateChapter();
+
+        // Act
+        var result = routes.PermittedNavigation(chapter, adminMember: null, CreateMember(siteAdmin: true));
+
+        // Assert
+        result.SelectMany(x => x.Items).Select(x => x.Route.Path)
+            .Should().Contain(routes.SiteAdminSubscriptions(chapter).Path);
+    }
+
+    [Test]
     public static void PermittedNavigation_SiteAdmin_IncludesSiteAdminSection()
     {
         // Arrange

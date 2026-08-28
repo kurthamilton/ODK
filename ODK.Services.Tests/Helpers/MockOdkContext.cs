@@ -159,6 +159,7 @@ internal class MockOdkContext : OdkContext
 
     internal ChapterPaymentAccount CreateChapterPaymentAccount(
         Chapter? chapter = null,
+        string? externalId = null,
         SitePaymentSettings? sitePaymentSettings = null,
         bool setupComplete = true)
     {
@@ -171,7 +172,7 @@ internal class MockOdkContext : OdkContext
         {
             ChapterId = chapter.Id,
             CreatedUtc = utcNow,
-            ExternalId = "acct_test",
+            ExternalId = externalId ?? "acct_test",
             Id = Guid.NewGuid(),
             IdentityDocumentsProvidedUtc = setupComplete ? utcNow : null,
             OnboardingCompletedUtc = setupComplete ? utcNow : null,
@@ -216,8 +217,9 @@ internal class MockOdkContext : OdkContext
         });
     }
 
-    internal Currency CreateCurrency() => Create(new Currency
+    internal Currency CreateCurrency(string? code = null) => Create(new Currency
     {
+        Code = code ?? "GBP",
         Id = Guid.NewGuid()
     });
 

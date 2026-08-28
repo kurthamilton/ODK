@@ -21,7 +21,7 @@ setlocal
 
 rem Paths are resolved from this script's own location (%~dp0 ends with a backslash), so it works whatever
 rem the current directory is. Never `cd ..` - that is relative to the caller, not to the script.
-cd /d "%~dp0..\ODK.Web.Razor" || (
+cd /d "%~dp0..\..\ODK.Web.Razor" || (
     echo Could not find ODK.Web.Razor next to "%~dp0..".
     pause
     exit /b 1

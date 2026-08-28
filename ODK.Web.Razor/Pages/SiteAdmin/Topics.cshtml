@@ -4,7 +4,7 @@
 @inject ITopicAdminService TopicAdminService
 @{
     Layout = "_SiteAdminLayout";
-    Model.Title = "Topics | SiteAdmin";
+    Model.Title = "Topics | Site Admin";
 
     var viewModel = await TopicAdminService.GetTopicsAdminPageViewModel(Model.MemberServiceRequest);
 }

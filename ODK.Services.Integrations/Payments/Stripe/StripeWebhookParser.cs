@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using ODK.Core.Payments;
+﻿using ODK.Core.Payments;
 using ODK.Core.Platforms;
 using ODK.Services.Exceptions;
 using ODK.Services.Logging;
@@ -73,6 +72,7 @@ public class StripeWebhookParser : IStripeWebhookParser
                 : 0,
             Complete = session.PaymentStatus == "paid",
             Id = stripeEvent.Id,
+            InvoiceId = null,
             Metadata = session.Metadata,
             OriginatedUtc = stripeEvent.Created,
             PaymentId = session.PaymentIntentId,
@@ -91,6 +91,7 @@ public class StripeWebhookParser : IStripeWebhookParser
             Amount = 0,
             Complete = session.Status == "expired",
             Id = stripeEvent.Id,
+            InvoiceId = null,
             Metadata = session.Metadata,
             OriginatedUtc = stripeEvent.Created,
             PaymentId = session.PaymentIntentId,
@@ -114,13 +115,13 @@ public class StripeWebhookParser : IStripeWebhookParser
             Amount = (decimal)(invoice.AmountPaid / 100.0),
             Complete = invoice.Status == "paid",
             Id = stripeEvent.Id,
+            InvoiceId = invoice.Id,
             Metadata = subscriptionDetails?.Metadata ?? new Dictionary<string, string>(),
             OriginatedUtc = stripeEvent.Created,
-            PaymentId = invoice.RawJsonElement is { } rawJson
-                && rawJson.TryGetProperty("payment_intent", out var paymentIntent)
-                && paymentIntent.ValueKind == JsonValueKind.String
-                ? paymentIntent.GetString()
-                : null,
+            /* An invoice names no payment: the payment intent left the invoice in the same API version
+               that introduced the parent read above, so a payload carrying one cannot carry the other.
+               InvoiceId is the handle on what was charged - see IPaymentProvider.GetInvoicePaymentId. */
+            PaymentId = null,
             PaymentProviderType = PaymentProviderType.Stripe,
             SubscriptionId = subscriptionDetails?.SubscriptionId,
             Type = PaymentProviderWebhookType.InvoicePaymentSucceeded
@@ -136,6 +137,7 @@ public class StripeWebhookParser : IStripeWebhookParser
             Amount = 0,
             Complete = subscription.Status == "canceled",
             Id = stripeEvent.Id,
+            InvoiceId = null,
             Metadata = subscription.Metadata,
             OriginatedUtc = stripeEvent.Created,
             PaymentId = null,

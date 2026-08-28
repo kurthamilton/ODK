@@ -126,7 +126,8 @@ public static class DependencyRegistrar
             ConnectedAccountBusinessName = payments.Stripe.ConnectedAccountBusinessName,
             ConnectedAccountCommissionPercentage = payments.Stripe.ConnectedAccountCommissionPercentage,
             ConnectedAccountMcc = payments.Stripe.ConnectedAccountMcc,
-            ConnectedAccountProductDescription = payments.Stripe.ConnectedAccountProductDescription
+            ConnectedAccountProductDescription = payments.Stripe.ConnectedAccountProductDescription,
+            SettlementReadDelay = TimeSpan.FromSeconds(payments.Stripe.SettlementReadDelaySeconds)
         });
         services.AddScoped<IStripeWebhookAdminService, StripeWebhookAdminService>();
         services.AddSingleton(new StripeWebhookAdminServiceSettings

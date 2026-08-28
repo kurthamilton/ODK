@@ -7,7 +7,7 @@
 @inject ISiteSubscriptionAdminService SiteSubscriptionAdminService
 @{
     Layout = "_SiteAdminLayout";
-    Model.Title = "Subscription | SiteAdmin";
+    Model.Title = "Subscription | Site Admin";
 
     var viewModel = await SiteSubscriptionAdminService.GetSubscriptionEditViewModel(Model.MemberServiceRequest, Model.SubscriptionId);
 }
