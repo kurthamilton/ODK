@@ -1,0 +1,16 @@
+﻿@page "/my/groups/{chapterId:guid}/siteadmin/instagram"
+@using ODK.Web.Razor.Models.Components
+@model InstagramModel
+@{
+    Layout = "_GroupAdminLayout";
+    Model.Title = "Instagram | Site Admin";
+
+    var chapter = Model.Chapter;
+}
+
+@await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
+{
+    Title = "Instagram",
+    BodyContentFunc = @<div>@await Html.PartialAsync("SiteAdmin/_InstagramContent", chapter)</div>,
+    MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu")
+})

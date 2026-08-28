@@ -114,9 +114,10 @@ public static class GroupAdminRoutesTests
     }
 
     [Test]
-    public static void PermittedNavigation_SiteAdminOnDefaultPlatform_ExcludesSiteAdminSubscriptions()
+    public static void PermittedNavigation_SiteAdminOnDefaultPlatform_ExcludesSiteAdminTheme()
     {
-        // Arrange - the whole site-admin area is Drunken Knitwits only, and there is no Group Squirrel page
+        /* Arrange - Group Squirrel gives a group's own admins a theme page, so the site-admin one is
+           Drunken Knitwits only and has no Group Squirrel page behind it. */
         var routes = new GroupAdminRoutes(PlatformType.Default);
         var chapter = CreateChapter();
 
@@ -125,15 +126,16 @@ public static class GroupAdminRoutesTests
 
         // Assert - a menu item on the platform that has no such page is a link to a 404
         result.SelectMany(x => x.Items).Select(x => x.Route.Path)
-            .Should().NotContain(routes.SiteAdminSubscriptions(chapter).Path);
+            .Should().NotContain(routes.SiteAdminTheme(chapter).Path);
     }
 
-    [Test]
-    public static void PermittedNavigation_SiteAdmin_IncludesSiteAdminSubscriptions()
+    [TestCase(PlatformType.Default)]
+    [TestCase(PlatformType.DrunkenKnitwits)]
+    public static void PermittedNavigation_SiteAdmin_IncludesSiteAdminSubscriptions(PlatformType platform)
     {
         /* Arrange - registering the route is not enough on its own: a page missing from Navigation exists
-           but is unreachable from the menu. */
-        var routes = new GroupAdminRoutes(PlatformType.DrunkenKnitwits);
+           but is unreachable from the menu. Both platforms have this page. */
+        var routes = new GroupAdminRoutes(platform);
         var chapter = CreateChapter();
 
         // Act
@@ -144,11 +146,12 @@ public static class GroupAdminRoutesTests
             .Should().Contain(routes.SiteAdminSubscriptions(chapter).Path);
     }
 
-    [Test]
-    public static void PermittedNavigation_SiteAdmin_IncludesSiteAdminSection()
+    [TestCase(PlatformType.Default)]
+    [TestCase(PlatformType.DrunkenKnitwits)]
+    public static void PermittedNavigation_SiteAdmin_IncludesSiteAdminSection(PlatformType platform)
     {
         // Arrange
-        var routes = new GroupAdminRoutes(PlatformType.DrunkenKnitwits);
+        var routes = new GroupAdminRoutes(platform);
 
         // Act
         var result = routes.PermittedNavigation(

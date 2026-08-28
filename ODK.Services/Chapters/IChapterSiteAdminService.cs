@@ -8,6 +8,9 @@ public interface IChapterSiteAdminService
 
     Task<ServiceResult> DeleteChapter(IMemberServiceRequest request, Guid chapterId);
 
+    Task<ChapterAdminMembersSiteAdminPageViewModel> GetChapterAdminMembersViewModel(
+        IMemberChapterServiceRequest request);
+
     Task<ChapterPaymentSettingsAdminPageViewModel> GetChapterPaymentSettingsViewModel(
         IMemberChapterServiceRequest request);
 

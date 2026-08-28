@@ -388,12 +388,6 @@ public class SiteAdminController : OdkControllerBase
         return Redirect(OdkRoutes.SiteAdmin.Topics.Path);
     }
 
-    [HttpGet("{chapterName}/Admin/siteadmin")]
-    public IActionResult Index(string chapterName)
-    {
-        return Redirect($"/{chapterName}/admin/siteadmin/payments");
-    }
-
     [HttpPost("groups/{chapterId:guid}/siteadmin/instagram/scrape")]
     public async Task<IActionResult> ScrapeInstagram(Guid chapterId)
     {

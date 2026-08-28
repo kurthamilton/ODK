@@ -43,8 +43,6 @@ public interface IChapterAdminService
     Task<ServiceResult<string>> GenerateChapterPaymentAccountSetupUrl(
         IMemberChapterAdminServiceRequest request, string refreshPath, string returnPath);
 
-    Task<IReadOnlyCollection<ChapterAdminMember>> GetChapterAdminMembers(IMemberChapterAdminServiceRequest request);
-
     /// <summary>
     /// The theme admin page. CanEdit is false when the owner's subscription lacks the theme feature -
     /// the page then shows the current theme read-only rather than hiding it.

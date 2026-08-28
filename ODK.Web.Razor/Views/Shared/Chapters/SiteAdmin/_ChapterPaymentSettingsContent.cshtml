@@ -1,16 +1,8 @@
-﻿@using ODK.Core.Chapters
-@using ODK.Services
-@using ODK.Services.Chapters
-@using ODK.Services.Chapters.ViewModels
-@using ODK.Web.Common.Services
-@using ODK.Web.Razor.Models
+﻿@using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Razor.Models.Chapters.SiteAdmin
-@using ODK.Web.Razor.Services
 @model ChapterPaymentSettingsAdminPageViewModel
 
-<h2 class="d-none d-md-block">Payment settings</h2>
-
-<form method="post">
+<form method="post" action="/groups/@Model.Chapter.Id/siteadmin/payments">
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("Chapters/SiteAdmin/_ChapterPaymentSettingsForm", new PaymentSettingsFormViewModel
     {

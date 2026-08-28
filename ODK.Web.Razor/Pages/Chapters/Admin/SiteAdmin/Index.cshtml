@@ -1,9 +1,2 @@
 ﻿@page "/{chapterName}/admin/siteadmin"
 @model IndexModel
-@{
-    Layout = "_OdkChapterAdminLayout";
-
-    var chapter = Model.Chapter;
-    Response.Redirect($"/{chapter.ShortName}/admin/siteadmin/members");
-}
-

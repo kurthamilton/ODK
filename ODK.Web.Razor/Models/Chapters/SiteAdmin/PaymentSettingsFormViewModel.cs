@@ -1,12 +1,8 @@
-﻿using System.ComponentModel;
-using ODK.Data.Core.Countries;
+﻿using ODK.Data.Core.Countries;
 
 namespace ODK.Web.Razor.Models.Chapters.SiteAdmin;
 
-public class PaymentSettingsFormViewModel
+public class PaymentSettingsFormViewModel : PaymentSettingsFormSubmitViewModel
 {
-    public IReadOnlyCollection<CurrencyDto> CurrencyOptions { get; set; } = [];
-
-    [DisplayName("Currency")]
-    public Guid? CurrencyId { get; set; }
+    public required IReadOnlyCollection<CurrencyDto> CurrencyOptions { get; init; }
 }
