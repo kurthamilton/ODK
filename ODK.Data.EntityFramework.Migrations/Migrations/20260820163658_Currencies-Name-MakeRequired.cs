@@ -52,31 +52,32 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
 
         private static IReadOnlyDictionary<string, string> GetCurrencyNames()
         {
-            var regions = CultureInfo
-                .GetCultures(CultureTypes.SpecificCultures)
-                .Select(TryGetRegion)
-                .Where(x => x != null)
-                .Select(x => x!)
-                .Where(x => IsCurrencyCode(x.ISOCurrencySymbol) && !string.IsNullOrEmpty(x.CurrencyEnglishName));
+            var names = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            return regions
-                .GroupBy(x => x.ISOCurrencySymbol, StringComparer.OrdinalIgnoreCase)
-                .ToDictionary(x => x.Key, x => x.First().CurrencyEnglishName, StringComparer.OrdinalIgnoreCase);
+            foreach (var culture in CultureInfo.GetCultures(CultureTypes.SpecificCultures))
+            {
+                RegionInfo region;
+
+                try
+                {
+                    region = new RegionInfo(culture.Name);
+                }
+                catch (ArgumentException)
+                {
+                    // A culture with no region of its own names no currency.
+                    continue;
+                }
+
+                if (IsCurrencyCode(region.ISOCurrencySymbol) && !string.IsNullOrEmpty(region.CurrencyEnglishName))
+                {
+                    names.TryAdd(region.ISOCurrencySymbol, region.CurrencyEnglishName);
+                }
+            }
+
+            return names;
         }
 
         private static bool IsCurrencyCode(string value)
             => value.Length == 3 && value.All(char.IsAsciiLetter);
-
-        private static RegionInfo? TryGetRegion(CultureInfo culture)
-        {
-            try
-            {
-                return new RegionInfo(culture.Name);
-            }
-            catch (ArgumentException)
-            {
-                return null;
-            }
-        }
     }
 }
