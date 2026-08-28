@@ -1,8 +1,8 @@
 ﻿using ODK.Core.Chapters;
 
-namespace ODK.Web.Razor.Models.Admin.Members;
+namespace ODK.Services.Chapters.ViewModels;
 
-public class SiteAdminAdminMembersViewModel
+public class ChapterAdminMembersSiteAdminPageViewModel
 {
     public required IReadOnlyCollection<ChapterAdminMember> AdminMembers { get; init; }
 

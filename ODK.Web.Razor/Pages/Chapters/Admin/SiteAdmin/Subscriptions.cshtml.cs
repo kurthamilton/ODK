@@ -2,4 +2,7 @@
 
 public class SubscriptionsModel : ChapterSiteAdminPageModel
 {
+    public void OnGet()
+    {
+    }
 }

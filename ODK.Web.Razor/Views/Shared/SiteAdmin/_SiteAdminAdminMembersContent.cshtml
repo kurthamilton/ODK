@@ -1,8 +1,6 @@
-﻿@using ODK.Web.Razor.Models.Admin.Members
+﻿@using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Razor.Models.Components
-@model SiteAdminAdminMembersViewModel
-
-<h2 class="content-heading d-none d-md-block">Members</h2>
+@model ChapterAdminMembersSiteAdminPageViewModel
 
 <div class="table-responsive">
     <table class="table table-striped">
@@ -14,7 +12,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var adminMember in Model.AdminMembers.OrderBy(x => x.Member.FullName))
+            @foreach (var adminMember in Model.AdminMembers)
             {
                 <tr>
                     <td>@adminMember.Member.FullName</td>

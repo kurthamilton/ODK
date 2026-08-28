@@ -10,5 +10,6 @@
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
+    Title = "Redirect",
     ContentFunc = @<div>@await Html.PartialAsync("Chapters/SiteAdmin/_RedirectContent", chapter)</div>
 })

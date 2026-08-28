@@ -392,23 +392,31 @@ public class GroupAdminRoutes
         => Base(chapter).Child("/siteadmin");
 
     public GroupAdminRoute SiteAdminInstagram(Chapter chapter)
-        => SiteAdmin(chapter).Child("/instagram", platform: PlatformType.DrunkenKnitwits);
+        => SiteAdmin(chapter).Child("/instagram");
 
+    /// <summary>
+    /// Drunken Knitwits only. Group Squirrel gives a group's own admins a location page, which a site
+    /// admin may open, so a second one under site admin would only duplicate it.
+    /// </summary>
     public GroupAdminRoute SiteAdminLocation(Chapter chapter)
         => SiteAdmin(chapter).Child("/location", platform: PlatformType.DrunkenKnitwits);
 
     public GroupAdminRoute SiteAdminMembers(Chapter chapter)
-        => SiteAdmin(chapter).Child("/members", platform: PlatformType.DrunkenKnitwits);
+        => SiteAdmin(chapter).Child("/members");
 
     public GroupAdminRoute SiteAdminPayments(Chapter chapter)
-        => SiteAdmin(chapter).Child("/payments", platform: PlatformType.DrunkenKnitwits);
+        => SiteAdmin(chapter).Child("/payments");
 
     public GroupAdminRoute SiteAdminRedirect(Chapter chapter)
-        => SiteAdmin(chapter).Child("/redirect", platform: PlatformType.DrunkenKnitwits);
+        => SiteAdmin(chapter).Child("/redirect");
 
     public GroupAdminRoute SiteAdminSubscriptions(Chapter chapter)
-        => SiteAdmin(chapter).Child("/subscriptions", platform: PlatformType.DrunkenKnitwits);
+        => SiteAdmin(chapter).Child("/subscriptions");
 
+    /// <summary>
+    /// Drunken Knitwits only. Group Squirrel gives a group's own admins a theme page, which a site
+    /// admin may open, so a second one under site admin would only duplicate it.
+    /// </summary>
     public GroupAdminRoute SiteAdminTheme(Chapter chapter)
         => SiteAdmin(chapter).Child("/theme", platform: PlatformType.DrunkenKnitwits);
 

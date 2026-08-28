@@ -1,0 +1,16 @@
+﻿@page "/my/groups/{chapterId:guid}/siteadmin/redirect"
+@using ODK.Web.Razor.Models.Components
+@model RedirectModel
+@{
+    Layout = "_GroupAdminLayout";
+    Model.Title = "Redirect | Site Admin";
+
+    var chapter = Model.Chapter;
+}
+
+@await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
+{
+    Title = "Redirect",
+    BodyContentFunc = @<div>@await Html.PartialAsync("Chapters/SiteAdmin/_RedirectContent", chapter)</div>,
+    MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu")
+})

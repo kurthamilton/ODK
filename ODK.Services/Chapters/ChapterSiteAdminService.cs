@@ -68,6 +68,23 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
         return ServiceResult.Successful();
     }
 
+    public async Task<ChapterAdminMembersSiteAdminPageViewModel> GetChapterAdminMembersViewModel(
+        IMemberChapterServiceRequest request)
+    {
+        var (platform, chapter) = (request.Platform, request.Chapter);
+
+        var adminMembers = await GetSiteAdminRestrictedContent(request,
+            x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id));
+
+        return new ChapterAdminMembersSiteAdminPageViewModel
+        {
+            AdminMembers = adminMembers
+                .OrderBy(x => x.Member.FullName)
+                .ToArray(),
+            Chapter = chapter
+        };
+    }
+
     public async Task<ChapterPaymentSettingsAdminPageViewModel> GetChapterPaymentSettingsViewModel(
         IMemberChapterServiceRequest request)
     {
@@ -79,6 +96,7 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
 
         return new ChapterPaymentSettingsAdminPageViewModel
         {
+            Chapter = chapter,
             Currencies = currencies,
             PaymentSettings = paymentSettings
         };

@@ -1,9 +1,7 @@
 ﻿@using ODK.Core.Chapters
 @model Chapter
 
-<h2 class="d-none d-md-block">Redirect</h2>
-
-<form method="post">
+<form method="post" action="/groups/@Model.Id/siteadmin/redirect">
     @Html.AntiForgeryToken()
 
     <div class="form-group mb-3">

@@ -1,8 +1,6 @@
 ﻿@using ODK.Core.Chapters
 @model Chapter
 
-<h2 class="content-heading d-none d-md-block">Instagram</h2>
-
 <form method="post" action="/groups/@Model.Id/siteadmin/instagram/scrape">
     @Html.AntiForgeryToken()
     <button class="btn btn-secondary">Scrape</button>

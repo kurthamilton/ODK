@@ -767,20 +767,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return ServiceResult<string>.Successful(url);
     }
 
-    public async Task<IReadOnlyCollection<ChapterAdminMember>> GetChapterAdminMembers(
-        IMemberChapterAdminServiceRequest request)
-    {
-        var (platform, chapterId, currentMember) = (request.Platform, request.Chapter.Id, request.CurrentMember);
-
-        var chapterAdminMembers = await _unitOfWork.ChapterAdminMemberRepository.GetByChapterId(platform, chapterId).Run();
-
-        AssertMemberIsChapterAdmin(
-            request,
-            chapterAdminMembers.FirstOrDefault(x => x.MemberId == currentMember.Id));
-
-        return chapterAdminMembers;
-    }
-
     public async Task<ChapterThemeAdminPageViewModel> GetChapterThemeViewModel(
         IMemberChapterAdminServiceRequest request)
     {
