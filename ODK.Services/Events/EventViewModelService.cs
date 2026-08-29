@@ -1,12 +1,9 @@
 ﻿using ODK.Core;
-using ODK.Core.Chapters;
 using ODK.Core.Events;
 using ODK.Core.Exceptions;
 using ODK.Core.Extensions;
 using ODK.Core.Members;
 using ODK.Core.Notifications;
-using ODK.Core.Payments;
-using ODK.Core.Subscriptions;
 using ODK.Core.Utils;
 using ODK.Core.Venues;
 using ODK.Data.Core;
@@ -24,16 +21,19 @@ namespace ODK.Services.Events;
 public class EventViewModelService : IEventViewModelService
 {
     private readonly IAuthorizationService _authorizationService;
-    private readonly IPaymentProviderFactory _paymentProviderFactory;
+    private readonly IPaymentService _paymentService;
+    private readonly PaymentSettings _paymentSettings;
     private readonly IUnitOfWork _unitOfWork;
 
     public EventViewModelService(
         IUnitOfWork unitOfWork,
         IAuthorizationService authorizationService,
-        IPaymentProviderFactory paymentProviderFactory)
+        PaymentSettings paymentSettings,
+        IPaymentService paymentService)
     {
         _authorizationService = authorizationService;
-        _paymentProviderFactory = paymentProviderFactory;
+        _paymentService = paymentService;
+        _paymentSettings = paymentSettings;
         _unitOfWork = unitOfWork;
     }
 
@@ -47,7 +47,7 @@ public class EventViewModelService : IEventViewModelService
             eventDto,
             memberSubscription,
             chapterPaymentSettings,
-            chapterPaymentAccountDto,
+            chapterPaymentAccount,
             hasProfiles,
             hasQuestions,
             isAdmin,
@@ -64,7 +64,11 @@ public class EventViewModelService : IEventViewModelService
                 .ToChapterSubscription()
                 .GetSingleOrDefault(),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterPaymentAccountRepository.Query().ForChapter(chapter.Id).ToDto().GetSingleOrDefault(),
+            x => x.ChapterPaymentAccountRepository
+                .Query()
+                .ForChapter(chapter.Id)
+                .ForEnvironment(request.Environment)
+                .GetSingleOrDefault(),
             x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
             x => x.ChapterAdminMemberRepository.IsAdmin(platform, chapter.Id, currentMember.Id),
@@ -81,41 +85,9 @@ public class EventViewModelService : IEventViewModelService
             throw new OdkServiceException("Event is not ticketed");
         }
 
-        if (chapterPaymentAccountDto == null)
+        if (chapterPaymentAccount == null)
         {
             throw new OdkServiceException("Chapter payment account not set up");
-        }
-
-        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
-            chapterPaymentAccountDto.SitePaymentSettings, chapterPaymentAccountDto.ChapterPaymentAccount);
-
-        var externalProductId = chapterPaymentSettings?.ExternalProductId;
-        if (string.IsNullOrEmpty(externalProductId))
-        {
-            externalProductId = await paymentProvider.CreateProduct(chapter.FullName);
-
-            if (string.IsNullOrEmpty(externalProductId))
-            {
-                throw new OdkServiceException("Error starting event checkout");
-            }
-
-            if (chapterPaymentSettings == null)
-            {
-                chapterPaymentSettings = new ChapterPaymentSettings
-                {
-                    ChapterId = chapter.Id
-                };
-
-                _unitOfWork.ChapterPaymentSettingsRepository.Add(chapterPaymentSettings);
-            }
-            else
-            {
-                _unitOfWork.ChapterPaymentSettingsRepository.Update(chapterPaymentSettings);
-            }
-
-            chapterPaymentSettings.ExternalProductId = externalProductId;
-
-            await _unitOfWork.SaveChanges();
         }
 
         var paidSoFar = eventTicketPayments.Sum(x => x.Payment.Amount);
@@ -138,16 +110,14 @@ public class EventViewModelService : IEventViewModelService
                 : PaymentReasonType.EventTicketRemainder;
         }
 
-        var utcNow = DateTime.UtcNow;
         var paymentCheckoutSessionId = _unitOfWork.NewId();
         var paymentId = _unitOfWork.NewId();
 
-        var eventTicketPayment = new EventTicketPayment
+        var eventTicketPayment = _unitOfWork.EventTicketPaymentRepository.Add(new EventTicketPayment
         {
-            Id = _unitOfWork.NewId(),
             EventId = @event.Id,
             PaymentId = paymentId
-        };
+        });
 
         var metadata = new PaymentMetadataModel(
             platform,
@@ -156,54 +126,26 @@ public class EventViewModelService : IEventViewModelService
             eventTicketPayment,
             paymentCheckoutSessionId);
 
-        var externalCheckoutSession = await paymentProvider.StartCheckout(
+        var (payment, externalCheckoutSession) = await _paymentService.CreateChapterOneOffPayment(
             request,
-            currentMember.EmailAddress,
-            new ExternalSubscriptionPlan
+            chapterPaymentAccount,
+            new OneOffPaymentCreateOptions
             {
                 Amount = amountDue,
-                CurrencyCode = @event.TicketSettings.Currency.Code,
-                ExternalId = string.Empty,
-                ExternalProductId = externalProductId,
-                Frequency = SiteSubscriptionFrequency.None,
-                Name = @event.GetDisplayName(),
-                NumberOfMonths = 0,
-                Recurring = false
-            },
-            returnPath,
-            metadata);
-
-        _unitOfWork.PaymentCheckoutSessionRepository.Add(new PaymentCheckoutSession
-        {
-            Id = paymentCheckoutSessionId,
-            MemberId = currentMember.Id,
-            PaymentId = paymentId,
-            SessionId = externalCheckoutSession.SessionId,
-            StartedUtc = utcNow
-        });
-
-        _unitOfWork.PaymentRepository.Add(new Payment
-        {
-            Amount = amountDue,
-            ChapterId = chapter.Id,
-            CreatedUtc = utcNow,
-            CurrencyId = @event.TicketSettings.CurrencyId,
-            ExternalId = externalCheckoutSession.PaymentId,
-            Id = paymentId,
-            MemberId = currentMember.Id,
-            Reference = @event.GetDisplayName(),
-            SitePaymentSettingId = null
-        });
-
-        _unitOfWork.EventTicketPaymentRepository.Add(eventTicketPayment);
-
-        await _unitOfWork.SaveChanges();
+                Currency = @event.TicketSettings.Currency,
+                Metadata = metadata,
+                PaymentCheckoutSessionId = paymentCheckoutSessionId,
+                PaymentId = paymentId,
+                Reference = @event.GetDisplayName(),
+                ReturnPath = returnPath
+            });
 
         var canViewVenue = _authorizationService.CanViewVenue(
             venue, currentMember, memberSubscription, membershipSettings, privacySettings);
 
         return new EventCheckoutPageViewModel
         {
+            ApiPublicKey = _paymentSettings.GetPlatform(platform).PublicApiKey,
             Chapter = chapter,
             ChapterPages = chapterPages,
             ClientSecret = externalCheckoutSession.ClientSecret,
@@ -213,7 +155,7 @@ public class EventViewModelService : IEventViewModelService
             HasQuestions = hasQuestions,
             IsAdmin = isAdmin,
             IsMember = currentMember.IsMemberOf(chapter.Id),
-            PaymentSettings = chapterPaymentAccountDto.SitePaymentSettings,
+            PaymentProvider = payment.PaymentProvider,
             Platform = platform,
             Venue = canViewVenue ? venue : null,
         };

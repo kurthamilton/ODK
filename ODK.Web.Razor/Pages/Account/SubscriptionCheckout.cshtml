@@ -20,7 +20,7 @@
 
     var returnPath = Model.OdkRoutes.Account.SiteSubscriptionConfirm();
     var viewModel = await SiteSubscriptionService.StartSiteSubscriptionCheckout(
-        Model.MemberServiceRequest, Model.SubscriptionId, returnPath, chapterId: null);
+        Model.MemberServiceRequest, Model.SubscriptionId, returnPath);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -45,7 +45,7 @@
                 <h2>Checkout</h2>
                 @await Html.PartialAsync("Components/_StripeCheckout", new StripeCheckoutViewModel
                 {
-                    ApiPublicKey = viewModel.PaymentSettings.ApiPublicKey,
+                    ApiPublicKey = viewModel.ApiPublicKey,
                     ClientSecret = viewModel.ClientSecret
                 })
             </div>
@@ -56,6 +56,6 @@
 {
     @await Html.PartialAsync("Payments/_PaymentScripts", new PaymentScriptsViewModel
     {
-        Providers = [viewModel.PaymentSettings.Provider]
+        Providers = [viewModel.PaymentProvider]
     })
 }

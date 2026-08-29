@@ -46,34 +46,7 @@
                         <td>
                             <a href="@OdkRoutes.SiteAdmin.Subscription(subscription.Id)">@subscription.Name</a>
                         </td>
-                        <td>
-                            @if (subscription.PaymentSettingsOnAnotherPlatform)
-                            {
-                                var platform = subscription.PaymentSettingsPlatform;
-                                var platformName = PlatformProvider.GetName(platform);
-                                var baseUrl = PlatformProvider.GetBaseUrl(platform);
-                                var odkRoutes = await OdkRoutesFactory.Create(platform);
-                                var route = odkRoutes.SiteAdmin.Payment(subscription.PaymentSettingsId);
-                                var url = $"{baseUrl}{route}";
-
-                                <a href="@url" target="_blank">
-                                    @subscription.PaymentSettingsName
-                                </a>
-                                <span data-bs-toggle="tooltip"
-                                      data-bs-title="These payment settings belong to @platformName">
-                                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.ExclamationTriangle)
-                                    {
-                                        Class = "text-danger"
-                                    })
-                                </span>
-                            }
-                            else
-                            {
-                                <a href="@OdkRoutes.SiteAdmin.Payment(subscription.PaymentSettingsId)">
-                                    @subscription.PaymentSettingsName
-                                </a>
-                            }
-                        </td>
+                        <td>@subscription.Environment</td>
                         <td>
                             @if (subscription.Enabled)
                             {

@@ -15,40 +15,41 @@ public class StripeWebhookAdminService : OdkAdminServiceBase, IStripeWebhookAdmi
 
     private readonly ILoggingService _loggingService;
     private readonly IPaymentProviderFactory _paymentProviderFactory;
+    private readonly PaymentSettings _paymentSettings;
     private readonly StripeWebhookAdminServiceSettings _settings;
 
     public StripeWebhookAdminService(
         IUnitOfWork unitOfWork,
         IPaymentProviderFactory paymentProviderFactory,
         ILoggingService loggingService,
-        StripeWebhookAdminServiceSettings settings)
+        StripeWebhookAdminServiceSettings settings,
+        PaymentSettings paymentSettings)
         : base(unitOfWork)
     {
         _loggingService = loggingService;
         _paymentProviderFactory = paymentProviderFactory;
+        _paymentSettings = paymentSettings;
         _settings = settings;
     }
 
     public async Task<SiteAdminStripeWebhooksViewModel> GetStripeWebhooksViewModel(IMemberServiceRequest request)
     {
-        var paymentSettings = await GetSiteAdminRestrictedContent(request,
-            x => x.SitePaymentSettingsRepository.GetAll(request.Platform));
+        AssertMemberIsSiteAdmin(request.CurrentMember);
 
-        var stripeSettings = paymentSettings
-            .Where(x => x.Provider == PaymentProviderType.Stripe)
-            // A record stating no environment sorts first: it is the one finding here fixed in the app itself.
-            .OrderBy(x => x.Environment)
-            .ThenBy(x => x.Name)
-            .ToArray();
+        /* The account this deployment transacts as, and only that one: config names one account per
+           platform, so there is no longer a set of records to sweep. */
+        var platformSettings = _paymentSettings.GetPlatformOrDefault(request.Platform);
 
         var viewModels = new List<SiteAdminStripeWebhookAccountViewModel>();
 
-        /* Sequential rather than awaited together: each call goes out to Stripe, but the failure path logs,
-           and every repository and the logging service share one DbContext. A fan-out would be a
-           thread-safety bug the moment one of these branches touched either. */
-        foreach (var paymentSetting in stripeSettings)
+        if (platformSettings != null && _paymentSettings.Provider == PaymentProviderType.Stripe)
         {
-            viewModels.Add(await GetAccountViewModel(paymentSetting));
+            viewModels.Add(await GetAccountViewModel(new StripePaymentAccount
+            {
+                AccountId = platformSettings.AccountId,
+                Environment = request.Environment,
+                Platform = request.Platform
+            }));
         }
 
         return new SiteAdminStripeWebhooksViewModel
@@ -57,40 +58,41 @@ public class StripeWebhookAdminService : OdkAdminServiceBase, IStripeWebhookAdmi
         };
     }
 
-    private static SiteAdminStripeWebhookAccountViewModel Unreadable(SitePaymentSettings paymentSettings, string error)
+    private static SiteAdminStripeWebhookAccountViewModel Unreadable(StripePaymentAccount account, string error)
         => new()
         {
+            Account = account,
             /* Nothing is reported as missing or duplicated, because nothing was read - an account that could
                not be listed is not an account with no endpoints. */
             DisabledWebhooks = [],
             DuplicateKinds = [],
-            EnvironmentNotSet = paymentSettings.Environment is null or EnvironmentType.None,
+            EnvironmentNotSet = account.Environment == EnvironmentType.None,
             Error = error,
             MissingKinds = [],
             MixedApiVersions = false,
-            PaymentSettings = paymentSettings,
             Webhooks = []
         };
 
-    private string? DashboardUrl(SitePaymentSettings paymentSettings, StripeWebhookEndpoint endpoint)
+    private string? DashboardUrl(StripePaymentAccount account, StripeWebhookEndpoint endpoint)
     {
         var format = endpoint.LiveMode
             ? _settings.LiveDashboardUrlFormat
             : _settings.TestDashboardUrlFormat;
 
-        return !string.IsNullOrWhiteSpace(paymentSettings.ExternalId) && !string.IsNullOrWhiteSpace(format)
+        return !string.IsNullOrWhiteSpace(account.AccountId) && !string.IsNullOrWhiteSpace(format)
             ? format
-                .Replace(AccountPlaceholder, paymentSettings.ExternalId)
+                .Replace(AccountPlaceholder, account.AccountId)
                 .Replace(WebhookPlaceholder, endpoint.Id)
             : null;
     }
 
-    private async Task<SiteAdminStripeWebhookAccountViewModel> GetAccountViewModel(SitePaymentSettings paymentSettings)
+    private async Task<SiteAdminStripeWebhookAccountViewModel> GetAccountViewModel(StripePaymentAccount account)
     {
-        var provider = _paymentProviderFactory.GetStripeWebhookProvider(paymentSettings);
+        var provider = _paymentProviderFactory.GetStripeWebhookProvider(
+            _paymentSettings.Provider, account.Platform);
         if (provider == null)
         {
-            return Unreadable(paymentSettings, "Provider does not support webhooks");
+            return Unreadable(account, "Provider does not support webhooks");
         }
 
         IReadOnlyCollection<StripeWebhookEndpoint> endpoints;
@@ -101,36 +103,36 @@ public class StripeWebhookAdminService : OdkAdminServiceBase, IStripeWebhookAdmi
         }
         catch (Exception ex)
         {
-            await _loggingService.Error($"Error listing Stripe webhooks for '{paymentSettings.Name}'", ex);
-            return Unreadable(paymentSettings, ex.Message);
+            await _loggingService.Error($"Error listing Stripe webhooks for '{account.Platform}'", ex);
+            return Unreadable(account, ex.Message);
         }
 
-        var audit = StripeWebhookAudit.Audit(paymentSettings, endpoints, _settings);
+        var audit = StripeWebhookAudit.Audit(account, endpoints, _settings);
 
         return new SiteAdminStripeWebhookAccountViewModel
         {
+            Account = account,
             DisabledWebhooks =
             [
-                .. audit.DisabledEndpoints.Select(x => ToViewModel(paymentSettings, x))
+                .. audit.DisabledEndpoints.Select(x => ToViewModel(account, x))
             ],
             DuplicateKinds = audit.DuplicateKinds,
             EnvironmentNotSet = audit.EnvironmentNotSet,
             Error = null,
             MissingKinds = audit.MissingKinds,
             MixedApiVersions = audit.MixedApiVersions,
-            PaymentSettings = paymentSettings,
-            Webhooks = [.. audit.Endpoints.Select(x => ToViewModel(paymentSettings, x))]
+            Webhooks = [.. audit.Endpoints.Select(x => ToViewModel(account, x))]
         };
     }
 
     private SiteAdminStripeWebhookViewModel ToViewModel(
-        SitePaymentSettings paymentSettings,
+        StripePaymentAccount account,
         StripeWebhookEndpointAudit audit)
         => new()
         {
             ApiVersion = audit.Endpoint.ApiVersion,
             Checks = audit.Checks,
-            DashboardUrl = DashboardUrl(paymentSettings, audit.Endpoint),
+            DashboardUrl = DashboardUrl(account, audit.Endpoint),
             Events = audit.Endpoint.Events,
             ExtraEvents = audit.ExtraEvents,
             Id = audit.Endpoint.Id,

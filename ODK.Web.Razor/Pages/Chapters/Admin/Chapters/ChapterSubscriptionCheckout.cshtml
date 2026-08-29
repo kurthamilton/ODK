@@ -40,6 +40,6 @@
 {
     @await Html.PartialAsync("Payments/_PaymentScripts", new PaymentScriptsViewModel
     {
-        Providers = [viewModel.PaymentSettings.Provider]
+        Providers = [viewModel.PaymentProvider]
     })
 }

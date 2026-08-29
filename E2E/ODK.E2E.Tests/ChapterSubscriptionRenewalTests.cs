@@ -46,7 +46,8 @@ public class ChapterSubscriptionRenewalTests : DefaultPageTest
         var group = await Provisioning.CreatePublishedGroup(owner, $"e2echaprenew{Guid.NewGuid():N}");
         var ownerId = await Members.GetMemberId(owner.Email);
         await MemberSubscriptions.EnsureActive(ownerId, siteSubscription.Id, siteSubscription.PriceId);
-        await ChapterPaymentAccounts.EnsureSetupComplete(group.ChapterId, ownerId, paymentSettings.Id, "acct_e2e_fake");
+        await ChapterPaymentAccounts.EnsureSetupComplete(
+            group.ChapterId, ownerId, "acct_e2e_fake", E2ESettings.EnvironmentTypeId);
 
         // The owner creates a recurring chapter subscription; its Stripe recurring price (on the platform
         // account) is what the SDK subscribes the test-clock customer to.

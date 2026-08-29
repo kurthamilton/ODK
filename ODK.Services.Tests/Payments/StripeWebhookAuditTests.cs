@@ -25,7 +25,7 @@ public static class StripeWebhookAuditTests
     public static void Audit_WhenEndpointMatchesEverything_ReportsNothing()
     {
         // Arrange
-        var paymentSettings = CreatePaymentSettings();
+        var paymentSettings = CreatePaymentAccount();
         var endpoints = new[] { CreateEndpoint() };
 
         // Act
@@ -47,7 +47,7 @@ public static class StripeWebhookAuditTests
         var endpoints = new[] { CreateEndpoint(Url(StripeWebhookKind.Site)) };
 
         // Act
-        var result = StripeWebhookAudit.Audit(CreatePaymentSettings(), endpoints, CreateExpectations());
+        var result = StripeWebhookAudit.Audit(CreatePaymentAccount(), endpoints, CreateExpectations());
 
         // Assert
         result.MissingKinds.Should().BeEquivalentTo([StripeWebhookKind.ConnectedAccount]);
@@ -64,7 +64,7 @@ public static class StripeWebhookAuditTests
         };
 
         // Act
-        var result = StripeWebhookAudit.Audit(CreatePaymentSettings(), endpoints, CreateExpectations());
+        var result = StripeWebhookAudit.Audit(CreatePaymentAccount(), endpoints, CreateExpectations());
 
         // Assert
         result.MissingKinds.Should().BeEmpty();
@@ -81,7 +81,7 @@ public static class StripeWebhookAuditTests
         };
 
         // Act
-        var result = StripeWebhookAudit.Audit(CreatePaymentSettings(), endpoints, CreateExpectations());
+        var result = StripeWebhookAudit.Audit(CreatePaymentAccount(), endpoints, CreateExpectations());
 
         // Assert
         result.DuplicateKinds.Should().BeEquivalentTo([StripeWebhookKind.Site]);
@@ -91,7 +91,7 @@ public static class StripeWebhookAuditTests
     public static void Audit_WhenRecordStatesNoEnvironment_ReportsItAndComparesNeitherHostNorLiveMode()
     {
         // Arrange
-        var paymentSettings = CreatePaymentSettings(environment: null);
+        var paymentSettings = CreatePaymentAccount(environment: EnvironmentType.None);
 
         // Act
         var result = StripeWebhookAudit.Audit(paymentSettings, [CreateEndpoint()], CreateExpectations());
@@ -109,7 +109,7 @@ public static class StripeWebhookAuditTests
         var endpoints = new[] { CreateEndpoint(events: ["checkout.session.completed"]) };
 
         // Act
-        var result = StripeWebhookAudit.Audit(CreatePaymentSettings(), endpoints, CreateExpectations());
+        var result = StripeWebhookAudit.Audit(CreatePaymentAccount(), endpoints, CreateExpectations());
 
         // Assert
         result.Endpoints.Single().MissingEvents.Should().BeEquivalentTo(["checkout.session.expired"]);
@@ -123,7 +123,7 @@ public static class StripeWebhookAuditTests
         var endpoints = new[] { CreateEndpoint(events: ["*"]) };
 
         // Act
-        var result = StripeWebhookAudit.Audit(CreatePaymentSettings(), endpoints, CreateExpectations());
+        var result = StripeWebhookAudit.Audit(CreatePaymentAccount(), endpoints, CreateExpectations());
 
         // Assert
         result.Endpoints.Single().MissingEvents.Should().BeEmpty();
@@ -139,7 +139,7 @@ public static class StripeWebhookAuditTests
         var endpoints = new[] { CreateEndpoint(events: events) };
 
         // Act
-        var result = StripeWebhookAudit.Audit(CreatePaymentSettings(), endpoints, CreateExpectations());
+        var result = StripeWebhookAudit.Audit(CreatePaymentAccount(), endpoints, CreateExpectations());
 
         // Assert
         result.Endpoints.Single().ExtraEvents.Should().BeEquivalentTo(["customer.created"]);
@@ -154,7 +154,7 @@ public static class StripeWebhookAuditTests
         var endpoints = new[] { CreateEndpoint(events: ["checkout.session.completed"]) };
 
         // Act
-        var result = StripeWebhookAudit.Audit(CreatePaymentSettings(), endpoints, expectations);
+        var result = StripeWebhookAudit.Audit(CreatePaymentAccount(), endpoints, expectations);
 
         // Assert
         Check(result, StripeWebhookCheckType.Events).State.Should().Be(StripeWebhookCheckState.NotComparable);
@@ -169,7 +169,7 @@ public static class StripeWebhookAuditTests
         var endpoints = new[] { CreateEndpoint($"{DefaultHost}/webhooks/legacy?v=1&p=Default") };
 
         // Act
-        var result = StripeWebhookAudit.Audit(CreatePaymentSettings(), endpoints, CreateExpectations());
+        var result = StripeWebhookAudit.Audit(CreatePaymentAccount(), endpoints, CreateExpectations());
 
         // Assert
         var check = Check(result, StripeWebhookCheckType.Path);
@@ -185,7 +185,7 @@ public static class StripeWebhookAuditTests
         var expectations = CreateExpectations(path: string.Empty);
 
         // Act
-        var result = StripeWebhookAudit.Audit(CreatePaymentSettings(), [CreateEndpoint()], expectations);
+        var result = StripeWebhookAudit.Audit(CreatePaymentAccount(), [CreateEndpoint()], expectations);
 
         // Assert
         Check(result, StripeWebhookCheckType.Path).State.Should().Be(StripeWebhookCheckState.NotComparable);
@@ -198,7 +198,7 @@ public static class StripeWebhookAuditTests
         var endpoints = new[] { CreateEndpoint("not a url") };
 
         // Act
-        var result = StripeWebhookAudit.Audit(CreatePaymentSettings(), endpoints, CreateExpectations());
+        var result = StripeWebhookAudit.Audit(CreatePaymentAccount(), endpoints, CreateExpectations());
 
         // Assert
         result.Endpoints.Single().Kind.Should().Be(StripeWebhookKind.None);
@@ -216,7 +216,7 @@ public static class StripeWebhookAuditTests
         var endpoints = new[] { CreateEndpoint($"{DefaultHost}/webhooks/stripe{query}") };
 
         // Act
-        var result = StripeWebhookAudit.Audit(CreatePaymentSettings(), endpoints, CreateExpectations());
+        var result = StripeWebhookAudit.Audit(CreatePaymentAccount(), endpoints, CreateExpectations());
 
         // Assert
         result.Endpoints.Single().Kind.Should().Be(StripeWebhookKind.None);
@@ -231,7 +231,7 @@ public static class StripeWebhookAuditTests
         var endpoints = new[] { CreateEndpoint($"{DefaultHost}/webhooks/stripe?v={version}&p=Default") };
 
         // Act
-        var result = StripeWebhookAudit.Audit(CreatePaymentSettings(), endpoints, CreateExpectations());
+        var result = StripeWebhookAudit.Audit(CreatePaymentAccount(), endpoints, CreateExpectations());
 
         // Assert
         result.Endpoints.Single().Kind.Should().Be(expected);
@@ -245,7 +245,7 @@ public static class StripeWebhookAuditTests
         var endpoints = new[] { CreateEndpoint($"{DefaultHost}/webhooks/stripe?v=1&p=DrunkenKnitwits") };
 
         // Act
-        var result = StripeWebhookAudit.Audit(CreatePaymentSettings(), endpoints, CreateExpectations());
+        var result = StripeWebhookAudit.Audit(CreatePaymentAccount(), endpoints, CreateExpectations());
 
         // Assert
         var check = Check(result, StripeWebhookCheckType.Platform);
@@ -258,7 +258,7 @@ public static class StripeWebhookAuditTests
     {
         /* Arrange - the controller reads an absent p as Drunken Knitwits, so this endpoint works, on a
            default nothing about it states. */
-        var paymentSettings = CreatePaymentSettings(platform: PlatformType.DrunkenKnitwits);
+        var paymentSettings = CreatePaymentAccount(platform: PlatformType.DrunkenKnitwits);
         var endpoints = new[] { CreateEndpoint($"{DefaultHost}/webhooks/stripe?v=1") };
         var expectations = CreateExpectations(hosts: Hosts(EnvironmentType.Prod, PlatformType.DrunkenKnitwits));
 
@@ -278,7 +278,7 @@ public static class StripeWebhookAuditTests
         var endpoints = new[] { CreateEndpoint($"{DefaultHost}/webhooks/stripe?v=1") };
 
         // Act
-        var result = StripeWebhookAudit.Audit(CreatePaymentSettings(), endpoints, CreateExpectations());
+        var result = StripeWebhookAudit.Audit(CreatePaymentAccount(), endpoints, CreateExpectations());
 
         // Assert
         var check = Check(result, StripeWebhookCheckType.Platform);
@@ -293,7 +293,7 @@ public static class StripeWebhookAuditTests
         var endpoints = new[] { CreateEndpoint($"{DefaultHost}/webhooks/stripe?v=1&p=Default&stale=1") };
 
         // Act
-        var result = StripeWebhookAudit.Audit(CreatePaymentSettings(), endpoints, CreateExpectations());
+        var result = StripeWebhookAudit.Audit(CreatePaymentAccount(), endpoints, CreateExpectations());
 
         // Assert
         var check = Check(result, StripeWebhookCheckType.Query);
@@ -308,7 +308,7 @@ public static class StripeWebhookAuditTests
         var endpoints = new[] { CreateEndpoint("https://elsewhere.com/webhooks/stripe?v=1&p=Default") };
 
         // Act
-        var result = StripeWebhookAudit.Audit(CreatePaymentSettings(), endpoints, CreateExpectations());
+        var result = StripeWebhookAudit.Audit(CreatePaymentAccount(), endpoints, CreateExpectations());
 
         // Assert
         var check = Check(result, StripeWebhookCheckType.Host);
@@ -325,7 +325,7 @@ public static class StripeWebhookAuditTests
         var expectations = CreateExpectations(hosts: Hosts(EnvironmentType.Prod, PlatformType.Default, host));
 
         // Act
-        var result = StripeWebhookAudit.Audit(CreatePaymentSettings(), [CreateEndpoint()], expectations);
+        var result = StripeWebhookAudit.Audit(CreatePaymentAccount(), [CreateEndpoint()], expectations);
 
         // Assert
         Check(result, StripeWebhookCheckType.Host).State.Should().Be(StripeWebhookCheckState.NotComparable);
@@ -335,7 +335,7 @@ public static class StripeWebhookAuditTests
     public static void Audit_WhenTheEnvironmentHasNoHostAtAll_ComparesNoHost()
     {
         // Arrange
-        var paymentSettings = CreatePaymentSettings(environment: EnvironmentType.E2E);
+        var paymentSettings = CreatePaymentAccount(environment: EnvironmentType.E2E);
 
         // Act
         var result = StripeWebhookAudit.Audit(paymentSettings, [CreateEndpoint()], CreateExpectations());
@@ -357,7 +357,7 @@ public static class StripeWebhookAuditTests
         };
 
         // Act
-        var result = StripeWebhookAudit.Audit(CreatePaymentSettings(), endpoints, CreateExpectations());
+        var result = StripeWebhookAudit.Audit(CreatePaymentAccount(), endpoints, CreateExpectations());
 
         // Assert
         result.Endpoints.Select(x => x.Endpoint.Id).Should().NotContain("we_old");
@@ -378,7 +378,7 @@ public static class StripeWebhookAuditTests
         };
 
         // Act
-        var result = StripeWebhookAudit.Audit(CreatePaymentSettings(), endpoints, CreateExpectations());
+        var result = StripeWebhookAudit.Audit(CreatePaymentAccount(), endpoints, CreateExpectations());
 
         // Assert
         result.DuplicateKinds.Should().BeEmpty();
@@ -396,7 +396,7 @@ public static class StripeWebhookAuditTests
         };
 
         // Act
-        var result = StripeWebhookAudit.Audit(CreatePaymentSettings(), endpoints, CreateExpectations());
+        var result = StripeWebhookAudit.Audit(CreatePaymentAccount(), endpoints, CreateExpectations());
 
         // Assert
         result.MissingKinds.Should().BeEquivalentTo([StripeWebhookKind.ConnectedAccount]);
@@ -413,7 +413,7 @@ public static class StripeWebhookAuditTests
         };
 
         // Act
-        var result = StripeWebhookAudit.Audit(CreatePaymentSettings(), endpoints, CreateExpectations());
+        var result = StripeWebhookAudit.Audit(CreatePaymentAccount(), endpoints, CreateExpectations());
 
         // Assert
         result.MixedApiVersions.Should().BeFalse();
@@ -430,7 +430,7 @@ public static class StripeWebhookAuditTests
         StripeWebhookCheckState expected)
     {
         // Arrange
-        var paymentSettings = CreatePaymentSettings(environment: environment);
+        var paymentSettings = CreatePaymentAccount(environment: environment);
         var endpoints = new[] { CreateEndpoint(liveMode: liveMode) };
 
         // Act
@@ -451,7 +451,7 @@ public static class StripeWebhookAuditTests
         };
 
         // Act
-        var result = StripeWebhookAudit.Audit(CreatePaymentSettings(), endpoints, CreateExpectations());
+        var result = StripeWebhookAudit.Audit(CreatePaymentAccount(), endpoints, CreateExpectations());
 
         // Assert
         result.MixedApiVersions.Should().BeTrue();
@@ -468,7 +468,7 @@ public static class StripeWebhookAuditTests
         };
 
         // Act
-        var result = StripeWebhookAudit.Audit(CreatePaymentSettings(), endpoints, CreateExpectations());
+        var result = StripeWebhookAudit.Audit(CreatePaymentAccount(), endpoints, CreateExpectations());
 
         // Assert
         result.MixedApiVersions.Should().BeFalse();
@@ -486,7 +486,7 @@ public static class StripeWebhookAuditTests
         };
 
         // Act
-        var result = StripeWebhookAudit.Audit(CreatePaymentSettings(), endpoints, CreateExpectations());
+        var result = StripeWebhookAudit.Audit(CreatePaymentAccount(), endpoints, CreateExpectations());
 
         // Assert
         result.Endpoints
@@ -529,17 +529,14 @@ public static class StripeWebhookAuditTests
             TestDashboardUrlFormat = "https://dashboard.stripe.com/{account}/test/webhooks/{id}"
         };
 
-    private static SitePaymentSettings CreatePaymentSettings(
-        EnvironmentType? environment = EnvironmentType.Prod,
+    private static StripePaymentAccount CreatePaymentAccount(
+        EnvironmentType environment = EnvironmentType.Prod,
         PlatformType platform = PlatformType.Default)
         => new()
         {
+            AccountId = "acct_1",
             Environment = environment,
-            ExternalId = "acct_1",
-            Id = Guid.NewGuid(),
-            Name = "Stripe",
-            Platform = platform,
-            Provider = PaymentProviderType.Stripe
+            Platform = platform
         };
 
     private static IReadOnlyDictionary<EnvironmentType, IReadOnlyDictionary<PlatformType, string>> Hosts(

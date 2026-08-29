@@ -6,6 +6,7 @@ using ODK.Core.Events;
 using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Notifications;
+using ODK.Core.Payments;
 using ODK.Core.Platforms;
 
 namespace ODK.Data.EntityFramework.Migrations.Enums;
@@ -38,6 +39,10 @@ public static class EnumTables
         {
             Name = "EmailRecipientTypes"
         },
+        [typeof(EnvironmentType)] = new EnumTable
+        {
+            Name = "EnvironmentTypes"
+        },
         [typeof(EventResponseType)] = new EnumTable
         {
             Name = "EventResponseTypes"
@@ -49,6 +54,10 @@ public static class EnumTables
         [typeof(NotificationType)] = new EnumTable
         {
             Name = "NotificationTypes"
+        },
+        [typeof(PaymentProviderType)] = new EnumTable
+        {
+            Name = "PaymentProviderTypes"
         },
         [typeof(PlatformType)] = new EnumTable
         {

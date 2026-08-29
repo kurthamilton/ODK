@@ -601,7 +601,7 @@ the request locale and enqueues a background `IMemberLocaleService.UpdateLocale`
 
 - **Free site subscriptions.** `SiteSubscription.Free` states that a plan costs nothing, so a plan is usable
   without any price. **A usable plan is `Enabled && (Free || priced)`** - never read `Enabled` alone, and
-  never infer "free" from a zero amount. Go through `SiteSubscription.IsActive(prices, sitePaymentSettings)`
+  never infer "free" from a zero amount. Go through `SiteSubscription.IsActive(prices, paymentsEnabled)`
   for a loaded subscription and `SiteSubscriptionQueryBuilder.Active()` for a query; the two mirror each
   other and have to agree. A free plan does not require its payment settings to be enabled - it takes no
   money - whereas a priced one does, since nothing can be bought while the provider is off.

@@ -26,7 +26,6 @@
 
     @await Html.PartialAsync("SiteAdmin/_SiteAdminGroupContentForm", new SiteAdminChapterFormViewModel
     {
-        SitePaymentSettings = Model.SitePaymentSettings,
         SiteSubscriptionId = Model.Subscription?.SiteSubscriptionId,
         SiteSubscriptions = Model.SiteSubscriptions,
         SubscriptionExpiresUtc = Model.Subscription?.ExpiresUtc

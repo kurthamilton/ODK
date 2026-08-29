@@ -5,6 +5,7 @@ using ODK.Data.Core.Members;
 using ODK.Services.Chapters.ViewModels;
 using ODK.Services.Chapters.Workflows;
 using ODK.Services.Exceptions;
+using ODK.Services.Payments;
 using ODK.Services.Subscriptions;
 using ODK.Services.Workflows;
 
@@ -15,17 +16,20 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
     private readonly StateMachineRunner<
         ChapterPublicationState, ChapterPublicationTrigger, ChapterPublicationContext> _chapterPublicationWorkflow;
     private readonly IMemberSiteSubscriptionWriter _memberSiteSubscriptionWriter;
+    private readonly PaymentSettings _paymentSettings;
     private readonly IUnitOfWork _unitOfWork;
 
     public ChapterSiteAdminService(
         IUnitOfWork unitOfWork,
         IMemberSiteSubscriptionWriter memberSiteSubscriptionWriter,
         StateMachineRunner<ChapterPublicationState, ChapterPublicationTrigger, ChapterPublicationContext>
-            chapterPublicationWorkflow)
+            chapterPublicationWorkflow,
+        PaymentSettings paymentSettings)
         : base(unitOfWork)
     {
         _chapterPublicationWorkflow = chapterPublicationWorkflow;
         _memberSiteSubscriptionWriter = memberSiteSubscriptionWriter;
+        _paymentSettings = paymentSettings;
         _unitOfWork = unitOfWork;
     }
 
@@ -107,13 +111,14 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
     {
         var chapter = request.Chapter;
 
-        /* Disabled subscriptions included, and nothing filtered by payment settings: a site admin is here
-           precisely to see what a group admin cannot. The group's own page drops any subscription whose
-           settings are missing or disabled, so from there it is indistinguishable from one that was never
-           created. */
-        var (subscriptions, sitePaymentSettings) = await GetSiteAdminRestrictedContent(request,
-            x => x.ChapterSubscriptionRepository.GetAdminDtosByChapterId(chapter.Id, includeDisabled: true),
-            x => x.SitePaymentSettingsRepository.GetAll());
+        /* Disabled subscriptions included: a site admin is here precisely to see what a group admin
+           cannot. The group's own page drops a disabled subscription, so from there it is
+           indistinguishable from one that was never created. */
+        var subscriptions = await GetSiteAdminRestrictedContent(request,
+            x => x.ChapterSubscriptionRepository.GetAdminDtosByChapterId(
+                chapter.Id, request.Environment, includeDisabled: true));
+
+        var paymentsEnabled = _paymentSettings.IsEnabled(request.Platform);
 
         return new ChapterSubscriptionsAdminPageViewModel
         {
@@ -124,9 +129,7 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
                 .Select(x => new ChapterSubscriptionSiteAdminViewModel
                 {
                     ChapterSubscription = x,
-                    SitePaymentSettings = sitePaymentSettings
-                        .FirstOrDefault(setting => setting.Id == x.SitePaymentSettingId),
-                    VisibleToGroupAdmins = x.IsVisibleToAdmins(sitePaymentSettings)
+                    VisibleToGroupAdmins = paymentsEnabled && x.IsVisibleToMembers()
                 })
                 .ToArray()
         };
@@ -191,25 +194,23 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
 
-        var (subscription, siteSubscriptions, prices, sitePaymentSettings) = await GetSiteAdminRestrictedContent(request,
+        var (subscription, siteSubscriptions, prices) = await GetSiteAdminRestrictedContent(request,
             x => x.MemberSiteSubscriptionRecordRepository.Query().Current().ForChapterOwner(chapter.Id).ToState().GetSingleOrDefault(),
             x => x.SiteSubscriptionRepository.GetAll(platform),
-            x => x.SiteSubscriptionPriceRepository.GetAll(platform),
-            x => x.SitePaymentSettingsRepository.GetAll());
+            x => x.SiteSubscriptionPriceRepository.GetAll(platform));
 
-        var sitePaymentSettingsDictionary = sitePaymentSettings.ToDictionary(x => x.Id);
+        var paymentsEnabled = _paymentSettings.IsEnabled(platform);
 
         return new SiteAdminChapterViewModel
         {
             Chapter = chapter,
             Platform = platform,
-            SitePaymentSettings = sitePaymentSettingsDictionary,
             /* The subscriptions an owner can be put on, plus whichever they are on already - a plan that has
                since stopped being usable still has to appear, or saving the form would move them off it. */
             SiteSubscriptions = siteSubscriptions
                 .Where(x => x.IsActive(
                         prices.Where(price => price.SiteSubscriptionId == x.Id),
-                        sitePaymentSettingsDictionary[x.SitePaymentSettingId]) ||
+                        paymentsEnabled) ||
                     subscription?.SiteSubscriptionId == x.Id)
                 .ToArray(),
             Subscription = subscription
@@ -227,11 +228,10 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
             throw new OdkServiceException($"Error updating group '{chapter.Id}': subscription not provided");
         }
 
-        var (currentRecord, siteSubscriptions, prices, sitePaymentSettings) = await GetSiteAdminRestrictedContent(request,
+        var (currentRecord, siteSubscriptions, prices) = await GetSiteAdminRestrictedContent(request,
             x => x.MemberSiteSubscriptionRecordRepository.Query().Current().ForMember(chapter.OwnerId).GetSingleOrDefault(),
             x => x.SiteSubscriptionRepository.GetAll(platform),
-            x => x.SiteSubscriptionPriceRepository.GetAll(platform),
-            x => x.SitePaymentSettingsRepository.GetAll());
+            x => x.SiteSubscriptionPriceRepository.GetAll(platform));
 
         var siteSubscription = siteSubscriptions
             .FirstOrDefault(x => x.Id == viewModel.SiteSubscriptionId.Value);
@@ -245,7 +245,7 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
         if (!staysOnCurrentSubscription &&
             !siteSubscription.IsActive(
                 prices.Where(x => x.SiteSubscriptionId == siteSubscription.Id),
-                sitePaymentSettings.Single(x => x.Id == siteSubscription.SitePaymentSettingId)))
+                _paymentSettings.IsEnabled(platform)))
         {
             return ServiceResult.Failure("Subscription is not available");
         }

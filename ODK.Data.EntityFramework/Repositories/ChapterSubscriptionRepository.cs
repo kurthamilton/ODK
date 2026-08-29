@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ODK.Core.Chapters;
 using ODK.Core.Members;
+using ODK.Core.Platforms;
 using ODK.Data.Core.Chapters;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
@@ -16,10 +17,10 @@ public class ChapterSubscriptionRepository : ReadWriteRepositoryBase<ChapterSubs
     }
 
     public IDeferredQueryMultiple<ChapterSubscriptionAdminDto> GetAdminDtosByChapterId(
-        Guid chapterId, bool includeDisabled)
+        Guid chapterId, EnvironmentType environment, bool includeDisabled)
     {
         var query =
-            from chapterSubscription in Set(chapterId, includeDisabled)
+            from chapterSubscription in Set(chapterId, environment, includeDisabled)
             select new ChapterSubscriptionAdminDto
             {
                 ChapterSubscription = chapterSubscription,
@@ -31,8 +32,9 @@ public class ChapterSubscriptionRepository : ReadWriteRepositoryBase<ChapterSubs
         return query.DeferredMultiple();
     }
 
-    public IDeferredQueryMultiple<ChapterSubscription> GetByChapterId(Guid chapterId, bool includeDisabled)
-        => Set(chapterId, includeDisabled).DeferredMultiple();
+    public IDeferredQueryMultiple<ChapterSubscription> GetByChapterId(
+        Guid chapterId, EnvironmentType environment, bool includeDisabled)
+        => Set(chapterId, environment, includeDisabled).DeferredMultiple();
 
     public IDeferredQuery<bool> InUse(Guid chapterSubscriptionId)
         => Set<MemberSubscriptionRecord>()
@@ -43,10 +45,10 @@ public class ChapterSubscriptionRepository : ReadWriteRepositoryBase<ChapterSubs
         => base.Set()
             .Include(x => x.Currency);
 
-    private IQueryable<ChapterSubscription> Set(Guid chapterId, bool includeDisabled)
+    private IQueryable<ChapterSubscription> Set(Guid chapterId, EnvironmentType environment, bool includeDisabled)
     {
         var query = Set()
-            .Where(x => x.ChapterId == chapterId);
+            .Where(x => x.ChapterId == chapterId && x.Environment == environment);
 
         if (!includeDisabled)
         {

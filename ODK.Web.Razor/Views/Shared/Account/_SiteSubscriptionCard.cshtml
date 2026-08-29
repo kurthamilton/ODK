@@ -43,11 +43,6 @@
                 <div class="d-flex flex-column gap-3">
                     @foreach (var price in prices)
                     {
-                        if (price.ExternalId == null)
-                        {
-                            continue;
-                        }
-
                         var checkoutUrl = chapter != null
                             ? OdkRoutes.GroupAdmin.SubscriptionCheckout(chapter, price.Id).Path
                             : OdkRoutes.Account.SiteSubscriptionCheckout(price.Id);

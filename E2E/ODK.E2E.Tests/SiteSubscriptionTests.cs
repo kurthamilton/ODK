@@ -23,16 +23,13 @@ public class SiteSubscriptionTests : DefaultPageTest
     // Numeric SiteFeatureType value for MemberSubscriptions ("Paid subscriptions").
     private const int SiteFeatureMemberSubscriptions = 5;
 
-    private static SitePaymentSettingsDataHelper PaymentSettings => new(E2ESettings.ConnectionString);
-
     private static SiteSubscriptionDataHelper Subscriptions => new(E2ESettings.ConnectionString);
 
     [Test]
     public async Task CreateSubscription_WithMemberSubscriptionsFeatureAndPrice_Persists()
     {
-        // Arrange - live Stripe payment settings (create calls the real Stripe API) and the site admin.
-        var paymentSettings = await PaymentSettings.GetStripeSettings(
-            PlatformTypeId, E2ESettings.StripeAccountId(PlatformTypeId));
+        // Arrange - the site admin. Creating a priced subscription calls the real Stripe API, on whichever
+        // account the app's own configuration names.
         var admin = await SharedAccounts.Get(SharedAccounts.SiteAdmin);
         var name = $"{SiteSubscriptionDataHelper.TestNamePrefix}{Guid.NewGuid():N}";
         await new LoginPage(Page).LogIn(admin.Email, admin.Password);
@@ -40,7 +37,7 @@ public class SiteSubscriptionTests : DefaultPageTest
         // Act - create the subscription with the "Paid subscriptions" feature, then add a monthly price.
         var page = new SiteAdminSubscriptionsPage(Page);
         await page.CreateSubscription(
-            paymentSettings.Name, name, "E2E paid subscription", groupLimit: 1, memberLimit: 10,
+            name, "E2E paid subscription", groupLimit: 1, memberLimit: 10,
             featureIds: new[] { SiteFeatureMemberSubscriptions });
         await page.AddPrice("GBP", "Monthly", 5m);
 

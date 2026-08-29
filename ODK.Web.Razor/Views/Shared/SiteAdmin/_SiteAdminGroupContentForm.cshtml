@@ -7,8 +7,8 @@
         { 
             Value = x.Id.ToString(), 
             Text = x.Free
-                ? $"{x.Name} [{Model.SitePaymentSettings[x.SitePaymentSettingId].Name}] (free)"
-                : $"{x.Name} [{Model.SitePaymentSettings[x.SitePaymentSettingId].Name}]"
+                ? $"{x.Name} (free)"
+                : x.Name
         })
         .OrderBy(x => x.Text)
         .ToArray();

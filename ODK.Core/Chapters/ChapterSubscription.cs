@@ -1,6 +1,7 @@
 ﻿using ODK.Core.Countries;
 using ODK.Core.Members;
 using ODK.Core.Payments;
+using ODK.Core.Platforms;
 
 namespace ODK.Core.Chapters;
 
@@ -18,9 +19,9 @@ public class ChapterSubscription : IDatabaseEntity, IChapterEntity
 
     public bool Disabled { get; set; }
 
-    public string? ExternalId { get; set; }
+    public EnvironmentType Environment { get; set; }
 
-    public string? ExternalProductId { get; set; }
+    public string ExternalId { get; set; } = string.Empty;
 
     public Guid Id { get; set; }
 
@@ -28,20 +29,18 @@ public class ChapterSubscription : IDatabaseEntity, IChapterEntity
 
     public string Name { get; set; } = string.Empty;
 
+    public PaymentProviderType PaymentProvider { get; set; }
+
     public bool Recurring { get; set; }
 
+    [Obsolete]
     public Guid? SitePaymentSettingId { get; set; }
 
     public string Title { get; set; } = string.Empty;
 
     public SubscriptionType Type { get; set; }
 
-    public bool IsVisibleToMembers(IEnumerable<SitePaymentSettings> sitePaymentSettings)
-        => !Disabled && IsVisibleToAdmins(sitePaymentSettings);
-
-    public bool IsVisibleToAdmins(IEnumerable<SitePaymentSettings> sitePaymentSettings)
-        => sitePaymentSettings
-            .FirstOrDefault(x => x.Id == SitePaymentSettingId)?.Enabled == true;
+    public bool IsVisibleToMembers() => !Disabled;
 
     public string ToReference() => $"Subscription: {Name}";
 }

@@ -37,11 +37,23 @@ public class PaymentMap : IEntityTypeConfiguration<Payment>
         builder.Property(x => x.CreatedUtc)
             .HasConversion<NullableUtcDateTimeConverter>();
 
+        builder.Property(x => x.Environment)
+            .HasColumnName("EnvironmentTypeId")
+            .HasConversion<int?>();
+
         builder.Property(x => x.ExternalChargeId)
             .HasMaxLength(100);
 
         builder.Property(x => x.PaidUtc)
             .HasConversion<UtcDateTimeConverter>();
+
+        builder.Property(x => x.PaymentProvider)
+            .HasColumnName("PaymentProviderTypeId")
+            .HasConversion<int?>();
+
+        builder.Property(x => x.Platform)
+            .HasColumnName("PlatformTypeId")
+            .HasConversion<int?>();
 
         builder.Property(x => x.SettlementCurrencyCode)
             .HasMaxLength(3);

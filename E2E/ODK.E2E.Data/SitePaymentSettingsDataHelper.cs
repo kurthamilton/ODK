@@ -1,4 +1,4 @@
-using ODK.E2E.Data.Models;
+﻿using ODK.E2E.Data.Models;
 
 namespace ODK.E2E.Data;
 
@@ -18,20 +18,6 @@ public class SitePaymentSettingsDataHelper : DataHelperBase
     public SitePaymentSettingsDataHelper(string connectionString)
         : base(connectionString)
     {
-    }
-
-    /// <summary>Whether a DrunkenKnitwits site subscription already exists for the given payment settings.</summary>
-    public async Task<bool> DrunkenKnitwitsSubscriptionExists(Guid sitePaymentSettingId)
-    {
-        const string sql =
-            """
-            SELECT COUNT(1)
-            FROM SiteSubscriptions
-            WHERE SitePaymentSettingId = @id AND PlatformTypeId = 2
-            """;
-
-        await using var builder = Builder(sql).AddParameter("@id", sitePaymentSettingId);
-        return await builder.ExecuteScalar<int>() > 0;
     }
 
     /// <summary>

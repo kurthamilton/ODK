@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Chapters;
+using ODK.Core.Platforms;
 
 namespace ODK.Data.Core.QueryBuilders;
 
@@ -7,7 +8,5 @@ public interface IChapterPaymentAccountQueryBuilder
 {
     IChapterPaymentAccountQueryBuilder ForChapter(Guid chapterId);
 
-    IChapterPaymentAccountDtoQueryBuilder ToDto();
-
-    ISitePaymentSettingsQueryBuilder ToSitePaymentSettings();
+    IChapterPaymentAccountQueryBuilder ForEnvironment(EnvironmentType environment);
 }

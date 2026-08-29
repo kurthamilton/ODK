@@ -97,6 +97,8 @@ public sealed class EmailParameters : IEmailParameters
         .Where(x => x.StartsWith(ThemePrefix, StringComparison.Ordinal))
         .ToArray();
 
+    public string? AccountActivateUrl { get; set; }
+
     public string? GroupUrl { get; set; }
 
     /// <summary>

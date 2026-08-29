@@ -27,8 +27,4 @@ public class SiteSubscriptionFormSubmitViewModel
 
     [Required]
     public string Name { get; set; } = string.Empty;
-
-    [Required]
-    [DisplayName("Site payment settings")]
-    public Guid? SitePaymentSettingId { get; set; }
 }

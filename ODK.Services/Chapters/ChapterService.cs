@@ -48,13 +48,12 @@ public class ChapterService : IChapterService
     public async Task<SubscriptionsPageViewModel> GetChapterMemberSubscriptionsViewModel(
         IMemberChapterServiceRequest request)
     {
-        var (chapter, platform, currentMember) =
-            (request.Chapter, request.Platform, request.CurrentMember);
+        var (environment, chapter, platform, currentMember) =
+            (request.Environment, request.Chapter, request.Platform, request.CurrentMember);
 
         var (
             memberSubscription,
             chapterSubscriptions,
-            sitePaymentSettings,
             memberSubscriptionRecord,
             membershipSettings
         ) = await _unitOfWork.Run(
@@ -65,8 +64,8 @@ public class ChapterService : IChapterService
                 .ForChapter(chapter.Id)
                 .ToChapterSubscription()
                 .GetSingleOrDefault(),
-            x => x.ChapterSubscriptionRepository.GetByChapterId(chapter.Id, includeDisabled: true),
-            x => x.SitePaymentSettingsRepository.GetAll(),
+            x => x.ChapterSubscriptionRepository.GetByChapterId(
+                chapter.Id, environment, includeDisabled: true),
             x => x.MemberSubscriptionRecordRepository
                 .Query()
                 .ForMember(currentMember.Id)
@@ -81,11 +80,11 @@ public class ChapterService : IChapterService
             .FirstOrDefault(x => x.Id == memberSubscriptionRecord?.ChapterSubscriptionId);
 
         chapterSubscriptions = chapterSubscriptions
-            .Where(x => x.IsVisibleToMembers(sitePaymentSettings))
+            .Where(x => x.IsVisibleToMembers())
             .ToArray();
 
         var externalSubscription = await GetExternalSubscription(
-            sitePaymentSettings,
+            chapter,
             memberSubscriptionRecord,
             chapterSubscriptions);
 
@@ -150,7 +149,7 @@ public class ChapterService : IChapterService
     }
 
     private async Task<ExternalSubscription?> GetExternalSubscription(
-        IReadOnlyCollection<SitePaymentSettings> sitePaymentSettings,
+        Chapter chapter,
         MemberSubscriptionRecord? memberSubscriptionRecord,
         IReadOnlyCollection<ChapterSubscription> chapterSubscriptions)
     {
@@ -168,9 +167,8 @@ public class ChapterService : IChapterService
             return null;
         }
 
-        var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(
-            sitePaymentSettings,
-            chapterSubscription.SitePaymentSettingId);
+        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
+            chapterSubscription.PaymentProvider, chapter.Platform);
 
         return await paymentProvider.GetSubscription(memberSubscriptionRecord.ExternalId);
     }

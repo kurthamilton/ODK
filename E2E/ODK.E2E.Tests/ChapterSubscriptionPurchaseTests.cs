@@ -31,8 +31,6 @@ public class ChapterSubscriptionPurchaseTests : DefaultPageTest
 
     private static MemberSiteSubscriptionDataHelper MemberSubscriptions => new(E2ESettings.ConnectionString);
 
-    private static SitePaymentSettingsDataHelper PaymentSettings => new(E2ESettings.ConnectionString);
-
     [Test]
     public async Task PurchaseChapterSubscription_CompletesViaWebhook_RecordsMemberSubscription()
     {
@@ -47,8 +45,6 @@ public class ChapterSubscriptionPurchaseTests : DefaultPageTest
                 "rejects an un-onboarded destination.");
         }
 
-        var paymentSettings = await PaymentSettings.GetStripeSettings(
-            PlatformTypeId, E2ESettings.StripeAccountId(PlatformTypeId));
         var siteSubscription = await Provisioning.EnsurePurchasableSiteSubscription();
 
         var owner = await Provisioning.NewAccount("chapter-subscription-owner");
@@ -56,7 +52,8 @@ public class ChapterSubscriptionPurchaseTests : DefaultPageTest
         var ownerId = await Members.GetMemberId(owner.Email);
         await MemberSubscriptions.EnsureActive(ownerId, siteSubscription.Id, siteSubscription.PriceId);
         await ChapterPaymentAccounts.EnsureSetupComplete(
-            group.ChapterId, ownerId, paymentSettings.Id, E2ESettings.StripeConnectedAccountId(PlatformTypeId));
+            group.ChapterId, ownerId, E2ESettings.StripeConnectedAccountId(PlatformTypeId),
+            E2ESettings.EnvironmentTypeId);
 
         // The owner creates a non-recurring chapter subscription (real Stripe product/price), on a throwaway
         // browser so this test's own browser is free for the buyer.

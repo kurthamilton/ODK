@@ -16,15 +16,11 @@ namespace ODK.E2E.Tests;
 [TestFixture]
 public class SiteSubscriptionCurrencyTests : DefaultPageTest
 {
-    private static SitePaymentSettingsDataHelper PaymentSettings => new(E2ESettings.ConnectionString);
-
     [Test]
     public async Task ChooseCurrency_OnAccountSubscriptionPage_Persists()
     {
         // Arrange - a purchasable site subscription so the currency dropdown has an option, and a fresh
         // member who has no currency yet (a stubbed-geolocation signup has a location but no country).
-        var paymentSettings = await PaymentSettings.GetStripeSettings(
-            PlatformTypeId, E2ESettings.StripeAccountId(PlatformTypeId));
         await Provisioning.EnsurePurchasableSiteSubscription();
         var member = await Provisioning.NewAccount("currency-member");
         await new LoginPage(Page).LogIn(member.Email, member.Password);

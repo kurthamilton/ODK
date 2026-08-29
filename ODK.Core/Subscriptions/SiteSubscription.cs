@@ -15,6 +15,8 @@ public class SiteSubscription : IDatabaseEntity
 
     public bool Enabled { get; set; }
 
+    public EnvironmentType Environment { get; set; }
+
     public Guid? FallbackSiteSubscriptionId { get; set; }
 
     /// <summary>
@@ -31,22 +33,24 @@ public class SiteSubscription : IDatabaseEntity
 
     public string Name { get; set; } = string.Empty;
 
+    public PaymentProviderType PaymentProvider { get; set; }
+
     public PlatformType Platform { get; set; }
 
     public Guid SitePaymentProductId { get; set; }
 
-    public Guid SitePaymentSettingId { get; set; }
+    [Obsolete]
+    public Guid? SitePaymentSettingId { get; set; }
 
     public bool HasCapacity(int memberCount) => MemberLimit == null || memberCount < MemberLimit;
 
     /// <summary>
     /// Whether the subscription is usable: enabled, and either free or something a member can buy. A free
-    /// subscription does not need the payment settings to be enabled - it takes no money, so a payment
-    /// provider being off does not stop a member being on it.
+    /// subscription does not need payments to be enabled - it takes no money, so a payment provider being
+    /// off does not stop a member being on it.
     /// </summary>
-    public bool IsActive(
-        IEnumerable<SiteSubscriptionPrice> prices, SitePaymentSettings sitePaymentSettings)
-        => Enabled && (Free || (prices.Any() && sitePaymentSettings.Enabled));
+    public bool IsActive(IEnumerable<SiteSubscriptionPrice> prices, bool paymentsEnabled)
+        => Enabled && (Free || (prices.Any() && paymentsEnabled));
 
     public string ToReference() => $"Subscription: {Name}";
 }

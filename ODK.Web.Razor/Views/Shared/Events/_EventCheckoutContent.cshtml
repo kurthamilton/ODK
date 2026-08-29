@@ -12,6 +12,6 @@
 
 @await Html.PartialAsync("Components/_StripeCheckout", new StripeCheckoutViewModel
 {
-    ApiPublicKey = Model.PaymentSettings.ApiPublicKey,
+    ApiPublicKey = Model.ApiPublicKey,
     ClientSecret = Model.ClientSecret
 })

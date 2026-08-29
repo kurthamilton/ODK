@@ -1,4 +1,4 @@
-namespace ODK.E2E.Data;
+﻿namespace ODK.E2E.Data;
 
 /// <summary>
 /// Direct-to-DB DrunkenKnitwits site-subscription setup. Creating a DrunkenKnitwits chapter account
@@ -19,6 +19,30 @@ public class SiteSubscriptionDataHelper : DataHelperBase
     }
 
     /// <summary>Returns the id of the named subscription on the given platform (PlatformTypeId), or null.</summary>
+    /// <summary>
+    /// Whether the platform already has the named subscription in the given deployment. Matched on what the
+    /// app itself treats as a duplicate - name, platform and environment - so a second provisioning run
+    /// finds the subscription the first one created rather than trying to create it again.
+    /// </summary>
+    public async Task<bool> Exists(string name, int platformTypeId, int environmentTypeId)
+    {
+        const string sql =
+            """
+            SELECT COUNT(1)
+            FROM SiteSubscriptions
+            WHERE Name = @name
+                AND PlatformTypeId = @platformTypeId
+                AND EnvironmentTypeId = @environmentTypeId
+            """;
+
+        await using var builder = Builder(sql)
+            .AddParameter("@name", name)
+            .AddParameter("@platformTypeId", platformTypeId)
+            .AddParameter("@environmentTypeId", environmentTypeId);
+
+        return await builder.ExecuteScalar<int>() > 0;
+    }
+
     public async Task<Guid?> GetId(string name, int platformTypeId)
     {
         const string sql =

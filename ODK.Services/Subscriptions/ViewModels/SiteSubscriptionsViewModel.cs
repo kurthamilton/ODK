@@ -18,7 +18,8 @@ public class SiteSubscriptionsViewModel
 
     public required MemberSiteSubscriptionDto? CurrentMemberSubscription { get; init; }
 
-    public required IReadOnlyCollection<SitePaymentSettings> SitePaymentSettings { get; init; }
+    /// <summary>Whether anything on this platform can be bought at all.</summary>
+    public required bool PaymentsEnabled { get; init; }
 
     public required IReadOnlyCollection<SiteSubscriptionListItemViewModel> Subscriptions { get; init; }
 }

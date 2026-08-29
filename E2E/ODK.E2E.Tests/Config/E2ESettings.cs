@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using ODK.E2E.Data;
 
 namespace ODK.E2E.Tests.Config;
@@ -26,6 +26,14 @@ public static class E2ESettings
 
     /// <summary>Base URL of the DrunkenKnitwits-platform instance (no trailing slash).</summary>
     public static string DrunkenKnitwitsBaseUrl => GetRequired("DrunkenKnitwitsBaseUrl").TrimEnd('/');
+
+    /// <summary>
+    /// The deployment the app under test runs as (its <c>Environment</c>), as the number its
+    /// <c>EnvironmentTypeId</c> columns store. Stated here because the app's own configuration is not
+    /// readable from these tests, and a row seeded for it to read has to carry the same environment it
+    /// stamps its own rows with - so the two have to agree. A row stamped anything else is invisible.
+    /// </summary>
+    public static int EnvironmentTypeId => EnvironmentTypeIds.FromName(GetRequired("Environment"));
 
     /// <summary>
     /// The site-subscription cooldown the app under test runs with (its

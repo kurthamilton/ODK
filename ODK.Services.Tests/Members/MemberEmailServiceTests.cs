@@ -38,6 +38,7 @@ public static class MemberEmailServiceTests
             Chapter = chapter,
             CurrentMember = member,
             CurrentMemberOrDefault = member,
+            Environment = EnvironmentType.Dev,
             HttpRequestContext = CreateHttpRequestContext(),
             Platform = PlatformType.Default
         };
@@ -74,6 +75,7 @@ public static class MemberEmailServiceTests
             Chapter = chapter,
             CurrentMember = member,
             CurrentMemberOrDefault = member,
+            Environment = EnvironmentType.Dev,
             HttpRequestContext = CreateHttpRequestContext(),
             Platform = PlatformType.Default
         };
@@ -114,6 +116,7 @@ public static class MemberEmailServiceTests
         {
             Chapter = chapter,
             CurrentMemberOrDefault = null,
+            Environment = EnvironmentType.Dev,
             HttpRequestContext = CreateHttpRequestContext(),
             Platform = PlatformType.Default
         };
@@ -209,6 +212,7 @@ public static class MemberEmailServiceTests
             Chapter = chapter,
             CurrentMember = member,
             CurrentMemberOrDefault = member,
+            Environment = EnvironmentType.Dev,
             HttpRequestContext = CreateHttpRequestContext(),
             Platform = PlatformType.Default
         };
@@ -250,6 +254,7 @@ public static class MemberEmailServiceTests
         {
             CurrentMember = member,
             CurrentMemberOrDefault = member,
+            Environment = EnvironmentType.Dev,
             HttpRequestContext = CreateHttpRequestContext(),
             Platform = PlatformType.Default
         };
@@ -287,6 +292,7 @@ public static class MemberEmailServiceTests
         {
             CurrentMember = member,
             CurrentMemberOrDefault = member,
+            Environment = EnvironmentType.Dev,
             HttpRequestContext = CreateHttpRequestContext(),
             Platform = PlatformType.Default
         };
@@ -321,6 +327,7 @@ public static class MemberEmailServiceTests
         {
             CurrentMember = member,
             CurrentMemberOrDefault = member,
+            Environment = EnvironmentType.Dev,
             HttpRequestContext = CreateHttpRequestContext(),
             Platform = PlatformType.Default
         };
@@ -405,13 +412,13 @@ public static class MemberEmailServiceTests
         CurrencyId = Guid.NewGuid(),
         Id = Guid.NewGuid(),
         MemberId = Guid.NewGuid(),
-        Reference = "REF123",
-        SitePaymentSettingId = Guid.NewGuid()
+        Reference = "REF123"
     };
 
     private static IServiceRequest CreateServiceRequest() => new ServiceRequest
     {
         CurrentMemberOrDefault = null,
+        Environment = EnvironmentType.Dev,
         HttpRequestContext = CreateHttpRequestContext(),
         Platform = PlatformType.Default
     };

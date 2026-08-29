@@ -1,9 +1,11 @@
 ﻿@using ODK.Services.Payments.Models
 @using ODK.Services.Payments.ViewModels
+@using ODK.Services.Platforms
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @model SiteAdminStripeWebhooksViewModel
 @inject IOdkRoutes OdkRoutes
+@inject IPlatformProvider PlatformProvider
 
 @{
     var kindTitles = new Dictionary<StripeWebhookKind, string>
@@ -58,17 +60,15 @@
     <div class="section-stack">
         @foreach (var account in Model.Accounts)
         {
-            var paymentSettings = account.PaymentSettings;
+            var stripeAccount = account.Account;
 
             @await Html.PartialAsync("Components/_Panel", new PanelViewModel
             {
                 Heading = new HeadingViewModel
                 {
-                    Title = paymentSettings.Name,
+                    Title = PlatformProvider.GetName(stripeAccount.Platform),
                     Type = HeadingType.H3
                 },
-                TitleEndContentFunc =
-                    @<a href="@OdkRoutes.SiteAdmin.Payment(paymentSettings.Id)">Settings</a>,
                 BodyContentFunc =
                     @<div>
                         <dl class="row mb-3">
@@ -83,14 +83,14 @@
                                 }
                                 else
                                 {
-                                    @paymentSettings.Environment
+                                    @stripeAccount.Environment
                                 }
                             </dd>
                             <dt class="col-sm-3">Account</dt>
                             <dd class="col-sm-9">
-                                @if (!string.IsNullOrEmpty(paymentSettings.ExternalId))
+                                @if (!string.IsNullOrEmpty(stripeAccount.AccountId))
                                 {
-                                    <code>@paymentSettings.ExternalId</code>
+                                    <code>@stripeAccount.AccountId</code>
                                 }
                                 else
                                 {

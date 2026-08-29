@@ -12,8 +12,6 @@ public class SiteSubscriptionEditViewModel
 
     public required IReadOnlyCollection<SiteSubscriptionEditPriceViewModel> Prices { get; init; }
 
-    public required IReadOnlyCollection<SitePaymentSettings> SitePaymentSettings { get; init; }
-
     public required SiteSubscription Subscription { get; init; }
 
     public required IReadOnlyCollection<SiteSubscription> Subscriptions { get; init; }

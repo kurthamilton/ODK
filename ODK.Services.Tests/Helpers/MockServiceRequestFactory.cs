@@ -1,10 +1,9 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using ODK.Core;
 using ODK.Core.Chapters;
 using ODK.Core.Members;
-using ODK.Services;
+using ODK.Core.Platforms;
 using ODK.Services.Tasks;
 
 namespace ODK.Services.Tests.Helpers;
@@ -42,6 +41,7 @@ internal class MockServiceRequestFactory : IServiceRequestFactory
         CurrentMemberOrDefault = request.CurrentMemberId != null
             ? _context.Set<Member>().SingleOrDefault(x => x.Id == request.CurrentMemberId)
             : null,
+        Environment = EnvironmentType.Dev,
         HttpRequestContext = new JobHttpRequestContext { BaseUrl = request.BaseUrl },
         Platform = request.Platform
     };

@@ -116,13 +116,38 @@ public static class DependencyRegistrar
         var payments = appSettings.Payments;
 
         services.AddScoped<IPaymentProviderFactory, PaymentProviderFactory>();
+        services.AddSingleton(new PaymentProviderFactorySettings
+        {
+            DefaultProvider = appSettings.Payments.Active
+        });
+        /* What the deployment transacts as. Several services ask it, so it is registered once rather
+           than declared per service. */
+        services.AddSingleton(new PaymentSettings
+        {
+            Platforms = payments.Stripe.Platforms.ToDictionary(
+                x => x.Key,
+                x => new PaymentPlatformSettings
+                {
+                    AccountId = x.Value.AccountId,
+                    Enabled = x.Value.Enabled,
+                    PublicApiKey = x.Value.PublicApiKey
+                }),
+            Provider = payments.Active
+        });
         services.AddSingleton(new PayPalPaymentProviderSettings
         {
             ApiBaseUrl = payments.PayPal.ApiBaseUrl
         });
         services.AddSingleton(new StripePaymentProviderSettings
         {
-            ConnectedAccountBaseUrls = payments.Stripe.Platforms.ToDictionary(x => x.Key, x => x.Value.ConnectedAccountBaseUrl),
+            Platforms = payments.Stripe.Platforms.ToDictionary(
+                x => x.Key,
+                x => new StripePaymentProviderPlatformSettings
+                {
+                    ConnectedAccountBaseUrl = x.Value.ConnectedAccountBaseUrl,
+                    PublicApiKey = x.Value.PublicApiKey,
+                    SecretApiKey = x.Value.SecretApiKey
+                }),
             ConnectedAccountBusinessName = payments.Stripe.ConnectedAccountBusinessName,
             ConnectedAccountCommissionPercentage = payments.Stripe.ConnectedAccountCommissionPercentage,
             ConnectedAccountMcc = payments.Stripe.ConnectedAccountMcc,
@@ -180,13 +205,13 @@ public static class DependencyRegistrar
             {
                 ApiKey = appSettings.Brevo.ApiKey,
                 DebugEmailAddress = appSettings.Emails.DebugEmailAddress,
-                Environment = appSettings.Brevo.Environment,
+                Environment = appSettings.Environment,
                 EnvironmentTagPrefix = appSettings.Brevo.EnvironmentTagPrefix
             })
             .AddScoped<IBrevoWebhookParser, BrevoWebhookParser>()
             .AddSingleton(new BrevoWebhookParserSettings
             {
-                Environment = appSettings.Brevo.Environment,
+                Environment = appSettings.Environment,
                 EnvironmentTagPrefix = appSettings.Brevo.EnvironmentTagPrefix
             })
             .AddScoped<IEventAdminService, EventAdminService>()
@@ -309,6 +334,11 @@ public static class DependencyRegistrar
             })
             .AddScoped<IPaymentAdminService, PaymentAdminService>()
             .AddScoped<IPaymentService, PaymentService>()
+            .AddSingleton(new PaymentServiceSettings
+            {
+                Environment = appSettings.Environment,
+                PaymentProvider = appSettings.Payments.Active
+            })
             .AddScoped<IPlatformProvider, PlatformProvider>()
             .AddSingleton(new PlatformProviderSettings
             {
@@ -319,6 +349,10 @@ public static class DependencyRegistrar
             .AddScoped<ILocaleService, LocaleService>()
             .AddScoped<IRecaptchaService, RecaptchaService>()
             .AddScoped<IRequestStore, RequestStore>()
+            .AddSingleton(new RequestStoreSettings
+            {
+                Environment = appSettings.Environment
+            })
             .AddScoped<IRequestStoreFactory, RequestStoreFactory>()
             .AddScoped<IServiceRequestFactory, ServiceRequestFactory>()
             .AddScoped<ISettingsService, SettingsService>()

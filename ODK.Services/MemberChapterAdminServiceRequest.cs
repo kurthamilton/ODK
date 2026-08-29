@@ -14,6 +14,7 @@ public class MemberChapterAdminServiceRequest : MemberChapterServiceRequest, IMe
             Chapter = request.Chapter,
             CurrentMember = request.CurrentMember,
             CurrentMemberOrDefault = request.CurrentMember,
+            Environment = request.Environment,
             HttpRequestContext = request.HttpRequestContext,
             Platform = request.Platform,
             Securable = securable

@@ -4,6 +4,7 @@ using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Payments;
 using ODK.Data.Core.QueryBuilders;
 using ODK.Data.Core.Repositories;
+using ODK.Data.EntityFramework.Extensions;
 using ODK.Data.EntityFramework.QueryBuilders;
 
 namespace ODK.Data.EntityFramework.Repositories;
@@ -13,6 +14,18 @@ public class PaymentRepository : ReadWriteRepositoryBase<Payment, IPaymentQueryB
     public PaymentRepository(DbContext context)
         : base(context)
     {
+    }
+
+    public IDeferredQuerySingle<Payment> GetByCheckoutSessionId(string sessionId)
+    {
+        var query =
+            from payment in Set()
+            from session in Set<PaymentCheckoutSession>()
+                .Where(x => x.PaymentId == payment.Id)
+            where session.SessionId == sessionId
+            select payment;
+
+        return query.DeferredSingle();
     }
 
     public IDeferredQueryMultiple<PaymentChapterDto> GetChapterDtosByMemberId(Guid memberId)

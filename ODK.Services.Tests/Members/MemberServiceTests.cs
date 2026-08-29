@@ -1109,7 +1109,9 @@ public static class MemberServiceTests
             workflow.GetRequiredService<StateMachineRunner<
                 ChapterMembershipState, ChapterMembershipTrigger, ChapterMembershipContext>>(),
             workflow.GetRequiredService<StateMachineRunner<AccountState, AccountTrigger, AccountContext>>(),
-            workflow.GetRequiredService<IAccountContextFactory>());
+            workflow.GetRequiredService<IAccountContextFactory>(),
+            TestPaymentSettings.Create(),
+            Mock.Of<IPaymentService>());
     }
 
     /// <summary>
@@ -1235,8 +1237,7 @@ public static class MemberServiceTests
             GroupLimit = 10,
             Enabled = true,
             Default = true,
-            Platform = platform,
-            SitePaymentSettingId = Guid.NewGuid()
+            Platform = platform
         });
     }
 }

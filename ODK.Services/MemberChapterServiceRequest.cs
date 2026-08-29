@@ -24,6 +24,7 @@ public class MemberChapterServiceRequest : MemberServiceRequest, IMemberChapterS
             Chapter = chapter,
             CurrentMember = currentMember,
             CurrentMemberOrDefault = currentMember,
+            Environment = request.Environment,
             HttpRequestContext = request.HttpRequestContext,
             Platform = request.Platform
         };

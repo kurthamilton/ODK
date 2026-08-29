@@ -464,6 +464,10 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                     b.Property<DateTime>("CreatedUtc")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("Environment")
+                        .HasColumnType("int")
+                        .HasColumnName("EnvironmentTypeId");
+
                     b.Property<string>("ExternalId")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -480,17 +484,19 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                     b.Property<Guid>("OwnerId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("SitePaymentSettingId")
+                    b.Property<int>("PaymentProvider")
+                        .HasColumnType("int")
+                        .HasColumnName("PaymentProviderTypeId");
+
+                    b.Property<Guid?>("SitePaymentSettingId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ChapterId")
-                        .IsUnique();
-
                     b.HasIndex("OwnerId");
 
-                    b.HasIndex("SitePaymentSettingId");
+                    b.HasIndex("ChapterId", "Environment", "PaymentProvider")
+                        .IsUnique();
 
                     b.ToTable("ChapterPaymentAccounts", (string)null);
                 });
@@ -664,11 +670,14 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                     b.Property<bool>("Disabled")
                         .HasColumnType("bit");
 
-                    b.Property<string>("ExternalId")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Environment")
+                        .HasColumnType("int")
+                        .HasColumnName("EnvironmentTypeId");
 
-                    b.Property<string>("ExternalProductId")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<string>("ExternalId")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<int>("Months")
                         .HasColumnType("int");
@@ -676,6 +685,10 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("PaymentProvider")
+                        .HasColumnType("int")
+                        .HasColumnName("PaymentProviderTypeId");
 
                     b.Property<bool>("Recurring")
                         .HasColumnType("bit");
@@ -696,8 +709,6 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                     b.HasIndex("ChapterId");
 
                     b.HasIndex("CurrencyId");
-
-                    b.HasIndex("SitePaymentSettingId");
 
                     b.ToTable("ChapterSubscriptions", (string)null);
                 });
@@ -2113,6 +2124,10 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                     b.Property<Guid>("CurrencyId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int>("Environment")
+                        .HasColumnType("int")
+                        .HasColumnName("EnvironmentTypeId");
+
                     b.Property<string>("ExternalChargeId")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
@@ -2125,6 +2140,14 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
 
                     b.Property<DateTime?>("PaidUtc")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("PaymentProvider")
+                        .HasColumnType("int")
+                        .HasColumnName("PaymentProviderTypeId");
+
+                    b.Property<int>("Platform")
+                        .HasColumnType("int")
+                        .HasColumnName("PlatformTypeId");
 
                     b.Property<string>("Reference")
                         .IsRequired()
@@ -2207,22 +2230,28 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int>("Environment")
+                        .HasColumnType("int")
+                        .HasColumnName("EnvironmentTypeId");
+
                     b.Property<string>("ExternalId")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("PaymentProvider")
+                        .HasColumnType("int")
+                        .HasColumnName("PaymentProviderTypeId");
 
                     b.Property<int>("Platform")
                         .HasColumnType("int")
                         .HasColumnName("PlatformTypeId");
 
-                    b.Property<Guid>("SitePaymentSettingId")
+                    b.Property<Guid?>("SitePaymentSettingId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("SitePaymentSettingId");
-
-                    b.HasIndex("Platform", "SitePaymentSettingId")
+                    b.HasIndex("Platform", "Environment", "PaymentProvider")
                         .IsUnique();
 
                     b.ToTable("SitePaymentProducts", (string)null);
@@ -2472,6 +2501,10 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                     b.Property<bool>("Enabled")
                         .HasColumnType("bit");
 
+                    b.Property<int>("Environment")
+                        .HasColumnType("int")
+                        .HasColumnName("EnvironmentTypeId");
+
                     b.Property<Guid?>("FallbackSiteSubscriptionId")
                         .HasColumnType("uniqueidentifier");
 
@@ -2488,6 +2521,10 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("PaymentProvider")
+                        .HasColumnType("int")
+                        .HasColumnName("PaymentProviderTypeId");
+
                     b.Property<int>("Platform")
                         .HasColumnType("int")
                         .HasColumnName("PlatformTypeId");
@@ -2495,7 +2532,7 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                     b.Property<Guid>("SitePaymentProductId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("SitePaymentSettingId")
+                    b.Property<Guid?>("SitePaymentSettingId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
@@ -2503,8 +2540,6 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                     b.HasIndex("FallbackSiteSubscriptionId");
 
                     b.HasIndex("SitePaymentProductId");
-
-                    b.HasIndex("SitePaymentSettingId");
 
                     b.ToTable("SiteSubscriptions", (string)null);
                 });
@@ -2542,7 +2577,9 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ExternalId")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<int>("Frequency")
                         .HasColumnType("int");
@@ -2906,8 +2943,8 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
             modelBuilder.Entity("ODK.Core.Chapters.ChapterPaymentAccount", b =>
                 {
                     b.HasOne("ODK.Core.Chapters.Chapter", null)
-                        .WithOne()
-                        .HasForeignKey("ODK.Core.Chapters.ChapterPaymentAccount", "ChapterId")
+                        .WithMany()
+                        .HasForeignKey("ChapterId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -2915,12 +2952,6 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                         .WithMany()
                         .HasForeignKey("OwnerId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("ODK.Core.Payments.SitePaymentSettings", null)
-                        .WithMany()
-                        .HasForeignKey("SitePaymentSettingId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
@@ -2986,10 +3017,6 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                         .HasForeignKey("CurrencyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("ODK.Core.Payments.SitePaymentSettings", null)
-                        .WithMany()
-                        .HasForeignKey("SitePaymentSettingId");
 
                     b.Navigation("Currency");
                 });
@@ -3563,15 +3590,6 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ODK.Core.Payments.SitePaymentProduct", b =>
-                {
-                    b.HasOne("ODK.Core.Payments.SitePaymentSettings", null)
-                        .WithMany()
-                        .HasForeignKey("SitePaymentSettingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("ODK.Core.Referrals.Referral", b =>
                 {
                     b.HasOne("ODK.Core.Members.Member", null)
@@ -3615,12 +3633,6 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                         .WithMany()
                         .HasForeignKey("SitePaymentProductId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("ODK.Core.Payments.SitePaymentSettings", null)
-                        .WithMany()
-                        .HasForeignKey("SitePaymentSettingId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 

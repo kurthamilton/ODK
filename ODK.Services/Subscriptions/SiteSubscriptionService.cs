@@ -1,8 +1,6 @@
 ﻿using ODK.Core;
-using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Members;
-using ODK.Core.Payments;
 using ODK.Core.Subscriptions;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
@@ -16,13 +14,19 @@ namespace ODK.Services.Subscriptions;
 public class SiteSubscriptionService : ISiteSubscriptionService
 {
     private readonly IPaymentProviderFactory _paymentProviderFactory;
+    private readonly IPaymentService _paymentService;
+    private readonly PaymentSettings _paymentSettings;
     private readonly IUnitOfWork _unitOfWork;
 
     public SiteSubscriptionService(
         IUnitOfWork unitOfWork,
-        IPaymentProviderFactory paymentProviderFactory)
+        IPaymentProviderFactory paymentProviderFactory,
+        PaymentSettings paymentSettings,
+        IPaymentService paymentService)
     {
         _paymentProviderFactory = paymentProviderFactory;
+        _paymentService = paymentService;
+        _paymentSettings = paymentSettings;
         _unitOfWork = unitOfWork;
     }
 
@@ -30,9 +34,8 @@ public class SiteSubscriptionService : ISiteSubscriptionService
     {
         var currentMember = request.CurrentMember;
 
-        var (memberSubscriptionDto, sitePaymentSettings) = await _unitOfWork.Run(
-            x => x.MemberSiteSubscriptionRecordRepository.GetDtoByMemberId(currentMember.Id),
-            x => x.SitePaymentSettingsRepository.GetAll());
+        var memberSubscriptionDto = await _unitOfWork.Run(
+            x => x.MemberSiteSubscriptionRecordRepository.GetDtoByMemberId(currentMember.Id));
 
         if (memberSubscriptionDto == null)
         {
@@ -46,9 +49,9 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             return ServiceResult.Failure("External subscription not found");
         }
 
-        var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(
-            sitePaymentSettings,
-            memberSubscriptionDto.SiteSubscription.SitePaymentSettingId);
+        var siteSubscription = memberSubscriptionDto.SiteSubscription;
+        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
+            siteSubscription.PaymentProvider, siteSubscription.Platform);
 
         var result = await paymentProvider.CancelSubscription(memberSubscriptionDto.MemberSiteSubscription.ExternalId);
 
@@ -60,18 +63,18 @@ public class SiteSubscriptionService : ISiteSubscriptionService
     public async Task<SiteSubscriptionsViewModel> GetSiteSubscriptionsViewModel(
         IServiceRequest request, Guid? chapterId)
     {
-        var (platform, memberId) = (request.Platform, request.CurrentMemberIdOrDefault);
+        var (environment, platform, memberId) =
+            (request.Environment, request.Platform, request.CurrentMemberIdOrDefault);
 
-        var (sitePaymentSettings,
-            subscriptionDtos,
+        var (subscriptionDtos,
             prices,
             currentMember,
             memberSubscriptionDto,
             memberCurrency,
             chapterCurrency) = await _unitOfWork.Run(
-            x => x.SitePaymentSettingsRepository.GetAll(),
             x => x.SiteSubscriptionRepository.Query()
                 .ForPlatform(platform)
+                .ForEnvironment(environment)
                 .Active()
                 .WithFeatures()
                 .GetAll(),
@@ -101,14 +104,9 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             .GroupBy(x => x.SiteSubscriptionId)
             .ToDictionary(x => x.Key, x => (IReadOnlyCollection<SiteSubscriptionPrice>)x.ToArray());
 
-        var sitePaymentSettingsDictionary = sitePaymentSettings
-            .ToDictionary(x => x.Id);
+        var paymentsEnabled = _paymentSettings.IsEnabled(platform);
 
-        var externalSubscription = await GetExternalSubscription(sitePaymentSettings, memberSubscriptionDto);
-
-        var subscriptions = subscriptionDtos
-            .Select(x => x.SiteSubscription)
-            .ToArray();
+        var externalSubscription = await GetExternalSubscription(memberSubscriptionDto);
 
         var siteSubscriptionViewModels = subscriptionDtos
             .Select(x => new
@@ -119,9 +117,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
                 Prices = priceDictionary.GetValueOrDefault(x.SiteSubscription.Id, []),
                 x.SiteSubscription
             })
-            .Where(x => x.SiteSubscription.IsActive(
-                x.Prices,
-                sitePaymentSettingsDictionary[x.SiteSubscription.SitePaymentSettingId]))
+            .Where(x => x.SiteSubscription.IsActive(x.Prices, paymentsEnabled))
             .Select(x => new SiteSubscriptionListItemViewModel
             {
                 IsCurrentMemberActiveSubscription =
@@ -141,97 +137,39 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             CurrentMember = currentMember,
             CurrentMemberSubscription = memberSubscriptionDto,
             CurrentMemberExternalSubscription = externalSubscription,
-            SitePaymentSettings = subscriptions
-                .Select(x => sitePaymentSettingsDictionary[x.SitePaymentSettingId])
-                .GroupBy(x => x.Id)
-                .Select(x => x.First())
-                .ToArray(),
+            PaymentsEnabled = paymentsEnabled,
             Subscriptions = siteSubscriptionViewModels
         };
     }
 
     public async Task<SiteSubscriptionCheckoutViewModel> StartSiteSubscriptionCheckout(
-        IMemberServiceRequest request, Guid priceId, string returnPath, Guid? chapterId)
+        IMemberServiceRequest request, Guid priceId, string returnPath)
     {
         var (platform, currentMember) = (request.Platform, request.CurrentMember);
 
-        var (siteSubscription, price, chapter) = await _unitOfWork.Run(
+        var (subscription, price) = await _unitOfWork.Run(
             x => x.SiteSubscriptionRepository.GetByPriceId(priceId),
-            x => x.SiteSubscriptionPriceRepository.GetById(priceId),
-            x => chapterId != null
-                ? x.ChapterRepository.GetByIdOrDefault(platform, chapterId.Value)
-                : new DefaultDeferredQuerySingleOrDefault<Chapter>());
+            x => x.SiteSubscriptionPriceRepository.GetById(priceId));
 
-        if (string.IsNullOrEmpty(price.ExternalId))
-        {
-            throw new Exception("Error starting checkout session: siteSubscriptionPrice.ExternalId missing");
-        }
-
-        var sitePaymentSettings = await _unitOfWork.SitePaymentSettingsRepository
-            .GetById(siteSubscription.SitePaymentSettingId).Run();
-
-        var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(sitePaymentSettings);
-
-        var externalSubscriptionPlan = await paymentProvider.GetSubscriptionPlan(price.ExternalId);
-        if (externalSubscriptionPlan == null)
-        {
-            throw new Exception("Error starting checkout session: subscriptionPlan not found");
-        }
-
-        var utcNow = DateTime.UtcNow;
-        var paymentCheckoutSessionId = _unitOfWork.NewId();
-        var paymentId = _unitOfWork.NewId();
-
-        var metadata = new PaymentMetadataModel(
-            platform,
-            PaymentReasonType.SiteSubscription,
-            currentMember,
-            price,
-            paymentCheckoutSessionId: paymentCheckoutSessionId,
-            paymentId: paymentId);
-
-        var externalCheckoutSession = await paymentProvider.StartCheckout(
+        var (payment, externalCheckoutSession) = await _paymentService.CreateSitePayment(
             request,
-            currentMember.EmailAddress,
-            externalSubscriptionPlan,
-            returnPath,
-            metadata);
-
-        _unitOfWork.PaymentCheckoutSessionRepository.Add(new PaymentCheckoutSession
-        {
-            Id = paymentCheckoutSessionId,
-            MemberId = currentMember.Id,
-            PaymentId = paymentId,
-            SessionId = externalCheckoutSession.SessionId,
-            StartedUtc = utcNow
-        });
-
-        _unitOfWork.PaymentRepository.Add(new Payment
-        {
-            Amount = price.Amount,
-            CreatedUtc = utcNow,
-            CurrencyId = price.CurrencyId,
-            ExternalId = externalCheckoutSession.PaymentId,
-            Id = paymentId,
-            MemberId = currentMember.Id,
-            Reference = siteSubscription.ToReference(),
-            SitePaymentSettingId = siteSubscription.SitePaymentSettingId
-        });
-
-        await _unitOfWork.SaveChanges();
+            subscription,
+            price,
+            new PaymentCreateOptions
+            {
+                ReturnPath = returnPath
+            });
 
         return new SiteSubscriptionCheckoutViewModel
         {
-            Chapter = chapter,
+            ApiPublicKey = _paymentSettings.GetPlatformOrDefault(platform)?.PublicApiKey ?? string.Empty,
             ClientSecret = externalCheckoutSession.ClientSecret,
-            PaymentSettings = sitePaymentSettings,
-            Platform = platform,
-            SiteSubscription = siteSubscription
+            PaymentProvider = payment.PaymentProvider,
+            SiteSubscription = subscription
         };
     }
 
     private async Task<ExternalSubscription?> GetExternalSubscription(
-        IReadOnlyCollection<SitePaymentSettings> sitePaymentSettings,
         MemberSiteSubscriptionDto? memberSubscriptionDto)
     {
         if (string.IsNullOrEmpty(memberSubscriptionDto?.MemberSiteSubscription?.ExternalId))
@@ -239,9 +177,9 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             return null;
         }
 
-        var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(
-            sitePaymentSettings,
-            memberSubscriptionDto.SiteSubscription.SitePaymentSettingId);
+        var siteSubscription = memberSubscriptionDto.SiteSubscription;
+        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
+            siteSubscription.PaymentProvider, siteSubscription.Platform);
 
         return await paymentProvider.GetSubscription(memberSubscriptionDto.MemberSiteSubscription.ExternalId);
     }

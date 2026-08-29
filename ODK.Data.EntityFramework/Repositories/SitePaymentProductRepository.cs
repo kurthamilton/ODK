@@ -15,8 +15,11 @@ public class SitePaymentProductRepository : ReadWriteRepositoryBase<SitePaymentP
     }
 
     public IDeferredQuerySingleOrDefault<SitePaymentProduct> GetByPlatform(
-        PlatformType platform, Guid sitePaymentSettingId)
+        PlatformType platform, EnvironmentType environment, PaymentProviderType provider)
         => Set()
-            .Where(x => x.Platform == platform && x.SitePaymentSettingId == sitePaymentSettingId)
+            .Where(x =>
+                x.Platform == platform &&
+                x.Environment == environment &&
+                x.PaymentProvider == provider)
             .DeferredSingleOrDefault();
 }

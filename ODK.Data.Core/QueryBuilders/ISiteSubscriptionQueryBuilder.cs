@@ -15,6 +15,8 @@ public interface ISiteSubscriptionQueryBuilder : IDatabaseEntityQueryBuilder<Sit
     /// </summary>
     ISiteSubscriptionQueryBuilder Active();
 
+    ISiteSubscriptionQueryBuilder ForEnvironment(EnvironmentType environment);
+
     IQueryBuilder<SiteSubscriptionFeature> Features();
 
     /// <summary>Subscriptions that fall back to the named one when they lapse.</summary>

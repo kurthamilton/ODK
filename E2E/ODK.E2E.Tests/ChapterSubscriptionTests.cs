@@ -26,15 +26,11 @@ public class ChapterSubscriptionTests : DefaultPageTest
 
     private static MemberSiteSubscriptionDataHelper MemberSubscriptions => new(E2ESettings.ConnectionString);
 
-    private static SitePaymentSettingsDataHelper PaymentSettings => new(E2ESettings.ConnectionString);
-
     [Test]
     public async Task CreateNonRecurringChapterSubscription_Persists()
     {
         // Arrange - a chapter whose owner has the MemberSubscriptions site feature and a set-up payment
         // account (both seeded). The chapter is local: the test mutates it by adding a subscription.
-        var paymentSettings = await PaymentSettings.GetStripeSettings(
-            PlatformTypeId, E2ESettings.StripeAccountId(PlatformTypeId));
         var siteSubscription = await Provisioning.EnsurePurchasableSiteSubscription();
 
         var owner = await Provisioning.NewAccount("chapter-subscription-owner");
@@ -42,7 +38,8 @@ public class ChapterSubscriptionTests : DefaultPageTest
         var ownerId = await Members.GetMemberId(owner.Email);
 
         await MemberSubscriptions.EnsureActive(ownerId, siteSubscription.Id, siteSubscription.PriceId);
-        await ChapterPaymentAccounts.EnsureSetupComplete(group.ChapterId, ownerId, paymentSettings.Id, "acct_e2e_fake");
+        await ChapterPaymentAccounts.EnsureSetupComplete(
+            group.ChapterId, ownerId, "acct_e2e_fake", E2ESettings.EnvironmentTypeId);
 
         await new LoginPage(Page).LogIn(owner.Email, owner.Password);
 

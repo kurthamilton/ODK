@@ -29,19 +29,18 @@ public static class SiteSubscriptionAdminServiceTests
     {
         // Arrange
         using var context = CreateMockOdkContext();
-        var paymentSettings = context.CreateSitePaymentSettings();
-        var product = context.CreateSitePaymentProduct(paymentSettings, externalId: "existing-product");
+        var product = context.CreateSitePaymentProduct(externalId: "existing-product");
         var paymentProvider = CreatePaymentProvider(createdProductId: "new-product");
         var service = CreateService(context, CreatePaymentProviderFactory(paymentProvider.Object));
 
         // Act
         var result = await service.AddSiteSubscription(
-            SiteAdminRequest(context), CreateModel(free: false, paymentSettings.Id));
+            SiteAdminRequest(context), CreateModel(free: false));
 
         // Assert
         result.Success.Should().BeTrue();
         context.Set<SitePaymentProduct>().Should().HaveCount(1);
-        paymentProvider.Verify(x => x.CreateProduct(It.IsAny<string>()), Times.Never);
+        paymentProvider.Verify(x => x.GetOrCreatePlatformProduct(It.IsAny<PlatformType>()), Times.Never);
 
         context.Set<SiteSubscription>()
             .Single(x => x.Id == result.Value).SitePaymentProductId.Should().Be(product.Id);
@@ -52,22 +51,21 @@ public static class SiteSubscriptionAdminServiceTests
     {
         // Arrange
         using var context = CreateMockOdkContext();
-        var paymentSettings = context.CreateSitePaymentSettings();
         var paymentProvider = CreatePaymentProvider(createdProductId: "new-product");
         var service = CreateService(context, CreatePaymentProviderFactory(paymentProvider.Object));
 
         // Act
         var result = await service.AddSiteSubscription(
-            SiteAdminRequest(context), CreateModel(free: false, paymentSettings.Id));
+            SiteAdminRequest(context), CreateModel(free: false));
 
         // Assert
         result.Success.Should().BeTrue();
-        paymentProvider.Verify(x => x.CreateProduct($"{PlatformName} Platform"), Times.Once);
+        paymentProvider.Verify(x => x.GetOrCreatePlatformProduct(PlatformType.Default), Times.Once);
 
         var product = context.Set<SitePaymentProduct>().Single();
         product.ExternalId.Should().Be("new-product");
         product.Platform.Should().Be(PlatformType.Default);
-        product.SitePaymentSettingId.Should().Be(paymentSettings.Id);
+        product.PaymentProvider.Should().Be(PaymentProviderType.Stripe);
 
         context.Set<SiteSubscription>()
             .Single(x => x.Id == result.Value).SitePaymentProductId.Should().Be(product.Id);
@@ -131,10 +129,9 @@ public static class SiteSubscriptionAdminServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
         var currency = context.CreateCurrency();
-        var paymentSettings = context.CreateSitePaymentSettings();
-        var product = context.CreateSitePaymentProduct(paymentSettings, externalId: "platform-product");
+        var product = context.CreateSitePaymentProduct(externalId: "platform-product");
         var subscription = context.CreateSiteSubscription(
-            sitePaymentProduct: product, sitePaymentSettings: paymentSettings);
+            sitePaymentProduct: product);
         var paymentProvider = CreatePaymentProvider(createdProductId: null);
         var service = CreateService(context, CreatePaymentProviderFactory(paymentProvider.Object));
 
@@ -479,8 +476,7 @@ public static class SiteSubscriptionAdminServiceTests
         context.Set<SiteSubscription>().Single(x => x.Id == subscription.Id).Free.Should().BeTrue();
     }
 
-    private static SiteSubscriptionCreateModel CreateModel(
-        bool free, Guid? sitePaymentSettingId = null) => new()
+    private static SiteSubscriptionCreateModel CreateModel(bool free) => new()
     {
         Description = "Description",
         Enabled = true,
@@ -489,8 +485,7 @@ public static class SiteSubscriptionAdminServiceTests
         Free = free,
         GroupLimit = 1,
         MemberLimit = null,
-        Name = "Test Subscription",
-        SitePaymentSettingId = sitePaymentSettingId ?? Guid.NewGuid()
+        Name = "Test Subscription"
     };
 
     private static MockOdkContext CreateMockOdkContext() => new();
@@ -504,8 +499,8 @@ public static class SiteSubscriptionAdminServiceTests
             .ReturnsAsync(ServiceResult.Successful());
 
         paymentProvider
-            .Setup(x => x.CreateProduct(It.IsAny<string>()))
-            .ReturnsAsync(createdProductId);
+            .Setup(x => x.GetOrCreatePlatformProduct(It.IsAny<PlatformType>()))
+            .ReturnsAsync(createdProductId ?? "external-product-id");
 
         paymentProvider
             .Setup(x => x.CreateSubscriptionPlan(It.IsAny<ExternalSubscriptionPlan>()))
@@ -519,12 +514,8 @@ public static class SiteSubscriptionAdminServiceTests
         var factory = new Mock<IPaymentProviderFactory>();
 
         factory
-            .Setup(x => x.GetSitePaymentProvider(It.IsAny<SitePaymentSettings>()))
-            .Returns(paymentProvider);
-
-        factory
-            .Setup(x => x.GetSitePaymentProvider(
-                It.IsAny<IReadOnlyCollection<SitePaymentSettings>>(), It.IsAny<Guid?>()))
+            .Setup(x => x.GetPaymentProvider(
+                It.IsAny<PaymentProviderType>(), It.IsAny<PlatformType>()))
             .Returns(paymentProvider);
 
         return factory.Object;
@@ -537,7 +528,8 @@ public static class SiteSubscriptionAdminServiceTests
         CreateHtmlValidator(),
         paymentProviderFactory ?? Mock.Of<IPaymentProviderFactory>(),
         CreatePlatformProvider(),
-        new SiteSubscriptionCooldown(months: 0));
+        new SiteSubscriptionCooldown(months: 0),
+        TestPaymentSettings.Create());
 
     // Set up explicitly rather than left bare: a Mock.Of with no configured return hands back null from
     // Validate, which reads as a pass.
@@ -552,6 +544,7 @@ public static class SiteSubscriptionAdminServiceTests
         var siteAdmin = context.CreateMember(afterCreate: x => x.SiteAdmin = true);
 
         return Mock.Of<IMemberServiceRequest>(x =>
+            x.Environment == EnvironmentType.Dev &&
             x.Platform == PlatformType.Default &&
             x.CurrentMember == siteAdmin);
     }

@@ -1,4 +1,6 @@
-﻿using ODK.Core.Payments;
+﻿using ODK.Core.Chapters;
+using ODK.Core.Payments;
+using ODK.Core.Subscriptions;
 using ODK.Services.Payments.Models;
 using ODK.Services.Tasks;
 
@@ -6,6 +8,23 @@ namespace ODK.Services.Payments;
 
 public interface IPaymentService
 {
+    Task<(Payment Payment, ExternalCheckoutSession Session)> CreateChapterOneOffPayment(
+        IMemberChapterServiceRequest request,
+        ChapterPaymentAccount paymentAccount,
+        OneOffPaymentCreateOptions options);
+
+    Task<(Payment Payment, ExternalCheckoutSession Session)> CreateChapterPayment(
+        IMemberChapterServiceRequest request,
+        ChapterPaymentAccount paymentAccount,
+        ChapterSubscription subscription,
+        PaymentCreateOptions options);
+
+    Task<(Payment Payment, ExternalCheckoutSession Session)> CreateSitePayment(
+        IMemberServiceRequest request,
+        SiteSubscription subscription,
+        SiteSubscriptionPrice price,
+        PaymentCreateOptions options);
+
     /// <summary>
     /// Queues the creation of the payment provider's product for a group, where it has none. The group is
     /// named by <see cref="JobRequest.ChapterId"/>, so the job fails rather than runs if it has been deleted

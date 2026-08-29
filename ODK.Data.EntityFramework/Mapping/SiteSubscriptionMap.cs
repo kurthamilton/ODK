@@ -13,6 +13,12 @@ public class SiteSubscriptionMap : IEntityTypeConfiguration<SiteSubscription>
 
         builder.HasKey(x => x.Id);
 
+        builder.Property(x => x.Environment)
+            .HasColumnName("EnvironmentTypeId");
+
+        builder.Property(x => x.PaymentProvider)
+            .HasColumnName("PaymentProviderTypeId");
+
         builder.Property(x => x.Platform)
             .HasColumnName("PlatformTypeId")
             .HasConversion<int>();
@@ -23,10 +29,6 @@ public class SiteSubscriptionMap : IEntityTypeConfiguration<SiteSubscription>
             .WithMany()
             .HasForeignKey(x => x.SitePaymentProductId)
             .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasOne<SitePaymentSettings>()
-            .WithMany()
-            .HasForeignKey(x => x.SitePaymentSettingId);
 
         builder.HasOne<SiteSubscription>()
             .WithMany()

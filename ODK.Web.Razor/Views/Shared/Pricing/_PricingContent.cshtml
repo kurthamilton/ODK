@@ -14,7 +14,7 @@
         ?? Model.SiteSubscriptions.Currencies.FirstOrDefault()
         ?? Model.SiteSubscriptions.Subscriptions.SelectMany(x => x.Prices).Select(x => x.Currency).FirstOrDefault();
 
-    if (Model.SiteSubscriptions.SitePaymentSettings.Count == 0)
+    if (!Model.SiteSubscriptions.PaymentsEnabled)
     {
         return;
     }
@@ -71,14 +71,6 @@
 
                             @foreach (var price in prices.OrderBy(x => x.Amount))
                             {
-                                if (price.ExternalId == null)
-                                {
-                                    continue;
-                                }
-
-                                var paymentSettings = Model.SiteSubscriptions.SitePaymentSettings
-                                    .First(x => x.Id == subscription.SitePaymentSettingId);
-
                                 @await Html.PartialAsync("Pricing/_SubscriptionPrice", new SiteSubscriptionPriceViewModel
                                 {
                                     Amount = price.Amount,
@@ -86,7 +78,7 @@
                                     Currency = currency!,
                                     Frequency = price.Frequency,
                                     ExternalId = price.ExternalId,
-                                    Provider = paymentSettings.Provider,
+                                    Provider = subscription.PaymentProvider,
                                     SiteSubscription = subscription,
                                     SiteSubscriptionPriceId = price.Id
                                 })   

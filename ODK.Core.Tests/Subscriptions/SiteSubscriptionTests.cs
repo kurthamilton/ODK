@@ -1,6 +1,5 @@
 ﻿using FluentAssertions;
 using NUnit.Framework;
-using ODK.Core.Payments;
 using ODK.Core.Subscriptions;
 
 namespace ODK.Core.Tests.Subscriptions;
@@ -15,7 +14,7 @@ public static class SiteSubscriptionTests
         var subscription = new SiteSubscription { Enabled = false, Free = true };
 
         // Act
-        var result = subscription.IsActive([], PaymentSettings(enabled: true));
+        var result = subscription.IsActive([], paymentsEnabled: true);
 
         // Assert
         result.Should().BeFalse();
@@ -28,7 +27,7 @@ public static class SiteSubscriptionTests
         var subscription = new SiteSubscription { Enabled = true, Free = true };
 
         // Act
-        var result = subscription.IsActive([], PaymentSettings(enabled: true));
+        var result = subscription.IsActive([], paymentsEnabled: true);
 
         // Assert
         result.Should().BeTrue();
@@ -41,7 +40,7 @@ public static class SiteSubscriptionTests
         var subscription = new SiteSubscription { Enabled = true, Free = true };
 
         // Act
-        var result = subscription.IsActive([], PaymentSettings(enabled: false));
+        var result = subscription.IsActive([], paymentsEnabled: false);
 
         // Assert
         result.Should().BeTrue();
@@ -54,7 +53,7 @@ public static class SiteSubscriptionTests
         var subscription = new SiteSubscription { Enabled = true, Free = false };
 
         // Act
-        var result = subscription.IsActive([new SiteSubscriptionPrice()], PaymentSettings(enabled: true));
+        var result = subscription.IsActive([new SiteSubscriptionPrice()], paymentsEnabled: true);
 
         // Assert
         result.Should().BeTrue();
@@ -67,7 +66,7 @@ public static class SiteSubscriptionTests
         var subscription = new SiteSubscription { Enabled = true, Free = false };
 
         // Act
-        var result = subscription.IsActive([new SiteSubscriptionPrice()], PaymentSettings(enabled: false));
+        var result = subscription.IsActive([new SiteSubscriptionPrice()], paymentsEnabled: false);
 
         // Assert
         result.Should().BeFalse();
@@ -80,14 +79,9 @@ public static class SiteSubscriptionTests
         var subscription = new SiteSubscription { Enabled = true, Free = false };
 
         // Act
-        var result = subscription.IsActive([], PaymentSettings(enabled: true));
+        var result = subscription.IsActive([], paymentsEnabled: true);
 
         // Assert
         result.Should().BeFalse();
     }
-
-    private static SitePaymentSettings PaymentSettings(bool enabled) => new()
-    {
-        Enabled = enabled
-    };
 }
