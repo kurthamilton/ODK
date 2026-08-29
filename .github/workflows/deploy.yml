@@ -77,7 +77,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "Migration failed with exit code $LASTEXITCODE." }
 
   # Deploy the SAME artifact to both sites in parallel. Each matrix leg runs in its own environment, so the
-  # env-scoped HOSTING_* secrets (and any LOGGING_PATH variable) resolve to that site's values.
+  # env-scoped HOSTING_* secrets (and any per-site Variables) resolve to that site's values.
   deploy:
     needs: [ setup, migrate ]
     runs-on: windows-latest     # Web Deploy (msdeploy) is a Windows tool; the runner has it pre-installed
@@ -117,7 +117,9 @@ jobs:
         shell: pwsh
         env:
           DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
-          LOGGING_PATH: ${{ vars.LOGGING_PATH }}   # optional per-environment, non-sensitive override
+          # Optional per-environment, non-sensitive overrides - see $environmentOverrides below.
+          HANGFIRE_SCHEMANAME: ${{ vars.HANGFIRE_SCHEMANAME }}
+          LOGGING_PATH: ${{ vars.LOGGING_PATH }}
         run: |
           $config = [pscustomobject]@{}
           $flat = doppler secrets download --no-file --format json | ConvertFrom-Json
@@ -144,9 +146,16 @@ jobs:
             $config | Add-Member -NotePropertyName $key -NotePropertyValue $value -Force
           }
           # Per-environment non-sensitive overrides come from GitHub environment Variables (viewable, not secrets).
-          # Only inject when set, so it stays optional; the key must NOT also live in Doppler.
-          if ($env:LOGGING_PATH) {
-            $config | Add-Member -NotePropertyName 'Logging:Path' -NotePropertyValue $env:LOGGING_PATH -Force
+          # Each is injected only when set, so it stays optional; a key here must NOT also live in Doppler.
+          # A new per-site key is a line here plus a matching entry in the step's env block above.
+          $environmentOverrides = [ordered]@{
+            'Hangfire:SchemaName' = $env:HANGFIRE_SCHEMANAME
+            'Logging:Path'        = $env:LOGGING_PATH
+          }
+          foreach ($override in $environmentOverrides.GetEnumerator()) {
+            if ($override.Value) {
+              $config | Add-Member -NotePropertyName $override.Key -NotePropertyValue $override.Value -Force
+            }
           }
           $config | ConvertTo-Json -Depth 20 | Set-Content "publish/appsettings.Production.json" -Encoding utf8
 

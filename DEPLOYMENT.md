@@ -118,9 +118,10 @@ Key points:
   base arrays keep their tail. That is why the committed `Platforms` declares `"Urls": []` — an environment
   stating one URL against a base of two would otherwise inherit the second. The rule for any array config might
   override: **leave it empty in the base file**, so the environment's value is the whole value.
-- Finally, any per-environment GitHub Variable the step reads (currently `LOGGING_PATH` → `Logging:Path`) is
-  injected — but only when set, so it stays optional. It's added by its full config key (e.g. `Logging:Path`),
-  which overrides the nested key from the base `appsettings.json` the same way the Doppler keys do.
+- Finally, each per-environment GitHub Variable in the step's `$environmentOverrides` map (currently
+  `HANGFIRE_SCHEMANAME` → `Hangfire:SchemaName` and `LOGGING_PATH` → `Logging:Path`) is injected — but only
+  when set, so it stays optional. It's added by its full config key (e.g. `Logging:Path`), which overrides the
+  nested key from the base `appsettings.json` the same way the Doppler keys do.
 
 ## 3. One-time repository setup
 
@@ -190,19 +191,24 @@ the next deploy — no commit needed.
 > The newline form is only for the keys named in `$stringListKeys` in `deploy.yml`, and it is deliberately not
 > available here: that handling runs before the JSON detection, so a key in that list can never carry JSON.
 
-**Step 6 — (Optional) platform-specific config/secrets.** If the new platform needs *different* values from
-the others:
+**Step 6 — Platform-specific config/secrets.**
 
-- **Non-sensitive** (e.g. a distinct `Logging:Path`): add it as an **environment Variable** in `prod-<platform>`
-  (Settings → Environments → the environment → *Variables*). The pipeline reads `vars.LOGGING_PATH` and injects
-  it as `Logging:Path` only when set. Ensure the same key isn't also in Doppler (one home per key). To wire up a *new* per-site key beyond `LOGGING_PATH`, add it to the env block and the
-  inject line in `deploy.yml`'s "Build appsettings.Production.json" step, mirroring `LOGGING_PATH`.
+- **A Hangfire schema — required.** Every site shares the one prod database, and a Hangfire server runs
+  whatever it finds in its own storage, so two sites pointed at one schema each run the other's background
+  jobs. Set `HANGFIRE_SCHEMANAME` as an **environment Variable** in `prod-<platform>` to a name no other site
+  uses. The committed default is `Hangfire`, which `prod-odk` keeps; `prod-gs` uses `Hangfire2`. The names are
+  deliberately numbered rather than named after a platform, so renaming a platform never strands a schema.
+  Hangfire creates the schema and its tables on first start, so the SQL login needs rights to do so.
+- **Other non-sensitive values** (e.g. a distinct `Logging:Path`): add them as environment Variables the same
+  way (Settings → Environments → the environment → *Variables*), and ensure the same key isn't also in Doppler
+  (one home per key). To wire up a *new* per-site key, add it to the env block and to `$environmentOverrides`
+  in `deploy.yml`'s "Build appsettings.Production.json" step, mirroring `LOGGING_PATH`.
 - **Sensitive**: create a Doppler **branch config** (e.g. `prd_<platform>`) with the differing secrets, generate
   a service token for it, and add that token as a `DOPPLER_TOKEN` **environment** secret in `prod-<platform>`
-  (it overrides the repo one).
+  (it overrides the repo one). If the platform shares its secrets (the default today), skip this — it uses the
+  shared `prd` Doppler config and the repo `DOPPLER_TOKEN`.
 
-Nothing else in the workflows changes. If the platform shares config (the default today), skip this — it uses
-the shared `prd` Doppler config and the repo `DOPPLER_TOKEN`.
+Nothing else in the workflows changes.
 
 **Step 7 — Ship it.** Merge to `master`. Build runs, and on success Deploy automatically migrates the shared DB
 once and deploys every site in the matrix — including the new one. (Or trigger Deploy manually via **Run
@@ -239,10 +245,13 @@ workflow**; see §6.)
 ### Adding / changing per-site non-sensitive config (GitHub Variables)
 
 - Settings → Environments → the environment (`prod-odk` / `prod-gs`) → *Variables*. Values are viewable and
-  editable here. `LOGGING_PATH` is wired up already; it applies on the next deploy of that environment.
+  editable here. `HANGFIRE_SCHEMANAME` and `LOGGING_PATH` are wired up already; a change applies on the next
+  deploy of that environment.
+- `HANGFIRE_SCHEMANAME` is per-site by necessity, not by preference — see Step 6 in §4. `prod-gs` sets
+  `Hangfire2`; `prod-odk` sets nothing and takes the committed `Hangfire`.
 - To add a *new* per-site key, extend `deploy.yml`'s "Build appsettings.Production.json" step: add
-  `<KEY>: ${{ vars.<KEY> }}` to the step `env` and a matching `if ($env:<KEY>) { … 'Config:Key' … }` inject
-  line, mirroring `LOGGING_PATH` → `Logging:Path`.
+  `<KEY>: ${{ vars.<KEY> }}` to the step `env` and a matching `'Config:Key' = $env:<KEY>` entry to
+  `$environmentOverrides`, mirroring `LOGGING_PATH` → `Logging:Path`.
 
 ### The one rule
 
