@@ -7,10 +7,6 @@
 /// </summary>
 public class WebhooksControllerSettings
 {
-    public required string BrevoWebhookEnv { get; init; }
-
-    public required string BrevoWebhookEnvHeader { get; init; }
-
     public required string BrevoWebhookPassword { get; init; }
 
     public required string BrevoWebhookPasswordHeader { get; init; }

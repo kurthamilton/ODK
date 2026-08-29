@@ -44,7 +44,7 @@ public class BrevoApiEmailClient : IEmailClient
         using var httpClient = _httpClientFactory.CreateClient();
         httpClient.DefaultRequestHeaders.Add("api-key", _settings.ApiKey);
 
-        var request = email.ToBrevoRequest(_settings.DebugEmailAddress);
+        var request = email.ToBrevoRequest(_settings);
         var body = JsonUtils.Serialize(request);
 
         var requestMessage = new HttpRequestMessage

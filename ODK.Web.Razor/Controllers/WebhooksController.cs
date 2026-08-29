@@ -1,5 +1,4 @@
-﻿using System.Text.Json.Nodes;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Platforms;
 using ODK.Core.Utils;
 using ODK.Services.Emails;
@@ -17,16 +16,18 @@ namespace ODK.Web.Razor.Controllers;
 [IgnoreAntiforgeryToken] // external POSTs; authenticated by signature/secret, not a token
 public class WebhooksController : OdkControllerBase
 {
-    private readonly WebhooksControllerSettings _settings;
+    private readonly IBrevoWebhookParser _brevoWebhookParser;
     private readonly IEmailService _emailService;
     private readonly ILoggingService _loggingService;
     private readonly IPaymentService _paymentService;
+    private readonly WebhooksControllerSettings _settings;
     private readonly IStripeWebhookParser _stripeWebhookParser;
 
     public WebhooksController(
         ILoggingService loggingService,
         IPaymentService paymentService,
         IStripeWebhookParser stripeWebhookParser,
+        IBrevoWebhookParser brevoWebhookParser,
         IRequestStore requestStore,
         IEmailService emailService,
         WebhooksControllerSettings settings,
@@ -34,6 +35,7 @@ public class WebhooksController : OdkControllerBase
         : base(requestStore, odkRoutes)
     {
         _settings = settings;
+        _brevoWebhookParser = brevoWebhookParser;
         _emailService = emailService;
         _loggingService = loggingService;
         _paymentService = paymentService;
@@ -43,12 +45,6 @@ public class WebhooksController : OdkControllerBase
     [HttpPost("webhooks/brevo")]
     public async Task Brevo()
     {
-        var env = GetHeader(_settings.BrevoWebhookEnvHeader);
-        if (env != _settings.BrevoWebhookEnv)
-        {
-            return;
-        }
-
         var password = GetHeader(_settings.BrevoWebhookPasswordHeader);
         if (password != _settings.BrevoWebhookPassword)
         {
@@ -57,23 +53,13 @@ public class WebhooksController : OdkControllerBase
 
         var json = await ReadBodyText();
 
-        var node = JsonNode.Parse(json);
-        if (node == null)
+        var webhook = await _brevoWebhookParser.ParseWebhook(json);
+        if (webhook == null)
         {
             return;
         }
 
-        var eventName = node?["event"]?.GetValue<string>();
-        var externalId = node?["message-id"]?.GetValue<string>();
-
-        if (string.IsNullOrEmpty(eventName) || string.IsNullOrEmpty(externalId))
-        {
-            await _loggingService.Error(
-                $"Error processing Brevo webhook: event {eventName} or messageId {externalId}  not found");
-            return;
-        }
-
-        await _emailService.AddEvent(externalId, eventName);
+        await _emailService.AddEvent(webhook.ExternalId, webhook.EventName);
     }
 
     /// <summary>
