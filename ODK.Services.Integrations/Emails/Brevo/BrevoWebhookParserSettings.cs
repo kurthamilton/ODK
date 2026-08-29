@@ -2,12 +2,8 @@
 
 namespace ODK.Services.Integrations.Emails.Brevo;
 
-public class BrevoApiEmailClientSettings
+public class BrevoWebhookParserSettings
 {
-    public required string ApiKey { get; init; }
-
-    public required string? DebugEmailAddress { get; init; }
-
     public required EnvironmentType Environment { get; init; }
 
     public required string EnvironmentTagPrefix { get; init; }

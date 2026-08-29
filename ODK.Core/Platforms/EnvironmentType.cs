@@ -7,7 +7,7 @@
 public enum EnvironmentType
 {
     None = 0,
-    Prod,
-    Dev,
-    E2E
+    Prod = 1,
+    Dev = 2,
+    E2E = 3
 }

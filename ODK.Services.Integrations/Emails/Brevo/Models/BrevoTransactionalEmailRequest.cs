@@ -14,5 +14,7 @@ public class BrevoTransactionalEmailRequest
 
     public required string Subject { get; init; }
 
+    public IReadOnlyCollection<string>? Tags { get; init; }
+
     public required IReadOnlyCollection<BrevoEmailAddressee> To { get; init; }
 }

@@ -179,7 +179,15 @@ public static class DependencyRegistrar
             .AddSingleton(new BrevoApiEmailClientSettings
             {
                 ApiKey = appSettings.Brevo.ApiKey,
-                DebugEmailAddress = appSettings.Emails.DebugEmailAddress
+                DebugEmailAddress = appSettings.Emails.DebugEmailAddress,
+                Environment = appSettings.Brevo.Environment,
+                EnvironmentTagPrefix = appSettings.Brevo.EnvironmentTagPrefix
+            })
+            .AddScoped<IBrevoWebhookParser, BrevoWebhookParser>()
+            .AddSingleton(new BrevoWebhookParserSettings
+            {
+                Environment = appSettings.Brevo.Environment,
+                EnvironmentTagPrefix = appSettings.Brevo.EnvironmentTagPrefix
             })
             .AddScoped<IEventAdminService, EventAdminService>()
             .AddSingleton(new EventAdminServiceSettings
@@ -406,8 +414,6 @@ public static class DependencyRegistrar
 
         services.AddSingleton(new WebhooksControllerSettings
         {
-            BrevoWebhookEnv = appSettings.Brevo.WebhookEnv,
-            BrevoWebhookEnvHeader = appSettings.Brevo.WebhookEnvHeader,
             BrevoWebhookPassword = appSettings.Brevo.WebhookPassword,
             BrevoWebhookPasswordHeader = appSettings.Brevo.WebhookPasswordHeader
         });

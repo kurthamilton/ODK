@@ -1,6 +1,7 @@
 ﻿using MimeKit;
 using MimeKit.Text;
 using ODK.Services.Emails;
+using ODK.Services.Integrations.Emails.Brevo;
 using ODK.Services.Integrations.Emails.Brevo.Models;
 
 namespace ODK.Services.Integrations.Emails.Extensions;
@@ -9,13 +10,14 @@ internal static class EmailClientEmailExtensions
 {
     internal static BrevoTransactionalEmailRequest ToBrevoRequest(
         this EmailClientEmail email,
-        string? debugEmailAddress)
+        BrevoApiEmailClientSettings settings)
     {
         var sender = new BrevoEmailAddressee(email.From);
 
         var to = new List<BrevoEmailAddressee>();
         var bcc = new List<BrevoEmailAddressee>();
 
+        var debugEmailAddress = settings.DebugEmailAddress;
         if (!string.IsNullOrEmpty(debugEmailAddress))
         {
             to.Add(new BrevoEmailAddressee(debugEmailAddress));
@@ -31,6 +33,10 @@ internal static class EmailClientEmailExtensions
             bcc.AddRange(email.To.Select(x => new BrevoEmailAddressee(x)));
         }
 
+        // Every environment sends through one Brevo account, and an event is delivered to every webhook
+        // endpoint registered on it. The tag is what lets a receiver tell whose message an event is for.
+        var environmentTag = BrevoEnvironmentTag.Format(settings.EnvironmentTagPrefix, settings.Environment);
+
         return new BrevoTransactionalEmailRequest
         {
             Bcc = bcc.Count > 0 ? bcc : null,
@@ -38,6 +44,7 @@ internal static class EmailClientEmailExtensions
             ScheduledAt = email.ScheduledUtc,
             Sender = sender,
             Subject = email.Subject,
+            Tags = environmentTag != null ? [environmentTag] : null,
             To = to
         };
     }
