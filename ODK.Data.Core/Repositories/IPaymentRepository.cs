@@ -7,6 +7,8 @@ namespace ODK.Data.Core.Repositories;
 
 public interface IPaymentRepository : IReadWriteRepository<Payment, IPaymentQueryBuilder>
 {
+    IDeferredQuerySingle<Payment> GetByCheckoutSessionId(string sessionId);
+
     IDeferredQueryMultiple<PaymentChapterDto> GetChapterDtosByMemberId(Guid memberId);
 
     IDeferredQueryMultiple<Payment> GetMemberChapterPayments(Guid memberId, Guid chapterId);

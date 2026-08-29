@@ -6,7 +6,7 @@
 @inject IOdkRoutes OdkRoutes
 
 @await Html.PartialAsync("Components/_AdminPageDescription",
-    "Every subscription this group has, and the payment settings each one takes money through. Active marks the settings the platform is currently transacting through, so anything else is pointed at an older account. The group's own subscriptions page hides any subscription whose settings are missing or disabled; this one shows them.")
+    "Every subscription this group has, and the deployment each one was created under. The group's own subscriptions page hides any subscription that is disabled or cannot be bought; this one shows them.")
 
 <div data-odk-component="_ChapterSubscriptionsContent">
     <div class="table-responsive">
@@ -18,11 +18,7 @@
                     <th>Amount</th>
                     <th>Months</th>
                     <th>Enabled</th>
-                    @* Payment settings, and the two of its properties that say which account a
-                       subscription is actually pointed at. Enabled above belongs to the subscription. *@
-                    <th>Payment settings</th>
                     <th>Environment</th>
-                    <th>Active</th>
                     <th>Visible to group</th>
                 </tr>
             </thead>
@@ -30,13 +26,13 @@
                 @if (Model.Subscriptions.Count == 0)
                 {
                     <tr>
-                        <td colspan="9" class="text-muted">This group has no subscriptions.</td>
+                        <td colspan="7" class="text-muted">This group has no subscriptions.</td>
                     </tr>
                 }
 
                 @foreach (var row in Model.Subscriptions)
                 {
-                    var (subscription, paymentSettings) = (row.ChapterSubscription, row.SitePaymentSettings);
+                    var subscription = row.ChapterSubscription;
 
                     <tr>
                         <td>
@@ -65,29 +61,7 @@
                                        checked="@(!subscription.Disabled ? "" : null)" />
                             </div>
                         </td>
-                        <td>
-                            @if (paymentSettings != null)
-                            {
-                                <span class="d-none" data-sort-value="@paymentSettings.Name"></span>
-                                <a href="@OdkRoutes.SiteAdmin.Payment(paymentSettings.Id)">@paymentSettings.Name</a>
-                            }
-                            else
-                            {
-                                <span class="text-danger">None</span>
-                            }
-                        </td>
-                        <td>@paymentSettings?.Environment</td>
-                        <td>
-                            @* No switch at all where there are no settings: an unchecked one would read as
-                               settings that exist and are inactive. *@
-                            @if (paymentSettings != null)
-                            {
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" role="switch" disabled
-                                           checked="@(paymentSettings.Active ? "" : null)" />
-                                </div>
-                            }
-                        </td>
+                        <td>@subscription.Environment</td>
                         <td>
                             @* Sorted on a stated value rather than the icon markup, which is identical for
                                every row that has one. *@
@@ -99,9 +73,9 @@
                             else
                             {
                                 <span class="text-danger" data-bs-toggle="tooltip"
-                                      title="@(paymentSettings == null
-                                          ? "No payment settings, so this cannot be bought"
-                                          : "The payment settings are disabled, so this cannot be bought")">
+                                      title="@(subscription.Disabled
+                                          ? "Disabled, so this cannot be bought"
+                                          : "Payments are switched off, so this cannot be bought")">
                                     @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.ExclamationTriangle))
                                 </span>
                             }

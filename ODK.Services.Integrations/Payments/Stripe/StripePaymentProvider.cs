@@ -19,23 +19,20 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
     private static readonly TimeSpan SubscriptionInvoiceMatchWindow = TimeSpan.FromHours(6);
 
     private readonly IStripeClient _client;
-    private readonly string? _connectedAccountId;
     private readonly ILoggingService _loggingService;
     private readonly IPlatformProvider _platformProvider;
     private readonly StripePaymentProviderSettings _settings;
 
     public StripePaymentProvider(
-        SitePaymentSettings paymentSettings,
         ILoggingService loggingService,
-        string? connectedAccountId,
         StripePaymentProviderSettings settings,
-        IPlatformProvider platformProvider)
+        IPlatformProvider platformProvider,
+        PlatformType platform)
     {
         _client = new StripeClient(new StripeClientOptions
         {
-            ApiKey = paymentSettings.ApiSecretKey
+            ApiKey = settings.Platforms[platform].SecretApiKey
         });
-        _connectedAccountId = connectedAccountId;
         _loggingService = loggingService;
         _platformProvider = platformProvider;
         _settings = settings;
@@ -133,30 +130,6 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
             await _loggingService.Error($"Error creating connected stripe account for '{emailAddress}'", ex);
             return null;
         }
-    }
-
-    public async Task<string?> CreateProduct(string name)
-    {
-        var service = CreateProductService();
-        var result = await service.SearchAsync(new ProductSearchOptions
-        {
-            Query = $"name:\"{name}\""
-        });
-
-        var match = result
-            .FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase));
-
-        if (match != null)
-        {
-            return match.Id;
-        }
-
-        var product = await service.CreateAsync(new ProductCreateOptions
-        {
-            Name = name
-        });
-
-        return product.Id;
     }
 
     public async Task<string?> CreateSubscriptionPlan(ExternalSubscriptionPlan subscriptionPlan)
@@ -266,6 +239,8 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
         }
     }
 
+    public Task<string> GetChapterProductId(Chapter chapter) => GetOrCreateProduct(chapter.FullName);
+
     public async Task<ExternalCheckoutSession?> GetCheckoutSession(string externalId)
     {
         var service = CreateSessionService();
@@ -324,6 +299,18 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
             IdentityDocumentsProvided = identityDocumentsProvided,
             InitialOnboardingComplete = initialOnboardingComplete
         };
+    }
+
+    public async Task<string> GetOrCreateChapterProduct(Chapter chapter)
+    {
+        var productName = chapter.FullName;
+        return await GetOrCreateProduct(productName);
+    }
+
+    public async Task<string> GetOrCreatePlatformProduct(PlatformType platform)
+    {
+        var productName = $"{_platformProvider.GetName(platform)} Platform";
+        return await GetOrCreateProduct(productName);
     }
 
     public async Task<string?> GetPaymentIdForReference(string reference, DateTime paidUtc)
@@ -456,15 +443,6 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
         }
     }
 
-    public async Task<string?> GetProductId(string name)
-    {
-        var service = CreateProductService();
-        var products = await service.ListAsync();
-        return products
-            .FirstOrDefault(x => string.Equals(name, x.Name, StringComparison.InvariantCultureIgnoreCase))
-            ?.Id;
-    }
-
     public async Task<ExternalSubscription?> GetSubscription(string externalId)
     {
         if (!externalId.StartsWith("sub_"))
@@ -557,7 +535,8 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
         string emailAddress,
         ExternalSubscriptionPlan subscriptionPlan,
         string returnPath,
-        PaymentMetadataModel metadata)
+        PaymentMetadataModel metadata,
+        ChapterPaymentAccount? chapterPaymentAccount)
     {
         var returnUrl = UrlUtils.Url(
             baseUrl: request.HttpRequestContext.BaseUrl,
@@ -608,12 +587,12 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
             PaymentIntentData = !subscriptionPlan.Recurring ? new SessionPaymentIntentDataOptions
             {
                 Metadata = metadataDictionary,
-                OnBehalfOf = _connectedAccountId
+                OnBehalfOf = chapterPaymentAccount?.ExternalId
             } : null,
             SubscriptionData = subscriptionPlan.Recurring ? new SessionSubscriptionDataOptions
             {
                 Metadata = metadataDictionary,
-                OnBehalfOf = _connectedAccountId
+                OnBehalfOf = chapterPaymentAccount?.ExternalId
             } : null
         });
 
@@ -713,10 +692,10 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
     {
         // do not send localhost to Stripe
         var baseUrl = UrlUtils.BaseUrl(url);
-        _settings.ConnectedAccountBaseUrls.TryGetValue(platform, out var connectedAccountBaseUrl);
-        if (!string.IsNullOrEmpty(connectedAccountBaseUrl))
+        if (_settings.Platforms.TryGetValue(platform, out var platformSettings) &&
+            !string.IsNullOrEmpty(platformSettings.ConnectedAccountBaseUrl))
         {
-            return url.Replace(baseUrl, connectedAccountBaseUrl, StringComparison.OrdinalIgnoreCase);
+            return url.Replace(baseUrl, platformSettings.ConnectedAccountBaseUrl, StringComparison.OrdinalIgnoreCase);
         }
 
         return baseUrl.Contains("localhost", StringComparison.OrdinalIgnoreCase)
@@ -734,6 +713,30 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
 
     private PriceService CreatePriceService() => new(_client);
 
+    private async Task<string> CreateProduct(string name)
+    {
+        var service = CreateProductService();
+        var result = await service.SearchAsync(new ProductSearchOptions
+        {
+            Query = $"name:\"{name}\""
+        });
+
+        var match = result
+            .FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase));
+
+        if (match != null)
+        {
+            return match.Id;
+        }
+
+        var product = await service.CreateAsync(new ProductCreateOptions
+        {
+            Name = name
+        });
+
+        return product.Id;
+    }
+
     private ProductService CreateProductService() => new(_client);
 
     private SessionService CreateSessionService() => new(_client);
@@ -743,4 +746,19 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
     private TransferService CreateTransferService() => new(_client);
 
     private WebhookEndpointService CreateWebhookEndpointService() => new(_client);
+
+    private async Task<string> GetOrCreateProduct(string name)
+    {
+        var service = CreateProductService();
+        var products = await service.ListAsync();
+        var existing = products
+            .FirstOrDefault(x => string.Equals(name, x.Name, StringComparison.OrdinalIgnoreCase))
+            ?.Id;
+        if (!string.IsNullOrEmpty(existing))
+        {
+            return existing;
+        }
+
+        return await CreateProduct(name);
+    }
 }

@@ -32,22 +32,37 @@ console email client (no real mail), HIBP breach check off, in-memory Hangfire, 
 `script.run.app.e2e.bat` binds **both** platform ports in one process — `:8125` (Default) and `:8126`
 (DrunkenKnitwits) — and `PlatformProvider` resolves the platform from the request URL.
 
-**One of that environment's values is asserted against rather than merely assumed.** An expired site
-subscription keeps its access for `Subscriptions:DefaultCooldownMonths`, so a test that lapses one has to
-know which side of that window it is arranging. These tests cannot read the app's configuration, so the same
-number is stated as `SiteSubscriptionCooldownMonths` (`ODK.E2E.Tests/appsettings.json`) and **the two have to
-agree**: `SiteSubscriptionCooldownTests` arranges expiries either side of the window (and skips itself where
-the setting says the app runs with no cooldown), while `MemberSiteSubscriptionDataHelper.Expire` defaults to
-years ago, so every other test lapses a subscription clear of any window.
+**Two of that environment's values are restated here rather than merely assumed, and each pair has to
+agree.** These tests cannot read the app's configuration, so where one of its values decides what a test has
+to arrange, the same value is stated in `ODK.E2E.Tests/appsettings.json`.
 
-**The Stripe payment tests run against payment settings the database already holds, not ones they seed.**
-A `SitePaymentSettings` row carries live Stripe API keys, and the connected account a purchase pays into
-exists only inside the Stripe account those keys belong to - so seeding half of that pairing from test config
-guarantees the two can drift, and a mismatch surfaces from Stripe as `No such on_behalf_of`. Instead each
-platform's `Stripe:Platforms:<platform>:AccountId` names a Stripe account, `SitePaymentSettingsDataHelper`
-finds the enabled row whose `ExternalId` is it, and everything - the app's keys, the connected account, and
-the key a test clock talks to Stripe with - comes from that one row. Curating the row is a manual database
-step; the tests fail naming the missing row rather than inventing one.
+- `Subscriptions:DefaultCooldownMonths` → `SiteSubscriptionCooldownMonths`. An expired site subscription
+  keeps its access for the cooldown, so a test that lapses one has to know which side of that window it is
+  arranging. `SiteSubscriptionCooldownTests` arranges expiries either side of it (and skips itself where the
+  setting says the app runs with no cooldown), while `MemberSiteSubscriptionDataHelper.Expire` defaults to
+  years ago, so every other test lapses a subscription clear of any window.
+- `Environment` → `Environment`, read as a number through `E2ESettings.EnvironmentTypeId`. Every
+  payment-related row carries the deployment it was written under, and the app reads back only rows carrying
+  its own - so a row seeded here under any other deployment is invisible to it. **The failure is silent**:
+  an unstamped column defaults to `None`, which is a deployment nothing runs as, and the app simply reports
+  the row missing. `ChapterPaymentAccountDataHelper.EnsureSetupComplete` stamps what the setting says, and
+  `SiteSubscriptionDataHelper.Exists` asks by it.
+
+**The Stripe keys the app transacts with are configuration, not data.** `appsettings.e2e.json` states them
+per platform under `Payments:Stripe:Platforms:<platform>`, so the app under test takes money on whichever
+Stripe account that file names. The connected account a chapter-subscription purchase pays into exists only
+inside that same Stripe account and comes from *this* solution's config
+(`Stripe:Platforms:<platform>:ConnectedAccountId`) - so the pairing that must not drift is between the two
+config files, and a mismatch surfaces from Stripe as `No such on_behalf_of`.
+`Stripe:Platforms:<platform>:AccountId` states which account both are meant to be, so each can be checked
+against that rather than against the other.
+
+**Two fixtures still read a `SitePaymentSettings` row**, and only for the secret key a test clock talks to
+Stripe with directly - `ChapterSubscriptionRenewalTests` and `RecurringSiteSubscriptionRenewalTests`, via
+`SitePaymentSettingsDataHelper`, which finds the enabled row whose `ExternalId` is that `AccountId`. That key
+duplicates the one in `appsettings.e2e.json`, so rotating a key means changing both. The row is what the app
+itself used to transact through and has not been dropped yet, rather than a source of truth; curating it is a
+manual database step, and the tests fail naming the missing row rather than inventing one.
 
 **One-time prerequisite:** install the Playwright browsers after the first build:
 
@@ -298,11 +313,12 @@ means a new category and the E2E suite tracks the app's workflows rather than a 
 - **Naming:** `Method_Scenario_ExpectedResult`; Arrange/Act/Assert with comments; FluentAssertions
   (`x.Should()...`); one top-level type per file; `required` init props for models.
 - **Config:** `ODK.E2E.Tests/appsettings.json` holds `DefaultBaseUrl`, `DrunkenKnitwitsBaseUrl`,
-  `ConnectionString`, `SiteSubscriptionCooldownMonths` and a `Stripe` section; override per-machine via
-  git-ignored `appsettings.local.json` or `ODK_E2E_*` env vars. The `Stripe` section holds no API keys - per
-  platform it names the Stripe account (`AccountId`) whose `SitePaymentSettings` row the tests use and the
-  connected account created under it, plus the shared ngrok `WebhookBaseUrl`. See the payment-settings note
-  under *Running the app for E2E*.
+  `ConnectionString`, `Environment`, `SiteSubscriptionCooldownMonths` and a `Stripe` section; override
+  per-machine via git-ignored `appsettings.local.json` or `ODK_E2E_*` env vars. The `Stripe` section holds no
+  API keys - per platform it names the Stripe account the app is configured to transact on (`AccountId`) and
+  the connected account created under it, plus the shared ngrok `WebhookBaseUrl`. `Environment` names the
+  deployment the app runs as, so seeded rows carry what it reads back. Both are values the app also states in
+  its own configuration - see the two notes under *Running the app for E2E*.
 
 ## Test isolation: shared vs local provisioning
 

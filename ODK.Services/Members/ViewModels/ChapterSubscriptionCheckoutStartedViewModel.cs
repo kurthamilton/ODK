@@ -6,13 +6,18 @@ namespace ODK.Services.Members.ViewModels;
 
 public class ChapterSubscriptionCheckoutStartedViewModel
 {
+    /// <summary>
+    /// The provider key the checkout page hands the provider's own browser script.
+    /// </summary>
+    public required string ApiPublicKey { get; init; }
+
     public required Chapter Chapter { get; init; }
 
     public required ChapterSubscription ChapterSubscription { get; init; }
 
     public required string ClientSecret { get; init; }
 
-    public required SitePaymentSettings PaymentSettings { get; init; }
+    public required PaymentProviderType PaymentProvider { get; init; }
 
     public required PlatformType Platform { get; init; }
 }

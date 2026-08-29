@@ -364,6 +364,7 @@ public static class EmailServiceTests
         var request = new ServiceRequest
         {
             CurrentMemberOrDefault = null,
+            Environment = EnvironmentType.Dev,
             HttpRequestContext = Mock.Of<IHttpRequestContext>(),
             Platform = PlatformType.DrunkenKnitwits
         };
@@ -421,6 +422,7 @@ public static class EmailServiceTests
         var request = new ServiceRequest
         {
             CurrentMemberOrDefault = null,
+            Environment = EnvironmentType.Dev,
             HttpRequestContext = Mock.Of<IHttpRequestContext>(),
             Platform = PlatformType.DrunkenKnitwits
         };
@@ -507,6 +509,7 @@ public static class EmailServiceTests
         var request = new ServiceRequest
         {
             CurrentMemberOrDefault = null,
+            Environment = EnvironmentType.Dev,
             HttpRequestContext = Mock.Of<IHttpRequestContext>(),
             Platform = PlatformType.DrunkenKnitwits
         };

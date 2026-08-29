@@ -1,4 +1,7 @@
-﻿namespace ODK.Core.Chapters;
+﻿using ODK.Core.Payments;
+using ODK.Core.Platforms;
+
+namespace ODK.Core.Chapters;
 
 public class ChapterPaymentAccount : IDatabaseEntity, IChapterEntity
 {
@@ -7,6 +10,8 @@ public class ChapterPaymentAccount : IDatabaseEntity, IChapterEntity
     public Guid ChapterId { get; set; }
 
     public DateTime CreatedUtc { get; set; }
+
+    public EnvironmentType Environment { get; init; }
 
     public required string ExternalId { get; set; }
 
@@ -20,7 +25,10 @@ public class ChapterPaymentAccount : IDatabaseEntity, IChapterEntity
 
     public Guid OwnerId { get; set; }
 
-    public Guid SitePaymentSettingId { get; set; }
+    public PaymentProviderType PaymentProvider { get; set; }
+
+    [Obsolete]
+    public Guid? SitePaymentSettingId { get; set; }
 
     public bool SetupComplete() =>
         OnboardingCompletedUtc != null &&

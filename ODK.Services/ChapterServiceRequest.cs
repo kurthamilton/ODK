@@ -14,6 +14,7 @@ public class ChapterServiceRequest : ServiceRequest, IChapterServiceRequest
         {
             Chapter = chapter,
             CurrentMemberOrDefault = request.CurrentMemberOrDefault,
+            Environment = request.Environment,
             HttpRequestContext = request.HttpRequestContext,
             Platform = request.Platform
         };

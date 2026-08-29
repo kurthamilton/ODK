@@ -160,11 +160,9 @@ internal class MockOdkContext : OdkContext
     internal ChapterPaymentAccount CreateChapterPaymentAccount(
         Chapter? chapter = null,
         string? externalId = null,
-        SitePaymentSettings? sitePaymentSettings = null,
         bool setupComplete = true)
     {
         chapter ??= CreateChapter();
-        sitePaymentSettings ??= CreateSitePaymentSettings(chapter.Platform);
 
         var utcNow = DateTime.UtcNow;
 
@@ -176,28 +174,28 @@ internal class MockOdkContext : OdkContext
             Id = Guid.NewGuid(),
             IdentityDocumentsProvidedUtc = setupComplete ? utcNow : null,
             OnboardingCompletedUtc = setupComplete ? utcNow : null,
+            Environment = EnvironmentType.Dev,
             OnboardingUrl = null,
             OwnerId = chapter.OwnerId,
-            SitePaymentSettingId = sitePaymentSettings.Id
+            PaymentProvider = PaymentProviderType.Stripe
         });
     }
 
     internal ChapterSubscription CreateChapterSubscription(
         Chapter? chapter = null,
-        SitePaymentSettings? sitePaymentSettings = null,
         Currency? currency = null)
     {
         currency ??= CreateCurrency();
         chapter ??= CreateChapter();
-        sitePaymentSettings ??= CreateSitePaymentSettings(chapter.Platform);
 
         return Create(new ChapterSubscription
         {
             ChapterId = chapter.Id,
             Currency = currency,
             CurrencyId = currency.Id,
+            Environment = EnvironmentType.Dev,
             Id = Guid.NewGuid(),
-            SitePaymentSettingId = sitePaymentSettings.Id
+            PaymentProvider = PaymentProviderType.Stripe
         });
     }
 
@@ -293,13 +291,12 @@ internal class MockOdkContext : OdkContext
     internal Payment CreatePayment(
         Currency? currency = null,
         Member? member = null,
-        SitePaymentSettings? sitePaymentSettings = null,
         Chapter? chapter = null,
-        DateTime? paidUtc = null)
+        DateTime? paidUtc = null,
+        PlatformType platform = PlatformType.Default)
     {
         currency ??= CreateCurrency();
         member ??= CreateMember();
-        sitePaymentSettings ??= CreateSitePaymentSettings();
 
         return Create(new Payment
         {
@@ -308,10 +305,12 @@ internal class MockOdkContext : OdkContext
             ChapterId = chapter?.Id,
             CreatedUtc = DateTime.UtcNow,
             CurrencyId = currency.Id,
+            Environment = EnvironmentType.Dev,
             MemberId = member.Id,
             PaidUtc = paidUtc,
-            Reference = "REF123",
-            SitePaymentSettingId = sitePaymentSettings.Id
+            PaymentProvider = PaymentProviderType.Stripe,
+            Platform = chapter?.Platform ?? platform,
+            Reference = "REF123"
         });
     }
 
@@ -333,36 +332,17 @@ internal class MockOdkContext : OdkContext
     }
 
     internal SitePaymentProduct CreateSitePaymentProduct(
-        SitePaymentSettings? sitePaymentSettings = null,
         PlatformType platform = PlatformType.Default,
         string externalId = "product-external-id")
     {
-        sitePaymentSettings ??= CreateSitePaymentSettings(platform);
-
         return Create(new SitePaymentProduct
         {
+            Environment = EnvironmentType.Dev,
             ExternalId = externalId,
             Id = Guid.NewGuid(),
-            Platform = platform,
-            SitePaymentSettingId = sitePaymentSettings.Id
-        });
-    }
-
-    internal SitePaymentSettings CreateSitePaymentSettings(
-        PlatformType platform = PlatformType.Default,
-        Action<SitePaymentSettings>? afterCreate = null)
-    {
-        var sitePaymentSettings = Create(new SitePaymentSettings
-        {
-            Active = true,
-            Enabled = true,
-            Id = Guid.NewGuid(),
+            PaymentProvider = PaymentProviderType.Stripe,
             Platform = platform
         });
-
-        afterCreate?.Invoke(sitePaymentSettings);
-
-        return sitePaymentSettings;
     }
 
     internal SiteSubscription CreateSiteSubscription(
@@ -371,13 +351,9 @@ internal class MockOdkContext : OdkContext
         bool free = false,
         int? memberLimit = null,
         PlatformType platform = PlatformType.Default,
-        SitePaymentProduct? sitePaymentProduct = null,
-        SitePaymentSettings? sitePaymentSettings = null)
+        SitePaymentProduct? sitePaymentProduct = null)
     {
-        /* Created rather than made up: a subscription's payment settings and product rows are both foreign
-           keys, so code that reads either expects to find one. */
-        sitePaymentSettings ??= CreateSitePaymentSettings(platform);
-        sitePaymentProduct ??= CreateSitePaymentProduct(sitePaymentSettings, platform);
+        sitePaymentProduct ??= CreateSitePaymentProduct(platform);
 
         var siteSubscription = Create(new SiteSubscription
         {
@@ -389,9 +365,10 @@ internal class MockOdkContext : OdkContext
             MemberLimit = memberLimit,
             Enabled = true,
             Default = false,
+            Environment = EnvironmentType.Dev,
+            PaymentProvider = PaymentProviderType.Stripe,
             Platform = platform,
-            SitePaymentProductId = sitePaymentProduct.Id,
-            SitePaymentSettingId = sitePaymentSettings.Id
+            SitePaymentProductId = sitePaymentProduct.Id
         });
 
         if (features != null)

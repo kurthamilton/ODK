@@ -12,18 +12,20 @@ public class SitePaymentProductMap : IEntityTypeConfiguration<SitePaymentProduct
 
         builder.HasKey(x => x.Id);
 
+        builder.Property(x => x.Environment)
+            .HasColumnName("EnvironmentTypeId");
+
+        builder.Property(x => x.PaymentProvider)
+            .HasColumnName("PaymentProviderTypeId");
+
         builder.Property(x => x.Platform)
             .HasColumnName("PlatformTypeId")
             .HasConversion<int>();
 
-        /* A platform owns one product per payment settings account: a second would make "the product to
+        /* A platform owns one product per account it transacts as: a second would make "the product to
            create this price under" ambiguous. Platform leads so the same index answers the lookup by
            platform alone. */
-        builder.HasIndex(x => new { x.Platform, x.SitePaymentSettingId })
+        builder.HasIndex(x => new { x.Platform, x.Environment, x.PaymentProvider })
             .IsUnique();
-
-        builder.HasOne<SitePaymentSettings>()
-            .WithMany()
-            .HasForeignKey(x => x.SitePaymentSettingId);
     }
 }

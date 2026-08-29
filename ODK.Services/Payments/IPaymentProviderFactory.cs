@@ -1,31 +1,25 @@
-﻿using ODK.Core.Chapters;
-using ODK.Core.Payments;
+﻿using ODK.Core.Payments;
+using ODK.Core.Platforms;
 
 namespace ODK.Services.Payments;
 
 public interface IPaymentProviderFactory
 {
+    IPaymentProvider GetPaymentProvider(PlatformType platform);
+
     IPaymentProvider GetPaymentProvider(
-        SitePaymentSettings sitePaymentSettings,
-        ChapterPaymentAccount? paymentAccount);
-
-    IPaymentProvider GetSitePaymentProvider(SitePaymentSettings sitePaymentSettings);
-
-    IPaymentProvider GetSitePaymentProvider(
-        IReadOnlyCollection<SitePaymentSettings> sitePaymentSettings,
-        Guid? sitePaymentSettingId);
+        PaymentProviderType provider, PlatformType platform);
 
     /// <summary>
-    /// The provider for these settings, or null where none is implemented for the type they name. For a
-    /// caller sweeping every configured account, where a record on a provider we cannot talk to is one to
-    /// pass over rather than a fault.
+    /// The provider for the type, or null where none is implemented for it. For a caller sweeping records
+    /// written under several providers, where one we cannot talk to is to be passed over rather than a fault.
     /// </summary>
-    IPaymentProvider? GetSitePaymentProviderOrDefault(SitePaymentSettings sitePaymentSettings);
+    IPaymentProvider? GetPaymentProviderOrDefault(PaymentProviderType provider, PlatformType platform);
 
     /// <summary>
-    /// The webhook reader for these settings, or null where the provider has no such thing. Kept here rather
-    /// than on <see cref="IPaymentProvider"/> so a caller never has to branch on
+    /// The webhook reader for the platform's account, or null where the provider has no such thing. Kept
+    /// here rather than on <see cref="IPaymentProvider"/> so a caller never has to branch on
     /// <see cref="PaymentProviderType"/> itself.
     /// </summary>
-    IStripeWebhookProvider? GetStripeWebhookProvider(SitePaymentSettings sitePaymentSettings);
+    IStripeWebhookProvider? GetStripeWebhookProvider(PaymentProviderType provider, PlatformType platform);
 }

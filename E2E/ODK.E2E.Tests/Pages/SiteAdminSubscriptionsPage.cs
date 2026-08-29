@@ -65,12 +65,11 @@ internal class SiteAdminSubscriptionsPage
     /// Lands on the created subscription's detail page on success.
     /// </summary>
     public async Task CreateSubscription(
-        string paymentSettingName, string name, string description, int groupLimit, int memberLimit,
+        string name, string description, int groupLimit, int memberLimit,
         int[]? featureIds = null, bool free = false)
     {
         await _page.Navigate("/siteadmin/subscriptions/new");
 
-        await _page.SelectOptionAsync("#SitePaymentSettingId", new SelectOptionValue { Label = paymentSettingName });
         await _page.FillAsync("#Name", name);
 
         await _page.SetHtmlEditor("Description", description);

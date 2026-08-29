@@ -704,8 +704,7 @@ public static class MemberAdminServiceTests
             GroupLimit = 10,
             Enabled = true,
             Default = true,
-            Platform = PlatformType.Default,
-            SitePaymentSettingId = Guid.NewGuid()
+            Platform = PlatformType.Default
         });
 
         var service = CreateMemberAdminService(context);
@@ -753,8 +752,7 @@ public static class MemberAdminServiceTests
             GroupLimit = 10,
             Enabled = true,
             Default = true,
-            Platform = PlatformType.Default,
-            SitePaymentSettingId = Guid.NewGuid()
+            Platform = PlatformType.Default
         });
 
         var service = CreateMemberAdminService(context);
@@ -823,8 +821,7 @@ public static class MemberAdminServiceTests
             GroupLimit = 10,
             Enabled = true,
             Default = true,
-            Platform = PlatformType.Default,
-            SitePaymentSettingId = Guid.NewGuid()
+            Platform = PlatformType.Default
         });
 
         var service = CreateMemberAdminService(context);
@@ -995,8 +992,7 @@ public static class MemberAdminServiceTests
             GroupLimit = 10,
             Enabled = true,
             Default = true,
-            Platform = PlatformType.Default,
-            SitePaymentSettingId = Guid.NewGuid()
+            Platform = PlatformType.Default
         });
 
         var service = CreateMemberAdminService(context);
@@ -1323,8 +1319,7 @@ public static class MemberAdminServiceTests
             GroupLimit = 10,
             Id = Guid.NewGuid(),
             Name = "Default",
-            Platform = platform,
-            SitePaymentSettingId = Guid.NewGuid()
+            Platform = platform
         });
     }
 }

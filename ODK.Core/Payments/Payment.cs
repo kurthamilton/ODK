@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Countries;
+using ODK.Core.Platforms;
 
 namespace ODK.Core.Payments;
 
@@ -55,6 +56,8 @@ public class Payment : IDatabaseEntity
 
     public Guid CurrencyId { get; set; }
 
+    public EnvironmentType Environment { get; set; }
+
     /// <summary>
     /// The provider's charge the money arrived on. Kept because a transfer out of it names it, and
     /// because it is what takes someone from a payment row to the charge in the provider's dashboard.
@@ -69,6 +72,10 @@ public class Payment : IDatabaseEntity
 
     public DateTime? PaidUtc { get; set; }
 
+    public PaymentProviderType PaymentProvider { get; set; }
+
+    public PlatformType Platform { get; set; }
+
     public string Reference { get; set; } = string.Empty;
 
     /// <summary>
@@ -78,6 +85,7 @@ public class Payment : IDatabaseEntity
     /// </summary>
     public string? SettlementCurrencyCode { get; set; }
 
+    [Obsolete]
     public Guid? SitePaymentSettingId { get; set; }
 
     /// <summary>

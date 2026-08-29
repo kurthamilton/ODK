@@ -7,5 +7,5 @@ namespace ODK.Data.Core.Repositories;
 public interface ISitePaymentProductRepository : IReadWriteRepository<SitePaymentProduct>
 {
     IDeferredQuerySingleOrDefault<SitePaymentProduct> GetByPlatform(
-        PlatformType platform, Guid sitePaymentSettingId);
+        PlatformType platform, EnvironmentType environment, PaymentProviderType provider);
 }

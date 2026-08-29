@@ -192,7 +192,8 @@ public static class ChapterSiteAdminServiceTests
         return new ChapterSiteAdminService(
             unitOfWork,
             new MemberSiteSubscriptionWriter(unitOfWork),
-            CreatePublicationRunner(unitOfWork, memberEmailService));
+            CreatePublicationRunner(unitOfWork, memberEmailService),
+            TestPaymentSettings.Create());
     }
 
     /// <summary>

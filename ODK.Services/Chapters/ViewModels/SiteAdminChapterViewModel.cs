@@ -12,8 +12,6 @@ public class SiteAdminChapterViewModel
 
     public required PlatformType Platform { get; init; }
 
-    public required IReadOnlyDictionary<Guid, SitePaymentSettings> SitePaymentSettings { get; init; }
-
     public required IReadOnlyCollection<SiteSubscription> SiteSubscriptions { get; init; }
 
     public required MemberSiteSubscriptionState? Subscription { get; init; }

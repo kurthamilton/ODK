@@ -47,9 +47,9 @@ internal static class MigrationBuilderExtensions
     }
 
     internal static MigrationBuilder DropConstraintIfExists(
-        this MigrationBuilder migrationBuilder, string table, string constraint)
+        this MigrationBuilder migrationBuilder, string table, string name)
     {
-        var sql = $"ALTER TABLE [{table}] DROP CONSTRAINT IF EXISTS [{constraint}];";
+        var sql = $"ALTER TABLE [{table}] DROP CONSTRAINT IF EXISTS [{name}];";
         migrationBuilder.Sql(sql);
         return migrationBuilder;
     }
@@ -84,9 +84,9 @@ internal static class MigrationBuilderExtensions
     /// create, and passes over a unique or clustered one.
     /// </summary>
     internal static MigrationBuilder DropIndexIfExists(
-        this MigrationBuilder migrationBuilder, string table, string index)
+        this MigrationBuilder migrationBuilder, string table, string name)
     {
-        migrationBuilder.Sql($"DROP INDEX IF EXISTS [{index}] ON [{table}];");
+        migrationBuilder.Sql($"DROP INDEX IF EXISTS [{name}] ON [{table}];");
         return migrationBuilder;
     }
 

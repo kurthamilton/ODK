@@ -332,16 +332,18 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             existing,
             owner,
             hasAccess,
-            sitePaymentSettings,
             country,
             currency) = await GetChapterAdminRestrictedContent(
             request,
-            x => x.ChapterPaymentAccountRepository.GetByChapterId(chapterId),
+            x => x.ChapterPaymentAccountRepository
+                .Query()
+                .ForChapter(chapterId)
+                .ForEnvironment(request.Environment)
+                .GetSingleOrDefault(),
             x => x.MemberRepository.GetChapterOwner(chapterId),
             x => x.MemberSiteSubscriptionRecordRepository
                 .Query(x => x.Current().ForChapterOwner(chapterId).Active(_siteSubscriptionCooldown))
                 .HasFeature(SiteFeatureType.Payments),
-            x => x.SitePaymentSettingsRepository.GetActive(chapter.Platform),
             x => x.CountryRepository.GetByChapterId(chapterId),
             x => x.CurrencyRepository.GetByChapterId(chapterId));
 
@@ -359,7 +361,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         var urlProvider = await _urlProviderFactory.Create(request);
 
-        var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(sitePaymentSettings);
+        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(chapter.Platform);
 
         var result = await paymentProvider.CreateConnectedAccount(new RemoteAccountCreateOptions
         {
@@ -386,10 +388,11 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         {
             ChapterId = request.Chapter.Id,
             CreatedUtc = DateTime.UtcNow,
+            Environment = request.Environment,
             ExternalId = result.Id,
             OnboardingUrl = onboardingUrl,
             OwnerId = owner.Id,
-            SitePaymentSettingId = sitePaymentSettings.Id
+            PaymentProvider = paymentProvider.Type
         });
 
         await _unitOfWork.SaveChanges();
@@ -488,21 +491,27 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     public async Task<ServiceResult> CreateChapterSubscription(
         IMemberChapterAdminServiceRequest request, ChapterSubscriptionCreateModel model)
     {
-        var (chapter, chapterId, currentMember) = (request.Chapter, request.Chapter.Id, request.CurrentMember);
+        var (environment, chapter, chapterId, currentMember) =
+            (request.Environment, request.Chapter, request.Chapter.Id, request.CurrentMember);
 
         var (
             hasAccess,
             existing,
             chapterPaymentSettings,
-            chapterPaymentAccountDto,
+            chapterPaymentAccount,
             currency
         ) = await GetChapterAdminRestrictedContent(request,
             x => x.MemberSiteSubscriptionRecordRepository
                 .Query(x => x.Current().ForChapterOwner(chapterId).Active(_siteSubscriptionCooldown))
                 .HasFeature(SiteFeatureType.MemberSubscriptions),
-            x => x.ChapterSubscriptionRepository.GetByChapterId(chapterId, includeDisabled: true),
+            x => x.ChapterSubscriptionRepository.GetByChapterId(
+                chapterId, environment, includeDisabled: true),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
-            x => x.ChapterPaymentAccountRepository.Query().ForChapter(chapterId).ToDto().GetSingleOrDefault(),
+            x => x.ChapterPaymentAccountRepository
+                .Query()
+                .ForChapter(chapterId)
+                .ForEnvironment(environment)
+                .GetSingleOrDefault(),
             x => x.CurrencyRepository.GetByChapterId(chapterId));
 
         if (!hasAccess)
@@ -510,12 +519,11 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             return ServiceResult.Failure(ErrorMessagesResource.NotPermitted);
         }
 
-        if (chapterPaymentAccountDto == null)
+        if (chapterPaymentAccount == null)
         {
             return ServiceResult.Failure("Payment account not set up");
         }
 
-        var chapterPaymentAccount = chapterPaymentAccountDto.ChapterPaymentAccount;
         if (!currentMember.SiteAdmin && !chapterPaymentAccount.SetupComplete())
         {
             return ServiceResult.Failure("Payment account set up not finished");
@@ -534,12 +542,13 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             CurrencyId = currency.Id,
             Description = model.Description,
             Disabled = model.Disabled,
+            Environment = chapterPaymentAccount.Environment,
             Months = model.Months,
             Name = model.Name,
+            PaymentProvider = chapterPaymentAccount.PaymentProvider,
             Recurring = model.Recurring,
             Title = model.Title,
-            Type = SubscriptionType.Full,
-            SitePaymentSettingId = chapterPaymentAccount.SitePaymentSettingId
+            Type = SubscriptionType.Full
         });
 
         var validationResult = ValidateChapterSubscription(subscription, existing);
@@ -548,23 +557,10 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             return validationResult;
         }
 
-        var sitePaymentSettings = chapterPaymentAccountDto.SitePaymentSettings;
-        var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(sitePaymentSettings);
+        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
+            chapterPaymentAccount.PaymentProvider, chapter.Platform);
 
-        var productName = chapter.FullName;
-
-        var productId = await paymentProvider.GetProductId(productName);
-        if (string.IsNullOrEmpty(productId))
-        {
-            productId = await paymentProvider.CreateProduct(productName);
-        }
-
-        if (productId == null)
-        {
-            throw new Exception("Error creating product");
-        }
-
-        subscription.ExternalProductId = productId;
+        var productId = await paymentProvider.GetOrCreateChapterProduct(chapter);
 
         var externalId = await paymentProvider.CreateSubscriptionPlan(new ExternalSubscriptionPlan
         {
@@ -580,12 +576,12 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         subscription.ExternalId = externalId;
 
+        await _unitOfWork.SaveChanges();
+
         if (!model.Disabled)
         {
             await paymentProvider.ActivateSubscriptionPlan(externalId);
         }
-
-        await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
     }
@@ -731,21 +727,25 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     public async Task<ServiceResult<string>> GenerateChapterPaymentAccountSetupUrl(
         IMemberChapterAdminServiceRequest request, string refreshPath, string returnPath)
     {
-        var chapterPaymentAccountDto = await GetChapterAdminRestrictedContent(
-            request,
-            x => x.ChapterPaymentAccountRepository.Query().ForChapter(request.Chapter.Id).ToDto().GetSingleOrDefault());
+        var (environment, chapter) = (request.Environment, request.Chapter);
 
-        if (chapterPaymentAccountDto == null)
+        var chapterPaymentAccount = await GetChapterAdminRestrictedContent(
+            request,
+            x => x.ChapterPaymentAccountRepository
+                .Query()
+                .ForChapter(chapter.Id)
+                .ForEnvironment(environment)
+                .GetSingleOrDefault());
+
+        if (chapterPaymentAccount == null)
         {
             return ServiceResult<string>.Failure("Payment account does not exist");
         }
 
         var baseUrl = request.HttpRequestContext.BaseUrl;
 
-        var (chapterPaymentAccount, sitePaymentSettings) =
-            (chapterPaymentAccountDto.ChapterPaymentAccount, chapterPaymentAccountDto.SitePaymentSettings);
-
-        var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(sitePaymentSettings);
+        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
+            chapterPaymentAccount.PaymentProvider, chapter.Platform);
 
         var url = await paymentProvider.GenerateConnectedAccountSetupUrl(new GenerateRemoteAccountSetupUrlOptions
         {
@@ -1122,16 +1122,18 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     public async Task<ChapterPaymentAccountAdminPageViewModel> GetChapterPaymentAccountViewModel(
         IMemberChapterAdminServiceRequest request)
     {
-        var (platform, chapter) = (request.Platform, request.Chapter);
+        var (environment, platform, chapter) = (request.Environment, request.Platform, request.Chapter);
 
-        var (hasAccess, chapterPaymentAccountDto) = await GetChapterAdminRestrictedContent(
+        var (hasAccess, chapterPaymentAccount) = await GetChapterAdminRestrictedContent(
             request,
             x => x.MemberSiteSubscriptionRecordRepository
                 .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
                 .HasFeature(SiteFeatureType.Payments),
-            x => x.ChapterPaymentAccountRepository.Query().ForChapter(chapter.Id).ToDto().GetSingleOrDefault());
-
-        var chapterPaymentAccount = chapterPaymentAccountDto?.ChapterPaymentAccount;
+            x => x.ChapterPaymentAccountRepository
+                .Query()
+                .ForChapter(chapter.Id)
+                .ForEnvironment(environment)
+                .GetSingleOrDefault());
 
         var remainingSteps = new List<string>();
 
@@ -1142,9 +1144,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         if (chapterPaymentAccount != null && !chapterPaymentAccount.SetupComplete())
         {
-            var sitePaymentSettings = chapterPaymentAccountDto!.SitePaymentSettings;
-
-            var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(sitePaymentSettings);
+            var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
+                chapterPaymentAccount.PaymentProvider, chapter.Platform);
             var remoteAccount = await paymentProvider.GetConnectedAccount(chapterPaymentAccount.ExternalId);
 
             if (remoteAccount?.InitialOnboardingComplete == true)
@@ -1636,7 +1637,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         var chapterOwnerRequest = MemberServiceRequest.Create(owner, request);
         return await _siteSubscriptionService.StartSiteSubscriptionCheckout(
-            chapterOwnerRequest, priceId, returnPath, chapter.Id);
+            chapterOwnerRequest, priceId, returnPath);
     }
 
     public async Task<ServiceResult> UpdateChapterAdminMember(
@@ -2275,12 +2276,12 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         Guid id,
         ChapterSubscriptionCreateModel model)
     {
-        var chapter = request.Chapter;
+        var (environment, chapter) = (request.Environment, request.Chapter);
 
-        var (sitePaymentSettings, subscriptions) = await GetChapterAdminRestrictedContent(
+        var subscriptions = await GetChapterAdminRestrictedContent(
             request,
-            x => x.SitePaymentSettingsRepository.GetAll(),
-            x => x.ChapterSubscriptionRepository.GetByChapterId(chapter.Id, includeDisabled: true));
+            x => x.ChapterSubscriptionRepository.GetByChapterId(
+                chapter.Id, environment, includeDisabled: true));
 
         var subscription = subscriptions.FirstOrDefault(x => x.Id == id);
         OdkAssertions.Exists(subscription);
@@ -2303,11 +2304,10 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         _unitOfWork.ChapterSubscriptionRepository.Update(subscription);
         await _unitOfWork.SaveChanges();
 
-        if (wasDisabled != model.Disabled && !string.IsNullOrEmpty(subscription.ExternalId))
+        if (wasDisabled != model.Disabled)
         {
-            var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(
-                sitePaymentSettings,
-                subscription.SitePaymentSettingId);
+            var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
+                subscription.PaymentProvider, chapter.Platform);
 
             if (model.Disabled)
             {
@@ -2513,7 +2513,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         }
 
         subscriptions = subscriptions
-            .Where(x => x.SitePaymentSettingId == subscription.SitePaymentSettingId)
+            .Where(x => x.PaymentProvider == subscription.PaymentProvider)
             .ToArray();
 
         if (subscriptions.Any(x => x.Id != subscription.Id && x.Name.Equals(subscription.Name)))

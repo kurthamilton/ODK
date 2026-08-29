@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Features;
+using ODK.Core.Payments;
 using ODK.Core.Platforms;
 
 namespace ODK.Services.Subscriptions.ViewModels;
@@ -18,6 +19,12 @@ public class SiteSubscriptionSiteAdminListItemViewModel
 
     public required bool Enabled { get; init; }
 
+    /// <summary>
+    /// The deployment the subscription was created under. A site admin sees only this deployment's
+    /// subscriptions, so it is stated to make an unstamped legacy row visible rather than invisible.
+    /// </summary>
+    public required EnvironmentType? Environment { get; init; }
+
     public required IReadOnlyCollection<SiteFeatureType> Features { get; init; }
 
     public required bool Free { get; init; }
@@ -30,18 +37,7 @@ public class SiteSubscriptionSiteAdminListItemViewModel
 
     public required string Name { get; init; }
 
-    public required Guid PaymentSettingsId { get; init; }
-
-    public required string PaymentSettingsName { get; init; }
-
-    /// <summary>
-    /// Whether the subscription's payment settings belong to a platform other than the one being
-    /// administered. A subscription transacts through its payment settings account, so a mismatch means it
-    /// takes money under another platform's keys.
-    /// </summary>
-    public required bool PaymentSettingsOnAnotherPlatform { get; init; }
-
-    public required PlatformType PaymentSettingsPlatform { get; init; }
+    public required PaymentProviderType? PaymentProvider { get; init; }
 
     public required IReadOnlyCollection<SiteSubscriptionSiteAdminListItemPriceViewModel> Prices { get; init; }
 

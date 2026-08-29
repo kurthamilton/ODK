@@ -240,21 +240,29 @@ public static class StripePaymentProviderTests
     private static StripePaymentProvider CreateProvider(
         ILoggingService? loggingService = null,
         IPlatformProvider? platformProvider = null,
-        string? connectedAccountBusinessName = null)
+        string? connectedAccountBusinessName = null,
+        PlatformType platform = PlatformType.Default)
         => new StripePaymentProvider(
-            new SitePaymentSettings { ApiSecretKey = "sk_test_dummy" },
             loggingService ?? new Mock<ILoggingService>().Object,
-            connectedAccountId: null,
             new StripePaymentProviderSettings
             {
-                ConnectedAccountBaseUrls = new Dictionary<PlatformType, string>(),
                 ConnectedAccountBusinessName = connectedAccountBusinessName ?? "{platform.title} - {group.name}",
                 ConnectedAccountCommissionPercentage = 0,
                 ConnectedAccountMcc = string.Empty,
                 ConnectedAccountProductDescription = string.Empty,
+                Platforms = new Dictionary<PlatformType, StripePaymentProviderPlatformSettings>
+                {
+                    [platform] = new StripePaymentProviderPlatformSettings
+                    {
+                        ConnectedAccountBaseUrl = string.Empty,
+                        PublicApiKey = string.Empty,
+                        SecretApiKey = "sk_test_dummy"
+                    }
+                },
                 SettlementReadDelay = TimeSpan.Zero
             },
-            platformProvider ?? CreateMockPlatformProvider("Platform").Object);
+            platformProvider ?? CreateMockPlatformProvider("Platform").Object,
+            platform);
 
     // £25.00 charged, 45p taken by Stripe, £24.55 landing in our balance.
     private static Charge CreateSettledCharge() => new Charge

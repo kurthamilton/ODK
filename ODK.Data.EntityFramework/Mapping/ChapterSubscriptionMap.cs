@@ -16,6 +16,15 @@ public class ChapterSubscriptionMap : IEntityTypeConfiguration<ChapterSubscripti
         builder.Property(x => x.Amount)
             .HasPrecision(18, 2);
 
+        builder.Property(x => x.Environment)
+            .HasColumnName("EnvironmentTypeId");
+
+        builder.Property(x => x.ExternalId)
+            .HasMaxLength(255);
+
+        builder.Property(x => x.PaymentProvider)
+            .HasColumnName("PaymentProviderTypeId");
+
         builder.Property(x => x.Type)
             .HasColumnName("SubscriptionTypeId")
             .HasConversion<int>();
@@ -23,10 +32,6 @@ public class ChapterSubscriptionMap : IEntityTypeConfiguration<ChapterSubscripti
         builder.HasOne(x => x.Currency)
             .WithMany()
             .HasForeignKey(x => x.CurrencyId);
-
-        builder.HasOne<SitePaymentSettings>()
-            .WithMany()
-            .HasForeignKey(x => x.SitePaymentSettingId);
 
         builder.HasOne<Chapter>()
             .WithMany()

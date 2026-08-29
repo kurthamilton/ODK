@@ -14,6 +14,8 @@ public class AppSettings
 
     public required EmailsSettings Emails { get; init; }
 
+    public required EnvironmentType Environment { get; init; }
+
     public required EventsSettings Events { get; init; }
 
     public required GoogleSettings Google { get; init; }

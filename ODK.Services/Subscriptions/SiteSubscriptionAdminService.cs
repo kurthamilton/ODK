@@ -3,6 +3,7 @@ using ODK.Core.Payments;
 using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
 using ODK.Data.Core;
+using ODK.Services.Exceptions;
 using ODK.Services.Html;
 using ODK.Services.Payments;
 using ODK.Services.Platforms;
@@ -15,6 +16,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
 {
     private readonly IHtmlValidator _htmlValidator;
     private readonly IPaymentProviderFactory _paymentProviderFactory;
+    private readonly PaymentSettings _paymentSettings;
     private readonly IPlatformProvider _platformProvider;
     private readonly SiteSubscriptionCooldown _siteSubscriptionCooldown;
     private readonly IUnitOfWork _unitOfWork;
@@ -24,11 +26,13 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         IHtmlValidator htmlValidator,
         IPaymentProviderFactory paymentProviderFactory,
         IPlatformProvider platformProvider,
-        SiteSubscriptionCooldown siteSubscriptionCooldown)
+        SiteSubscriptionCooldown siteSubscriptionCooldown,
+        PaymentSettings paymentSettings)
         : base(unitOfWork)
     {
         _htmlValidator = htmlValidator;
         _paymentProviderFactory = paymentProviderFactory;
+        _paymentSettings = paymentSettings;
         _platformProvider = platformProvider;
         _siteSubscriptionCooldown = siteSubscriptionCooldown;
         _unitOfWork = unitOfWork;
@@ -37,16 +41,17 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
     public async Task<ServiceResult<Guid>> AddSiteSubscription(
         IMemberServiceRequest request, SiteSubscriptionCreateModel model)
     {
-        var platform = request.Platform;
+        // A new record takes the account it is written under from config; everything read back carries its own.
+        var (environment, platform, provider) =
+            (request.Environment, request.Platform, _paymentSettings.Provider);
 
-        var (paymentSettings, existing, existingProduct) = await GetSiteAdminRestrictedContent(request,
-            x => x.SitePaymentSettingsRepository.GetById(model.SitePaymentSettingId),
+        var (existing, existingProduct) = await GetSiteAdminRestrictedContent(request,
             x => x.SiteSubscriptionRepository.GetAll(platform),
-            x => x.SitePaymentProductRepository.GetByPlatform(platform, model.SitePaymentSettingId));
+            x => x.SitePaymentProductRepository.GetByPlatform(platform, environment, provider));
 
         if (existing.Any(x =>
             x.Platform == platform &&
-            x.SitePaymentSettingId == model.SitePaymentSettingId &&
+            x.Environment == environment &&
             string.Equals(x.Name, model.Name, StringComparison.InvariantCultureIgnoreCase)))
         {
             return ServiceResult<Guid>.Failure($"Subscription '{model.Name}' already exists");
@@ -65,40 +70,33 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         }
 
         /* Every one of a platform's prices sits under one product, so a new subscription joins the
-           product its payment settings account already has, and only the first creates one. */
+           product the account it is written under already has, and only the first creates one. */
         var sitePaymentProduct = existingProduct;
         if (sitePaymentProduct == null)
         {
-            var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(paymentSettings);
-            var externalProductId = await paymentProvider.CreateProduct(
-                $"{_platformProvider.GetName(platform)} Platform");
-            if (string.IsNullOrEmpty(externalProductId))
-            {
-                return ServiceResult<Guid>.Failure("Error creating payment provider product");
-            }
+            var paymentProvider = _paymentProviderFactory.GetPaymentProvider(provider, platform);
+            var externalProductId = await paymentProvider.GetOrCreatePlatformProduct(platform);
 
-            sitePaymentProduct = new SitePaymentProduct
+            sitePaymentProduct = _unitOfWork.SitePaymentProductRepository.Add(new SitePaymentProduct
             {
+                Environment = environment,
                 ExternalId = externalProductId,
                 Id = _unitOfWork.NewId(),
-                Platform = platform,
-                SitePaymentSettingId = paymentSettings.Id
-            };
-
-            _unitOfWork.SitePaymentProductRepository.Add(sitePaymentProduct);
+                PaymentProvider = provider,
+                Platform = platform
+            });
         }
 
-        var subscription = new SiteSubscription
+        var subscription = _unitOfWork.SiteSubscriptionRepository.Add(new SiteSubscription
         {
+            Environment = environment,
             Id = _unitOfWork.NewId(),
+            PaymentProvider = provider,
             Platform = platform,
-            SitePaymentProductId = sitePaymentProduct.Id,
-            SitePaymentSettingId = paymentSettings.Id
-        };
+            SitePaymentProductId = sitePaymentProduct.Id
+        });
 
         UpdateSiteSubscription(model, subscription, []);
-
-        _unitOfWork.SiteSubscriptionRepository.Add(subscription);
 
         await _unitOfWork.SaveChanges();
 
@@ -116,8 +114,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
             return ServiceResult.Failure("Currency is required");
         }
 
-        var (sitePaymentSettings, siteSubscription, existing, currency) = await GetSiteAdminRestrictedContent(request,
-            x => x.SitePaymentSettingsRepository.GetAll(),
+        var (siteSubscription, existing, currency) = await GetSiteAdminRestrictedContent(request,
             x => x.SiteSubscriptionRepository.GetById(siteSubscriptionId),
             x => x.SiteSubscriptionPriceRepository.GetBySiteSubscriptionId(siteSubscriptionId),
             x => x.CurrencyRepository.GetById(model.CurrencyId));
@@ -145,16 +142,15 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
             SiteSubscriptionId = siteSubscriptionId
         };
 
-        var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(
-            sitePaymentSettings,
-            siteSubscription.SitePaymentSettingId);
+        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
+            siteSubscription.PaymentProvider, siteSubscription.Platform);
 
         if (model.Amount > 0)
         {
             var sitePaymentProduct = await GetSiteAdminRestrictedContent(request,
                 x => x.SitePaymentProductRepository.GetById(siteSubscription.SitePaymentProductId));
 
-            price.ExternalId = await paymentProvider.CreateSubscriptionPlan(
+            var externalId = await paymentProvider.CreateSubscriptionPlan(
                 new ExternalSubscriptionPlan
                 {
                     Amount = model.Amount,
@@ -166,15 +162,19 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
                     NumberOfMonths = model.Frequency == SiteSubscriptionFrequency.Yearly ? 12 : 1,
                     Recurring = true
                 });
+
+            if (string.IsNullOrEmpty(externalId))
+            {
+                throw new OdkServiceException($"Error creating price for site subscription {siteSubscriptionId}");
+            }
+
+            price.ExternalId = externalId;
         }
 
         _unitOfWork.SiteSubscriptionPriceRepository.Add(price);
         await _unitOfWork.SaveChanges();
 
-        if (!string.IsNullOrEmpty(price.ExternalId))
-        {
-            await paymentProvider.ActivateSubscriptionPlan(price.ExternalId);
-        }
+        await paymentProvider.ActivateSubscriptionPlan(price.ExternalId);
 
         return ServiceResult.Successful();
     }
@@ -234,9 +234,8 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
     public async Task<ServiceResult> DeleteSiteSubscriptionPrice(
         IMemberServiceRequest request, Guid siteSubscriptionId, Guid siteSubscriptionPriceId)
     {
-        var (sitePaymentSettings, siteSubscription, price, hasMemberRecords) =
+        var (siteSubscription, price, hasMemberRecords) =
             await GetSiteAdminRestrictedContent(request,
-                x => x.SitePaymentSettingsRepository.GetAll(),
                 x => x.SiteSubscriptionRepository.GetById(siteSubscriptionId),
                 x => x.SiteSubscriptionPriceRepository.GetById(siteSubscriptionPriceId),
                 x => x.MemberSiteSubscriptionRecordRepository
@@ -257,13 +256,9 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         _unitOfWork.SiteSubscriptionPriceRepository.Delete(price);
         await _unitOfWork.SaveChanges();
 
-        if (!string.IsNullOrEmpty(price.ExternalId))
-        {
-            var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(
-                sitePaymentSettings,
-                siteSubscription.SitePaymentSettingId);
-            await paymentProvider.DeactivateSubscriptionPlan(price.ExternalId);
-        }
+        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
+            siteSubscription.PaymentProvider, siteSubscription.Platform);
+        await paymentProvider.DeactivateSubscriptionPlan(price.ExternalId);
 
         return ServiceResult.Successful();
     }
@@ -354,17 +349,13 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
     {
         var platform = request.Platform;
 
-        var (sitePaymentSettings, siteSubscriptionSummaries, prices) = await GetSiteAdminRestrictedContent(request,
-            x => x.SitePaymentSettingsRepository.GetAll(),
+        var (siteSubscriptionSummaries, prices) = await GetSiteAdminRestrictedContent(request,
             x => x.SiteSubscriptionRepository.GetSummaries(platform, _siteSubscriptionCooldown),
             x => x.SiteSubscriptionPriceRepository.GetAll(platform));
 
         var priceDictionary = prices
             .GroupBy(x => x.SiteSubscriptionId)
             .ToDictionary(x => x.Key, x => x.ToArray());
-
-        var sitePaymentSettingsDictionary = sitePaymentSettings
-            .ToDictionary(x => x.Id);
 
         /* The subscriptions another one falls back to, which cannot be deleted while it does. Read from the
            summaries rather than queried: they are every one of the platform's subscriptions, and a fallback
@@ -391,11 +382,8 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
                 Id = x.SiteSubscription.Id,
                 MemberLimit = x.SiteSubscription.MemberLimit,
                 Name = x.SiteSubscription.Name,
-                PaymentSettingsId = sitePaymentSettingsDictionary[x.SiteSubscription.SitePaymentSettingId].Id,
-                PaymentSettingsName = sitePaymentSettingsDictionary[x.SiteSubscription.SitePaymentSettingId].Name,
-                PaymentSettingsOnAnotherPlatform =
-                    sitePaymentSettingsDictionary[x.SiteSubscription.SitePaymentSettingId].Platform != platform,
-                PaymentSettingsPlatform = sitePaymentSettingsDictionary[x.SiteSubscription.SitePaymentSettingId].Platform,
+                Environment = x.SiteSubscription.Environment,
+                PaymentProvider = x.SiteSubscription.PaymentProvider,
                 Prices = priceDictionary.TryGetValue(x.SiteSubscription.Id, out var prices)
                     ? prices
                         .Select(x => new SiteSubscriptionSiteAdminListItemPriceViewModel
@@ -409,8 +397,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
                         .ToArray()
                     : []
             })
-            .OrderBy(x => x.PaymentSettingsName)
-            .ThenBy(x => x.Name)
+            .OrderBy(x => x.Name)
             .ToArray();
     }
 
@@ -418,13 +405,11 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
     {
         var platform = request.Platform;
 
-        var (sitePaymentSettings, subscriptions) = await GetSiteAdminRestrictedContent(request,
-            x => x.SitePaymentSettingsRepository.GetAll(platform),
+        var subscriptions = await GetSiteAdminRestrictedContent(request,
             x => x.SiteSubscriptionRepository.GetAll(platform));
 
         return new SiteSubscriptionCreateViewModel
         {
-            SitePaymentSettings = sitePaymentSettings,
             Subscriptions = subscriptions
         };
     }
@@ -432,7 +417,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
     public async Task<SiteSubscriptionEditViewModel> GetSubscriptionEditViewModel(
         IMemberServiceRequest request, Guid siteSubscriptionId)
     {
-        var (siteSubscriptionDto, prices, pricesInUse, currencies, sitePaymentSettings, subscriptions) =
+        var (siteSubscriptionDto, prices, pricesInUse, currencies, subscriptions) =
             await GetSiteAdminRestrictedContent(request,
                 x => x.SiteSubscriptionRepository
                     .Query()
@@ -449,7 +434,6 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
                     .SiteSubscriptionPrices()
                     .GetAll(),
                 x => x.CurrencyRepository.GetAllDtos(),
-                x => x.SitePaymentSettingsRepository.GetAll(),
                 x => x.SiteSubscriptionRepository.GetAll(request.Platform));
 
         var pricesInUseIds = pricesInUse.Select(x => x.Id).ToHashSet();
@@ -469,7 +453,6 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
                     Id = x.Id
                 })
                 .ToArray(),
-            SitePaymentSettings = sitePaymentSettings,
             Subscription = siteSubscriptionDto.SiteSubscription,
             Subscriptions = subscriptions
         };
@@ -479,8 +462,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
     {
         var platform = request.Platform;
 
-        var (sitePaymentSettings, subscriptions, prices) = await GetSiteAdminRestrictedContent(request,
-            x => x.SitePaymentSettingsRepository.GetAll(),
+        var (subscriptions, prices) = await GetSiteAdminRestrictedContent(request,
             x => x.SiteSubscriptionRepository.GetAll(platform),
             x => x.SiteSubscriptionPriceRepository.GetAll(platform));
 
@@ -488,18 +470,15 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         OdkAssertions.Exists(subscription);
 
         /* Every new account is put on the default, so a default nobody can be on would fail every sign-up.
-           Payment settings are not consulted: the check is about the plan being usable at all, and a paid
-           plan whose provider is switched off is a temporary state rather than a broken default. */
+           Whether payments are switched on is not consulted: the check is about the plan being usable at
+           all, and a paid plan whose provider is off is a temporary state rather than a broken default. */
         if (!subscription.Free && !prices.Any(x => x.SiteSubscriptionId == subscription.Id))
         {
             return ServiceResult.Failure("A subscription with no prices must be free to be the default");
         }
 
-        var sitePaymentSettingsDictionary = sitePaymentSettings
-            .ToDictionary(x => x.Id);
-
         var existingDefaults = subscriptions
-            .Where(x => x.Default && sitePaymentSettingsDictionary[x.SitePaymentSettingId].Enabled)
+            .Where(x => x.Default)
             .ToArray();
 
         foreach (var existingDefault in existingDefaults)

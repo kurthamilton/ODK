@@ -27,6 +27,7 @@ public class PaymentService : IPaymentService
     private readonly IMemberSiteSubscriptionWriter _memberSiteSubscriptionWriter;
     private readonly IPaymentProviderFactory _paymentProviderFactory;
     private readonly IPlatformProvider _platformProvider;
+    private readonly PaymentSettings _settings;
     private readonly IServiceRequestFactory _serviceRequestFactory;
     private readonly SiteSubscriptionCooldown _siteSubscriptionCooldown;
     private readonly IUnitOfWork _unitOfWork;
@@ -42,7 +43,8 @@ public class PaymentService : IPaymentService
         IMemberSiteSubscriptionWriter memberSiteSubscriptionWriter,
         IPlatformProvider platformProvider,
         IServiceRequestFactory serviceRequestFactory,
-        SiteSubscriptionCooldown siteSubscriptionCooldown)
+        SiteSubscriptionCooldown siteSubscriptionCooldown,
+        PaymentSettings settings)
     {
         _backgroundTaskService = backgroundTaskService;
         _eventService = eventService;
@@ -53,8 +55,115 @@ public class PaymentService : IPaymentService
         _paymentProviderFactory = paymentProviderFactory;
         _platformProvider = platformProvider;
         _serviceRequestFactory = serviceRequestFactory;
+        _settings = settings;
         _siteSubscriptionCooldown = siteSubscriptionCooldown;
         _unitOfWork = unitOfWork;
+    }
+
+    public async Task<(Payment Payment, ExternalCheckoutSession Session)> CreateChapterOneOffPayment(
+        IMemberChapterServiceRequest request,
+        ChapterPaymentAccount paymentAccount,
+        OneOffPaymentCreateOptions options)
+    {
+        var chapter = request.Chapter;
+
+        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
+            paymentAccount.PaymentProvider, chapter.Platform);
+
+        return await CreatePayment(request, new PaymentCheckoutModel
+        {
+            Amount = options.Amount,
+            ChapterId = chapter.Id,
+            ConnectedAccount = paymentAccount,
+            CurrencyId = options.Currency.Id,
+            Metadata = options.Metadata,
+            PaymentCheckoutSessionId = options.PaymentCheckoutSessionId,
+            PaymentId = options.PaymentId,
+            Plan = ExternalSubscriptionPlan.OneOff(
+                options.Amount,
+                options.Currency.Code,
+                await paymentProvider.GetOrCreateChapterProduct(chapter),
+                options.Reference),
+            Platform = chapter.Platform,
+            Provider = paymentProvider,
+            Reference = options.Reference,
+            ReturnPath = options.ReturnPath
+        });
+    }
+
+    public async Task<(Payment Payment, ExternalCheckoutSession Session)> CreateChapterPayment(
+        IMemberChapterServiceRequest request,
+        ChapterPaymentAccount paymentAccount,
+        ChapterSubscription subscription,
+        PaymentCreateOptions options)
+    {
+        var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
+
+        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
+            subscription.PaymentProvider, chapter.Platform);
+
+        var paymentCheckoutSessionId = _unitOfWork.NewId();
+        var paymentId = _unitOfWork.NewId();
+
+        return await CreatePayment(request, new PaymentCheckoutModel
+        {
+            Amount = subscription.Amount,
+            ChapterId = subscription.ChapterId,
+            ConnectedAccount = paymentAccount,
+            CurrencyId = subscription.Currency.Id,
+            Metadata = new PaymentMetadataModel(
+                chapter.Platform,
+                PaymentReasonType.ChapterSubscription,
+                currentMember,
+                subscription,
+                paymentCheckoutSessionId: paymentCheckoutSessionId,
+                paymentId: paymentId),
+            PaymentCheckoutSessionId = paymentCheckoutSessionId,
+            PaymentId = paymentId,
+            Plan = await GetSubscriptionPlan(paymentProvider, subscription.ExternalId),
+            Platform = chapter.Platform,
+            Provider = paymentProvider,
+            Reference = subscription.ToReference(),
+            ReturnPath = options.ReturnPath
+        });
+    }
+
+    public async Task<(Payment Payment, ExternalCheckoutSession Session)> CreateSitePayment(
+        IMemberServiceRequest request,
+        SiteSubscription subscription,
+        SiteSubscriptionPrice price,
+        PaymentCreateOptions options)
+    {
+        var (platform, currentMember) = (subscription.Platform, request.CurrentMember);
+
+        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
+            subscription.PaymentProvider, platform);
+
+        var paymentCheckoutSessionId = _unitOfWork.NewId();
+        var paymentId = _unitOfWork.NewId();
+
+        return await CreatePayment(request, new PaymentCheckoutModel
+        {
+            Amount = price.Amount,
+            // Nothing for a group: the site is what is being paid, so there is no connected account either.
+            ChapterId = null,
+            ConnectedAccount = null,
+            CurrencyId = price.CurrencyId,
+            Metadata = new PaymentMetadataModel(
+                platform,
+                PaymentReasonType.SiteSubscription,
+                currentMember,
+                price,
+                paymentCheckoutSessionId: paymentCheckoutSessionId,
+                paymentId: paymentId),
+            PaymentCheckoutSessionId = paymentCheckoutSessionId,
+            PaymentId = paymentId,
+            Plan = await GetSubscriptionPlan(paymentProvider, price.ExternalId),
+            Platform = platform,
+            Provider = paymentProvider,
+            Reference = subscription.ToReference(),
+            ReturnPath = options.ReturnPath
+        });
     }
 
     public string EnqueueEnsureProductExistsJob(JobRequest request)
@@ -81,20 +190,18 @@ public class PaymentService : IPaymentService
     public async Task<PaymentStatusType> GetMemberChapterPaymentCheckoutSessionStatus(
         IMemberServiceRequest request, Guid chapterId, string externalSessionId)
     {
-        var (chapterPaymentAccountDto, checkoutSession) = await _unitOfWork.Run(
-            x => x.ChapterPaymentAccountRepository.Query().ForChapter(chapterId).ToDto().GetSingle(),
-            x => x.PaymentCheckoutSessionRepository.GetByMemberId(request.CurrentMember.Id, externalSessionId));
+        var checkoutSessionDto = await _unitOfWork.Run(
+            x => x.PaymentCheckoutSessionRepository.GetDtoByMemberId(request.CurrentMember.Id, externalSessionId));
 
-        OdkAssertions.Exists(checkoutSession);
+        var (payment, session) = (checkoutSessionDto.Payment, checkoutSessionDto.Session);
 
-        if (checkoutSession.CompletedUtc != null)
+        if (session.CompletedUtc != null)
         {
             return PaymentStatusType.Complete;
         }
 
         var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
-            chapterPaymentAccountDto.SitePaymentSettings,
-            chapterPaymentAccountDto.ChapterPaymentAccount);
+            payment.PaymentProvider, payment.Platform);
 
         // Completion is driven solely by the payment provider webhook; this status check only reports
         // progress. An expired remote session is surfaced so the UI can stop polling.
@@ -110,21 +217,18 @@ public class PaymentService : IPaymentService
     public async Task<PaymentStatusType> GetMemberSitePaymentCheckoutSessionStatus(
         IMemberServiceRequest request, string externalSessionId)
     {
-        var (checkoutSession, sitePaymentSettings) = await _unitOfWork.Run(
-            x => x.PaymentCheckoutSessionRepository.GetByMemberId(request.CurrentMember.Id, externalSessionId),
-            x => x.SitePaymentSettingsRepository.GetAll());
+        var checkoutSessionDto = await _unitOfWork.Run(
+            x => x.PaymentCheckoutSessionRepository.GetDtoByMemberId(request.CurrentMember.Id, externalSessionId));
 
-        OdkAssertions.Exists(checkoutSession);
+        var (payment, session) = (checkoutSessionDto.Payment, checkoutSessionDto.Session);
 
-        if (checkoutSession.CompletedUtc != null)
+        if (session.CompletedUtc != null)
         {
             return PaymentStatusType.Complete;
         }
 
-        var payment = await _unitOfWork.PaymentRepository.GetById(checkoutSession.PaymentId).Run();
-
-        var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(
-            sitePaymentSettings, payment.SitePaymentSettingId);
+        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
+            payment.PaymentProvider, payment.Platform);
 
         // Completion is driven solely by the payment provider webhook; this status check only reports
         // progress. An expired remote session is surfaced so the UI can stop polling.
@@ -216,9 +320,8 @@ public class PaymentService : IPaymentService
            is the provider's to state - it is the one that knows how long after taking the money it finishes
            moving it - and it is not what makes the settlement correct, only what keeps it quiet. */
         var paymentId = result.Payment.Id;
-        var sitePaymentSettings = await _unitOfWork.SitePaymentSettingsRepository.GetAll().Run();
         var settlementReadDelay = _paymentProviderFactory
-            .GetSitePaymentProvider(sitePaymentSettings, result.Payment.SitePaymentSettingId)
+            .GetPaymentProvider(result.Payment.PaymentProvider, result.Payment.Platform)
             .SettlementReadDelay;
 
         _backgroundTaskService.Schedule(
@@ -255,6 +358,12 @@ public class PaymentService : IPaymentService
     // A cooldown longer than the subscription's own length can continue a period that has already fully
     // elapsed, so a calculated expiry that is not in the future starts a new period instead: a payment must
     // always leave the member current.
+    private static async Task<ExternalSubscriptionPlan> GetSubscriptionPlan(
+        IPaymentProvider paymentProvider, string externalId)
+        => await paymentProvider.GetSubscriptionPlan(externalId)
+            ?? throw new OdkServiceException(
+                $"Error starting checkout session: subscription plan '{externalId}' not found");
+
     private static string ToTransferIdempotencyKey(Guid paymentId)
         => $"payment-transfer-{paymentId}";
 
@@ -275,34 +384,74 @@ public class PaymentService : IPaymentService
             : utcNow.AddMonths(months);
     }
 
+    /* Every kind of payment ends the same way: the provider is asked to start a checkout for a plan, and
+       what comes back is recorded against a payment and a session. What differs between them is settled
+       before this is called - see PaymentCheckoutModel - so this stays the one place a payment is written. */
+    private async Task<(Payment Payment, ExternalCheckoutSession Session)> CreatePayment(
+        IMemberServiceRequest request, PaymentCheckoutModel checkout)
+    {
+        var currentMember = request.CurrentMember;
+
+        var externalCheckoutSession = await checkout.Provider.StartCheckout(
+            request,
+            currentMember.EmailAddress,
+            checkout.Plan,
+            checkout.ReturnPath,
+            checkout.Metadata,
+            checkout.ConnectedAccount);
+
+        var utcNow = DateTime.UtcNow;
+
+        _unitOfWork.PaymentCheckoutSessionRepository.Add(new PaymentCheckoutSession
+        {
+            Id = checkout.PaymentCheckoutSessionId,
+            MemberId = currentMember.Id,
+            PaymentId = checkout.PaymentId,
+            SessionId = externalCheckoutSession.SessionId,
+            StartedUtc = utcNow
+        });
+
+        var payment = _unitOfWork.PaymentRepository.Add(new Payment
+        {
+            Amount = checkout.Amount,
+            ChapterId = checkout.ChapterId,
+            CreatedUtc = utcNow,
+            CurrencyId = checkout.CurrencyId,
+            Environment = request.Environment,
+            ExternalId = externalCheckoutSession.PaymentId,
+            Id = checkout.PaymentId,
+            MemberId = currentMember.Id,
+            PaymentProvider = checkout.Provider.Type,
+            Platform = checkout.Platform,
+            Reference = checkout.Reference
+        });
+
+        await _unitOfWork.SaveChanges();
+
+        return (payment, externalCheckoutSession);
+    }
+
     private async Task EnsureProductExists(IChapterServiceRequest request)
     {
         var chapter = request.Chapter;
 
-        var (chapterPaymentSettings, sitePaymentSettings) = await _unitOfWork.Run(
+        var (chapterPaymentSettings, chapterPaymentAccount) = await _unitOfWork.Run(
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterPaymentAccountRepository.Query().ForChapter(chapter.Id).ToSitePaymentSettings().GetSingle());
+            x => x.ChapterPaymentAccountRepository
+                .Query()
+                .ForChapter(chapter.Id)
+                .ForEnvironment(request.Environment)
+                .GetSingle());
 
         if (!string.IsNullOrEmpty(chapterPaymentSettings?.ExternalProductId))
         {
             return;
         }
 
-        var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(sitePaymentSettings);
+        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
+            chapterPaymentAccount.PaymentProvider, chapter.Platform);
 
-        var productName = chapter.FullName;
-
-        var productId = await paymentProvider.GetProductId(productName);
-        if (string.IsNullOrEmpty(productId))
-        {
-            productId = await paymentProvider.CreateProduct(productName);
-        }
-
-        if (string.IsNullOrEmpty(productId))
-        {
-            await _loggingService.Error($"Could not create payment product for chapter {chapter.FullName}");
-            return;
-        }
+        var productId = await paymentProvider.GetOrCreateChapterProduct(chapter);
 
         chapterPaymentSettings ??= new ChapterPaymentSettings();
 
@@ -322,15 +471,12 @@ public class PaymentService : IPaymentService
     }
 
     private async Task<DateTime?> GetChapterSubscriptionNextPaymentDate(
-        Guid chapterId, string externalId)
+        PlatformType platform, ChapterSubscription subscription)
     {
-        var chapterPaymentAccountDto = await _unitOfWork.Run(
-            x => x.ChapterPaymentAccountRepository.Query().ForChapter(chapterId).ToDto().GetSingle());
-
         var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
-            chapterPaymentAccountDto.SitePaymentSettings, chapterPaymentAccountDto.ChapterPaymentAccount);
+            subscription.PaymentProvider, platform);
 
-        return await GetNextPaymentDate(paymentProvider, externalId);
+        return await GetNextPaymentDate(paymentProvider, subscription.ExternalId);
     }
 
     private async Task<DateTime?> GetNextPaymentDate(IPaymentProvider paymentProvider, string externalId)
@@ -397,12 +543,14 @@ public class PaymentService : IPaymentService
                 ChapterId = chapter.Id,
                 CreatedUtc = completedUtc,
                 CurrencyId = chapterSubscription.CurrencyId,
+                Environment = chapterSubscription.Environment,
                 ExternalId = externalId,
                 Id = _unitOfWork.NewId(),
                 MemberId = member.Id,
                 PaidUtc = completedUtc,
-                Reference = chapterSubscription.ToReference(),
-                SitePaymentSettingId = chapterSubscription.SitePaymentSettingId
+                PaymentProvider = chapterSubscription.PaymentProvider,
+                Platform = chapter.Platform,
+                Reference = chapterSubscription.ToReference()
             });
         }
         else if (payment.PaidUtc != null)
@@ -587,12 +735,14 @@ public class PaymentService : IPaymentService
                 Amount = siteSubscriptionPrice.Amount,
                 CreatedUtc = completedUtc,
                 CurrencyId = siteSubscriptionPrice.CurrencyId,
+                Environment = siteSubscription.Environment,
                 ExternalId = externalId,
                 Id = _unitOfWork.NewId(),
                 MemberId = member.Id,
                 PaidUtc = completedUtc,
-                Reference = siteSubscription.ToReference(),
-                SitePaymentSettingId = siteSubscription.SitePaymentSettingId
+                PaymentProvider = siteSubscription.PaymentProvider,
+                Platform = siteSubscription.Platform,
+                Reference = siteSubscription.ToReference()
             });
         }
         else if (payment.PaidUtc != null)
@@ -843,27 +993,26 @@ public class PaymentService : IPaymentService
        Nothing about the shape of an id is read here. Stripe ids do embed something of the account, but that
        is undocumented and demonstrably unreliable on this data - nine payments already carry references
        from accounts other than the one they name. Asking cannot be wrong in the same way. */
-    private async Task<(Guid SitePaymentSettingId, IPaymentProvider Provider, ExternalPaymentSettlement Settlement)?>
-        LocatePayment(Payment payment, IReadOnlyCollection<SitePaymentSettings> sitePaymentSettings)
+    private async Task<(PlatformType Platform, IPaymentProvider Provider, ExternalPaymentSettlement Settlement)?>
+        LocatePayment(Payment payment)
     {
         if (string.IsNullOrEmpty(payment.ExternalId) || payment.PaidUtc == null)
         {
             return null;
         }
 
-        /* Only accounts we are meant to be transacting through are asked. A disabled record is one we are
-           not, and in development that is what keeps a live key - which the database holds, being restored
-           from production - out of a reconcile run. A payment only a disabled account holds is left alone. */
-        var candidates = sitePaymentSettings.Where(x => x.Enabled);
+        /* Only accounts this deployment is meant to be transacting through are asked. Config names them, so
+           a database restored from production cannot put a live account into a development reconcile run.
+           A payment only a switched-off account holds is left alone. */
+        var candidates = _settings.Platforms
+            .Where(x => x.Value.Enabled && x.Key == payment.Platform)
+            .Select(x => x.Key);
 
-        if (payment.SitePaymentSettingId != null)
-        {
-            candidates = candidates.Where(x => x.Id == payment.SitePaymentSettingId);
-        }
+        var provider = payment.PaymentProvider;
 
-        foreach (var candidate in candidates)
+        foreach (var platform in candidates)
         {
-            var paymentProvider = _paymentProviderFactory.GetSitePaymentProviderOrDefault(candidate);
+            var paymentProvider = _paymentProviderFactory.GetPaymentProviderOrDefault(provider, platform);
             if (paymentProvider == null)
             {
                 continue;
@@ -880,7 +1029,7 @@ public class PaymentService : IPaymentService
             var settlement = await paymentProvider.GetPaymentSettlement(externalPaymentId);
             if (settlement != null)
             {
-                return (candidate.Id, paymentProvider, settlement);
+                return (platform, paymentProvider, settlement);
             }
         }
 
@@ -977,12 +1126,14 @@ public class PaymentService : IPaymentService
     private async Task ResolvePaymentSettlement(
         Guid paymentId, string? externalPaymentId, string? externalInvoiceId)
     {
-        var (payment, sitePaymentSettings) = await _unitOfWork.Run(
-            x => x.PaymentRepository.GetById(paymentId),
-            x => x.SitePaymentSettingsRepository.GetAll());
+        var payment = await _unitOfWork.Run(
+            x => x.PaymentRepository.GetById(paymentId));
 
-        var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(
-            sitePaymentSettings, payment.SitePaymentSettingId);
+        /* The account the payment was taken through, where the payment names one. Reconciling one that
+           names none has to prove which account holds it before it can be asked anything - see
+           LocatePayment - so this stays unresolved until that answers. */
+        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
+            payment.PaymentProvider, payment.Platform);
 
         /* What decides whether anything is owed onward is a connected account to owe it to, not the payment
            belonging to a group: a group that has never finished setting up payments has no account, and
@@ -1005,7 +1156,7 @@ public class PaymentService : IPaymentService
                to be found before anything can be asked about it. */
             if (string.IsNullOrEmpty(externalPaymentId) && string.IsNullOrEmpty(externalInvoiceId))
             {
-                var located = await LocatePayment(payment, sitePaymentSettings);
+                var located = await LocatePayment(payment);
 
                 if (located == null)
                 {
@@ -1018,17 +1169,28 @@ public class PaymentService : IPaymentService
                     return;
                 }
 
-                (var sitePaymentSettingId, paymentProvider, settlement) = located.Value;
+                (var platform, paymentProvider, settlement) = located.Value;
 
-                if (payment.SitePaymentSettingId != sitePaymentSettingId)
+                if (payment.Platform != platform)
                 {
                     /* Recorded because it has been proven, not guessed: the account that produced a
                        settlement for the reference is the one the payment was taken through. */
-                    payment.SitePaymentSettingId = sitePaymentSettingId;
+                    payment.Platform = platform;
+                    payment.PaymentProvider = paymentProvider.Type;
                 }
             }
             else
             {
+                /* Acting on a webhook, which names the payment: the provider has just told us it exists, so
+                   a payment that names no account is a record written before it carried one and nothing
+                   here can say where to read it. */
+                if (paymentProvider == null)
+                {
+                    await _loggingService.Warn(
+                        $"Not reading Payment {payment.Id}: it names no payment account");
+                    return;
+                }
+
                 settlement = await ReadPaymentSettlement(
                     payment, paymentProvider, externalPaymentId, externalInvoiceId);
             }
@@ -1036,7 +1198,7 @@ public class PaymentService : IPaymentService
             await RecordPaymentSettlement(payment, paymentProvider, connectedAccount, settlement);
         }
 
-        if (connectedAccount != null)
+        if (connectedAccount != null && paymentProvider != null)
         {
             await TransferConnectedAccountShare(payment, paymentProvider, connectedAccount);
         }
@@ -1154,7 +1316,8 @@ public class PaymentService : IPaymentService
         // A recurring subscription expires when the provider next takes payment, so the two cannot drift
         // apart: the provider anchors its schedule to the original purchase
         var nextPaymentUtc = chapterSubscription.Recurring
-            ? await GetChapterSubscriptionNextPaymentDate(chapterId, externalId)
+            ? await GetChapterSubscriptionNextPaymentDate(
+                chapter.Platform, chapterSubscription)
             : null;
 
         // A negative cooldown is meaningless and is treated as none, so it cannot narrow the window to less
@@ -1209,12 +1372,11 @@ public class PaymentService : IPaymentService
     {
         var memberId = member.Id;
 
-        var (recordForInitiator, currentRecord, sitePaymentSettings) = await _unitOfWork.Run(
+        var (recordForInitiator, currentRecord) = await _unitOfWork.Run(
             x => !string.IsNullOrEmpty(initiatorId)
                 ? x.MemberSiteSubscriptionRecordRepository.Query().ForInitiator(initiatorId).GetSingleOrDefault()
                 : new DefaultDeferredQuerySingleOrDefault<MemberSiteSubscriptionRecord>(),
-            x => x.MemberSiteSubscriptionRecordRepository.Query().Current().ForMember(memberId).GetSingleOrDefault(),
-            x => x.SitePaymentSettingsRepository.GetAll());
+            x => x.MemberSiteSubscriptionRecordRepository.Query().Current().ForMember(memberId).GetSingleOrDefault());
 
         // Idempotency: if this initiating event (the payment provider webhook id) has already extended a
         // subscription, do not extend again. This protects against a retry of the webhook-processing job
@@ -1230,8 +1392,8 @@ public class PaymentService : IPaymentService
         }
 
         // A site subscription is always a provider subscription, so it expires when payment is next taken.
-        var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(
-            sitePaymentSettings, payment.SitePaymentSettingId);
+        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
+            payment.PaymentProvider, payment.Platform);
         var nextPaymentUtc = await GetNextPaymentDate(paymentProvider, externalId);
 
         var months = siteSubscriptionPrice.Frequency.Months();

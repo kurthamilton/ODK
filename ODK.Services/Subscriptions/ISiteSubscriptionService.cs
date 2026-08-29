@@ -10,5 +10,5 @@ public interface ISiteSubscriptionService
         IServiceRequest request, Guid? chapterId);
 
     Task<SiteSubscriptionCheckoutViewModel> StartSiteSubscriptionCheckout(
-        IMemberServiceRequest request, Guid priceId, string returnPath, Guid? chapterId);
+        IMemberServiceRequest request, Guid priceId, string returnPath);
 }

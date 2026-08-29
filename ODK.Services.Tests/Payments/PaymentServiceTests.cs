@@ -1457,11 +1457,11 @@ public static class PaymentServiceTests
            its reference is found by asking, and recorded because asking proved it. */
         using var context = CreateMockOdkContext();
 
-        var sitePaymentSettings = context.CreateSitePaymentSettings();
-        var payment = context.CreatePayment(sitePaymentSettings: sitePaymentSettings);
+        var payment = context.CreatePayment();
         payment.ExternalId = "sub_123";
         payment.PaidUtc = DateTime.UtcNow;
-        payment.SitePaymentSettingId = null;
+        payment.PaymentProvider = PaymentProviderType.Stripe;
+        payment.Platform = PlatformType.Default;
 
         var paymentProvider = CreateMockPaymentProvider();
         paymentProvider
@@ -1477,7 +1477,8 @@ public static class PaymentServiceTests
 
         // Assert
         var stored = context.Set<Payment>().Single(x => x.Id == payment.Id);
-        stored.SitePaymentSettingId.Should().Be(sitePaymentSettings.Id);
+        stored.Platform.Should().Be(PlatformType.Default);
+        stored.PaymentProvider.Should().Be(PaymentProviderType.Stripe);
         stored.ActualAmount.Should().Be(100m);
 
         paymentProvider.Verify(x => x.GetPaymentSettlement("pi_456"), Times.Once);
@@ -1486,23 +1487,22 @@ public static class PaymentServiceTests
     [Test]
     public static async Task ResolvePaymentSettlementJob_ReconcilingWithDisabledAccounts_DoesNotAskThem()
     {
-        /* Arrange - the only account configured is disabled. Locally that is the live one, whose key the
-           database carries because it is restored from production, and a reconcile must not reach for it. */
+        /* Arrange - every account config names is switched off, which is how a deployment says it is not
+           the one transacting. A reconcile must not reach for an account it has been told not to use. */
         using var context = CreateMockOdkContext();
 
-        var sitePaymentSettings = context.CreateSitePaymentSettings(
-            afterCreate: x => x.Enabled = false);
-
-        var payment = context.CreatePayment(sitePaymentSettings: sitePaymentSettings);
+        var payment = context.CreatePayment();
         payment.ExternalId = "sub_123";
         payment.PaidUtc = DateTime.UtcNow;
-        payment.SitePaymentSettingId = null;
+        payment.PaymentProvider = PaymentProviderType.Stripe;
+        payment.Platform = PlatformType.Default;
 
         var paymentProvider = CreateMockPaymentProvider();
 
         var service = CreatePaymentService(
             context,
-            paymentProviderFactory: CreateMockPaymentProviderFactory(paymentProvider.Object));
+            paymentProviderFactory: CreateMockPaymentProviderFactory(paymentProvider.Object),
+            paymentSettings: TestPaymentSettings.Create(enabled: false));
 
         // Act
         await service.ResolvePaymentSettlementJob(payment.Id, externalPaymentId: null, externalInvoiceId: null);
@@ -1526,7 +1526,6 @@ public static class PaymentServiceTests
         var payment = context.CreatePayment();
         payment.ExternalId = "pi_gone";
         payment.PaidUtc = DateTime.UtcNow;
-        payment.SitePaymentSettingId = null;
 
         var paymentProvider = CreateMockPaymentProvider();
         paymentProvider
@@ -1549,7 +1548,6 @@ public static class PaymentServiceTests
         // Assert - no throw, so no retry, and nothing recorded against an account that does not hold it
         var stored = context.Set<Payment>().Single(x => x.Id == payment.Id);
         stored.ActualAmount.Should().BeNull();
-        stored.SitePaymentSettingId.Should().BeNull();
 
         Mock.Get(loggingService)
             .Verify(x => x.Warn(It.Is<string>(m => m.Contains("pi_gone"))), Times.Once);
@@ -1974,16 +1972,24 @@ public static class PaymentServiceTests
         var factory = new Mock<IPaymentProviderFactory>();
 
         factory
-            .Setup(x => x.GetPaymentProvider(It.IsAny<SitePaymentSettings>(), It.IsAny<ChapterPaymentAccount?>()))
+            .Setup(x => x.GetPaymentProvider(It.IsAny<PlatformType>()))
             .Returns(paymentProvider);
 
         factory
-            .Setup(x => x.GetSitePaymentProvider(
-                It.IsAny<IReadOnlyCollection<SitePaymentSettings>>(), It.IsAny<Guid?>()))
+            .Setup(x => x.GetPaymentProvider(
+                It.IsAny<PaymentProviderType>(), It.IsAny<PlatformType>()))
             .Returns(paymentProvider);
 
         factory
-            .Setup(x => x.GetSitePaymentProviderOrDefault(It.IsAny<SitePaymentSettings>()))
+            .Setup(x => x.GetPaymentProvider(
+                It.IsAny<PaymentProviderType>(),
+                It.IsAny<PlatformType>()))
+            .Returns(paymentProvider);
+
+
+        factory
+            .Setup(x => x.GetPaymentProviderOrDefault(
+                It.IsAny<PaymentProviderType>(), It.IsAny<PlatformType>()))
             .Returns(paymentProvider);
 
         return factory.Object;
@@ -1998,7 +2004,8 @@ public static class PaymentServiceTests
         IPaymentProviderFactory? paymentProviderFactory = null,
         IEventService? eventService = null,
         SiteSubscriptionCooldown? siteSubscriptionCooldown = null,
-        IBackgroundTaskService? backgroundTaskService = null)
+        IBackgroundTaskService? backgroundTaskService = null,
+        PaymentSettings? paymentSettings = null)
     {
         var unitOfWork = CreateMockUnitOfWork(context);
         return new PaymentService(
@@ -2012,7 +2019,8 @@ public static class PaymentServiceTests
             new MemberSiteSubscriptionWriter(unitOfWork),
             TestPlatformProvider.Create(),
             new MockServiceRequestFactory(context),
-            siteSubscriptionCooldown ?? new SiteSubscriptionCooldown(months: 0));
+            siteSubscriptionCooldown ?? new SiteSubscriptionCooldown(months: 0),
+            paymentSettings ?? TestPaymentSettings.Create());
     }
 
     private static IServiceRequest CreateServiceRequest(PlatformType? platform = null)
@@ -2022,6 +2030,9 @@ public static class PaymentServiceTests
         // Set because anything queueing a job reads the base URL off it to build the job's request.
         mock.Setup(x => x.HttpRequestContext)
             .Returns(new JobHttpRequestContext { BaseUrl = "https://example.com" });
+
+        mock.Setup(x => x.Environment)
+            .Returns(EnvironmentType.Dev);
 
         mock.Setup(x => x.Platform)
             .Returns(platform ?? PlatformType.Default);

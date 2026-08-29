@@ -1,5 +1,4 @@
-﻿using ODK.Core.Payments;
-using ODK.Core.Platforms;
+﻿using ODK.Core.Platforms;
 using ODK.Services.Payments.Models;
 
 namespace ODK.Services.Payments;
@@ -21,11 +20,11 @@ public static class StripeWebhookAudit
     private const string WildcardEvent = "*";
 
     public static StripeWebhookAuditResult Audit(
-        SitePaymentSettings settings,
+        StripePaymentAccount account,
         IReadOnlyCollection<StripeWebhookEndpoint> endpoints,
         StripeWebhookAdminServiceSettings expectations)
     {
-        var environment = settings.Environment ?? EnvironmentType.None;
+        var environment = account.Environment;
 
         /* A disabled endpoint is not a participant: Stripe will not deliver to it, so it is superseded
            rather than broken, and judging it would report a finding against a decision somebody made on
@@ -33,7 +32,7 @@ public static class StripeWebhookAudit
            kind show up as that kind having none, rather than as one that exists and does nothing. */
         var audited = endpoints
             .Where(x => x.Enabled)
-            .Select(x => AuditEndpoint(settings, environment, x, expectations))
+            .Select(x => AuditEndpoint(account, environment, x, expectations))
             .OrderBy(x => x.Kind == StripeWebhookKind.None)
             .ThenBy(x => x.Kind)
             .ThenBy(x => x.Endpoint.Url)
@@ -66,7 +65,7 @@ public static class StripeWebhookAudit
     }
 
     private static StripeWebhookEndpointAudit AuditEndpoint(
-        SitePaymentSettings settings,
+        StripePaymentAccount account,
         EnvironmentType environment,
         StripeWebhookEndpoint endpoint,
         StripeWebhookAdminServiceSettings expectations)
@@ -81,10 +80,10 @@ public static class StripeWebhookAudit
         StripeWebhookCheck[] checks =
         [
             EventsCheck(expectations, missingEvents),
-            HostCheck(settings, environment, uri, expectations),
+            HostCheck(account, environment, uri, expectations),
             LiveModeCheck(environment, endpoint),
             PathCheck(uri, expectations),
-            PlatformCheck(settings, query),
+            PlatformCheck(account, query),
             QueryCheck(query),
             VersionCheck(query, kind)
         ];
@@ -133,13 +132,13 @@ public static class StripeWebhookAudit
             : [.. endpoint.Events.Except(expectations.Events, StringComparer.OrdinalIgnoreCase)];
 
     private static StripeWebhookCheck HostCheck(
-        SitePaymentSettings settings,
+        StripePaymentAccount account,
         EnvironmentType environment,
         Uri? uri,
         StripeWebhookAdminServiceSettings expectations)
     {
         var expected = expectations.Hosts.TryGetValue(environment, out var platformHosts)
-            && platformHosts.TryGetValue(settings.Platform, out var host)
+            && platformHosts.TryGetValue(account.Platform, out var host)
             && !string.IsNullOrWhiteSpace(host)
                 ? host
                 : null;
@@ -230,7 +229,7 @@ public static class StripeWebhookAudit
     }
 
     private static StripeWebhookCheck PlatformCheck(
-        SitePaymentSettings settings,
+        StripePaymentAccount account,
         IReadOnlyDictionary<string, string> query)
     {
         query.TryGetValue(PlatformParameter, out var actual);
@@ -238,17 +237,17 @@ public static class StripeWebhookAudit
         /* An absent p is read by WebhooksController as Drunken Knitwits, so a Drunken Knitwits endpoint
            without one works - on a default nothing about the endpoint states. Any other platform's silently
            does not, which is why the same omission is a warning on one and an error on the other. */
-        var severity = string.IsNullOrEmpty(actual) && settings.Platform == PlatformType.DrunkenKnitwits
+        var severity = string.IsNullOrEmpty(actual) && account.Platform == PlatformType.DrunkenKnitwits
             ? StripeWebhookCheckSeverity.Warning
             : StripeWebhookCheckSeverity.Error;
 
         return new StripeWebhookCheck
         {
             Actual = actual,
-            Expected = settings.Platform.ToString(),
+            Expected = account.Platform.ToString(),
             Severity = severity,
             State = Enum.TryParse<PlatformType>(actual, ignoreCase: true, out var platform)
-                && platform == settings.Platform
+                && platform == account.Platform
                     ? StripeWebhookCheckState.Met
                     : StripeWebhookCheckState.Unmet,
             Type = StripeWebhookCheckType.Platform

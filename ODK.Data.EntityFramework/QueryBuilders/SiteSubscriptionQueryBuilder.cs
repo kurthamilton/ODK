@@ -31,6 +31,12 @@ public class SiteSubscriptionQueryBuilder
         return this;
     }
 
+    public ISiteSubscriptionQueryBuilder ForEnvironment(EnvironmentType environment)
+    {
+        Query = Query.Where(x => x.Environment == environment);
+        return this;
+    }
+
     public IQueryBuilder<SiteSubscriptionFeature> Features()
     {
         var query =

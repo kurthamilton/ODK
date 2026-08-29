@@ -1,4 +1,6 @@
-﻿using ODK.Core.Payments;
+﻿using ODK.Core.Chapters;
+using ODK.Core.Payments;
+using ODK.Core.Platforms;
 using ODK.Services.Payments.Models;
 
 namespace ODK.Services.Payments;
@@ -25,8 +27,6 @@ public interface IPaymentProvider
 
     Task<RemoteAccount?> CreateConnectedAccount(RemoteAccountCreateOptions options);
 
-    Task<string?> CreateProduct(string name);
-
     Task<string?> CreateSubscriptionPlan(ExternalSubscriptionPlan subscriptionPlan);
 
     /// <summary>
@@ -42,6 +42,10 @@ public interface IPaymentProvider
     Task<ExternalCheckoutSession?> GetCheckoutSession(string externalId);
 
     Task<RemoteAccount?> GetConnectedAccount(string externalId);
+
+    Task<string> GetOrCreateChapterProduct(Chapter chapter);
+
+    Task<string> GetOrCreatePlatformProduct(PlatformType platform);
 
     /// <summary>
     /// The id of the payment that settled an invoice, for passing to
@@ -68,8 +72,6 @@ public interface IPaymentProvider
     /// </summary>
     Task<ExternalPaymentSettlement?> GetPaymentSettlement(string externalPaymentId);
 
-    Task<string?> GetProductId(string name);
-
     Task<ExternalSubscription?> GetSubscription(string externalId);
 
     Task<ExternalSubscriptionPlan?> GetSubscriptionPlan(string externalId);
@@ -79,5 +81,6 @@ public interface IPaymentProvider
         string emailAddress,
         ExternalSubscriptionPlan subscriptionPlan,
         string returnPath,
-        PaymentMetadataModel metadata);
+        PaymentMetadataModel metadata,
+        ChapterPaymentAccount? chapterPaymentAccount);
 }

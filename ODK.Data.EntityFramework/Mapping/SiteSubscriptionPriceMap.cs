@@ -16,6 +16,9 @@ public class SiteSubscriptionPriceMap : IEntityTypeConfiguration<SiteSubscriptio
         builder.Property(x => x.Amount)
             .IsMoneyType();
 
+        builder.Property(x => x.ExternalId)
+            .HasMaxLength(255);
+
         builder.Property(x => x.Frequency)
             .HasConversion<int>();
 

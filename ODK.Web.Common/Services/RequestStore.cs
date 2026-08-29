@@ -4,8 +4,8 @@ using System.Threading.Tasks;
 using ODK.Core.Chapters;
 using ODK.Core.Exceptions;
 using ODK.Core.Members;
-using ODK.Core.Referrals;
 using ODK.Core.Platforms;
+using ODK.Core.Referrals;
 using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
@@ -13,11 +13,11 @@ using ODK.Services;
 using ODK.Services.Exceptions;
 using ODK.Services.Logging;
 using ODK.Services.Members;
+using ODK.Services.Platforms;
 using ODK.Services.Tasks;
 using ChapterServiceRequestImpl = ODK.Services.ChapterServiceRequest;
 using MemberChapterServiceRequestImpl = ODK.Services.MemberChapterServiceRequest;
 using MemberServiceRequestImpl = ODK.Services.MemberServiceRequest;
-using ODK.Services.Platforms;
 
 namespace ODK.Web.Common.Services;
 
@@ -35,6 +35,7 @@ public class RequestStore : IRequestStore
     private readonly IMemberLocaleService _memberLocaleService;
     private readonly IPlatformProvider _platformProvider;
     private IServiceRequest? _serviceRequest;
+    private readonly RequestStoreSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
 
     private readonly Lazy<IChapterServiceRequest> _chapterServiceRequest;
@@ -46,12 +47,14 @@ public class RequestStore : IRequestStore
         ILoggingService loggingService,
         IPlatformProvider platformProvider,
         IBackgroundTaskService backgroundTaskService,
-        IMemberLocaleService memberLocaleService)
+        IMemberLocaleService memberLocaleService,
+        RequestStoreSettings settings)
     {
         _backgroundTaskService = backgroundTaskService;
         _loggingService = loggingService;
         _memberLocaleService = memberLocaleService;
         _platformProvider = platformProvider;
+        _settings = settings;
         _unitOfWork = unitOfWork;
 
         _chapterServiceRequest = new(() => ChapterServiceRequestImpl.Create(Chapter, ServiceRequest));
@@ -228,6 +231,7 @@ public class RequestStore : IRequestStore
         _serviceRequest = new ServiceRequest
         {
             CurrentMemberOrDefault = currentMember,
+            Environment = _settings.Environment,
             HttpRequestContext = context,
             Platform = Platform
         };

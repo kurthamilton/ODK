@@ -10,6 +10,8 @@ public interface IServiceRequest
 
     Member? CurrentMemberOrDefault { get; }
 
+    EnvironmentType Environment { get; }
+
     IHttpRequestContext HttpRequestContext { get; }
 
     PlatformType Platform { get; }

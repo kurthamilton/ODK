@@ -45,7 +45,7 @@
             @<div>
                 @await Html.PartialAsync("Components/_StripeCheckout", new StripeCheckoutViewModel
                 {
-                    ApiPublicKey = viewModel.PaymentSettings.ApiPublicKey,
+                    ApiPublicKey = viewModel.ApiPublicKey,
                     ClientSecret = viewModel.ClientSecret
                 })
             </div>
@@ -56,6 +56,6 @@
 {
     @await Html.PartialAsync("Payments/_PaymentScripts", new PaymentScriptsViewModel
     {
-        Providers = [viewModel.PaymentSettings.Provider]
+        Providers = [viewModel.PaymentProvider]
     })
 }

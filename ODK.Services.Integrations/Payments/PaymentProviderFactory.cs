@@ -1,5 +1,5 @@
-﻿using ODK.Core.Chapters;
-using ODK.Core.Payments;
+﻿using ODK.Core.Payments;
+using ODK.Core.Platforms;
 using ODK.Services.Integrations.Payments.Stripe;
 using ODK.Services.Logging;
 using ODK.Services.Payments;
@@ -11,68 +11,51 @@ public class PaymentProviderFactory : IPaymentProviderFactory
 {
     private readonly ILoggingService _loggingService;
     private readonly IPlatformProvider _platformProvider;
+    private readonly PaymentProviderFactorySettings _settings;
     private readonly StripePaymentProviderSettings _stripeSettings;
 
     public PaymentProviderFactory(
         ILoggingService loggingService,
         StripePaymentProviderSettings stripeSettings,
-        IPlatformProvider platformProvider)
+        IPlatformProvider platformProvider,
+        PaymentProviderFactorySettings settings)
     {
         _loggingService = loggingService;
         _platformProvider = platformProvider;
+        _settings = settings;
         _stripeSettings = stripeSettings;
     }
 
-    public IPaymentProvider GetPaymentProvider(
-        SitePaymentSettings sitePaymentSettings,
-        ChapterPaymentAccount? paymentAccount)
+    public IPaymentProvider GetPaymentProvider(PlatformType platform)
+        => GetPaymentProvider(_settings.DefaultProvider, platform);
+
+    public IPaymentProvider GetPaymentProvider(PaymentProviderType provider, PlatformType platform)
     {
-        return GetPaymentProvider(sitePaymentSettings, paymentAccount?.ExternalId);
+        switch (provider)
+        {
+            case PaymentProviderType.Stripe:
+                return new StripePaymentProvider(
+                    _loggingService,
+                    _stripeSettings,
+                    _platformProvider,
+                    platform);
+
+            default:
+                throw new InvalidOperationException($"Payment provider type {provider} not supported");
+        }
     }
-
-    public IPaymentProvider GetSitePaymentProvider(SitePaymentSettings settings)
-    {
-        return GetPaymentProvider(settings, connectedAccountId: null);
-    }
-
-    public IPaymentProvider GetSitePaymentProvider(
-        IReadOnlyCollection<SitePaymentSettings> sitePaymentSettings,
-        Guid? sitePaymentSettingId)
-    {
-        var paymentSettings = sitePaymentSettingId != null
-            ? sitePaymentSettings.First(x => x.Id == sitePaymentSettingId.Value)
-            : sitePaymentSettings.First(x => x.Active);
-
-        return GetPaymentProvider(paymentSettings, connectedAccountId: null);
-    }
-
-    public IPaymentProvider? GetSitePaymentProviderOrDefault(SitePaymentSettings sitePaymentSettings)
-        => sitePaymentSettings.Provider == PaymentProviderType.Stripe
-            ? GetPaymentProvider(sitePaymentSettings, connectedAccountId: null)
-            : null;
 
     /* Guarded on the provider type rather than constructing and testing the result, because
        GetPaymentProvider throws for a type it does not support - and a record on another provider is a
        caller asking a fair question, not a fault. */
-    public IStripeWebhookProvider? GetStripeWebhookProvider(SitePaymentSettings sitePaymentSettings)
-        => sitePaymentSettings.Provider == PaymentProviderType.Stripe
-            ? GetPaymentProvider(sitePaymentSettings, connectedAccountId: null) as IStripeWebhookProvider
+    public IPaymentProvider? GetPaymentProviderOrDefault(PaymentProviderType provider, PlatformType platform)
+        => provider == PaymentProviderType.Stripe
+            ? GetPaymentProvider(provider, platform)
             : null;
 
-    private IPaymentProvider GetPaymentProvider(SitePaymentSettings settings, string? connectedAccountId)
-    {
-        switch (settings.Provider)
-        {
-            case PaymentProviderType.Stripe:
-                return new StripePaymentProvider(
-                    settings,
-                    _loggingService,
-                    connectedAccountId: connectedAccountId,
-                    _stripeSettings,
-                    _platformProvider);
-
-            default:
-                throw new InvalidOperationException($"Payment provider type {settings.Provider} not supported");
-        }
-    }
+    /// <inheritdoc cref="GetPaymentProviderOrDefault"/>
+    public IStripeWebhookProvider? GetStripeWebhookProvider(PaymentProviderType provider, PlatformType platform)
+        => provider == PaymentProviderType.Stripe
+            ? GetPaymentProvider(provider, platform) as IStripeWebhookProvider
+            : null;
 }

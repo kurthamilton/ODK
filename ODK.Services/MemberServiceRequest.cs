@@ -14,6 +14,7 @@ public class MemberServiceRequest : ServiceRequest, IMemberServiceRequest
         {
             CurrentMember = currentMember,
             CurrentMemberOrDefault = currentMember,
+            Environment = request.Environment,
             HttpRequestContext = request.HttpRequestContext,
             Platform = request.Platform
         };

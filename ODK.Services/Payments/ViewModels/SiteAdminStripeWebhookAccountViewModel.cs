@@ -1,10 +1,9 @@
-﻿using ODK.Core.Payments;
-using ODK.Services.Payments.Models;
+﻿using ODK.Services.Payments.Models;
 
 namespace ODK.Services.Payments.ViewModels;
 
 /// <summary>
-/// One payment settings record's Stripe account, and what its webhook endpoints look like.
+/// One Stripe account, and what its webhook endpoints look like.
 /// </summary>
 public class SiteAdminStripeWebhookAccountViewModel
 {
@@ -34,7 +33,7 @@ public class SiteAdminStripeWebhookAccountViewModel
 
     public required bool MixedApiVersions { get; init; }
 
-    public required SitePaymentSettings PaymentSettings { get; init; }
+    public required StripePaymentAccount Account { get; init; }
 
     public required IReadOnlyCollection<SiteAdminStripeWebhookViewModel> Webhooks { get; init; }
 }

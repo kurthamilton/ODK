@@ -14,6 +14,12 @@ namespace ODK.E2E.Tests.Helpers;
 /// </summary>
 internal static class Provisioning
 {
+    /// <summary>
+    /// The DrunkenKnitwits default subscription's name, which is also what identifies it on a second run:
+    /// the app treats name + platform + environment as a duplicate, so the guard has to ask the same thing.
+    /// </summary>
+    private const string DrunkenKnitwitsSubscriptionName = "ODK E2E Free";
+
     // Set up the DrunkenKnitwits Stripe product / default subscription exactly once per run, even when
     // parallel DrunkenKnitwits fixtures race to seed it (Lazy runs the factory a single time).
     private static readonly Lazy<Task> DrunkenKnitwitsSubscription = new(EnsureDrunkenKnitwitsSubscriptionOnce);
@@ -420,11 +426,10 @@ internal static class Provisioning
 
     private static async Task EnsureDrunkenKnitwitsSubscriptionOnce()
     {
-        var payments = new SitePaymentSettingsDataHelper(E2ESettings.ConnectionString);
-        var paymentSettings = await payments.GetStripeSettings(
-            PlatformTypeIds.DrunkenKnitwits, E2ESettings.StripeAccountId(PlatformTypeIds.DrunkenKnitwits));
+        var subscriptions = new SiteSubscriptionDataHelper(E2ESettings.ConnectionString);
 
-        if (await payments.DrunkenKnitwitsSubscriptionExists(paymentSettings.Id))
+        if (await subscriptions.Exists(
+            DrunkenKnitwitsSubscriptionName, PlatformTypeIds.DrunkenKnitwits, E2ESettings.EnvironmentTypeId))
         {
             return;
         }
@@ -434,20 +439,15 @@ internal static class Provisioning
         var admin = await SharedAccounts.Get(SharedAccounts.SiteAdmin);
         await RunAs(admin, page => CreateSiteSubscription(
             () => new SiteAdminSubscriptionsPage(page).CreateSubscription(
-                paymentSettings.Name, "ODK E2E Free", "ODK E2E Free", groupLimit: 1,
+                DrunkenKnitwitsSubscriptionName, DrunkenKnitwitsSubscriptionName, groupLimit: 1,
                 memberLimit: 20, free: true)),
             E2ESettings.DrunkenKnitwitsBaseUrl);
 
-        await new SiteSubscriptionDataHelper(E2ESettings.ConnectionString)
-            .SetDrunkenKnitwitsDefault("ODK E2E Free");
+        await subscriptions.SetDrunkenKnitwitsDefault(DrunkenKnitwitsSubscriptionName);
     }
 
     private static async Task<TestSiteSubscription> CreateMemberApprovalSiteSubscriptionOnce()
     {
-        var payments = new SitePaymentSettingsDataHelper(E2ESettings.ConnectionString);
-        var paymentSettings = await payments.GetStripeSettings(
-            PlatformTypeIds.Default, E2ESettings.StripeAccountId(PlatformTypeIds.Default));
-
         var admin = await SharedAccounts.Get(SharedAccounts.SiteAdmin);
         var name = $"{SiteSubscriptionDataHelper.TestNamePrefix}{Guid.NewGuid():N}";
 
@@ -456,7 +456,7 @@ internal static class Provisioning
         {
             var subscriptions = new SiteAdminSubscriptionsPage(page);
             await CreateSiteSubscription(() => subscriptions.CreateSubscription(
-                paymentSettings.Name, name, "E2E member approval subscription",
+                name, "E2E member approval subscription",
                 // 5 = MemberSubscriptions, which renders the membership settings form; 2 = ApproveMembers,
                 // which renders the approval switch on it. Both are needed to reach the setting.
                 groupLimit: 1, memberLimit: 10, featureIds: new[] { 5, 2 }));
@@ -474,10 +474,6 @@ internal static class Provisioning
 
     private static async Task<TestSiteSubscription> CreateMemberLimitedSiteSubscriptionOnce()
     {
-        var payments = new SitePaymentSettingsDataHelper(E2ESettings.ConnectionString);
-        var paymentSettings = await payments.GetStripeSettings(
-            PlatformTypeIds.Default, E2ESettings.StripeAccountId(PlatformTypeIds.Default));
-
         var admin = await SharedAccounts.Get(SharedAccounts.SiteAdmin);
         var name = $"{SiteSubscriptionDataHelper.TestNamePrefix}{Guid.NewGuid():N}";
 
@@ -486,7 +482,7 @@ internal static class Provisioning
         {
             var subscriptions = new SiteAdminSubscriptionsPage(page);
             await CreateSiteSubscription(() => subscriptions.CreateSubscription(
-                paymentSettings.Name, name, "E2E one-member subscription",
+                name, "E2E one-member subscription",
                 groupLimit: 1, memberLimit: 1));
             await subscriptions.AddPrice("GBP", "Monthly", 5m);
         });
@@ -502,10 +498,6 @@ internal static class Provisioning
 
     private static async Task<TestSiteSubscription> CreateCustomEmailsSiteSubscriptionOnce()
     {
-        var payments = new SitePaymentSettingsDataHelper(E2ESettings.ConnectionString);
-        var paymentSettings = await payments.GetStripeSettings(
-            PlatformTypeIds.Default, E2ESettings.StripeAccountId(PlatformTypeIds.Default));
-
         var admin = await SharedAccounts.Get(SharedAccounts.SiteAdmin);
         var name = $"{SiteSubscriptionDataHelper.TestNamePrefix}{Guid.NewGuid():N}";
 
@@ -514,7 +506,7 @@ internal static class Provisioning
         {
             var subscriptions = new SiteAdminSubscriptionsPage(page);
             await CreateSiteSubscription(() => subscriptions.CreateSubscription(
-                paymentSettings.Name, name, "E2E custom emails subscription",
+                name, "E2E custom emails subscription",
                 groupLimit: 1, memberLimit: 10, featureIds: new[] { 10 })); // 10 = CustomEmails
             await subscriptions.AddPrice("GBP", "Monthly", 5m);
         });
@@ -530,10 +522,6 @@ internal static class Provisioning
 
     private static async Task<TestSiteSubscription> CreatePurchasableSiteSubscriptionOnce()
     {
-        var payments = new SitePaymentSettingsDataHelper(E2ESettings.ConnectionString);
-        var paymentSettings = await payments.GetStripeSettings(
-            PlatformTypeIds.Default, E2ESettings.StripeAccountId(PlatformTypeIds.Default));
-
         var admin = await SharedAccounts.Get(SharedAccounts.SiteAdmin);
         var name = $"{SiteSubscriptionDataHelper.TestNamePrefix}{Guid.NewGuid():N}";
 
@@ -542,7 +530,7 @@ internal static class Provisioning
         {
             var subscriptions = new SiteAdminSubscriptionsPage(page);
             await CreateSiteSubscription(() => subscriptions.CreateSubscription(
-                paymentSettings.Name, name, "E2E purchasable subscription",
+                name, "E2E purchasable subscription",
                 groupLimit: 1, memberLimit: 10, featureIds: new[] { 5 })); // 5 = MemberSubscriptions
             await subscriptions.AddPrice("GBP", "Monthly", 5m);
         });

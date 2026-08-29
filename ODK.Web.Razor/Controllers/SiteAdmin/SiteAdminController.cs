@@ -1,13 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ODK.Core.Payments;
 using ODK.Services.Authentication;
 using ODK.Services.Contact;
 using ODK.Services.Features;
 using ODK.Services.Logging;
-using ODK.Services.Payments;
-using ODK.Services.Settings;
-using ODK.Services.Settings.Models;
 using ODK.Services.SocialMedia;
 using ODK.Services.Subscriptions;
 using ODK.Services.Subscriptions.Models;
@@ -28,8 +24,6 @@ public class SiteAdminController : OdkControllerBase
     private readonly IContactAdminService _contactAdminService;
     private readonly IFeatureService _featureService;
     private readonly ILoggingService _loggingService;
-    private readonly IPaymentAdminService _paymentAdminService;
-    private readonly ISettingsService _settingsService;
     private readonly ISiteSubscriptionAdminService _siteSubscriptionAdminService;
     private readonly ISocialMediaService _socialMediaService;
     private readonly ITopicAdminService _topicAdminService;
@@ -37,12 +31,10 @@ public class SiteAdminController : OdkControllerBase
     public SiteAdminController(
         ILoggingService loggingService,
         ISocialMediaService socialMediaService,
-        ISettingsService settingsService,
         ISiteSubscriptionAdminService siteSubscriptionAdminService,
         IFeatureService featureService,
         IContactAdminService contactAdminService,
         ITopicAdminService topicAdminService,
-        IPaymentAdminService paymentAdminService,
         IRequestStore requestStore,
         IOdkRoutes odkRoutes)
         : base(requestStore, odkRoutes)
@@ -50,8 +42,6 @@ public class SiteAdminController : OdkControllerBase
         _contactAdminService = contactAdminService;
         _featureService = featureService;
         _loggingService = loggingService;
-        _paymentAdminService = paymentAdminService;
-        _settingsService = settingsService;
         _siteSubscriptionAdminService = siteSubscriptionAdminService;
         _socialMediaService = socialMediaService;
         _topicAdminService = topicAdminService;
@@ -121,80 +111,6 @@ public class SiteAdminController : OdkControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("siteadmin/payments")]
-    public async Task<IActionResult> CreatePaymentSettings(
-        [FromForm] SitePaymentSettingsFormSubmitViewModel viewModel)
-    {
-        var result = await _settingsService.CreatePaymentSettings(
-            MemberServiceRequest,
-            new SitePaymentSettingsCreateModel
-            {
-                ApiPublicKey = viewModel.PublicKey ?? string.Empty,
-                ApiSecretKey = viewModel.SecretKey ?? string.Empty,
-                Commission = viewModel.Commission / 100,
-                Enabled = viewModel.Enabled,
-                Environment = viewModel.Environment,
-                ExternalId = viewModel.ExternalId,
-                ExternalUrl = viewModel.ExternalUrl,
-                Name = viewModel.Name ?? string.Empty,
-                Provider = viewModel.Provider ?? PaymentProviderType.None
-            });
-
-        AddFeedback(result, "Payment settings created");
-
-        return Redirect(OdkRoutes.SiteAdmin.Payments.Path);
-    }
-
-    [HttpPost("siteadmin/payments/{id:guid}")]
-    public async Task<IActionResult> UpdatePaymentSettings(Guid id,
-        [FromForm] SitePaymentSettingsFormSubmitViewModel viewModel)
-    {
-        var result = await _settingsService.UpdatePaymentSettings(
-            MemberServiceRequest,
-            id,
-            new SitePaymentSettingsUpdateModel
-            {
-                ApiPublicKey = viewModel.PublicKey ?? string.Empty,
-                ApiSecretKey = viewModel.SecretKey ?? string.Empty,
-                Commission = viewModel.Commission / 100,
-                Enabled = viewModel.Enabled,
-                Environment = viewModel.Environment,
-                ExternalId = viewModel.ExternalId,
-                ExternalUrl = viewModel.ExternalUrl,
-                Name = viewModel.Name ?? string.Empty
-            });
-
-        AddFeedback(result, "Payment settings updated");
-
-        return RedirectToReferrer();
-    }
-
-    [HttpPost("siteadmin/payments/{id:guid}/activate")]
-    public async Task<IActionResult> ActivatePaymentSettings(Guid id)
-    {
-        var result = await _settingsService.ActivatePaymentSettings(MemberServiceRequest, id);
-
-        AddFeedback(result, "Active payment settings updated");
-
-        return RedirectToReferrer();
-    }
-
-    [HttpPost("siteadmin/payments/reconcile")]
-    public async Task<IActionResult> ReconcilePaymentSettlements()
-    {
-        var result = await _paymentAdminService.ReconcilePaymentSettlements(MemberServiceRequest);
-
-        /* Reports what was queued rather than what was settled: each payment is read back in its own job,
-           so nothing is known about the outcome yet. A payment that cannot be read fails its own job and is
-           reported there. */
-        AddFeedback(
-            $"Reconciling {result.Queued} payments. " +
-            $"{result.Unidentifiable} cannot be identified at the payment provider and were skipped.",
-            FeedbackType.Success);
-
-        return RedirectToReferrer();
-    }
-
     [HttpPost("siteadmin/subscriptions")]
     public async Task<IActionResult> CreateSubscription(SiteSubscriptionFormSubmitViewModel viewModel)
     {
@@ -207,8 +123,7 @@ public class SiteAdminController : OdkControllerBase
             Features = viewModel.Features ?? [],
             Free = viewModel.Free,
             GroupLimit = viewModel.GroupLimit,
-            MemberLimit = viewModel.MemberLimit,
-            SitePaymentSettingId = viewModel.SitePaymentSettingId ?? Guid.Empty
+            MemberLimit = viewModel.MemberLimit
         });
 
         AddFeedback(result, "Subscription created");
@@ -228,8 +143,7 @@ public class SiteAdminController : OdkControllerBase
             Features = viewModel.Features ?? [],
             Free = viewModel.Free,
             GroupLimit = viewModel.GroupLimit,
-            MemberLimit = viewModel.MemberLimit,
-            SitePaymentSettingId = viewModel.SitePaymentSettingId ?? Guid.Empty
+            MemberLimit = viewModel.MemberLimit
         });
 
         if (result.Success)

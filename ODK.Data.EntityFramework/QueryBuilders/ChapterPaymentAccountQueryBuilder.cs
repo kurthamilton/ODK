@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ODK.Core.Chapters;
-using ODK.Core.Payments;
-using ODK.Data.Core.Chapters;
+using ODK.Core.Platforms;
 using ODK.Data.Core.QueryBuilders;
 
 namespace ODK.Data.EntityFramework.QueryBuilders;
@@ -23,19 +22,9 @@ public class ChapterPaymentAccountQueryBuilder
         return this;
     }
 
-    public IChapterPaymentAccountDtoQueryBuilder ToDto() =>
-        CreateQueryBuilder<IChapterPaymentAccountDtoQueryBuilder, ChapterPaymentAccountDto>(
-            context => new ChapterPaymentAccountDtoQueryBuilder(context, Query));
-
-    public ISitePaymentSettingsQueryBuilder ToSitePaymentSettings()
+    public IChapterPaymentAccountQueryBuilder ForEnvironment(EnvironmentType environment)
     {
-        Func<DbContext, IQueryable<SitePaymentSettings>> query = context =>
-            from chapterPaymentAccount in Query
-            from sitePaymentSettings in context.Set<SitePaymentSettings>()
-                .Where(x => x.Id == chapterPaymentAccount.SitePaymentSettingId)
-            select sitePaymentSettings;
-
-        return CreateQueryBuilder<ISitePaymentSettingsQueryBuilder, SitePaymentSettings>(
-            context => new SitePaymentSettingsQueryBuilder(context, query(context)));
+        Query = Query.Where(x => x.Environment == environment);
+        return this;
     }
 }
