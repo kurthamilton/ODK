@@ -2,7 +2,7 @@
 
 public class QueuedEmail : IDatabaseEntity
 {
-    public string Body { get; set; } = string.Empty;
+    public string BodyHtml { get; set; } = string.Empty;
 
     public Guid? ChapterId { get; set; }
 

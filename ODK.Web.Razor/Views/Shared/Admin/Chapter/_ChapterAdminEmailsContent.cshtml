@@ -103,7 +103,7 @@
                                                 var overridden = new[]
                                                 {
                                                     item.Email.OverridesSubject ? "Subject" : null,
-                                                    item.Email.OverridesContent ? "Body" : null
+                                                    item.Email.OverridesBody ? "Body" : null
                                                 }.Where(x => x != null);
 
                                                 <span>@string.Join(", ", overridden)</span>

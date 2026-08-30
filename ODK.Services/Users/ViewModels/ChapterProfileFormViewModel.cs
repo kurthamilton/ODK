@@ -4,6 +4,8 @@ namespace ODK.Services.Users.ViewModels;
 
 public class ChapterProfileFormViewModel : ChapterProfileFormSubmitViewModel
 {
+    public required Chapter Chapter { get; init; }
+
     public required string ChapterName { get; init; }
 
     public required IReadOnlyCollection<ChapterProperty> ChapterProperties { get; init; }

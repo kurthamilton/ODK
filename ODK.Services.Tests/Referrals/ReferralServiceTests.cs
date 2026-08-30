@@ -158,7 +158,7 @@ public static class ReferralServiceTests
                 null,
                 It.Is<IEnumerable<EmailAddressee>>(to => to.Single().Address == "friend@example.com"),
                 campaign.EmailSubject,
-                campaign.EmailText,
+                campaign.EmailTextHtml,
                 EmailRecipientType.Members,
                 It.Is<IEmailParameters>(p =>
                     p.ToDictionary()["member.fullName"] == "Ada Lovelace" &&
@@ -175,9 +175,9 @@ public static class ReferralServiceTests
         => context.Create(new ReferralCampaign
         {
             CreatedUtc = createdUtc ?? DateTime.UtcNow.AddDays(-1),
-            Description = "<p>Refer a friend</p>",
+            DescriptionHtml = "<p>Refer a friend</p>",
             EmailSubject = $"{name} subject",
-            EmailText = "<p>Hello {fullName}</p>",
+            EmailTextHtml = "<p>Hello {fullName}</p>",
             ExpiresUtc = expiresUtc,
             Id = Guid.NewGuid(),
             Name = name

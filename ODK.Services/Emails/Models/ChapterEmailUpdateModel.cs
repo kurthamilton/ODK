@@ -12,9 +12,9 @@
 /// </remarks>
 public class ChapterEmailUpdateModel
 {
-    public required string? HtmlContent { get; init; }
+    public required string? BodyHtml { get; init; }
 
-    public required bool OverrideHtmlContent { get; init; }
+    public required bool OverrideBody { get; init; }
 
     public required bool OverrideSubject { get; init; }
 

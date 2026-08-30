@@ -14,7 +14,8 @@ public class EventFormSubmitViewModel
 
     public DateTime Date { get; set; }
 
-    public string? Description { get; set; } = string.Empty;
+    [DisplayName("Description")]
+    public string? DescriptionHtml { get; set; } = string.Empty;
 
     public bool Draft { get; set; }
 

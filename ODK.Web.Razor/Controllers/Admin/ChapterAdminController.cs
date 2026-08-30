@@ -154,7 +154,7 @@ public class ChapterAdminController : AdminControllerBase
     {
         var request = MemberChapterAdminServiceRequest.Create(
             ChapterAdminSecurable.ContactMessages, MemberChapterServiceRequest);
-        var result = await _chapterAdminService.ReplyToMessage(request, id, viewModel.Message ?? string.Empty);
+        var result = await _chapterAdminService.ReplyToMessage(request, id, viewModel.MessageHtml ?? string.Empty);
         AddFeedback(result, "Reply sent");
         return RedirectToReferrer();
     }
@@ -213,7 +213,7 @@ public class ChapterAdminController : AdminControllerBase
     {
         var model = new ChapterQuestionCreateModel
         {
-            Answer = answer ?? string.Empty,
+            AnswerHtml = answer ?? string.Empty,
             Name = name ?? string.Empty
         };
 
@@ -298,8 +298,8 @@ public class ChapterAdminController : AdminControllerBase
             ChapterAdminSecurable.Emails, MemberChapterServiceRequest);
         var result = await _emailAdminService.UpdateChapterEmail(request, type, new ChapterEmailUpdateModel
         {
-            HtmlContent = viewModel.Content,
-            OverrideHtmlContent = viewModel.OverrideContent,
+            BodyHtml = viewModel.ContentHtml,
+            OverrideBody = viewModel.OverrideContent,
             OverrideSubject = viewModel.OverrideSubject,
             Subject = viewModel.Subject
         });
@@ -352,8 +352,8 @@ public class ChapterAdminController : AdminControllerBase
             ChapterAdminSecurable.Emails, MemberChapterServiceRequest);
         var preview = await _emailAdminService.PreviewChapterEmail(request, type, new ChapterEmailUpdateModel
         {
-            HtmlContent = viewModel.Content,
-            OverrideHtmlContent = viewModel.OverrideContent,
+            BodyHtml = viewModel.ContentHtml,
+            OverrideBody = viewModel.OverrideContent,
             OverrideSubject = viewModel.OverrideSubject,
             Subject = viewModel.Subject
         });
@@ -416,10 +416,10 @@ public class ChapterAdminController : AdminControllerBase
             ChapterAdminSecurable.Texts, MemberChapterServiceRequest);
         var result = await _chapterAdminService.UpdateChapterTexts(request, new ChapterTextsUpdateModel
         {
-            Description = viewModel.Description,
-            RegisterText = viewModel.RegisterMessage,
+            DescriptionHtml = viewModel.DescriptionHtml,
+            RegisterTextHtml = viewModel.RegisterMessageHtml,
             ShortDescription = viewModel.ShortDescription,
-            WelcomeText = viewModel.WelcomeMessage
+            WelcomeTextHtml = viewModel.WelcomeMessageHtml
         });
 
         AddFeedback(result, "Texts updated");

@@ -7,10 +7,10 @@
     var memberId = User.MemberIdOrDefault();
 }
 
-@if (!string.IsNullOrEmpty(Model.Texts?.RegisterText))
+@if (!string.IsNullOrEmpty(Model.Texts?.RegisterTextHtml))
 {
     <p>
-        @Html.Raw(Model.Texts.RegisterText)
+        @Html.Raw(Model.Texts.RegisterTextHtml)
     </p>
 }
 

@@ -17,9 +17,9 @@
             },
             BodyContentFunc =
                 @<div>
-                    @if (!string.IsNullOrEmpty(Model.Texts?.WelcomeText))
+                    @if (!string.IsNullOrEmpty(Model.Texts?.WelcomeTextHtml))
                     {
-                        @Html.Raw(Model.Texts.WelcomeText)
+                        @Html.Raw(Model.Texts.WelcomeTextHtml)
                     }
                 </div>
         })

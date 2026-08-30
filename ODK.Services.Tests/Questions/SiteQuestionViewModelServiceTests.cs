@@ -63,7 +63,7 @@ public static class SiteQuestionViewModelServiceTests
 
         // Assert
         var question = viewModel.Questions.Single();
-        question.Answer.Should().Be("Welcome to Bells &amp; Whistles");
+        question.AnswerHtml.Should().Be("Welcome to Bells &amp; Whistles");
         question.Name.Should().Be("Bells & Whistles");
     }
 
@@ -82,7 +82,7 @@ public static class SiteQuestionViewModelServiceTests
         var viewModel = await service.GetAboutPage(CreateRequest(PlatformType.Default));
 
         // Assert
-        viewModel.Questions.Single().Answer
+        viewModel.Questions.Single().AnswerHtml
             .Should().Be($"You are on {TestPlatformProvider.DefaultName}");
     }
 
@@ -169,7 +169,7 @@ public static class SiteQuestionViewModelServiceTests
     private static SiteQuestion CreateQuestion(
         PlatformType platform, string name, int displayOrder = 1, string? answer = null) => new()
     {
-        Answer = answer ?? $"{name} answer",
+        AnswerHtml = answer ?? $"{name} answer",
         DisplayOrder = displayOrder,
         Id = Guid.NewGuid(),
         Name = name,

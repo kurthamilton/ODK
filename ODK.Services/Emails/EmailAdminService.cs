@@ -220,13 +220,13 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
            The fall through to the site's wording is stated here rather than left to the renderer's own
            fallback: the stored row may still hold an override this form is turning off, which is what that
            fallback would find and show. */
-        var htmlContent = Resolve(model.OverrideHtmlContent, model.HtmlContent, chapterEmail?.HtmlContent)
-            ?? siteEmail.HtmlContent;
+        var bodyHtml = Resolve(model.OverrideBody, model.BodyHtml, chapterEmail?.BodyHtml)
+            ?? siteEmail.BodyHtml;
         var subject = Resolve(model.OverrideSubject, model.Subject, chapterEmail?.Subject)
             ?? siteEmail.Subject;
 
         return await _memberEmailService.RenderTestEmail(
-            request, chapter, currentMember, type, subject, htmlContent);
+            request, chapter, currentMember, type, subject, bodyHtml);
     }
 
     public async Task<RenderedEmail> PreviewEmail(
@@ -279,21 +279,21 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         /* Blank is stored as null rather than as an empty string, so the row says the group has not
            overridden the field rather than that it overrode it with nothing. Each is independent: setting
            one leaves the other inheriting the site's. */
-        var htmlContent = Resolve(
-            model.OverrideHtmlContent, model.HtmlContent, chapterEmail?.HtmlContent);
+        var bodyHtml = Resolve(
+            model.OverrideBody, model.BodyHtml, chapterEmail?.BodyHtml);
         var subject = Resolve(model.OverrideSubject, model.Subject, chapterEmail?.Subject);
 
         /* Which fields this save actually writes. Both what may be written and what is checked hang off the
            same answer, so the two cannot disagree about whether a field is being touched. */
         var writesSubject = WritesWording(subject, chapterEmail?.Subject);
-        var writesHtmlContent = WritesWording(htmlContent, chapterEmail?.HtmlContent);
+        var writesBody = WritesWording(bodyHtml, chapterEmail?.BodyHtml);
 
         /* Without the feature a group may still stop customising - that is the state it would be in had it
            never customised at all - but not write wording. Refusing the save outright instead would strand a
            group that lost the feature with wording it could neither change nor remove.
 
            The form disables what it must, but that is presentation - this is what withholds it. */
-        if (!CanOverrideEmails(ownerSubscriptionFeatures) && (writesSubject || writesHtmlContent))
+        if (!CanOverrideEmails(ownerSubscriptionFeatures) && (writesSubject || writesBody))
         {
             return ServiceResult.Failure(NotPermitted);
         }
@@ -304,13 +304,13 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
             Type = type
         };
 
-        chapterEmail.HtmlContent = htmlContent;
+        chapterEmail.BodyHtml = bodyHtml;
         chapterEmail.Subject = subject;
 
         var validationResult = ValidateChapterEmail(
             type,
             writesSubject ? subject : null,
-            writesHtmlContent ? htmlContent : null);
+            writesBody ? bodyHtml : null);
         if (!validationResult.Success)
         {
             return validationResult;
@@ -375,7 +375,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         var existing = await GetSiteAdminRestrictedContent(request,
             x => x.EmailRepository.GetByType(type));
 
-        existing.HtmlContent = model.HtmlContent;
+        existing.BodyHtml = model.BodyHtml;
         existing.IsGroupEmail = model.IsGroupEmail;
         existing.Subject = model.Subject;
 
@@ -398,18 +398,18 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
     public async Task<ServiceResult> ValidateChapterEmailHtml(
         IMemberChapterAdminServiceRequest request,
         EmailType type,
-        string? htmlContent)
+        string? bodyHtml)
     {
         await AssertMemberIsChapterAdmin(request);
 
-        return ValidateHtml(type, htmlContent);
+        return ValidateHtml(type, bodyHtml);
     }
 
-    public ServiceResult ValidateEmailHtml(IMemberServiceRequest request, EmailType type, string? htmlContent)
+    public ServiceResult ValidateEmailHtml(IMemberServiceRequest request, EmailType type, string? bodyHtml)
     {
         AssertMemberIsSiteAdmin(request.CurrentMember);
 
-        return ValidateHtml(type, htmlContent);
+        return ValidateHtml(type, bodyHtml);
     }
 
     /* Batched into whichever query the caller is already running rather than fetched on its own, so
@@ -465,12 +465,12 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
 
     /* Checked against everything the type supplies, not the narrower list a group is offered: a group
        template using platform.baseurl still resolves, so rejecting it would fail a working email. */
-    private static ServiceResult ValidatePlaceholders(EmailType type, string subject, string htmlContent)
+    private static ServiceResult ValidatePlaceholders(EmailType type, string subject, string bodyHtml)
     {
         var supplied = EmailTemplateParameters.ForSite(type);
 
         var unknown = EmailTemplateValidator.UnknownPlaceholders(subject, supplied)
-            .Concat(EmailTemplateValidator.UnknownPlaceholders(htmlContent, supplied))
+            .Concat(EmailTemplateValidator.UnknownPlaceholders(bodyHtml, supplied))
             .Distinct(EmailParameterComparer.Default)
             .ToArray();
 
@@ -491,7 +491,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
 
        An unset field is not the group's wording either, so the same applies: holding it to these rules would
        report a problem with the site's template against a form the group cannot fix. */
-    private ServiceResult ValidateChapterEmail(EmailType type, string? subject, string? htmlContent)
+    private ServiceResult ValidateChapterEmail(EmailType type, string? subject, string? bodyHtml)
     {
         if (!Enum.IsDefined(typeof(EmailType), type) || type == EmailType.None)
         {
@@ -499,16 +499,16 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         }
 
         var placeholderResult = ValidatePlaceholders(
-            type, subject ?? string.Empty, htmlContent ?? string.Empty);
+            type, subject ?? string.Empty, bodyHtml ?? string.Empty);
 
         if (!placeholderResult.Success)
         {
             return placeholderResult;
         }
 
-        return string.IsNullOrWhiteSpace(htmlContent)
+        return string.IsNullOrWhiteSpace(bodyHtml)
             ? ServiceResult.Successful()
-            : ValidateHtml(type, htmlContent);
+            : ValidateHtml(type, bodyHtml);
     }
 
     private ServiceResult ValidateEmail(Email email)
@@ -518,17 +518,17 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
             return ServiceResult.Failure("Invalid type");
         }
 
-        if (string.IsNullOrWhiteSpace(email.HtmlContent) ||
+        if (string.IsNullOrWhiteSpace(email.BodyHtml) ||
             string.IsNullOrWhiteSpace(email.Subject))
         {
             return ServiceResult.Failure("Some required fields are missing");
         }
 
-        var placeholderResult = ValidatePlaceholders(email.Type, email.Subject, email.HtmlContent);
+        var placeholderResult = ValidatePlaceholders(email.Type, email.Subject, email.BodyHtml);
 
         return !placeholderResult.Success
             ? placeholderResult
-            : ValidateHtml(email.Type, email.HtmlContent);
+            : ValidateHtml(email.Type, email.BodyHtml);
     }
 
 
@@ -536,7 +536,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
        <html>, <head>, a stylesheet - so the allow-list tuned for rich text would reject it outright.
        Only the site admin edits it, and it is not a group email. Subjects are not checked
        either: they are plain text, so a stray angle bracket is not markup. */
-    private ServiceResult ValidateHtml(EmailType type, string? htmlContent) => type == EmailType.Layout
+    private ServiceResult ValidateHtml(EmailType type, string? bodyHtml) => type == EmailType.Layout
         ? ServiceResult.Successful()
-        : _htmlValidator.Validate(htmlContent, TemplateHtmlOptions);
+        : _htmlValidator.Validate(bodyHtml, TemplateHtmlOptions);
 }

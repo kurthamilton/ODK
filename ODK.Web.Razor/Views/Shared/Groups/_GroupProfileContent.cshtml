@@ -15,6 +15,7 @@
             @Html.AntiForgeryToken()
             @await Html.PartialAsync("Account/_ChapterProfileForm", new ChapterProfileFormViewModel
             {
+                Chapter = Model.Chapter,
                 ChapterName = Model.Chapter.GetDisplayName(Model.Platform),
                 ChapterProperties = Model.ChapterProperties,
                 ChapterPropertyOptions = Model.ChapterPropertyOptions,

@@ -13,7 +13,7 @@
     }    
 
     var chapter = RequestStore.ChapterOrDefault;
-    var description = feature.Description
+    var descriptionHtml = feature.DescriptionHtml
         .Replace("{group.name}", chapter?.GetDisplayName(platform) ?? string.Empty);
 }
 
@@ -27,7 +27,7 @@
    data-popover-show
    data-feature-tip="@Model.Name">
     <div class="d-none" data-popover-content>        
-        <div>@Html.Raw(description)</div>
+        <div>@Html.Raw(descriptionHtml)</div>
         <div class="d-flex justify-content-end">
             <button class="btn btn-link btn-sm px-0" data-feature-hidetip="@Model.Name" type="button">
                 Close

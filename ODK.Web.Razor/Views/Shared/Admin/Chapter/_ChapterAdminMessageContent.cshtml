@@ -71,7 +71,7 @@
                                 <tr>
                                     <td>@reply.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions { IncludeDayOfWeek = true, TimeZone = Html.DisplayTimeZone(Model.Chapter.TimeZone) })</td>
                                     <td>@reply.Member?.FullName</td>
-                                    <td>@Html.Raw(reply.Message)</td>
+                                    <td>@Html.Raw(reply.MessageHtml)</td>
                                 </tr>
                             }
                         </tbody>
@@ -109,7 +109,7 @@
                     @Html.AntiForgeryToken()
                     @await Html.PartialAsync("Admin/Chapter/_ChapterAdminMessageForm", new ChapterMessageReplyFormViewModel
                     {
-                        Message = string.Empty
+                        MessageHtml = string.Empty
                     })
                     <button class="btn btn-primary">Send</button>
                 </form>

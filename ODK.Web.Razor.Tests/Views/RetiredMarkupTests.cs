@@ -15,8 +15,6 @@ namespace ODK.Web.Razor.Tests.Views;
 [Parallelizable]
 public static class RetiredMarkupTests
 {
-    private static readonly string[] ExcludedDirectories = ["bin", "lib", "node_modules", "obj"];
-
     /* Each entry is a class the section conventions retired, and what to use instead. Matched as a whole
        word inside a class attribute, so `mt-section` does not trip the `section--admin` rule. */
     private static readonly (string Class, string Replacement)[] RetiredClasses =
@@ -42,13 +40,13 @@ public static class RetiredMarkupTests
     public static void Views_NoRetiredClassIsUsed()
     {
         // Arrange
-        var projectDirectory = ProjectDirectory();
+        var projectDirectory = ViewFiles.ProjectDirectory();
 
         // Act
         var found = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
         var scanned = 0;
 
-        foreach (var file in ViewFiles(projectDirectory))
+        foreach (var file in ViewFiles.All(projectDirectory))
         {
             scanned++;
             var text = File.ReadAllText(file);
@@ -81,41 +79,5 @@ public static class RetiredMarkupTests
             "these views use a class the section conventions retired:{0}{1}",
             Environment.NewLine,
             string.Join(Environment.NewLine, found));
-    }
-
-    private static string ProjectDirectory()
-    {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
-
-        while (directory != null && !File.Exists(Path.Combine(directory.FullName, "odk.slnx")))
-        {
-            directory = directory.Parent;
-        }
-
-        directory.Should().NotBeNull(
-            "this test reads the web project's own files, so it must run from inside the repository - no "
-            + "odk.slnx was found above {0}",
-            AppContext.BaseDirectory);
-
-        return Path.Combine(directory.FullName, "ODK.Web.Razor");
-    }
-
-    private static IEnumerable<string> ViewFiles(string directory)
-    {
-        foreach (var file in Directory.EnumerateFiles(directory, "*.cshtml"))
-        {
-            yield return file;
-        }
-
-        foreach (var child in Directory.EnumerateDirectories(directory))
-        {
-            if (!ExcludedDirectories.Contains(Path.GetFileName(child), StringComparer.OrdinalIgnoreCase))
-            {
-                foreach (var file in ViewFiles(child))
-                {
-                    yield return file;
-                }
-            }
-        }
     }
 }

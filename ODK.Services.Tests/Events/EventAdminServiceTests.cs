@@ -73,7 +73,7 @@ public static class EventAdminServiceTests
         {
             AttendeeLimit = null,
             Date = eventDate,
-            Description = null,
+            DescriptionHtml = null,
             EndTime = null,
             Hosts = [],
             ImageUrl = null,

@@ -12,6 +12,10 @@ public class ChapterEventSettingsMap : IEntityTypeConfiguration<ChapterEventSett
 
         builder.HasKey(x => x.ChapterId);
 
+        // Pinned to the current column name - the columns are renamed to match in a later migration.
+        builder.Property(x => x.DefaultDescriptionHtml)
+            .HasColumnName("DefaultDescription");
+
         builder.HasOne<Chapter>()
             .WithOne()
             .HasForeignKey<ChapterEventSettings>(x => x.ChapterId)

@@ -12,6 +12,9 @@ public class ChapterPropertyOptionMap : IEntityTypeConfiguration<ChapterProperty
 
         builder.HasKey(x => x.Id);
 
+        builder.Property(x => x.Value)
+            .HasMaxLength(255);
+
         builder.HasOne<ChapterProperty>()
             .WithMany()
             .HasForeignKey(x => x.ChapterPropertyId)

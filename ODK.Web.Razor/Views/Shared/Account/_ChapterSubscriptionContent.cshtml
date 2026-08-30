@@ -109,7 +109,7 @@ else if (Model.ChapterSubscriptions.Count > 0)
                 <div class="card-body">
                     <h5 class="card-title">@chapterSubscription.Title</h5>
                     <div class="card-text">
-                        @Html.Raw(chapterSubscription.Description)
+                        @Html.Raw(chapterSubscription.DescriptionHtml)
                     </div>
 
                     @if (chapterSubscription.Recurring)

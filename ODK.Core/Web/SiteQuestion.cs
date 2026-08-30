@@ -8,7 +8,7 @@ namespace ODK.Core.Web;
 /// </summary>
 public class SiteQuestion : IVersioned, IDatabaseEntity
 {
-    public string Answer { get; set; } = string.Empty;
+    public string AnswerHtml { get; set; } = string.Empty;
 
     public int DisplayOrder { get; set; }
 

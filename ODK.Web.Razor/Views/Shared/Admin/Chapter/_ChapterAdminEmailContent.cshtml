@@ -12,10 +12,10 @@
     var formViewModel = new ChapterEmailFormViewModel
     {
         CanOverride = Model.CanOverride,
-        Content = StringUtils.Coalesce(Model.Email.HtmlContent, Model.SiteEmail.HtmlContent),
-        InheritedContent = Model.SiteEmail.HtmlContent,
+        ContentHtml = StringUtils.Coalesce(Model.Email.BodyHtml, Model.SiteEmail.BodyHtml),
+        InheritedContentHtml = Model.SiteEmail.BodyHtml,
         InheritedSubject = Model.SiteEmail.Subject,
-        OverridesContent = Model.Email.OverridesContent,
+        OverridesBody = Model.Email.OverridesBody,
         OverridesSubject = Model.Email.OverridesSubject,
         Placeholders = EmailTemplateParameters.ForGroup(Model.Email.Type),
         PreviewUrl = $"/groups/{Model.Chapter.Id}/emails/{Model.Email.Type}/preview",

@@ -19,7 +19,7 @@
     return;
 }
 
-@if (!string.IsNullOrEmpty(Model.Texts?.RegisterText))
+@if (!string.IsNullOrEmpty(Model.Texts?.RegisterTextHtml))
 {
     @await Html.PartialAsync("Components/_Panel", new PanelViewModel
     {
@@ -31,7 +31,7 @@
         },
         BodyContentFunc =
             @<div>
-                @Html.Raw(Model.Texts.RegisterText)
+                @Html.Raw(Model.Texts.RegisterTextHtml)
             </div>
     })
 }
@@ -40,6 +40,7 @@
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("Account/_ChapterProfileForm", new ChapterProfileFormViewModel
     {
+        Chapter = Model.Chapter,
         ChapterName = "",
         ChapterProperties = Model.Properties,
         ChapterPropertyOptions = Model.PropertyOptions,

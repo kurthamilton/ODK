@@ -27,7 +27,7 @@ public class FeatureModel : SiteAdminPageModel
     {
         await _featureService.UpdateFeature(MemberServiceRequest, id, new FeatureUpdateModel
         {
-            Description = viewModel.Description,
+            DescriptionHtml = viewModel.DescriptionHtml,
             Name = viewModel.Name
         });
 

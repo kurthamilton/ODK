@@ -75,7 +75,7 @@ public class EmailService : IEmailService
 
         // A supplied layout wins, so a preview shows an edited layout rather than the stored one.
         var layoutHtml = StringUtils.Coalesce(
-            options.Layout, templates.ChapterLayout?.HtmlContent, templates.SiteLayout.HtmlContent);
+            options.Layout, templates.ChapterLayout?.BodyHtml, templates.SiteLayout.BodyHtml);
 
         // A send carrying its own body leaves Type at Layout, so it has no template of its own to render.
         var hasTemplate = options.Type != EmailType.Layout;
@@ -86,7 +86,7 @@ public class EmailService : IEmailService
             siteSettings,
             chapterEmailSettings,
             hasTemplate
-                ? StringUtils.Coalesce(templates.ChapterEmail?.HtmlContent, templates.SiteEmail.HtmlContent)
+                ? StringUtils.Coalesce(templates.ChapterEmail?.BodyHtml, templates.SiteEmail.BodyHtml)
                 : null,
             hasTemplate ? templates.SiteEmail.RecipientType : options.RecipientType);
 
@@ -103,7 +103,7 @@ public class EmailService : IEmailService
 
         return new RenderedEmail
         {
-            Body = layoutHtml.Interpolate(parameters),
+            BodyHtml = layoutHtml.Interpolate(parameters),
             FromEmailAddress = siteSettings.FromEmailAddress,
             /* An email is addressed from the same name its wording refers to its group by, read back out of
                the parameters rather than resolved again, so the two cannot disagree. */
@@ -122,7 +122,7 @@ public class EmailService : IEmailService
 
         await SendEmail(request, new SendEmailOptions
         {
-            Body = string.Empty,
+            BodyHtml = string.Empty,
             Chapter = chapter,
             Parameters = parameters,
             Subject = string.Empty,
@@ -142,7 +142,7 @@ public class EmailService : IEmailService
 
         await SendEmail(request, new SendEmailOptions
         {
-            Body = body,
+            BodyHtml = body,
             Chapter = chapter,
             RecipientType = recipientType,
             Subject = subject,
@@ -176,7 +176,7 @@ public class EmailService : IEmailService
         {
             await SendEmail(request, new SendEmailOptions
             {
-                Body = string.Empty,
+                BodyHtml = string.Empty,
                 Chapter = chapter,
                 Parameters = parameters,
                 Subject = string.Empty,
@@ -189,7 +189,7 @@ public class EmailService : IEmailService
         {
             await SendEmail(request, new SendEmailOptions
             {
-                Body = string.Empty,
+                BodyHtml = string.Empty,
                 Chapter = chapter,
                 Parameters = parameters,
                 Subject = string.Empty,
@@ -216,7 +216,7 @@ public class EmailService : IEmailService
     {
         return await SendEmail(request, new SendEmailOptions
         {
-            Body = string.Empty,
+            BodyHtml = string.Empty,
             Chapter = chapter,
             Subject = string.Empty,
             Parameters = parameters,
@@ -247,7 +247,7 @@ public class EmailService : IEmailService
     {
         return await SendEmail(request, new SendEmailOptions
         {
-            Body = body,
+            BodyHtml = body,
             Chapter = chapter,
             Parameters = parameters,
             RecipientType = recipientType,
@@ -267,7 +267,7 @@ public class EmailService : IEmailService
     {
         return await SendEmail(request, new SendEmailOptions
         {
-            Body = body,
+            BodyHtml = body,
             Chapter = chapter,
             RecipientType = recipientType,
             Subject = subject,
@@ -285,7 +285,7 @@ public class EmailService : IEmailService
 
         var email = new EmailClientEmail
         {
-            Body = queuedEmail.Body,
+            BodyHtml = queuedEmail.BodyHtml,
             From = new EmailAddressee(queuedEmail.FromEmailAddress, queuedEmail.FromName),
             ScheduledUtc = queuedEmail.SendAfterUtc,
             Subject = queuedEmail.Subject,
@@ -375,8 +375,8 @@ public class EmailService : IEmailService
             EmailTitle.For(siteSettings, chapterEmailSettings, recipientType)
                 .Interpolate(parameters.AsReadOnly(), HttpUtility.HtmlEncode);
 
-        var body = !string.IsNullOrEmpty(options.Body)
-            ? options.Body
+        var body = !string.IsNullOrEmpty(options.BodyHtml)
+            ? options.BodyHtml
             : templateHtml ?? string.Empty;
         body = body.Interpolate(parameters.AsReadOnly(), HttpUtility.HtmlEncode);
 
@@ -400,7 +400,7 @@ public class EmailService : IEmailService
 
         var queuedEmail = _unitOfWork.QueuedEmailRepository.Add(new QueuedEmail
         {
-            Body = rendered.Body,
+            BodyHtml = rendered.BodyHtml,
             ChapterId = options.Chapter?.Id,
             CreatedUtc = DateTime.UtcNow,
             FromEmailAddress = rendered.FromEmailAddress,

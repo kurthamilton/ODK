@@ -2,7 +2,7 @@
 
 public class EmailUpdateModel
 {
-    public required string HtmlContent { get; init; }
+    public required string BodyHtml { get; init; }
 
     public required bool IsGroupEmail { get; init; }
 

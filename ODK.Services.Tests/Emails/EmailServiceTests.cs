@@ -31,7 +31,7 @@ public static class EmailServiceTests
 
         // Assert
         sent.Subject.Should().Be("{chapter.name} subject");
-        sent.Body.Should().Contain("{chapter.fullName} - {chapter.baseurl}");
+        sent.BodyHtml.Should().Contain("{chapter.fullName} - {chapter.baseurl}");
     }
 
     [Test]
@@ -48,7 +48,7 @@ public static class EmailServiceTests
 
         // Assert
         sent.Subject.Should().Be("Test group Drunken Knitwits subject");
-        sent.Body.Should().Contain("Test group Drunken Knitwits - https://test.local/groups/test-group");
+        sent.BodyHtml.Should().Contain("Test group Drunken Knitwits - https://test.local/groups/test-group");
     }
 
     [Test]
@@ -63,7 +63,7 @@ public static class EmailServiceTests
         var sent = await SendTemplate(subject: "subject", body: body);
 
         // Assert
-        sent.Body.Should().NotContain("{");
+        sent.BodyHtml.Should().NotContain("{");
     }
 
     [Test]
@@ -77,7 +77,7 @@ public static class EmailServiceTests
 
         // Assert
         sent.Subject.Should().Be("Test group Drunken Knitwits subject");
-        sent.Body.Should().Contain("Test group Drunken Knitwits");
+        sent.BodyHtml.Should().Contain("Test group Drunken Knitwits");
     }
 
     [Test]
@@ -96,7 +96,7 @@ public static class EmailServiceTests
 
         // Assert
         sent.Subject.Should().Be("Overridden subject");
-        sent.Body.Should().Contain("https://test.local/somewhere");
+        sent.BodyHtml.Should().Contain("https://test.local/somewhere");
     }
 
     [Test]
@@ -110,7 +110,7 @@ public static class EmailServiceTests
 
         // Assert - the title is a template in its own right, so the group name inside it resolves too.
         sent.Subject.Should().Be("Test group Drunken Knitwits members subject");
-        sent.Body.Should().Contain("Test group Drunken Knitwits members");
+        sent.BodyHtml.Should().Contain("Test group Drunken Knitwits members");
     }
 
     [Test]
@@ -124,7 +124,7 @@ public static class EmailServiceTests
 
         // Assert
         sent.Subject.Should().Be("Test group Drunken Knitwits admins subject");
-        sent.Body.Should().Contain("Test group Drunken Knitwits admins");
+        sent.BodyHtml.Should().Contain("Test group Drunken Knitwits admins");
     }
 
     [Test]
@@ -142,7 +142,7 @@ public static class EmailServiceTests
             });
 
         // Assert
-        sent.Body.Should().Contain("Our own wording");
+        sent.BodyHtml.Should().Contain("Our own wording");
     }
 
     [Test]
@@ -161,8 +161,8 @@ public static class EmailServiceTests
             });
 
         // Assert
-        sent.Body.Should().Contain("Test group Drunken Knitwits admins");
-        sent.Body.Should().NotContain("Our own wording");
+        sent.BodyHtml.Should().Contain("Test group Drunken Knitwits admins");
+        sent.BodyHtml.Should().NotContain("Our own wording");
     }
 
     [Test]
@@ -181,7 +181,7 @@ public static class EmailServiceTests
 
         // Assert
         sent.Subject.Should().Be("Our own subject");
-        sent.Body.Should().Contain("Site body");
+        sent.BodyHtml.Should().Contain("Site body");
     }
 
     [Test]
@@ -194,13 +194,13 @@ public static class EmailServiceTests
             chapterEmail: new ChapterEmail
             {
                 Id = Guid.NewGuid(),
-                HtmlContent = "<p>Our own body</p>"
+                BodyHtml = "<p>Our own body</p>"
             });
 
         // Assert
         sent.Subject.Should().Be("Site subject");
-        sent.Body.Should().Contain("Our own body");
-        sent.Body.Should().NotContain("Site body");
+        sent.BodyHtml.Should().Contain("Our own body");
+        sent.BodyHtml.Should().NotContain("Site body");
     }
 
     [Test]
@@ -213,7 +213,7 @@ public static class EmailServiceTests
             body: "<p>Site body</p>",
             chapterEmail: new ChapterEmail
             {
-                HtmlContent = "<p>Our own body</p>",
+                BodyHtml = "<p>Our own body</p>",
                 Id = Guid.NewGuid(),
                 Subject = string.Empty
             });
@@ -238,7 +238,7 @@ public static class EmailServiceTests
             });
 
         // Assert
-        sent.Body.Should().Contain("Test group Drunken Knitwits members");
+        sent.BodyHtml.Should().Contain("Test group Drunken Knitwits members");
     }
 
     [Test]
@@ -315,7 +315,7 @@ public static class EmailServiceTests
 
         context.Create(new Email
         {
-            HtmlContent = "{body}",
+            BodyHtml = "{body}",
             Subject = string.Empty,
             Type = EmailType.Layout
         });
@@ -323,7 +323,7 @@ public static class EmailServiceTests
         // Distinct subjects, so an assertion can tell which template each send used.
         context.Create(new Email
         {
-            HtmlContent = "<p>admin</p>",
+            BodyHtml = "<p>admin</p>",
             RecipientType = EmailRecipientType.Admins,
             Subject = "Admin comment",
             Type = EmailType.EventComment
@@ -331,7 +331,7 @@ public static class EmailServiceTests
 
         context.Create(new Email
         {
-            HtmlContent = "<p>reply</p>",
+            BodyHtml = "<p>reply</p>",
             RecipientType = EmailRecipientType.Members,
             Subject = "Comment reply",
             Type = EmailType.EventCommentReply
@@ -405,7 +405,7 @@ public static class EmailServiceTests
 
         context.Create(new Email
         {
-            HtmlContent = "{body}",
+            BodyHtml = "{body}",
             Subject = string.Empty,
             Type = EmailType.Layout
         });
@@ -477,14 +477,14 @@ public static class EmailServiceTests
 
         context.Create(new Email
         {
-            HtmlContent = "{body}",
+            BodyHtml = "{body}",
             Subject = string.Empty,
             Type = EmailType.Layout
         });
 
         context.Create(new Email
         {
-            HtmlContent = body,
+            BodyHtml = body,
             RecipientType = recipientType,
             Subject = subject,
             Type = EmailType.NewMember

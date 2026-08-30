@@ -172,7 +172,7 @@ public class ContactAdminService : OdkAdminServiceBase, IContactAdminService
         _unitOfWork.SiteContactMessageReplyRepository.Add(new SiteContactMessageReply
         {
             CreatedUtc = now,
-            Message = message,
+            MessageHtml = message,
             MemberId = currentMember.Id,
             SiteContactMessageId = originalMessage.Id
         });

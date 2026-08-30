@@ -17,7 +17,7 @@ public class Event : IDatabaseEntity, IChapterEntity, ICloneable<Event>
 
     public DateTime DateUtc { get; set; }
 
-    public string? Description { get; set; }
+    public string? DescriptionHtml { get; set; }
 
     public TimeSpan? EndTime { get; set; }
 
@@ -81,7 +81,7 @@ public class Event : IDatabaseEntity, IChapterEntity, ICloneable<Event>
         CreatedBy = CreatedBy,
         CreatedUtc = CreatedUtc,
         DateUtc = DateUtc,
-        Description = Description,
+        DescriptionHtml = DescriptionHtml,
         EndTime = EndTime,
         Id = Id,
         ImageUrl = ImageUrl,

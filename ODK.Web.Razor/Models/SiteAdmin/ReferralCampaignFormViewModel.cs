@@ -13,7 +13,8 @@ public class ReferralCampaignFormViewModel
     public DateTime? ExpiresLocalDate { get; set; }
 
     /// <summary>Shown to the member on the refer page. HTML from the rich text editor.</summary>
-    public string Description { get; set; } = string.Empty;
+    [Display(Name = "Description")]
+    public string DescriptionHtml { get; set; } = string.Empty;
 
     /// <summary>Subject line of the referral email. Plain text.</summary>
     [Display(Name = "Email subject")]
@@ -24,7 +25,7 @@ public class ReferralCampaignFormViewModel
     /// url and referral.id tokens when sent.
     /// </summary>
     [Display(Name = "Email text")]
-    public string EmailText { get; set; } = string.Empty;
+    public string EmailTextHtml { get; set; } = string.Empty;
 
     [Required]
     public string Name { get; set; } = string.Empty;

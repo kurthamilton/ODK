@@ -16,6 +16,13 @@ public class ReferralCampaignMap : IEntityTypeConfiguration<ReferralCampaign>
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();
 
+        // Pinned to the current column name - the columns are renamed to match in a later migration.
+        builder.Property(x => x.DescriptionHtml)
+            .HasColumnName("Description");
+
+        builder.Property(x => x.EmailTextHtml)
+            .HasColumnName("EmailText");
+
         builder.Property(x => x.ExpiresUtc)
             .HasConversion<NullableUtcDateTimeConverter>();
 

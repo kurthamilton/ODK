@@ -8,16 +8,16 @@ namespace ODK.Core.Emails;
 /// </summary>
 public class ChapterEmail : IDatabaseEntity
 {
-    public Guid ChapterId { get; set; }
+    public string? BodyHtml { get; set; }
 
-    public string? HtmlContent { get; set; }
+    public Guid ChapterId { get; set; }
 
     public Guid Id { get; set; }
 
     /// <inheritdoc cref="Email.Name" />
     public string Name => EnumUtils.GetDisplayValue(Type);
 
-    public bool OverridesContent => !string.IsNullOrWhiteSpace(HtmlContent);
+    public bool OverridesBody => !string.IsNullOrWhiteSpace(BodyHtml);
 
     public bool OverridesSubject => !string.IsNullOrWhiteSpace(Subject);
 
@@ -28,5 +28,5 @@ public class ChapterEmail : IDatabaseEntity
     public bool IsDefault() => Id == default;
 
     /// <summary>Whether the group overrides anything at all. A row that overrides nothing is not kept.</summary>
-    public bool OverridesAnything() => OverridesSubject || OverridesContent;
+    public bool OverridesAnything() => OverridesSubject || OverridesBody;
 }

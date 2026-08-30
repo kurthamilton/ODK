@@ -16,6 +16,10 @@ public class SiteContactMessageReplyMap : IEntityTypeConfiguration<SiteContactMe
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();
 
+        // Pinned to the current column name - the columns are renamed to match in a later migration.
+        builder.Property(x => x.MessageHtml)
+            .HasColumnName("Message");
+
         builder.HasOne<SiteContactMessage>()
             .WithMany()
             .HasForeignKey(x => x.SiteContactMessageId);

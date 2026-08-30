@@ -30,9 +30,9 @@ public class ReferralCampaignCreateModel : SiteAdminPageModel
             MemberServiceRequest,
             new ReferralCampaignUpdateModel
             {
-                Description = viewModel.Description,
+                DescriptionHtml = viewModel.DescriptionHtml,
                 EmailSubject = viewModel.EmailSubject,
-                EmailText = viewModel.EmailText,
+                EmailTextHtml = viewModel.EmailTextHtml,
                 ExpiresLocalDate = viewModel.ExpiresLocalDate,
                 Name = viewModel.Name
             });

@@ -62,5 +62,5 @@ internal class SiteAdminQuestionsPage
         await _page.ClickAndWaitForDocument($"form[action='/siteadmin/questions/{questionId}'] button[type='submit']");
     }
 
-    private Task FillAnswer(string answer) => _page.SetHtmlEditor("Answer", answer);
+    private Task FillAnswer(string answer) => _page.SetHtmlEditor("AnswerHtml", answer);
 }

@@ -12,6 +12,16 @@ public class ChapterTextsMap : IEntityTypeConfiguration<ChapterTexts>
 
         builder.HasKey(x => x.ChapterId);
 
+        // Pinned to the current column name - the columns are renamed to match in a later migration.
+        builder.Property(x => x.DescriptionHtml)
+            .HasColumnName("Description");
+
+        builder.Property(x => x.RegisterTextHtml)
+            .HasColumnName("RegisterText");
+
+        builder.Property(x => x.WelcomeTextHtml)
+            .HasColumnName("WelcomeText");
+
         builder.HasOne<Chapter>()
             .WithMany()
             .HasForeignKey(x => x.ChapterId);

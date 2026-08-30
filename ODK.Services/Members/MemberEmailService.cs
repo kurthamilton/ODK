@@ -60,7 +60,7 @@ public class MemberEmailService : IMemberEmailService
 
         return await _emailService.RenderEmail(request, new RenderEmailOptions
         {
-            Body = isLayout ? LayoutPreviewBody : body,
+            BodyHtml = isLayout ? LayoutPreviewBody : body,
             Chapter = chapter,
             Layout = isLayout ? body : null,
             Parameters = parameters,

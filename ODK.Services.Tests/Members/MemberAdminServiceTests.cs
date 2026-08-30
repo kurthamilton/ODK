@@ -700,7 +700,7 @@ public static class MemberAdminServiceTests
         {
             Id = Guid.NewGuid(),
             Name = "Default",
-            Description = "",
+            DescriptionHtml = "",
             GroupLimit = 10,
             Enabled = true,
             Default = true,
@@ -748,7 +748,7 @@ public static class MemberAdminServiceTests
         {
             Id = Guid.NewGuid(),
             Name = "Default",
-            Description = "",
+            DescriptionHtml = "",
             GroupLimit = 10,
             Enabled = true,
             Default = true,
@@ -817,7 +817,7 @@ public static class MemberAdminServiceTests
         {
             Id = Guid.NewGuid(),
             Name = "Default",
-            Description = "",
+            DescriptionHtml = "",
             GroupLimit = 10,
             Enabled = true,
             Default = true,
@@ -988,7 +988,7 @@ public static class MemberAdminServiceTests
         {
             Id = Guid.NewGuid(),
             Name = "Default",
-            Description = "",
+            DescriptionHtml = "",
             GroupLimit = 10,
             Enabled = true,
             Default = true,
@@ -1314,7 +1314,7 @@ public static class MemberAdminServiceTests
         context.Create(new SiteSubscription
         {
             Default = true,
-            Description = "",
+            DescriptionHtml = "",
             Enabled = true,
             GroupLimit = 10,
             Id = Guid.NewGuid(),

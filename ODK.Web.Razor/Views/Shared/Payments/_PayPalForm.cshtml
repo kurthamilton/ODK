@@ -5,7 +5,7 @@
      data-paypal-currencycode="@Model.Currency.Code"
      data-paypal-amount="@Model.Amount.ToString("0.00")">
     <p>
-        @Html.Raw(Model.Description)
+        @Html.Raw(Model.DescriptionHtml)
     </p>
     <p>
         <span>@Model.Currency.ToAmountString(Model.Amount)</span>

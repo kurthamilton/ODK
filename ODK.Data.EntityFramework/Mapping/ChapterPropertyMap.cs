@@ -19,6 +19,21 @@ public class ChapterPropertyMap : IEntityTypeConfiguration<ChapterProperty>
             .HasColumnName("DataTypeId")
             .HasConversion<int>();
 
+        builder.Property(x => x.DisplayName)
+            .HasMaxLength(255);
+
+        builder.Property(x => x.HelpText)
+            .HasMaxLength(255);
+
+        builder.Property(x => x.Label)
+            .HasMaxLength(255);
+
+        builder.Property(x => x.Name)
+            .HasMaxLength(255);
+
+        builder.Property(x => x.Subtitle)
+            .HasMaxLength(255);
+
         builder.HasOne<Chapter>()
             .WithMany()
             .HasForeignKey(x => x.ChapterId)

@@ -2,7 +2,7 @@
 
 public class ChapterQuestion : IVersioned, IDatabaseEntity, IChapterEntity
 {
-    public string Answer { get; set; } = string.Empty;
+    public string AnswerHtml { get; set; } = string.Empty;
 
     public Guid ChapterId { get; set; }
 

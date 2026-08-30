@@ -9,7 +9,7 @@ public class SiteSubscription : IDatabaseEntity
 
     public bool Default { get; set; }
 
-    public string Description { get; set; } = string.Empty;
+    public string DescriptionHtml { get; set; } = string.Empty;
 
     public int? DisplayOrder { get; set; }
 

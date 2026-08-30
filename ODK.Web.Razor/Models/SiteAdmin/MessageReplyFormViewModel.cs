@@ -1,9 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace ODK.Web.Razor.Models.SiteAdmin;
 
 public class MessageReplyFormViewModel
 {
     [Required]
-    public string? Message { get; set; }
+    [DisplayName("Message")]
+    public string? MessageHtml { get; set; }
 }

@@ -11,7 +11,7 @@
                 HeaderContentFunc = 
                     @<div>@question.Name</div>,
                 BodyContentFunc = 
-                    @<div>@Html.Raw(question.Answer)</div>
+                    @<div>@Html.Raw(question.AnswerHtml)</div>
             })
         </div>
     }

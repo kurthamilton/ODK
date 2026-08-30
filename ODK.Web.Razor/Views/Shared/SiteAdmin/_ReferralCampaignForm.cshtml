@@ -8,9 +8,9 @@
 </div>
 
 <div class="form-group mb-3">
-    @Html.LabelFor(x => x.Description, new { @class = "form-label" })
-    @Html.TextAreaFor(x => x.Description, new { @class = "form-control", data_html_editor = "" })
-    @Html.ValidationMessageFor(x => x.Description)
+    @Html.LabelFor(x => x.DescriptionHtml, new { @class = "form-label" })
+    @Html.TextAreaFor(x => x.DescriptionHtml, new { @class = "form-control", data_html_editor = "" })
+    @Html.ValidationMessageFor(x => x.DescriptionHtml)
 </div>
 
 <div class="form-group mb-3">
@@ -20,10 +20,10 @@
 </div>
 
 <div class="form-group mb-3">
-    @Html.LabelFor(x => x.EmailText, new { @class = "form-label" })
-    @Html.TextAreaFor(x => x.EmailText, new { @class = "form-control", data_html_editor = "" })
+    @Html.LabelFor(x => x.EmailTextHtml, new { @class = "form-label" })
+    @Html.TextAreaFor(x => x.EmailTextHtml, new { @class = "form-control", data_html_editor = "" })
     <div class="form-text">Tokens: {member.fullName}, {url}, {referral.id}.</div>
-    @Html.ValidationMessageFor(x => x.EmailText)
+    @Html.ValidationMessageFor(x => x.EmailTextHtml)
 </div>
 
 <div class="form-group mb-3">

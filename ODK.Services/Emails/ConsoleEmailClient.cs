@@ -27,7 +27,7 @@ public class ConsoleEmailClient : IEmailClient
             $"  From: {email.From}{Environment.NewLine}" +
             $"  Scheduled: {email.ScheduledUtc?.ToString("O") ?? "immediate"}{Environment.NewLine}" +
             $"  Subject: {email.Subject}{Environment.NewLine}" +
-            $"  Body:{Environment.NewLine}{email.Body}");
+            $"  Body:{Environment.NewLine}{email.BodyHtml}");
 
         return new SendEmailResult(true, "Logged by ConsoleEmailClient")
         {

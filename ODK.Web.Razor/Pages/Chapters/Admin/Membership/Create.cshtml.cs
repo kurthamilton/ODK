@@ -28,7 +28,7 @@ public class CreateModel : AdminPageModel
         var result = await _chapterAdminService.CreateChapterSubscription(serviceRequest, new ChapterSubscriptionCreateModel
         {
             Amount = viewModel.Amount ?? 0,
-            Description = viewModel.Description,
+            DescriptionHtml = viewModel.DescriptionHtml,
             Disabled = !viewModel.Enabled,
             Months = viewModel.DurationMonths ?? 0,
             Name = viewModel.Name,

@@ -4,7 +4,7 @@ public class Feature : IDatabaseEntity
 {
     public DateTime CreatedUtc { get; set; }
 
-    public string Description { get; set; } = string.Empty;
+    public string DescriptionHtml { get; set; } = string.Empty;
 
     public Guid Id { get; set; }
 

@@ -9,7 +9,7 @@ public class ChapterEmailFormViewModel : ChapterEmailFormSubmitViewModel
     public required bool CanOverride { get; init; }
 
     /// <summary>Whether the body may be typed into: the group customises it and is allowed to.</summary>
-    public bool CanEditContent => CanOverride && OverridesContent;
+    public bool CanEditContent => CanOverride && OverridesBody;
 
     /// <inheritdoc cref="CanEditContent" />
     public bool CanEditSubject => CanOverride && OverridesSubject;
@@ -18,7 +18,7 @@ public class ChapterEmailFormViewModel : ChapterEmailFormSubmitViewModel
     /// Whether the body's Customise toggle works. A group that cannot write wording can still turn off a
     /// customisation it already has, but turning one on would only reveal a field it cannot type into.
     /// </summary>
-    public bool CanToggleContent => CanOverride || OverridesContent;
+    public bool CanToggleContent => CanOverride || OverridesBody;
 
     /// <inheritdoc cref="CanToggleContent" />
     public bool CanToggleSubject => CanOverride || OverridesSubject;
@@ -27,18 +27,18 @@ public class ChapterEmailFormViewModel : ChapterEmailFormSubmitViewModel
     /// The body the group would send if it stopped overriding, shown for comparison while it does. The field
     /// itself already holds this where the group does not override it.
     /// </summary>
-    public required string InheritedContent { get; init; }
+    public required string InheritedContentHtml { get; init; }
 
-    /// <inheritdoc cref="InheritedContent" />
+    /// <inheritdoc cref="InheritedContentHtml" />
     public required string InheritedSubject { get; init; }
 
     /// <summary>
     /// Whether the group overrides the body. A field it does not override shows the site's, disabled - so it
     /// reads as the email the group actually sends, and posts nothing, which is what leaves it inheriting.
     /// </summary>
-    public required bool OverridesContent { get; init; }
+    public required bool OverridesBody { get; init; }
 
-    /// <inheritdoc cref="OverridesContent" />
+    /// <inheritdoc cref="OverridesBody" />
     public required bool OverridesSubject { get; init; }
 
     /// <summary>

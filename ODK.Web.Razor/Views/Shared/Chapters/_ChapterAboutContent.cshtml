@@ -7,10 +7,10 @@
 
 <div class="section-stack">
     
-    @if (!string.IsNullOrEmpty(Model.Texts?.Description))
+    @if (!string.IsNullOrEmpty(Model.Texts?.DescriptionHtml))
     {
         <div>
-            @Html.Raw(Model.Texts.Description)
+            @Html.Raw(Model.Texts.DescriptionHtml)
         </div>
     }
 

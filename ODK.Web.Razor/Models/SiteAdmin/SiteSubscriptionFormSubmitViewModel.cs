@@ -7,7 +7,8 @@ namespace ODK.Web.Razor.Models.SiteAdmin;
 public class SiteSubscriptionFormSubmitViewModel
 {
     [Required]
-    public string Description { get; set; } = string.Empty;
+    [DisplayName("Description")]
+    public string DescriptionHtml { get; set; } = string.Empty;
 
     public bool Enabled { get; set; }
 

@@ -24,7 +24,7 @@
     <div class="card-body">
         <h5 class="card-title">@subscription.Name</h5>
         <div class="card-text">
-            @Html.Raw(subscription.Description)
+            @Html.Raw(subscription.DescriptionHtml)
 
             @if (Model.IsCurrentMemberActiveSubscription)
             {

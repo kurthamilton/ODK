@@ -30,7 +30,7 @@ internal class ChapterSubscriptionAdminPage
         await _page.FillAsync("#Amount", amount.ToString(CultureInfo.InvariantCulture));
         await _page.FillAsync("#DurationMonths", durationMonths.ToString());
 
-        await _page.SetHtmlEditor("Description", description);
+        await _page.SetHtmlEditor("DescriptionHtml", description);
 
         // Recurring is a checkbox only when the payment provider supports recurring payments; otherwise it's
         // a hidden input already fixed to false. Set it only when it's an actual checkbox.

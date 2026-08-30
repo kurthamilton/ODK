@@ -4,7 +4,7 @@ public class EventSettingsUpdateModel
 {
     public required DayOfWeek? DefaultDayOfWeek { get; init; }
 
-    public required string? DefaultDescription { get; init; }
+    public required string? DefaultDescriptionHtml { get; init; }
 
     public required TimeSpan? DefaultEndTime { get; init; }
 

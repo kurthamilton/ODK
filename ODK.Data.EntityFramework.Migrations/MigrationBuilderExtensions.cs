@@ -132,7 +132,7 @@ internal static class MigrationBuilderExtensions
             [
                 (int)email.Type,
                 email.Subject,
-                email.HtmlContent,
+                email.BodyHtml,
                 email.IsGroupEmail,
                 email.Type.ToString()
             ];

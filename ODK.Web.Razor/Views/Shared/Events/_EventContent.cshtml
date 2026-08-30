@@ -24,13 +24,13 @@
                     Venue = Model.Venue
                 })
 
-                @if (!string.IsNullOrEmpty(Model.Event.Description) || !string.IsNullOrEmpty(Model.Event.ImageUrl))
+                @if (!string.IsNullOrEmpty(Model.Event.DescriptionHtml) || !string.IsNullOrEmpty(Model.Event.ImageUrl))
                 {
                     <div class="mt-4 d-flex flex-column gap-3">
-                        @if (!string.IsNullOrEmpty(Model.Event.Description))
+                        @if (!string.IsNullOrEmpty(Model.Event.DescriptionHtml))
                         {
                             <div>
-                                @Html.Raw(Model.Event.Description)
+                                @Html.Raw(Model.Event.DescriptionHtml)
                             </div>
                         }
 

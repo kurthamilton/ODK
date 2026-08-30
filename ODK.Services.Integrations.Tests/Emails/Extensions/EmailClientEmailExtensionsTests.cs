@@ -44,7 +44,7 @@ public static class EmailClientEmailExtensionsTests
 
     private static EmailClientEmail CreateEmail() => new EmailClientEmail
     {
-        Body = "<p>body</p>",
+        BodyHtml = "<p>body</p>",
         From = new EmailAddressee("from@example.com", "From"),
         ScheduledUtc = null,
         Subject = "Subject",

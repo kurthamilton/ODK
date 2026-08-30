@@ -40,7 +40,7 @@ internal static class EmailClientEmailExtensions
         return new BrevoTransactionalEmailRequest
         {
             Bcc = bcc.Count > 0 ? bcc : null,
-            HtmlContent = email.Body,
+            HtmlContent = email.BodyHtml,
             ScheduledAt = email.ScheduledUtc,
             Sender = sender,
             Subject = email.Subject,
@@ -55,7 +55,7 @@ internal static class EmailClientEmailExtensions
         {
             Body = new TextPart(TextFormat.Html)
             {
-                Text = email.Body
+                Text = email.BodyHtml
             },
             Subject = email.Subject
         };

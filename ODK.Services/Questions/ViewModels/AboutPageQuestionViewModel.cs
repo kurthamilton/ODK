@@ -12,7 +12,7 @@ public class AboutPageQuestionViewModel
     /// <summary>
     /// HTML, and resolved with its values HTML-encoded, since the page renders it unencoded.
     /// </summary>
-    public required string Answer { get; init; }
+    public required string AnswerHtml { get; init; }
 
     public required string Name { get; init; }
 }

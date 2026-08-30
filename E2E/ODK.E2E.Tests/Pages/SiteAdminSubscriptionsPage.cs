@@ -73,7 +73,7 @@ internal class SiteAdminSubscriptionsPage
 
         await _page.FillAsync("#Name", name);
 
-        await _page.SetHtmlEditor("Description", description);
+        await _page.SetHtmlEditor("DescriptionHtml", description);
 
         if (!await _page.IsCheckedAsync("#Enabled"))
         {

@@ -11,7 +11,8 @@ public class SubscriptionFormSubmitViewModel
     public decimal? Amount { get; set; }
 
     [Required]
-    public string Description { get; set; } = string.Empty;
+    [DisplayName("Description")]
+    public string DescriptionHtml { get; set; } = string.Empty;
 
     [DisplayName("Duration (months)")]
     [Required]

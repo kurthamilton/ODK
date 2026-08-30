@@ -15,5 +15,11 @@ public class ErrorMap : IEntityTypeConfiguration<Error>
 
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();
+
+        builder.Property(x => x.ExceptionMessage)
+            .HasMaxLength(1024);
+
+        builder.Property(x => x.ExceptionType)
+            .HasMaxLength(255);
     }
 }

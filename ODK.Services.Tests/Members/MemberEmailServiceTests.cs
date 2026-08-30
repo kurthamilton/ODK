@@ -52,7 +52,7 @@ public static class MemberEmailServiceTests
             x => x.RenderEmail(
                 request,
                 It.Is<RenderEmailOptions>(x =>
-                    x.Body == "<p>A body</p>" &&
+                    x.BodyHtml == "<p>A body</p>" &&
                     x.Layout == null &&
                     x.Subject == "A subject" &&
                     x.Type == EmailType.NewMember)),
@@ -91,8 +91,8 @@ public static class MemberEmailServiceTests
                 request,
                 It.Is<RenderEmailOptions>(x =>
                     x.Layout == layout &&
-                    x.Body != layout &&
-                    x.Body.Length > 0)),
+                    x.BodyHtml != layout &&
+                    x.BodyHtml.Length > 0)),
             Times.Once);
     }
 
@@ -374,7 +374,7 @@ public static class MemberEmailServiceTests
             .Setup(x => x.RenderEmail(It.IsAny<IServiceRequest>(), It.IsAny<RenderEmailOptions>()))
             .ReturnsAsync(new RenderedEmail
             {
-                Body = string.Empty,
+                BodyHtml = string.Empty,
                 FromEmailAddress = string.Empty,
                 FromName = string.Empty,
                 Subject = string.Empty

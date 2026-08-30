@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace ODK.Web.Razor.Models.SiteAdmin;
 
@@ -10,7 +11,8 @@ namespace ODK.Web.Razor.Models.SiteAdmin;
 public class SiteEmailFormSubmitViewModel
 {
     [Required]
-    public string Content { get; set; } = string.Empty;
+    [DisplayName("Content")]
+    public string ContentHtml { get; set; } = string.Empty;
 
     [Required]
     public string Subject { get; set; } = string.Empty;

@@ -94,7 +94,7 @@ public class EventAdminController : AdminControllerBase
             ChapterAdminSecurable.Events,
             MemberChapterServiceRequest);
         await _eventAdminService.SendEventInviteeEmail(request, id,
-            model.ResponseTypes, model.Subject ?? string.Empty, model.Body ?? string.Empty);
+            model.ResponseTypes, model.Subject ?? string.Empty, model.BodyHtml ?? string.Empty);
         AddFeedback("Update sent", FeedbackType.Success);
 
         return RedirectToReferrer();
@@ -148,7 +148,7 @@ public class EventAdminController : AdminControllerBase
         await _eventAdminService.UpdateEventSettings(request, new EventSettingsUpdateModel
         {
             DefaultDayOfWeek = viewModel.DefaultDayOfWeek,
-            DefaultDescription = viewModel.DefaultDescription,
+            DefaultDescriptionHtml = viewModel.DefaultDescriptionHtml,
             DefaultEndTime = TimeSpanUtils.FromString(viewModel.DefaultEndTime),
             DefaultScheduledEmailDayOfWeek = viewModel.DefaultScheduledEmailDayOfWeek,
             DefaultScheduledEmailTimeOfDay = TimeSpanUtils.FromString(viewModel.DefaultScheduledEmailTimeOfDay),

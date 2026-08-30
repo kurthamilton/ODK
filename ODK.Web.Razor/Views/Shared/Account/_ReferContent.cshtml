@@ -2,7 +2,7 @@
 @using ODK.Web.Razor.Models.Account
 @model ReferralCampaign
 
-@Html.Raw(Model.Description)
+@Html.Raw(Model.DescriptionHtml)
 
 <form method="post">
     @Html.AntiForgeryToken()

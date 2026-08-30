@@ -47,7 +47,7 @@ public static class EmailAdminServiceTests
         context.Create(new ChapterEmail
         {
             ChapterId = chapter.Id,
-            HtmlContent = "<p>Custom</p>",
+            BodyHtml = "<p>Custom</p>",
             Id = Guid.NewGuid(),
             Subject = "Custom",
             Type = Type
@@ -104,7 +104,7 @@ public static class EmailAdminServiceTests
         // Assert
         var email = result.Emails.Single().Email;
         email.OverridesSubject.Should().BeFalse();
-        email.OverridesContent.Should().BeFalse();
+        email.OverridesBody.Should().BeFalse();
         email.OverridesAnything().Should().BeFalse();
     }
 
@@ -132,7 +132,7 @@ public static class EmailAdminServiceTests
         // Assert
         var email = result.Emails.Single().Email;
         email.OverridesSubject.Should().BeTrue();
-        email.OverridesContent.Should().BeFalse();
+        email.OverridesBody.Should().BeFalse();
     }
 
     [Test]
@@ -221,9 +221,9 @@ public static class EmailAdminServiceTests
 
         var stored = context.Set<ChapterEmail>().Single(x => x.ChapterId == chapter.Id && x.Type == Type);
         stored.Subject.Should().Be("Updated");
-        stored.HtmlContent.Should().BeNull();
+        stored.BodyHtml.Should().BeNull();
         stored.OverridesSubject.Should().BeTrue();
-        stored.OverridesContent.Should().BeFalse();
+        stored.OverridesBody.Should().BeFalse();
     }
 
     [Test]
@@ -246,7 +246,7 @@ public static class EmailAdminServiceTests
 
         var stored = context.Set<ChapterEmail>().Single(x => x.ChapterId == chapter.Id && x.Type == Type);
         stored.Subject.Should().BeNull();
-        stored.HtmlContent.Should().Be("<p>Updated</p>");
+        stored.BodyHtml.Should().Be("<p>Updated</p>");
     }
 
     [Test]
@@ -260,7 +260,7 @@ public static class EmailAdminServiceTests
         context.Create(new ChapterEmail
         {
             ChapterId = chapter.Id,
-            HtmlContent = "<p>Existing</p>",
+            BodyHtml = "<p>Existing</p>",
             Id = Guid.NewGuid(),
             Subject = "Existing",
             Type = Type
@@ -294,10 +294,10 @@ public static class EmailAdminServiceTests
 
         // Assert
         result.Email.Subject.Should().BeNull();
-        result.Email.HtmlContent.Should().BeNull();
+        result.Email.BodyHtml.Should().BeNull();
         result.Email.Type.Should().Be(Type);
         result.SiteEmail.Subject.Should().Be("Standard");
-        result.SiteEmail.HtmlContent.Should().Be("<p>Standard</p>");
+        result.SiteEmail.BodyHtml.Should().Be("<p>Standard</p>");
     }
 
     [Test]
@@ -345,7 +345,7 @@ public static class EmailAdminServiceTests
         context.Create(new ChapterEmail
         {
             ChapterId = chapter.Id,
-            HtmlContent = "<p>Existing</p>",
+            BodyHtml = "<p>Existing</p>",
             Id = Guid.NewGuid(),
             Subject = "Existing",
             Type = Type
@@ -364,7 +364,7 @@ public static class EmailAdminServiceTests
 
         var stored = context.Set<ChapterEmail>().Single(x => x.ChapterId == chapter.Id);
         stored.Subject.Should().BeNull();
-        stored.HtmlContent.Should().Be("<p>Existing</p>");
+        stored.BodyHtml.Should().Be("<p>Existing</p>");
     }
 
     [Test]
@@ -379,7 +379,7 @@ public static class EmailAdminServiceTests
         context.Create(new ChapterEmail
         {
             ChapterId = chapter.Id,
-            HtmlContent = "<p>Existing body</p>",
+            BodyHtml = "<p>Existing body</p>",
             Id = Guid.NewGuid(),
             Subject = "Existing subject",
             Type = Type
@@ -402,7 +402,7 @@ public static class EmailAdminServiceTests
 
         var stored = context.Set<ChapterEmail>().Single(x => x.ChapterId == chapter.Id);
         stored.Subject.Should().Be("Existing subject");
-        stored.HtmlContent.Should().BeNull();
+        stored.BodyHtml.Should().BeNull();
     }
 
     [Test]
@@ -417,7 +417,7 @@ public static class EmailAdminServiceTests
         context.Create(new ChapterEmail
         {
             ChapterId = chapter.Id,
-            HtmlContent = "<p style=\"text-align: center;\">Existing body</p>",
+            BodyHtml = "<p style=\"text-align: center;\">Existing body</p>",
             Id = Guid.NewGuid(),
             Subject = "Existing subject",
             Type = Type
@@ -441,7 +441,7 @@ public static class EmailAdminServiceTests
 
         var stored = context.Set<ChapterEmail>().Single(x => x.ChapterId == chapter.Id);
         stored.Subject.Should().BeNull();
-        stored.HtmlContent.Should().Be("<p style=\"text-align: center;\">Existing body</p>");
+        stored.BodyHtml.Should().Be("<p style=\"text-align: center;\">Existing body</p>");
     }
 
     [Test]
@@ -455,7 +455,7 @@ public static class EmailAdminServiceTests
         context.Create(new ChapterEmail
         {
             ChapterId = chapter.Id,
-            HtmlContent = "<p>Existing body</p>",
+            BodyHtml = "<p>Existing body</p>",
             Id = Guid.NewGuid(),
             Subject = "Existing subject",
             Type = Type
@@ -478,7 +478,7 @@ public static class EmailAdminServiceTests
 
         var stored = context.Set<ChapterEmail>().Single(x => x.ChapterId == chapter.Id);
         stored.Subject.Should().Be("Existing subject");
-        stored.HtmlContent.Should().Be("<p>Existing body</p>");
+        stored.BodyHtml.Should().Be("<p>Existing body</p>");
     }
 
     [Test]
@@ -512,7 +512,7 @@ public static class EmailAdminServiceTests
         context.Create(new ChapterEmail
         {
             ChapterId = chapter.Id,
-            HtmlContent = "<p>Existing</p>",
+            BodyHtml = "<p>Existing</p>",
             Id = Guid.NewGuid(),
             Subject = "Existing",
             Type = Type
@@ -526,7 +526,7 @@ public static class EmailAdminServiceTests
         // Assert
         var stored = context.Set<ChapterEmail>().Single(x => x.ChapterId == chapter.Id);
         stored.Subject.Should().Be("Existing");
-        stored.HtmlContent.Should().Be("<p>Existing</p>");
+        stored.BodyHtml.Should().Be("<p>Existing</p>");
     }
 
     [Test]
@@ -860,7 +860,7 @@ public static class EmailAdminServiceTests
         MockOdkContext context,
         EmailRecipientType recipientType = EmailRecipientType.Members) => context.Create(new Email
     {
-        HtmlContent = "<p>Standard</p>",
+        BodyHtml = "<p>Standard</p>",
         IsGroupEmail = true,
         RecipientType = recipientType,
         Subject = "Standard",
@@ -890,8 +890,8 @@ public static class EmailAdminServiceTests
         bool? overrideSubject = null,
         bool? overrideHtmlContent = null) => new()
     {
-        HtmlContent = htmlContent,
-        OverrideHtmlContent = overrideHtmlContent ?? !string.IsNullOrWhiteSpace(htmlContent),
+        BodyHtml = htmlContent,
+        OverrideBody = overrideHtmlContent ?? !string.IsNullOrWhiteSpace(htmlContent),
         OverrideSubject = overrideSubject ?? !string.IsNullOrWhiteSpace(subject),
         Subject = subject
     };

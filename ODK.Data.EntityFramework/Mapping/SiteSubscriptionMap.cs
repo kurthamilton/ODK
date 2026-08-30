@@ -13,6 +13,10 @@ public class SiteSubscriptionMap : IEntityTypeConfiguration<SiteSubscription>
 
         builder.HasKey(x => x.Id);
 
+        // Pinned to the current column name - the columns are renamed to match in a later migration.
+        builder.Property(x => x.DescriptionHtml)
+            .HasColumnName("Description");
+
         builder.Property(x => x.Environment)
             .HasColumnName("EnvironmentTypeId");
 

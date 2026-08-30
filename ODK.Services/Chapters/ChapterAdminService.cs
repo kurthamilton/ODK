@@ -462,7 +462,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         var displayOrder = existing.Count > 0 ? existing.Max(x => x.DisplayOrder) + 1 : 1;
 
-        var htmlResult = _htmlValidator.Validate(model.Answer, DefaultHtmlValidatorOptions);
+        var htmlResult = _htmlValidator.Validate(model.AnswerHtml, DefaultHtmlValidatorOptions);
         if (!htmlResult.Success)
         {
             return htmlResult;
@@ -470,7 +470,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         var question = new ChapterQuestion
         {
-            Answer = model.Answer,
+            AnswerHtml = model.AnswerHtml,
             ChapterId = chapterId,
             DisplayOrder = displayOrder,
             Name = model.Name
@@ -529,7 +529,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             return ServiceResult.Failure("Payment account set up not finished");
         }
 
-        var htmlResult = _htmlValidator.Validate(model.Description, DefaultHtmlValidatorOptions);
+        var htmlResult = _htmlValidator.Validate(model.DescriptionHtml, DefaultHtmlValidatorOptions);
         if (!htmlResult.Success)
         {
             return htmlResult;
@@ -540,7 +540,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             Amount = model.Amount,
             ChapterId = chapterId,
             CurrencyId = currency.Id,
-            Description = model.Description,
+            DescriptionHtml = model.DescriptionHtml,
             Disabled = model.Disabled,
             Environment = chapterPaymentAccount.Environment,
             Months = model.Months,
@@ -1519,7 +1519,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         {
             ChapterContactMessageId = originalMessage.Id,
             CreatedUtc = now,
-            Message = message,
+            MessageHtml = message,
             MemberId = request.CurrentMember.Id
         });
 
@@ -1807,7 +1807,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             return htmlResult;
         }
 
-        texts.Description = description;
+        texts.DescriptionHtml = description;
 
         if (texts.ChapterId == default)
         {
@@ -2189,13 +2189,13 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         OdkAssertions.BelongsToChapter(question, chapter.Id);
 
-        var htmlResult = _htmlValidator.Validate(model.Answer, DefaultHtmlValidatorOptions);
+        var htmlResult = _htmlValidator.Validate(model.AnswerHtml, DefaultHtmlValidatorOptions);
         if (!htmlResult.Success)
         {
             return htmlResult;
         }
 
-        question.Answer = model.Answer;
+        question.AnswerHtml = model.AnswerHtml;
         question.Name = model.Name;
 
         var validationResult = ValidateChapterQuestion(question);
@@ -2289,7 +2289,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         var wasDisabled = subscription.Disabled;
 
         // subscription.Amount = model.Amount;
-        subscription.Description = model.Description;
+        subscription.DescriptionHtml = model.DescriptionHtml;
         subscription.Disabled = model.Disabled;
         // subscription.Months = model.Months;
         subscription.Name = model.Name;
@@ -2332,8 +2332,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             request,
             x => x.ChapterTextsRepository.GetByChapterId(chapter.Id));
 
-        if (string.IsNullOrWhiteSpace(model.RegisterText) ||
-            string.IsNullOrWhiteSpace(model.WelcomeText))
+        if (string.IsNullOrWhiteSpace(model.RegisterTextHtml) ||
+            string.IsNullOrWhiteSpace(model.WelcomeTextHtml))
         {
             return ServiceResult.Failure("Some required fields are missing");
         }
@@ -2343,10 +2343,9 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         // only validate changed texts to avoid blocking an update for an existing field
         var validateTexts = new[]
         {
-            model.Description != texts.Description ? model.Description : null,
-            model.RegisterText != texts.RegisterText ? model.RegisterText : null,
-            model.ShortDescription != texts.ShortDescription ? model.RegisterText : null,
-            model.WelcomeText != texts.WelcomeText ? model.WelcomeText : null
+            model.DescriptionHtml != texts.DescriptionHtml ? model.DescriptionHtml : null,
+            model.RegisterTextHtml != texts.RegisterTextHtml ? model.RegisterTextHtml : null,
+            model.WelcomeTextHtml != texts.WelcomeTextHtml ? model.WelcomeTextHtml : null
         };
 
         foreach (var validateText in validateTexts)
@@ -2358,10 +2357,10 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             }
         }
 
-        texts.Description = model.Description;
-        texts.RegisterText = model.RegisterText;
+        texts.DescriptionHtml = model.DescriptionHtml;
+        texts.RegisterTextHtml = model.RegisterTextHtml;
         texts.ShortDescription = model.ShortDescription;
-        texts.WelcomeText = model.WelcomeText;
+        texts.WelcomeTextHtml = model.WelcomeTextHtml;
 
         if (texts.ChapterId == default)
         {
@@ -2448,7 +2447,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     private ServiceResult ValidateChapterQuestion(ChapterQuestion question)
     {
         if (string.IsNullOrWhiteSpace(question.Name) ||
-            string.IsNullOrWhiteSpace(question.Answer))
+            string.IsNullOrWhiteSpace(question.AnswerHtml))
         {
             return ServiceResult.Failure(ErrorMessagesResource.RequiredFieldsMissing);
         }
@@ -2495,7 +2494,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             return ServiceResult.Failure("Invalid type");
         }
 
-        if (string.IsNullOrWhiteSpace(subscription.Description) ||
+        if (string.IsNullOrWhiteSpace(subscription.DescriptionHtml) ||
             string.IsNullOrWhiteSpace(subscription.Name) ||
             string.IsNullOrWhiteSpace(subscription.Title))
         {

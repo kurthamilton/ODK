@@ -25,7 +25,7 @@ public class IndexModel : EventAdminPageModel
         {
             AttendeeLimit = viewModel.AttendeeLimit,
             Date = viewModel.Date,
-            Description = viewModel.Description,
+            DescriptionHtml = viewModel.DescriptionHtml,
             EndTime = TimeSpanUtils.FromString(viewModel.EndTime),
             Hosts = viewModel.Hosts ?? [],
             ImageUrl = viewModel.ImageUrl,

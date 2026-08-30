@@ -471,7 +471,7 @@ public static class SiteSubscriptionAdminServiceTests
 
     private static SiteSubscriptionCreateModel CreateModel(bool free) => new()
     {
-        Description = "Description",
+        DescriptionHtml = "DescriptionHtml",
         Enabled = true,
         FallbackSiteSubscriptionId = null,
         Features = [],

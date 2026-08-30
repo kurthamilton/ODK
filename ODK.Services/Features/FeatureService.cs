@@ -21,7 +21,7 @@ public class FeatureService : OdkAdminServiceBase, IFeatureService
         _unitOfWork.FeatureRepository.Add(new Feature
         {
             CreatedUtc = DateTime.UtcNow,
-            Description = model.Description,
+            DescriptionHtml = model.DescriptionHtml,
             Id = _unitOfWork.NewId(),
             Name = model.Name
         });
@@ -75,7 +75,7 @@ public class FeatureService : OdkAdminServiceBase, IFeatureService
         var feature = await GetSiteAdminRestrictedContent(request,
             x => x.FeatureRepository.GetById(featureId));
 
-        feature.Description = model.Description;
+        feature.DescriptionHtml = model.DescriptionHtml;
         feature.Name = model.Name;
 
         _unitOfWork.FeatureRepository.Update(feature);

@@ -6,7 +6,8 @@ namespace ODK.Web.Razor.Models.SiteAdmin;
 public class SiteQuestionFormViewModel
 {
     [Required]
-    public string Answer { get; set; } = string.Empty;
+    [DisplayName("Answer")]
+    public string AnswerHtml { get; set; } = string.Empty;
 
     [Required]
     [DisplayName("Question")]

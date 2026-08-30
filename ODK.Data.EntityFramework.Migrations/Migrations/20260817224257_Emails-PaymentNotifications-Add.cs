@@ -27,7 +27,7 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                 EmailSchemaEra.IdKey,
                 new Email
                 {
-                    HtmlContent = MemberBody,
+                    BodyHtml = MemberBody,
                     IsGroupEmail = true,
                     RecipientType = EmailRecipientType.Members,
                     Subject = Subject,

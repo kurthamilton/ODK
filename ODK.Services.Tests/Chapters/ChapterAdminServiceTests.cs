@@ -1864,7 +1864,7 @@ public static class ChapterAdminServiceTests
         {
             ChapterId = chapter.Id,
             Name = name ?? "Test Question",
-            Answer = answer ?? "<p>Test Answer</p>"
+            AnswerHtml = answer ?? "<p>Test AnswerHtml</p>"
         };
 
     private static ChapterQuestionCreateModel CreateChapterQuestionCreateModel(
@@ -1873,7 +1873,7 @@ public static class ChapterAdminServiceTests
         => new ChapterQuestionCreateModel
         {
             Name = name ?? "Test Question",
-            Answer = answer ?? "<p>Test Answer</p>"
+            AnswerHtml = answer ?? "<p>Test AnswerHtml</p>"
         };
 
     private static ChapterAdminMemberUpdateModel CreateChapterAdminMemberUpdateModel(
@@ -1930,9 +1930,9 @@ public static class ChapterAdminServiceTests
         => new ChapterTexts
         {
             ChapterId = chapter.Id,
-            Description = "Test description",
-            WelcomeText = "Welcome to the test chapter",
-            RegisterText = "Register here"
+            DescriptionHtml = "Test description",
+            WelcomeTextHtml = "Welcome to the test chapter",
+            RegisterTextHtml = "Register here"
         };
 
     private static ChapterLinks CreateChapterLinks(Chapter chapter)

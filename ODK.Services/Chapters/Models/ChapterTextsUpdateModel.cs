@@ -2,11 +2,11 @@
 
 public class ChapterTextsUpdateModel
 {
-    public required string? Description { get; init; }
+    public required string? DescriptionHtml { get; init; }
 
-    public required string? RegisterText { get; init; }
+    public required string? RegisterTextHtml { get; init; }
 
     public required string? ShortDescription { get; init; }
 
-    public required string? WelcomeText { get; init; }
+    public required string? WelcomeTextHtml { get; init; }
 }
