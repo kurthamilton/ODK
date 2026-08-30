@@ -14,13 +14,13 @@ public class ChapterTextsMap : IEntityTypeConfiguration<ChapterTexts>
         builder.HasKey(x => x.ChapterId);
 
         builder.DualWriteColumn(
-            x => x.DescriptionHtml, writesTo: "Description", mirrorsTo: "DescriptionHtml");
+            x => x.DescriptionHtml, writesTo: "DescriptionHtml", mirrorsTo: "Description");
 
         builder.DualWriteColumn(
-            x => x.RegisterTextHtml, writesTo: "RegisterText", mirrorsTo: "RegisterTextHtml");
+            x => x.RegisterTextHtml, writesTo: "RegisterTextHtml", mirrorsTo: "RegisterText");
 
         builder.DualWriteColumn(
-            x => x.WelcomeTextHtml, writesTo: "WelcomeText", mirrorsTo: "WelcomeTextHtml");
+            x => x.WelcomeTextHtml, writesTo: "WelcomeTextHtml", mirrorsTo: "WelcomeText");
 
         builder.HasOne<Chapter>()
             .WithMany()

@@ -17,9 +17,9 @@ public class ReferralCampaignMap : IEntityTypeConfiguration<ReferralCampaign>
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();
 
-        builder.DualWriteColumn(x => x.DescriptionHtml, writesTo: "Description", mirrorsTo: "DescriptionHtml");
+        builder.DualWriteColumn(x => x.DescriptionHtml, writesTo: "DescriptionHtml", mirrorsTo: "Description");
 
-        builder.DualWriteColumn(x => x.EmailTextHtml, writesTo: "EmailText", mirrorsTo: "EmailTextHtml");
+        builder.DualWriteColumn(x => x.EmailTextHtml, writesTo: "EmailTextHtml", mirrorsTo: "EmailText");
 
         builder.Property(x => x.ExpiresUtc)
             .HasConversion<NullableUtcDateTimeConverter>();

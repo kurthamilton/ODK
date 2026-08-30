@@ -17,7 +17,7 @@ public class ChapterContactMessageReplyMap : IEntityTypeConfiguration<ChapterCon
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();
 
-        builder.DualWriteColumn(x => x.MessageHtml, writesTo: "Message", mirrorsTo: "MessageHtml");
+        builder.DualWriteColumn(x => x.MessageHtml, writesTo: "MessageHtml", mirrorsTo: "Message");
 
         builder.HasOne<ChapterContactMessage>()
             .WithMany()

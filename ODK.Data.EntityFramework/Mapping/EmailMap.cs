@@ -13,7 +13,7 @@ public class EmailMap : IEntityTypeConfiguration<Email>
 
         builder.HasKey(x => x.Type);
 
-        builder.DualWriteColumn(x => x.BodyHtml, writesTo: "Body", mirrorsTo: "BodyHtml");
+        builder.DualWriteColumn(x => x.BodyHtml, writesTo: "BodyHtml", mirrorsTo: "Body");
 
         builder.Property(x => x.RecipientType)
             .HasConversion<int>()

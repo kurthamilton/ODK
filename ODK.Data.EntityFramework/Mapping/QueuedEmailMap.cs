@@ -15,7 +15,7 @@ public class QueuedEmailMap : IEntityTypeConfiguration<QueuedEmail>
 
         builder.HasKey(x => x.Id);
 
-        builder.DualWriteColumn(x => x.BodyHtml, writesTo: "Body", mirrorsTo: "BodyHtml");
+        builder.DualWriteColumn(x => x.BodyHtml, writesTo: "BodyHtml", mirrorsTo: "Body");
 
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();

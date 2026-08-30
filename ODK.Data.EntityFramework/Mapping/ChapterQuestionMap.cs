@@ -13,7 +13,7 @@ public class ChapterQuestionMap : IEntityTypeConfiguration<ChapterQuestion>
 
         builder.HasKey(x => x.Id);
 
-        builder.DualWriteColumn(x => x.AnswerHtml, writesTo: "Answer", mirrorsTo: "AnswerHtml");
+        builder.DualWriteColumn(x => x.AnswerHtml, writesTo: "AnswerHtml", mirrorsTo: "Answer");
 
         builder.Property(x => x.Name)
             .HasMaxLength(255);

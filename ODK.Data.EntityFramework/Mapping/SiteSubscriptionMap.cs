@@ -14,7 +14,7 @@ public class SiteSubscriptionMap : IEntityTypeConfiguration<SiteSubscription>
 
         builder.HasKey(x => x.Id);
 
-        builder.DualWriteColumn(x => x.DescriptionHtml, writesTo: "Description", mirrorsTo: "DescriptionHtml");
+        builder.DualWriteColumn(x => x.DescriptionHtml, writesTo: "DescriptionHtml", mirrorsTo: "Description");
 
         builder.Property(x => x.Environment)
             .HasColumnName("EnvironmentTypeId");

@@ -14,7 +14,7 @@ public class ChapterEventSettingsMap : IEntityTypeConfiguration<ChapterEventSett
         builder.HasKey(x => x.ChapterId);
 
         builder.DualWriteColumn(
-            x => x.DefaultDescriptionHtml, writesTo: "DefaultDescription", mirrorsTo: "DefaultDescriptionHtml");
+            x => x.DefaultDescriptionHtml, writesTo: "DefaultDescriptionHtml", mirrorsTo: "DefaultDescription");
 
         builder.HasOne<Chapter>()
             .WithOne()
