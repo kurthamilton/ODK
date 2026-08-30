@@ -14,7 +14,7 @@ public static class SiteSubscriptionTests
         var subscription = new SiteSubscription { Enabled = false, Free = true };
 
         // Act
-        var result = subscription.IsActive([], paymentsEnabled: true);
+        var result = subscription.IsActive([]);
 
         // Assert
         result.Should().BeFalse();
@@ -27,20 +27,7 @@ public static class SiteSubscriptionTests
         var subscription = new SiteSubscription { Enabled = true, Free = true };
 
         // Act
-        var result = subscription.IsActive([], paymentsEnabled: true);
-
-        // Assert
-        result.Should().BeTrue();
-    }
-
-    [Test]
-    public static void IsActive_WhenFreeAndPaymentSettingsDisabled_ReturnsTrue()
-    {
-        // Arrange - a free subscription takes no payment, so the provider being off does not affect it.
-        var subscription = new SiteSubscription { Enabled = true, Free = true };
-
-        // Act
-        var result = subscription.IsActive([], paymentsEnabled: false);
+        var result = subscription.IsActive([]);
 
         // Assert
         result.Should().BeTrue();
@@ -53,23 +40,10 @@ public static class SiteSubscriptionTests
         var subscription = new SiteSubscription { Enabled = true, Free = false };
 
         // Act
-        var result = subscription.IsActive([new SiteSubscriptionPrice()], paymentsEnabled: true);
+        var result = subscription.IsActive([new SiteSubscriptionPrice()]);
 
         // Assert
         result.Should().BeTrue();
-    }
-
-    [Test]
-    public static void IsActive_WhenPricedAndPaymentSettingsDisabled_ReturnsFalse()
-    {
-        // Arrange - nothing can be bought while the provider is off, and there is no free route in.
-        var subscription = new SiteSubscription { Enabled = true, Free = false };
-
-        // Act
-        var result = subscription.IsActive([new SiteSubscriptionPrice()], paymentsEnabled: false);
-
-        // Assert
-        result.Should().BeFalse();
     }
 
     [Test]
@@ -79,7 +53,7 @@ public static class SiteSubscriptionTests
         var subscription = new SiteSubscription { Enabled = true, Free = false };
 
         // Act
-        var result = subscription.IsActive([], paymentsEnabled: true);
+        var result = subscription.IsActive([]);
 
         // Assert
         result.Should().BeFalse();

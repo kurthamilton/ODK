@@ -1,12 +1,10 @@
 ﻿using ODK.Core;
 using ODK.Core.Payments;
-using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
 using ODK.Data.Core;
 using ODK.Services.Exceptions;
 using ODK.Services.Html;
 using ODK.Services.Payments;
-using ODK.Services.Platforms;
 using ODK.Services.Subscriptions.Models;
 using ODK.Services.Subscriptions.ViewModels;
 
@@ -16,8 +14,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
 {
     private readonly IHtmlValidator _htmlValidator;
     private readonly IPaymentProviderFactory _paymentProviderFactory;
-    private readonly PaymentSettings _paymentSettings;
-    private readonly IPlatformProvider _platformProvider;
+    private readonly SiteSubscriptionAdminServiceSettings _settings;
     private readonly SiteSubscriptionCooldown _siteSubscriptionCooldown;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -25,15 +22,13 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         IUnitOfWork unitOfWork,
         IHtmlValidator htmlValidator,
         IPaymentProviderFactory paymentProviderFactory,
-        IPlatformProvider platformProvider,
         SiteSubscriptionCooldown siteSubscriptionCooldown,
-        PaymentSettings paymentSettings)
+        SiteSubscriptionAdminServiceSettings settings)
         : base(unitOfWork)
     {
         _htmlValidator = htmlValidator;
         _paymentProviderFactory = paymentProviderFactory;
-        _paymentSettings = paymentSettings;
-        _platformProvider = platformProvider;
+        _settings = settings;
         _siteSubscriptionCooldown = siteSubscriptionCooldown;
         _unitOfWork = unitOfWork;
     }
@@ -43,7 +38,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
     {
         // A new record takes the account it is written under from config; everything read back carries its own.
         var (environment, platform, provider) =
-            (request.Environment, request.Platform, _paymentSettings.Provider);
+            (request.Environment, request.Platform, _settings.PaymentProvider);
 
         var (existing, existingProduct) = await GetSiteAdminRestrictedContent(request,
             x => x.SiteSubscriptionRepository.GetAll(platform),

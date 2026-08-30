@@ -239,8 +239,6 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
         }
     }
 
-    public Task<string> GetChapterProductId(Chapter chapter) => GetOrCreateProduct(chapter.FullName);
-
     public async Task<ExternalCheckoutSession?> GetCheckoutSession(string externalId)
     {
         var service = CreateSessionService();
@@ -442,6 +440,8 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
             return null;
         }
     }
+
+    public string GetPublicApiKey(PlatformType platform) => _settings.Platforms[platform].PublicApiKey;
 
     public async Task<ExternalSubscription?> GetSubscription(string externalId)
     {

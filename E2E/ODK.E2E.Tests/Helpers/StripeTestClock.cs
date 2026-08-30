@@ -36,9 +36,9 @@ internal sealed class StripeTestClock : IAsyncDisposable
     public static async Task<StripeTestClock> CreateSubscription(
         string apiSecretKey, string priceExternalId, IReadOnlyDictionary<string, string> metadata)
     {
-        /* The key comes from the payment settings the app is transacting through rather than from test
-           config: a clock, its customer and its subscription only exist inside one Stripe account, and the
-           subscription has to be the one the app's webhook processing will be told about. */
+        /* The key has to be the one the app transacts with: a clock, its customer and its subscription
+           only exist inside one Stripe account, and the subscription has to be the one the app's webhook
+           processing will be told about. */
         var client = new StripeClient(apiSecretKey);
         var frozenStart = DateTime.UtcNow;
 

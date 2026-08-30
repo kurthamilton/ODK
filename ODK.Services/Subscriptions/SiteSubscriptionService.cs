@@ -15,18 +15,15 @@ public class SiteSubscriptionService : ISiteSubscriptionService
 {
     private readonly IPaymentProviderFactory _paymentProviderFactory;
     private readonly IPaymentService _paymentService;
-    private readonly PaymentSettings _paymentSettings;
     private readonly IUnitOfWork _unitOfWork;
 
     public SiteSubscriptionService(
         IUnitOfWork unitOfWork,
         IPaymentProviderFactory paymentProviderFactory,
-        PaymentSettings paymentSettings,
         IPaymentService paymentService)
     {
         _paymentProviderFactory = paymentProviderFactory;
         _paymentService = paymentService;
-        _paymentSettings = paymentSettings;
         _unitOfWork = unitOfWork;
     }
 
@@ -104,8 +101,6 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             .GroupBy(x => x.SiteSubscriptionId)
             .ToDictionary(x => x.Key, x => (IReadOnlyCollection<SiteSubscriptionPrice>)x.ToArray());
 
-        var paymentsEnabled = _paymentSettings.IsEnabled(platform);
-
         var externalSubscription = await GetExternalSubscription(memberSubscriptionDto);
 
         var siteSubscriptionViewModels = subscriptionDtos
@@ -117,7 +112,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
                 Prices = priceDictionary.GetValueOrDefault(x.SiteSubscription.Id, []),
                 x.SiteSubscription
             })
-            .Where(x => x.SiteSubscription.IsActive(x.Prices, paymentsEnabled))
+            .Where(x => x.SiteSubscription.IsActive(x.Prices))
             .Select(x => new SiteSubscriptionListItemViewModel
             {
                 IsCurrentMemberActiveSubscription =
@@ -137,7 +132,6 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             CurrentMember = currentMember,
             CurrentMemberSubscription = memberSubscriptionDto,
             CurrentMemberExternalSubscription = externalSubscription,
-            PaymentsEnabled = paymentsEnabled,
             Subscriptions = siteSubscriptionViewModels
         };
     }
@@ -151,7 +145,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             x => x.SiteSubscriptionRepository.GetByPriceId(priceId),
             x => x.SiteSubscriptionPriceRepository.GetById(priceId));
 
-        var (payment, externalCheckoutSession) = await _paymentService.CreateSitePayment(
+        var (payment, externalCheckoutSession, publicApiKey) = await _paymentService.CreateSitePayment(
             request,
             subscription,
             price,
@@ -162,7 +156,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
 
         return new SiteSubscriptionCheckoutViewModel
         {
-            ApiPublicKey = _paymentSettings.GetPlatformOrDefault(platform)?.PublicApiKey ?? string.Empty,
+            ApiPublicKey = publicApiKey,
             ClientSecret = externalCheckoutSession.ClientSecret,
             PaymentProvider = payment.PaymentProvider,
             SiteSubscription = subscription

@@ -11,6 +11,8 @@ namespace ODK.Services.Payments;
 /// </remarks>
 public class StripeWebhookAdminServiceSettings
 {
+    public required IReadOnlyDictionary<PlatformType, string> AccountIds { get; init; }
+
     public required IReadOnlyCollection<string> Events { get; init; }
 
     public required IReadOnlyDictionary<EnvironmentType, IReadOnlyDictionary<PlatformType, string>> Hosts { get; init; }

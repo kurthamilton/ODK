@@ -1,5 +1,4 @@
-﻿using ODK.Core.Payments;
-using ODK.Core.Platforms;
+﻿using ODK.Core.Platforms;
 using ODK.Data.Core;
 using ODK.Services.Logging;
 using ODK.Services.Payments.Models;
@@ -15,46 +14,37 @@ public class StripeWebhookAdminService : OdkAdminServiceBase, IStripeWebhookAdmi
 
     private readonly ILoggingService _loggingService;
     private readonly IPaymentProviderFactory _paymentProviderFactory;
-    private readonly PaymentSettings _paymentSettings;
     private readonly StripeWebhookAdminServiceSettings _settings;
 
     public StripeWebhookAdminService(
         IUnitOfWork unitOfWork,
         IPaymentProviderFactory paymentProviderFactory,
         ILoggingService loggingService,
-        StripeWebhookAdminServiceSettings settings,
-        PaymentSettings paymentSettings)
+        StripeWebhookAdminServiceSettings settings)
         : base(unitOfWork)
     {
         _loggingService = loggingService;
         _paymentProviderFactory = paymentProviderFactory;
-        _paymentSettings = paymentSettings;
         _settings = settings;
     }
 
     public async Task<SiteAdminStripeWebhooksViewModel> GetStripeWebhooksViewModel(IMemberServiceRequest request)
     {
-        AssertMemberIsSiteAdmin(request.CurrentMember);
+        var (environment, platform, currentMember) =
+            (request.Environment, request.Platform, request.CurrentMember);
 
-        /* The account this deployment transacts as, and only that one: config names one account per
-           platform, so there is no longer a set of records to sweep. */
-        var platformSettings = _paymentSettings.GetPlatformOrDefault(request.Platform);
+        AssertMemberIsSiteAdmin(currentMember);
 
-        var viewModels = new List<SiteAdminStripeWebhookAccountViewModel>();
-
-        if (platformSettings != null && _paymentSettings.Provider == PaymentProviderType.Stripe)
+        var viewModel = await GetAccountViewModel(new StripePaymentAccount
         {
-            viewModels.Add(await GetAccountViewModel(new StripePaymentAccount
-            {
-                AccountId = platformSettings.AccountId,
-                Environment = request.Environment,
-                Platform = request.Platform
-            }));
-        }
+            AccountId = _settings.AccountIds[platform],
+            Environment = environment,
+            Platform = platform
+        });
 
         return new SiteAdminStripeWebhooksViewModel
         {
-            Accounts = viewModels
+            Accounts = [viewModel]
         };
     }
 
@@ -88,8 +78,7 @@ public class StripeWebhookAdminService : OdkAdminServiceBase, IStripeWebhookAdmi
 
     private async Task<SiteAdminStripeWebhookAccountViewModel> GetAccountViewModel(StripePaymentAccount account)
     {
-        var provider = _paymentProviderFactory.GetStripeWebhookProvider(
-            _paymentSettings.Provider, account.Platform);
+        var provider = _paymentProviderFactory.GetStripeWebhookProvider(account.Platform);
         if (provider == null)
         {
             return Unreadable(account, "Provider does not support webhooks");

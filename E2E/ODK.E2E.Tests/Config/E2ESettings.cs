@@ -45,28 +45,29 @@ public static class E2ESettings
     public static int SiteSubscriptionCooldownMonths => GetRequiredInt("SiteSubscriptionCooldownMonths");
 
     /// <summary>
-    /// The Stripe account the platform transacts through, named by its account id (<c>acct_...</c>). It
-    /// identifies which <c>SitePaymentSettings</c> row the tests use - the row whose <c>ExternalId</c> is
-    /// this - so the API keys come from the row rather than from here, and cannot drift from
-    /// <see cref="StripeConnectedAccountId"/>, which only exists under this account.
+    /// Base URL (an ngrok tunnel) Stripe delivers webhooks to. Blank when no
+    /// tunnel is configured; webhook-dependent tests preflight it via <c>StripeWebhookTunnel</c>.
     /// </summary>
-    public static string StripeAccountId(int platformTypeId)
-        => GetRequired($"Stripe:Platforms:{PlatformTypeIds.Name(platformTypeId)}:AccountId");
+    public static string StripeWebhookBaseUrl => GetOptional("Stripe:WebhookBaseUrl").TrimEnd('/');
 
     /// <summary>
     /// A pre-onboarded Stripe sandbox connected account id (<c>acct_...</c>) used as the transfer
-    /// destination for chapter-subscription purchases, created under the platform's own
-    /// <see cref="StripeAccountId"/>. Blank until a sandbox account has been onboarded; tests that seed a
-    /// <c>ChapterPaymentAccount</c> for a real purchase require it.
+    /// destination for chapter-subscription purchases, created under the Stripe account
+    /// <see cref="StripeSecretApiKey"/> belongs to. Blank until a sandbox account has been onboarded; tests
+    /// that seed a <c>ChapterPaymentAccount</c> for a real purchase require it.
     /// </summary>
     public static string StripeConnectedAccountId(int platformTypeId)
         => GetOptional($"Stripe:Platforms:{PlatformTypeIds.Name(platformTypeId)}:ConnectedAccountId");
 
     /// <summary>
-    /// Base URL (an ngrok tunnel) Stripe delivers webhooks to. Blank when no
-    /// tunnel is configured; webhook-dependent tests preflight it via <c>StripeWebhookTunnel</c>.
+    /// The Stripe secret key for the account the platform transacts through, for the few things a test does
+    /// against Stripe directly (a test clock). Stated here because the app's own configuration is not
+    /// readable from these tests, and a clock's customer and subscription only exist inside one Stripe
+    /// account - it has to be the account the app's webhook processing will be told about, so this and the
+    /// app's <c>Stripe:Platforms:&lt;platform&gt;:SecretApiKey</c> have to be the same key.
     /// </summary>
-    public static string StripeWebhookBaseUrl => GetOptional("Stripe:WebhookBaseUrl").TrimEnd('/');
+    public static string StripeSecretApiKey(int platformTypeId)
+        => GetRequired($"Stripe:Platforms:{PlatformTypeIds.Name(platformTypeId)}:SecretApiKey");
 
     private static string GetOptional(string key) => Configuration[key] ?? string.Empty;
 

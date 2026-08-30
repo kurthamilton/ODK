@@ -2,7 +2,7 @@
 
 namespace ODK.Infrastructure.Settings;
 
-public class PaymentsStripeSettings
+public class StripeSettings
 {
     public required string ConnectedAccountBusinessName { get; init; }
 
@@ -12,9 +12,9 @@ public class PaymentsStripeSettings
 
     public required string ConnectedAccountProductDescription { get; init; }
 
-    public required Dictionary<PlatformType, PaymentsStripePlatformSettings> Platforms { get; init; }
+    public required Dictionary<PlatformType, StripePlatformSettings> Platforms { get; init; }
 
     public required int SettlementReadDelaySeconds { get; init; }
 
-    public required PaymentsStripeWebhooksSettings Webhooks { get; init; }
+    public required StripeWebhooksSettings Webhooks { get; init; }
 }

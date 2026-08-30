@@ -5,7 +5,6 @@ using ODK.Data.Core.Members;
 using ODK.Services.Chapters.ViewModels;
 using ODK.Services.Chapters.Workflows;
 using ODK.Services.Exceptions;
-using ODK.Services.Payments;
 using ODK.Services.Subscriptions;
 using ODK.Services.Workflows;
 
@@ -16,20 +15,17 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
     private readonly StateMachineRunner<
         ChapterPublicationState, ChapterPublicationTrigger, ChapterPublicationContext> _chapterPublicationWorkflow;
     private readonly IMemberSiteSubscriptionWriter _memberSiteSubscriptionWriter;
-    private readonly PaymentSettings _paymentSettings;
     private readonly IUnitOfWork _unitOfWork;
 
     public ChapterSiteAdminService(
         IUnitOfWork unitOfWork,
         IMemberSiteSubscriptionWriter memberSiteSubscriptionWriter,
         StateMachineRunner<ChapterPublicationState, ChapterPublicationTrigger, ChapterPublicationContext>
-            chapterPublicationWorkflow,
-        PaymentSettings paymentSettings)
+            chapterPublicationWorkflow)
         : base(unitOfWork)
     {
         _chapterPublicationWorkflow = chapterPublicationWorkflow;
         _memberSiteSubscriptionWriter = memberSiteSubscriptionWriter;
-        _paymentSettings = paymentSettings;
         _unitOfWork = unitOfWork;
     }
 
@@ -118,8 +114,6 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
             x => x.ChapterSubscriptionRepository.GetAdminDtosByChapterId(
                 chapter.Id, request.Environment, includeDisabled: true));
 
-        var paymentsEnabled = _paymentSettings.IsEnabled(request.Platform);
-
         return new ChapterSubscriptionsAdminPageViewModel
         {
             Chapter = chapter,
@@ -129,7 +123,7 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
                 .Select(x => new ChapterSubscriptionSiteAdminViewModel
                 {
                     ChapterSubscription = x,
-                    VisibleToGroupAdmins = paymentsEnabled && x.IsVisibleToMembers()
+                    VisibleToGroupAdmins = x.IsVisibleToMembers()
                 })
                 .ToArray()
         };
@@ -199,8 +193,6 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
             x => x.SiteSubscriptionRepository.GetAll(platform),
             x => x.SiteSubscriptionPriceRepository.GetAll(platform));
 
-        var paymentsEnabled = _paymentSettings.IsEnabled(platform);
-
         return new SiteAdminChapterViewModel
         {
             Chapter = chapter,
@@ -208,9 +200,7 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
             /* The subscriptions an owner can be put on, plus whichever they are on already - a plan that has
                since stopped being usable still has to appear, or saving the form would move them off it. */
             SiteSubscriptions = siteSubscriptions
-                .Where(x => x.IsActive(
-                        prices.Where(price => price.SiteSubscriptionId == x.Id),
-                        paymentsEnabled) ||
+                .Where(x => x.IsActive(prices.Where(price => price.SiteSubscriptionId == x.Id)) ||
                     subscription?.SiteSubscriptionId == x.Id)
                 .ToArray(),
             Subscription = subscription
@@ -244,8 +234,7 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
         var staysOnCurrentSubscription = siteSubscription.Id == currentRecord?.SiteSubscriptionId;
         if (!staysOnCurrentSubscription &&
             !siteSubscription.IsActive(
-                prices.Where(x => x.SiteSubscriptionId == siteSubscription.Id),
-                _paymentSettings.IsEnabled(platform)))
+                prices.Where(x => x.SiteSubscriptionId == siteSubscription.Id)))
         {
             return ServiceResult.Failure("Subscription is not available");
         }

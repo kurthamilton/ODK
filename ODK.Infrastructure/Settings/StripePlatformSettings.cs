@@ -1,6 +1,6 @@
 ﻿namespace ODK.Infrastructure.Settings;
 
-public class PaymentsStripePlatformSettings
+public class StripePlatformSettings
 {
     /// <summary>
     /// The provider's own id for the account this platform transacts as. Not a secret - it names the
@@ -9,12 +9,6 @@ public class PaymentsStripePlatformSettings
     public required string AccountId { get; init; }
 
     public required string ConnectedAccountBaseUrl { get; init; }
-
-    /// <summary>
-    /// Whether anything can be bought on this platform. Off stops a purchase without stopping the app,
-    /// so a plan that costs nothing stays usable.
-    /// </summary>
-    public required bool Enabled { get; init; }
 
     public required string PublicApiKey { get; init; }
 

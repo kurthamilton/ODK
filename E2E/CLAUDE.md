@@ -49,20 +49,18 @@ to arrange, the same value is stated in `ODK.E2E.Tests/appsettings.json`.
   `SiteSubscriptionDataHelper.Exists` asks by it.
 
 **The Stripe keys the app transacts with are configuration, not data.** `appsettings.e2e.json` states them
-per platform under `Payments:Stripe:Platforms:<platform>`, so the app under test takes money on whichever
-Stripe account that file names. The connected account a chapter-subscription purchase pays into exists only
-inside that same Stripe account and comes from *this* solution's config
-(`Stripe:Platforms:<platform>:ConnectedAccountId`) - so the pairing that must not drift is between the two
-config files, and a mismatch surfaces from Stripe as `No such on_behalf_of`.
-`Stripe:Platforms:<platform>:AccountId` states which account both are meant to be, so each can be checked
-against that rather than against the other.
+per platform under `Stripe:Platforms:<platform>`, so the app under test takes money on whichever Stripe
+account that file names. Two of this solution's own settings have to belong to that same account, and
+nothing checks either of them - a mismatch surfaces from Stripe, not from a test:
 
-**Two fixtures still read a `SitePaymentSettings` row**, and only for the secret key a test clock talks to
-Stripe with directly - `ChapterSubscriptionRenewalTests` and `RecurringSiteSubscriptionRenewalTests`, via
-`SitePaymentSettingsDataHelper`, which finds the enabled row whose `ExternalId` is that `AccountId`. That key
-duplicates the one in `appsettings.e2e.json`, so rotating a key means changing both. The row is what the app
-itself used to transact through and has not been dropped yet, rather than a source of truth; curating it is a
-manual database step, and the tests fail naming the missing row rather than inventing one.
+- `Stripe:Platforms:<platform>:SecretApiKey` is the **same key**, restated here, for the few things a test
+  does against Stripe directly. `ChapterSubscriptionRenewalTests` and `RecurringSiteSubscriptionRenewalTests`
+  drive a test clock with it, and a clock's customer and subscription only exist inside one Stripe account -
+  it has to be the account whose webhooks the app will be told about. So rotating a key means changing both
+  files.
+- `Stripe:Platforms:<platform>:ConnectedAccountId` is the connected account a chapter-subscription purchase
+  pays into, which exists only under that same Stripe account. A mismatch surfaces as `No such
+  on_behalf_of`.
 
 **One-time prerequisite:** install the Playwright browsers after the first build:
 
@@ -314,11 +312,13 @@ means a new category and the E2E suite tracks the app's workflows rather than a 
   (`x.Should()...`); one top-level type per file; `required` init props for models.
 - **Config:** `ODK.E2E.Tests/appsettings.json` holds `DefaultBaseUrl`, `DrunkenKnitwitsBaseUrl`,
   `ConnectionString`, `Environment`, `SiteSubscriptionCooldownMonths` and a `Stripe` section; override
-  per-machine via git-ignored `appsettings.local.json` or `ODK_E2E_*` env vars. The `Stripe` section holds no
-  API keys - per platform it names the Stripe account the app is configured to transact on (`AccountId`) and
-  the connected account created under it, plus the shared ngrok `WebhookBaseUrl`. `Environment` names the
-  deployment the app runs as, so seeded rows carry what it reads back. Both are values the app also states in
-  its own configuration - see the two notes under *Running the app for E2E*.
+  per-machine via git-ignored `appsettings.local.json` or `ODK_E2E_*` env vars. Per platform the `Stripe`
+  section states the secret key the app transacts with (`SecretApiKey`) and the connected account created
+  under that account (`ConnectedAccountId`), plus the shared ngrok `WebhookBaseUrl`. The key is a secret, so
+  the tracked file states it as `""` and the real value lives in the git-ignored
+  `appsettings.Development.json`. `Environment` names the deployment the app runs as, so seeded rows carry
+  what it reads back. These are values the app also states in its own configuration - see the notes under
+  *Running the app for E2E*.
 
 ## Test isolation: shared vs local provisioning
 

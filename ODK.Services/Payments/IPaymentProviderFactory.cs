@@ -16,10 +16,5 @@ public interface IPaymentProviderFactory
     /// </summary>
     IPaymentProvider? GetPaymentProviderOrDefault(PaymentProviderType provider, PlatformType platform);
 
-    /// <summary>
-    /// The webhook reader for the platform's account, or null where the provider has no such thing. Kept
-    /// here rather than on <see cref="IPaymentProvider"/> so a caller never has to branch on
-    /// <see cref="PaymentProviderType"/> itself.
-    /// </summary>
-    IStripeWebhookProvider? GetStripeWebhookProvider(PaymentProviderType provider, PlatformType platform);
+    IStripeWebhookProvider? GetStripeWebhookProvider(PlatformType platform);
 }

@@ -27,9 +27,6 @@ public class ChapterPaymentAccount : IDatabaseEntity, IChapterEntity
 
     public PaymentProviderType PaymentProvider { get; set; }
 
-    [Obsolete]
-    public Guid? SitePaymentSettingId { get; set; }
-
     public bool SetupComplete() =>
         OnboardingCompletedUtc != null &&
         IdentityDocumentsProvidedUtc != null;

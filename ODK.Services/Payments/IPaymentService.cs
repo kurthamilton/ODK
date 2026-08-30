@@ -8,18 +8,18 @@ namespace ODK.Services.Payments;
 
 public interface IPaymentService
 {
-    Task<(Payment Payment, ExternalCheckoutSession Session)> CreateChapterOneOffPayment(
+    Task<(Payment Payment, ExternalCheckoutSession Session, string PublicApiKey)> CreateChapterOneOffPayment(
         IMemberChapterServiceRequest request,
         ChapterPaymentAccount paymentAccount,
         OneOffPaymentCreateOptions options);
 
-    Task<(Payment Payment, ExternalCheckoutSession Session)> CreateChapterPayment(
+    Task<(Payment Payment, ExternalCheckoutSession Session, string PublicApiKey)> CreateChapterPayment(
         IMemberChapterServiceRequest request,
         ChapterPaymentAccount paymentAccount,
         ChapterSubscription subscription,
         PaymentCreateOptions options);
 
-    Task<(Payment Payment, ExternalCheckoutSession Session)> CreateSitePayment(
+    Task<(Payment Payment, ExternalCheckoutSession Session, string PublicApiKey)> CreateSitePayment(
         IMemberServiceRequest request,
         SiteSubscription subscription,
         SiteSubscriptionPrice price,

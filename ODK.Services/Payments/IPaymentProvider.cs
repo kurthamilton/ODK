@@ -72,6 +72,8 @@ public interface IPaymentProvider
     /// </summary>
     Task<ExternalPaymentSettlement?> GetPaymentSettlement(string externalPaymentId);
 
+    string GetPublicApiKey(PlatformType platform);
+
     Task<ExternalSubscription?> GetSubscription(string externalId);
 
     Task<ExternalSubscriptionPlan?> GetSubscriptionPlan(string externalId);

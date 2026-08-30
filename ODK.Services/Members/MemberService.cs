@@ -38,7 +38,6 @@ public class MemberService : IMemberService
     private readonly IMemberEmailService _memberEmailService;
     private readonly IMemberImageService _memberImageService;
     private readonly IPaymentProviderFactory _paymentProviderFactory;
-    private readonly PaymentSettings _paymentSettings;
     private readonly IPaymentService _paymentService;
     private readonly ITopicService _topicService;
     private readonly IUnitOfWork _unitOfWork;
@@ -58,7 +57,6 @@ public class MemberService : IMemberService
             chapterMembershipWorkflow,
         StateMachineRunner<AccountState, AccountTrigger, AccountContext> accountWorkflow,
         IAccountContextFactory accountContextFactory,
-        PaymentSettings paymentSettings,
         IPaymentService paymentService)
     {
         _accountWorkflow = accountWorkflow;
@@ -73,7 +71,6 @@ public class MemberService : IMemberService
         _memberImageService = memberImageService;
         _paymentProviderFactory = paymentProviderFactory;
         _paymentService = paymentService;
-        _paymentSettings = paymentSettings;
         _topicService = topicService;
         _unitOfWork = unitOfWork;
     }
@@ -455,7 +452,7 @@ public class MemberService : IMemberService
             throw new OdkServiceException("Error starting checkout session: Chapter Payment Account not set up");
         }
 
-        var (payment, externalCheckoutSession) = await _paymentService.CreateChapterPayment(
+        var (payment, externalCheckoutSession, publicApiKey) = await _paymentService.CreateChapterPayment(
             request, chapterPaymentAccount, chapterSubscription, new PaymentCreateOptions
             {
                 ReturnPath = returnPath
@@ -463,7 +460,7 @@ public class MemberService : IMemberService
 
         return new ChapterSubscriptionCheckoutStartedViewModel
         {
-            ApiPublicKey = _paymentSettings.GetPlatform(platform).PublicApiKey,
+            ApiPublicKey = publicApiKey,
             Chapter = chapter,
             ChapterSubscription = chapterSubscription,
             ClientSecret = externalCheckoutSession.ClientSecret,

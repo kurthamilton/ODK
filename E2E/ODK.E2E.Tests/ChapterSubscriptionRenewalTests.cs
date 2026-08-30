@@ -31,15 +31,11 @@ public class ChapterSubscriptionRenewalTests : DefaultPageTest
 
     private static MemberSiteSubscriptionDataHelper MemberSubscriptions => new(E2ESettings.ConnectionString);
 
-    private static SitePaymentSettingsDataHelper PaymentSettings => new(E2ESettings.ConnectionString);
-
     [Test]
     public async Task RecurringChapterSubscription_RenewsViaWebhook_SetsExpiryToNextPaymentDate()
     {
         // Arrange - renewals arrive as real Stripe webhooks over the tunnel.
         await StripeWebhookTunnel.EnsureReachable(E2ESettings.StripeWebhookBaseUrl);
-        var paymentSettings = await PaymentSettings.GetStripeSettings(
-            PlatformTypeId, E2ESettings.StripeAccountId(PlatformTypeId));
         var siteSubscription = await Provisioning.EnsurePurchasableSiteSubscription();
 
         var owner = await Provisioning.NewAccount("chapter-renewal-owner");
@@ -73,7 +69,7 @@ public class ChapterSubscriptionRenewalTests : DefaultPageTest
         };
 
         await using var clock = await StripeTestClock.CreateSubscription(
-            paymentSettings.ApiSecretKey, priceExternalId, metadata);
+            E2ESettings.StripeSecretApiKey(PlatformTypeId), priceExternalId, metadata);
 
         // Assert - the first invoice's webhook records the expiry as the date Stripe will next charge, read
         // from the provider rather than calculated, so the two cannot disagree.

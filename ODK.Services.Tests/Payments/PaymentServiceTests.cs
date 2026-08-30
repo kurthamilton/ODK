@@ -1485,37 +1485,6 @@ public static class PaymentServiceTests
     }
 
     [Test]
-    public static async Task ResolvePaymentSettlementJob_ReconcilingWithDisabledAccounts_DoesNotAskThem()
-    {
-        /* Arrange - every account config names is switched off, which is how a deployment says it is not
-           the one transacting. A reconcile must not reach for an account it has been told not to use. */
-        using var context = CreateMockOdkContext();
-
-        var payment = context.CreatePayment();
-        payment.ExternalId = "sub_123";
-        payment.PaidUtc = DateTime.UtcNow;
-        payment.PaymentProvider = PaymentProviderType.Stripe;
-        payment.Platform = PlatformType.Default;
-
-        var paymentProvider = CreateMockPaymentProvider();
-
-        var service = CreatePaymentService(
-            context,
-            paymentProviderFactory: CreateMockPaymentProviderFactory(paymentProvider.Object),
-            paymentSettings: TestPaymentSettings.Create(enabled: false));
-
-        // Act
-        await service.ResolvePaymentSettlementJob(payment.Id, externalPaymentId: null, externalInvoiceId: null);
-
-        // Assert
-        paymentProvider.Verify(
-            x => x.GetPaymentIdForReference(It.IsAny<string>(), It.IsAny<DateTime>()), Times.Never);
-
-        context.Set<Payment>().Single(x => x.Id == payment.Id)
-            .ActualAmount.Should().BeNull();
-    }
-
-    [Test]
     public static async Task ResolvePaymentSettlementJob_ReconcilingPaymentIntentNoAccountHolds_SkipsWithoutThrowing()
     {
         /* Arrange - a reference naming a payment directly, which no enabled account holds. Resolving such a
@@ -2004,8 +1973,7 @@ public static class PaymentServiceTests
         IPaymentProviderFactory? paymentProviderFactory = null,
         IEventService? eventService = null,
         SiteSubscriptionCooldown? siteSubscriptionCooldown = null,
-        IBackgroundTaskService? backgroundTaskService = null,
-        PaymentSettings? paymentSettings = null)
+        IBackgroundTaskService? backgroundTaskService = null)
     {
         var unitOfWork = CreateMockUnitOfWork(context);
         return new PaymentService(
@@ -2019,8 +1987,7 @@ public static class PaymentServiceTests
             new MemberSiteSubscriptionWriter(unitOfWork),
             TestPlatformProvider.Create(),
             new MockServiceRequestFactory(context),
-            siteSubscriptionCooldown ?? new SiteSubscriptionCooldown(months: 0),
-            paymentSettings ?? TestPaymentSettings.Create());
+            siteSubscriptionCooldown ?? new SiteSubscriptionCooldown(months: 0));
     }
 
     private static IServiceRequest CreateServiceRequest(PlatformType? platform = null)

@@ -11,8 +11,8 @@ namespace ODK.E2E.Tests;
 /// Site-admin Stripe scenario: create a site subscription (with the MemberSubscriptions "Paid
 /// subscriptions" feature) and add a recurring price. Runs on the Default platform (:8125), so the new
 /// subscription's platform is Default. Creating the subscription and adding a paid price call the real
-/// Stripe API, so this needs live Stripe keys (E2ESettings.Stripe*) and an active Default payment-settings
-/// row (seeded here). Not webhook-dependent - no payment is taken.
+/// Stripe API, so the app under test needs live Stripe keys configured for the Default platform. Not
+/// webhook-dependent - no payment is taken.
 /// </summary>
 [TestFixture]
 public class SiteSubscriptionTests : DefaultPageTest

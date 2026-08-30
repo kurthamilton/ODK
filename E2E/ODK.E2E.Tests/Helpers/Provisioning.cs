@@ -49,11 +49,11 @@ internal static class Provisioning
     private static readonly Lazy<Task<TestSiteSubscription>> MemberLimitedSiteSubscription =
         new(CreateMemberLimitedSiteSubscriptionOnce);
 
-    // Only one site subscription is created at a time, run-wide. The app creates a payment settings
-    // account's payment product on the first subscription created against it, by reading the product and
-    // inserting one when it finds none - so fixtures creating their subscriptions at the same time all read
-    // no product, all insert one, and every loser fails on the unique index. The gate keeps the suite out of
-    // that window; it does not close it in the app.
+    // Only one site subscription is created at a time, run-wide. The app creates the platform's payment
+    // product on the first subscription created under it, by reading the product and inserting one when it
+    // finds none - so fixtures creating their subscriptions at the same time all read no product, all insert
+    // one, and every loser fails on the unique index. The gate keeps the suite out of that window; it does
+    // not close it in the app.
     private static readonly SemaphoreSlim SiteSubscriptionCreateGate = new(1, 1);
 
     // One shared Playwright driver + browser for ALL provisioning, launched once. Each provisioning call
@@ -382,7 +382,7 @@ internal static class Provisioning
         TestAccount owner, string name, bool approved = true, bool published = true)
     {
         // Joining creates the member with the platform's default site subscription, so the platform must
-        // have a live payment-settings + default subscription set up.
+        // have one set up.
         await EnsureDrunkenKnitwitsSubscription();
 
         var group = await CreateGroup(owner, name);
@@ -391,12 +391,6 @@ internal static class Provisioning
         return group;
     }
 
-    /// <summary>
-    /// Ensures the DrunkenKnitwits platform has a live Stripe payment settings row and a default site
-    /// subscription. The payment settings are seeded via SQL (with real Stripe keys, ready for
-    /// payment-integration tests); the subscription is created through the site-admin UI (which also
-    /// creates the Stripe product) and then made the platform default so <c>GetDefault</c> returns it.
-    /// </summary>
     private static async Task<TestEvent> CreateEvent(
         TestAccount owner, PlatformRoutes routes, Guid chapterId, string baseUrl, bool draft, int? attendeeLimit = null)
     {
@@ -424,6 +418,11 @@ internal static class Provisioning
 
     private static Task EnsureDrunkenKnitwitsSubscription() => DrunkenKnitwitsSubscription.Value;
 
+    /// <summary>
+    /// Ensures the DrunkenKnitwits platform has a default site subscription: it is created through the
+    /// site-admin UI (which also creates the Stripe product) and then made the platform default so
+    /// <c>GetDefault</c> returns it.
+    /// </summary>
     private static async Task EnsureDrunkenKnitwitsSubscriptionOnce()
     {
         var subscriptions = new SiteSubscriptionDataHelper(E2ESettings.ConnectionString);

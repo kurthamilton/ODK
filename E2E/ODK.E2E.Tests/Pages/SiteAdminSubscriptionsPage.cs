@@ -6,10 +6,11 @@ namespace ODK.E2E.Tests.Pages;
 /// <summary>
 /// The site-admin create-subscription page (<c>/siteadmin/subscriptions/new</c>) and the price form on
 /// the created subscription's detail page. Creating a subscription also creates the Stripe product, and
-/// adding a paid price creates the Stripe plan (via the selected live payment settings), so this needs
-/// real Stripe keys. Site admin is a global role and the site-admin area is platform-agnostic, but the
-/// new subscription's platform comes from the request - so run this against the platform whose default
-/// subscription you're setting up (the caller drives it on the matching platform's browser context).
+/// adding a paid price creates the Stripe plan (on the Stripe account the app is configured to transact
+/// on), so this needs real Stripe keys. Site admin is a global role and the site-admin area is
+/// platform-agnostic, but the new subscription's platform comes from the request - so run this against
+/// the platform whose default subscription you're setting up (the caller drives it on the matching
+/// platform's browser context).
 /// </summary>
 internal class SiteAdminSubscriptionsPage
 {

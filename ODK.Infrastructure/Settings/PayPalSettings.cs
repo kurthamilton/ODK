@@ -1,6 +1,6 @@
 ﻿namespace ODK.Infrastructure.Settings;
 
-public class PaymentsPayPalSettings
+public class PayPalSettings
 {
     public string ApiBaseUrl { get; set; } = string.Empty;
 }

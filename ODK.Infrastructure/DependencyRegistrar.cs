@@ -3,7 +3,7 @@ using ODK.Core.Countries;
 using ODK.Core.Exceptions;
 using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
-using ODK.Core.Web;
+using ODK.Core.Workflows;
 using ODK.Data.Core;
 using ODK.Data.EntityFramework;
 using ODK.Infrastructure.Settings;
@@ -18,18 +18,18 @@ using ODK.Services.Countries;
 using ODK.Services.Csv;
 using ODK.Services.Emails;
 using ODK.Services.Emails.Parameters;
-using ODK.Services.Html;
 using ODK.Services.Emails.Validation;
-using ODK.Services.Integrations.Emails;
-using ODK.Services.Integrations.Html;
 using ODK.Services.Events;
 using ODK.Services.Features;
 using ODK.Services.Geolocation;
+using ODK.Services.Html;
 using ODK.Services.Imaging;
 using ODK.Services.Integrations.Authentication;
 using ODK.Services.Integrations.Csv;
 using ODK.Services.Integrations.Emails.Brevo;
+using ODK.Services.Integrations.Emails.Reoon;
 using ODK.Services.Integrations.Geolocation;
+using ODK.Services.Integrations.Html;
 using ODK.Services.Integrations.Imaging;
 using ODK.Services.Integrations.Instagram;
 using ODK.Services.Integrations.OAuth;
@@ -40,17 +40,16 @@ using ODK.Services.Integrations.Recaptcha;
 using ODK.Services.Localization;
 using ODK.Services.Logging;
 using ODK.Services.Members;
-using ODK.Services.Members.Workflows.Account;
-using ODK.Services.Members.Workflows.ChapterMembership;
-using ODK.Services.Workflows;
-using ODK.Core.Workflows;
 using ODK.Services.Members.Tasks;
 using ODK.Services.Members.Tasks.Providers;
+using ODK.Services.Members.Workflows.Account;
+using ODK.Services.Members.Workflows.ChapterMembership;
 using ODK.Services.Notifications;
 using ODK.Services.Payments;
 using ODK.Services.Platforms;
-using ODK.Services.Referrals;
+using ODK.Services.Questions;
 using ODK.Services.Recaptcha;
+using ODK.Services.Referrals;
 using ODK.Services.Settings;
 using ODK.Services.SocialMedia;
 using ODK.Services.Subscriptions;
@@ -58,12 +57,11 @@ using ODK.Services.Topics;
 using ODK.Services.Users;
 using ODK.Services.Venues;
 using ODK.Services.Web;
+using ODK.Services.Workflows;
 using ODK.Web.Common.Account;
 using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
 using ODK.Web.Common.Settings;
-using ODK.Services.Integrations.Emails.Reoon;
-using ODK.Services.Questions;
 
 namespace ODK.Infrastructure;
 
@@ -113,34 +111,20 @@ public static class DependencyRegistrar
 
     private static void ConfigurePayments(this IServiceCollection services, AppSettings appSettings)
     {
-        var payments = appSettings.Payments;
+        var stripe = appSettings.Stripe;
 
         services.AddScoped<IPaymentProviderFactory, PaymentProviderFactory>();
         services.AddSingleton(new PaymentProviderFactorySettings
         {
             DefaultProvider = appSettings.Payments.Active
         });
-        /* What the deployment transacts as. Several services ask it, so it is registered once rather
-           than declared per service. */
-        services.AddSingleton(new PaymentSettings
-        {
-            Platforms = payments.Stripe.Platforms.ToDictionary(
-                x => x.Key,
-                x => new PaymentPlatformSettings
-                {
-                    AccountId = x.Value.AccountId,
-                    Enabled = x.Value.Enabled,
-                    PublicApiKey = x.Value.PublicApiKey
-                }),
-            Provider = payments.Active
-        });
         services.AddSingleton(new PayPalPaymentProviderSettings
         {
-            ApiBaseUrl = payments.PayPal.ApiBaseUrl
+            ApiBaseUrl = appSettings.PayPal.ApiBaseUrl
         });
         services.AddSingleton(new StripePaymentProviderSettings
         {
-            Platforms = payments.Stripe.Platforms.ToDictionary(
+            Platforms = stripe.Platforms.ToDictionary(
                 x => x.Key,
                 x => new StripePaymentProviderPlatformSettings
                 {
@@ -148,28 +132,31 @@ public static class DependencyRegistrar
                     PublicApiKey = x.Value.PublicApiKey,
                     SecretApiKey = x.Value.SecretApiKey
                 }),
-            ConnectedAccountBusinessName = payments.Stripe.ConnectedAccountBusinessName,
-            ConnectedAccountCommissionPercentage = payments.Stripe.ConnectedAccountCommissionPercentage,
-            ConnectedAccountMcc = payments.Stripe.ConnectedAccountMcc,
-            ConnectedAccountProductDescription = payments.Stripe.ConnectedAccountProductDescription,
-            SettlementReadDelay = TimeSpan.FromSeconds(payments.Stripe.SettlementReadDelaySeconds)
+            ConnectedAccountBusinessName = stripe.ConnectedAccountBusinessName,
+            ConnectedAccountCommissionPercentage = stripe.ConnectedAccountCommissionPercentage,
+            ConnectedAccountMcc = stripe.ConnectedAccountMcc,
+            ConnectedAccountProductDescription = stripe.ConnectedAccountProductDescription,
+            SettlementReadDelay = TimeSpan.FromSeconds(stripe.SettlementReadDelaySeconds)
         });
         services.AddScoped<IStripeWebhookAdminService, StripeWebhookAdminService>();
         services.AddSingleton(new StripeWebhookAdminServiceSettings
         {
-            Events = payments.Stripe.Webhooks.Events,
-            Hosts = (payments.Stripe.Webhooks.Hosts ?? []).ToDictionary(
+            AccountIds = stripe.Platforms.ToDictionary(
+                x => x.Key,
+                x => x.Value.AccountId),
+            Events = stripe.Webhooks.Events,
+            Hosts = (stripe.Webhooks.Hosts ?? []).ToDictionary(
                 x => x.Key,
                 x => (IReadOnlyDictionary<PlatformType, string>)(x.Value ?? [])),
-            LiveDashboardUrlFormat = payments.Stripe.Webhooks.LiveDashboardUrlFormat,
-            Path = payments.Stripe.Webhooks.Path,
-            TestDashboardUrlFormat = payments.Stripe.Webhooks.TestDashboardUrlFormat
+            LiveDashboardUrlFormat = stripe.Webhooks.LiveDashboardUrlFormat,
+            Path = stripe.Webhooks.Path,
+            TestDashboardUrlFormat = stripe.Webhooks.TestDashboardUrlFormat
         });
         services.AddScoped<IStripeWebhookParser, StripeWebhookParser>();
         services.AddSingleton(new StripeWebhookParserSettings
         {
-            WebhookSecretsV1 = appSettings.Payments.Stripe.Platforms.ToDictionary(x => x.Key, x => x.Value.WebhookSecretV1),
-            WebhookSecretsV2 = appSettings.Payments.Stripe.Platforms.ToDictionary(x => x.Key, x => x.Value.WebhookSecretV2)
+            WebhookSecretsV1 = stripe.Platforms.ToDictionary(x => x.Key, x => x.Value.WebhookSecretV1),
+            WebhookSecretsV2 = stripe.Platforms.ToDictionary(x => x.Key, x => x.Value.WebhookSecretV2)
         });
     }
 
@@ -357,6 +344,10 @@ public static class DependencyRegistrar
             .AddScoped<IServiceRequestFactory, ServiceRequestFactory>()
             .AddScoped<ISettingsService, SettingsService>()
             .AddScoped<ISiteSubscriptionAdminService, SiteSubscriptionAdminService>()
+            .AddSingleton(new SiteSubscriptionAdminServiceSettings
+            {
+                PaymentProvider = appSettings.Payments.Active
+            })
             .AddScoped<ISiteSubscriptionService, SiteSubscriptionService>()
             .AddScoped<ISocialMediaService, SocialMediaService>()
             .AddSingleton(new SocialMediaServiceSettings
