@@ -14,5 +14,8 @@ public class TopicGroupMap : IEntityTypeConfiguration<TopicGroup>
 
         builder.Property(x => x.Name)
             .HasMaxLength(255);
+
+        builder.HasIndex(x => x.Name)
+            .IsUnique();
     }
 }

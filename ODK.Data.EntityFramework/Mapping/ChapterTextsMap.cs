@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ODK.Core.Chapters;
+using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework.Mapping;
 
@@ -12,15 +13,14 @@ public class ChapterTextsMap : IEntityTypeConfiguration<ChapterTexts>
 
         builder.HasKey(x => x.ChapterId);
 
-        // Pinned to the current column name - the columns are renamed to match in a later migration.
-        builder.Property(x => x.DescriptionHtml)
-            .HasColumnName("Description");
+        builder.DualWriteColumn(
+            x => x.DescriptionHtml, writesTo: "Description", mirrorsTo: "DescriptionHtml");
 
-        builder.Property(x => x.RegisterTextHtml)
-            .HasColumnName("RegisterText");
+        builder.DualWriteColumn(
+            x => x.RegisterTextHtml, writesTo: "RegisterText", mirrorsTo: "RegisterTextHtml");
 
-        builder.Property(x => x.WelcomeTextHtml)
-            .HasColumnName("WelcomeText");
+        builder.DualWriteColumn(
+            x => x.WelcomeTextHtml, writesTo: "WelcomeText", mirrorsTo: "WelcomeTextHtml");
 
         builder.HasOne<Chapter>()
             .WithMany()

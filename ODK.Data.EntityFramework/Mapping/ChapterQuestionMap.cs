@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ODK.Core.Chapters;
+using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework.Mapping;
 
@@ -12,9 +13,7 @@ public class ChapterQuestionMap : IEntityTypeConfiguration<ChapterQuestion>
 
         builder.HasKey(x => x.Id);
 
-        // Pinned to the current column name - the columns are renamed to match in a later migration.
-        builder.Property(x => x.AnswerHtml)
-            .HasColumnName("Answer");
+        builder.DualWriteColumn(x => x.AnswerHtml, writesTo: "Answer", mirrorsTo: "AnswerHtml");
 
         builder.Property(x => x.Name)
             .HasMaxLength(255);

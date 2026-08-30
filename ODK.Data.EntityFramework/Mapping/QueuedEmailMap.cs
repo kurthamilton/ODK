@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ODK.Core.Chapters;
 using ODK.Core.Emails;
 using ODK.Data.EntityFramework.Converters;
+using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework.Mapping;
 
@@ -14,9 +15,7 @@ public class QueuedEmailMap : IEntityTypeConfiguration<QueuedEmail>
 
         builder.HasKey(x => x.Id);
 
-        // Pinned to the current column name - the columns are renamed to match in a later migration.
-        builder.Property(x => x.BodyHtml)
-            .HasColumnName("Body");
+        builder.DualWriteColumn(x => x.BodyHtml, writesTo: "Body", mirrorsTo: "BodyHtml");
 
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();

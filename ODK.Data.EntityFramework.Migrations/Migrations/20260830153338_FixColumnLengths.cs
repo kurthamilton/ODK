@@ -30,6 +30,10 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                 oldType: "nvarchar(max)",
                 oldNullable: true);
 
+            migrationBuilder.DropConstraintIfExists(
+                name: "UQ_TopicGroups_Name",
+                table: "TopicGroups");
+
             migrationBuilder.AlterColumn<string>(
                 name: "Name",
                 table: "TopicGroups",
