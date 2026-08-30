@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ODK.Core.Payments;
 using ODK.Core.Subscriptions;
-using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework.Mapping;
 
@@ -13,8 +12,6 @@ public class SiteSubscriptionMap : IEntityTypeConfiguration<SiteSubscription>
         builder.ToTable("SiteSubscriptions");
 
         builder.HasKey(x => x.Id);
-
-        builder.DualWriteColumn(x => x.DescriptionHtml, writesTo: "DescriptionHtml", mirrorsTo: "Description");
 
         builder.Property(x => x.Environment)
             .HasColumnName("EnvironmentTypeId");

@@ -14,7 +14,6 @@ using ODK.Core.Subscriptions;
 using ODK.Core.Utils;
 using ODK.Core.Venues;
 using ODK.Data.EntityFramework;
-using ODK.Data.EntityFramework.Interceptors;
 
 namespace ODK.Services.Tests.Helpers;
 
@@ -419,8 +418,6 @@ internal class MockOdkContext : OdkContext
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     {
         // generate unique DB name per-test
-        options
-            .UseInMemoryDatabase($"odk-{Guid.NewGuid()}")
-            .AddInterceptors(new HtmlColumnMirrorInterceptor());
+        options.UseInMemoryDatabase($"odk-{Guid.NewGuid()}");
     }
 }

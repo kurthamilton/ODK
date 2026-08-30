@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ODK.Core.Chapters;
 using ODK.Core.Emails;
 using ODK.Data.EntityFramework.Converters;
-using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework.Mapping;
 
@@ -14,8 +13,6 @@ public class QueuedEmailMap : IEntityTypeConfiguration<QueuedEmail>
         builder.ToTable("QueuedEmails");
 
         builder.HasKey(x => x.Id);
-
-        builder.DualWriteColumn(x => x.BodyHtml, writesTo: "BodyHtml", mirrorsTo: "Body");
 
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();

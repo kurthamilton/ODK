@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ODK.Core.Chapters;
-using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework.Mapping;
 
@@ -12,8 +11,6 @@ public class ChapterQuestionMap : IEntityTypeConfiguration<ChapterQuestion>
         builder.ToTable("ChapterQuestions");
 
         builder.HasKey(x => x.Id);
-
-        builder.DualWriteColumn(x => x.AnswerHtml, writesTo: "AnswerHtml", mirrorsTo: "Answer");
 
         builder.Property(x => x.Name)
             .HasMaxLength(255);

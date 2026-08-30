@@ -70,7 +70,7 @@ public class ChapterEmailCustomisationTests : DefaultPageTest
         // Assert - stored as an override of the subject alone; the body is left unset, which is what makes
         // the send fall back rather than sending an empty body.
         (await ChapterEmails.GetSubject(group.ChapterId)).Should().Be(customSubject);
-        (await ChapterEmails.GetHtmlContent(group.ChapterId)).Should().BeNull();
+        (await ChapterEmails.GetBodyHtml(group.ChapterId)).Should().BeNull();
 
         // The form comes back showing the subject customised and the body still on the default, unchanged
         // and still locked.
@@ -153,7 +153,7 @@ public class ChapterEmailCustomisationTests : DefaultPageTest
 
         // Assert
         (await ChapterEmails.GetSubject(group.ChapterId)).Should().Be(customSubject);
-        (await ChapterEmails.GetHtmlContent(group.ChapterId)).Should().Be(customContent);
+        (await ChapterEmails.GetBodyHtml(group.ChapterId)).Should().Be(customContent);
 
         // Both fields now hold the group's own wording, and both may be typed into.
         await page.Open(emailUrl);
@@ -210,7 +210,7 @@ public class ChapterEmailCustomisationTests : DefaultPageTest
 
         // Assert - the subject survives a save that could not post it.
         (await ChapterEmails.GetSubject(group.ChapterId)).Should().Be(customSubject);
-        (await ChapterEmails.GetHtmlContent(group.ChapterId)).Should().BeNull();
+        (await ChapterEmails.GetBodyHtml(group.ChapterId)).Should().BeNull();
 
         await page.Open(emailUrl);
         (await page.IsSubjectCustomised()).Should().BeTrue();

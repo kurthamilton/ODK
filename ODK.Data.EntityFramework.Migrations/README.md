@@ -70,6 +70,22 @@ Examples:
 | Drop the `LegacyToken` column from `Member` | `Member-LegacyToken-Remove` |
 | Make `Member.EmailAddress` non-nullable | `Member-EmailAddress-MakeRequired` |
 
+## A model change with no schema change still needs a migration
+
+Some changes move the model without touching the database: unmapping a column that is being dropped in a
+later PR, renaming a property that `HasColumnName` pins to its existing column. There is nothing to run, but
+the migration is not optional - `Migrate()` throws `PendingModelChangesWarning` when the model has changes no
+migration accounts for, which fails the deploy's migrate job and blocks the deploy behind it.
+
+Scaffold one, **delete the operations it wrote, and keep it**. The refreshed snapshot is the point, and the
+only SQL it applies is its own `__EFMigrationsHistory` row - `migrations script` is the way to check that is
+all it does. Say in the migration why it is empty, or the next reader will delete it.
+
+`HtmlColumns-Unmap` is the worked example: the columns it takes out of the model cannot be dropped in the
+same deploy, because a migration runs a minute ahead of the code it ships with and the build still serving
+selects them. The drop that follows it is written by hand - the snapshot no longer holds the columns, so
+there is no model change left to scaffold from.
+
 ## Enum lookup tables
 
 Some enums are mirrored by a database table so other tables can foreign key to them —
