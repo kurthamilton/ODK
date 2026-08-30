@@ -18,7 +18,7 @@ public class FeatureMap : IEntityTypeConfiguration<Feature>
             .HasConversion<UtcDateTimeConverter>();
 
         builder.DualWriteColumn(
-            x => x.DescriptionHtml, writesTo: "Description", mirrorsTo: "DescriptionHtml", maxLength: 255);
+            x => x.DescriptionHtml, writesTo: "DescriptionHtml", mirrorsTo: "Description", maxLength: 255);
 
         builder.Property(x => x.Name)
             .HasMaxLength(255);

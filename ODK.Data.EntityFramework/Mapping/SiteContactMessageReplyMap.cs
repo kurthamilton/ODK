@@ -17,7 +17,7 @@ public class SiteContactMessageReplyMap : IEntityTypeConfiguration<SiteContactMe
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();
 
-        builder.DualWriteColumn(x => x.MessageHtml, writesTo: "Message", mirrorsTo: "MessageHtml");
+        builder.DualWriteColumn(x => x.MessageHtml, writesTo: "MessageHtml", mirrorsTo: "Message");
 
         builder.HasOne<SiteContactMessage>()
             .WithMany()

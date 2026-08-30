@@ -17,7 +17,7 @@ public class ChapterSubscriptionMap : IEntityTypeConfiguration<ChapterSubscripti
         builder.Property(x => x.Amount)
             .HasPrecision(18, 2);
 
-        builder.DualWriteColumn(x => x.DescriptionHtml, writesTo: "Description", mirrorsTo: "DescriptionHtml");
+        builder.DualWriteColumn(x => x.DescriptionHtml, writesTo: "DescriptionHtml", mirrorsTo: "Description");
 
         builder.Property(x => x.Environment)
             .HasColumnName("EnvironmentTypeId");

@@ -22,7 +22,7 @@ public class EventMap : IEntityTypeConfiguration<Event>
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();
 
-        builder.DualWriteColumn(x => x.DescriptionHtml, writesTo: "Description", mirrorsTo: "DescriptionHtml");
+        builder.DualWriteColumn(x => x.DescriptionHtml, writesTo: "DescriptionHtml", mirrorsTo: "Description");
 
         builder.Property(x => x.ImageUrl)
             .HasMaxLength(1024);

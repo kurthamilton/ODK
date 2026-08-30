@@ -18,7 +18,7 @@ public class ChapterEmailMap : IEntityTypeConfiguration<ChapterEmail>
         builder.HasIndex(x => x.ChapterId)
             .IsClustered();
 
-        builder.DualWriteColumn(x => x.BodyHtml, writesTo: "HtmlContent", mirrorsTo: "BodyHtml");
+        builder.DualWriteColumn(x => x.BodyHtml, writesTo: "BodyHtml", mirrorsTo: "HtmlContent");
 
         builder.Property(x => x.Subject)
             .HasMaxLength(255);
