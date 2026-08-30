@@ -85,7 +85,7 @@ public class MemberEmailService : IMemberEmailService
 
         var parameters = new ActivateAccountParameters
         {
-            Url = url
+            ActivateAccountUrl = url
         };
 
         await _emailService.SendEmail(request, chapter, to, EmailType.ActivateAccount, parameters);

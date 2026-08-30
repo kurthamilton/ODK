@@ -5,14 +5,14 @@
 /// </summary>
 public sealed class ActivateAccountParameters : EmailTypeParameters
 {
-    private const string UrlName = "account.urls.activate";
+    private const string ActivateAccountUrlName = "account.urls.activate";
 
-    public static IReadOnlyCollection<string> Names { get; } = [UrlName];
+    public static IReadOnlyCollection<string> Names { get; } = [ActivateAccountUrlName];
 
-    public required string Url { get; init; }
+    public required string ActivateAccountUrl { get; init; }
 
     protected override void AddParameters(IDictionary<string, string> values)
     {
-        Add(values, UrlName, Url);
+        Add(values, ActivateAccountUrlName, ActivateAccountUrl);
     }
 }

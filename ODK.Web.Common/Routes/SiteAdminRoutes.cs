@@ -27,8 +27,6 @@ public class SiteAdminRoutes
 
     public SiteAdminRoute MembersFlagged => Members.Child("/flagged");
 
-    public SiteAdminRoute PaymentCreate => Payments.Child("/new");
-
     public SiteAdminRoute Payments => Path("/payments");
 
     /// <summary>
@@ -110,8 +108,6 @@ public class SiteAdminRoutes
         new(Topics, "Topics"),
         new(Workflows, "Workflows")
     ];
-
-    public SiteAdminRoute Payment(Guid id) => Payments.Child($"/{id}");
 
     public SiteAdminRoute Question(Guid id) => Questions.Child($"/{id}");
 

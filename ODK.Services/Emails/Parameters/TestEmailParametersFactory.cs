@@ -78,7 +78,7 @@ public class TestEmailParametersFactory : ITestEmailParametersFactory
         {
             EmailType.ActivateAccount => new ActivateAccountParameters
             {
-                Url = urlProvider.ActivateAccountUrl(chapter, "TEST")
+                ActivateAccountUrl = urlProvider.ActivateAccountUrl(chapter, "TEST")
             },
             EmailType.ContactRequest => new ContactRequestParameters
             {

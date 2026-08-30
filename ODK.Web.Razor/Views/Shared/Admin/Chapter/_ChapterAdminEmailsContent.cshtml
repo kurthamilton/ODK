@@ -1,5 +1,6 @@
-﻿@using ODK.Core.Features
-@using ODK.Core.Utils
+﻿@using ODK.Core.Emails
+@using ODK.Core.Features
+@using ODK.Services.Emails.ViewModels
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Admin.Emails
@@ -15,6 +16,14 @@
         SiteAdminTitle = Model.SiteAdminTitle,
         SiteMemberTitle = Model.SiteMemberTitle
     };
+
+    (string Heading, string Description, IEnumerable<ChapterEmailListItemViewModel> Emails)[] tables =
+    [
+        ("Member email templates", "Sent by your group to its members. Each has a default you can override to add your own wording.",
+            Model.Emails.Where(x => x.RecipientType == EmailRecipientType.Members)),
+        ("Admin email templates", "Sent by your group to its own admins. Each has a default you can override to add your own wording.",
+            Model.Emails.Where(x => x.RecipientType == EmailRecipientType.Admins))
+    ];
 }
 
 <div class="section-stack">
@@ -48,64 +57,64 @@
         })
     })
 
-    @await Html.PartialAsync("Components/_Section", new SectionViewModel
+    @* Split by recipient, so the section a template sits in says who receives it and which of the two titles
+       above applies to it. *@
+    @foreach (var table in tables)
     {
-        Heading = new HeadingViewModel
+        @await Html.PartialAsync("Components/_Section", new SectionViewModel
         {
-            Title = "Templates",
-            Type = HeadingType.H3
-        },
-        BodyContentFunc =
-            @<div>
-                @await Html.PartialAsync("Components/_AdminPageDescription",
-                    "Templates for the emails your group sends. Each has a default you can override to add your own wording.")
+            Heading = new HeadingViewModel
+            {
+                Title = table.Heading,
+                Type = HeadingType.H3
+            },
+            BodyContentFunc =
+                @<div>
+                    <p class="text-muted">@table.Description</p>
 
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Email</th>
-                                <th>Recipients</th>
-                                <th>Custom</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var item in Model.Emails.OrderBy(x => x.Email.Name))
-                            {
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
                                 <tr>
-                                    <td>
-                                        @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
-                                        {
-                                            Route = OdkRoutes.GroupAdmin.Email(Model.Chapter, item.Email.Type),
-                                            Text = item.Email.Name
-                                        })
-                                    </td>
-                                    <td>
-                                        @EnumUtils.GetDisplayValue(item.RecipientType)
-                                    </td>
-                                    @* Named rather than ticked: subject and body are overridden independently,
-                                       so which of them a group has customised is the useful part. *@
-                                    <td>
-                                        @if (!item.Email.OverridesAnything())
-                                        {
-                                            <span class="text-muted">Default</span>
-                                        }
-                                        else
-                                        {
-                                            var overridden = new[]
-                                            {
-                                                item.Email.OverridesSubject ? "Subject" : null,
-                                                item.Email.OverridesContent ? "Body" : null
-                                            }.Where(x => x != null);
-
-                                            <span>@string.Join(", ", overridden)</span>
-                                        }
-                                    </td>
+                                    <th>Email</th>
+                                    <th>Custom</th>
                                 </tr>
-                            }
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in table.Emails.OrderBy(x => x.Email.Name))
+                                {
+                                    <tr>
+                                        <td>
+                                            @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                                            {
+                                                Route = OdkRoutes.GroupAdmin.Email(Model.Chapter, item.Email.Type),
+                                                Text = item.Email.Name
+                                            })
+                                        </td>
+                                        @* Named rather than ticked: subject and body are overridden independently,
+                                           so which of them a group has customised is the useful part. *@
+                                        <td>
+                                            @if (!item.Email.OverridesAnything())
+                                            {
+                                                <span class="text-muted">Default</span>
+                                            }
+                                            else
+                                            {
+                                                var overridden = new[]
+                                                {
+                                                    item.Email.OverridesSubject ? "Subject" : null,
+                                                    item.Email.OverridesContent ? "Body" : null
+                                                }.Where(x => x != null);
+
+                                                <span>@string.Join(", ", overridden)</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
-    })
+        })
+    }
 </div>
