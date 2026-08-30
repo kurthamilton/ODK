@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Moq;
 using NUnit.Framework;
 using ODK.Core.Chapters;
@@ -14,6 +17,7 @@ using ODK.Core.Web;
 using ODK.Services.Authorization;
 using ODK.Services.Emails;
 using ODK.Services.Emails.Models;
+using ODK.Services.Emails.Parameters;
 using ODK.Services.Emails.ViewModels;
 using ODK.Services.Exceptions;
 using ODK.Services.Html;
@@ -773,6 +777,14 @@ public static class EmailAdminServiceTests
         return (chapter, currentMember);
     }
 
+    private static IEmailParameters CreateEmailParameters()
+    {
+        var mock = new Mock<IEmailParameters>();
+        mock.Setup(x => x.ToDictionary())
+            .Returns(new Dictionary<string, string>());
+        return mock.Object;
+    }
+
     // Set up explicitly rather than left bare: a Mock.Of with no configured return hands back null from
     // Validate, which reads as a pass and turns every failure case into a false pass.
     private static IHtmlValidator CreateHtmlValidator(ServiceResult result) => Mock.Of<IHtmlValidator>(x =>
@@ -817,7 +829,21 @@ public static class EmailAdminServiceTests
         new AuthorizationService(),
         htmlValidator ?? CreateHtmlValidator(ServiceResult.Successful()),
         CreateUrlProviderFactory(),
-        new SiteSubscriptionCooldown(months: 0));
+        new SiteSubscriptionCooldown(months: 0),
+        CreateTestEmailParametersFactory());
+
+    private static ITestEmailParametersFactory CreateTestEmailParametersFactory()
+    {
+        var mock = new Mock<ITestEmailParametersFactory>();
+        mock.Setup(x => x.Create(
+            It.IsAny<IServiceRequest>(),
+            It.IsAny<EmailType>(),
+            It.IsAny<Member>(),
+            It.IsAny<CultureInfo>(),
+            It.IsAny<Chapter?>()))
+            .ReturnsAsync(CreateEmailParameters());
+        return mock.Object;
+    }
 
     // Returns a URL for anything asked of it: a bare mock hands back null, and a null group URL would read
     // as a parameter with no value rather than one this page can resolve.
