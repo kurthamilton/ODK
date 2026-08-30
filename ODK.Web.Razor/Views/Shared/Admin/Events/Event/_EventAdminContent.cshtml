@@ -40,7 +40,7 @@
         Chapter = Model.Chapter,
         Currency = Model.Currency,
         Date = Model.Event.ToLocalTime(Model.Chapter.TimeZone),
-        Description = Model.Event.Description,
+        DescriptionHtml = Model.Event.DescriptionHtml,
         EndTime = TimeSpanUtils.ToString(Model.Event.EndTime),
         Hosts = Model.Hosts?.Select(x => x.MemberId).ToList() ?? [],
         HostOptions = hostOptions,

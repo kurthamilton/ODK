@@ -9,7 +9,7 @@ public class EventSettingsFormSubmitViewModel
     public DayOfWeek? DefaultDayOfWeek { get; set; }
 
     [DisplayName("Default description")]
-    public string? DefaultDescription { get; set; }
+    public string? DefaultDescriptionHtml { get; set; }
 
     [DisplayName("End time")]
     [TimeOfDay]

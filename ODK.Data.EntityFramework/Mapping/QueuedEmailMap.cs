@@ -14,6 +14,10 @@ public class QueuedEmailMap : IEntityTypeConfiguration<QueuedEmail>
 
         builder.HasKey(x => x.Id);
 
+        // Pinned to the current column name - the columns are renamed to match in a later migration.
+        builder.Property(x => x.BodyHtml)
+            .HasColumnName("Body");
+
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();
 

@@ -13,6 +13,9 @@ public class InstagramPostMap : IEntityTypeConfiguration<InstagramPost>
 
         builder.HasKey(x => x.Id);
 
+        builder.Property(x => x.ExternalId)
+            .HasMaxLength(255);
+
         builder.HasOne<Chapter>()
             .WithMany()
             .HasForeignKey(x => x.ChapterId)

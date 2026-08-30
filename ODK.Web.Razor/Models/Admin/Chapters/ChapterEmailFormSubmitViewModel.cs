@@ -1,4 +1,6 @@
-﻿namespace ODK.Web.Razor.Models.Admin.Chapters;
+﻿using System.ComponentModel;
+
+namespace ODK.Web.Razor.Models.Admin.Chapters;
 
 /// <summary>
 /// A group's override of one email. Neither field is required: blank means the group is not overriding it,
@@ -7,11 +9,12 @@
 /// </summary>
 public class ChapterEmailFormSubmitViewModel
 {
-    public string? Content { get; set; }
+    [DisplayName("Content")]
+    public string? ContentHtml { get; set; }
 
     /// <summary>
     /// Whether the group overrides the body, from its own Customise switch. Posted rather than inferred from
-    /// <see cref="Content"/> arriving blank: the form locks a field the group may not write, and a locked
+    /// <see cref="ContentHtml"/> arriving blank: the form locks a field the group may not write, and a locked
     /// field posts nothing, so blank means "nothing to say" rather than "stop overriding this".
     /// </summary>
     public bool OverrideContent { get; set; }

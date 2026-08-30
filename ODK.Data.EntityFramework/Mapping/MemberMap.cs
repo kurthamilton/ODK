@@ -17,6 +17,15 @@ public class MemberMap : IEntityTypeConfiguration<Member>
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();
 
+        builder.Property(x => x.EmailAddress)
+            .HasMaxLength(255);
+
+        builder.Property(x => x.FirstName)
+            .HasMaxLength(50);
+
+        builder.Property(x => x.LastName)
+            .HasMaxLength(50);
+
         builder.Property(x => x.Platform)
             .HasColumnName("PlatformTypeId")
             .HasConversion<int>();

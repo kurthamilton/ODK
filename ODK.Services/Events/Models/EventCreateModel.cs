@@ -6,7 +6,7 @@ public class EventCreateModel
 
     public required DateTime Date { get; init; }
 
-    public required string? Description { get; init; }
+    public required string? DescriptionHtml { get; init; }
 
     public required TimeSpan? EndTime { get; init; }
 

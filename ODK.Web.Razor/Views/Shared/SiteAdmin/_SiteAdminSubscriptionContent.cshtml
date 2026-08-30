@@ -11,7 +11,7 @@
         @Html.AntiForgeryToken()
         @await Html.PartialAsync("SiteAdmin/_SiteAdminSubscriptionForm", new SiteSubscriptionFormViewModel
         {
-            Description = Model.Subscription.Description,
+            DescriptionHtml = Model.Subscription.DescriptionHtml,
             Enabled = Model.Subscription.Enabled,
             FallbackSiteSubscriptionId = Model.Subscription.FallbackSiteSubscriptionId,
             Features = Model.Features.Select(x => x.Feature).ToList(),

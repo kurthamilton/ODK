@@ -212,9 +212,9 @@ public static class ReferralAdminServiceTests
 
     private static ReferralCampaignUpdateModel CreateModel(string name, DateTime? expires = null) => new()
     {
-        Description = "<p>Refer a friend</p>",
+        DescriptionHtml = "<p>Refer a friend</p>",
         EmailSubject = "You have been referred",
-        EmailText = "<p>Hello</p>",
+        EmailTextHtml = "<p>Hello</p>",
         ExpiresLocalDate = expires,
         Name = name
     };

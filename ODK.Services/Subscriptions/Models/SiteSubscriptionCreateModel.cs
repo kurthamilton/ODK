@@ -4,7 +4,7 @@ namespace ODK.Services.Subscriptions.Models;
 
 public class SiteSubscriptionCreateModel
 {
-    public required string Description { get; init; } = string.Empty;
+    public required string DescriptionHtml { get; init; } = string.Empty;
 
     public required bool Enabled { get; init; }
 

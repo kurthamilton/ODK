@@ -11,5 +11,8 @@ public class TopicGroupMap : IEntityTypeConfiguration<TopicGroup>
         builder.ToTable("TopicGroups");
 
         builder.HasKey(x => x.Id);
+
+        builder.Property(x => x.Name)
+            .HasMaxLength(255);
     }
 }

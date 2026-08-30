@@ -10,7 +10,7 @@ public class ReferralCampaign : IDatabaseEntity
     /// <summary>
     /// HTML shown to the member on the refer page, describing the campaign.
     /// </summary>
-    public string Description { get; set; } = string.Empty;
+    public string DescriptionHtml { get; set; } = string.Empty;
 
     /// <summary>
     /// Subject line of the referral email. Plain text, not HTML.
@@ -20,7 +20,7 @@ public class ReferralCampaign : IDatabaseEntity
     /// <summary>
     /// HTML body of the referral email. Interpolated with the member.fullName, url and referral.id tokens.
     /// </summary>
-    public string EmailText { get; set; } = string.Empty;
+    public string EmailTextHtml { get; set; } = string.Empty;
 
     /// <summary>
     /// When the campaign stops accepting referrals; null means it never expires. Stored as the instant

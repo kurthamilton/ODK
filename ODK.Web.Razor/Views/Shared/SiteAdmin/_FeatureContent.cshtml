@@ -7,7 +7,7 @@
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("SiteAdmin/_FeatureForm", new FeatureFormViewModel
     {
-        Description = Model.Feature.Description,
+        DescriptionHtml = Model.Feature.DescriptionHtml,
         Name = Model.Feature.Name
     })
     <button class="btn btn-primary">Update</button>

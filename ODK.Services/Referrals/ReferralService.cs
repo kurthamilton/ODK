@@ -79,7 +79,7 @@ public class ReferralService : IReferralService
             chapter: null,
             to: [new EmailAddressee(emailAddress, string.Empty)],
             subject: campaign.EmailSubject,
-            body: campaign.EmailText,
+            body: campaign.EmailTextHtml,
             recipientType: EmailRecipientType.Members,
             parameters: new CustomEmailParameters
             {

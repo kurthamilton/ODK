@@ -14,8 +14,14 @@ public class VenueMap : IEntityTypeConfiguration<Venue>
 
         builder.HasKey(x => x.Id);
 
+        builder.Property(x => x.Address)
+            .HasMaxLength(255);
+
         builder.Property(x => x.ArchivedUtc)
             .HasConversion<NullableUtcDateTimeConverter>();
+
+        builder.Property(x => x.MapQuery)
+            .HasMaxLength(255);
 
         builder.Property(x => x.Name)
             .HasMaxLength(255);

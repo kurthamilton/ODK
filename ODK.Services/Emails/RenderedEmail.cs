@@ -6,7 +6,7 @@
 /// </summary>
 public class RenderedEmail
 {
-    public required string Body { get; init; }
+    public required string BodyHtml { get; init; }
 
     public required string FromEmailAddress { get; init; }
 

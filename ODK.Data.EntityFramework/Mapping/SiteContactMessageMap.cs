@@ -16,6 +16,9 @@ public class SiteContactMessageMap : IEntityTypeConfiguration<SiteContactMessage
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();
 
+        builder.Property(x => x.FromAddress)
+            .HasMaxLength(255);
+
         builder.Property(x => x.RepliedUtc)
             .HasConversion<NullableUtcDateTimeConverter>();
     }

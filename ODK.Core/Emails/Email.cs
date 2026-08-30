@@ -4,7 +4,7 @@ namespace ODK.Core.Emails;
 
 public class Email
 {
-    public string HtmlContent { get; set; } = string.Empty;
+    public string BodyHtml { get; set; } = string.Empty;
 
     /// <summary>
     /// Whether groups send this template. A group email is one a group may customise; the site-only

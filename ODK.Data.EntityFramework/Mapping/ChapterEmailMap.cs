@@ -17,6 +17,10 @@ public class ChapterEmailMap : IEntityTypeConfiguration<ChapterEmail>
         builder.HasIndex(x => x.ChapterId)
             .IsClustered();
 
+        // Pinned to the current column name - the columns are renamed to match in a later migration.
+        builder.Property(x => x.BodyHtml)
+            .HasColumnName("HtmlContent");
+
         builder.Property(x => x.Subject)
             .HasMaxLength(255);
 

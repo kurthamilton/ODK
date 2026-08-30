@@ -28,9 +28,9 @@
     </div>
 
     <div class="form-group mb-3 required">
-        @Html.LabelFor(x => x.Body, new { @class = "form-label" })
-        @Html.TextAreaFor(x => x.Body, new { @class = "form-control", rows = 6 })
-        @Html.ValidationMessageFor(x => x.Body)
+        @Html.LabelFor(x => x.BodyHtml, new { @class = "form-label" })
+        @Html.TextAreaFor(x => x.BodyHtml, new { @class = "form-control", rows = 6 })
+        @Html.ValidationMessageFor(x => x.BodyHtml)
     </div>
 
     <button type="submit" class="btn btn-secondary mt-3">Send update</button>

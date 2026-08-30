@@ -9,7 +9,8 @@ public class EventUpdateViewModel
 {
 
     [Required]
-    public string? Body { get; set; }
+    [DisplayName("Body")]
+    public string? BodyHtml { get; set; }
 
     public required Chapter Chapter { get; set; }
 

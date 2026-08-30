@@ -14,7 +14,7 @@
     @* Label and toolbar share a row, laid out here rather than by the toolbar. Nothing below it: the site's
        own fields are always editable, so there is no Customise switch to sit under the label. *@
     <div class="d-flex align-items-center flex-wrap gap-2 mb-1">
-        @Html.LabelFor(x => x.Content, new { @class = "form-label mb-0 me-auto" })
+        @Html.LabelFor(x => x.ContentHtml, new { @class = "form-label mb-0 me-auto" })
 
         @await Html.PartialAsync("Emails/_EmailEditorButtons", new EmailEditorButtonsViewModel
         {
@@ -30,7 +30,7 @@
     })
 
     @* rows is the editor's minimum height and max-lines its maximum - see odk.code-editor.js. *@
-    @Html.OdkEmailTemplateTextAreaFor(x => x.Content, Model.Placeholders, Model.ValidateUrl,
+    @Html.OdkEmailTemplateTextAreaFor(x => x.ContentHtml, Model.Placeholders, Model.ValidateUrl,
         htmlAttributes: new
         {
             @class = "form-control",
@@ -39,5 +39,5 @@
             data_code_editor_max_lines = Model.MaxEditorLines?.ToString() ?? "none"
         })
 
-    @Html.ValidationMessageFor(x => x.Content)
+    @Html.ValidationMessageFor(x => x.ContentHtml)
 </div>

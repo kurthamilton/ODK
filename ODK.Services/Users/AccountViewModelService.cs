@@ -89,7 +89,6 @@ public class AccountViewModelService : IAccountViewModelService
                 chapter,
                 chapterProperties,
                 chapterPropertyOptions,
-                null,
                 [],
                 /* Signing up on this platform is joining the chapter, so an anonymous visitor here is raising
                    an account. A signed-in member is joining a second chapter and already has one. */
@@ -155,7 +154,6 @@ public class AccountViewModelService : IAccountViewModelService
                 chapter,
                 chapterProperties,
                 chapterPropertyOptions,
-                currentMember,
                 memberProperties,
                 signingUp: false)
         };
@@ -238,7 +236,6 @@ public class AccountViewModelService : IAccountViewModelService
         Chapter chapter,
         IReadOnlyCollection<ChapterProperty> chapterProperties,
         IReadOnlyCollection<ChapterPropertyOption> chapterPropertyOptions,
-        Member? member,
         IReadOnlyCollection<MemberProperty> memberProperties,
         bool signingUp)
     {
@@ -246,6 +243,7 @@ public class AccountViewModelService : IAccountViewModelService
 
         return new ChapterProfileFormViewModel
         {
+            Chapter = chapter,
             ChapterName = chapter.GetDisplayName(platform),
             ChapterProperties = chapterProperties,
             ChapterPropertyOptions = chapterPropertyOptions,

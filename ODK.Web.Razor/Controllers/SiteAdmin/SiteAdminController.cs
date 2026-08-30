@@ -98,7 +98,7 @@ public class SiteAdminController : OdkControllerBase
     public async Task<IActionResult> ReplyToMessage(Guid id,
         [FromForm] ChapterMessageReplyFormViewModel viewModel)
     {
-        var result = await _contactAdminService.ReplyToMessage(MemberServiceRequest, id, viewModel.Message ?? string.Empty);
+        var result = await _contactAdminService.ReplyToMessage(MemberServiceRequest, id, viewModel.MessageHtml ?? string.Empty);
         AddFeedback(result, "Reply sent");
         return RedirectToReferrer();
     }
@@ -116,7 +116,7 @@ public class SiteAdminController : OdkControllerBase
     {
         var result = await _siteSubscriptionAdminService.AddSiteSubscription(MemberServiceRequest, new SiteSubscriptionCreateModel
         {
-            Description = viewModel.Description,
+            DescriptionHtml = viewModel.DescriptionHtml,
             Name = viewModel.Name,
             Enabled = viewModel.Enabled,
             FallbackSiteSubscriptionId = viewModel.FallbackSiteSubscriptionId,
@@ -136,7 +136,7 @@ public class SiteAdminController : OdkControllerBase
     {
         var result = await _siteSubscriptionAdminService.UpdateSiteSubscription(MemberServiceRequest, id, new SiteSubscriptionCreateModel
         {
-            Description = viewModel.Description,
+            DescriptionHtml = viewModel.DescriptionHtml,
             Name = viewModel.Name,
             Enabled = viewModel.Enabled,
             FallbackSiteSubscriptionId = viewModel.FallbackSiteSubscriptionId,

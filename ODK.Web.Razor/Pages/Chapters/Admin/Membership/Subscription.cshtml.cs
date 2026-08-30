@@ -32,7 +32,7 @@ public class SubscriptionModel : AdminPageModel
         var result = await _chapterAdminService.UpdateChapterSubscription(serviceRequest, id, new ChapterSubscriptionCreateModel
         {
             Amount = viewModel.Amount ?? 0,
-            Description = viewModel.Description,
+            DescriptionHtml = viewModel.DescriptionHtml,
             Disabled = !viewModel.Enabled,
             Name = viewModel.Name,
             Months = viewModel.DurationMonths ?? 0,

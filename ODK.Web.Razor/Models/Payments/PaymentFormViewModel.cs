@@ -8,7 +8,7 @@ public class PaymentFormViewModel
 
     public required Currency Currency { get; init; }
 
-    public required string Description { get; init; }
+    public required string DescriptionHtml { get; init; }
 
     public required string Id { get; init; }
 }

@@ -15,7 +15,7 @@ public class ChapterSubscription : IDatabaseEntity, IChapterEntity
 
     public Guid CurrencyId { get; set; }
 
-    public string Description { get; set; } = string.Empty;
+    public string DescriptionHtml { get; set; } = string.Empty;
 
     public bool Disabled { get; set; }
 

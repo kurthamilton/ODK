@@ -38,7 +38,7 @@ public class EmailsController : OdkControllerBase
         EmailType type, [FromForm] SiteEmailFormSubmitViewModel viewModel)
     {
         var preview = await _emailAdminService.PreviewEmail(
-            MemberServiceRequest, type, viewModel.Subject, viewModel.Content);
+            MemberServiceRequest, type, viewModel.Subject, viewModel.ContentHtml);
 
         return Ok(EmailPreviewViewModel.FromRendered(preview));
     }

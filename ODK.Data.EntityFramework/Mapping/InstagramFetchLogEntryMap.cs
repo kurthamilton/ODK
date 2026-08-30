@@ -15,5 +15,8 @@ public class InstagramFetchLogEntryMap : IEntityTypeConfiguration<InstagramFetch
 
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();
+
+        builder.Property(x => x.Username)
+            .HasMaxLength(255);
     }
 }

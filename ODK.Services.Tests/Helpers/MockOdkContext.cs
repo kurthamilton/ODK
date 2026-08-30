@@ -359,7 +359,7 @@ internal class MockOdkContext : OdkContext
         {
             Id = Guid.NewGuid(),
             Name = "Test Subscription",
-            Description = "Test subscription for testing",
+            DescriptionHtml = "Test subscription for testing",
             Free = free,
             GroupLimit = groupLimit ?? 10,
             MemberLimit = memberLimit,

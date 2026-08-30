@@ -10,7 +10,7 @@
 <div class="row">
     <div class="col-lg-7">
         <div class="section-stack">
-            @if (!string.IsNullOrEmpty(Model.Texts?.Description))
+            @if (!string.IsNullOrEmpty(Model.Texts?.DescriptionHtml))
             {
                 @await Html.PartialAsync("Components/_Panel", new PanelViewModel
                 {
@@ -21,7 +21,7 @@
                     },
                     BodyContentFunc =
                         @<div>
-                            @Html.Raw(Model.Texts?.Description)
+                            @Html.Raw(Model.Texts?.DescriptionHtml)
                         </div>
                 })
             }
@@ -37,10 +37,10 @@
                     },
                     BodyContentFunc =
                         @<div>
-                            @if (!string.IsNullOrEmpty(Model.Texts?.WelcomeText))
+                            @if (!string.IsNullOrEmpty(Model.Texts?.WelcomeTextHtml))
                             {
                                 <div class="mb-3">
-                                    @Html.Raw(Model.Texts.WelcomeText)
+                                    @Html.Raw(Model.Texts.WelcomeTextHtml)
                                 </div>
                             }
 

@@ -242,13 +242,13 @@ public static class SiteQuestionAdminServiceTests
 
     private static SiteQuestionUpdateModel CreateModel(string name, string answer) => new()
     {
-        Answer = answer,
+        AnswerHtml = answer,
         Name = name
     };
 
     private static SiteQuestion CreateQuestion(PlatformType platform, string name, int displayOrder) => new()
     {
-        Answer = $"{name} answer",
+        AnswerHtml = $"{name} answer",
         DisplayOrder = displayOrder,
         Id = Guid.NewGuid(),
         Name = name,

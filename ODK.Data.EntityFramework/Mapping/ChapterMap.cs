@@ -20,7 +20,8 @@ public class ChapterMap : IEntityTypeConfiguration<Chapter>
 
         // Column not being implicitly included for some reason
         builder.Property(x => x.BannerImageUrl)
-            .HasColumnName("BannerImageUrl");
+            .HasColumnName("BannerImageUrl")
+            .HasMaxLength(255);
 
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();
@@ -35,8 +36,17 @@ public class ChapterMap : IEntityTypeConfiguration<Chapter>
         builder.Property(x => x.PublishedUtc)
             .HasConversion<NullableUtcDateTimeConverter>();
 
+        builder.Property(x => x.RedirectUrl)
+            .HasMaxLength(255);
+
         builder.Property(x => x.Slug)
             .HasMaxLength(255);
+
+        builder.Property(x => x.ThemeBackground)
+            .HasMaxLength(7);
+
+        builder.Property(x => x.ThemeColor)
+            .HasMaxLength(7);
 
         builder.Ignore(x => x.TimeZone);
 

@@ -58,7 +58,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
             return ServiceResult<Guid>.Failure($"Fallback subscription not found");
         }
 
-        var htmlResult = _htmlValidator.Validate(model.Description, DefaultHtmlValidatorOptions);
+        var htmlResult = _htmlValidator.Validate(model.DescriptionHtml, DefaultHtmlValidatorOptions);
         if (!htmlResult.Success)
         {
             return ServiceResult<Guid>.Failure(htmlResult.Message ?? string.Empty);
@@ -533,7 +533,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
             }
         }
 
-        var htmlResult = _htmlValidator.Validate(model.Description, DefaultHtmlValidatorOptions);
+        var htmlResult = _htmlValidator.Validate(model.DescriptionHtml, DefaultHtmlValidatorOptions);
         if (!htmlResult.Success)
         {
             return htmlResult;
@@ -565,7 +565,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         SiteSubscription subscription,
         IReadOnlyCollection<SiteSubscriptionFeature> existingFeatures)
     {
-        subscription.Description = model.Description;
+        subscription.DescriptionHtml = model.DescriptionHtml;
         subscription.Enabled = model.Enabled;
         subscription.FallbackSiteSubscriptionId = model.FallbackSiteSubscriptionId;
         subscription.Free = model.Free;

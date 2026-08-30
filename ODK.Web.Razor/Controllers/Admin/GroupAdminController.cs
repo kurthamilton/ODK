@@ -70,7 +70,7 @@ public class GroupAdminController : OdkControllerBase
         var result = await _chapterAdminService.UpdateChapterQuestion(request, questionId,
             new ChapterQuestionCreateModel
             {
-                Answer = viewModel.Answer ?? string.Empty,
+                AnswerHtml = viewModel.AnswerHtml ?? string.Empty,
                 Name = viewModel.Question ?? string.Empty
             });
 

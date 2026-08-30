@@ -6,7 +6,7 @@ public class ChapterEventSettings : IChapterEntity
 
     public DayOfWeek? DefaultDayOfWeek { get; set; }
 
-    public string? DefaultDescription { get; set; }
+    public string? DefaultDescriptionHtml { get; set; }
 
     public TimeSpan? DefaultEndTime { get; set; }
 

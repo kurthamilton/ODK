@@ -19,9 +19,9 @@
         @await Html.PartialAsync("SiteAdmin/_ReferralCampaignForm", new ReferralCampaignFormViewModel
         {
             // Stored as the instant the expiry day ends, so step back to the day the admin chose.
-            Description = campaign.Description,
+            DescriptionHtml = campaign.DescriptionHtml,
             EmailSubject = campaign.EmailSubject,
-            EmailText = campaign.EmailText,
+            EmailTextHtml = campaign.EmailTextHtml,
             ExpiresLocalDate = campaign.ExpiresUtc?.AddDays(-1).Date,
             Name = campaign.Name
         })

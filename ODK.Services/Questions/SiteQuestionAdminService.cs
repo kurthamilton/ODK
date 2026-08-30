@@ -28,7 +28,7 @@ public class SiteQuestionAdminService : OdkAdminServiceBase, ISiteQuestionAdminS
             request,
             x => x.SiteQuestionRepository.GetByPlatform(request.Platform));
 
-        var htmlResult = _htmlValidator.Validate(model.Answer, DefaultHtmlValidatorOptions);
+        var htmlResult = _htmlValidator.Validate(model.AnswerHtml, DefaultHtmlValidatorOptions);
         if (!htmlResult.Success)
         {
             return ServiceResult<Guid>.Failure(htmlResult.Message ?? string.Empty);
@@ -36,7 +36,7 @@ public class SiteQuestionAdminService : OdkAdminServiceBase, ISiteQuestionAdminS
 
         var question = new SiteQuestion
         {
-            Answer = model.Answer,
+            AnswerHtml = model.AnswerHtml,
             DisplayOrder = existing.Count > 0 ? existing.Max(x => x.DisplayOrder) + 1 : 1,
             Id = _unitOfWork.NewId(),
             Name = model.Name.NormaliseWhitespace(),
@@ -109,12 +109,12 @@ public class SiteQuestionAdminService : OdkAdminServiceBase, ISiteQuestionAdminS
     {
         var question = await GetQuestion(request, questionId);
 
-        var htmlResult = _htmlValidator.Validate(model.Answer, DefaultHtmlValidatorOptions);
+        var htmlResult = _htmlValidator.Validate(model.AnswerHtml, DefaultHtmlValidatorOptions);
         if (!htmlResult.Success)
         {
             return htmlResult;
         }
-        question.Answer = model.Answer;
+        question.AnswerHtml = model.AnswerHtml;
         question.Name = model.Name.NormaliseWhitespace();
 
         var validationResult = Validate(question);
@@ -170,7 +170,7 @@ public class SiteQuestionAdminService : OdkAdminServiceBase, ISiteQuestionAdminS
     private static ServiceResult Validate(SiteQuestion question)
     {
         if (string.IsNullOrWhiteSpace(question.Name) ||
-            string.IsNullOrWhiteSpace(question.Answer))
+            string.IsNullOrWhiteSpace(question.AnswerHtml))
         {
             return ServiceResult.Failure(ErrorMessagesResource.RequiredFieldsMissing);
         }

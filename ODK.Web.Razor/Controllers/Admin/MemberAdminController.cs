@@ -145,7 +145,7 @@ public class MemberAdminController : AdminControllerBase
         var request = MemberChapterAdminServiceRequest.Create(
             ChapterAdminSecurable.BulkEmail, MemberChapterServiceRequest);
         var result = await _memberAdminService.SendBulkEmail(
-            request, viewModel.MemberIds, viewModel.Subject, viewModel.Body);
+            request, viewModel.MemberIds, viewModel.Subject, viewModel.BodyHtml);
         AddFeedback(result);
         return RedirectToReferrer();
     }

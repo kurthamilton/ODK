@@ -4,7 +4,7 @@ namespace ODK.Services.Emails;
 
 public record EmailClientEmail
 {
-    public required string Body { get; init; }
+    public required string BodyHtml { get; init; }
 
     public required EmailAddressee From { get; init; }
 

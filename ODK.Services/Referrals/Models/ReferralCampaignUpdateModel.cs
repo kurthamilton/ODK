@@ -8,11 +8,11 @@ public class ReferralCampaignUpdateModel
     /// </summary>
     public required DateTime? ExpiresLocalDate { get; set; }
 
-    public required string Description { get; set; }
+    public required string DescriptionHtml { get; set; }
 
     public required string EmailSubject { get; set; }
 
-    public required string EmailText { get; set; }
+    public required string EmailTextHtml { get; set; }
 
     public required string Name { get; set; }
 }

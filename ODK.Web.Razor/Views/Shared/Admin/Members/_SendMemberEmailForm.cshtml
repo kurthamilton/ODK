@@ -8,7 +8,7 @@
 </div>
 
 <div class="form-group mb-3 required">
-    @Html.LabelFor(x => x.Body, new { @class = "form-label" })
-    @Html.TextAreaFor(x => x.Body, new { @class = "form-control", data_html_editor = "" })
-    @Html.ValidationMessageFor(x => x.Body)
+    @Html.LabelFor(x => x.BodyHtml, new { @class = "form-label" })
+    @Html.TextAreaFor(x => x.BodyHtml, new { @class = "form-control", data_html_editor = "" })
+    @Html.ValidationMessageFor(x => x.BodyHtml)
 </div>

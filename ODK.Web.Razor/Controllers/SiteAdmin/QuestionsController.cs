@@ -72,7 +72,7 @@ public class QuestionsController : AdminControllerBase
 
     private static SiteQuestionUpdateModel ToModel(SiteQuestionFormViewModel viewModel) => new()
     {
-        Answer = viewModel.Answer,
+        AnswerHtml = viewModel.AnswerHtml,
         Name = viewModel.Question
     };
 }

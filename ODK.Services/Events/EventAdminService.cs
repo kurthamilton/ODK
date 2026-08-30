@@ -97,7 +97,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             request,
             chapterAdminMembers.FirstOrDefault(x => x.MemberId == currentMember.Id));
 
-        var htmlResult = _htmlValidator.Validate(model.Description, DefaultHtmlValidatorOptions);
+        var htmlResult = _htmlValidator.Validate(model.DescriptionHtml, DefaultHtmlValidatorOptions);
         if (!htmlResult.Success)
         {
             return htmlResult;
@@ -111,7 +111,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             CreatedBy = currentMember.FullName,
             CreatedUtc = DateTime.UtcNow,
             DateUtc = date,
-            Description = model.Description,
+            DescriptionHtml = model.DescriptionHtml,
             EndTime = model.EndTime,
             ImageUrl = model.ImageUrl,
             IsPublic = model.IsPublic,
@@ -873,7 +873,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             date = date.SpecifyKind(DateTimeKind.Utc);
         }
 
-        var htmlResult = _htmlValidator.Validate(model.Description, DefaultHtmlValidatorOptions);
+        var htmlResult = _htmlValidator.Validate(model.DescriptionHtml, DefaultHtmlValidatorOptions);
         if (!htmlResult.Success)
         {
             return htmlResult;
@@ -882,7 +882,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         @event.AttendeeLimit = model.AttendeeLimit;
         @event.DateUtc = date;
-        @event.Description = model.Description;
+        @event.DescriptionHtml = model.DescriptionHtml;
         @event.EndTime = model.EndTime;
         @event.ImageUrl = model.ImageUrl;
         @event.IsPublic = model.IsPublic;
@@ -967,7 +967,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         settings ??= new();
 
         settings.DefaultDayOfWeek = model.DefaultDayOfWeek;
-        settings.DefaultDescription = model.DefaultDescription;
+        settings.DefaultDescriptionHtml = model.DefaultDescriptionHtml;
         settings.DefaultEndTime = model.DefaultEndTime;
         settings.DefaultStartTime = model.DefaultStartTime;
         settings.DisableComments = model.DisableComments;

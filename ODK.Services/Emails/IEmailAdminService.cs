@@ -52,8 +52,8 @@ public interface IEmailAdminService
     /// already, and reporting them here too would flag the same field twice.
     /// </summary>
     Task<ServiceResult> ValidateChapterEmailHtml(
-        IMemberChapterAdminServiceRequest request, EmailType type, string? htmlContent);
+        IMemberChapterAdminServiceRequest request, EmailType type, string? bodyHtml);
 
     /// <inheritdoc cref="ValidateChapterEmailHtml" />
-    ServiceResult ValidateEmailHtml(IMemberServiceRequest request, EmailType type, string? htmlContent);
+    ServiceResult ValidateEmailHtml(IMemberServiceRequest request, EmailType type, string? bodyHtml);
 }

@@ -14,7 +14,7 @@
     var description = viewModel.Chapter.GetDisplayName(Model.Platform);
 
     // The description is rich text, and a meta tag takes none - without this the tag carries the markup.
-    var descriptionText = HtmlTextExtractor.ToPlainText(viewModel.Texts?.Description);
+    var descriptionText = HtmlTextExtractor.ToPlainText(viewModel.Texts?.DescriptionHtml);
 
     if (!string.IsNullOrEmpty(descriptionText))
     {

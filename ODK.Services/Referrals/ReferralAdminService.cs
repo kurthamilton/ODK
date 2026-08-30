@@ -31,9 +31,9 @@ public class ReferralAdminService : OdkAdminServiceBase, IReferralAdminService
         var campaign = new ReferralCampaign
         {
             CreatedUtc = DateTime.UtcNow,
-            Description = model.Description,
+            DescriptionHtml = model.DescriptionHtml,
             EmailSubject = model.EmailSubject,
-            EmailText = model.EmailText,
+            EmailTextHtml = model.EmailTextHtml,
             ExpiresUtc = ToExpiresUtc(model.ExpiresLocalDate),
             Id = _unitOfWork.NewId(),
             Name = model.Name.NormaliseWhitespace()
@@ -85,9 +85,9 @@ public class ReferralAdminService : OdkAdminServiceBase, IReferralAdminService
             return validationResult;
         }
 
-        campaign.Description = model.Description;
+        campaign.DescriptionHtml = model.DescriptionHtml;
         campaign.EmailSubject = model.EmailSubject;
-        campaign.EmailText = model.EmailText;
+        campaign.EmailTextHtml = model.EmailTextHtml;
         campaign.ExpiresUtc = ToExpiresUtc(model.ExpiresLocalDate);
         campaign.Name = model.Name.NormaliseWhitespace();
 

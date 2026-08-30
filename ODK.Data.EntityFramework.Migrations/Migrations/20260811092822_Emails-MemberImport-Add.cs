@@ -38,14 +38,14 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                 EmailSchemaEra.TypeIdKey,
                 new Email
                 {
-                    HtmlContent = ActivationBody,
+                    BodyHtml = ActivationBody,
                     IsGroupEmail = true,
                     Subject = "{title} - Activate your account",
                     Type = EmailType.MemberImportActivation
                 },
                 new Email
                 {
-                    HtmlContent = InviteBody,
+                    BodyHtml = InviteBody,
                     IsGroupEmail = true,
                     Subject = "{title} - You have been added to the group",
                     Type = EmailType.MemberImportInvite

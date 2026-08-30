@@ -25,8 +25,13 @@
                     <td>
                         @if (property.Name.Equals("EXCEPTION.STACKTRACE"))
                         {
+                            // Encoded before the line breaks go in: an exception's text carries
+                            // whatever was being processed when it threw.
+                            var stackTraceHtml = Html.Encode(property.Value)
+                                .Replace(Environment.NewLine, "<br/>");
+
                             <span>
-                                @Html.Raw(property.Value.Replace(Environment.NewLine, "<br/>"))
+                                @Html.Raw(stackTraceHtml)
                             </span>
                         }                    
                         else

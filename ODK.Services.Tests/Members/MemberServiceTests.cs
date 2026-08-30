@@ -1232,7 +1232,7 @@ public static class MemberServiceTests
         {
             Id = Guid.NewGuid(),
             Name = "Default",
-            Description = "",
+            DescriptionHtml = "",
             GroupLimit = 10,
             Enabled = true,
             Default = true,

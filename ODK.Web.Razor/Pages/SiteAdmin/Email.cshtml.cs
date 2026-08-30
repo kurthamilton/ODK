@@ -32,7 +32,7 @@ public class EmailModel : SiteAdminPageModel
 
         var result = await _emailAdminService.UpdateEmail(MemberServiceRequest, type, new EmailUpdateModel
         {
-            HtmlContent = viewModel.Content,
+            BodyHtml = viewModel.ContentHtml,
             IsGroupEmail = isGroupEmail,
             Subject = viewModel.Subject
         });

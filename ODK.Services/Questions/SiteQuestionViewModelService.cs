@@ -41,7 +41,7 @@ public class SiteQuestionViewModelService : ISiteQuestionViewModelService
                 {
                     // The answer is HTML the page renders unencoded, so its values are encoded going in.
                     // The name is rendered as text, which Razor encodes for itself.
-                    Answer = x.Answer.Interpolate(parameters, HttpUtility.HtmlEncode),
+                    AnswerHtml = x.AnswerHtml.Interpolate(parameters, HttpUtility.HtmlEncode),
                     Name = x.Name.Interpolate(parameters)
                 })
                 .ToArray()

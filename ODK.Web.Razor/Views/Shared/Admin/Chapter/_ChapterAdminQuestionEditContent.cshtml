@@ -1,9 +1,5 @@
-﻿@using ODK.Core.Platforms
-@using ODK.Services.Chapters.ViewModels
-@using ODK.Web.Common.Routes
-@using ODK.Web.Razor.Models.Admin
+﻿@using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Razor.Models.Admin.Chapters
-@using ODK.Web.Razor.Models.Components
 @model ChapterQuestionAdminPageViewModel
 
 @await Html.PartialAsync("Components/_AdminPageDescription",
@@ -13,7 +9,7 @@
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("Admin/Chapter/_ChapterAdminQuestionForm", new ChapterQuestionFormViewModel
     {
-        Answer = Model.Question.Answer,
+        AnswerHtml = Model.Question.AnswerHtml,
         Question = Model.Question.Name
     })
     <button class="btn btn-primary">Update</button>

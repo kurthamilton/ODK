@@ -4,7 +4,7 @@ public class ChapterSubscriptionCreateModel
 {
     public required decimal Amount { get; init; }
 
-    public required string Description { get; init; }
+    public required string DescriptionHtml { get; init; }
 
     public required bool Disabled { get; init; }
 

@@ -12,6 +12,18 @@ public class ChapterLinksMap : IEntityTypeConfiguration<ChapterLinks>
 
         builder.HasKey(x => x.ChapterId);
 
+        builder.Property(x => x.FacebookName)
+            .HasMaxLength(255);
+
+        builder.Property(x => x.InstagramName)
+            .HasMaxLength(255);
+
+        builder.Property(x => x.TwitterName)
+            .HasMaxLength(255);
+
+        builder.Property(x => x.WhatsApp)
+            .HasMaxLength(255);
+
         builder.Property(x => x.Version)
             .IsRowVersion();
 
