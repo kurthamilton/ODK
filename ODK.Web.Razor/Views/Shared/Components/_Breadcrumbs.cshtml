@@ -11,26 +11,33 @@
     <ol class="breadcrumb">
         @foreach (MenuItem breadcrumb in Model.Breadcrumbs)
         {
-            <li class="breadcrumb-item @(breadcrumb.Active ? "active" : null)">
-                @if (breadcrumb.Active)
+            @* A crumb naming the page you are already on carries no link, so it renders as text.
+               An anchor with an empty href points at the current page, which reads as somewhere to go. *@
+            var link = !breadcrumb.Active && !string.IsNullOrEmpty(breadcrumb.Link)
+                ? breadcrumb.Link
+                : null;
+
+            <li class="breadcrumb-item @(link != null ? null : "active")"
+                aria-current="@(link != null ? null : "page")">
+                @if (link != null)
+                {
+                    <a href="@link">
+                        @if (breadcrumb.Icon != null)
+                        {
+                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(breadcrumb.Icon.Value))
+                        }
+
+                        <span>@breadcrumb.Text</span>
+                    </a>
+                }
+                else
                 {
                     @if (breadcrumb.Icon != null)
                     {
                         @await Html.PartialAsync("Components/_Icon", new IconViewModel(breadcrumb.Icon.Value))
                     }
 
-                    @:item.Text
-                }
-                else
-                {
-                    <a href="@breadcrumb.Link">
-                        @if (breadcrumb.Icon != null)
-                        {
-                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(breadcrumb.Icon.Value))
-                        }
-
-                        @breadcrumb.Text
-                    </a>
+                    <span>@breadcrumb.Text</span>
                 }
             </li>
         }

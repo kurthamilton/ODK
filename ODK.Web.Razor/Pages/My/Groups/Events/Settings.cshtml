@@ -1,8 +1,7 @@
 ﻿@page "/my/groups/{chapterId:guid}/events/settings"
 @using ODK.Services.Events
-@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
-@model ODK.Web.Razor.Pages.My.Groups.Events.SettingsModel
+@model SettingsModel
 @inject IEventAdminService EventAdminService
 @{
     Layout = "_GroupAdminLayout";
@@ -15,6 +14,18 @@
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
 {
     Title = "Event settings",
+    Breadcrumbs = new BreadcrumbsViewModel
+    {
+        Breadcrumbs = new[]
+        {
+            new MenuItem
+            {
+                Link = Model.OdkRoutes.GroupAdmin.Events(Model.Chapter).Path,
+                Text = "Back to events",
+                Icon = IconType.ArrowLeft
+            }
+        }
+    },
     BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Events/_SettingsContent", viewModel)</div>,
     MenuTitle = "Admin",
     MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu")

@@ -1,6 +1,7 @@
 ﻿@page "/{chapterName}/admin/events/settings"
 @using ODK.Services.Events
 @using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Components
 @model SettingsModel
 @inject IEventAdminService EventAdminService
 @{
@@ -14,5 +15,14 @@
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
     Title = "Event settings",
+    Breadcrumbs = new[]
+    {
+        new MenuItem
+        {
+            Link = Model.AdminRoutes.Events(Model.Chapter).Path,
+            Text = "Back to events",
+            Icon = IconType.ArrowLeft
+        }
+    },
     ContentFunc = @<div>@await Html.PartialAsync("Admin/Events/_SettingsContent", viewModel)</div>
 })

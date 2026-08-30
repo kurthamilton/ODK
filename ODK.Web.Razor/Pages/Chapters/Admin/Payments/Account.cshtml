@@ -1,6 +1,7 @@
 ﻿@page "/{chapterName}/admin/payments/account"
 @using ODK.Services.Chapters
 @using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Components
 @model AccountModel
 @inject IChapterAdminService ChapterAdminService
 @{
@@ -14,5 +15,14 @@
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
     Title = "Payment account",
+    Breadcrumbs = new[]
+    {
+        new MenuItem
+        {
+            Link = Model.AdminRoutes.Payments(Model.Chapter).Path,
+            Text = "Back to payments",
+            Icon = IconType.ArrowLeft
+        }
+    },
     ContentFunc = @<div>@await Html.PartialAsync("Admin/Payments/_AccountContent", viewModel)</div>
 })

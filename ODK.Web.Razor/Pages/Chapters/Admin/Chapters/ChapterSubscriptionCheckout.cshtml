@@ -2,13 +2,11 @@
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Services.Chapters
-@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Payments
 @model ChapterSubscriptionCheckoutModel
 @inject IChapterAdminService ChapterAdminService
-@inject IOdkRoutes OdkRoutes
 @{
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Checkout | Subscription | Admin";
@@ -16,7 +14,7 @@
     var chapter = Model.Chapter;
     var request = Model.MemberChapterAdminServiceRequest;
 
-    var returnPath = OdkRoutes.GroupAdmin.SubscriptionConfirm(chapter).Path;
+    var returnPath = Model.OdkRoutes.GroupAdmin.SubscriptionConfirm(chapter).Path;
     var viewModel = await ChapterAdminService.StartSiteSubscriptionCheckout(
         request, Model.PriceId, returnPath);
 }

@@ -6,9 +6,6 @@
     var currencyDictionary = Model.Currencies.ToDictionary(x => x.Currency.Id);
 }
 
-@* The subscription's name is the page title, so the form below it needs no heading of its own. *@
-<h2 class="content-heading">@Model.Subscription.Name</h2>
-
 <div class="section-stack">
     <form action="/siteadmin/Subscriptions/@Model.Subscription.Id" method="post">
         @Html.AntiForgeryToken()
