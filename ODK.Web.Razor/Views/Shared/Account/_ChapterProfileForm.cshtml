@@ -72,11 +72,7 @@
         @if (chapterProperty.DataType != DataType.Checkbox)
         {
             <label class="form-label" for="@Html.IdFor(x => x.Properties[i].Value)">
-                <span>@chapterProperty.Label</span>
-                @if (chapterProperty.Name == "tenets" && Model.Chapter.Platform == PlatformType.DrunkenKnitwits)
-                {
-                    <a href="/#tenets" target="_blank">Tenets</a>
-                }
+                <span>@chapterProperty.Label</span>                
             </label>
         }
         
@@ -104,7 +100,12 @@
                 data-val-required="@(chapterProperty.Required ? $"The {chapterProperty.DisplayName} field is required." : null)" />
             
             <label for="@Html.IdFor(x => x.Properties[i].Value)" class="form-check-label">
-                @chapterProperty.Label
+                <span>@chapterProperty.Label</span>
+
+                @if (chapterProperty.Name == "tenets" && Model.Chapter.Platform == PlatformType.DrunkenKnitwits)
+                {
+                    <a href="/#tenets" target="_blank">View</a>
+                }
             </label>
         }
         else if (chapterProperty.DataType == DataType.DropDown)
