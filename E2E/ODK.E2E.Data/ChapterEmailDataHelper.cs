@@ -18,9 +18,9 @@ public class ChapterEmailDataHelper : DataHelperBase
     }
 
     /// <summary>The group's overridden body, or null where it has not overridden one.</summary>
-    public async Task<string?> GetHtmlContent(Guid chapterId)
+    public async Task<string?> GetBodyHtml(Guid chapterId)
     {
-        const string sql = "SELECT HtmlContent FROM ChapterEmails WHERE ChapterId = @chapterId";
+        const string sql = "SELECT BodyHtml FROM ChapterEmails WHERE ChapterId = @chapterId";
 
         await using var builder = Builder(sql).AddParameter("@chapterId", chapterId);
         return await builder.ExecuteScalar<string?>();

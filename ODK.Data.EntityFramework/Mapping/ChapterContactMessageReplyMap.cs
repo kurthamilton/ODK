@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ODK.Core.Chapters;
 using ODK.Data.EntityFramework.Converters;
-using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework.Mapping;
 
@@ -16,8 +15,6 @@ public class ChapterContactMessageReplyMap : IEntityTypeConfiguration<ChapterCon
 
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();
-
-        builder.DualWriteColumn(x => x.MessageHtml, writesTo: "MessageHtml", mirrorsTo: "Message");
 
         builder.HasOne<ChapterContactMessage>()
             .WithMany()

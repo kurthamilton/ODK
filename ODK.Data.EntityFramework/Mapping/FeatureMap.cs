@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ODK.Core.Features;
 using ODK.Data.EntityFramework.Converters;
-using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework.Mapping;
 
@@ -17,8 +16,8 @@ public class FeatureMap : IEntityTypeConfiguration<Feature>
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();
 
-        builder.DualWriteColumn(
-            x => x.DescriptionHtml, writesTo: "DescriptionHtml", mirrorsTo: "Description", maxLength: 255);
+        builder.Property(x => x.DescriptionHtml)
+            .HasMaxLength(255);
 
         builder.Property(x => x.Name)
             .HasMaxLength(255);

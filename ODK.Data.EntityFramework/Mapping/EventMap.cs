@@ -4,7 +4,6 @@ using ODK.Core.Chapters;
 using ODK.Core.Events;
 using ODK.Core.Venues;
 using ODK.Data.EntityFramework.Converters;
-using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework.Mapping;
 
@@ -21,8 +20,6 @@ public class EventMap : IEntityTypeConfiguration<Event>
 
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();
-
-        builder.DualWriteColumn(x => x.DescriptionHtml, writesTo: "DescriptionHtml", mirrorsTo: "Description");
 
         builder.Property(x => x.ImageUrl)
             .HasMaxLength(1024);
