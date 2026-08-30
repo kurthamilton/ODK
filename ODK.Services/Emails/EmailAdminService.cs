@@ -1,7 +1,9 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Emails;
+using ODK.Core.Extensions;
 using ODK.Core.Features;
 using ODK.Core.Subscriptions;
+using ODK.Core.Utils;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
 using ODK.Services.Authorization;
@@ -31,6 +33,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
     private readonly IHtmlValidator _htmlValidator;
     private readonly IMemberEmailService _memberEmailService;
     private readonly SiteSubscriptionCooldown _siteSubscriptionCooldown;
+    private readonly ITestEmailParametersFactory _testEmailParametersFactory;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUrlProviderFactory _urlProviderFactory;
 
@@ -40,13 +43,15 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         IAuthorizationService authorizationService,
         IHtmlValidator htmlValidator,
         IUrlProviderFactory urlProviderFactory,
-        SiteSubscriptionCooldown siteSubscriptionCooldown)
+        SiteSubscriptionCooldown siteSubscriptionCooldown,
+        ITestEmailParametersFactory testEmailParametersFactory)
         : base(unitOfWork)
     {
         _authorizationService = authorizationService;
         _htmlValidator = htmlValidator;
         _memberEmailService = memberEmailService;
         _siteSubscriptionCooldown = siteSubscriptionCooldown;
+        _testEmailParametersFactory = testEmailParametersFactory;
         _unitOfWork = unitOfWork;
         _urlProviderFactory = urlProviderFactory;
     }
@@ -54,16 +59,17 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
     public async Task<ChapterEmailAdminPageViewModel> GetChapterEmail(
         IMemberChapterAdminServiceRequest request, EmailType type)
     {
-        var chapter = request.Chapter;
+        var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
 
-        var (chapterEmail, siteEmail, settings, siteSettings, ownerSubscriptionFeatures) =
+        var (chapterEmail, siteEmail, settings, siteSettings, ownerSubscriptionFeatures, preferences) =
             await GetChapterAdminRestrictedContent(
                 request,
                 x => x.ChapterEmailRepository.GetByChapterId(chapter.Id, type),
                 x => x.EmailRepository.GetByType(type),
                 x => x.ChapterEmailSettingsRepository.GetByChapterIdOrDefault(chapter.Id),
-                x => x.SiteEmailSettingsRepository.Get(request.Platform),
-                OwnerSubscriptionFeatures(chapter.Id, _siteSubscriptionCooldown));
+                x => x.SiteEmailSettingsRepository.Get(chapter.Platform),
+                OwnerSubscriptionFeatures(chapter.Id, _siteSubscriptionCooldown),
+                x => x.MemberPreferencesRepository.GetByMemberIdOrDefault(currentMember.Id));
 
         var title = EmailTitle.For(siteSettings, settings, siteEmail.RecipientType);
 
@@ -71,12 +77,25 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
            actually carry and cannot drift from them. The group is fixed on this page, so everything about it
            already has a value; only what the email is about is still unknown. */
         var urlProvider = await _urlProviderFactory.Create(request);
-        var resolved = new EmailParameters
+
+        var coreParameters = new EmailParameters
         {
             GroupName = chapter.FullName,
             GroupUrl = urlProvider.GroupUrl(chapter),
             PlatformUrl = urlProvider.BaseUrl()
-        }.ToDictionary();
+        };
+
+        var customParameters = await _testEmailParametersFactory.Create(
+            request,
+            type,
+            currentMember,
+            LocaleUtils.GetCultureOrDefault(preferences?.Locale),
+            chapter);
+
+        var resolved = new Dictionary<string, string>()
+            .Merge(coreParameters.ToDictionary())
+            .Merge(customParameters.ToDictionary())
+            .AsReadOnly();
 
         return new ChapterEmailAdminPageViewModel
         {
