@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ODK.Core.Chapters;
 using ODK.Core.Payments;
+using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework.Mapping;
 
@@ -16,9 +17,7 @@ public class ChapterSubscriptionMap : IEntityTypeConfiguration<ChapterSubscripti
         builder.Property(x => x.Amount)
             .HasPrecision(18, 2);
 
-        // Pinned to the current column name - the columns are renamed to match in a later migration.
-        builder.Property(x => x.DescriptionHtml)
-            .HasColumnName("Description");
+        builder.DualWriteColumn(x => x.DescriptionHtml, writesTo: "Description", mirrorsTo: "DescriptionHtml");
 
         builder.Property(x => x.Environment)
             .HasColumnName("EnvironmentTypeId");

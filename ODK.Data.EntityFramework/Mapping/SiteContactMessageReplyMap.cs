@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ODK.Core.Messages;
 using ODK.Data.EntityFramework.Converters;
+using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework.Mapping;
 
@@ -16,9 +17,7 @@ public class SiteContactMessageReplyMap : IEntityTypeConfiguration<SiteContactMe
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();
 
-        // Pinned to the current column name - the columns are renamed to match in a later migration.
-        builder.Property(x => x.MessageHtml)
-            .HasColumnName("Message");
+        builder.DualWriteColumn(x => x.MessageHtml, writesTo: "Message", mirrorsTo: "MessageHtml");
 
         builder.HasOne<SiteContactMessage>()
             .WithMany()

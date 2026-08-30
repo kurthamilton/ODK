@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ODK.Core.Referrals;
 using ODK.Data.EntityFramework.Converters;
+using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework.Mapping;
 
@@ -16,12 +17,9 @@ public class ReferralCampaignMap : IEntityTypeConfiguration<ReferralCampaign>
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();
 
-        // Pinned to the current column name - the columns are renamed to match in a later migration.
-        builder.Property(x => x.DescriptionHtml)
-            .HasColumnName("Description");
+        builder.DualWriteColumn(x => x.DescriptionHtml, writesTo: "Description", mirrorsTo: "DescriptionHtml");
 
-        builder.Property(x => x.EmailTextHtml)
-            .HasColumnName("EmailText");
+        builder.DualWriteColumn(x => x.EmailTextHtml, writesTo: "EmailText", mirrorsTo: "EmailTextHtml");
 
         builder.Property(x => x.ExpiresUtc)
             .HasConversion<NullableUtcDateTimeConverter>();

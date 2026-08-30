@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ODK.Core.Chapters;
+using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework.Mapping;
 
@@ -12,9 +13,8 @@ public class ChapterEventSettingsMap : IEntityTypeConfiguration<ChapterEventSett
 
         builder.HasKey(x => x.ChapterId);
 
-        // Pinned to the current column name - the columns are renamed to match in a later migration.
-        builder.Property(x => x.DefaultDescriptionHtml)
-            .HasColumnName("DefaultDescription");
+        builder.DualWriteColumn(
+            x => x.DefaultDescriptionHtml, writesTo: "DefaultDescription", mirrorsTo: "DefaultDescriptionHtml");
 
         builder.HasOne<Chapter>()
             .WithOne()

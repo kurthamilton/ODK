@@ -26,5 +26,12 @@ internal enum EmailSchemaEra
     /// <summary>
     /// Keyed on Id, with EmailRecipientTypeId.
     /// </summary>
-    IdKey
+    IdKey,
+
+    /// <summary>
+    /// Keyed on Id, writing the body to both Body and BodyHtml. The column is being renamed, and the two
+    /// stand together until it is: a row written to one of them alone is empty from whichever side is not
+    /// reading it yet.
+    /// </summary>
+    IdKeyWithBodyHtml
 }

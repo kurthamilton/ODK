@@ -14,6 +14,10 @@ internal static class MigrationBuilderExtensions
     private static readonly string[] IdKeyColumnTypes =
         ["int", "nvarchar(255)", "nvarchar(max)", "bit", "nvarchar(255)", "int"];
 
+    private static readonly string[] IdKeyWithBodyHtmlColumns = [.. IdKeyColumns, "BodyHtml"];
+
+    private static readonly string[] IdKeyWithBodyHtmlColumnTypes = [.. IdKeyColumnTypes, "nvarchar(max)"];
+
     private static readonly string[] TypeIdKeyColumns = ["EmailTypeId", "Subject", "Body", "Overridable", "Name"];
 
     private static readonly string[] TypeIdKeyColumnTypes =
@@ -137,13 +141,16 @@ internal static class MigrationBuilderExtensions
                 email.Type.ToString()
             ];
 
-            /* The recipient type is the only column any era adds, so the one era without it is the one era
-               that writes the shorter value list. */
             migrationBuilder.InsertData(
                 table: "Emails",
                 columns: columns,
                 columnTypes: columnTypes,
-                values: era == EmailSchemaEra.TypeIdKey ? values : [.. values, (int)email.RecipientType]);
+                values: era switch
+                {
+                    EmailSchemaEra.TypeIdKey => values,
+                    EmailSchemaEra.IdKeyWithBodyHtml => [.. values, (int)email.RecipientType, email.BodyHtml],
+                    _ => [.. values, (int)email.RecipientType]
+                });
         }
 
         return migrationBuilder;
@@ -165,12 +172,16 @@ internal static class MigrationBuilderExtensions
         string subject,
         string body)
     {
+        var (columns, values) = era == EmailSchemaEra.IdKeyWithBodyHtml
+            ? (new[] { "Subject", "Body", "BodyHtml" }, new object[] { subject, body, body })
+            : (new[] { "Subject", "Body" }, new object[] { subject, body });
+
         migrationBuilder.UpdateData(
             table: "Emails",
             keyColumn: KeyColumn(era),
             keyValue: (int)type,
-            columns: ["Subject", "Body"],
-            values: [subject, body]);
+            columns: columns,
+            values: values);
         return migrationBuilder;
     }
 
@@ -180,13 +191,14 @@ internal static class MigrationBuilderExtensions
         EmailSchemaEra.TypeIdKeyWithRecipientType =>
             (TypeIdKeyWithRecipientTypeColumns, TypeIdKeyWithRecipientTypeColumnTypes),
         EmailSchemaEra.IdKey => (IdKeyColumns, IdKeyColumnTypes),
+        EmailSchemaEra.IdKeyWithBodyHtml => (IdKeyWithBodyHtmlColumns, IdKeyWithBodyHtmlColumnTypes),
         _ => throw new ArgumentOutOfRangeException(nameof(era), era, "No Emails column set for this era.")
     };
 
     private static string KeyColumn(EmailSchemaEra era) => era switch
     {
         EmailSchemaEra.TypeIdKey or EmailSchemaEra.TypeIdKeyWithRecipientType => "EmailTypeId",
-        EmailSchemaEra.IdKey => "Id",
+        EmailSchemaEra.IdKey or EmailSchemaEra.IdKeyWithBodyHtml => "Id",
         _ => throw new ArgumentOutOfRangeException(nameof(era), era, "No Emails key column for this era.")
     };
 }
