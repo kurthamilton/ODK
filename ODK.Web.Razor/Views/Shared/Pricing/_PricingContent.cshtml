@@ -14,11 +14,6 @@
         ?? Model.SiteSubscriptions.Currencies.FirstOrDefault()
         ?? Model.SiteSubscriptions.Subscriptions.SelectMany(x => x.Prices).Select(x => x.Currency).FirstOrDefault();
 
-    if (!Model.SiteSubscriptions.PaymentsEnabled)
-    {
-        return;
-    }
-
     if (currency == null && Model.SiteSubscriptions.Subscriptions.Any(x => x.Prices.Count > 0))
     {
         return;

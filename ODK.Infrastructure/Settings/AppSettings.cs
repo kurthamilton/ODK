@@ -40,6 +40,8 @@ public class AppSettings
 
     public required PaymentsSettings Payments { get; init; }
 
+    public required PayPalSettings PayPal { get; init; }
+
     public required Dictionary<PlatformType, PlatformSettings> Platforms { get; init; }
 
     public required RateLimitingSettings RateLimiting { get; init; }
@@ -49,6 +51,8 @@ public class AppSettings
     public required ReoonSettings Reoon { get; init; }
 
     public required ScheduledTasksSettings ScheduledTasks { get; init; }
+
+    public required StripeSettings Stripe { get; init; }
 
     public required SubscriptionsSettings Subscriptions { get; init; }
 

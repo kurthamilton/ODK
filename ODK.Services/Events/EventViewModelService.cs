@@ -22,18 +22,15 @@ public class EventViewModelService : IEventViewModelService
 {
     private readonly IAuthorizationService _authorizationService;
     private readonly IPaymentService _paymentService;
-    private readonly PaymentSettings _paymentSettings;
     private readonly IUnitOfWork _unitOfWork;
 
     public EventViewModelService(
         IUnitOfWork unitOfWork,
         IAuthorizationService authorizationService,
-        PaymentSettings paymentSettings,
         IPaymentService paymentService)
     {
         _authorizationService = authorizationService;
         _paymentService = paymentService;
-        _paymentSettings = paymentSettings;
         _unitOfWork = unitOfWork;
     }
 
@@ -126,7 +123,7 @@ public class EventViewModelService : IEventViewModelService
             eventTicketPayment,
             paymentCheckoutSessionId);
 
-        var (payment, externalCheckoutSession) = await _paymentService.CreateChapterOneOffPayment(
+        var (payment, externalCheckoutSession, publicApiKey) = await _paymentService.CreateChapterOneOffPayment(
             request,
             chapterPaymentAccount,
             new OneOffPaymentCreateOptions
@@ -145,7 +142,7 @@ public class EventViewModelService : IEventViewModelService
 
         return new EventCheckoutPageViewModel
         {
-            ApiPublicKey = _paymentSettings.GetPlatform(platform).PublicApiKey,
+            ApiPublicKey = publicApiKey,
             Chapter = chapter,
             ChapterPages = chapterPages,
             ClientSecret = externalCheckoutSession.ClientSecret,

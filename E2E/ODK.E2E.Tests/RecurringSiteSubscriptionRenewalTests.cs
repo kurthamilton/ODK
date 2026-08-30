@@ -24,8 +24,6 @@ public class RecurringSiteSubscriptionRenewalTests : DefaultPageTest
 
     private static MemberSiteSubscriptionDataHelper MemberSubscriptions => new(E2ESettings.ConnectionString);
 
-    private static SitePaymentSettingsDataHelper PaymentSettings => new(E2ESettings.ConnectionString);
-
     private static SiteSubscriptionDataHelper Subscriptions => new(E2ESettings.ConnectionString);
 
     [Test]
@@ -34,8 +32,6 @@ public class RecurringSiteSubscriptionRenewalTests : DefaultPageTest
         // Arrange - renewals arrive as real Stripe webhooks over the tunnel; the SDK and app share the Stripe
         // account (same secret) so the app's recurring price is usable here.
         await StripeWebhookTunnel.EnsureReachable(E2ESettings.StripeWebhookBaseUrl);
-        var paymentSettings = await PaymentSettings.GetStripeSettings(
-            PlatformTypeId, E2ESettings.StripeAccountId(PlatformTypeId));
         var subscription = await Provisioning.EnsurePurchasableSiteSubscription();
         var priceExternalId = await Subscriptions.GetPriceExternalId(subscription.Id)
             ?? throw new InvalidOperationException("The recurring site subscription has no Stripe price id.");
@@ -54,7 +50,7 @@ public class RecurringSiteSubscriptionRenewalTests : DefaultPageTest
         };
 
         await using var clock = await StripeTestClock.CreateSubscription(
-            paymentSettings.ApiSecretKey, priceExternalId, metadata);
+            E2ESettings.StripeSecretApiKey(PlatformTypeId), priceExternalId, metadata);
 
         // Assert - the first invoice's webhook records the expiry as the date Stripe will next charge, read
         // from the provider rather than calculated, so the two cannot disagree.

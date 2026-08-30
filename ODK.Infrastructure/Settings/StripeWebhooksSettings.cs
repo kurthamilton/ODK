@@ -2,7 +2,7 @@
 
 namespace ODK.Infrastructure.Settings;
 
-public class PaymentsStripeWebhooksSettings
+public class StripeWebhooksSettings
 {
     /// <summary>
     /// The events every webhook endpoint, on every account, is expected to be subscribed to. One list rather

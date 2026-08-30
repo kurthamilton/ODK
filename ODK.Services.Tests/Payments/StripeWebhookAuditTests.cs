@@ -522,6 +522,11 @@ public static class StripeWebhookAuditTests
         string path = "/webhooks/stripe")
         => new()
         {
+            AccountIds = new Dictionary<PlatformType, string>
+            {
+                { PlatformType.Default, "GS_AccountId" },
+                { PlatformType.DrunkenKnitwits, "DK_AccountId" }
+            },
             Events = events ?? ExpectedEvents,
             Hosts = hosts ?? Hosts(EnvironmentType.Prod, PlatformType.Default),
             LiveDashboardUrlFormat = "https://dashboard.stripe.com/{account}/webhooks/{id}",

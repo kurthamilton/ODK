@@ -18,7 +18,4 @@ public class SitePaymentProduct : IDatabaseEntity
     public PaymentProviderType PaymentProvider { get; set; }
 
     public PlatformType Platform { get; set; }
-
-    [Obsolete]
-    public Guid? SitePaymentSettingId { get; set; }
 }

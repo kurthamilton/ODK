@@ -1,5 +1,4 @@
-﻿using ODK.Core;
-using ODK.Core.Chapters;
+﻿using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Core.Payments;
 using ODK.Core.Platforms;
@@ -27,7 +26,6 @@ public class PaymentService : IPaymentService
     private readonly IMemberSiteSubscriptionWriter _memberSiteSubscriptionWriter;
     private readonly IPaymentProviderFactory _paymentProviderFactory;
     private readonly IPlatformProvider _platformProvider;
-    private readonly PaymentSettings _settings;
     private readonly IServiceRequestFactory _serviceRequestFactory;
     private readonly SiteSubscriptionCooldown _siteSubscriptionCooldown;
     private readonly IUnitOfWork _unitOfWork;
@@ -43,8 +41,7 @@ public class PaymentService : IPaymentService
         IMemberSiteSubscriptionWriter memberSiteSubscriptionWriter,
         IPlatformProvider platformProvider,
         IServiceRequestFactory serviceRequestFactory,
-        SiteSubscriptionCooldown siteSubscriptionCooldown,
-        PaymentSettings settings)
+        SiteSubscriptionCooldown siteSubscriptionCooldown)
     {
         _backgroundTaskService = backgroundTaskService;
         _eventService = eventService;
@@ -55,12 +52,11 @@ public class PaymentService : IPaymentService
         _paymentProviderFactory = paymentProviderFactory;
         _platformProvider = platformProvider;
         _serviceRequestFactory = serviceRequestFactory;
-        _settings = settings;
         _siteSubscriptionCooldown = siteSubscriptionCooldown;
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<(Payment Payment, ExternalCheckoutSession Session)> CreateChapterOneOffPayment(
+    public async Task<(Payment Payment, ExternalCheckoutSession Session, string PublicApiKey)> CreateChapterOneOffPayment(
         IMemberChapterServiceRequest request,
         ChapterPaymentAccount paymentAccount,
         OneOffPaymentCreateOptions options)
@@ -70,28 +66,30 @@ public class PaymentService : IPaymentService
         var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
             paymentAccount.PaymentProvider, chapter.Platform);
 
-        return await CreatePayment(request, new PaymentCheckoutModel
-        {
-            Amount = options.Amount,
-            ChapterId = chapter.Id,
-            ConnectedAccount = paymentAccount,
-            CurrencyId = options.Currency.Id,
-            Metadata = options.Metadata,
-            PaymentCheckoutSessionId = options.PaymentCheckoutSessionId,
-            PaymentId = options.PaymentId,
-            Plan = ExternalSubscriptionPlan.OneOff(
-                options.Amount,
-                options.Currency.Code,
-                await paymentProvider.GetOrCreateChapterProduct(chapter),
-                options.Reference),
-            Platform = chapter.Platform,
-            Provider = paymentProvider,
-            Reference = options.Reference,
-            ReturnPath = options.ReturnPath
-        });
+        return await CreatePayment(
+            request,
+            new PaymentCheckoutModel
+            {
+                Amount = options.Amount,
+                ChapterId = chapter.Id,
+                ConnectedAccount = paymentAccount,
+                CurrencyId = options.Currency.Id,
+                Metadata = options.Metadata,
+                PaymentCheckoutSessionId = options.PaymentCheckoutSessionId,
+                PaymentId = options.PaymentId,
+                Plan = ExternalSubscriptionPlan.OneOff(
+                    options.Amount,
+                    options.Currency.Code,
+                    await paymentProvider.GetOrCreateChapterProduct(chapter),
+                    options.Reference),
+                Platform = chapter.Platform,
+                Provider = paymentProvider,
+                Reference = options.Reference,
+                ReturnPath = options.ReturnPath
+            });
     }
 
-    public async Task<(Payment Payment, ExternalCheckoutSession Session)> CreateChapterPayment(
+    public async Task<(Payment Payment, ExternalCheckoutSession Session, string PublicApiKey)> CreateChapterPayment(
         IMemberChapterServiceRequest request,
         ChapterPaymentAccount paymentAccount,
         ChapterSubscription subscription,
@@ -128,7 +126,7 @@ public class PaymentService : IPaymentService
         });
     }
 
-    public async Task<(Payment Payment, ExternalCheckoutSession Session)> CreateSitePayment(
+    public async Task<(Payment Payment, ExternalCheckoutSession Session, string PublicApiKey)> CreateSitePayment(
         IMemberServiceRequest request,
         SiteSubscription subscription,
         SiteSubscriptionPrice price,
@@ -387,7 +385,7 @@ public class PaymentService : IPaymentService
     /* Every kind of payment ends the same way: the provider is asked to start a checkout for a plan, and
        what comes back is recorded against a payment and a session. What differs between them is settled
        before this is called - see PaymentCheckoutModel - so this stays the one place a payment is written. */
-    private async Task<(Payment Payment, ExternalCheckoutSession Session)> CreatePayment(
+    private async Task<(Payment Payment, ExternalCheckoutSession Session, string PublicApiKey)> CreatePayment(
         IMemberServiceRequest request, PaymentCheckoutModel checkout)
     {
         var currentMember = request.CurrentMember;
@@ -428,7 +426,9 @@ public class PaymentService : IPaymentService
 
         await _unitOfWork.SaveChanges();
 
-        return (payment, externalCheckoutSession);
+        var publicApiKey = checkout.Provider.GetPublicApiKey(checkout.Platform);
+
+        return (payment, externalCheckoutSession, publicApiKey);
     }
 
     private async Task EnsureProductExists(IChapterServiceRequest request)
@@ -1001,22 +1001,14 @@ public class PaymentService : IPaymentService
             return null;
         }
 
-        /* Only accounts this deployment is meant to be transacting through are asked. Config names them, so
-           a database restored from production cannot put a live account into a development reconcile run.
-           A payment only a switched-off account holds is left alone. */
-        var candidates = _settings.Platforms
-            .Where(x => x.Value.Enabled && x.Key == payment.Platform)
-            .Select(x => x.Key);
+        var candidates = Enum.GetValues<PlatformType>()
+            .Where(x => x != PlatformType.None);
 
         var provider = payment.PaymentProvider;
 
         foreach (var platform in candidates)
         {
-            var paymentProvider = _paymentProviderFactory.GetPaymentProviderOrDefault(provider, platform);
-            if (paymentProvider == null)
-            {
-                continue;
-            }
+            var paymentProvider = _paymentProviderFactory.GetPaymentProvider(provider, platform);
 
             var externalPaymentId = await paymentProvider.GetPaymentIdForReference(
                 payment.ExternalId, payment.PaidUtc.Value);

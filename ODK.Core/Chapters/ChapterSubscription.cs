@@ -33,9 +33,6 @@ public class ChapterSubscription : IDatabaseEntity, IChapterEntity
 
     public bool Recurring { get; set; }
 
-    [Obsolete]
-    public Guid? SitePaymentSettingId { get; set; }
-
     public string Title { get; set; } = string.Empty;
 
     public SubscriptionType Type { get; set; }

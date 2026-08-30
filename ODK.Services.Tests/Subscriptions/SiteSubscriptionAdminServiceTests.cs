@@ -1,18 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Moq;
 using NUnit.Framework;
-using ODK.Core.Members;
 using ODK.Core.Payments;
 using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
 using ODK.Services.Html;
-using ODK.Services.Members;
 using ODK.Services.Payments;
-using ODK.Services.Platforms;
 using ODK.Services.Subscriptions;
 using ODK.Services.Subscriptions.Models;
 using ODK.Services.Tests.Helpers;
@@ -22,8 +17,6 @@ namespace ODK.Services.Tests.Subscriptions;
 [Parallelizable]
 public static class SiteSubscriptionAdminServiceTests
 {
-    private const string PlatformName = "Test";
-
     [Test]
     public static async Task AddSiteSubscription_ExistingProduct_ReusesIt()
     {
@@ -527,17 +520,13 @@ public static class SiteSubscriptionAdminServiceTests
         MockUnitOfWorkFactory.Create(context),
         CreateHtmlValidator(),
         paymentProviderFactory ?? Mock.Of<IPaymentProviderFactory>(),
-        CreatePlatformProvider(),
         new SiteSubscriptionCooldown(months: 0),
-        TestPaymentSettings.Create());
+        new SiteSubscriptionAdminServiceSettings { PaymentProvider = PaymentProviderType.Stripe });
 
     // Set up explicitly rather than left bare: a Mock.Of with no configured return hands back null from
     // Validate, which reads as a pass.
     private static IHtmlValidator CreateHtmlValidator() => Mock.Of<IHtmlValidator>(x =>
         x.Validate(It.IsAny<string?>(), It.IsAny<HtmlValidatorOptions>()) == ServiceResult.Successful());
-
-    private static IPlatformProvider CreatePlatformProvider() => Mock.Of<IPlatformProvider>(x =>
-        x.GetName(It.IsAny<PlatformType>()) == PlatformName);
 
     private static IMemberServiceRequest SiteAdminRequest(MockOdkContext context)
     {

@@ -1110,7 +1110,6 @@ public static class MemberServiceTests
                 ChapterMembershipState, ChapterMembershipTrigger, ChapterMembershipContext>>(),
             workflow.GetRequiredService<StateMachineRunner<AccountState, AccountTrigger, AccountContext>>(),
             workflow.GetRequiredService<IAccountContextFactory>(),
-            TestPaymentSettings.Create(),
             Mock.Of<IPaymentService>());
     }
 

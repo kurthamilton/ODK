@@ -39,9 +39,6 @@ public class SiteSubscription : IDatabaseEntity
 
     public Guid SitePaymentProductId { get; set; }
 
-    [Obsolete]
-    public Guid? SitePaymentSettingId { get; set; }
-
     public bool HasCapacity(int memberCount) => MemberLimit == null || memberCount < MemberLimit;
 
     /// <summary>
@@ -49,8 +46,8 @@ public class SiteSubscription : IDatabaseEntity
     /// subscription does not need payments to be enabled - it takes no money, so a payment provider being
     /// off does not stop a member being on it.
     /// </summary>
-    public bool IsActive(IEnumerable<SiteSubscriptionPrice> prices, bool paymentsEnabled)
-        => Enabled && (Free || (prices.Any() && paymentsEnabled));
+    public bool IsActive(IEnumerable<SiteSubscriptionPrice> prices)
+        => Enabled && (Free || prices.Any());
 
     public string ToReference() => $"Subscription: {Name}";
 }

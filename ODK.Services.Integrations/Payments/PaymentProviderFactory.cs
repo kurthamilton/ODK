@@ -54,8 +54,6 @@ public class PaymentProviderFactory : IPaymentProviderFactory
             : null;
 
     /// <inheritdoc cref="GetPaymentProviderOrDefault"/>
-    public IStripeWebhookProvider? GetStripeWebhookProvider(PaymentProviderType provider, PlatformType platform)
-        => provider == PaymentProviderType.Stripe
-            ? GetPaymentProvider(provider, platform) as IStripeWebhookProvider
-            : null;
+    public IStripeWebhookProvider? GetStripeWebhookProvider(PlatformType platform)
+        => GetPaymentProvider(PaymentProviderType.Stripe, platform) as IStripeWebhookProvider;
 }
