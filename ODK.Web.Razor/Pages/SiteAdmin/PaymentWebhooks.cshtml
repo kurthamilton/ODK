@@ -14,8 +14,12 @@
 {
     Breadcrumbs = new[]
     {
-        new MenuItem { Link = Model.OdkRoutes.SiteAdmin.Payments.Path, Text = "Payments" },
-        new MenuItem { Text = "Webhooks" }
+        new MenuItem
+        {
+            Link = Model.OdkRoutes.SiteAdmin.Payments.Path,
+            Text = "Back to payments",
+            Icon = IconType.ArrowLeft
+        }
     }
 })
 

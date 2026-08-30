@@ -1,6 +1,7 @@
 ﻿@page "/{chapterName}/admin/members/invited"
 @using ODK.Services.Members
 @using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Components
 @model InvitedMembersModel
 @inject IMemberAdminService MemberAdminService
 @{
@@ -13,5 +14,14 @@
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
     Title = "Invited members",
+    Breadcrumbs = new[]
+    {
+        new MenuItem
+        {
+            Link = Model.AdminRoutes.Members(Model.Chapter).Path,
+            Text = "Back to members",
+            Icon = IconType.ArrowLeft
+        }
+    },
     ContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_InvitedMembersContent", viewModel)</div>
 })

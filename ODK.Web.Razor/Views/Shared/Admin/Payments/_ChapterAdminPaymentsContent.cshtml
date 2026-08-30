@@ -11,6 +11,19 @@
     "charged; Received is your share of it, minus fees.")
 
 <div data-odk-component="_ChapterAdminPaymentsContent">
+    @if (!Model.PaymentAccountEnabled)
+    {
+        <div class="alert alert-warning">
+            <span>Your group cannot take money until its payment account is set up.</span>
+            @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+            {
+                Route = OdkRoutes.GroupAdmin.PaymentAccount(Model.Chapter),
+                Text = "Set up payment account",
+                UnauthorizedBehaviour = AdminLinkUnauthorizedBehaviour.Hide
+            })
+        </div>
+    }
+
     <div class="table-responsive">
         <table class="table" data-sortable id="payments-table" data-table-striped>
             <thead>

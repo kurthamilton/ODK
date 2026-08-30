@@ -13,15 +13,21 @@ public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
     public async Task<ChapterPaymentsViewModel> GetPayments(
         IMemberChapterAdminServiceRequest request)
     {
-        var chapter = request.Chapter;
+        var (environment, chapter) = (request.Environment, request.Chapter);
 
-        var payments = await GetChapterAdminRestrictedContent(
+        var (payments, paymentAccount) = await GetChapterAdminRestrictedContent(
             request,
-            x => x.PaymentRepository.GetMemberDtosByChapterId(chapter.Id));
+            x => x.PaymentRepository.GetMemberDtosByChapterId(chapter.Id),
+            x => x.ChapterPaymentAccountRepository
+                .Query()
+                .ForChapter(chapter.Id)
+                .ForEnvironment(environment)
+                .GetSingleOrDefault());
 
         return new ChapterPaymentsViewModel
         {
             Chapter = chapter,
+            PaymentAccountEnabled = paymentAccount?.SetupComplete() == true,
             Payments = payments
                 .OrderByDescending(x => x.Payment.PaidUtc)
                 .ToArray()
