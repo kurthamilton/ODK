@@ -290,6 +290,13 @@ possible later.
   { Title = "Bulk email", Type = HeadingType.H3 }` is the whole surface, so every title carries the level its
   page needs and none of them hand-roll a heading tag. Anything that sits *beside* the title — a link, a
   badge, a count — goes in `TitleEndContentFunc`, which is why no template belongs on the title itself.
+- **An offcanvas always states a `Title`, and it is a required string.** A drawer that slides over the page
+  has to say what it is, and on a phone it is the whole screen, so a title is not decoration - it is the
+  only thing naming what was opened. Anything that sits *before* the title, an icon or a count, goes in
+  `TitleStartContentFunc`; a component that wraps `_Offcanvas` carries the title through as its own
+  required property (`NavbarViewModel.MenuTitle`, `TwoColLeftMenuViewModel.MenuTitle`) rather than
+  defaulting one, so a new caller has to choose. The `aria-labelledby` id is derived from `Id`, since
+  several drawers can share a page.
 - **A title rendered at a caller-chosen level goes through `Components/_Heading`** (`HeadingViewModel`:
   `Title`, an optional `Type` from `HeadingType`, an optional `Class`). A component that holds a title takes
   a `HeadingViewModel` rather than picking a level itself, since the right level depends on what the page

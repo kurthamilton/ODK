@@ -12,5 +12,6 @@
 {
     Title = "Redirect",
     BodyContentFunc = @<div>@await Html.PartialAsync("Chapters/SiteAdmin/_RedirectContent", chapter)</div>,
+    MenuTitle = "Admin",
     MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu")
 })

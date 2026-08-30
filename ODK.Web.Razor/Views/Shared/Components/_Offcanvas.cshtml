@@ -21,24 +21,24 @@
     {
         customClasses.Add("has-footer");
     }
+
+    // Several offcanvases can share a page, so the label the drawer points at has to be unique to it
+    var labelId = $"{Model.Id}-label";
 }
 
 <div data-odk-component="_Offcanvas">
     <div class="offcanvas @string.Join(' ', customClasses)" 
         tabindex="-1" 
         id="@Model.Id" 
-        aria-labelledby="offcanvas-label">
+        aria-labelledby="@labelId">
         
         <div class="offcanvas-header">            
-            <h5 class="offcanvas-title" id="offcanvas-label">
-                @if (Model.TitleContent != null)
+            <h5 class="offcanvas-title" id="@labelId">
+                @if (Model.TitleStartContentFunc != null)
                 {
-                    @Model.TitleContent.Invoke(null)
+                    @Model.TitleStartContentFunc.Invoke(null)
                 }
-                else
-                {
-                    @Model.Title
-                }
+                <span>@Model.Title</span>
             </h5>
             
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>

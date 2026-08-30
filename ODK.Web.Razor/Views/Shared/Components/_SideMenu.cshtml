@@ -24,18 +24,40 @@
     <ul class="side-menu nav">
         @foreach (var menuItem in Model.MenuItems.Where(x => !string.IsNullOrEmpty(x.Text)))
         {
-            var children = active != null && active.DescendantOf(menuItem) && menuItem.Children != null
+            var current = active != null && active.DescendantOf(menuItem);
+
+            var children = (current || Model.ExpandAll) && menuItem.Children != null
                 ? menuItem.Children.Where(x => !string.IsNullOrEmpty(x.Text)).ToArray()
                 : [];
 
-            <li>
-                <a class="nav-link text-nowrap @(menuItem == active ? "active" : "") @(children.Length > 0 ? "current" : "")" href="@menuItem.Link">
-                    @menuItem.Text
-                </a>
+            var collapsible = Model.ExpandAll && children.Length > 0;
+
+            <li data-side-menu-section="@(collapsible ? "" : null)">
+                <div class="side-menu__row">
+                    <a class="nav-link text-nowrap @(menuItem == active ? "active" : "") @(current && children.Length > 0 ? "current" : "")" href="@menuItem.Link">
+                        @menuItem.Text
+                    </a>
+
+                    @if (collapsible)
+                    {
+                        <button type="button" class="side-menu__toggle" data-side-menu-toggle
+                                aria-expanded="@(current ? "true" : "false")"
+                                aria-label="@menuItem.Text section">
+                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.AngleDown)
+                            {
+                                Class = "side-menu__toggle-icon"
+                            })
+                        </button>
+                    }
+                </div>
 
                 @if (children.Length > 0)
                 {
-                    <ul class="side-menu nav">
+                    @* Bootstrap's collapse is what hides a section that isn't the active one, in the drawer
+                       and on the page alike. Only the drawer shows a toggle, so on the page the menu stays
+                       as it renders: the active section open and the rest closed. *@
+                    <ul class="side-menu nav @(collapsible ? "collapse" : null) @(collapsible && current ? "show" : null)"
+                        data-side-menu-items="@(collapsible ? "" : null)">
                         @foreach (var child in children)
                         {
                             <li>

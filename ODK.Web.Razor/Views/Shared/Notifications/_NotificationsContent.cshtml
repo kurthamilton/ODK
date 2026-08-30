@@ -21,15 +21,15 @@
         Position = "end",
         SubtitleContent =
             @<div>@await Html.PartialAsync("Notifications/_NotificationSubtitle", Model)</div>,
-        TitleContent =
-            @<div>
+        Title = "Notifications",
+        TitleStartContentFunc =
+            @<text>
                 <span class="icon-wrapper @showIfEmptyClass" data-notifications-show-if-empty>
                     @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.BellOutline))
                 </span>
                 <span class="icon-wrapper @hideIfEmptyClass" data-notifications-hide-if-empty>
                     @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Bell))
                 </span>
-                <span>Notifications</span>
-            </div>
+            </text>
     })
 </div>

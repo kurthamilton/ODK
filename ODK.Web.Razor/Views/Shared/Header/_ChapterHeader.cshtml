@@ -83,6 +83,7 @@
         Color = "dark",
         CssClass = null,
         Member = Model.Member,
-        MenuItems = [new MenuItemGroup { MenuItems = menuItems.ToArray() }]
+        MenuItems = [new MenuItemGroup { MenuItems = menuItems.ToArray() }],
+        MenuTitle = Model.Chapter.GetDisplayName(platform)
     }
 })

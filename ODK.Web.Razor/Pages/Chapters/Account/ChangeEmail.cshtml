@@ -22,6 +22,7 @@
     Content = await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
     {
         Title = "Change email address",
+        MenuTitle = "Account",
         MenuContentFunc = _ => Html.PartialAsync("Account/_AccountMenu", new AccountMenuViewModel
         {
             Chapter = viewModel.Chapter

@@ -11,6 +11,7 @@
     bindPopovers();
     bindRedirectTimers();
     bindScroll();
+    bindSideMenus();
     bindSiteHeader();
     bindToasts();
     bindTooltips();
@@ -358,6 +359,26 @@
                 if (intervalId) window.clearInterval(intervalId);
                 window.location = url;
             }, seconds * 1000);
+        });
+    }
+
+    /* The expand toggles on a side menu's sections. The menu renders twice - the page's own column and the
+       drawer - so the collapse is driven from the section the toggle sits in rather than through a
+       data-bs-target id, which the second copy would duplicate. */
+    function bindSideMenus() {
+        const $toggles = document.querySelectorAll('[data-side-menu-toggle]');
+        $toggles.forEach($toggle => {
+            const $section = $toggle.closest('[data-side-menu-section]');
+            const $items = $section?.querySelector('[data-side-menu-items]');
+            if (!$items) {
+                return;
+            }
+
+            const collapse = bootstrap.Collapse.getOrCreateInstance($items, { toggle: false });
+
+            $toggle.addEventListener('click', () => collapse.toggle());
+            $items.addEventListener('show.bs.collapse', () => $toggle.setAttribute('aria-expanded', 'true'));
+            $items.addEventListener('hide.bs.collapse', () => $toggle.setAttribute('aria-expanded', 'false'));
         });
     }
 

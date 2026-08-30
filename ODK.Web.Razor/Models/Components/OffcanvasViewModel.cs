@@ -25,7 +25,10 @@ public class OffcanvasViewModel
 
     public Func<object?, IHtmlContent>? SubtitleContent { get; init; }
 
-    public string? Title { get; init; }
+    public required string Title { get; init; }
 
-    public Func<object?, IHtmlContent>? TitleContent { get; init; }
+    /// <summary>
+    /// Content rendered before the title, for what the title text can't express (an icon, a count)
+    /// </summary>
+    public Func<object?, IHtmlContent>? TitleStartContentFunc { get; init; }
 }
