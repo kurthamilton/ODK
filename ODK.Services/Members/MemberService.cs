@@ -106,9 +106,9 @@ public class MemberService : IMemberService
     }
 
     public async Task<ServiceResult> CancelChapterSubscription(
-        IMemberServiceRequest request, string externalId)
+        IMemberChapterServiceRequest request, string externalId)
     {
-        var (platform, member) = (request.Platform, request.CurrentMember);
+        var (platform, chapter, member) = (request.Platform, request.Chapter, request.CurrentMember);
 
         var memberSubscriptionRecord = await _unitOfWork.Run(
             x => x.MemberSubscriptionRecordRepository
@@ -118,7 +118,7 @@ public class MemberService : IMemberService
                 .OrderByDescending(x => x.PurchasedUtc)
                 .GetSingle());
 
-        return await CancelSubscription(platform, memberSubscriptionRecord);
+        return await CancelSubscription(chapter, memberSubscriptionRecord);
     }
 
     public async Task<ServiceResult> ConfirmEmailAddressUpdate(Guid memberId, string confirmationToken)
@@ -349,7 +349,8 @@ public class MemberService : IMemberService
 
     public async Task<ServiceResult> LeaveChapter(IMemberChapterServiceRequest request, string reason)
     {
-        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
+        var (platform, chapter, currentMember) =
+            (request.Platform, request.Chapter, request.CurrentMember);
 
         var (adminMembers, subscription) = await _unitOfWork.Run(
             x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
@@ -368,7 +369,7 @@ public class MemberService : IMemberService
 
         if (subscription != null)
         {
-            await CancelSubscription(platform, subscription);
+            await CancelSubscription(chapter, subscription);
         }
 
         await _memberEmailService.SendMemberLeftChapterEmail(
@@ -377,7 +378,7 @@ public class MemberService : IMemberService
             currentMember,
             reason);
 
-        return ServiceResult.Successful($"You have left the group '{chapter.GetDisplayName(request.Platform)}'");
+        return ServiceResult.Successful($"You have left the group '{chapter.FullName}'");
     }
 
     public async Task<ServiceResult> RequestMemberEmailAddressUpdate(IMemberChapterServiceRequest request, string newEmailAddress)
@@ -434,8 +435,8 @@ public class MemberService : IMemberService
     public async Task<ChapterSubscriptionCheckoutStartedViewModel> StartChapterSubscriptionCheckoutSession(
         IMemberChapterServiceRequest request, Guid chapterSubscriptionId, string returnPath)
     {
-        var (environment, platform, chapter, currentMember) =
-            (request.Environment, request.Chapter.Platform, request.Chapter, request.CurrentMember);
+        var (environment, chapter, currentMember) =
+            (request.Environment, request.Chapter, request.CurrentMember);
 
         var (chapterPaymentAccount, chapterSubscription) = await _unitOfWork.Run(
             x => x.ChapterPaymentAccountRepository
@@ -464,8 +465,7 @@ public class MemberService : IMemberService
             Chapter = chapter,
             ChapterSubscription = chapterSubscription,
             ClientSecret = externalCheckoutSession.ClientSecret,
-            PaymentProvider = payment.PaymentProvider,
-            Platform = platform
+            PaymentProvider = payment.PaymentProvider
         };
     }
 
@@ -729,10 +729,10 @@ public class MemberService : IMemberService
     }
 
     private async Task<ServiceResult> CancelSubscription(
-        PlatformType platform,
+        Chapter chapter,
         MemberSubscriptionRecord memberSubscriptionRecord)
     {
-        var chapterId = memberSubscriptionRecord.ChapterId;
+        var chapterId = chapter.Id;
 
         if (memberSubscriptionRecord.ChapterSubscriptionId == null ||
             string.IsNullOrEmpty(memberSubscriptionRecord.ExternalId))
@@ -744,7 +744,7 @@ public class MemberService : IMemberService
             x => x.ChapterSubscriptionRepository.GetById(memberSubscriptionRecord.ChapterSubscriptionId.Value));
 
         var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
-            chapterSubscription.PaymentProvider, platform);
+            chapterSubscription.PaymentProvider, chapter.Platform);
 
         var success = await paymentProvider.CancelSubscription(memberSubscriptionRecord.ExternalId);
         if (success)

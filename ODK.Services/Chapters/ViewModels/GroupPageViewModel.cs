@@ -18,7 +18,7 @@ public class GroupPageViewModel
 
     public required bool IsAdmin { get; init; }
 
-    public required bool IsMember { get; init; }
+    public bool IsMember => CurrentMember?.IsMemberOf(Chapter.Id) == true;
 
     public required PlatformType Platform { get; init; }
 

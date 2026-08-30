@@ -23,6 +23,7 @@ using ODK.Services.Chapters.ViewModels;
 using ODK.Services.Events.ViewModels;
 using ODK.Services.Geolocation;
 using ODK.Services.Logging;
+using ODK.Services.Members;
 using ODK.Services.SocialMedia;
 using ODK.Services.SocialMedia.ViewModels;
 using ODK.Services.Users.ViewModels;
@@ -38,6 +39,7 @@ public class ChapterViewModelService : IChapterViewModelService
     private readonly ILoggingService _loggingService;
     private readonly SiteSubscriptionCooldown _siteSubscriptionCooldown;
     private readonly ISocialMediaService _socialMediaService;
+    private readonly ISubscriptionsPageViewModelFactory _subscriptionsPageViewModelFactory;
     private readonly IUnitOfWork _unitOfWork;
 
     public ChapterViewModelService(
@@ -48,7 +50,8 @@ public class ChapterViewModelService : IChapterViewModelService
         IDistanceUnitFactory distanceUnitFactory,
         IGeolocationService geolocationService,
         ILatLongCalculator latLongCalculator,
-        SiteSubscriptionCooldown siteSubscriptionCooldown)
+        SiteSubscriptionCooldown siteSubscriptionCooldown,
+        ISubscriptionsPageViewModelFactory subscriptionsPageViewModelFactory)
     {
         _authorizationService = authorizationService;
         _distanceUnitFactory = distanceUnitFactory;
@@ -57,6 +60,7 @@ public class ChapterViewModelService : IChapterViewModelService
         _loggingService = loggingService;
         _siteSubscriptionCooldown = siteSubscriptionCooldown;
         _socialMediaService = socialMediaService;
+        _subscriptionsPageViewModelFactory = subscriptionsPageViewModelFactory;
         _unitOfWork = unitOfWork;
     }
 
@@ -334,7 +338,6 @@ public class ChapterViewModelService : IChapterViewModelService
             HasQuestions = hasQuestions,
             InvitedMemberHasAccount = invitedMember?.Activated == true,
             IsAdmin = isAdmin,
-            IsMember = currentMember?.IsMemberOf(chapter.Id) == true,
             Platform = platform,
             Properties = properties,
             PropertyOptions = propertyOptions,
@@ -391,7 +394,6 @@ public class ChapterViewModelService : IChapterViewModelService
             HasProfiles = hasProperties,
             HasQuestions = hasQuestions,
             IsAdmin = isAdmin,
-            IsMember = currentMember?.IsMemberOf(chapter.Id) == true,
             Platform = platform
         };
     }
@@ -453,7 +455,6 @@ public class ChapterViewModelService : IChapterViewModelService
             HasProfiles = hasProperties,
             HasQuestions = hasQuestions,
             IsAdmin = isAdmin,
-            IsMember = currentMember?.IsMemberOf(chapter.Id) == true,
             Messages = messages,
             OtherConversations = conversations
                 .Where(x => x.Conversation.Id != conversationId)
@@ -516,7 +517,6 @@ public class ChapterViewModelService : IChapterViewModelService
             HasProfiles = hasProperties,
             HasQuestions = hasQuestions,
             IsAdmin = isAdmin,
-            IsMember = currentMember?.IsMemberOf(chapter.Id) == true,
             Events = ToGroupPageListEvents(
                 upcomingEventDtos.OrderBy(x => x.Event.DateUtc),
                 memberResponses,
@@ -532,7 +532,8 @@ public class ChapterViewModelService : IChapterViewModelService
 
     public async Task<GroupPageViewModel> GetGroupPage(IChapterServiceRequest request)
     {
-        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMemberOrDefault);
+        var (platform, chapter, currentMember) =
+            (request.Platform, request.Chapter, request.CurrentMemberOrDefault);
 
         var (
             isAdmin,
@@ -555,7 +556,6 @@ public class ChapterViewModelService : IChapterViewModelService
             HasProfiles = hasProperties,
             HasQuestions = hasQuestions,
             IsAdmin = isAdmin,
-            IsMember = currentMember?.IsMemberOf(chapter.Id) == true,
             Platform = platform
         };
     }
@@ -616,7 +616,6 @@ public class ChapterViewModelService : IChapterViewModelService
             HasProfiles = hasProperties,
             HasQuestions = hasQuestions,
             IsAdmin = isAdmin,
-            IsMember = currentMember?.IsMemberOf(chapter.Id) == true,
             Events = ToGroupPageListEvents(
                 pastEventDtos,
                 memberResponses,
@@ -745,7 +744,6 @@ public class ChapterViewModelService : IChapterViewModelService
                     : []
             },
             IsAdmin = isAdmin,
-            IsMember = currentMember?.IsMemberOf(chapter.Id) == true,
             Links = links,
             MemberCount = memberCount,
             Owners = adminMembers
@@ -794,7 +792,6 @@ public class ChapterViewModelService : IChapterViewModelService
             HasProfiles = properties.Any(),
             HasQuestions = hasQuestions,
             IsAdmin = isAdmin,
-            IsMember = currentMember?.IsMemberOf(chapter.Id) == true,
             MembershipSettings = membershipSettings,
             Platform = platform,
             Properties = properties,
@@ -834,7 +831,6 @@ public class ChapterViewModelService : IChapterViewModelService
             HasProfiles = chapterProperties.Any(),
             HasQuestions = hasQuestions,
             IsAdmin = isAdmin,
-            IsMember = currentMember.IsMemberOf(chapter.Id) == true,
             MemberProperties = memberProperties,
             Platform = platform
         };
@@ -864,7 +860,6 @@ public class ChapterViewModelService : IChapterViewModelService
             HasProfiles = hasProperties,
             HasQuestions = questions.Count > 0,
             IsAdmin = isAdmin,
-            IsMember = currentMember?.IsMemberOf(chapter.Id) == true,
             Platform = platform,
             Questions = questions.OrderBy(x => x.DisplayOrder).ToArray()
         };
@@ -873,18 +868,47 @@ public class ChapterViewModelService : IChapterViewModelService
     public async Task<GroupSubscriptionPageViewModel> GetGroupSubscriptionPage(
         IMemberChapterServiceRequest request)
     {
-        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
+        var (environment, platform, chapter, currentMember) =
+            (request.Environment, request.Platform, request.Chapter, request.CurrentMember);
 
+        // The group chrome and the subscription rows are loaded together so the page costs one round-trip.
         var (
             isAdmin,
             hasProperties,
             hasQuestions,
-            chapterPages
+            chapterPages,
+            memberSubscription,
+            chapterSubscriptions,
+            memberSubscriptionRecord,
+            membershipSettings
         ) = await _unitOfWork.Run(
             x => x.ChapterAdminMemberRepository.IsAdmin(platform, chapter.Id, currentMember.Id),
             x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
-            x => x.ChapterPageRepository.GetByChapterId(chapter.Id));
+            x => x.ChapterPageRepository.GetByChapterId(chapter.Id),
+            x => x.MemberSubscriptionRecordRepository
+                .Query()
+                .Current()
+                .ForMember(currentMember.Id)
+                .ForChapter(chapter.Id)
+                .ToChapterSubscription()
+                .GetSingleOrDefault(),
+            x => x.ChapterSubscriptionRepository.GetByChapterId(
+                chapter.Id, environment, includeDisabled: true),
+            x => x.MemberSubscriptionRecordRepository
+                .Query()
+                .ForMember(currentMember.Id)
+                .ForChapter(chapter.Id)
+                .OrderByDescending(x => x.PurchasedUtc)
+                .GetSingleOrDefault(),
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id));
+
+        var subscriptions = await _subscriptionsPageViewModelFactory.Create(
+            request,
+            memberSubscription,
+            chapterSubscriptions,
+            memberSubscriptionRecord,
+            membershipSettings);
 
         return new GroupSubscriptionPageViewModel
         {
@@ -894,8 +918,8 @@ public class ChapterViewModelService : IChapterViewModelService
             HasProfiles = hasProperties,
             HasQuestions = hasQuestions,
             IsAdmin = isAdmin,
-            IsMember = currentMember.IsMemberOf(chapter.Id) == true,
-            Platform = platform
+            Platform = platform,
+            Subscriptions = subscriptions
         };
     }
 
