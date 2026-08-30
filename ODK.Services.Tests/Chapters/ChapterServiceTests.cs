@@ -8,6 +8,7 @@ using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Services.Chapters;
+using ODK.Services.Members;
 using ODK.Services.Payments;
 using ODK.Services.Tests.Helpers;
 
@@ -138,7 +139,9 @@ public static class ChapterServiceTests
     }
 
     private static ChapterService CreateChapterService(MockOdkContext context)
-        => new(MockUnitOfWorkFactory.Create(context), Mock.Of<IPaymentProviderFactory>());
+        => new(
+            MockUnitOfWorkFactory.Create(context),
+            new SubscriptionsPageViewModelFactory(Mock.Of<IPaymentProviderFactory>()));
 
     private static Chapter CreateDrunkenKnitwitsChapter(
         MockOdkContext context,

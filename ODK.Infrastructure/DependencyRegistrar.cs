@@ -358,6 +358,7 @@ public static class DependencyRegistrar
                 InstagramTagUrlFormat = appSettings.Instagram.BaseUrl + appSettings.Instagram.Paths.Tag,
                 WhatsAppUrlFormat = appSettings.WhatsApp.UrlFormat
             })
+            .AddScoped<ISubscriptionsPageViewModelFactory, SubscriptionsPageViewModelFactory>()
             .AddScoped<ITopicAdminService, TopicAdminService>()
             .AddScoped<ITopicService, TopicService>()
             .AddScoped<IVenueAdminService, VenueAdminService>();

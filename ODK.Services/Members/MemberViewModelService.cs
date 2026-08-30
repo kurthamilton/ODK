@@ -182,7 +182,6 @@ public class MemberViewModelService : IMemberViewModelService
             HasProfiles = chapterProperties.Any(),
             HasQuestions = hasQuestions,
             IsAdmin = isAdmin,
-            IsMember = currentMember.IsMemberOf(chapter.Id),
             Member = member,
             MemberProperties = memberProperties,
             Platform = platform
@@ -217,7 +216,6 @@ public class MemberViewModelService : IMemberViewModelService
             HasProfiles = hasProperties,
             HasQuestions = hasQuestions,
             IsAdmin = isAdmin,
-            IsMember = isMember,
             Members = isMember ? members : [],
             Platform = platform
         };

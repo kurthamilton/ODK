@@ -1,25 +1,22 @@
-﻿using ODK.Core;
-using ODK.Core.Chapters;
-using ODK.Core.Members;
-using ODK.Core.Payments;
+﻿using ODK.Core.Chapters;
 using ODK.Core.Platforms;
 using ODK.Data.Core;
 using ODK.Services.Chapters.ViewModels;
+using ODK.Services.Members;
 using ODK.Services.Members.ViewModels;
-using ODK.Services.Payments;
 
 namespace ODK.Services.Chapters;
 
 public class ChapterService : IChapterService
 {
-    private readonly IPaymentProviderFactory _paymentProviderFactory;
+    private readonly ISubscriptionsPageViewModelFactory _subscriptionsPageViewModelFactory;
     private readonly IUnitOfWork _unitOfWork;
 
     public ChapterService(
         IUnitOfWork unitOfWork,
-        IPaymentProviderFactory paymentProviderFactory)
+        ISubscriptionsPageViewModelFactory subscriptionsPageViewModelFactory)
     {
-        _paymentProviderFactory = paymentProviderFactory;
+        _subscriptionsPageViewModelFactory = subscriptionsPageViewModelFactory;
         _unitOfWork = unitOfWork;
     }
 
@@ -48,8 +45,8 @@ public class ChapterService : IChapterService
     public async Task<SubscriptionsPageViewModel> GetChapterMemberSubscriptionsViewModel(
         IMemberChapterServiceRequest request)
     {
-        var (environment, chapter, platform, currentMember) =
-            (request.Environment, request.Chapter, request.Platform, request.CurrentMember);
+        var (environment, chapter, currentMember) =
+            (request.Environment, request.Chapter, request.CurrentMember);
 
         var (
             memberSubscription,
@@ -74,30 +71,12 @@ public class ChapterService : IChapterService
                 .GetSingleOrDefault(),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id));
 
-        OdkAssertions.MemberOf(currentMember, chapter.Id);
-
-        var currentSubscription = chapterSubscriptions
-            .FirstOrDefault(x => x.Id == memberSubscriptionRecord?.ChapterSubscriptionId);
-
-        chapterSubscriptions = chapterSubscriptions
-            .Where(x => x.IsVisibleToMembers())
-            .ToArray();
-
-        var externalSubscription = await GetExternalSubscription(
-            chapter,
+        return await _subscriptionsPageViewModelFactory.Create(
+            request,
+            memberSubscription,
+            chapterSubscriptions,
             memberSubscriptionRecord,
-            chapterSubscriptions);
-
-        return new SubscriptionsPageViewModel
-        {
-            Chapter = chapter,
-            ChapterSubscriptions = chapterSubscriptions,
-            CurrentMember = currentMember,
-            CurrentSubscription = currentSubscription,
-            ExternalSubscription = externalSubscription,
-            MembershipSettings = membershipSettings,
-            MemberSubscription = memberSubscription
-        };
+            membershipSettings);
     }
 
     public async Task<IReadOnlyCollection<Chapter>> GetChaptersByOwnerId(
@@ -146,31 +125,6 @@ public class ChapterService : IChapterService
         // chapter has to be filtered out here rather than relied on from the query.
         var chapter = chapters.First();
         return chapter.IsPublished() ? chapter : null;
-    }
-
-    private async Task<ExternalSubscription?> GetExternalSubscription(
-        Chapter chapter,
-        MemberSubscriptionRecord? memberSubscriptionRecord,
-        IReadOnlyCollection<ChapterSubscription> chapterSubscriptions)
-    {
-        if (string.IsNullOrEmpty(memberSubscriptionRecord?.ExternalId) ||
-            memberSubscriptionRecord.ChapterSubscriptionId == null)
-        {
-            return null;
-        }
-
-        var chapterSubscription = chapterSubscriptions
-            .FirstOrDefault(x => x.Id == memberSubscriptionRecord.ChapterSubscriptionId);
-
-        if (chapterSubscription == null)
-        {
-            return null;
-        }
-
-        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
-            chapterSubscription.PaymentProvider, chapter.Platform);
-
-        return await paymentProvider.GetSubscription(memberSubscriptionRecord.ExternalId);
     }
 
     private async Task<IReadOnlyCollection<Chapter>> GetMemberChapters(IMemberServiceRequest request)

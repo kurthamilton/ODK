@@ -2,16 +2,12 @@
 @using ODK.Services.Chapters
 @using ODK.Web.Razor.Models.Groups
 @model IndexModel
-@inject IChapterService ChapterService
 @inject IChapterViewModelService ChapterViewModelService
 @{
     Layout = "_HomeLayout";
 
-    var request = Model.MemberChapterServiceRequest;
-    
-    // TODO: merge these calls
-    var groupViewModel = await ChapterViewModelService.GetGroupSubscriptionPage(request);
-    var subscriptionViewModel = await ChapterService.GetChapterMemberSubscriptionsViewModel(request);
+    var viewModel = await ChapterViewModelService.GetGroupSubscriptionPage(
+        Model.MemberChapterServiceRequest);
 
     Model.Title = "Subscription | Profile";
 }
@@ -19,6 +15,7 @@
 @await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel
 {
     Title = "",
-    Content = await Html.PartialAsync("Groups/Subscription/_GroupSubscriptionContent", subscriptionViewModel),
-    Group = groupViewModel
+    Content = await Html.PartialAsync(
+        "Groups/Subscription/_GroupSubscriptionContent", viewModel.Subscriptions),
+    Group = viewModel
 })

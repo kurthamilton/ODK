@@ -151,7 +151,6 @@ public class EventViewModelService : IEventViewModelService
             HasProfiles = hasProfiles,
             HasQuestions = hasQuestions,
             IsAdmin = isAdmin,
-            IsMember = currentMember.IsMemberOf(chapter.Id),
             PaymentProvider = payment.PaymentProvider,
             Platform = platform,
             Venue = canViewVenue ? venue : null,
@@ -308,7 +307,6 @@ public class EventViewModelService : IEventViewModelService
             Hosts = hosts,
             IsAdmin = isAdmin,
             IsOnWaitlist = waitlist.Any(x => x.MemberId == currentMember?.Id),
-            IsMember = currentMember?.IsMemberOf(chapter.Id) == true,
             MembersByResponse = responseDictionary,
             MemberResponse = currentMember != null
                 ? responses.FirstOrDefault(x => x.MemberId == currentMember.Id)?.Type

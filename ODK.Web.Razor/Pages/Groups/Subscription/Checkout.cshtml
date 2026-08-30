@@ -1,21 +1,20 @@
 ﻿@page "/groups/{slug}/subscription/{chapterSubscriptionId:guid}/checkout"
-@using ODK.Core.Payments
 @using ODK.Services.Chapters
 @using ODK.Services.Members
-@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Groups
 @using ODK.Web.Razor.Models.Payments
 @model CheckoutModel
 @inject IChapterViewModelService ChapterViewModelService
 @inject IMemberService MemberService
-@inject IOdkRoutes OdkRoutes
 @{
     Layout = "_HomeLayout";
 
-    var group = await ChapterViewModelService.GetGroupPage(Model.ChapterServiceRequest);
+    var returnPath = Model.OdkRoutes.Groups.SubscriptionConfirm(Model.Chapter);
 
-    var returnPath = OdkRoutes.Groups.SubscriptionConfirm(Model.Chapter);
-    
+    // There is little to be gained by trying to merge these calls.
+    // The chapter subscription call is used across platforms, and the group page
+    // call is lightweight.
+    var group = await ChapterViewModelService.GetGroupPage(Model.ChapterServiceRequest);    
     var viewModel = await MemberService.StartChapterSubscriptionCheckoutSession(
         Model.MemberChapterServiceRequest, Model.ChapterSubscriptionId, returnPath);
 }
