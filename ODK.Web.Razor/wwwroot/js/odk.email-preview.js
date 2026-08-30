@@ -54,9 +54,11 @@
 
             const preview = await response.json();
 
+            /* EmailPreviewViewModel's property names, camel-cased by the serialiser. Nothing checks the
+               pairing, so a rename on either side has to be made on both. */
             $from.textContent = preview.from;
             $subject.textContent = preview.subject;
-            $frame.srcdoc = preview.body;
+            $frame.srcdoc = preview.bodyHtml;
         } catch (e) {
             showError('The preview could not be rendered.');
             console.warn('Email preview request failed', e);
