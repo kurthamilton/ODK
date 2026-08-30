@@ -39,3 +39,44 @@
         padding-left: 1rem;
     }
 }
+
+// The section's own link and its expand toggle share a row. The link takes the free width so its hover and
+// active highlights still span the menu, and the toggle is what the row grows by.
+.side-menu__row {
+    display: flex;
+    align-items: stretch;
+
+    .nav-link {
+        flex-grow: 1;
+    }
+}
+
+// A menu built with SideMenuViewModel.ExpandAll renders every section's children and collapses the ones
+// outside the active branch. Only the drawer offers a toggle: on a page the menu is a column beside the
+// content the section links to, so opening another section there would say nothing the page doesn't.
+.side-menu__toggle {
+    display: none;
+}
+
+.offcanvas .side-menu__toggle {
+    display: flex;
+    align-items: center;
+    padding: 0 1rem;
+    border: 0;
+    color: var(--bs-secondary-color);
+    background: none;
+
+    &:hover {
+        color: var(--bs-emphasis-color);
+        background-color: var(--bs-tertiary-bg);
+    }
+
+    // points up while the section is open
+    &[aria-expanded="true"] .side-menu__toggle-icon {
+        transform: rotate(180deg);
+    }
+}
+
+.side-menu__toggle-icon {
+    transition: transform 0.2s ease-in-out;
+}

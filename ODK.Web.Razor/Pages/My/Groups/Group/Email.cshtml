@@ -37,6 +37,7 @@
         }
     },
     BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_ChapterAdminEmailContent", viewModel)</div>,
+    MenuTitle = "Admin",
     MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu")
 })
 

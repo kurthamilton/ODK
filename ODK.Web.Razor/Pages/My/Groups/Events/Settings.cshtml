@@ -16,5 +16,6 @@
 {
     Title = "Event settings",
     BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Events/_SettingsContent", viewModel)</div>,
+    MenuTitle = "Admin",
     MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu")
 })

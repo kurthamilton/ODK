@@ -28,6 +28,7 @@
 <div data-odk-component="_AdminSideMenu">
     @await Html.PartialAsync("Components/_SideMenu", new SideMenuViewModel
     {
+        ExpandAll = true,
         MenuItems = menuItems,
         Root = true
     })

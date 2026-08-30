@@ -22,6 +22,11 @@ public class NavbarViewModel
 
     public Member? Member { get; init; }
 
+    /// <summary>
+    /// Titles the menu drawer
+    /// </summary>
+    public required string MenuTitle { get; init; }
+
     public required IReadOnlyCollection<MenuItemGroup> MenuItems { get; init; }
 
     public bool UseOffcanvas { get; init; }

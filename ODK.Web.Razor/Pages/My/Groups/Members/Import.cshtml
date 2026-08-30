@@ -1,4 +1,4 @@
-@page "/my/groups/{chapterId:guid}/members/import"
+﻿@page "/my/groups/{chapterId:guid}/members/import"
 @using ODK.Web.Razor.Models.Admin.Members
 @using ODK.Web.Razor.Models.Components
 @model ImportModel
@@ -28,6 +28,7 @@
         Preview = Model.Preview,
         Token = Model.Token
     })</div>,
+    MenuTitle = "Admin",
     MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu")
 })
 

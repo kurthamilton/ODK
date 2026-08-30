@@ -15,5 +15,6 @@
 {
     Title = "Delete group",
     BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_DeleteContent", viewModel)</div>,
+    MenuTitle = "Admin",
     MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu")
 })
