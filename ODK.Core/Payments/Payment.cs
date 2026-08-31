@@ -66,6 +66,13 @@ public class Payment : IDatabaseEntity
 
     public string? ExternalId { get; set; }
 
+    /// <summary>
+    /// The provider's transfer that moved <see cref="ActualConnectedAccountAmount"/> to the group. Kept
+    /// because reversing a transfer names it, so a payment without it cannot be refunded from the group's
+    /// share. Null for a site payment, and for a group payment not yet transferred.
+    /// </summary>
+    public string? ExternalTransferId { get; set; }
+
     public Guid Id { get; set; }
 
     public Guid MemberId { get; set; }
@@ -76,6 +83,26 @@ public class Payment : IDatabaseEntity
 
     public PlatformType Platform { get; set; }
 
+    /// <summary>
+    /// When the last reconcile gave up on the payment. Null while none has, and cleared by one that
+    /// succeeds.
+    /// </summary>
+    public DateTime? ReconciliationFailedUtc { get; set; }
+
+    /// <summary>
+    /// What the last reconcile could not do. Recorded rather than only logged, so the reason a payment is
+    /// still listed is visible beside it rather than in the error log.
+    /// </summary>
+    public string? ReconciliationFailureReason { get; set; }
+
+    /// <summary>
+    /// When a site admin told reconciliation to ignore the payment, because nothing the provider can be
+    /// asked will ever answer for it - a charge taken through an account no longer configured, or one
+    /// restored into a database whose provider keys reach a different account. An ignored payment is
+    /// skipped by the job as well as hidden from the page, so a directly queued read respects it too.
+    /// </summary>
+    public DateTime? ReconciliationIgnoredUtc { get; set; }
+
     public string Reference { get; set; } = string.Empty;
 
     /// <summary>
@@ -84,9 +111,6 @@ public class Payment : IDatabaseEntity
     /// Named rather than referenced, because a settlement currency need not be one of ours.
     /// </summary>
     public string? SettlementCurrencyCode { get; set; }
-
-    [Obsolete]
-    public Guid? SitePaymentSettingId { get; set; }
 
     /// <summary>
     /// When <see cref="ActualConnectedAccountAmount"/> actually reached the group. Null while it has not:

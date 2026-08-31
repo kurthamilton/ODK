@@ -27,6 +27,13 @@ public class SiteAdminRoutes
 
     public SiteAdminRoute MembersFlagged => Members.Child("/flagged");
 
+    /// <summary>
+    /// The payments waiting on something the payment provider has yet to be asked for, and the action that
+    /// asks. Its own page rather than part of <see cref="Payments"/>: it lists rows, and the action on it
+    /// reaches out to every account.
+    /// </summary>
+    public SiteAdminRoute PaymentReconciliation => Payments.Child("/reconciliation");
+
     public SiteAdminRoute Payments => Path("/payments");
 
     /// <summary>
@@ -101,7 +108,11 @@ public class SiteAdminRoutes
         new(Messages(), "Messages"),
         new(Payments, "Payments")
         {
-            Children = [new(PaymentWebhooks, "Webhooks")]
+            Children =
+            [
+                new(PaymentReconciliation, "Reconciliation"),
+                new(PaymentWebhooks, "Webhooks")
+            ]
         },
         new(Referrals, "Referrals"),
         new(Subscriptions, "Subscriptions"),

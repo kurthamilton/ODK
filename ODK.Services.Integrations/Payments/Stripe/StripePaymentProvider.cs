@@ -18,6 +18,11 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
        narrower than the shortest billing period, so it cannot span two invoices of one subscription. */
     private static readonly TimeSpan SubscriptionInvoiceMatchWindow = TimeSpan.FromHours(6);
 
+    /* A transfer against a charge is made seconds after it, so this is slack rather than a real expectation
+       - wide enough that a transfer delayed by retries is still found, and narrow enough that the search
+       stays one page of a single group's transfers. */
+    private static readonly TimeSpan TransferSearchWindow = TimeSpan.FromDays(7);
+
     private readonly IStripeClient _client;
     private readonly ILoggingService _loggingService;
     private readonly IPlatformProvider _platformProvider;
@@ -165,7 +170,7 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
         return result.Id;
     }
 
-    public async Task<ServiceResult> CreateTransfer(ExternalTransfer transfer)
+    public async Task<CreateTransferResult> CreateTransfer(ExternalTransfer transfer)
     {
         var service = CreateTransferService();
 
@@ -176,7 +181,7 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
 
                The idempotency key is what makes a retry safe: Stripe returns the transfer it already made
                rather than making a second one, so a job that fails after the money moved cannot pay twice. */
-            await service.CreateAsync(
+            var created = await service.CreateAsync(
                 new TransferCreateOptions
                 {
                     Amount = ToStripeAmount(transfer.Amount),
@@ -189,7 +194,7 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
                     IdempotencyKey = transfer.IdempotencyKey
                 });
 
-            return ServiceResult.Successful();
+            return CreateTransferResult.Transferred(created.Id);
         }
         catch (Exception ex)
         {
@@ -198,7 +203,7 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
                 $"'{transfer.ExternalChargeId}' to connected account '{transfer.ConnectedAccountId}'";
 
             await _loggingService.Error(message, ex);
-            return ServiceResult.Failure(message);
+            return CreateTransferResult.Failure(message);
         }
     }
 
@@ -212,6 +217,43 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
         });
 
         return ServiceResult.Successful();
+    }
+
+    public async Task<string?> FindTransferIdForCharge(
+        string externalChargeId, string connectedAccountId, DateTime chargedUtc)
+    {
+        var service = CreateTransferService();
+
+        try
+        {
+            var options = new TransferListOptions
+            {
+                Destination = connectedAccountId,
+                Created = new DateRangeOptions
+                {
+                    GreaterThanOrEqual = chargedUtc.Subtract(TransferSearchWindow),
+                    LessThanOrEqual = chargedUtc.Add(TransferSearchWindow)
+                }
+            };
+
+            await foreach (var transfer in service.ListAutoPagingAsync(options))
+            {
+                if (string.Equals(transfer.SourceTransactionId, externalChargeId, StringComparison.Ordinal))
+                {
+                    return transfer.Id;
+                }
+            }
+
+            return null;
+        }
+        catch (Exception ex)
+        {
+            // Warned rather than thrown, because the caller reads null as "none found" and carries on.
+            await _loggingService.Warn(
+                $"Could not search Stripe transfers to '{connectedAccountId}' for charge " +
+                $"'{externalChargeId}': {ex.Message}");
+            return null;
+        }
     }
 
     public async Task<string?> GenerateConnectedAccountSetupUrl(GenerateRemoteAccountSetupUrlOptions options)
@@ -627,6 +669,7 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
         return new ExternalPaymentSettlement
         {
             Amount = FromStripeAmount(charge.Amount),
+            ChargedUtc = charge.Created,
             ChargeId = charge.Id,
             CollectedCommissionAmount = charge.ApplicationFeeAmount != null
                 ? FromStripeAmount(charge.ApplicationFeeAmount)
@@ -635,6 +678,7 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
             FeeAmount = balanceTransaction != null ? FromStripeAmount(balanceTransaction.Fee) : null,
             NetAmount = balanceTransaction != null ? FromStripeAmount(balanceTransaction.Net) : null,
             SettlementCurrencyCode = balanceTransaction?.Currency,
+            TransferId = charge.Transfer?.Id,
             TransferredUtc = charge.Transfer?.Created
         };
     }

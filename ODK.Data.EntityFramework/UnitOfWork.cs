@@ -24,6 +24,8 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IChapterMembershipSettingsRepository> _chapterMembershipSettingsRepository;
     private readonly Lazy<IChapterPageRepository> _chapterPageRepository;
     private readonly Lazy<IChapterPaymentAccountRepository> _chapterPaymentAccountRepository;
+    private readonly Lazy<IChapterPaymentAdjustmentRecoveryRepository> _chapterPaymentAdjustmentRecoveryRepository;
+    private readonly Lazy<IChapterPaymentAdjustmentRepository> _chapterPaymentAdjustmentRepository;
     private readonly Lazy<IChapterPaymentSettingsRepository> _chapterPaymentSettingsRepository;
     private readonly Lazy<IChapterPrivacySettingsRepository> _chapterPrivacySettingsRepository;
     private readonly Lazy<IChapterPropertyOptionRepository> _chapterPropertyOptionRepository;
@@ -75,6 +77,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<INotificationRepository> _notificationRepository;
     private readonly Lazy<IPaymentCheckoutSessionRepository> _paymentCheckoutSessionRepository;
     private readonly Lazy<IPaymentProviderWebhookEventRepository> _paymentProviderWebhookEventRepository;
+    private readonly Lazy<IPaymentRefundRepository> _paymentRefundRepository;
     private readonly Lazy<IPaymentRepository> _paymentRepository;
     private readonly Lazy<IQueuedEmailRecipientRepository> _queuedEmailRecipientRepository;
     private readonly Lazy<IQueuedEmailRepository> _queuedEmailRepository;
@@ -116,6 +119,8 @@ public class UnitOfWork : IUnitOfWork
         _chapterMembershipSettingsRepository = new(() => new ChapterMembershipSettingsRepository(_context));
         _chapterPageRepository = new(() => new ChapterPageRepository(_context));
         _chapterPaymentAccountRepository = new(() => new ChapterPaymentAccountRepository(_context));
+        _chapterPaymentAdjustmentRecoveryRepository = new(() => new ChapterPaymentAdjustmentRecoveryRepository(_context));
+        _chapterPaymentAdjustmentRepository = new(() => new ChapterPaymentAdjustmentRepository(_context));
         _chapterPaymentSettingsRepository = new(() => new ChapterPaymentSettingsRepository(_context));
         _chapterPrivacySettingsRepository = new(() => new ChapterPrivacySettingsRepository(_context));
         _chapterPropertyOptionRepository = new(() => new ChapterPropertyOptionRepository(_context));
@@ -167,6 +172,7 @@ public class UnitOfWork : IUnitOfWork
         _notificationRepository = new(() => new NotificationRepository(_context));
         _paymentCheckoutSessionRepository = new(() => new PaymentCheckoutSessionRepository(_context));
         _paymentProviderWebhookEventRepository = new(() => new PaymentProviderWebhookEventRepository(_context));
+        _paymentRefundRepository = new(() => new PaymentRefundRepository(_context));
         _paymentRepository = new(() => new PaymentRepository(_context));
         _queuedEmailRecipientRepository = new(() => new QueuedEmailRecipientRepository(_context));
         _queuedEmailRepository = new(() => new QueuedEmailRepository(_context));
@@ -204,6 +210,8 @@ public class UnitOfWork : IUnitOfWork
     public IChapterMembershipSettingsRepository ChapterMembershipSettingsRepository => _chapterMembershipSettingsRepository.Value;
     public IChapterPageRepository ChapterPageRepository => _chapterPageRepository.Value;
     public IChapterPaymentAccountRepository ChapterPaymentAccountRepository => _chapterPaymentAccountRepository.Value;
+    public IChapterPaymentAdjustmentRecoveryRepository ChapterPaymentAdjustmentRecoveryRepository => _chapterPaymentAdjustmentRecoveryRepository.Value;
+    public IChapterPaymentAdjustmentRepository ChapterPaymentAdjustmentRepository => _chapterPaymentAdjustmentRepository.Value;
     public IChapterPaymentSettingsRepository ChapterPaymentSettingsRepository => _chapterPaymentSettingsRepository.Value;
     public IChapterPrivacySettingsRepository ChapterPrivacySettingsRepository => _chapterPrivacySettingsRepository.Value;
     public IChapterPropertyOptionRepository ChapterPropertyOptionRepository => _chapterPropertyOptionRepository.Value;
@@ -256,6 +264,7 @@ public class UnitOfWork : IUnitOfWork
     public INotificationRepository NotificationRepository => _notificationRepository.Value;
     public IPaymentCheckoutSessionRepository PaymentCheckoutSessionRepository => _paymentCheckoutSessionRepository.Value;
     public IPaymentProviderWebhookEventRepository PaymentProviderWebhookEventRepository => _paymentProviderWebhookEventRepository.Value;
+    public IPaymentRefundRepository PaymentRefundRepository => _paymentRefundRepository.Value;
     public IPaymentRepository PaymentRepository => _paymentRepository.Value;
     public IQueuedEmailRecipientRepository QueuedEmailRecipientRepository => _queuedEmailRecipientRepository.Value;
     public IQueuedEmailRepository QueuedEmailRepository => _queuedEmailRepository.Value;

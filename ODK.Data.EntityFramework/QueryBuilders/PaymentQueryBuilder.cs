@@ -2,6 +2,7 @@
 using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Core.Payments;
+using ODK.Core.Platforms;
 using ODK.Data.Core.Payments;
 using ODK.Data.Core.QueryBuilders;
 
@@ -22,9 +23,21 @@ public class PaymentQueryBuilder : DatabaseEntityQueryBuilder<Payment, IPaymentQ
         return this;
     }
 
+    public IPaymentQueryBuilder ForEnvironment(EnvironmentType environment)
+    {
+        Query = Query.Where(x => x.Environment == environment);
+        return this;
+    }
+
     public IPaymentQueryBuilder ForMember(Guid memberId)
     {
         Query = Query.Where(x => x.MemberId == memberId);
+        return this;
+    }
+
+    public IPaymentQueryBuilder ForPlatform(PlatformType platform)
+    {
+        Query = Query.Where(x => x.Platform == platform);
         return this;
     }
 
@@ -34,9 +47,27 @@ public class PaymentQueryBuilder : DatabaseEntityQueryBuilder<Payment, IPaymentQ
         return this;
     }
 
+    public IPaymentQueryBuilder IgnoredForReconciliation()
+    {
+        Query = Query.Where(x => x.ReconciliationIgnoredUtc != null);
+        return this;
+    }
+
+    public IPaymentQueryBuilder NotIgnoredForReconciliation()
+    {
+        Query = Query.Where(x => x.ReconciliationIgnoredUtc == null);
+        return this;
+    }
+
     public IPaymentQueryBuilder Paid()
     {
         Query = Query.Where(x => x.PaidUtc != null);
+        return this;
+    }
+
+    public IPaymentQueryBuilder WithUnrecordedTransfer()
+    {
+        Query = Query.Where(x => x.TransferredUtc != null && x.ExternalTransferId == null);
         return this;
     }
 

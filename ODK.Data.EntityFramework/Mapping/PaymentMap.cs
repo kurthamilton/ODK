@@ -44,6 +44,9 @@ public class PaymentMap : IEntityTypeConfiguration<Payment>
         builder.Property(x => x.ExternalChargeId)
             .HasMaxLength(100);
 
+        builder.Property(x => x.ExternalTransferId)
+            .HasMaxLength(100);
+
         builder.Property(x => x.PaidUtc)
             .HasConversion<UtcDateTimeConverter>();
 
@@ -54,6 +57,15 @@ public class PaymentMap : IEntityTypeConfiguration<Payment>
         builder.Property(x => x.Platform)
             .HasColumnName("PlatformTypeId")
             .HasConversion<int?>();
+
+        builder.Property(x => x.ReconciliationFailedUtc)
+            .HasConversion<NullableUtcDateTimeConverter>();
+
+        builder.Property(x => x.ReconciliationFailureReason)
+            .HasMaxLength(500);
+
+        builder.Property(x => x.ReconciliationIgnoredUtc)
+            .HasConversion<NullableUtcDateTimeConverter>();
 
         builder.Property(x => x.SettlementCurrencyCode)
             .HasMaxLength(3);

@@ -507,6 +507,83 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                     b.ToTable("ChapterPaymentAccounts", (string)null);
                 });
 
+            modelBuilder.Entity("ODK.Core.Chapters.ChapterPaymentAdjustment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("money");
+
+                    b.Property<Guid>("ChapterId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("CurrencyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<Guid?>("PaymentRefundId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("RecoveredAmount")
+                        .HasColumnType("money");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int")
+                        .HasColumnName("ChapterPaymentAdjustmentTypeId");
+
+                    b.HasKey("Id");
+
+                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
+
+                    b.HasIndex("ChapterId");
+
+                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("ChapterId"));
+
+                    b.HasIndex("CurrencyId");
+
+                    b.ToTable("ChapterPaymentAdjustments", (string)null);
+                });
+
+            modelBuilder.Entity("ODK.Core.Chapters.ChapterPaymentAdjustmentRecovery", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("money");
+
+                    b.Property<Guid>("ChapterPaymentAdjustmentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("PaymentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
+
+                    b.HasIndex("ChapterPaymentAdjustmentId");
+
+                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("ChapterPaymentAdjustmentId"));
+
+                    b.HasIndex("PaymentId");
+
+                    b.ToTable("ChapterPaymentAdjustmentRecoveries", (string)null);
+                });
+
             modelBuilder.Entity("ODK.Core.Chapters.ChapterPaymentSettings", b =>
                 {
                     b.Property<Guid>("ChapterId")
@@ -2163,6 +2240,10 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                     b.Property<string>("ExternalId")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ExternalTransferId")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<Guid>("MemberId")
                         .HasColumnType("uniqueidentifier");
 
@@ -2177,6 +2258,16 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                         .HasColumnType("int")
                         .HasColumnName("PlatformTypeId");
 
+                    b.Property<DateTime?>("ReconciliationFailedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ReconciliationFailureReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("ReconciliationIgnoredUtc")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Reference")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -2184,9 +2275,6 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                     b.Property<string>("SettlementCurrencyCode")
                         .HasMaxLength(3)
                         .HasColumnType("nvarchar(3)");
-
-                    b.Property<Guid?>("SitePaymentSettingId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("TransferredUtc")
                         .HasColumnType("datetime2");
@@ -2250,6 +2338,88 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                     b.HasKey("PaymentProviderType", "ExternalId");
 
                     b.ToTable("PaymentProviderWebhookEvents", (string)null);
+                });
+
+            modelBuilder.Entity("ODK.Core.Payments.PaymentRefund", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal?>("ActualAmount")
+                        .HasColumnType("money");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("money");
+
+                    b.Property<decimal?>("ChapterAmount")
+                        .HasColumnType("money");
+
+                    b.Property<string>("DeclinedReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("ExternalId")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("ExternalReversalId")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("FailureReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<decimal?>("FeeReturnedAmount")
+                        .HasColumnType("money");
+
+                    b.Property<Guid>("PaymentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("RefundedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("RequestedByMemberId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("RequestedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("ResolvedByMemberId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("ResolvedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal?>("ReversedAmount")
+                        .HasColumnType("money");
+
+                    b.Property<DateTime?>("ReversedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SettlementCurrencyCode")
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int")
+                        .HasColumnName("PaymentRefundStatusTypeId");
+
+                    b.HasKey("Id");
+
+                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
+
+                    b.HasIndex("PaymentId");
+
+                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("PaymentId"));
+
+                    b.ToTable("PaymentRefunds", (string)null);
                 });
 
             modelBuilder.Entity("ODK.Core.Payments.SitePaymentProduct", b =>
@@ -2931,6 +3101,30 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("ODK.Core.Chapters.ChapterPaymentAdjustment", b =>
+                {
+                    b.HasOne("ODK.Core.Chapters.Chapter", null)
+                        .WithMany()
+                        .HasForeignKey("ChapterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ODK.Core.Countries.Currency", null)
+                        .WithMany()
+                        .HasForeignKey("CurrencyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ODK.Core.Chapters.ChapterPaymentAdjustmentRecovery", b =>
+                {
+                    b.HasOne("ODK.Core.Chapters.ChapterPaymentAdjustment", null)
+                        .WithMany()
+                        .HasForeignKey("ChapterPaymentAdjustmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("ODK.Core.Chapters.ChapterPaymentSettings", b =>
                 {
                     b.HasOne("ODK.Core.Chapters.Chapter", null)
@@ -3562,6 +3756,15 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                     b.HasOne("ODK.Core.Members.Member", null)
                         .WithMany()
                         .HasForeignKey("MemberId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ODK.Core.Payments.PaymentRefund", b =>
+                {
+                    b.HasOne("ODK.Core.Payments.Payment", null)
+                        .WithMany()
+                        .HasForeignKey("PaymentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

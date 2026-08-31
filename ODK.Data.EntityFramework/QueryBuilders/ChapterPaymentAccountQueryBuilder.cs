@@ -22,6 +22,12 @@ public class ChapterPaymentAccountQueryBuilder
         return this;
     }
 
+    public IChapterPaymentAccountQueryBuilder ForChapters(IEnumerable<Guid> chapterIds)
+    {
+        Query = Query.Where(x => chapterIds.Contains(x.ChapterId));
+        return this;
+    }
+
     public IChapterPaymentAccountQueryBuilder ForEnvironment(EnvironmentType environment)
     {
         Query = Query.Where(x => x.Environment == environment);

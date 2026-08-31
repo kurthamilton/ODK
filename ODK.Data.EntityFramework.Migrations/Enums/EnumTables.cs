@@ -27,6 +27,10 @@ public static class EnumTables
         {
             Name = "ChapterAdminRoles"
         },
+        [typeof(ChapterPaymentAdjustmentType)] = new EnumTable
+        {
+            Name = "ChapterPaymentAdjustmentTypes"
+        },
         [typeof(DataType)] = new EnumTable
         {
             Name = "DataTypes"
@@ -58,6 +62,10 @@ public static class EnumTables
         [typeof(PaymentProviderType)] = new EnumTable
         {
             Name = "PaymentProviderTypes"
+        },
+        [typeof(PaymentRefundStatusType)] = new EnumTable
+        {
+            Name = "PaymentRefundStatusTypes"
         },
         [typeof(PlatformType)] = new EnumTable
         {

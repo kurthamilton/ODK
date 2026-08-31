@@ -1,0 +1,26 @@
+﻿@page "/siteadmin/payments/reconciliation"
+@using ODK.Services.Payments
+@using ODK.Web.Razor.Models.Components
+@model PaymentReconciliationModel
+@inject IPaymentAdminService PaymentAdminService
+@{
+    Layout = "_SiteAdminLayout";
+    Model.Title = "Reconciliation | Site Admin";
+
+    var viewModel = await PaymentAdminService.GetPaymentReconciliationViewModel(Model.MemberServiceRequest);
+}
+
+@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+{
+    Breadcrumbs = new[]
+    {
+        new MenuItem
+        {
+            Link = Model.OdkRoutes.SiteAdmin.Payments.Path,
+            Text = "Back to payments",
+            Icon = IconType.ArrowLeft
+        }
+    }
+})
+
+@await Html.PartialAsync("SiteAdmin/_SiteAdminPaymentReconciliationContent", viewModel)

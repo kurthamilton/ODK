@@ -49,4 +49,12 @@ public interface IPaymentService
 
     Task<PaymentStatusType> GetMemberSitePaymentCheckoutSessionStatus(
         IMemberServiceRequest request, string externalSessionId);
+
+    /// <summary>
+    /// Reconciles one payment now and reports what happened, for a caller waiting on the answer rather than
+    /// queueing the work. Unlike the queued job, a state that would earn a retry comes back as a failure
+    /// instead of being thrown - so this is for acting on a single payment where something is waiting to be
+    /// told, not for a sweep.
+    /// </summary>
+    Task<ResolvePaymentSettlementResult> ResolvePaymentSettlement(Guid paymentId);
 }

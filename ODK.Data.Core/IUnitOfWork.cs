@@ -19,6 +19,8 @@ public interface IUnitOfWork
     IChapterMembershipSettingsRepository ChapterMembershipSettingsRepository { get; }
     IChapterPageRepository ChapterPageRepository { get; }
     IChapterPaymentAccountRepository ChapterPaymentAccountRepository { get; }
+    IChapterPaymentAdjustmentRecoveryRepository ChapterPaymentAdjustmentRecoveryRepository { get; }
+    IChapterPaymentAdjustmentRepository ChapterPaymentAdjustmentRepository { get; }
     IChapterPaymentSettingsRepository ChapterPaymentSettingsRepository { get; }
     IChapterPrivacySettingsRepository ChapterPrivacySettingsRepository { get; }
     IChapterPropertyOptionRepository ChapterPropertyOptionRepository { get; }
@@ -70,6 +72,7 @@ public interface IUnitOfWork
     INotificationRepository NotificationRepository { get; }
     IPaymentCheckoutSessionRepository PaymentCheckoutSessionRepository { get; }
     IPaymentProviderWebhookEventRepository PaymentProviderWebhookEventRepository { get; }
+    IPaymentRefundRepository PaymentRefundRepository { get; }
     IPaymentRepository PaymentRepository { get; }
     IQueuedEmailRecipientRepository QueuedEmailRecipientRepository { get; }
     IQueuedEmailRepository QueuedEmailRepository { get; }
