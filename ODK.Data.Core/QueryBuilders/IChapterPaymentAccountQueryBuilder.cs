@@ -8,5 +8,7 @@ public interface IChapterPaymentAccountQueryBuilder
 {
     IChapterPaymentAccountQueryBuilder ForChapter(Guid chapterId);
 
+    IChapterPaymentAccountQueryBuilder ForChapters(IEnumerable<Guid> chapterIds);
+
     IChapterPaymentAccountQueryBuilder ForEnvironment(EnvironmentType environment);
 }

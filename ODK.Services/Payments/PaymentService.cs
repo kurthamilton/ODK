@@ -344,10 +344,32 @@ public class PaymentService : IPaymentService
     public async Task ProcessWebhookJob(JobRequest request, PaymentProviderWebhook webhook)
         => await ProcessWebhook(await _serviceRequestFactory.Create(request), webhook);
 
+    public async Task<ResolvePaymentSettlementResult> ResolvePaymentSettlement(Guid paymentId)
+    {
+        try
+        {
+            return await ResolvePaymentSettlement(paymentId, null, null);
+        }
+        catch (OdkServiceException ex)
+        {
+            /* The job lets this bubble so Hangfire retries it. A caller waiting on the answer is told
+               instead, and it is recorded so the page states it beside the row - a state that will clear
+               itself on the next read is still the reason this one did nothing. */
+            var payment = await _unitOfWork.Run(x => x.PaymentRepository.GetById(paymentId));
+            await RecordReconciliationFailure(payment, ex.Message);
+
+            return ResolvePaymentSettlementResult.Failure(ex.Message);
+        }
+    }
+
     /// <inheritdoc cref="EnsureProductExistsJob" />
+    /* The outcome is discarded: a give-up has already recorded its reason on the payment, and nothing here
+       is waiting to be told. What must still leave this method is a throw, which is what earns a retry. */
     public async Task ResolvePaymentSettlementJob(
         Guid paymentId, string? externalPaymentId, string? externalInvoiceId)
-        => await ResolvePaymentSettlement(paymentId, externalPaymentId, externalInvoiceId);
+    {
+        await ResolvePaymentSettlement(paymentId, externalPaymentId, externalInvoiceId);
+    }
 
     // A period that is still live - or lapsed but inside the cooldown - is continued, so a subscription
     // keeps its anniversary instead of drifting by however late the member renewed. Otherwise the period
@@ -361,6 +383,14 @@ public class PaymentService : IPaymentService
         => await paymentProvider.GetSubscriptionPlan(externalId)
             ?? throw new OdkServiceException(
                 $"Error starting checkout session: subscription plan '{externalId}' not found");
+
+    /* Cleared by any successful read, so a reason left on the row is always about the state it is in now
+       rather than a failure it has since recovered from. */
+    private static void ClearReconciliationFailure(Payment payment)
+    {
+        payment.ReconciliationFailedUtc = null;
+        payment.ReconciliationFailureReason = null;
+    }
 
     private static string ToTransferIdempotencyKey(Guid paymentId)
         => $"payment-transfer-{paymentId}";
@@ -470,13 +500,23 @@ public class PaymentService : IPaymentService
         await _unitOfWork.SaveChanges();
     }
 
+    /* The member's own subscription is what has a schedule to read, so that is what is asked for -
+       <paramref name="externalSubscriptionId"/>, taken from the webhook. Not
+       ChapterSubscription.ExternalId, which names the provider's *price*: asking for a subscription by a
+       price id answers nothing, and the expiry then falls back to being calculated, which is the drift
+       reading the provider exists to avoid. */
     private async Task<DateTime?> GetChapterSubscriptionNextPaymentDate(
-        PlatformType platform, ChapterSubscription subscription)
+        PlatformType platform, ChapterSubscription subscription, string? externalSubscriptionId)
     {
+        if (string.IsNullOrEmpty(externalSubscriptionId))
+        {
+            return null;
+        }
+
         var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
             subscription.PaymentProvider, platform);
 
-        return await GetNextPaymentDate(paymentProvider, subscription.ExternalId);
+        return await GetNextPaymentDate(paymentProvider, externalSubscriptionId);
     }
 
     private async Task<DateTime?> GetNextPaymentDate(IPaymentProvider paymentProvider, string externalId)
@@ -984,48 +1024,24 @@ public class PaymentService : IPaymentService
         return PaymentWebhookProcessingResult.Failure();
     }
 
-    /* Which account a payment was taken through, asked rather than inferred: the account that can produce
-       a settlement for the reference is the one holding it, and one that cannot says so plainly. The
-       settlement is kept rather than discarded, so proving where the payment lives and reading what it did
-       are the same call. Only the payment's own account is asked where it names one; a payment naming none
-       is swept against every enabled account, which is what lets one be recorded for it.
-
-       Nothing about the shape of an id is read here. Stripe ids do embed something of the account, but that
-       is undocumented and demonstrably unreliable on this data - nine payments already carry references
-       from accounts other than the one they name. Asking cannot be wrong in the same way. */
-    private async Task<(PlatformType Platform, IPaymentProvider Provider, ExternalPaymentSettlement Settlement)?>
-        LocatePayment(Payment payment)
+    private async Task<ExternalPaymentSettlement?> LocatePayment(Payment payment)
     {
         if (string.IsNullOrEmpty(payment.ExternalId) || payment.PaidUtc == null)
         {
             return null;
         }
 
-        var candidates = Enum.GetValues<PlatformType>()
-            .Where(x => x != PlatformType.None);
+        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(payment.PaymentProvider, payment.Platform);
 
-        var provider = payment.PaymentProvider;
+        var externalPaymentId = await paymentProvider.GetPaymentIdForReference(
+            payment.ExternalId, payment.PaidUtc.Value);
 
-        foreach (var platform in candidates)
+        if (string.IsNullOrEmpty(externalPaymentId))
         {
-            var paymentProvider = _paymentProviderFactory.GetPaymentProvider(provider, platform);
-
-            var externalPaymentId = await paymentProvider.GetPaymentIdForReference(
-                payment.ExternalId, payment.PaidUtc.Value);
-
-            if (string.IsNullOrEmpty(externalPaymentId))
-            {
-                continue;
-            }
-
-            var settlement = await paymentProvider.GetPaymentSettlement(externalPaymentId);
-            if (settlement != null)
-            {
-                return (platform, paymentProvider, settlement);
-            }
+            return null;
         }
 
-        return null;
+        return await paymentProvider.GetPaymentSettlement(externalPaymentId);
     }
 
     /* Throws wherever the payment cannot be read, so the job is retried and only one that never becomes
@@ -1085,6 +1101,7 @@ public class PaymentService : IPaymentService
                the provider collected, and we were left with the rest of the net. Recomputing it from the
                current rate would state figures that never occurred. */
             connectedAccountAmount = settlement.Amount - settlement.CollectedCommissionAmount;
+            payment.ExternalTransferId = settlement.TransferId;
             payment.TransferredUtc = settlement.TransferredUtc;
         }
         else if (connectedAccount != null)
@@ -1110,16 +1127,70 @@ public class PaymentService : IPaymentService
         payment.ActualNetAmount = netAmount;
         payment.ExternalChargeId = settlement.ChargeId;
         payment.SettlementCurrencyCode = settlement.SettlementCurrencyCode;
+        ClearReconciliationFailure(payment);
 
         _unitOfWork.PaymentRepository.Update(payment);
         await _unitOfWork.SaveChanges();
     }
 
-    private async Task ResolvePaymentSettlement(
+    /* The transfer alone, for a payment settled before the transfer was recorded. Deliberately not
+       RecordPaymentSettlement: that works the commission out from the current rate, which for a charge
+       collected whole would restate a split made at whatever rate applied at the time. */
+    private async Task RecordPaymentTransferId(
+        Payment payment,
+        IPaymentProvider paymentProvider,
+        ChapterPaymentAccount connectedAccount,
+        ExternalPaymentSettlement settlement)
+    {
+        // A charge the provider split names its own transfer; one collected whole has to be searched for.
+        var transferId = settlement.TransferId
+            ?? await paymentProvider.FindTransferIdForCharge(
+                settlement.ChargeId, connectedAccount.ExternalId, settlement.ChargedUtc);
+
+        if (transferId == null)
+        {
+            /* Recorded rather than thrown: a transfer the provider does not know about will not appear on
+               a retry, so this is a fact about the data rather than a fault. It leaves the payment
+               unrefundable from the group's share, which is what the record is for. */
+            await RecordReconciliationFailure(
+                payment,
+                $"No {paymentProvider.Type} transfer to '{connectedAccount.ExternalId}' comes out of " +
+                $"charge '{settlement.ChargeId}'");
+            return;
+        }
+
+        payment.ExternalTransferId = transferId;
+        ClearReconciliationFailure(payment);
+        _unitOfWork.PaymentRepository.Update(payment);
+        await _unitOfWork.SaveChanges();
+    }
+
+    /* Kept on the payment as well as logged. The error log answers "what went wrong last night"; this
+       answers "why is this row still here", which is the question the reconciliation page raises and the
+       only one a site admin can act on - by excluding the payment. */
+    private async Task RecordReconciliationFailure(Payment payment, string reason)
+    {
+        await _loggingService.Warn($"Not reconciling Payment {payment.Id}: {reason}");
+
+        payment.ReconciliationFailedUtc = DateTime.UtcNow;
+        payment.ReconciliationFailureReason = reason;
+
+        _unitOfWork.PaymentRepository.Update(payment);
+        await _unitOfWork.SaveChanges();
+    }
+
+    private async Task<ResolvePaymentSettlementResult> ResolvePaymentSettlement(
         Guid paymentId, string? externalPaymentId, string? externalInvoiceId)
     {
         var payment = await _unitOfWork.Run(
             x => x.PaymentRepository.GetById(paymentId));
+
+        /* Checked here rather than only in the query that lists them, so a read queued directly - by id,
+           or by a webhook - respects the same ruling. */
+        if (payment.ReconciliationIgnoredUtc != null)
+        {
+            return ResolvePaymentSettlementResult.Failure("It is ignored for reconciliation");
+        }
 
         /* The account the payment was taken through, where the payment names one. Reconciling one that
            names none has to prove which account holds it before it can be asked anything - see
@@ -1138,73 +1209,72 @@ public class PaymentService : IPaymentService
                 .Run()
             : null;
 
-        // Already read, and what moved cannot move differently the second time; only the transfer is left.
-        if (payment.ActualAmount == null)
+        /* A payment whose share reached the group before the transfer was recorded names no transfer, so a
+           refund of it has nothing to reverse. That is worth reading for on its own, and is the only reason
+           to read a payment already settled: what moved cannot move differently the second time. */
+        var transferUnrecorded =
+            connectedAccount != null &&
+            payment.TransferredUtc != null &&
+            payment.ExternalTransferId == null;
+
+        if (payment.ActualAmount == null || transferUnrecorded)
         {
-            ExternalPaymentSettlement settlement;
+            ExternalPaymentSettlement? settlement;
 
             /* Reconciling, rather than acting on a webhook: no ids were handed in, so the reference
                recorded when the payment was taken is all there is to go on, and the account holding it has
                to be found before anything can be asked about it. */
             if (string.IsNullOrEmpty(externalPaymentId) && string.IsNullOrEmpty(externalInvoiceId))
             {
-                var located = await LocatePayment(payment);
+                settlement = await LocatePayment(payment);
 
-                if (located == null)
+                if (settlement == null)
                 {
                     /* Skipped rather than thrown: no configured account holds it, and no number of retries
                        will change which account does. A warning rather than an error, because a payment
                        taken through an account no longer configured is a fact about the data, not a fault. */
-                    await _loggingService.Warn(
-                        $"Not reconciling Payment {payment.Id}: no configured account holds " +
-                        $"'{payment.ExternalId}'");
-                    return;
-                }
-
-                (var platform, paymentProvider, settlement) = located.Value;
-
-                if (payment.Platform != platform)
-                {
-                    /* Recorded because it has been proven, not guessed: the account that produced a
-                       settlement for the reference is the one the payment was taken through. */
-                    payment.Platform = platform;
-                    payment.PaymentProvider = paymentProvider.Type;
+                    var reason = $"'{payment.ExternalId}' not found in {paymentProvider.Type}";
+                    await RecordReconciliationFailure(payment, reason);
+                    return ResolvePaymentSettlementResult.Failure(reason);
                 }
             }
             else
             {
-                /* Acting on a webhook, which names the payment: the provider has just told us it exists, so
-                   a payment that names no account is a record written before it carried one and nothing
-                   here can say where to read it. */
-                if (paymentProvider == null)
-                {
-                    await _loggingService.Warn(
-                        $"Not reading Payment {payment.Id}: it names no payment account");
-                    return;
-                }
-
                 settlement = await ReadPaymentSettlement(
                     payment, paymentProvider, externalPaymentId, externalInvoiceId);
             }
 
-            await RecordPaymentSettlement(payment, paymentProvider, connectedAccount, settlement);
+            if (payment.ActualAmount == null)
+            {
+                await RecordPaymentSettlement(payment, paymentProvider, connectedAccount, settlement);
+            }
+            else if (connectedAccount != null)
+            {
+                await RecordPaymentTransferId(payment, paymentProvider, connectedAccount, settlement);
+            }
         }
 
-        if (connectedAccount != null && paymentProvider != null)
-        {
+        var transferred =
+            connectedAccount != null &&
+            paymentProvider != null &&
             await TransferConnectedAccountShare(payment, paymentProvider, connectedAccount);
-        }
+
+        /* Read back rather than assumed: a settlement or transfer id that could not be found records its
+           reason and carries on, so the payment can end this method still incomplete. */
+        return payment.ReconciliationFailureReason != null
+            ? ResolvePaymentSettlementResult.Failure(payment.ReconciliationFailureReason)
+            : ResolvePaymentSettlementResult.Resolved(transferred);
     }
 
     /* The group's share, moved once the settlement says what there is to share. Idempotent twice over: the
        date below stops a second attempt starting, and the provider is given a key derived from the payment,
        so an attempt that moved the money but failed before recording it cannot move it again. */
-    private async Task TransferConnectedAccountShare(
+    private async Task<bool> TransferConnectedAccountShare(
         Payment payment, IPaymentProvider paymentProvider, ChapterPaymentAccount connectedAccount)
     {
         if (payment.ActualConnectedAccountAmount == null || payment.TransferredUtc != null)
         {
-            return;
+            return false;
         }
 
         var currency = await _unitOfWork.CurrencyRepository.GetById(payment.CurrencyId).Run();
@@ -1234,9 +1304,12 @@ public class PaymentService : IPaymentService
                 $"for Payment {payment.Id}: {result.Message}");
         }
 
+        payment.ExternalTransferId = result.ExternalTransferId;
         payment.TransferredUtc = DateTime.UtcNow;
         _unitOfWork.PaymentRepository.Update(payment);
         await _unitOfWork.SaveChanges();
+
+        return true;
     }
 
     private async Task<PaymentWebhookProcessingResult> UpdateMemberChapterSubscription(
@@ -1309,7 +1382,7 @@ public class PaymentService : IPaymentService
         // apart: the provider anchors its schedule to the original purchase
         var nextPaymentUtc = chapterSubscription.Recurring
             ? await GetChapterSubscriptionNextPaymentDate(
-                chapter.Platform, chapterSubscription)
+                chapter.Platform, chapterSubscription, externalId)
             : null;
 
         // A negative cooldown is meaningless and is treated as none, so it cannot narrow the window to less

@@ -19,9 +19,21 @@ namespace ODK.Services.Tests.Helpers;
 
 internal class MockOdkContext : OdkContext
 {
+    private readonly bool _noTracking;
+
     public MockOdkContext()
+        : this(noTracking: false)
+    {
+    }
+
+    /* The real context reads without tracking, so an included entity arrives as a separate instance per
+       row - and a write that attaches two payments sharing one currency is rejected. Tracking resolves
+       those to one instance and hides it, so a test covering a multi-row write has to ask for the
+       behaviour the app actually runs with. */
+    public MockOdkContext(bool noTracking)
         : base(new OdkContextSettings(""))
     {
+        _noTracking = noTracking;
     }
 
     public override EntityEntry<TEntity> Add<TEntity>(TEntity entity)
@@ -419,5 +431,10 @@ internal class MockOdkContext : OdkContext
     {
         // generate unique DB name per-test
         options.UseInMemoryDatabase($"odk-{Guid.NewGuid()}");
+
+        if (_noTracking)
+        {
+            options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+        }
     }
 }

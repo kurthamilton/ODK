@@ -1,0 +1,210 @@
+﻿@using System.Globalization
+@using ODK.Services.Payments.ViewModels
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.SiteAdmin
+@model PaymentReconciliationViewModel
+@{
+    // Money first: it is the one a site admin has to look at before pressing anything.
+    var kinds = new (PaymentReconciliationType Type, string Title, string Description, string Action, IconType Icon)[]
+    {
+        (PaymentReconciliationType.SettlementAndTransfer,
+            "Settlement and transfer",
+            "Reads what the charge settled for, then sends the group its share. This is the only kind that moves money.",
+            "Read the settlement and send the group its share",
+            IconType.Dollar),
+        (PaymentReconciliationType.Settlement,
+            "Settlement",
+            "Reads what the charge settled for. Nothing is sent - these payments have no connected account to send to.",
+            "Read the settlement - no money is sent",
+            IconType.Database),
+        (PaymentReconciliationType.TransferRecord,
+            "Transfer record",
+            "Records the transfer that already sent the group its share, so a refund has something to reverse. Nothing is sent.",
+            "Record the transfer - no money is sent",
+            IconType.Database)
+    };
+
+    var transferCount = Model.Payments
+        .Count(x => x.Pending == PaymentReconciliationType.SettlementAndTransfer);
+
+    var kindsByType = kinds.ToDictionary(x => x.Type);
+}
+
+<div data-odk-component="_SiteAdminPaymentReconciliationContent">
+    <h2 class="content-heading">Reconciliation</h2>
+
+    <p>
+        Payments taken for this platform that are waiting on something the payment provider has yet to be
+        asked for. Each table below says what reconciling those payments will actually do.
+    </p>    
+
+    @if (Model.Payments.Count == 0)
+    {
+        <p class="text-muted">Every payment is fully reconciled.</p>
+    }
+
+    <div class="section-stack mt-section">
+        @foreach (var kind in kinds)
+        {
+            var payments = Model.Payments.Where(x => x.Pending == kind.Type).ToArray();
+            if (payments.Length == 0)
+            {
+                continue;
+            }
+
+            @await Html.PartialAsync("Components/_Section", new SectionViewModel
+            {
+                Heading = new HeadingViewModel
+                {
+                    Title = $"{kind.Title} ({payments.Length})",
+                    Type = HeadingType.H4
+                },
+                BodyContentFunc =
+                @<text>
+                    <p>@kind.Description</p>
+
+                    @* The ids are posted rather than re-queried, so each button covers exactly the rows
+                       below it. Two submits on one form, so the ids are written once. *@
+                    <form method="post" class="mb-3">
+                        @Html.AntiForgeryToken()
+
+                        @foreach (var item in payments)
+                        {
+                            @Html.Hidden(
+                                nameof(PaymentReconciliationFormSubmitViewModel.PaymentIds),
+                                item.Payment.Id)
+                        }
+
+                        <div class="button-container">
+                            <button type="submit" formaction="/siteadmin/payments/reconcile" class="btn btn-primary">
+                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(kind.Icon))
+                                <span>Reconcile all</span>
+                            </button>
+                            <button type="submit" formaction="/siteadmin/payments/reconcile/ignore" class="btn btn-outline-danger">
+                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Times))
+                                <span>Ignore all</span>
+                            </button>
+                        </div>                        
+                    </form>
+
+                    <div class="table-responsive">
+                        <table class="table" data-sortable data-table-striped>
+                            <thead>
+                                <tr>
+                                    @* UTC rather than a local zone: the point of the column is matching a
+                                       row against the payment provider's own dashboard, which states its
+                                       times in UTC. *@
+                                    <th data-sortable-sort="default" data-sortable-dir="desc">Paid (UTC)</th>
+                                    <th data-sortable-sort>Group</th>
+                                    <th>Reference</th>
+                                    <th>Amount</th>
+                                    <th>Last failure</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in payments)
+                                {
+                                    var payment = item.Payment;
+
+                                    <tr>
+                                        <td>
+                                            @(payment.PaidUtc?.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture) ?? "-")
+                                        </td>
+                                        <td>
+                                            @* A site payment belongs to no group, which is not a gap in
+                                               the data. *@
+                                            @(item.ChapterName ?? "-")
+                                        </td>
+                                        <td>@payment.Reference</td>
+                                        <td>@payment.Currency.ToAmountString(payment.Amount)</td>
+                                        <td class="text-danger">@payment.ReconciliationFailureReason</td>
+                                        <td class="text-nowrap">
+                                            <form method="post" action="/siteadmin/payments/@payment.Id/reconcile" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <button data-bs-toggle="tooltip" data-bs-title="@kind.Action" class="btn-icon">
+                                                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(kind.Icon))
+                                                </button>
+                                            </form>
+                                            <form method="post" action="/siteadmin/payments/@payment.Id/reconcile/ignore" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <button data-bs-toggle="tooltip" data-bs-title="Ignore" class="btn-icon text-danger">
+                                                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Times))
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </text>
+            })
+        }
+
+        @if (Model.Ignored.Count > 0)
+        {
+            @await Html.PartialAsync("Components/_Section", new SectionViewModel
+            {
+                Heading = new HeadingViewModel
+                {
+                    Title = $"Ignored ({Model.Ignored.Count})",
+                    Type = HeadingType.H3
+                },
+                BodyContentFunc =
+                @<text>
+                    <p>
+                        Payments ignored because nothing the provider can be asked will ever answer for
+                        them. They are skipped by the reconcile job as well as by the tables above.
+                    </p>
+
+                    <div class="table-responsive">
+                        <table class="table" data-sortable data-table-striped>
+                            <thead>
+                                <tr>
+                                    <th data-sortable-sort="default" data-sortable-dir="desc">Paid (UTC)</th>
+                                    <th data-sortable-sort>Group</th>
+                                    <th>Reference</th>
+                                    <th>Amount</th>
+                                    @* What reconciling it would do, if it were ever un-ignored. *@
+                                    <th data-sortable-sort>Would do</th>
+                                    <th>Last failure</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Ignored)
+                                {
+                                    var payment = item.Payment;
+                                    var kind = kindsByType[item.Pending];
+
+                                    <tr>
+                                        <td>
+                                            @(payment.PaidUtc?.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture) ?? "-")
+                                        </td>
+                                        <td>@(item.ChapterName ?? "-")</td>
+                                        <td>@payment.Reference</td>
+                                        <td>@payment.Currency.ToAmountString(payment.Amount)</td>
+                                        <td>
+                                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(kind.Icon))
+                                            <span>@kind.Title</span>
+                                        </td>
+                                        <td class="text-muted">@payment.ReconciliationFailureReason</td>
+                                        <td>
+                                            <form method="post" action="/siteadmin/payments/@payment.Id/reconcile/unignore">
+                                                @Html.AntiForgeryToken()
+                                                <button data-bs-toggle="tooltip" data-bs-title="Reconcile this payment again" class="btn-icon">
+                                                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Undo))
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </text>
+            })
+        }
+    </div>
+</div>

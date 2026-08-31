@@ -82,15 +82,6 @@ public class EventRepository : ReadWriteRepositoryBase<Event, IEventQueryBuilder
             .ForShortcode(shortcode)
             .Any();
 
-    public override void Update(Event entity)
-    {
-        // do not include Currency in the update
-        var clone = entity.Clone();
-        clone.TicketSettings?.Currency = null!;
-
-        base.Update(entity);
-    }
-
     // Date bounds are UTC instants resolved from the chapter's timezone by the service; the query
     // stays a simple (index-friendly) UTC range.
     private static IEventQueryBuilder ApplyFilter(

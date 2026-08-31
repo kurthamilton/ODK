@@ -753,6 +753,69 @@ public static class PaymentServiceTests
     }
 
     [Test]
+    public static async Task ProcessWebhook_RecurringChapterSubscription_ReadsTheMembersSubscriptionNotThePrice()
+    {
+        /* Arrange - a chapter subscription's own ExternalId names the provider's price, while the schedule
+           belongs to the member's subscription, which the webhook names. Asking for a subscription by a
+           price id answers nothing, and the expiry silently falls back to being calculated. */
+        using var context = CreateMockOdkContext();
+
+        var member = context.CreateMember();
+        var chapter = context.CreateChapter(members: [member]);
+        context.CreateChapterPaymentAccount(chapter);
+
+        var chapterSubscription = context.CreateChapterSubscription(chapter: chapter);
+        chapterSubscription.ExternalId = "price_123";
+        chapterSubscription.Months = 1;
+        chapterSubscription.Recurring = true;
+
+        // Deliberately not a month out, so only reading the provider's date can satisfy the assertion.
+        var nextPaymentDate = DateTime.UtcNow.AddDays(20);
+
+        var paymentProvider = CreateMockPaymentProvider();
+        paymentProvider
+            .Setup(x => x.GetSubscription("sub_123"))
+            .ReturnsAsync(new ExternalSubscription
+            {
+                CancelDate = null,
+                ConnectedAccountId = null,
+                ExternalId = "sub_123",
+                ExternalSubscriptionPlanId = "price_123",
+                LastPaymentDate = DateTime.UtcNow.AddDays(-10),
+                Metadata = new Dictionary<string, string>(),
+                NextBillingDate = nextPaymentDate,
+                Status = ExternalSubscriptionStatus.Active
+            });
+
+        var webhook = CreatePaymentProviderWebhook(
+            id: "wh_inv",
+            type: PaymentProviderWebhookType.InvoicePaymentSucceeded,
+            subscriptionId: "sub_123",
+            metadata: new PaymentMetadataModel(
+                PlatformType.Default,
+                PaymentReasonType.ChapterSubscription,
+                member,
+                chapterSubscription,
+                Guid.NewGuid(),
+                Guid.NewGuid()));
+
+        var service = CreatePaymentService(
+            context,
+            paymentProviderFactory: CreateMockPaymentProviderFactory(paymentProvider.Object));
+
+        // Act
+        await service.ProcessWebhook(CreateServiceRequest(), webhook);
+
+        // Assert
+        paymentProvider.Verify(x => x.GetSubscription("sub_123"), Times.Once);
+        paymentProvider.Verify(x => x.GetSubscription("price_123"), Times.Never);
+
+        context.Set<MemberSubscriptionRecord>()
+            .Single(x => x.MemberId == member.Id && x.ChapterId == chapter.Id && x.IsCurrent)
+            .ExpiresUtc.Should().BeCloseTo(nextPaymentDate, TimeSpan.FromMinutes(5));
+    }
+
+    [Test]
     public static async Task ProcessWebhookAction_WhenSameEventProcessedTwice_ExtendsChapterSubscriptionOnce()
     {
         // Arrange
@@ -1557,6 +1620,39 @@ public static class PaymentServiceTests
             .Verify(x => x.Warn(It.Is<string>(m => m.Contains("sub_gone"))), Times.Once);
 
         paymentProvider.Verify(x => x.GetPaymentSettlement(It.IsAny<string>()), Times.Never);
+
+        /* And the reason is kept on the payment, not only logged: it is what tells a site admin why the row
+           is still listed, and it is the whole basis for deciding to exclude it. */
+        var stored = context.Set<Payment>().Single(x => x.Id == payment.Id);
+        stored.ReconciliationFailureReason.Should().Contain("sub_gone");
+        stored.ReconciliationFailedUtc.Should().NotBeNull();
+    }
+
+    [Test]
+    public static async Task ResolvePaymentSettlementJob_IgnoredPayment_ReadsNothing()
+    {
+        /* Arrange - ignoring is an instruction about the payment, so a read queued directly has to respect
+           it too. Hiding it from the page alone would leave the retries running. */
+        using var context = CreateMockOdkContext();
+
+        var payment = context.CreatePayment();
+        payment.PaidUtc = DateTime.UtcNow;
+        payment.ReconciliationIgnoredUtc = DateTime.UtcNow;
+
+        var paymentProvider = CreateMockPaymentProvider();
+
+        var service = CreatePaymentService(
+            context,
+            paymentProviderFactory: CreateMockPaymentProviderFactory(paymentProvider.Object));
+
+        // Act
+        await service.ResolvePaymentSettlementJob(payment.Id, "pi_123", externalInvoiceId: null);
+
+        // Assert
+        paymentProvider.Verify(x => x.GetPaymentSettlement(It.IsAny<string>()), Times.Never);
+
+        context.Set<Payment>().Single(x => x.Id == payment.Id)
+            .ActualAmount.Should().BeNull();
     }
 
     [Test]
@@ -1609,6 +1705,13 @@ public static class PaymentServiceTests
         stored.ActualConnectedAccountAmount.Should().Be(88.47m);
         stored.TransferredUtc.Should().NotBeNull();
 
+        // The transfer is recorded, so a refund of this payment can reverse it
+        stored.ExternalTransferId.Should().Be("tr_123");
+
+        // And an earlier failure is cleared, so a stale reason cannot outlive what it described
+        stored.ReconciliationFailureReason.Should().BeNull();
+        stored.ReconciliationFailedUtc.Should().BeNull();
+
         paymentProvider.Verify(
             x => x.CreateTransfer(It.Is<ExternalTransfer>(t =>
                 t.Amount == 88.47m &&
@@ -1635,7 +1738,7 @@ public static class PaymentServiceTests
         paymentProvider
             .Setup(x => x.GetPaymentSettlement(It.IsAny<string>()))
             .ReturnsAsync(CreateExternalPaymentSettlement(
-                collectedCommissionAmount: 5m, transferredUtc: transferredUtc));
+                collectedCommissionAmount: 5m, transferId: "tr_123", transferredUtc: transferredUtc));
 
         var service = CreatePaymentService(
             context,
@@ -1652,6 +1755,9 @@ public static class PaymentServiceTests
         stored.ActualConnectedAccountAmount.Should().Be(95m);
         stored.ActualCommissionAmount.Should().Be(3.30m);
         stored.TransferredUtc.Should().Be(transferredUtc);
+
+        // The provider's own transfer is recorded, so a refund of this payment can still reverse it
+        stored.ExternalTransferId.Should().Be("tr_123");
 
         // And nothing is transferred: that money moved when the charge was made
         paymentProvider.Verify(x => x.CreateTransfer(It.IsAny<ExternalTransfer>()), Times.Never);
@@ -1670,6 +1776,7 @@ public static class PaymentServiceTests
         var payment = context.CreatePayment(chapter: chapter, currency: currency);
         payment.ActualAmount = 100m;
         payment.ActualConnectedAccountAmount = 88.47m;
+        payment.ExternalTransferId = "tr_123";
         payment.TransferredUtc = DateTime.UtcNow.AddMinutes(-5);
 
         var paymentProvider = CreateMockPaymentProvider();
@@ -1683,6 +1790,126 @@ public static class PaymentServiceTests
 
         // Assert - paying a group twice is the one failure this whole path exists to avoid
         paymentProvider.Verify(x => x.CreateTransfer(It.IsAny<ExternalTransfer>()), Times.Never);
+
+        // And nothing is re-read: the payment has everything the provider could tell it
+        paymentProvider.Verify(x => x.GetPaymentSettlement(It.IsAny<string>()), Times.Never);
+    }
+
+    [Test]
+    public static async Task ResolvePaymentSettlementJob_SettledPaymentNamesNoTransfer_RecordsProvidersOwnTransfer()
+    {
+        /* Arrange - a payment settled before the transfer was recorded, which the provider transferred
+           itself. Its transfer is named by the charge. */
+        using var context = CreateMockOdkContext();
+
+        var currency = context.CreateCurrency();
+        var chapter = context.CreateChapter();
+        context.CreateChapterPaymentAccount(chapter, externalId: "acct_123");
+
+        var payment = context.CreatePayment(chapter: chapter, currency: currency);
+        payment.ActualAmount = 100m;
+        payment.ActualCommissionAmount = 42m;
+        payment.ActualConnectedAccountAmount = 88.47m;
+        payment.TransferredUtc = DateTime.UtcNow.AddMonths(-3);
+
+        var paymentProvider = CreateMockPaymentProvider();
+        paymentProvider
+            .Setup(x => x.GetPaymentSettlement(It.IsAny<string>()))
+            .ReturnsAsync(CreateExternalPaymentSettlement(transferId: "tr_123"));
+
+        var service = CreatePaymentService(
+            context,
+            paymentProviderFactory: CreateMockPaymentProviderFactory(paymentProvider.Object));
+
+        // Act
+        await service.ResolvePaymentSettlementJob(payment.Id, "pi_123", externalInvoiceId: null);
+
+        // Assert
+        var stored = context.Set<Payment>().Single(x => x.Id == payment.Id);
+        stored.ExternalTransferId.Should().Be("tr_123");
+
+        /* And the split is left exactly as it was recorded. Re-running the settlement would work the
+           commission out from the current rate and restate figures that never occurred. */
+        stored.ActualCommissionAmount.Should().Be(42m);
+        stored.ActualConnectedAccountAmount.Should().Be(88.47m);
+    }
+
+    [Test]
+    public static async Task ResolvePaymentSettlementJob_SettledPaymentNamesNoTransfer_SearchesForOneAgainstTheCharge()
+    {
+        // Arrange - a charge we collected whole, whose transfer is only reachable from the transfer's side
+        using var context = CreateMockOdkContext();
+
+        var currency = context.CreateCurrency();
+        var chapter = context.CreateChapter();
+        context.CreateChapterPaymentAccount(chapter, externalId: "acct_123");
+
+        var payment = context.CreatePayment(chapter: chapter, currency: currency);
+        payment.ActualAmount = 100m;
+        payment.ActualConnectedAccountAmount = 88.47m;
+        payment.TransferredUtc = DateTime.UtcNow.AddMonths(-3);
+
+        var chargedUtc = new DateTime(2026, 5, 7, 16, 0, 0, DateTimeKind.Utc);
+
+        var paymentProvider = CreateMockPaymentProvider();
+        paymentProvider
+            .Setup(x => x.GetPaymentSettlement(It.IsAny<string>()))
+            .ReturnsAsync(CreateExternalPaymentSettlement());
+
+        paymentProvider
+            .Setup(x => x.FindTransferIdForCharge("ch_123", "acct_123", chargedUtc))
+            .ReturnsAsync("tr_456");
+
+        var service = CreatePaymentService(
+            context,
+            paymentProviderFactory: CreateMockPaymentProviderFactory(paymentProvider.Object));
+
+        // Act
+        await service.ResolvePaymentSettlementJob(payment.Id, "pi_123", externalInvoiceId: null);
+
+        // Assert
+        context.Set<Payment>().Single(x => x.Id == payment.Id)
+            .ExternalTransferId.Should().Be("tr_456");
+    }
+
+    [Test]
+    public static async Task ResolvePaymentSettlementJob_SettledPaymentTransferNotFound_WarnsAndLeavesItUnrecorded()
+    {
+        // Arrange - the provider knows of no transfer out of the charge, by either route
+        using var context = CreateMockOdkContext();
+
+        var currency = context.CreateCurrency();
+        var chapter = context.CreateChapter();
+        context.CreateChapterPaymentAccount(chapter, externalId: "acct_123");
+
+        var payment = context.CreatePayment(chapter: chapter, currency: currency);
+        payment.ActualAmount = 100m;
+        payment.ActualConnectedAccountAmount = 88.47m;
+        payment.TransferredUtc = DateTime.UtcNow.AddMonths(-3);
+
+        var loggingService = new Mock<ILoggingService>();
+
+        var paymentProvider = CreateMockPaymentProvider();
+        paymentProvider
+            .Setup(x => x.GetPaymentSettlement(It.IsAny<string>()))
+            .ReturnsAsync(CreateExternalPaymentSettlement());
+
+        var service = CreatePaymentService(
+            context,
+            loggingService: loggingService.Object,
+            paymentProviderFactory: CreateMockPaymentProviderFactory(paymentProvider.Object));
+
+        // Act
+        await service.ResolvePaymentSettlementJob(payment.Id, "pi_123", externalInvoiceId: null);
+
+        /* Assert - warned rather than thrown, because no number of retries will make the provider name a
+           transfer it does not have. The payment stays unrefundable from the group's share, which is what
+           the warning is there to surface. */
+        context.Set<Payment>().Single(x => x.Id == payment.Id)
+            .ExternalTransferId.Should().BeNull();
+
+        loggingService.Verify(
+            x => x.Warn(It.Is<string>(m => m.Contains(payment.Id.ToString()))), Times.Once);
     }
 
     [Test]
@@ -1700,7 +1927,7 @@ public static class PaymentServiceTests
         var paymentProvider = CreateMockPaymentProvider();
         paymentProvider
             .Setup(x => x.CreateTransfer(It.IsAny<ExternalTransfer>()))
-            .ReturnsAsync(ServiceResult.Failure("no such account"));
+            .ReturnsAsync(CreateTransferResult.Failure("no such account"));
 
         var service = CreatePaymentService(
             context,
@@ -1828,20 +2055,181 @@ public static class PaymentServiceTests
             .ActualAmount.Should().Be(100m);
     }
 
+    [Test]
+    public static async Task ResolvePaymentSettlementNow_NoAccountHoldsThePayment_ReturnsTheReason()
+    {
+        /* Arrange - the case the reconciliation page exists to explain: a reference no configured account
+           knows about. A caller waiting on the answer has to be given it, not left reading the log. */
+        using var context = CreateMockOdkContext();
+
+        var payment = context.CreatePayment();
+        payment.ExternalId = "sub_gone";
+        payment.PaidUtc = DateTime.UtcNow;
+
+        var paymentProvider = CreateMockPaymentProvider();
+        paymentProvider
+            .Setup(x => x.GetPaymentIdForReference(It.IsAny<string>(), It.IsAny<DateTime>()))
+            .ReturnsAsync((string?)null);
+
+        var service = CreatePaymentService(
+            context,
+            paymentProviderFactory: CreateMockPaymentProviderFactory(paymentProvider.Object));
+
+        // Act
+        var result = await service.ResolvePaymentSettlement(payment.Id);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.Message.Should().Contain("sub_gone");
+        result.Transferred.Should().BeFalse();
+    }
+
+    [Test]
+    public static async Task ResolvePaymentSettlementNow_NotSettledYet_ReturnsAFailureRatherThanThrowing()
+    {
+        /* Arrange - the queued job throws here so Hangfire retries it. Nothing is retrying a site admin's
+           button press, so the same state has to come back as an answer. */
+        using var context = CreateMockOdkContext();
+
+        var payment = context.CreatePayment();
+
+        var paymentProvider = CreateMockPaymentProvider();
+        paymentProvider
+            .Setup(x => x.GetPaymentSettlement(It.IsAny<string>()))
+            .ReturnsAsync(CreateExternalPaymentSettlement(settled: false));
+
+        var service = CreatePaymentService(
+            context,
+            paymentProviderFactory: CreateMockPaymentProviderFactory(paymentProvider.Object));
+
+        // Act
+        var result = await service.ResolvePaymentSettlement(payment.Id);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.Message.Should().NotBeNull();
+
+        // And it is recorded, so the page states it beside the row until a later read clears it
+        context.Set<Payment>().Single(x => x.Id == payment.Id)
+            .ReconciliationFailureReason.Should().NotBeNull();
+    }
+
+    [Test]
+    public static async Task ResolvePaymentSettlementNow_GroupPayment_ReportsThatMoneyMoved()
+    {
+        /* Arrange - the distinction a site admin needs: this reconcile paid the group, rather than only
+           writing to our own records. Not derivable from the payment afterwards, where a transfer made
+           months ago looks the same as one made just now. */
+        using var context = CreateMockOdkContext();
+
+        var currency = context.CreateCurrency();
+        var chapter = context.CreateChapter();
+        context.CreateChapterPaymentAccount(chapter, externalId: "acct_123");
+
+        var payment = context.CreatePayment(
+            chapter: chapter, currency: currency, paidUtc: DateTime.UtcNow.AddMinutes(-1));
+        payment.ExternalId = "sub_123";
+
+        var paymentProvider = CreateMockPaymentProvider();
+        paymentProvider
+            .Setup(x => x.GetPaymentIdForReference(It.IsAny<string>(), It.IsAny<DateTime>()))
+            .ReturnsAsync("pi_123");
+
+        var service = CreatePaymentService(
+            context,
+            paymentProviderFactory: CreateMockPaymentProviderFactory(paymentProvider.Object));
+
+        // Act
+        var result = await service.ResolvePaymentSettlement(payment.Id);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.Transferred.Should().BeTrue();
+    }
+
+    [Test]
+    public static async Task ResolvePaymentSettlementNow_SitePayment_ReportsThatNoMoneyMoved()
+    {
+        // Arrange - no connected account, so the reconcile only reads
+        using var context = CreateMockOdkContext();
+
+        var payment = context.CreatePayment(paidUtc: DateTime.UtcNow.AddMinutes(-1));
+        payment.ExternalId = "sub_123";
+
+        var paymentProvider = CreateMockPaymentProvider();
+        paymentProvider
+            .Setup(x => x.GetPaymentIdForReference(It.IsAny<string>(), It.IsAny<DateTime>()))
+            .ReturnsAsync("pi_123");
+
+        var service = CreatePaymentService(
+            context,
+            paymentProviderFactory: CreateMockPaymentProviderFactory(paymentProvider.Object));
+
+        // Act
+        var result = await service.ResolvePaymentSettlement(payment.Id);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.Transferred.Should().BeFalse();
+    }
+
+    [Test]
+    public static async Task ResolvePaymentSettlement_GroupPayment_UpdatesTheSamePaymentTwice()
+    {
+        /* Arrange - the settlement is recorded and committed before the transfer is made, so one payment is
+           updated twice in one request. Reading without tracking gives each read its own instance, and the
+           repository updates through a clone - so this is the case that has to keep working. */
+        using var context = new MockOdkContext(noTracking: true);
+
+        var currency = context.CreateCurrency();
+        var chapter = context.CreateChapter(country: context.CreateCountry(currency));
+        context.CreateChapterPaymentAccount(chapter, externalId: "acct_123");
+
+        var payment = context.CreatePayment(
+            chapter: chapter, currency: currency, paidUtc: DateTime.UtcNow.AddMinutes(-1));
+        payment.ExternalId = "sub_123";
+
+        var paymentProvider = CreateMockPaymentProvider();
+        paymentProvider
+            .Setup(x => x.GetPaymentIdForReference(It.IsAny<string>(), It.IsAny<DateTime>()))
+            .ReturnsAsync("pi_123");
+
+        var service = CreatePaymentService(
+            context,
+            paymentProviderFactory: CreateMockPaymentProviderFactory(paymentProvider.Object));
+
+        // Seeding leaves its entities tracked, which a request never starts with.
+        context.ChangeTracker.Clear();
+
+        // Act
+        var result = await service.ResolvePaymentSettlement(payment.Id);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.Transferred.Should().BeTrue();
+
+        var stored = context.Set<Payment>().Single(x => x.Id == payment.Id);
+        stored.ActualAmount.Should().Be(100m);
+        stored.TransferredUtc.Should().NotBeNull();
+    }
+
     private static ExternalPaymentSettlement CreateExternalPaymentSettlement(
         decimal? amount = null,
         bool settled = true,
         decimal? collectedCommissionAmount = null,
+        string? transferId = null,
         DateTime? transferredUtc = null)
         => new ExternalPaymentSettlement
         {
             Amount = amount ?? 100m,
+            ChargedUtc = new DateTime(2026, 5, 7, 16, 0, 0, DateTimeKind.Utc),
             ChargeId = "ch_123",
             CollectedCommissionAmount = collectedCommissionAmount,
             CurrencyCode = "GBP",
             FeeAmount = settled ? 1.70m : null,
             NetAmount = settled ? (amount ?? 100m) - 1.70m : null,
             SettlementCurrencyCode = settled ? "GBP" : null,
+            TransferId = transferId,
             TransferredUtc = transferredUtc
         };
 
@@ -1919,7 +2307,7 @@ public static class PaymentServiceTests
 
         paymentProvider
             .Setup(x => x.CreateTransfer(It.IsAny<ExternalTransfer>()))
-            .ReturnsAsync(ServiceResult.Successful());
+            .ReturnsAsync(CreateTransferResult.Transferred("tr_123"));
 
         // Read immediately, so a test's assertions do not depend on when the job was scheduled for.
         paymentProvider

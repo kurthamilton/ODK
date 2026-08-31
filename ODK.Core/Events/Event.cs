@@ -3,7 +3,7 @@ using ODK.Core.Utils;
 
 namespace ODK.Core.Events;
 
-public class Event : IDatabaseEntity, IChapterEntity, ICloneable<Event>
+public class Event : IDatabaseEntity, IChapterEntity
 {
     public int? AttendeeLimit { get; set; }
 
@@ -73,29 +73,6 @@ public class Event : IDatabaseEntity, IChapterEntity, ICloneable<Event>
             ? $"{time} - {TimeSpanUtils.ToString(endTime)}"
             : $"from {time}";
     }
-
-    public Event Clone() => new()
-    {
-        AttendeeLimit = AttendeeLimit,
-        ChapterId = ChapterId,
-        CreatedBy = CreatedBy,
-        CreatedUtc = CreatedUtc,
-        DateUtc = DateUtc,
-        DescriptionHtml = DescriptionHtml,
-        EndTime = EndTime,
-        Id = Id,
-        ImageUrl = ImageUrl,
-        IsPublic = IsPublic,
-        Name = Name,
-        PublishedUtc = PublishedUtc,
-        RsvpDeadlineUtc = RsvpDeadlineUtc,
-        RsvpDisabled = RsvpDisabled,
-        Shortcode = Shortcode,
-        TicketSettings = TicketSettings?.Clone(),
-        Time = Time,
-        VenueId = VenueId,
-        WaitlistDisabled = WaitlistDisabled,
-    };
 
     public string GetDisplayName() => (!IsPublished ? "[DRAFT] " : string.Empty) + Name;
 

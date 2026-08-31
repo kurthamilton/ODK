@@ -18,6 +18,12 @@ public class ExternalPaymentSettlement
     public required string ChargeId { get; init; }
 
     /// <summary>
+    /// When the provider made the charge. What bounds a search for a transfer made against it, so it is
+    /// taken from the provider's own record of the charge rather than from when we recorded the payment.
+    /// </summary>
+    public required DateTime ChargedUtc { get; init; }
+
+    /// <summary>
     /// The commission the provider collected on our behalf as part of the charge, in
     /// <see cref="CurrencyCode"/>, where it did so - which is a charge that also made its own transfer.
     /// Null for a charge collected whole, where the split is ours to make.
@@ -51,6 +57,12 @@ public class ExternalPaymentSettlement
     /// <see cref="CurrencyCode"/>. Null alongside them.
     /// </summary>
     public required string? SettlementCurrencyCode { get; init; }
+
+    /// <summary>
+    /// The provider's own transfer to the connected account, where it made one. Null for a charge collected
+    /// whole, where making the transfer is ours to do - and so is recording its id.
+    /// </summary>
+    public required string? TransferId { get; init; }
 
     /// <summary>
     /// When the provider made its own transfer to the connected account, where it did. Null for a charge

@@ -31,11 +31,25 @@ public interface IPaymentProvider
 
     /// <summary>
     /// Moves money out of a charge we collected and on to a connected account. Safe to call again for the
-    /// same <see cref="ExternalTransfer.IdempotencyKey"/> - the provider makes one transfer, not two.
+    /// same <see cref="ExternalTransfer.IdempotencyKey"/> - the provider makes one transfer, not two, and
+    /// answers with the one it already made.
     /// </summary>
-    Task<ServiceResult> CreateTransfer(ExternalTransfer transfer);
+    Task<CreateTransferResult> CreateTransfer(ExternalTransfer transfer);
 
     Task<ServiceResult> DeactivateSubscriptionPlan(string externalId);
+
+    /// <summary>
+    /// The transfer that moved money out of <paramref name="externalChargeId"/> and on to
+    /// <paramref name="connectedAccountId"/>, where one was made against a charge collected whole. Null
+    /// where the provider knows of none.
+    /// </summary>
+    /// <remarks>
+    /// Searched from the transfer's side, because the link only points that way: a charge names a transfer
+    /// only where the provider made that transfer as part of the charge, so one made against the charge
+    /// afterwards is not reachable from it. <paramref name="chargedUtc"/> bounds the search.
+    /// </remarks>
+    Task<string?> FindTransferIdForCharge(
+        string externalChargeId, string connectedAccountId, DateTime chargedUtc);
 
     Task<string?> GenerateConnectedAccountSetupUrl(GenerateRemoteAccountSetupUrlOptions options);
 

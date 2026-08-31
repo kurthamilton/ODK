@@ -146,6 +146,45 @@ public static class StripePaymentProviderTests
     }
 
     [Test]
+    public static void MapSettlement_ProviderMadeItsOwnTransfer_CarriesTheTransfer()
+    {
+        /* Arrange - a destination charge, which Stripe split and transferred itself. Its transfer is the
+           only handle a refund of that payment has for taking the group's share back. */
+        var transferredUtc = new DateTime(2026, 5, 7, 16, 30, 0, DateTimeKind.Utc);
+
+        var charge = CreateSettledCharge();
+        charge.ApplicationFeeAmount = 250;
+        charge.Transfer = new Transfer
+        {
+            Id = "tr_123",
+            Created = transferredUtc
+        };
+
+        // Act
+        var result = StripePaymentProvider.MapSettlement(charge);
+
+        // Assert
+        result.CollectedCommissionAmount.Should().Be(2.50m);
+        result.TransferId.Should().Be("tr_123");
+        result.TransferredUtc.Should().Be(transferredUtc);
+    }
+
+    [Test]
+    public static void MapSettlement_ChargeCollectedWhole_HasNoTransfer()
+    {
+        // Arrange - collected whole, so the transfer is ours to make and ours to record
+        var charge = CreateSettledCharge();
+
+        // Act
+        var result = StripePaymentProvider.MapSettlement(charge);
+
+        // Assert
+        result.CollectedCommissionAmount.Should().BeNull();
+        result.TransferId.Should().BeNull();
+        result.TransferredUtc.Should().BeNull();
+    }
+
+    [Test]
     public static void MapSettlement_SettlementCurrencyDiffersFromCharge_CarriesSettlementCurrency()
     {
         // Arrange - a euro charge settling into a sterling balance; the fee and net are in sterling

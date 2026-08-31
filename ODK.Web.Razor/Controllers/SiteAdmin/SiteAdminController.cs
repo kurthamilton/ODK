@@ -4,6 +4,7 @@ using ODK.Services.Authentication;
 using ODK.Services.Contact;
 using ODK.Services.Features;
 using ODK.Services.Logging;
+using ODK.Services.Payments;
 using ODK.Services.SocialMedia;
 using ODK.Services.Subscriptions;
 using ODK.Services.Subscriptions.Models;
@@ -24,6 +25,7 @@ public class SiteAdminController : OdkControllerBase
     private readonly IContactAdminService _contactAdminService;
     private readonly IFeatureService _featureService;
     private readonly ILoggingService _loggingService;
+    private readonly IPaymentAdminService _paymentAdminService;
     private readonly ISiteSubscriptionAdminService _siteSubscriptionAdminService;
     private readonly ISocialMediaService _socialMediaService;
     private readonly ITopicAdminService _topicAdminService;
@@ -34,6 +36,7 @@ public class SiteAdminController : OdkControllerBase
         ISiteSubscriptionAdminService siteSubscriptionAdminService,
         IFeatureService featureService,
         IContactAdminService contactAdminService,
+        IPaymentAdminService paymentAdminService,
         ITopicAdminService topicAdminService,
         IRequestStore requestStore,
         IOdkRoutes odkRoutes)
@@ -42,6 +45,7 @@ public class SiteAdminController : OdkControllerBase
         _contactAdminService = contactAdminService;
         _featureService = featureService;
         _loggingService = loggingService;
+        _paymentAdminService = paymentAdminService;
         _siteSubscriptionAdminService = siteSubscriptionAdminService;
         _socialMediaService = socialMediaService;
         _topicAdminService = topicAdminService;
@@ -109,6 +113,55 @@ public class SiteAdminController : OdkControllerBase
         var result = await _contactAdminService.DeleteSpamMessages(MemberServiceRequest);
         AddFeedback(result, "Spam messages deleted");
         return RedirectToReferrer();
+    }
+
+    [HttpPost("siteadmin/payments/{id:guid}/reconcile/ignore")]
+    public async Task<IActionResult> IgnorePayment(Guid id)
+    {
+        var result = await _paymentAdminService.IgnorePayment(MemberServiceRequest, id);
+
+        AddFeedback(result);
+        return Redirect(OdkRoutes.SiteAdmin.PaymentReconciliation.Path);
+    }
+
+    [HttpPost("siteadmin/payments/reconcile/ignore")]
+    public async Task<IActionResult> IgnorePayments(
+        [FromForm] PaymentReconciliationFormSubmitViewModel viewModel)
+    {
+        var result = await _paymentAdminService.IgnorePayments(
+            MemberServiceRequest, viewModel.PaymentIds);
+
+        AddFeedback(result);
+        return Redirect(OdkRoutes.SiteAdmin.PaymentReconciliation.Path);
+    }
+
+    [HttpPost("siteadmin/payments/{id:guid}/reconcile/unignore")]
+    public async Task<IActionResult> UnignorePayment(Guid id)
+    {
+        var result = await _paymentAdminService.UnignorePayment(MemberServiceRequest, id);
+
+        AddFeedback(result);
+        return Redirect(OdkRoutes.SiteAdmin.PaymentReconciliation.Path);
+    }
+
+    [HttpPost("siteadmin/payments/{id:guid}/reconcile")]
+    public async Task<IActionResult> ReconcilePayment(Guid id)
+    {
+        var result = await _paymentAdminService.ReconcilePayment(MemberServiceRequest, id);
+
+        AddFeedback(result);
+        return Redirect(OdkRoutes.SiteAdmin.PaymentReconciliation.Path);
+    }
+
+    [HttpPost("siteadmin/payments/reconcile")]
+    public async Task<IActionResult> ReconcilePayments(
+        [FromForm] PaymentReconciliationFormSubmitViewModel viewModel)
+    {
+        var result = await _paymentAdminService.ReconcilePayments(
+            MemberServiceRequest, viewModel.PaymentIds);
+
+        AddFeedback(result);
+        return Redirect(OdkRoutes.SiteAdmin.PaymentReconciliation.Path);
     }
 
     [HttpPost("siteadmin/subscriptions")]
