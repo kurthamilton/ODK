@@ -13,6 +13,7 @@
         DescriptionHtml = Model.Texts?.DescriptionHtml,
         RegisterMessageHtml = Model.Texts?.RegisterTextHtml,
         ShortDescription = Model.Texts?.ShortDescription,
+        ValidateUrl = $"/groups/{Model.Chapter.Id}/texts/validate",
         WelcomeMessageHtml = Model.Texts?.WelcomeTextHtml
     })
     <button class="btn btn-primary">Update</button>

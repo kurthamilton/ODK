@@ -10,6 +10,7 @@ using ODK.Services.Emails.Models;
 using ODK.Services.Security;
 using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
+using ODK.Web.Razor.Models.Admin;
 using ODK.Web.Razor.Models.Admin.Chapters;
 using ODK.Web.Razor.Models.Admin.Emails;
 using ODK.Web.Razor.Models.Admin.Members;
@@ -334,7 +335,7 @@ public class ChapterAdminController : AdminControllerBase
             ChapterAdminSecurable.Emails, MemberChapterServiceRequest);
         var result = await _emailAdminService.ValidateChapterEmailHtml(request, type, content);
 
-        return Ok(new EmailHtmlValidationResultViewModel
+        return Ok(new HtmlValidationResultViewModel
         {
             Message = result.Message,
             Valid = result.Success
@@ -410,20 +411,36 @@ public class ChapterAdminController : AdminControllerBase
 
     [HttpPost("groups/{chapterId:guid}/texts")]
     public async Task<IActionResult> UpdateChapterTexts(Guid chapterId,
-        [FromForm] ChapterTextsFormViewModel viewModel)
+        [FromForm] ChapterTextsFormSubmitViewModel viewModel)
     {
         var request = MemberChapterAdminServiceRequest.Create(
             ChapterAdminSecurable.Texts, MemberChapterServiceRequest);
         var result = await _chapterAdminService.UpdateChapterTexts(request, new ChapterTextsUpdateModel
         {
             DescriptionHtml = viewModel.DescriptionHtml,
-            RegisterTextHtml = viewModel.RegisterMessageHtml,
+            RegisterTextHtml = viewModel.RegisterMessageHtml ?? string.Empty,
             ShortDescription = viewModel.ShortDescription,
-            WelcomeTextHtml = viewModel.WelcomeMessageHtml
+            WelcomeTextHtml = viewModel.WelcomeMessageHtml ?? string.Empty
         });
 
         AddFeedback(result, "Texts updated");
 
         return RedirectToReferrer();
+    }
+
+    /* One endpoint for all of the texts rather than one per field: the check is the same allow-list
+       whichever box the content came from, so the field it belongs to makes no difference to the answer. */
+    [HttpPost("groups/{chapterId:guid}/texts/validate")]
+    public async Task<IActionResult> ValidateChapterText(Guid chapterId, [FromForm] string? content)
+    {
+        var request = MemberChapterAdminServiceRequest.Create(
+            ChapterAdminSecurable.Texts, MemberChapterServiceRequest);
+        var result = await _chapterAdminService.ValidateChapterTextHtml(request, content);
+
+        return Ok(new HtmlValidationResultViewModel
+        {
+            Message = result.Message,
+            Valid = result.Success
+        });
     }
 }

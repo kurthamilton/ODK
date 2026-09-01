@@ -197,4 +197,10 @@ public interface IChapterAdminService
     Task<ServiceResult> UpdateChapterTopics(
         IMemberChapterAdminServiceRequest request,
         IReadOnlyCollection<Guid> topicIds);
+
+    /// <summary>
+    /// Whether one of a group's texts holds markup the save will accept, for the editor to ask as it is
+    /// typed into rather than leaving it to the submit.
+    /// </summary>
+    Task<ServiceResult> ValidateChapterTextHtml(IMemberChapterAdminServiceRequest request, string? html);
 }

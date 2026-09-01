@@ -181,6 +181,42 @@ public static class HtmlExtensions
         return htmlBuilder;
     }
 
+    /// <summary>
+    /// A textarea holding rich text, mounted with the WYSIWYG editor - see odk.html-editor.js - and checked
+    /// against the markup rules the save applies. Those rules are a parse and an allow-list the server owns,
+    /// so the field is checked by posting it to <paramref name="validateUrl"/> (the htmlcontent provider in
+    /// odk.forms.js) rather than by a pattern the browser could run.
+    ///
+    /// Sets data-val itself so the check applies whether or not the bound property carries a validation
+    /// attribute.
+    /// </summary>
+    public static IHtmlContent OdkHtmlEditorTextAreaFor<TModel>(
+        this IHtmlHelper<TModel> htmlHelper,
+        Expression<Func<TModel, string?>> expression,
+        string validateUrl,
+        object? htmlAttributes = null)
+    {
+        var attributes = htmlAttributes != null
+            ? HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes)
+            : new Dictionary<string, object>();
+
+        attributes["data-html-editor"] = string.Empty;
+        attributes["data-val"] = "true";
+        attributes["data-val-htmlcontent"] = "Invalid HTML";
+        attributes["data-val-htmlcontent-url"] = validateUrl;
+
+        /* Only content the author has touched is checked, which is what the save does too - stored markup
+           that predates these rules must not block an edit to another field on the same form. */
+        attributes["data-val-htmlcontent-changed-only"] = "true";
+
+        /* Narrowed from the default "input change" to change alone, which for a field behind an editor means
+           it lost focus after an edit. The default re-runs every validator on the field once it is showing an
+           error, which for this one is a round trip carrying the whole body every time typing pauses. */
+        attributes["data-val-event"] = "change";
+
+        return htmlHelper.TextAreaFor(expression, attributes);
+    }
+
     public static IHtmlContent OdkTimeZoneDropDownFor<TModel>(this IHtmlHelper<TModel> htmlHelper,
         Expression<Func<TModel, string?>> expression, string optionLabel, object htmlAttributes)
         => htmlHelper.TimeZoneDropDownFor(expression, optionLabel, htmlAttributes);

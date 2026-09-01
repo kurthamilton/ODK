@@ -56,10 +56,10 @@ window.odk.codeEditor = window.odk.codeEditor || {};
         $container.className = 'code-editor';
         $textarea.insertAdjacentElement('afterend', $container);
 
-        // Moved out of sight rather than hidden - see .code-editor-source in _code-editor.scss for why
+        // Moved out of sight rather than hidden - see .editor-source in _editor-source.scss for why
         // display:none would switch this field's validation off. Out of the tab order because the editor
         // is what a keyboard user should reach.
-        $textarea.classList.add('code-editor-source');
+        $textarea.classList.add('editor-source');
         $textarea.tabIndex = -1;
 
         const editor = ace.edit($container, {
@@ -99,8 +99,9 @@ window.odk.codeEditor = window.odk.codeEditor || {};
         // the editor never lost focus. Silent - raising the event here would validate every keystroke.
         editor.session.on('change', () => { $textarea.value = editor.getValue(); });
 
-        // The field validates on change (data-val-event in _EmailForm) and assigning value above does
-        // not raise it, so it is raised here: the editor losing focus is the real field's equivalent.
+        // The field validates on change (data-val-event, set by OdkEmailTemplateTextAreaFor) and assigning
+        // value above does not raise it, so it is raised here: the editor losing focus is the real field's
+        // equivalent.
         editor.on('blur', () => {
             $textarea.value = editor.getValue();
             $textarea.dispatchEvent(new Event('change', { bubbles: true }));

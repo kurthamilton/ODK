@@ -1360,6 +1360,132 @@ public static class ChapterAdminServiceTests
     }
 
     [Test]
+    public static async Task UpdateChapterTexts_UpdatesSuccessfully()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(
+            adminMembers: [currentMember]);
+
+        context.Create(CreateChapterTexts(chapter: chapter));
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.Texts);
+
+        var model = CreateChapterTextsUpdateModel();
+
+        // Act
+        var result = await service.UpdateChapterTexts(request, model);
+
+        // Assert
+        result.Success.Should().BeTrue();
+    }
+
+    [Test]
+    public static async Task UpdateChapterTexts_RequiredFieldIsMissing_NamesTheField()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(
+            adminMembers: [currentMember]);
+
+        context.Create(CreateChapterTexts(chapter: chapter));
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.Texts);
+
+        var model = CreateChapterTextsUpdateModel(registerTextHtml: "");
+
+        // Act
+        var result = await service.UpdateChapterTexts(request, model);
+
+        // Assert
+        result.Messages.Should().Equal($"{ChapterTextLabels.RegisterText} is required");
+    }
+
+    [Test]
+    public static async Task UpdateChapterTexts_SeveralFieldsAreInvalid_ReportsEachOne()
+    {
+        // Arrange - one field empty and another holding markup the validator rejects, so a single save has
+        // to account for both rather than stopping at the first.
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(
+            adminMembers: [currentMember]);
+
+        context.Create(CreateChapterTexts(chapter: chapter));
+
+        var service = CreateChapterAdminService(
+            context,
+            htmlValidator: CreateMockHtmlValidator(rejected: "<script>"));
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.Texts);
+
+        var model = CreateChapterTextsUpdateModel(
+            descriptionHtml: "<script>alert(1)</script>",
+            welcomeTextHtml: "");
+
+        // Act
+        var result = await service.UpdateChapterTexts(request, model);
+
+        // Assert - in the order the fields appear on the form.
+        result.Messages.Should().Equal(
+            $"{ChapterTextLabels.Description}: Unsupported HTML: <script>",
+            $"{ChapterTextLabels.WelcomeText} is required");
+    }
+
+    [Test]
+    public static async Task UpdateChapterTexts_StoredTextIsInvalidAndUnchanged_UpdatesSuccessfully()
+    {
+        // Arrange - markup stored before the validator existed must not block an edit to another field on
+        // the same form.
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(
+            adminMembers: [currentMember]);
+
+        context.Create(CreateChapterTexts(chapter: chapter, descriptionHtml: "<script>alert(1)</script>"));
+
+        var service = CreateChapterAdminService(
+            context,
+            htmlValidator: CreateMockHtmlValidator(rejected: "<script>"));
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.Texts);
+
+        var model = CreateChapterTextsUpdateModel(descriptionHtml: "<script>alert(1)</script>");
+
+        // Act
+        var result = await service.UpdateChapterTexts(request, model);
+
+        // Assert
+        result.Success.Should().BeTrue();
+    }
+
+    [Test]
     public static async Task UpdateChapterMembershipSettings_OwnerHasApproveMembers_AppliesTheSetting()
     {
         // Arrange - the owner pays for member approval, so turning it on has to stick. This condition was
@@ -1630,6 +1756,20 @@ public static class ChapterAdminServiceTests
         var mock = new Mock<IHtmlValidator>();
         mock.Setup(x => x.Validate(It.IsAny<string?>(), It.IsAny<HtmlValidatorOptions>()))
             .Returns(ServiceResult.Successful());
+        return mock.Object;
+    }
+
+    /// <summary>
+    /// A validator that rejects any content holding <paramref name="rejected"/>, reporting it the way the
+    /// real one does. Everything else passes.
+    /// </summary>
+    private static IHtmlValidator CreateMockHtmlValidator(string rejected)
+    {
+        var mock = new Mock<IHtmlValidator>();
+        mock.Setup(x => x.Validate(It.IsAny<string?>(), It.IsAny<HtmlValidatorOptions>()))
+            .Returns((string? html, HtmlValidatorOptions _) => html?.Contains(rejected) == true
+                ? ServiceResult.Failure($"Unsupported HTML: {rejected}")
+                : ServiceResult.Successful());
         return mock.Object;
     }
 
@@ -1923,13 +2063,30 @@ public static class ChapterAdminServiceTests
     private static ChapterImage CreateChapterImage(Chapter chapter)
         => new ChapterImage { ChapterId = chapter.Id };
 
-    private static ChapterTexts CreateChapterTexts(Chapter chapter)
+    private static ChapterTexts CreateChapterTexts(Chapter chapter, string? descriptionHtml = null)
         => new ChapterTexts
         {
             ChapterId = chapter.Id,
-            DescriptionHtml = "Test description",
+            DescriptionHtml = descriptionHtml ?? "Test description",
             WelcomeTextHtml = "Welcome to the test chapter",
             RegisterTextHtml = "Register here"
+        };
+
+    /// <summary>
+    /// Defaults to what <see cref="CreateChapterTexts" /> stores, so a test that overrides nothing submits
+    /// the group's texts unchanged.
+    /// </summary>
+    private static ChapterTextsUpdateModel CreateChapterTextsUpdateModel(
+        string? descriptionHtml = null,
+        string? registerTextHtml = null,
+        string? shortDescription = null,
+        string? welcomeTextHtml = null)
+        => new ChapterTextsUpdateModel
+        {
+            DescriptionHtml = descriptionHtml ?? "Test description",
+            RegisterTextHtml = registerTextHtml ?? "Register here",
+            ShortDescription = shortDescription,
+            WelcomeTextHtml = welcomeTextHtml ?? "Welcome to the test chapter"
         };
 
     private static ChapterLinks CreateChapterLinks(Chapter chapter)

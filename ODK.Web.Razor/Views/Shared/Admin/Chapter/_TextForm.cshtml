@@ -1,10 +1,12 @@
 ﻿@using ODK.Resources.Resources
 @using ODK.Web.Razor.Models.Admin.Chapters
+@using ODK.Web.Razor.Mvc
 @model ChapterTextsFormViewModel
 
 <div class="form-group mb-3">
     @Html.LabelFor(x => x.ShortDescription, new { @class = "form-label" })
     @await Html.PartialAsync("Components/_FormLabelSubtitle", GroupsResource.ShortDescriptionHelpText)
+    @* Plain text rather than rich text, so no editor and nothing to check for markup. *@
     @Html.TextAreaFor(x => x.ShortDescription, new { @class = "form-control", rows = 2 })
     @Html.ValidationMessageFor(x => x.ShortDescription)
 </div>
@@ -12,18 +14,25 @@
 <div class="form-group mb-3">
     @Html.LabelFor(x => x.DescriptionHtml, new { @class = "form-label" })
     @await Html.PartialAsync("Components/_FormLabelSubtitle", GroupsResource.DescriptionHelpText)
-    @Html.TextAreaFor(x => x.DescriptionHtml, new { @class = "form-control", rows = 6, data_html_editor = "" })
+    @Html.OdkHtmlEditorTextAreaFor(x => x.DescriptionHtml, Model.ValidateUrl,
+        htmlAttributes: new { @class = "form-control", rows = 6 })
     @Html.ValidationMessageFor(x => x.DescriptionHtml)
 </div>
 
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.RegisterMessageHtml, new { @class = "form-label" })
-    @Html.TextAreaFor(x => x.RegisterMessageHtml, new { @class = "form-control", rows = 6, data_html_editor = "" })
+    @await Html.PartialAsync("Components/_FormLabelSubtitle",
+        "Shown to non-members on the registration page.")
+    @Html.OdkHtmlEditorTextAreaFor(x => x.RegisterMessageHtml, Model.ValidateUrl,
+        htmlAttributes: new { @class = "form-control", rows = 6 })
     @Html.ValidationMessageFor(x => x.RegisterMessageHtml)
 </div>
 
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.WelcomeMessageHtml, new { @class = "form-label" })
-    @Html.TextAreaFor(x => x.WelcomeMessageHtml, new { @class = "form-control", rows = 6, data_html_editor = "" })
+    @await Html.PartialAsync("Components/_FormLabelSubtitle",
+        "Shown to non-members on the group home page.")
+    @Html.OdkHtmlEditorTextAreaFor(x => x.WelcomeMessageHtml, Model.ValidateUrl,
+        htmlAttributes: new { @class = "form-control", rows = 6 })
     @Html.ValidationMessageFor(x => x.WelcomeMessageHtml)
 </div>
