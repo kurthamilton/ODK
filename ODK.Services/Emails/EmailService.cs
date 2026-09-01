@@ -21,6 +21,7 @@ public class EmailService : IEmailService
     private readonly ILoggingService _loggingService;
     private readonly IPlatformProvider _platformProvider;
     private readonly EmailServiceSettings _settings;
+    private readonly ISiteEmailSettingsProvider _siteEmailSettingsProvider;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUrlProviderFactory _urlProviderFactory;
 
@@ -31,12 +32,14 @@ public class EmailService : IEmailService
         IBackgroundTaskService backgroundTaskService,
         ILoggingService loggingService,
         IPlatformProvider platformProvider,
+        ISiteEmailSettingsProvider siteEmailSettingsProvider,
         EmailServiceSettings settings)
     {
         _backgroundTaskService = backgroundTaskService;
         _emailClient = emailClient;
         _loggingService = loggingService;
         _platformProvider = platformProvider;
+        _siteEmailSettingsProvider = siteEmailSettingsProvider;
         _unitOfWork = unitOfWork;
         _settings = settings;
         _urlProviderFactory = urlProviderFactory;
@@ -66,9 +69,10 @@ public class EmailService : IEmailService
         var platform = request.Platform;
         var chapterId = options.Chapter?.Id;
 
-        var (templates, siteSettings, chapterEmailSettings) = await _unitOfWork.Run(
+        var siteSettings = _siteEmailSettingsProvider.Get(platform);
+
+        var (templates, chapterEmailSettings) = await _unitOfWork.Run(
             x => x.ChapterEmailRepository.GetDto(chapterId, options.Type),
-            x => x.SiteEmailSettingsRepository.Get(platform),
             x => chapterId != null
                 ? x.ChapterEmailSettingsRepository.GetByChapterIdOrDefault(chapterId.Value)
                 : new DefaultDeferredQuerySingleOrDefault<ChapterEmailSettings>());

@@ -3,13 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Emails;
 using ODK.Services.Authentication;
 using ODK.Services.Emails;
-using ODK.Services.Settings;
-using ODK.Services.Settings.Models;
 using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
 using ODK.Web.Razor.Models.Admin.Chapters;
 using ODK.Web.Razor.Models.Admin.Emails;
-using ODK.Web.Razor.Models.Feedback;
 using ODK.Web.Razor.Models.SiteAdmin;
 
 namespace ODK.Web.Razor.Controllers.SiteAdmin;
@@ -18,17 +15,14 @@ namespace ODK.Web.Razor.Controllers.SiteAdmin;
 public class EmailsController : OdkControllerBase
 {
     private readonly IEmailAdminService _emailAdminService;
-    private readonly ISettingsService _settingsService;
 
     public EmailsController(
-        ISettingsService settingsService,
         IEmailAdminService emailAdminService,
         IRequestStore requestStore,
         IOdkRoutes odkRoutes)
         : base(requestStore, odkRoutes)
     {
         _emailAdminService = emailAdminService;
-        _settingsService = settingsService;
     }
 
     /* Binds the same view model the save binds, so the preview is of what saving would send rather than of
@@ -37,7 +31,7 @@ public class EmailsController : OdkControllerBase
     public async Task<IActionResult> PreviewEmail(
         EmailType type, [FromForm] SiteEmailFormSubmitViewModel viewModel)
     {
-        var preview = await _emailAdminService.PreviewEmail(
+        var preview = await _emailAdminService.PreviewSiteEmail(
             MemberServiceRequest, type, viewModel.Subject, viewModel.ContentHtml);
 
         return Ok(EmailPreviewViewModel.FromRendered(preview));
@@ -63,20 +57,5 @@ public class EmailsController : OdkControllerBase
             Message = result.Message,
             Valid = result.Success
         });
-    }
-
-    [HttpPost("siteadmin/emails/settings")]
-    public async Task<IActionResult> UpdateSettings(SiteEmailSettingsViewModel viewModel)
-    {
-        var model = new EmailSettingsUpdateModel
-        {
-            AdminTitle = viewModel.AdminTitle,
-            FromEmailAddress = viewModel.FromEmailAddress,
-            MemberTitle = viewModel.MemberTitle
-        };
-
-        await _settingsService.UpdateEmailSettings(MemberServiceRequest, model);
-        AddFeedback("Email settings updated", FeedbackType.Success);
-        return RedirectToReferrer();
     }
 }

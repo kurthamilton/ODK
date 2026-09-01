@@ -43,7 +43,6 @@ public static class EmailAdminServiceTests
         using var context = new MockOdkContext();
         var (chapter, currentMember) = CreateChapter(context, withFeature: true);
         CreateSiteEmail(context, EmailRecipientType.Admins);
-        CreateSiteEmailSettings(context);
         context.Create(new ChapterEmail
         {
             ChapterId = chapter.Id,
@@ -72,17 +71,16 @@ public static class EmailAdminServiceTests
         using var context = new MockOdkContext();
         var currentMember = context.CreateMember(siteAdmin: true);
         CreateSiteEmail(context);
-        CreateSiteEmailSettings(context);
 
         var service = CreateService(context);
 
         // Act
-        var result = await service.GetEmail(CreateMemberRequest(currentMember), Type);
+        var result = await service.GetSiteEmail(CreateMemberRequest(currentMember), Type);
 
         // Assert
         result.Parameters.Single(x => x.Name == "platform.url").Value.Should().NotBeNull();
         result.Parameters.Single(x => x.Name == "group.name").Value.Should().BeNull();
-        result.Parameters.Single(x => x.Name == "title").Value.Should().Be("Site members");
+        result.Parameters.Single(x => x.Name == "title").Value.Should().Be(TestSiteEmailSettingsProvider.MemberTitle);
     }
 
     [Test]
@@ -94,7 +92,6 @@ public static class EmailAdminServiceTests
         using var context = new MockOdkContext();
         var (chapter, currentMember) = CreateChapter(context, withFeature: true);
         CreateSiteEmail(context);
-        CreateSiteEmailSettings(context);
 
         var service = CreateService(context);
 
@@ -115,7 +112,6 @@ public static class EmailAdminServiceTests
         using var context = new MockOdkContext();
         var (chapter, currentMember) = CreateChapter(context, withFeature: true);
         CreateSiteEmail(context);
-        CreateSiteEmailSettings(context);
         context.Create(new ChapterEmail
         {
             ChapterId = chapter.Id,
@@ -142,7 +138,6 @@ public static class EmailAdminServiceTests
         using var context = new MockOdkContext();
         var (chapter, currentMember) = CreateChapter(context, withFeature: true);
         CreateSiteEmail(context);
-        CreateSiteEmailSettings(context);
         context.Create(new ChapterEmailSettings
         {
             ChapterId = chapter.Id,
@@ -158,8 +153,8 @@ public static class EmailAdminServiceTests
         // Assert - the site's titles come through too, since the form shows them beside the group's boxes.
         result.Settings.Should().NotBeNull();
         result.Settings.MemberTitle.Should().Be("Our own wording");
-        result.SiteMemberTitle.Should().Be("Site members");
-        result.SiteAdminTitle.Should().Be("Site admins");
+        result.SiteMemberTitle.Should().Be(TestSiteEmailSettingsProvider.MemberTitle);
+        result.SiteAdminTitle.Should().Be(TestSiteEmailSettingsProvider.AdminTitle);
         result.CanEdit.Should().BeTrue();
     }
 
@@ -171,7 +166,6 @@ public static class EmailAdminServiceTests
         using var context = new MockOdkContext();
         var (chapter, currentMember) = CreateChapter(context, withFeature: false);
         CreateSiteEmail(context);
-        CreateSiteEmailSettings(context);
 
         var service = CreateService(context);
 
@@ -285,7 +279,6 @@ public static class EmailAdminServiceTests
         using var context = new MockOdkContext();
         var (chapter, currentMember) = CreateChapter(context, withFeature: true);
         CreateSiteEmail(context);
-        CreateSiteEmailSettings(context);
 
         var service = CreateService(context);
 
@@ -308,7 +301,6 @@ public static class EmailAdminServiceTests
         using var context = new MockOdkContext();
         var (chapter, currentMember) = CreateChapter(context, withFeature: true);
         CreateSiteEmail(context);
-        CreateSiteEmailSettings(context);
 
         var service = CreateService(context);
 
@@ -322,7 +314,7 @@ public static class EmailAdminServiceTests
         Value(result, "group.url").Should().NotBeNull();
 
         // The title comes from the audience and the group's settings rather than from that dictionary.
-        Value(result, "title").Should().Be("Site members");
+        Value(result, "title").Should().Be(TestSiteEmailSettingsProvider.MemberTitle);
 
         // Unresolved because it stands for the member being emailed.
         Value(result, "member.firstName").Should().BeNull();
@@ -829,6 +821,7 @@ public static class EmailAdminServiceTests
         new AuthorizationService(),
         htmlValidator ?? CreateHtmlValidator(ServiceResult.Successful()),
         CreateUrlProviderFactory(),
+        TestSiteEmailSettingsProvider.Create(),
         new SiteSubscriptionCooldown(months: 0),
         CreateTestEmailParametersFactory());
 
@@ -865,17 +858,6 @@ public static class EmailAdminServiceTests
         RecipientType = recipientType,
         Subject = "Standard",
         Type = Type
-    });
-
-    /* The chapter email pages read the site's titles, to show a group what leaving a box empty gives it, so
-       the settings row has to exist for them to load at all. */
-    private static void CreateSiteEmailSettings(MockOdkContext context) => context.Create(new SiteEmailSettings
-    {
-        AdminTitle = "Site admins",
-        FromEmailAddress = "noreply@example.com",
-        Id = Guid.NewGuid(),
-        MemberTitle = "Site members",
-        Platform = PlatformType.Default
     });
 
     private static string? Value(ChapterEmailAdminPageViewModel result, string name) =>
