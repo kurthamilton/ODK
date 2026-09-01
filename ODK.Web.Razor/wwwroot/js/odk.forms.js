@@ -1,14 +1,38 @@
 ﻿window.odk = window.odk || {};
 window.odk.forms = window.odk.forms || {};
 
+/* Steps that run, in order, after a form has validated and before it posts - a field a script has to fill
+   asynchronously, which the native submit gives it no chance to do. See odk.recaptcha.js.
+
+   A step is registered here rather than as a submit handler of the script's own: a handler that replaces the
+   native submit to await something silences every other check on that form, the client-side validation
+   included, and it is the first such handler to be registered that wins. So one place owns the submit and
+   runs the steps in between - which is also the only way a form posted programmatically (see bindSubmits)
+   can run them at all, since form.submit() fires no submit event.
+
+   Declared here because the scripts that register a step load after this bundle. */
+window.odk.forms.beforeSubmit = window.odk.forms.beforeSubmit || [];
+
 (function () {
     initConfig();
     bindAutoSubmits();
+    bindBeforeSubmit();
     bindClearables();
     bindClientSideValidation();
     bindColorPickers();
     bindDatePickers();
     bindSubmits();
+
+    // Validates, runs the pre-submit steps, then posts. The route for code that submits a form itself:
+    // form.submit() fires no submit event, so neither the validation library nor bindBeforeSubmit below
+    // can see it and both have to be run from here.
+    window.odk.forms.validateAndSubmit = async $form => {
+        const v = window.odk.forms.validationService;
+        if (!await v.validateForm($form)) return;
+
+        await runBeforeSubmit($form);
+        $form.submit();
+    };
 
     // Hydrate window.odk.config from server-rendered data attributes on <html>, so the JS reads
     // server-side values from the DOM rather than the server writing to window.odk inline.
@@ -27,6 +51,27 @@ window.odk.forms = window.odk.forms || {};
             // bind selects to odk:changed, which is emitted by the slim-select integration since change events don't bubble
             const eventName = $trigger.tagName === 'SELECT' ? 'odk:changed' : 'change';
             $trigger.addEventListener(eventName, () => $form.submit());
+        });
+    }
+
+    function bindBeforeSubmit() {
+        /* Delegated to the document, which is where a submit that has passed every check on the way arrives.
+           A form the validation library tracks never lets its own submit event get this far - the library
+           stops it, validates, and dispatches a fresh one once the form is valid - so an event seen here has
+           either validated or belongs to a form with nothing to validate.
+
+           An event another handler has already claimed is left alone: the confirm dialog in odk.js cancels
+           the submit to ask, and replays it on accept, and the replay arrives here. */
+        document.addEventListener('submit', async e => {
+            if (e.defaultPrevented) return;
+            if (window.odk.forms.beforeSubmit.length === 0) return;
+
+            const $form = e.target;
+
+            // Replaced rather than delayed: a step can only be awaited, and a submit event cannot wait.
+            e.preventDefault();
+            await runBeforeSubmit($form);
+            $form.submit();
         });
     }
 
@@ -216,17 +261,12 @@ window.odk.forms = window.odk.forms || {};
             $button.addEventListener('click', () => {
                 if ($target.tagName !== 'FORM') return;
 
-                // Awaits validateForm rather than reading isValid(): once a provider validates
-                // asynchronously (see htmlcontent) the synchronous state is still stale when isValid
-                // returns, so the form would submit before the answer arrived. The promise resolves true
-                // for a form with no validated fields, which is how the test/restore buttons - which
+                // validateAndSubmit awaits validateForm rather than reading isValid(): once a provider
+                // validates asynchronously (see htmlcontent) the synchronous state is still stale when
+                // isValid returns, so the form would submit before the answer arrived. The promise resolves
+                // true for a form with no validated fields, which is how the test/restore buttons - which
                 // target their own empty forms - still submit.
-                const submit = async () => {
-                    const v = window.odk.forms.validationService;
-                    if (await v.validateForm($target)) {
-                        $target.submit();
-                    }
-                };
+                const submit = () => window.odk.forms.validateAndSubmit($target);
 
                 // submit() fires no submit event, so the confirm interception in odk.js can't see it - ask
                 // here instead. Returns false when the form has no _Confirm, in which case just submit.
@@ -255,5 +295,12 @@ window.odk.forms = window.odk.forms || {};
         const $span = document.createElement('span');
         $span.textContent = text;
         return $span.innerHTML;
+    }
+
+    // Sequential rather than parallel: a step may depend on what an earlier one wrote into the form.
+    async function runBeforeSubmit($form) {
+        for (const step of window.odk.forms.beforeSubmit) {
+            await step($form);
+        }
     }
 })();

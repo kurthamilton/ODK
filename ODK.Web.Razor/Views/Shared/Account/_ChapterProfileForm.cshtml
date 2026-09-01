@@ -56,11 +56,8 @@
     var htmlAttributes = new Dictionary<string, object>();
     if (chapterProperty.Required == true)
     {
-        var label = !string.IsNullOrEmpty(chapterProperty.DisplayName) 
-            ? chapterProperty.DisplayName 
-            : chapterProperty.Label;
         htmlAttributes.Add("data-val", "true");
-        htmlAttributes.Add("data-val-required", $"The {label} field is required.");
+        htmlAttributes.Add("data-val-required", $"The {chapterProperty.GetDisplayText()} field is required.");
     }
 
     @Html.HiddenFor(x => x.Properties[i].ChapterPropertyId)
@@ -97,7 +94,7 @@
                 class="form-check-input"
                 type="checkbox"
                 data-val="true"
-                data-val-required="@(chapterProperty.Required ? $"The {chapterProperty.DisplayName} field is required." : null)" />
+                data-val-required="@(chapterProperty.Required ? $"The {chapterProperty.GetDisplayText()} field is required." : null)" />
             
             <label for="@Html.IdFor(x => x.Properties[i].Value)" class="form-check-label">
                 <span>@chapterProperty.Label</span>
