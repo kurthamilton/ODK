@@ -25,6 +25,7 @@ public class PaymentService : IPaymentService
     private readonly IMemberEmailService _memberEmailService;
     private readonly IMemberSiteSubscriptionWriter _memberSiteSubscriptionWriter;
     private readonly IPaymentProviderFactory _paymentProviderFactory;
+    private readonly IPaymentUpdateBroadcaster _paymentUpdateBroadcaster;
     private readonly IPlatformProvider _platformProvider;
     private readonly IServiceRequestFactory _serviceRequestFactory;
     private readonly SiteSubscriptionCooldown _siteSubscriptionCooldown;
@@ -35,6 +36,7 @@ public class PaymentService : IPaymentService
         ILoggingService loggingService,
         IMemberEmailService memberEmailService,
         IPaymentProviderFactory paymentProviderFactory,
+        IPaymentUpdateBroadcaster paymentUpdateBroadcaster,
         IEventService eventService,
         IBackgroundTaskService backgroundTaskService,
         IMemberChapterSubscriptionWriter memberChapterSubscriptionWriter,
@@ -50,6 +52,7 @@ public class PaymentService : IPaymentService
         _memberEmailService = memberEmailService;
         _memberSiteSubscriptionWriter = memberSiteSubscriptionWriter;
         _paymentProviderFactory = paymentProviderFactory;
+        _paymentUpdateBroadcaster = paymentUpdateBroadcaster;
         _platformProvider = platformProvider;
         _serviceRequestFactory = serviceRequestFactory;
         _siteSubscriptionCooldown = siteSubscriptionCooldown;
@@ -303,6 +306,15 @@ public class PaymentService : IPaymentService
         if (!result.Success)
         {
             return;
+        }
+
+        /* Every path above has committed by the time it returns, so a watcher told to look now reads the
+           state this webhook produced rather than the one before it. Told, not given: a broadcast reaches
+           only what this process holds a connection to and is lost outright to a reconnect, so what a
+           checkout page does with it is re-read the status endpoint. */
+        if (result.CheckoutSession != null)
+        {
+            await _paymentUpdateBroadcaster.CheckoutSessionUpdated(result.CheckoutSession.SessionId);
         }
 
         if (result.Payment == null)
@@ -630,6 +642,7 @@ public class PaymentService : IPaymentService
             metadata,
             member,
             payment,
+            paymentCheckoutSession,
             externalId: externalId,
             completedUtc,
             initiatorId);
@@ -720,13 +733,14 @@ public class PaymentService : IPaymentService
                 x => x.CurrencyRepository.GetById(payment.CurrencyId));
 
             return PaymentWebhookProcessingResult.Successful(
-                member, chapter, payment, currency);
+                member, chapter, payment, currency, paymentCheckoutSession);
         }
 
         return await UpdateMemberChapterSubscription(
             metadata,
             member,
             payment,
+            paymentCheckoutSession,
             externalId: externalId,
             completedUtc,
             initiatorId);
@@ -823,6 +837,7 @@ public class PaymentService : IPaymentService
                 member,
                 siteSubscriptionPrice,
                 payment,
+                paymentCheckoutSession,
                 externalId: externalId,
                 completedUtc,
                 initiatorId);
@@ -885,7 +900,8 @@ public class PaymentService : IPaymentService
 
         await _unitOfWork.SaveChanges();
 
-        return PaymentWebhookProcessingResult.Successful(member: null, chapter: null, payment: null, currency: null);
+        return PaymentWebhookProcessingResult.Successful(
+            member: null, chapter: null, payment: null, currency: null, paymentCheckoutSession);
     }
 
     private async Task<PaymentWebhookProcessingResult> ProcessWebhookPayment(PaymentProviderWebhook webhook)
@@ -948,7 +964,8 @@ public class PaymentService : IPaymentService
             memberSubscriptionRecord.CancelledUtc = webhook.OriginatedUtc;
             _unitOfWork.MemberSubscriptionRecordRepository.Update(memberSubscriptionRecord);
             await _unitOfWork.SaveChanges();
-            return PaymentWebhookProcessingResult.Successful(member: null, chapter: null, payment: null, currency: null);
+            return PaymentWebhookProcessingResult.Successful(
+                member: null, chapter: null, payment: null, currency: null, checkoutSession: null);
         }
 
         return await ProcessCompletedChapterSubscription(
@@ -1319,6 +1336,7 @@ public class PaymentService : IPaymentService
         PaymentMetadataModel metadata,
         Member member,
         Payment payment,
+        PaymentCheckoutSession? checkoutSession,
         string externalId,
         DateTime utcNow,
         string? initiatorId)
@@ -1378,7 +1396,7 @@ public class PaymentService : IPaymentService
             await _loggingService.Info(
                 $"Chapter subscription already updated for initiator '{initiatorId}'; not updating again");
             return PaymentWebhookProcessingResult.Successful(
-                member, chapter, payment, chapterSubscription.Currency);
+                member, chapter, payment, chapterSubscription.Currency, checkoutSession);
         }
 
         // A recurring subscription expires when the provider next takes payment, so the two cannot drift
@@ -1427,13 +1445,14 @@ public class PaymentService : IPaymentService
         await _unitOfWork.SaveChanges();
 
         return PaymentWebhookProcessingResult.Successful(
-            member, chapter, payment, chapterSubscription.Currency);
+            member, chapter, payment, chapterSubscription.Currency, checkoutSession);
     }
 
     private async Task<PaymentWebhookProcessingResult> UpdateMemberSiteSubscription(
         Member member,
         SiteSubscriptionPrice siteSubscriptionPrice,
         Payment payment,
+        PaymentCheckoutSession? checkoutSession,
         string externalId,
         DateTime utcNow,
         string? initiatorId)
@@ -1456,7 +1475,7 @@ public class PaymentService : IPaymentService
             await _loggingService.Info(
                 $"Site subscription already updated for initiator '{initiatorId}'; not updating again");
             return PaymentWebhookProcessingResult.Successful(
-                member, chapter: null, payment, siteSubscriptionPrice.Currency);
+                member, chapter: null, payment, siteSubscriptionPrice.Currency, checkoutSession);
         }
 
         // A site subscription is always a provider subscription, so it expires when payment is next taken.
@@ -1492,6 +1511,6 @@ public class PaymentService : IPaymentService
         await _unitOfWork.SaveChanges();
 
         return PaymentWebhookProcessingResult.Successful(
-            member, chapter: null, payment, siteSubscriptionPrice.Currency);
+            member, chapter: null, payment, siteSubscriptionPrice.Currency, checkoutSession);
     }
 }

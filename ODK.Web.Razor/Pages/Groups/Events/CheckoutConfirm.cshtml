@@ -24,6 +24,7 @@
     Content = await Html.PartialAsync("Payments/_PaymentConfirmContent", new PaymentConfirmViewModel
     {
         Chapter = viewModel.Chapter,
+        Scope = PaymentConfirmScope.Member,
         SessionId = Model.SessionId
     }),
     Breadcrumbs = new[]

@@ -102,6 +102,17 @@ const BUNDLES = [
         ]
     },
     {
+        /* Its own bundle rather than an addition to the main one: only the payment confirm pages watch a
+           checkout session, and the SignalR client is 47KB that every other page would carry for nothing. */
+        output: 'js/odk.bundle.checkout.js',
+        sources: [
+            'lib/signalr/signalr.min.js',
+            'js/odk.signalr.js',
+            'js/odk.polling.js',
+            'js/odk.checkout.js'
+        ]
+    },
+    {
         output: 'css/odk.bundle.lib.css',
         sources: [
             'lib/font-awesome/css/all.css',

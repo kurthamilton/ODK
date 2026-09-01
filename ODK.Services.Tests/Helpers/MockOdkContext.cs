@@ -329,7 +329,8 @@ internal class MockOdkContext : OdkContext
     internal PaymentCheckoutSession CreatePaymentCheckoutSession(
         Payment? payment = null,
         DateTime? completedUtc = null,
-        DateTime? expiredUtc = null)
+        DateTime? expiredUtc = null,
+        string sessionId = "cs_test")
     {
         payment ??= CreatePayment();
 
@@ -339,7 +340,8 @@ internal class MockOdkContext : OdkContext
             MemberId = payment.MemberId,
             PaymentId = payment.Id,
             CompletedUtc = completedUtc,
-            ExpiredUtc = expiredUtc
+            ExpiredUtc = expiredUtc,
+            SessionId = sessionId
         });
     }
 

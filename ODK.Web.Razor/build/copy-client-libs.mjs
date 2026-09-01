@@ -79,6 +79,10 @@ const COPIES = [
     ['ace-builds/src-min-noconflict/theme-monokai.js', 'ace/theme-monokai.js'],
     ['ace-builds/src-min-noconflict/theme-textmate.js', 'ace/theme-textmate.js'],
 
+    /* The browser build, which is a self-contained UMD bundle and the only one served - the ES modules,
+       the Node build and the TypeScript declarations beside it are for a bundler this app does not use. */
+    ['@microsoft/signalr/dist/browser/signalr.min.js', 'signalr/signalr.min.js'],
+
     ['mermaid/dist/mermaid.min.js', 'mermaid/mermaid.min.js']
 ];
 

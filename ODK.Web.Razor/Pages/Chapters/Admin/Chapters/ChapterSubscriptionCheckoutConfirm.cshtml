@@ -28,9 +28,9 @@
         @<div>
             @await Html.PartialAsync("Payments/_PaymentConfirmContent", new PaymentConfirmViewModel
             {
-                Chapter = null,
-                SessionId = Model.SessionId,
-                StatusUrl = $"/groups/{Model.Chapter.Id}/payments/sessions/{Model.SessionId}/status"
+                Chapter = Model.Chapter,
+                Scope = PaymentConfirmScope.ChapterAdmin,
+                SessionId = Model.SessionId
             })
         </div>
 })
