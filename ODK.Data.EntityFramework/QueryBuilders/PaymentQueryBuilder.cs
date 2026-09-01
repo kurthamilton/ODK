@@ -29,6 +29,15 @@ public class PaymentQueryBuilder : DatabaseEntityQueryBuilder<Payment, IPaymentQ
         return this;
     }
 
+    public IPaymentQueryBuilder ForExternalReference(string reference)
+    {
+        Query = Query.Where(x =>
+            x.ExternalChargeId == reference ||
+            x.ExternalId == reference ||
+            x.Reference == reference);
+        return this;
+    }
+
     public IPaymentQueryBuilder ForMember(Guid memberId)
     {
         Query = Query.Where(x => x.MemberId == memberId);

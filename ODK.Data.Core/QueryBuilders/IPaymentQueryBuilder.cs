@@ -10,6 +10,16 @@ public interface IPaymentQueryBuilder : IDatabaseEntityQueryBuilder<Payment, IPa
 
     IPaymentQueryBuilder ForEnvironment(EnvironmentType environment);
 
+    /// <summary>
+    /// Payments matching a reference as a site admin would have one to hand: the provider's charge, the
+    /// provider's payment or subscription, or the reference recorded when the payment was taken.
+    /// </summary>
+    /// <remarks>
+    /// Our own reference is not unique - a subscription's is the same on every payment for it - so a caller
+    /// resolving a single payment has to cope with more than one match rather than assuming one.
+    /// </remarks>
+    IPaymentQueryBuilder ForExternalReference(string reference);
+
     IPaymentQueryBuilder ForMember(Guid memberId);
 
     /// <summary>

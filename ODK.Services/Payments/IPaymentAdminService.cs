@@ -1,4 +1,5 @@
-﻿using ODK.Services.Payments.ViewModels;
+﻿using ODK.Services.Payments.Models;
+using ODK.Services.Payments.ViewModels;
 
 namespace ODK.Services.Payments;
 
@@ -8,6 +9,11 @@ public interface IPaymentAdminService
     /// The payments waiting on something the provider has yet to be asked for, and those ruled out.
     /// </summary>
     Task<PaymentReconciliationViewModel> GetPaymentReconciliationViewModel(IMemberServiceRequest request);
+
+    /// <summary>
+    /// The refunds recorded against this platform's payments, and what each left the group owing.
+    /// </summary>
+    Task<PaymentRefundsViewModel> GetPaymentRefundsViewModel(IMemberServiceRequest request);
 
     Task<ChapterPaymentsViewModel> GetPayments(IMemberChapterAdminServiceRequest request);
 
@@ -40,6 +46,13 @@ public interface IPaymentAdminService
     /// </summary>
     Task<ServiceResult> ReconcilePayments(
         IMemberServiceRequest request, IReadOnlyCollection<Guid> paymentIds);
+
+    /// <summary>
+    /// Writes down a refund already made through the payment provider. It makes no refund and moves no
+    /// money: what it does is stop a refund performed in the provider's dashboard being invisible here,
+    /// and record what the group is left owing.
+    /// </summary>
+    Task<ServiceResult> RecordPaymentRefund(IMemberServiceRequest request, RecordPaymentRefundModel model);
 
     /// <summary>
     /// Undoes <see cref="IgnorePayment(IMemberServiceRequest, Guid)"/>.

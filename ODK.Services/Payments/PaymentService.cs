@@ -348,7 +348,10 @@ public class PaymentService : IPaymentService
     {
         try
         {
-            return await ResolvePaymentSettlement(paymentId, null, null);
+            return await ResolvePaymentSettlement(
+                paymentId,
+                externalPaymentId: null,
+                externalInvoiceId: null);
         }
         catch (OdkServiceException ex)
         {
@@ -1189,7 +1192,7 @@ public class PaymentService : IPaymentService
            or by a webhook - respects the same ruling. */
         if (payment.ReconciliationIgnoredUtc != null)
         {
-            return ResolvePaymentSettlementResult.Failure("It is ignored for reconciliation");
+            return ResolvePaymentSettlementResult.Failure("Ignored for reconciliation");
         }
 
         /* The account the payment was taken through, where the payment names one. Reconciling one that

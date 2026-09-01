@@ -34,6 +34,8 @@ public class SiteAdminRoutes
     /// </summary>
     public SiteAdminRoute PaymentReconciliation => Payments.Child("/reconciliation");
 
+    public SiteAdminRoute PaymentRefunds => Payments.Child("/refunds");
+
     public SiteAdminRoute Payments => Path("/payments");
 
     /// <summary>
@@ -111,6 +113,7 @@ public class SiteAdminRoutes
             Children =
             [
                 new(PaymentReconciliation, "Reconciliation"),
+                new(PaymentRefunds, "Refunds"),
                 new(PaymentWebhooks, "Webhooks")
             ]
         },
