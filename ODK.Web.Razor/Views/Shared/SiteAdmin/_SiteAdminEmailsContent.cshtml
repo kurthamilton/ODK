@@ -1,44 +1,63 @@
-﻿@using ODK.Services.Platforms
-@using ODK.Services.Settings
+﻿@using ODK.Core.Emails
+@using ODK.Core.Utils
+@using ODK.Services.Emails
+@using ODK.Web.Common.Routes
 @using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Components
-@using ODK.Web.Razor.Models.SiteAdmin
-@inject IPlatformProvider PlatformProvider
+@inject IEmailAdminService EmailAdminService
+@inject IOdkRoutes OdkRoutes
 @inject IRequestStore RequestStore
-@inject ISettingsService SettingsService
 @{
-    var request = RequestStore.MemberServiceRequest;
-    var settings = await SettingsService.GetSiteEmailSettings(request);
-    var platformName = PlatformProvider.GetName(request.Platform);
+    var emails = await EmailAdminService.GetSiteEmails(RequestStore.MemberServiceRequest);
+
+    (string Heading, string Description, IEnumerable<Email> Emails)[] tables =
+    [
+        ("Site email templates", "Sent by the site itself, and only a site admin edits them.",
+            emails.Where(x => !x.IsGroupEmail)),
+        ("Group email templates", "Sent by a group, so a group admin can customise the wording.",
+            emails.Where(x => x.IsGroupEmail))
+    ];
 }
 
 <div class="section-stack">
-    @await Html.PartialAsync("Components/_Section", new SectionViewModel
+    @foreach (var table in tables)
     {
-        Heading = new HeadingViewModel
+        @await Html.PartialAsync("Components/_Section", new SectionViewModel
         {
-            Title = "Email settings",
-            Type = HeadingType.H3
-        },
-        BodyContentFunc =
-            @<div>
-                <p class="text-muted">
-                    These apply to <strong>@platformName</strong> only. Each platform has its own settings,
-                    chosen by the address the site is reached on, so editing here leaves the other platform
-                    alone.
-                </p>
-                <form action="/siteadmin/emails/settings" method="post">
-                    @Html.AntiForgeryToken()
-                    @await Html.PartialAsync("SiteAdmin/_SiteAdminEmailSettingsForm", new SiteEmailSettingsViewModel
-                    {
-                        AdminTitle = settings.AdminTitle,
-                        FromEmailAddress = settings.FromEmailAddress,
-                        MemberTitle = settings.MemberTitle
-                    })
-                    <button class="btn btn-primary" type="submit">Update</button>
-                </form>
-            </div>
-    })
-
-    @await Html.PartialAsync("SiteAdmin/_SiteAdminEmailsTables")
+            Heading = new HeadingViewModel
+            {
+                Title = table.Heading,
+                Type = HeadingType.H3
+            },
+            BodyContentFunc =
+                @<div>
+                    <p class="text-muted">@table.Description</p>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Email</th>
+                                    <th>Recipients</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var email in table.Emails.OrderBy(x => x.Name))
+                                {
+                                    <tr>
+                                        <td>
+                                            <a href="@OdkRoutes.SiteAdmin.Email(email.Type)">
+                                                @email.Name
+                                            </a>
+                                        </td>
+                                        <td>
+                                            @EnumUtils.GetDisplayValue(email.RecipientType)
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+        })
+    }
 </div>

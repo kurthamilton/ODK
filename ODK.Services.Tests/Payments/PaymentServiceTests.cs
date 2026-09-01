@@ -7,7 +7,6 @@ using Moq;
 using NUnit.Framework;
 using ODK.Core.Chapters;
 using ODK.Core.Countries;
-using ODK.Core.Emails;
 using ODK.Core.Events;
 using ODK.Core.Members;
 using ODK.Core.Payments;
@@ -2266,8 +2265,6 @@ public static class PaymentServiceTests
     private static MockOdkContext CreateMockOdkContext()
     {
         var context = new MockOdkContext();
-
-        context.Add(new SiteEmailSettings { Platform = PlatformType.Default });
 
         return context;
     }

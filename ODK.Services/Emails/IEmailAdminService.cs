@@ -11,9 +11,9 @@ public interface IEmailAdminService
 
     Task<ChapterEmailsAdminPageViewModel> GetChapterEmails(IMemberChapterAdminServiceRequest request);
 
-    Task<EmailAdminPageViewModel> GetEmail(IMemberServiceRequest request, EmailType type);
+    Task<EmailAdminPageViewModel> GetSiteEmail(IMemberServiceRequest request, EmailType type);
 
-    Task<IReadOnlyCollection<Email>> GetEmails(IMemberServiceRequest request);
+    Task<IReadOnlyCollection<Email>> GetSiteEmails(IMemberServiceRequest request);
 
     /// <summary>
     /// Renders one of a group's emails as the form currently holds it, resolving each field the way
@@ -23,7 +23,7 @@ public interface IEmailAdminService
         IMemberChapterAdminServiceRequest request, EmailType type, ChapterEmailUpdateModel model);
 
     /// <inheritdoc cref="PreviewChapterEmail" />
-    Task<RenderedEmail> PreviewEmail(
+    Task<RenderedEmail> PreviewSiteEmail(
         IMemberServiceRequest request, EmailType type, string subject, string body);
 
     Task<ServiceResult> SendTestEmail(IMemberChapterAdminServiceRequest request, EmailType type);

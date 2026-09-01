@@ -13,7 +13,6 @@ using NUnit.Framework;
 using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.DataTypes;
-using ODK.Core.Emails;
 using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
@@ -1610,8 +1609,6 @@ public static class ChapterAdminServiceTests
     private static MockOdkContext CreateMockOdkContext()
     {
         var context = new MockOdkContext();
-
-        context.Add(new SiteEmailSettings { Platform = PlatformType.Default });
 
         return context;
     }

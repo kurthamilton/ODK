@@ -6,7 +6,6 @@ using FluentAssertions;
 using Moq;
 using NUnit.Framework;
 using ODK.Core.Chapters;
-using ODK.Core.Emails;
 using ODK.Core.Events;
 using ODK.Core.Features;
 using ODK.Core.Members;
@@ -316,8 +315,6 @@ public static class EventAdminServiceTests
     private static MockOdkContext CreateMockOdkContext()
     {
         var context = new MockOdkContext();
-
-        context.Add(new SiteEmailSettings { Platform = PlatformType.Default });
 
         return context;
     }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using ODK.Core.Countries;
+using ODK.Core.Emails;
 using ODK.Core.Exceptions;
 using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
@@ -50,7 +51,6 @@ using ODK.Services.Platforms;
 using ODK.Services.Questions;
 using ODK.Services.Recaptcha;
 using ODK.Services.Referrals;
-using ODK.Services.Settings;
 using ODK.Services.SocialMedia;
 using ODK.Services.Subscriptions;
 using ODK.Services.Topics;
@@ -342,7 +342,18 @@ public static class DependencyRegistrar
             })
             .AddScoped<IRequestStoreFactory, RequestStoreFactory>()
             .AddScoped<IServiceRequestFactory, ServiceRequestFactory>()
-            .AddScoped<ISettingsService, SettingsService>()
+            .AddScoped<ISiteEmailSettingsProvider, SiteEmailSettingsProvider>()
+            .AddSingleton(new SiteEmailSettingsProviderSettings
+            {
+                Platforms = appSettings.Emails.Platforms.ToDictionary(
+                    x => x.Key,
+                    x => new SiteEmailSettings
+                    {
+                        AdminTitle = x.Value.AdminTitle,
+                        FromEmailAddress = x.Value.FromEmailAddress,
+                        MemberTitle = x.Value.MemberTitle
+                    })
+            })
             .AddScoped<ISiteSubscriptionAdminService, SiteSubscriptionAdminService>()
             .AddSingleton(new SiteSubscriptionAdminServiceSettings
             {

@@ -1,8 +1,12 @@
-﻿namespace ODK.Infrastructure.Settings;
+﻿using ODK.Core.Platforms;
+
+namespace ODK.Infrastructure.Settings;
 
 public class EmailsSettings
 {
     public string? DebugEmailAddress { get; set; }
+
+    public required Dictionary<PlatformType, EmailsPlatformSettings> Platforms { get; init; }
 
     public required EmailsThemeSettings Theme { get; init; }
 

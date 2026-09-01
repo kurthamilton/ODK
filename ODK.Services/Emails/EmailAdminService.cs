@@ -32,6 +32,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
     private readonly IAuthorizationService _authorizationService;
     private readonly IHtmlValidator _htmlValidator;
     private readonly IMemberEmailService _memberEmailService;
+    private readonly ISiteEmailSettingsProvider _siteEmailSettingsProvider;
     private readonly SiteSubscriptionCooldown _siteSubscriptionCooldown;
     private readonly ITestEmailParametersFactory _testEmailParametersFactory;
     private readonly IUnitOfWork _unitOfWork;
@@ -43,6 +44,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         IAuthorizationService authorizationService,
         IHtmlValidator htmlValidator,
         IUrlProviderFactory urlProviderFactory,
+        ISiteEmailSettingsProvider siteEmailSettingsProvider,
         SiteSubscriptionCooldown siteSubscriptionCooldown,
         ITestEmailParametersFactory testEmailParametersFactory)
         : base(unitOfWork)
@@ -50,6 +52,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         _authorizationService = authorizationService;
         _htmlValidator = htmlValidator;
         _memberEmailService = memberEmailService;
+        _siteEmailSettingsProvider = siteEmailSettingsProvider;
         _siteSubscriptionCooldown = siteSubscriptionCooldown;
         _testEmailParametersFactory = testEmailParametersFactory;
         _unitOfWork = unitOfWork;
@@ -61,15 +64,18 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
     {
         var (chapter, currentMember) = (request.Chapter, request.CurrentMember);
 
-        var (chapterEmail, siteEmail, settings, siteSettings, ownerSubscriptionFeatures, preferences) =
+        var (chapterEmail, siteEmail, settings, ownerSubscriptionFeatures, preferences) =
             await GetChapterAdminRestrictedContent(
                 request,
                 x => x.ChapterEmailRepository.GetByChapterId(chapter.Id, type),
                 x => x.EmailRepository.GetByType(type),
                 x => x.ChapterEmailSettingsRepository.GetByChapterIdOrDefault(chapter.Id),
-                x => x.SiteEmailSettingsRepository.Get(chapter.Platform),
                 OwnerSubscriptionFeatures(chapter.Id, _siteSubscriptionCooldown),
                 x => x.MemberPreferencesRepository.GetByMemberIdOrDefault(currentMember.Id));
+
+        // The group's own platform, not the request's - the same email is addressed the same way whichever
+        // site an admin edits it from.
+        var siteSettings = _siteEmailSettingsProvider.Get(chapter.Platform);
 
         var title = EmailTitle.For(siteSettings, settings, siteEmail.RecipientType);
 
@@ -120,14 +126,15 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
     {
         var chapter = request.Chapter;
 
-        var (chapterEmails, siteEmails, settings, siteSettings, ownerSubscriptionFeatures) =
+        var (chapterEmails, siteEmails, settings, ownerSubscriptionFeatures) =
             await GetChapterAdminRestrictedContent(
                 request,
                 x => x.ChapterEmailRepository.GetByChapterId(chapter.Id),
                 x => x.EmailRepository.GetAll(),
                 x => x.ChapterEmailSettingsRepository.GetByChapterIdOrDefault(chapter.Id),
-                x => x.SiteEmailSettingsRepository.Get(request.Platform),
                 OwnerSubscriptionFeatures(chapter.Id, _siteSubscriptionCooldown));
+
+        var siteSettings = _siteEmailSettingsProvider.Get(chapter.Platform);
 
         var chapterEmailDictionary = chapterEmails.ToDictionary(x => x.Type);
 
@@ -169,12 +176,13 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         };
     }
 
-    public async Task<EmailAdminPageViewModel> GetEmail(IMemberServiceRequest request, EmailType type)
+    public async Task<EmailAdminPageViewModel> GetSiteEmail(IMemberServiceRequest request, EmailType type)
     {
-        var (email, siteSettings) = await GetSiteAdminRestrictedContent(
+        var email = await GetSiteAdminRestrictedContent(
             request,
-            x => x.EmailRepository.GetByType(type),
-            x => x.SiteEmailSettingsRepository.Get(request.Platform));
+            x => x.EmailRepository.GetByType(type));
+
+        var siteSettings = _siteEmailSettingsProvider.Get(request.Platform);
 
         // No chapter settings: this is the site's own copy of the template.
         var title = EmailTitle.For(siteSettings, chapterEmailSettings: null, email.RecipientType);
@@ -196,7 +204,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         };
     }
 
-    public async Task<IReadOnlyCollection<Email>> GetEmails(IMemberServiceRequest request)
+    public async Task<IReadOnlyCollection<Email>> GetSiteEmails(IMemberServiceRequest request)
     {
         return await GetSiteAdminRestrictedContent(request,
             x => x.EmailRepository.GetAll());
@@ -229,7 +237,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
             request, chapter, currentMember, type, subject, bodyHtml);
     }
 
-    public async Task<RenderedEmail> PreviewEmail(
+    public async Task<RenderedEmail> PreviewSiteEmail(
         IMemberServiceRequest request,
         EmailType type,
         string subject,

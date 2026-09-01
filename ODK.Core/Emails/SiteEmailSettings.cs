@@ -1,16 +1,14 @@
-﻿using ODK.Core.Platforms;
+﻿namespace ODK.Core.Emails;
 
-namespace ODK.Core.Emails;
-
-public class SiteEmailSettings : IDatabaseEntity
+/// <summary>
+/// A platform's own email wording: what an email is addressed from, and the titles a group inherits where
+/// it has set none of its own.
+/// </summary>
+public class SiteEmailSettings
 {
-    public string AdminTitle { get; set; } = string.Empty;
+    public required string AdminTitle { get; init; }
 
-    public string FromEmailAddress { get; set; } = string.Empty;
+    public required string FromEmailAddress { get; init; }
 
-    public Guid Id { get; set; }
-
-    public string MemberTitle { get; set; } = string.Empty;
-
-    public PlatformType Platform { get; set; }
+    public required string MemberTitle { get; init; }
 }

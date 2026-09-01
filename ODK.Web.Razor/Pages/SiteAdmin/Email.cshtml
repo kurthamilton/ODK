@@ -10,7 +10,7 @@
     Layout = "_SiteAdminLayout";
     Model.Title = "Edit email | Site Admin";
 
-    var email = await EmailAdminService.GetEmail(Model.MemberServiceRequest, Model.Type);
+    var email = await EmailAdminService.GetSiteEmail(Model.MemberServiceRequest, Model.Type);
 }
 
 @await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel

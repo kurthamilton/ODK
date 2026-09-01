@@ -306,13 +306,6 @@ public static class EmailServiceTests
             Slug = "test-group"
         });
 
-        context.Create(new SiteEmailSettings
-        {
-            FromEmailAddress = "noreply@example.com",
-            Id = Guid.NewGuid(),
-            Platform = PlatformType.DrunkenKnitwits
-        });
-
         context.Create(new Email
         {
             BodyHtml = "{body}",
@@ -394,15 +387,6 @@ public static class EmailServiceTests
             Slug = "test-group"
         });
 
-        context.Create(new SiteEmailSettings
-        {
-            AdminTitle = "{group.name} admins",
-            FromEmailAddress = "noreply@example.com",
-            Id = Guid.NewGuid(),
-            MemberTitle = "{group.name} members",
-            Platform = PlatformType.DrunkenKnitwits
-        });
-
         context.Create(new Email
         {
             BodyHtml = "{body}",
@@ -456,17 +440,6 @@ public static class EmailServiceTests
             Name = "Test group",
             Platform = PlatformType.DrunkenKnitwits,
             Slug = "test-group"
-        });
-
-        /* Each title is a template of its own, and the two are given distinguishable wording so an
-           assertion can tell which one an email resolved to. */
-        context.Create(new SiteEmailSettings
-        {
-            AdminTitle = "{group.name} admins",
-            FromEmailAddress = "noreply@example.com",
-            Id = Guid.NewGuid(),
-            MemberTitle = "{group.name} members",
-            Platform = PlatformType.DrunkenKnitwits
         });
 
         if (chapterEmailSettings != null)
@@ -549,6 +522,11 @@ public static class EmailServiceTests
             new MockBackgroundTaskService(),
             Mock.Of<ILoggingService>(),
             TestPlatformProvider.Create(),
+            /* Each title is a template of its own, and the two are given distinguishable wording so an
+               assertion can tell which one an email resolved to. */
+            TestSiteEmailSettingsProvider.Create(
+                adminTitle: "{group.name} admins",
+                memberTitle: "{group.name} members"),
             new EmailServiceSettings
             {
                 DefaultBodyBackground = "#fff",
