@@ -20,7 +20,8 @@ public class ChapterPropertyMap : IEntityTypeConfiguration<ChapterProperty>
             .HasConversion<int>();
 
         builder.Property(x => x.DisplayName)
-            .HasMaxLength(255);
+            .HasMaxLength(255)
+            .IsRequired();
 
         builder.Property(x => x.HelpText)
             .HasMaxLength(255);

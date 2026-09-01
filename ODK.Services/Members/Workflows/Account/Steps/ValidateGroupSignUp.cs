@@ -31,7 +31,7 @@ public sealed class ValidateGroupSignUp : IStep<AccountContext>
 
         var missing = context.ChapterProperties
             .GetMissingRequired(values, forApplication: true)
-            .Select(x => x.GetDisplayText())
+            .Select(x => x.DisplayName)
             .ToArray();
 
         if (missing.Length > 0)

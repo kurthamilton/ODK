@@ -10,7 +10,7 @@ public class ChapterProperty : IDatabaseEntity, IChapterEntity
 
     public DataType DataType { get; set; }
 
-    public string? DisplayName { get; set; }
+    public string DisplayName { get; set; } = string.Empty;
 
     public int DisplayOrder { get; set; }
 
@@ -25,6 +25,4 @@ public class ChapterProperty : IDatabaseEntity, IChapterEntity
     public bool Required { get; set; }
 
     public string? Subtitle { get; set; }
-
-    public string GetDisplayText() => !string.IsNullOrEmpty(DisplayName) ? DisplayName : Label;
 }

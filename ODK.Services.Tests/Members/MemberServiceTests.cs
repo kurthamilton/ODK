@@ -567,6 +567,7 @@ public static class MemberServiceTests
         {
             ChapterId = chapter.Id,
             DataType = DataType.Text,
+            DisplayName = "Favourite yarn",
             Id = Guid.NewGuid(),
             Label = "Favourite yarn",
             Name = "yarn",
