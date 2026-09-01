@@ -2332,29 +2332,27 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             request,
             x => x.ChapterTextsRepository.GetByChapterId(chapter.Id));
 
-        if (string.IsNullOrWhiteSpace(model.RegisterTextHtml) ||
-            string.IsNullOrWhiteSpace(model.WelcomeTextHtml))
-        {
-            return ServiceResult.Failure("Some required fields are missing");
-        }
-
         texts ??= new ChapterTexts();
 
-        // only validate changed texts to avoid blocking an update for an existing field
-        var validateTexts = new[]
-        {
-            model.DescriptionHtml != texts.DescriptionHtml ? model.DescriptionHtml : null,
-            model.RegisterTextHtml != texts.RegisterTextHtml ? model.RegisterTextHtml : null,
-            model.WelcomeTextHtml != texts.WelcomeTextHtml ? model.WelcomeTextHtml : null
-        };
+        /* Every field is checked before returning, and each message names the field it came from, so a form
+           with two problems says which two boxes to go and fix. Field order matches the form's, so the
+           messages read down the page.
 
-        foreach (var validateText in validateTexts)
+           Short description is plain text, so nothing here checks it for markup - a stray angle bracket in
+           it is not a tag. */
+        var messages = ValidateChapterText(
+                ChapterTextLabels.Description, model.DescriptionHtml, texts.DescriptionHtml)
+            .Concat(ValidateChapterText(
+                ChapterTextLabels.RegisterText, model.RegisterTextHtml, texts.RegisterTextHtml,
+                required: true))
+            .Concat(ValidateChapterText(
+                ChapterTextLabels.WelcomeText, model.WelcomeTextHtml, texts.WelcomeTextHtml,
+                required: true))
+            .ToArray();
+
+        if (messages.Length > 0)
         {
-            var fieldResult = _htmlValidator.Validate(validateText, DefaultHtmlValidatorOptions);
-            if (!fieldResult.Success)
-            {
-                return fieldResult;
-            }
+            return ServiceResult.Failure(messages);
         }
 
         texts.DescriptionHtml = model.DescriptionHtml;
@@ -2423,6 +2421,16 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         }
 
         return ServiceResult.Successful();
+    }
+
+    public async Task<ServiceResult> ValidateChapterTextHtml(
+        IMemberChapterAdminServiceRequest request, string? html)
+    {
+        await AssertMemberIsChapterAdmin(request);
+
+        // The same validator and options the save applies, so the answer the editor gets while typing is the
+        // answer the save will give.
+        return _htmlValidator.Validate(html, DefaultHtmlValidatorOptions);
     }
 
     private ServiceResult UpdateChapterImage(ChapterImage image, byte[] imageData)
@@ -2521,5 +2529,33 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         }
 
         return ServiceResult.Successful();
+    }
+
+    /// <summary>
+    /// What is wrong with one of a group's texts, named after the field's own label so the message points at
+    /// the box on screen. Empty when the field is acceptable.
+    /// </summary>
+    private IEnumerable<string> ValidateChapterText(
+        string label, string? value, string? stored, bool required = false)
+    {
+        if (required && string.IsNullOrWhiteSpace(value))
+        {
+            // Nothing else to say about an empty field, and the markup checks below would pass it.
+            yield return $"{label} is required";
+            yield break;
+        }
+
+        // Only changed text is validated: markup stored before these rules existed must not block an edit to
+        // another field on the same form.
+        if (value == stored)
+        {
+            yield break;
+        }
+
+        var result = _htmlValidator.Validate(value, DefaultHtmlValidatorOptions);
+        if (!result.Success)
+        {
+            yield return $"{label}: {result.Message}";
+        }
     }
 }

@@ -41,8 +41,18 @@ public abstract class OdkControllerBase : Controller
     protected void AddFeedback(string message, FeedbackType type)
         => AddFeedback(new FeedbackViewModel(message, type));
 
+    /// <summary>
+    /// One item of feedback per message the result carries, so a save that found several problems reports
+    /// all of them rather than the first alone.
+    /// </summary>
     protected void AddFeedback(ServiceResult result)
-        => AddFeedback(new FeedbackViewModel(result));
+    {
+        var type = result.Success ? FeedbackType.Success : FeedbackType.Error;
+        foreach (var message in result.Messages)
+        {
+            AddFeedback(message, type);
+        }
+    }
 
     protected void AddFeedback(ServiceResult result, string successMessage)
     {

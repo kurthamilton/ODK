@@ -1,0 +1,19 @@
+﻿// The textarea behind a mounted editor - Ace over an email template (odk.code-editor.js), TinyMCE over a
+// rich text field (odk.html-editor.js). The textarea stays the form field in both: Html.TextAreaFor binds
+// it, aspnet-client-validation attaches to it, and the htmlcontent provider reads its value. So it is moved
+// out of sight rather than taken out of the layout. Deliberately not display:none - the validation library
+// treats a field with no box as hidden and skips it, reporting valid, which would quietly switch off every
+// check on the field.
+.editor-source {
+    border: 0;
+    height: 1px;
+    opacity: 0;
+    overflow: hidden;
+    padding: 0;
+    pointer-events: none;
+    position: absolute;
+    // Firefox draws a textarea's resize grip regardless of the box it is given, so it shows through as a
+    // stray handle under the editor.
+    resize: none;
+    width: 1px;
+}

@@ -116,11 +116,11 @@ window.odk.forms = window.odk.forms || {};
                 + unknown.map(x => `{${x}}`).join(', ');
         });
 
-        // Custom [data-val-htmlcontent] provider for the email template editor. The markup rules are a
-        // parse for well-formedness plus an allow-list of tags and attributes, none of which can be
-        // expressed as a pattern the way the providers above are, so this one asks the server: it posts
-        // the value to data-val-htmlcontent-url and returns the promise, which the validation library
-        // awaits (true passes, a string is the message to show).
+        // Custom [data-val-htmlcontent] provider for the fields holding authored markup - an email
+        // template, a group's texts. The markup rules are a parse for well-formedness plus an allow-list of
+        // tags and attributes, none of which can be expressed as a pattern the way the providers above are,
+        // so this one asks the server: it posts the value to data-val-htmlcontent-url and returns the
+        // promise, which the validation library awaits (true passes, a string is the message to show).
         // Fails open on a network or HTTP error: the same check runs again on submit, so a check that
         // cannot reach the server must not block content the server would have accepted.
         // Empty values pass - presence is the [Required] provider's job.
@@ -129,6 +129,15 @@ window.odk.forms = window.odk.forms || {};
 
             const url = element.getAttribute('data-val-htmlcontent-url');
             if (!url) return true;
+
+            // A field whose save only checks what changed says so, and untouched content is then left
+            // alone here too - otherwise markup stored before these rules existed would block an edit to
+            // another field on the same form, which the save would have allowed. An email template asks
+            // for no such thing: it is checked whatever state it is in.
+            if (element.getAttribute('data-val-htmlcontent-changed-only') === 'true' &&
+                value === element.defaultValue) {
+                return true;
+            }
 
             const body = new FormData();
             body.append('content', value);
@@ -149,9 +158,14 @@ window.odk.forms = window.odk.forms || {};
                 }
 
                 const result = await response.json();
-                return result.valid
-                    ? true
-                    : result.message || element.getAttribute('data-val-htmlcontent');
+                if (result.valid) return true;
+
+                /* Escaped because the validation library writes a message into its span with innerHTML, and
+                   this message names markup - "Unsupported HTML: <script>" would be inserted as that tag
+                   and show nothing at all. Escaped here rather than by the server, which sends plain text:
+                   the same message also reaches a Razor-rendered toast, where the encoder would then print
+                   the entities. */
+                return escapeHtml(result.message || element.getAttribute('data-val-htmlcontent'));
             } catch (e) {
                 console.warn(`Validation request to ${url} could not be read`, e);
                 return true;
@@ -234,5 +248,12 @@ window.odk.forms = window.odk.forms || {};
                 });
             });
         });
+    }
+
+    // Text as it would render, for anywhere it is handed to something that takes HTML.
+    function escapeHtml(text) {
+        const $span = document.createElement('span');
+        $span.textContent = text;
+        return $span.innerHTML;
     }
 })();

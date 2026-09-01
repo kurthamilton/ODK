@@ -15,6 +15,7 @@
     editors.forEach(el => {
         tinymce.init({
             target: el,
+            setup: editor => wireValidation(editor, el),
             license_key: 'gpl',
             // Customise link plugin
             link_title: false,
@@ -49,4 +50,35 @@
             }
         });
     });
+
+    /* The textarea stays the form field - the validation library attaches to it and the htmlcontent provider
+       reads its value - so it has to keep a box on the page and hold current content. TinyMCE gives it
+       neither on its own: it hides the target with display:none, which the library reads as hidden and skips
+       (reporting the field valid, whatever it holds), and it only writes the editor's content back on submit.
+       See .editor-source in _editor-source.scss, which odk.code-editor.js shares. */
+    function wireValidation(editor, $textarea) {
+        editor.on('init', () => {
+            $textarea.classList.add('editor-source');
+            // Clears TinyMCE's own inline display:none, which would otherwise beat the class.
+            $textarea.style.display = '';
+            // Out of the tab order because the editor is what a keyboard user should reach.
+            $textarea.tabIndex = -1;
+
+            /* The baseline the changed-only check compares against - see the htmlcontent provider in
+               odk.forms.js. Written through the editor rather than left as the markup the server rendered,
+               because TinyMCE normalises what it is given: against the original, a field nobody touched
+               would look edited and be checked. Saving first puts the baseline through the same path a
+               later blur takes, so the two are comparable. */
+            editor.save();
+            $textarea.defaultValue = $textarea.value;
+        });
+
+        /* Written back and raised on blur, which is what the field validates on (data-val-event, set by
+           OdkHtmlEditorTextAreaFor): the editor losing focus is the real field's equivalent of a change.
+           Assigning value does not raise the event on its own. */
+        editor.on('blur', () => {
+            editor.save();
+            $textarea.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+    }
 })();

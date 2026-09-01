@@ -5,7 +5,7 @@ using ODK.Services.Authentication;
 using ODK.Services.Emails;
 using ODK.Web.Common.Routes;
 using ODK.Web.Common.Services;
-using ODK.Web.Razor.Models.Admin.Chapters;
+using ODK.Web.Razor.Models.Admin;
 using ODK.Web.Razor.Models.Admin.Emails;
 using ODK.Web.Razor.Models.SiteAdmin;
 
@@ -46,13 +46,13 @@ public class EmailsController : OdkControllerBase
     }
 
     /* The site-admin counterpart of the group endpoint, and the same contract - see
-       EmailHtmlValidationResultViewModel. */
+       HtmlValidationResultViewModel. */
     [HttpPost("/siteadmin/emails/{type}/validate")]
     public IActionResult ValidateEmail(EmailType type, [FromForm] string? content)
     {
         var result = _emailAdminService.ValidateEmailHtml(MemberServiceRequest, type, content);
 
-        return Ok(new EmailHtmlValidationResultViewModel
+        return Ok(new HtmlValidationResultViewModel
         {
             Message = result.Message,
             Valid = result.Success
