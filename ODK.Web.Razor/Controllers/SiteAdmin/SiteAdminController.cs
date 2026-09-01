@@ -5,6 +5,7 @@ using ODK.Services.Contact;
 using ODK.Services.Features;
 using ODK.Services.Logging;
 using ODK.Services.Payments;
+using ODK.Services.Payments.Models;
 using ODK.Services.SocialMedia;
 using ODK.Services.Subscriptions;
 using ODK.Services.Subscriptions.Models;
@@ -151,6 +152,27 @@ public class SiteAdminController : OdkControllerBase
 
         AddFeedback(result);
         return Redirect(OdkRoutes.SiteAdmin.PaymentReconciliation.Path);
+    }
+
+    [HttpPost("siteadmin/payments/refunds")]
+    public async Task<IActionResult> RecordPaymentRefund(
+        [FromForm] RecordPaymentRefundFormSubmitViewModel viewModel)
+    {
+        var result = await _paymentAdminService.RecordPaymentRefund(
+            MemberServiceRequest,
+            new RecordPaymentRefundModel
+            {
+                Amount = viewModel.Amount,
+                ExternalId = viewModel.ExternalId,
+                ExternalReversalId = viewModel.ExternalReversalId,
+                FeeReturnedAmount = viewModel.FeeReturnedAmount,
+                PaymentReference = viewModel.PaymentReference,
+                Reason = viewModel.Reason,
+                ReversedAmount = viewModel.ReversedAmount
+            });
+
+        AddFeedback(result);
+        return Redirect(OdkRoutes.SiteAdmin.PaymentRefunds.Path);
     }
 
     [HttpPost("siteadmin/payments/reconcile")]

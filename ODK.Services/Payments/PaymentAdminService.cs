@@ -1,7 +1,9 @@
-﻿using ODK.Core.Payments;
+﻿using ODK.Core.Chapters;
+using ODK.Core.Payments;
 using ODK.Core.Platforms;
 using ODK.Data.Core;
 using ODK.Data.Core.QueryBuilders;
+using ODK.Services.Payments.Models;
 using ODK.Services.Payments.ViewModels;
 
 namespace ODK.Services.Payments;
@@ -45,6 +47,37 @@ public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
                 .ToArray(),
             Payments = items
                 .OrderByDescending(x => x.Payment.PaidUtc)
+                .ToArray()
+        };
+    }
+
+    public async Task<PaymentRefundsViewModel> GetPaymentRefundsViewModel(IMemberServiceRequest request)
+    {
+        var payments = await GetSiteAdminRestrictedContent(
+            request,
+            x => x.PaymentRepository
+                .Query()
+                .ForEnvironment(request.Environment)
+                .ForPlatform(request.Platform)
+                .GetAll());
+
+        var paymentsById = payments.ToDictionary(x => x.Id);
+
+        var refunds = await _unitOfWork.PaymentRefundRepository
+            .Query()
+            .ForPayments(paymentsById.Keys)
+            .GetAll()
+            .Run();
+
+        var chapterNames = (await GetChapters(
+            request.Platform,
+            refunds.Select(x => paymentsById[x.PaymentId]))).Names;
+
+        return new PaymentRefundsViewModel
+        {
+            Refunds = refunds
+                .Select(x => ToRefundItem(x, paymentsById[x.PaymentId], chapterNames))
+                .OrderByDescending(x => x.Refund.RequestedUtc)
                 .ToArray()
         };
     }
@@ -152,6 +185,110 @@ public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
             ToOutcomeMessage("Queued", payments.Count, paymentIds.Count));
     }
 
+    public async Task<ServiceResult> RecordPaymentRefund(
+        IMemberServiceRequest request, RecordPaymentRefundModel model)
+    {
+        if (model.Amount <= 0)
+        {
+            return ServiceResult.Failure("Enter the amount that was refunded");
+        }
+
+        var reference = model.PaymentReference.Trim();
+
+        var matches = await GetSiteAdminRestrictedContent(
+            request,
+            x => x.PaymentRepository
+                .Query()
+                .ForEnvironment(request.Environment)
+                .ForPlatform(request.Platform)
+                .Paid()
+                .ForExternalReference(reference)
+                .GetAll());
+
+        if (matches.Count == 0)
+        {
+            return ServiceResult.Failure($"No payment found for '{reference}'");
+        }
+
+        if (matches.Count > 1)
+        {
+            /* Our own reference is shared by every payment for a subscription, so it cannot pick one out.
+               The provider's charge names exactly one. */
+            return ServiceResult.Failure(
+                $"'{reference}' matches {matches.Count} payments - use the provider's charge id");
+        }
+
+        var payment = matches.Single();
+
+        var existing = await _unitOfWork.PaymentRefundRepository
+            .Query()
+            .ForPayment(payment.Id)
+            .Live()
+            .GetAll()
+            .Run();
+
+        var validation = ValidateRefund(payment, existing, model);
+
+        if (validation != null)
+        {
+            return ServiceResult.Failure(validation);
+        }
+
+        /* The group covers what the refund cost us, so a fee the provider gave back is one less thing it
+           cost and comes off what the group owes. Null for a site payment: there is no group to owe it. */
+        var chapterAmount = payment.ChapterId != null
+            ? model.Amount - model.FeeReturnedAmount
+            : (decimal?)null;
+
+        var utcNow = DateTime.UtcNow;
+
+        var refund = _unitOfWork.PaymentRefundRepository.Add(new PaymentRefund
+        {
+            ActualAmount = model.Amount,
+            Amount = model.Amount,
+            ChapterAmount = chapterAmount,
+            ExternalId = model.ExternalId,
+            ExternalReversalId = model.ExternalReversalId,
+            FeeReturnedAmount = model.FeeReturnedAmount > 0 ? model.FeeReturnedAmount : null,
+            PaymentId = payment.Id,
+            Reason = model.Reason,
+            RefundedUtc = utcNow,
+            RequestedByMemberId = request.CurrentMember.Id,
+            RequestedUtc = utcNow,
+            ResolvedByMemberId = request.CurrentMember.Id,
+            ResolvedUtc = utcNow,
+            ReversedAmount = model.ReversedAmount > 0 ? model.ReversedAmount : null,
+            ReversedUtc = model.ReversedAmount > 0 ? utcNow : null,
+            SettlementCurrencyCode = model.FeeReturnedAmount > 0 ? payment.SettlementCurrencyCode : null,
+            Status = PaymentRefundStatusType.Refunded
+        });
+
+        var outstanding = (chapterAmount ?? 0) - model.ReversedAmount;
+
+        if (payment.ChapterId != null && outstanding > 0)
+        {
+            /* What the reversal could not take back. Recorded rather than absorbed, so the sum of a group's
+               adjustments is the answer to what it owes - even while nothing collects them yet. */
+            _unitOfWork.ChapterPaymentAdjustmentRepository.Add(new ChapterPaymentAdjustment
+            {
+                Amount = -outstanding,
+                ChapterId = payment.ChapterId.Value,
+                CreatedUtc = utcNow,
+                CurrencyId = payment.CurrencyId,
+                Description = $"Refund of payment {payment.Reference}",
+                PaymentRefundId = refund.Id,
+                RecoveredAmount = 0,
+                Type = ChapterPaymentAdjustmentType.RefundShortfall
+            });
+        }
+
+        await _unitOfWork.SaveChanges();
+
+        return ServiceResult.Successful(outstanding > 0
+            ? $"Refund recorded; the group owes {outstanding:0.00}"
+            : "Refund recorded");
+    }
+
     public async Task<ServiceResult> UnignorePayment(
         IMemberServiceRequest request, Guid paymentId)
         => await SetPaymentIgnored(request, paymentId, ignored: false);
@@ -176,6 +313,22 @@ public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
             ? PaymentReconciliationType.TransferRecord
             : ToUnsettledType(payment, payableChapterIds);
 
+    private static PaymentRefundItemViewModel ToRefundItem(
+        PaymentRefund refund,
+        Payment payment,
+        IReadOnlyDictionary<Guid, string> chapterNames)
+        => new PaymentRefundItemViewModel
+        {
+            ChapterName = payment.ChapterId != null && chapterNames.TryGetValue(payment.ChapterId.Value, out var name)
+                ? name
+                : null,
+            OutstandingAmount = refund.ChapterAmount != null
+                ? refund.ChapterAmount - (refund.ReversedAmount ?? 0)
+                : null,
+            Payment = payment,
+            Refund = refund
+        };
+
     private static PaymentReconciliationItemViewModel ToItem(
         Payment payment,
         IReadOnlyDictionary<Guid, string> chapterNames,
@@ -196,6 +349,41 @@ public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
         => acted == requested
             ? $"{verb} {acted} payment{(acted == 1 ? string.Empty : "s")}"
             : $"{verb} {acted} of {requested} payments; the rest are no longer outstanding";
+
+    /* What a refund cannot exceed. The settlement is what says what the charge and the group's share
+       actually were, so a payment that has never been read cannot have either checked - and a reversal
+       claimed against one would be a number nothing can contradict. */
+    private static string? ValidateRefund(
+        Payment payment, IReadOnlyCollection<PaymentRefund> existing, RecordPaymentRefundModel model)
+    {
+        if (payment.ActualAmount == null)
+        {
+            return model.ReversedAmount > 0
+                ? "Reconcile this payment before recording a reversal against it"
+                : null;
+        }
+
+        var refundedAlready = existing.Sum(x => x.ActualAmount ?? x.Amount);
+
+        if (refundedAlready + model.Amount > payment.ActualAmount)
+        {
+            return
+                $"That would refund more than the payment: {payment.ActualAmount} taken, " +
+                $"{refundedAlready} already refunded";
+        }
+
+        var reversedAlready = existing.Sum(x => x.ReversedAmount ?? 0);
+        var share = payment.ActualConnectedAccountAmount ?? 0;
+
+        if (reversedAlready + model.ReversedAmount > share)
+        {
+            return
+                $"That would reverse more than the group was sent: {share} transferred, " +
+                $"{reversedAlready} already reversed";
+        }
+
+        return null;
+    }
 
     /* What reading an unsettled payment's settlement will go on to do. A connected account to pay is what
        decides it, not the payment belonging to a group - the same test TransferConnectedAccountShare

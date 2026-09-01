@@ -9,6 +9,7 @@ using ODK.Core.Payments;
 using ODK.Core.Platforms;
 using ODK.Data.Core;
 using ODK.Services.Payments;
+using ODK.Services.Payments.Models;
 using ODK.Services.Payments.ViewModels;
 using ODK.Services.Tests.Helpers;
 
@@ -328,6 +329,262 @@ public static class PaymentAdminServiceTests
     }
 
     [Test]
+    public static async Task RecordPaymentRefund_RecordsTheRefundAndWhatTheGroupOwes()
+    {
+        /* Arrange - a group payment refunded in the provider's dashboard with no reversal made, which is
+           the case the form exists for. */
+        using var context = CreateMockOdkContext();
+
+        var chapter = context.CreateChapter(name: "Group one");
+        var payment = CreateSettledPayment(context, chapter);
+
+        var service = CreatePaymentAdminService(context);
+
+        // Act
+        var result = await service.RecordPaymentRefund(
+            SiteAdminRequest(context), CreateModel(payment, amount: 100m));
+
+        // Assert
+        result.Success.Should().BeTrue();
+
+        var refund = context.Set<PaymentRefund>().Single();
+        refund.PaymentId.Should().Be(payment.Id);
+        refund.Amount.Should().Be(100m);
+        refund.Status.Should().Be(PaymentRefundStatusType.Refunded);
+        refund.RefundedUtc.Should().NotBeNull();
+
+        // The group covers the whole of it, and none of it was taken back
+        refund.ChapterAmount.Should().Be(100m);
+
+        var adjustment = context.Set<ChapterPaymentAdjustment>().Single();
+        adjustment.ChapterId.Should().Be(chapter.Id);
+        adjustment.Type.Should().Be(ChapterPaymentAdjustmentType.RefundShortfall);
+        adjustment.Amount.Should().Be(-100m, "negative is owed to us by the group");
+        adjustment.PaymentRefundId.Should().Be(refund.Id);
+    }
+
+    [Test]
+    public static async Task RecordPaymentRefund_Reversed_LeavesOnlyTheRestOutstanding()
+    {
+        // Arrange - the group's share was taken back, so only what the reversal could not reach is owed
+        using var context = CreateMockOdkContext();
+
+        var chapter = context.CreateChapter(name: "Group one");
+        var payment = CreateSettledPayment(context, chapter);
+
+        var service = CreatePaymentAdminService(context);
+
+        // Act
+        var result = await service.RecordPaymentRefund(
+            SiteAdminRequest(context), CreateModel(payment, amount: 100m, reversedAmount: 88m));
+
+        // Assert
+        result.Success.Should().BeTrue();
+
+        context.Set<ChapterPaymentAdjustment>().Single()
+            .Amount.Should().Be(-12m);
+    }
+
+    [Test]
+    public static async Task RecordPaymentRefund_FeeReturned_ComesOffWhatTheGroupOwes()
+    {
+        /* Arrange - a returned fee is one less thing the refund cost us, and the group covers what it cost
+           rather than a number of its own. */
+        using var context = CreateMockOdkContext();
+
+        var chapter = context.CreateChapter(name: "Group one");
+        var payment = CreateSettledPayment(context, chapter);
+
+        var service = CreatePaymentAdminService(context);
+
+        // Act
+        var result = await service.RecordPaymentRefund(
+            SiteAdminRequest(context),
+            CreateModel(payment, amount: 100m, reversedAmount: 88m, feeReturnedAmount: 2m));
+
+        // Assert
+        result.Success.Should().BeTrue();
+
+        context.Set<PaymentRefund>().Single().ChapterAmount.Should().Be(98m);
+        context.Set<ChapterPaymentAdjustment>().Single().Amount.Should().Be(-10m);
+    }
+
+    [Test]
+    public static async Task RecordPaymentRefund_FullyReversed_RaisesNoAdjustment()
+    {
+        // Arrange - nothing is left owing, so there is nothing to carry
+        using var context = CreateMockOdkContext();
+
+        var chapter = context.CreateChapter(name: "Group one");
+        var payment = CreateSettledPayment(context, chapter);
+
+        var service = CreatePaymentAdminService(context);
+
+        // Act
+        var result = await service.RecordPaymentRefund(
+            SiteAdminRequest(context), CreateModel(payment, amount: 88m, reversedAmount: 88m));
+
+        // Assert
+        result.Success.Should().BeTrue();
+        context.Set<ChapterPaymentAdjustment>().Should().BeEmpty();
+    }
+
+    [Test]
+    public static async Task RecordPaymentRefund_SitePayment_RaisesNoAdjustment()
+    {
+        // Arrange - no group to owe anything
+        using var context = CreateMockOdkContext();
+
+        var payment = CreateSettledPayment(context, chapter: null);
+
+        var service = CreatePaymentAdminService(context);
+
+        // Act
+        var result = await service.RecordPaymentRefund(
+            SiteAdminRequest(context), CreateModel(payment, amount: 100m));
+
+        // Assert
+        result.Success.Should().BeTrue();
+        context.Set<PaymentRefund>().Single().ChapterAmount.Should().BeNull();
+        context.Set<ChapterPaymentAdjustment>().Should().BeEmpty();
+    }
+
+    [Test]
+    public static async Task RecordPaymentRefund_MoreThanThePayment_IsRefused()
+    {
+        // Arrange - a payment cannot give back more than it took, however many refunds it takes to get there
+        using var context = CreateMockOdkContext();
+
+        var chapter = context.CreateChapter(name: "Group one");
+        var payment = CreateSettledPayment(context, chapter);
+
+        var service = CreatePaymentAdminService(context);
+
+        await service.RecordPaymentRefund(
+            SiteAdminRequest(context), CreateModel(payment, amount: 60m));
+
+        // Act
+        var result = await service.RecordPaymentRefund(
+            SiteAdminRequest(context), CreateModel(payment, amount: 50m));
+
+        // Assert
+        result.Success.Should().BeFalse();
+        context.Set<PaymentRefund>().Should().HaveCount(1);
+    }
+
+    [Test]
+    public static async Task RecordPaymentRefund_MoreThanTheGroupWasSent_IsRefused()
+    {
+        // Arrange - a reversal cannot take back more than the transfer sent
+        using var context = CreateMockOdkContext();
+
+        var chapter = context.CreateChapter(name: "Group one");
+        var payment = CreateSettledPayment(context, chapter);
+
+        var service = CreatePaymentAdminService(context);
+
+        // Act
+        var result = await service.RecordPaymentRefund(
+            SiteAdminRequest(context), CreateModel(payment, amount: 100m, reversedAmount: 90m));
+
+        // Assert
+        result.Success.Should().BeFalse();
+        context.Set<PaymentRefund>().Should().BeEmpty();
+    }
+
+    [Test]
+    public static async Task RecordPaymentRefund_UnsettledPaymentWithAReversal_IsRefused()
+    {
+        /* Arrange - nothing says what the group was sent, so a reversal claimed against it is a number
+           nothing can contradict. */
+        using var context = CreateMockOdkContext();
+
+        var chapter = context.CreateChapter(name: "Group one");
+        var payment = CreateUnsettledPayment(context, chapter);
+        payment.ExternalChargeId = "ch_123";
+
+        var service = CreatePaymentAdminService(context);
+
+        // Act
+        var result = await service.RecordPaymentRefund(
+            SiteAdminRequest(context), CreateModel(payment, amount: 100m, reversedAmount: 10m));
+
+        // Assert
+        result.Success.Should().BeFalse();
+        context.Set<PaymentRefund>().Should().BeEmpty();
+    }
+
+    [Test]
+    public static async Task RecordPaymentRefund_PaymentNotFound_IsRefused()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var service = CreatePaymentAdminService(context);
+
+        // Act
+        var result = await service.RecordPaymentRefund(
+            SiteAdminRequest(context),
+            new RecordPaymentRefundModel
+            {
+                Amount = 10m,
+                ExternalId = null,
+                ExternalReversalId = null,
+                FeeReturnedAmount = 0m,
+                PaymentReference = "ch_nothing",
+                Reason = "Test",
+                ReversedAmount = 0m
+            });
+
+        // Assert
+        result.Success.Should().BeFalse();
+        context.Set<PaymentRefund>().Should().BeEmpty();
+    }
+
+    [Test]
+    public static async Task RecordPaymentRefund_PaymentOnAnotherPlatform_IsRefused()
+    {
+        // Arrange - a posted reference can no more reach past the platform than any other action
+        using var context = CreateMockOdkContext();
+
+        var chapter = context.CreateChapter(platform: PlatformType.DrunkenKnitwits);
+        var payment = CreateSettledPayment(context, chapter);
+
+        var service = CreatePaymentAdminService(context);
+
+        // Act
+        var result = await service.RecordPaymentRefund(
+            SiteAdminRequest(context), CreateModel(payment, amount: 10m));
+
+        // Assert
+        result.Success.Should().BeFalse();
+        context.Set<PaymentRefund>().Should().BeEmpty();
+    }
+
+    [Test]
+    public static async Task GetPaymentRefundsViewModel_ListsWhatEachRefundLeftOwing()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var chapter = context.CreateChapter(name: "Group one");
+        var payment = CreateSettledPayment(context, chapter);
+
+        var service = CreatePaymentAdminService(context);
+
+        await service.RecordPaymentRefund(
+            SiteAdminRequest(context), CreateModel(payment, amount: 100m, reversedAmount: 88m));
+
+        // Act
+        var result = await service.GetPaymentRefundsViewModel(SiteAdminRequest(context));
+
+        // Assert
+        var item = result.Refunds.Single();
+        item.ChapterName.Should().Be("Group one");
+        item.OutstandingAmount.Should().Be(12m);
+    }
+
+    [Test]
     public static async Task ReconcilePayment_PendingPayment_RunsNowAndReportsTheOutcome()
     {
         /* Arrange - the row action runs the reconcile rather than queueing it, so the site admin is told
@@ -603,6 +860,38 @@ public static class PaymentAdminServiceTests
         result.Success.Should().BeFalse();
         context.Set<Payment>().Single(x => x.Id == payment.Id)
             .ReconciliationIgnoredUtc.Should().BeNull();
+    }
+
+    private static RecordPaymentRefundModel CreateModel(
+        Payment payment,
+        decimal amount,
+        decimal reversedAmount = 0m,
+        decimal feeReturnedAmount = 0m)
+        => new RecordPaymentRefundModel
+        {
+            Amount = amount,
+            ExternalId = "re_123",
+            ExternalReversalId = reversedAmount > 0 ? "trr_123" : null,
+            FeeReturnedAmount = feeReturnedAmount,
+            PaymentReference = payment.ExternalChargeId!,
+            Reason = "Event cancelled",
+            ReversedAmount = reversedAmount
+        };
+
+    /* A payment whose settlement has been read, which is what says what the charge and the group's share
+       actually were - and so what a refund can be checked against. */
+    private static Payment CreateSettledPayment(MockOdkContext context, Chapter? chapter)
+    {
+        var payment = CreateUnsettledPayment(context, chapter);
+
+        payment.ActualAmount = 100m;
+        payment.ActualCommissionAmount = chapter != null ? 10m : null;
+        payment.ActualConnectedAccountAmount = chapter != null ? 88m : null;
+        payment.ActualNetAmount = 98m;
+        payment.ExternalChargeId = $"ch_{payment.Id:N}";
+        payment.SettlementCurrencyCode = "GBP";
+
+        return payment;
     }
 
     private static PaymentAdminService CreatePaymentAdminService(
