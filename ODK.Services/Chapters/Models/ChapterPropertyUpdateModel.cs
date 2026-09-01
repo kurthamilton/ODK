@@ -2,7 +2,7 @@
 
 public class ChapterPropertyUpdateModel
 {
-    public string? DisplayName { get; set; }
+    public string DisplayName { get; set; } = string.Empty;
 
     public string? HelpText { get; set; }
 

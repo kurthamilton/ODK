@@ -17,7 +17,7 @@ public sealed class CheckMemberProperties : IStep<ChapterMembershipContext>
 
         var missing = context.ChapterProperties
             .GetMissingRequired(values, forApplication: true)
-            .Select(x => x.GetDisplayText())
+            .Select(x => x.DisplayName)
             .ToArray();
 
         var outcome = missing.Length > 0

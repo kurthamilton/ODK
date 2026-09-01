@@ -14,8 +14,9 @@ public class ChapterPropertyFormViewModel
 
     public bool DataTypeEnabled { get; set; }
 
+    [Required]
     [DisplayName("Display name")]
-    public string? DisplayName { get; set; }
+    public string DisplayName { get; set; } = string.Empty;
 
     [DisplayName("Help text")]
     public string? HelpText { get; set; }

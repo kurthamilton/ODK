@@ -2480,6 +2480,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         if (string.IsNullOrEmpty(property.Name) ||
             string.IsNullOrEmpty(property.Label) ||
+            string.IsNullOrEmpty(property.DisplayName) ||
             !Enum.IsDefined(property.DataType) || property.DataType == DataType.None)
         {
             return ServiceResult.Failure(ErrorMessagesResource.RequiredFieldsMissing);

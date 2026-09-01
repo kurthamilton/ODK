@@ -725,7 +725,7 @@ public class MemberService : IMemberService
 
         return chapterProperties
             .GetMissingRequired(valuesByPropertyId, forApplication)
-            .Select(x => x.GetDisplayText());
+            .Select(x => x.DisplayName);
     }
 
     private async Task<ServiceResult> CancelSubscription(

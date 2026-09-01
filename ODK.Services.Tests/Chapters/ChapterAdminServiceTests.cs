@@ -678,6 +678,33 @@ public static class ChapterAdminServiceTests
     }
 
     [Test]
+    public static async Task CreateChapterProperty_WhenMissingDisplayName_ReturnsFailure()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(
+            adminMembers: [currentMember]);
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.Properties);
+
+        var model = CreateChapterPropertyCreateModel(displayName: string.Empty);
+
+        // Act
+        var result = await service.CreateChapterProperty(request, model);
+
+        // Assert
+        result.Success.Should().BeFalse();
+    }
+
+    [Test]
     public static async Task CreateChapterProperty_WhenMissingRequiredFields_ReturnsFailure()
     {
         // Arrange
