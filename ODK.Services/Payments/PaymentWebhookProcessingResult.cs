@@ -13,6 +13,12 @@ public class PaymentWebhookProcessingResult
 
     internal Chapter? Chapter { get; init; }
 
+    /// <summary>
+    /// The checkout session the event was about, where it was about one. Carried for the same reason
+    /// <see cref="Payment"/> is - a caller acts on it once the processing has committed.
+    /// </summary>
+    internal PaymentCheckoutSession? CheckoutSession { get; init; }
+
     internal Currency? Currency { get; init; }
 
     internal Member? Member { get; init; }
@@ -22,10 +28,15 @@ public class PaymentWebhookProcessingResult
     internal bool Success { get; init; }
 
     internal static PaymentWebhookProcessingResult Successful(
-        Member? member, Chapter? chapter, Payment? payment, Currency? currency)
+        Member? member,
+        Chapter? chapter,
+        Payment? payment,
+        Currency? currency,
+        PaymentCheckoutSession? checkoutSession)
         => new PaymentWebhookProcessingResult
         {
             Chapter = chapter,
+            CheckoutSession = checkoutSession,
             Currency = currency,
             Member = member,
             Payment = payment,

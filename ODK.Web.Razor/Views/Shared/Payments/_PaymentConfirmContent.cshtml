@@ -1,25 +1,34 @@
 ﻿@using ODK.Core.Payments
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Payments
 @model PaymentConfirmViewModel
+@inject IOdkRoutes OdkRoutes
 @{
-    string statusUrl;
+    var chapterId = Model.Chapter?.Id;
+    var chapterAdmin = Model.Scope == PaymentConfirmScope.ChapterAdmin;
 
-    if (!string.IsNullOrEmpty(Model.StatusUrl))
-    {
-        statusUrl = Model.StatusUrl;
-    }
-    else
-    {
-        statusUrl = $"/payments/sessions/{Model.SessionId}/status";
-        if (Model.Chapter != null)
-        {
-            statusUrl += $"?groupId={Model.Chapter.Id}";
-        }
-    }
+    var statusUrl = chapterAdmin
+        ? OdkRoutes.Payments.ChapterCheckoutSessionStatus(chapterId!.Value, Model.SessionId)
+        : OdkRoutes.Payments.CheckoutSessionStatus(chapterId, Model.SessionId);
+
+    // The hub method is named rather than derived in script: the two differ in who they authorise, which is
+    // a fact about the page and not something the browser can be trusted to decide.
+    var watchMethod = chapterAdmin ? "WatchChapterCheckoutSession" : "WatchCheckoutSession";
+
+    /* Only the fallback. The page is told to re-read as soon as the webhook lands, so this covers what a
+       broadcast cannot reach - one raised in another process, or lost while the socket was down. It starts
+       fast and odk.checkout.js slows it once the connection is up, so a browser that never gets a socket
+       is no worse off than before there was one. */
+    const int pollingIntervalMs = 1000;
 }
 
 <div data-odk-component="_PaymentConfirmContent">
-    <div data-odk-checkout data-odk-polling-url="@statusUrl">
+    <div data-odk-checkout
+        data-odk-checkout-hub-url="@OdkRoutes.Payments.CheckoutSessionHub(chapterId)"
+        data-odk-checkout-session-id="@Model.SessionId"
+        data-odk-checkout-watch-method="@watchMethod"
+        data-odk-polling-url="@statusUrl"
+        data-odk-polling-interval="@pollingIntervalMs">
 
         <div class="d-none"
             data-odk-checkout-status="@PaymentStatusType.Complete"

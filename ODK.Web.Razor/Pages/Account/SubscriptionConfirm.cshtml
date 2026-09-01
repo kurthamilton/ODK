@@ -39,6 +39,7 @@
                 @await Html.PartialAsync("Payments/_PaymentConfirmContent", new PaymentConfirmViewModel
                 {
                     Chapter = null,
+                    Scope = PaymentConfirmScope.Member,
                     SessionId = Model.SessionId
                 })
             </div>

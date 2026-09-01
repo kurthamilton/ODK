@@ -12,10 +12,12 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using ODK.Core.Platforms;
 using ODK.Infrastructure;
 using ODK.Infrastructure.Settings;
+using ODK.Services.Payments;
 using ODK.Services.Platforms;
 using ODK.Services.Tasks;
 using ODK.Web.Razor.Attributes;
 using ODK.Web.Razor.Authentication;
+using ODK.Web.Razor.Hubs;
 using ODK.Web.Razor.Middleware;
 using ODK.Web.Razor.Mvc;
 using ODK.Web.Razor.Services;
@@ -86,6 +88,22 @@ public class Program
 
         app.MapRazorPages();
         app.MapControllers();
+
+        /* The chapter is a route value so RequestStore resolves it the way it does for a controller, and a
+           hub method can compose a chapter request without a lookup of its own.
+
+           Two mappings rather than one {chapterId:guid?}, because MapHub also maps path + "/negotiate": an
+           optional parameter followed by another segment is not optional, so a connection with no chapter
+           would fail to negotiate. Both reach the same hub type, and groups belong to the type rather than
+           to the path, so a broadcast reaches a connection made on either.
+
+           The request store middleware is skipped: a hub invocation gets its own scope, so the store that
+           middleware loads is never the one a hub method holds, and a socket handshake should not pay a
+           load nothing reads. PaymentsHub loads its own. */
+        app.MapHub<PaymentsHub>("/hubs/payments")
+            .WithMetadata(new SkipRequestStoreMiddlewareAttribute());
+        app.MapHub<PaymentsHub>("/hubs/payments/{chapterId:guid}")
+            .WithMetadata(new SkipRequestStoreMiddlewareAttribute());
 
         app.MapGet("/favicon.ico", async (HttpContext ctx, IPlatformProvider platformProvider) =>
         {
@@ -174,6 +192,7 @@ public class Program
         }
 
         builder.Services.AddControllers();
+        builder.Services.AddSignalR();
 
         builder.Services.AddScoped<CustomCookieAuthenticationEvents>();
         builder.Services.AddHttpContextAccessor();
@@ -189,6 +208,9 @@ public class Program
 
         builder.Services
             .AddScoped<IBackgroundTaskService, HangfireService>();
+
+        builder.Services
+            .AddScoped<IPaymentUpdateBroadcaster, SignalRPaymentUpdateBroadcaster>();
 
         builder.Services
             .AddScoped<IMemberImportStagingService, MemberImportStagingService>()
@@ -252,7 +274,12 @@ public class Program
                 .Filter
                     .ByExcluding(Matching.WithProperty<string>("RequestPath", v => v.EndsWith(".css")))
                 .Filter
-                    .ByExcluding(Matching.WithProperty<string>("RequestPath", v => v.EndsWith(".js")));
+                    .ByExcluding(Matching.WithProperty<string>("RequestPath", v => v.EndsWith(".js")))
+                /* A hub connection is one request held open for as long as the page is, so it logs once with
+                   an elapsed time measured in minutes - which reads as a slow request and skews everything
+                   BetterStack is looked at for. The local trace file keeps them. */
+                .Filter
+                    .ByExcluding(Matching.WithProperty<string>("RequestPath", v => v.StartsWith("/hubs/")));
         }
 
         var logger = loggerConfiguration.CreateLogger();

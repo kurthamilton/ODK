@@ -251,6 +251,120 @@ public static class PaymentServiceTests
         paymentCheckoutSession.ExpiredUtc.Should().NotBeNull();
     }
 
+    [Test]
+    public static async Task ProcessWebhook_WhenCheckoutSessionAlreadyExpired_BroadcastsNothing()
+    {
+        /* Arrange - a redelivered expiry webhook. Nothing moved, so nobody is told: a broadcast is what
+           makes a watching page re-read, and a re-read that can only find what it already has is the cost
+           the push exists to remove. */
+        using var context = CreateMockOdkContext();
+
+        var member = context.CreateMember();
+        var currency = context.CreateCurrency();
+        var payment = context.CreatePayment(member: member, currency: currency);
+        var paymentCheckoutSession = context.CreatePaymentCheckoutSession(
+            payment: payment,
+            expiredUtc: DateTime.UtcNow.AddMinutes(-5),
+            sessionId: "cs_already_expired");
+        var siteSubscriptionPrice = context.CreateSiteSubscriptionPrice(currency: currency);
+
+        var webhook = CreatePaymentProviderWebhook(
+            id: "wh_expired_again",
+            type: PaymentProviderWebhookType.CheckoutSessionExpired,
+            metadata: new PaymentMetadataModel(
+                PlatformType.Default,
+                PaymentReasonType.SiteSubscription,
+                member,
+                siteSubscriptionPrice,
+                paymentCheckoutSession.Id,
+                payment.Id));
+
+        var paymentUpdateBroadcaster = CreateMockPaymentUpdateBroadcaster();
+        var service = CreatePaymentService(context, paymentUpdateBroadcaster: paymentUpdateBroadcaster);
+        var request = CreateServiceRequest();
+
+        // Act
+        await service.ProcessWebhook(request, webhook);
+
+        // Assert
+        Mock.Get(paymentUpdateBroadcaster).Verify(
+            x => x.CheckoutSessionUpdated(It.IsAny<string>()),
+            Times.Never);
+    }
+
+    [Test]
+    public static async Task ProcessWebhook_WhenCheckoutSessionCompleted_BroadcastsSessionUpdate()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var member = context.CreateMember();
+        var chapter = context.CreateChapter(members: [member]);
+        var chapterSubscription = context.CreateChapterSubscription(chapter: chapter);
+        var paymentCheckoutSession = context.CreatePaymentCheckoutSession(sessionId: "cs_completed");
+
+        var webhook = CreatePaymentProviderWebhook(
+            id: "wh_completed_broadcast",
+            type: PaymentProviderWebhookType.CheckoutSessionCompleted,
+            subscriptionId: "sub_123",
+            metadata: new PaymentMetadataModel(
+                PlatformType.Default,
+                PaymentReasonType.ChapterSubscription,
+                member,
+                chapterSubscription,
+                paymentCheckoutSession.Id,
+                paymentCheckoutSession.PaymentId));
+
+        var paymentUpdateBroadcaster = CreateMockPaymentUpdateBroadcaster();
+        var service = CreatePaymentService(context, paymentUpdateBroadcaster: paymentUpdateBroadcaster);
+        var request = CreateServiceRequest();
+
+        // Act
+        await service.ProcessWebhook(request, webhook);
+
+        // Assert - the provider's own session id, which is what a watching page names
+        Mock.Get(paymentUpdateBroadcaster).Verify(
+            x => x.CheckoutSessionUpdated("cs_completed"),
+            Times.Once);
+    }
+
+    [Test]
+    public static async Task ProcessWebhook_WhenCheckoutSessionExpired_BroadcastsSessionUpdate()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var member = context.CreateMember();
+        var currency = context.CreateCurrency();
+        var payment = context.CreatePayment(member: member, currency: currency);
+        var paymentCheckoutSession = context.CreatePaymentCheckoutSession(
+            payment: payment, sessionId: "cs_expired");
+        var siteSubscriptionPrice = context.CreateSiteSubscriptionPrice(currency: currency);
+
+        var webhook = CreatePaymentProviderWebhook(
+            id: "wh_expired_broadcast",
+            type: PaymentProviderWebhookType.CheckoutSessionExpired,
+            metadata: new PaymentMetadataModel(
+                PlatformType.Default,
+                PaymentReasonType.SiteSubscription,
+                member,
+                siteSubscriptionPrice,
+                paymentCheckoutSession.Id,
+                payment.Id));
+
+        var paymentUpdateBroadcaster = CreateMockPaymentUpdateBroadcaster();
+        var service = CreatePaymentService(context, paymentUpdateBroadcaster: paymentUpdateBroadcaster);
+        var request = CreateServiceRequest();
+
+        // Act
+        await service.ProcessWebhook(request, webhook);
+
+        // Assert
+        Mock.Get(paymentUpdateBroadcaster).Verify(
+            x => x.CheckoutSessionUpdated("cs_expired"),
+            Times.Once);
+    }
+
     [TestCase(PaymentProviderWebhookType.InvoicePaymentSucceeded)]
     public static async Task ProcessWebhook_SubscriptionSucceeded_UpdatesChapterSubscription(PaymentProviderWebhookType webhookType)
     {
@@ -2249,6 +2363,13 @@ public static class PaymentServiceTests
         return mock.Object;
     }
 
+    private static IPaymentUpdateBroadcaster CreateMockPaymentUpdateBroadcaster()
+    {
+        var mock = new Mock<IPaymentUpdateBroadcaster>();
+        mock.Setup(x => x.CheckoutSessionUpdated(It.IsAny<string>())).Returns(Task.CompletedTask);
+        return mock.Object;
+    }
+
     private static IMemberEmailService CreateMockMemberEmailService()
     {
         var mock = new Mock<IMemberEmailService>();
@@ -2356,6 +2477,7 @@ public static class PaymentServiceTests
         ILoggingService? loggingService = null,
         IMemberEmailService? memberEmailService = null,
         IPaymentProviderFactory? paymentProviderFactory = null,
+        IPaymentUpdateBroadcaster? paymentUpdateBroadcaster = null,
         IEventService? eventService = null,
         SiteSubscriptionCooldown? siteSubscriptionCooldown = null,
         IBackgroundTaskService? backgroundTaskService = null)
@@ -2366,6 +2488,7 @@ public static class PaymentServiceTests
             loggingService ?? CreateMockLoggingService(),
             memberEmailService ?? CreateMockMemberEmailService(),
             paymentProviderFactory ?? CreateMockPaymentProviderFactory(),
+            paymentUpdateBroadcaster ?? CreateMockPaymentUpdateBroadcaster(),
             eventService ?? CreateMockEventService(),
             backgroundTaskService ?? new MockBackgroundTaskService(),
             new MemberChapterSubscriptionWriter(unitOfWork),
