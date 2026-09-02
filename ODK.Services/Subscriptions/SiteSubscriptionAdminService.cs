@@ -289,7 +289,8 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
             return new SiteAdminMembersViewModel
             {
                 Platform = platform,
-                Rows = []
+                Rows = [],
+                TimeZone = request.CurrentMember.TimeZone
             };
         }
 
@@ -335,7 +336,8 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         return new SiteAdminMembersViewModel
         {
             Platform = platform,
-            Rows = rows
+            Rows = rows,
+            TimeZone = request.CurrentMember.TimeZone
         };
     }
 

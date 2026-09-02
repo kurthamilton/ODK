@@ -48,7 +48,7 @@
                         @message.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions
                         {
                             IncludeDayOfWeek = true,
-                            TimeZone = Model.CurrentMember.TimeZone
+                            TimeZone = Model.TimeZone
                         })
                     </td>
                     <td>@message.FromAddress</td>

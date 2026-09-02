@@ -11,6 +11,13 @@ public interface IPaymentAdminService
     Task<PaymentReconciliationViewModel> GetPaymentReconciliationViewModel(IMemberServiceRequest request);
 
     /// <summary>
+    /// What to record against <paramref name="paymentId"/>, filled in from the payment where one is named
+    /// and blank where it is not.
+    /// </summary>
+    Task<PaymentRefundCreateViewModel> GetPaymentRefundCreateViewModel(
+        IMemberServiceRequest request, Guid? paymentId);
+
+    /// <summary>
     /// The refunds recorded against this platform's payments, and what each left the group owing.
     /// </summary>
     Task<PaymentRefundsViewModel> GetPaymentRefundsViewModel(IMemberServiceRequest request);

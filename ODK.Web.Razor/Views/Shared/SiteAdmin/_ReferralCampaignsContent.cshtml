@@ -1,10 +1,8 @@
-﻿@using ODK.Core.Chapters
-@using ODK.Core.Utils
+﻿@using ODK.Core.Utils
 @using ODK.Services.Referrals
 @using ODK.Web.Common.Routes
 @using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Components
-@using ODK.Web.Razor.Mvc
 @inject IOdkRoutes OdkRoutes
 @inject IReferralAdminService ReferralAdminService
 @inject IRequestStore RequestStore
@@ -12,9 +10,7 @@
     var viewModel = await ReferralAdminService.GetCampaignsViewModel(RequestStore.MemberServiceRequest);
     var campaigns = viewModel.Campaigns;
 
-    // Site-wide page, so there's no chapter zone to fall back to - use the app default.
-    var timeZone = Html.DisplayTimeZone(Chapter.DefaultTimeZone);
-    var options = new FriendlyDateStringOptions { TimeZone = timeZone };
+    var options = new FriendlyDateStringOptions { TimeZone = viewModel.TimeZone };
 }
 
 <h2 class="content-heading">Referral campaigns</h2>

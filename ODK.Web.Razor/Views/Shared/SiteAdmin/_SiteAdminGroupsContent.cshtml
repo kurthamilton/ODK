@@ -1,10 +1,18 @@
-﻿@using ODK.Services.Chapters.ViewModels
+﻿@using ODK.Core.Utils
+@using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model SiteAdminChaptersViewModel
 @inject IOdkRoutes OdkRoutes
 @{
+    var dateOptions = new FriendlyDateStringOptions
+    {
+        ForceIncludeYear = true,
+        TimeZone = Model.TimeZone
+    };
+    var dateTimeOptions = dateOptions with { ForceIncludeTime = true };
+
     var tabs = new TabsViewModel
     {
         MenuItems = new[]
@@ -45,10 +53,10 @@
                                     @chapter.GetDisplayName(Model.Platform)
                                 </a>
                             </td>
-                            <td>@chapter.CreatedUtc.ToString("yyyy-MM-dd HH:mm:ss")</td>
-                            <td>@chapter.PublishedUtc?.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                            <td>@chapter.CreatedUtc.ToFriendlyDateString(dateTimeOptions)</td>
+                            <td>@chapter.PublishedUtc?.ToFriendlyDateString(dateTimeOptions)</td>
                             <td>@row.SiteSubscriptionName</td>
-                            <td>@row.SiteSubscriptionExpiresUtc?.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                            <td>@row.SiteSubscriptionExpiresUtc?.ToFriendlyDateString(dateOptions)</td>
                             <td>
                                 @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
                                 {
@@ -82,7 +90,7 @@
 
                         <tr>
                             <td>@chapter.GetDisplayName(Model.Platform)</td>
-                            <td>@chapter.CreatedUtc.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                            <td>@chapter.CreatedUtc.ToFriendlyDateString(dateTimeOptions)</td>
                             <td>
                                 @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
                                 {

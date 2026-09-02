@@ -1,0 +1,27 @@
+﻿@page "/siteadmin/payments/refunds/new"
+@using ODK.Services.Payments
+@using ODK.Web.Razor.Models.Components
+@model PaymentRefundCreateModel
+@inject IPaymentAdminService PaymentAdminService
+@{
+    Layout = "_SiteAdminLayout";
+    Model.Title = "Record a refund | Site Admin";
+
+    var viewModel = await PaymentAdminService.GetPaymentRefundCreateViewModel(
+        Model.MemberServiceRequest, Model.PaymentId);
+}
+
+@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+{
+    Breadcrumbs = new[]
+    {
+        new MenuItem
+        {
+            Link = Model.OdkRoutes.SiteAdmin.PaymentRefunds.Path,
+            Text = "Back to refunds",
+            Icon = IconType.ArrowLeft
+        }
+    }
+})
+
+@await Html.PartialAsync("SiteAdmin/_SiteAdminPaymentRefundCreateContent", viewModel)

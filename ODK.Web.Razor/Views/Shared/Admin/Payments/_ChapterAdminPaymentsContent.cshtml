@@ -1,14 +1,26 @@
-﻿@using ODK.Services.Payments.ViewModels
+﻿@using System.Globalization
+@using ODK.Core.Utils
+@using ODK.Services.Payments.ViewModels
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Mvc
 @model ChapterPaymentsViewModel
 @inject IOdkRoutes OdkRoutes
+@{
+    // Date, Member, Reference, Paid, Received, Refunded, and the site admin's own action column.
+    var columnCount = Model.ViewedBySiteAdmin ? 7 : 6;
 
-@* Neither the provider nor the platform is named: the wording is shared by both platforms, and which
-   provider took the fee is not something a group has any say in. *@
+    var dateTimeOptions = new FriendlyDateStringOptions
+    {
+        ForceIncludeTime = true,
+        ForceIncludeYear = true,
+        TimeZone = Html.DisplayTimeZone(Model.Chapter.TimeZone)
+    };
+}
+
 @await Html.PartialAsync("Components/_AdminPageDescription",
-    "Money your group has taken, including what each payment was for. Paid is what the member was " +
-    "charged; Received is your share of it, minus fees.")
+    "Money your group has taken, including what each payment was for.")
 
 <div data-odk-component="_ChapterAdminPaymentsContent">
     @if (!Model.PaymentAccountEnabled)
@@ -31,21 +43,39 @@
                     <th data-sortable-sort="default" data-sortable-dir="desc">Date</th>
                     <th data-sortable-sort>Member</th>
                     <th>Reference</th>
-                    <th>Paid</th>
-                    <th>Received</th>
+                    <th>
+                        Paid
+                        @await Html.PartialAsync("Components/_Tooltip",
+                            "What the member was charged.")
+                    </th>
+                    <th>
+                        Received
+                        @await Html.PartialAsync("Components/_Tooltip",
+                            "Your share of what the member paid, less fees.")
+                    </th>
+                    <th>
+                        Refunded
+                        @await Html.PartialAsync("Components/_Tooltip",
+                            "What has since been given back to the member.")
+                    </th>
+                    @* Recording a refund is a site-admin act, so the column is theirs alone. *@
+                    @if (Model.ViewedBySiteAdmin)
+                    {
+                        <th></th>
+                    }
                 </tr>
             </thead>
             <tbody>
                 @if (Model.Payments.Count == 0)
                 {
                     <tr>
-                        <td colspan="5" class="text-muted">No payments received yet.</td>
+                        <td colspan="@columnCount" class="text-muted">No payments received yet.</td>
                     </tr>
                 }
 
-                @foreach (var dto in Model.Payments)
+                @foreach (var item in Model.Payments)
                 {
-                    var (currency, member, payment) = (dto.Payment.Currency, dto.Member, dto.Payment);
+                    var (currency, member, payment) = (item.Payment.Currency, item.Member, item.Payment);
 
                     if (payment.PaidUtc == null)
                     {
@@ -54,7 +84,9 @@
 
                     <tr>
                         <td>
-                            @Model.Chapter.ToChapterTime(payment.PaidUtc.Value).ToString("yyyy-MM-dd HH:mm:ss")
+                            @* A friendly date does not sort as a date, so the cell carries the instant for the sorter. *@
+                            <span class="d-none" data-sort-value="@payment.PaidUtc.Value.ToString("O", CultureInfo.InvariantCulture)"></span>
+                            @payment.PaidUtc.Value.ToFriendlyDateString(dateTimeOptions)
                         </td>
                         <td>
                             <span class="d-none" data-sort-value="@member.FullName"></span>
@@ -69,12 +101,45 @@
                             @currency.ToAmountString(payment.Amount)
                         </td>
                         <td>
-                            @* A dash rather than a zero: nothing has been read back from the payment
-                               provider for this one yet, which is not the same as receiving nothing. *@
+                            @* A dash rather than a zero: no share is recorded against this payment,
+                               which is not the same as receiving nothing. *@
                             @(payment.ActualConnectedAccountAmount != null
                                 ? currency.ToAmountString(payment.ActualConnectedAccountAmount.Value)
                                 : "-")
                         </td>
+                        <td>
+                            @* An agreed refund that has not been paid yet is neither an amount nor
+                               nothing, so it says so rather than reading as either. *@
+                            @if (item.RefundedAmount != null)
+                            {
+                                <span>@currency.ToAmountString(item.RefundedAmount.Value)</span>
+                            }
+                            else if (item.HasRefund)
+                            {
+                                <span class="text-muted">Pending</span>
+                            }
+                            else
+                            {
+                                <span>-</span>
+                            }
+                        </td>
+                        @if (Model.ViewedBySiteAdmin)
+                        {
+                            <td>
+                                @* Nothing to record against a payment whose refund is already on the
+                                   books, and the form would prefill as though it had none. *@
+                                @if (!item.HasRefund)
+                                {
+                                    @* Carries the payment, so the amounts arrive filled in rather than
+                                       being copied across by hand from the provider's dashboard. *@
+                                    <a href="@OdkRoutes.SiteAdmin.PaymentRefundCreateFor(payment.Id)"
+                                       data-bs-toggle="tooltip" data-bs-title="Record a refund" class="btn-icon">
+                                        @await Html.PartialAsync("Components/_Icon",
+                                            new IconViewModel(IconType.Undo))
+                                    </a>
+                                }
+                            </td>
+                        }
                     </tr>
                 }
             </tbody>

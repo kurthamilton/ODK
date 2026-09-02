@@ -1185,6 +1185,38 @@ public class PaymentService : IPaymentService
         await _unitOfWork.SaveChanges();
     }
 
+    /* Spends what was withheld against the adjustments it was withheld for, in the order given. Each
+       carries the sign of the adjustment it settles, so a debt (negative) is recovered by a negative
+       amount and Outstanding() walks to zero. */
+    private void RecordAdjustmentRecoveries(
+        Payment payment, IReadOnlyCollection<ChapterPaymentAdjustment> outstanding, decimal withheld)
+    {
+        var remaining = withheld;
+
+        foreach (var adjustment in outstanding)
+        {
+            if (remaining <= 0)
+            {
+                break;
+            }
+
+            var take = Math.Min(remaining, -adjustment.Outstanding());
+
+            adjustment.RecoveredAmount -= take;
+            _unitOfWork.ChapterPaymentAdjustmentRepository.Update(adjustment);
+
+            _unitOfWork.ChapterPaymentAdjustmentRecoveryRepository.Add(new ChapterPaymentAdjustmentRecovery
+            {
+                Amount = -take,
+                ChapterPaymentAdjustmentId = adjustment.Id,
+                CreatedUtc = DateTime.UtcNow,
+                PaymentId = payment.Id
+            });
+
+            remaining -= take;
+        }
+    }
+
     /* Kept on the payment as well as logged. The error log answers "what went wrong last night"; this
        answers "why is this row still here", which is the question the reconciliation page raises and the
        only one a site admin can act on - by excluding the payment. */
@@ -1286,9 +1318,13 @@ public class PaymentService : IPaymentService
             : ResolvePaymentSettlementResult.Resolved(transferred);
     }
 
-    /* The group's share, moved once the settlement says what there is to share. Idempotent twice over: the
-       date below stops a second attempt starting, and the provider is given a key derived from the payment,
-       so an attempt that moved the money but failed before recording it cannot move it again. */
+    /* The group's share, moved once the settlement says what there is to share - less whatever the group
+       already owes, which this is the only thing that collects. Idempotent twice over: the date below stops
+       a second attempt starting, and the provider is given a key derived from the payment, so an attempt
+       that moved the money but failed before recording it cannot move it again.
+
+       Nothing is written until the provider has answered, so a failure part-way leaves neither the transfer
+       nor the recoveries recorded and the retry recomputes both from the same state. */
     private async Task<bool> TransferConnectedAccountShare(
         Payment payment, IPaymentProvider paymentProvider, ChapterPaymentAccount connectedAccount)
     {
@@ -1308,28 +1344,58 @@ public class PaymentService : IPaymentService
                 $"'{payment.SettlementCurrencyCode}' but is denominated in '{currency.Code}'");
         }
 
-        var result = await paymentProvider.CreateTransfer(new ExternalTransfer
-        {
-            Amount = payment.ActualConnectedAccountAmount.Value,
-            ConnectedAccountId = connectedAccount.ExternalId,
-            CurrencyCode = currency.Code,
-            ExternalChargeId = payment.ExternalChargeId ?? string.Empty,
-            IdempotencyKey = ToTransferIdempotencyKey(payment.Id)
-        });
+        var share = payment.ActualConnectedAccountAmount.Value;
 
-        if (!result.Success)
+        /* Oldest first, so a debt is paid down in the order it was incurred rather than in whatever order
+           the rows come back. Only this currency: amounts in different ones cannot be netted. */
+        var outstanding = (await _unitOfWork.ChapterPaymentAdjustmentRepository
+                .Query()
+                .ForChapter(payment.ChapterId!.Value)
+                .InCurrency(payment.CurrencyId)
+                .Outstanding()
+                .GetAll()
+                .Run())
+            .Where(x => x.Outstanding() < 0)
+            .OrderBy(x => x.CreatedUtc)
+            .ToArray();
+
+        var withheld = Math.Min(outstanding.Sum(x => -x.Outstanding()), share);
+        var sending = share - withheld;
+
+        string? externalTransferId = null;
+
+        if (sending > 0)
         {
-            throw new OdkServiceException(
-                $"Could not transfer {payment.ActualConnectedAccountAmount} {currency.Code} to the group " +
-                $"for Payment {payment.Id}: {result.Message}");
+            var result = await paymentProvider.CreateTransfer(new ExternalTransfer
+            {
+                Amount = sending,
+                ConnectedAccountId = connectedAccount.ExternalId,
+                CurrencyCode = currency.Code,
+                ExternalChargeId = payment.ExternalChargeId ?? string.Empty,
+                IdempotencyKey = ToTransferIdempotencyKey(payment.Id)
+            });
+
+            if (!result.Success)
+            {
+                throw new OdkServiceException(
+                    $"Could not transfer {sending} {currency.Code} to the group " +
+                    $"for Payment {payment.Id}: {result.Message}");
+            }
+
+            externalTransferId = result.ExternalTransferId;
         }
 
-        payment.ExternalTransferId = result.ExternalTransferId;
+        RecordAdjustmentRecoveries(payment, outstanding, withheld);
+
+        payment.ExternalTransferId = externalTransferId;
+        payment.TransferWithheldAmount = withheld > 0 ? withheld : null;
         payment.TransferredUtc = DateTime.UtcNow;
         _unitOfWork.PaymentRepository.Update(payment);
         await _unitOfWork.SaveChanges();
 
-        return true;
+        /* Withholding the whole share discharges the payment without moving anything, so the caller is told
+           no money moved - which is what it reports to whoever pressed the button. */
+        return sending > 0;
     }
 
     private async Task<PaymentWebhookProcessingResult> UpdateMemberChapterSubscription(

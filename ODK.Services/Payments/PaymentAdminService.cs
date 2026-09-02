@@ -2,6 +2,7 @@
 using ODK.Core.Payments;
 using ODK.Core.Platforms;
 using ODK.Data.Core;
+using ODK.Data.Core.Payments;
 using ODK.Data.Core.QueryBuilders;
 using ODK.Services.Payments.Models;
 using ODK.Services.Payments.ViewModels;
@@ -47,7 +48,8 @@ public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
                 .ToArray(),
             Payments = items
                 .OrderByDescending(x => x.Payment.PaidUtc)
-                .ToArray()
+                .ToArray(),
+            TimeZone = request.CurrentMember.TimeZone
         };
     }
 
@@ -73,13 +75,76 @@ public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
             request.Platform,
             refunds.Select(x => paymentsById[x.PaymentId]))).Names;
 
+        /* What is still owed lives on the adjustment, not on the refund: a later transfer pays it down, and
+           a figure worked out from the refund alone would go on claiming a debt already collected. */
+        var outstandingByRefund = (await _unitOfWork.ChapterPaymentAdjustmentRepository
+                .Query()
+                .ForRefunds(refunds.Select(x => x.Id))
+                .GetAll()
+                .Run())
+            .ToDictionary(x => x.PaymentRefundId!.Value, x => -x.Outstanding());
+
         return new PaymentRefundsViewModel
         {
             Refunds = refunds
-                .Select(x => ToRefundItem(x, paymentsById[x.PaymentId], chapterNames))
+                .Select(x => ToRefundItem(x, paymentsById[x.PaymentId], chapterNames, outstandingByRefund))
                 .OrderByDescending(x => x.Refund.RequestedUtc)
-                .ToArray()
+                .ToArray(),
+            TimeZone = request.CurrentMember.TimeZone
         };
+    }
+
+    /* What to record against a payment, where one is named. A refund is usually the whole of it, so the
+       amounts are offered filled in and stay editable - the site admin has just done the thing in the
+       provider's dashboard and knows what actually happened better than we can guess. */
+    public async Task<PaymentRefundCreateViewModel> GetPaymentRefundCreateViewModel(
+        IMemberServiceRequest request, Guid? paymentId)
+    {
+        if (paymentId == null)
+        {
+            return Blank(request);
+        }
+
+        var payment = await GetSiteAdminRestrictedContent(
+            request,
+            x => x.PaymentRepository
+                .Query()
+                .ForEnvironment(request.Environment)
+                .ForPlatform(request.Platform)
+                .ById(paymentId.Value)
+                .GetSingleOrDefault());
+
+        if (payment == null)
+        {
+            return Blank(request);
+        }
+
+        var chapterNames = (await GetChapters(request.Platform, [payment])).Names;
+
+        return new PaymentRefundCreateViewModel
+        {
+            Amount = payment.ActualAmount,
+            ChapterName = payment.ChapterId != null && chapterNames.TryGetValue(payment.ChapterId.Value, out var name)
+                ? name
+                : null,
+            Payment = payment,
+            /* The provider's charge, because our own reference is shared by every payment for a
+               subscription and would refuse to pick one out. */
+            PaymentReference = payment.ExternalChargeId ?? payment.Reference,
+            ReversedAmount = payment.ActualConnectedAccountAmount,
+            TimeZone = request.CurrentMember.TimeZone
+        };
+
+        static PaymentRefundCreateViewModel Blank(IMemberServiceRequest request)
+            => new()
+            {
+                Amount = null,
+                ChapterName = null,
+                Payment = null,
+                PaymentReference = null,
+                ReversedAmount = null,
+                TimeZone = request.CurrentMember.TimeZone
+            };
     }
 
     public async Task<ChapterPaymentsViewModel> GetPayments(
@@ -89,12 +154,29 @@ public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
 
         var (payments, paymentAccount) = await GetChapterAdminRestrictedContent(
             request,
-            x => x.PaymentRepository.GetMemberDtosByChapterId(chapter.Id),
-            x => x.ChapterPaymentAccountRepository
-                .Query()
-                .ForChapter(chapter.Id)
+            x => x.PaymentRepository.Query()
                 .ForEnvironment(environment)
+                .ForChapter(chapter.Id)
+                .WithMember()
+                .GetAll(),
+            x => x.ChapterPaymentAccountRepository.Query()
+                .ForEnvironment(environment)
+                .ForChapter(chapter.Id)
                 .GetSingleOrDefault());
+
+        /* A second query, because a refund is found by its payment. Always loaded rather than only for
+           a site admin: what a payment has been refunded is the group's own business. */
+        var refunds = await GetChapterAdminRestrictedContent(
+            request,
+            x => x.PaymentRefundRepository
+                .Query()
+                .ForPayments(payments.Select(p => p.Payment.Id).ToArray())
+                .Live()
+                .GetAll());
+
+        var refundsByPayment = refunds
+            .GroupBy(x => x.PaymentId)
+            .ToDictionary(x => x.Key, x => x.ToArray());
 
         return new ChapterPaymentsViewModel
         {
@@ -102,7 +184,9 @@ public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
             PaymentAccountEnabled = paymentAccount?.SetupComplete() == true,
             Payments = payments
                 .OrderByDescending(x => x.Payment.PaidUtc)
-                .ToArray()
+                .Select(x => ToChapterPaymentItem(x, refundsByPayment))
+                .ToArray(),
+            ViewedBySiteAdmin = request.CurrentMember.SiteAdmin
         };
     }
 
@@ -307,6 +391,26 @@ public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
 
     /* What an ignored payment would do if it were reconciled after all. It has not been read, so which
        part is outstanding is read off the row rather than off which query found it. */
+    private static ChapterPaymentItemViewModel ToChapterPaymentItem(
+        PaymentMemberDto dto, IReadOnlyDictionary<Guid, PaymentRefund[]> refundsByPayment)
+    {
+        var refunds = refundsByPayment.TryGetValue(dto.Payment.Id, out var found) ? found : [];
+
+        /* Status is what says where a refund got to, and only Refunded means the money has gone -
+           a failed one can carry a refunded date and still have returned the money to us. */
+        var refunded = refunds
+            .Where(x => x.Status == PaymentRefundStatusType.Refunded)
+            .Sum(x => x.ActualAmount ?? x.Amount);
+
+        return new ChapterPaymentItemViewModel
+        {
+            HasRefund = refunds.Length > 0,
+            Member = dto.Member,
+            Payment = dto.Payment,
+            RefundedAmount = refunded > 0 ? refunded : null
+        };
+    }
+
     private static PaymentReconciliationType ToIgnoredType(
         Payment payment, IReadOnlySet<Guid> payableChapterIds)
         => payment.ActualAmount != null
@@ -316,14 +420,15 @@ public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
     private static PaymentRefundItemViewModel ToRefundItem(
         PaymentRefund refund,
         Payment payment,
-        IReadOnlyDictionary<Guid, string> chapterNames)
+        IReadOnlyDictionary<Guid, string> chapterNames,
+        IReadOnlyDictionary<Guid, decimal> outstandingByRefund)
         => new PaymentRefundItemViewModel
         {
             ChapterName = payment.ChapterId != null && chapterNames.TryGetValue(payment.ChapterId.Value, out var name)
                 ? name
                 : null,
-            OutstandingAmount = refund.ChapterAmount != null
-                ? refund.ChapterAmount - (refund.ReversedAmount ?? 0)
+            OutstandingAmount = outstandingByRefund.TryGetValue(refund.Id, out var outstanding)
+                ? outstanding
                 : null,
             Payment = payment,
             Refund = refund

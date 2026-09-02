@@ -73,7 +73,6 @@ public class ContactAdminService : OdkAdminServiceBase, IContactAdminService
 
         return new MessagesAdminPageViewModel
         {
-            CurrentMember = request.CurrentMember,
             Messages = messages,
             Status = status,
             StatusCounts = new Dictionary<MessageStatus, int>
@@ -81,7 +80,8 @@ public class ContactAdminService : OdkAdminServiceBase, IContactAdminService
                 { MessageStatus.Unreplied, status == MessageStatus.Unreplied ? messages.Count : unrepliedCount },
                 { MessageStatus.Replied, status == MessageStatus.Replied ? messages.Count : repliedCount },
                 { MessageStatus.Spam, status == MessageStatus.Spam ? messages.Count : spamCount }
-            }
+            },
+            TimeZone = request.CurrentMember.TimeZone
         };
     }
 
@@ -102,9 +102,9 @@ public class ContactAdminService : OdkAdminServiceBase, IContactAdminService
 
         return new MessageAdminPageViewModel
         {
-            CurrentMember = currentMember,
             Message = message,
-            Replies = replies
+            Replies = replies,
+            TimeZone = currentMember.TimeZone
         };
     }
 
@@ -137,7 +137,8 @@ public class ContactAdminService : OdkAdminServiceBase, IContactAdminService
             ActiveConversationCount = active.Count,
             Archived = archived,
             ArchivedConversationCount = archivedConversations.Count,
-            Conversations = archived ? archivedConversations : active
+            Conversations = archived ? archivedConversations : active,
+            TimeZone = request.CurrentMember.TimeZone
         };
     }
 

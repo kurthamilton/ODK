@@ -1,9 +1,16 @@
 ﻿@using System.Globalization
+@using ODK.Core.Utils
 @using ODK.Services.Payments.ViewModels
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.SiteAdmin
 @model PaymentReconciliationViewModel
 @{
+    var dateTimeOptions = new FriendlyDateStringOptions
+    {
+        ForceIncludeYear = true,
+        TimeZone = Model.TimeZone
+    };
+
     // Money first: it is the one a site admin has to look at before pressing anything.
     var kinds = new (PaymentReconciliationType Type, string Title, string Description, string Action, IconType Icon)[]
     {
@@ -91,10 +98,7 @@
                         <table class="table" data-sortable data-table-striped>
                             <thead>
                                 <tr>
-                                    @* UTC rather than a local zone: the point of the column is matching a
-                                       row against the payment provider's own dashboard, which states its
-                                       times in UTC. *@
-                                    <th data-sortable-sort="default" data-sortable-dir="desc">Paid (UTC)</th>
+                                    <th data-sortable-sort="default" data-sortable-dir="desc">Paid</th>
                                     <th data-sortable-sort>Group</th>
                                     <th>Reference</th>
                                     <th>Amount</th>
@@ -109,7 +113,9 @@
 
                                     <tr>
                                         <td>
-                                            @(payment.PaidUtc?.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture) ?? "-")
+                                            @* A friendly date does not sort as a date, so the cell carries the instant for the sorter. *@
+                                            <span class="d-none" data-sort-value="@payment.PaidUtc?.ToString("O", CultureInfo.InvariantCulture)"></span>
+                                            @(payment.PaidUtc?.ToFriendlyDateTimeString(dateTimeOptions) ?? "-")
                                         </td>
                                         <td>
                                             @* A site payment belongs to no group, which is not a gap in
@@ -162,7 +168,7 @@
                         <table class="table" data-sortable data-table-striped>
                             <thead>
                                 <tr>
-                                    <th data-sortable-sort="default" data-sortable-dir="desc">Paid (UTC)</th>
+                                    <th data-sortable-sort="default" data-sortable-dir="desc">Paid</th>
                                     <th data-sortable-sort>Group</th>
                                     <th>Reference</th>
                                     <th>Amount</th>
@@ -180,7 +186,9 @@
 
                                     <tr>
                                         <td>
-                                            @(payment.PaidUtc?.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture) ?? "-")
+                                            @* A friendly date does not sort as a date, so the cell carries the instant for the sorter. *@
+                                            <span class="d-none" data-sort-value="@payment.PaidUtc?.ToString("O", CultureInfo.InvariantCulture)"></span>
+                                            @(payment.PaidUtc?.ToFriendlyDateTimeString(dateTimeOptions) ?? "-")
                                         </td>
                                         <td>@(item.ChapterName ?? "-")</td>
                                         <td>@payment.Reference</td>

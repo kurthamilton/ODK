@@ -1,4 +1,4 @@
-namespace ODK.E2E.Data;
+﻿namespace ODK.E2E.Data;
 
 /// <summary>
 /// Reads chapter subscriptions (<c>ChapterSubscriptions</c>) - a single table carrying the amount,
@@ -10,6 +10,22 @@ public class ChapterSubscriptionDataHelper : DataHelperBase
     public ChapterSubscriptionDataHelper(string connectionString)
         : base(connectionString)
     {
+    }
+
+    /// <summary>
+    /// The currency the named subscription is priced in, or null if absent. What a payment for it is
+    /// denominated in, and so the currency a group's balance has to be recorded in to be netted off it.
+    /// </summary>
+    public async Task<Guid?> GetCurrencyId(Guid chapterId, string name)
+    {
+        const string sql =
+            "SELECT CurrencyId FROM ChapterSubscriptions WHERE ChapterId = @chapterId AND Name = @name";
+
+        await using var builder = Builder(sql)
+            .AddParameter("@chapterId", chapterId)
+            .AddParameter("@name", name);
+
+        return await builder.ExecuteScalar<Guid?>();
     }
 
     /// <summary>The Stripe external price id created for the named subscription, or null if none/absent.</summary>

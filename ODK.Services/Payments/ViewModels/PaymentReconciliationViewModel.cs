@@ -9,4 +9,7 @@ public class PaymentReconciliationViewModel
     public required IReadOnlyCollection<PaymentReconciliationItemViewModel> Ignored { get; init; }
 
     public required IReadOnlyCollection<PaymentReconciliationItemViewModel> Payments { get; init; }
+
+    /// <summary>The viewing site admin's zone: a site-wide page has no chapter to fall back to.</summary>
+    public required TimeZoneInfo TimeZone { get; init; }
 }

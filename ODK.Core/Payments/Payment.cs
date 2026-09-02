@@ -113,6 +113,20 @@ public class Payment : IDatabaseEntity
     public string? SettlementCurrencyCode { get; set; }
 
     /// <summary>
+    /// The part of <see cref="ActualConnectedAccountAmount"/> that was not sent, because it was applied
+    /// against what the group already owed. Null where nothing was withheld, which is every payment taken
+    /// before this was recorded and every payment for a group carrying no debt.
+    /// </summary>
+    /// <remarks>
+    /// <c>ActualConnectedAccountAmount = TransferWithheldAmount + what was transferred</c>. Written once,
+    /// with <see cref="TransferredUtc"/>, and never adjusted after - so the pair states what was owed and
+    /// what became of it, which one mutating figure could not. Derivable from the recovery rows and
+    /// denormalised anyway, as the settlement figures are: the rows are the record, this is what a reader
+    /// and a query see.
+    /// </remarks>
+    public decimal? TransferWithheldAmount { get; set; }
+
+    /// <summary>
     /// When <see cref="ActualConnectedAccountAmount"/> actually reached the group. Null while it has not:
     /// a payment with a <see cref="ChapterId"/> and a settlement but no date here is money we still owe,
     /// whether the transfer is pending or has failed for good.

@@ -179,7 +179,8 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
             Pending = pending
                 .OrderBy(x => x.Chapter.CreatedUtc)
                 .ToArray(),
-            Platform = request.Platform
+            Platform = request.Platform,
+            TimeZone = request.CurrentMember.TimeZone
         };
     }
 

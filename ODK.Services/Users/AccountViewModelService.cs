@@ -162,9 +162,16 @@ public class AccountViewModelService : IAccountViewModelService
     public async Task<MemberChapterPaymentsPageViewModel> GetMemberChapterPaymentsPage(
         IMemberChapterServiceRequest request)
     {
-        var (currentMember, platform, chapter) = (request.CurrentMember, request.Platform, request.Chapter);
+        var (environment, currentMember, platform, chapter) =
+            (request.Environment, request.CurrentMember, request.Platform, request.Chapter);
 
-        var payments = await _unitOfWork.PaymentRepository.GetChapterDtosByMemberId(currentMember.Id).Run();
+        var payments = await _unitOfWork.PaymentRepository
+            .Query()
+            .ForEnvironment(environment)
+            .ForMember(currentMember.Id)
+            .WithChapter()
+            .GetAll()
+            .Run();
 
         return new MemberChapterPaymentsPageViewModel
         {
@@ -194,11 +201,20 @@ public class AccountViewModelService : IAccountViewModelService
 
     public async Task<MemberPaymentsPageViewModel> GetMemberPaymentsPage(IMemberServiceRequest request)
     {
-        var (currentMember, platform) = (request.CurrentMember, request.Platform);
+        var (environment, currentMember, platform) = (request.Environment, request.CurrentMember, request.Platform);
 
         var (chapterPayments, sitePayments) = await _unitOfWork.Run(
-            x => x.PaymentRepository.GetChapterDtosByMemberId(currentMember.Id),
-            x => x.PaymentRepository.GetSitePaymentsByMemberId(currentMember.Id));
+            x => x.PaymentRepository
+                .Query()
+                .ForEnvironment(environment)
+                .ForMember(currentMember.Id)
+                .WithChapter()
+                .GetAll(),
+            x => x.PaymentRepository.Query()
+                .ForEnvironment(environment)
+                .ForSite()
+                .ForMember(currentMember.Id)
+                .GetAll());
 
         return new MemberPaymentsPageViewModel
         {

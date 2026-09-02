@@ -1,4 +1,5 @@
-﻿@using ODK.Services.Logging
+﻿@using System.Globalization
+@using ODK.Services.Logging
 @using ODK.Web.Common.Routes
 @using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Components
@@ -6,7 +7,12 @@
 @inject IOdkRoutes OdkRoutes
 @inject IRequestStore RequestStore
 @{
-    var errors = await LoggingService.GetErrors(RequestStore.MemberServiceRequest, 1, 1000);
+    var request = RequestStore.MemberServiceRequest;
+    var errors = await LoggingService.GetErrors(request, 1, 1000);
+
+    /* Precise to the second and in a fixed order, because a row is read against a server log rather than
+       for its prose - but in the reader's own zone, like every other timestamp they are shown. */
+    var timeZone = request.CurrentMember.TimeZone;
 }
 
 <h2 class="content-heading">Error log</h2>
@@ -25,7 +31,10 @@
             @foreach (var error in errors)
             {
                 <tr>
-                    <td>@error.CreatedUtc.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                    <td>
+                        @TimeZoneInfo.ConvertTimeFromUtc(error.CreatedUtc, timeZone)
+                            .ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)
+                    </td>
                     <td>@error.ExceptionType</td>
                     <td>
                         <a href="@OdkRoutes.SiteAdmin.Error(error.Id)">@error.ExceptionMessage</a>

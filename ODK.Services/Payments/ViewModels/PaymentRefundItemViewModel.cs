@@ -10,9 +10,14 @@ public class PaymentRefundItemViewModel
     public required string? ChapterName { get; init; }
 
     /// <summary>
-    /// What the group still owes of this refund - what a reversal could not take back. Null for a site
-    /// payment, which has no group to recover from.
+    /// What the group still owes of this refund, read from the adjustment the refund raised rather than
+    /// computed from the refund. A later transfer pays that adjustment down, so anything worked out from
+    /// the refund alone would go on claiming a debt that has since been collected.
     /// </summary>
+    /// <remarks>
+    /// Null where the refund raised no adjustment: a site payment, or one whose reversal took back the
+    /// whole of the group's share. Zero where the debt has since been recovered in full.
+    /// </remarks>
     public required decimal? OutstandingAmount { get; init; }
 
     public required Payment Payment { get; init; }

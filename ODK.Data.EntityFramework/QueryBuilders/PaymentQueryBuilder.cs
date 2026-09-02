@@ -76,7 +76,13 @@ public class PaymentQueryBuilder : DatabaseEntityQueryBuilder<Payment, IPaymentQ
 
     public IPaymentQueryBuilder WithUnrecordedTransfer()
     {
-        Query = Query.Where(x => x.TransferredUtc != null && x.ExternalTransferId == null);
+        /* Withholding nothing is what separates a payment transferred before ids were recorded from one
+           whose share was kept back against a debt: the second made no transfer, so there is none to find
+           and nothing for the backfill to do. */
+        Query = Query.Where(x =>
+            x.TransferredUtc != null &&
+            x.ExternalTransferId == null &&
+            x.TransferWithheldAmount == null);
         return this;
     }
 
