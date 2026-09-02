@@ -395,12 +395,17 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     public async Task<MemberPaymentsAdminPageViewModel> GetMemberPaymentsViewModel(
         IMemberChapterAdminServiceRequest request, Guid memberId)
     {
-        var (platform, chapter) = (request.Platform, request.Chapter);
+        var (environment, platform, chapter) = (request.Environment, request.Platform, request.Chapter);
 
         var (member, payments) = await GetChapterAdminRestrictedContent(
             request,
             x => x.MemberRepository.GetById(memberId),
-            x => x.PaymentRepository.GetMemberChapterPayments(memberId, chapter.Id));
+            x => x.PaymentRepository
+                .Query()
+                .ForEnvironment(environment)
+                .ForChapter(chapter.Id)
+                .ForMember(memberId)
+                .GetAll());
 
         return new MemberPaymentsAdminPageViewModel
         {
@@ -679,7 +684,8 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                     MemberId = x.Id,
                     RecaptchaScore = x.RecaptchaScore ?? 0
                 })
-                .ToArray()
+                .ToArray(),
+            TimeZone = request.CurrentMember.TimeZone
         };
     }
 

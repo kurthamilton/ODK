@@ -56,7 +56,8 @@ public class ReferralAdminService : OdkAdminServiceBase, IReferralAdminService
         return new ReferralCampaignAdminPageViewModel
         {
             Campaign = campaign,
-            Referrals = referrals
+            Referrals = referrals,
+            TimeZone = request.CurrentMember.TimeZone
         };
     }
 
@@ -68,7 +69,8 @@ public class ReferralAdminService : OdkAdminServiceBase, IReferralAdminService
 
         return new ReferralCampaignsAdminPageViewModel
         {
-            Campaigns = campaigns
+            Campaigns = campaigns,
+            TimeZone = request.CurrentMember.TimeZone
         };
     }
 

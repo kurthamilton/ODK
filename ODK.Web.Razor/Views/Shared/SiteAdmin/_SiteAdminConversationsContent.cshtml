@@ -3,7 +3,6 @@
 @using ODK.Web.Common.Routes
 @using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Components
-@using ODK.Web.Razor.Mvc
 @model SiteConversationsAdminPageViewModel
 @inject IOdkRoutes OdkRoutes
 @inject IRequestStore RequestStore
@@ -57,8 +56,7 @@
                             <td>@dto.Member.FullName</td>
                             <td>@dto.MessageCount</td>
                             <td>
-                                @dto.LastMessage.Message.CreatedUtc.ToRelativeTime(
-                                    Html.DisplayTimeZone(TimeZoneInfo.Utc))
+                                @dto.LastMessage.Message.CreatedUtc.ToRelativeTime(Model.TimeZone)
                             </td>
                             <td>
                                 @* No member admin page to link to yet, so the id is what makes a

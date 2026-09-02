@@ -1,154 +1,103 @@
 ﻿@using System.Globalization
+@using ODK.Core.Utils
 @using ODK.Services.Payments.ViewModels
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
-@using ODK.Web.Razor.Models.SiteAdmin
 @model PaymentRefundsViewModel
+@inject IOdkRoutes OdkRoutes
+@{
+    var dateTimeOptions = new FriendlyDateStringOptions
+    {
+        ForceIncludeYear = true,
+        TimeZone = Model.TimeZone
+    };
+}
 
 <div data-odk-component="_SiteAdminPaymentRefundsContent">
     <h2 class="content-heading">Refunds</h2>
 
     <p>
         Refunds already made through the payment provider, written down here. Nothing on this page refunds
-        anything or moves any money - it records what happened elsewhere, so a refund made in the provider's
-        dashboard is not invisible here, and so what the group is left owing is written down.
+        anything or moves any money - it records what happened elsewhere.
     </p>
 
-    <div class="section-stack mt-section">
-        @await Html.PartialAsync("Components/_Section", new SectionViewModel
-        {
-            Heading = new HeadingViewModel
-            {
-                Title = "Record a refund",
-                Type = HeadingType.H4
-            },
-            BodyContentFunc =
-            @<text>
-                <form method="post" action="/siteadmin/payments/refunds">
-                    @Html.AntiForgeryToken()
+    <div class="button-container mb-3">
+        <a class="btn btn-primary" href="@OdkRoutes.SiteAdmin.PaymentRefundCreate">
+            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Plus))
+            <span>Record a refund</span>
+        </a>
+    </div>
 
-                    <div class="mb-3">
-                        <label class="form-label" for="PaymentReference">Payment</label>
-                        <input class="form-control" id="PaymentReference" name="PaymentReference" required />
-                        <div class="form-text">
-                            The provider's charge (<code>ch_…</code>), its payment or subscription, or our own
-                            reference. Our reference is shared by every payment for a subscription, so where
-                            it matches more than one the charge is what picks one out.
-                        </div>
-                    </div>
+    <div class="table-responsive">
+        <table class="table" data-sortable data-table-striped>
+            <thead>
+                <tr>
+                    <th data-sortable-sort="default" data-sortable-dir="desc">Refunded</th>
+                    @* The payment's own date, so a row can be matched to the charge it undoes. *@
+                    <th data-sortable-sort>Paid</th>
+                    <th data-sortable-sort>Group</th>
+                    <th>Reference</th>
+                    <th>Refunded</th>
+                    <th>Reversed</th>
+                    <th>Group owes</th>
+                    <th>Reason</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Refunds.Count == 0)
+                {
+                    <tr>
+                        <td colspan="8" class="text-muted">No refunds recorded.</td>
+                    </tr>
+                }
 
-                    <div class="mb-3">
-                        <label class="form-label" for="Amount">Amount refunded</label>
-                        <input class="form-control" id="Amount" name="Amount" type="number" step="0.01" min="0.01" required />
-                        <div class="form-text">What the member was given back, in the payment's currency.</div>
-                    </div>
+                @foreach (var item in Model.Refunds)
+                {
+                    var (payment, refund) = (item.Payment, item.Refund);
 
-                    <div class="mb-3">
-                        <label class="form-label" for="ReversedAmount">Reversed from the group</label>
-                        <input class="form-control" id="ReversedAmount" name="ReversedAmount" type="number" step="0.01" min="0" value="0" />
-                        <div class="form-text">
-                            What a transfer reversal took back. Leave at zero if none was made - the whole of
-                            the group's share is then left outstanding.
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label" for="FeeReturnedAmount">Fee returned by the provider</label>
-                        <input class="form-control" id="FeeReturnedAmount" name="FeeReturnedAmount" type="number" step="0.01" min="0" value="0" />
-                        <div class="form-text">
-                            Usually none. It comes off what the group owes, since it is one less thing the
-                            refund cost us.
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label" for="ExternalId">Provider refund id</label>
-                        <input class="form-control" id="ExternalId" name="ExternalId" />
-                        <div class="form-text">
-                            <code>re_…</code>. Optional, and what takes a row here back to the refund in the
-                            provider's dashboard.
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label" for="ExternalReversalId">Provider reversal id</label>
-                        <input class="form-control" id="ExternalReversalId" name="ExternalReversalId" />
-                        <div class="form-text"><code>trr_…</code>. Optional.</div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label" for="Reason">Reason</label>
-                        <input class="form-control" id="Reason" name="Reason" required />
-                        <div class="form-text">
-                            Why it was refunded. The whole of the audit trail for money leaving a group's
-                            account, so worth a sentence rather than a word.
-                        </div>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary">Record refund</button>
-                </form>
-            </text>
-        })
-
-        @await Html.PartialAsync("Components/_Section", new SectionViewModel
-        {
-            Heading = new HeadingViewModel
-            {
-                Title = $"Recorded ({Model.Refunds.Count})",
-                Type = HeadingType.H4
-            },
-            BodyContentFunc =
-            @<text>
-                <div class="table-responsive">
-                    <table class="table" data-sortable data-table-striped>
-                        <thead>
-                            <tr>
-                                <th data-sortable-sort="default" data-sortable-dir="desc">Refunded (UTC)</th>
-                                <th data-sortable-sort>Group</th>
-                                <th>Reference</th>
-                                <th>Refunded</th>
-                                <th>Reversed</th>
-                                @* What the reversal could not take back, which nothing collects yet. *@
-                                <th>Group owes</th>
-                                <th>Reason</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @if (Model.Refunds.Count == 0)
+                    <tr>
+                        <td>
+                            <span class="d-none" data-sort-value="@refund.RefundedUtc?.ToString("O", CultureInfo.InvariantCulture)"></span>
+                            @(refund.RefundedUtc?.ToFriendlyDateTimeString(dateTimeOptions) ?? "-")
+                        </td>
+                        <td>
+                            <span class="d-none" data-sort-value="@payment.PaidUtc?.ToString("O", CultureInfo.InvariantCulture)"></span>
+                            @(payment.PaidUtc?.ToFriendlyDateTimeString(dateTimeOptions) ?? "-")
+                        </td>
+                        @* A site payment belongs to no group, which is not a gap in the data. *@
+                        <td>@(item.ChapterName ?? "-")</td>
+                        <td>@payment.Reference</td>
+                        <td>@payment.Currency.ToAmountString(refund.Amount)</td>
+                        <td>
+                            @(refund.ReversedAmount != null
+                                ? payment.Currency.ToAmountString(refund.ReversedAmount.Value)
+                                : "-")
+                        </td>
+                        <td>
+                            @* Nothing owed and nothing ever owed are different states, and a bare zero
+                               would not tell them apart - so a settled debt says it was collected. *@
+                            @if (item.OutstandingAmount == null)
                             {
-                                <tr>
-                                    <td colspan="7" class="text-muted">No refunds recorded.</td>
-                                </tr>
+                                <span>-</span>
                             }
-
-                            @foreach (var item in Model.Refunds)
+                            else if (item.OutstandingAmount > 0)
                             {
-                                var (payment, refund) = (item.Payment, item.Refund);
-
-                                <tr>
-                                    <td>
-                                        @(refund.RefundedUtc?.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture) ?? "-")
-                                    </td>
-                                    @* A site payment belongs to no group, which is not a gap in the data. *@
-                                    <td>@(item.ChapterName ?? "-")</td>
-                                    <td>@payment.Reference</td>
-                                    <td>@payment.Currency.ToAmountString(refund.Amount)</td>
-                                    <td>
-                                        @(refund.ReversedAmount != null
-                                            ? payment.Currency.ToAmountString(refund.ReversedAmount.Value)
-                                            : "-")
-                                    </td>
-                                    <td class="@(item.OutstandingAmount > 0 ? "text-danger" : null)">
-                                        @(item.OutstandingAmount != null
-                                            ? payment.Currency.ToAmountString(item.OutstandingAmount.Value)
-                                            : "-")
-                                    </td>
-                                    <td>@refund.Reason</td>
-                                </tr>
+                                <span class="text-danger">
+                                    @payment.Currency.ToAmountString(item.OutstandingAmount.Value)
+                                </span>
                             }
-                        </tbody>
-                    </table>
-                </div>
-            </text>
-        })
+                            else
+                            {
+                                <span class="text-success">
+                                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Check))
+                                    <span>Recovered</span>
+                                </span>
+                            }
+                        </td>
+                        <td>@refund.Reason</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
     </div>
 </div>

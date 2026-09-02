@@ -2326,6 +2326,211 @@ public static class PaymentServiceTests
         stored.TransferredUtc.Should().NotBeNull();
     }
 
+    [Test]
+    public static async Task ResolvePaymentSettlement_GroupOwesNothing_TransfersTheWholeShare()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var (chapter, payment, paymentProvider) = ArrangeTransfer(context);
+
+        var service = CreatePaymentService(
+            context,
+            paymentProviderFactory: CreateMockPaymentProviderFactory(paymentProvider.Object));
+
+        // Act
+        await service.ResolvePaymentSettlement(payment.Id);
+
+        // Assert
+        paymentProvider.Verify(
+            x => x.CreateTransfer(It.Is<ExternalTransfer>(t => t.Amount == 88.47m)), Times.Once);
+
+        context.Set<Payment>().Single(x => x.Id == payment.Id)
+            .TransferWithheldAmount.Should().BeNull();
+    }
+
+    [Test]
+    public static async Task ResolvePaymentSettlement_GroupOwesLessThanTheShare_TransfersTheRemainder()
+    {
+        // Arrange - the debt is paid down and what is left of the share still goes out
+        using var context = CreateMockOdkContext();
+
+        var (chapter, payment, paymentProvider) = ArrangeTransfer(context);
+        var adjustment = CreateDebt(context, chapter, payment, amount: -20m);
+
+        var service = CreatePaymentService(
+            context,
+            paymentProviderFactory: CreateMockPaymentProviderFactory(paymentProvider.Object));
+
+        // Act
+        await service.ResolvePaymentSettlement(payment.Id);
+
+        // Assert
+        paymentProvider.Verify(
+            x => x.CreateTransfer(It.Is<ExternalTransfer>(t => t.Amount == 68.47m)), Times.Once);
+
+        context.Set<Payment>().Single(x => x.Id == payment.Id)
+            .TransferWithheldAmount.Should().Be(20m);
+
+        context.Set<ChapterPaymentAdjustment>().Single(x => x.Id == adjustment.Id)
+            .Outstanding().Should().Be(0m, "the debt is settled in full");
+
+        var recovery = context.Set<ChapterPaymentAdjustmentRecovery>().Single();
+        recovery.PaymentId.Should().Be(payment.Id, "a recovery names the transfer that absorbed it");
+        recovery.Amount.Should().Be(-20m);
+    }
+
+    [Test]
+    public static async Task ResolvePaymentSettlement_GroupOwesMoreThanTheShare_TransfersNothingAtAll()
+    {
+        /* Arrange - the whole share is kept back. A transfer of nothing is not a thing to ask a provider
+           for, so it is not asked. */
+        using var context = CreateMockOdkContext();
+
+        var (chapter, payment, paymentProvider) = ArrangeTransfer(context);
+        var adjustment = CreateDebt(context, chapter, payment, amount: -200m);
+
+        var service = CreatePaymentService(
+            context,
+            paymentProviderFactory: CreateMockPaymentProviderFactory(paymentProvider.Object));
+
+        // Act
+        var result = await service.ResolvePaymentSettlement(payment.Id);
+
+        // Assert
+        paymentProvider.Verify(x => x.CreateTransfer(It.IsAny<ExternalTransfer>()), Times.Never);
+        result.Transferred.Should().BeFalse("nothing moved, whatever the payment was discharged by");
+
+        var stored = context.Set<Payment>().Single(x => x.Id == payment.Id);
+        stored.TransferWithheldAmount.Should().Be(88.47m);
+        stored.TransferredUtc.Should().NotBeNull("the payment owes the group nothing further");
+        stored.ExternalTransferId.Should().BeNull();
+
+        context.Set<ChapterPaymentAdjustment>().Single(x => x.Id == adjustment.Id)
+            .Outstanding().Should().Be(-111.53m, "what the share could not reach is still owed");
+    }
+
+    [Test]
+    public static async Task ResolvePaymentSettlement_ShareFullyWithheld_IsNotListedAsNeedingItsTransferId()
+    {
+        /* Arrange - it made no transfer, so there is none to find. Without telling the two apart the
+           reconciliation page would list it and the backfill would search for something that never was. */
+        using var context = CreateMockOdkContext();
+
+        var (chapter, payment, paymentProvider) = ArrangeTransfer(context);
+        CreateDebt(context, chapter, payment, amount: -200m);
+
+        var service = CreatePaymentService(
+            context,
+            paymentProviderFactory: CreateMockPaymentProviderFactory(paymentProvider.Object));
+
+        await service.ResolvePaymentSettlement(payment.Id);
+
+        // Act
+        var unrecorded = await CreateMockUnitOfWork(context).PaymentRepository
+            .Query()
+            .WithUnrecordedTransfer()
+            .GetAll()
+            .Run();
+
+        // Assert
+        unrecorded.Should().BeEmpty();
+    }
+
+    [Test]
+    public static async Task ResolvePaymentSettlement_SeveralDebts_PaysTheOldestFirst()
+    {
+        // Arrange - a debt is paid down in the order it was incurred
+        using var context = CreateMockOdkContext();
+
+        var (chapter, payment, paymentProvider) = ArrangeTransfer(context);
+
+        var older = CreateDebt(
+            context, chapter, payment, amount: -50m, createdUtc: DateTime.UtcNow.AddDays(-10));
+        var newer = CreateDebt(
+            context, chapter, payment, amount: -50m, createdUtc: DateTime.UtcNow.AddDays(-1));
+
+        var service = CreatePaymentService(
+            context,
+            paymentProviderFactory: CreateMockPaymentProviderFactory(paymentProvider.Object));
+
+        // Act
+        await service.ResolvePaymentSettlement(payment.Id);
+
+        // Assert - 88.47 covers the older whole and 38.47 of the newer
+        context.Set<ChapterPaymentAdjustment>().Single(x => x.Id == older.Id)
+            .Outstanding().Should().Be(0m);
+
+        context.Set<ChapterPaymentAdjustment>().Single(x => x.Id == newer.Id)
+            .Outstanding().Should().Be(-11.53m);
+    }
+
+    [Test]
+    public static async Task ResolvePaymentSettlement_DebtInAnotherCurrency_IsNotNettedOff()
+    {
+        // Arrange - amounts in different currencies cannot be netted against each other
+        using var context = CreateMockOdkContext();
+
+        var (chapter, payment, paymentProvider) = ArrangeTransfer(context);
+
+        var otherCurrency = context.CreateCurrency(code: "EUR");
+        var adjustment = CreateDebt(context, chapter, payment, amount: -20m);
+        adjustment.CurrencyId = otherCurrency.Id;
+
+        var service = CreatePaymentService(
+            context,
+            paymentProviderFactory: CreateMockPaymentProviderFactory(paymentProvider.Object));
+
+        // Act
+        await service.ResolvePaymentSettlement(payment.Id);
+
+        // Assert
+        paymentProvider.Verify(
+            x => x.CreateTransfer(It.Is<ExternalTransfer>(t => t.Amount == 88.47m)), Times.Once);
+
+        context.Set<ChapterPaymentAdjustment>().Single(x => x.Id == adjustment.Id)
+            .Outstanding().Should().Be(-20m);
+    }
+
+    /* A settled group payment ready to transfer, with a provider that answers for its reference. The share
+       works out at 88.47: 100 charged, 1.70 fee, 10% commission on the net. */
+    private static (Chapter Chapter, Payment Payment, Mock<IPaymentProvider> Provider) ArrangeTransfer(
+        MockOdkContext context)
+    {
+        var currency = context.CreateCurrency();
+        var chapter = context.CreateChapter(country: context.CreateCountry(currency));
+        context.CreateChapterPaymentAccount(chapter, externalId: "acct_123");
+
+        var payment = context.CreatePayment(
+            chapter: chapter, currency: currency, paidUtc: DateTime.UtcNow.AddMinutes(-1));
+        payment.ExternalId = "sub_123";
+
+        var paymentProvider = CreateMockPaymentProvider();
+        paymentProvider
+            .Setup(x => x.GetPaymentIdForReference(It.IsAny<string>(), It.IsAny<DateTime>()))
+            .ReturnsAsync("pi_123");
+
+        return (chapter, payment, paymentProvider);
+    }
+
+    private static ChapterPaymentAdjustment CreateDebt(
+        MockOdkContext context,
+        Chapter chapter,
+        Payment payment,
+        decimal amount,
+        DateTime? createdUtc = null)
+        => context.Create(new ChapterPaymentAdjustment
+        {
+            Amount = amount,
+            ChapterId = chapter.Id,
+            CreatedUtc = createdUtc ?? DateTime.UtcNow.AddDays(-1),
+            CurrencyId = payment.CurrencyId,
+            Description = "Refund shortfall",
+            Id = Guid.NewGuid(),
+            RecoveredAmount = 0m,
+            Type = ChapterPaymentAdjustmentType.RefundShortfall
+        });
+
     private static ExternalPaymentSettlement CreateExternalPaymentSettlement(
         decimal? amount = null,
         bool settled = true,

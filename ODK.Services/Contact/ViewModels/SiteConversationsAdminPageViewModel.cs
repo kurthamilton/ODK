@@ -12,4 +12,7 @@ public class SiteConversationsAdminPageViewModel
 
     /// <summary>Most recently active first: a thread is interesting because somebody just said something.</summary>
     public required IReadOnlyCollection<SiteConversationDto> Conversations { get; init; }
+
+    /// <summary>The viewing site admin's zone: a site-wide page has no chapter to fall back to.</summary>
+    public required TimeZoneInfo TimeZone { get; init; }
 }

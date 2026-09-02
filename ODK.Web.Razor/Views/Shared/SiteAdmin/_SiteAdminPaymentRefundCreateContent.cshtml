@@ -1,0 +1,98 @@
+﻿@using ODK.Core.Utils
+@using ODK.Services.Payments.ViewModels
+@using ODK.Web.Common.Routes
+@model PaymentRefundCreateViewModel
+@inject IOdkRoutes OdkRoutes
+
+<div data-odk-component="_SiteAdminPaymentRefundCreateContent">
+    <h2 class="content-heading">Record a refund</h2>
+
+    <p>
+        Writes down a refund already made through the payment provider. Nothing here refunds anything or
+        moves any money - it records what happened elsewhere, so a refund made in the provider's dashboard
+        is not invisible here, and so what the group is left owing is written down.
+    </p>
+
+    @if (Model.Payment != null)
+    {
+        <p>
+            Against <strong>@Model.Payment.Reference</strong>@(Model.ChapterName != null ? $" for {Model.ChapterName}" : null),
+            taken @(Model.Payment.PaidUtc?.ToFriendlyDateTimeString(new FriendlyDateStringOptions
+            {
+                TimeZone = Model.TimeZone
+            }) ?? "at an unrecorded time").
+            The amounts below are a full refund; change them if that is not what happened.
+        </p>
+    }
+
+    <form method="post" action="/siteadmin/payments/refunds">
+        @Html.AntiForgeryToken()
+
+        <div class="mb-3">
+            <label class="form-label" for="PaymentReference">Payment</label>
+            <input class="form-control" id="PaymentReference" name="PaymentReference"
+                   value="@Model.PaymentReference" required />
+            <div class="form-text">
+                The provider's charge (<code>ch_…</code>), its payment or subscription, or our own
+                reference. Our reference is shared by every payment for a subscription, so where it matches
+                more than one the charge is what picks one out.
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="Amount">Amount refunded</label>
+            <input class="form-control" id="Amount" name="Amount" type="number" step="0.01" min="0.01"
+                   value="@Model.Amount" required />
+            <div class="form-text">What the member was given back, in the payment's currency.</div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="ReversedAmount">Reversed from the group</label>
+            <input class="form-control" id="ReversedAmount" name="ReversedAmount" type="number" step="0.01"
+                   min="0" value="@(Model.ReversedAmount ?? 0)" />
+            <div class="form-text">
+                What a transfer reversal took back. Set it to zero if none was made - the whole of the
+                group's share is then left outstanding.
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="FeeReturnedAmount">Fee returned by the provider</label>
+            <input class="form-control" id="FeeReturnedAmount" name="FeeReturnedAmount" type="number"
+                   step="0.01" min="0" value="0" />
+            <div class="form-text">
+                Usually none. It comes off what the group owes, since it is one less thing the refund cost
+                us.
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="ExternalId">Provider refund id</label>
+            <input class="form-control" id="ExternalId" name="ExternalId" />
+            <div class="form-text">
+                <code>re_…</code>. Optional, and what takes a row here back to the refund in the provider's
+                dashboard.
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="ExternalReversalId">Provider reversal id</label>
+            <input class="form-control" id="ExternalReversalId" name="ExternalReversalId" />
+            <div class="form-text"><code>trr_…</code>. Optional.</div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="Reason">Reason</label>
+            <input class="form-control" id="Reason" name="Reason" required />
+            <div class="form-text">
+                Why it was refunded. The whole of the audit trail for money leaving a group's account, so
+                worth a sentence rather than a word.
+            </div>
+        </div>
+
+        <div class="button-container">
+            <button type="submit" class="btn btn-primary">Record refund</button>
+            <a class="btn btn-outline-secondary" href="@OdkRoutes.SiteAdmin.PaymentRefunds">Cancel</a>
+        </div>
+    </form>
+</div>

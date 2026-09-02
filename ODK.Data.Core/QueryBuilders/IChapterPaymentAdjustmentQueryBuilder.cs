@@ -7,6 +7,11 @@ public interface IChapterPaymentAdjustmentQueryBuilder
 {
     IChapterPaymentAdjustmentQueryBuilder ForChapter(Guid chapterId);
 
+    /// <summary>
+    /// Adjustments raised by the given refunds.
+    /// </summary>
+    IChapterPaymentAdjustmentQueryBuilder ForRefunds(IEnumerable<Guid> paymentRefundIds);
+
     IChapterPaymentAdjustmentQueryBuilder InCurrency(Guid currencyId);
 
     /// <summary>

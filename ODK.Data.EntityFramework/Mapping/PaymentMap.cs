@@ -70,6 +70,9 @@ public class PaymentMap : IEntityTypeConfiguration<Payment>
         builder.Property(x => x.SettlementCurrencyCode)
             .HasMaxLength(3);
 
+        builder.Property(x => x.TransferWithheldAmount)
+            .IsMoneyType();
+
         builder.Property(x => x.TransferredUtc)
             .HasConversion<NullableUtcDateTimeConverter>();
 

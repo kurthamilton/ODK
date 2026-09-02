@@ -1,17 +1,12 @@
-﻿@using ODK.Core.Chapters
-@using ODK.Core.Utils
+﻿@using ODK.Core.Utils
 @using ODK.Services.Members
 @using ODK.Web.Common.Services
-@using ODK.Web.Razor.Mvc
 @inject IMemberAdminService MemberAdminService
 @inject IRequestStore RequestStore
 @{
     var viewModel = await MemberAdminService
         .GetSiteAdminFlaggedMembersViewModel(RequestStore.MemberServiceRequest);
     var rows = viewModel.Rows;
-
-    // Site-wide page, so there's no chapter zone to fall back to - use the app default.
-    var timeZone = Html.DisplayTimeZone(Chapter.DefaultTimeZone);
 }
 
 <h2 class="content-heading">Flagged members</h2>
@@ -48,7 +43,7 @@ else
                     <td>@row.FullName</td>
                     <td>@row.EmailAddress</td>
                     <td>@row.RecaptchaScore.ToString("0.00")</td>
-                    <td>@row.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions { TimeZone = timeZone })</td>
+                    <td>@row.CreatedUtc.ToFriendlyDateTimeString(new FriendlyDateStringOptions { TimeZone = viewModel.TimeZone })</td>
                     <td>
                         @if (row.Activated)
                         {

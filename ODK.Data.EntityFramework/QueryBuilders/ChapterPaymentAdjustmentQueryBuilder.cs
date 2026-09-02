@@ -21,6 +21,13 @@ public class ChapterPaymentAdjustmentQueryBuilder
         return this;
     }
 
+    public IChapterPaymentAdjustmentQueryBuilder ForRefunds(IEnumerable<Guid> paymentRefundIds)
+    {
+        Query = Query.Where(x =>
+            x.PaymentRefundId != null && paymentRefundIds.Contains(x.PaymentRefundId.Value));
+        return this;
+    }
+
     public IChapterPaymentAdjustmentQueryBuilder InCurrency(Guid currencyId)
     {
         Query = Query.Where(x => x.CurrencyId == currencyId);

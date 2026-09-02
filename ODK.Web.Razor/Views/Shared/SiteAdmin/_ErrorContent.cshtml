@@ -1,4 +1,5 @@
-﻿@using ODK.Core.Logging
+﻿@using System.Globalization
+@using ODK.Core.Logging
 @using ODK.Services.Logging
 @model ODK.Web.Razor.Models.SiteAdmin.ErrorContentViewModel
 @inject ILoggingService LoggingService
@@ -11,7 +12,11 @@
         <tbody>
             <tr>
                 <td>Time</td>
-                <td>@error.CreatedUtc.ToString("dd/MM/yyyy HH:mm:ss")</td>
+                @* Precise to the second and in a fixed order: read against a server log, not for prose. *@
+                <td>
+                    @TimeZoneInfo.ConvertTimeFromUtc(error.CreatedUtc, Model.TimeZone)
+                        .ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)
+                </td>
             </tr>
             <tr>
                 <td>Message</td>

@@ -18,4 +18,5 @@
     }
 })
 
-@await Html.PartialAsync("SiteAdmin/_ErrorContent", new ErrorContentViewModel(Model.Error))
+@await Html.PartialAsync("SiteAdmin/_ErrorContent", new ErrorContentViewModel(
+    Model.Error, Model.MemberServiceRequest.CurrentMember.TimeZone))

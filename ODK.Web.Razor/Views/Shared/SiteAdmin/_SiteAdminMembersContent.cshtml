@@ -1,11 +1,20 @@
 ﻿@using ODK.Core.Subscriptions
+@using ODK.Core.Utils
 @using ODK.Services.Subscriptions
 @using ODK.Web.Common.Services
 @inject ISiteSubscriptionAdminService SiteSubscriptionAdminService
 @inject IRequestStore RequestStore
 @{
-    var rows = (await SiteSubscriptionAdminService
-        .GetSiteAdminMembersViewModel(RequestStore.MemberServiceRequest)).Rows;
+    var viewModel = await SiteSubscriptionAdminService
+        .GetSiteAdminMembersViewModel(RequestStore.MemberServiceRequest);
+    var rows = viewModel.Rows;
+
+    var dateOptions = new FriendlyDateStringOptions
+    {
+        ForceIncludeYear = true,
+        FullMonthName = true,
+        TimeZone = viewModel.TimeZone
+    };
 }
 
 <h2 class="content-heading">Members</h2>
@@ -53,7 +62,7 @@ else
                     <td>
                         @if (row.ExpiresUtc != null)
                         {
-                            <span>@row.ExpiresUtc.Value.ToString("d MMMM yyyy")</span>
+                            <span>@row.ExpiresUtc.Value.ToFriendlyDateString(dateOptions)</span>
                         }
                         else
                         {

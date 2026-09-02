@@ -1,4 +1,5 @@
-﻿@using ODK.Services.Features
+﻿@using ODK.Core.Utils
+@using ODK.Services.Features
 @using ODK.Web.Common.Routes
 @using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Components
@@ -6,7 +7,14 @@
 @inject IOdkRoutes OdkRoutes
 @inject IRequestStore RequestStore
 @{
-    var features = await FeatureService.GetFeatures(RequestStore.MemberServiceRequest);
+    var request = RequestStore.MemberServiceRequest;
+    var features = await FeatureService.GetFeatures(request);
+
+    var options = new FriendlyDateStringOptions
+    {
+        ForceIncludeYear = true,
+        TimeZone = request.CurrentMember.TimeZone
+    };
 }
 
 <h2 class="content-heading">Feature notifications</h2>
@@ -34,7 +42,7 @@
                 <td>
                     <a href="@OdkRoutes.SiteAdmin.Feature(feature.Id)">@feature.Name</a>
                 </td>
-                <td>@feature.CreatedUtc.ToString("yyyy-MM-dd")</td>
+                <td>@feature.CreatedUtc.ToFriendlyDateString(options)</td>
                 <td>
                     <form action="/siteadmin/features/@feature.Id/delete" method="post">
                         @Html.AntiForgeryToken()

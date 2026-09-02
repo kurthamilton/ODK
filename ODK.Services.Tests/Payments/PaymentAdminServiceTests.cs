@@ -11,6 +11,7 @@ using ODK.Data.Core;
 using ODK.Services.Payments;
 using ODK.Services.Payments.Models;
 using ODK.Services.Payments.ViewModels;
+using ODK.Services.Security;
 using ODK.Services.Tests.Helpers;
 
 namespace ODK.Services.Tests.Payments;
@@ -326,6 +327,120 @@ public static class PaymentAdminServiceTests
 
         // Assert
         result.Payments.Should().BeEmpty();
+    }
+
+    [Test]
+    public static async Task GetPayments_UnrefundedPayment_OffersARefund()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var chapter = context.CreateChapter();
+        CreateSettledPayment(context, chapter);
+
+        var request = ChapterAdminRequest(context, chapter);
+        var service = CreatePaymentAdminService(context);
+
+        // Act
+        var result = await service.GetPayments(request);
+
+        // Assert
+        var item = result.Payments.Single();
+        item.HasRefund.Should().BeFalse();
+        item.RefundedAmount.Should().BeNull();
+    }
+
+    [Test]
+    public static async Task GetPayments_RefundedPayment_ShowsWhatWasGivenBack()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var chapter = context.CreateChapter();
+        var payment = CreateSettledPayment(context, chapter);
+
+        CreateRefund(context, payment, 40m, PaymentRefundStatusType.Refunded);
+
+        var request = ChapterAdminRequest(context, chapter);
+        var service = CreatePaymentAdminService(context);
+
+        // Act
+        var result = await service.GetPayments(request);
+
+        // Assert
+        var item = result.Payments.Single();
+        item.HasRefund.Should().BeTrue();
+        item.RefundedAmount.Should().Be(40m);
+    }
+
+    [Test]
+    public static async Task GetPayments_RefundNotYetPaid_HasARefundWithNoAmount()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var chapter = context.CreateChapter();
+        var payment = CreateSettledPayment(context, chapter);
+
+        CreateRefund(context, payment, 40m, PaymentRefundStatusType.Approved);
+
+        var request = ChapterAdminRequest(context, chapter);
+        var service = CreatePaymentAdminService(context);
+
+        // Act
+        var result = await service.GetPayments(request);
+
+        // Assert
+        var item = result.Payments.Single();
+        item.HasRefund.Should().BeTrue();
+        item.RefundedAmount.Should().BeNull();
+    }
+
+    [Test]
+    public static async Task GetPayments_FailedRefund_IsNotARefundThePaymentHas()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var chapter = context.CreateChapter();
+        var payment = CreateSettledPayment(context, chapter);
+
+        /* A failed refund carries a refunded date and returned the money to us, so it must not read as
+           either a refund the payment has or an amount given back. */
+        CreateRefund(context, payment, 40m, PaymentRefundStatusType.Failed);
+
+        var request = ChapterAdminRequest(context, chapter);
+        var service = CreatePaymentAdminService(context);
+
+        // Act
+        var result = await service.GetPayments(request);
+
+        // Assert
+        var item = result.Payments.Single();
+        item.HasRefund.Should().BeFalse();
+        item.RefundedAmount.Should().BeNull();
+    }
+
+    [Test]
+    public static async Task GetPayments_PartiallyRefundedTwice_AddsUpWhatWasGivenBack()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var chapter = context.CreateChapter();
+        var payment = CreateSettledPayment(context, chapter);
+
+        CreateRefund(context, payment, 30m, PaymentRefundStatusType.Refunded);
+        CreateRefund(context, payment, 25m, PaymentRefundStatusType.Refunded);
+
+        var request = ChapterAdminRequest(context, chapter);
+        var service = CreatePaymentAdminService(context);
+
+        // Act
+        var result = await service.GetPayments(request);
+
+        // Assert
+        result.Payments.Single().RefundedAmount.Should().Be(55m);
     }
 
     [Test]
@@ -862,6 +977,20 @@ public static class PaymentAdminServiceTests
             .ReconciliationIgnoredUtc.Should().BeNull();
     }
 
+    private static IMemberChapterAdminServiceRequest ChapterAdminRequest(
+        MockOdkContext context, Chapter chapter)
+    {
+        var admin = context.CreateMember();
+        context.CreateChapterAdminMember(chapter, admin);
+
+        return Mock.Of<IMemberChapterAdminServiceRequest>(x =>
+            x.Chapter == chapter &&
+            x.CurrentMember == admin &&
+            x.Environment == EnvironmentType.Dev &&
+            x.Platform == PlatformType.Default &&
+            x.Securable == ChapterAdminSecurable.Any);
+    }
+
     private static RecordPaymentRefundModel CreateModel(
         Payment payment,
         decimal amount,
@@ -877,6 +1006,26 @@ public static class PaymentAdminServiceTests
             Reason = "Event cancelled",
             ReversedAmount = reversedAmount
         };
+
+    private static PaymentRefund CreateRefund(
+        MockOdkContext context, Payment payment, decimal amount, PaymentRefundStatusType status)
+    {
+        var utcNow = DateTime.UtcNow;
+
+        return context.Create(new PaymentRefund
+        {
+            ActualAmount = amount,
+            Amount = amount,
+            ChapterAmount = payment.ChapterId != null ? amount : null,
+            Id = Guid.NewGuid(),
+            PaymentId = payment.Id,
+            Reason = "Event cancelled",
+            RefundedUtc = utcNow,
+            RequestedByMemberId = payment.MemberId,
+            RequestedUtc = utcNow,
+            Status = status
+        });
+    }
 
     /* A payment whose settlement has been read, which is what says what the charge and the group's share
        actually were - and so what a refund can be checked against. */
