@@ -18,4 +18,9 @@ public class SiteRoutes
 
     /// <summary>The refer-a-friend page. Not available on the DrunkenKnitwits platform.</summary>
     public string Refer => "/refer";
+
+    /// <summary>
+    /// The sitemap as a page, listing what <c>/sitemap.xml</c> offers a crawler.
+    /// </summary>
+    public string Sitemap => "/sitemap";
 }

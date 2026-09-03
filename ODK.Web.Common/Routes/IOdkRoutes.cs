@@ -9,6 +9,7 @@ public interface IOdkRoutes
     GroupAdminRoutes GroupAdmin { get; }
     MemberRoutes Members { get; }
     PaymentRoutes Payments { get; }
+    PublicRoutes Public { get; }
     SiteRoutes Site { get; }
     SiteAdminRoutes SiteAdmin { get; }
 

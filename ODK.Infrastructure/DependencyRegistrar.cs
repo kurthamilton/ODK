@@ -51,6 +51,7 @@ using ODK.Services.Platforms;
 using ODK.Services.Questions;
 using ODK.Services.Recaptcha;
 using ODK.Services.Referrals;
+using ODK.Services.Sitemap;
 using ODK.Services.SocialMedia;
 using ODK.Services.Subscriptions;
 using ODK.Services.Topics;
@@ -213,6 +214,7 @@ public static class DependencyRegistrar
             .AddScoped<IEmailVerifier, ReoonEmailVerifier>()
             .AddScoped<IReferralAdminService, ReferralAdminService>()
             .AddScoped<IReferralService, ReferralService>()
+            .AddScoped<ISitemapService, SitemapService>()
             .AddScoped<ISiteQuestionAdminService, SiteQuestionAdminService>()
             .AddScoped<ISiteQuestionViewModelService, SiteQuestionViewModelService>()
             .AddScoped<IImageService, ImageService>()

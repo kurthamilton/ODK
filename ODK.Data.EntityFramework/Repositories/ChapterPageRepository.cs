@@ -23,4 +23,9 @@ public class ChapterPageRepository : ReadWriteRepositoryBase<ChapterPage>, IChap
         => Set()
             .Where(x => x.ChapterId == chapterId && x.PageType == pageType)
             .DeferredSingleOrDefault();
+
+    public IDeferredQueryMultiple<ChapterPage> GetByChapterIds(IEnumerable<Guid> chapterIds)
+        => Set()
+            .Where(x => chapterIds.Contains(x.ChapterId))
+            .DeferredMultiple();
 }

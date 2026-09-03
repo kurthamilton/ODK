@@ -7,4 +7,6 @@ public interface IChapterPrivacySettingsRepository : IWriteRepository<ChapterPri
     IChapterEntityRepository<ChapterPrivacySettings>
 {
     IDeferredQuerySingleOrDefault<ChapterPrivacySettings> GetByChapterId(Guid chapterId);
+
+    IDeferredQueryMultiple<ChapterPrivacySettings> GetByChapterIds(IEnumerable<Guid> chapterIds);
 }

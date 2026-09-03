@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ODK.Core.Chapters;
+using ODK.Data.Core.Chapters;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
@@ -21,4 +22,15 @@ public class ChapterQuestionRepository : ReadWriteRepositoryBase<ChapterQuestion
         .Where(x => x.ChapterId == chapterId)
         .OrderBy(x => x.DisplayOrder)
         .DeferredMultiple();
+
+    public IDeferredQueryMultiple<ChapterQuestionCountDto> GetCountsByChapterIds(IEnumerable<Guid> chapterIds)
+        => Set()
+            .Where(x => chapterIds.Contains(x.ChapterId))
+            .GroupBy(x => x.ChapterId)
+            .Select(x => new ChapterQuestionCountDto
+            {
+                ChapterId = x.Key,
+                Count = x.Count()
+            })
+            .DeferredMultiple();
 }

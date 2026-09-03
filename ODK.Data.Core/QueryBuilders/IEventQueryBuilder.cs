@@ -11,6 +11,8 @@ public interface IEventQueryBuilder : IDatabaseEntityQueryBuilder<Event, IEventQ
 
     IEventQueryBuilder ForChapter(Guid chapterId);
 
+    IEventQueryBuilder ForChapters(IEnumerable<Guid> chapterIds);
+
     IEventQueryBuilder ForShortcode(string shortcode);
 
     IEventQueryBuilder ForVenue(Guid venueId);
@@ -22,6 +24,12 @@ public interface IEventQueryBuilder : IDatabaseEntityQueryBuilder<Event, IEventQ
     IEventQueryBuilder Past();
 
     IEventQueryBuilder Public();
+
+    /// <summary>
+    /// Projects to what identifies each event and when it was published. Only meaningful after
+    /// <see cref="Published"/> - an unpublished event has no publication date.
+    /// </summary>
+    IQueryBuilder<EventPublicationDto> Publication();
 
     IEventQueryBuilder Published();
 

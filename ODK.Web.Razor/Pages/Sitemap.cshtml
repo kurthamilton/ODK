@@ -1,21 +1,29 @@
-﻿@page "/sitemap.xml"
+﻿@page "/sitemap"
+@using ODK.Core.Platforms
+@using ODK.Services.Chapters
+@using ODK.Services.Sitemap
+@using ODK.Web.Razor.Models.Components
 @model SitemapModel
+@inject IChapterService ChapterService
+@inject ISitemapService SitemapService
 @{
-    Layout = null;
-    Response.ContentType = "text/xml";
+    Layout = "_HomeLayout";
+    Model.Title = "Sitemap";
+    Model.Description = "Every page on the site that does not need an account";
+    Model.Path = Model.OdkRoutes.Site.Sitemap;
 
-    var nodes = await Model.GetSitemapNodes();
+    var viewModel = await SitemapService.GetSitemapViewModel(Model.ServiceRequest);
+    var nodes = Model.OdkRoutes.Public.Sitemap(viewModel);
 }
 
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemalocation="http://www.google.com/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd"
-    xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
-    @foreach (var node in nodes)
-    {
-        <url>
-            <loc>@node.Url</loc>
-            <priority>@node.Priority</priority>
-        </url>
-    }
-</urlset>
+@if (Model.Platform == PlatformType.DrunkenKnitwits)
+{
+    var headerViewModel = await ChapterService.GetOdkHomeHeaderViewModel();
+    @await Html.PartialAsync("Header/_OdkHomeHeader", headerViewModel)
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Content = await Html.PartialAsync("Sitemap/_SitemapBody", nodes),
+    Title = "Sitemap"
+})

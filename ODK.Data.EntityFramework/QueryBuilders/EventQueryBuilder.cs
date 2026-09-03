@@ -38,6 +38,12 @@ public class EventQueryBuilder : DatabaseEntityQueryBuilder<Event, IEventQueryBu
         return this;
     }
 
+    public IEventQueryBuilder ForChapters(IEnumerable<Guid> chapterIds)
+    {
+        Query = Query.Where(x => chapterIds.Contains(x.ChapterId));
+        return this;
+    }
+
     public IEventQueryBuilder ForShortcode(string shortcode)
     {
         Query = Query.Where(x => x.Shortcode == shortcode);
@@ -72,6 +78,20 @@ public class EventQueryBuilder : DatabaseEntityQueryBuilder<Event, IEventQueryBu
     {
         Query = Query.Where(x => x.IsPublic);
         return this;
+    }
+
+    public IQueryBuilder<EventPublicationDto> Publication()
+    {
+        var query = Query
+            .Where(x => x.PublishedUtc != null)
+            .Select(x => new EventPublicationDto
+            {
+                ChapterId = x.ChapterId,
+                PublishedUtc = x.PublishedUtc!.Value,
+                Shortcode = x.Shortcode
+            });
+
+        return ProjectTo(query);
     }
 
     public IEventQueryBuilder Published()
