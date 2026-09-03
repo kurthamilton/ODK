@@ -1,0 +1,33 @@
+﻿@using ODK.Services.Payments.ViewModels
+@using ODK.Web.Razor.Models.Admin.Payments
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.SiteAdmin
+@model IReadOnlyCollection<PaymentItemViewModel>
+
+@* Rendered after the table rather than in the row that opens it: a dialog is not a row, and it has no
+   business inside the wrapper the table scrolls in. *@
+@* Not "item": a Razor template delegate names its own implicit parameter that, and it would shadow the
+   loop variable inside the modal's Body. *@
+@foreach (var refundable in Model.Where(x => x.RefundableAmount > 0))
+{
+    var payment = refundable.Payment;
+
+    @await Html.PartialAsync("Components/_Modal", new ModalViewModel
+    {
+        Id = PaymentRefundElements.ModalId(payment.Id),
+        Title = $"Refund {payment.Reference}",
+        Size = ModalSize.Large,
+        Body =
+            @<div>
+                @await Html.PartialAsync("SiteAdmin/_SiteAdminRefundPaymentForm",
+                    new RefundPaymentFormViewModel
+                    {
+                        Amount = refundable.RefundableAmount,
+                        Currency = payment.Currency,
+                        PaymentId = payment.Id,
+                        Reason = string.Empty,
+                        RefundableAmount = refundable.RefundableAmount!.Value
+                    })
+            </div>
+    })
+}

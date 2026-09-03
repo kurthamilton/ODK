@@ -12,7 +12,7 @@ public class ChapterPaymentsViewModel
     /// </summary>
     public required bool PaymentAccountEnabled { get; init; }
 
-    public required IReadOnlyCollection<ChapterPaymentItemViewModel> Payments { get; init; }
+    public required IReadOnlyCollection<PaymentItemViewModel> Payments { get; init; }
 
     /// <summary>
     /// Whether the member viewing the page is a site admin. Recording a refund is a site-admin act, and

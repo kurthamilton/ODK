@@ -18,6 +18,12 @@ public interface IPaymentAdminService
     Task<ChapterPaymentsViewModel> GetPayments(IMemberChapterAdminServiceRequest request);
 
     /// <summary>
+    /// Every payment taken for the platform, whichever group it was for. The same rows as a group's own
+    /// payments page, with the group named and no group's payments left out.
+    /// </summary>
+    Task<SitePaymentsViewModel> GetSitePayments(IMemberServiceRequest request);
+
+    /// <summary>
     /// Tells reconciliation to ignore a payment, for one nothing the provider can be asked will ever
     /// answer for. An ignored payment leaves the pending tables and is skipped by the job itself, so a
     /// read queued directly respects it too.
