@@ -144,6 +144,102 @@ public static class PaymentAdminServiceTests
     }
 
     [Test]
+    public static async Task GetSitePayments_NamesTheGroupEachPaymentWasFor()
+    {
+        // Arrange - the column a group's own payments page has no need of
+        using var context = CreateMockOdkContext();
+
+        var chapter = context.CreateChapter(name: "Group one");
+        CreateSettledPayment(context, chapter);
+
+        var service = CreatePaymentAdminService(context);
+
+        // Act
+        var result = await service.GetSitePayments(SiteAdminRequest(context));
+
+        // Assert
+        result.Payments.Single().ChapterName.Should().Be("Group one");
+    }
+
+    [Test]
+    public static async Task GetSitePayments_SitePayment_NamesNoGroup()
+    {
+        // Arrange - a payment the site took for itself belongs to no group, which is not a gap
+        using var context = CreateMockOdkContext();
+
+        CreateSettledPayment(context, chapter: null);
+
+        var service = CreatePaymentAdminService(context);
+
+        // Act
+        var result = await service.GetSitePayments(SiteAdminRequest(context));
+
+        // Assert
+        var item = result.Payments.Single();
+        item.ChapterName.Should().BeNull();
+        item.ChapterAmount.Should().BeNull("the site keeps the net");
+    }
+
+    [Test]
+    public static async Task GetSitePayments_ListsEveryGroupsPayments()
+    {
+        /* Arrange - the whole point of the page: a group's own payments page shows one group's, this shows
+           all of them. */
+        using var context = CreateMockOdkContext();
+
+        CreateSettledPayment(context, context.CreateChapter(name: "Group one"));
+        CreateSettledPayment(context, context.CreateChapter(name: "Group two"));
+
+        var service = CreatePaymentAdminService(context);
+
+        // Act
+        var result = await service.GetSitePayments(SiteAdminRequest(context));
+
+        // Assert
+        result.Payments.Select(x => x.ChapterName)
+            .Should().BeEquivalentTo(["Group one", "Group two"]);
+    }
+
+    [Test]
+    public static async Task GetSitePayments_PaymentOnAnotherPlatform_IsNotListed()
+    {
+        // Arrange - the site admin area is scoped to one platform, like the rest of it
+        using var context = CreateMockOdkContext();
+
+        CreateSettledPayment(context, context.CreateChapter(platform: PlatformType.DrunkenKnitwits));
+
+        var service = CreatePaymentAdminService(context);
+
+        // Act
+        var result = await service.GetSitePayments(SiteAdminRequest(context));
+
+        // Assert
+        result.Payments.Should().BeEmpty();
+    }
+
+    [Test]
+    public static async Task GetSitePayments_RefundedPayment_ShowsWhatIsLeftToRefund()
+    {
+        // Arrange - the rows carry what the refund button is gated on, as the group's page does
+        using var context = CreateMockOdkContext();
+
+        var chapter = context.CreateChapter(name: "Group one");
+        var payment = CreateSettledPayment(context, chapter);
+
+        CreateRefund(context, payment, 40m, PaymentRefundStatusType.Refunded);
+
+        var service = CreatePaymentAdminService(context);
+
+        // Act
+        var result = await service.GetSitePayments(SiteAdminRequest(context));
+
+        // Assert
+        var item = result.Payments.Single();
+        item.RefundedAmount.Should().Be(40m);
+        item.RefundableAmount.Should().Be(60m);
+    }
+
+    [Test]
     public static async Task GetPaymentReconciliationViewModel_NamesTheGroupThePaymentWasFor()
     {
         // Arrange

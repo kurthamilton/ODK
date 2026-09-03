@@ -1,16 +1,115 @@
-﻿@using ODK.Web.Common.Routes
-@inject IOdkRoutes OdkRoutes
+﻿@using System.Globalization
+@using ODK.Core.Utils
+@using ODK.Services.Payments.ViewModels
+@using ODK.Web.Razor.Models.Components
+@model SitePaymentsViewModel
+@{
+    // Date, Member, Group, Reference, Paid, Received, Refunded, and the refund action.
+    const int columnCount = 8;
 
-<h2 class="content-heading">Payments</h2>
+    var dateTimeOptions = new FriendlyDateStringOptions
+    {
+        ForceIncludeTime = true,
+        ForceIncludeYear = true,
+        TimeZone = Model.TimeZone
+    };
+}
 
-<ul>
-    <li>
-        <a href="@OdkRoutes.SiteAdmin.PaymentReconciliation">Reconciliation</a>
-    </li>
-    <li>
-        <a href="@OdkRoutes.SiteAdmin.PaymentRefunds">Refunds</a>
-    </li>
-    <li>
-        <a href="@OdkRoutes.SiteAdmin.PaymentWebhooks">Webhooks</a>
-    </li>
-</ul>
+<div data-odk-component="_SiteAdminPaymentsContent">
+    <h2 class="content-heading">Payments</h2>
+
+    <p>
+        Every payment taken for this platform, whichever group it was for. Reconciliation, refunds and
+        webhooks are on their own pages.
+    </p>
+
+    <div class="table-responsive">
+        <table class="table" data-sortable id="payments-table" data-table-striped>
+            <thead>
+                <tr>
+                    <th data-sortable-sort="default" data-sortable-dir="desc">Date</th>
+                    <th data-sortable-sort>Member</th>
+                    <th data-sortable-sort>Group</th>
+                    <th>Reference</th>
+                    <th>
+                        Paid
+                        @await Html.PartialAsync("Components/_Tooltip",
+                            "What the member was charged.")
+                    </th>
+                    <th>
+                        Received
+                        @await Html.PartialAsync("Components/_Tooltip",
+                            "The group's share of what the member paid, less fees.")
+                    </th>
+                    <th>
+                        Refunded
+                        @await Html.PartialAsync("Components/_Tooltip",
+                            "What has since been given back to the member.")
+                    </th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Payments.Count == 0)
+                {
+                    <tr>
+                        <td colspan="@columnCount" class="text-muted">No payments taken yet.</td>
+                    </tr>
+                }
+
+                @foreach (var item in Model.Payments)
+                {
+                    var (currency, member, payment) = (item.Payment.Currency, item.Member, item.Payment);
+
+                    if (payment.PaidUtc == null)
+                    {
+                        continue;
+                    }
+
+                    <tr>
+                        <td>
+                            @* A friendly date does not sort as a date, so the cell carries the instant for the sorter. *@
+                            <span class="d-none" data-sort-value="@payment.PaidUtc.Value.ToString("O", CultureInfo.InvariantCulture)"></span>
+                            @payment.PaidUtc.Value.ToFriendlyDateString(dateTimeOptions)
+                        </td>
+                        <td>@member.FullName</td>
+                        @* A site payment belongs to no group, which is not a gap in the data. *@
+                        <td>@(item.ChapterName ?? "-")</td>
+                        <td>@payment.Reference</td>
+                        <td>
+                            @currency.ToAmountString(payment.Amount)
+                        </td>
+                        <td>
+                            @* A dash rather than a zero: no share is recorded against this payment,
+                               which is not the same as receiving nothing. *@
+                            @(item.ChapterAmount != null
+                                ? currency.ToAmountString(item.ChapterAmount.Value)
+                                : "-")
+                        </td>
+                        <td>
+                            @* An agreed refund that has not been paid yet is neither an amount nor
+                               nothing, so it says so rather than reading as either. *@
+                            @if (item.RefundedAmount != null)
+                            {
+                                <span>@currency.ToAmountString(item.RefundedAmount.Value)</span>
+                            }
+                            else if (item.HasRefund)
+                            {
+                                <span class="text-muted">Pending</span>
+                            }
+                            else
+                            {
+                                <span>-</span>
+                            }
+                        </td>
+                        <td>
+                            @await Html.PartialAsync("Admin/Payments/_PaymentRefundButton", item)
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @await Html.PartialAsync("Admin/Payments/_PaymentRefundModals", Model.Payments)
+</div>

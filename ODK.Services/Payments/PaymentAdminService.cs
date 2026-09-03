@@ -151,9 +151,47 @@ public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
             PaymentAccountEnabled = paymentAccount?.SetupComplete() == true,
             Payments = payments
                 .OrderByDescending(x => x.Payment.PaidUtc)
-                .Select(x => ToChapterPaymentItem(x, refundsByPayment, transfersByPayment))
+                .Select(x => ToPaymentItem(x, refundsByPayment, transfersByPayment))
                 .ToArray(),
             ViewedBySiteAdmin = request.CurrentMember.SiteAdmin
+        };
+    }
+
+    public async Task<SitePaymentsViewModel> GetSitePayments(IMemberServiceRequest request)
+    {
+        var payments = await GetSiteAdminRestrictedContent(
+            request,
+            x => x.PaymentRepository
+                .Query()
+                .ForEnvironment(request.Environment)
+                .ForPlatform(request.Platform)
+                .WithMember()
+                .GetAll());
+
+        /* Both found by the payments the first read returned, so a second round trip rather than a wider
+           first one - the same shape as a group's own payments page. */
+        var paymentIds = payments.Select(x => x.Payment.Id).ToArray();
+
+        var (refunds, transfers) = await _unitOfWork.Run(
+            x => x.PaymentRefundRepository.Query().ForPayments(paymentIds).Live().GetAll(),
+            x => x.PaymentTransferRepository.Query().ForPayments(paymentIds).GetAll());
+
+        var chapterNames = (await GetChapters(
+            request.Platform, payments.Select(x => x.Payment))).Names;
+
+        var refundsByPayment = refunds
+            .GroupBy(x => x.PaymentId)
+            .ToDictionary(x => x.Key, x => x.ToArray());
+
+        var transfersByPayment = transfers.ToDictionary(x => x.PaymentId);
+
+        return new SitePaymentsViewModel
+        {
+            Payments = payments
+                .OrderByDescending(x => x.Payment.PaidUtc)
+                .Select(x => ToPaymentItem(x, refundsByPayment, transfersByPayment, chapterNames))
+                .ToArray(),
+            TimeZone = request.CurrentMember.TimeZone
         };
     }
 
@@ -285,10 +323,11 @@ public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
 
     /* What an ignored payment would do if it were reconciled after all. It has not been read, so which
        part is outstanding is read off the row rather than off which query found it. */
-    private static ChapterPaymentItemViewModel ToChapterPaymentItem(
+    private static PaymentItemViewModel ToPaymentItem(
         PaymentMemberDto dto,
         IReadOnlyDictionary<Guid, PaymentRefund[]> refundsByPayment,
-        IReadOnlyDictionary<Guid, PaymentTransfer> transfersByPayment)
+        IReadOnlyDictionary<Guid, PaymentTransfer> transfersByPayment,
+        IReadOnlyDictionary<Guid, string>? chapterNames = null)
     {
         var refunds = refundsByPayment.TryGetValue(dto.Payment.Id, out var found) ? found : [];
 
@@ -300,11 +339,15 @@ public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
 
         var payment = dto.Payment;
 
-        return new ChapterPaymentItemViewModel
+        return new PaymentItemViewModel
         {
             ChapterAmount = transfersByPayment.TryGetValue(payment.Id, out var transfer)
                 ? transfer.Amount
                 : null,
+            ChapterName = payment.ChapterId != null &&
+                chapterNames?.TryGetValue(payment.ChapterId.Value, out var chapterName) == true
+                    ? chapterName
+                    : null,
             HasRefund = refunds.Length > 0,
             Member = dto.Member,
             Payment = payment,

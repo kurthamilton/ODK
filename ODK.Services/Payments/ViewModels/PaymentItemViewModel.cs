@@ -4,15 +4,23 @@ using ODK.Core.Payments;
 namespace ODK.Services.Payments.ViewModels;
 
 /// <summary>
-/// One row of a group's payments: what was taken, from whom, and what has since been given back.
+/// One row of a payments table: what was taken, from whom, and what has since been given back. Shared by
+/// the group's own payments page and the site admin's, which differ in the columns around the row rather
+/// than in the row itself.
 /// </summary>
-public class ChapterPaymentItemViewModel
+public class PaymentItemViewModel
 {
     /// <summary>
     /// The group's share of the payment, in the payment's currency. Null until the settlement has been
     /// read, and for a payment taken by the site.
     /// </summary>
     public required decimal? ChapterAmount { get; init; }
+
+    /// <summary>
+    /// The group the payment was taken for. Null for a payment taken by the site, and on a page already
+    /// scoped to one group, which has no column for it.
+    /// </summary>
+    public required string? ChapterName { get; init; }
 
     /// <summary>
     /// Whether a refund is already on the books - given back, or agreed to and not yet paid. Wider than
