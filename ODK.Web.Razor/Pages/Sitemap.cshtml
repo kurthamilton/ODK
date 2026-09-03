@@ -10,8 +10,7 @@
     Layout = "_HomeLayout";
     Model.Title = "Sitemap";
     Model.Description = "Every page on the site that does not need an account";
-    Model.Path = Model.OdkRoutes.Site.Sitemap;
-
+    
     var viewModel = await SitemapService.GetSitemapViewModel(Model.ServiceRequest);
     var nodes = Model.OdkRoutes.Public.Sitemap(viewModel);
 }

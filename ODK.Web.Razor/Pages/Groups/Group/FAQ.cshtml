@@ -9,6 +9,7 @@
     var viewModel = await ChapterViewModelService.GetGroupQuestionsPage(Model.ChapterServiceRequest);
 
     Model.Title = "FAQ";
+    Model.Path = Model.OdkRoutes.Groups.Questions(Model.Chapter);
 }
 
 @await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel

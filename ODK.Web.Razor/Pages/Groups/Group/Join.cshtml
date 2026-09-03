@@ -2,7 +2,6 @@
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Services.Chapters
-@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Groups
 @model JoinModel
 @inject IChapterViewModelService ChapterViewModelService
@@ -12,6 +11,7 @@
     var viewModel = await ChapterViewModelService.GetGroupJoinPage(Model.ChapterServiceRequest);
 
     Model.Title = "Join";
+    Model.Path = Model.OdkRoutes.Groups.Join(Model.Chapter);
 }
 
 @await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel

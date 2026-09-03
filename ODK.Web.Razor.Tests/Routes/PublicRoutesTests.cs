@@ -32,7 +32,8 @@ public static class PublicRoutesTests
         ("/siteadmin/", "site admin"),
         ("/error/", "an error page"),
         ("/{chaptername}/error/", "an error page"),
-        ("/groups/{slug}/error/", "an error page")
+        ("/groups/{slug}/error/", "an error page"),
+        ("/sitemap", "unlisted")
     ];
 
     /* And the individual ones, which are judgement calls and get a reason each. */

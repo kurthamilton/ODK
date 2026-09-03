@@ -160,7 +160,7 @@ public static class PublicRoutesSitemapTests
 
         // Assert
         result.Should().BeEquivalentTo(
-            ["/", "/groups", "/about", "/contact", "/pricing", "/privacy", "/sitemap"]);
+            ["/", "/groups", "/about", "/contact", "/pricing", "/privacy"]);
     }
 
     /// <summary>
