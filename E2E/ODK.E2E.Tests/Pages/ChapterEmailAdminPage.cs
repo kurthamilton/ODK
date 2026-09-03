@@ -18,6 +18,8 @@ internal class ChapterEmailAdminPage
 
     private const string ContentToggle = "#override-content";
 
+    private const string FeedbackToasts = ".toasts";
+
     private const string SubjectField = "#Subject";
 
     // The toolbar buttons are icon-only, so there is no text to match them on.
@@ -152,12 +154,19 @@ internal class ChapterEmailAdminPage
     public Task<string> GetPreviewSubject() => _page.InnerTextAsync(PreviewSubject);
 
     /// <summary>
-    /// Sends a test of this email to the signed-in admin, via the test button in the editor's toolbar.
+    /// Sends a test of this email to the signed-in admin, via the test button in the editor's toolbar. The
+    /// send posts without leaving the page, so this waits for the toast reporting it rather than for a
+    /// document load - the editor is deliberately left holding whatever was being written.
     /// </summary>
     public async Task SendTest(string emailUrl)
     {
         await Open(emailUrl);
-        await Submit(SendTestButton, r => r.Request.Method == "POST" && r.Url.Contains("/test"));
+
+        await _page.RunAndWaitForResponseAsync(
+            () => _page.ClickAsync(SendTestButton),
+            r => r.Request.Method == "POST" && r.Url.Contains("/test"));
+
+        await _page.Locator(FeedbackToasts).First.WaitForAsync();
     }
 
     /// <summary>

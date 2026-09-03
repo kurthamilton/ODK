@@ -51,15 +51,6 @@ public class GroupAdminController : OdkControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("admin/groups/{chapterId:guid}/description")]
-    public async Task<IActionResult> UpdateDescription(Guid chapterId, [FromForm] string description)
-    {
-        var request = MemberChapterAdminServiceRequest.Create(
-            ChapterAdminSecurable.Texts, MemberChapterServiceRequest);
-        await _chapterAdminService.UpdateChapterDescription(request, description);
-        return RedirectToReferrer();
-    }
-
     [HttpPost("admin/groups/{chapterId:guid}/questions/{questionId:guid}")]
     public async Task<IActionResult> UpdateQuestion(
         Guid chapterId, Guid questionId, [FromForm] ChapterQuestionFormViewModel viewModel)

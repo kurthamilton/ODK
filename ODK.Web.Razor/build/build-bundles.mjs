@@ -53,6 +53,7 @@ const BUNDLES = [
             'js/odk.cookieconsent.js',
             'js/odk.currency-picker.js',
             'js/odk.dropdowns.js',
+            'js/odk.feedback.js',
             'js/odk.forms.js',
             'js/odk.load.js',
             'js/odk.notifications.js',

@@ -23,50 +23,11 @@
 
         models.Add(new FeedbackViewModel(message, type));
     }
-
-    if (models.Count == 0)
-    {
-        return;
-    }
 }
 
-@*d-none is removed by attach-to*@
-<div class="toasts d-none" data-bs-theme="" data-theme-contrast data-attach-to="[data-toast-anchor]">
-    @foreach (var model in models)
-    {
-        IconType icon;
-        string iconClass;
-
-        switch (model.Type)
-        {
-            case FeedbackType.Success:
-                (icon, iconClass) = (IconType.CheckCircle, "text-success");
-                break;
-            case FeedbackType.Warning:
-                (icon, iconClass) = (IconType.ExclamationTriangle, "text-warning");
-                break;
-            case FeedbackType.Error:
-                (icon, iconClass) = (IconType.TimesCircle, "text-danger");
-                break;
-            default:
-                continue;
-        }
-
-        @await Html.PartialAsync("Components/_Toast", new ToastViewModel
-        {
-            KeepOpen = true,
-            Header = 
-                @<div class="d-flex gap-1">
-                    <span>
-                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(icon)
-                        {
-                            Class = iconClass
-                        })
-                    </span>
-                    <span class="flex-grow-1">
-                        @(model.Message)
-                    </span>                
-                </div>
-        })
-    }
-</div>
+@await Html.PartialAsync("Components/_FeedbackToasts", new FeedbackToastsViewModel
+{
+    // Rendered by the layout, so these start outside the anchor the page puts wherever its toasts belong.
+    AttachTo = "[data-toast-anchor]",
+    Feedback = models
+})

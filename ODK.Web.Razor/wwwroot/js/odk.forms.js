@@ -14,24 +14,27 @@ window.odk.forms = window.odk.forms || {};
 window.odk.forms.beforeSubmit = window.odk.forms.beforeSubmit || [];
 
 (function () {
+    // Reported when a post never got an answer, so there is no server wording to show instead.
+    const FAILURE_MESSAGE = 'Something went wrong. Please try again.';
+
     initConfig();
     bindAutoSubmits();
-    bindBeforeSubmit();
     bindClearables();
     bindClientSideValidation();
     bindColorPickers();
     bindDatePickers();
+    bindSubmitEvents();
     bindSubmits();
 
     // Validates, runs the pre-submit steps, then posts. The route for code that submits a form itself:
-    // form.submit() fires no submit event, so neither the validation library nor bindBeforeSubmit below
+    // form.submit() fires no submit event, so neither the validation library nor bindSubmitEvents below
     // can see it and both have to be run from here.
     window.odk.forms.validateAndSubmit = async $form => {
         const v = window.odk.forms.validationService;
         if (!await v.validateForm($form)) return;
 
         await runBeforeSubmit($form);
-        $form.submit();
+        await submitForm($form);
     };
 
     // Hydrate window.odk.config from server-rendered data attributes on <html>, so the JS reads
@@ -51,27 +54,6 @@ window.odk.forms.beforeSubmit = window.odk.forms.beforeSubmit || [];
             // bind selects to odk:changed, which is emitted by the slim-select integration since change events don't bubble
             const eventName = $trigger.tagName === 'SELECT' ? 'odk:changed' : 'change';
             $trigger.addEventListener(eventName, () => $form.submit());
-        });
-    }
-
-    function bindBeforeSubmit() {
-        /* Delegated to the document, which is where a submit that has passed every check on the way arrives.
-           A form the validation library tracks never lets its own submit event get this far - the library
-           stops it, validates, and dispatches a fresh one once the form is valid - so an event seen here has
-           either validated or belongs to a form with nothing to validate.
-
-           An event another handler has already claimed is left alone: the confirm dialog in odk.js cancels
-           the submit to ask, and replays it on accept, and the replay arrives here. */
-        document.addEventListener('submit', async e => {
-            if (e.defaultPrevented) return;
-            if (window.odk.forms.beforeSubmit.length === 0) return;
-
-            const $form = e.target;
-
-            // Replaced rather than delayed: a step can only be awaited, and a submit event cannot wait.
-            e.preventDefault();
-            await runBeforeSubmit($form);
-            $form.submit();
         });
     }
 
@@ -249,6 +231,29 @@ window.odk.forms.beforeSubmit = window.odk.forms.beforeSubmit || [];
         });
     }
 
+    function bindSubmitEvents() {
+        /* Delegated to the document, which is where a submit that has passed every check on the way arrives.
+           A form the validation library tracks never lets its own submit event get this far - the library
+           stops it, validates, and dispatches a fresh one once the form is valid - so an event seen here has
+           either validated or belongs to a form with nothing to validate.
+
+           An event another handler has already claimed is left alone: the confirm dialog in odk.js cancels
+           the submit to ask, and replays it on accept, and the replay arrives here. */
+        document.addEventListener('submit', async e => {
+            if (e.defaultPrevented) return;
+
+            const $form = e.target;
+
+            // Nothing to intervene for: no step to run, and a native submit does what submitForm would.
+            if (window.odk.forms.beforeSubmit.length === 0 && !$form.hasAttribute('data-xhr')) return;
+
+            // Replaced rather than delayed: a step can only be awaited, and a submit event cannot wait.
+            e.preventDefault();
+            await runBeforeSubmit($form);
+            await submitForm($form);
+        });
+    }
+
     function bindSubmits() {
         document.querySelectorAll('[data-submit]').forEach($button => {
             const targetSelector = $button.getAttribute('data-submit');
@@ -301,6 +306,52 @@ window.odk.forms.beforeSubmit = window.odk.forms.beforeSubmit || [];
     async function runBeforeSubmit($form) {
         for (const step of window.odk.forms.beforeSubmit) {
             await step($form);
+        }
+    }
+
+    /* The one place a form is posted from, so how it posts is decided once however the submit arrived - a
+       click, the validation library's replayed event, or a script calling validateAndSubmit, which fires no
+       event at all and so never reaches the handler above. */
+    async function submitForm($form) {
+        if (!$form.hasAttribute('data-xhr')) {
+            $form.submit();
+            return;
+        }
+
+        await submitXhrForm($form);
+    }
+
+    /* Posts a form marked data-xhr without leaving the page and shows the feedback the response carries.
+       Opt-in per form, because the endpoint has to answer with that payload rather than with a redirect -
+       see FeedbackResponse in OdkControllerBase. */
+    async function submitXhrForm($form) {
+        // A post that leaves the page as it is has nothing else stopping a second click sending a second
+        // request, and the endpoints behind these forms act on every one they get.
+        if ($form.hasAttribute('data-xhr-posting')) return;
+        $form.setAttribute('data-xhr-posting', '');
+
+        try {
+            const response = await fetch($form.action, {
+                method: 'POST',
+                headers: window.odk.antiforgeryHeaders(),
+                body: new FormData($form)
+            });
+
+            if (!response.ok) {
+                console.warn(`Post to ${$form.action} failed: ${response.status}`);
+                await window.odk.feedback.error(FAILURE_MESSAGE);
+                return;
+            }
+
+            // FeedbackResponseViewModel's property name, camel-cased by the serialiser. Nothing checks the
+            // pairing, so a rename on either side has to be made on both.
+            const result = await response.json();
+            await window.odk.feedback.show(result.feedback);
+        } catch (e) {
+            console.warn(`Post to ${$form.action} could not be sent`, e);
+            await window.odk.feedback.error(FAILURE_MESSAGE);
+        } finally {
+            $form.removeAttribute('data-xhr-posting');
         }
     }
 })();

@@ -281,7 +281,7 @@ public class SiteAdminController : OdkControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("siteadmin/subscriptions/{siteSubscriptionId:guid}/Prices/{id:guid}/Delete")]
+    [HttpPost("siteadmin/subscriptions/{siteSubscriptionId:guid}/prices/{id:guid}/delete")]
     public async Task<IActionResult> DeleteSiteSubscriptionPrice(Guid siteSubscriptionId, Guid id)
     {
         var result = await _siteSubscriptionAdminService.DeleteSiteSubscriptionPrice(

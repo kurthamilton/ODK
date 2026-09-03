@@ -88,6 +88,13 @@
         $contrastEls.forEach($el => $el.setAttribute('data-bs-theme', contrastTheme));
     };
 
+    /* Exposed for markup that arrives after load, which the two calls above cannot reach - an element added
+       later carries the attribute but none of the theme it asks for until something runs this again. It
+       reads the whole document and sets what is already set, so a caller passes nothing and repeats no
+       work that matters. */
+    window.odk = window.odk || {};
+    window.odk.themes = { setContrastThemes };
+
     const setTheme = (theme, persist) => {
         root.setAttribute('data-bs-theme', theme);
         setButtonVisibility();
