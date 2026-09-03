@@ -26,17 +26,18 @@ public class PaymentRefundQueryBuilder
         return this;
     }
 
+    // Mirrors PaymentRefund.IsLive, which asks the same question of a loaded refund.
     public IPaymentRefundQueryBuilder Live()
     {
         Query = Query.Where(x =>
-            x.Status != PaymentRefundStatusType.Declined &&
+            x.Status != PaymentRefundStatusType.Cancelled &&
             x.Status != PaymentRefundStatusType.Failed);
         return this;
     }
 
     public IPaymentRefundQueryBuilder Unconfirmed()
     {
-        Query = Query.Where(x => x.Status == PaymentRefundStatusType.Refunding);
+        Query = Query.Where(x => x.Status == PaymentRefundStatusType.Pending);
         return this;
     }
 }

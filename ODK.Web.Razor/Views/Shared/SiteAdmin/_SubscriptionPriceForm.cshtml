@@ -21,6 +21,6 @@
 
 <div class="form-group required">
     @Html.LabelFor(x => x.Amount, new { @class = "form-label" })
-    @Html.TextBoxFor(x => x.Amount, new { @class = "form-control", type = "number" })
+    @Html.TextBoxFor(x => x.Amount, format: "{0:0.00}", new { @class = "form-control", type = "number" })
     @Html.ValidationMessageFor(x => x.Amount)
 </div>

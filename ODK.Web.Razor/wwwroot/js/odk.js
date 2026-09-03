@@ -458,6 +458,16 @@
             '[data-bs-toggle="tooltip"], [data-odk-tooltip]');
         const tooltipList = [...tooltipTriggerList]
             .filter(x => !!x.getAttribute('data-bs-title'))
-            .map(x => new bootstrap.Tooltip(x));
+            .map(x => {
+                const tooltip = new bootstrap.Tooltip(x);
+
+                /* A trigger that also does something on click leaves its tooltip behind: whatever the click
+                   opens covers the trigger without the pointer moving, so no mouseleave is raised and the
+                   tooltip hangs over the new thing. Clicking has answered whatever the tooltip was there to
+                   say, so hiding it is right whether or not the trigger does anything else. */
+                x.addEventListener('click', () => tooltip.hide());
+
+                return tooltip;
+            });
     }
 })();

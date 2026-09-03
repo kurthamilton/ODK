@@ -2176,12 +2176,6 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                     b.Property<decimal?>("ActualAmount")
                         .HasColumnType("money");
 
-                    b.Property<decimal?>("ActualCommissionAmount")
-                        .HasColumnType("money");
-
-                    b.Property<decimal?>("ActualConnectedAccountAmount")
-                        .HasColumnType("money");
-
                     b.Property<decimal?>("ActualFeeAmount")
                         .HasColumnType("money");
 
@@ -2211,10 +2205,6 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                     b.Property<string>("ExternalId")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("ExternalTransferId")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
                     b.Property<Guid>("MemberId")
                         .HasColumnType("uniqueidentifier");
 
@@ -2229,16 +2219,6 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                         .HasColumnType("int")
                         .HasColumnName("PlatformTypeId");
 
-                    b.Property<DateTime?>("ReconciliationFailedUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ReconciliationFailureReason")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<DateTime?>("ReconciliationIgnoredUtc")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("Reference")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -2246,12 +2226,6 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                     b.Property<string>("SettlementCurrencyCode")
                         .HasMaxLength(3)
                         .HasColumnType("nvarchar(3)");
-
-                    b.Property<decimal?>("TransferWithheldAmount")
-                        .HasColumnType("money");
-
-                    b.Property<DateTime?>("TransferredUtc")
-                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -2314,6 +2288,37 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                     b.ToTable("PaymentProviderWebhookEvents", (string)null);
                 });
 
+            modelBuilder.Entity("ODK.Core.Payments.PaymentReconciliation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("FailedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FailureReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("IgnoredUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("PaymentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
+
+                    b.HasIndex("PaymentId")
+                        .IsUnique();
+
+                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("PaymentId"));
+
+                    b.ToTable("PaymentReconciliations", (string)null);
+                });
+
             modelBuilder.Entity("ODK.Core.Payments.PaymentRefund", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2329,15 +2334,7 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                     b.Property<decimal?>("ChapterAmount")
                         .HasColumnType("money");
 
-                    b.Property<string>("DeclinedReason")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
                     b.Property<string>("ExternalId")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("ExternalReversalId")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
@@ -2365,18 +2362,6 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                     b.Property<DateTime>("RequestedUtc")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid?>("ResolvedByMemberId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("ResolvedUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal?>("ReversedAmount")
-                        .HasColumnType("money");
-
-                    b.Property<DateTime?>("ReversedUtc")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("SettlementCurrencyCode")
                         .HasMaxLength(3)
                         .HasColumnType("nvarchar(3)");
@@ -2394,6 +2379,87 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("PaymentId"));
 
                     b.ToTable("PaymentRefunds", (string)null);
+                });
+
+            modelBuilder.Entity("ODK.Core.Payments.PaymentTransfer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("money");
+
+                    b.Property<decimal>("CommissionAmount")
+                        .HasColumnType("money");
+
+                    b.Property<DateTime?>("CompletedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ExternalId")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("PaymentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal?>("WithheldAmount")
+                        .HasColumnType("money");
+
+                    b.HasKey("Id");
+
+                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
+
+                    b.HasIndex("PaymentId")
+                        .IsUnique();
+
+                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("PaymentId"));
+
+                    b.ToTable("PaymentTransfers", (string)null);
+                });
+
+            modelBuilder.Entity("ODK.Core.Payments.PaymentTransferReversal", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal?>("ActualAmount")
+                        .HasColumnType("money");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("money");
+
+                    b.Property<DateTime?>("CompletedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ExternalId")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("PaymentRefundId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("PaymentTransferId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
+
+                    b.HasIndex("PaymentRefundId");
+
+                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("PaymentRefundId"));
+
+                    b.HasIndex("PaymentTransferId");
+
+                    b.ToTable("PaymentTransferReversals", (string)null);
                 });
 
             modelBuilder.Entity("ODK.Core.Payments.SitePaymentProduct", b =>
@@ -3734,11 +3800,38 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("ODK.Core.Payments.PaymentReconciliation", b =>
+                {
+                    b.HasOne("ODK.Core.Payments.Payment", null)
+                        .WithMany()
+                        .HasForeignKey("PaymentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("ODK.Core.Payments.PaymentRefund", b =>
                 {
                     b.HasOne("ODK.Core.Payments.Payment", null)
                         .WithMany()
                         .HasForeignKey("PaymentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ODK.Core.Payments.PaymentTransfer", b =>
+                {
+                    b.HasOne("ODK.Core.Payments.Payment", null)
+                        .WithMany()
+                        .HasForeignKey("PaymentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ODK.Core.Payments.PaymentTransferReversal", b =>
+                {
+                    b.HasOne("ODK.Core.Payments.PaymentTransfer", null)
+                        .WithMany()
+                        .HasForeignKey("PaymentTransferId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

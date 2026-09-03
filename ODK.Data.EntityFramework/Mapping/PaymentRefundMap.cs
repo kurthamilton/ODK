@@ -30,13 +30,7 @@ public class PaymentRefundMap : IEntityTypeConfiguration<PaymentRefund>
         builder.Property(x => x.ChapterAmount)
             .IsMoneyType();
 
-        builder.Property(x => x.DeclinedReason)
-            .HasMaxLength(500);
-
         builder.Property(x => x.ExternalId)
-            .HasMaxLength(100);
-
-        builder.Property(x => x.ExternalReversalId)
             .HasMaxLength(100);
 
         builder.Property(x => x.FailureReason)
@@ -54,15 +48,6 @@ public class PaymentRefundMap : IEntityTypeConfiguration<PaymentRefund>
         builder.Property(x => x.RequestedUtc)
             .HasConversion<UtcDateTimeConverter>();
 
-        builder.Property(x => x.ResolvedUtc)
-            .HasConversion<NullableUtcDateTimeConverter>();
-
-        builder.Property(x => x.ReversedAmount)
-            .IsMoneyType();
-
-        builder.Property(x => x.ReversedUtc)
-            .HasConversion<NullableUtcDateTimeConverter>();
-
         builder.Property(x => x.SettlementCurrencyCode)
             .HasMaxLength(3);
 
@@ -73,9 +58,9 @@ public class PaymentRefundMap : IEntityTypeConfiguration<PaymentRefund>
         /* Cascade, so that deleting a chapter or a member still works: both reach Payments that way and a
            refund left behind would block it.
 
-           This is also why RequestedByMemberId and ResolvedByMemberId carry no foreign key. Member already
-           cascades to Payments and Payments cascades to here, so a key on either of those columns would be
-           a second cascade path from Member to this table, and SQL Server rejects that outright. */
+           This is also why RequestedByMemberId carries no foreign key. Member already cascades to Payments
+           and Payments cascades to here, so a key on that column would be a second cascade path from
+           Member to this table, and SQL Server rejects that outright. */
         builder.HasOne<Payment>()
             .WithMany()
             .HasForeignKey(x => x.PaymentId)

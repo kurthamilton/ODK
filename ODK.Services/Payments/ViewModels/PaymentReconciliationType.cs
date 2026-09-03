@@ -25,5 +25,11 @@ public enum PaymentReconciliationType
     /// Records the transfer that already sent the group its share, so a refund has something to reverse.
     /// Writes to our own records and nothing else.
     /// </summary>
-    TransferRecord
+    TransferRecord,
+
+    /// <summary>
+    /// Records what became of a refund the provider took but has not confirmed. Writes to our own records
+    /// and nothing else - the money left when the refund was made, or never will.
+    /// </summary>
+    RefundRecord
 }

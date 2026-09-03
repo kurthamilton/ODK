@@ -19,12 +19,6 @@ public class PaymentMap : IEntityTypeConfiguration<Payment>
         builder.Property(x => x.ActualAmount)
             .IsMoneyType();
 
-        builder.Property(x => x.ActualCommissionAmount)
-            .IsMoneyType();
-
-        builder.Property(x => x.ActualConnectedAccountAmount)
-            .IsMoneyType();
-
         builder.Property(x => x.ActualFeeAmount)
             .IsMoneyType();
 
@@ -44,9 +38,6 @@ public class PaymentMap : IEntityTypeConfiguration<Payment>
         builder.Property(x => x.ExternalChargeId)
             .HasMaxLength(100);
 
-        builder.Property(x => x.ExternalTransferId)
-            .HasMaxLength(100);
-
         builder.Property(x => x.PaidUtc)
             .HasConversion<UtcDateTimeConverter>();
 
@@ -58,23 +49,8 @@ public class PaymentMap : IEntityTypeConfiguration<Payment>
             .HasColumnName("PlatformTypeId")
             .HasConversion<int?>();
 
-        builder.Property(x => x.ReconciliationFailedUtc)
-            .HasConversion<NullableUtcDateTimeConverter>();
-
-        builder.Property(x => x.ReconciliationFailureReason)
-            .HasMaxLength(500);
-
-        builder.Property(x => x.ReconciliationIgnoredUtc)
-            .HasConversion<NullableUtcDateTimeConverter>();
-
         builder.Property(x => x.SettlementCurrencyCode)
             .HasMaxLength(3);
-
-        builder.Property(x => x.TransferWithheldAmount)
-            .IsMoneyType();
-
-        builder.Property(x => x.TransferredUtc)
-            .HasConversion<NullableUtcDateTimeConverter>();
 
         builder.HasOne(x => x.Currency)
             .WithMany()

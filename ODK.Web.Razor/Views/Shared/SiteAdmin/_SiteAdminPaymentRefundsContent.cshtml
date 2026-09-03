@@ -1,10 +1,8 @@
 ﻿@using System.Globalization
 @using ODK.Core.Utils
 @using ODK.Services.Payments.ViewModels
-@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @model PaymentRefundsViewModel
-@inject IOdkRoutes OdkRoutes
 @{
     var dateTimeOptions = new FriendlyDateStringOptions
     {
@@ -17,16 +15,9 @@
     <h2 class="content-heading">Refunds</h2>
 
     <p>
-        Refunds already made through the payment provider, written down here. Nothing on this page refunds
-        anything or moves any money - it records what happened elsewhere.
+        Every refund made through the payment provider, what came back off the group to cover it, and what
+        the group is left owing. Refunds are raised from a group's payments page.
     </p>
-
-    <div class="button-container mb-3">
-        <a class="btn btn-primary" href="@OdkRoutes.SiteAdmin.PaymentRefundCreate">
-            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Plus))
-            <span>Record a refund</span>
-        </a>
-    </div>
 
     <div class="table-responsive">
         <table class="table" data-sortable data-table-striped>
@@ -69,8 +60,8 @@
                         <td>@payment.Reference</td>
                         <td>@payment.Currency.ToAmountString(refund.Amount)</td>
                         <td>
-                            @(refund.ReversedAmount != null
-                                ? payment.Currency.ToAmountString(refund.ReversedAmount.Value)
+                            @(item.ReversedAmount != null
+                                ? payment.Currency.ToAmountString(item.ReversedAmount.Value)
                                 : "-")
                         </td>
                         <td>

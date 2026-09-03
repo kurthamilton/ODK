@@ -27,6 +27,7 @@ public static class ChapterAdminSecurableExtensions
         ChapterAdminSecurable.MembershipSettings => ChapterAdminRole.Admin,
         ChapterAdminSecurable.Pages => ChapterAdminRole.Admin,
         ChapterAdminSecurable.PaymentAccount => ChapterAdminRole.Owner,
+        ChapterAdminSecurable.PaymentRefunds => ChapterAdminRole.Owner,
         ChapterAdminSecurable.Payments => ChapterAdminRole.Admin,
         ChapterAdminSecurable.PaymentSettings => ChapterAdminRole.Admin,
         ChapterAdminSecurable.PrivacySettings => ChapterAdminRole.Admin,

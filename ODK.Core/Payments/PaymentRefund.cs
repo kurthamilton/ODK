@@ -1,13 +1,13 @@
 ﻿namespace ODK.Core.Payments;
 
 /// <summary>
-/// A refund of some or all of a <see cref="Payment"/>: what the member is given back, and what was
-/// recovered from the group to cover it.
+/// The provider's refund of some or all of a <see cref="Payment"/>: what the member is given back, and
+/// who asked for it.
 /// </summary>
 /// <remarks>
 /// A payment has many, because a refund can be partial and can be retried after a failure. The sum of a
-/// payment's refunds cannot exceed its <see cref="Payment.ActualAmount"/>, and the sum of their
-/// <see cref="ReversedAmount"/> cannot exceed its <see cref="Payment.ActualConnectedAccountAmount"/>.
+/// payment's refunds cannot exceed its <see cref="Payment.ActualAmount"/>. What was recovered from the
+/// group to cover it is a <see cref="PaymentTransferReversal"/>.
 /// </remarks>
 public class PaymentRefund : IDatabaseEntity
 {
@@ -31,21 +31,10 @@ public class PaymentRefund : IDatabaseEntity
     public decimal? ChapterAmount { get; set; }
 
     /// <summary>
-    /// Why the refund was refused. Set with <see cref="PaymentRefundStatusType.Declined"/>, and written
-    /// for the member to read.
-    /// </summary>
-    public string? DeclinedReason { get; set; }
-
-    /// <summary>
     /// The provider's refund. Set as soon as the provider accepts it, which is before it confirms what it
     /// did - so this identifies a refund whose outcome is still unknown.
     /// </summary>
     public string? ExternalId { get; set; }
-
-    /// <summary>
-    /// The provider's reversal of the transfer, where the group's share was recovered by reversing it.
-    /// </summary>
-    public string? ExternalReversalId { get; set; }
 
     /// <summary>
     /// Why the provider failed the refund after taking it. Set with
@@ -84,27 +73,23 @@ public class PaymentRefund : IDatabaseEntity
     public DateTime RequestedUtc { get; set; }
 
     /// <summary>
-    /// Who approved or declined it. Null while it is still <see cref="PaymentRefundStatusType.Requested"/>.
-    /// </summary>
-    public Guid? ResolvedByMemberId { get; set; }
-
-    /// <inheritdoc cref="ResolvedByMemberId"/>
-    public DateTime? ResolvedUtc { get; set; }
-
-    /// <summary>
-    /// What came back from the group's connected account by reversing the transfer, in the payment's
-    /// currency. Less than <see cref="ChapterAmount"/> where the transfer could not cover it - the
-    /// remainder is a <c>ChapterPaymentAdjustment</c>, recovered from the group's later transfers.
-    /// </summary>
-    public decimal? ReversedAmount { get; set; }
-
-    public DateTime? ReversedUtc { get; set; }
-
-    /// <summary>
     /// The currency <see cref="FeeReturnedAmount"/> is in, which need not be the payment's own - a
     /// provider converts when it holds no balance in the currency charged. Null alongside it.
     /// </summary>
     public string? SettlementCurrencyCode { get; set; }
 
     public PaymentRefundStatusType Status { get; set; }
+
+    /// <summary>
+    /// Whether the refund has reduced what the member paid, or is expected to: anything but one that was
+    /// cancelled or that the provider failed. What a payment's remaining refundable amount is measured
+    /// against.
+    /// </summary>
+    /// <remarks>
+    /// Mirrors <c>IPaymentRefundQueryBuilder.Live</c>, which asks the same question of a query. The two
+    /// have to agree.
+    /// </remarks>
+    public bool IsLive =>
+        Status != PaymentRefundStatusType.Cancelled &&
+        Status != PaymentRefundStatusType.Failed;
 }

@@ -23,7 +23,7 @@
             <span class="input-group-text">
                 @Model.Currency.Symbol
             </span>
-            @Html.TextBoxFor(x => x.Amount, new { @class = "form-control", type = "number", min = 0, step = 0.5 })
+            @Html.TextBoxFor(x => x.Amount, format: "{0:0.00}", new { @class = "form-control", type = "number", min = 0, step = 0.5 })
         </div>
         @Html.ValidationMessageFor(x => x.Amount)
     </div>

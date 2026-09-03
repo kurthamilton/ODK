@@ -38,8 +38,6 @@ public class SiteAdminRoutes
     /// The form for writing down a refund. Takes an optional <c>paymentId</c>, which fills it in - the
     /// route a group's payments page links to, so a site admin does not have to carry a charge id across.
     /// </summary>
-    public SiteAdminRoute PaymentRefundCreate => PaymentRefunds.Child("/new");
-
     public SiteAdminRoute PaymentRefunds => Payments.Child("/refunds");
 
     public SiteAdminRoute Payments => Path("/payments");
@@ -93,10 +91,6 @@ public class SiteAdminRoutes
     public SiteAdminRoute Messages() => Path("/messages");
 
     public SiteAdminRoute Messages(MessageStatus status) => Messages().Child($"?status={status}");
-
-    /// <inheritdoc cref="PaymentRefundCreate"/>
-    public SiteAdminRoute PaymentRefundCreateFor(Guid paymentId)
-        => PaymentRefundCreate.Child($"?paymentId={paymentId}");
 
     /// <summary>
     /// The site admin menu, defined alongside the routes themselves so the layout does not repeat them.

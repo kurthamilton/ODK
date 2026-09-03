@@ -53,6 +53,11 @@ public interface IPaymentProvider
 
     Task<string?> GenerateConnectedAccountSetupUrl(GenerateRemoteAccountSetupUrlOptions options);
 
+    /// <summary>
+    /// The charge a payment arrived on, with what has already been given back off it.
+    /// </summary>
+    Task<ExternalCharge?> GetCharge(string externalChargeId);
+
     Task<ExternalCheckoutSession?> GetCheckoutSession(string externalId);
 
     Task<RemoteAccount?> GetConnectedAccount(string externalId);
@@ -91,6 +96,19 @@ public interface IPaymentProvider
     Task<ExternalSubscription?> GetSubscription(string externalId);
 
     Task<ExternalSubscriptionPlan?> GetSubscriptionPlan(string externalId);
+
+    /// <summary>
+    /// Gives <paramref name="amount"/> back off a charge. Null where the provider refused, which is
+    /// reported rather than thrown: a refund it would not take is an answer, not a fault.
+    /// </summary>
+    Task<ExternalRefund?> RefundCharge(string externalChargeId, decimal amount);
+
+    /// <summary>
+    /// Takes <paramref name="amount"/> back off a transfer already made to a connected account. Null where
+    /// the provider refused - most often because the account no longer holds enough to cover it, which is
+    /// the group's shortfall to make up rather than a fault.
+    /// </summary>
+    Task<ExternalTransferReversal?> ReverseTransfer(string externalTransferId, decimal amount);
 
     Task<ExternalCheckoutSession> StartCheckout(
         IServiceRequest request,
