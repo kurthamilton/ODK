@@ -1,5 +1,7 @@
-﻿@using ODK.Web.Razor.Models.Components
+﻿@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Components
 @model ToastAnchorViewModel
+@inject IOdkRoutes OdkRoutes
 @{
     var classes = new List<string>();
     if (Model.PseudoContainer)
@@ -11,4 +13,7 @@
         classes.Add("toast-anchor");
     }
 }
-<div class="@string.Join(' ', classes)" data-toast-anchor></div>
+@* Carries the URL of the page that renders a toast as well as marking where one goes, so a script showing
+   feedback has both from the one element - see odk.feedback.js. *@
+<div class="@string.Join(' ', classes)" data-toast-anchor
+     data-feedback-url="@OdkRoutes.Site.Feedback"></div>

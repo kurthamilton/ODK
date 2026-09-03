@@ -37,12 +37,14 @@ public class EmailsController : OdkControllerBase
         return Ok(EmailPreviewViewModel.FromRendered(preview));
     }
 
+    /* Answers with its feedback rather than redirecting: the form is posted by script, which shows the
+       result without the editor being reloaded and the author losing what they were part-way through
+       writing. */
     [HttpPost("/siteadmin/emails/{type}/send/test")]
-    public async Task<IActionResult> SendTestEmail(string chapterName, EmailType type)
+    public async Task<IActionResult> SendTestEmail(EmailType type)
     {
         var result = await _emailAdminService.SendTestMemberEmail(MemberServiceRequest, type);
-        AddFeedback(result, "Test email sent");
-        return RedirectToReferrer();
+        return FeedbackResponse(result, "Test email sent");
     }
 
     /* The site-admin counterpart of the group endpoint, and the same contract - see

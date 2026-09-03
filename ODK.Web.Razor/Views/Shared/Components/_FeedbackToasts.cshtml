@@ -1,0 +1,58 @@
+﻿@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Feedback
+@model FeedbackToastsViewModel
+@{
+    // Resolved before anything is written, so a set that renders no toast - one item of feedback with
+    // nothing to say - renders no container either, and the script showing it has nothing to insert.
+    var toasts = new List<(FeedbackViewModel Feedback, IconType Icon, string IconClass)>();
+    foreach (var feedback in Model.Feedback)
+    {
+        switch (feedback.Type)
+        {
+            case FeedbackType.Success:
+                toasts.Add((feedback, IconType.CheckCircle, "text-success"));
+                break;
+            case FeedbackType.Warning:
+                toasts.Add((feedback, IconType.ExclamationTriangle, "text-warning"));
+                break;
+            case FeedbackType.Error:
+                toasts.Add((feedback, IconType.TimesCircle, "text-danger"));
+                break;
+        }
+    }
+
+    if (toasts.Count == 0)
+    {
+        return;
+    }
+
+    var classes = new List<string> { "toasts" };
+    if (Model.AttachTo != null)
+    {
+        // Removed by attach-to, which is also what moves this into the anchor.
+        classes.Add("d-none");
+    }
+}
+
+<div class="@string.Join(' ', classes)" data-bs-theme="" data-theme-contrast
+     data-attach-to="@Model.AttachTo" data-odk-component="_FeedbackToasts">
+    @foreach (var (feedback, icon, iconClass) in toasts)
+    {
+        @await Html.PartialAsync("Components/_Toast", new ToastViewModel
+        {
+            KeepOpen = true,
+            Header =
+                @<div class="d-flex gap-1">
+                    <span>
+                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(icon)
+                        {
+                            Class = iconClass
+                        })
+                    </span>
+                    <span class="flex-grow-1">
+                        @(feedback.Message)
+                    </span>
+                </div>
+        })
+    }
+</div>

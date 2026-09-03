@@ -68,9 +68,10 @@
 </form>
 
 @* Empty but for its token: the toolbar's test button submits it, and it cannot be nested inside the form
-   above. *@
+   above. data-xhr keeps the page as it is - see submitXhrForm in odk.forms.js - so the send reports itself
+   in a toast rather than reloading the editor under whoever is writing in it. *@
 <form method="post" action="/groups/@Model.Chapter.Id/emails/@Model.Email.Type/test"
-      id="@EmailEditorElements.SendTestFormId">
+      id="@EmailEditorElements.SendTestFormId" data-xhr>
     @Html.AntiForgeryToken()
 </form>
 

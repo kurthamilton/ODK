@@ -362,14 +362,16 @@ public class ChapterAdminController : AdminControllerBase
         return Ok(EmailPreviewViewModel.FromRendered(preview));
     }
 
+    /* Answers with its feedback rather than redirecting: the form is posted by script, which shows the
+       result without the editor being reloaded and the author losing what they were part-way through
+       writing. */
     [HttpPost("groups/{chapterId:guid}/emails/{type}/test")]
     public async Task<IActionResult> SendTestEmail(Guid chapterId, EmailType type)
     {
         var request = MemberChapterAdminServiceRequest.Create(
             ChapterAdminSecurable.Emails, MemberChapterServiceRequest);
         var result = await _emailAdminService.SendTestEmail(request, type);
-        AddFeedback(result, "Test email sent");
-        return RedirectToReferrer();
+        return FeedbackResponse(result, "Test email sent");
     }
 
     [HttpPost("groups/{chapterId:guid}/owner")]

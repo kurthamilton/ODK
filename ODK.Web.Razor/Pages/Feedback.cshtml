@@ -1,0 +1,20 @@
+﻿@page "/feedback"
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Feedback
+@model FeedbackModel
+@{
+    Layout = null;
+
+    /* The messages are the request's, so they are text and go through the encoder like any other Razor
+       expression - the toast the script shows carries the wording its post's response gave it, and a caller
+       asking for something else gets only what it typed back. */
+    var feedback = Model.Feedback
+        .Where(x => !string.IsNullOrEmpty(x.Message))
+        .Select(x => new FeedbackViewModel(x.Message!, x.Type))
+        .ToArray();
+}
+
+@await Html.PartialAsync("Components/_FeedbackToasts", new FeedbackToastsViewModel
+{
+    Feedback = feedback
+})

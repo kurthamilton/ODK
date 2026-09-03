@@ -18,6 +18,7 @@
 
     window.odk = window.odk || {};
     window.odk.utils = window.odk.utils || {};
+    window.odk.utils.bindToasts = bindToasts;
     window.odk.utils.bindTooltips = bindTooltips;
 
     // Headers for AJAX POSTs so they carry the antiforgery token (from the layout meta tag).
@@ -30,6 +31,10 @@
         const $elements = document.querySelectorAll('[data-attach-to]');
         $elements.forEach($element => {
             const selector = $element.getAttribute('data-attach-to');
+            // An element naming no target has nothing to attach to, and querySelector throws on an empty
+            // selector rather than returning nothing.
+            if (!selector) return;
+
             const $target = document.querySelector(selector);
             $element.removeAttribute('data-attach-to');
             $element.classList.remove('d-none');
@@ -433,10 +438,11 @@
         });
     }
 
-    function bindToasts() {
-        const $toasts = document.querySelectorAll('[data-toast]');
-
-        $toasts.forEach($toast => {
+    // Takes the toasts to show, defaulting to every one on the page. A toast added after load names itself
+    // rather than being found again, so the ones already on screen are left alone - a dismissed toast is
+    // still in the DOM, and showing it a second time brings it back.
+    function bindToasts($toasts) {
+        ($toasts || document.querySelectorAll('[data-toast]')).forEach($toast => {
             const autohide = $toast.getAttribute('data-toast-autohide');
             const delay = $toast.getAttribute('data-toast-delay');
 

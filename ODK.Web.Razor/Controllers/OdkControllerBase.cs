@@ -41,29 +41,17 @@ public abstract class OdkControllerBase : Controller
     protected void AddFeedback(string message, FeedbackType type)
         => AddFeedback(new FeedbackViewModel(message, type));
 
-    /// <summary>
-    /// One item of feedback per message the result carries, so a save that found several problems reports
-    /// all of them rather than the first alone.
-    /// </summary>
     protected void AddFeedback(ServiceResult result)
-    {
-        var type = result.Success ? FeedbackType.Success : FeedbackType.Error;
-        foreach (var message in result.Messages)
-        {
-            AddFeedback(message, type);
-        }
-    }
+        => AddFeedback(FeedbackViewModel.FromResult(result));
 
     protected void AddFeedback(ServiceResult result, string successMessage)
+        => AddFeedback(FeedbackViewModel.FromResult(result, successMessage));
+
+    protected void AddFeedback(IReadOnlyCollection<FeedbackViewModel> viewModels)
     {
-        if (result.Success)
+        foreach (var viewModel in viewModels)
         {
-            var message = !string.IsNullOrEmpty(result.Message) ? result.Message : successMessage;
-            AddFeedback(message, FeedbackType.Success);
-        }
-        else
-        {
-            AddFeedback(result);
+            AddFeedback(viewModel);
         }
     }
 
@@ -82,6 +70,25 @@ public abstract class OdkControllerBase : Controller
 
         return File(data, mimeType);
     }
+
+    /// <summary>
+    /// The result of a post the page made by script: the feedback it has to show, as the response to that
+    /// post. Deliberately not TempData - the post does not redirect, so feedback left there would surface on
+    /// whichever page the member loaded next.
+    /// </summary>
+    protected IActionResult FeedbackResponse(ServiceResult result)
+        => FeedbackResponse(FeedbackViewModel.FromResult(result));
+
+    /// <inheritdoc cref="FeedbackResponse(ServiceResult)"/>
+    protected IActionResult FeedbackResponse(ServiceResult result, string successMessage)
+        => FeedbackResponse(FeedbackViewModel.FromResult(result, successMessage));
+
+    /// <inheritdoc cref="FeedbackResponse(ServiceResult)"/>
+    protected IActionResult FeedbackResponse(IReadOnlyCollection<FeedbackViewModel> viewModels)
+        => Ok(new FeedbackResponseViewModel
+        {
+            Feedback = viewModels
+        });
 
     protected string? GetHeader(string name)
         => Request.Headers
