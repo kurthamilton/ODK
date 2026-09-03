@@ -13,6 +13,12 @@ public class PaymentReconciliationItemViewModel
     /// </summary>
     public required string? ChapterName { get; init; }
 
+    /// <summary>
+    /// What the last reconcile could not do. Null where none has failed, which is every payment simply
+    /// waiting its turn.
+    /// </summary>
+    public required string? FailureReason { get; init; }
+
     public required Payment Payment { get; init; }
 
     public required PaymentReconciliationType Pending { get; init; }

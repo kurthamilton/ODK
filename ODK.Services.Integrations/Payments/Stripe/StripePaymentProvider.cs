@@ -23,10 +23,22 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
        stays one page of a single group's transfers. */
     private static readonly TimeSpan TransferSearchWindow = TimeSpan.FromDays(7);
 
-    private readonly IStripeClient _client;
     private readonly ILoggingService _loggingService;
     private readonly IPlatformProvider _platformProvider;
     private readonly StripePaymentProviderSettings _settings;
+    private readonly Lazy<AccountLinkService> _stripeAccountLinkService;
+    private readonly Lazy<AccountService> _stripeAccountService;
+    private readonly Lazy<ChargeService> _stripeChargeService;
+    private readonly Lazy<InvoiceService> _stripeInvoiceService;
+    private readonly Lazy<PaymentIntentService> _stripePaymentIntentService;
+    private readonly Lazy<PriceService> _stripePriceService;
+    private readonly Lazy<ProductService> _stripeProductService;
+    private readonly Lazy<RefundService> _stripeRefundService;
+    private readonly Lazy<SessionService> _stripeSessionService;
+    private readonly Lazy<SubscriptionService> _stripeSubscriptionService;
+    private readonly Lazy<TransferReversalService> _stripeTransferReversalService;
+    private readonly Lazy<TransferService> _stripeTransferService;
+    private readonly Lazy<WebhookEndpointService> _stripeWebhookEndpointService;
 
     public StripePaymentProvider(
         ILoggingService loggingService,
@@ -34,13 +46,27 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
         IPlatformProvider platformProvider,
         PlatformType platform)
     {
-        _client = new StripeClient(new StripeClientOptions
+        var client = new StripeClient(new StripeClientOptions
         {
             ApiKey = settings.Platforms[platform].SecretApiKey
         });
         _loggingService = loggingService;
         _platformProvider = platformProvider;
         _settings = settings;
+
+        _stripeAccountLinkService = new(() => new AccountLinkService(client));
+        _stripeAccountService = new(() => new AccountService(client));
+        _stripeChargeService = new(() => new ChargeService(client));
+        _stripeInvoiceService = new(() => new InvoiceService(client));
+        _stripePaymentIntentService = new(() => new PaymentIntentService(client));
+        _stripePriceService = new(() => new PriceService(client));
+        _stripeProductService = new(() => new ProductService(client));
+        _stripeRefundService = new(() => new RefundService(client));
+        _stripeSessionService = new(() => new SessionService(client));
+        _stripeSubscriptionService = new(() => new SubscriptionService(client));
+        _stripeTransferReversalService = new(() => new TransferReversalService(client));
+        _stripeTransferService = new(() => new TransferService(client));
+        _stripeWebhookEndpointService = new(() => new WebhookEndpointService(client));
     }
 
     public decimal CommissionPercentage => _settings.ConnectedAccountCommissionPercentage;
@@ -51,7 +77,7 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
 
     public async Task<ServiceResult> ActivateSubscriptionPlan(string externalId)
     {
-        var service = CreatePriceService();
+        var service = _stripePriceService.Value;
 
         await service.UpdateAsync(externalId, new PriceUpdateOptions
         {
@@ -65,7 +91,7 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
     {
         await _loggingService.Info($"Cancelling Stripe subscription '{externalId}'");
 
-        var service = CreateSubscriptionService();
+        var service = _stripeSubscriptionService.Value;
 
         try
         {
@@ -85,7 +111,7 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
 
         await _loggingService.Info($"Creating connected stripe account for '{emailAddress}'");
 
-        var service = CreateAccountService();
+        var service = _stripeAccountService.Value;
 
         try
         {
@@ -139,7 +165,7 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
 
     public async Task<string?> CreateSubscriptionPlan(ExternalSubscriptionPlan subscriptionPlan)
     {
-        var service = CreatePriceService();
+        var service = _stripePriceService.Value;
 
         var options = new PriceCreateOptions
         {
@@ -172,7 +198,7 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
 
     public async Task<CreateTransferResult> CreateTransfer(ExternalTransfer transfer)
     {
-        var service = CreateTransferService();
+        var service = _stripeTransferService.Value;
 
         try
         {
@@ -209,7 +235,7 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
 
     public async Task<ServiceResult> DeactivateSubscriptionPlan(string externalId)
     {
-        var service = CreatePriceService();
+        var service = _stripePriceService.Value;
 
         await service.UpdateAsync(externalId, new PriceUpdateOptions
         {
@@ -222,7 +248,7 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
     public async Task<string?> FindTransferIdForCharge(
         string externalChargeId, string connectedAccountId, DateTime chargedUtc)
     {
-        var service = CreateTransferService();
+        var service = _stripeTransferService.Value;
 
         try
         {
@@ -260,7 +286,7 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
     {
         await _loggingService.Info($"Refreshing connected stripe account for Stripe account '{options.Id}'");
 
-        var service = CreateAccountLinkService();
+        var service = _stripeAccountLinkService.Value;
 
         try
         {
@@ -281,9 +307,48 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
         }
     }
 
+    public async Task<ExternalCharge?> GetCharge(string externalChargeId)
+    {
+        Charge charge;
+
+        try
+        {
+            charge = await _stripeChargeService.Value.GetAsync(externalChargeId);
+        }
+        catch (Exception ex)
+        {
+            await _loggingService.Error($"Error fetching Stripe charge '{externalChargeId}'", ex);
+            return null;
+        }
+
+        var refunds = new List<ExternalRefund>();
+
+        // Only asked for where there is something to find: an unrefunded charge lists nothing.
+        if (charge.AmountRefunded > 0)
+        {
+            var options = new RefundListOptions
+            {
+                Charge = charge.Id
+            };
+
+            await foreach (var refund in _stripeRefundService.Value.ListAutoPagingAsync(options))
+            {
+                refunds.Add(ToExternalRefund(refund));
+            }
+        }
+
+        return new ExternalCharge
+        {
+            Amount = FromStripeAmount(charge.Amount),
+            Commission = FromStripeAmount(charge.ApplicationFeeAmount),
+            ExternalId = charge.Id,
+            Refunds = refunds
+        };
+    }
+
     public async Task<ExternalCheckoutSession?> GetCheckoutSession(string externalId)
     {
-        var service = CreateSessionService();
+        var service = _stripeSessionService.Value;
 
         try
         {
@@ -324,7 +389,7 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
 
     public async Task<RemoteAccount?> GetConnectedAccount(string externalId)
     {
-        var service = CreateAccountService();
+        var service = _stripeAccountService.Value;
 
         var account = await service.GetAsync(externalId);
 
@@ -367,7 +432,7 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
             return null;
         }
 
-        var service = CreateInvoiceService();
+        var service = _stripeInvoiceService.Value;
 
         try
         {
@@ -410,7 +475,7 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
 
     public async Task<string?> GetInvoicePaymentId(string externalInvoiceId)
     {
-        var service = CreateInvoiceService();
+        var service = _stripeInvoiceService.Value;
 
         try
         {
@@ -449,7 +514,7 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
 
     public async Task<ExternalPaymentSettlement?> GetPaymentSettlement(string externalPaymentId)
     {
-        var service = CreatePaymentIntentService();
+        var service = _stripePaymentIntentService.Value;
 
         try
         {
@@ -492,7 +557,7 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
             return null;
         }
 
-        var service = CreateSubscriptionService();
+        var service = _stripeSubscriptionService.Value;
 
         try
         {
@@ -508,7 +573,7 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
 
     public async Task<ExternalSubscriptionPlan?> GetSubscriptionPlan(string externalId)
     {
-        var service = CreatePriceService();
+        var service = _stripePriceService.Value;
 
         try
         {
@@ -548,7 +613,7 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
 
     public async Task<IReadOnlyCollection<StripeWebhookEndpoint>> ListWebhooks()
     {
-        var service = CreateWebhookEndpointService();
+        var service = _stripeWebhookEndpointService.Value;
 
         var endpoints = new List<StripeWebhookEndpoint>();
 
@@ -572,6 +637,52 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
         return endpoints;
     }
 
+    public async Task<ExternalRefund?> RefundCharge(
+        string externalChargeId, decimal amount)
+    {
+        try
+        {
+            var refund = await _stripeRefundService.Value.CreateAsync(new RefundCreateOptions
+            {
+                Amount = ToStripeAmount(amount),
+                Charge = externalChargeId
+            });
+
+            return ToExternalRefund(refund);
+        }
+        catch (Exception ex)
+        {
+            await _loggingService.Error($"Error refunding Stripe charge '{externalChargeId}'", ex);
+            return null;
+        }
+    }
+
+    public async Task<ExternalTransferReversal?> ReverseTransfer(string externalTransferId, decimal amount)
+    {
+        try
+        {
+            var reversal = await _stripeTransferReversalService.Value.CreateAsync(
+                externalTransferId,
+                new TransferReversalCreateOptions
+                {
+                    Amount = ToStripeAmount(amount)
+                });
+
+            return new ExternalTransferReversal
+            {
+                Amount = FromStripeAmount(reversal.Amount),
+                CreatedUtc = reversal.Created,
+                CurrencyCode = reversal.Currency,
+                ExternalId = reversal.Id
+            };
+        }
+        catch (Exception ex)
+        {
+            await _loggingService.Error($"Error reversing Stripe transfer '{externalTransferId}'", ex);
+            return null;
+        }
+    }
+
     public async Task<ExternalCheckoutSession> StartCheckout(
         IServiceRequest request,
         string emailAddress,
@@ -586,7 +697,7 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
 
         var metadataDictionary = new Dictionary<string, string>(metadata.ToDictionary());
 
-        var service = CreateSessionService();
+        var service = _stripeSessionService.Value;
 
         var stripeAmount = ToStripeAmount(subscriptionPlan.Amount);
 
@@ -730,6 +841,27 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
 
     private static decimal FromStripeAmount(long? stripeAmount) => (stripeAmount ?? 0) / 100m;
 
+    private static ExternalRefund ToExternalRefund(Refund refund) => new()
+    {
+        Amount = FromStripeAmount(refund.Amount),
+        CreatedUtc = refund.Created,
+        CurrencyCode = refund.Currency,
+        ExternalId = refund.Id,
+        Status = ToRefundStatus(refund.Status)
+    };
+
+    /* Stripe's requires_action reads as pending: the refund exists and has not moved, which is what a
+       pending refund means here, and the action it wants is taken in Stripe's own dashboard. Anything
+       unrecognised is pending too, so a status we have not seen leaves the refund open to be read again
+       rather than declared finished. */
+    private static PaymentRefundStatusType ToRefundStatus(string status) => status switch
+    {
+        "succeeded" => PaymentRefundStatusType.Refunded,
+        "failed" => PaymentRefundStatusType.Failed,
+        "canceled" => PaymentRefundStatusType.Cancelled,
+        _ => PaymentRefundStatusType.Pending
+    };
+
     private static long ToStripeAmount(decimal amount) => (long)Math.Round(amount * 100m, MidpointRounding.AwayFromZero);
 
     private string? CleanConnectedAccountUrl(PlatformType platform, string url)
@@ -747,19 +879,9 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
             : null;
     }
 
-    private AccountLinkService CreateAccountLinkService() => new(_client);
-
-    private AccountService CreateAccountService() => new(_client);
-
-    private InvoiceService CreateInvoiceService() => new(_client);
-
-    private PaymentIntentService CreatePaymentIntentService() => new(_client);
-
-    private PriceService CreatePriceService() => new(_client);
-
     private async Task<string> CreateProduct(string name)
     {
-        var service = CreateProductService();
+        var service = _stripeProductService.Value;
         var result = await service.SearchAsync(new ProductSearchOptions
         {
             Query = $"name:\"{name}\""
@@ -781,19 +903,9 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
         return product.Id;
     }
 
-    private ProductService CreateProductService() => new(_client);
-
-    private SessionService CreateSessionService() => new(_client);
-
-    private SubscriptionService CreateSubscriptionService() => new(_client);
-
-    private TransferService CreateTransferService() => new(_client);
-
-    private WebhookEndpointService CreateWebhookEndpointService() => new(_client);
-
     private async Task<string> GetOrCreateProduct(string name)
     {
-        var service = CreateProductService();
+        var service = _stripeProductService.Value;
         var products = await service.ListAsync();
         var existing = products
             .FirstOrDefault(x => string.Equals(name, x.Name, StringComparison.OrdinalIgnoreCase))

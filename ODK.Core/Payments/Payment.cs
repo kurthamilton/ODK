@@ -3,6 +3,14 @@ using ODK.Core.Platforms;
 
 namespace ODK.Core.Payments;
 
+/// <summary>
+/// What a member was asked to pay, and the provider's charge that answered it.
+/// </summary>
+/// <remarks>
+/// What became of the money afterwards is not here: the group's share is a
+/// <see cref="PaymentTransfer"/>, what was given back is a <see cref="PaymentRefund"/>, and how far the
+/// reconciliation job has got with it is a <see cref="PaymentReconciliation"/>.
+/// </remarks>
 public class Payment : IDatabaseEntity
 {
     public Payment()
@@ -14,21 +22,6 @@ public class Payment : IDatabaseEntity
     /// read back from the provider, and permanently null for a payment taken before that was recorded.
     /// </summary>
     public decimal? ActualAmount { get; set; }
-
-    /// <summary>
-    /// What we kept, in <see cref="Currency"/>: our commission, taken from <see cref="ActualNetAmount"/> so
-    /// that the provider's fee comes off before we take a cut. Null for a payment taken by the site, which
-    /// has no connected account to split with and keeps the net.
-    /// </summary>
-    public decimal? ActualCommissionAmount { get; set; }
-
-    /// <summary>
-    /// What the group's connected account is owed, in <see cref="Currency"/>:
-    /// <see cref="ActualNetAmount"/> less <see cref="ActualCommissionAmount"/>. Null for a payment taken by
-    /// the site. Set when the settlement is read, which is before the money moves - see
-    /// <see cref="TransferredUtc"/>.
-    /// </summary>
-    public decimal? ActualConnectedAccountAmount { get; set; }
 
     /// <summary>
     /// The provider's commission, in <see cref="SettlementCurrencyCode"/>. We bear it, whether or not a
@@ -66,13 +59,6 @@ public class Payment : IDatabaseEntity
 
     public string? ExternalId { get; set; }
 
-    /// <summary>
-    /// The provider's transfer that moved <see cref="ActualConnectedAccountAmount"/> to the group. Kept
-    /// because reversing a transfer names it, so a payment without it cannot be refunded from the group's
-    /// share. Null for a site payment, and for a group payment not yet transferred.
-    /// </summary>
-    public string? ExternalTransferId { get; set; }
-
     public Guid Id { get; set; }
 
     public Guid MemberId { get; set; }
@@ -82,26 +68,6 @@ public class Payment : IDatabaseEntity
     public PaymentProviderType PaymentProvider { get; set; }
 
     public PlatformType Platform { get; set; }
-
-    /// <summary>
-    /// When the last reconcile gave up on the payment. Null while none has, and cleared by one that
-    /// succeeds.
-    /// </summary>
-    public DateTime? ReconciliationFailedUtc { get; set; }
-
-    /// <summary>
-    /// What the last reconcile could not do. Recorded rather than only logged, so the reason a payment is
-    /// still listed is visible beside it rather than in the error log.
-    /// </summary>
-    public string? ReconciliationFailureReason { get; set; }
-
-    /// <summary>
-    /// When a site admin told reconciliation to ignore the payment, because nothing the provider can be
-    /// asked will ever answer for it - a charge taken through an account no longer configured, or one
-    /// restored into a database whose provider keys reach a different account. An ignored payment is
-    /// skipped by the job as well as hidden from the page, so a directly queued read respects it too.
-    /// </summary>
-    public DateTime? ReconciliationIgnoredUtc { get; set; }
 
     public string Reference { get; set; } = string.Empty;
 
@@ -113,23 +79,21 @@ public class Payment : IDatabaseEntity
     public string? SettlementCurrencyCode { get; set; }
 
     /// <summary>
-    /// The part of <see cref="ActualConnectedAccountAmount"/> that was not sent, because it was applied
-    /// against what the group already owed. Null where nothing was withheld, which is every payment taken
-    /// before this was recorded and every payment for a group carrying no debt.
+    /// What is still to be given back: what the charge actually took, less what the payment's live refunds
+    /// have already claimed. Null where the settlement has never been read, so nothing says what the
+    /// charge took and there is nothing to measure a refund against.
     /// </summary>
     /// <remarks>
-    /// <c>ActualConnectedAccountAmount = TransferWithheldAmount + what was transferred</c>. Written once,
-    /// with <see cref="TransferredUtc"/>, and never adjusted after - so the pair states what was owed and
-    /// what became of it, which one mutating figure could not. Derivable from the recovery rows and
-    /// denormalised anyway, as the settlement figures are: the rows are the record, this is what a reader
-    /// and a query see.
+    /// How much is left, not whether a refund can be made - refunding through the provider also needs a
+    /// charge to refund against, which a payment settled before charge ids were recorded does not name.
+    /// A refund of one of those can still be written down.
     /// </remarks>
-    public decimal? TransferWithheldAmount { get; set; }
-
-    /// <summary>
-    /// When <see cref="ActualConnectedAccountAmount"/> actually reached the group. Null while it has not:
-    /// a payment with a <see cref="ChapterId"/> and a settlement but no date here is money we still owe,
-    /// whether the transfer is pending or has failed for good.
-    /// </summary>
-    public DateTime? TransferredUtc { get; set; }
+    /// <param name="refunds">
+    /// Every refund of this payment. Which of them count is this method's to decide, so a caller cannot
+    /// measure against a different set than the next one does.
+    /// </param>
+    public decimal? RefundableAmount(IEnumerable<PaymentRefund> refunds)
+        => ActualAmount != null
+            ? ActualAmount.Value - refunds.Where(x => x.IsLive).Sum(x => x.ActualAmount ?? x.Amount)
+            : null;
 }

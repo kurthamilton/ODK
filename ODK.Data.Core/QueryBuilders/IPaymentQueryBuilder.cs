@@ -54,11 +54,30 @@ public interface IPaymentQueryBuilder : IDatabaseEntityQueryBuilder<Payment, IPa
     IPaymentQueryBuilder WithUnrecordedTransfer();
 
     /// <summary>
+    /// Payments carrying a refund the provider took and has not said the outcome of, so what became of the
+    /// member's money is unknown to us.
+    /// </summary>
+    IPaymentQueryBuilder WithUnconfirmedRefund();
+
+    /// <summary>
     /// Payments whose settlement has never been read back from the payment provider.
     /// </summary>
     IPaymentQueryBuilder WithoutSettlement();
 
     IQueryBuilder<PaymentChapterDto> WithChapter();
 
+    /// <summary>
+    /// Each payment with everything recorded against it, in one read. For a caller that needs the whole
+    /// picture of a payment - what a refund can be checked against, and what there is to reverse - rather
+    /// than one that needs a column or two of it.
+    /// </summary>
+    IQueryBuilder<PaymentDetailsDto> WithDetails();
+
     IQueryBuilder<PaymentMemberDto> WithMember();
+
+    /// <summary>
+    /// Each payment with what the reconciliation job has to say about it, where it has anything to say -
+    /// a payment no reconcile has stumbled on carries none.
+    /// </summary>
+    IQueryBuilder<PaymentReconciliationDto> WithReconciliation();
 }

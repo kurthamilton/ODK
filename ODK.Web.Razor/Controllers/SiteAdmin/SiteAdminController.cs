@@ -154,27 +154,6 @@ public class SiteAdminController : OdkControllerBase
         return Redirect(OdkRoutes.SiteAdmin.PaymentReconciliation.Path);
     }
 
-    [HttpPost("siteadmin/payments/refunds")]
-    public async Task<IActionResult> RecordPaymentRefund(
-        [FromForm] RecordPaymentRefundFormSubmitViewModel viewModel)
-    {
-        var result = await _paymentAdminService.RecordPaymentRefund(
-            MemberServiceRequest,
-            new RecordPaymentRefundModel
-            {
-                Amount = viewModel.Amount,
-                ExternalId = viewModel.ExternalId,
-                ExternalReversalId = viewModel.ExternalReversalId,
-                FeeReturnedAmount = viewModel.FeeReturnedAmount,
-                PaymentReference = viewModel.PaymentReference,
-                Reason = viewModel.Reason,
-                ReversedAmount = viewModel.ReversedAmount
-            });
-
-        AddFeedback(result);
-        return Redirect(OdkRoutes.SiteAdmin.PaymentRefunds.Path);
-    }
-
     [HttpPost("siteadmin/payments/reconcile")]
     public async Task<IActionResult> ReconcilePayments(
         [FromForm] PaymentReconciliationFormSubmitViewModel viewModel)
@@ -184,6 +163,23 @@ public class SiteAdminController : OdkControllerBase
 
         AddFeedback(result);
         return Redirect(OdkRoutes.SiteAdmin.PaymentReconciliation.Path);
+    }
+
+    [HttpPost("siteadmin/payments/{id}/refund")]
+    public async Task<IActionResult> RefundPayment(
+        [FromForm] RefundPaymentFormSubmitViewModel viewModel, Guid id)
+    {
+        var result = await _paymentAdminService.RefundPayment(
+            MemberServiceRequest,
+            id,
+            new RefundPaymentModel
+            {
+                Amount = viewModel.Amount,
+                Reason = viewModel.Reason
+            });
+
+        AddFeedback(result);
+        return RedirectToReferrer();
     }
 
     [HttpPost("siteadmin/subscriptions")]

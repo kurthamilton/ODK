@@ -115,12 +115,12 @@ public class ChapterSubscriptionPurchaseTests : DefaultPageTest
 
         // Assert
         transfer.Should().NotBeNull("the settlement job should read the charge and transfer the group's share");
-        transfer!.TransferredUtc.Should().NotBeNull();
-        transfer.ConnectedAccountAmount.Should()
+        transfer!.CompletedUtc.Should().NotBeNull();
+        transfer.Amount.Should()
             .BeGreaterThan(SeededDebt, "the seeded debt has to be smaller than the share for this to be the reduced-transfer case");
 
-        // The payment states what was kept back, which is the only account of a transfer smaller than the
-        // share beside it.
+        // The transfer states what was kept back, which is the only account of one smaller than the share
+        // beside it.
         transfer.WithheldAmount.Should().Be(SeededDebt);
 
         // The debt is settled by exactly what was withheld, and carries the sign its amount does.
@@ -135,12 +135,12 @@ public class ChapterSubscriptionPurchaseTests : DefaultPageTest
         /* And the money actually moved, reduced - read from Stripe rather than inferred from the columns
            above, which are the app agreeing with itself. Amounts are in the currency's minor units; every
            currency these tests run in has two decimal places. */
-        transfer.ExternalTransferId.Should().NotBeNull("a reduced transfer is still a transfer");
+        transfer.ExternalId.Should().NotBeNull("a reduced transfer is still a transfer");
         var stripeTransfer = await new TransferService(
                 new StripeClient(E2ESettings.StripeSecretApiKey(PlatformTypeId)))
-            .GetAsync(transfer.ExternalTransferId);
+            .GetAsync(transfer.ExternalId);
         stripeTransfer.Amount.Should().Be(
-            (long)Math.Round((transfer.ConnectedAccountAmount!.Value - SeededDebt) * 100m));
+            (long)Math.Round((transfer.Amount - SeededDebt) * 100m));
     }
 
     /// <summary>
@@ -201,14 +201,14 @@ public class ChapterSubscriptionPurchaseTests : DefaultPageTest
 
     /* The slowest step in the flow, and the one furthest from the click: the settlement is read on a job
        scheduled for the provider's own settlement delay after the purchase webhook, and the transfer is made
-       from what it read. TransferredUtc is what says the whole of that finished. */
+       from what it read. CompletedUtc is what says the whole of that finished. */
     private static async Task<TestPaymentTransfer?> PollForTransfer(Guid memberId, Guid chapterId)
     {
         var deadline = DateTime.UtcNow.AddSeconds(120);
         while (DateTime.UtcNow < deadline)
         {
             var transfer = await Payments.GetTransfer(memberId, chapterId);
-            if (transfer?.TransferredUtc != null)
+            if (transfer?.CompletedUtc != null)
             {
                 return transfer;
             }

@@ -1,6 +1,7 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Payments;
 using ODK.Core.Subscriptions;
+using ODK.Data.Core.Payments;
 using ODK.Services.Payments.Models;
 using ODK.Services.Tasks;
 
@@ -49,6 +50,14 @@ public interface IPaymentService
 
     Task<PaymentStatusType> GetMemberSitePaymentCheckoutSessionStatus(
         IMemberServiceRequest request, string externalSessionId);
+
+    /// <summary>
+    /// Gives some or all of a payment back to the member, and takes what it can of that back off the
+    /// group. Takes the payment's whole picture rather than the row: what is left to refund and what is
+    /// left to reverse are both questions about rows the payment does not carry.
+    /// </summary>
+    Task<ServiceResult> RefundPayment(
+        IMemberServiceRequest request, PaymentDetailsDto payment, RefundPaymentModel model);
 
     /// <summary>
     /// Reconciles one payment now and reports what happened, for a caller waiting on the answer rather than

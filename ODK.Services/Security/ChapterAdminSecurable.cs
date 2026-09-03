@@ -24,6 +24,7 @@ public enum ChapterAdminSecurable
     MembershipSettings,
     Pages,
     PaymentAccount,
+    PaymentRefunds,
     Payments,
     PaymentSettings,
     PrivacySettings,

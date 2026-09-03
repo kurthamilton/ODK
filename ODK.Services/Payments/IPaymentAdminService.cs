@@ -11,13 +11,6 @@ public interface IPaymentAdminService
     Task<PaymentReconciliationViewModel> GetPaymentReconciliationViewModel(IMemberServiceRequest request);
 
     /// <summary>
-    /// What to record against <paramref name="paymentId"/>, filled in from the payment where one is named
-    /// and blank where it is not.
-    /// </summary>
-    Task<PaymentRefundCreateViewModel> GetPaymentRefundCreateViewModel(
-        IMemberServiceRequest request, Guid? paymentId);
-
-    /// <summary>
     /// The refunds recorded against this platform's payments, and what each left the group owing.
     /// </summary>
     Task<PaymentRefundsViewModel> GetPaymentRefundsViewModel(IMemberServiceRequest request);
@@ -54,12 +47,7 @@ public interface IPaymentAdminService
     Task<ServiceResult> ReconcilePayments(
         IMemberServiceRequest request, IReadOnlyCollection<Guid> paymentIds);
 
-    /// <summary>
-    /// Writes down a refund already made through the payment provider. It makes no refund and moves no
-    /// money: what it does is stop a refund performed in the provider's dashboard being invisible here,
-    /// and record what the group is left owing.
-    /// </summary>
-    Task<ServiceResult> RecordPaymentRefund(IMemberServiceRequest request, RecordPaymentRefundModel model);
+    Task<ServiceResult> RefundPayment(IMemberServiceRequest request, Guid paymentId, RefundPaymentModel model);
 
     /// <summary>
     /// Undoes <see cref="IgnorePayment(IMemberServiceRequest, Guid)"/>.

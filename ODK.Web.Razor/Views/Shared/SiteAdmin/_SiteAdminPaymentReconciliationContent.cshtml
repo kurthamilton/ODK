@@ -28,6 +28,11 @@
             "Transfer record",
             "Records the transfer that already sent the group its share, so a refund has something to reverse. Nothing is sent.",
             "Record the transfer - no money is sent",
+            IconType.Database),
+        (PaymentReconciliationType.RefundRecord,
+            "Refund outcome",
+            "Records what became of a refund the provider took and has not confirmed. Nothing is refunded - that happened when the refund was made, or it never will.",
+            "Record what became of the refund - no money is sent",
             IconType.Database)
     };
 
@@ -124,7 +129,7 @@
                                         </td>
                                         <td>@payment.Reference</td>
                                         <td>@payment.Currency.ToAmountString(payment.Amount)</td>
-                                        <td class="text-danger">@payment.ReconciliationFailureReason</td>
+                                        <td class="text-danger">@item.FailureReason</td>
                                         <td class="text-nowrap">
                                             <form method="post" action="/siteadmin/payments/@payment.Id/reconcile" class="d-inline">
                                                 @Html.AntiForgeryToken()
@@ -197,7 +202,7 @@
                                             @await Html.PartialAsync("Components/_Icon", new IconViewModel(kind.Icon))
                                             <span>@kind.Title</span>
                                         </td>
-                                        <td class="text-muted">@payment.ReconciliationFailureReason</td>
+                                        <td class="text-muted">@item.FailureReason</td>
                                         <td>
                                             <form method="post" action="/siteadmin/payments/@payment.Id/reconcile/unignore">
                                                 @Html.AntiForgeryToken()

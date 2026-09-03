@@ -10,7 +10,7 @@ public interface IPaymentRefundQueryBuilder : IDatabaseEntityQueryBuilder<Paymen
 
     /// <summary>
     /// Refunds that have reduced what the member paid, or are expected to: everything but the ones that
-    /// were declined or that the provider failed. What a payment's remaining refundable amount is measured
+    /// were cancelled or that the provider failed. What a payment's remaining refundable amount is measured
     /// against.
     /// </summary>
     IPaymentRefundQueryBuilder Live();

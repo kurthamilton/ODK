@@ -5,6 +5,7 @@ using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
+using ODK.Data.Core.Payments;
 using ODK.Services.Events;
 using ODK.Services.Exceptions;
 using ODK.Services.Logging;
@@ -356,6 +357,95 @@ public class PaymentService : IPaymentService
     public async Task ProcessWebhookJob(JobRequest request, PaymentProviderWebhook webhook)
         => await ProcessWebhook(await _serviceRequestFactory.Create(request), webhook);
 
+    /* Three steps, in an order a crash between any two of them survives. The provider is asked to refund
+       the member first, because that is the promise being made; the refund is recorded before the group's
+       transfer is reversed, so money taken back off a group is always money a recorded refund asked for;
+       and what the reversal could not cover is left on the group's ledger. */
+    public async Task<ServiceResult> RefundPayment(
+        IMemberServiceRequest request, PaymentDetailsDto details, RefundPaymentModel model)
+    {
+        var payment = details.Payment;
+
+        var refundable = details.RefundableAmount;
+
+        if (refundable == null)
+        {
+            return ServiceResult.Failure("Reconcile this payment before refunding it");
+        }
+
+        if (string.IsNullOrEmpty(payment.ExternalChargeId))
+        {
+            return ServiceResult.Failure("This payment names no charge to refund");
+        }
+
+        var amount = model.Amount ?? refundable.Value;
+
+        if (amount <= 0)
+        {
+            return ServiceResult.Failure("Enter the amount to refund");
+        }
+
+        if (amount > refundable)
+        {
+            return ServiceResult.Failure(
+                "That would refund more than the payment has left: " +
+                $"{payment.ActualAmount} taken, {refundable} still refundable");
+        }
+
+        /* Enforced here rather than only on the form: the reason is the whole of the audit trail for money
+           leaving a group's account, and nothing else stands between a posted form and the provider. */
+        if (string.IsNullOrWhiteSpace(model.Reason))
+        {
+            return ServiceResult.Failure("Enter why the payment is being refunded");
+        }
+
+        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
+            payment.PaymentProvider, payment.Platform);
+
+        var externalRefund = await paymentProvider.RefundCharge(payment.ExternalChargeId!, amount);
+
+        if (externalRefund == null)
+        {
+            return ServiceResult.Failure($"{paymentProvider.Type} would not take the refund");
+        }
+
+        /* The group covers what the refund costs us, so the whole of it is the group's to bear. Null for a
+           site payment: there is no group to recover it from. */
+        var chapterAmount = payment.ChapterId != null ? amount : (decimal?)null;
+
+        var utcNow = DateTime.UtcNow;
+
+        var refund = _unitOfWork.PaymentRefundRepository.Add(new PaymentRefund
+        {
+            ActualAmount = externalRefund.Amount,
+            Amount = amount,
+            ChapterAmount = chapterAmount,
+            ExternalId = externalRefund.ExternalId,
+            PaymentId = payment.Id,
+            Reason = model.Reason,
+            RefundedUtc = externalRefund.Status == PaymentRefundStatusType.Refunded ? utcNow : null,
+            RequestedByMemberId = request.CurrentMember.Id,
+            RequestedUtc = utcNow,
+            Status = externalRefund.Status
+        });
+
+        await _unitOfWork.SaveChanges();
+
+        var reversed = await ReverseTransfer(details, refund, paymentProvider, chapterAmount ?? 0);
+
+        var outstanding = (chapterAmount ?? 0) - reversed;
+
+        if (payment.ChapterId != null && outstanding > 0)
+        {
+            RecordRefundShortfall(payment, refund, outstanding, utcNow);
+        }
+
+        await _unitOfWork.SaveChanges();
+
+        return ServiceResult.Successful(outstanding > 0
+            ? $"Refund created; the group owes {outstanding:0.00}"
+            : "Refund created");
+    }
     public async Task<ResolvePaymentSettlementResult> ResolvePaymentSettlement(Guid paymentId)
     {
         try
@@ -370,8 +460,11 @@ public class PaymentService : IPaymentService
             /* The job lets this bubble so Hangfire retries it. A caller waiting on the answer is told
                instead, and it is recorded so the page states it beside the row - a state that will clear
                itself on the next read is still the reason this one did nothing. */
-            var payment = await _unitOfWork.Run(x => x.PaymentRepository.GetById(paymentId));
-            await RecordReconciliationFailure(payment, ex.Message);
+            var (payment, reconciliation) = await _unitOfWork.Run(
+                x => x.PaymentRepository.GetById(paymentId),
+                x => x.PaymentReconciliationRepository.Query().ForPayment(paymentId).GetSingleOrDefault());
+
+            await RecordReconciliationFailure(payment, reconciliation, ex.Message);
 
             return ResolvePaymentSettlementResult.Failure(ex.Message);
         }
@@ -399,14 +492,6 @@ public class PaymentService : IPaymentService
             ?? throw new OdkServiceException(
                 $"Error starting checkout session: subscription plan '{externalId}' not found");
 
-    /* Cleared by any successful read, so a reason left on the row is always about the state it is in now
-       rather than a failure it has since recovered from. */
-    private static void ClearReconciliationFailure(Payment payment)
-    {
-        payment.ReconciliationFailedUtc = null;
-        payment.ReconciliationFailureReason = null;
-    }
-
     private static string ToTransferIdempotencyKey(Guid paymentId)
         => $"payment-transfer-{paymentId}";
 
@@ -430,6 +515,21 @@ public class PaymentService : IPaymentService
     /* Every kind of payment ends the same way: the provider is asked to start a checkout for a plan, and
        what comes back is recorded against a payment and a session. What differs between them is settled
        before this is called - see PaymentCheckoutModel - so this stays the one place a payment is written. */
+    /* Cleared by any successful read, so a reason left against a payment is always about the state it is
+       in now rather than a failure it has since recovered from. A payment no reconcile has ever complained
+       about has no row and needs no clearing. */
+    private void ClearReconciliationFailure(PaymentReconciliation? reconciliation)
+    {
+        if (reconciliation == null)
+        {
+            return;
+        }
+
+        reconciliation.FailedUtc = null;
+        reconciliation.FailureReason = null;
+        _unitOfWork.PaymentReconciliationRepository.Update(reconciliation);
+    }
+
     private async Task<(Payment Payment, ExternalCheckoutSession Session, string PublicApiKey)> CreatePayment(
         IMemberServiceRequest request, PaymentCheckoutModel checkout)
     {
@@ -547,6 +647,74 @@ public class PaymentService : IPaymentService
         }
 
         return externalSubscription.NextBillingDate;
+    }
+
+    /* What became of the refunds the provider took and did not confirm. Read from the charge rather than
+       one refund at a time: the provider lists a charge's refunds in one call, and a payment's are all on
+       the one charge.
+
+       A refund the charge no longer names is left alone. That is not an outcome - it is the provider
+       answering about a charge that is not the one the refund was made against - and writing a terminal
+       status off it would say the member was paid when nothing here knows that. */
+    private async Task ConfirmRefunds(
+        Payment payment,
+        IReadOnlyCollection<PaymentRefund> refunds,
+        IPaymentProvider paymentProvider)
+    {
+        if (refunds.Count == 0 || string.IsNullOrEmpty(payment.ExternalChargeId))
+        {
+            return;
+        }
+
+        var charge = await paymentProvider.GetCharge(payment.ExternalChargeId);
+
+        if (charge == null)
+        {
+            return;
+        }
+
+        var externalRefunds = charge.Refunds.ToDictionary(x => x.ExternalId);
+        var utcNow = DateTime.UtcNow;
+        var confirmed = false;
+
+        foreach (var refund in refunds)
+        {
+            if (refund.ExternalId == null ||
+                !externalRefunds.TryGetValue(refund.ExternalId, out var externalRefund) ||
+                externalRefund.Status == PaymentRefundStatusType.Pending)
+            {
+                continue;
+            }
+
+            refund.ActualAmount = externalRefund.Amount;
+            refund.Status = externalRefund.Status;
+
+            // Only a refund that succeeded took the money; a failed one returned it to our balance.
+            refund.RefundedUtc = externalRefund.Status == PaymentRefundStatusType.Refunded ? utcNow : null;
+
+            _unitOfWork.PaymentRefundRepository.Update(refund);
+            confirmed = true;
+        }
+
+        if (confirmed)
+        {
+            await _unitOfWork.SaveChanges();
+        }
+    }
+
+    private PaymentReconciliation GetOrAddReconciliation(
+        Payment payment, PaymentReconciliation? reconciliation)
+    {
+        if (reconciliation != null)
+        {
+            _unitOfWork.PaymentReconciliationRepository.Update(reconciliation);
+            return reconciliation;
+        }
+
+        return _unitOfWork.PaymentReconciliationRepository.Add(new PaymentReconciliation
+        {
+            PaymentId = payment.Id
+        });
     }
 
     private async Task<PaymentWebhookProcessingResult> ProcessCompletedChapterSubscription(
@@ -1097,8 +1265,12 @@ public class PaymentService : IPaymentService
         return settlement;
     }
 
-    private async Task RecordPaymentSettlement(
+    /* The group's share, recorded as soon as the settlement says what there is to share - which is before
+       any of it moves. Returns the transfer so the caller can go on to move it; null for a payment with no
+       connected account to pay, which is every payment the site took for itself. */
+    private async Task<PaymentTransfer?> RecordPaymentSettlement(
         Payment payment,
+        PaymentReconciliation? reconciliation,
         IPaymentProvider paymentProvider,
         ChapterPaymentAccount? connectedAccount,
         ExternalPaymentSettlement settlement)
@@ -1111,8 +1283,9 @@ public class PaymentService : IPaymentService
         }
 
         var netAmount = settlement.NetAmount.Value;
+        var utcNow = DateTime.UtcNow;
 
-        decimal? connectedAccountAmount;
+        PaymentTransfer? transfer = null;
 
         if (settlement.CollectedCommissionAmount != null)
         {
@@ -1120,9 +1293,17 @@ public class PaymentService : IPaymentService
                happened to it is a matter of record: the group was left with the amount less the commission
                the provider collected, and we were left with the rest of the net. Recomputing it from the
                current rate would state figures that never occurred. */
-            connectedAccountAmount = settlement.Amount - settlement.CollectedCommissionAmount;
-            payment.ExternalTransferId = settlement.TransferId;
-            payment.TransferredUtc = settlement.TransferredUtc;
+            var connectedAccountAmount = settlement.Amount - settlement.CollectedCommissionAmount.Value;
+
+            transfer = _unitOfWork.PaymentTransferRepository.Add(new PaymentTransfer
+            {
+                Amount = connectedAccountAmount,
+                CommissionAmount = netAmount - connectedAccountAmount,
+                CompletedUtc = settlement.TransferredUtc,
+                CreatedUtc = utcNow,
+                ExternalId = settlement.TransferId,
+                PaymentId = payment.Id
+            });
         }
         else if (connectedAccount != null)
         {
@@ -1131,33 +1312,36 @@ public class PaymentService : IPaymentService
                member has chosen a card. */
             var commissionAmount = Math.Round(
                 netAmount * paymentProvider.CommissionPercentage / 100, 2, MidpointRounding.AwayFromZero);
-            connectedAccountAmount = netAmount - commissionAmount;
-        }
-        else
-        {
-            connectedAccountAmount = null;
+
+            transfer = _unitOfWork.PaymentTransferRepository.Add(new PaymentTransfer
+            {
+                Amount = netAmount - commissionAmount,
+                CommissionAmount = commissionAmount,
+                CreatedUtc = utcNow,
+                PaymentId = payment.Id
+            });
         }
 
         payment.ActualAmount = settlement.Amount;
-        payment.ActualCommissionAmount = connectedAccountAmount != null
-            ? netAmount - connectedAccountAmount
-            : null;
-        payment.ActualConnectedAccountAmount = connectedAccountAmount;
         payment.ActualFeeAmount = settlement.FeeAmount;
         payment.ActualNetAmount = netAmount;
         payment.ExternalChargeId = settlement.ChargeId;
         payment.SettlementCurrencyCode = settlement.SettlementCurrencyCode;
-        ClearReconciliationFailure(payment);
 
         _unitOfWork.PaymentRepository.Update(payment);
+        ClearReconciliationFailure(reconciliation);
         await _unitOfWork.SaveChanges();
+
+        return transfer;
     }
 
-    /* The transfer alone, for a payment settled before the transfer was recorded. Deliberately not
-       RecordPaymentSettlement: that works the commission out from the current rate, which for a charge
-       collected whole would restate a split made at whatever rate applied at the time. */
-    private async Task RecordPaymentTransferId(
+    /* The transfer id alone, for a share that reached the group before the transfer was recorded.
+       Deliberately not RecordPaymentSettlement: that works the commission out from the current rate, which
+       for a charge collected whole would restate a split made at whatever rate applied at the time. */
+    private async Task<PaymentReconciliation?> RecordPaymentTransferId(
         Payment payment,
+        PaymentReconciliation? reconciliation,
+        PaymentTransfer transfer,
         IPaymentProvider paymentProvider,
         ChapterPaymentAccount connectedAccount,
         ExternalPaymentSettlement settlement)
@@ -1172,17 +1356,19 @@ public class PaymentService : IPaymentService
             /* Recorded rather than thrown: a transfer the provider does not know about will not appear on
                a retry, so this is a fact about the data rather than a fault. It leaves the payment
                unrefundable from the group's share, which is what the record is for. */
-            await RecordReconciliationFailure(
+            return await RecordReconciliationFailure(
                 payment,
+                reconciliation,
                 $"No {paymentProvider.Type} transfer to '{connectedAccount.ExternalId}' comes out of " +
                 $"charge '{settlement.ChargeId}'");
-            return;
         }
 
-        payment.ExternalTransferId = transferId;
-        ClearReconciliationFailure(payment);
-        _unitOfWork.PaymentRepository.Update(payment);
+        transfer.ExternalId = transferId;
+        _unitOfWork.PaymentTransferRepository.Update(transfer);
+        ClearReconciliationFailure(reconciliation);
         await _unitOfWork.SaveChanges();
+
+        return reconciliation;
     }
 
     /* Spends what was withheld against the adjustments it was withheld for, in the order given. Each
@@ -1217,29 +1403,51 @@ public class PaymentService : IPaymentService
         }
     }
 
-    /* Kept on the payment as well as logged. The error log answers "what went wrong last night"; this
+    /* Kept against the payment as well as logged. The error log answers "what went wrong last night"; this
        answers "why is this row still here", which is the question the reconciliation page raises and the
-       only one a site admin can act on - by excluding the payment. */
-    private async Task RecordReconciliationFailure(Payment payment, string reason)
+       only one a site admin can act on - by ignoring the payment. */
+    private async Task<PaymentReconciliation> RecordReconciliationFailure(
+        Payment payment, PaymentReconciliation? reconciliation, string reason)
     {
         await _loggingService.Warn($"Not reconciling Payment {payment.Id}: {reason}");
 
-        payment.ReconciliationFailedUtc = DateTime.UtcNow;
-        payment.ReconciliationFailureReason = reason;
+        reconciliation = GetOrAddReconciliation(payment, reconciliation);
+        reconciliation.FailedUtc = DateTime.UtcNow;
+        reconciliation.FailureReason = reason;
 
-        _unitOfWork.PaymentRepository.Update(payment);
         await _unitOfWork.SaveChanges();
+
+        return reconciliation;
     }
+
+    /* What the reversal could not take back. Recorded rather than absorbed, so the sum of a group's
+       adjustments is the answer to what it owes. */
+    private void RecordRefundShortfall(
+        Payment payment, PaymentRefund refund, decimal outstanding, DateTime utcNow)
+        => _unitOfWork.ChapterPaymentAdjustmentRepository.Add(new ChapterPaymentAdjustment
+        {
+            Amount = -outstanding,
+            ChapterId = payment.ChapterId!.Value,
+            CreatedUtc = utcNow,
+            CurrencyId = payment.CurrencyId,
+            Description = $"Refund of payment {payment.Reference}",
+            PaymentRefundId = refund.Id,
+            RecoveredAmount = 0,
+            Type = ChapterPaymentAdjustmentType.RefundShortfall
+        });
 
     private async Task<ResolvePaymentSettlementResult> ResolvePaymentSettlement(
         Guid paymentId, string? externalPaymentId, string? externalInvoiceId)
     {
-        var payment = await _unitOfWork.Run(
-            x => x.PaymentRepository.GetById(paymentId));
+        var (payment, reconciliation, transfer, unconfirmedRefunds) = await _unitOfWork.Run(
+            x => x.PaymentRepository.GetById(paymentId),
+            x => x.PaymentReconciliationRepository.Query().ForPayment(paymentId).GetSingleOrDefault(),
+            x => x.PaymentTransferRepository.Query().ForPayment(paymentId).GetSingleOrDefault(),
+            x => x.PaymentRefundRepository.Query().ForPayment(paymentId).Unconfirmed().GetAll());
 
         /* Checked here rather than only in the query that lists them, so a read queued directly - by id,
            or by a webhook - respects the same ruling. */
-        if (payment.ReconciliationIgnoredUtc != null)
+        if (reconciliation?.IgnoredUtc != null)
         {
             return ResolvePaymentSettlementResult.Failure("Ignored for reconciliation");
         }
@@ -1263,11 +1471,18 @@ public class PaymentService : IPaymentService
 
         /* A payment whose share reached the group before the transfer was recorded names no transfer, so a
            refund of it has nothing to reverse. That is worth reading for on its own, and is the only reason
-           to read a payment already settled: what moved cannot move differently the second time. */
+           to read a payment already settled: what moved cannot move differently the second time.
+
+           Withholding nothing is what separates that from a share kept back against a debt: the second made
+           no transfer, so there is none to find. The same three conditions as
+           IPaymentQueryBuilder.WithUnrecordedTransfer, which is what lists these - the two have to agree, or
+           a payment the page never offers is searched for anyway when the job reaches it by id. */
         var transferUnrecorded =
             connectedAccount != null &&
-            payment.TransferredUtc != null &&
-            payment.ExternalTransferId == null;
+            transfer != null &&
+            transfer.CompletedUtc != null &&
+            transfer.ExternalId == null &&
+            transfer.WithheldAmount == null;
 
         if (payment.ActualAmount == null || transferUnrecorded)
         {
@@ -1286,7 +1501,7 @@ public class PaymentService : IPaymentService
                        will change which account does. A warning rather than an error, because a payment
                        taken through an account no longer configured is a fact about the data, not a fault. */
                     var reason = $"'{payment.ExternalId}' not found in {paymentProvider.Type}";
-                    await RecordReconciliationFailure(payment, reason);
+                    await RecordReconciliationFailure(payment, reconciliation, reason);
                     return ResolvePaymentSettlementResult.Failure(reason);
                 }
             }
@@ -1298,24 +1513,75 @@ public class PaymentService : IPaymentService
 
             if (payment.ActualAmount == null)
             {
-                await RecordPaymentSettlement(payment, paymentProvider, connectedAccount, settlement);
+                transfer = await RecordPaymentSettlement(
+                    payment, reconciliation, paymentProvider, connectedAccount, settlement);
             }
-            else if (connectedAccount != null)
+            else if (connectedAccount != null && transfer != null)
             {
-                await RecordPaymentTransferId(payment, paymentProvider, connectedAccount, settlement);
+                reconciliation = await RecordPaymentTransferId(
+                    payment, reconciliation, transfer, paymentProvider, connectedAccount, settlement);
             }
         }
 
         var transferred =
             connectedAccount != null &&
-            paymentProvider != null &&
-            await TransferConnectedAccountShare(payment, paymentProvider, connectedAccount);
+            transfer != null &&
+            await TransferConnectedAccountShare(payment, transfer, paymentProvider, connectedAccount);
+
+        await ConfirmRefunds(payment, unconfirmedRefunds, paymentProvider);
+
 
         /* Read back rather than assumed: a settlement or transfer id that could not be found records its
            reason and carries on, so the payment can end this method still incomplete. */
-        return payment.ReconciliationFailureReason != null
-            ? ResolvePaymentSettlementResult.Failure(payment.ReconciliationFailureReason)
+        return reconciliation?.FailureReason != null
+            ? ResolvePaymentSettlementResult.Failure(reconciliation.FailureReason)
             : ResolvePaymentSettlementResult.Resolved(transferred);
+    }
+
+    /* Takes back off the group what a refund cost, as far as the transfer can cover it. Returns what
+       actually came back, which is nothing where there was no transfer, where it has already given back
+       all it was sent, or where the provider refused - the group's shortfall in each case. */
+    private async Task<decimal> ReverseTransfer(
+        PaymentDetailsDto details,
+        PaymentRefund refund,
+        IPaymentProvider paymentProvider,
+        decimal amount)
+    {
+        var transfer = details.Transfer;
+
+        if (amount <= 0 || transfer?.ExternalId == null)
+        {
+            return 0;
+        }
+
+        var reversing = Math.Min(amount, details.ReversibleAmount);
+
+        if (reversing <= 0)
+        {
+            return 0;
+        }
+
+        var externalReversal = await paymentProvider.ReverseTransfer(transfer.ExternalId, reversing);
+
+        if (externalReversal == null)
+        {
+            return 0;
+        }
+
+        var utcNow = DateTime.UtcNow;
+
+        _unitOfWork.PaymentTransferReversalRepository.Add(new PaymentTransferReversal
+        {
+            ActualAmount = externalReversal.Amount,
+            Amount = reversing,
+            CompletedUtc = utcNow,
+            CreatedUtc = utcNow,
+            ExternalId = externalReversal.ExternalId,
+            PaymentRefundId = refund.Id,
+            PaymentTransferId = transfer.Id
+        });
+
+        return externalReversal.Amount;
     }
 
     /* The group's share, moved once the settlement says what there is to share - less whatever the group
@@ -1326,9 +1592,12 @@ public class PaymentService : IPaymentService
        Nothing is written until the provider has answered, so a failure part-way leaves neither the transfer
        nor the recoveries recorded and the retry recomputes both from the same state. */
     private async Task<bool> TransferConnectedAccountShare(
-        Payment payment, IPaymentProvider paymentProvider, ChapterPaymentAccount connectedAccount)
+        Payment payment,
+        PaymentTransfer transfer,
+        IPaymentProvider paymentProvider,
+        ChapterPaymentAccount connectedAccount)
     {
-        if (payment.ActualConnectedAccountAmount == null || payment.TransferredUtc != null)
+        if (transfer.CompletedUtc != null)
         {
             return false;
         }
@@ -1344,7 +1613,7 @@ public class PaymentService : IPaymentService
                 $"'{payment.SettlementCurrencyCode}' but is denominated in '{currency.Code}'");
         }
 
-        var share = payment.ActualConnectedAccountAmount.Value;
+        var share = transfer.Amount;
 
         /* Oldest first, so a debt is paid down in the order it was incurred rather than in whatever order
            the rows come back. Only this currency: amounts in different ones cannot be netted. */
@@ -1387,10 +1656,10 @@ public class PaymentService : IPaymentService
 
         RecordAdjustmentRecoveries(payment, outstanding, withheld);
 
-        payment.ExternalTransferId = externalTransferId;
-        payment.TransferWithheldAmount = withheld > 0 ? withheld : null;
-        payment.TransferredUtc = DateTime.UtcNow;
-        _unitOfWork.PaymentRepository.Update(payment);
+        transfer.CompletedUtc = DateTime.UtcNow;
+        transfer.ExternalId = externalTransferId;
+        transfer.WithheldAmount = withheld > 0 ? withheld : null;
+        _unitOfWork.PaymentTransferRepository.Update(transfer);
         await _unitOfWork.SaveChanges();
 
         /* Withholding the whole share discharges the payment without moving anything, so the caller is told

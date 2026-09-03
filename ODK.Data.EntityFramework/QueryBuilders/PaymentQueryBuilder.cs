@@ -58,13 +58,17 @@ public class PaymentQueryBuilder : DatabaseEntityQueryBuilder<Payment, IPaymentQ
 
     public IPaymentQueryBuilder IgnoredForReconciliation()
     {
-        Query = Query.Where(x => x.ReconciliationIgnoredUtc != null);
+        var ignored = IgnoredReconciliations();
+        Query = Query.Where(x => ignored.Any(r => r.PaymentId == x.Id));
         return this;
     }
 
+    /* Not ignored covers the payment that has never been reconciled at all, which has no reconciliation
+       row to read a date off - so this is the absence of an ignoring one rather than a null date. */
     public IPaymentQueryBuilder NotIgnoredForReconciliation()
     {
-        Query = Query.Where(x => x.ReconciliationIgnoredUtc == null);
+        var ignored = IgnoredReconciliations();
+        Query = Query.Where(x => !ignored.Any(r => r.PaymentId == x.Id));
         return this;
     }
 
@@ -79,10 +83,23 @@ public class PaymentQueryBuilder : DatabaseEntityQueryBuilder<Payment, IPaymentQ
         /* Withholding nothing is what separates a payment transferred before ids were recorded from one
            whose share was kept back against a debt: the second made no transfer, so there is none to find
            and nothing for the backfill to do. */
-        Query = Query.Where(x =>
-            x.TransferredUtc != null &&
-            x.ExternalTransferId == null &&
-            x.TransferWithheldAmount == null);
+        var unrecorded = Set<PaymentTransfer>()
+            .Where(x =>
+                x.CompletedUtc != null &&
+                x.ExternalId == null &&
+                x.WithheldAmount == null);
+
+        Query = Query.Where(x => unrecorded.Any(t => t.PaymentId == x.Id));
+        return this;
+    }
+
+    // Mirrors IPaymentRefundQueryBuilder.Unconfirmed, asked of the payments carrying such a refund.
+    public IPaymentQueryBuilder WithUnconfirmedRefund()
+    {
+        var unconfirmed = Set<PaymentRefund>()
+            .Where(x => x.Status == PaymentRefundStatusType.Pending);
+
+        Query = Query.Where(x => unconfirmed.Any(r => r.PaymentId == x.Id));
         return this;
     }
 
@@ -122,6 +139,51 @@ public class PaymentQueryBuilder : DatabaseEntityQueryBuilder<Payment, IPaymentQ
         return ProjectTo(query);
     }
 
+    public IQueryBuilder<PaymentDetailsDto> WithDetails()
+    {
+        var query =
+            from payment in Query
+            from reconciliation in Set<PaymentReconciliation>()
+                .Where(x => x.PaymentId == payment.Id)
+                .DefaultIfEmpty()
+            from transfer in Set<PaymentTransfer>()
+                .Where(x => x.PaymentId == payment.Id)
+                .DefaultIfEmpty()
+            select new PaymentDetailsDto
+            {
+                Payment = payment,
+                Reconciliation = reconciliation,
+                Refunds = Set<PaymentRefund>()
+                    .Where(x => x.PaymentId == payment.Id)
+                    .ToArray(),
+                /* Reached through the transfer rather than through the joined one above, which is null for
+                   a payment that has none - and a null cannot be asked for its id. */
+                Reversals = Set<PaymentTransferReversal>()
+                    .Where(x => Set<PaymentTransfer>()
+                        .Any(t => t.Id == x.PaymentTransferId && t.PaymentId == payment.Id))
+                    .ToArray(),
+                Transfer = transfer
+            };
+
+        return ProjectTo(query);
+    }
+
+    public IQueryBuilder<PaymentReconciliationDto> WithReconciliation()
+    {
+        var query =
+            from payment in Query
+            from reconciliation in Set<PaymentReconciliation>()
+                .Where(x => x.PaymentId == payment.Id)
+                .DefaultIfEmpty()
+            select new PaymentReconciliationDto
+            {
+                Payment = payment,
+                Reconciliation = reconciliation
+            };
+
+        return ProjectTo(query);
+    }
+
     private static IQueryable<Payment> BaseQuery(DbContext context)
     {
         // exclude payments for an expired checkout session by default
@@ -134,4 +196,7 @@ public class PaymentQueryBuilder : DatabaseEntityQueryBuilder<Payment, IPaymentQ
             where paymentCheckoutSession == null || paymentCheckoutSession.ExpiredUtc == null
             select payment;
     }
+
+    private IQueryable<PaymentReconciliation> IgnoredReconciliations()
+        => Set<PaymentReconciliation>().Where(x => x.IgnoredUtc != null);
 }

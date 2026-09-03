@@ -23,4 +23,10 @@ public class PaymentRefundItemViewModel
     public required Payment Payment { get; init; }
 
     public required PaymentRefund Refund { get; init; }
+
+    /// <summary>
+    /// What was taken back off the group by reversing the payment's transfer. Null where nothing was: a
+    /// site payment, one whose share never moved, or a reversal the provider refused.
+    /// </summary>
+    public required decimal? ReversedAmount { get; init; }
 }

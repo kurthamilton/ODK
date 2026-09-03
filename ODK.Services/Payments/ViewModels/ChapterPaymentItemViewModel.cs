@@ -9,6 +9,12 @@ namespace ODK.Services.Payments.ViewModels;
 public class ChapterPaymentItemViewModel
 {
     /// <summary>
+    /// The group's share of the payment, in the payment's currency. Null until the settlement has been
+    /// read, and for a payment taken by the site.
+    /// </summary>
+    public required decimal? ChapterAmount { get; init; }
+
+    /// <summary>
     /// Whether a refund is already on the books - given back, or agreed to and not yet paid. Wider than
     /// <see cref="RefundedAmount"/>, so a refund in flight still counts as one the payment has.
     /// </summary>
@@ -17,6 +23,14 @@ public class ChapterPaymentItemViewModel
     public required Member Member { get; init; }
 
     public required Payment Payment { get; init; }
+
+    /// <summary>
+    /// What can still be given back through the payment provider, in the payment's currency: what the
+    /// payment took, less what its live refunds have already claimed. Null where a refund cannot be made
+    /// at all - the payment has never been settled, or names no charge to refund - and zero where the
+    /// whole of it has been given back.
+    /// </summary>
+    public required decimal? RefundableAmount { get; init; }
 
     /// <summary>
     /// What the provider has confirmed leaving us, in the payment's currency. Null where nothing has -

@@ -1,4 +1,5 @@
-﻿@using ODK.Services.Chapters.ViewModels
+﻿@using System.Globalization
+@using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Razor.Models.Components
 @model GroupsViewModel
 
@@ -25,7 +26,9 @@
     </div>
     <div class="form-group">
         <div class="d-flex flex-nowrap">
-            <input type="number" value="@Model.Distance.Value" name="d" class="form-control form-control-sm form-control-inline-mw-5" />
+            @* Invariant because the value is written straight into the markup: a number input's value
+               is a floating-point literal, and the request's locale would write a comma into it. *@
+            <input type="number" value="@Model.Distance.Value.ToString(CultureInfo.InvariantCulture)" name="d" class="form-control form-control-sm form-control-inline-mw-5" />
             <select name="u" class="form-select form-select-sm w-auto">
                 @foreach (var option in Model.DistanceUnits)
                 {

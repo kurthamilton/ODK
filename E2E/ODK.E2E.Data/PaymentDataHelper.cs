@@ -29,16 +29,18 @@ public class PaymentDataHelper : DataHelperBase
     }
 
     /// <summary>
-    /// What the member's payment to the chapter records about transferring the group's share, or null if no
-    /// payment has been recorded yet. Every value is null until the settlement has been read.
+    /// What the member's payment to the chapter records about transferring the group's share, or null if
+    /// the settlement has not been read yet - the share is not worked out, and no row written, until it
+    /// has.
     /// </summary>
     public async Task<TestPaymentTransfer?> GetTransfer(Guid memberId, Guid chapterId)
     {
         const string sql =
             """
-            SELECT ActualConnectedAccountAmount, ExternalTransferId, TransferWithheldAmount, TransferredUtc
-            FROM Payments
-            WHERE MemberId = @memberId AND ChapterId = @chapterId
+            SELECT t.Amount, t.ExternalId, t.WithheldAmount, t.CompletedUtc
+            FROM PaymentTransfers t
+            INNER JOIN Payments p ON p.Id = t.PaymentId
+            WHERE p.MemberId = @memberId AND p.ChapterId = @chapterId
             """;
 
         await using var builder = Builder(sql)
@@ -46,7 +48,7 @@ public class PaymentDataHelper : DataHelperBase
             .AddParameter("@chapterId", chapterId);
 
         var rows = await builder.ReadMany(reader => new TestPaymentTransfer(
-            reader.IsDBNull(0) ? null : reader.GetDecimal(0),
+            reader.GetDecimal(0),
             reader.IsDBNull(1) ? null : reader.GetString(1),
             reader.IsDBNull(2) ? null : reader.GetDecimal(2),
             reader.IsDBNull(3) ? null : reader.GetDateTime(3)));
