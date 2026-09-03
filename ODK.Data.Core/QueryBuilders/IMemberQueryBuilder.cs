@@ -28,6 +28,12 @@ public interface IMemberQueryBuilder : IDatabaseEntityQueryBuilder<Member, IMemb
 
     IMemberQueryBuilder Latest(int pageSize);
 
+    /// <summary>
+    /// Members whose name or email address contains <paramref name="search"/>. Deliberately broad: it
+    /// backs a site admin looking someone up by whichever of those they happen to know.
+    /// </summary>
+    IMemberQueryBuilder Search(string search);
+
     IQueryBuilder<MemberWithAvatarDto> WithAvatar();
 
     /// <summary>

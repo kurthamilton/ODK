@@ -80,6 +80,16 @@ public class MemberQueryBuilder : DatabaseEntityQueryBuilder<Member, IMemberQuer
         return this;
     }
 
+    public IMemberQueryBuilder Search(string search)
+    {
+        Query = Query.Where(x =>
+            x.EmailAddress.Contains(search) ||
+            x.FirstName.Contains(search) ||
+            x.LastName.Contains(search) ||
+            (x.FirstName + " " + x.LastName).Contains(search));
+        return this;
+    }
+
     public IQueryBuilder<MemberWithAvatarDto> WithAvatar()
     {
         var query =

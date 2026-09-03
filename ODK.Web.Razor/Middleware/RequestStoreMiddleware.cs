@@ -29,7 +29,7 @@ public class RequestStoreMiddleware
 
         var requestContext = HttpRequestContext.Create(context.Request);
         var currentMemberIdOrDefault = context.User.MemberIdOrDefault();
-        await requestStore.Load(requestContext, currentMemberIdOrDefault);
+        await requestStore.Load(requestContext, currentMemberIdOrDefault, context.User.SignedInMemberIds());
 
         await _next(context);
     }

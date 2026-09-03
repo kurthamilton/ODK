@@ -172,6 +172,44 @@ public class AccountController : OdkControllerBase
         return RedirectToReferrer();
     }
 
+    /// <summary>
+    /// Acts as one of the other members signed in on the same cookie. The cookie is the whole authority
+    /// for the switch, so a member it does not list is refused.
+    /// </summary>
+    [HttpPost("account/accounts/switch")]
+    public async Task<IActionResult> SwitchAccount([FromForm] Guid memberId)
+    {
+        var result = await _loginHandler.SwitchAccount(ServiceRequest, memberId);
+        if (result.Member != null)
+        {
+            AddFeedback($"Signed in as {result.Member.EmailAddress}", FeedbackType.Success);
+        }
+
+        return RedirectToReferrer();
+    }
+
+    /// <summary>
+    /// Signs one of the members on the cookie out, leaving the others signed in.
+    /// </summary>
+    [HttpPost("account/accounts/logout")]
+    public async Task<IActionResult> LogoutAccount([FromForm] Guid memberId)
+    {
+        var previousMemberId = ServiceRequest.CurrentMemberOrDefault?.Id;
+
+        var result = await _loginHandler.LogoutAccount(ServiceRequest, memberId);
+        if (result.Member == null)
+        {
+            return Redirect("/");
+        }
+
+        AddFeedback(
+            result.Member.Id != previousMemberId
+                ? $"Signed in as {result.Member.EmailAddress}"
+                : "Account signed out",
+            FeedbackType.Success);
+        return RedirectToReferrer();
+    }
+
     [HttpPost("account/delete")]
     public async Task<IActionResult> DeleteAccount()
     {

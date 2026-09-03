@@ -1,0 +1,110 @@
+﻿@using System.Web
+@using ODK.Services.Members.ViewModels
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Components
+@model SiteAdminMemberSearchViewModel
+@inject IOdkRoutes OdkRoutes
+@{
+    var path = OdkRoutes.SiteAdmin.Impersonate.Path;
+
+    // Carry the search back to the page so a post that fails validation re-renders the results it was
+    // chosen from rather than an empty search.
+    var loginAction = string.IsNullOrEmpty(Model.Search)
+        ? path
+        : $"{path}?search={HttpUtility.UrlEncode(Model.Search)}";
+
+    var logoutAction = OdkRoutes.Account.LogoutAccount();
+}
+
+<h2 class="content-heading">Impersonate</h2>
+
+<p class="text-muted">
+    Signs a member in alongside your own account rather than in place of it, so the account menu can
+    switch between them.
+</p>
+
+<form class="mb-4" method="get" action="@path">
+    <div class="input-group">
+        <input class="form-control" type="search" name="search" value="@Model.Search"
+            placeholder="Name or email address" aria-label="Search members" />
+        <button class="btn btn-primary" type="submit">
+            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.MagnifyingGlass))
+            <span>Search</span>
+        </button>
+    </div>
+</form>
+
+@if (string.IsNullOrEmpty(Model.Search))
+{
+    <p class="text-muted">Search for the member to sign in as.</p>
+}
+else if (Model.Rows.Count == 0)
+{
+    <p class="text-muted">No members match that search.</p>
+}
+else
+{
+    @if (Model.Truncated)
+    {
+        <p class="text-muted">
+            Showing the first @Model.Rows.Count matches. Narrow the search to see the rest.
+        </p>
+    }
+
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var row in Model.Rows)
+            {
+                <tr>
+                    <td>
+                        <span>@row.FullName</span>
+                        @if (row.SiteAdmin)
+                        {
+                            <span class="badge text-bg-secondary">Site admin</span>
+                        }
+                    </td>
+                    <td>@row.EmailAddress</td>
+                    @* A form per row rather than one around the table: the two actions post to different
+                       endpoints, and a form inside a form is not markup a browser will honour. *@
+                    <td class="text-end">
+                        @if (row.Current)
+                        {
+                            <span class="text-muted">Current account</span>
+                        }
+                        else if (row.SignedIn)
+                        {
+                            <form method="post" action="@logoutAction">
+                                @Html.AntiForgeryToken()
+
+                                <button class="btn btn-sm btn-outline-primary" type="submit"
+                                    name="memberId" value="@row.MemberId">
+                                    Log out
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <form method="post" action="@loginAction">
+                                @Html.AntiForgeryToken()
+
+                                <button class="btn btn-sm btn-primary" type="submit"
+                                    name="MemberId" value="@row.MemberId">
+                                    Log in
+                                </button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}

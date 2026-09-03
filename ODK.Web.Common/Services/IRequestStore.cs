@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using ODK.Core.Chapters;
 using ODK.Core.Members;
@@ -39,12 +40,24 @@ public interface IRequestStore
 
     IServiceRequest ServiceRequest { get; }
 
+    /// <summary>
+    /// The members signed in on the same auth cookie, oldest sign-in first, loaded with the current member
+    /// so the account menu can offer a switch without a round trip of its own. Empty unless more than one
+    /// is signed in, which only a site admin switching accounts ever arranges.
+    /// </summary>
+    IReadOnlyCollection<Member> SignedInMembers { get; }
+
     Task<ChapterAdminMember?> GetCurrentChapterAdminMember();
 
     /// <summary>
     /// Loads from a request, deriving the platform from its URL and the chapter from its route values.
+    /// <paramref name="signedInMemberIds"/> is every member the auth cookie holds, which is the current
+    /// member alone for all but a site admin switching accounts.
     /// </summary>
-    Task<IRequestStore> Load(IHttpRequestContext context, Guid? currentMemberIdOrDefault);
+    Task<IRequestStore> Load(
+        IHttpRequestContext context,
+        Guid? currentMemberIdOrDefault,
+        IReadOnlyCollection<Guid> signedInMemberIds);
 
     /// <summary>
     /// Loads from values already resolved, for a background job. A job has no URL to derive a platform from

@@ -90,7 +90,8 @@ public class PaymentsHub : Hub
 
         return await _requestStore.Load(
             HttpRequestContext.Create(httpContext.Request),
-            Context.User?.MemberIdOrDefault());
+            Context.User?.MemberIdOrDefault(),
+            Context.User?.SignedInMemberIds() ?? []);
     }
 
     private async Task<string> Watch(string externalSessionId, PaymentStatusType status)

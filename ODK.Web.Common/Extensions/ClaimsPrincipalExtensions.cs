@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using ODK.Services.Authentication;
 using ODK.Services.Exceptions;
 
 namespace ODK.Web.Common.Extensions;
@@ -34,4 +36,10 @@ public static class ClaimsPrincipalExtensions
 
         return null;
     }
+
+    /// <summary>
+    /// Every member signed in on the cookie, oldest sign-in first, including the one the request acts as.
+    /// </summary>
+    public static IReadOnlyCollection<Guid> SignedInMemberIds(this ClaimsPrincipal user)
+        => new OdkClaimsUser(user.Claims).SignedInMemberIds;
 }

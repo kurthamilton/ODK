@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using ODK.Core.Chapters;
 using ODK.Core.Exceptions;
@@ -84,6 +85,8 @@ public class RequestStore : IRequestStore
 
     public IServiceRequest ServiceRequest => _serviceRequest!;
 
+    public IReadOnlyCollection<Member> SignedInMembers { get; private set; } = [];
+
     public async Task<ChapterAdminMember?> GetCurrentChapterAdminMember()
     {
         if (_currentChapterAdminMemberLoaded)
@@ -100,8 +103,11 @@ public class RequestStore : IRequestStore
     /// <summary>
     /// Called from middleware and <see cref="RequestStoreFactory"/>
     /// </summary>
-    public Task<IRequestStore> Load(IHttpRequestContext context, Guid? currentMemberIdOrDefault)
-        => Load(context, currentMemberIdOrDefault, verbose: false);
+    public Task<IRequestStore> Load(
+        IHttpRequestContext context,
+        Guid? currentMemberIdOrDefault,
+        IReadOnlyCollection<Guid> signedInMemberIds)
+        => Load(context, currentMemberIdOrDefault, signedInMemberIds, verbose: false);
 
     public Task<IRequestStore> Load(JobRequest request) => Load(
         new JobHttpRequestContext { BaseUrl = request.BaseUrl },
@@ -109,7 +115,9 @@ public class RequestStore : IRequestStore
         x => request.ChapterId != null
             ? x.ChapterRepository.GetByIdOrDefault(request.Platform, request.ChapterId.Value)
             : new DefaultDeferredQuerySingleOrDefault<Chapter>(),
-        request.CurrentMemberId);
+        request.CurrentMemberId,
+        // A job runs as one member; there is no cookie behind it to hold any others.
+        []);
 
     public void Reset()
     {
@@ -117,6 +125,7 @@ public class RequestStore : IRequestStore
         _currentChapterAdminMember = null;
         _serviceRequest = null;
         Loaded = false;
+        SignedInMembers = [];
     }
 
     private IDeferredQuerySingleOrDefault<Chapter> GetChapterQuery(
@@ -191,18 +200,24 @@ public class RequestStore : IRequestStore
         return new DefaultDeferredQuerySingleOrDefault<Chapter>();
     }
 
-    private Task<IRequestStore> Load(IHttpRequestContext context, Guid? currentMemberIdOrDefault, bool verbose)
+    private Task<IRequestStore> Load(
+        IHttpRequestContext context,
+        Guid? currentMemberIdOrDefault,
+        IReadOnlyCollection<Guid> signedInMemberIds,
+        bool verbose)
         => Load(
             context,
             _platformProvider.GetPlatform(context.RequestUrl),
             x => GetChapterQuery(context, x, verbose),
-            currentMemberIdOrDefault);
+            currentMemberIdOrDefault,
+            signedInMemberIds);
 
     private async Task<IRequestStore> Load(
         IHttpRequestContext context,
         PlatformType platform,
         Func<IUnitOfWork, IDeferredQuerySingleOrDefault<Chapter>> chapterQuery,
-        Guid? currentMemberIdOrDefault)
+        Guid? currentMemberIdOrDefault,
+        IReadOnlyCollection<Guid> signedInMemberIds)
     {
         if (Loaded)
         {
@@ -212,7 +227,7 @@ public class RequestStore : IRequestStore
         // Set the platform directly to persist when resetting other state
         Platform = platform;
 
-        var (chapter, currentMember, memberPreferences, activeReferralCampaign) = await _unitOfWork.Run(
+        var (chapter, currentMember, memberPreferences, activeReferralCampaign, signedInMembers) = await _unitOfWork.Run(
             chapterQuery,
             x => currentMemberIdOrDefault != null
                 ? x.MemberRepository.GetByIdOrDefault(currentMemberIdOrDefault.Value)
@@ -224,9 +239,23 @@ public class RequestStore : IRequestStore
             // everyone else costs no query at all.
             x => currentMemberIdOrDefault != null && Platform != PlatformType.DrunkenKnitwits
                 ? x.ReferralCampaignRepository.GetMostRecentActive(DateTime.UtcNow)
-                : new DefaultDeferredQuerySingleOrDefault<ReferralCampaign>());
+                : new DefaultDeferredQuerySingleOrDefault<ReferralCampaign>(),
+            // A single signed-in member is the current member, whom the query above already loads, so
+            // only a cookie holding several costs a query here.
+            x => signedInMemberIds.Count > 1
+                ? x.MemberRepository.GetByIds(signedInMemberIds)
+                : new DefaultDeferredQueryMultiple<Member>());
 
         ActiveReferralCampaign = activeReferralCampaign;
+
+        // GetByIds answers in whatever order the database returns; the cookie's order is sign-in order,
+        // which is what the account menu lists.
+        SignedInMembers = signedInMemberIds
+            .Select(x => signedInMembers.FirstOrDefault(y => y.Id == x))
+            .Where(x => x != null)
+            .Select(x => x!)
+            .ToArray();
+
         _chapter = chapter;
         _serviceRequest = new ServiceRequest
         {

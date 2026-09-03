@@ -15,5 +15,10 @@ public class RequestStoreFactory : IRequestStoreFactory
     public Task<IRequestStore> Create(IServiceRequest request)
         // Only does a full load if the request store isn't already loaded
         // Allows for lazy-loading when running outside the request pipeline
-        => _requestStore.Load(request.HttpRequestContext, request.CurrentMemberIdOrDefault);
+        => _requestStore.Load(
+            request.HttpRequestContext,
+            request.CurrentMemberIdOrDefault,
+            // A service request carries the member it acts as and nothing about the cookie it came from,
+            // so filling the account menu's switcher is left to the middleware's load.
+            []);
 }
