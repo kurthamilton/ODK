@@ -8,6 +8,8 @@
 @inject IChapterViewModelService ChapterViewModelService
 @{
     Layout = "_HomeLayout";
+    Model.Description = "Form for sending messages to the owners of this group";
+    Model.Path = Model.OdkRoutes.Groups.Contact(Model.Chapter);
 
     var viewModel = await ChapterViewModelService.GetGroupPage(Model.ChapterServiceRequest);
 

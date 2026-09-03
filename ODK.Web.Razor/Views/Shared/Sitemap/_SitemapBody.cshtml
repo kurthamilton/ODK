@@ -1,0 +1,17 @@
+﻿@using ODK.Web.Common.Sitemap
+@model IReadOnlyCollection<SitemapNode>
+@*
+    The same nodes /sitemap.xml offers a crawler, in the same order, so the two cannot say different
+    things. Flat, because the XML is: a urlset holds its urls as siblings, with no nesting to indent.
+*@
+
+<div class="container-md" data-odk-component="_SitemapBody">
+    <ul>
+        @foreach (var node in Model)
+        {
+            <li>
+                <a href="@node.Path">@node.Path</a>
+            </li>
+        }
+    </ul>
+</div>

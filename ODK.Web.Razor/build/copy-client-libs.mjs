@@ -20,9 +20,10 @@ import { dirname, join, posix, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 /*
- * [source, destination] - source relative to node_modules, destination relative to wwwroot/lib. Either may
- * be a file or a directory; a directory is copied whole, so a package that resolves assets at runtime (see
- * the notes below) keeps the tree it expects to find.
+ * [source, destination, filter?] - source relative to node_modules, destination relative to wwwroot/lib.
+ * Either may be a file or a directory; a directory is copied whole, so a package that resolves assets at
+ * runtime (see the notes below) keeps the tree it expects to find. The optional filter narrows a directory
+ * copy - see minifiedOnly, the only one so far.
  *
  * Versions are not stated here - they live in package.json, pinned exactly, and package-lock.json resolves
  * them. Adding a library means adding the dependency and a line or two here.
@@ -62,13 +63,23 @@ const COPIES = [
     ['@eastdesire/jscolor/jscolor.js', 'jscolor/jscolor.js'],
 
     /* TinyMCE resolves skins, themes, plugins, models and icons off tinymce.baseURL at runtime, and
-       odk.html-editor.js builds content_css from it for the dark theme, so the whole tree has to be here -
-       none of it is referenced from anywhere a build could see. */
-    ['tinymce/icons', 'tinymce/icons'],
-    ['tinymce/models', 'tinymce/models'],
-    ['tinymce/plugins', 'tinymce/plugins'],
-    ['tinymce/skins', 'tinymce/skins'],
-    ['tinymce/themes', 'tinymce/themes'],
+       odk.html-editor.js builds content_css from it for the dark theme, so every skin and plugin has to be
+       here - which one is asked for is not referenced from anywhere a build could see.
+
+       Which *build* of each is, though: tinymce.min.js has the '.min' suffix baked in, so it only ever
+       requests plugin.min.js, skin.min.css, theme.min.js and their like. minifiedOnly drops the rest, which
+       is the unminified duplicate of every file, the index.js ESM entries a bundler would use, and the
+       TypeScript sources beside the skin stylesheets - two thirds of the tree, and the largest single
+       saving in the deployed payload.
+
+       Two plugins ship a non-min data payload their minified build fetches - emoticons/js/emojis.js and
+       help/js/i18n/keynav - so adding either to the plugin list in odk.html-editor.js means excepting it
+       here. Neither is configured. */
+    ['tinymce/icons', 'tinymce/icons', minifiedOnly],
+    ['tinymce/models', 'tinymce/models', minifiedOnly],
+    ['tinymce/plugins', 'tinymce/plugins', minifiedOnly],
+    ['tinymce/skins', 'tinymce/skins', minifiedOnly],
+    ['tinymce/themes', 'tinymce/themes', minifiedOnly],
     ['tinymce/tinymce.min.js', 'tinymce/tinymce.min.js'],
 
     /* Ace would lazily fetch a mode or a theme from its base path, but the code-editor bundle concatenates
@@ -111,16 +122,23 @@ async function main() {
     // Rebuilt rather than merged into, so a library dropped from COPIES leaves nothing behind.
     await rm(libDirectory, { recursive: true, force: true });
 
-    for (const [source, destination] of COPIES) {
+    for (const [source, destination, filter] of COPIES) {
         const target = join(libDirectory, destination);
         await mkdir(dirname(target), { recursive: true });
-        await cp(join(nodeModules, source), target, { recursive: true });
+        await cp(join(nodeModules, source), target, { recursive: true, filter });
     }
 
     await writeFile(fingerprintPath, JSON.stringify(fingerprint, null, 2) + '\n');
 
     const { files, bytes } = await measure(libDirectory);
     console.log(`Copied ${files} files (${(bytes / 1024 / 1024).toFixed(1)} MB) to wwwroot/lib.`);
+}
+
+/* A COPIES filter keeping only minified builds. Directories are always kept, or the walk stops at the first
+   one and takes the tree with it; the decision is per file. Returning a promise is supported, so the stat
+   that tells the two apart can be awaited. */
+async function minifiedOnly(source) {
+    return (await stat(source)).isDirectory() || /\.min\.[^.]+$/.test(source);
 }
 
 /* The installed version of every package copied from, plus a hash of this file - between them they cover

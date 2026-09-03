@@ -1,5 +1,15 @@
 <Project>
 
+  <PropertyGroup>
+    <!-- Ship no localised resource assemblies. The UI copy is authored in the default language, so
+         CurrentUICulture is always the default and a resource lookup never asks for another one - see the
+         localisation notes in CLAUDE.md. Set here rather than in the web project because each referenced
+         project copies its own packages' satellites into the referencing output, so the property has to be
+         in scope for all of them. Worth ~120 files and 12 MB of every deploy, most of it the Roslyn
+         satellites that arrive with Razor runtime compilation. -->
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
       <PrivateAssets>all</PrivateAssets>

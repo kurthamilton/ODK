@@ -9,6 +9,8 @@
 
     var request = Model.ChapterServiceRequest;
     var viewModel = await AccountViewModelService.GetChapterJoinPage(request, Model.InviteToken);
+
+    Model.Path = Model.OdkRoutes.Groups.Join(Model.Chapter);
 }
 
 @if (!viewModel.Chapter.IsOpenForRegistration())

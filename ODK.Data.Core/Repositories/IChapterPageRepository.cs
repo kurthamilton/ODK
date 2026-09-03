@@ -9,4 +9,6 @@ public interface IChapterPageRepository : IReadWriteRepository<ChapterPage>
     IDeferredQueryMultiple<ChapterPage> GetByChapterId(Guid chapterId);
 
     IDeferredQuerySingleOrDefault<ChapterPage> GetByChapterId(Guid chapterId, PageType pageType);
+
+    IDeferredQueryMultiple<ChapterPage> GetByChapterIds(IEnumerable<Guid> chapterIds);
 }

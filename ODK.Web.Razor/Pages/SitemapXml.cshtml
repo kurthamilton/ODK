@@ -1,0 +1,28 @@
+﻿@page "/sitemap.xml"
+@using System.Globalization
+@using ODK.Services.Sitemap
+@model SitemapXmlModel
+@inject ISitemapService SitemapService
+@{
+    Layout = null;
+    Response.ContentType = "text/xml";
+
+    var viewModel = await SitemapService.GetSitemapViewModel(Model.ServiceRequest);
+    var nodes = Model.OdkRoutes.Public.Sitemap(viewModel);
+    var baseUrl = Model.ServiceRequest.HttpRequestContext.BaseUrl;
+}
+
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+    @foreach (var node in nodes)
+    {
+        <url>
+            <loc>@($"{baseUrl}{node.Path}")</loc>
+            @if (node.LastModifiedUtc != null)
+            {
+                <lastmod>@node.LastModifiedUtc.Value.ToString("yyyy-MM-ddTHH:mm:ss'Z'", CultureInfo.InvariantCulture)</lastmod>
+            }
+        </url>
+    }
+</urlset>

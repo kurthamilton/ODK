@@ -22,16 +22,20 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<!-- The SCSS sources. A build compiles them, so nothing dotnet watch does should react to an edit -
-		     see run.build.css.bat, the fast path for recompiling mid-session. Note this keeps them out of the
-		     watch list only - the build still enumerates and hashes everything under wwwroot as a static web
-		     asset, which is why a sass watcher must not run alongside dotnet watch (see run.app.bat).
+		<!-- The SCSS sources are a build *input*, not something the app serves: sass reads wwwroot\scss off
+		     disk directly, so nothing here needs them as items. Removing them from Content keeps them out of
+		     the publish output - where they were both dead weight and publicly fetchable under /scss/ - and
+		     out of the static web asset manifest the build enumerates and hashes. They come back as None so
+		     they stay visible in the IDE, with Watch="false" on both: a build compiles them, so nothing
+		     dotnet watch does should react to an edit (see run.build.css.bat, the fast path for recompiling
+		     mid-session), and a sass watcher must not run alongside dotnet watch (see run.app.bat).
 
 		     The generated CSS and bundles need no entry here. They are excluded from the default glob above
 		     and added by BuildClientAssets with Watch="false" already on them. The bundles' *sources* are
 		     deliberately left watched: a build is what regenerates a bundle, so a script edit has to be able
 		     to trigger one. -->
-		<Content Update="wwwroot\scss\**" Watch="false" />
+		<Content Remove="wwwroot\scss\**" />
+		<None Include="wwwroot\scss\**" Watch="false" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -69,8 +73,15 @@
 
 		<ItemGroup>
 			<!-- Watch="false": nobody edits these, and a build rewriting files dotnet watch is watching takes
-			     the watcher down. -->
-			<Content Include="wwwroot\lib\**" Exclude="wwwroot\lib\.client-libs.json" Watch="false" />
+			     the watcher down.
+
+			     Bootstrap's scss is excluded for the same reason wwwroot\scss is removed from Content above:
+			     sass reads it off disk as a build input - wwwroot\scss\bootstrap\main.scss imports it - and
+			     nothing serves it. The copy has already put it there by the time this runs, so taking it out
+			     of Content affects the publish output and the static web asset manifest, not the compile.
+			     Static web assets publish a .br and a .gz beside each file, so a wwwroot file kept out of
+			     Content is three fewer in the deployed payload. -->
+			<Content Include="wwwroot\lib\**" Exclude="wwwroot\lib\.client-libs.json;wwwroot\lib\bootstrap\scss\**" Watch="false" />
 			<Content Include="wwwroot\css\**" Watch="false" />
 			<Content Include="wwwroot\js\odk.bundle*.js" Watch="false" />
 		</ItemGroup>

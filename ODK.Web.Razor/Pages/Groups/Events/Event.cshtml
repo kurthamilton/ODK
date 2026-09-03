@@ -1,9 +1,7 @@
 ﻿@page "/groups/{slug}/events/{shortcode}"
 @using ODK.Services.Events
-@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Groups
-@using ODK.Web.Razor.Models.Payments
 @model EventModel
 @inject IEventViewModelService EventViewModelService
 @{
@@ -13,6 +11,8 @@
         Model.ChapterServiceRequest, Model.Shortcode);
 
     Model.Title = viewModel.Event.GetDisplayName();
+    Model.Path = Model.OdkRoutes.Groups.Event(Model.Chapter, viewModel.Event.Shortcode);
+    Model.Location = viewModel.VenueLocation;
 }
 
 @await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel

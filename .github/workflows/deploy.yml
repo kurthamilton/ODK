@@ -167,6 +167,12 @@ jobs:
       # %VAR% come from this step's env; the password must not contain a literal % (cmd variable delimiter).
       # DoNotDeleteRule: don't delete server files missing from the publish (logs, uploads, App_Data).
       # AppOffline: drop app_offline.htm during the copy so IIS releases the dll lock, then remove it.
+      # useChecksum: compare file *contents*, not size and last-write-time. The artifact is built fresh on
+      # every run, so by timestamp every one of ~1600 files looks newer than the deployed copy and the whole
+      # payload is re-sent - which is also how long the site stays behind app_offline.htm. Builds are
+      # deterministic and third-party assemblies come from the NuGet cache unchanged, so hashing sends only
+      # what actually differs. The cost is server-side hashing of the destination tree, which is CPU rather
+      # than bandwidth.
       - name: Web Deploy
         shell: cmd
         env:
@@ -180,5 +186,6 @@ jobs:
           -source:contentPath="%GITHUB_WORKSPACE%\publish"
           -dest:contentPath="%SITE%",computerName="%MSDEPLOY_URL%",userName="%USER%",password="%PASSWORD%",authtype="Basic"
           -allowUntrusted
+          -useChecksum
           -enableRule:DoNotDeleteRule
           -enableRule:AppOffline

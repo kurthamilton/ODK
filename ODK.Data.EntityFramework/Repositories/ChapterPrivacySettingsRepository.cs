@@ -21,6 +21,10 @@ public class ChapterPrivacySettingsRepository :
         .Where(x => x.ChapterId == chapterId)
         .DeferredSingleOrDefault();
 
+    public IDeferredQueryMultiple<ChapterPrivacySettings> GetByChapterIds(IEnumerable<Guid> chapterIds) => Set()
+        .Where(x => chapterIds.Contains(x.ChapterId))
+        .DeferredMultiple();
+
     public void Upsert(ChapterPrivacySettings entity, Guid chapterId)
         => _chapterEntityRepository.Upsert(entity, chapterId);
 }
