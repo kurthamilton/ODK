@@ -100,6 +100,12 @@ public class AccountRoutes : RoutesBase
         _ => null
     }, "/logout");
 
+    /// <summary>
+    /// Signs the current member out of a cookie holding several accounts, leaving the rest signed in.
+    /// Not chapter-scoped on either platform - it acts on the cookie, not on a group.
+    /// </summary>
+    public string LogoutAccount() => "/account/accounts/logout";
+
     public string Notifications(Chapter? chapter) => AccountPath(chapter, "/notifications");
 
     public string PasswordChange(Chapter? chapter) => AccountPath(chapter, "/password/change");
@@ -132,6 +138,12 @@ public class AccountRoutes : RoutesBase
 
     public string SiteSubscriptionConfirm()
         => $"{Subscription(chapter: null)}/confirm?sessionId={{sessionId}}";
+
+    /// <summary>
+    /// Acts as one of the other accounts on the cookie. Not chapter-scoped on either platform - it acts on
+    /// the cookie, not on a group.
+    /// </summary>
+    public string SwitchAccount() => "/account/accounts/switch";
 
     private string AccountPath(Chapter? chapter, string path)
         => GetRoute(chapter, "/account" + path);

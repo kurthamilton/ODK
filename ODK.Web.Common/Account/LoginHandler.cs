@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
@@ -10,7 +11,9 @@ using ODK.Core.Members;
 using ODK.Data.Core;
 using ODK.Services;
 using ODK.Services.Authentication.OAuth;
+using ODK.Services.Exceptions;
 using ODK.Services.Members;
+using ODK.Web.Common.Extensions;
 using IAuthenticationService = ODK.Services.Authentication.IAuthenticationService;
 
 namespace ODK.Web.Common.Account;
@@ -40,22 +43,20 @@ public class LoginHandler : ILoginHandler
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<AuthenticationResult> Impersonate(IMemberServiceRequest request, Guid memberId)
+    public async Task<AuthenticationResult> AddAccount(IMemberServiceRequest request, Guid memberId)
     {
-        var currentMember = request.CurrentMember;
+        OdkAssertions.MeetsCondition(request.CurrentMember, x => x.SiteAdmin);
+
         var member = await _unitOfWork.MemberRepository.GetById(memberId).Run();
 
-        OdkAssertions.MeetsCondition(currentMember, x => x.SiteAdmin);
-
-        await Logout();
-        return await Login(request, member);
+        return await Login(request, member, GetSignedInMemberIds());
     }
 
     public async Task<AuthenticationResult> Login(
         IServiceRequest request, string username, string password, bool rememberMe)
     {
         var member = await _authenticationService.GetMember(username, password);
-        return await Login(request, member);
+        return await Login(request, member, []);
     }
 
     public async Task Logout()
@@ -69,16 +70,67 @@ public class LoginHandler : ILoginHandler
         await httpContext.SignOutAsync();
     }
 
+    public async Task<AuthenticationResult> LogoutAccount(IServiceRequest request, Guid memberId)
+    {
+        var signedInMemberIds = GetSignedInMemberIds();
+
+        // The cookie is the only authority for what can be signed out of it, as it is for a switch.
+        if (!signedInMemberIds.Contains(memberId))
+        {
+            throw new OdkNotAuthorizedException();
+        }
+
+        var remainingMemberIds = signedInMemberIds
+            .Where(x => x != memberId)
+            .ToArray();
+
+        if (remainingMemberIds.Length == 0)
+        {
+            await Logout();
+            return new AuthenticationResult();
+        }
+
+        // Signing out somebody other than the member being acted as leaves that member in place.
+        var currentMemberId = request.CurrentMemberOrDefault?.Id;
+        var nextMemberId = currentMemberId != null && remainingMemberIds.Contains(currentMemberId.Value)
+            ? currentMemberId.Value
+            : remainingMemberIds[0];
+
+        var member = await _unitOfWork.MemberRepository.GetById(nextMemberId).Run();
+
+        return await Login(request, member, remainingMemberIds);
+    }
+
     public async Task<AuthenticationResult> OAuthLogin(
         IServiceRequest request, OAuthProviderType providerType, string token)
     {
         var provider = _oauthProviderFactory.GetProvider(providerType);
         var oauthUser = await provider.GetUser(token);
         var member = await _memberService.FindMemberByEmailAddress(oauthUser.Email);
-        return await Login(request, member);
+        return await Login(request, member, []);
     }
 
-    private async Task<AuthenticationResult> Login(IServiceRequest request, Member? member)
+    public async Task<AuthenticationResult> SwitchAccount(IServiceRequest request, Guid memberId)
+    {
+        var signedInMemberIds = GetSignedInMemberIds();
+
+        // The cookie is the only authority for a switch, so a member it does not list is a request to act
+        // as somebody this browser was never signed in as.
+        if (!signedInMemberIds.Contains(memberId))
+        {
+            throw new OdkNotAuthorizedException();
+        }
+
+        var member = await _unitOfWork.MemberRepository.GetById(memberId).Run();
+
+        return await Login(request, member, signedInMemberIds);
+    }
+
+    private IReadOnlyCollection<Guid> GetSignedInMemberIds()
+        => _httpContextAccessor.HttpContext?.User.SignedInMemberIds() ?? [];
+
+    private async Task<AuthenticationResult> Login(
+        IServiceRequest request, Member? member, IReadOnlyCollection<Guid> signedInMemberIds)
     {
         if (member == null)
         {
@@ -92,7 +144,8 @@ public class LoginHandler : ILoginHandler
         }
 
         var claims = await _authenticationService.GetClaims(
-            MemberServiceRequest.Create(member, request));
+            MemberServiceRequest.Create(member, request),
+            signedInMemberIds);
         await SetAuthCookie(httpContext, claims);
         return new AuthenticationResult
         {

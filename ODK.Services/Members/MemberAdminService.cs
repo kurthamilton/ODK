@@ -9,6 +9,7 @@ using ODK.Core.Payments;
 using ODK.Core.Subscriptions;
 using ODK.Core.Workflows;
 using ODK.Data.Core;
+using ODK.Data.Core.Deferred;
 using ODK.Services.Authorization;
 using ODK.Services.Emails;
 using ODK.Services.Emails.Validation;
@@ -27,6 +28,8 @@ namespace ODK.Services.Members;
 
 public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 {
+    private const int SiteAdminMemberSearchLimit = 50;
+
     private readonly StateMachineRunner<AccountState, AccountTrigger, AccountContext> _accountWorkflow;
     private readonly IAccountContextFactory _accountContextFactory;
     private readonly IAuthorizationService _authorizationService;
@@ -686,6 +689,42 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                 })
                 .ToArray(),
             TimeZone = request.CurrentMember.TimeZone
+        };
+    }
+
+    public async Task<SiteAdminMemberSearchViewModel> GetSiteAdminMemberSearchViewModel(
+        IMemberServiceRequest request,
+        string? search,
+        IReadOnlyCollection<Guid> signedInMemberIds)
+    {
+        var trimmed = search?.Trim();
+
+        var members = await GetSiteAdminRestrictedContent(request,
+            x => !string.IsNullOrEmpty(trimmed)
+                // One more than the page shows, so a full page can say whether anything was left off.
+                ? x.MemberRepository
+                    .Query(y => y.Search(trimmed))
+                    .OrderBy(y => y.FirstName)
+                    .Take(SiteAdminMemberSearchLimit + 1)
+                    .GetAll()
+                : new DefaultDeferredQueryMultiple<Member>());
+
+        return new SiteAdminMemberSearchViewModel
+        {
+            Rows = members
+                .Take(SiteAdminMemberSearchLimit)
+                .Select(x => new SiteAdminMemberSearchRowViewModel
+                {
+                    Current = x.Id == request.CurrentMember.Id,
+                    EmailAddress = x.EmailAddress,
+                    FullName = x.FullName,
+                    MemberId = x.Id,
+                    SignedIn = signedInMemberIds.Contains(x.Id),
+                    SiteAdmin = x.SiteAdmin
+                })
+                .ToArray(),
+            Search = trimmed,
+            Truncated = members.Count > SiteAdminMemberSearchLimit
         };
     }
 

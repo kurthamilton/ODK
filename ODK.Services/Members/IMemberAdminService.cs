@@ -91,6 +91,17 @@ public interface IMemberAdminService
     /// </summary>
     Task<SiteAdminFlaggedMembersViewModel> GetSiteAdminFlaggedMembersViewModel(IMemberServiceRequest request);
 
+    /// <summary>
+    /// Site-admin only: members matching <paramref name="search"/>, for picking one to sign in as. A blank
+    /// search matches nobody rather than everybody - the page is a lookup, not a member list.
+    /// <paramref name="signedInMemberIds"/> is what the caller's auth cookie already holds, which decides
+    /// whether a row offers to sign that member in or out.
+    /// </summary>
+    Task<SiteAdminMemberSearchViewModel> GetSiteAdminMemberSearchViewModel(
+        IMemberServiceRequest request,
+        string? search,
+        IReadOnlyCollection<Guid> signedInMemberIds);
+
     Task<ServiceResult> UpdateMemberSubscription(
         IMemberChapterAdminServiceRequest request,
         Guid memberId,

@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using ODK.Web.Common.Account;
 using ODK.Web.Razor.Models.SiteAdmin;
 
@@ -13,25 +13,28 @@ public class ImpersonateModel : SiteAdminPageModel
         _loginHandler = loginHandler;
     }
 
-    public IActionResult OnGet()
+    public string? Search { get; private set; }
+
+    public IActionResult OnGet(string? search)
     {
+        Search = search;
         return Page();
     }
 
-    public async Task<IActionResult> OnPostAsync(ImpersonateFormViewModel viewModel)
+    public async Task<IActionResult> OnPostAsync(ImpersonateFormViewModel viewModel, string? search)
     {
         if (!ModelState.IsValid || viewModel.MemberId == null)
         {
-            return OnGet();
+            return OnGet(search);
         }
 
         var request = MemberServiceRequest;
-        var result = await _loginHandler.Impersonate(request, viewModel.MemberId.Value);
+        var result = await _loginHandler.AddAccount(request, viewModel.MemberId.Value);
         if (result.Success)
         {
             return Redirect("/");
         }
 
-        return OnGet();
+        return OnGet(search);
     }
 }

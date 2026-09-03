@@ -4,7 +4,6 @@ namespace ODK.Web.Razor.Models.SiteAdmin;
 
 public class ImpersonateFormViewModel
 {
-    [Display(Name = "Member Id")]
     [Required]
     public Guid? MemberId { get; set; }
 }

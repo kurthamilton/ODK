@@ -88,7 +88,7 @@ public class ErrorHandlingMiddleware
         {
             var requestContext = HttpRequestContext.Create(httpContext.Request);
             var currentMemberIdOrDefault = httpContext.User.MemberIdOrDefault();
-            await requestStore.Load(requestContext, currentMemberIdOrDefault);
+            await requestStore.Load(requestContext, currentMemberIdOrDefault, httpContext.User.SignedInMemberIds());
         }
 
         // We might end up on a valid chapter route as a result of being redirected to a chapter error page,

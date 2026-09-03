@@ -5,9 +5,13 @@
 @inject IRequestStore RequestStore
 @{
     var currentMember = RequestStore.CurrentMemberOrDefault;
+
+    var otherSignedInMembers = RequestStore.SignedInMembers
+        .Where(x => x.Id != currentMember?.Id)
+        .ToArray();
 }
 
-<div class="list-group list-group-flush list-group-border-0">
+<div class="list-group list-group-flush list-group-border-0" data-odk-component="_AccountDropdownFooter">
     <div class="offcanvas-flush-item"><strong>Appearance</strong></div>
 
     <label class="list-group-item list-group-item-action d-flex align-items-center offcanvas-flush-item">
@@ -30,6 +34,55 @@
                 Signed in as @currentMember.EmailAddress
             </div>
         </div>
+
+        @* Only a cookie a site admin has added accounts to holds anybody to switch between, so for
+           everyone else the menu is unchanged. A collapse rather than a hover menu: the account menu is
+           an offcanvas, which is the whole screen on a phone, where there is no hover. *@
+        @if (otherSignedInMembers.Length > 0)
+        {
+            <div class="list-group list-group-flush list-group-border-0">
+                <button class="list-group-item list-group-item-action" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#account-menu-switch"
+                    aria-expanded="false" aria-controls="account-menu-switch">
+                    <span class="icon">
+                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.ArrowsLeftRight))
+                    </span>
+                    <span>Switch account</span>
+                </button>
+            </div>
+
+            <div class="collapse" id="account-menu-switch">
+                <form class="list-group list-group-flush list-group-border-0"
+                    method="post" action="@OdkRoutes.Account.SwitchAccount()">
+                    @Html.AntiForgeryToken()
+
+                    @foreach (var member in otherSignedInMembers)
+                    {
+                        <button class="list-group-item list-group-item-action ps-5" type="submit"
+                            name="memberId" value="@member.Id">
+                            <span class="icon">
+                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.UserOutline))
+                            </span>
+                            <span>@member.EmailAddress</span>
+                        </button>
+                    }
+                </form>
+            </div>
+
+            <form class="list-group list-group-flush list-group-border-0"
+                method="post" action="@OdkRoutes.Account.LogoutAccount()">
+                @Html.AntiForgeryToken()
+
+                <button class="list-group-item list-group-item-action" type="submit"
+                    name="memberId" value="@currentMember.Id">
+                    <span class="icon">
+                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Logout))
+                    </span>
+                    <span>Sign out of this account</span>
+                </button>
+            </form>
+        }
+
         <div class="list-group list-group-flush list-group-border-0">
             <a class="list-group-item list-group-item-action" href="@OdkRoutes.Account.Logout(currentChapter)">
                 <span class="icon">
@@ -38,5 +91,5 @@
                 <span>Sign Out</span>
             </a>
         </div>
-    }    
+    }
 </div>

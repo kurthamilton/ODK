@@ -1,17 +1,16 @@
 ﻿@page "/siteadmin/impersonate"
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Services.Authentication
-@using ODK.Web.Razor.Models.SiteAdmin
+@using ODK.Services.Members
+@using ODK.Web.Common.Extensions
 @attribute [Authorize(Roles = OdkRoles.SiteAdmin)]
 @model ImpersonateModel
+@inject IMemberAdminService MemberAdminService
 @{
-    Layout = "_SiteAdminLayout";   
+    Layout = "_SiteAdminLayout";
+
+    var viewModel = await MemberAdminService.GetSiteAdminMemberSearchViewModel(
+        Model.MemberServiceRequest, Model.Search, User.SignedInMemberIds());
 }
 
-<h2 class="content-heading">Impersonate</h2>
-
-<form method="post">
-    @await Html.PartialAsync("SiteAdmin/_ImpersonateForm", new ImpersonateFormViewModel())
-
-    <button class="btn btn-primary">Log in</button>
-</form>
+@await Html.PartialAsync("SiteAdmin/_ImpersonateContent", viewModel)

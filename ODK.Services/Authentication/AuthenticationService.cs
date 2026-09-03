@@ -135,9 +135,11 @@ public class AuthenticationService : IAuthenticationService
         return ServiceResult.Successful();
     }
 
-    public Task<IReadOnlyCollection<Claim>> GetClaims(IMemberServiceRequest request)
+    public Task<IReadOnlyCollection<Claim>> GetClaims(
+        IMemberServiceRequest request,
+        IReadOnlyCollection<Guid> signedInMemberIds)
     {
-        var claimsUser = new OdkClaimsUser(request.CurrentMember);
+        var claimsUser = new OdkClaimsUser(request.CurrentMember, signedInMemberIds);
         return Task.FromResult<IReadOnlyCollection<Claim>>(claimsUser
             .GetClaims()
             .ToArray());
