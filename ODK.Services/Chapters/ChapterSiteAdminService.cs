@@ -1,10 +1,14 @@
-﻿using ODK.Core.Members;
+﻿using ODK.Core.Chapters;
+using ODK.Core.Members;
 using ODK.Core.Workflows;
 using ODK.Data.Core;
 using ODK.Data.Core.Members;
+using ODK.Resources.Resources;
+using ODK.Services.Chapters.Models;
 using ODK.Services.Chapters.ViewModels;
 using ODK.Services.Chapters.Workflows;
 using ODK.Services.Exceptions;
+using ODK.Services.Imaging;
 using ODK.Services.Subscriptions;
 using ODK.Services.Workflows;
 
@@ -14,17 +18,20 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
 {
     private readonly StateMachineRunner<
         ChapterPublicationState, ChapterPublicationTrigger, ChapterPublicationContext> _chapterPublicationWorkflow;
+    private readonly IImageService _imageService;
     private readonly IMemberSiteSubscriptionWriter _memberSiteSubscriptionWriter;
     private readonly IUnitOfWork _unitOfWork;
 
     public ChapterSiteAdminService(
         IUnitOfWork unitOfWork,
         IMemberSiteSubscriptionWriter memberSiteSubscriptionWriter,
+        IImageService imageService,
         StateMachineRunner<ChapterPublicationState, ChapterPublicationTrigger, ChapterPublicationContext>
             chapterPublicationWorkflow)
         : base(unitOfWork)
     {
         _chapterPublicationWorkflow = chapterPublicationWorkflow;
+        _imageService = imageService;
         _memberSiteSubscriptionWriter = memberSiteSubscriptionWriter;
         _unitOfWork = unitOfWork;
     }
@@ -82,6 +89,21 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
                 .OrderBy(x => x.Member.FullName)
                 .ToArray(),
             Chapter = chapter
+        };
+    }
+
+    public async Task<ChapterHeaderImageAdminPageViewModel> GetChapterHeaderImageViewModel(
+        IMemberChapterServiceRequest request)
+    {
+        var chapter = request.Chapter;
+
+        var image = await GetSiteAdminRestrictedContent(request,
+            x => x.ChapterHeaderImageRepository.GetByChapterId(chapter.Id));
+
+        return new ChapterHeaderImageAdminPageViewModel
+        {
+            Chapter = chapter,
+            Image = image
         };
     }
 
@@ -206,6 +228,38 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
                 .ToArray(),
             Subscription = subscription
         };
+    }
+
+    public async Task<ServiceResult> UpdateChapterHeaderImage(
+        IMemberChapterServiceRequest request,
+        ChapterHeaderImageUpdateModel model)
+    {
+        var chapter = request.Chapter;
+
+        var image = await GetSiteAdminRestrictedContent(request,
+            x => x.ChapterHeaderImageRepository.GetByChapterId(chapter.Id));
+
+        if (!_imageService.IsImage(model.ImageData))
+        {
+            return ServiceResult.Failure(ErrorMessagesResource.InvalidImage);
+        }
+
+        image ??= new ChapterHeaderImage();
+
+        var mimeType = ChapterHeaderImage.DefaultMimeType;
+
+        // Re-encoded but never resized: no MaxWidth and no AspectRatio, so the image keeps the
+        // dimensions it was uploaded at.
+        image.ImageData = _imageService.Process(model.ImageData, new ImageProcessingOptions
+        {
+            MimeType = mimeType
+        });
+        image.MimeType = mimeType;
+
+        _unitOfWork.ChapterHeaderImageRepository.Upsert(image, chapter.Id);
+        await _unitOfWork.SaveChanges();
+
+        return ServiceResult.Successful();
     }
 
     public async Task<ServiceResult> UpdateSiteAdminChapter(

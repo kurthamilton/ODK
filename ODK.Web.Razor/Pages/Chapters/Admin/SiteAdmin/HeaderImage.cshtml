@@ -1,0 +1,28 @@
+﻿@page "/{chapterName}/admin/siteadmin/header-image"
+@using ODK.Services.Chapters
+@using ODK.Web.Razor.Models.Admin
+@model HeaderImageModel
+@inject IChapterSiteAdminService ChapterSiteAdminService
+@{
+    Layout = "_OdkChapterAdminLayout";
+    Model.Title = "Header image | Site Admin";
+
+    var viewModel = await ChapterSiteAdminService.GetChapterHeaderImageViewModel(
+        Model.MemberChapterServiceRequest);
+}
+
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    Title = "Header image",
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_HeaderImageContent", viewModel)</div>
+})
+
+@section styles
+{
+    @await Html.PartialAsync("Components/Styles/_ImagingStyles")
+}
+
+@section scripts
+{
+    @await Html.PartialAsync("Components/Scripts/_ImagingScripts")
+}

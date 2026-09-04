@@ -29,6 +29,7 @@
 {
     @await Html.PartialAsync("Header/_ChapterHeader", new ChapterHeaderViewModel
     {
+        HeaderImageVersion = viewModel.HeaderImageVersion,
         Chapter = chapter,
         Member = member,
         Pages = viewModel.Pages

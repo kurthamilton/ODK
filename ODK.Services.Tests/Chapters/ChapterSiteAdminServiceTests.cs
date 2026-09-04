@@ -11,8 +11,11 @@ using ODK.Core.Platforms;
 using ODK.Core.Workflows;
 using ODK.Data.Core;
 using ODK.Services.Chapters;
+using ODK.Services.Exceptions;
 using ODK.Services.Chapters.ViewModels;
+using ODK.Services.Chapters.Models;
 using ODK.Services.Chapters.Workflows;
+using ODK.Services.Imaging;
 using ODK.Services.Members;
 using ODK.Services.Subscriptions;
 using ODK.Services.Tests.Helpers;
@@ -93,6 +96,109 @@ public static class ChapterSiteAdminServiceTests
         // Assert
         result.SiteSubscriptions.Select(x => x.Id).Should().BeEquivalentTo(new[] { unusableCurrent.Id, free.Id });
         result.SiteSubscriptions.Should().NotContain(x => x.Id == unusable.Id);
+    }
+
+    [Test]
+    public static async Task UpdateChapterHeaderImage_InvalidImage_ReturnsFailure()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+        var chapter = context.CreateChapter();
+
+        var service = CreateService(
+            context, Mock.Of<IMemberEmailService>(), MockImageService(isImage: false));
+
+        // Act
+        var result = await service.UpdateChapterHeaderImage(
+            SiteAdminChapterRequest(context, chapter),
+            new ChapterHeaderImageUpdateModel { ImageData = [1, 2, 3] });
+
+        // Assert
+        result.Success.Should().BeFalse();
+        context.Set<ChapterHeaderImage>().Should().BeEmpty();
+    }
+
+    [Test]
+    public static async Task UpdateChapterHeaderImage_ValidImage_StoresItWithoutResizing()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+        var chapter = context.CreateChapter();
+
+        var imageService = new Mock<IImageService>();
+        imageService
+            .Setup(x => x.IsImage(It.IsAny<byte[]>()))
+            .Returns(true);
+
+        ImageProcessingOptions? options = null;
+        imageService
+            .Setup(x => x.Process(It.IsAny<byte[]>(), It.IsAny<ImageProcessingOptions>()))
+            .Returns((byte[] data, ImageProcessingOptions x) =>
+            {
+                options = x;
+                return data;
+            });
+
+        var service = CreateService(context, Mock.Of<IMemberEmailService>(), imageService.Object);
+
+        // Act
+        var result = await service.UpdateChapterHeaderImage(
+            SiteAdminChapterRequest(context, chapter),
+            new ChapterHeaderImageUpdateModel { ImageData = [1, 2, 3] });
+
+        // Assert
+        result.Success.Should().BeTrue();
+
+        var stored = context.Set<ChapterHeaderImage>().Single(x => x.ChapterId == chapter.Id);
+        stored.ImageData.Should().BeEquivalentTo(new byte[] { 1, 2, 3 });
+        stored.MimeType.Should().Be(ChapterHeaderImage.DefaultMimeType);
+
+        // A header image keeps the dimensions it was uploaded at, so neither bound is asked for.
+        options!.MimeType.Should().Be(ChapterHeaderImage.DefaultMimeType);
+        options.MaxWidth.Should().BeNull();
+        options.AspectRatio.Should().BeNull();
+    }
+
+    [Test]
+    public static async Task UpdateChapterHeaderImage_ExistingImage_ReplacesIt()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+        var chapter = context.CreateChapter();
+        context.CreateChapterHeaderImage(chapter);
+
+        var service = CreateService(context, Mock.Of<IMemberEmailService>());
+
+        // Act
+        var result = await service.UpdateChapterHeaderImage(
+            SiteAdminChapterRequest(context, chapter),
+            new ChapterHeaderImageUpdateModel { ImageData = [4, 5, 6] });
+
+        // Assert
+        result.Success.Should().BeTrue();
+        context.Set<ChapterHeaderImage>()
+            .Single(x => x.ChapterId == chapter.Id)
+            .ImageData.Should().BeEquivalentTo(new byte[] { 4, 5, 6 });
+    }
+
+    [Test]
+    public static async Task UpdateChapterHeaderImage_ChapterAdminWhoIsNotASiteAdmin_Throws()
+    {
+        /* Arrange - a group's own admin holds every chapter securable, so nothing but the site-admin check
+           stands between them and this. */
+        using var context = CreateMockOdkContext();
+        var chapter = context.CreateChapter();
+
+        var service = CreateService(context, Mock.Of<IMemberEmailService>());
+
+        // Act
+        var act = () => service.UpdateChapterHeaderImage(
+            ChapterAdminChapterRequest(context, chapter),
+            new ChapterHeaderImageUpdateModel { ImageData = [1, 2, 3] });
+
+        // Assert
+        await act.Should().ThrowAsync<OdkNotAuthorizedException>();
+        context.Set<ChapterHeaderImage>().Should().BeEmpty();
     }
 
     [Test]
@@ -185,14 +291,31 @@ public static class ChapterSiteAdminServiceTests
     }
 
     private static ChapterSiteAdminService CreateService(
-        MockOdkContext context, IMemberEmailService memberEmailService)
+        MockOdkContext context, IMemberEmailService memberEmailService, IImageService? imageService = null)
     {
         var unitOfWork = MockUnitOfWorkFactory.Create(context);
 
         return new ChapterSiteAdminService(
             unitOfWork,
             new MemberSiteSubscriptionWriter(unitOfWork),
+            imageService ?? MockImageService(isImage: true),
             CreatePublicationRunner(unitOfWork, memberEmailService));
+    }
+
+    /// <summary>
+    /// An image service that accepts or rejects what it is given, and returns the bytes it processed so a
+    /// test can assert on the options it was called with.
+    /// </summary>
+    private static IImageService MockImageService(bool isImage)
+    {
+        var mock = new Mock<IImageService>();
+
+        mock.Setup(x => x.IsImage(It.IsAny<byte[]>()))
+            .Returns(isImage);
+        mock.Setup(x => x.Process(It.IsAny<byte[]>(), It.IsAny<ImageProcessingOptions>()))
+            .Returns((byte[] data, ImageProcessingOptions _) => data);
+
+        return mock.Object;
     }
 
     /// <summary>
@@ -230,6 +353,18 @@ public static class ChapterSiteAdminServiceTests
     }
 
     private static MockOdkContext CreateMockOdkContext() => new();
+
+    private static IMemberChapterServiceRequest ChapterAdminChapterRequest(
+        MockOdkContext context, Chapter chapter)
+    {
+        var member = context.CreateMember();
+        context.CreateChapterAdminMember(chapter, member);
+
+        return Mock.Of<IMemberChapterServiceRequest>(x =>
+            x.Platform == PlatformType.Default &&
+            x.Chapter == chapter &&
+            x.CurrentMember == member);
+    }
 
     private static IMemberChapterServiceRequest SiteAdminChapterRequest(MockOdkContext context, Chapter chapter)
     {

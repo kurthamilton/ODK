@@ -4,24 +4,24 @@ using ODK.Core.Chapters;
 
 namespace ODK.Data.EntityFramework.Mapping;
 
-public class ChapterImageMap : IEntityTypeConfiguration<ChapterImage>
+public class ChapterHeaderImageMap : IEntityTypeConfiguration<ChapterHeaderImage>
 {
-    public void Configure(EntityTypeBuilder<ChapterImage> builder)
+    public void Configure(EntityTypeBuilder<ChapterHeaderImage> builder)
     {
-        builder.ToTable("ChapterImages");
+        builder.ToTable("ChapterHeaderImages");
 
         builder.HasKey(x => x.ChapterId);
 
         builder.Property(x => x.Version)
             .IsRowVersion();
 
-        // Derived by the database from the rowversion, so a write gets a new number and the
+        // Derived by the database from the rowversion, so a new upload gets a new number and the
         // cache-busting url built from it changes with it.
         builder.Property(x => x.VersionInt)
             .HasComputedColumnSql("CONVERT([int],CONVERT([bigint],[Version]))");
 
         builder.HasOne<Chapter>()
             .WithOne()
-            .HasForeignKey<ChapterImage>(x => x.ChapterId);
+            .HasForeignKey<ChapterHeaderImage>(x => x.ChapterId);
     }
 }

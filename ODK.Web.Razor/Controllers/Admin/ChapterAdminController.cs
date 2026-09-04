@@ -54,8 +54,36 @@ public class ChapterAdminController : AdminControllerBase
         return Redirect(OdkRoutes.GroupAdmin.Index().Path);
     }
 
+    [HttpPost("groups/{chapterId:guid}/header-image")]
+    public async Task<IActionResult> UpdateHeaderImage(
+        Guid chapterId, [FromForm] ChapterImageFormSubmitViewModel viewModel)
+    {
+        if (string.IsNullOrEmpty(viewModel.ImageDataUrl))
+        {
+            AddFeedback("No image provided", FeedbackType.Warning);
+            return RedirectToReferrer();
+        }
+
+        if (!ImageHelper.TryParseDataUrl(viewModel.ImageDataUrl, out var bytes))
+        {
+            AddFeedback("Image could not be processed", FeedbackType.Error);
+            return RedirectToReferrer();
+        }
+
+        var result = await _chapterSiteAdminService.UpdateChapterHeaderImage(
+            MemberChapterServiceRequest,
+            new ChapterHeaderImageUpdateModel
+            {
+                ImageData = bytes
+            });
+
+        AddFeedback(result, "Header image updated");
+        return RedirectToReferrer();
+    }
+
     [HttpPost("groups/{chapterId:guid}/image")]
-    public async Task<IActionResult> UpdateImage(Guid chapterId, [FromForm] ChapterImageFormViewModel viewModel)
+    public async Task<IActionResult> UpdateImage(
+        Guid chapterId, [FromForm] ChapterImageFormSubmitViewModel viewModel)
     {
         if (string.IsNullOrEmpty(viewModel.ImageDataUrl))
         {
@@ -70,7 +98,7 @@ public class ChapterAdminController : AdminControllerBase
         }
 
         var request = MemberChapterAdminServiceRequest.Create(
-            ChapterAdminSecurable.MemberImage, MemberChapterServiceRequest);
+            ChapterAdminSecurable.Branding, MemberChapterServiceRequest);
         var result = await _chapterAdminService.UpdateChapterImage(request, new ChapterImageUpdateModel
         {
             ImageData = bytes

@@ -5,6 +5,8 @@ namespace ODK.Web.Razor.Models.Header;
 
 public class ChapterHeaderViewModel
 {
+    public required int? HeaderImageVersion { get; init; }
+
     public required Chapter Chapter { get; init; }
 
     public required Member? Member { get; init; }

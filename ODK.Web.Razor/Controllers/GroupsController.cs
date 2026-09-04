@@ -69,6 +69,19 @@ public class GroupsController : OdkControllerBase
     }
 
     [SkipRequestStoreMiddleware]
+    [HttpGet("groups/{chapterId:guid}/header-image")]
+    public async Task<IActionResult> HeaderImage(Guid chapterId, [FromQuery(Name = "v")] int? version = null)
+    {
+        var image = await _chapterService.GetChapterHeaderImage(chapterId);
+        if (image == null)
+        {
+            return NotFound();
+        }
+
+        return CacheableFile(image.ImageData, image.MimeType, version);
+    }
+
+    [SkipRequestStoreMiddleware]
     [HttpGet("groups/{chapterId:guid}/image")]
     public async Task<IActionResult> Image(Guid chapterId, [FromQuery(Name = "v")] int? version = null)
     {
