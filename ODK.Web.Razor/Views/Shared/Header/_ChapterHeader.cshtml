@@ -1,10 +1,8 @@
 ﻿@using ODK.Core.Pages
-@using ODK.Core.Platforms
 @using ODK.Web.Common.Routes
 @using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Header
-@using ODK.Web.Razor.Services
 @model ChapterHeaderViewModel
 @inject IOdkRoutes OdkRoutes
 @inject IRequestStore RequestStore
@@ -15,10 +13,9 @@
     var pages = Model.Pages
         .ToDictionary(x => x.PageType);
 
-    // The stored image, or the path in Chapter.BannerImageUrl for a group that has not been given one.
     var headerImageUrl = Model.HeaderImageVersion != null
         ? OdkRoutes.Groups.HeaderImage(Model.Chapter.Id, Model.HeaderImageVersion.Value)
-        : Model.Chapter.BannerImageUrl;
+        : "/assets/img/home-banner.png";
 
     var menuItems = new List<MenuItem>();
 
