@@ -57,7 +57,7 @@ public static class E2ESettings
     /// that seed a <c>ChapterPaymentAccount</c> for a real purchase require it.
     /// </summary>
     public static string StripeConnectedAccountId(int platformTypeId)
-        => GetOptional($"Stripe:Platforms:{PlatformTypeIds.Name(platformTypeId)}:ConnectedAccountId");
+        => GetOptional($"Stripe:Platforms:{PlatformTypeIds.Key(platformTypeId)}:ConnectedAccountId");
 
     /// <summary>
     /// The Stripe secret key for the account the platform transacts through, for the few things a test does
@@ -67,7 +67,7 @@ public static class E2ESettings
     /// app's <c>Stripe:Platforms:&lt;platform&gt;:SecretApiKey</c> have to be the same key.
     /// </summary>
     public static string StripeSecretApiKey(int platformTypeId)
-        => GetRequired($"Stripe:Platforms:{PlatformTypeIds.Name(platformTypeId)}:SecretApiKey");
+        => GetRequired($"Stripe:Platforms:{PlatformTypeIds.Key(platformTypeId)}:SecretApiKey");
 
     private static string GetOptional(string key) => Configuration[key] ?? string.Empty;
 

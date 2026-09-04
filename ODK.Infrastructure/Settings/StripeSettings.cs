@@ -1,6 +1,4 @@
-﻿using ODK.Core.Platforms;
-
-namespace ODK.Infrastructure.Settings;
+﻿namespace ODK.Infrastructure.Settings;
 
 public class StripeSettings
 {
@@ -12,7 +10,7 @@ public class StripeSettings
 
     public required string ConnectedAccountProductDescription { get; init; }
 
-    public required Dictionary<PlatformType, StripePlatformSettings> Platforms { get; init; }
+    public required Dictionary<PlatformKey, StripePlatformSettings> Platforms { get; init; }
 
     public required int SettlementReadDelaySeconds { get; init; }
 

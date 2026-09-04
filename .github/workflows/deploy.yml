@@ -100,15 +100,15 @@ jobs:
       - uses: dopplerhq/cli-action@v3
 
       # Build appsettings.Production.json from Doppler, which is the single source of deploy-time production
-      # config - credentials and non-secret values alike (Platforms:*:Urls, RateLimiting:BlockPatterns, ...).
+      # config - credentials and non-secret values alike (Platforms:*:Url, RateLimiting:BlockPatterns, ...).
       # Config that is public and identical in every environment stays in the committed appsettings.json
-      # instead - a platform's Name, but not its Urls. Doppler's JSON import delimits
-      # config levels with "_" (e.g. PAYMENTS_STRIPE_PLATFORMS_DEFAULT_WEBHOOKSECRETV1) which we convert to ":" -
+      # instead - a platform's Name, but not its Url. Doppler's JSON import delimits
+      # config levels with "_" (e.g. STRIPE_PLATFORMS_GS_WEBHOOKSECRETV1) which we convert to ":" -
       # unambiguous because no config-key segment contains an underscore. .NET matches keys case-insensitively,
       # so a flat "ConnectionStrings:Default" key overrides the nested one from the base appsettings.json.
       # Arrays come from Doppler two ways: a value that is JSON ([...]/{...}) is parsed and injected as real
       # structure (needed for arrays of objects like Logging:IgnoreExceptions, and for plain lists like
-      # PLATFORMS_DEFAULT_URLS); a small set of string-array keys ($stringListKeys below, e.g.
+      # GROUPS_RESERVEDSLUGS); a small set of string-array keys ($stringListKeys below, e.g.
       # RateLimiting:BlockPatterns) is instead a newline-delimited plain-text list so the raw regexes can be
       # edited without JSON escaping. The two are mutually exclusive, and a key outside $stringListKeys whose
       # value is not JSON binds to null rather than to an array. DOPPLER_TOKEN is a read-only service token
@@ -148,10 +148,11 @@ jobs:
           # Each is injected only when set, so it stays optional; a key here must NOT also live in Doppler.
           # A new per-site key is a line here plus a matching entry in the step's env block above.
           #
-          # Only the platform belongs here. Anything else that differs between the sites differs *because*
-          # of the platform, so it is a per-platform section keyed by PlatformType that every site carries
-          # identically (Logging:Platforms, Hangfire:Platforms) - config the app selects from, rather than a
-          # value the pipeline has to inject per site.
+          # Only the platform belongs here, and its value is the platform as the app spells it - Default or
+          # DrunkenKnitwits, never the GS / DK label a per-platform section is keyed by, which does not bind
+          # here. Anything else that differs between the sites differs *because* of the platform, so it is a
+          # per-platform section keyed by that label and carried identically by every site (Logging:Platforms,
+          # Hangfire:Platforms) - config the app selects from, rather than a value the pipeline injects.
           $environmentOverrides = [ordered]@{
             'Platform' = $env:PLATFORM
           }

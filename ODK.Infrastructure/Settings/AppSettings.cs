@@ -45,7 +45,7 @@ public class AppSettings
     /// <summary>The platform this deployment serves. Every environment states its own.</summary>
     public required PlatformType Platform { get; init; }
 
-    public required Dictionary<PlatformType, PlatformSettings> Platforms { get; init; }
+    public required Dictionary<PlatformKey, PlatformSettings> Platforms { get; init; }
 
     public required RateLimitingSettings RateLimiting { get; init; }
 

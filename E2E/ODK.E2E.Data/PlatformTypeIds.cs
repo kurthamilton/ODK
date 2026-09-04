@@ -13,12 +13,13 @@ public static class PlatformTypeIds
     public const int DrunkenKnitwits = 2;
 
     /// <summary>
-    /// The platform's name as the app's enum spells it, for a config key that names one platform's values.
+    /// The label a config key names one platform's values by, as the app's own configuration labels it.
+    /// The numbers above are the app's enum; these are what its <c>appsettings.json</c> is keyed by.
     /// </summary>
-    public static string Name(int platformTypeId) => platformTypeId switch
+    public static string Key(int platformTypeId) => platformTypeId switch
     {
-        Default => nameof(Default),
-        DrunkenKnitwits => nameof(DrunkenKnitwits),
+        Default => "GS",
+        DrunkenKnitwits => "DK",
         _ => throw new ArgumentOutOfRangeException(
             nameof(platformTypeId), platformTypeId, "Unknown platform")
     };

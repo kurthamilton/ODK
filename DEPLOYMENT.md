@@ -6,13 +6,21 @@ How ODK is built and deployed to the hosting provider, and how to add a new plat
 
 ## 1. Overview
 
-The app is one codebase serving multiple **platforms** (Group Squirrel = `Default`, Drunken Knitwits =
-`DrunkenKnitwits`), each hosted on its **own site** at the hosting provider under its own domain. A site
-**states the platform it serves** in its config (the `Platform` key, from its `PLATFORM` environment
-Variable), so the **same build artifact is deployed to every site** — nothing platform-specific is baked into
-the binary, and nothing about a request decides the platform.
+The app is one codebase serving multiple **platforms**, each hosted on its **own site** at the hosting
+provider under its own domain. A site **states the platform it serves** in its config (the `Platform` key,
+from its `PLATFORM` environment Variable), so the **same build artifact is deployed to every site** — nothing
+platform-specific is baked into the binary, and nothing about a request decides the platform.
 
-Each site still carries **every** platform's `Platforms`, `Payments:Stripe:Platforms` and
+**A per-platform config section keys its entries by a two-letter label:** `GS` for Group Squirrel, `DK` for
+Drunken Knitwits — `Platforms:GS:Url`, `STRIPE_PLATFORMS_DK_WEBHOOKSECRETV1`. It keeps a Doppler key legible
+where its whole path is spelled out. The app calls the same platforms `Default` and `DrunkenKnitwits` (its
+`PlatformType`) and maps the label to one as it binds, so a section keyed by those names contributes nothing.
+
+**The `Platform` key is the exception: its value is the platform as the app spells it** — `Default` or
+`DrunkenKnitwits` — because it is a value read whole rather than a segment of a long key. Putting a label
+there fails at startup rather than binding, so the two cannot be crossed silently in either direction.
+
+Each site still carries **every** platform's `Platforms`, `Stripe:Platforms` and
 `Emails:Platforms` entries, because a Stripe webhook is actioned as the platform its payment was made on
 whichever endpoint received it — so a site has to be able to name and transact as another platform even
 though it only ever serves its own.
@@ -52,9 +60,9 @@ committed base `appsettings.json`:
 | Kind of value | Home | Example |
 |---|---|---|
 | Public, and identical in every environment | committed `ODK.Web.Razor/appsettings.json` | `Platforms:*:Name` |
-| Anything environment-specific, sensitive or not | Doppler (leaf secret) | `Platforms:Default:Url`, `ConnectionStrings:Default`, `Payments:Stripe:Platforms:Default:WebhookSecretV1` |
+| Anything environment-specific, sensitive or not | Doppler (leaf secret) | `Platforms:GS:Url`, `ConnectionStrings:Default`, `Stripe:Platforms:GS:WebhookSecretV1` |
 | Non-sensitive config that differs per site | GitHub **environment Variable** (`vars.*`, viewable, scoped per environment) | `Platform` |
-| Anything that differs *because of* the platform | a `Platforms` dictionary in the section, keyed by `PlatformType`, carried identically by every site | `Logging:Platforms:*:Path`, `Hangfire:Platforms:*:SchemaName`, `BetterStack:Platforms:*` |
+| Anything that differs *because of* the platform | a `Platforms` dictionary in the section, keyed by platform label, carried identically by every site | `Logging:Platforms:*:Path`, `Hangfire:Platforms:*:SchemaName`, `BetterStack:Platforms:*` |
 | **String list** | Doppler (secret whose value is a **newline-delimited list**) | `RateLimiting:BlockPatterns` |
 | **Structured** config, and any **array** | Doppler (secret whose **value is JSON**) | `Logging:IgnoreExceptions` |
 | **Dictionary** (keys are data, not a config path) | Doppler (**one** secret for the whole dictionary, **value is a JSON object**) | `Instagram:Client:Cookies` |
@@ -62,7 +70,7 @@ committed base `appsettings.json`:
 **Decision rule for any value:** does it differ per site *for a reason other than the platform*? **Yes → a
 GitHub environment Variable** (`vars.*`), and only if it is non-sensitive — today `Platform` itself is the only
 one. Does it differ per site **because of** the platform? **Then it is not per-site at all:** make it a
-`Platforms` dictionary keyed by `PlatformType`, which every site carries identically and the app selects its
+`Platforms` dictionary keyed by platform label, which every site carries identically and the app selects its
 own entry from (`ServedPlatform`). Otherwise: is it public and the same in *every* environment, production and
 local alike? **Yes → the committed `appsettings.json`; otherwise → Doppler**, which is the single source of
 everything the deploy injects, so there is one place to look and one place to change.
@@ -99,11 +107,11 @@ Key points:
 ### How the merge works (reference)
 
 - Doppler stores flat keys. Its JSON import delimits config levels with a single underscore, so
-  `Payments:Stripe:Platforms:Default:WebhookSecretV1` becomes
-  `PAYMENTS_STRIPE_PLATFORMS_DEFAULT_WEBHOOKSECRETV1`. The pipeline converts `_` → `:`. Case doesn't matter
+  `Stripe:Platforms:GS:WebhookSecretV1` becomes
+  `STRIPE_PLATFORMS_GS_WEBHOOKSECRETV1`. The pipeline converts `_` → `:`. Case doesn't matter
   for a *settings* key — .NET matches config keys case-insensitively, so
-  `PAYMENTS:STRIPE:PLATFORMS:DEFAULT:WEBHOOKSECRETV1` overrides the nested key from the base
-  `appsettings.json`. The platform name is a config *level* here, not data, which is why it survives the
+  `STRIPE:PLATFORMS:GS:WEBHOOKSECRETV1` overrides the nested key from the base
+  `appsettings.json`. The platform label is a config *level* here, not data, which is why it survives the
   upper-casing intact - see the dictionary rule below for the case that does not.
 - **A Doppler key name cannot carry a literal underscore, hyphen, or lower-case letter into a config segment.**
   The `_` → `:` conversion is unconditional, so an underscore *within* a name splits it into another level, and
@@ -167,10 +175,10 @@ Do this once (it already exists today; documented here for completeness / disast
 
 ## 4. Adding a platform (new deployment target)
 
-Follow these steps to stand up a new site for a platform. (A brand-new *platform type* beyond `Default` /
-`DrunkenKnitwits` additionally needs an app change — a new `PlatformType` value, and the platform-specific
-behaviour branched on it — which is outside this deployment doc. These steps assume the platform type
-already exists.)
+Follow these steps to stand up a new site for a platform. (A brand-new *platform type* additionally needs an
+app change — a new `PlatformType` value, a `PlatformKey` label for a config section to key its entry by, and
+the platform-specific behaviour branched on it — which is outside this deployment doc. These steps assume the
+platform type already exists.)
 
 **Step 1 — Create the site at the hosting provider.** In the hosting provider's control panel, create the
 website for the new domain and bind the domain(s). If it's on the same hosting account as the existing sites,
@@ -197,14 +205,16 @@ deploy matrix so the pipeline ships to it: in `deploy.yml`, add `prod-<platform>
 
 **Step 5 — State the platform the site serves.** Set `PLATFORM` as an **environment Variable** in
 `prod-<platform>` (Settings → Environments → the environment → *Variables*) to the `PlatformType` member's
-name — `Default` or `DrunkenKnitwits`. **Set it explicitly on every site, including existing ones.** The
-committed `appsettings.json` states `"Platform": "None"`, and a site whose Variable is missing reads that as
-`DrunkenKnitwits` and serves Drunken Knitwits' chrome and groups — it starts and looks broken rather than
-failing, so nothing but this Variable distinguishes the two sites.
+name — `Default` or `DrunkenKnitwits`, **not** the `GS` / `DK` label a per-platform section is keyed by.
+**Set it explicitly on every site, including existing ones.** The committed `appsettings.json` states
+`"Platform": "None"`, and a site whose Variable is missing reads that as `DrunkenKnitwits` and serves Drunken
+Knitwits' chrome and groups — it starts and looks broken rather than failing, so nothing but this Variable
+distinguishes the two sites. A Variable holding a label is the one mistake that does fail loudly, at
+startup.
 
 **Step 6 — Give the platform a canonical URL.** Every site needs *every* platform's URL, not just its own
 (see §1), so this is a Doppler secret rather than a per-site Variable: one per platform, named for its config
-path — `PLATFORMS_DEFAULT_URL` for `Platforms:Default:Url` — with the canonical domain as a plain string:
+path — `PLATFORMS_GS_URL` for `Platforms:GS:Url` — with the canonical domain as a plain string:
 
 ```
 https://<group-squirrel-domain>
@@ -220,7 +230,7 @@ The change ships with the next deploy — no commit needed.
 - **A Hangfire schema — required, and committed.** Every site shares the one prod database, and a Hangfire
   server runs whatever it finds in its own storage, so two sites pointed at one schema each run the other's
   background jobs. Add the platform's entry to `Hangfire:Platforms` in `appsettings.json` with a schema name
-  no other platform uses (`DrunkenKnitwits` is `Hangfire`, `Default` is `Hangfire2`). The names are
+  no other platform uses (`DK` is `Hangfire`, `GS` is `Hangfire2`). The names are
   deliberately numbered rather than named after a platform, so renaming a platform never strands a schema.
   Hangfire creates the schema and its tables on first start, so the SQL login needs rights to do so.
   A queued job carries the platform it was queued *for*, so a site running only its own storage's jobs is
@@ -327,9 +337,13 @@ one failing doesn't abort the other.
 - **`A duplicate key '…' was found`** on the site after deploy. A key is in *both* Doppler and a GitHub
   environment Variable. Remove it from one.
 - **A site is serving the wrong platform's chrome and groups.** Its `PLATFORM` environment Variable is
-  missing or misspelt, so the site read the committed `"Platform": "None"` and fell back to
-  `DrunkenKnitwits`. Set it (Settings → Environments → the environment → *Variables*) and re-run Deploy for
-  that environment. The site's log says so at startup: "Platform is not stated in configuration".
+  missing, so the site read the committed `"Platform": "None"` and fell back to `DrunkenKnitwits`. Set it
+  (Settings → Environments → the environment → *Variables*) to `Default` or `DrunkenKnitwits` and re-run
+  Deploy for that environment. The site's log says so at startup: "Platform is not stated in configuration".
+- **A site fails at startup, having converted no configuration value at `Platform`.** Its `PLATFORM`
+  Variable holds a section label - `GS` or `DK` - rather than the platform as the app spells it. Set it to
+  `Default` or `DrunkenKnitwits`. This is the deliberate half of the pair above: a value config cannot read
+  fails rather than being taken for unstated and serving a platform by accident.
 - **A list deployed as a single string.** For a **newline list** (`BlockPatterns` etc.), the key must
   be in `$stringListKeys` in `deploy.yml` and each entry on its own line. For a **JSON** value it must start with
   `[`/`{` and be valid JSON (backslashes doubled) — an invalid escape (e.g. a lone `\.`) fails to parse and

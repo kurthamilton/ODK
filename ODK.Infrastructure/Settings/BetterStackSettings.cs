@@ -1,8 +1,6 @@
-﻿using ODK.Core.Platforms;
-
-namespace ODK.Infrastructure.Settings;
+﻿namespace ODK.Infrastructure.Settings;
 
 public class BetterStackSettings
 {
-    public required Dictionary<PlatformType, BetterStackPlatformSettings> Platforms { get; init; }
+    public required Dictionary<PlatformKey, BetterStackPlatformSettings> Platforms { get; init; }
 }

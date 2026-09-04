@@ -22,6 +22,22 @@ decided by what it is about rather than by the request has to name another site 
 actioned as the platform its payment was made on, whichever endpoint received it. So
 `IPlatformProvider.GetBaseUrl(platform)` takes a platform, and only `Platform` is about this deployment.
 
+**A per-platform config section is keyed by a `PlatformKey` label, not by `PlatformType`** — `GS` and `DK`,
+because a config key is read where its whole path is spelled out (`STRIPE_PLATFORMS_DK_WEBHOOKSECRETV1` in
+Doppler). `DependencyRegistrar` maps the label to a `PlatformType` before any service sees one, so a label
+reaches nothing outside `ODK.Infrastructure`, and `ServedPlatform.Of` selects an entry by crossing from the
+served `PlatformType` to its label (`ToPlatformKey`), falling back to the `GS` entry — `PlatformType.Default`,
+the platform GS names. **Keys only:** `Platform`, whose value is the platform a deployment serves, stays a
+`PlatformType` name, since it is read whole rather than as a segment of a long key. A new platform therefore
+needs a `PlatformKey` member as well as a `PlatformType` one, and the two mappings have to agree —
+`PlatformConfigTests` round-trips every member.
+
+**Crossing the two vocabularies never binds, and only one direction is quiet.** A dictionary key the binder
+cannot convert is dropped, so a section keyed `DrunkenKnitwits` contributes nothing rather than fighting the
+`DK` entry — never make both spellings bind, or the entry is decided by whichever key sorts last instead of
+by which config layer stated it. A *scalar* it cannot convert throws while binding, so a `Platform` stating
+`GS` fails at startup rather than being read as unstated and serving Drunken Knitwits by accident.
+
 ## Solution layout
 
 Dependencies flow downward; never reference upward.
@@ -578,7 +594,7 @@ the request locale and enqueues a background `IMemberLocaleService.UpdateLocale`
   neither is its reading an unstated `Platform` (which binds as `None`) as `DrunkenKnitwits`.
 - **A value kept out of git still has its structure committed to `appsettings.json`, emptied.** `""` for a
   string, `[]` for an array, and never an omitted section — the real value goes in the git-ignored
-  `appsettings.dev.json` and in Doppler (`Payments:Stripe:Platforms:*:WebhookSecretV1`,
+  `appsettings.dev.json` and in Doppler (`Stripe:Platforms:*:WebhookSecretV1`,
   `Recaptcha:SecretKey`, `Platforms:*:Url`). The tracked file then doubles as the template for a new
   environment while giving nothing away, and `AppSettingsTests` keeps working: it binds the tracked file and
   skips nullable properties, so an omitted section is a nullable property it walks straight past, taking every
@@ -588,12 +604,13 @@ the request locale and enqueues a background `IMemberLocaleService.UpdateLocale`
   neither met nor unmet, and code that conflates the two reports a failure it has no grounds for. See
   `StripeWebhookParser`, which reads a blank webhook secret as unconfigured.
 - **A value that differs between deployments *because of* the platform is a `Platforms` dictionary, not a
-  per-deployment value.** Every deployment carries every platform's entry, keyed by `PlatformType`, and the
+  per-deployment value.** Every deployment carries every platform's entry, keyed by `PlatformKey`, and the
   running app selects its own through `ServedPlatform` — so the two platforms' values are stated together,
   in config, where a reader can compare them. `Logging:Platforms:*:Path`,
   `Hangfire:Platforms:*:SchemaName` and `BetterStack:Platforms:*` are the pattern; `Emails:Platforms` and
-  `Payments:Stripe:Platforms` predate it and are the same shape. A missing entry falls back to `Default`'s, as
-  `SiteEmailSettingsProvider` and `IPlatformProvider.GetName` do.
+  `Stripe:Platforms` predate it and are the same shape. A missing entry falls back to the `GS`
+  entry, or to `PlatformType.Default`'s once mapped, as `SiteEmailSettingsProvider` and
+  `IPlatformProvider.GetName` do.
   The point is what it removes: a per-site GitHub Variable is invisible from the repo, has to be set again
   for every new site, and is the one thing a deploy cannot check. `Platform` itself is the only value that
   cannot be expressed this way, and it is the only one left.
@@ -607,7 +624,7 @@ the request locale and enqueues a background `IMemberLocaleService.UpdateLocale`
   `AppSettingsTests` walks the bound graph and fails on any *non-nullable* setting that came back null, so this
   stays enforced rather than reviewed.
 - **Everything bound to `appsettings.json` lives in `ODK.Infrastructure/Settings`**, named for its config path
-  plus `Settings` (`Payments:Stripe` → `PaymentsStripeSettings`, one entry of `Logging:IgnoreExceptions` →
+  plus `Settings` (`Google:Maps` → `GoogleMapsSettings`, one entry of `Logging:IgnoreExceptions` →
   `LoggingIgnoreExceptionSettings`). That includes the element types of arrays and nested sections, not just the
   top-level ones. Where a service needs the same values it declares **its own** type (`LoggingServiceSettings`,
   `EmailServiceSettings`) and `DependencyRegistrar` maps one to the other. The duplication is the point: the
