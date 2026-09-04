@@ -41,6 +41,8 @@ public class GroupRoutes
         return $"{path}?token={HttpUtility.UrlEncode(inviteToken)}";
     }
 
+    public string HeaderImage(Guid chapterId, int version) => $"/groups/{chapterId}/header-image?v={version}";
+
     public string Contact(Chapter chapter) => GroupPath(chapter, "/contact");
 
     public string Conversation(Chapter chapter, Guid conversationId)

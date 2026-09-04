@@ -15,6 +15,11 @@
     var pages = Model.Pages
         .ToDictionary(x => x.PageType);
 
+    // The stored image, or the path in Chapter.BannerImageUrl for a group that has not been given one.
+    var headerImageUrl = Model.HeaderImageVersion != null
+        ? OdkRoutes.Groups.HeaderImage(Model.Chapter.Id, Model.HeaderImageVersion.Value)
+        : Model.Chapter.BannerImageUrl;
+
     var menuItems = new List<MenuItem>();
 
     menuItems.Add(new MenuItem 
@@ -75,7 +80,7 @@
 {
     ImageAltText = $"{Model.Chapter.GetDisplayName(platform)} Header Image",
     ImageLink = OdkRoutes.Groups.Group(Model.Chapter),
-    ImageUrl = Model.Chapter.BannerImageUrl,
+    ImageUrl = headerImageUrl,
     Navbar = new NavbarViewModel
     {
         Breakpoint = "md",

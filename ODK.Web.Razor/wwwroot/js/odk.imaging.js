@@ -182,8 +182,10 @@ function fitImage(canvas, image, selection) {
 }
 
 function getAspectRatio(context) {
+    /* No ratio stated leaves the crop unconstrained. A form that wants one says so, reading it off
+       the entity being uploaded. */
     if (!context.resize.hasAttribute('data-img-ratio')) {
-        return 1;
+        return NaN;
     }
 
     /* Number() rather than parseFloat(): parseFloat stops at the first character it cannot read, so a

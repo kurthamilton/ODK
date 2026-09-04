@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 using ODK.Data.EntityFramework;
@@ -12,9 +13,11 @@ using ODK.Data.EntityFramework;
 namespace ODK.Data.EntityFramework.Migrations.Migrations
 {
     [DbContext(typeof(OdkContext))]
-    partial class OdkContextModelSnapshot : ModelSnapshot
+    [Migration("20260904170457_ChapterHeaderImages-Add")]
+    partial class ChapterHeaderImagesAdd
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -372,8 +375,7 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
 
                     b.Property<int>("VersionInt")
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("int")
-                        .HasComputedColumnSql("CONVERT([int],CONVERT([bigint],[Version]))");
+                        .HasColumnType("int");
 
                     b.HasKey("ChapterId");
 
@@ -420,8 +422,7 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                     b.Property<Point>("LatLongPoint")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("geography")
-                        .HasColumnName("LatLong")
-                        .HasComputedColumnSql("[geography]::Point([Latitude],[Longitude],(4326))", true);
+                        .HasColumnName("LatLong");
 
                     b.Property<double>("Latitude")
                         .HasColumnType("float");
@@ -1597,8 +1598,7 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
 
                     b.Property<int>("VersionInt")
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("int")
-                        .HasComputedColumnSql("CONVERT([int],CONVERT([bigint],[Version]))");
+                        .HasColumnType("int");
 
                     b.HasKey("MemberId");
 
@@ -1741,8 +1741,7 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                     b.Property<Point>("LatLongPoint")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("geography")
-                        .HasColumnName("LatLong")
-                        .HasComputedColumnSql("[geography]::Point([Latitude],[Longitude],(4326))", true);
+                        .HasColumnName("LatLong");
 
                     b.Property<double>("Latitude")
                         .HasColumnType("float");
@@ -2659,8 +2658,7 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
 
                     b.Property<int>("VersionInt")
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("int")
-                        .HasComputedColumnSql("CONVERT([int],CONVERT([bigint],[Version]))");
+                        .HasColumnType("int");
 
                     b.Property<int?>("Width")
                         .HasColumnType("int");
@@ -2960,8 +2958,7 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                     b.Property<Point>("LatLongPoint")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("geography")
-                        .HasColumnName("LatLong")
-                        .HasComputedColumnSql("[geography]::Point([Latitude],[Longitude],(4326))", true);
+                        .HasColumnName("LatLong");
 
                     b.Property<double>("Latitude")
                         .HasColumnType("float");

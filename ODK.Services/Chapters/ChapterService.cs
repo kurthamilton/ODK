@@ -26,17 +26,22 @@ public class ChapterService : IChapterService
     public Task<Chapter> GetByEventId(IServiceRequest request, Guid eventId)
         => _unitOfWork.ChapterRepository.GetByEventId(request.Platform, eventId).Run();
 
+    public Task<ChapterHeaderImage?> GetChapterHeaderImage(Guid chapterId)
+        => _unitOfWork.ChapterHeaderImageRepository.GetByChapterId(chapterId).Run();
+
     public Task<ChapterImage?> GetChapterImage(Guid chapterId)
         => _unitOfWork.ChapterImageRepository.GetByChapterId(chapterId).Run();
 
     public async Task<ChapterLayoutViewModel> GetChapterLayoutViewModel(Guid chapterId)
     {
-        var (links, pages) = await _unitOfWork.Run(
+        var (headerImageVersion, links, pages) = await _unitOfWork.Run(
+            x => x.ChapterHeaderImageRepository.GetVersionDtoByChapterId(chapterId),
             x => x.ChapterLinksRepository.GetByChapterId(chapterId),
             x => x.ChapterPageRepository.GetByChapterId(chapterId));
 
         return new ChapterLayoutViewModel
         {
+            HeaderImageVersion = headerImageVersion?.Version,
             Links = links,
             Pages = pages
         };

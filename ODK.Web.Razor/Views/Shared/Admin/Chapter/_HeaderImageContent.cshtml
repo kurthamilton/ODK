@@ -1,18 +1,15 @@
-﻿@using ODK.Core.Chapters
-@using ODK.Core.Images
+﻿@using ODK.Core.Images
 @using ODK.Services.Chapters.ViewModels
-@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Admin.Chapters
-@model ChapterImageAdminPageViewModel
+@model ChapterHeaderImageAdminPageViewModel
 
 @await Html.PartialAsync("Components/_AdminPageDescription",
-    "The picture shown on your group page and wherever your group is listed.")
+    "The image across the top of every page of this group. Upload it at the size it should be shown at - it is stored as it arrives.")
 
-<form action="/groups/@Model.Chapter.Id/image" method="post">
+<form action="/groups/@Model.Chapter.Id/header-image" method="post">
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("Admin/Chapter/_ImageForm", new ChapterImageFormViewModel
     {
-        AspectRatio = ChapterImage.AspectRatio,
         CurrentImageDataUrl = Model.Image != null
             ? ImageHelper.ToDataUrl(Model.Image.ImageData, Model.Image.MimeType)
             : null

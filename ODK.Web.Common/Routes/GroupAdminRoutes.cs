@@ -323,7 +323,8 @@ public class GroupAdminRoutes
                 new(SiteAdminLocation(chapter), "Location"),
                 new(SiteAdminInstagram(chapter), "Instagram"),
                 new(SiteAdminRedirect(chapter), "Redirect"),
-                new(SiteAdminTheme(chapter), "Theme")
+                new(SiteAdminTheme(chapter), "Theme"),
+                new(SiteAdminHeaderImage(chapter), "Header image")
             ]
         }
     ];
@@ -390,6 +391,12 @@ public class GroupAdminRoutes
 
     public GroupAdminRoute SiteAdmin(Chapter chapter)
         => Base(chapter).Child("/siteadmin");
+
+    /// <summary>
+    /// Drunken Knitwits only, that being the only platform whose chrome renders a header image.
+    /// </summary>
+    public GroupAdminRoute SiteAdminHeaderImage(Chapter chapter)
+        => SiteAdmin(chapter).Child("/header-image", platform: PlatformType.DrunkenKnitwits);
 
     public GroupAdminRoute SiteAdminInstagram(Chapter chapter)
         => SiteAdmin(chapter).Child("/instagram");

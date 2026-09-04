@@ -13,11 +13,12 @@ public class ChapterLocationMap : IEntityTypeConfiguration<ChapterLocation>
 
         builder.HasKey(x => x.ChapterId);
 
-        // Shadow property mapped to the LatLong column to enable server-side spatial queries
+        /* Shadow property mapped to the LatLong column to enable server-side spatial queries. The
+           database derives the point from the two coordinates, so nothing writes it. */
         builder.Property<Point>("LatLongPoint")
             .HasColumnName("LatLong")
             .HasColumnType("geography")
-            .ValueGeneratedOnAddOrUpdate();
+            .HasComputedColumnSql("[geography]::Point([Latitude],[Longitude],(4326))", stored: true);
 
         builder.HasOne<Chapter>()
             .WithOne()

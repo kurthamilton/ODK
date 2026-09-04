@@ -1,15 +1,14 @@
-﻿using ODK.Core.Chapters;
+﻿namespace ODK.Web.Razor.Models.Admin.Chapters;
 
-namespace ODK.Web.Razor.Models.Admin.Chapters;
-
-public class ChapterImageFormViewModel
+public class ChapterImageFormViewModel : ChapterImageFormSubmitViewModel
 {
-    public ChapterImage? ChapterImage { get; set; }
+    /// <summary>
+    /// Ratio the crop is locked to, or null to leave it free.
+    /// </summary>
+    public decimal? AspectRatio { get; set; }
 
     /// <summary>
-    /// Dummy form field
+    /// The picture already stored, as a data url, so the form opens on what it is replacing.
     /// </summary>
-    public string? Image { get; set; }
-
-    public string? ImageDataUrl { get; set; }
+    public string? CurrentImageDataUrl { get; set; }
 }

@@ -11,6 +11,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly IEntityIdGenerator _idGenerator;
 
     private readonly Lazy<IChapterAdminMemberRepository> _chapterAdminMemberRepository;
+    private readonly Lazy<IChapterHeaderImageRepository> _chapterHeaderImageRepository;
     private readonly Lazy<IChapterContactMessageReplyRepository> _chapterContactMessageReplyRepository;
     private readonly Lazy<IChapterContactMessageRepository> _chapterContactMessageRepository;
     private readonly Lazy<IChapterConversationMessageRepository> _chapterConversationMessageRepository;
@@ -108,6 +109,7 @@ public class UnitOfWork : IUnitOfWork
         _idGenerator = idGenerator;
 
         _chapterAdminMemberRepository = new(() => new ChapterAdminMemberRepository(_context));
+        _chapterHeaderImageRepository = new(() => new ChapterHeaderImageRepository(_context));
         _chapterContactMessageReplyRepository = new(() => new ChapterContactMessageReplyRepository(_context));
         _chapterContactMessageRepository = new(() => new ChapterContactMessageRepository(_context));
         _chapterConversationMessageRepository = new(() => new ChapterConversationMessageRepository(_context));
@@ -201,6 +203,7 @@ public class UnitOfWork : IUnitOfWork
     }
 
     public IChapterAdminMemberRepository ChapterAdminMemberRepository => _chapterAdminMemberRepository.Value;
+    public IChapterHeaderImageRepository ChapterHeaderImageRepository => _chapterHeaderImageRepository.Value;
     public IChapterContactMessageReplyRepository ChapterContactMessageReplyRepository => _chapterContactMessageReplyRepository.Value;
     public IChapterContactMessageRepository ChapterContactMessageRepository => _chapterContactMessageRepository.Value;
     public IChapterConversationMessageRepository ChapterConversationMessageRepository => _chapterConversationMessageRepository.Value;

@@ -444,7 +444,7 @@ public partial class InitialCreate : Migration
                 ImageData = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
                 MimeType = table.Column<string>(type: "nvarchar(max)", nullable: false),
                 Version = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: false),
-                VersionInt = table.Column<int>(type: "int", nullable: false)
+                VersionInt = table.Column<int>(type: "int", nullable: false, computedColumnSql: "CONVERT([int],CONVERT([bigint],[Version]))")
             },
             constraints: table =>
             {
@@ -465,7 +465,7 @@ public partial class InitialCreate : Migration
                 Latitude = table.Column<double>(type: "float", nullable: false),
                 Longitude = table.Column<double>(type: "float", nullable: false),
                 Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                LatLong = table.Column<Point>(type: "geography", nullable: true)
+                LatLong = table.Column<Point>(type: "geography", nullable: true, computedColumnSql: "[geography]::Point([Latitude],[Longitude],(4326))", stored: true)
             },
             constraints: table =>
             {
@@ -718,7 +718,7 @@ public partial class InitialCreate : Migration
                 IsVideo = table.Column<bool>(type: "bit", nullable: false),
                 MimeType = table.Column<string>(type: "nvarchar(max)", nullable: false),
                 Version = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: false),
-                VersionInt = table.Column<int>(type: "int", nullable: false),
+                VersionInt = table.Column<int>(type: "int", nullable: false, computedColumnSql: "CONVERT([int],CONVERT([bigint],[Version]))"),
                 Width = table.Column<int>(type: "int", nullable: true)
             },
             constraints: table =>
@@ -974,7 +974,7 @@ public partial class InitialCreate : Migration
                 ImageData = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
                 MimeType = table.Column<string>(type: "nvarchar(max)", nullable: false),
                 Version = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: false),
-                VersionInt = table.Column<int>(type: "int", nullable: false)
+                VersionInt = table.Column<int>(type: "int", nullable: false, computedColumnSql: "CONVERT([int],CONVERT([bigint],[Version]))")
             },
             constraints: table =>
             {
@@ -1458,7 +1458,7 @@ public partial class InitialCreate : Migration
                 Latitude = table.Column<double>(type: "float", nullable: false),
                 Longitude = table.Column<double>(type: "float", nullable: false),
                 Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                LatLong = table.Column<Point>(type: "geography", nullable: true)
+                LatLong = table.Column<Point>(type: "geography", nullable: true, computedColumnSql: "[geography]::Point([Latitude],[Longitude],(4326))", stored: true)
             },
             constraints: table =>
             {
@@ -1500,7 +1500,7 @@ public partial class InitialCreate : Migration
                 Latitude = table.Column<double>(type: "float", nullable: false),
                 Longitude = table.Column<double>(type: "float", nullable: false),
                 Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                LatLong = table.Column<Point>(type: "geography", nullable: true)
+                LatLong = table.Column<Point>(type: "geography", nullable: true, computedColumnSql: "[geography]::Point([Latitude],[Longitude],(4326))", stored: true)
             },
             constraints: table =>
             {

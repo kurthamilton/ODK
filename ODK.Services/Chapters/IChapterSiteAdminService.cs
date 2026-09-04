@@ -1,4 +1,5 @@
-﻿using ODK.Services.Chapters.ViewModels;
+﻿using ODK.Services.Chapters.Models;
+using ODK.Services.Chapters.ViewModels;
 
 namespace ODK.Services.Chapters;
 
@@ -9,6 +10,9 @@ public interface IChapterSiteAdminService
     Task<ServiceResult> DeleteChapter(IMemberServiceRequest request, Guid chapterId);
 
     Task<ChapterAdminMembersSiteAdminPageViewModel> GetChapterAdminMembersViewModel(
+        IMemberChapterServiceRequest request);
+
+    Task<ChapterHeaderImageAdminPageViewModel> GetChapterHeaderImageViewModel(
         IMemberChapterServiceRequest request);
 
     Task<ChapterPaymentSettingsAdminPageViewModel> GetChapterPaymentSettingsViewModel(
@@ -24,6 +28,10 @@ public interface IChapterSiteAdminService
     Task<SiteAdminChaptersViewModel> GetSiteAdminChaptersViewModel(IMemberServiceRequest request);
 
     Task<SiteAdminChapterViewModel> GetSiteAdminChapterViewModel(IMemberChapterServiceRequest request);
+
+    Task<ServiceResult> UpdateChapterHeaderImage(
+        IMemberChapterServiceRequest request,
+        ChapterHeaderImageUpdateModel model);
 
     Task<ServiceResult> UpdateSiteAdminChapter(
         IMemberChapterServiceRequest request,

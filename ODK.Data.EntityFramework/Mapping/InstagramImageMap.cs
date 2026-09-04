@@ -15,8 +15,10 @@ public class InstagramImageMap : IEntityTypeConfiguration<InstagramImage>
         builder.Property(x => x.Version)
             .IsRowVersion();
 
+        // Derived by the database from the rowversion, so a write gets a new number and the
+        // cache-busting url built from it changes with it.
         builder.Property(x => x.VersionInt)
-            .ValueGeneratedOnAddOrUpdate();
+            .HasComputedColumnSql("CONVERT([int],CONVERT([bigint],[Version]))");
 
         builder.HasOne<InstagramPost>()
             .WithMany()
