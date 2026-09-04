@@ -21,7 +21,8 @@
 5. Install [ngrok](https://ngrok.com/download) and create `ngrok.yml` in the repo root (see [ngrok](#ngrok))
 
 ## Apps
-The project runs two different platforms based on the base URL.
+The project runs two different platforms off one codebase. A deployment serves the one its `Platform`
+configuration states, so each platform is its own site with its own domains.
 
 ### ODK
 The Drunken Knitwits platform, specifically for Drunken Knitwits groups around the world.
@@ -30,9 +31,59 @@ The Drunken Knitwits platform, specifically for Drunken Knitwits groups around t
 A Meetup-style platform currently under development.
 
 ## Running locally
-Run `Scripts/run.app.bat`. One process serves **both** platforms — Group Squirrel on
-[localhost:8123](http://localhost:8123) and ODK on [localhost:8124](http://localhost:8124) — with the
-platform resolved from the request URL (the `Platforms` config in `appsettings.Development.json`).
+A process serves **one** platform, the one its configuration states — the same way a deployed site does — so
+running the app means running two of them. `Scripts/app/run.bat` opens both in one Windows Terminal window,
+a tab each:
+
+| Tab | Platform | URL | Launch profile |
+|---|---|---|---|
+| GS | Group Squirrel | [localhost:8123](http://localhost:8123) | `gs` |
+| DK | Drunken Knitwits | [localhost:8124](http://localhost:8124) | `dk` |
+
+Both tabs run `dotnet watch`, so an edit reloads both. Windows Terminal focuses the tab it opened last (DK),
+which is where `dotnet watch`'s **Ctrl+R** goes — those shortcuts only reach the focused tab.
+
+### How the two instances stay out of each other's way
+
+Everything that differs between them is in a **launch profile**
+(`ODK.Web.Razor/Properties/launchSettings.json`): the environment, the port, and `Platform`. Both then read
+the same `appsettings.Development.json`.
+
+Each tab also runs under an **`--artifacts-path` of its own** (`artifacts/gs`, `artifacts/dk`), which is what
+makes two instances possible at all. It relocates `bin` *and* `obj` for every project in the graph, so the
+two share no build output. Without it they collide twice over: a running instance holds the `.exe` in its
+`bin`, so the second one to build never starts, and a shared `obj` makes two simultaneous builds fail on the
+same intermediate file.
+
+Two things follow, both easy to undo by accident:
+
+- **`Platform` must never be an environment variable in a shell that builds.** It is one of MSBuild's own
+  properties, and MSBuild reads its properties from the environment, so `set Platform=Default` silently moves
+  the build to `bin\Default\…`. A launch profile is the one safe place for it — a profile's environment is
+  applied to the launched app, not to the build.
+- **The csproj excludes `artifacts\**` and `bin\**` from the default globs.** The SDK excludes only the one
+  output path the build was given, so without those the *other* instance's tree arrives as this build's
+  content — and since an artifacts path relocates `obj` too, its generated `.cs` gets compiled in, which
+  duplicates every assembly attribute (`CS0579`).
+
+`artifacts/` and `bin/` are both gitignored.
+
+### How each instance knows its platform
+
+The scripts pass it as configuration on the command line — `dotnet run … -- --Platform=DrunkenKnitwits` — so
+the environment stays plain `Development` and both instances read the same `appsettings.Development.json`.
+
+**It cannot be an environment variable in a shell that also builds.** `Platform` is one of MSBuild's own
+properties, and MSBuild reads its properties from the environment, so `set Platform=Default` silently moves
+the build to `bin\Default\…` and `obj\Default\…`. The one safe place for it as a variable is a
+`launchSettings.json` profile, whose environment is applied to the launched app rather than to the build —
+which is what the two IDE profiles (**Group Squirrel**, **Drunken Knitwits**) use.
+
+Anything else that varies by platform is a `Platforms` dictionary keyed by `PlatformType`, so every
+platform's value is stated together and the running app selects its own (`ServedPlatform`).
+`Logging:Platforms:*:Path` is the local one that matters: each platform needs a log directory of its own,
+since Serilog holds the file it opens and two instances sharing a directory would leave one of them without
+a trace file.
 
 It runs `dotnet watch` in that window; the build itself compiles the SCSS and rebuilds the bundles, so there
 is nothing to compile beforehand. `dotnet watch` owns the console's stdin, so its shortcuts work — notably **Ctrl+R** to force a restart when a change isn't picked up or the app doesn't
@@ -46,7 +97,7 @@ Nothing watches `wwwroot/scss` while the app is running, so a change there has n
 it. In a **second** terminal (leave `dotnet watch` running in the first):
 
 ```
-Scripts/run.build.css.bat
+Scripts/app/build-css.bat
 ```
 
 or, equivalently, `npm run build:css` from `ODK.Web.Razor`.
@@ -77,8 +128,15 @@ Two tunnels are defined, one per local app:
 
 | Tunnel | Local app | Started by |
 |---|---|---|
-| `odk` | `http://localhost:8123` (dev) | `Scripts/run.ngrok.odk.bat` |
-| `odk-e2e` | `http://localhost:8125` (e2e) | `E2E/script.run.ngrok.e2e.bat`, also opened as a third tab by `E2E/script.run.tests.bat` |
+| `odk` | `http://localhost:8124` (dev, Drunken Knitwits) | `Scripts/ngrok/odk.bat` |
+| `odk-e2e` | `http://localhost:8126` (e2e, Drunken Knitwits) | `E2E/Scripts/run.ngrok.bat`, also opened as a tab by `E2E/Scripts/run.tests.bat` |
+
+**One tunnel serves both platforms' webhooks, and points at the Drunken Knitwits instance.** Each platform's
+Stripe account registers its own endpoint, but every one of them is on this single host — the platform travels
+on the URL (`/webhooks/stripe?p=<platform>`, which selects the signing secret to verify against) and the
+payment's own platform, read from the event metadata, decides which site the receipt is sent as. So an
+instance receives and actions the *other* platform's events perfectly well, which is why one tunnel is enough
+and why every instance carries every platform's Stripe settings.
 
 Both read `ngrok.yml` in the **repo root**. That file is gitignored (it holds your auth token), so create it
 yourself with this structure, substituting your ngrok auth token and the reserved URL for each endpoint:
@@ -93,12 +151,12 @@ endpoints:
   - name: odk
     url: <NGROK_URL>
     upstream:
-      url: http://localhost:8123
+      url: http://localhost:8124
 
   - name: odk-e2e
     url: <NGROK_URL>
     upstream:
-      url: http://localhost:8125
+      url: http://localhost:8126
 ```
 
 YAML is indentation-sensitive: within each endpoint, `name`, `url` and `upstream` must line up in the same
@@ -109,11 +167,11 @@ column, and `upstream`'s own `url` is indented one level further.
 
 `wwwroot/css` is **generated and gitignored**, the same as `wwwroot/lib` and the bundles. The
 `BuildClientAssets` target in the csproj compiles it on every build, so a plain `dotnet build`,
-`dotnet publish` or `Scripts/run.app.bat` produces current CSS with no extra command — and a deploy never
+`dotnet publish` or `Scripts/app/run.bat` produces current CSS with no extra command — and a deploy never
 depends on what someone last compiled locally. Don't edit anything in there by hand.
 
 To compile it on its own — which is what you want after editing a `.scss` mid-session, since nothing
-watches `wwwroot/scss` — run `Scripts/run.build.css.bat` (or `npm run build:css` from `ODK.Web.Razor`).
+watches `wwwroot/scss` — run `Scripts/app/build-css.bat` (or `npm run build:css` from `ODK.Web.Razor`).
 
 `wwwroot/scss` imports Bootstrap's own Sass sources out of `wwwroot/lib`, so the compile needs the
 client-side libraries in place. `build:css` restores them first, so there is no order to remember; the
@@ -131,7 +189,7 @@ Don't edit them by hand.
 `BuildClientAssets` runs the build after the client-library copy on every build, so any full build produces
 current bundles. If `dotnet watch` does not pick up a script edit — it may treat one as a static-asset refresh rather
 than a rebuild — run the bundle build yourself and hard-refresh, the way editing a `.scss` needs
-`Scripts/run.build.css.bat`:
+`Scripts/app/build-css.bat`:
 
 ```
 npm run build:bundles
@@ -158,7 +216,7 @@ npm, and `ODK.Web.Razor/build/copy-client-libs.mjs` copies them into `wwwroot/li
 
 `wwwroot/lib` is **generated and gitignored**. Nothing in it should be edited by hand; it is rebuilt whenever
 a package version changes. The `BuildClientAssets` target in the csproj runs the copy on every build (and then
-the SCSS compile and the bundle build), so a plain `dotnet build`, `dotnet publish` or `Scripts/run.app.bat`
+the SCSS compile and the bundle build), so a plain `dotnet build`, `dotnet publish` or `Scripts/app/run.bat`
 produces a working `wwwroot/lib` with no extra command. To run it on its own:
 
 ```

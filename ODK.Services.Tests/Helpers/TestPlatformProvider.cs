@@ -22,18 +22,22 @@ internal static class TestPlatformProvider
     /// <param name="defaultName">
     /// The default platform's name, for a test that turns on what the name itself contains.
     /// </param>
-    internal static IPlatformProvider Create(string? defaultName = null) => new PlatformProvider(
+    /// <param name="platform">The platform the deployment under test serves.</param>
+    internal static IPlatformProvider Create(
+        string? defaultName = null,
+        PlatformType platform = PlatformType.Default) => new PlatformProvider(
         new PlatformProviderSettings
         {
+            BaseUrls = new Dictionary<PlatformType, string>
+            {
+                { PlatformType.Default, DefaultBaseUrl },
+                { PlatformType.DrunkenKnitwits, DrunkenKnitwitsBaseUrl }
+            },
             Names = new Dictionary<PlatformType, string>
             {
                 { PlatformType.Default, defaultName ?? DefaultName },
                 { PlatformType.DrunkenKnitwits, DrunkenKnitwitsName }
             },
-            Urls = new Dictionary<PlatformType, IReadOnlyCollection<string>>
-            {
-                { PlatformType.Default, [DefaultBaseUrl] },
-                { PlatformType.DrunkenKnitwits, [DrunkenKnitwitsBaseUrl] }
-            }
+            Platform = platform
         });
 }

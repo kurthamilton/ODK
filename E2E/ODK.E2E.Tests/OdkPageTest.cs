@@ -113,7 +113,7 @@ public abstract class OdkPageTest : PageTest
 
     /// <summary>
     /// Where failure artifacts are written: the project's <c>TestResults</c>, alongside the html report,
-    /// so a run's output is in one place and script.e2e.bat can name the path. Found by walking up from
+    /// so a run's output is in one place and e2e.bat can name the path. Found by walking up from
     /// the assembly (which lives in bin/Debug/net10.0) to the directory holding the csproj - WorkDirectory
     /// is the bin folder under `dotnet test`, which would scatter the artifacts away from the report.
     /// </summary>

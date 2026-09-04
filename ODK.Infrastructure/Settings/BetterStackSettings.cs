@@ -1,6 +1,8 @@
-﻿namespace ODK.Infrastructure.Settings;
+﻿using ODK.Core.Platforms;
+
+namespace ODK.Infrastructure.Settings;
 
 public class BetterStackSettings
 {
-    public string? SourceToken { get; set; }
+    public required Dictionary<PlatformType, BetterStackPlatformSettings> Platforms { get; init; }
 }

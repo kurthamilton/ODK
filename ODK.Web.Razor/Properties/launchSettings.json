@@ -8,29 +8,57 @@
     }
   },
   "profiles": {
-    "http": {
+    // A profile per platform per environment, because a process serves the one platform its config states,
+    // and a suite covering both platforms needs one instance of each. Everything that differs is here: the
+    // environment, the port, and the platform.
+    //
+    // `Platform` is safe as an environment variable *here* and nowhere else. A launch profile's environment
+    // is applied to the app being launched, not to the build, so MSBuild - which reads its own `Platform`
+    // property from the environment - never sees it. Set it in a shell instead and the build silently moves
+    // to bin\Default\... and obj\Default\...
+    //
+    // The dev pair is opened by Scripts\app\run.bat, the e2e pair by E2E\script.run.tests.bat, each tab
+    // under an --artifacts-path of its own so the instances share no build output.
+    "gs": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,
-      "applicationUrl": "http://localhost:8888",
+      "applicationUrl": "http://localhost:8123",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "Platform": "Default"
       }
     },
-    "https": {
+    "dk": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,
-      "applicationUrl": "https://localhost:7272;http://localhost:8888",
+      "applicationUrl": "http://localhost:8124",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "Platform": "DrunkenKnitwits"
       }
     },
-    "IIS Express": {
-      "commandName": "IISExpress",
-      "launchBrowser": true,
+    // No launchBrowser: an E2E run drives its own browser, and the tests wait for the port rather than for
+    // a window. Ports are 8125/8126 so a run can sit alongside a dev instance on 8123/8124.
+    "e2e-gs": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      "applicationUrl": "http://localhost:8125",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "e2e",
+        "Platform": "Default"
+      }
+    },
+    "e2e-dk": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      "applicationUrl": "http://localhost:8126",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "e2e",
+        "Platform": "DrunkenKnitwits"
       }
     }
   }

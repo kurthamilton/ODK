@@ -30,9 +30,7 @@
     <File Path="Scripts/dotnet/tool-restore.bat" />
   </Folder>
   <Folder Name="/Solution Items/e2e/">
-    <File Path="E2E/script.run.app.e2e.bat" />
-    <File Path="E2E/script.run.ngrok.e2e.bat" />
-    <File Path="E2E/script.run.tests.bat" />
+    <File Path="E2E/Scripts/run.tests.bat" />
   </Folder>
   <Folder Name="/Solution Items/ef-migrations/">
     <File Path="Scripts/ef-migrations/add.bat" />

@@ -33,6 +33,7 @@ using ODK.Services.Integrations.Geolocation;
 using ODK.Services.Integrations.Html;
 using ODK.Services.Integrations.Imaging;
 using ODK.Services.Integrations.Instagram;
+using ODK.Services.Integrations.Logging;
 using ODK.Services.Integrations.OAuth;
 using ODK.Services.Integrations.Payments;
 using ODK.Services.Integrations.Payments.PayPal;
@@ -222,7 +223,7 @@ public static class DependencyRegistrar
             {
                 MaxPixels = appSettings.Imaging.MaxPixels
             })
-            .AddScoped<ILoggingService, LoggingService>()
+            .AddScoped<ILoggingService, SerilogLoggingService>()
             .AddSingleton(new LoggingServiceSettings
             {
                 IgnoreExceptions = appSettings.Logging.IgnoreExceptions
@@ -331,8 +332,9 @@ public static class DependencyRegistrar
             .AddScoped<IPlatformProvider, PlatformProvider>()
             .AddSingleton(new PlatformProviderSettings
             {
+                BaseUrls = appSettings.Platforms.ToDictionary(x => x.Key, x => x.Value.Url),
                 Names = appSettings.Platforms.ToDictionary(x => x.Key, x => x.Value.Name),
-                Urls = appSettings.Platforms.ToDictionary(x => x.Key, x => (IReadOnlyCollection<string>)x.Value.Urls)
+                Platform = ServedPlatform.Of(appSettings)
             })
             .AddScoped<ICountryAdminService, CountryAdminService>()
             .AddScoped<ILocaleService, LocaleService>()

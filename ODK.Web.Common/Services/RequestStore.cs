@@ -207,7 +207,7 @@ public class RequestStore : IRequestStore
         bool verbose)
         => Load(
             context,
-            _platformProvider.GetPlatform(context.RequestUrl),
+            _platformProvider.Platform,
             x => GetChapterQuery(context, x, verbose),
             currentMemberIdOrDefault,
             signedInMemberIds);

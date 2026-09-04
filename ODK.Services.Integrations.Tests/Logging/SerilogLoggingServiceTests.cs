@@ -5,13 +5,14 @@ using NUnit.Framework;
 using ODK.Core.Exceptions;
 using ODK.Core.Web;
 using ODK.Data.Core;
+using ODK.Services.Integrations.Logging;
 using ODK.Services.Logging;
 using Serilog;
 
 namespace ODK.Services.Tests.Logging;
 
 [Parallelizable]
-public static class LoggingServiceTests
+public static class SerilogLoggingServiceTests
 {
     [TestCase("/abc/", "/abc", ExpectedResult = true)]
     [TestCase("/abc/", "/abcd", ExpectedResult = false)]
@@ -187,10 +188,10 @@ public static class LoggingServiceTests
         return mock.Object;
     }
 
-    private static LoggingService CreateService(
+    private static SerilogLoggingService CreateService(
         LoggingServiceSettings? settings = null)
     {
-        return new LoggingService(
+        return new SerilogLoggingService(
             Mock.Of<ILogger>(),
             Mock.Of<IUnitOfWorkFactory>(),
             Mock.Of<IUnitOfWork>(),

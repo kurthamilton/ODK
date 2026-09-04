@@ -4,8 +4,17 @@
 		<TargetFramework>net10.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
-		<UserSecretsId>aspnet-ODK.Web.Razor-885db159-c982-4fde-b49e-baf69b1293fb</UserSecretsId>
 		<DefaultItemExcludes>$(DefaultItemExcludes);node_modules\**</DefaultItemExcludes>
+
+		<!-- Every output tree, not just this build's own. Each platform's instance builds into an artifacts
+		     path of its own (artifacts\gs, artifacts\dk - see Scripts\app\run.bat), and the SDK excludes
+		     only the one path this build was given, so without these the *other* platform's tree arrives
+		     through the default globs: its files copied in as Content, and - because an artifacts path
+		     relocates obj as well - its generated .cs compiled in too, which is a duplicate of every
+		     assembly attribute (CS0579). Measured at 410 Content and 175 Compile items.
+		     bin\** covers the same hazard for a build given a plain BaseOutputPath instead. -->
+		<DefaultItemExcludes>$(DefaultItemExcludes);artifacts\**</DefaultItemExcludes>
+		<DefaultItemExcludes>$(DefaultItemExcludes);bin\**</DefaultItemExcludes>
 
 		<!-- Every generated client asset: the vendored libraries copied out of node_modules, the CSS compiled
 		     from wwwroot\scss, and the script bundles. All three are gitignored, and none may come from the
@@ -36,13 +45,6 @@
 		     to trigger one. -->
 		<Content Remove="wwwroot\scss\**" />
 		<None Include="wwwroot\scss\**" Watch="false" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<Compile Remove="Pages\Groups\Admin\**" />
-		<Content Remove="Pages\Groups\Admin\**" />
-		<EmbeddedResource Remove="Pages\Groups\Admin\**" />
-		<None Remove="Pages\Groups\Admin\**" />
 	</ItemGroup>
 
 	<!-- Produces every generated client asset and hands it to the build as Content: restores the vendored

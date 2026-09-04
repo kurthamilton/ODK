@@ -5,7 +5,6 @@ using Hangfire;
 using Hangfire.SqlServer;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -34,6 +33,18 @@ public class Program
     public static void Main(string[] args)
     {
         var (app, appSettings) = BuildApp(args);
+
+        /* The site serves either way - an unstated platform is read as Drunken Knitwits when the settings
+           are mapped - so the log is the only place that can say the deployment never stated one. */
+        if (appSettings.Platform == PlatformType.None)
+        {
+            app.Services
+                .GetRequiredService<ILoggerFactory>()
+                .CreateLogger(typeof(Program).FullName!)
+                .LogWarning(
+                    "Platform is not stated in configuration - serving {Platform}",
+                    app.Services.GetRequiredService<PlatformProviderSettings>().Platform);
+        }
 
         // Pin the app-wide default culture so model binding parses posted values (dates, decimals) under a
         // fixed culture regardless of host. The request locale is applied for *rendering only* by
@@ -107,9 +118,7 @@ public class Program
 
         app.MapGet("/favicon.ico", async (HttpContext ctx, IPlatformProvider platformProvider) =>
         {
-            var platform = platformProvider.GetPlatform(ctx.Request.GetDisplayUrl());
-
-            var file = platform == PlatformType.DrunkenKnitwits
+            var file = platformProvider.Platform == PlatformType.DrunkenKnitwits
                 ? "wwwroot/assets/drunkenknitwits/favicon/favicon.ico"
                 : "wwwroot/assets/groupsquirrel/favicon/favicon.ico";
 
@@ -140,7 +149,9 @@ public class Program
                         appSettings.ConnectionStrings.Default,
                         new SqlServerStorageOptions
                         {
-                            SchemaName = appSettings.Hangfire.SchemaName
+                            SchemaName = ServedPlatform
+                                .Of(appSettings, appSettings.Hangfire.Platforms)
+                                .SchemaName
                         });
                 }
             })
@@ -243,7 +254,7 @@ public class Program
         // which uses more condensed request logging instead of asp.net's "spammy" version
         builder.Services.AddSerilog();
 
-        var logFileDirectory = appSettings.Logging.Path;
+        var logFileDirectory = ServedPlatform.Of(appSettings, appSettings.Logging.Platforms).Path;
         var connectionString = appSettings.ConnectionStrings.Default;
 
         var outputTemplate = $"t:{{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}}|ip:{{{IP}}}|u:{{{Name}}}|m:{{Message:lj}}|ex:{{Exception}}{{NewLine}}";
@@ -266,11 +277,19 @@ public class Program
             .WriteTo.File(Path.Combine(logFileDirectory, $"Trace.{DateTime.Today:yyyyMMdd}.txt"), outputTemplate: outputTemplate)
             .WriteTo.Console();
 
-        if (!string.IsNullOrEmpty(appSettings.BetterStack.SourceToken))
+        /* A source is its token *and* the host that ingests it, so both have to be stated for the sink to be
+           configured at all - either one blank reads as unstated and leaves it off. Not a token alone with
+           some default endpoint: the sink reports a delivery failure to SelfLog and nowhere else, so a token
+           posted to the wrong host is logs that silently never arrive. */
+        var betterStack = ServedPlatform.Of(appSettings, appSettings.BetterStack.Platforms);
+
+        if (!string.IsNullOrEmpty(betterStack.SourceToken) && !string.IsNullOrEmpty(betterStack.IngestingHost))
         {
             loggerConfiguration = loggerConfiguration
                 .WriteTo
-                .BetterStack(sourceToken: appSettings.BetterStack.SourceToken)
+                .BetterStack(
+                    sourceToken: betterStack.SourceToken,
+                    betterStackEndpoint: $"https://{betterStack.IngestingHost}")
                 .Filter
                     .ByExcluding(Matching.WithProperty<string>("RequestPath", v => v.EndsWith(".css")))
                 .Filter

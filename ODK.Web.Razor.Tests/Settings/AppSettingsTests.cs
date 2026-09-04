@@ -4,6 +4,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using ODK.Core.Platforms;
 using ODK.Infrastructure;
 using ODK.Infrastructure.Settings;
 
@@ -38,6 +39,30 @@ public static class AppSettingsTests
         nullPaths.Should().BeEmpty(
             "every non-nullable setting must be stated in config, but these bound to null: {0}",
             string.Join(", ", nullPaths));
+    }
+
+    /* The committed file is the template every environment layers over, so a value that differs per
+       deployment is stated empty rather than given a working default: a default is a value nobody reviewing
+       the config can see, and it is what a deployment that forgot to state its own would silently run as. */
+    [Test]
+    public static void AppSettings_PerDeploymentValuesAreLeftUnstated()
+    {
+        // Act
+        var settings = BindAppSettings();
+
+        // Assert
+        settings.Platform.Should().Be(
+            PlatformType.None,
+            "the platform a deployment serves is stated by that deployment, not by the committed file");
+        settings.Platforms.Values.Select(x => x.Url).Should().AllSatisfy(
+            url => url.Should().BeEmpty("a platform's URL differs per environment"));
+        settings.Logging.Platforms.Values.Select(x => x.Path).Should().AllSatisfy(
+            path => path.Should().BeEmpty("a platform's log directory differs per environment"));
+        settings.BetterStack.Platforms.Values.Should().AllSatisfy(source =>
+        {
+            source.SourceToken.Should().BeEmpty("a platform's log source is a secret, so it is never committed");
+            source.IngestingHost.Should().BeEmpty("a platform's ingesting host belongs to its source");
+        });
     }
 
     [Test]

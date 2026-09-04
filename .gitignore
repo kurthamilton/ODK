@@ -2,6 +2,7 @@
 *.user
 bin
 obj
+artifacts
 appsettings.*.json
 /ODK.Web.Razor/Logs
 /ODK.Web.Razor/wwwroot/lib
@@ -12,8 +13,6 @@ appsettings.*.json
 app_data
 /ODK.Web.Razor/Views/Shared/Groups/_GroupProfileMenu.cshtml
 
-# E2E test local overrides
-ODK.E2ETests/appsettings.local.json
 /ngrok.yml
 
 # Test run output: the html report, plus the traces and screenshots OdkPageTest writes for failures

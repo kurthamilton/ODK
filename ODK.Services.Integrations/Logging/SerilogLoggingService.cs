@@ -3,20 +3,21 @@ using ODK.Core.Logging;
 using ODK.Core.Utils;
 using ODK.Core.Web;
 using ODK.Data.Core;
+using ODK.Services.Logging;
 using Serilog;
 using Serilog.Context;
 using Serilog.Events;
 
-namespace ODK.Services.Logging;
+namespace ODK.Services.Integrations.Logging;
 
-public class LoggingService : OdkAdminServiceBase, ILoggingService
+public class SerilogLoggingService : OdkAdminServiceBase, ILoggingService
 {
     private readonly ILogger _logger;
     private readonly LoggingServiceSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUnitOfWorkFactory _unitOfWorkFactory;
 
-    public LoggingService(
+    public SerilogLoggingService(
         ILogger logger,
         IUnitOfWorkFactory unitOfWorkFactory,
         IUnitOfWork unitOfWork,

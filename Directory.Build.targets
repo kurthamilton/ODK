@@ -1,0 +1,40 @@
+<Project>
+
+  <!-- Rebuilds the discovered .editorconfig set with a single spelling.
+
+       The SDK finds .editorconfig files by walking up from every Compile item and de-duplicating the
+       directories with a CASE-SENSITIVE Distinct() (Microsoft.Managed.Core.targets, whose own comment there
+       flags the underlying MSBuild bug). A compilation whose Compile items disagree about the casing of a
+       directory therefore yields the same file more than once - C:\Git\ODK\.editorconfig,
+       C:\Git\odk\.editorconfig, C:\git\odk\.editorconfig - because the Exists() filter is case-insensitive
+       and accepts every spelling.
+
+       Roslyn compares config directories case-INsensitively, so it sees one directory declared repeatedly
+       and discards the whole set: every rule reverts to its default severity. That is the ~1,600 StyleCop
+       warnings in ODK.Web.Common, and - the part that matters - the four rules this repo enforces
+       (SA1201/SA1202/SA1204/SA1028) silently stop being enforced. It comes and goes between byte-identical
+       builds, because which generated Compile items exist varies from run to run, so a green build is no
+       evidence that the rules ran.
+
+       Fixed by dropping every discovered .editorconfig and adding the repo's own back once, spelled from
+       $(MSBuildProjectDirectory) so it shares the casing of the source paths it must match. Anything not
+       named exactly ".editorconfig" - the generated MSBuild config, .globalconfig - is left alone. -->
+  <PropertyGroup>
+    <!-- Projects sit one level below the repo root, and the E2E solution's two. Purely lexical: GetFullPath
+         resolves the ".." without consulting the file system, so the project's casing is what survives. -->
+    <OdkEditorConfigPath Condition="Exists('$(MSBuildProjectDirectory)\..\.editorconfig')">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\..\.editorconfig'))</OdkEditorConfigPath>
+    <OdkEditorConfigPath Condition="'$(OdkEditorConfigPath)' == '' and Exists('$(MSBuildProjectDirectory)\..\..\.editorconfig')">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\..\..\.editorconfig'))</OdkEditorConfigPath>
+  </PropertyGroup>
+
+  <Target Name="OdkNormaliseEditorConfigFiles"
+          BeforeTargets="CoreCompile"
+          Condition="'$(OdkEditorConfigPath)' != ''">
+    <ItemGroup>
+      <!-- A file named ".editorconfig" has an empty Filename and ".editorconfig" as its Extension, which is
+           what separates it from ODK.Core.GeneratedMSBuildEditorConfig.editorconfig. -->
+      <EditorConfigFiles Remove="@(EditorConfigFiles->WithMetadataValue('Filename','')->WithMetadataValue('Extension','.editorconfig'))" />
+      <EditorConfigFiles Include="$(OdkEditorConfigPath)" />
+    </ItemGroup>
+  </Target>
+
+</Project>

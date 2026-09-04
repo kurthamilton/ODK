@@ -5,13 +5,22 @@ Guidance for working in this repository. Keep this file current as conventions s
 ## What this is
 
 ODK is an ASP.NET Core (net10.0) server-rendered web app that runs **two platforms** off the
-same codebase, selected by base URL:
+same codebase:
 
 - **ODK / Drunken Knitwits** — groups for Drunken Knitwits chapters.
 - **Group Squirrel** — a Meetup-style platform, under active development.
 
 Platform-specific behaviour is branched on `PlatformType` (usually a `switch`), so when adding
 features consider both platforms — see `GroupAdminRoutes` for the pattern.
+
+**A deployment serves the one platform its `Platform` config states**, and `IPlatformProvider.Platform`
+is where the running app reads it — nothing about a request decides it, because a site is bound to one
+platform's domains. `request.Platform` still answers "which platform is this for" everywhere downstream.
+**The app is not single-platform, though**: `Platforms`, `Stripe:Platforms`, `Emails:Platforms` and
+`Stripe:Webhooks:Hosts` are keyed by platform on *every* deployment, because work whose platform is
+decided by what it is about rather than by the request has to name another site — a Stripe webhook is
+actioned as the platform its payment was made on, whichever endpoint received it. So
+`IPlatformProvider.GetBaseUrl(platform)` takes a platform, and only `Platform` is about this deployment.
 
 ## Solution layout
 
@@ -37,11 +46,28 @@ Tests: `ODK.Core.Tests`, `ODK.Core.Workflows.Tests`, `ODK.Services.Tests`,
 
 - **Build:** `dotnet build ODK.Web.Razor/ODK.Web.Razor.csproj` (builds the referenced graph).
 - **Test:** `dotnet test ODK.Services.Tests/ODK.Services.Tests.csproj` (or the solution).
-- **Run locally:** `Scripts/run.app.bat`. One process serves both platforms, resolved from the request URL.
-  Requires a local SQL Server restored from a prod backup.
+- **Run locally:** `Scripts/app/run.bat` opens both platforms as tabs of one Windows Terminal window, GS on
+  8123 and DK on 8124, each under `dotnet watch`. Requires a local SQL Server restored from a prod backup.
+  **Everything that differs between the two is a launch profile** (`gs`, `dk`, plus `e2e-gs` / `e2e-dk` for
+  the E2E suite, in `Properties/launchSettings.json`): the environment, the port and `Platform`. Both dev
+  instances then read the same `appsettings.Development.json`.
+  **Each instance runs under an `--artifacts-path` of its own** (`artifacts/gs`, `artifacts/dk`, and
+  `artifacts/e2e-*`), which is what makes two instances possible: it relocates `bin` *and* `obj` for every
+  project in the graph, so they share no build output. Without it they collide twice — a running instance
+  holds the `.exe` in its `bin`, so the second one to build never starts, and a shared `obj` makes two
+  simultaneous builds fail on the same intermediate file. With a tree each, every tab builds when it likes,
+  so nothing has to be built up front or run `--no-build`.
+  **`Platform` must never be set as an environment variable in a shell that builds**: it is one of MSBuild's
+  own properties and MSBuild reads properties from the environment, so `set Platform=Default` silently
+  relocates the build to `bin\Default\…` and `obj\Default\…`. A `launchSettings.json` profile is the one
+  safe place — its environment reaches the launched app, not the build.
+  **The csproj excludes `artifacts\**` and `bin\**` from the default globs**, because the SDK excludes only
+  the one output path the build was given: without them the other instance's tree arrives as this build's
+  Content, and — an artifacts path having relocated `obj` too — its generated `.cs` is compiled in, which
+  duplicates every assembly attribute (`CS0579`). Measured at 410 Content and 175 Compile items.
 - **CSS:** `.scss` in `wwwroot/scss` compiles to `wwwroot/css`, which is **generated and gitignored** - the
   `BuildClientAssets` csproj target compiles it on every build, so nothing deployed depends on a local
-  build being current. `Scripts/run.build.css.bat` (or `npm run build:css` from `ODK.Web.Razor`) recompiles
+  build being current. `Scripts/app/build-css.bat` (or `npm run build:css` from `ODK.Web.Razor`) recompiles
   it on its own, which is what you want mid-session, since `wwwroot/scss` is not watched. Don't hand-edit
   compiled `.css`, and **don't run a Sass watcher alongside `dotnet watch`** - a stylesheet rewritten while
   MSBuild is evaluating the project takes `dotnet watch` down with it. See the README.
@@ -67,6 +93,16 @@ Tests: `ODK.Core.Tests`, `ODK.Core.Workflows.Tests`, `ODK.Services.Tests`,
 - **Batch scripts live in `Scripts/`, and resolve paths from `%~dp0`, never from the current directory.** A
   `cd ..` is relative to the caller, and a failed `cd` does not stop a batch file - it carries on in the wrong
   directory.
+
+- **`Directory.Build.targets` re-spells the discovered `.editorconfig`, and the analyzers depend on it.** The
+  SDK finds the file by walking up from every `Compile` item and de-duplicating the directories
+  case-*sensitively*, so mixed-case `Compile` paths hand Roslyn the same file two or three times; Roslyn
+  compares those directories case-*insensitively*, sees one directory declared repeatedly, and discards the
+  whole set. Every rule then reverts to its default severity - thousands of warnings, and `SA1201`/`SA1202`/
+  `SA1204`/`SA1028` quietly stop being enforced. It varied between byte-identical builds, so a green build
+  was no evidence the rules had run. Don't remove that target, and if the analyzers ever go quiet or loud
+  without explanation, check the `/analyzerconfig:` arguments (`dotnet build -v:d`) for more than one
+  spelling of `.editorconfig`.
 
 Project defaults: `net10.0`, nullable enabled, implicit usings enabled.
 
@@ -538,11 +574,12 @@ the request locale and enqueues a background `IMemberLocaleService.UpdateLocale`
   **`required` states intent and enforces nothing here.** The configuration binder constructs settings
   reflectively, so a key missing from `appsettings.json` arrives as `null` (or `0`, or `false`) whatever the
   declaration says — `required` only binds C# code using an object initialiser. So the code reading a settings
-  value must still cope with absence; `DependencyRegistrar` coalescing `x.Paths ?? []` is not redundant.
+  value must still cope with absence; `DependencyRegistrar` coalescing `x.Paths ?? []` is not redundant, and
+  neither is its reading an unstated `Platform` (which binds as `None`) as `DrunkenKnitwits`.
 - **A value kept out of git still has its structure committed to `appsettings.json`, emptied.** `""` for a
   string, `[]` for an array, and never an omitted section — the real value goes in the git-ignored
-  `appsettings.Development.json` and in Doppler (`Payments:Stripe:Platforms:*:WebhookSecretV1`,
-  `Recaptcha:SecretKey`, `Platforms:*:Urls`). The tracked file then doubles as the template for a new
+  `appsettings.dev.json` and in Doppler (`Payments:Stripe:Platforms:*:WebhookSecretV1`,
+  `Recaptcha:SecretKey`, `Platforms:*:Url`). The tracked file then doubles as the template for a new
   environment while giving nothing away, and `AppSettingsTests` keeps working: it binds the tracked file and
   skips nullable properties, so an omitted section is a nullable property it walks straight past, taking every
   non-nullable value inside it out of coverage too.
@@ -550,6 +587,16 @@ the request locale and enqueues a background `IMemberLocaleService.UpdateLocale`
   And read an empty value as *unstated*, never as "expected to be empty": a check with no expectation is
   neither met nor unmet, and code that conflates the two reports a failure it has no grounds for. See
   `StripeWebhookParser`, which reads a blank webhook secret as unconfigured.
+- **A value that differs between deployments *because of* the platform is a `Platforms` dictionary, not a
+  per-deployment value.** Every deployment carries every platform's entry, keyed by `PlatformType`, and the
+  running app selects its own through `ServedPlatform` — so the two platforms' values are stated together,
+  in config, where a reader can compare them. `Logging:Platforms:*:Path`,
+  `Hangfire:Platforms:*:SchemaName` and `BetterStack:Platforms:*` are the pattern; `Emails:Platforms` and
+  `Payments:Stripe:Platforms` predate it and are the same shape. A missing entry falls back to `Default`'s, as
+  `SiteEmailSettingsProvider` and `IPlatformProvider.GetName` do.
+  The point is what it removes: a per-site GitHub Variable is invisible from the repo, has to be set again
+  for every new site, and is the one thing a deploy cannot check. `Platform` itself is the only value that
+  cannot be expressed this way, and it is the only one left.
 - **Declare a setting nullable when config genuinely cannot state it, and coalesce at the mapping.** Two cases,
   both of which the binder resolves to `null` rather than to something empty: a **dictionary**, because `{}`
   produces no config keys at all (`Instagram:Client:Cookies`); and any property an **array element** leaves out,

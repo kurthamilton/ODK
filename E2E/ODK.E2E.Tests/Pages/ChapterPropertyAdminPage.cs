@@ -22,10 +22,14 @@ internal class ChapterPropertyAdminPage
     {
         await _page.Navigate(createUrl);
 
-        // Name is the internal identifier, Label is the displayed question; both are required. DataType
-        // defaults to Text, which is what we want.
+        /* Name is the internal identifier, Label is the displayed question, DisplayName names the field in
+           the validation message a member sees ("The {DisplayName} field is required."). All three are
+           required. Only Label is rendered to a member, so the assertions turn on that; the other two take
+           the same value because nothing here reads them apart. DataType defaults to Text, which is what we
+           want. */
         await _page.FillAsync("#Name", label);
         await _page.FillAsync("#Label", label);
+        await _page.FillAsync("#DisplayName", label);
 
         if (required)
         {
