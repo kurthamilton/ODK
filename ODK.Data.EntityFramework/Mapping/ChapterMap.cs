@@ -18,11 +18,6 @@ public class ChapterMap : IEntityTypeConfiguration<Chapter>
         builder.Property(x => x.ApprovedUtc)
             .HasConversion<NullableUtcDateTimeConverter>();
 
-        // Column not being implicitly included for some reason
-        builder.Property(x => x.BannerImageUrl)
-            .HasColumnName("BannerImageUrl")
-            .HasMaxLength(255);
-
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();
 

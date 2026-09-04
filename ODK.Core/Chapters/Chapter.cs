@@ -12,8 +12,6 @@ public class Chapter : IDatabaseEntity, ITimeZoneEntity
 
     public DateTime? ApprovedUtc { get; set; }
 
-    public string? BannerImageUrl { get; set; }
-
     public Guid CountryId { get; set; }
 
     public DateTime CreatedUtc { get; set; }
