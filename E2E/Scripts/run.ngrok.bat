@@ -1,0 +1,1 @@
+ngrok start odk-e2e --config ../../ngrok.yml

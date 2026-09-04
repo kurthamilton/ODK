@@ -9,6 +9,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Settings\**" />
+    <EmbeddedResource Remove="Settings\**" />
+    <None Remove="Settings\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="FluentAssertions" Version="8.10.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.11" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.11" />
@@ -29,10 +35,6 @@
     <ProjectReference Include="..\ODK.Data.Core\ODK.Data.Core.csproj" />
     <ProjectReference Include="..\ODK.Data.EntityFramework\ODK.Data.EntityFramework.csproj" />
     <ProjectReference Include="..\ODK.Services\ODK.Services.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Settings\" />
   </ItemGroup>
 
 </Project>

@@ -117,9 +117,8 @@ jobs:
         shell: pwsh
         env:
           DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
-          # Optional per-environment, non-sensitive overrides - see $environmentOverrides below.
-          HANGFIRE_SCHEMANAME: ${{ vars.HANGFIRE_SCHEMANAME }}
-          LOGGING_PATH: ${{ vars.LOGGING_PATH }}
+          # Per-environment, non-sensitive overrides - see $environmentOverrides below.
+          PLATFORM: ${{ vars.PLATFORM }}
         run: |
           $config = [pscustomobject]@{}
           $flat = doppler secrets download --no-file --format json | ConvertFrom-Json
@@ -148,9 +147,13 @@ jobs:
           # Per-environment non-sensitive overrides come from GitHub environment Variables (viewable, not secrets).
           # Each is injected only when set, so it stays optional; a key here must NOT also live in Doppler.
           # A new per-site key is a line here plus a matching entry in the step's env block above.
+          #
+          # Only the platform belongs here. Anything else that differs between the sites differs *because*
+          # of the platform, so it is a per-platform section keyed by PlatformType that every site carries
+          # identically (Logging:Platforms, Hangfire:Platforms) - config the app selects from, rather than a
+          # value the pipeline has to inject per site.
           $environmentOverrides = [ordered]@{
-            'Hangfire:SchemaName' = $env:HANGFIRE_SCHEMANAME
-            'Logging:Path'        = $env:LOGGING_PATH
+            'Platform' = $env:PLATFORM
           }
           foreach ($override in $environmentOverrides.GetEnumerator()) {
             if ($override.Value) {

@@ -7,9 +7,15 @@ How ODK is built and deployed to the hosting provider, and how to add a new plat
 ## 1. Overview
 
 The app is one codebase serving multiple **platforms** (Group Squirrel = `Default`, Drunken Knitwits =
-`DrunkenKnitwits`), each hosted on its **own site** at the hosting provider under its own domain. The running
-app decides which platform a request is for from the request URL (the `Platforms` config), so the **same build
-artifact is deployed to every site** — nothing platform-specific is baked into the binary.
+`DrunkenKnitwits`), each hosted on its **own site** at the hosting provider under its own domain. A site
+**states the platform it serves** in its config (the `Platform` key, from its `PLATFORM` environment
+Variable), so the **same build artifact is deployed to every site** — nothing platform-specific is baked into
+the binary, and nothing about a request decides the platform.
+
+Each site still carries **every** platform's `Platforms`, `Payments:Stripe:Platforms` and
+`Emails:Platforms` entries, because a Stripe webhook is actioned as the platform its payment was made on
+whichever endpoint received it — so a site has to be able to name and transact as another platform even
+though it only ever serves its own.
 
 Two GitHub Actions workflows:
 
@@ -46,22 +52,36 @@ committed base `appsettings.json`:
 | Kind of value | Home | Example |
 |---|---|---|
 | Public, and identical in every environment | committed `ODK.Web.Razor/appsettings.json` | `Platforms:*:Name` |
-| Anything environment-specific, sensitive or not | Doppler (leaf secret) | `Platforms:Default:Urls`, `ConnectionStrings:Default`, `Payments:Stripe:Platforms:Default:WebhookSecretV1` |
-| Non-sensitive config that differs per site | GitHub **environment Variable** (`vars.*`, viewable, scoped per environment) | `Logging:Path` |
+| Anything environment-specific, sensitive or not | Doppler (leaf secret) | `Platforms:Default:Url`, `ConnectionStrings:Default`, `Payments:Stripe:Platforms:Default:WebhookSecretV1` |
+| Non-sensitive config that differs per site | GitHub **environment Variable** (`vars.*`, viewable, scoped per environment) | `Platform` |
+| Anything that differs *because of* the platform | a `Platforms` dictionary in the section, keyed by `PlatformType`, carried identically by every site | `Logging:Platforms:*:Path`, `Hangfire:Platforms:*:SchemaName`, `BetterStack:Platforms:*` |
 | **String list** | Doppler (secret whose value is a **newline-delimited list**) | `RateLimiting:BlockPatterns` |
-| **Structured** config, and any **array** | Doppler (secret whose **value is JSON**) | `Platforms:Default:Urls`, `Logging:IgnoreExceptions` |
+| **Structured** config, and any **array** | Doppler (secret whose **value is JSON**) | `Logging:IgnoreExceptions` |
 | **Dictionary** (keys are data, not a config path) | Doppler (**one** secret for the whole dictionary, **value is a JSON object**) | `Instagram:Client:Cookies` |
 
-**Decision rule for any value:** does it differ per site? **Yes → a GitHub environment Variable** (`vars.*`),
-and only if it is non-sensitive. **No →** is it public and the same in *every* environment, production and local
-alike? **Yes → the committed `appsettings.json`; otherwise → Doppler**, which is the single source of everything
-the deploy injects, so there is one place to look and one place to change.
+**Decision rule for any value:** does it differ per site *for a reason other than the platform*? **Yes → a
+GitHub environment Variable** (`vars.*`), and only if it is non-sensitive — today `Platform` itself is the only
+one. Does it differ per site **because of** the platform? **Then it is not per-site at all:** make it a
+`Platforms` dictionary keyed by `PlatformType`, which every site carries identically and the app selects its
+own entry from (`ServedPlatform`). Otherwise: is it public and the same in *every* environment, production and
+local alike? **Yes → the committed `appsettings.json`; otherwise → Doppler**, which is the single source of
+everything the deploy injects, so there is one place to look and one place to change.
+
+> **Prefer a platform dictionary to a per-site Variable.** A Variable is invisible from the repo, has to be
+> set again for every new site, and is the one thing a deploy cannot check — a value that follows from the
+> platform can instead be stated once, in config, next to the other platform's. That is why `Logging:Path`
+> and `Hangfire:SchemaName` are no longer Variables.
 
 > **`Platforms` is split between the two on purpose.** A platform's `Name` is the same everywhere, so it is
-> committed. Its `Urls` are not — production has the live domains, local has `localhost` ports — so the
-> committed file declares `"Urls": []` and each environment states its own: Doppler for production, the
-> git-ignored `appsettings.<env>.json` for everything else. Leaving base empty also matters mechanically: see
-> the array-merge note below.
+> committed. Its `Url` is not — production has the live domain, local has a `localhost` port — so the
+> committed file declares `"Url": ""` and each environment states its own: Doppler for production, the
+> git-ignored `appsettings.<family>.json` for everything else.
+
+> **`Platform` and `Platforms` answer different questions.** `Platform` is the one platform *this site
+> serves*, so it is a per-site Variable. `Platforms` describes *every* platform, identically on every site,
+> because a site has to be able to name another one (see §1). Never make `Platforms` per-site to match the
+> platform the site serves — a Stripe webhook actioned as the other platform would then have no URL to build
+> its links against, and fails naming the gap.
 
 > **Variables vs secrets.** GitHub *secrets* are write-only (see §3). GitHub *Variables* are plaintext and
 > **viewable/editable in the UI**, so they're the right home for non-sensitive per-site config — you can read
@@ -114,14 +134,14 @@ Key points:
     array. A plain string where an array is expected binds the property to **null** rather than to an empty
     array, and the failure lands wherever the collection is first enumerated.
 - **An array in the base `appsettings.json` is merged into, not replaced.** Every provider is flattened to
-  indexed keys (`Platforms:Default:Urls:0`), so a later source only overrides the indices it states and longer
-  base arrays keep their tail. That is why the committed `Platforms` declares `"Urls": []` — an environment
-  stating one URL against a base of two would otherwise inherit the second. The rule for any array config might
-  override: **leave it empty in the base file**, so the environment's value is the whole value.
-- Finally, each per-environment GitHub Variable in the step's `$environmentOverrides` map (currently
-  `HANGFIRE_SCHEMANAME` → `Hangfire:SchemaName` and `LOGGING_PATH` → `Logging:Path`) is injected — but only
-  when set, so it stays optional. It's added by its full config key (e.g. `Logging:Path`), which overrides the
-  nested key from the base `appsettings.json` the same way the Doppler keys do.
+  indexed keys (`Logging:IgnoreExceptions:0`), so a later source only overrides the indices it states and
+  longer base arrays keep their tail — an environment stating one entry against a base of two inherits the
+  second. The rule for any array config might override: **leave it empty in the base file**, so the
+  environment's value is the whole value.
+- Finally, each per-environment GitHub Variable in the step's `$environmentOverrides` map (currently just
+  `PLATFORM` → `Platform`) is injected — but only when set, so it stays optional. It's added by its full
+  config key, which overrides the nested key from the base `appsettings.json` the same way the Doppler keys
+  do.
 
 ## 3. One-time repository setup
 
@@ -148,8 +168,9 @@ Do this once (it already exists today; documented here for completeness / disast
 ## 4. Adding a platform (new deployment target)
 
 Follow these steps to stand up a new site for a platform. (A brand-new *platform type* beyond `Default` /
-`DrunkenKnitwits` additionally needs an app change — a new `PlatformType` value and `PlatformProvider`
-handling — which is outside this deployment doc. These steps assume the platform type already exists.)
+`DrunkenKnitwits` additionally needs an app change — a new `PlatformType` value, and the platform-specific
+behaviour branched on it — which is outside this deployment doc. These steps assume the platform type
+already exists.)
 
 **Step 1 — Create the site at the hosting provider.** In the hosting provider's control panel, create the
 website for the new domain and bind the domain(s). If it's on the same hosting account as the existing sites,
@@ -174,35 +195,55 @@ deploy matrix so the pipeline ships to it: in `deploy.yml`, add `prod-<platform>
   If this site uses different credentials, also add `HOSTING_USER` / `HOSTING_PASSWORD` here — an environment
   secret overrides the shared repo secret of the same name. Otherwise leave them at repo level.
 
-**Step 5 — Map the domain to the platform.** The platform's live domains live in Doppler, in a secret named
-for its config path — `PLATFORMS_DEFAULT_URLS` for `Platforms:Default:Urls`. Its value must be a **JSON array**:
+**Step 5 — State the platform the site serves.** Set `PLATFORM` as an **environment Variable** in
+`prod-<platform>` (Settings → Environments → the environment → *Variables*) to the `PlatformType` member's
+name — `Default` or `DrunkenKnitwits`. **Set it explicitly on every site, including existing ones.** The
+committed `appsettings.json` states `"Platform": "None"`, and a site whose Variable is missing reads that as
+`DrunkenKnitwits` and serves Drunken Knitwits' chrome and groups — it starts and looks broken rather than
+failing, so nothing but this Variable distinguishes the two sites.
 
-```json
-[ "https://<group-squirrel-domain>", "https://www.<group-squirrel-domain>" ]
+**Step 6 — Give the platform a canonical URL.** Every site needs *every* platform's URL, not just its own
+(see §1), so this is a Doppler secret rather than a per-site Variable: one per platform, named for its config
+path — `PLATFORMS_DEFAULT_URL` for `Platforms:Default:Url` — with the canonical domain as a plain string:
+
+```
+https://<group-squirrel-domain>
 ```
 
-A platform may list several URLs (an apex domain and its `www.`); every one of them resolves to the platform, and
-the **first** is the one the app builds links against, so put the canonical domain first. Its `Name` comes from
-the committed `appsettings.json`, which is the only part of `Platforms` that lives there. The change ships with
-the next deploy — no commit needed.
+Alternate hosts (an apex and its `www.`) are bound at the site rather than listed here — the app never reads
+a request's host to work out its platform, so only the one URL links are built against is configuration. Its
+`Name` comes from the committed `appsettings.json`, which is the only part of `Platforms` that lives there.
+The change ships with the next deploy — no commit needed.
 
-> **It has to be JSON, not a newline-delimited list.** A newline list would bind `Urls` to **null** rather than
-> to an array, and `PlatformProvider.GetPlatform` enumerates it on every request — so the whole site would 500.
-> The newline form is only for the keys named in `$stringListKeys` in `deploy.yml`, and it is deliberately not
-> available here: that handling runs before the JSON detection, so a key in that list can never carry JSON.
+**Step 7 — Platform-specific config/secrets.**
 
-**Step 6 — Platform-specific config/secrets.**
-
-- **A Hangfire schema — required.** Every site shares the one prod database, and a Hangfire server runs
-  whatever it finds in its own storage, so two sites pointed at one schema each run the other's background
-  jobs. Set `HANGFIRE_SCHEMANAME` as an **environment Variable** in `prod-<platform>` to a name no other site
-  uses. The committed default is `Hangfire`, which `prod-odk` keeps; `prod-gs` uses `Hangfire2`. The names are
+- **A Hangfire schema — required, and committed.** Every site shares the one prod database, and a Hangfire
+  server runs whatever it finds in its own storage, so two sites pointed at one schema each run the other's
+  background jobs. Add the platform's entry to `Hangfire:Platforms` in `appsettings.json` with a schema name
+  no other platform uses (`DrunkenKnitwits` is `Hangfire`, `Default` is `Hangfire2`). The names are
   deliberately numbered rather than named after a platform, so renaming a platform never strands a schema.
   Hangfire creates the schema and its tables on first start, so the SQL login needs rights to do so.
-- **Other non-sensitive values** (e.g. a distinct `Logging:Path`): add them as environment Variables the same
-  way (Settings → Environments → the environment → *Variables*), and ensure the same key isn't also in Doppler
-  (one home per key). To wire up a *new* per-site key, add it to the env block and to `$environmentOverrides`
-  in `deploy.yml`'s "Build appsettings.Production.json" step, mirroring `LOGGING_PATH`.
+  A queued job carries the platform it was queued *for*, so a site running only its own storage's jobs is
+  still doing work for whichever platform each job named.
+- **A log directory.** Add the platform's entry to `Logging:Platforms` — the *value* is environment-specific,
+  so it goes in Doppler (`LOGGING_PLATFORMS_<PLATFORM>_PATH`) while the committed file states `""`. One per
+  platform because each platform's instance is its own process and Serilog holds the file it opens.
+- **A BetterStack source.** Add the platform's entry to `BetterStack:Platforms` — **both** its
+  `SourceToken` and its `IngestingHost`, in Doppler
+  (`BETTERSTACK_PLATFORMS_<PLATFORM>_SOURCETOKEN`, `..._INGESTINGHOST`) while the committed file states `""`
+  for each. One source per platform, so a question about one platform's logs is not read against the other's
+  traffic.
+
+  BetterStack issues an **ingesting host per source** (`s0000000.eu-central-1a.betterstackdata.com`, no
+  scheme) and recommends posting to it rather than to a shared endpoint, so it belongs to the source as much
+  as the token does — and the two are not interchangeable between sources. Take both from the same source's
+  page. Either one blank reads as unstated and turns the sink off, which is how a platform runs with no
+  BetterStack at all; a token posted to the wrong host is worse than either, because the sink reports the
+  delivery failure to Serilog's SelfLog and nowhere else, so the logs simply never arrive.
+- **Anything else that differs per site.** Ask first whether it differs *because of* the platform — if so it
+  is a `Platforms` dictionary like the three above, not a per-site value. Only if it genuinely varies for some
+  other reason does it become an environment Variable: add it to the env block and to `$environmentOverrides`
+  in `deploy.yml`'s "Build appsettings.Production.json" step, mirroring `PLATFORM`.
 - **Sensitive**: create a Doppler **branch config** (e.g. `prd_<platform>`) with the differing secrets, generate
   a service token for it, and add that token as a `DOPPLER_TOKEN` **environment** secret in `prod-<platform>`
   (it overrides the repo one). If the platform shares its secrets (the default today), skip this — it uses the
@@ -210,7 +251,7 @@ the next deploy — no commit needed.
 
 Nothing else in the workflows changes.
 
-**Step 7 — Ship it.** Merge to `master`. Build runs, and on success Deploy automatically migrates the shared DB
+**Step 8 — Ship it.** Merge to `master`. Build runs, and on success Deploy automatically migrates the shared DB
 once and deploys every site in the matrix — including the new one. (Or trigger Deploy manually via **Run
 workflow**; see §6.)
 
@@ -229,8 +270,8 @@ workflow**; see §6.)
   wp-login
   ```
 - For **structured** config and for any plain array (an array of objects like `Logging:IgnoreExceptions`, or a
-  list of strings like `Platforms:Default:Urls` → `PLATFORMS_DEFAULT_URLS`), set the value to **JSON**
-  (`[…]`/`{…}`). JSON strings must be validly escaped — every backslash doubled.
+  list of strings), set the value to **JSON** (`[…]`/`{…}`). JSON strings must be validly escaped — every
+  backslash doubled.
 - For a **dictionary** (`Instagram:Client:Cookies`, `Instagram:Client:Headers`), use **one secret for the whole
   dictionary**, with a JSON object as its value — never one secret per entry:
   ```
@@ -245,13 +286,15 @@ workflow**; see §6.)
 ### Adding / changing per-site non-sensitive config (GitHub Variables)
 
 - Settings → Environments → the environment (`prod-odk` / `prod-gs`) → *Variables*. Values are viewable and
-  editable here. `HANGFIRE_SCHEMANAME` and `LOGGING_PATH` are wired up already; a change applies on the next
-  deploy of that environment.
-- `HANGFIRE_SCHEMANAME` is per-site by necessity, not by preference — see Step 6 in §4. `prod-gs` sets
-  `Hangfire2`; `prod-odk` sets nothing and takes the committed `Hangfire`.
+  editable here. `PLATFORM` is the only one wired up; a change applies on the next deploy of that environment.
+- `PLATFORM` is what makes the two sites different deployments of the same artifact — see Step 5 in §4. It has
+  no usable default, so every site states it.
+- **It is meant to stay the only one.** A Variable is invisible from the repo and has to be set again for
+  every new site, so anything that differs between the sites *because of* the platform belongs in a
+  `Platforms` dictionary in config instead — which is where the Hangfire schema and log path now live.
 - To add a *new* per-site key, extend `deploy.yml`'s "Build appsettings.Production.json" step: add
   `<KEY>: ${{ vars.<KEY> }}` to the step `env` and a matching `'Config:Key' = $env:<KEY>` entry to
-  `$environmentOverrides`, mirroring `LOGGING_PATH` → `Logging:Path`.
+  `$environmentOverrides`, mirroring `PLATFORM` → `Platform`.
 
 ### The one rule
 
@@ -270,7 +313,7 @@ resolves the latest successful `master` Build and runs the identical migrate + d
 per-site picker — it always does both; adjust the `deploy` matrix in `deploy.yml` if you ever need to scope it.
 
 Under the hood, each site's deploy builds its own `appsettings.Production.json` (everything from Doppler, plus
-any env `LOGGING_PATH`) and Web Deploys with `-enableRule:DoNotDeleteRule` (won't delete server files missing
+its `PLATFORM`) and Web Deploys with `-enableRule:DoNotDeleteRule` (won't delete server files missing
 from the publish — logs, uploads, `App_Data`) and `-enableRule:AppOffline` (drops `app_offline.htm` during the
 copy so IIS releases the DLL lock, then removes it). The two sites deploy in parallel (`fail-fast: false`), so
 one failing doesn't abort the other.
@@ -283,6 +326,10 @@ one failing doesn't abort the other.
   `build.yml`). If you haven't deployed in over a week, run **Build** first to produce a fresh one.
 - **`A duplicate key '…' was found`** on the site after deploy. A key is in *both* Doppler and a GitHub
   environment Variable. Remove it from one.
+- **A site is serving the wrong platform's chrome and groups.** Its `PLATFORM` environment Variable is
+  missing or misspelt, so the site read the committed `"Platform": "None"` and fell back to
+  `DrunkenKnitwits`. Set it (Settings → Environments → the environment → *Variables*) and re-run Deploy for
+  that environment. The site's log says so at startup: "Platform is not stated in configuration".
 - **A list deployed as a single string.** For a **newline list** (`BlockPatterns` etc.), the key must
   be in `$stringListKeys` in `deploy.yml` and each entry on its own line. For a **JSON** value it must start with
   `[`/`{` and be valid JSON (backslashes doubled) — an invalid escape (e.g. a lone `\.`) fails to parse and

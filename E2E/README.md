@@ -1,105 +1,112 @@
-# ODK.E2ETests
+# ODK E2E tests
 
-End-to-end browser tests for the **Group Squirrel** platform, using **Playwright** + **NUnit**.
+Black-box, browser-driven end-to-end tests for the ODK app — **Playwright** + **NUnit** +
+**FluentAssertions**, in their own solution (`odk.e2e.slnx`). They drive a *running* instance with a real
+browser and read the database only for what a user cannot see: activation tokens, invitation tokens, sent-email
+records, and outcome assertions.
 
-These are black-box tests: they drive a *running* instance of the app with a real browser and read
-the database only to obtain the account-activation token (an E2E test can't open the activation
-email). They do **not** reference the app's projects.
+They **do not reference the app's projects**, which is why this is a separate solution. Two projects:
+`ODK.E2E.Tests` (fixtures, page objects, provisioning, `Config/E2ESettings`) and `ODK.E2E.Data` (all database
+access), with `Tests → Data`.
 
-## What's covered
-
-- `AccountFlowTests.CreateAccount_ActivateAndLogIn_Succeeds` — signs up on `/account/create`,
-  activates via the emailed token, sets a password, and logs in. It then asserts the registration
-  emails were sent: the pipeline records every email in `SentEmails` right after the client (the e2e
-  `ConsoleEmailClient`) reports success, so the test reads that table back for the activation and
-  welcome emails to the member.
-
-## Avoiding real remote services (a dedicated `e2e` environment)
-
-The E2E instance runs as a **separate process** under a dedicated environment name, `e2e`. Standard
-.NET config layering (base `appsettings.json` + `appsettings.e2e.json`) then turns off the external
-services — no per-request routing and virtually no production code involved.
-
-`appsettings.e2e.json` overrides just what's needed:
-
-- `Emails:UseConsoleClient: true` — emails are logged via `ConsoleEmailClient` instead of sent (no
-  Brevo quota). The client is chosen once at startup from this flag.
-- `Hibp:Enabled: false` — the Have I Been Pwned password-breach check during activation is skipped (no
-  external call, and any password passes).
-- `Hangfire:InMemory: true` — the email queue runs in-memory (no Hangfire DB schema needed).
-- `ConnectionStrings:Default` — the local dev database (the cleanup only removes `@e2e.odk.test`
-  members, so it won't disturb real data).
-
-Because the `e2e` environment does **not** load `appsettings.Development.json`, `appsettings.e2e.json`
-carries the handful of values it needs on top of base `appsettings.json` (which already has every key).
-Point it at a test DB by editing its connection string.
+> **`CLAUDE.md` in this folder is the detailed guide** — categories, platform targeting, page-object and
+> selector conventions, test-isolation rules, and the DrunkenKnitwits specifics. This file is just how to get
+> a run going. Anything here that contradicts it is this file being out of date.
 
 ## Prerequisites
 
-1. **The test database** must be the same one the running app uses — the tests read the activation
-   token from it (both `appsettings.e2e.json` and this project's `appsettings.json` point at the local
-   dev `odk` DB).
-2. **Playwright browsers** installed once (after the first build):
+1. **A database** — the same one the app under test uses, since the tests read tokens from it. Both
+   `ODK.Web.Razor/appsettings.e2e.json` and `ODK.E2E.Tests/appsettings.json` point at the local dev `odk`
+   database. Test data is cleaned up on the `@e2e.odk.test` domain, but run against a disposable one anyway.
+2. **Playwright browsers**, once, after the first build:
 
-   ```bash
-   powershell -File ODK.E2ETests\bin\Debug\net10.0\playwright.ps1 install
+   ```
+   powershell -File ODK.E2E.Tests\bin\Debug\net10.0\playwright.ps1 install
    ```
 
-   (Use `pwsh` instead of `powershell` if you have PowerShell 7 installed, or `playwright install` if
-   the CLI is on your PATH.)
+   (`pwsh` instead of `powershell` on PowerShell 7, or `playwright install` if the CLI is on your PATH.)
+3. **An ngrok tunnel**, only for the `Stripe` category — see the ngrok section in the [root
+   README](../README.md).
 
 ## Running
 
-The app and the tests run as separate processes. Two ways to drive them:
+```
+run.tests.bat                 prompts for a category
+run.tests.bat NoStripe        everything except the slow payment tests
+run.tests.bat Default         Group Squirrel only
+```
 
-- **One command (recommended):** `run.e2e.gs.bat` (repo root) opens a single Windows Terminal window
-  with two tabs — one running the app in the `e2e` environment on `http://localhost:8125` (console
-  email, HIBP off, in-memory Hangfire, local dev DB — see above), one that waits for the app, runs the
-  tests, then stops the app. Port 8125 lets it run alongside a normal dev instance (`run.app.gs.bat`
-  on 8123).
-- **Manually:** start the app with `run.app.gs.e2e.bat`, then in another terminal run
-  `dotnet test ODK.E2ETests/ODK.E2ETests.csproj --filter "TestCategory=E2E"` (the tests are
-  `[Explicit]`, so the filter is required to include them). The tests target `:8125`.
+That opens one Windows Terminal window with four tabs: an app instance per platform, the test run, and ngrok.
+The tests tab waits for both instances to answer, runs the filtered suite, then stops both. A run report
+lands at `ODK.E2E.Tests/TestResults/e2e.html` and opens itself when anything failed, with Playwright traces
+and screenshots for failures beside it in `TestResults/artifacts`.
 
-The generic wait→test→stop orchestration lives in `run.e2e.tests.bat <port> <test-csproj>`, so a
-future ODK E2E suite can reuse it with its own app-start script.
+**Two app instances, because an instance serves one platform.** The app reads the platform it serves from its
+own config, so the suite needs one per platform: the `e2e-gs` launch profile on `:8125` and `e2e-dk` on
+`:8126`. A fixture picks its instance through its platform base class, so both start whatever category you
+filter to. Those ports also let an E2E run sit alongside an ordinary dev instance (`:8123` / `:8124`).
+
+Each instance runs under an **`--artifacts-path` of its own** (`artifacts/e2e-gs`, `artifacts/e2e-dk`), which
+relocates `bin` *and* `obj` for every project in the graph. That is what lets the two run together, and beside
+a dev instance: nothing is shared, so both tabs build at once and neither has to be pre-built. See the note in
+`Scripts/app/run.bat`.
+
+To drive the pieces yourself:
+
+```
+run.app.bat gs                    one instance
+e2e.bat 8125+8126 ODK.E2E.Tests\ODK.E2E.Tests.csproj NoStripe
+dotnet test ODK.E2E.Tests\ODK.E2E.Tests.csproj --filter "TestCategory=E2E"
+```
+
+The fixtures are `[Explicit]`, so a filter is always required — a plain `dotnet test` runs none of them, which
+is what keeps them out of the unit-test run.
+
+## The `e2e` environment
+
+An instance runs under the `e2e` environment, so its config is `appsettings.json` → `appsettings.e2e.json`,
+plus the environment, port and `Platform` its launch profile supplies (`e2e-gs` / `e2e-dk`, in
+`ODK.Web.Razor/Properties/launchSettings.json`, beside the `gs` / `dk` dev pair).
+`appsettings.e2e.json` is what turns the outside world off:
+
+- `Emails:UseConsoleClient: true` — emails are logged rather than sent, and still recorded in `SentEmails`,
+  which is how a test asserts one was sent. There is no mail sink, so **an email's body is never readable** —
+  only its subject.
+- `Hibp:Enabled: false` — no breach-check call during activation, so any password passes.
+- `Hangfire:InMemory: true` — the job queue is per process, so the two instances cannot run each other's jobs.
+- `ConnectionStrings:Default` — the local dev database.
+- `Logging:Platforms:*:Path` — a log directory per platform, since each instance is its own process.
+
+**Some of that environment's values are restated in `ODK.E2E.Tests/appsettings.json`, and each pair has to
+agree** — these tests cannot read the app's configuration. `Environment`, `SiteSubscriptionCooldownMonths` and
+the per-platform Stripe keys are the cases; `CLAUDE.md` explains what breaks when one drifts, and the failures
+are silent.
 
 ## Configuration
 
-Settings live in `appsettings.json` (copied to the output directory):
+`ODK.E2E.Tests/appsettings.json`, copied to the output directory. Override per machine in the git-ignored
+`appsettings.Development.json` / `appsettings.local.json`, or per environment with `ODK_E2E_`-prefixed
+variables (`ODK_E2E_ConnectionString`; use `:` for nesting, since `_` is read as a config level).
 
-```json
-{
-  "BaseUrl": "http://localhost:8125",
-  "ConnectionString": "server=.\\SQLEXPRESS;database=odk;..."
-}
+| Key | Purpose |
+|---|---|
+| `DefaultBaseUrl` / `DrunkenKnitwitsBaseUrl` | where each platform's instance is listening |
+| `ConnectionString` | the app's database, for tokens and outcome assertions |
+| `Environment` | the deployment the app runs as, so seeded payment rows carry what it reads back |
+| `SiteSubscriptionCooldownMonths` | the app's cooldown, so a test knows which side of it it is arranging |
+| `Stripe:Platforms:*:SecretApiKey` / `ConnectedAccountId` | the account the app transacts through |
+| `Stripe:WebhookBaseUrl` | the ngrok tunnel Stripe delivers to; blank disables the webhook tests |
+
+Playwright's own options are set the standard way:
+
+```
+HEADED=1 BROWSER=chromium dotnet test ODK.E2E.Tests\ODK.E2E.Tests.csproj --filter "TestCategory=Default"
 ```
 
-- For machine-specific overrides that shouldn't be committed, add `appsettings.local.json` (same keys) — it's optional and git-ignored.
-- For CI, override via environment variables prefixed `ODK_E2E_`: `ODK_E2E_BaseUrl` and `ODK_E2E_ConnectionString` (no internal underscores — those are treated as config nesting).
+## Test data
 
-| Key | `appsettings.json` | Env override | Purpose |
-|---|---|---|---|
-| `BaseUrl` | `http://localhost:8125` | `ODK_E2E_BaseUrl` | Base URL of the running GS instance (the E2E port) |
-| `ConnectionString` | local dev connection string | `ODK_E2E_ConnectionString` | DB to read activation tokens from |
-
-Playwright's own options (headed mode, browser, slow-mo) are set the standard way, e.g.:
-
-```bash
-HEADED=1 BROWSER=chromium dotnet test ODK.E2ETests/ODK.E2ETests.csproj --filter "TestCategory=E2E"
-```
-
-## Notes / gotchas
-
-- **Real data & cleanup:** each run creates a real member (unique `e2e-<guid>@e2e.odk.test`, a
-  dedicated domain) and activates it. A namespace-level `[SetUpFixture]` (`E2ECleanupFixture`) deletes
-  every member on that domain in `[OneTimeTearDown]` after all tests finish — which NUnit always runs,
-  whether tests pass, fail, or error. Member foreign keys are `ON DELETE CASCADE`, so removing the
-  member removes its related rows; `SentEmails` has no FK to members, so its rows for the test domain
-  are deleted explicitly in the same step. Still, run against a disposable/dev database.
-- **Password breach check:** the `e2e` environment disables the Have I Been Pwned check
-  (`Hibp:Enabled: false`), so activation makes no external call and the test's random password passes.
-- **Selectors** target stable hooks (`data-firstname`, `#Password`, wizard page ids `#wizard-1..4`);
-  if the sign-up wizard markup changes, update `Pages/*`.
-- These tests are intentionally **excluded from the normal unit-test run** — they need a live app and
-  browsers, so run them explicitly (or in a dedicated CI job).
+Test members use the dedicated `@e2e.odk.test` domain. A namespace `[SetUpFixture]` (`E2ETestRunFixture`)
+provisions the site admin in `[OneTimeSetUp]` and runs `TestDataCleaner` in `[OneTimeTearDown]` — always,
+pass or fail — removing every member on that domain along with the groups, memberships and emails that hang
+off them. Anything a test writes against somebody *else* falls outside that cascade and needs its own way
+back; see the test-data rules in `CLAUDE.md`.

@@ -11,26 +11,44 @@ and read the database only for things a user can't see (activation tokens, sent-
 assertions). They **do not reference the app's projects** — production code and these tests never depend
 on each other, so this solution is separate from `ODK.slnx`.
 
-The app runs **two platforms** off one codebase, selected by base URL: **`Default`** (working title
-"Group Squirrel") and **`DrunkenKnitwits`**. Tests target a platform via a base class + test category
-(see below).
+The app runs **two platforms** off one codebase — **`Default`** (working title "Group Squirrel") and
+**`DrunkenKnitwits`** — and an instance serves the one its config states, so a suite covering both drives
+**two** instances. Tests target a platform via a base class + test category (see below), which is what picks
+the instance a fixture talks to.
 
 ## Solution layout
 
 ```
-ODK.E2E.Core     E2ESettings (config: per-platform base URLs, connection string). No test/UI deps.
 ODK.E2E.Data     DB access: E2EQueryBuilder + *DataHelper classes + Models (TestAccount/TestGroup/...).
-ODK.E2E.Tests    The tests: fixtures, Pages (page objects), Helpers (provisioning), assets.
+ODK.E2E.Tests    The tests: fixtures, Config (E2ESettings), Pages (page objects), Helpers (provisioning), assets.
 ```
 
-Dependencies flow `Tests → Data → Core`. Never reference the app's projects from here.
+Dependencies flow `Tests → Data`. Never reference the app's projects from here.
 
 ## Running the app for E2E
 
 The app runs in a dedicated ASP.NET environment, **`e2e`** (`appsettings.e2e.json` in `ODK.Web.Razor`):
-console email client (no real mail), HIBP breach check off, in-memory Hangfire, and the local dev DB.
-`script.run.app.e2e.bat` binds **both** platform ports in one process — `:8125` (Default) and `:8126`
-(DrunkenKnitwits) — and `PlatformProvider` resolves the platform from the request URL.
+console email client (no real mail), HIBP breach check off, in-memory Hangfire, the local dev DB, and a log
+directory per platform. `run.app.bat <gs|dk>` runs one instance — `:8125` (Default) or `:8126`
+(DrunkenKnitwits); `run.tests.bat` starts both, because a fixture takes its platform from its base
+class and starting only one leaves the other's tests unable to load a page.
+
+**Everything that differs between the two instances is a launch profile** — `e2e-gs` and `e2e-dk` in
+`ODK.Web.Razor/Properties/launchSettings.json` — holding the environment, the port and `Platform`. The two
+E2E profiles sit beside the `gs` / `dk` dev pair, so all four local configurations are in one file.
+`Platform` is safe as an environment variable *there* and nowhere else: it is one of MSBuild's own
+properties, read from the environment, so setting it in a shell that builds would silently move the build to
+`bin\Default\…`, whereas a profile's environment is applied to the launched app. See the note in
+`Scripts/app/run.bat`.
+
+**Each instance runs under an `--artifacts-path` of its own** (`artifacts/e2e-gs`, `artifacts/e2e-dk`), which
+is what lets the two run together and lets either run beside a dev instance. It relocates `bin` *and* `obj`
+for every project in the graph, so no two instances share build output: a running instance holds the `.exe`
+in its `bin`, and a shared `obj` would make two simultaneous builds fail on the same intermediate file. Both
+app tabs therefore build at the same time, and nothing is pre-built or run `--no-build`.
+
+**In-memory Hangfire is what makes two instances safe here.** Each has its own job storage, so neither picks
+up the other's jobs — the hazard `Hangfire:Platforms:*:SchemaName` exists for in production.
 
 **Two of that environment's values are restated here rather than merely assumed, and each pair has to
 agree.** These tests cannot read the app's configuration, so where one of its values decides what a test has
@@ -70,21 +88,23 @@ powershell -File ODK.E2E.Tests\bin\Debug\net10.0\playwright.ps1 install
 
 ## Running the tests
 
-Scripts open a Windows Terminal with three tabs (app + tests + ngrok) and tear the app down after:
+`run.tests.bat [category]` opens a Windows Terminal with four tabs — an app per platform, the tests,
+and ngrok — and tears both apps down after. Run it with no argument to be prompted for a category.
 
-- `script.run.tests.default.bat` — Default platform only
-- `script.run.tests.dk.bat` — DrunkenKnitwits only
-- `script.run.tests.bat [Default|DrunkenKnitwits|E2E]` — generic (default `E2E` = both)
+Both instances start whatever the category, because a fixture takes its platform from its base class and one
+filtered out is still a fixture that would fail to load a page.
 
-Under the hood: `dotnet test --filter "TestCategory=<platform>"`. `script.e2e.bat <port> <csproj> [category]`
-is the generic wait-for-ready → run → kill-port runner. The ngrok tab is left running — ngrok owns its
+Under the hood: `dotnet test --filter "TestCategory=<platform>"`. `e2e.bat <port[+port...]> <csproj>
+[category]` is the generic wait-for-ready → run → kill-ports runner, taking one port per instance
+(`8125+8126`); joined with `+` because cmd splits a comma-separated argument in two and quoting a
+space-separated one inside `wt ... cmd /k "..."` needs the quotes doubled. The ngrok tab is left running — ngrok owns its
 console, so tearing it down from another tab just garbles the output; close the terminal window when
 done. Its tunnel config lives in the gitignored root `ngrok.yml` (see the root README).
 
 
 ## Reading a run's results
 
-**`script.e2e.bat` writes an HTML report to `E2E/ODK.E2E.Tests/TestResults/e2e.html`** (the `html` logger
+**`e2e.bat` writes an HTML report to `E2E/ODK.E2E.Tests/TestResults/e2e.html`** (the `html` logger
 that ships with `Microsoft.NET.Test.Sdk`) and opens it when anything failed. It is the record of the last
 run, including runs started outside this session — so when the user reports a failure, **read that file
 rather than asking which test broke**. Failed tests come first under "Failed Results" with their assertion
@@ -163,20 +183,20 @@ Three axes, composed by the filter:
     independently, and the form's state is driven by client script.
 
 ```
-script.run.tests.bat                              # prompts for a category
-script.run.tests.bat AccountWorkflows             # every route to an account
-script.run.tests.bat ChapterMembershipWorkflows   # every route into a group
-script.run.tests.bat ChapterPublicationWorkflows  # approving and publishing a group
-script.run.tests.bat Stripe                       # just the payment tests
-script.run.tests.bat Venues                       # just the venue admin tests
-script.run.tests.bat SiteQuestions                # just the site FAQ tests
-script.run.tests.bat EmailAdmin                   # just the email customisation tests
-script.run.tests.bat Default                      # one platform
-script.run.tests.bat NoStripe                     # everything except payments - skips the slow ones
+run.tests.bat                              # prompts for a category
+run.tests.bat AccountWorkflows             # every route to an account
+run.tests.bat ChapterMembershipWorkflows   # every route into a group
+run.tests.bat ChapterPublicationWorkflows  # approving and publishing a group
+run.tests.bat Stripe                       # just the payment tests
+run.tests.bat Venues                       # just the venue admin tests
+run.tests.bat SiteQuestions                # just the site FAQ tests
+run.tests.bat EmailAdmin                   # just the email customisation tests
+run.tests.bat Default                      # one platform
+run.tests.bat NoStripe                     # everything except payments - skips the slow ones
 ```
 
 A bare name is wrapped as `TestCategory=<name>`; anything mentioning `TestCategory` is used verbatim.
-`NoStripe` is an alias for `TestCategory!=Stripe`, expanded inside `script.e2e.bat` - it can't be passed as
+`NoStripe` is an alias for `TestCategory!=Stripe`, expanded inside `e2e.bat` - it can't be passed as
 a raw filter because **cmd treats `=` as an argument delimiter**, so `TestCategory!=Stripe` arrives split
 into two arguments. Same reason a filter using `&` (AND) can't go through the scripts. For either, call
 `dotnet test` directly:

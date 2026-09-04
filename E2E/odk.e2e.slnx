@@ -5,11 +5,12 @@
     <Platform Name="x86" />
   </Configurations>
   <Folder Name="/SolutionItems/">
+    <File Path="CLAUDE.md" />
     <File Path="README.md" />
-    <File Path="script.run.app.e2e.bat" />
-    <File Path="script.run.tests.bat" />
-    <File Path="script.run.tests.default.bat" />
-    <File Path="script.run.tests.dk.bat" />
+    <File Path="e2e.bat" />
+    <File Path="run.app.bat" />
+    <File Path="run.ngrok.bat" />
+    <File Path="run.tests.bat" />
   </Folder>
   <Project Path="ODK.E2E.Data/ODK.E2E.Data.csproj" Id="a3242759-0bef-4b4f-8ddb-cdb4423a6ece" />
   <Project Path="ODK.E2E.Tests/ODK.E2E.Tests.csproj" />
