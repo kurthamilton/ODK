@@ -23,8 +23,9 @@
         @Html.TextBoxFor(x => x.Image, htmlAttributes)
         @Html.ValidationMessageFor(x => x.Image)
 
-        <div class="mt-3 @(string.IsNullOrEmpty(Model.CurrentImageDataUrl) ? "d-none" : null)" data-img-preview-container>
-            <img src="@Model.CurrentImageDataUrl" data-img-preview data-img-resize data-img-ratio="@aspectRatio" />
+        @* The cropper appears once a file is picked; odk.imaging.js unhides this and drives it. *@
+        <div class="mt-3 d-none" data-img-preview-container>
+            <img data-img-preview data-img-resize data-img-ratio="@aspectRatio" />
         </div>
     </div>
 </div>

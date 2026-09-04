@@ -1,0 +1,42 @@
+﻿@using ODK.Web.Razor.Models.Admin.Chapters
+@using ODK.Web.Razor.Models.Components
+@model ChapterAdminImageViewModel
+
+<div data-odk-component="_ChapterAdminImage">
+    @if (Model.ImageUrl != null)
+    {
+        <img src="@Model.ImageUrl" class="@Model.ImageClass" alt="@Model.ImageAlt" />
+    }
+    else
+    {
+        <p class="text-muted">Not set</p>
+    }
+
+    <div class="mt-3">
+        <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#@Model.Id">
+            @(Model.ImageUrl != null ? "Change" : "Upload")
+        </button>
+    </div>
+</div>
+
+@await Html.PartialAsync("Components/_Modal", new ModalViewModel
+{
+    Id = Model.Id,
+    Size = ModalSize.Large,
+    Title = Model.ModalTitle,
+    Body =
+    @<div>
+        <form method="post" action="@Model.FormAction">
+            @Html.AntiForgeryToken()
+
+            @await Html.PartialAsync("Admin/Chapter/_ImageForm", new ChapterImageFormViewModel
+            {
+                AspectRatio = Model.AspectRatio
+            })
+
+            <div class="d-flex justify-content-end">
+                <button class="btn btn-primary">Update</button>
+            </div>
+        </form>
+    </div>
+})

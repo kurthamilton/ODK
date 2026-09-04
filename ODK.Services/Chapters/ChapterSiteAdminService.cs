@@ -97,13 +97,13 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
     {
         var chapter = request.Chapter;
 
-        var image = await GetSiteAdminRestrictedContent(request,
-            x => x.ChapterHeaderImageRepository.GetByChapterId(chapter.Id));
+        var version = await GetSiteAdminRestrictedContent(request,
+            x => x.ChapterHeaderImageRepository.GetVersionDtoByChapterId(chapter.Id));
 
         return new ChapterHeaderImageAdminPageViewModel
         {
             Chapter = chapter,
-            Image = image
+            ImageVersion = version?.Version
         };
     }
 

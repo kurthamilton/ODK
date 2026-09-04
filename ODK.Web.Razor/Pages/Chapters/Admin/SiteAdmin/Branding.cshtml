@@ -1,0 +1,31 @@
+﻿@page "/{chapterName}/admin/siteadmin/branding"
+@using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Razor.Models.Admin
+@model BrandingModel
+@{
+    Layout = "_OdkChapterAdminLayout";
+    Model.Title = "Branding | Site Admin";
+
+    // Site admin page, not a group-owner one, so the subscription feature never gates it.
+    var viewModel = new ChapterThemeAdminPageViewModel
+    {
+        Chapter = Model.Chapter,
+        CanEdit = true
+    };
+}
+
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    Title = "Branding",
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_BrandingContent", viewModel)</div>
+})
+
+@section styles
+{
+    @await Html.PartialAsync("Components/Styles/_ImagingStyles")
+}
+
+@section scripts
+{
+    @await Html.PartialAsync("Components/Scripts/_ImagingScripts")
+}

@@ -1,0 +1,37 @@
+﻿@using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Common.Services
+@using ODK.Web.Razor.Models.Components
+@model ChapterThemeAdminPageViewModel
+@inject IRequestStore RequestStore
+@{
+    // The header image is a site admin's to set. The service behind the section asserts the same, so
+    // leaving it out here is presentation rather than the guard.
+    var viewedBySiteAdmin = RequestStore.CurrentMember.SiteAdmin;
+}
+
+@await Html.PartialAsync("Components/_AdminPageDescription", "How your group's pages look.")
+
+<div class="section-stack">
+    @await Html.PartialAsync("Components/_Section", new SectionViewModel
+    {
+        Heading = new HeadingViewModel
+        {
+            Title = "Theme",
+            Type = HeadingType.H3
+        },
+        BodyContent = await Html.PartialAsync("Admin/Chapter/_ThemeContent", Model)
+    })
+
+    @if (viewedBySiteAdmin)
+    {
+        @await Html.PartialAsync("Components/_Section", new SectionViewModel
+        {
+            Heading = new HeadingViewModel
+            {
+                Title = "Header image",
+                Type = HeadingType.H3
+            },
+            BodyContent = await Html.PartialAsync("Admin/Chapter/_HeaderImageContent")
+        })
+    }
+</div>

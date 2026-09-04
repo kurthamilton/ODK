@@ -31,6 +31,12 @@ public class GroupAdminRoutes
     public GroupAdminRoute AdminMembers(Chapter chapter)
         => Members(chapter).Child("/admins", ChapterAdminSecurable.AdminMembers);
 
+    public GroupAdminRoute Branding(Chapter chapter) => Platform switch
+    {
+        PlatformType.DrunkenKnitwits => GroupAdminRoute.Default,
+        _ => Group(chapter).Child("/branding", ChapterAdminSecurable.Branding, PlatformType.Default)
+    };
+
     public GroupAdminRoute Conversation(Chapter chapter, Guid conversationId)
         => Conversations(chapter).Child($"/{conversationId}");
 
@@ -252,6 +258,7 @@ public class GroupAdminRoutes
             Text = "Group",
             Items =
             [
+                new(Branding(chapter), "Branding"),
                 new(Conversations(chapter), "Conversations"),
                 new(Emails(chapter), "Emails"),
                 new(Questions(chapter), "FAQ"),
@@ -263,7 +270,6 @@ public class GroupAdminRoutes
                 new(SocialMedia(chapter), "Social media"),
                 new(Subscription(chapter), "Subscription"),
                 new(Texts(chapter), "Texts"),
-                new(Theme(chapter), "Theme"),
                 new(Topics(chapter), "Topics"),
                 new(Delete(chapter), "Delete")
             ]
@@ -323,8 +329,7 @@ public class GroupAdminRoutes
                 new(SiteAdminLocation(chapter), "Location"),
                 new(SiteAdminInstagram(chapter), "Instagram"),
                 new(SiteAdminRedirect(chapter), "Redirect"),
-                new(SiteAdminTheme(chapter), "Theme"),
-                new(SiteAdminHeaderImage(chapter), "Header image")
+                new(SiteAdminBranding(chapter), "Branding")
             ]
         }
     ];
@@ -393,10 +398,11 @@ public class GroupAdminRoutes
         => Base(chapter).Child("/siteadmin");
 
     /// <summary>
-    /// Drunken Knitwits only, that being the only platform whose chrome renders a header image.
+    /// Drunken Knitwits only. Group Squirrel gives a group's own admins a branding page, which a site
+    /// admin may open, so a second one under site admin would only duplicate it.
     /// </summary>
-    public GroupAdminRoute SiteAdminHeaderImage(Chapter chapter)
-        => SiteAdmin(chapter).Child("/header-image", platform: PlatformType.DrunkenKnitwits);
+    public GroupAdminRoute SiteAdminBranding(Chapter chapter)
+        => SiteAdmin(chapter).Child("/branding", platform: PlatformType.DrunkenKnitwits);
 
     public GroupAdminRoute SiteAdminInstagram(Chapter chapter)
         => SiteAdmin(chapter).Child("/instagram");
@@ -420,13 +426,6 @@ public class GroupAdminRoutes
     public GroupAdminRoute SiteAdminSubscriptions(Chapter chapter)
         => SiteAdmin(chapter).Child("/subscriptions");
 
-    /// <summary>
-    /// Drunken Knitwits only. Group Squirrel gives a group's own admins a theme page, which a site
-    /// admin may open, so a second one under site admin would only duplicate it.
-    /// </summary>
-    public GroupAdminRoute SiteAdminTheme(Chapter chapter)
-        => SiteAdmin(chapter).Child("/theme", platform: PlatformType.DrunkenKnitwits);
-
     public GroupAdminRoute SocialMedia(Chapter chapter)
         => Group(chapter).Child("/social-media", ChapterAdminSecurable.SocialMedia);
 
@@ -444,12 +443,6 @@ public class GroupAdminRoutes
 
     public GroupAdminRoute Texts(Chapter chapter)
         => Group(chapter).Child("/texts", ChapterAdminSecurable.Texts);
-
-    public GroupAdminRoute Theme(Chapter chapter) => Platform switch
-    {
-        PlatformType.DrunkenKnitwits => GroupAdminRoute.Default,
-        _ => Group(chapter).Child("/theme", ChapterAdminSecurable.Branding, PlatformType.Default)
-    };
 
     public GroupAdminRoute Topics(Chapter chapter) => Platform switch
     {

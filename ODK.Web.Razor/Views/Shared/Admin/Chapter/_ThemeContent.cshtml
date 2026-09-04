@@ -12,8 +12,7 @@
     };
 }
 
-@await Html.PartialAsync("Components/_AdminPageDescription",
-    "Colours applied to your group's pages. Leave them unset to use the standard look.")
+<p class="text-muted">Colours applied to your group's pages. Leave them unset to use the standard look.</p>
 
 @* DisabledContentFunc rather than hiding the form: a group that already has a theme keeps rendering it,
    so the owner needs to see what is set even when they can no longer change it. The server enforces this
