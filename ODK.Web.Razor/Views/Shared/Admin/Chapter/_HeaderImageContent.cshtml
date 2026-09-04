@@ -1,18 +1,28 @@
-﻿@using ODK.Core.Images
-@using ODK.Services.Chapters.ViewModels
+﻿@using ODK.Services.Chapters
+@using ODK.Web.Common.Routes
+@using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Admin.Chapters
-@model ChapterHeaderImageAdminPageViewModel
+@inject IChapterSiteAdminService ChapterSiteAdminService
+@inject IOdkRoutes OdkRoutes
+@inject IRequestStore RequestStore
+@{
+    var viewModel = await ChapterSiteAdminService.GetChapterHeaderImageViewModel(
+        RequestStore.MemberChapterServiceRequest);
+}
 
-@await Html.PartialAsync("Components/_AdminPageDescription",
-    "The image across the top of every page of this group. Upload it at the size it should be shown at - it is stored as it arrives.")
+<p class="text-muted">
+    The image across the top of every page of this group. Upload it at the size it should be shown at -
+    it is stored as it arrives.
+</p>
 
-<form action="/groups/@Model.Chapter.Id/header-image" method="post">
-    @Html.AntiForgeryToken()
-    @await Html.PartialAsync("Admin/Chapter/_ImageForm", new ChapterImageFormViewModel
-    {
-        CurrentImageDataUrl = Model.Image != null
-            ? ImageHelper.ToDataUrl(Model.Image.ImageData, Model.Image.MimeType)
-            : null
-    })
-    <button class="btn btn-primary">Update</button>
-</form>
+@await Html.PartialAsync("Admin/Chapter/_ChapterAdminImage", new ChapterAdminImageViewModel
+{
+    FormAction = $"/groups/{viewModel.Chapter.Id}/header-image",
+    Id = "chapter-header-image-modal",
+    ImageAlt = "Group header image",
+    ImageClass = "img-fluid",
+    ImageUrl = viewModel.ImageVersion != null
+        ? OdkRoutes.Groups.HeaderImage(viewModel.Chapter.Id, viewModel.ImageVersion.Value)
+        : null,
+    ModalTitle = "Change header image"
+})

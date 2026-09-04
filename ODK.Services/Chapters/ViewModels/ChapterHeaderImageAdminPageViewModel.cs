@@ -6,5 +6,9 @@ public class ChapterHeaderImageAdminPageViewModel
 {
     public required Chapter Chapter { get; init; }
 
-    public required ChapterHeaderImage? Image { get; init; }
+    /// <summary>
+    /// Version of the stored image, or null when the group has none. The page renders the image from its
+    /// own url, so the bytes never travel with the page.
+    /// </summary>
+    public required int? ImageVersion { get; init; }
 }

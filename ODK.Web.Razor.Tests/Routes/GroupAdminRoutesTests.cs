@@ -114,9 +114,9 @@ public static class GroupAdminRoutesTests
     }
 
     [Test]
-    public static void PermittedNavigation_SiteAdminOnDefaultPlatform_ExcludesSiteAdminTheme()
+    public static void PermittedNavigation_SiteAdminOnDefaultPlatform_ExcludesSiteAdminBranding()
     {
-        /* Arrange - Group Squirrel gives a group's own admins a theme page, so the site-admin one is
+        /* Arrange - Group Squirrel gives a group's own admins a branding page, so the site-admin one is
            Drunken Knitwits only and has no Group Squirrel page behind it. */
         var routes = new GroupAdminRoutes(PlatformType.Default);
         var chapter = CreateChapter();
@@ -126,7 +126,7 @@ public static class GroupAdminRoutesTests
 
         // Assert - a menu item on the platform that has no such page is a link to a 404
         result.SelectMany(x => x.Items).Select(x => x.Route.Path)
-            .Should().NotContain(routes.SiteAdminTheme(chapter).Path);
+            .Should().NotContain(routes.SiteAdminBranding(chapter).Path);
     }
 
     [TestCase(PlatformType.Default)]
