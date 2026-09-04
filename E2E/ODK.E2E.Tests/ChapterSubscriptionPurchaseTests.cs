@@ -154,7 +154,7 @@ public class ChapterSubscriptionPurchaseTests : DefaultPageTest
         if (string.IsNullOrWhiteSpace(E2ESettings.StripeConnectedAccountId(PlatformTypeId)))
         {
             Assert.Fail(
-                $"Set 'Stripe:Platforms:{PlatformTypeIds.Name(PlatformTypeId)}:ConnectedAccountId' to a " +
+                $"Set 'Stripe:Platforms:{PlatformTypeIds.Key(PlatformTypeId)}:ConnectedAccountId' to a " +
                 "pre-onboarded Stripe sandbox connected account (acct_...), created under that platform's " +
                 "own Stripe account. A chapter-subscription purchase transfers funds to it, and Stripe " +
                 "rejects an un-onboarded destination.");

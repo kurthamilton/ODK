@@ -19,6 +19,36 @@ namespace ODK.Web.Razor.Tests.Settings;
 public static class PlatformConfigTests
 {
     [Test]
+    public static void AppSettings_PlatformStatesASectionLabel_FailsToBind()
+    {
+        /* Arrange - a label, which keys a per-platform section but is not how the platform a deployment
+           serves is stated. */
+        var act = () => BindAppSettings("""{ "Platform": "GS" }""");
+
+        /* Act / Assert - naming the value and the type it could not become. The binder yields None for a
+           platform config never stated, and None is served as Drunken Knitwits, so a value it could read as
+           unstated would serve a platform by accident rather than fail. */
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*GS*")
+            .WithMessage($"*{nameof(PlatformType)}*");
+    }
+
+    [Test]
+    public static void PlatformKeyExtensions_EveryLabelAndPlatform_RoundTrips()
+    {
+        /* Arrange - a section is keyed by label while the platform a deployment serves is stated as the app
+           spells it, so selecting an entry crosses from one vocabulary to the other and back. The two
+           mappings are separate switches, and nothing but this stops them disagreeing. */
+        var labels = Enum.GetValues<PlatformKey>().Where(x => x != PlatformKey.None).ToArray();
+        var platforms = Enum.GetValues<PlatformType>().Where(x => x != PlatformType.None).ToArray();
+
+        // Act / Assert - every member of each, so a platform added to one alone fails here.
+        labels.Should().AllSatisfy(label => label.ToPlatformType().ToPlatformKey().Should().Be(label));
+        platforms.Should().AllSatisfy(
+            platform => platform.ToPlatformKey().ToPlatformType().Should().Be(platform));
+    }
+
+    [Test]
     public static void ConfigureDependencies_PlatformNotStated_ServesDrunkenKnitwits()
     {
         // Arrange - what the binder yields for a deployment whose config never named a platform.
@@ -44,6 +74,26 @@ public static class PlatformConfigTests
         settings.Platform.Should().Be(PlatformType.Default);
     }
 
+    [Test]
+    public static void ConfigureDependencies_SectionKeyedNone_Throws()
+    {
+        /* Arrange - None is a label, so unlike every other key that names no platform it binds rather than
+           being dropped. It reaches the mapping, which is where it has to be refused. */
+        var appSettings = BindAppSettings(
+            """
+            {
+              "Platform": "Default",
+              "Platforms": { "None": { "Name": "", "Url": "" } }
+            }
+            """);
+
+        // Act
+        var act = () => MapPlatformProviderSettings(appSettings);
+
+        // Assert
+        act.Should().Throw<ArgumentOutOfRangeException>().WithMessage("*None*");
+    }
+
     /* Every per-platform section has to select the same platform's entry. A deployment logging to one
        platform's directory, shipping to the other's BetterStack source and queueing to a third's Hangfire
        schema would be far harder to spot than any one of those alone, so they are asserted together rather
@@ -63,14 +113,14 @@ public static class PlatformConfigTests
               "Platform": "{{configuredPlatform}}",
               "BetterStack": {
                 "Platforms": {
-                  "Default": { "IngestingHost": "host-gs", "SourceToken": "token-gs" },
-                  "DrunkenKnitwits": { "IngestingHost": "host-dk", "SourceToken": "token-dk" }
+                  "DK": { "IngestingHost": "host-dk", "SourceToken": "token-dk" },
+                  "GS": { "IngestingHost": "host-gs", "SourceToken": "token-gs" }
                 }
               },
               "Logging": {
                 "Platforms": {
-                  "Default": { "Path": "C:\\Logs\\gs" },
-                  "DrunkenKnitwits": { "Path": "C:\\Logs\\dk" }
+                  "DK": { "Path": "C:\\Logs\\dk" },
+                  "GS": { "Path": "C:\\Logs\\gs" }
                 }
               }
             }
@@ -92,7 +142,7 @@ public static class PlatformConfigTests
     }
 
     [Test]
-    public static void ServedPlatform_SectionOmitsThisPlatform_TakesTheDefaultPlatformsEntry()
+    public static void ServedPlatform_SectionOmitsThisPlatform_TakesTheGSEntry()
     {
         /* Arrange - bound from this JSON alone rather than over the committed file, which states every
            platform: layering can only override an entry, never remove one, so the committed file is what
@@ -102,7 +152,7 @@ public static class PlatformConfigTests
             """
             {
               "Platform": "DrunkenKnitwits",
-              "Logging": { "Platforms": { "Default": { "Path": "C:\\Logs\\only" } } }
+              "Logging": { "Platforms": { "GS": { "Path": "C:\\Logs\\only" } } }
             }
             """);
 
@@ -111,6 +161,34 @@ public static class PlatformConfigTests
 
         // Assert - as SiteEmailSettingsProvider and IPlatformProvider.GetName do for the same case.
         logging.Path.Should().Be(@"C:\Logs\only");
+    }
+
+    [Test]
+    public static void ServedPlatform_SectionAlsoKeyedByAPlatformTypeName_IgnoresThatEntry()
+    {
+        /* Arrange - a section stating both a label and the app's own name for the same platform, bound
+           from this JSON alone so it states nothing else. */
+        var appSettings = BindSettingsWithoutBaseFile(
+            """
+            {
+              "Platform": "DrunkenKnitwits",
+              "Logging": {
+                "Platforms": {
+                  "DK": { "Path": "C:\\Logs\\dk" },
+                  "DrunkenKnitwits": { "Path": "C:\\Logs\\stale" }
+                }
+              }
+            }
+            """);
+
+        // Act
+        var logging = ServedPlatform.Of(appSettings, appSettings.Logging.Platforms);
+
+        /* Assert - the binder converts a key through the labels alone and drops what it cannot convert, so
+           the name contributes nothing. Do not make both spellings bind: the entry would then be decided by
+           whichever key sorted last, not by which config layer stated it. */
+        appSettings.Logging.Platforms.Should().ContainSingle();
+        logging.Path.Should().Be(@"C:\Logs\dk");
     }
 
     [Test]
@@ -123,8 +201,8 @@ public static class PlatformConfigTests
             {
               "Platform": "DrunkenKnitwits",
               "Platforms": {
-                "Default": { "Url": "https://groupsquirrel.example.com" },
-                "DrunkenKnitwits": { "Url": "https://drunkenknitwits.example.com" }
+                "DK": { "Url": "https://drunkenknitwits.example.com" },
+                "GS": { "Url": "https://groupsquirrel.example.com" }
               }
             }
             """);

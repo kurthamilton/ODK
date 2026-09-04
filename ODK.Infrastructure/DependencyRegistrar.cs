@@ -127,7 +127,7 @@ public static class DependencyRegistrar
         services.AddSingleton(new StripePaymentProviderSettings
         {
             Platforms = stripe.Platforms.ToDictionary(
-                x => x.Key,
+                x => x.Key.ToPlatformType(),
                 x => new StripePaymentProviderPlatformSettings
                 {
                     ConnectedAccountBaseUrl = x.Value.ConnectedAccountBaseUrl,
@@ -144,12 +144,14 @@ public static class DependencyRegistrar
         services.AddSingleton(new StripeWebhookAdminServiceSettings
         {
             AccountIds = stripe.Platforms.ToDictionary(
-                x => x.Key,
+                x => x.Key.ToPlatformType(),
                 x => x.Value.AccountId),
             Events = stripe.Webhooks.Events,
             Hosts = (stripe.Webhooks.Hosts ?? []).ToDictionary(
                 x => x.Key,
-                x => (IReadOnlyDictionary<PlatformType, string>)(x.Value ?? [])),
+                x => (IReadOnlyDictionary<PlatformType, string>)(x.Value ?? []).ToDictionary(
+                    y => y.Key.ToPlatformType(),
+                    y => y.Value)),
             LiveDashboardUrlFormat = stripe.Webhooks.LiveDashboardUrlFormat,
             Path = stripe.Webhooks.Path,
             TestDashboardUrlFormat = stripe.Webhooks.TestDashboardUrlFormat
@@ -157,8 +159,8 @@ public static class DependencyRegistrar
         services.AddScoped<IStripeWebhookParser, StripeWebhookParser>();
         services.AddSingleton(new StripeWebhookParserSettings
         {
-            WebhookSecretsV1 = stripe.Platforms.ToDictionary(x => x.Key, x => x.Value.WebhookSecretV1),
-            WebhookSecretsV2 = stripe.Platforms.ToDictionary(x => x.Key, x => x.Value.WebhookSecretV2)
+            WebhookSecretsV1 = stripe.Platforms.ToDictionary(x => x.Key.ToPlatformType(), x => x.Value.WebhookSecretV1),
+            WebhookSecretsV2 = stripe.Platforms.ToDictionary(x => x.Key.ToPlatformType(), x => x.Value.WebhookSecretV2)
         });
     }
 
@@ -332,8 +334,8 @@ public static class DependencyRegistrar
             .AddScoped<IPlatformProvider, PlatformProvider>()
             .AddSingleton(new PlatformProviderSettings
             {
-                BaseUrls = appSettings.Platforms.ToDictionary(x => x.Key, x => x.Value.Url),
-                Names = appSettings.Platforms.ToDictionary(x => x.Key, x => x.Value.Name),
+                BaseUrls = appSettings.Platforms.ToDictionary(x => x.Key.ToPlatformType(), x => x.Value.Url),
+                Names = appSettings.Platforms.ToDictionary(x => x.Key.ToPlatformType(), x => x.Value.Name),
                 Platform = ServedPlatform.Of(appSettings)
             })
             .AddScoped<ICountryAdminService, CountryAdminService>()
@@ -350,7 +352,7 @@ public static class DependencyRegistrar
             .AddSingleton(new SiteEmailSettingsProviderSettings
             {
                 Platforms = appSettings.Emails.Platforms.ToDictionary(
-                    x => x.Key,
+                    x => x.Key.ToPlatformType(),
                     x => new SiteEmailSettings
                     {
                         AdminTitle = x.Value.AdminTitle,

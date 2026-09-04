@@ -19,15 +19,15 @@ public static class ServedPlatform
         : PlatformType.DrunkenKnitwits;
 
     /// <summary>
-    /// What a per-platform section states for this deployment, falling back to the Default platform's entry
-    /// the way every other per-platform lookup does.
+    /// What a per-platform section states for this deployment, falling back to the entry labelled GS the way
+    /// every other per-platform lookup falls back to <see cref="PlatformType.Default"/>, the platform GS names.
     /// </summary>
-    public static T Of<T>(AppSettings appSettings, IReadOnlyDictionary<PlatformType, T> platforms)
+    public static T Of<T>(AppSettings appSettings, IReadOnlyDictionary<PlatformKey, T> platforms)
     {
-        var platform = Of(appSettings);
+        var key = Of(appSettings).ToPlatformKey();
 
-        return platforms.TryGetValue(platform, out var value)
+        return platforms.TryGetValue(key, out var value)
             ? value
-            : platforms[PlatformType.Default];
+            : platforms[PlatformKey.GS];
     }
 }

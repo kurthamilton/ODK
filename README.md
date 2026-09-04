@@ -79,7 +79,7 @@ the build to `bin\Default\…` and `obj\Default\…`. The one safe place for it 
 `launchSettings.json` profile, whose environment is applied to the launched app rather than to the build —
 which is what the two IDE profiles (**Group Squirrel**, **Drunken Knitwits**) use.
 
-Anything else that varies by platform is a `Platforms` dictionary keyed by `PlatformType`, so every
+Anything else that varies by platform is a `Platforms` dictionary keyed by the platform's config label, so every
 platform's value is stated together and the running app selects its own (`ServedPlatform`).
 `Logging:Platforms:*:Path` is the local one that matters: each platform needs a log directory of its own,
 since Serilog holds the file it opens and two instances sharing a directory would leave one of them without

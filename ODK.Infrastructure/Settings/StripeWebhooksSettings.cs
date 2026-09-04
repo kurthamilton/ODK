@@ -22,7 +22,7 @@ public class StripeWebhooksSettings
     /// at all, so an omitted section arrives as null however the property is declared. Declaring it so keeps
     /// the <c>?? []</c> in <c>DependencyRegistrar</c> compiler-enforced rather than remembered.
     /// </remarks>
-    public required Dictionary<EnvironmentType, Dictionary<PlatformType, string>?>? Hosts { get; init; }
+    public required Dictionary<EnvironmentType, Dictionary<PlatformKey, string>?>? Hosts { get; init; }
 
     /// <summary>
     /// The Stripe dashboard address of one webhook endpoint on a live-mode account, with <c>{account}</c> and
