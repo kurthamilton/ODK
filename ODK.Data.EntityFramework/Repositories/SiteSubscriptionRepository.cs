@@ -25,16 +25,10 @@ public class SiteSubscriptionRepository
             .DeferredMultiple();
 
     public IDeferredQuerySingle<SiteSubscription> GetByPriceId(Guid priceId)
-    {
-        var query =
-            from price in Set<SiteSubscriptionPrice>()
-            from siteSubscription in Set()
-                .Where(x => x.Id == price.SiteSubscriptionId)
-            where price.Id == priceId
-            select siteSubscription;
+        => ByPriceId(priceId).DeferredSingle();
 
-        return query.DeferredSingle();
-    }
+    public IDeferredQuerySingleOrDefault<SiteSubscription> GetByPriceIdOrDefault(Guid priceId)
+        => ByPriceId(priceId).DeferredSingleOrDefault();
 
     public IDeferredQuerySingle<SiteSubscription> GetDefault(PlatformType platform)
         => Set()
@@ -71,4 +65,11 @@ public class SiteSubscriptionRepository
 
     public override ISiteSubscriptionQueryBuilder Query()
         => CreateQueryBuilder(context => new SiteSubscriptionQueryBuilder(context));
+
+    private IQueryable<SiteSubscription> ByPriceId(Guid priceId)
+        => from price in Set<SiteSubscriptionPrice>()
+           from siteSubscription in Set()
+               .Where(x => x.Id == price.SiteSubscriptionId)
+           where price.Id == priceId
+           select siteSubscription;
 }
