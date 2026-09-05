@@ -194,9 +194,11 @@ public static class StripeAccountAuditTests
     }
 
     [Test]
-    public static void Audit_WhenSubscriptionCarriesTheFirstPurchasesPaymentId_ReportsCheckoutIdsOnSubscription()
+    public static void Audit_WhenSubscriptionCarriesTheCheckoutIds_ReportsNothing()
     {
-        // Arrange
+        // Arrange - checkout writes one metadata dictionary to the session and to the subscription, so a
+        // subscription names the payment and session of the purchase that created it. The first invoice is
+        // what claims them, and every later invoice creates a payment of its own, so they are not a fault.
         var metadata = ChapterSubscriptionMetadata();
         metadata.Add(PaymentMetadataModel.Keys.PaymentId, PaymentId.ToString());
         metadata.Add(
@@ -209,16 +211,7 @@ public static class StripeAccountAuditTests
         var result = StripeAccountAudit.Audit(CreateAccount(), [], subscriptions, records);
 
         // Assert
-        result.Subscriptions
-            .Single()
-            .Findings
-            .Where(x => x.Type == StripeTransactionFindingType.CheckoutIdsOnSubscription)
-            .Select(x => x.Key)
-            .Should()
-            .BeEquivalentTo([
-                PaymentMetadataModel.Keys.PaymentId,
-                PaymentMetadataModel.Keys.PaymentCheckoutSessionId
-            ]);
+        result.Subscriptions.Single().Findings.Should().BeEmpty();
     }
 
     [Test]

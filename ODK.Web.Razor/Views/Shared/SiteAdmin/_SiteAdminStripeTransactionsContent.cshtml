@@ -124,8 +124,26 @@
                     }
                     else
                     {
+                        <div class="row row-cols-lg-auto g-3 align-items-center mb-3">
+                            <div class="col-12">
+                                <label class="form-label" for="subscription-status-filter">Status</label>
+                                @* Nothing selected means nothing filtered out, so the control starts
+                                   untouched. None is offered like any other: it is what a status Stripe
+                                   returned and we do not recognise renders as, and those are rows an admin
+                                   wants to reach. *@
+                                <select class="form-select" id="subscription-status-filter" multiple
+                                        data-table-filter="#stripe-subscriptions-table"
+                                        data-table-filter-field="status">
+                                    @foreach (var status in Enum.GetValues<StripeSubscriptionStatus>())
+                                    {
+                                        <option value="@status">@subscriptionStatusTitles[status]</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
                         <div class="table-responsive">
-                            <table class="table">
+                            <table class="table" id="stripe-subscriptions-table">
                                 <thead>
                                     <tr>
                                         <th>Subscription</th>
@@ -139,7 +157,7 @@
                                 <tbody>
                                     @foreach (var subscription in Model.Subscriptions)
                                     {
-                                        <tr>
+                                        <tr data-filter-status="@subscription.Status">
                                             <td>
                                                 <div class="text-break"><code>@subscription.Id</code></div>
                                                 <div class="text-muted small">
@@ -228,8 +246,22 @@
                     }
                     else
                     {
+                        <div class="row row-cols-lg-auto g-3 align-items-center mb-3">
+                            <div class="col-12">
+                                <label class="form-label" for="transaction-status-filter">Status</label>
+                                <select class="form-select" id="transaction-status-filter" multiple
+                                        data-table-filter="#stripe-transactions-table"
+                                        data-table-filter-field="status">
+                                    @foreach (var status in Enum.GetValues<StripeTransactionStatus>())
+                                    {
+                                        <option value="@status">@transactionStatusTitles[status]</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
                         <div class="table-responsive">
-                            <table class="table">
+                            <table class="table" id="stripe-transactions-table">
                                 <thead>
                                     <tr>
                                         <th>When</th>
@@ -244,7 +276,7 @@
                                 <tbody>
                                     @foreach (var transaction in Model.Transactions)
                                     {
-                                        <tr>
+                                        <tr data-filter-status="@transaction.Status">
                                             <td>@transaction.CreatedUtc.ToFriendlyDateString(dateOptions)</td>
                                             <td>@kindTitles[transaction.Kind]</td>
                                             <td>

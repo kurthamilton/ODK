@@ -30,48 +30,66 @@
         .forEach($table => stripeTable($table));
 
     /*FILTERING*/
-    const $filters = document.querySelectorAll('[data-table-filter]');
-    $filters.forEach($filter => {
-        const targetSelector = $filter.getAttribute('data-table-filter');
-        const $target = document.querySelector(targetSelector);
+    /* Each filter is held with the table it named, and a pass over a table reads only the filters that named
+       that table. A page can carry more than one filterable table, and a row of one carries no attribute for
+       another's filter to match - so an unscoped pass would empty every table but the one being filtered. */
+    const filters = [];
+    document.querySelectorAll('[data-table-filter]').forEach($filter => {
+        const $target = document.querySelector($filter.getAttribute('data-table-filter'));
         if (!$target) {
             return;
-        }        
+        }
 
-        const elementType = $filter.tagName;
-        const trigger = elementType === 'SELECT' ? 'change' : 'input';
-        $filter.addEventListener(trigger, () => {
-            filterTable($target);
-        }); 
+        filters.push({
+            $filter: $filter,
+            $target: $target,
+            field: $filter.getAttribute('data-table-filter-field')
+        });
+    });
 
-        filterTable($target);
-    });    
+    filters.forEach(filter => {
+        const trigger = filter.$filter.tagName === 'SELECT' ? 'change' : 'input';
+        filter.$filter.addEventListener(trigger, () => {
+            filterTable(filter.$target);
+        });
+    });
+
+    /* One pass per table, after every filter is held: a pass run mid-registration would not yet see the
+       filters still to come, and a control can arrive already narrowed - a select with options selected. */
+    new Set(filters.map(filter => filter.$target)).forEach($target => filterTable($target));
 
     function filterTable($table) {
         const $body = $table.querySelector('tbody');
         const $rows = $body.querySelectorAll('tr');
 
-        const filters = [];
-        $filters.forEach($filter => {
-            /* A checkbox reports its value whether or not it is checked, so it is read through `checked`
-               instead - unchecked it contributes an empty value, which is what drops it from the pass. */
-            const rawValues = $filter.tagName === 'SELECT'
-                ? Array.from($filter.options).filter(x => x.selected).map(x => x.value)
-                : $filter.type === 'checkbox'
-                ? [$filter.checked ? $filter.value : '']
-                : [$filter.value ?? ''];
+        const tableFilters = filters
+            .filter(filter => filter.$target === $table)
+            .map(filter => {
+                const $filter = filter.$filter;
 
-            filters.push({
-                field: $filter.getAttribute('data-table-filter-field'),
-                values: rawValues.map(x => x.toLocaleLowerCase())
+                /* A checkbox reports its value whether or not it is checked, so it is read through `checked`
+                   instead - unchecked it contributes an empty value, which is what drops it from the pass. */
+                const rawValues = $filter.tagName === 'SELECT'
+                    ? Array.from($filter.options).filter(x => x.selected).map(x => x.value)
+                    : $filter.type === 'checkbox'
+                    ? [$filter.checked ? $filter.value : '']
+                    : [$filter.value ?? ''];
+
+                return {
+                    /* A typed box is a search and matches any part of a row's value; a chosen option names
+                       one whole value, and matching part of it would let a choice carry every value it is a
+                       prefix of - Incomplete would bring IncompleteExpired with it. */
+                    exact: $filter.tagName !== 'INPUT' || $filter.type === 'checkbox',
+                    field: filter.field,
+                    values: rawValues.map(x => x.toLocaleLowerCase())
+                };
             });
-        });        
 
         $rows.forEach($row => {
             let possibleMatches = 0;
             let matches = 0;
 
-            filters.forEach(filter => {
+            tableFilters.forEach(filter => {
                 const field = filter.field;
                 const values = filter.values;
 
@@ -86,7 +104,8 @@
                     return;
                 }
 
-                if (values.find(x => rowValue.toLocaleLowerCase().includes(x.toLocaleLowerCase()))) {
+                const comparand = rowValue.toLocaleLowerCase();
+                if (values.find(x => filter.exact ? comparand === x : comparand.includes(x))) {
                     matches++;
                 }
             });            

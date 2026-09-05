@@ -777,6 +777,129 @@ public static class PaymentServiceTests
     }
 
     [Test]
+    public static async Task ProcessWebhook_ChapterSubscriptionRenewalNamesTheCheckoutPayment_RecordsItsOwnPayment()
+    {
+        // Arrange - the metadata the app's own checkout writes: StartCheckout writes one dictionary to the
+        // session and to the subscription, so PaymentId and PaymentCheckoutSessionId name the purchase that
+        // created the subscription and arrive on every invoice it issues. The first invoice is that purchase
+        // and claims them; the renewal took money of its own and needs a payment of its own.
+        using var context = CreateMockOdkContext();
+
+        var member = context.CreateMember();
+        var chapter = context.CreateChapter(members: [member]);
+        var chapterSubscription = context.CreateChapterSubscription(chapter: chapter);
+        chapterSubscription.Months = 1;
+        chapterSubscription.Recurring = true;
+
+        var checkoutPayment = context.CreatePayment(member: member, chapter: chapter);
+        var checkoutSession = context.CreatePaymentCheckoutSession(payment: checkoutPayment);
+
+        var metadata = new PaymentMetadataModel(
+            PlatformType.Default,
+            PaymentReasonType.ChapterSubscription,
+            member,
+            chapterSubscription,
+            checkoutSession.Id,
+            checkoutPayment.Id);
+
+        var firstInvoice = CreatePaymentProviderWebhook(
+            id: "wh_inv1",
+            type: PaymentProviderWebhookType.InvoicePaymentSucceeded,
+            subscriptionId: "sub_123",
+            metadata: metadata);
+        var renewalInvoice = CreatePaymentProviderWebhook(
+            id: "wh_inv2",
+            type: PaymentProviderWebhookType.InvoicePaymentSucceeded,
+            subscriptionId: "sub_123",
+            metadata: metadata);
+
+        var service = CreatePaymentService(context);
+        var request = CreateServiceRequest();
+
+        // Act
+        await service.ProcessWebhook(request, firstInvoice);
+        await service.ProcessWebhook(request, renewalInvoice);
+
+        // Assert
+        var payments = context.Set<Payment>().Where(x => x.MemberId == member.Id).ToArray();
+        payments.Should().HaveCount(2);
+
+        context.Set<Payment>().Single(x => x.Id == checkoutPayment.Id).PaidUtc.Should().NotBeNull();
+        context.Set<PaymentCheckoutSession>()
+            .Single(x => x.Id == checkoutSession.Id)
+            .CompletedUtc
+            .Should()
+            .NotBeNull();
+
+        var renewalPayment = payments.Single(x => x.Id != checkoutPayment.Id);
+        renewalPayment.PaidUtc.Should().NotBeNull();
+        renewalPayment.ExternalId.Should().Be("sub_123");
+        renewalPayment.ChapterId.Should().Be(chapter.Id);
+
+        context.Set<MemberSubscriptionRecord>()
+            .Single(x => x.MemberId == member.Id && x.ChapterId == chapter.Id && x.IsCurrent)
+            .PaymentId
+            .Should()
+            .Be(renewalPayment.Id);
+    }
+
+    [Test]
+    public static async Task ProcessWebhook_ChapterSubscriptionRenewal_LogsNoWarning()
+    {
+        // Arrange - the same subscription as above, carrying the purchase's checkout ids. A renewal finding
+        // that payment paid and that session completed is what a renewal always finds, so neither is worth
+        // saying: a warning per renewal is the noise a real double-processing would have to be spotted in.
+        using var context = CreateMockOdkContext();
+
+        var member = context.CreateMember();
+        var chapter = context.CreateChapter(members: [member]);
+        var chapterSubscription = context.CreateChapterSubscription(chapter: chapter);
+        chapterSubscription.Months = 1;
+        chapterSubscription.Recurring = true;
+
+        var checkoutPayment = context.CreatePayment(member: member, chapter: chapter);
+        var checkoutSession = context.CreatePaymentCheckoutSession(payment: checkoutPayment);
+
+        var metadata = new PaymentMetadataModel(
+            PlatformType.Default,
+            PaymentReasonType.ChapterSubscription,
+            member,
+            chapterSubscription,
+            checkoutSession.Id,
+            checkoutPayment.Id);
+
+        var firstInvoice = CreatePaymentProviderWebhook(
+            id: "wh_inv1",
+            type: PaymentProviderWebhookType.InvoicePaymentSucceeded,
+            subscriptionId: "sub_123",
+            metadata: metadata);
+        var renewalInvoice = CreatePaymentProviderWebhook(
+            id: "wh_inv2",
+            type: PaymentProviderWebhookType.InvoicePaymentSucceeded,
+            subscriptionId: "sub_123",
+            metadata: metadata);
+
+        var loggingService = CreateMockLoggingService();
+
+        // The provider states a next payment date, as Stripe does for a live recurring subscription. Without
+        // one the service warns that it is calculating the expiry instead, which would answer this test with
+        // a warning of nothing to do with what it asks.
+        var service = CreatePaymentService(
+            context,
+            loggingService: loggingService,
+            paymentProviderFactory: CreateMockPaymentProviderFactory(DateTime.UtcNow.AddMonths(1)));
+        var request = CreateServiceRequest();
+
+        await service.ProcessWebhook(request, firstInvoice);
+
+        // Act
+        await service.ProcessWebhook(request, renewalInvoice);
+
+        // Assert
+        Mock.Get(loggingService).Verify(x => x.Warn(It.IsAny<string>()), Times.Never);
+    }
+
+    [Test]
     public static async Task ProcessWebhook_ChapterSubscription_PersistsExternalIdOnlyWhenRecurring(
         [Values(true, false)] bool recurring)
     {
@@ -1035,8 +1158,7 @@ public static class PaymentServiceTests
     {
         // Arrange
         // A renewal is a subsequent invoice.payment_succeeded (a distinct event) for an existing site
-        // subscription. Recurring invoices reuse the original checkout Payment, so keying idempotency on the
-        // payment id would wrongly skip the renewal. Keyed on the event id, the renewal extends exactly once.
+        // subscription. Keyed on the event id, it extends exactly once.
         using var context = CreateMockOdkContext();
 
         var member = context.CreateMember();
@@ -1091,6 +1213,71 @@ public static class PaymentServiceTests
             .Count()
             .Should()
             .Be(2);
+    }
+
+    [Test]
+    public static async Task ProcessWebhook_SiteSubscriptionRenewalNamesTheCheckoutPayment_RecordsItsOwnPayment()
+    {
+        // Arrange - the site counterpart of the chapter test above: a subscription carrying the checkout
+        // ids its purchase wrote, billed twice.
+        using var context = CreateMockOdkContext();
+
+        var member = context.CreateMember();
+        var currency = context.CreateCurrency();
+        var siteSubscription = context.CreateSiteSubscription();
+        var siteSubscriptionPrice = context.CreateSiteSubscriptionPrice(
+            siteSubscription: siteSubscription,
+            currency: currency);
+
+        var checkoutPayment = context.CreatePayment(member: member, currency: currency);
+        var checkoutSession = context.CreatePaymentCheckoutSession(payment: checkoutPayment);
+
+        var metadata = new PaymentMetadataModel(
+            PlatformType.Default,
+            PaymentReasonType.SiteSubscription,
+            member,
+            siteSubscriptionPrice,
+            checkoutSession.Id,
+            checkoutPayment.Id);
+
+        var firstInvoice = CreatePaymentProviderWebhook(
+            id: "wh_inv1",
+            type: PaymentProviderWebhookType.InvoicePaymentSucceeded,
+            subscriptionId: "sub_123",
+            metadata: metadata);
+        var renewalInvoice = CreatePaymentProviderWebhook(
+            id: "wh_inv2",
+            type: PaymentProviderWebhookType.InvoicePaymentSucceeded,
+            subscriptionId: "sub_123",
+            metadata: metadata);
+
+        var service = CreatePaymentService(context);
+        var request = CreateServiceRequest();
+
+        // Act
+        await service.ProcessWebhook(request, firstInvoice);
+        await service.ProcessWebhook(request, renewalInvoice);
+
+        // Assert
+        var payments = context.Set<Payment>().Where(x => x.MemberId == member.Id).ToArray();
+        payments.Should().HaveCount(2);
+
+        context.Set<Payment>().Single(x => x.Id == checkoutPayment.Id).PaidUtc.Should().NotBeNull();
+        context.Set<PaymentCheckoutSession>()
+            .Single(x => x.Id == checkoutSession.Id)
+            .CompletedUtc
+            .Should()
+            .NotBeNull();
+
+        var renewalPayment = payments.Single(x => x.Id != checkoutPayment.Id);
+        renewalPayment.PaidUtc.Should().NotBeNull();
+        renewalPayment.ExternalId.Should().Be("sub_123");
+
+        context.Set<MemberSiteSubscriptionRecord>()
+            .Single(x => x.MemberId == member.Id && x.IsCurrent)
+            .PaymentId
+            .Should()
+            .Be(renewalPayment.Id);
     }
 
     // Lapsed but inside the cooldown - still effectively a subscriber, so the period continues.
