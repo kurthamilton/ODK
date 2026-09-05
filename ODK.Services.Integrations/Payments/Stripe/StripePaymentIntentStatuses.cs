@@ -2,5 +2,7 @@
 
 internal static class StripePaymentIntentStatuses
 {
+    internal const string Canceled = "canceled";
+
     internal const string Succeeded = "succeeded";
 }

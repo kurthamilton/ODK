@@ -46,6 +46,12 @@ public class MemberSubscriptionRecordQueryBuilder :
         return this;
     }
 
+    public IMemberSubscriptionRecordQueryBuilder HasExternalId()
+    {
+        Query = Query.Where(x => x.ExternalId != null && x.ExternalId != string.Empty);
+        return this;
+    }
+
     public IMemberSubscriptionRecordQueryBuilder InChapters(IEnumerable<Guid> chapterIds)
     {
         Query = Query.Where(x => chapterIds.Contains(x.ChapterId));

@@ -1,0 +1,49 @@
+﻿@using ODK.Services.Payments.Models
+@model IReadOnlyCollection<StripeTransactionFinding>
+@* What is wrong with one Stripe object, worst first. Renders nothing when nothing is wrong - whether that
+   means "accounted for" or "not judged" is the caller's to say, since a transaction that took no money is
+   deliberately not judged at all. *@
+
+@{
+    var severityClasses = new Dictionary<StripeFindingSeverity, string>
+    {
+        { StripeFindingSeverity.None, "text-bg-secondary" },
+        { StripeFindingSeverity.Info, "text-bg-info" },
+        { StripeFindingSeverity.Warning, "text-bg-warning" },
+        { StripeFindingSeverity.Error, "text-bg-danger" }
+    };
+
+    var titles = new Dictionary<StripeTransactionFindingType, string>
+    {
+        { StripeTransactionFindingType.None, "Unknown" },
+        { StripeTransactionFindingType.AmountDisagrees, "Amount differs" },
+        { StripeTransactionFindingType.CheckoutIdsOnSubscription, "Checkout id on subscription" },
+        { StripeTransactionFindingType.DisagreesWithRecord, "Disagrees with record" },
+        { StripeTransactionFindingType.MetadataAbsent, "No metadata" },
+        { StripeTransactionFindingType.NoDatabaseRecord, "No record" },
+        { StripeTransactionFindingType.RequiredKeyMissing, "Key missing" },
+        { StripeTransactionFindingType.RoutingKeyMissing, "Not routable" },
+        { StripeTransactionFindingType.UnknownReference, "Unknown reference" }
+    };
+}
+
+<div data-odk-component="_SiteAdminStripeFindings">
+    @foreach (var finding in Model.OrderByDescending(x => x.Severity).ThenBy(x => x.Type))
+    {
+        <div class="mb-1">
+            <span class="badge @severityClasses[finding.Severity]">@titles[finding.Type]</span>
+            @if (finding.Key != null)
+            {
+                <code>@finding.Key</code>
+            }
+            @if (finding.Expected != null)
+            {
+                <text>expected <code>@finding.Expected</code>,</text>
+            }
+            @if (finding.Actual != null)
+            {
+                <text>found <code>@finding.Actual</code></text>
+            }
+        </div>
+    }
+</div>

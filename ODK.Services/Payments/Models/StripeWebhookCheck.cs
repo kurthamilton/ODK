@@ -14,7 +14,7 @@ public class StripeWebhookCheck
 
     public required string? Expected { get; init; }
 
-    public required StripeWebhookCheckSeverity Severity { get; init; }
+    public required StripeFindingSeverity Severity { get; init; }
 
     public required StripeWebhookCheckState State { get; init; }
 

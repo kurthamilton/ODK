@@ -10,6 +10,8 @@ public class StripeSettings
 
     public required string ConnectedAccountProductDescription { get; init; }
 
+    public required StripeDashboardSettings Dashboard { get; init; }
+
     public required Dictionary<PlatformKey, StripePlatformSettings> Platforms { get; init; }
 
     public required int SettlementReadDelaySeconds { get; init; }

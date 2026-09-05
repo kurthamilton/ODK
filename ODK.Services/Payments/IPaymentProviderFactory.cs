@@ -16,5 +16,7 @@ public interface IPaymentProviderFactory
     /// </summary>
     IPaymentProvider? GetPaymentProviderOrDefault(PaymentProviderType provider, PlatformType platform);
 
+    IStripeTransactionProvider? GetStripeTransactionProvider(PlatformType platform);
+
     IStripeWebhookProvider? GetStripeWebhookProvider(PlatformType platform);
 }

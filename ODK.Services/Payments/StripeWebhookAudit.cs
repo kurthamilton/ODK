@@ -115,7 +115,7 @@ public static class StripeWebhookAudit
             // The lists themselves are on the audit, where a reader can see which events are missing.
             Actual = null,
             Expected = null,
-            Severity = StripeWebhookCheckSeverity.Error,
+            Severity = StripeFindingSeverity.Error,
             State = expectations.Events.Count == 0
                 ? StripeWebhookCheckState.NotComparable
                 : missingEvents.Count == 0
@@ -149,7 +149,7 @@ public static class StripeWebhookAudit
         {
             Actual = actual,
             Expected = expected,
-            Severity = StripeWebhookCheckSeverity.Error,
+            Severity = StripeFindingSeverity.Error,
             State = expected == null
                 ? StripeWebhookCheckState.NotComparable
                 : string.Equals(actual, Authority(expected), StringComparison.OrdinalIgnoreCase)
@@ -168,7 +168,7 @@ public static class StripeWebhookAudit
         {
             Actual = endpoint.LiveMode.ToString(),
             Expected = environment != EnvironmentType.None ? expected.ToString() : null,
-            Severity = StripeWebhookCheckSeverity.Error,
+            Severity = StripeFindingSeverity.Error,
             State = environment == EnvironmentType.None
                 ? StripeWebhookCheckState.NotComparable
                 : endpoint.LiveMode == expected
@@ -217,7 +217,7 @@ public static class StripeWebhookAudit
         {
             Actual = actual,
             Expected = expectations.Path,
-            Severity = StripeWebhookCheckSeverity.Error,
+            Severity = StripeFindingSeverity.Error,
             State = string.IsNullOrWhiteSpace(expectations.Path)
                 ? StripeWebhookCheckState.NotComparable
                 : string.Equals(
@@ -238,8 +238,8 @@ public static class StripeWebhookAudit
            without one works - on a default nothing about the endpoint states. Any other platform's silently
            does not, which is why the same omission is a warning on one and an error on the other. */
         var severity = string.IsNullOrEmpty(actual) && account.Platform == PlatformType.DrunkenKnitwits
-            ? StripeWebhookCheckSeverity.Warning
-            : StripeWebhookCheckSeverity.Error;
+            ? StripeFindingSeverity.Warning
+            : StripeFindingSeverity.Error;
 
         return new StripeWebhookCheck
         {
@@ -267,7 +267,7 @@ public static class StripeWebhookAudit
         {
             Actual = unexpected.Length > 0 ? string.Join(", ", unexpected) : null,
             Expected = null,
-            Severity = StripeWebhookCheckSeverity.Error,
+            Severity = StripeFindingSeverity.Error,
             State = unexpected.Length == 0 ? StripeWebhookCheckState.Met : StripeWebhookCheckState.Unmet,
             Type = StripeWebhookCheckType.Query
         };
@@ -310,7 +310,7 @@ public static class StripeWebhookAudit
         {
             Actual = actual,
             Expected = null,
-            Severity = StripeWebhookCheckSeverity.Error,
+            Severity = StripeFindingSeverity.Error,
             State = kind != StripeWebhookKind.None
                 ? StripeWebhookCheckState.Met
                 : StripeWebhookCheckState.Unmet,

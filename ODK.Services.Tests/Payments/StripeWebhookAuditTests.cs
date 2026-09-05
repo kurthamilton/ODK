@@ -250,7 +250,7 @@ public static class StripeWebhookAuditTests
         // Assert
         var check = Check(result, StripeWebhookCheckType.Platform);
         check.State.Should().Be(StripeWebhookCheckState.Unmet);
-        check.Severity.Should().Be(StripeWebhookCheckSeverity.Error);
+        check.Severity.Should().Be(StripeFindingSeverity.Error);
     }
 
     [Test]
@@ -268,7 +268,7 @@ public static class StripeWebhookAuditTests
         // Assert
         var check = Check(result, StripeWebhookCheckType.Platform);
         check.State.Should().Be(StripeWebhookCheckState.Unmet);
-        check.Severity.Should().Be(StripeWebhookCheckSeverity.Warning);
+        check.Severity.Should().Be(StripeFindingSeverity.Warning);
     }
 
     [Test]
@@ -283,7 +283,7 @@ public static class StripeWebhookAuditTests
         // Assert
         var check = Check(result, StripeWebhookCheckType.Platform);
         check.State.Should().Be(StripeWebhookCheckState.Unmet);
-        check.Severity.Should().Be(StripeWebhookCheckSeverity.Error);
+        check.Severity.Should().Be(StripeFindingSeverity.Error);
     }
 
     [Test]

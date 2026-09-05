@@ -90,20 +90,52 @@ public class PaymentMetadataModel
 
     public Guid? SiteSubscriptionPriceId { get; private set; }
 
+    /// <summary>
+    /// The metadata a recurring group subscription has to carry for every renewal of it to be recorded:
+    /// what the payment is for, and who and what it is for. Held by the subscription itself, so it names
+    /// only what is true of every invoice the subscription will ever issue.
+    /// </summary>
+    public static PaymentMetadataModel ForChapterSubscription(
+        PlatformType platform,
+        Guid memberId,
+        Guid chapterId,
+        Guid chapterSubscriptionId)
+        => new()
+        {
+            ChapterId = chapterId,
+            ChapterSubscriptionId = chapterSubscriptionId,
+            MemberId = memberId,
+            Platform = platform,
+            Reason = PaymentReasonType.ChapterSubscription
+        };
+
+    /// <inheritdoc cref="ForChapterSubscription"/>
+    public static PaymentMetadataModel ForSiteSubscription(
+        PlatformType platform,
+        Guid memberId,
+        Guid siteSubscriptionPriceId)
+        => new()
+        {
+            MemberId = memberId,
+            Platform = platform,
+            Reason = PaymentReasonType.SiteSubscription,
+            SiteSubscriptionPriceId = siteSubscriptionPriceId
+        };
+
     public static PaymentMetadataModel FromDictionary(IReadOnlyDictionary<string, string> dictionary)
     {
         dictionary = dictionary.WithComparer(StringComparer.OrdinalIgnoreCase);
 
-        dictionary.TryGetGuidValue("ChapterId", out var chapterId);
-        dictionary.TryGetGuidValue("ChapterSubscriptionId", out var chapterSubscriptionId);
-        dictionary.TryGetGuidValue("EventTicketPaymentId", out var eventTicketPaymentId);
-        dictionary.TryGetGuidValue("EventId", out var eventId);
-        dictionary.TryGetGuidValue("MemberId", out var memberId);
-        dictionary.TryGetGuidValue("PaymentCheckoutSessionId", out var paymentCheckoutSessionId);
-        dictionary.TryGetGuidValue("PaymentId", out var paymentId);
-        dictionary.TryGetEnumValue<PlatformType>("Platform", out var platform);
-        dictionary.TryGetEnumValue<PaymentReasonType>("Reason", out var reason);
-        dictionary.TryGetGuidValue("SiteSubscriptionPriceId", out var siteSubscriptionPriceId);
+        dictionary.TryGetGuidValue(Keys.ChapterId, out var chapterId);
+        dictionary.TryGetGuidValue(Keys.ChapterSubscriptionId, out var chapterSubscriptionId);
+        dictionary.TryGetGuidValue(Keys.EventTicketPaymentId, out var eventTicketPaymentId);
+        dictionary.TryGetGuidValue(Keys.EventId, out var eventId);
+        dictionary.TryGetGuidValue(Keys.MemberId, out var memberId);
+        dictionary.TryGetGuidValue(Keys.PaymentCheckoutSessionId, out var paymentCheckoutSessionId);
+        dictionary.TryGetGuidValue(Keys.PaymentId, out var paymentId);
+        dictionary.TryGetEnumValue<PlatformType>(Keys.Platform, out var platform);
+        dictionary.TryGetEnumValue<PaymentReasonType>(Keys.Reason, out var reason);
+        dictionary.TryGetGuidValue(Keys.SiteSubscriptionPriceId, out var siteSubscriptionPriceId);
 
         return new PaymentMetadataModel
         {
@@ -126,54 +158,82 @@ public class PaymentMetadataModel
 
         if (ChapterId != null)
         {
-            dictionary.Add("ChapterId", ChapterId.Value.ToString());
+            dictionary.Add(Keys.ChapterId, ChapterId.Value.ToString());
         }
 
         if (ChapterSubscriptionId != null)
         {
-            dictionary.Add("ChapterSubscriptionId", ChapterSubscriptionId.Value.ToString());
+            dictionary.Add(Keys.ChapterSubscriptionId, ChapterSubscriptionId.Value.ToString());
         }
 
         if (EventId != null)
         {
-            dictionary.Add("EventId", EventId.Value.ToString());
+            dictionary.Add(Keys.EventId, EventId.Value.ToString());
         }
 
         if (EventTicketPaymentId != null)
         {
-            dictionary.Add("EventTicketPaymentId", EventTicketPaymentId.Value.ToString());
+            dictionary.Add(Keys.EventTicketPaymentId, EventTicketPaymentId.Value.ToString());
         }
 
         if (MemberId != null)
         {
-            dictionary.Add("MemberId", MemberId.Value.ToString());
+            dictionary.Add(Keys.MemberId, MemberId.Value.ToString());
         }
 
         if (PaymentCheckoutSessionId != null)
         {
-            dictionary.Add("PaymentCheckoutSessionId", PaymentCheckoutSessionId.Value.ToString());
+            dictionary.Add(Keys.PaymentCheckoutSessionId, PaymentCheckoutSessionId.Value.ToString());
         }
 
         if (PaymentId != null)
         {
-            dictionary.Add("PaymentId", PaymentId.Value.ToString());
+            dictionary.Add(Keys.PaymentId, PaymentId.Value.ToString());
         }
 
         if (Platform != null)
         {
-            dictionary.Add("Platform", Platform.Value.ToString());
+            dictionary.Add(Keys.Platform, Platform.Value.ToString());
         }
 
         if (Reason != null)
         {
-            dictionary.Add("Reason", Reason.Value.ToString());
+            dictionary.Add(Keys.Reason, Reason.Value.ToString());
         }
 
         if (SiteSubscriptionPriceId != null)
         {
-            dictionary.Add("SiteSubscriptionPriceId", SiteSubscriptionPriceId.Value.ToString());
+            dictionary.Add(Keys.SiteSubscriptionPriceId, SiteSubscriptionPriceId.Value.ToString());
         }
 
         return dictionary;
+    }
+
+    /// <summary>
+    /// The names the keys are written under, and read back by. One statement of each, because a payment
+    /// provider holds metadata written by a version of this app that has long since been replaced, and a
+    /// key renamed on one side alone stops matching without failing.
+    /// </summary>
+    public static class Keys
+    {
+        public const string ChapterId = "ChapterId";
+
+        public const string ChapterSubscriptionId = "ChapterSubscriptionId";
+
+        public const string EventId = "EventId";
+
+        public const string EventTicketPaymentId = "EventTicketPaymentId";
+
+        public const string MemberId = "MemberId";
+
+        public const string PaymentCheckoutSessionId = "PaymentCheckoutSessionId";
+
+        public const string PaymentId = "PaymentId";
+
+        public const string Platform = "Platform";
+
+        public const string Reason = "Reason";
+
+        public const string SiteSubscriptionPriceId = "SiteSubscriptionPriceId";
     }
 }

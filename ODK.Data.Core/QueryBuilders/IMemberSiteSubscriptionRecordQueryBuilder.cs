@@ -30,6 +30,9 @@ public interface IMemberSiteSubscriptionRecordQueryBuilder :
 
     IMemberSiteSubscriptionRecordQueryBuilder ForSiteSubscriptionPrice(Guid siteSubscriptionPriceId);
 
+    /// <inheritdoc cref="IMemberSubscriptionRecordQueryBuilder.HasExternalId"/>
+    IMemberSiteSubscriptionRecordQueryBuilder HasExternalId();
+
     IDeferredQuery<bool> HasFeature(SiteFeatureType feature);
 
     ISiteSubscriptionQueryBuilder SiteSubscription();

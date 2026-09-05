@@ -83,6 +83,12 @@ public class MemberSiteSubscriptionRecordQueryBuilder :
         return this;
     }
 
+    public IMemberSiteSubscriptionRecordQueryBuilder HasExternalId()
+    {
+        Query = Query.Where(x => x.ExternalId != null && x.ExternalId != string.Empty);
+        return this;
+    }
+
     public IDeferredQuery<bool> HasFeature(SiteFeatureType feature)
         => SiteSubscription().HasFeature(feature);
 

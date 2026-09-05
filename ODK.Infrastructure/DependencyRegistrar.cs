@@ -140,6 +140,19 @@ public static class DependencyRegistrar
             ConnectedAccountProductDescription = stripe.ConnectedAccountProductDescription,
             SettlementReadDelay = TimeSpan.FromSeconds(stripe.SettlementReadDelaySeconds)
         });
+        services.AddScoped<IStripeTransactionAdminService, StripeTransactionAdminService>();
+        services.AddSingleton(new StripeTransactionAdminServiceSettings
+        {
+            AccountIds = stripe.Platforms.ToDictionary(
+                x => x.Key.ToPlatformType(),
+                x => x.Value.AccountId),
+            LiveInvoiceUrlFormat = stripe.Dashboard.LiveInvoiceUrlFormat,
+            LivePaymentUrlFormat = stripe.Dashboard.LivePaymentUrlFormat,
+            LiveSubscriptionUrlFormat = stripe.Dashboard.LiveSubscriptionUrlFormat,
+            TestInvoiceUrlFormat = stripe.Dashboard.TestInvoiceUrlFormat,
+            TestPaymentUrlFormat = stripe.Dashboard.TestPaymentUrlFormat,
+            TestSubscriptionUrlFormat = stripe.Dashboard.TestSubscriptionUrlFormat
+        });
         services.AddScoped<IStripeWebhookAdminService, StripeWebhookAdminService>();
         services.AddSingleton(new StripeWebhookAdminServiceSettings
         {
