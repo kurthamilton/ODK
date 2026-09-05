@@ -109,6 +109,7 @@
                                         @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel
                                         {
                                             Member = member,
+                                            ShowPlaceholder = false,
                                             Version = dto.AvatarVersion
                                         })
                                     </div>

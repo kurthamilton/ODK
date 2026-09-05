@@ -47,6 +47,7 @@
                             @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel
                             {
                                 Member = payment.Member.Member,
+                                ShowPlaceholder = false,
                                 Width = 30,
                                 Version = payment.Member.AvatarVersion
                             })

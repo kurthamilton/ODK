@@ -1,6 +1,4 @@
-﻿@using ODK.Services.Authentication
-@using ODK.Services.Members.ViewModels
-@using ODK.Web.Razor.Models.Components
+﻿@using ODK.Services.Members.ViewModels
 @using ODK.Web.Razor.Models.Members
 @model MemberPageViewModel  
 
@@ -8,6 +6,7 @@
     @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel
     {
         Member = Model.Member,
+        ShowPlaceholder = false,
         Version = Model.AvatarVersion
     })
 </div>
