@@ -78,6 +78,7 @@ public class StripeWebhookParser : IStripeWebhookParser
             PaymentId = session.PaymentIntentId,
             PaymentProviderType = PaymentProviderType.Stripe,
             SubscriptionId = null,
+            SubscriptionRenewal = false,
             Type = PaymentProviderWebhookType.CheckoutSessionCompleted
         };
     }
@@ -97,6 +98,7 @@ public class StripeWebhookParser : IStripeWebhookParser
             PaymentId = session.PaymentIntentId,
             PaymentProviderType = PaymentProviderType.Stripe,
             SubscriptionId = null,
+            SubscriptionRenewal = false,
             Type = PaymentProviderWebhookType.CheckoutSessionExpired
         };
     }
@@ -124,6 +126,11 @@ public class StripeWebhookParser : IStripeWebhookParser
             PaymentId = null,
             PaymentProviderType = PaymentProviderType.Stripe,
             SubscriptionId = subscriptionDetails?.SubscriptionId,
+            /* An unrecognised billing reason is read as a renewal, the same way round as
+               StripeTransactionKind: the invoice that created a subscription is the one already known
+               to have come from checkout. */
+            SubscriptionRenewal = subscriptionDetails?.SubscriptionId != null &&
+                invoice.BillingReason != StripeInvoiceBillingReasons.SubscriptionCreate,
             Type = PaymentProviderWebhookType.InvoicePaymentSucceeded
         };
     }
@@ -143,6 +150,7 @@ public class StripeWebhookParser : IStripeWebhookParser
             PaymentId = null,
             PaymentProviderType = PaymentProviderType.Stripe,
             SubscriptionId = subscription.Id,
+            SubscriptionRenewal = false,
             Type = PaymentProviderWebhookType.SubscriptionCancelled
         };
     }

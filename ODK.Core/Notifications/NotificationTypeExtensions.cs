@@ -20,6 +20,7 @@ public static class NotificationTypeExtensions
         NotificationType.NewMember => NotificationGroupType.Members,
         NotificationType.SiteConversationMemberMessage => NotificationGroupType.Messages,
         NotificationType.SiteConversationReplies => NotificationGroupType.Messages,
+        NotificationType.SubscriptionRenewed => NotificationGroupType.Subscriptions,
         _ => NotificationGroupType.None
     };
 }

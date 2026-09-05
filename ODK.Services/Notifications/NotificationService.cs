@@ -4,6 +4,7 @@ using ODK.Core.Events;
 using ODK.Core.Members;
 using ODK.Core.Messages;
 using ODK.Core.Notifications;
+using ODK.Core.Payments;
 using ODK.Core.Platforms;
 using ODK.Core.Utils;
 using ODK.Core.Venues;
@@ -153,6 +154,40 @@ public class NotificationService : INotificationService
             settings,
             entityId: conversation.Id,
             chapterId: null);
+    }
+
+    public async Task AddSubscriptionRenewedNotification(
+        Member member,
+        Chapter? chapter,
+        Payment payment,
+        DateTime? nextPaymentUtc,
+        IReadOnlyCollection<MemberNotificationSettings> settings)
+    {
+        // The text is persisted, so the date is formatted in the member's own culture and timezone rather
+        // than in whatever the background job that raised it is running as.
+        var culture = await _memberLocaleService.GetCulture(member.Id);
+
+        var renewed = chapter != null
+            ? $"Your membership of {chapter.GetDisplayName(chapter.Platform)} has been renewed."
+            : "Your subscription has been renewed.";
+
+        var nextPayment = nextPaymentUtc?.ToFriendlyDateString(new FriendlyDateStringOptions
+        {
+            Culture = culture,
+            TimeZone = member.TimeZone
+        });
+
+        var text = nextPayment != null
+            ? string.Join(Environment.NewLine, renewed, $"Your next payment is due on {nextPayment}.")
+            : renewed;
+
+        AddNotifications(
+            NotificationType.SubscriptionRenewed,
+            _ => text,
+            [member],
+            settings,
+            entityId: payment.Id,
+            chapterId: chapter?.Id);
     }
 
     public async Task<NotificationsPageViewModel> GetNotificationsPageViewModel(

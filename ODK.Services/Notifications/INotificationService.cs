@@ -3,6 +3,7 @@ using ODK.Core.Events;
 using ODK.Core.Members;
 using ODK.Core.Messages;
 using ODK.Core.Notifications;
+using ODK.Core.Payments;
 using ODK.Core.Venues;
 using ODK.Services.Notifications.ViewModels;
 
@@ -50,6 +51,13 @@ public interface INotificationService
     void AddSiteConversationReplyNotification(
         SiteConversation conversation,
         Member member,
+        IReadOnlyCollection<MemberNotificationSettings> settings);
+
+    Task AddSubscriptionRenewedNotification(
+        Member member,
+        Chapter? chapter,
+        Payment payment,
+        DateTime? nextPaymentUtc,
         IReadOnlyCollection<MemberNotificationSettings> settings);
 
     Task<NotificationsPageViewModel> GetNotificationsPageViewModel(IMemberServiceRequest request);

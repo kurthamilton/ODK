@@ -26,5 +26,11 @@ public class PaymentProviderWebhook
 
     public required string? SubscriptionId { get; init; }
 
+    /// <summary>
+    /// Whether the event bills a subscription that already existed, rather than the one billing that
+    /// created it. A renewal is the only billing no member is sitting in front of a checkout for.
+    /// </summary>
+    public required bool SubscriptionRenewal { get; init; }
+
     public required PaymentProviderWebhookType? Type { get; init; }
 }

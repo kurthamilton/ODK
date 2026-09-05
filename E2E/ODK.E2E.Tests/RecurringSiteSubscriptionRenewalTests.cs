@@ -13,8 +13,9 @@ namespace ODK.E2E.Tests;
 /// clock a month to fire a real renewal webhook over the ngrok tunnel. Asserts the stored expiry equals
 /// Stripe's next payment date after both the first invoice and the renewal - the invariant that keeps a
 /// subscription from lapsing before, or outliving, the next charge - and that each billing event appends
-/// exactly one log row. Webhook-only, so the tunnel must be up. It doesn't exercise the purchase UI (test
-/// clocks require an SDK-created subscription); SiteSubscriptionPurchaseTests covers real Checkout.
+/// exactly one log row, and that only the renewal notifies the member - the purchase is told to them on the
+/// checkout page they made it on. Webhook-only, so the tunnel must be up. It doesn't exercise the purchase
+/// UI (test clocks require an SDK-created subscription); SiteSubscriptionPurchaseTests covers real Checkout.
 ///
 /// The second test tags the subscription with the checkout ids as well, which is what the app's own
 /// checkout writes, and follows the money instead of the expiry.
@@ -28,6 +29,8 @@ public class RecurringSiteSubscriptionRenewalTests : DefaultPageTest
     private static MemberDataHelper Members => new(E2ESettings.ConnectionString);
 
     private static MemberSiteSubscriptionDataHelper MemberSubscriptions => new(E2ESettings.ConnectionString);
+
+    private static NotificationDataHelper Notifications => new(E2ESettings.ConnectionString);
 
     private static PaymentDataHelper Payments => new(E2ESettings.ConnectionString);
 
@@ -70,6 +73,12 @@ public class RecurringSiteSubscriptionRenewalTests : DefaultPageTest
         // second row. Counting them is what catches a double-apply below.
         var recordsAfterFirst = await MemberSubscriptions.GetRecordCount(memberId);
 
+        /* A notification is committed with the subscription record it announces, so the expiry read above
+           is already evidence of whether one was written. The purchase raises none: a member who bought
+           at checkout is told there. */
+        (await Notifications.GetByType(memberId, NotificationTypeIds.SubscriptionRenewed))
+            .Should().BeEmpty("the purchase is told to the member on the checkout page they made it on");
+
         // Act - advance the clock past the billing period to trigger a renewal.
         await clock.AdvanceOneMonth();
 
@@ -85,6 +94,12 @@ public class RecurringSiteSubscriptionRenewalTests : DefaultPageTest
         // the same provider date - so the row count is what guards the idempotency.
         (await MemberSubscriptions.GetRecordCount(memberId))
             .Should().Be(recordsAfterFirst + 1, "the renewal should append exactly one further log row");
+
+        // A renewal is billed with nobody at a checkout page, so this is what tells the member about it.
+        // A site subscription belongs to no group, so the notification names none.
+        var notifications = await Notifications.GetByType(memberId, NotificationTypeIds.SubscriptionRenewed);
+        notifications.Should().HaveCount(1, "the renewal is what the member is told about");
+        notifications.Single().ChapterId.Should().BeNull();
     }
 
     [Test]

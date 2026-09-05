@@ -14,5 +14,8 @@ public enum NotificationType
     SiteConversationMemberMessage = 7,
 
     /// <summary>A site admin has replied to the member's thread.</summary>
-    SiteConversationReplies = 8
+    SiteConversationReplies = 8,
+
+    /// <summary>A subscription of the member's has been billed again by the payment provider.</summary>
+    SubscriptionRenewed = 9
 }

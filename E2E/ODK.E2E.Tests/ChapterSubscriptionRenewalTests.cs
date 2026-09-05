@@ -18,6 +18,11 @@ namespace ODK.E2E.Tests;
 /// next charge - and that each billing event appends exactly one log row. Webhook-only, so the tunnel must
 /// be up.
 /// <para>
+/// It also asserts that only the renewal notifies the member: the first invoice is the purchase they made
+/// at checkout, which the checkout page itself tells them about, whereas nobody is watching a page when a
+/// renewal is billed.
+/// </para>
+/// <para>
 /// It also follows the renewal's money to the group. A billing records itself against a payment of its own,
 /// which is then settled and its share transferred - so a real onboarded connected account is needed, and
 /// the run moves sandbox money into it.
@@ -36,6 +41,8 @@ public class ChapterSubscriptionRenewalTests : DefaultPageTest
     private static MemberDataHelper Members => new(E2ESettings.ConnectionString);
 
     private static MemberSiteSubscriptionDataHelper MemberSubscriptions => new(E2ESettings.ConnectionString);
+
+    private static NotificationDataHelper Notifications => new(E2ESettings.ConnectionString);
 
     private static PaymentDataHelper Payments => new(E2ESettings.ConnectionString);
 
@@ -105,6 +112,11 @@ public class ChapterSubscriptionRenewalTests : DefaultPageTest
         (await MemberChapterSubscriptions.GetRecordCount(memberId, group.ChapterId))
             .Should().Be(1, "the first invoice should append exactly one log row");
 
+        /* A notification is committed with the subscription record it announces, so the expiry read above
+           is already evidence of whether one was written. */
+        (await Notifications.GetByType(memberId, NotificationTypeIds.SubscriptionRenewed))
+            .Should().BeEmpty("the purchase is told to the member on the checkout page they made it on");
+
         // Act - advance the clock past the billing period to trigger a renewal.
         await clock.AdvanceOneMonth();
 
@@ -120,6 +132,14 @@ public class ChapterSubscriptionRenewalTests : DefaultPageTest
         // the same provider date - so the row count is what guards the idempotency.
         (await MemberChapterSubscriptions.GetRecordCount(memberId, group.ChapterId))
             .Should().Be(2, "the renewal should append exactly one further log row");
+
+        // A renewal is billed with nobody at a checkout page, so this is what tells the member about it.
+        var notifications = await Notifications.GetByType(memberId, NotificationTypeIds.SubscriptionRenewed);
+        notifications.Should().HaveCount(1, "the renewal is what the member is told about");
+
+        var notification = notifications.Single();
+        notification.ChapterId.Should().Be(group.ChapterId);
+        notification.Text.Should().Contain(group.Name, "the notification should name the group renewed");
 
         // The renewal's own payment, named by the record it wrote - not the first invoice's, which is the
         // whole point: a renewal that recorded itself against the purchase's payment would find that

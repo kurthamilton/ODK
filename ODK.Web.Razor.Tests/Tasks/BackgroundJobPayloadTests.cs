@@ -119,6 +119,7 @@ public static class BackgroundJobPayloadTests
             PaymentId = "pi_1",
             PaymentProviderType = PaymentProviderType.Stripe,
             SubscriptionId = "sub_1",
+            SubscriptionRenewal = true,
             Type = PaymentProviderWebhookType.CheckoutSessionCompleted
         };
 
@@ -133,6 +134,7 @@ public static class BackgroundJobPayloadTests
         result.Metadata.Should().BeEquivalentTo(webhook.Metadata);
         result.OriginatedUtc.Should().Be(webhook.OriginatedUtc);
         result.PaymentProviderType.Should().Be(webhook.PaymentProviderType);
+        result.SubscriptionRenewal.Should().Be(webhook.SubscriptionRenewal);
         result.Type.Should().Be(webhook.Type);
     }
 
@@ -153,6 +155,25 @@ public static class BackgroundJobPayloadTests
         // Assert
         result.InvoiceId.Should().BeNull();
         result.PaymentId.Should().Be("pi_1");
+    }
+
+    [Test]
+    public static void PaymentProviderWebhook_PayloadWithoutSubscriptionRenewal_DeserialisesAsNotARenewal()
+    {
+        /* Arrange - what a job queued before the flag existed holds. False is the safe way for one to
+           arrive: an event no longer able to say it renewed a subscription announces nothing, rather
+           than telling a member their first payment was a renewal. */
+        const string json =
+            "{\"Amount\":12.34,\"Complete\":true,\"Id\":\"wh_1\",\"InvoiceId\":\"in_1\",\"Metadata\":{}," +
+            "\"OriginatedUtc\":\"2026-08-20T09:30:00Z\",\"PaymentId\":\"pi_1\"," +
+            "\"PaymentProviderType\":1,\"SubscriptionId\":\"sub_1\",\"Type\":3}";
+
+        // Act
+        var result = SerializationHelper.Deserialize<PaymentProviderWebhook>(json, SerializationOption.User);
+
+        // Assert
+        result.SubscriptionRenewal.Should().BeFalse();
+        result.SubscriptionId.Should().Be("sub_1");
     }
 
     private static JobRequest CreateJobRequest() => new()
