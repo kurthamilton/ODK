@@ -746,19 +746,44 @@ public class PaymentService : IPaymentService
         }
 
         // Load basic metadata objects
-        var (member, chapter, chapterSubscription, payment, paymentCheckoutSession) = await _unitOfWork.Run(
-            x => x.MemberRepository.GetById(metadata.MemberId.Value),
-            x => x.ChapterRepository.GetById(platform, metadata.ChapterId.Value),
-            x => x.ChapterSubscriptionRepository.GetById(metadata.ChapterSubscriptionId.Value),
-            x => metadata.PaymentId != null
-                ? x.PaymentRepository.GetByIdOrDefault(metadata.PaymentId.Value)
-                : new DefaultDeferredQuerySingleOrDefault<Payment>(),
-            x => metadata.PaymentCheckoutSessionId != null
-                ? x.PaymentCheckoutSessionRepository.GetByIdOrDefault(metadata.PaymentCheckoutSessionId.Value)
-                : new DefaultDeferredQuerySingleOrDefault<PaymentCheckoutSession>());
+        var (member, chapter, chapterSubscription, payment, paymentCheckoutSession, recordForInitiator) =
+            await _unitOfWork.Run(
+                x => x.MemberRepository.GetById(metadata.MemberId.Value),
+                x => x.ChapterRepository.GetById(platform, metadata.ChapterId.Value),
+                x => x.ChapterSubscriptionRepository.GetById(metadata.ChapterSubscriptionId.Value),
+                x => metadata.PaymentId != null
+                    ? x.PaymentRepository.GetByIdOrDefault(metadata.PaymentId.Value)
+                    : new DefaultDeferredQuerySingleOrDefault<Payment>(),
+                x => metadata.PaymentCheckoutSessionId != null
+                    ? x.PaymentCheckoutSessionRepository.GetByIdOrDefault(metadata.PaymentCheckoutSessionId.Value)
+                    : new DefaultDeferredQuerySingleOrDefault<PaymentCheckoutSession>(),
+                x => !string.IsNullOrEmpty(initiatorId)
+                    ? x.MemberSubscriptionRecordRepository
+                        .Query()
+                        .ForInitiator(initiatorId)
+                        .GetSingleOrDefault()
+                    : new DefaultDeferredQuerySingleOrDefault<MemberSubscriptionRecord>());
 
-        // A renewal has no checkout Payment: create one (already paid) and add it
-        if (payment == null)
+        /* Asked here as well as in UpdateMemberChapterSubscription, and asked first: a billing this event
+           has already recorded must not get as far as deciding its payment, because deciding creates one,
+           and a payment nothing goes on to commit would still be handed back as a payment to settle. The
+           check downstream covers the one-off path, which arrives with a payment already in hand.
+
+           The session is carried through so a checkout page waiting on it is still told, since a retry is
+           what reaches it when the first attempt committed and then failed. */
+        if (recordForInitiator != null)
+        {
+            await _loggingService.Info(
+                $"Chapter subscription already updated for initiator '{initiatorId}'; not updating again");
+            return PaymentWebhookProcessingResult.Successful(
+                member: null, chapter: null, payment: null, currency: null, paymentCheckoutSession);
+        }
+
+        /* A billing gets a Payment of its own unless the checkout the metadata names is still waiting to be
+           paid, in which case this billing is that checkout's. A subscription's metadata is snapshotted onto
+           every invoice it issues, so PaymentId names the purchase that created it on renewals too - and a
+           payment already paid took different money, on a different day, from the one that just arrived. */
+        if (payment == null || payment.PaidUtc != null)
         {
             payment = _unitOfWork.PaymentRepository.Add(new Payment
             {
@@ -776,11 +801,6 @@ public class PaymentService : IPaymentService
                 Reference = chapterSubscription.ToReference()
             });
         }
-        else if (payment.PaidUtc != null)
-        {
-            await _loggingService.Warn(
-                $"Not updating Payment {payment.Id} in {paymentProvider} webhook processing: already paid");
-        }
         else
         {
             payment.ExternalId = externalId;
@@ -788,22 +808,14 @@ public class PaymentService : IPaymentService
             _unitOfWork.PaymentRepository.Update(payment);
         }
 
-        // update payment checkout session
-        if (paymentCheckoutSession != null)
+        /* The session the metadata names is the purchase's, and only the first invoice completes it, so a
+           later billing finds it completed and leaves it alone. Silently: a session already closed says
+           nothing has gone wrong here, and the one-off path keeps its warning because there a completed
+           session does mean the same event arriving twice. */
+        if (paymentCheckoutSession is { CompletedUtc: null })
         {
-            if (paymentCheckoutSession.CompletedUtc != null)
-            {
-                var message =
-                    $"Not updating PaymentCheckoutSession {paymentCheckoutSession.Id} " +
-                    $"in {paymentProvider} webhook processing: " +
-                    $"already completed";
-                await _loggingService.Warn(message);
-            }
-            else
-            {
-                paymentCheckoutSession.CompletedUtc = completedUtc;
-                _unitOfWork.PaymentCheckoutSessionRepository.Update(paymentCheckoutSession);
-            }
+            paymentCheckoutSession.CompletedUtc = completedUtc;
+            _unitOfWork.PaymentCheckoutSessionRepository.Update(paymentCheckoutSession);
         }
 
         return await UpdateMemberChapterSubscription(
@@ -939,21 +951,46 @@ public class PaymentService : IPaymentService
         }
 
         // Load basic metadata objects
-        var (member, siteSubscription, siteSubscriptionPrice, payment, paymentCheckoutSession) = await _unitOfWork.Run(
-            x => x.MemberRepository.GetById(metadata.MemberId.Value),
-            x => x.SiteSubscriptionRepository.GetByPriceId(metadata.SiteSubscriptionPriceId.Value),
-            x => x.SiteSubscriptionPriceRepository.GetById(metadata.SiteSubscriptionPriceId.Value),
-            x => metadata.PaymentId != null
-                ? x.PaymentRepository.GetByIdOrDefault(metadata.PaymentId.Value)
-                : new DefaultDeferredQuerySingleOrDefault<Payment>(),
-            x => metadata.PaymentCheckoutSessionId != null
-                ? x.PaymentCheckoutSessionRepository.GetByIdOrDefault(metadata.PaymentCheckoutSessionId.Value)
-                : new DefaultDeferredQuerySingleOrDefault<PaymentCheckoutSession>());
+        var (member, siteSubscription, siteSubscriptionPrice, payment, paymentCheckoutSession, recordForInitiator) =
+            await _unitOfWork.Run(
+                x => x.MemberRepository.GetById(metadata.MemberId.Value),
+                x => x.SiteSubscriptionRepository.GetByPriceId(metadata.SiteSubscriptionPriceId.Value),
+                x => x.SiteSubscriptionPriceRepository.GetById(metadata.SiteSubscriptionPriceId.Value),
+                x => metadata.PaymentId != null
+                    ? x.PaymentRepository.GetByIdOrDefault(metadata.PaymentId.Value)
+                    : new DefaultDeferredQuerySingleOrDefault<Payment>(),
+                x => metadata.PaymentCheckoutSessionId != null
+                    ? x.PaymentCheckoutSessionRepository.GetByIdOrDefault(metadata.PaymentCheckoutSessionId.Value)
+                    : new DefaultDeferredQuerySingleOrDefault<PaymentCheckoutSession>(),
+                x => !string.IsNullOrEmpty(initiatorId)
+                    ? x.MemberSiteSubscriptionRecordRepository
+                        .Query()
+                        .ForInitiator(initiatorId)
+                        .GetSingleOrDefault()
+                    : new DefaultDeferredQuerySingleOrDefault<MemberSiteSubscriptionRecord>());
 
-        // A renewal has no checkout Payment: create one (already paid) and Add it once. Adding then also
-        // Upserting would break - Upsert Updates once the Id is set, downgrading the Added state to
-        // Modified, so the row is never inserted and the subscription-record FK to it fails.
-        if (payment == null)
+        /* Asked here as well as in UpdateMemberSiteSubscription, and asked first: a billing this event has
+           already recorded must not get as far as deciding its payment, because deciding creates one, and a
+           payment nothing goes on to commit would still be handed back as a payment to settle.
+
+           The session is carried through so a checkout page waiting on it is still told, since a retry is
+           what reaches it when the first attempt committed and then failed. */
+        if (recordForInitiator != null)
+        {
+            await _loggingService.Info(
+                $"Site subscription already updated for initiator '{initiatorId}'; not updating again");
+            return PaymentWebhookProcessingResult.Successful(
+                member: null, chapter: null, payment: null, currency: null, paymentCheckoutSession);
+        }
+
+        /* A billing gets a Payment of its own unless the checkout the metadata names is still waiting to be
+           paid, in which case this billing is that checkout's. A subscription's metadata is snapshotted onto
+           every invoice it issues, so PaymentId names the purchase that created it on renewals too - and a
+           payment already paid took different money, on a different day, from the one that just arrived.
+
+           Added once, never also Upserted - Upsert Updates once the Id is set, downgrading the Added state
+           to Modified, so the row is never inserted and the subscription-record FK to it fails. */
+        if (payment == null || payment.PaidUtc != null)
         {
             payment = _unitOfWork.PaymentRepository.Add(new Payment
             {
@@ -970,11 +1007,6 @@ public class PaymentService : IPaymentService
                 Reference = siteSubscription.ToReference()
             });
         }
-        else if (payment.PaidUtc != null)
-        {
-            await _loggingService.Warn(
-                $"Not updating Payment {payment.Id} in {paymentProvider} webhook processing: already paid");
-        }
         else
         {
             payment.ExternalId = externalId;
@@ -982,21 +1014,14 @@ public class PaymentService : IPaymentService
             _unitOfWork.PaymentRepository.Update(payment);
         }
 
-        // update payment checkout session
-        if (paymentCheckoutSession != null)
+        /* The session the metadata names is the purchase's, and only the first invoice completes it, so a
+           later billing finds it completed and leaves it alone. Silently: a session already closed says
+           nothing has gone wrong here, and the one-off path keeps its warning because there a completed
+           session does mean the same event arriving twice. */
+        if (paymentCheckoutSession is { CompletedUtc: null })
         {
-            if (paymentCheckoutSession.CompletedUtc != null)
-            {
-                var message =
-                    $"Not updating PaymentCheckoutSession {paymentCheckoutSession.Id} in {paymentProvider} webhook processing: " +
-                    $"already completed";
-                await _loggingService.Warn(message);
-            }
-            else
-            {
-                paymentCheckoutSession.CompletedUtc = completedUtc;
-                _unitOfWork.PaymentCheckoutSessionRepository.Update(paymentCheckoutSession);
-            }
+            paymentCheckoutSession.CompletedUtc = completedUtc;
+            _unitOfWork.PaymentCheckoutSessionRepository.Update(paymentCheckoutSession);
         }
 
         try
@@ -1803,8 +1828,7 @@ public class PaymentService : IPaymentService
         // Idempotency: if this initiating event (the payment provider webhook id) has already extended a
         // subscription, do not extend again. This protects against a retry of the webhook-processing job
         // re-applying the same event after the extension has already been committed. Renewals carry a
-        // distinct webhook id, so they are not caught here. Keying on the payment id would instead skip
-        // renewals, since recurring invoices reuse the original checkout Payment.
+        // distinct webhook id, so they are not caught here.
         if (recordForInitiator != null)
         {
             await _loggingService.Info(

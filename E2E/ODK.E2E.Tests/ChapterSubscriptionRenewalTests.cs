@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using NUnit.Framework;
 using ODK.E2E.Data;
+using ODK.E2E.Data.Models;
 using ODK.E2E.Tests.Config;
 using ODK.E2E.Tests.Helpers;
 
@@ -15,10 +16,15 @@ namespace ODK.E2E.Tests;
 /// real renewal webhook. Asserts the stored expiry equals Stripe's next payment date after both the first
 /// invoice and the renewal - the invariant that keeps a membership from lapsing before, or outliving, the
 /// next charge - and that each billing event appends exactly one log row. Webhook-only, so the tunnel must
-/// be up. No real connected account is needed - the test-clock subscription has no transfer, and a fake
-/// acct_ satisfies the create guard.
+/// be up.
+/// <para>
+/// It also follows the renewal's money to the group. A billing records itself against a payment of its own,
+/// which is then settled and its share transferred - so a real onboarded connected account is needed, and
+/// the run moves sandbox money into it.
+/// </para>
 /// </summary>
 [TestFixture]
+[Category("Stripe")]
 public class ChapterSubscriptionRenewalTests : DefaultPageTest
 {
     private static ChapterPaymentAccountDataHelper ChapterPaymentAccounts => new(E2ESettings.ConnectionString);
@@ -31,11 +37,23 @@ public class ChapterSubscriptionRenewalTests : DefaultPageTest
 
     private static MemberSiteSubscriptionDataHelper MemberSubscriptions => new(E2ESettings.ConnectionString);
 
+    private static PaymentDataHelper Payments => new(E2ESettings.ConnectionString);
+
     [Test]
     public async Task RecurringChapterSubscription_RenewsViaWebhook_SetsExpiryToNextPaymentDate()
     {
-        // Arrange - renewals arrive as real Stripe webhooks over the tunnel.
+        // Arrange - renewals arrive as real Stripe webhooks over the tunnel, and the share of one is
+        // transferred to the group's own account.
         await StripeWebhookTunnel.EnsureReachable(E2ESettings.StripeWebhookBaseUrl);
+        if (string.IsNullOrWhiteSpace(E2ESettings.StripeConnectedAccountId(PlatformTypeId)))
+        {
+            Assert.Fail(
+                $"Set 'Stripe:Platforms:{PlatformTypeIds.Key(PlatformTypeId)}:ConnectedAccountId' to a " +
+                "pre-onboarded Stripe sandbox connected account (acct_...), created under that platform's " +
+                "own Stripe account. A renewal transfers the group's share to it, and Stripe rejects an " +
+                "un-onboarded destination.");
+        }
+
         var siteSubscription = await Provisioning.EnsurePurchasableSiteSubscription();
 
         var owner = await Provisioning.NewAccount("chapter-renewal-owner");
@@ -43,7 +61,8 @@ public class ChapterSubscriptionRenewalTests : DefaultPageTest
         var ownerId = await Members.GetMemberId(owner.Email);
         await MemberSubscriptions.EnsureActive(ownerId, siteSubscription.Id, siteSubscription.PriceId);
         await ChapterPaymentAccounts.EnsureSetupComplete(
-            group.ChapterId, ownerId, "acct_e2e_fake", E2ESettings.EnvironmentTypeId);
+            group.ChapterId, ownerId, E2ESettings.StripeConnectedAccountId(PlatformTypeId),
+            E2ESettings.EnvironmentTypeId);
 
         // The owner creates a recurring chapter subscription; its Stripe recurring price (on the platform
         // account) is what the SDK subscribes the test-clock customer to.
@@ -101,6 +120,42 @@ public class ChapterSubscriptionRenewalTests : DefaultPageTest
         // the same provider date - so the row count is what guards the idempotency.
         (await MemberChapterSubscriptions.GetRecordCount(memberId, group.ChapterId))
             .Should().Be(2, "the renewal should append exactly one further log row");
+
+        // The renewal's own payment, named by the record it wrote - not the first invoice's, which is the
+        // whole point: a renewal that recorded itself against the purchase's payment would find that
+        // payment's share already sent and move nothing.
+        var renewalPaymentId = await MemberChapterSubscriptions.GetCurrentPaymentId(memberId, group.ChapterId)
+            ?? throw new InvalidOperationException("The renewal's subscription record names no payment.");
+
+        var transfer = await PollForTransfer(renewalPaymentId);
+        transfer.Should().NotBeNull("the renewal's payment should be settled and its share transferred");
+        transfer!.CompletedUtc.Should().NotBeNull();
+        transfer.Amount.Should().BeGreaterThan(0);
+
+        // The group owes nothing, so the whole share went - and the Stripe transfer id is what says it
+        // actually moved rather than being worked out and recorded.
+        transfer.WithheldAmount.Should().BeNull();
+        transfer.ExternalId.Should().StartWith("tr_", "the share should have reached the connected account");
+    }
+
+    /* The slowest step, and the furthest from the webhook: the settlement is read on a job scheduled for the
+       provider's own settlement delay after the renewal, and the transfer is made from what it read.
+       CompletedUtc is what says the whole of that finished. */
+    private static async Task<TestPaymentTransfer?> PollForTransfer(Guid paymentId)
+    {
+        var deadline = DateTime.UtcNow.AddSeconds(120);
+        while (DateTime.UtcNow < deadline)
+        {
+            var transfer = await Payments.GetTransferForPayment(paymentId);
+            if (transfer?.CompletedUtc != null)
+            {
+                return transfer;
+            }
+
+            await Task.Delay(2000);
+        }
+
+        return await Payments.GetTransferForPayment(paymentId);
     }
 
     private static async Task<DateTime?> PollForExpiryBeyond(Guid memberId, Guid chapterId, DateTime threshold)

@@ -101,33 +101,6 @@ public static class StripeAccountAudit
     }
 
     /// <summary>
-    /// A subscription's metadata is read by every invoice it ever issues, so a payment or checkout session
-    /// on it names one purchase on behalf of all of them - and a renewal resolving to an already-paid
-    /// payment records itself against that one instead of its own.
-    /// </summary>
-    private static void AddCheckoutIdFindings(
-        List<StripeTransactionFinding> findings, PaymentMetadataModel metadata)
-    {
-        if (metadata.PaymentId != null)
-        {
-            findings.Add(Finding(
-                StripeTransactionFindingType.CheckoutIdsOnSubscription,
-                StripeFindingSeverity.Warning,
-                PaymentMetadataModel.Keys.PaymentId,
-                actual: metadata.PaymentId.Value.ToString()));
-        }
-
-        if (metadata.PaymentCheckoutSessionId != null)
-        {
-            findings.Add(Finding(
-                StripeTransactionFindingType.CheckoutIdsOnSubscription,
-                StripeFindingSeverity.Warning,
-                PaymentMetadataModel.Keys.PaymentCheckoutSessionId,
-                actual: metadata.PaymentCheckoutSessionId.Value.ToString()));
-        }
-    }
-
-    /// <summary>
     /// Compared only where both sides state a value: a key the metadata does not carry is already reported
     /// as missing, and reporting it again as a disagreement says the same thing twice.
     /// </summary>
@@ -360,7 +333,6 @@ public static class StripeAccountAudit
         else
         {
             AddSubscriptionMetadataFindings(findings, metadata, records, severity);
-            AddCheckoutIdFindings(findings, metadata);
             AddSubscriptionDisagreementFindings(
                 findings, metadata, memberSubscriptionRecord, memberSiteSubscriptionRecord, severity);
         }

@@ -17,13 +17,6 @@ public enum StripeTransactionFindingType
     AmountDisagrees,
 
     /// <summary>
-    /// A subscription's metadata carries the payment and checkout session of the purchase that created it.
-    /// Every renewal reads them, so every renewal resolves to that first payment instead of recording its
-    /// own.
-    /// </summary>
-    CheckoutIdsOnSubscription,
-
-    /// <summary>
     /// A matched record and the metadata name different things. The metadata is what a webhook acts on, so
     /// it is the metadata that is wrong, whatever the record says.
     /// </summary>

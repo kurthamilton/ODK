@@ -52,6 +52,27 @@ public class MemberChapterSubscriptionDataHelper : DataHelperBase
     }
 
     /// <summary>
+    /// The payment the member's current subscription record for the chapter was recorded against. Each
+    /// billing records itself against its own payment, so on a renewed subscription this is the renewal's -
+    /// which is what a test about the renewal's money has to start from.
+    /// </summary>
+    public async Task<Guid?> GetCurrentPaymentId(Guid memberId, Guid chapterId)
+    {
+        const string sql =
+            """
+            SELECT l.PaymentId
+            FROM MemberSubscriptionLog l
+            WHERE l.MemberId = @memberId AND l.ChapterId = @chapterId AND l.IsCurrent = 1
+            """;
+
+        await using var builder = Builder(sql)
+            .AddParameter("@memberId", memberId)
+            .AddParameter("@chapterId", chapterId);
+
+        return await builder.ExecuteScalar<Guid?>();
+    }
+
+    /// <summary>
     /// How many log rows the member has for the chapter. One row is appended per billing event, so this is
     /// what distinguishes a renewal being applied once from being applied twice - the expiry cannot, since a
     /// recurring subscription's expiry is the provider's next payment date and re-applying an event sets the
