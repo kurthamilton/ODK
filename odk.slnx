@@ -49,6 +49,7 @@
   </Folder>
   <Folder Name="/Solution Items/npm/">
     <File Path="Scripts/npm/outdated.bat" />
+    <File Path="Scripts/npm/update.bat" />
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="ODK.Core.Tests/ODK.Core.Tests.csproj" />

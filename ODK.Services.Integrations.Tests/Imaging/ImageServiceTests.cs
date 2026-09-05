@@ -3,7 +3,11 @@ using ODK.Services.Exceptions;
 using ODK.Services.Imaging;
 using ODK.Services.Integrations.Imaging;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats;
+using SixLabors.ImageSharp.Formats.Gif;
+using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.Formats.Tiff;
 using SixLabors.ImageSharp.Formats.Webp;
 using SixLabors.ImageSharp.PixelFormats;
 
@@ -14,6 +18,14 @@ public static class ImageServiceTests
 {
     // Well clear of every image these tests create, so only the tests that set their own cap hit it.
     private const int MaxPixels = 1_000_000;
+
+    private static readonly IImageFormat[] SupportedFormats =
+    [
+        GifFormat.Instance,
+        JpegFormat.Instance,
+        PngFormat.Instance,
+        WebpFormat.Instance
+    ];
 
     [Test]
     public static void IsImage_ExceedsMaxPixels_ReturnsFalse()
@@ -38,6 +50,36 @@ public static class ImageServiceTests
 
         // Act
         var result = service.IsImage([1, 2, 3]);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [TestCaseSource(nameof(SupportedFormats))]
+    public static void IsImage_SupportedFormat_ReturnsTrue(IImageFormat format)
+    {
+        // Arrange
+        var service = CreateService();
+        var data = CreateImage(50, 50, format);
+
+        // Act
+        var result = service.IsImage(data);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Test]
+    public static void IsImage_UnsupportedFormat_ReturnsFalse()
+    {
+        /* Arrange - the service registers a decoder per format it accepts, so a format outside that set is
+           not recognised as an image at all. Written here through ImageSharp's own default configuration,
+           which still carries every decoder it ships. */
+        var service = CreateService();
+        var data = CreateImage(50, 50, TiffFormat.Instance);
+
+        // Act
+        var result = service.IsImage(data);
 
         // Assert
         result.Should().BeFalse();
@@ -201,11 +243,11 @@ public static class ImageServiceTests
         size.Height.Should().Be(80);
     }
 
-    private static byte[] CreateImage(int width, int height)
+    private static byte[] CreateImage(int width, int height, IImageFormat? format = null)
     {
         using var image = new Image<Rgba32>(width, height);
         using var stream = new MemoryStream();
-        image.Save(stream, PngFormat.Instance);
+        image.Save(stream, format ?? PngFormat.Instance);
         return stream.ToArray();
     }
 
