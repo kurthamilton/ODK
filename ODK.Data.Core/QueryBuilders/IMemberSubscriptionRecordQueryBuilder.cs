@@ -15,6 +15,13 @@ public interface IMemberSubscriptionRecordQueryBuilder :
 
     IMemberSubscriptionRecordQueryBuilder ForMember(Guid memberId);
 
+    /// <summary>
+    /// Records naming a subscription at the payment provider. For a caller comparing what the provider holds
+    /// against what we recorded - where a record naming a subscription the provider does not have is the
+    /// finding, so the provider's ids cannot narrow the read.
+    /// </summary>
+    IMemberSubscriptionRecordQueryBuilder HasExternalId();
+
     IMemberSubscriptionRecordQueryBuilder InChapters(IEnumerable<Guid> chapterIds);
 
     /// <summary>

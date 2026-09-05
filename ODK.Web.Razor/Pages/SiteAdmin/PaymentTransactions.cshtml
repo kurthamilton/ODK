@@ -1,0 +1,27 @@
+﻿@page "/siteadmin/payments/transactions"
+@using ODK.Services.Payments
+@using ODK.Web.Razor.Models.Components
+@model PaymentTransactionsModel
+@inject IStripeTransactionAdminService StripeTransactionAdminService
+@{
+    Layout = "_SiteAdminLayout";
+    Model.Title = "Transactions | Site Admin";
+
+    var viewModel = await StripeTransactionAdminService.GetStripeTransactionsViewModel(
+        Model.MemberServiceRequest);
+}
+
+@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+{
+    Breadcrumbs = new[]
+    {
+        new MenuItem
+        {
+            Link = Model.OdkRoutes.SiteAdmin.Payments.Path,
+            Text = "Back to payments",
+            Icon = IconType.ArrowLeft
+        }
+    }
+})
+
+@await Html.PartialAsync("SiteAdmin/_SiteAdminStripeTransactionsContent", viewModel)

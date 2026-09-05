@@ -43,6 +43,13 @@ public class SiteAdminRoutes
     public SiteAdminRoute Payments => Path("/payments");
 
     /// <summary>
+    /// Everything the platform's Stripe account holds, against the records that should account for it. Its
+    /// own page rather than part of <see cref="Payments"/>, which lists our payments alone: rendering this
+    /// sweeps the whole account.
+    /// </summary>
+    public SiteAdminRoute PaymentTransactions => Payments.Child("/transactions");
+
+    /// <summary>
     /// The webhook endpoints registered against the platform's payment provider accounts. Its own page
     /// rather than part of <see cref="Payments"/>: rendering it calls out to every account.
     /// </summary>
@@ -118,6 +125,7 @@ public class SiteAdminRoutes
             [
                 new(PaymentReconciliation, "Reconciliation"),
                 new(PaymentRefunds, "Refunds"),
+                new(PaymentTransactions, "Transactions"),
                 new(PaymentWebhooks, "Webhooks")
             ]
         },

@@ -12,7 +12,7 @@ using Stripe.Checkout;
 
 namespace ODK.Services.Integrations.Payments.Stripe;
 
-public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
+public class StripePaymentProvider : IPaymentProvider, IStripeTransactionProvider, IStripeWebhookProvider
 {
     /* Wide enough to absorb the gap between an invoice being paid and the webhook that recorded it, and far
        narrower than the shortest billing period, so it cannot span two invoices of one subscription. */
@@ -611,6 +611,108 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
         }
     }
 
+    public async Task<IReadOnlyCollection<StripeSubscription>> ListSubscriptions()
+    {
+        var service = _stripeSubscriptionService.Value;
+
+        var subscriptions = new List<StripeSubscription>();
+
+        await foreach (var subscription in service.ListAutoPagingAsync(new SubscriptionListOptions
+        {
+            // Without this Stripe answers with the running ones only, and a cancelled subscription is
+            // exactly the sort whose metadata explains a renewal that was never recorded.
+            Status = StripeSubscriptionStatuses.All
+        }))
+        {
+            subscriptions.Add(new StripeSubscription
+            {
+                CreatedUtc = subscription.Created,
+                CustomerId = subscription.CustomerId,
+                Id = subscription.Id,
+                Metadata = subscription.Metadata ?? new Dictionary<string, string>(),
+                Status = ToSubscriptionStatus(subscription.Status)
+            });
+        }
+
+        return subscriptions;
+    }
+
+    public async Task<IReadOnlyCollection<StripeTransaction>> ListTransactions()
+    {
+        var transactions = new List<StripeTransaction>();
+        var invoicedPaymentIntentIds = new HashSet<string>(StringComparer.Ordinal);
+
+        /* Invoices first, and expanded: an invoice is the only object naming both the subscription that
+           billed it and the payment that settled it - neither a charge nor a payment intent names an invoice
+           in this API version - and its payments are not returned unless asked for. */
+        await foreach (var invoice in _stripeInvoiceService.Value.ListAutoPagingAsync(new InvoiceListOptions
+        {
+            Expand = ["data.payments"]
+        }))
+        {
+            var subscriptionDetails = invoice.Parent?.SubscriptionDetails;
+
+            // An invoice retried after a failure names every attempt, so the paid one is preferred and the
+            // most recent of those breaks the tie.
+            var payment = invoice.Payments?.Data
+                .OrderByDescending(x => x.Status == StripeInvoicePaymentStatuses.Paid)
+                .ThenByDescending(x => x.Created)
+                .FirstOrDefault()
+                ?.Payment;
+
+            if (!string.IsNullOrEmpty(payment?.PaymentIntentId))
+            {
+                invoicedPaymentIntentIds.Add(payment.PaymentIntentId);
+            }
+
+            transactions.Add(new StripeTransaction
+            {
+                Amount = FromStripeAmount(invoice.AmountPaid),
+                ChargeId = payment?.ChargeId,
+                CreatedUtc = invoice.Created,
+                CurrencyCode = invoice.Currency,
+                InvoiceId = invoice.Id,
+                Kind = ToTransactionKind(invoice),
+                /* The subscription details' metadata and nothing else where a subscription billed the
+                   invoice, because that is the one an invoice.payment_succeeded webhook reads - see
+                   StripeWebhookParser. An invoice raised by anything else falls back to its own. */
+                Metadata = subscriptionDetails?.Metadata
+                    ?? invoice.Metadata
+                    ?? new Dictionary<string, string>(),
+                PaymentIntentId = payment?.PaymentIntentId,
+                Status = ToTransactionStatus(invoice),
+                SubscriptionId = subscriptionDetails?.SubscriptionId
+            });
+        }
+
+        /* Then the payment intents no invoice claimed, which is what a one-off is: nothing on a payment
+           intent says whether an invoice raised it, so the ones that were are subtracted. */
+        await foreach (var paymentIntent in _stripePaymentIntentService.Value.ListAutoPagingAsync(
+            new PaymentIntentListOptions()))
+        {
+            if (invoicedPaymentIntentIds.Contains(paymentIntent.Id))
+            {
+                continue;
+            }
+
+            transactions.Add(new StripeTransaction
+            {
+                Amount = FromStripeAmount(paymentIntent.Amount),
+                ChargeId = paymentIntent.LatestChargeId,
+                CreatedUtc = paymentIntent.Created,
+                CurrencyCode = paymentIntent.Currency,
+                InvoiceId = null,
+                Kind = StripeTransactionKind.OneOff,
+                Metadata = paymentIntent.Metadata ?? new Dictionary<string, string>(),
+                PaymentIntentId = paymentIntent.Id,
+                Status = ToTransactionStatus(paymentIntent),
+                SubscriptionId = null
+            });
+        }
+
+        return transactions;
+    }
+
     public async Task<IReadOnlyCollection<StripeWebhookEndpoint>> ListWebhooks()
     {
         var service = _stripeWebhookEndpointService.Value;
@@ -863,6 +965,43 @@ public class StripePaymentProvider : IPaymentProvider, IStripeWebhookProvider
     };
 
     private static long ToStripeAmount(decimal amount) => (long)Math.Round(amount * 100m, MidpointRounding.AwayFromZero);
+
+    private static StripeSubscriptionStatus ToSubscriptionStatus(string status) => status switch
+    {
+        StripeSubscriptionStatuses.Active => StripeSubscriptionStatus.Active,
+        StripeSubscriptionStatuses.Canceled => StripeSubscriptionStatus.Cancelled,
+        StripeSubscriptionStatuses.Incomplete => StripeSubscriptionStatus.Incomplete,
+        StripeSubscriptionStatuses.IncompleteExpired => StripeSubscriptionStatus.IncompleteExpired,
+        StripeSubscriptionStatuses.PastDue => StripeSubscriptionStatus.PastDue,
+        StripeSubscriptionStatuses.Paused => StripeSubscriptionStatus.Paused,
+        StripeSubscriptionStatuses.Trialing => StripeSubscriptionStatus.Trialing,
+        StripeSubscriptionStatuses.Unpaid => StripeSubscriptionStatus.Unpaid,
+        _ => StripeSubscriptionStatus.None
+    };
+
+    /* An unrecognised billing reason is read as a renewal, which is the safe way round: a renewal's metadata
+       is audited, and a first invoice's is the one already known to have come from checkout. */
+    private static StripeTransactionKind ToTransactionKind(Invoice invoice)
+        => invoice.Parent?.SubscriptionDetails?.SubscriptionId == null
+            ? StripeTransactionKind.OneOff
+            : invoice.BillingReason == StripeInvoiceBillingReasons.SubscriptionCreate
+                ? StripeTransactionKind.SubscriptionInitial
+                : StripeTransactionKind.SubscriptionRenewal;
+
+    private static StripeTransactionStatus ToTransactionStatus(Invoice invoice) => invoice.Status switch
+    {
+        StripeInvoiceStatuses.Paid => StripeTransactionStatus.Succeeded,
+        StripeInvoiceStatuses.Uncollectible or StripeInvoiceStatuses.Void => StripeTransactionStatus.Cancelled,
+        _ => StripeTransactionStatus.Pending
+    };
+
+    private static StripeTransactionStatus ToTransactionStatus(PaymentIntent paymentIntent)
+        => paymentIntent.Status switch
+        {
+            StripePaymentIntentStatuses.Succeeded => StripeTransactionStatus.Succeeded,
+            StripePaymentIntentStatuses.Canceled => StripeTransactionStatus.Cancelled,
+            _ => StripeTransactionStatus.Pending
+        };
 
     private string? CleanConnectedAccountUrl(PlatformType platform, string url)
     {

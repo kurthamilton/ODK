@@ -1,0 +1,422 @@
+﻿@using ODK.Core.Platforms
+@using ODK.Core.Utils
+@using ODK.Services.Payments.Models
+@using ODK.Services.Payments.ViewModels
+@using ODK.Services.Platforms
+@using ODK.Web.Razor.Models.Components
+@model SiteAdminStripeTransactionsViewModel
+@inject IPlatformProvider PlatformProvider
+
+@{
+    var dateOptions = new FriendlyDateStringOptions
+    {
+        ForceIncludeYear = true,
+        TimeZone = Model.TimeZone
+    };
+
+    var kindTitles = new Dictionary<StripeTransactionKind, string>
+    {
+        { StripeTransactionKind.None, "Unknown" },
+        { StripeTransactionKind.OneOff, "One-off" },
+        { StripeTransactionKind.SubscriptionInitial, "Subscription start" },
+        { StripeTransactionKind.SubscriptionRenewal, "Renewal" }
+    };
+
+    var recordTypeTitles = new Dictionary<StripeSubscriptionRecordType, string>
+    {
+        { StripeSubscriptionRecordType.None, "Unknown" },
+        { StripeSubscriptionRecordType.Group, "Group" },
+        { StripeSubscriptionRecordType.Site, "Site" }
+    };
+
+    var subscriptionStatusTitles = new Dictionary<StripeSubscriptionStatus, string>
+    {
+        { StripeSubscriptionStatus.None, "Unrecognised" },
+        { StripeSubscriptionStatus.Active, "Active" },
+        { StripeSubscriptionStatus.Cancelled, "Cancelled" },
+        { StripeSubscriptionStatus.Incomplete, "Incomplete" },
+        { StripeSubscriptionStatus.IncompleteExpired, "Incomplete, expired" },
+        { StripeSubscriptionStatus.PastDue, "Past due" },
+        { StripeSubscriptionStatus.Paused, "Paused" },
+        { StripeSubscriptionStatus.Trialing, "Trialing" },
+        { StripeSubscriptionStatus.Unpaid, "Unpaid" }
+    };
+
+    var transactionStatusTitles = new Dictionary<StripeTransactionStatus, string>
+    {
+        { StripeTransactionStatus.None, "Unknown" },
+        { StripeTransactionStatus.Cancelled, "Cancelled" },
+        { StripeTransactionStatus.Pending, "Pending" },
+        { StripeTransactionStatus.Succeeded, "Paid" }
+    };
+}
+
+<div data-odk-component="_SiteAdminStripeTransactionsContent">
+    <h2 class="content-heading d-none d-md-block">Transactions</h2>
+
+    @await Html.PartialAsync("Components/_AdminPageDescription",
+        "Everything this platform's Stripe account holds, against the records that should account for it. " +
+        "The metadata shown is the one a webhook would have read, so a subscription reported here is one " +
+        "whose renewals are being dropped. Nothing on this page changes anything - a correction is made in " +
+        "Stripe's own dashboard.")
+
+    <dl class="row mb-3">
+        <dt class="col-sm-3">Platform</dt>
+        <dd class="col-sm-9">@PlatformProvider.GetName(Model.Account.Platform)</dd>
+        <dt class="col-sm-3">Environment</dt>
+        <dd class="col-sm-9">
+            @if (Model.Account.Environment == EnvironmentType.None)
+            {
+                <span class="badge text-bg-warning">Not set</span>
+                <span class="text-muted">- no link into Stripe can be built without one</span>
+            }
+            else
+            {
+                @Model.Account.Environment
+            }
+        </dd>
+        <dt class="col-sm-3">Account</dt>
+        <dd class="col-sm-9">
+            @if (!string.IsNullOrEmpty(Model.Account.AccountId))
+            {
+                <code>@Model.Account.AccountId</code>
+            }
+            else
+            {
+                <span class="text-muted">Not set - no link into Stripe can be built</span>
+            }
+        </dd>
+    </dl>
+
+    @if (Model.Error != null)
+    {
+        <div class="alert alert-danger">
+            <p class="mb-0"><strong>The account could not be read.</strong> @Model.Error</p>
+            <p class="mb-0 mt-2">Nothing below was compared, so nothing is reported either way.</p>
+        </div>
+    }
+    else if (!Model.HasFindings)
+    {
+        <p class="text-success">
+            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Check))
+            <span>Every object in the account is accounted for.</span>
+        </p>
+    }
+
+    <div class="section-stack">
+        @await Html.PartialAsync("Components/_Section", new SectionViewModel
+        {
+            Heading = new HeadingViewModel
+            {
+                Title = "Subscriptions",
+                Type = HeadingType.H3
+            },
+            BodyContentFunc =
+                @<div>
+                    <p class="text-muted">
+                        What each subscription carries now is what its next invoice will carry. Correcting one
+                        in Stripe fixes its future renewals and nothing already invoiced.
+                    </p>
+
+                    @if (Model.Subscriptions.Count == 0)
+                    {
+                        <p>The account has no subscriptions.</p>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Subscription</th>
+                                        <th>Status</th>
+                                        <th>For</th>
+                                        <th>Metadata</th>
+                                        <th>Should carry</th>
+                                        <th>Findings</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var subscription in Model.Subscriptions)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <div class="text-break"><code>@subscription.Id</code></div>
+                                                <div class="text-muted small">
+                                                    @subscription.CreatedUtc.ToFriendlyDateString(dateOptions)
+                                                </div>
+                                                @if (subscription.DashboardUrl != null)
+                                                {
+                                                    <a href="@subscription.DashboardUrl" target="_blank">Open in Stripe</a>
+                                                }
+                                            </td>
+                                            <td>@subscriptionStatusTitles[subscription.Status]</td>
+                                            <td>
+                                                <div>@(subscription.MemberName ?? "Unknown member")</div>
+                                                @if (subscription.ChapterName != null)
+                                                {
+                                                    <div class="text-muted small">@subscription.ChapterName</div>
+                                                }
+                                            </td>
+                                            <td>
+                                                @await Html.PartialAsync(
+                                                    "SiteAdmin/_SiteAdminStripeMetadata", subscription.Metadata)
+                                            </td>
+                                            <td>
+                                                @if (subscription.ExpectedMetadata == null)
+                                                {
+                                                    <span class="text-muted">
+                                                        Nothing matched it, so there is nothing to work this out from
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <dl class="mb-0 small">
+                                                        @foreach (var entry in subscription.ExpectedMetadata
+                                                            .OrderBy(x => x.Key, StringComparer.OrdinalIgnoreCase))
+                                                        {
+                                                            var matches = subscription.Metadata.TryGetValue(
+                                                                    entry.Key, out var current)
+                                                                && string.Equals(
+                                                                    current, entry.Value, StringComparison.Ordinal);
+
+                                                            <dt class="fw-normal text-muted">@entry.Key</dt>
+                                                            <dd class="mb-1 text-break @(matches ? "" : "text-danger fw-bold")">
+                                                                <code>@entry.Value</code>
+                                                            </dd>
+                                                        }
+                                                    </dl>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (!subscription.HasFindings)
+                                                {
+                                                    <span class="badge text-bg-success">Accounted for</span>
+                                                }
+                                                else
+                                                {
+                                                    @await Html.PartialAsync(
+                                                        "SiteAdmin/_SiteAdminStripeFindings", subscription.Findings)
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+        })
+
+        @await Html.PartialAsync("Components/_Section", new SectionViewModel
+        {
+            Heading = new HeadingViewModel
+            {
+                Title = "Transactions",
+                Type = HeadingType.H3
+            },
+            BodyContentFunc =
+                @<div>
+                    <p class="text-muted">
+                        Every movement of money the account holds, newest first. One that took nothing is
+                        listed and not judged - there is no payment of ours for it to disagree with.
+                    </p>
+
+                    @if (Model.Transactions.Count == 0)
+                    {
+                        <p>The account holds no transactions.</p>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>When</th>
+                                        <th>Kind</th>
+                                        <th>Amount</th>
+                                        <th>Member</th>
+                                        <th>Stripe</th>
+                                        <th>Metadata</th>
+                                        <th>Findings</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var transaction in Model.Transactions)
+                                    {
+                                        <tr>
+                                            <td>@transaction.CreatedUtc.ToFriendlyDateString(dateOptions)</td>
+                                            <td>@kindTitles[transaction.Kind]</td>
+                                            <td>
+                                                <div>@transaction.AmountDisplay</div>
+                                                <div class="text-muted small">
+                                                    @transactionStatusTitles[transaction.Status]
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div>@(transaction.MemberName ?? "Unknown member")</div>
+                                                @if (transaction.Reference != null)
+                                                {
+                                                    <div class="text-muted small text-break">@transaction.Reference</div>
+                                                }
+                                            </td>
+                                            <td class="small text-break">
+                                                @if (transaction.PaymentIntentId != null)
+                                                {
+                                                    <div><code>@transaction.PaymentIntentId</code></div>
+                                                }
+                                                @if (transaction.InvoiceId != null)
+                                                {
+                                                    <div><code>@transaction.InvoiceId</code></div>
+                                                }
+                                                @if (transaction.SubscriptionId != null)
+                                                {
+                                                    <div><code>@transaction.SubscriptionId</code></div>
+                                                }
+                                                @if (transaction.DashboardUrl != null)
+                                                {
+                                                    <a href="@transaction.DashboardUrl" target="_blank">Open in Stripe</a>
+                                                }
+                                            </td>
+                                            <td>
+                                                @await Html.PartialAsync(
+                                                    "SiteAdmin/_SiteAdminStripeMetadata", transaction.Metadata)
+                                            </td>
+                                            <td>
+                                                @if (transaction.Status != StripeTransactionStatus.Succeeded)
+                                                {
+                                                    <span class="text-muted">Not judged</span>
+                                                }
+                                                else if (!transaction.HasFindings)
+                                                {
+                                                    <span class="badge text-bg-success">Accounted for</span>
+                                                }
+                                                else
+                                                {
+                                                    @await Html.PartialAsync(
+                                                        "SiteAdmin/_SiteAdminStripeFindings", transaction.Findings)
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+        })
+
+        @await Html.PartialAsync("Components/_Section", new SectionViewModel
+        {
+            Heading = new HeadingViewModel
+            {
+                Title = "Payments Stripe does not account for",
+                Type = HeadingType.H3
+            },
+            BodyContentFunc =
+                @<div>
+                    @if (Model.UnaccountedPayments.Count == 0)
+                    {
+                        <p>Every payment we recorded as paid through Stripe is answered by something in the account.</p>
+                    }
+                    else
+                    {
+                        <p class="text-muted">
+                            Paid through Stripe, and nothing in the account answers for them. A payment taken
+                            through an account no longer configured looks exactly like this.
+                        </p>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Paid</th>
+                                        <th>Amount</th>
+                                        <th>Member</th>
+                                        <th>Reference</th>
+                                        <th>Names at Stripe</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var payment in Model.UnaccountedPayments)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @(payment.PaidUtc != null
+                                                    ? payment.PaidUtc.Value.ToFriendlyDateString(dateOptions)
+                                                    : "Unknown")
+                                            </td>
+                                            <td>@payment.AmountDisplay</td>
+                                            <td>@(payment.MemberName ?? "Unknown member")</td>
+                                            <td class="text-break">@payment.Reference</td>
+                                            <td class="text-break">
+                                                @if (payment.ExternalId != null)
+                                                {
+                                                    <code>@payment.ExternalId</code>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">Nothing</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+        })
+
+        @await Html.PartialAsync("Components/_Section", new SectionViewModel
+        {
+            Heading = new HeadingViewModel
+            {
+                Title = "Subscription records Stripe does not have",
+                Type = HeadingType.H3
+            },
+            BodyContentFunc =
+                @<div>
+                    @if (Model.UnaccountedSubscriptions.Count == 0)
+                    {
+                        <p>Every current subscription record names a subscription the account holds.</p>
+                    }
+                    else
+                    {
+                        <p class="text-muted">
+                            Current records naming a Stripe subscription this account does not have. Either it
+                            was deleted, or the record names one in another account.
+                        </p>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Member</th>
+                                        <th>Group</th>
+                                        <th>Expires</th>
+                                        <th>Names at Stripe</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var record in Model.UnaccountedSubscriptions)
+                                    {
+                                        <tr>
+                                            <td>@recordTypeTitles[record.Type]</td>
+                                            <td>@(record.MemberName ?? "Unknown member")</td>
+                                            <td>@(record.ChapterName ?? "-")</td>
+                                            <td>
+                                                @(record.ExpiresUtc != null
+                                                    ? record.ExpiresUtc.Value.ToFriendlyDateString(dateOptions)
+                                                    : "Never")
+                                            </td>
+                                            <td class="text-break"><code>@record.ExternalId</code></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+        })
+    </div>
+</div>
