@@ -24,6 +24,7 @@
         NotificationType.NewMember => "New member",
         NotificationType.SiteConversationMemberMessage => "New conversation message",
         NotificationType.SiteConversationReplies => "New conversation message",
+        NotificationType.SubscriptionRenewed => "Subscription renewed",
         _ => null
     };
 
@@ -34,6 +35,7 @@
         NotificationGroupType.Events => IconType.Calendar,
         NotificationGroupType.Members => IconType.User,
         NotificationGroupType.Messages => IconType.Envelope,
+        NotificationGroupType.Subscriptions => IconType.Dollar,
         _ => default(IconType?)
     };
 
@@ -54,13 +56,18 @@
         NotificationType.NewMember => chapter != null && notification.EntityId != null
             ? OdkRoutes.GroupAdmin.Member(chapter, notification.EntityId.Value).Path
             : null,
-        // Site conversations belong to no group, so these are the only paths here that need no chapter.
+        // Site conversations belong to no group, so these paths need no chapter.
         NotificationType.SiteConversationMemberMessage => notification.EntityId != null
             ? OdkRoutes.SiteAdmin.Conversation(notification.EntityId.Value).Path
             : null,
         NotificationType.SiteConversationReplies => notification.EntityId != null
             ? OdkRoutes.Account.SiteConversation(notification.EntityId.Value)
             : null,
+        // The subscription, not the payment that renewed it: what a member opens this for is what the
+        // renewal left them with. A site subscription belongs to no group, hence the second branch.
+        NotificationType.SubscriptionRenewed => chapter != null
+            ? OdkRoutes.Groups.Subscription(chapter)
+            : OdkRoutes.Account.Subscription(chapter: null),
         _ => null
     };
 

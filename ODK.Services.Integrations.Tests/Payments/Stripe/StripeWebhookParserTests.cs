@@ -163,6 +163,25 @@ public static class StripeWebhookParserTests
         result.Type.Should().Be(PaymentProviderWebhookType.InvoicePaymentSucceeded);
     }
 
+    [TestCase("subscription_cycle", true)]
+    [TestCase("subscription_update", true)]
+    [TestCase("", true)]
+    [TestCase("subscription_create", false)]
+    public static async Task ParseWebhook_InvoicePaymentSucceeded_ReadsRenewalFromBillingReason(
+        string billingReason, bool expected)
+    {
+        // Arrange - only the reason that says an invoice created its subscription is not a renewal;
+        // anything else, an unrecognised reason included, is a later billing of one.
+        var json = CreateEventJson(EventTypes.InvoicePaymentSucceeded, InvoiceJson(billingReason));
+
+        // Act
+        var result = await ParseSigned(CreateParser(), json);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.SubscriptionRenewal.Should().Be(expected);
+    }
+
     [Test]
     public static async Task ParseWebhook_InvoicePaymentSucceeded_NoSubscriptionDetails_EmptyMetadata()
     {
@@ -176,6 +195,8 @@ public static class StripeWebhookParserTests
         result.Should().NotBeNull();
         result.Metadata.Should().BeEmpty();
         result.SubscriptionId.Should().BeNull();
+        // Nothing renewed: an invoice billed by no subscription cannot be a later billing of one.
+        result.SubscriptionRenewal.Should().BeFalse();
     }
 
     [Test]
@@ -270,13 +291,14 @@ public static class StripeWebhookParserTests
                 }
             });
 
-    private static string InvoiceJson() =>
-        """
+    private static string InvoiceJson(string billingReason = "subscription_cycle") =>
+        $$"""
         {
           "id": "in_123",
           "object": "invoice",
           "amount_paid": 1200,
           "status": "paid",
+          "billing_reason": "{{billingReason}}",
           "parent": {
             "type": "subscription_details",
             "subscription_details": {

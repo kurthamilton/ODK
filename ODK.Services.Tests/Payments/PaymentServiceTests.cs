@@ -9,6 +9,7 @@ using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Events;
 using ODK.Core.Members;
+using ODK.Core.Notifications;
 using ODK.Core.Payments;
 using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
@@ -18,6 +19,7 @@ using ODK.Services.Events;
 using ODK.Services.Exceptions;
 using ODK.Services.Logging;
 using ODK.Services.Members;
+using ODK.Services.Notifications;
 using ODK.Services.Payments;
 using ODK.Services.Payments.Models;
 using ODK.Services.Subscriptions;
@@ -900,6 +902,105 @@ public static class PaymentServiceTests
     }
 
     [Test]
+    public static async Task ProcessWebhook_ChapterSubscriptionRenewal_NotifiesMember()
+    {
+        // Arrange - a renewal invoice for a recurring membership. Nobody is at a checkout page when one
+        // arrives, so the notification is the only thing that tells the member on the site.
+        using var context = CreateMockOdkContext();
+
+        var member = context.CreateMember();
+        var chapter = context.CreateChapter(name: "Knitters", members: [member]);
+        var chapterSubscription = context.CreateChapterSubscription(chapter: chapter);
+        chapterSubscription.Months = 1;
+        chapterSubscription.Recurring = true;
+
+        var webhook = CreatePaymentProviderWebhook(
+            id: "wh_renewal",
+            type: PaymentProviderWebhookType.InvoicePaymentSucceeded,
+            subscriptionId: "sub_123",
+            metadata: ChapterSubscriptionMetadata(member, chapterSubscription),
+            renewal: true);
+
+        var service = CreatePaymentService(context);
+        var request = CreateServiceRequest();
+
+        // Act
+        await service.ProcessWebhook(request, webhook);
+
+        // Assert
+        var notification = context.Set<Notification>().Single(x => x.MemberId == member.Id);
+        notification.Type.Should().Be(NotificationType.SubscriptionRenewed);
+        notification.ChapterId.Should().Be(chapter.Id);
+        notification.Text.Should().Contain(chapter.Name);
+    }
+
+    [Test]
+    public static async Task ProcessWebhook_ChapterSubscriptionFirstInvoice_DoesNotNotifyMember()
+    {
+        // Arrange - the invoice that created the subscription. The member is watching the checkout page
+        // it came from, which tells them there.
+        using var context = CreateMockOdkContext();
+
+        var member = context.CreateMember();
+        var chapter = context.CreateChapter(members: [member]);
+        var chapterSubscription = context.CreateChapterSubscription(chapter: chapter);
+        chapterSubscription.Months = 1;
+        chapterSubscription.Recurring = true;
+
+        var webhook = CreatePaymentProviderWebhook(
+            id: "wh_inv1",
+            type: PaymentProviderWebhookType.InvoicePaymentSucceeded,
+            subscriptionId: "sub_123",
+            metadata: ChapterSubscriptionMetadata(member, chapterSubscription),
+            renewal: false);
+
+        var service = CreatePaymentService(context);
+        var request = CreateServiceRequest();
+
+        // Act
+        await service.ProcessWebhook(request, webhook);
+
+        // Assert
+        context.Set<Notification>().Should().BeEmpty();
+    }
+
+    [Test]
+    public static async Task ProcessWebhook_ChapterSubscriptionRenewal_WhenMemberDisabledThem_DoesNotNotifyMember()
+    {
+        // Arrange - the member has turned subscription notifications off.
+        using var context = CreateMockOdkContext();
+
+        var member = context.CreateMember();
+        var chapter = context.CreateChapter(members: [member]);
+        var chapterSubscription = context.CreateChapterSubscription(chapter: chapter);
+        chapterSubscription.Months = 1;
+        chapterSubscription.Recurring = true;
+
+        context.Create(new MemberNotificationSettings
+        {
+            Disabled = true,
+            MemberId = member.Id,
+            NotificationType = NotificationType.SubscriptionRenewed
+        });
+
+        var webhook = CreatePaymentProviderWebhook(
+            id: "wh_renewal",
+            type: PaymentProviderWebhookType.InvoicePaymentSucceeded,
+            subscriptionId: "sub_123",
+            metadata: ChapterSubscriptionMetadata(member, chapterSubscription),
+            renewal: true);
+
+        var service = CreatePaymentService(context);
+        var request = CreateServiceRequest();
+
+        // Act
+        await service.ProcessWebhook(request, webhook);
+
+        // Assert
+        context.Set<Notification>().Should().BeEmpty();
+    }
+
+    [Test]
     public static async Task ProcessWebhook_ChapterSubscription_PersistsExternalIdOnlyWhenRecurring(
         [Values(true, false)] bool recurring)
     {
@@ -1213,6 +1314,53 @@ public static class PaymentServiceTests
             .Count()
             .Should()
             .Be(2);
+    }
+
+    [Test]
+    public static async Task ProcessWebhook_SiteSubscriptionRenewal_NotifiesMemberWithoutAGroup()
+    {
+        // Arrange - a site subscription belongs to no group, so the notification it raises names none.
+        using var context = CreateMockOdkContext();
+
+        var member = context.CreateMember();
+        var currency = context.CreateCurrency();
+        var siteSubscription = context.CreateSiteSubscription();
+        var siteSubscriptionPrice = context.CreateSiteSubscriptionPrice(
+            siteSubscription: siteSubscription,
+            currency: currency);
+        var payment = context.CreatePayment(
+            member: member,
+            currency: currency,
+            paidUtc: DateTime.UtcNow.AddMonths(-12));
+
+        context.CreateMemberSiteSubscription(
+            member,
+            siteSubscription: siteSubscription,
+            expiresUtc: DateTime.UtcNow.AddDays(10));
+
+        var webhook = CreatePaymentProviderWebhook(
+            id: "wh_renewal",
+            type: PaymentProviderWebhookType.InvoicePaymentSucceeded,
+            subscriptionId: "sub_123",
+            metadata: new PaymentMetadataModel(
+                PlatformType.Default,
+                PaymentReasonType.SiteSubscription,
+                member,
+                siteSubscriptionPrice,
+                Guid.NewGuid(),
+                payment.Id),
+            renewal: true);
+
+        var service = CreatePaymentService(context);
+        var request = CreateServiceRequest();
+
+        // Act
+        await service.ProcessWebhook(request, webhook);
+
+        // Assert
+        var notification = context.Set<Notification>().Single(x => x.MemberId == member.Id);
+        notification.Type.Should().Be(NotificationType.SubscriptionRenewed);
+        notification.ChapterId.Should().BeNull();
     }
 
     [Test]
@@ -3100,6 +3248,19 @@ public static class PaymentServiceTests
 
     /* A settled group payment ready to transfer, with a provider that answers for its reference. The share
        works out at 88.47: 100 charged, 1.70 fee, 10% commission on the net. */
+    /* What the app's own checkout writes for a chapter subscription, and what every invoice the
+       subscription later issues carries. */
+    private static PaymentMetadataModel ChapterSubscriptionMetadata(
+        Member member,
+        ChapterSubscription chapterSubscription)
+        => new PaymentMetadataModel(
+            PlatformType.Default,
+            PaymentReasonType.ChapterSubscription,
+            member,
+            chapterSubscription,
+            Guid.NewGuid(),
+            Guid.NewGuid());
+
     private static (Chapter Chapter, Payment Payment, Mock<IPaymentProvider> Provider) ArrangeTransfer(
         MockOdkContext context)
     {
@@ -3432,6 +3593,9 @@ public static class PaymentServiceTests
             backgroundTaskService ?? new MockBackgroundTaskService(),
             new MemberChapterSubscriptionWriter(unitOfWork),
             new MemberSiteSubscriptionWriter(unitOfWork),
+            /* The real service, so a test reads the notifications a renewal actually writes rather than
+               a call it was asked to make. */
+            new NotificationService(unitOfWork, Mock.Of<IMemberLocaleService>()),
             TestPlatformProvider.Create(),
             new MockServiceRequestFactory(context),
             siteSubscriptionCooldown ?? new SiteSubscriptionCooldown(months: 0));
@@ -3483,7 +3647,8 @@ public static class PaymentServiceTests
         string? invoiceId = null,
         PaymentMetadataModel? metadata = null,
         IReadOnlyDictionary<string, string>? metadataDictionary = null,
-        decimal? amount = null)
+        decimal? amount = null,
+        bool renewal = false)
         => new PaymentProviderWebhook
         {
             Id = id ?? "wh_123",
@@ -3492,6 +3657,7 @@ public static class PaymentServiceTests
             InvoiceId = invoiceId,
             PaymentId = paymentId ?? "pi_123",
             SubscriptionId = subscriptionId,
+            SubscriptionRenewal = renewal,
             Metadata = metadata?.ToDictionary() ?? metadataDictionary ?? new Dictionary<string, string>(),
             Amount = amount ?? 100m,
             OriginatedUtc = DateTime.UtcNow,
