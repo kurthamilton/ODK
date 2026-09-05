@@ -1,8 +1,11 @@
-﻿using ODK.Core.Countries;
+﻿using ODK.Core.Chapters;
+using ODK.Core.Countries;
 using ODK.Core.Members;
 using ODK.Core.Payments;
 using ODK.Core.Platforms;
+using ODK.Core.Subscriptions;
 using ODK.Data.Core;
+using ODK.Data.Core.Deferred;
 using ODK.Services.Logging;
 using ODK.Services.Payments.Models;
 using ODK.Services.Payments.ViewModels;
@@ -25,128 +28,138 @@ public class StripeTransactionAdminService : OdkAdminServiceBase, IStripeTransac
 
     private readonly ILoggingService _loggingService;
     private readonly IPaymentProviderFactory _paymentProviderFactory;
+    private readonly IPaymentService _paymentService;
     private readonly StripeTransactionAdminServiceSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
 
     public StripeTransactionAdminService(
         IUnitOfWork unitOfWork,
         IPaymentProviderFactory paymentProviderFactory,
+        IPaymentService paymentService,
         ILoggingService loggingService,
         StripeTransactionAdminServiceSettings settings)
         : base(unitOfWork)
     {
         _loggingService = loggingService;
         _paymentProviderFactory = paymentProviderFactory;
+        _paymentService = paymentService;
         _settings = settings;
         _unitOfWork = unitOfWork;
+    }
+
+    public async Task<ServiceResult> BackfillRenewalPayment(IMemberServiceRequest request, string invoiceId)
+    {
+        var read = await ReadAccount(request);
+
+        if (!read.Readable)
+        {
+            return ServiceResult.Failure(read.Error);
+        }
+
+        var audit = read.Audit.Transactions.FirstOrDefault(
+            x => string.Equals(x.Transaction.InvoiceId, invoiceId, StringComparison.Ordinal));
+
+        if (audit == null)
+        {
+            return ServiceResult.Failure($"The account holds no invoice '{invoiceId}'");
+        }
+
+        /* Resolved again, against the account as it is now rather than as the page found it: a payment
+           written by a first press of this button is matched by the audit above, so a second press is told
+           the renewal is already recorded instead of writing it twice. */
+        var backfill = StripeRenewalBackfill.Resolve(audit, read.Records);
+        if (!backfill.CanBackfill)
+        {
+            return ServiceResult.Failure(backfill.Reason);
+        }
+
+        var transaction = audit.Transaction;
+
+        var (currency, chapterSubscription, siteSubscription) = await _unitOfWork.Run(
+            x => x.CurrencyRepository.GetByCode(transaction.CurrencyCode),
+            x => backfill.ChapterSubscriptionId != null
+                ? x.ChapterSubscriptionRepository.GetByIdOrDefault(backfill.ChapterSubscriptionId.Value)
+                : new DefaultDeferredQuerySingleOrDefault<ChapterSubscription>(),
+            x => backfill.SiteSubscriptionPriceId != null
+                ? x.SiteSubscriptionRepository.GetByPriceIdOrDefault(backfill.SiteSubscriptionPriceId.Value)
+                : new DefaultDeferredQuerySingleOrDefault<SiteSubscription>());
+
+        if (currency == null)
+        {
+            return ServiceResult.Failure(
+                $"The renewal was charged in '{transaction.CurrencyCode}', which is not a currency we hold");
+        }
+
+        // What the payment says it was for, in the words the subscription itself uses - the same reference
+        // the webhook path records, so a renewal written down here reads like every other one.
+        var reference = chapterSubscription?.ToReference() ?? siteSubscription?.ToReference();
+        if (reference == null)
+        {
+            return ServiceResult.Failure("The subscription the renewal was for no longer exists");
+        }
+
+        /* What Stripe billed, not what our price says it should have: a subscription renews at the amount
+           it was created at, and a price changed since would restate money that never moved. ActualAmount
+           is left unset - what the charge settled for is the read below's to fill in.
+
+           The charge id is written now rather than left to that read, because it is what ties this payment
+           to this renewal exactly: a later audit finds it by charge id before it gets as far as matching a
+           subscription's payments on time. */
+        var payment = _unitOfWork.PaymentRepository.Add(new Payment
+        {
+            Amount = transaction.Amount,
+            ChapterId = backfill.ChapterId,
+            CreatedUtc = transaction.CreatedUtc,
+            CurrencyId = currency.Id,
+            Environment = request.Environment,
+            ExternalChargeId = transaction.ChargeId,
+            ExternalId = transaction.SubscriptionId,
+            Id = _unitOfWork.NewId(),
+            MemberId = backfill.MemberId!.Value,
+            /* When Stripe took the money, not when it raised the invoice for it: what settles the payment
+               afterwards finds the invoice by the time it was paid, which on one retried after a failed
+               card is days from the one it was created on. */
+            PaidUtc = transaction.PaidUtc ?? transaction.CreatedUtc,
+            PaymentProvider = PaymentProviderType.Stripe,
+            Platform = request.Platform,
+            Reference = reference
+        });
+
+        await _unitOfWork.SaveChanges();
+
+        /* Committed before the provider is asked anything, so the payment survives whatever the read does.
+           Read now rather than queued for the reason PaymentAdminService.ReconcilePayment gives: a site
+           admin pressing a button is owed the answer rather than a promise that something will happen. */
+        var settlement = await _paymentService.ResolvePaymentSettlement(payment.Id);
+
+        if (!settlement.Success)
+        {
+            return ServiceResult.Failure(
+                $"Renewal recorded, but what it settled for could not be read: {settlement.Message}");
+        }
+
+        return ServiceResult.Successful(settlement.Transferred
+            ? "Renewal recorded and the group's share sent"
+            : "Renewal recorded");
     }
 
     public async Task<SiteAdminStripeTransactionsViewModel> GetStripeTransactionsViewModel(
         IMemberServiceRequest request)
     {
-        var (environment, platform, timeZone) =
-            (request.Environment, request.Platform, request.CurrentMember.TimeZone);
+        var read = await ReadAccount(request);
+        var timeZone = request.CurrentMember.TimeZone;
 
-        var account = new StripePaymentAccount
+        if (!read.Readable)
         {
-            AccountId = _settings.AccountIds.TryGetValue(platform, out var accountId)
-                ? accountId
-                : string.Empty,
-            Environment = environment,
-            Platform = platform
-        };
-
-        /* Every record that could answer for something in the account, before the account is asked - the
-           read is site-admin-only, and this is what asserts that. Neither subscription read can be narrowed
-           by what Stripe holds: a record naming a subscription the account does not have is a finding, so
-           narrowing to the ids Stripe returned would hide exactly what is being looked for. */
-        var (payments, memberSubscriptionRecords, memberSiteSubscriptionRecords) =
-            await GetSiteAdminRestrictedContent(
-                request,
-                x => x.PaymentRepository
-                    .Query()
-                    .ForEnvironment(environment)
-                    .ForPlatform(platform)
-                    .GetAll(),
-                x => x.MemberSubscriptionRecordRepository.Query().HasExternalId().GetAll(),
-                x => x.MemberSiteSubscriptionRecordRepository.Query().HasExternalId().GetAll());
-
-        var provider = _paymentProviderFactory.GetStripeTransactionProvider(platform);
-        if (provider == null)
-        {
-            return Unreadable(account, timeZone, "Provider does not support transactions");
+            return Unreadable(read.Account, timeZone, read.Error);
         }
 
-        IReadOnlyCollection<StripeTransaction> transactions;
-        IReadOnlyCollection<StripeSubscription> subscriptions;
+        var (account, audit, records) = (read.Account, read.Audit, read.Records);
 
-        try
-        {
-            transactions = await provider.ListTransactions();
-            subscriptions = await provider.ListSubscriptions();
-        }
-        catch (Exception ex)
-        {
-            await _loggingService.Error($"Error listing Stripe transactions for '{platform}'", ex);
-            return Unreadable(account, timeZone, ex.Message);
-        }
-
-        var metadata = transactions
-            .Select(x => x.Metadata)
-            .Concat(subscriptions.Select(x => x.Metadata))
-            .Select(PaymentMetadataModel.FromDictionary)
-            .ToArray();
-
-        /* The ids to ask about: what the metadata names, so a dangling reference can be reported, and what
-           the records name, so a row whose metadata says nothing is still named after the member and group
-           it belongs to. A record's own ids always exist, so adding them cannot make a missing row look
-           present - it only widens what is asked. */
-        var chapterIds = Ids(metadata, x => x.ChapterId)
-            .Concat(memberSubscriptionRecords.Select(x => x.ChapterId))
-            .Concat(payments.Where(x => x.ChapterId != null).Select(x => x.ChapterId!.Value))
-            .ToHashSet();
-
-        var memberIds = Ids(metadata, x => x.MemberId)
-            .Concat(memberSubscriptionRecords.Select(x => x.MemberId))
-            .Concat(memberSiteSubscriptionRecords.Select(x => x.MemberId))
-            .Concat(payments.Select(x => x.MemberId))
-            .ToHashSet();
-
-        var (members, chapters, chapterSubscriptions, siteSubscriptionPrices, checkoutSessions, currencies) =
-            await _unitOfWork.Run(
-                x => x.MemberRepository.GetByIds(memberIds),
-                /* Default, which ChapterRepository reads as no platform filter, so this is a lookup by id
-                   alone. The question is whether a chapter exists, and one the metadata names exists
-                   whichever platform it belongs to. */
-                x => x.ChapterRepository.GetByIds(PlatformType.Default, chapterIds),
-                x => x.ChapterSubscriptionRepository.GetByIds(
-                    Ids(metadata, y => y.ChapterSubscriptionId).ToHashSet()),
-                x => x.SiteSubscriptionPriceRepository.GetByIds(
-                    Ids(metadata, y => y.SiteSubscriptionPriceId).ToHashSet()),
-                x => x.PaymentCheckoutSessionRepository.GetByIds(
-                    Ids(metadata, y => y.PaymentCheckoutSessionId).ToHashSet()),
-                x => x.CurrencyRepository.GetAll());
-
-        var audit = StripeAccountAudit.Audit(
-            account,
-            transactions,
-            subscriptions,
-            new StripeTransactionRecords
-            {
-                ChapterIds = chapters.Select(x => x.Id).ToHashSet(),
-                ChapterSubscriptionIds = chapterSubscriptions.Select(x => x.Id).ToHashSet(),
-                MemberIds = members.Select(x => x.Id).ToHashSet(),
-                MemberSiteSubscriptionRecords = memberSiteSubscriptionRecords,
-                MemberSubscriptionRecords = memberSubscriptionRecords,
-                PaymentCheckoutSessionIds = checkoutSessions.Select(x => x.Id).ToHashSet(),
-                Payments = payments,
-                SiteSubscriptionPriceIds = siteSubscriptionPrices.Select(x => x.Id).ToHashSet()
-            });
-
-        var chapterNames = chapters.ToDictionary(x => x.Id, x => x.Name);
-        var memberNames = members.ToDictionary(x => x.Id, x => x.FullName);
-        var currenciesByCode = currencies.ToDictionary(x => x.Code, StringComparer.OrdinalIgnoreCase);
-        var currenciesById = currencies.ToDictionary(x => x.Id);
+        var chapterNames = read.Chapters.ToDictionary(x => x.Id, x => x.Name);
+        var memberNames = read.Members.ToDictionary(x => x.Id, x => x.FullName);
+        var currenciesByCode = read.Currencies.ToDictionary(x => x.Code, StringComparer.OrdinalIgnoreCase);
+        var currenciesById = read.Currencies.ToDictionary(x => x.Id);
 
         return new SiteAdminStripeTransactionsViewModel
         {
@@ -159,7 +172,8 @@ public class StripeTransactionAdminService : OdkAdminServiceBase, IStripeTransac
             TimeZone = timeZone,
             Transactions =
             [
-                .. audit.Transactions.Select(x => ToTransactionViewModel(account, x, memberNames, currenciesByCode))
+                .. audit.Transactions.Select(
+                    x => ToTransactionViewModel(account, x, records, memberNames, currenciesByCode))
             ],
             UnaccountedPayments =
             [
@@ -242,6 +256,18 @@ public class StripeTransactionAdminService : OdkAdminServiceBase, IStripeTransac
             Type = StripeSubscriptionRecordType.Group
         };
 
+    private static StripeAccountRead Unread(StripePaymentAccount account, string error)
+        => new()
+        {
+            Account = account,
+            Audit = null,
+            Chapters = [],
+            Currencies = [],
+            Error = error,
+            Members = [],
+            Records = null
+        };
+
     private static SiteAdminStripeTransactionsViewModel Unreadable(
         StripePaymentAccount account, TimeZoneInfo timeZone, string error)
         => new()
@@ -276,6 +302,118 @@ public class StripeTransactionAdminService : OdkAdminServiceBase, IStripeTransac
                 : null;
     }
 
+    /// <summary>
+    /// Everything one look at the account produced, so the page and the actions on it are decided by the
+    /// same reading rather than by two of them.
+    /// </summary>
+    private async Task<StripeAccountRead> ReadAccount(IMemberServiceRequest request)
+    {
+        var (environment, platform) = (request.Environment, request.Platform);
+
+        var account = new StripePaymentAccount
+        {
+            AccountId = _settings.AccountIds.TryGetValue(platform, out var accountId)
+                ? accountId
+                : string.Empty,
+            Environment = environment,
+            Platform = platform
+        };
+
+        /* Every record that could answer for something in the account, before the account is asked - the
+           read is site-admin-only, and this is what asserts that. Neither subscription read can be narrowed
+           by what Stripe holds: a record naming a subscription the account does not have is a finding, so
+           narrowing to the ids Stripe returned would hide exactly what is being looked for. */
+        var (payments, memberSubscriptionRecords, memberSiteSubscriptionRecords) =
+            await GetSiteAdminRestrictedContent(
+                request,
+                x => x.PaymentRepository
+                    .Query()
+                    .ForEnvironment(environment)
+                    .ForPlatform(platform)
+                    .GetAll(),
+                x => x.MemberSubscriptionRecordRepository.Query().HasExternalId().GetAll(),
+                x => x.MemberSiteSubscriptionRecordRepository.Query().HasExternalId().GetAll());
+
+        var provider = _paymentProviderFactory.GetStripeTransactionProvider(platform);
+        if (provider == null)
+        {
+            return Unread(account, "Provider does not support transactions");
+        }
+
+        IReadOnlyCollection<StripeTransaction> transactions;
+        IReadOnlyCollection<StripeSubscription> subscriptions;
+
+        try
+        {
+            transactions = await provider.ListTransactions();
+            subscriptions = await provider.ListSubscriptions();
+        }
+        catch (Exception ex)
+        {
+            await _loggingService.Error($"Error listing Stripe transactions for '{platform}'", ex);
+            return Unread(account, ex.Message);
+        }
+
+        var metadata = transactions
+            .Select(x => x.Metadata)
+            .Concat(subscriptions.Select(x => x.Metadata))
+            .Select(PaymentMetadataModel.FromDictionary)
+            .ToArray();
+
+        /* The ids to ask about: what the metadata names, so a dangling reference can be reported, and what
+           the records name, so a row whose metadata says nothing is still named after the member and group
+           it belongs to. A record's own ids always exist, so adding them cannot make a missing row look
+           present - it only widens what is asked. */
+        var chapterIds = Ids(metadata, x => x.ChapterId)
+            .Concat(memberSubscriptionRecords.Select(x => x.ChapterId))
+            .Concat(payments.Where(x => x.ChapterId != null).Select(x => x.ChapterId!.Value))
+            .ToHashSet();
+
+        var memberIds = Ids(metadata, x => x.MemberId)
+            .Concat(memberSubscriptionRecords.Select(x => x.MemberId))
+            .Concat(memberSiteSubscriptionRecords.Select(x => x.MemberId))
+            .Concat(payments.Select(x => x.MemberId))
+            .ToHashSet();
+
+        var (members, chapters, chapterSubscriptions, siteSubscriptionPrices, checkoutSessions, currencies) =
+            await _unitOfWork.Run(
+                x => x.MemberRepository.GetByIds(memberIds),
+                /* Default, which ChapterRepository reads as no platform filter, so this is a lookup by id
+                   alone. The question is whether a chapter exists, and one the metadata names exists
+                   whichever platform it belongs to. */
+                x => x.ChapterRepository.GetByIds(PlatformType.Default, chapterIds),
+                x => x.ChapterSubscriptionRepository.GetByIds(
+                    Ids(metadata, y => y.ChapterSubscriptionId).ToHashSet()),
+                x => x.SiteSubscriptionPriceRepository.GetByIds(
+                    Ids(metadata, y => y.SiteSubscriptionPriceId).ToHashSet()),
+                x => x.PaymentCheckoutSessionRepository.GetByIds(
+                    Ids(metadata, y => y.PaymentCheckoutSessionId).ToHashSet()),
+                x => x.CurrencyRepository.GetAll());
+
+        var records = new StripeTransactionRecords
+        {
+            ChapterIds = chapters.Select(x => x.Id).ToHashSet(),
+            ChapterSubscriptionIds = chapterSubscriptions.Select(x => x.Id).ToHashSet(),
+            MemberIds = members.Select(x => x.Id).ToHashSet(),
+            MemberSiteSubscriptionRecords = memberSiteSubscriptionRecords,
+            MemberSubscriptionRecords = memberSubscriptionRecords,
+            PaymentCheckoutSessionIds = checkoutSessions.Select(x => x.Id).ToHashSet(),
+            Payments = payments,
+            SiteSubscriptionPriceIds = siteSubscriptionPrices.Select(x => x.Id).ToHashSet()
+        };
+
+        return new StripeAccountRead
+        {
+            Account = account,
+            Audit = StripeAccountAudit.Audit(account, transactions, subscriptions, records),
+            Chapters = chapters,
+            Currencies = currencies,
+            Error = null,
+            Members = members,
+            Records = records
+        };
+    }
+
     private SiteAdminStripeSubscriptionViewModel ToSubscriptionViewModel(
         StripePaymentAccount account,
         StripeSubscriptionAudit audit,
@@ -306,6 +444,7 @@ public class StripeTransactionAdminService : OdkAdminServiceBase, IStripeTransac
     private SiteAdminStripeTransactionViewModel ToTransactionViewModel(
         StripePaymentAccount account,
         StripeTransactionAudit audit,
+        StripeTransactionRecords records,
         IReadOnlyDictionary<Guid, string> memberNames,
         IReadOnlyDictionary<string, Currency> currenciesByCode)
     {
@@ -323,6 +462,11 @@ public class StripeTransactionAdminService : OdkAdminServiceBase, IStripeTransac
                 transaction.Amount,
                 currenciesByCode.TryGetValue(transaction.CurrencyCode, out var currency) ? currency : null,
                 transaction.CurrencyCode),
+            /* Offered by the rule the action applies, so a button that appears is one that goes on to do
+               something. The invoice is what addresses the renewal - a renewal is billed by one, and one
+               invoice is one transaction. */
+            CanBackfillPayment = transaction.InvoiceId != null
+                && StripeRenewalBackfill.Resolve(audit, records).CanBackfill,
             ChargeId = transaction.ChargeId,
             CreatedUtc = transaction.CreatedUtc,
             DashboardUrl = DashboardUrl(account, liveFormat, testFormat, id),

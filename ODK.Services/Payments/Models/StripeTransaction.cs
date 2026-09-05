@@ -34,6 +34,13 @@ public class StripeTransaction
     /// </summary>
     public required IReadOnlyDictionary<string, string> Metadata { get; init; }
 
+    /// <summary>
+    /// When Stripe recorded the money as taken, where it says - which is not
+    /// <see cref="CreatedUtc"/> on an invoice retried after a failed card. Null where nothing on the object
+    /// states it.
+    /// </summary>
+    public required DateTime? PaidUtc { get; init; }
+
     public required string? PaymentIntentId { get; init; }
 
     public required StripeTransactionStatus Status { get; init; }

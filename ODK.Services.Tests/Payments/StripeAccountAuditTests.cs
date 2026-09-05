@@ -784,6 +784,7 @@ public static class StripeAccountAuditTests
             InvoiceId = subscriptionId != null ? "in_1" : null,
             Kind = kind,
             Metadata = metadata ?? new Dictionary<string, string>(),
+            PaidUtc = Now,
             PaymentIntentId = paymentIntentId,
             Status = status,
             SubscriptionId = subscriptionId

@@ -679,6 +679,7 @@ public class StripePaymentProvider : IPaymentProvider, IStripeTransactionProvide
                 Metadata = subscriptionDetails?.Metadata
                     ?? invoice.Metadata
                     ?? new Dictionary<string, string>(),
+                PaidUtc = invoice.StatusTransitions?.PaidAt,
                 PaymentIntentId = payment?.PaymentIntentId,
                 Status = ToTransactionStatus(invoice),
                 SubscriptionId = subscriptionDetails?.SubscriptionId
@@ -704,6 +705,9 @@ public class StripePaymentProvider : IPaymentProvider, IStripeTransactionProvide
                 InvoiceId = null,
                 Kind = StripeTransactionKind.OneOff,
                 Metadata = paymentIntent.Metadata ?? new Dictionary<string, string>(),
+                // Nothing on a payment intent says when it was taken - only the charge behind it does, and
+                // that is not returned unless expanded.
+                PaidUtc = null,
                 PaymentIntentId = paymentIntent.Id,
                 Status = ToTransactionStatus(paymentIntent),
                 SubscriptionId = null

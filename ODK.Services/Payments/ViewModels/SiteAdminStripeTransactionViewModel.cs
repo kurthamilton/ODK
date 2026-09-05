@@ -9,6 +9,13 @@ public class SiteAdminStripeTransactionViewModel
 {
     public required string AmountDisplay { get; init; }
 
+    /// <summary>
+    /// Whether the overview offers to write down the payment this renewal never got. Decided by
+    /// <see cref="StripeRenewalBackfill"/>, the same rule the action applies, so a button that appears is
+    /// one that goes on to do something.
+    /// </summary>
+    public required bool CanBackfillPayment { get; init; }
+
     public required string? ChargeId { get; init; }
 
     public required DateTime CreatedUtc { get; init; }

@@ -29,6 +29,7 @@ public class SiteAdminController : OdkControllerBase
     private readonly IPaymentAdminService _paymentAdminService;
     private readonly ISiteSubscriptionAdminService _siteSubscriptionAdminService;
     private readonly ISocialMediaService _socialMediaService;
+    private readonly IStripeTransactionAdminService _stripeTransactionAdminService;
     private readonly ITopicAdminService _topicAdminService;
 
     public SiteAdminController(
@@ -38,6 +39,7 @@ public class SiteAdminController : OdkControllerBase
         IFeatureService featureService,
         IContactAdminService contactAdminService,
         IPaymentAdminService paymentAdminService,
+        IStripeTransactionAdminService stripeTransactionAdminService,
         ITopicAdminService topicAdminService,
         IRequestStore requestStore,
         IOdkRoutes odkRoutes)
@@ -49,6 +51,7 @@ public class SiteAdminController : OdkControllerBase
         _paymentAdminService = paymentAdminService;
         _siteSubscriptionAdminService = siteSubscriptionAdminService;
         _socialMediaService = socialMediaService;
+        _stripeTransactionAdminService = stripeTransactionAdminService;
         _topicAdminService = topicAdminService;
     }
 
@@ -114,6 +117,18 @@ public class SiteAdminController : OdkControllerBase
         var result = await _contactAdminService.DeleteSpamMessages(MemberServiceRequest);
         AddFeedback(result, "Spam messages deleted");
         return RedirectToReferrer();
+    }
+
+    /* The invoice addresses the renewal because that is what billed it, and nothing of ours names it yet -
+       which is the whole reason the button is there. */
+    [HttpPost("siteadmin/payments/transactions/{invoiceId}/backfill")]
+    public async Task<IActionResult> BackfillRenewalPayment(string invoiceId)
+    {
+        var result = await _stripeTransactionAdminService.BackfillRenewalPayment(
+            MemberServiceRequest, invoiceId);
+
+        AddFeedback(result);
+        return Redirect(OdkRoutes.SiteAdmin.PaymentTransactions.Path);
     }
 
     [HttpPost("siteadmin/payments/{id:guid}/reconcile/ignore")]
