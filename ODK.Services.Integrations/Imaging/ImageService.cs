@@ -3,6 +3,7 @@ using ODK.Services.Exceptions;
 using ODK.Services.Imaging;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats;
+using SixLabors.ImageSharp.Formats.Gif;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Formats.Webp;
@@ -12,6 +13,24 @@ namespace ODK.Services.Integrations.Imaging;
 
 public class ImageService : IImageService
 {
+    /* The formats an upload may be in, and the only decoders registered. A decoder is chosen by the bytes
+       rather than by any declared type, and IsImage answers by decoding, so this set - not a mime-type
+       check - is what bounds the format-parsing code an upload reaches. A format outside it is not
+       recognised as an image at all.
+
+       Webp is here for both directions: uploads are converted to it, so stored images are read back from
+       it. */
+    private static readonly Configuration ImageConfiguration = new(
+        new GifConfigurationModule(),
+        new JpegConfigurationModule(),
+        new PngConfigurationModule(),
+        new WebpConfigurationModule());
+
+    private static readonly DecoderOptions ImageDecoderOptions = new()
+    {
+        Configuration = ImageConfiguration
+    };
+
     private readonly ImageServiceSettings _settings;
 
     public ImageService(ImageServiceSettings settings)
@@ -87,7 +106,7 @@ public class ImageService : IImageService
     {
         try
         {
-            return Image.DetectFormat(data).DefaultMimeType;
+            return Image.DetectFormat(ImageDecoderOptions, data).DefaultMimeType;
         }
         catch
         {
@@ -106,7 +125,7 @@ public class ImageService : IImageService
         {
             var processed = false;
 
-            var imageFormat = Image.DetectFormat(data);
+            var imageFormat = Image.DetectFormat(ImageDecoderOptions, data);
 
             /* A requested mime type only chooses the format the single encode at the end writes. Converting
                up front would mean encoding to bytes and immediately decoding them again, so the operations
@@ -263,7 +282,7 @@ public class ImageService : IImageService
     {
         try
         {
-            return Image.Identify(data);
+            return Image.Identify(ImageDecoderOptions, data);
         }
         catch
         {
@@ -277,7 +296,7 @@ public class ImageService : IImageService
        hundreds of megabytes of output. */
     private Image LoadImage(byte[] data)
     {
-        var info = Image.Identify(data);
+        var info = Image.Identify(ImageDecoderOptions, data);
 
         var pixels = (long)info.Width * info.Height;
         if (pixels > _settings.MaxPixels)
@@ -286,14 +305,14 @@ public class ImageService : IImageService
                 $"Image is too large to process: {info.Width}x{info.Height} exceeds {_settings.MaxPixels} pixels");
         }
 
-        return Image.Load(data);
+        return Image.Load(ImageDecoderOptions, data);
     }
 
     private byte[] ProcessImage(byte[] data, Action<Image> action)
     {
         return ProcessImage(data, image =>
         {
-            var imageInfo = Image.DetectFormat(data);
+            var imageInfo = Image.DetectFormat(ImageDecoderOptions, data);
             action(image);
             return ImageToBytes(image, imageInfo);
         });

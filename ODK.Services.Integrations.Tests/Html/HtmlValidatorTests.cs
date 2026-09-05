@@ -80,6 +80,22 @@ public static class HtmlValidatorTests
         result.Success.Should().BeFalse();
     }
 
+    [TestCase("<body onload=\"alert(1)\"><p>Hi</p>")]
+    [TestCase("<html onmouseover=\"alert(1)\"><p>Hi</p>")]
+    public static void Validate_WrapperElementAttribute_Fails(string html)
+    {
+        /* An html or body start tag does not create an element - the parser merges its attributes onto the
+           document's existing one. The same merge happens again in the browser when the stored markup is
+           written into a page, so an attribute that survives here is served as an attribute of the real
+           element. */
+
+        // Act
+        var result = new HtmlValidator().Validate(html, Default);
+
+        // Assert
+        result.Success.Should().BeFalse();
+    }
+
     [Test]
     public static void Validate_JavascriptHref_Fails()
     {
