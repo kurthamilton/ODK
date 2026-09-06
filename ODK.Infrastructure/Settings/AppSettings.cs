@@ -47,6 +47,8 @@ public class AppSettings
 
     public required Dictionary<PlatformKey, PlatformSettings> Platforms { get; init; }
 
+    public required PrivacySettings Privacy { get; init; }
+
     public required RateLimitingSettings RateLimiting { get; init; }
 
     public required RecaptchaSettings Recaptcha { get; init; }

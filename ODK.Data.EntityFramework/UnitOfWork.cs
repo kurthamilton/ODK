@@ -55,6 +55,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IInstagramFetchLogEntryRepository> _instagramFetchLogEntryRepository;
     private readonly Lazy<IInstagramImageRepository> _instagramImageRepository;
     private readonly Lazy<IInstagramPostRepository> _instagramPostRepository;
+    private readonly Lazy<ILogRepository> _logRepository;
     private readonly Lazy<IMemberActivationTokenRepository> _memberActivationTokenRepository;
     private readonly Lazy<IMemberAvatarRepository> _memberAvatarRepository;
     private readonly Lazy<IMemberChapterInviteRepository> _memberChapterInviteRepository;
@@ -153,6 +154,7 @@ public class UnitOfWork : IUnitOfWork
         _instagramFetchLogEntryRepository = new(() => new InstagramFetchLogEntryRepository(_context));
         _instagramImageRepository = new(() => new InstagramImageRepository(_context));
         _instagramPostRepository = new(() => new InstagramPostRepository(_context));
+        _logRepository = new(() => new LogRepository(_context));
         _memberActivationTokenRepository = new(() => new MemberActivationTokenRepository(_context));
         _memberAvatarRepository = new(() => new MemberAvatarRepository(_context));
         _memberChapterNotificationSettingsRepository = new(() => new MemberChapterNotificationSettingsRepository(_context));
@@ -247,6 +249,7 @@ public class UnitOfWork : IUnitOfWork
     public IInstagramFetchLogEntryRepository InstagramFetchLogEntryRepository => _instagramFetchLogEntryRepository.Value;
     public IInstagramImageRepository InstagramImageRepository => _instagramImageRepository.Value;
     public IInstagramPostRepository InstagramPostRepository => _instagramPostRepository.Value;
+    public ILogRepository LogRepository => _logRepository.Value;
     public IMemberActivationTokenRepository MemberActivationTokenRepository => _memberActivationTokenRepository.Value;
     public IMemberAvatarRepository MemberAvatarRepository => _memberAvatarRepository.Value;
     public IMemberChapterNotificationSettingsRepository MemberChapterNotificationSettingsRepository => _memberChapterNotificationSettingsRepository.Value;

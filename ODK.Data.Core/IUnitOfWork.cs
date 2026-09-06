@@ -50,6 +50,7 @@ public interface IUnitOfWork
     IInstagramFetchLogEntryRepository InstagramFetchLogEntryRepository { get; }
     IInstagramImageRepository InstagramImageRepository { get; }
     IInstagramPostRepository InstagramPostRepository { get; }
+    ILogRepository LogRepository { get; }
     IMemberActivationTokenRepository MemberActivationTokenRepository { get; }
     IMemberAvatarRepository MemberAvatarRepository { get; }
     IMemberChapterNotificationSettingsRepository MemberChapterNotificationSettingsRepository { get; }
