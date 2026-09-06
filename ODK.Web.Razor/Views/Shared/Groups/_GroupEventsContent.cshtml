@@ -1,11 +1,8 @@
-﻿@using ODK.Core.Chapters
-@using ODK.Core.Events
+﻿@using ODK.Core.Events
 @using ODK.Services.Chapters.ViewModels
-@using ODK.Services.Events
 @using ODK.Services.Events.ViewModels
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Extensions
-@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Events
 @model GroupEventsPageViewModel
 @inject IOdkRoutes OdkRoutes
@@ -41,6 +38,5 @@
         .ToArray(),
     ForceDisplayYear = past,
     FullWidth = true,
-    Platform = Model.Platform,
     TimeZone = Model.Chapter.TimeZone
 })

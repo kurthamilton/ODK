@@ -8,8 +8,7 @@
         {
             AvatarVersion = x.AvatarVersion,
             Chapter = Model.Chapter,
-            Member = x.Member,
-            Platform = Model.Platform
+            Member = x.Member
         })
         .ToArray();
 }
@@ -18,6 +17,5 @@
 {
     Chapter = Model.Chapter,
     Cols = 3,
-    Members = members,
-    Platform = Model.Platform
+    Members = members
 })

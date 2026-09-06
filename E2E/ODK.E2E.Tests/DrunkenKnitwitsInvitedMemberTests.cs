@@ -8,7 +8,7 @@ using ODK.E2E.Tests.Pages;
 namespace ODK.E2E.Tests;
 
 /// <summary>
-/// An imported member's journey into a DrunkenKnitwits chapter. An import records an <em>invitation</em> and
+/// An imported member's journey into a DrunkenKnitwits chapter. An import records an <em>invite</em> and
 /// no membership, so membership begins when the member accepts - and because signing up on DrunkenKnitwits
 /// is joining, accepting happens on the chapter's own join page.
 /// </summary>
@@ -18,7 +18,7 @@ namespace ODK.E2E.Tests;
 /// is exactly the dynamic, multi-actor state the isolation rules say must be local rather than shared.
 /// </para>
 /// <para>
-/// Two things are read from the database because a browser cannot see them: the invitation's token (the
+/// Two things are read from the database because a browser cannot see them: the invite's token (the
 /// emailed link carries it, and <c>SentEmails</c> records only subjects, never bodies) and the resulting
 /// membership. That is the same compromise <c>ActivationTokenDataHelper</c> already makes.
 /// </para>
@@ -46,11 +46,11 @@ public class DrunkenKnitwitsInvitedMemberTests : DrunkenKnitwitsPageTest
 
         // Assert - invited, but not yet a member: membership waits for them to accept.
         (await MemberChapterInviteDataHelper.HasInvite(email, group.ChapterId)).Should().BeTrue(
-            "the import records an invitation");
+            "the import records an invite");
         (await ChapterDataHelper.IsMember(email, group.ChapterId)).Should().BeFalse(
             "an imported member has no membership status until they accept");
 
-        /* Assert - the invitation, not an activation link. On this platform the invitation's link lands on
+        /* Assert - the invite, not an activation link. On this platform the invite's link lands on
            the pre-filled join page, where the account is created; an activation link would take them
            straight past it into an account belonging to no group. */
         var subjects = await SentEmailDataHelper.GetSubjects(email, expectedCount: 1);
@@ -59,14 +59,14 @@ public class DrunkenKnitwitsInvitedMemberTests : DrunkenKnitwitsPageTest
         subjects.Should().ContainSingle(found);
         subjects.Should().Contain(
             x => x.Contains(InviteSubjectFragment, StringComparison.OrdinalIgnoreCase),
-            $"No invitation email was sent. {found}");
+            $"No invite email was sent. {found}");
         subjects.Should().NotContain(
             x => x.Contains("Activate", StringComparison.OrdinalIgnoreCase),
-            $"An activation email was sent instead of the invitation. {found}");
+            $"An activation email was sent instead of the invite. {found}");
     }
 
     [Test]
-    public async Task AcceptInvitation_KeepingTheInvitedAddress_GoesStraightToSettingAPassword()
+    public async Task AcceptInvite_KeepingTheInvitedAddress_GoesStraightToSettingAPassword()
     {
         // Arrange - an imported member following the link they were emailed.
         var (group, owner) = await SeedChapter();
@@ -77,15 +77,15 @@ public class DrunkenKnitwitsInvitedMemberTests : DrunkenKnitwitsPageTest
         var shortName = ShortName(group);
 
         var joinPage = new DrunkenKnitwitsJoinPage(Page);
-        await joinPage.OpenInvitation(shortName, inviteToken);
+        await joinPage.OpenInvite(shortName, inviteToken);
 
         // Assert - the form arrives filled in with what the group already holds about them.
         (await joinPage.GetEmailAddress()).Should().Be(email);
         (await joinPage.GetFirstName()).Should().Be("Imported");
         (await joinPage.GetLastName()).Should().Be("Member");
 
-        // Act - submit with the address the invitation was sent to.
-        var landedOn = await joinPage.AcceptInvitation();
+        // Act - submit with the address the invite was sent to.
+        var landedOn = await joinPage.AcceptInvite();
 
         /* Assert - straight to setting a password. Holding the token proves they read mail at that address,
            which is all an activation email establishes, so the URL carries the activation token instead of
@@ -106,14 +106,14 @@ public class DrunkenKnitwitsInvitedMemberTests : DrunkenKnitwitsPageTest
         await new DrunkenKnitwitsActivatePage(Page).Activate(shortName, activationToken, password);
         await new DrunkenKnitwitsLoginPage(Page).LogIn(shortName, email, password);
 
-        // Assert - a member of the group, and the invitation is consumed rather than left outstanding.
+        // Assert - a member of the group, and the invite is consumed rather than left outstanding.
         Page.Url.Should().NotContainEquivalentOf("/account/login");
         (await ChapterDataHelper.IsMember(email, group.ChapterId)).Should().BeTrue();
         (await MemberChapterInviteDataHelper.HasInvite(email, group.ChapterId)).Should().BeFalse();
     }
 
     [Test]
-    public async Task AcceptInvitation_ChangingTheEmailAddress_FallsBackToAnActivationEmail()
+    public async Task AcceptInvite_ChangingTheEmailAddress_FallsBackToAnActivationEmail()
     {
         /* Arrange - the same link, but the member corrects the address the import supplied. The token says
            nothing about an address it was not sent to, so the new one has to be proved the usual way. */
@@ -125,10 +125,10 @@ public class DrunkenKnitwitsInvitedMemberTests : DrunkenKnitwitsPageTest
         var correctedEmail = TestAccounts.NewEmailAddress();
 
         var joinPage = new DrunkenKnitwitsJoinPage(Page);
-        await joinPage.OpenInvitation(ShortName(group), inviteToken);
+        await joinPage.OpenInvite(ShortName(group), inviteToken);
 
         // Act
-        var landedOn = await joinPage.AcceptInvitation(replacementEmailAddress: correctedEmail);
+        var landedOn = await joinPage.AcceptInvite(replacementEmailAddress: correctedEmail);
 
         // Assert - the ordinary "check your email" path, and the email goes to the address they typed.
         landedOn.Should().ContainEquivalentOf("/account/pending");
@@ -140,7 +140,7 @@ public class DrunkenKnitwitsInvitedMemberTests : DrunkenKnitwitsPageTest
     }
 
     [Test]
-    public async Task AcceptInvitation_MemberWhoAlreadyHasAnAccount_SignsInAndJoins()
+    public async Task AcceptInvite_MemberWhoAlreadyHasAnAccount_SignsInAndJoins()
     {
         // Arrange - somebody with an account already, imported into a group they are not in.
         var (group, owner) = await SeedChapter();
@@ -151,14 +151,14 @@ public class DrunkenKnitwitsInvitedMemberTests : DrunkenKnitwitsPageTest
         var shortName = ShortName(group);
 
         var joinPage = new DrunkenKnitwitsJoinPage(Page);
-        await joinPage.OpenInvitation(shortName, inviteToken);
+        await joinPage.OpenInvite(shortName, inviteToken);
 
         /* Assert - no sign-up form. Offering one could only tell them the address is taken and leave the
-           invitation outstanding, so the page asks them to sign in. */
+           invite outstanding, so the page asks them to sign in. */
         (await joinPage.HasSignUpForm()).Should().BeFalse();
         (await joinPage.HasSignInPrompt()).Should().BeTrue();
 
-        // Act - sign in from the prompt, whose return URL brings them back to the invitation.
+        // Act - sign in from the prompt, whose return URL brings them back to the invite.
         await joinPage.FollowSignInPrompt();
         await new DrunkenKnitwitsLoginPage(Page).LogInOnCurrentPage(member.Email, member.Password);
 
@@ -166,7 +166,7 @@ public class DrunkenKnitwitsInvitedMemberTests : DrunkenKnitwitsPageTest
 
         await joinPage.JoinAsSignedInMember(shortName);
 
-        // Assert - joined, and the invitation is consumed.
+        // Assert - joined, and the invite is consumed.
         (await ChapterDataHelper.IsMember(member.Email, group.ChapterId)).Should().BeTrue();
         (await MemberChapterInviteDataHelper.HasInvite(member.Email, group.ChapterId)).Should().BeFalse();
     }

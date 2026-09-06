@@ -5,7 +5,7 @@ namespace ODK.Services.Web;
 public interface IUrlProvider
 {
     /// <summary>
-    /// The page an invitation link lands on, which differs by platform - see
+    /// The page an invite link lands on, which differs by platform - see
     /// <c>GroupRoutes.AcceptInvite</c>.
     /// </summary>
     string AcceptInviteUrl(Chapter chapter, string inviteToken);
@@ -48,6 +48,8 @@ public interface IUrlProvider
     string MessageSiteAdminUrl(Guid messageId);
 
     string PasswordReset(Chapter? chapter, string token);
+
+    string RefuseInviteUrl(Chapter chapter, string inviteToken);
 
     string SiteAdminGroups();
 

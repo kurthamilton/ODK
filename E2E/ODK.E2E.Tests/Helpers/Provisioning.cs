@@ -172,7 +172,7 @@ internal static class Provisioning
     /// <summary>
     /// Imports members into a group from a CSV, as the group owner on a throwaway browser, driving the real
     /// import wizard. Runs on its own browser so a test's own browser stays anonymous (or signed in as
-    /// somebody else) - the join page behaves differently for a signed-in visitor. The invitations exist by
+    /// somebody else) - the join page behaves differently for a signed-in visitor. The invites exist by
     /// the time this returns; the emails follow on a background job.
     /// </summary>
     public static Task ImportMembers(

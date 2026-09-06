@@ -13,7 +13,7 @@ namespace ODK.Services.Members.Workflows.Account.Steps;
 /// <remarks>
 /// The activation token is deliberately not scoped to the group, because an import is not a sign-up to it. On
 /// Drunken Knitwits that leaves the token unusable by the chapter-scoped activation page, which is why nothing
-/// there emails it - a new member is sent the invitation instead.
+/// there emails it - a new member is sent the invite instead.
 /// </remarks>
 public sealed class CreateImportedMember : IStep<AccountContext>
 {

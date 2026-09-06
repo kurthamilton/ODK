@@ -20,12 +20,12 @@ public class GroupRoutes
     public string About(Chapter chapter) => GroupPath(chapter, "/about");
 
     /// <summary>
-    /// Where an invitation link lands: the page that identifies who was invited from the token and lets them
+    /// Where an invite link lands: the page that identifies who was invited from the token and lets them
     /// act on it without being able to sign in.
     /// </summary>
     /// <remarks>
     /// The two platforms reach that through different pages, so this is the one place that knows which. Signing
-    /// up on Drunken Knitwits is joining the chapter, so its anonymous sign-up page serves as the invitation
+    /// up on Drunken Knitwits is joining the chapter, so its anonymous sign-up page serves as the invite
     /// page too, with the token filling the form in. Group Squirrel's join page requires an account that can
     /// sign in, which an invited member has not got, so accepting is a page of its own that gives the account
     /// its first password and joins the group in one submit.
@@ -102,7 +102,7 @@ public class GroupRoutes
     /// The two platforms reach that through different pages, so this is the one place that knows which. Signing
     /// up on Drunken Knitwits *is* joining the chapter, so there is no separate join page - it is the chapter's
     /// account sign-up. Group Squirrel has members before they have groups, so joining is its own page and
-    /// assumes an account already exists. Someone holding an invitation goes to <see cref="AcceptInvite"/>
+    /// assumes an account already exists. Someone holding an invite goes to <see cref="AcceptInvite"/>
     /// instead, which on Group Squirrel is what supplies the account this page needs.
     /// </remarks>
     public string Join(Chapter chapter) => Platform switch
@@ -121,6 +121,9 @@ public class GroupRoutes
     public string Profile(Chapter chapter) => GroupPath(chapter, "/profile");
 
     public string Questions(Chapter chapter) => GroupPath(chapter, "/faq");
+
+    public string RefuseInvite(Chapter chapter, string inviteToken)
+        => $"{GroupPath(chapter, "/refuse-invite")}?token={HttpUtility.UrlEncode(inviteToken)}";
 
     public string Subscription(Chapter chapter) => Platform switch
     {

@@ -32,7 +32,7 @@ A definition is written in code — a fluent builder in a `static Create()` meth
 built. Four rules shape it:
 
 - **State is derived, never stored.** No workflow column anywhere. A state resolver computes the current
-  state from the domain: whether an account is activated, whether an invitation is outstanding, whether a
+  state from the domain: whether an account is activated, whether an invite is outstanding, whether a
   membership row exists and is approved. Two sources of truth for "is this activated" would be worse than
   the branching this replaced. The cost is that derivation must be *total*, which each machine has a test
   for: every combination of the domain it reads lands on exactly one state.

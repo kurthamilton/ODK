@@ -75,9 +75,9 @@ internal class DrunkenKnitwitsJoinPage
     }
 
     /// <summary>
-    /// Opens the join page as an invitation link does, carrying the invitation's token.
+    /// Opens the join page as an invite link does, carrying the invite's token.
     /// </summary>
-    public Task OpenInvitation(string chapterShortName, string inviteToken)
+    public Task OpenInvite(string chapterShortName, string inviteToken)
         => _page.Navigate($"/{chapterShortName}/account/join?token={Uri.EscapeDataString(inviteToken)}");
 
     /// <summary>
@@ -94,7 +94,7 @@ internal class DrunkenKnitwitsJoinPage
     public Task<string> GetLastName() => _page.InputValueAsync("[data-lastname]");
 
     /// <summary>
-    /// Whether the page is offering the sign-up form, which it does not when the invitation names someone who
+    /// Whether the page is offering the sign-up form, which it does not when the invite names someone who
     /// already has an account.
     /// </summary>
     public async Task<bool> HasSignUpForm() => await _page.Locator("[data-email]").CountAsync() > 0;
@@ -106,7 +106,7 @@ internal class DrunkenKnitwitsJoinPage
 
     /// <summary>
     /// Follows the sign-in prompt, landing on the chapter login page with a return URL back to this
-    /// invitation.
+    /// invite.
     /// </summary>
     public async Task FollowSignInPrompt()
     {
@@ -115,11 +115,11 @@ internal class DrunkenKnitwitsJoinPage
     }
 
     /// <summary>
-    /// Submits the invited sign-up, optionally replacing the address the invitation pre-filled, and returns
-    /// the URL it landed on: the activate page when the invitation stood in for the activation email, or the
+    /// Submits the invited sign-up, optionally replacing the address the invite pre-filled, and returns
+    /// the URL it landed on: the activate page when the invite stood in for the activation email, or the
     /// "check your email" page when it did not.
     /// </summary>
-    public async Task<string> AcceptInvitation(string? replacementEmailAddress = null)
+    public async Task<string> AcceptInvite(string? replacementEmailAddress = null)
     {
         if (replacementEmailAddress != null)
         {

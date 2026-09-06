@@ -7,18 +7,18 @@ using ODK.E2E.Tests.Pages;
 namespace ODK.E2E.Tests;
 
 /// <summary>
-/// An imported member's journey into a Group Squirrel group. An import records an <em>invitation</em> and no
+/// An imported member's journey into a Group Squirrel group. An import records an <em>invite</em> and no
 /// membership, so membership begins when the member accepts - and because a member here exists before any
 /// group does, accepting happens on a page of its own that gives the account its first password and joins the
 /// group in the same submit.
 /// </summary>
 /// <remarks>
 /// <para>
-/// Each test provisions its own group. Importing writes membership and invitation state to it, which is
+/// Each test provisions its own group. Importing writes membership and invite state to it, which is
 /// exactly the dynamic, multi-actor state the isolation rules say must be local rather than shared.
 /// </para>
 /// <para>
-/// Two things are read from the database because a browser cannot see them: the invitation's token (the
+/// Two things are read from the database because a browser cannot see them: the invite's token (the
 /// emailed link carries it, and <c>SentEmails</c> records only subjects, never bodies) and the resulting
 /// membership. That is the same compromise <c>ActivationTokenDataHelper</c> already makes.
 /// </para>
@@ -46,11 +46,11 @@ public class GroupSquirrelInvitedMemberTests : DefaultPageTest
 
         // Assert - invited, but not yet a member: membership waits for them to accept.
         (await MemberChapterInviteDataHelper.HasInvite(email, group.ChapterId)).Should().BeTrue(
-            "the import records an invitation");
+            "the import records an invite");
         (await ChapterDataHelper.IsMember(email, group.ChapterId)).Should().BeFalse(
             "an imported member has no membership status until they accept");
 
-        /* Assert - the invitation, not an activation link. The invitation's link lands on a page that gives
+        /* Assert - the invite, not an activation link. The invite's link lands on a page that gives
            the account its first password and joins the group; an activation link would take them straight
            past it into an account belonging to no group. */
         var subjects = await SentEmailDataHelper.GetSubjects(email, expectedCount: 1);
@@ -59,14 +59,14 @@ public class GroupSquirrelInvitedMemberTests : DefaultPageTest
         subjects.Should().ContainSingle(found);
         subjects.Should().Contain(
             x => x.Contains(InviteSubjectFragment, StringComparison.OrdinalIgnoreCase),
-            $"No invitation email was sent. {found}");
+            $"No invite email was sent. {found}");
         subjects.Should().NotContain(
             x => x.Contains("Activate", StringComparison.OrdinalIgnoreCase),
-            $"An activation email was sent instead of the invitation. {found}");
+            $"An activation email was sent instead of the invite. {found}");
     }
 
     [Test]
-    public async Task AcceptInvitation_NewMember_SetsAPasswordAndJoinsInOneGo()
+    public async Task AcceptInvite_NewMember_SetsAPasswordAndJoinsInOneGo()
     {
         // Arrange - an imported member following the link they were emailed.
         var (group, owner) = await SeedGroup();
@@ -94,7 +94,7 @@ public class GroupSquirrelInvitedMemberTests : DefaultPageTest
 
         (await ChapterDataHelper.IsMember(email, group.ChapterId)).Should().BeTrue();
         (await MemberChapterInviteDataHelper.HasInvite(email, group.ChapterId)).Should().BeFalse(
-            "accepting consumes the invitation rather than leaving them permanently invited");
+            "accepting consumes the invite rather than leaving them permanently invited");
 
         var subjects = await SentEmailDataHelper.GetSubjects(email, expectedCount: 1);
         subjects.Should().NotContain(
@@ -107,7 +107,7 @@ public class GroupSquirrelInvitedMemberTests : DefaultPageTest
     }
 
     [Test]
-    public async Task AcceptInvitation_MemberWhoAlreadyHasAnAccount_SignsInAndJoins()
+    public async Task AcceptInvite_MemberWhoAlreadyHasAnAccount_SignsInAndJoins()
     {
         // Arrange - somebody with an account already, imported into a group they are not in.
         var (group, owner) = await SeedGroup();
@@ -124,7 +124,7 @@ public class GroupSquirrelInvitedMemberTests : DefaultPageTest
         (await acceptPage.HasAcceptForm()).Should().BeFalse();
         (await acceptPage.HasSignInPrompt()).Should().BeTrue();
 
-        // Act - sign in from the prompt, whose return URL brings them back to the invitation.
+        // Act - sign in from the prompt, whose return URL brings them back to the invite.
         await acceptPage.FollowSignInPrompt();
         await new LoginPage(Page).LogInOnCurrentPage(member.Email, member.Password);
 
@@ -133,13 +133,13 @@ public class GroupSquirrelInvitedMemberTests : DefaultPageTest
 
         await new JoinGroupPage(Page).Join(group.Slug);
 
-        // Assert - joined, and the invitation is consumed.
+        // Assert - joined, and the invite is consumed.
         (await ChapterDataHelper.IsMember(member.Email, group.ChapterId)).Should().BeTrue();
         (await MemberChapterInviteDataHelper.HasInvite(member.Email, group.ChapterId)).Should().BeFalse();
     }
 
     [Test]
-    public async Task AcceptInvitation_TokenThatNamesNoInvitation_OffersNoForm()
+    public async Task AcceptInvite_TokenThatNamesNoInvite_OffersNoForm()
     {
         // Arrange - a link already used, or one for another group: from this page they are the same thing.
         var (group, _) = await SeedGroup();
@@ -155,7 +155,7 @@ public class GroupSquirrelInvitedMemberTests : DefaultPageTest
     }
 
     /// <summary>
-    /// A group of its own per test: importing writes membership and invitation state to it, which the
+    /// A group of its own per test: importing writes membership and invite state to it, which the
     /// isolation rules keep local rather than shared.
     /// </summary>
     private static async Task<(TestGroup Group, TestAccount Owner)> SeedGroup()

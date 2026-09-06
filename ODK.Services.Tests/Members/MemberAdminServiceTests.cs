@@ -37,6 +37,8 @@ namespace ODK.Services.Tests.Members;
 [Parallelizable]
 public static class MemberAdminServiceTests
 {
+    private const int InviteRetentionDays = 90;
+
     [Test]
     public static async Task ApproveMember_WhenMemberExists_ApprovesMemberAndTellsThem()
     {
@@ -334,10 +336,10 @@ public static class MemberAdminServiceTests
     }
 
     [Test]
-    public static async Task GetInvitedMembersViewModel_ReturnsOutstandingInvitationsOldestFirst()
+    public static async Task GetInvitedMembersViewModel_ReturnsOutstandingInvitesOldestFirst()
     {
-        /* Arrange - three invitations raised out of order, so passing cannot be an accident of insertion
-           order. The oldest invitation is the one that has been waiting longest, which is what an admin
+        /* Arrange - three invites raised out of order, so passing cannot be an accident of insertion
+           order. The oldest invite is the one that has been waiting longest, which is what an admin
            chasing acceptances wants at the top. */
         using var context = CreateMockOdkContext();
 
@@ -367,15 +369,74 @@ public static class MemberAdminServiceTests
         result.Invited.Select(x => x.Member.FirstName)
             .Should()
             .Equal("Oldest", "Middle", "Newest");
-        result.Invited.Select(x => x.CreatedUtc)
+        result.Invited.Select(x => x.InvitedUtc)
             .Should()
             .BeInAscendingOrder();
     }
 
     [Test]
+    public static async Task GetInvitedMembersViewModel_StatesWhenEachInviteIsDeleted()
+    {
+        /* Arrange - nothing moves an invite's date, so when it will be deleted is worked out from the
+           retention in force at read time. An invite with part of a day left has to read as a day rather
+           than as due. */
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(owner: currentMember);
+
+        var invited = context.CreateMember();
+        var createdUtc = DateTime.UtcNow.AddDays(-(InviteRetentionDays - 1)).AddMinutes(-1);
+        CreateInvite(context, chapter.Id, invited.Id, createdUtc);
+
+        var service = CreateMemberAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberImport);
+
+        // Act
+        var result = await service.GetInvitedMembersViewModel(request);
+
+        // Assert
+        result.RetentionDays.Should().Be(InviteRetentionDays);
+
+        var row = result.Invited.Single();
+        row.DeletedUtc.Should().Be(createdUtc.AddDays(InviteRetentionDays));
+        row.DaysRemaining.Should().Be(1);
+    }
+
+    [Test]
+    public static async Task GetInvitedMembersViewModel_ExpiredInvite_HasNoDaysRemaining()
+    {
+        // Arrange - due, and gone the next time the purge runs.
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(owner: currentMember);
+
+        var invited = context.CreateMember();
+        CreateInvite(context, chapter.Id, invited.Id, DateTime.UtcNow.AddDays(-(InviteRetentionDays + 1)));
+
+        var service = CreateMemberAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberImport);
+
+        // Act
+        var result = await service.GetInvitedMembersViewModel(request);
+
+        // Assert
+        result.Invited.Single().DaysRemaining.Should().Be(0);
+    }
+
+    [Test]
     public static async Task GetInvitedMembersViewModel_MemberInvitedToAnotherGroup_IsNotListed()
     {
-        // Arrange - the page is one group's outstanding invitations, and an invitation is per group.
+        // Arrange - the page is one group's outstanding invites, and an invite is per group.
         using var context = CreateMockOdkContext();
 
         var currentMember = context.CreateMember();
@@ -737,7 +798,7 @@ public static class MemberAdminServiceTests
     public static async Task ImportMembers_NewMember_InvitesThemWithoutGivingThemMembership()
     {
         /* Arrange - an imported member has no membership status until they activate their account and join, so
-           the import records the invitation and nothing else. Creating the membership here would make them a
+           the import records the invite and nothing else. Creating the membership here would make them a
            member of a group they have never responded to. */
         using var context = CreateMockOdkContext();
 
@@ -796,7 +857,7 @@ public static class MemberAdminServiceTests
     public static async Task ImportMembers_AlreadyInvited_DoesNotInviteAgain()
     {
         /* Arrange - re-importing the same file is a normal thing to do, and the unique index on
-           (chapter, member) would reject a second invitation rather than ignore it. */
+           (chapter, member) would reject a second invite rather than ignore it. */
         using var context = CreateMockOdkContext();
 
         var currentMember = context.CreateMember();
@@ -853,10 +914,10 @@ public static class MemberAdminServiceTests
 
     [TestCase(PlatformType.Default)]
     [TestCase(PlatformType.DrunkenKnitwits)]
-    public static async Task ImportMembers_NewMember_SendsTheInvitation(PlatformType platform)
+    public static async Task ImportMembers_NewMember_SendsTheInvite(PlatformType platform)
     {
-        /* Arrange - both platforms have a page an invitation's link lands on that a member with no password can
-           use, so both send the invitation. An activation link would take a new member straight past the group
+        /* Arrange - both platforms have a page an invite's link lands on that a member with no password can
+           use, so both send the invite. An activation link would take a new member straight past the group
            they were invited to, into an account belonging to none. */
         using var context = CreateMockOdkContext();
 
@@ -883,7 +944,7 @@ public static class MemberAdminServiceTests
         var result = await service.ImportMembers(request, members);
 
         // Assert - the (mock) background task service runs the enqueued job synchronously, which reloads the
-        // member, chapter and invitation and sends the email exactly once.
+        // member, chapter and invite and sends the email exactly once.
         result.Success.Should().BeTrue();
 
         emailService.Verify(
@@ -932,10 +993,10 @@ public static class MemberAdminServiceTests
     }
 
     [Test]
-    public static async Task ImportMembers_ExistingMember_SendsTheInvitationRatherThanRecreatingTheirAccount()
+    public static async Task ImportMembers_ExistingMember_SendsTheInviteRatherThanRecreatingTheirAccount()
     {
         /* Arrange - someone who already has an account, on either platform: there is nothing to activate, so the
-           invitation is the only email that makes sense. */
+           invite is the only email that makes sense. */
         using var context = CreateMockOdkContext();
 
         var currentMember = context.CreateMember();
@@ -1132,7 +1193,12 @@ public static class MemberAdminServiceTests
                 ChapterMembershipState, ChapterMembershipTrigger, ChapterMembershipContext>>(),
             workflow.GetRequiredService<IChapterMembershipContextFactory>(),
             new MockServiceRequestFactory(context),
-            new SiteSubscriptionCooldown(months: 0));
+            new SiteSubscriptionCooldown(months: 0),
+            new MemberAdminServiceSettings
+            {
+                InviteRetentionDays = InviteRetentionDays,
+                MemberAvatarSize = 75
+            });
     }
 
     /// <summary>

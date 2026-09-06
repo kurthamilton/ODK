@@ -217,7 +217,7 @@ public class GroupAdminRoutes
 
     /// <summary>
     /// Who the group has asked to join and is waiting on. Keyed to the import securable rather than to
-    /// Members: an invitation exists only because an import raised one, and the people it lists are not
+    /// Members: an invite exists only because an import raised one, and the people it lists are not
     /// members yet.
     /// </summary>
     public GroupAdminRoute MembersInvited(Chapter chapter)

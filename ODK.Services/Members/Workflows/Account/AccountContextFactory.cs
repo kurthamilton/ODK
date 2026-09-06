@@ -27,7 +27,7 @@ public sealed class AccountContextFactory : IAccountContextFactory
     }
 
     public async Task<AccountContext> CreateForAcceptInvite(
-        IChapterServiceRequest request, MemberChapterInvite invite, InvitationAcceptModel model)
+        IChapterServiceRequest request, MemberChapterInvite invite, InviteAcceptModel model)
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
 
@@ -62,7 +62,7 @@ public sealed class AccountContextFactory : IAccountContextFactory
             AdminMembers = adminMembers,
             Chapter = chapter,
             ChapterProperties = chapterProperties,
-            Invitation = model,
+            InviteAccept = model,
             Member = member,
             MemberCount = memberCount,
             MemberPassword = memberPassword,
@@ -76,7 +76,7 @@ public sealed class AccountContextFactory : IAccountContextFactory
             OwnerSubscriptionFeatures = ownerSubscription?.Features ?? [],
             PendingActivation = pendingActivation,
             Request = request,
-            /* Nothing here is a sign-up, so no provider has vouched for anything - holding the invitation is
+            /* Nothing here is a sign-up, so no provider has vouched for anything - holding the invite is
                itself the proof the address was reachable. */
             VerifiedByOAuth = false
         };
@@ -238,7 +238,7 @@ public sealed class AccountContextFactory : IAccountContextFactory
 
     /// <summary>
     /// What an account that has never been activated holds, read before a sign-up discards and recreates it:
-    /// its activation token, so a link already emailed still works, and its invitations, which are an admin's
+    /// its activation token, so a link already emailed still works, and its invites, which are an admin's
     /// record that the member was asked to join and are what lets them skip approval. The delete would cascade
     /// both away.
     /// </summary>

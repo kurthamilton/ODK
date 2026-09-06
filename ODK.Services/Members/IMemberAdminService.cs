@@ -12,9 +12,6 @@ public interface IMemberAdminService
 
     Task<AdminMembersAdminPageViewModel> GetAdminMembersAdminPageViewModel(IMemberChapterAdminServiceRequest request);
 
-    /// <summary>
-    /// Everyone the group has asked to join who has yet to accept, oldest invitation first.
-    /// </summary>
     Task<InvitedMembersAdminPageViewModel> GetInvitedMembersViewModel(
         IMemberChapterAdminServiceRequest request);
 

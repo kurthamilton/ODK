@@ -8,12 +8,7 @@ namespace ODK.Services.Members;
 
 public interface IMemberService
 {
-    /// <summary>
-    /// Accepts an invitation on behalf of the member it names, who cannot sign in yet: the account an import
-    /// raised is given its first password and the group is joined in one act. Holding the invitation's token is
-    /// what stands in for an activation email.
-    /// </summary>
-    Task<ServiceResult> AcceptInvitation(IChapterServiceRequest request, InvitationAcceptModel model);
+    Task<ServiceResult> AcceptInvite(IChapterServiceRequest request, InviteAcceptModel model);
 
     Task<ServiceResult> CancelChapterSubscription(
         IMemberChapterServiceRequest request, string externalId);

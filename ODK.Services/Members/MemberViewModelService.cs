@@ -183,8 +183,7 @@ public class MemberViewModelService : IMemberViewModelService
             HasQuestions = hasQuestions,
             IsAdmin = isAdmin,
             Member = member,
-            MemberProperties = memberProperties,
-            Platform = platform
+            MemberProperties = memberProperties
         };
     }
 
@@ -216,8 +215,7 @@ public class MemberViewModelService : IMemberViewModelService
             HasProfiles = hasProperties,
             HasQuestions = hasQuestions,
             IsAdmin = isAdmin,
-            Members = isMember ? members : [],
-            Platform = platform
+            Members = isMember ? members : []
         };
     }
 }

@@ -84,7 +84,7 @@ public class PublicRoutes
     /// The pages that belong to the site rather than to a group.
     /// </summary>
     /// <remarks>
-    /// Sign-up, sign-in, password reset, invitation and checkout pages are deliberately absent. They are
+    /// Sign-up, sign-in, password reset, invite and checkout pages are deliberately absent. They are
     /// anonymously reachable but they are steps in a flow rather than destinations, and every one of them
     /// is linked from a page that is here.
     /// </remarks>

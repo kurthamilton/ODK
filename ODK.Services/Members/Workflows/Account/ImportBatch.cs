@@ -27,7 +27,7 @@ public sealed class ImportBatch
     public Member? ExistingMember(string emailAddress) => ExistingMembers
         .FirstOrDefault(x => string.Equals(x.EmailAddress, emailAddress, StringComparison.OrdinalIgnoreCase));
 
-    /// <summary>The invitation the group already has outstanding for a member, where there is one.</summary>
+    /// <summary>The invite the group already has outstanding for a member, where there is one.</summary>
     public MemberChapterInvite? OutstandingInvite(Guid memberId) => OutstandingInvites
         .FirstOrDefault(x => x.MemberId == memberId);
 }

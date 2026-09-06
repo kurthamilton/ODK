@@ -9,12 +9,12 @@
     var viewModel = await ChapterViewModelService.GetGroupAcceptInvitePage(
         Model.ChapterServiceRequest, Model.InviteToken);
 
-    Model.Title = "Accept invitation";
+    Model.Title = "Accept invite";
 }
 
 @await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel
 {
-    Title = "Accept your invitation",
+    Title = "Accept your invite",
     Content = await Html.PartialAsync("Groups/_GroupAcceptInviteContent", viewModel),
     Group = viewModel
 })

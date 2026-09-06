@@ -121,7 +121,7 @@ public static class AccountStateMachineTests
     [Test]
     public static void Create_AcceptInvite_OnlyLeavesAnAccountThatCannotSignIn()
     {
-        /* Arrange - an invitation is accepted by giving the account an import raised its first password, so the
+        /* Arrange - an invite is accepted by giving the account an import raised its first password, so the
            only state it can be fired from is the one that has no password. An account that can already sign in
            accepts by signing in and using the group's join page, which is another machine's business. */
         var definition = AccountStateMachine.Create();
@@ -156,7 +156,7 @@ public static class AccountStateMachineTests
         var commit = Array.FindIndex(steps, x => x.Kind == StepKind.Commit);
         commit.Should().BeGreaterThan(0);
 
-        var joins = Array.FindIndex(steps, x => x.StepType == typeof(AcceptTheInvitation));
+        var joins = Array.FindIndex(steps, x => x.StepType == typeof(AcceptTheInvite));
         joins.Should().BeInRange(1, commit - 1);
 
         // And the group is only told once the membership it is told about is durable.

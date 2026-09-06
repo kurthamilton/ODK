@@ -18,6 +18,7 @@ public class GroupsController : OdkControllerBase
     private readonly IChapterAdminService _chapterAdminService;
     private readonly IChapterService _chapterService;
     private readonly IContactService _contactService;
+    private readonly IMemberInviteService _memberInviteService;
     private readonly IMemberService _memberService;
 
     public GroupsController(
@@ -26,12 +27,14 @@ public class GroupsController : OdkControllerBase
         IContactService contactService,
         IChapterService chapterService,
         IOdkRoutes odkRoutes,
-        IChapterAdminService chapterAdminService)
+        IChapterAdminService chapterAdminService,
+        IMemberInviteService memberInviteService)
         : base(requestStore, odkRoutes)
     {
         _chapterAdminService = chapterAdminService;
         _chapterService = chapterService;
         _contactService = contactService;
+        _memberInviteService = memberInviteService;
         _memberService = memberService;
     }
 
@@ -108,6 +111,20 @@ public class GroupsController : OdkControllerBase
         }
 
         return Redirect(OdkRoutes.GroupAdmin.Index().Path);
+    }
+
+    [HttpPost("groups/{chapterId:guid}/refuse-invite")]
+    public async Task<IActionResult> RefuseInvite(
+        Guid chapterId,
+        [FromForm] RefuseInviteFormSubmitViewModel viewModel)
+    {
+        var result = await _memberInviteService.RefuseInvite(ChapterServiceRequest, viewModel.Token);
+
+        AddFeedback(
+            result,
+            "Your invite has been declined, and the details the group imported have been deleted");
+
+        return Redirect(OdkRoutes.Groups.Group(Chapter));
     }
 
     [Authorize]

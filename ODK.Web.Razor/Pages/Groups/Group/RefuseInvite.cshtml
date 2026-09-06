@@ -1,0 +1,20 @@
+﻿@page "/groups/{slug}/refuse-invite"
+@using ODK.Services.Chapters
+@using ODK.Web.Razor.Models.Groups
+@model RefuseInviteModel
+@inject IChapterViewModelService ChapterViewModelService
+@{
+    Layout = "_HomeLayout";
+
+    var viewModel = await ChapterViewModelService.GetGroupRefuseInvitePage(
+        Model.ChapterServiceRequest, Model.InviteToken);
+
+    Model.Title = "Decline invite";
+}
+
+@await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel
+{
+    Title = "Decline your invite",
+    Content = await Html.PartialAsync("Groups/_GroupRefuseInviteContent", viewModel),
+    Group = viewModel
+})

@@ -119,6 +119,7 @@ public class TestEmailParametersFactory : ITestEmailParametersFactory
             EmailType.MemberImportInvite => chapter != null
                 ? new MemberImportInviteParameters
                 {
+                    RefuseUrl = urlProvider.RefuseInviteUrl(chapter, "TEST"),
                     Url = urlProvider.AcceptInviteUrl(chapter, "TEST")
                 }
                 : null,

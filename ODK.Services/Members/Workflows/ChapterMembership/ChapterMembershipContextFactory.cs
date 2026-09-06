@@ -34,12 +34,12 @@ public sealed class ChapterMembershipContextFactory : IChapterMembershipContextF
     {
         var chapter = context.RequiredChapter;
         var member = context.RequiredMember;
-        var properties = context.RequiredInvitation.Properties.ToArray();
+        var properties = context.RequiredInviteAccept.Properties.ToArray();
 
         return new ChapterMembershipContext
         {
             AdminMembers = context.AdminMembers,
-            /* The group's setting, which this member is exempt from either way: an invitation is approval, so
+            /* The group's setting, which this member is exempt from either way: an invite is approval, so
                ApprovedOnJoining reads true whatever it says. Passed rather than hardcoded so the one rule
                about approval lives in one place. */
             ApprovalRequired = ApprovalIsRequired(context.OwnerSubscriptionFeatures, context.MembershipSettings),
@@ -66,8 +66,8 @@ public sealed class ChapterMembershipContextFactory : IChapterMembershipContextF
     public ChapterMembershipContext CreateForApproval(IChapterServiceRequest request, Member member) => new()
     {
         /* Approving writes the membership row and emails the member, so everything the join transitions read
-           is empty here - the invitation included. The member is already in the group, so the row rather than
-           an invitation is what the state is derived from. */
+           is empty here - the invite included. The member is already in the group, so the row rather than
+           an invite is what the state is derived from. */
         AdminMembers = [],
         ApprovalRequired = false,
         ChapterId = request.Chapter.Id,
@@ -91,9 +91,9 @@ public sealed class ChapterMembershipContextFactory : IChapterMembershipContextF
         Member member,
         MemberChapterInvite? outstandingInvite) => new()
     {
-        /* An invitation notifies nobody, queues nobody and asks nothing of the member, so everything the join
+        /* An invite notifies nobody, queues nobody and asks nothing of the member, so everything the join
            transitions read is empty here. What the machine needs is the member, the group, and whether an
-           invitation is already outstanding - which together decide whether Invite is permitted at all. */
+           invite is already outstanding - which together decide whether Invite is permitted at all. */
         AdminMembers = [],
         ApprovalRequired = false,
         ChapterId = request.Chapter.Id,
@@ -170,7 +170,7 @@ public sealed class ChapterMembershipContextFactory : IChapterMembershipContextF
         return new ChapterMembershipContext
         {
             AdminMembers = adminMembers,
-            /* The group's setting only. Whether this member is queued also turns on their invitation, which the
+            /* The group's setting only. Whether this member is queued also turns on their invite, which the
                machine carries as a state - see ChapterMembershipContext.ApprovedOnJoining. */
             ApprovalRequired = ApprovalIsRequired(features, membershipSettings),
             ChapterId = chapter.Id,
@@ -193,7 +193,7 @@ public sealed class ChapterMembershipContextFactory : IChapterMembershipContextF
 
     /// <summary>
     /// The group's setting, and whether its owner's subscription carries the feature at all. Whether *this*
-    /// member is queued also turns on their invitation, which the machine carries as a state - see
+    /// member is queued also turns on their invite, which the machine carries as a state - see
     /// <see cref="ChapterMembershipContext.ApprovedOnJoining"/>.
     /// </summary>
     private bool ApprovalIsRequired(

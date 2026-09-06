@@ -1,0 +1,36 @@
+﻿@using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Common.Routes
+@model GroupRefuseInvitePageViewModel
+@inject IOdkRoutes OdkRoutes
+
+@if (Model.Form == null)
+{
+    <div class="alert alert-danger">
+        This invite link is no longer valid. It may already have been used, declined or expired.
+    </div>
+
+    <a class="btn btn-primary" href="@OdkRoutes.Groups.Group(Model.Chapter)">Go to the group</a>
+
+    return;
+}
+
+<p>
+    @Model.Chapter.FullName invited <strong>@Model.Form.Name</strong> to join, at
+    <strong>@Model.Form.EmailAddress</strong>.
+</p>
+
+<p>
+    Declining deletes the invite, along with the name and email address the group's organisers supplied
+    when they imported it. Where the account was raised only to carry this invite, it is deleted too.
+</p>
+
+<form action="/groups/@Model.Chapter.Id/refuse-invite" method="post">
+    @Html.AntiForgeryToken()
+    @await Html.PartialAsync("Account/_RefuseInviteForm", Model.Form)
+
+    <button class="btn btn-danger" type="submit">Decline invite</button>
+
+    <a class="btn btn-link" href="@OdkRoutes.Groups.AcceptInvite(Model.Chapter, Model.Form.Token)">
+        Accept it instead
+    </a>
+</form>

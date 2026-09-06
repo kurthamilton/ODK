@@ -70,6 +70,9 @@ public class UrlProvider : IUrlProvider
 
     public string PasswordReset(Chapter? chapter, string token) => GetUrl(_odkRoutes.Account.PasswordReset(chapter, token));
 
+    public string RefuseInviteUrl(Chapter chapter, string inviteToken)
+        => GetUrl(_odkRoutes.Groups.RefuseInvite(chapter, inviteToken));
+
     public string SiteAdminGroups() => GetUrl(_odkRoutes.SiteAdmin.Groups);
 
     public string SiteConversationAdminUrl(Guid conversationId)

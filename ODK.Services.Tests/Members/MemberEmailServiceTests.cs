@@ -99,7 +99,7 @@ public static class MemberEmailServiceTests
     [Test]
     public static async Task SendMemberImportInviteEmail_SendsInviteTemplateWithTheAcceptUrl()
     {
-        /* Arrange - the page where an invitation is accepted, which the template names group.urls.join. The
+        /* Arrange - the page where an invite is accepted, which the template names group.urls.join. The
            parameter is older than that page being platform-specific, so the two names differ on purpose. */
         var chapter = CreateChapter();
         var member = CreateMember();

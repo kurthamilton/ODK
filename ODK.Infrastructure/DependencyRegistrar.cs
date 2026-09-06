@@ -296,12 +296,14 @@ public static class DependencyRegistrar
             .AddScoped<IMemberAdminService, MemberAdminService>()
             .AddSingleton(new MemberAdminServiceSettings
             {
+                InviteRetentionDays = appSettings.Privacy.Invites.RetentionDays,
                 MemberAvatarSize = appSettings.Members.AvatarSize
             })
             .AddScoped<IMemberChapterSubscriptionWriter, MemberChapterSubscriptionWriter>()
             .AddScoped<IMemberSiteSubscriptionWriter, MemberSiteSubscriptionWriter>()
             .AddScoped<IMemberEmailService, MemberEmailService>()
             .AddScoped<IMemberImageService, MemberImageService>()
+            .AddScoped<IMemberInviteService, MemberInviteService>()
             .AddScoped<IMemberLocaleService, MemberLocaleService>()
             .AddSingleton(new MemberImageServiceSettings
             {
@@ -436,6 +438,11 @@ public static class DependencyRegistrar
 
         // How long an expired site subscription keeps its access (Subscriptions:DefaultCooldownMonths).
         services.AddSingleton(new SiteSubscriptionCooldown(appSettings.Subscriptions.DefaultCooldownMonths));
+
+        services.AddSingleton(new MemberInviteServiceSettings
+        {
+            RetentionDays = appSettings.Privacy.Invites.RetentionDays
+        });
     }
 
     /* The web layer's own mapped settings, declared in ODK.Web.Common so this project can see them - the
@@ -471,6 +478,7 @@ public static class DependencyRegistrar
             BetterStackRetentionDays = privacy.Logging.BetterStackRetentionDays,
             EmailAddress = ServedPlatform.Of(appSettings, privacy.Platforms).EmailAddress,
             HostingProvider = privacy.HostingProvider,
+            InviteRetentionDays = appSettings.Privacy.Invites.RetentionDays,
             LogRetentionDays = privacy.Logging.DefaultRetentionDays,
             TraderName = privacy.TraderName,
             TradingAddress = privacy.TradingAddress

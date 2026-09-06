@@ -311,8 +311,8 @@ public class ChapterViewModelService : IChapterViewModelService
                 ? x.MemberChapterInviteRepository.GetByToken(inviteToken)
                 : new DefaultDeferredQuerySingleOrDefault<MemberChapterInvite>());
 
-        /* A second round-trip only when there is an invitation to resolve: the member it names cannot be
-           batched with the query that finds it. An invitation to another group is treated as no invitation
+        /* A second round-trip only when there is an invite to resolve: the member it names cannot be
+           batched with the query that finds it. An invite to another group is treated as no invite
            rather than refused - the link is simply not for this page. */
         var invitedMember = invite != null && invite.ChapterId == chapter.Id
             ? await _unitOfWork.MemberRepository.GetByIdOrDefault(invite.MemberId).Run()
@@ -323,8 +323,8 @@ public class ChapterViewModelService : IChapterViewModelService
             Chapter = chapter,
             ChapterPages = chapterPages,
             CurrentMember = currentMember,
-            /* Only an invitation naming an account that has yet to be activated has a form to fill: one naming
-               an account that can sign in is accepted by signing in, and no invitation at all is a dead link. */
+            /* Only an invite naming an account that has yet to be activated has a form to fill: one naming
+               an account that can sign in is accepted by signing in, and no invite at all is a dead link. */
             Form = invitedMember is { Activated: false }
                 ? new AcceptInviteFormViewModel
                 {
@@ -338,7 +338,6 @@ public class ChapterViewModelService : IChapterViewModelService
             HasQuestions = hasQuestions,
             InvitedMemberHasAccount = invitedMember?.Activated == true,
             IsAdmin = isAdmin,
-            Platform = platform,
             Properties = properties,
             PropertyOptions = propertyOptions,
             RegistrationOpen = chapter.IsOpenForRegistration(),
@@ -393,8 +392,7 @@ public class ChapterViewModelService : IChapterViewModelService
             CurrentMember = currentMember,
             HasProfiles = hasProperties,
             HasQuestions = hasQuestions,
-            IsAdmin = isAdmin,
-            Platform = platform
+            IsAdmin = isAdmin
         };
     }
 
@@ -458,8 +456,7 @@ public class ChapterViewModelService : IChapterViewModelService
             Messages = messages,
             OtherConversations = conversations
                 .Where(x => x.Conversation.Id != conversationId)
-                .ToArray(),
-            Platform = platform
+                .ToArray()
         };
     }
 
@@ -525,8 +522,7 @@ public class ChapterViewModelService : IChapterViewModelService
                 memberSubscription,
                 membershipSettings,
                 privacySettings),
-            PastEventCount = pastEventCount,
-            Platform = platform
+            PastEventCount = pastEventCount
         };
     }
 
@@ -555,8 +551,7 @@ public class ChapterViewModelService : IChapterViewModelService
             CurrentMember = currentMember,
             HasProfiles = hasProperties,
             HasQuestions = hasQuestions,
-            IsAdmin = isAdmin,
-            Platform = platform
+            IsAdmin = isAdmin
         };
     }
 
@@ -624,8 +619,7 @@ public class ChapterViewModelService : IChapterViewModelService
                 memberSubscription,
                 membershipSettings,
                 privacySettings),
-            PastEventCount = pastEventDtos.Count,
-            Platform = platform
+            PastEventCount = pastEventDtos.Count
         };
     }
 
@@ -754,7 +748,6 @@ public class ChapterViewModelService : IChapterViewModelService
                     Member = x.ChapterAdminMember.Member
                 })
                 .ToArray(),
-            Platform = platform,
             RecentEvents = recentEventViewModels,
             Texts = texts,
             Topics = chapterTopics.Select(x => x.Topic).ToArray(),
@@ -793,7 +786,6 @@ public class ChapterViewModelService : IChapterViewModelService
             HasQuestions = hasQuestions,
             IsAdmin = isAdmin,
             MembershipSettings = membershipSettings,
-            Platform = platform,
             Properties = properties,
             PropertyOptions = propertyOptions,
             RegistrationOpen = chapter.IsOpenForRegistration(),
@@ -831,8 +823,7 @@ public class ChapterViewModelService : IChapterViewModelService
             HasProfiles = chapterProperties.Any(),
             HasQuestions = hasQuestions,
             IsAdmin = isAdmin,
-            MemberProperties = memberProperties,
-            Platform = platform
+            MemberProperties = memberProperties
         };
     }
 
@@ -860,8 +851,56 @@ public class ChapterViewModelService : IChapterViewModelService
             HasProfiles = hasProperties,
             HasQuestions = questions.Count > 0,
             IsAdmin = isAdmin,
-            Platform = platform,
             Questions = questions.OrderBy(x => x.DisplayOrder).ToArray()
+        };
+    }
+
+    public async Task<GroupRefuseInvitePageViewModel> GetGroupRefuseInvitePage(
+        IChapterServiceRequest request, string? inviteToken)
+    {
+        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMemberOrDefault);
+
+        var (
+            isAdmin,
+            hasProperties,
+            hasQuestions,
+            chapterPages,
+            invite) = await _unitOfWork.Run(
+            x => currentMember != null
+                ? x.ChapterAdminMemberRepository.IsAdmin(platform, chapter.Id, currentMember.Id)
+                : new DefaultDeferredQueryAny(false),
+            x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
+            x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
+            x => x.ChapterPageRepository.GetByChapterId(chapter.Id),
+            x => !string.IsNullOrEmpty(inviteToken)
+                ? x.MemberChapterInviteRepository.GetByToken(inviteToken)
+                : new DefaultDeferredQuerySingleOrDefault<MemberChapterInvite>());
+
+        /* A second round-trip only when there is an invite to resolve: the member it names cannot be
+           batched with the query that finds it. An invite to another group is treated as no invite
+           rather than refused - the link is simply not for this page. */
+        var invitedMember = invite != null && invite.ChapterId == chapter.Id
+            ? await _unitOfWork.MemberRepository.GetByIdOrDefault(invite.MemberId).Run()
+            : null;
+
+        return new GroupRefuseInvitePageViewModel
+        {
+            Chapter = chapter,
+            ChapterPages = chapterPages,
+            CurrentMember = currentMember,
+            /* Declining is offered whether or not the account can sign in, unlike accepting: what it withdraws
+               is the invite, and an account that already existed is not the import's to delete. */
+            Form = invitedMember != null
+                ? new RefuseInviteFormViewModel
+                {
+                    EmailAddress = invitedMember.EmailAddress,
+                    Name = invitedMember.FullName,
+                    Token = inviteToken ?? string.Empty
+                }
+                : null,
+            HasProfiles = hasProperties,
+            HasQuestions = hasQuestions,
+            IsAdmin = isAdmin
         };
     }
 
@@ -918,7 +957,6 @@ public class ChapterViewModelService : IChapterViewModelService
             HasProfiles = hasProperties,
             HasQuestions = hasQuestions,
             IsAdmin = isAdmin,
-            Platform = platform,
             Subscriptions = subscriptions
         };
     }

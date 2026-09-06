@@ -20,7 +20,7 @@ public class PersonalDetailsFormViewModel
     public string FirstName { get; set; } = string.Empty;
 
     /// <summary>
-    /// The invitation the visitor arrived with, posted back so the submit can see that they hold it. Null for
+    /// The invite the visitor arrived with, posted back so the submit can see that they hold it. Null for
     /// anyone signing up unprompted, and not rendered at all for a member editing their own details.
     /// </summary>
     public string? InviteToken { get; set; }

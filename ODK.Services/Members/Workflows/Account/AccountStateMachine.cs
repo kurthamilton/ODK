@@ -22,7 +22,7 @@ public static class AccountStateMachine
 
         /* The half of activating that every edge does, in the order they must: nothing is written until the
            password is accepted, and the link is spent alongside the account it activates. Shared by the two
-           edges an activation link reaches and by the one an invitation link does. */
+           edges an activation link reaches and by the one an invite link does. */
         var activate = (TransitionBuilder<AccountContext> x) => x
             .Then<ValidateNewPassword>()
             .Then<MarkAccountActivated>()
@@ -42,7 +42,7 @@ public static class AccountStateMachine
             .Then<MakeSiteSubscriptionCurrent>()
             .Then<StoreAvatar>()
             .Then<IssueActivationToken>()
-            .Then<CarryOverInvitations>()
+            .Then<CarryOverInvites>()
             .Then<CommitSignUp>();
 
         /* Creating the account a sign-up to the site asks for. Shared by the edge with no account to start from
@@ -52,7 +52,7 @@ public static class AccountStateMachine
             .Then<CreateSiteMember>()
             .Then<MakeSiteSubscriptionCurrent>()
             .Then<AddMemberTopics>()
-            .Then<CarryOverInvitations>();
+            .Then<CarryOverInvites>();
 
         return StateMachine
             .Define<AccountState, AccountTrigger, AccountContext>(Name)
@@ -61,14 +61,14 @@ public static class AccountStateMachine
             /* An import raises the account, so the address has one before anybody signs up against it. It cannot
                sign in until an activation link is followed, which is why this lands where a sign-up does. */
             /* Write steps only, and no commit: an import is a batch, and the caller commits the whole file at
-               once. The invitation is the other machine's business, raised alongside this. */
+               once. The invite is the other machine's business, raised alongside this. */
             .Transition(
                 AccountState.Anonymous,
                 AccountTrigger.Import,
                 AccountState.Registered,
                 x => x.Then<CreateImportedMember>())
 
-            /* Signing up to a group, with no account to start from. There is no invitation to present - an
+            /* Signing up to a group, with no account to start from. There is no invite to present - an
                invited address already has the account an import raised, so it starts from Registered below. */
             .Transition(
                 AccountState.Anonymous,
@@ -111,7 +111,7 @@ public static class AccountStateMachine
 
             /* Signing up against an address that already has an unactivated account: it is discarded and
                recreated from the details just submitted, so the latest of them wins, and it ends where it
-               started. Presenting the invitation's token proves the sign-up reached that inbox, which is what
+               started. Presenting the invite's token proves the sign-up reached that inbox, which is what
                an activation email would have established - so that edge sends none, and the caller hands them
                straight to setting a password. */
             .Transition(
@@ -184,9 +184,9 @@ public static class AccountStateMachine
                     .Then<Commit<AccountContext>>()
                     .Then<SendSiteWelcomeEmail>())
 
-            /* Accepting an invitation, which is how an imported member joins on Group Squirrel: its join page
+            /* Accepting an invite, which is how an imported member joins on Group Squirrel: its join page
                needs an account that can sign in, and an imported one has no password until it is given one.
-               Holding the invitation's token proves the link reached the address the import supplied, which is
+               Holding the invite's token proves the link reached the address the import supplied, which is
                everything an activation email establishes - so the same submit sets the password and joins the
                group, and there is no separate activation to wait for. Only Registered has this edge: an
                account that can already sign in accepts by signing in and using the join page. */
@@ -196,7 +196,7 @@ public static class AccountStateMachine
                 AccountState.Activated,
                 x => activate(x)
                     .Then<ConfirmInvitedMemberName>()
-                    .Then<AcceptTheInvitation>()
+                    .Then<AcceptTheInvite>()
                     .Then<Commit<AccountContext>>()
                     .Then<SendNewMemberEmails>())
             .Build();
