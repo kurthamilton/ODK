@@ -35,10 +35,11 @@ public class ContactAdminService : OdkAdminServiceBase, IContactAdminService
     public async Task<ServiceResult> DeleteSpamMessages(IMemberServiceRequest request)
     {
         var spamThreshold = _settings.ContactMessageRecaptchaScoreThreshold;
+        var platform = request.Platform;
 
         var messages = await GetSiteAdminRestrictedContent(request,
             x => x.SiteContactMessageRepository
-                .Query(x => x.ForStatus(MessageStatus.Spam, spamThreshold))
+                .Query(x => x.ForPlatform(platform).ForStatus(MessageStatus.Spam, spamThreshold))
                 .GetAll());
 
         _unitOfWork.SiteContactMessageRepository.DeleteMany(messages);
@@ -50,25 +51,26 @@ public class ContactAdminService : OdkAdminServiceBase, IContactAdminService
     public async Task<MessagesAdminPageViewModel> GetMessagesViewModel(IMemberServiceRequest request, MessageStatus status)
     {
         var spamThreshold = _settings.ContactMessageRecaptchaScoreThreshold;
+        var platform = request.Platform;
 
         var (messages, unrepliedCount, repliedCount, spamCount) = await GetSiteAdminRestrictedContent(request,
             x => x.SiteContactMessageRepository
-                .Query(x => x.ForStatus(status, spamThreshold))
+                .Query(x => x.ForPlatform(platform).ForStatus(status, spamThreshold))
                 .GetAll(),
             x => status == MessageStatus.Unreplied
                 ? new DefaultDeferredQuery<int>(0)
                 : x.SiteContactMessageRepository
-                    .Query(x => x.ForStatus(MessageStatus.Unreplied, spamThreshold))
+                    .Query(x => x.ForPlatform(platform).ForStatus(MessageStatus.Unreplied, spamThreshold))
                     .Count(),
             x => status == MessageStatus.Replied
                 ? new DefaultDeferredQuery<int>(0)
                 : x.SiteContactMessageRepository
-                    .Query(x => x.ForStatus(MessageStatus.Replied, spamThreshold))
+                    .Query(x => x.ForPlatform(platform).ForStatus(MessageStatus.Replied, spamThreshold))
                     .Count(),
             x => status == MessageStatus.Spam
                 ? new DefaultDeferredQuery<int>(0)
                 : x.SiteContactMessageRepository
-                    .Query(x => x.ForStatus(MessageStatus.Spam, spamThreshold))
+                    .Query(x => x.ForPlatform(platform).ForStatus(MessageStatus.Spam, spamThreshold))
                     .Count());
 
         return new MessagesAdminPageViewModel

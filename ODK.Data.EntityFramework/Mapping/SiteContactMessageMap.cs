@@ -19,6 +19,10 @@ public class SiteContactMessageMap : IEntityTypeConfiguration<SiteContactMessage
         builder.Property(x => x.FromAddress)
             .HasMaxLength(255);
 
+        builder.Property(x => x.Platform)
+            .HasColumnName("PlatformTypeId")
+            .HasConversion<int>();
+
         builder.Property(x => x.RepliedUtc)
             .HasConversion<NullableUtcDateTimeConverter>();
     }
