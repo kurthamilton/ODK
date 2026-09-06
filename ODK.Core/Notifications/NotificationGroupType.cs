@@ -10,5 +10,7 @@ public enum NotificationGroupType
     [Display(Name = "New members")]
     Members = 2,
 
-    Messages = 3
+    Messages = 3,
+
+    Subscriptions = 4
 }

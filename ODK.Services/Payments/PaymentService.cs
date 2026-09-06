@@ -1,5 +1,6 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Members;
+using ODK.Core.Notifications;
 using ODK.Core.Payments;
 using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
@@ -10,6 +11,7 @@ using ODK.Services.Events;
 using ODK.Services.Exceptions;
 using ODK.Services.Logging;
 using ODK.Services.Members;
+using ODK.Services.Notifications;
 using ODK.Services.Payments.Models;
 using ODK.Services.Platforms;
 using ODK.Services.Subscriptions;
@@ -25,6 +27,7 @@ public class PaymentService : IPaymentService
     private readonly IMemberChapterSubscriptionWriter _memberChapterSubscriptionWriter;
     private readonly IMemberEmailService _memberEmailService;
     private readonly IMemberSiteSubscriptionWriter _memberSiteSubscriptionWriter;
+    private readonly INotificationService _notificationService;
     private readonly IPaymentProviderFactory _paymentProviderFactory;
     private readonly IPaymentUpdateBroadcaster _paymentUpdateBroadcaster;
     private readonly IPlatformProvider _platformProvider;
@@ -42,6 +45,7 @@ public class PaymentService : IPaymentService
         IBackgroundTaskService backgroundTaskService,
         IMemberChapterSubscriptionWriter memberChapterSubscriptionWriter,
         IMemberSiteSubscriptionWriter memberSiteSubscriptionWriter,
+        INotificationService notificationService,
         IPlatformProvider platformProvider,
         IServiceRequestFactory serviceRequestFactory,
         SiteSubscriptionCooldown siteSubscriptionCooldown)
@@ -52,6 +56,7 @@ public class PaymentService : IPaymentService
         _memberChapterSubscriptionWriter = memberChapterSubscriptionWriter;
         _memberEmailService = memberEmailService;
         _memberSiteSubscriptionWriter = memberSiteSubscriptionWriter;
+        _notificationService = notificationService;
         _paymentProviderFactory = paymentProviderFactory;
         _paymentUpdateBroadcaster = paymentUpdateBroadcaster;
         _platformProvider = platformProvider;
@@ -512,6 +517,20 @@ public class PaymentService : IPaymentService
             : utcNow.AddMonths(months);
     }
 
+    private async Task AddSubscriptionRenewedNotification(
+        Member member,
+        Chapter? chapter,
+        Payment payment,
+        DateTime? nextPaymentUtc)
+    {
+        var notificationSettings = await _unitOfWork.MemberNotificationSettingsRepository
+            .GetByMemberIds([member.Id], NotificationType.SubscriptionRenewed)
+            .Run();
+
+        await _notificationService.AddSubscriptionRenewedNotification(
+            member, chapter, payment, nextPaymentUtc, notificationSettings);
+    }
+
     /* Every kind of payment ends the same way: the provider is asked to start a checkout for a plan, and
        what comes back is recorded against a payment and a session. What differs between them is settled
        before this is called - see PaymentCheckoutModel - so this stays the one place a payment is written. */
@@ -722,7 +741,8 @@ public class PaymentService : IPaymentService
         DateTime completedUtc,
         PaymentProviderType paymentProvider,
         string externalId,
-        string? initiatorId)
+        string? initiatorId,
+        bool renewal)
     {
         var platform = metadata.PlatformOrDrunkenKnitwits;
 
@@ -825,7 +845,8 @@ public class PaymentService : IPaymentService
             paymentCheckoutSession,
             externalId: externalId,
             completedUtc,
-            initiatorId);
+            initiatorId,
+            renewal);
     }
 
     private async Task<PaymentWebhookProcessingResult> ProcessCompletedPayment(
@@ -923,7 +944,8 @@ public class PaymentService : IPaymentService
             paymentCheckoutSession,
             externalId: externalId,
             completedUtc,
-            initiatorId);
+            initiatorId,
+            renewal: false);
     }
 
     private async Task<PaymentWebhookProcessingResult> ProcessCompletedSiteSubscription(
@@ -931,7 +953,8 @@ public class PaymentService : IPaymentService
         DateTime completedUtc,
         PaymentProviderType paymentProvider,
         string externalId,
-        string? initiatorId)
+        string? initiatorId,
+        bool renewal)
     {
         if (metadata.MemberId == null ||
             metadata.SiteSubscriptionPriceId == null)
@@ -1033,7 +1056,8 @@ public class PaymentService : IPaymentService
                 paymentCheckoutSession,
                 externalId: externalId,
                 completedUtc,
-                initiatorId);
+                initiatorId,
+                renewal);
         }
         catch (Exception ex)
         {
@@ -1166,7 +1190,8 @@ public class PaymentService : IPaymentService
             webhook.OriginatedUtc,
             webhook.PaymentProviderType,
             webhook.SubscriptionId,
-            initiatorId: webhook.Id);
+            initiatorId: webhook.Id,
+            renewal: webhook.SubscriptionRenewal);
     }
 
     private async Task<PaymentWebhookProcessingResult> ProcessWebhookSiteSubscription(
@@ -1188,7 +1213,8 @@ public class PaymentService : IPaymentService
             completedUtc: webhook.OriginatedUtc,
             webhook.PaymentProviderType,
             webhook.SubscriptionId,
-            initiatorId: webhook.Id);
+            initiatorId: webhook.Id,
+            renewal: webhook.SubscriptionRenewal);
     }
 
     /* The platform comes from the webhook's own metadata rather than from the request, because a provider
@@ -1699,7 +1725,8 @@ public class PaymentService : IPaymentService
         PaymentCheckoutSession? checkoutSession,
         string externalId,
         DateTime utcNow,
-        string? initiatorId)
+        string? initiatorId,
+        bool renewal)
     {
         if (metadata.ChapterId == null || metadata.ChapterSubscriptionId == null)
         {
@@ -1802,6 +1829,14 @@ public class PaymentService : IPaymentService
             $"Updating member {member.Id} subscription for chapter {chapter.Name}. " +
             $"Updating expiry date from {previousExpiresUtc} to {expiresUtc:yyyy-MM-dd HH:mm:ss}");
 
+        /* Only a renewal is announced: a purchase the member made at checkout is told to them on the
+           page they made it on. Staged with the record so a notification never outlives a renewal that
+           failed to save. */
+        if (renewal)
+        {
+            await AddSubscriptionRenewedNotification(member, chapter, payment, expiresUtc);
+        }
+
         await _unitOfWork.SaveChanges();
 
         return PaymentWebhookProcessingResult.Successful(
@@ -1815,7 +1850,8 @@ public class PaymentService : IPaymentService
         PaymentCheckoutSession? checkoutSession,
         string externalId,
         DateTime utcNow,
-        string? initiatorId)
+        string? initiatorId,
+        bool renewal)
     {
         var memberId = member.Id;
 
@@ -1866,6 +1902,12 @@ public class PaymentService : IPaymentService
                 SiteSubscriptionPriceId = siteSubscriptionPrice.Id
             },
             existingCurrent: currentRecord);
+
+        // See UpdateMemberChapterSubscription: only a renewal is announced.
+        if (renewal)
+        {
+            await AddSubscriptionRenewedNotification(member, chapter: null, payment, expiresUtc);
+        }
 
         await _unitOfWork.SaveChanges();
 

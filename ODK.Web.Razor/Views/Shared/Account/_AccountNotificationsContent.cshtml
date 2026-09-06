@@ -15,6 +15,7 @@
     { 
         NotificationGroupType.Events,
         NotificationGroupType.Messages,
+        NotificationGroupType.Subscriptions,
         NotificationGroupType.Members,
     }
     .Where(x => isAdmin || !x.ForAdmins());
