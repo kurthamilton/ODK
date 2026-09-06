@@ -351,7 +351,7 @@ public static class MemberServiceTests
     [Test]
     public static async Task CreateChapterAccount_InvitedMemberKeepsInvitedAddress_ReturnsActivationTokenUnemailed()
     {
-        /* Arrange - an imported member following their invitation link and registering the address it was sent
+        /* Arrange - an imported member following their invite link and registering the address it was sent
            to. Holding the token proves they read mail at that address, which is the only thing an activation
            email establishes, so they are handed the token instead of being made to wait for one. */
         using var context = CreateMockOdkContext();
@@ -442,10 +442,10 @@ public static class MemberServiceTests
     }
 
     [Test]
-    public static async Task CreateChapterAccount_InvitationToAnotherChapter_CarriesItOverWithItsToken()
+    public static async Task CreateChapterAccount_InviteToAnotherChapter_CarriesItOverWithItsToken()
     {
         /* Arrange - joining one group discards and recreates the unactivated account, which would cascade away an
-           invitation from a second group. It is re-raised with its own token so the link already emailed for that
+           invite from a second group. It is re-raised with its own token so the link already emailed for that
            group still resolves. */
         using var context = CreateMockOdkContext();
         SeedDefaultSiteSubscription(context, PlatformType.DrunkenKnitwits);
@@ -612,9 +612,9 @@ public static class MemberServiceTests
     }
 
     [Test]
-    public static async Task JoinChapter_InvitedMember_SkipsApprovalAndConsumesTheInvitation()
+    public static async Task JoinChapter_InvitedMember_SkipsApprovalAndConsumesTheInvite()
     {
-        /* Arrange - a group that approves new members, and a member it has invited. This is how an invitation is
+        /* Arrange - a group that approves new members, and a member it has invited. This is how an invite is
            accepted by someone who already has an account: they sign in and submit the group's questions. Putting
            them in the approvals queue would ask the group to approve someone it asked to join. */
         using var context = CreateMockOdkContext();
@@ -665,9 +665,9 @@ public static class MemberServiceTests
     }
 
     [Test]
-    public static async Task JoinChapter_MemberWithNoInvitation_StillNeedsApproving()
+    public static async Task JoinChapter_MemberWithNoInvite_StillNeedsApproving()
     {
-        // Arrange - the pair to the test above: without an invitation the group's own setting decides.
+        // Arrange - the pair to the test above: without an invite the group's own setting decides.
         using var context = CreateMockOdkContext();
 
         var owner = context.CreateMember();
@@ -766,9 +766,9 @@ public static class MemberServiceTests
     }
 
     [Test]
-    public static async Task AcceptInvitation_InvitedMember_ActivatesTheAccountAndJoinsTheGroup()
+    public static async Task AcceptInvite_InvitedMember_ActivatesTheAccountAndJoinsTheGroup()
     {
-        /* Arrange - an imported member following their invitation link on the platform whose join page needs an
+        /* Arrange - an imported member following their invite link on the platform whose join page needs an
            account that can sign in. Holding the token proves they read mail at the invited address, which is
            the only thing an activation email establishes, so the one submit does both. */
         using var context = CreateMockOdkContext();
@@ -794,9 +794,9 @@ public static class MemberServiceTests
         var service = CreateMemberService(context, emailService.Object);
 
         // Act
-        var result = await service.AcceptInvitation(
+        var result = await service.AcceptInvite(
             CreateChapterRequest(chapter, PlatformType.Default),
-            CreateInvitationAcceptModel("invite-token", firstName: "Confirmed"));
+            CreateInviteAcceptModel("invite-token", firstName: "Confirmed"));
 
         // Assert
         result.Success.Should().BeTrue();
@@ -807,7 +807,7 @@ public static class MemberServiceTests
 
         context.Set<MemberPassword>().Should().ContainSingle(x => x.MemberId == invited.Id);
 
-        // An invitation is approval, so the group that asked them in is not asked to approve them.
+        // An invite is approval, so the group that asked them in is not asked to approve them.
         context.Set<MemberChapter>()
             .Should()
             .ContainSingle(x => x.MemberId == invited.Id && x.ChapterId == chapter.Id)
@@ -816,15 +816,15 @@ public static class MemberServiceTests
             .Should()
             .BeTrue();
 
-        // Both single-use records are spent: the invitation, and the activation it stood in for.
+        // Both single-use records are spent: the invite, and the activation it stood in for.
         context.Set<MemberChapterInvite>().Any(x => x.MemberId == invited.Id).Should().BeFalse();
         context.Set<MemberActivationToken>().Any(x => x.MemberId == invited.Id).Should().BeFalse();
     }
 
     [Test]
-    public static async Task AcceptInvitation_GroupApprovesNewMembers_StillSkipsApproval()
+    public static async Task AcceptInvite_GroupApprovesNewMembers_StillSkipsApproval()
     {
-        // Arrange - the group asked them in, so approving them would be asking it to confirm its own invitation.
+        // Arrange - the group asked them in, so approving them would be asking it to confirm its own invite.
         using var context = CreateMockOdkContext();
         SeedDefaultSiteSubscription(context);
 
@@ -852,9 +852,9 @@ public static class MemberServiceTests
             authorizationService: CreateMockAuthorizationService(chapterHasAccess: true));
 
         // Act
-        var result = await service.AcceptInvitation(
+        var result = await service.AcceptInvite(
             CreateChapterRequest(chapter, PlatformType.Default),
-            CreateInvitationAcceptModel("invite-token"));
+            CreateInviteAcceptModel("invite-token"));
 
         // Assert
         result.Success.Should().BeTrue();
@@ -866,9 +866,9 @@ public static class MemberServiceTests
     }
 
     [Test]
-    public static async Task AcceptInvitation_InvitationToAnotherGroup_FailsWithoutWritingAnything()
+    public static async Task AcceptInvite_InviteToAnotherGroup_FailsWithoutWritingAnything()
     {
-        /* Arrange - the token names which invitation is being spent, and the page it was posted to names which
+        /* Arrange - the token names which invite is being spent, and the page it was posted to names which
            group. A token for somewhere else is a link that is not for this page. */
         using var context = CreateMockOdkContext();
         SeedDefaultSiteSubscription(context);
@@ -884,9 +884,9 @@ public static class MemberServiceTests
         var service = CreateMemberService(context, new Mock<IMemberEmailService>().Object);
 
         // Act
-        var result = await service.AcceptInvitation(
+        var result = await service.AcceptInvite(
             CreateChapterRequest(chapter, PlatformType.Default),
-            CreateInvitationAcceptModel("invite-token"));
+            CreateInviteAcceptModel("invite-token"));
 
         // Assert
         result.Success.Should().BeFalse();
@@ -896,7 +896,7 @@ public static class MemberServiceTests
     }
 
     [Test]
-    public static async Task AcceptInvitation_MemberAlreadyActivated_FailsAndTellsThemToSignIn()
+    public static async Task AcceptInvite_MemberAlreadyActivated_FailsAndTellsThemToSignIn()
     {
         /* Arrange - the machine has no AcceptInvite edge out of Activated, and the page shows such a member a
            sign-in prompt rather than this form, so getting here means they activated between the two requests.
@@ -914,9 +914,9 @@ public static class MemberServiceTests
         var service = CreateMemberService(context, new Mock<IMemberEmailService>().Object);
 
         // Act
-        var result = await service.AcceptInvitation(
+        var result = await service.AcceptInvite(
             CreateChapterRequest(chapter, PlatformType.Default),
-            CreateInvitationAcceptModel("invite-token"));
+            CreateInviteAcceptModel("invite-token"));
 
         // Assert
         result.Success.Should().BeFalse();
@@ -925,10 +925,10 @@ public static class MemberServiceTests
     }
 
     [Test]
-    public static async Task AcceptInvitation_RefusedPassword_LeavesTheInvitationOutstanding()
+    public static async Task AcceptInvite_RefusedPassword_LeavesTheInviteOutstanding()
     {
         /* Arrange - the password check is the first step, so a refusal has to leave the account exactly as it
-           was: still unactivated, and still holding the invitation to try again with. */
+           was: still unactivated, and still holding the invite to try again with. */
         using var context = CreateMockOdkContext();
         SeedDefaultSiteSubscription(context);
 
@@ -955,9 +955,9 @@ public static class MemberServiceTests
             memberPasswordService: passwordService);
 
         // Act
-        var result = await service.AcceptInvitation(
+        var result = await service.AcceptInvite(
             CreateChapterRequest(chapter, PlatformType.Default),
-            CreateInvitationAcceptModel("invite-token"));
+            CreateInviteAcceptModel("invite-token"));
 
         // Assert
         result.Success.Should().BeFalse();
@@ -985,8 +985,8 @@ public static class MemberServiceTests
         ImageData = [1, 2, 3]
     };
 
-    private static InvitationAcceptModel CreateInvitationAcceptModel(
-        string token, string firstName = "Invited") => new InvitationAcceptModel
+    private static InviteAcceptModel CreateInviteAcceptModel(
+        string token, string firstName = "Invited") => new InviteAcceptModel
     {
         FirstName = firstName,
         LastName = "Member",

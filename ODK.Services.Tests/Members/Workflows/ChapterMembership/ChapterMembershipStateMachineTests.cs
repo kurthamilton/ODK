@@ -106,7 +106,7 @@ public static class ChapterMembershipStateMachineTests
     [Test]
     public static void Create_Accept_StagesWritesAndNothingElse()
     {
-        /* Arrange - accepting an invitation activates the account and joins the group in one transaction, which
+        /* Arrange - accepting an invite activates the account and joins the group in one transaction, which
            the account machine owns: its AcceptInvite transition runs this machine's as a step, then commits and
            sends the email. So this edge must stage writes and stop there. A commit here would split the
            transaction in two, and an email here would be sent before it. The builder cannot check this, because
@@ -127,9 +127,9 @@ public static class ChapterMembershipStateMachineTests
     }
 
     [Test]
-    public static void Create_Accept_ConsumesTheInvitationItActedOn()
+    public static void Create_Accept_ConsumesTheInviteItActedOn()
     {
-        /* Arrange - the membership row becomes the record that they joined, so an invitation left behind would
+        /* Arrange - the membership row becomes the record that they joined, so an invite left behind would
            list a member as invited to a group they are in. Unlike the Join edges, nothing else deletes it here:
            the account is kept rather than discarded and recreated, so no cascade tidies it away. */
         var definition = ChapterMembershipStateMachine.Create();
@@ -141,7 +141,7 @@ public static class ChapterMembershipStateMachineTests
             .Select(x => x.StepType);
 
         // Assert
-        steps.Should().Contain(typeof(ConsumeInvitation));
+        steps.Should().Contain(typeof(ConsumeInvite));
     }
 
     [Test]

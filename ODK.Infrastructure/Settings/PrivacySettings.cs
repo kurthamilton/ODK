@@ -13,6 +13,8 @@ public class PrivacySettings
 {
     public required string HostingProvider { get; init; }
 
+    public required PrivacyInviteSettings Invites { get; init; }
+
     public required PrivacyLoggingSettings Logging { get; init; }
 
     public required Dictionary<PlatformKey, PrivacyPlatformSettings> Platforms { get; init; }

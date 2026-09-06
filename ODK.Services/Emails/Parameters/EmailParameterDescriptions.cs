@@ -34,6 +34,9 @@ public static class EmailParameterDescriptions
             ["group.url"] = "Link to your group's home page",
             ["group.urls.events"] = "Link to your group's events page",
             ["group.urls.join"] = "Link the recipient follows to join your group",
+            ["group.urls.refuseInvite"] =
+                "Link the recipient follows to decline their invite and have the details you imported "
+                + "about them deleted",
             ["member.firstName"] = "The recipient's first name",
             ["member.properties"] = "The answers the member gave when joining, as a list",
             ["message.from"] = "The name and email address the message came from",

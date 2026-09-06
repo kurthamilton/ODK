@@ -4,7 +4,7 @@ namespace ODK.Services.Members.Workflows.ChapterMembership;
 
 /// <summary>
 /// Derives what the member is to the group. Nothing stores it: a membership row, or failing that an
-/// outstanding invitation, is the whole answer.
+/// outstanding invite, is the whole answer.
 /// </summary>
 public sealed class ChapterMembershipStateResolver
     : IStateResolver<ChapterMembershipState, ChapterMembershipContext>

@@ -5,7 +5,7 @@ namespace ODK.Services.Members.Workflows.Account.Steps;
 
 /// <summary>
 /// Discards an account that has never been activated, so the sign-up recreates it from the details just
-/// submitted and the latest of them wins. Its activation token and its invitations are already on the
+/// submitted and the latest of them wins. Its activation token and its invites are already on the
 /// context, read before this delete cascades them away.
 /// </summary>
 public sealed class DiscardUnactivatedAccount : IStep<AccountContext>

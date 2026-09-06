@@ -2,7 +2,7 @@
 
 Black-box, browser-driven end-to-end tests for the ODK app — **Playwright** + **NUnit** +
 **FluentAssertions**, in their own solution (`odk.e2e.slnx`). They drive a *running* instance with a real
-browser and read the database only for what a user cannot see: activation tokens, invitation tokens, sent-email
+browser and read the database only for what a user cannot see: activation tokens, invite tokens, sent-email
 records, and outcome assertions.
 
 They **do not reference the app's projects**, which is why this is a separate solution. Two projects:

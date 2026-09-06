@@ -25,7 +25,7 @@
         new MenuItem 
         { 
             Link = Model.OdkRoutes.Groups.Group(Model.Chapter), 
-            Text = viewModel.Chapter.GetDisplayName(viewModel.Platform)
+            Text = viewModel.Chapter.FullName
         },
         new MenuItem { Link = Model.OdkRoutes.Groups.Members(Model.Chapter), Text = chapterPage?.Title ?? "Members" },
         new MenuItem { Text = viewModel.Member.FullName }

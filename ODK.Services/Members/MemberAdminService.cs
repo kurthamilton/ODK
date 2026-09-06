@@ -10,6 +10,7 @@ using ODK.Core.Subscriptions;
 using ODK.Core.Workflows;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
+using ODK.Data.Core.Members;
 using ODK.Services.Authorization;
 using ODK.Services.Emails;
 using ODK.Services.Emails.Validation;
@@ -43,6 +44,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     private readonly IMemberImageService _memberImageService;
     private readonly IMemberService _memberService;
     private readonly IServiceRequestFactory _serviceRequestFactory;
+    private readonly MemberAdminServiceSettings _settings;
     private readonly SiteSubscriptionCooldown _siteSubscriptionCooldown;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -61,7 +63,8 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             chapterMembership,
         IChapterMembershipContextFactory chapterMembershipContextFactory,
         IServiceRequestFactory serviceRequestFactory,
-        SiteSubscriptionCooldown siteSubscriptionCooldown)
+        SiteSubscriptionCooldown siteSubscriptionCooldown,
+        MemberAdminServiceSettings settings)
         : base(unitOfWork)
     {
         _accountWorkflow = account;
@@ -75,6 +78,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         _memberImageService = memberImageService;
         _memberService = memberService;
         _serviceRequestFactory = serviceRequestFactory;
+        _settings = settings;
         _siteSubscriptionCooldown = siteSubscriptionCooldown;
         _emailValidationService = emailValidationService;
         _unitOfWork = unitOfWork;
@@ -190,11 +194,16 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             request,
             x => x.MemberChapterInviteRepository.GetDtosByChapterId(chapter.Id));
 
+        var utcNow = DateTime.UtcNow;
+
         return new InvitedMembersAdminPageViewModel
         {
             Chapter = chapter,
-            Invited = invited,
-            Platform = platform
+            Invited = invited
+                .Select(x => ToInvitedMemberViewModel(x, utcNow))
+                .ToArray(),
+            Platform = platform,
+            RetentionDays = _settings.InviteRetentionDays
         };
     }
 
@@ -800,18 +809,11 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                 continue;
             }
 
-            /* Everybody imported gets the invitation, on either platform and whether or not they already had
-               an account: each platform has a page its link lands on that can be used without signing in. An
-               activation link is never sent for an import - it would take a new member straight past the group
-               they were invited to, into an account belonging to none. */
             inviteEmailMembers.Add(member);
         }
 
         await _unitOfWork.SaveChanges();
 
-        // Send the invitation emails in the background so a large import doesn't block the request, and so
-        // each email is an independently-retryable job. Only ids cross the Hangfire boundary; the member,
-        // chapter and token are reloaded inside each job.
         var jobRequest = JobRequest.Create(request);
 
         foreach (var member in inviteEmailMembers)
@@ -1150,6 +1152,23 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         .Where(x => x.Disabled)
         .Select(x => x.MemberId)
         .ToHashSet();
+
+    private InvitedMemberViewModel ToInvitedMemberViewModel(MemberChapterInviteDto invite, DateTime utcNow)
+    {
+        var deletedUtc = invite.CreatedUtc.AddDays(_settings.InviteRetentionDays);
+        var remaining = deletedUtc - utcNow;
+
+        return new InvitedMemberViewModel
+        {
+            // Rounded up, so an invite with hours left reads as a day rather than as due.
+            DaysRemaining = remaining > TimeSpan.Zero
+                ? (int)Math.Ceiling(remaining.TotalDays)
+                : 0,
+            DeletedUtc = deletedUtc,
+            InvitedUtc = invite.CreatedUtc,
+            Member = invite.Member
+        };
+    }
 
     private string EnqueueSendImportInviteEmailJob(JobRequest request, Guid chapterId, Guid memberId)
         => _backgroundTaskService.Enqueue(

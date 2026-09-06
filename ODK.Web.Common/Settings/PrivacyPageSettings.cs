@@ -12,6 +12,8 @@ public class PrivacyPageSettings
 
     public required string HostingProvider { get; init; }
 
+    public required int InviteRetentionDays { get; init; }
+
     public required int LogRetentionDays { get; init; }
 
     public required string TraderName { get; init; }

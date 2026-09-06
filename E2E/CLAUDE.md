@@ -145,7 +145,7 @@ Three axes, composed by the filter:
     *fixture* level: `AccountFlowTests` (Group Squirrel sign-up → activate → log in),
     `DrunkenKnitwitsAccountFlowTests` (where signing up is joining the chapter),
     `DrunkenKnitwitsInvitedMemberTests` and `GroupSquirrelInvitedMemberTests` (an imported member accepting an
-    invitation, which each platform does through a page of its own). Worth isolating because account creation
+    invite, which each platform does through a page of its own). Worth isolating because account creation
     is what nearly every other fixture provisions through, so it is the first thing to run when a change might
     have broken sign-up — and because the invited flows branch several ways on state a test has to arrange
     (invited or not, address kept or changed, account or no account).
@@ -307,7 +307,7 @@ means a new category and the E2E suite tracks the app's workflows rather than a 
 - **An email's *body* is not readable — only its subject.** `SentEmails` records `To`, `Subject` and
   `SentUtc`, and there is no test mail sink, so a link inside an email can never be scraped. Read the token the
   link would carry straight from the database and build the URL in the test: `ActivationTokenDataHelper` does
-  that for activation, `MemberChapterInviteDataHelper` for an invitation. Where a subject is the only signal
+  that for activation, `MemberChapterInviteDataHelper` for an invite. Where a subject is the only signal
   available, keep the fragment asserted on in a named constant, since it is seeded wording that may change.
 - **Provisioning** (`Helpers/Provisioning.cs`): builds prerequisite state by driving the real UI on a
   throwaway browser (its own context with `BaseURL` set). `SharedAccounts.GetAsync(role)` caches an

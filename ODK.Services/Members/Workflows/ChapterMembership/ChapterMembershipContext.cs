@@ -19,12 +19,12 @@ public sealed class ChapterMembershipContext
     /// <summary>
     /// Whether the group puts new members in front of an admin: its setting, and whether the owner's
     /// subscription carries the feature at all. Whether *this* member is queued also depends on their
-    /// invitation, which is a state rather than a condition - see <see cref="ApprovedOnJoining"/>.
+    /// invite, which is a state rather than a condition - see <see cref="ApprovedOnJoining"/>.
     /// </summary>
     public required bool ApprovalRequired { get; init; }
 
     /// <summary>
-    /// What the membership row is written with. An invitation is approval - the group asked them in - so an
+    /// What the membership row is written with. An invite is approval - the group asked them in - so an
     /// invited member is never queued however the group is configured.
     /// </summary>
     public bool ApprovedOnJoining => Invite != null || !ApprovalRequired;
@@ -33,7 +33,7 @@ public sealed class ChapterMembershipContext
 
     public required IReadOnlyCollection<ChapterProperty> ChapterProperties { get; init; }
 
-    /// <summary>The invitation the group has outstanding for this member, where there is one.</summary>
+    /// <summary>The invite the group has outstanding for this member, where there is one.</summary>
     public MemberChapterInvite? Invite { get; init; }
 
     public required Member Member { get; init; }

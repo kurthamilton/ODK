@@ -1,8 +1,8 @@
 namespace ODK.E2E.Data;
 
 /// <summary>
-/// Reads a member's outstanding chapter invitation directly from the database. A test can't open the
-/// invitation email - there is no test email sink, and <c>SentEmails</c> records only the subject, not the
+/// Reads a member's outstanding chapter invite directly from the database. A test can't open the
+/// invite email - there is no test email sink, and <c>SentEmails</c> records only the subject, not the
 /// body - so the token is read here and the join URL built from it, the same compromise
 /// <see cref="ActivationTokenDataHelper"/> makes for the activation link.
 /// </summary>
@@ -14,7 +14,7 @@ public class MemberChapterInviteDataHelper : DataHelperBase
     }
 
     /// <summary>
-    /// Whether the member still holds an invitation to the chapter. Accepting consumes it, so this is how a
+    /// Whether the member still holds an invite to the chapter. Accepting consumes it, so this is how a
     /// test asserts that joining recorded the acceptance rather than leaving them permanently invited.
     /// </summary>
     public async Task<bool> HasInvite(string emailAddress, Guid chapterId)
@@ -35,7 +35,7 @@ public class MemberChapterInviteDataHelper : DataHelperBase
     }
 
     /// <summary>
-    /// The token from the invitation the member was emailed, which the join link carries.
+    /// The token from the invite the member was emailed, which the join link carries.
     /// </summary>
     public async Task<string> GetInviteToken(string emailAddress, Guid chapterId)
     {
@@ -51,7 +51,7 @@ public class MemberChapterInviteDataHelper : DataHelperBase
             .AddParameter("@email", emailAddress)
             .AddParameter("@id", chapterId);
 
-        // The invitation is written by the import request itself, so it is there once the import has
+        // The invite is written by the import request itself, so it is there once the import has
         // redirected - but retry briefly in case the browser navigation wins the race with the commit.
         for (var attempt = 0; attempt < 10; attempt++)
         {
@@ -66,6 +66,6 @@ public class MemberChapterInviteDataHelper : DataHelperBase
         }
 
         throw new InvalidOperationException(
-            $"No invitation to chapter '{chapterId}' found for '{emailAddress}'. Did the import run?");
+            $"No invite to chapter '{chapterId}' found for '{emailAddress}'. Did the import run?");
     }
 }

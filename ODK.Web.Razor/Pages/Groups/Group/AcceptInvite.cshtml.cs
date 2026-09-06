@@ -7,7 +7,7 @@ using ODK.Web.Razor.Models.Feedback;
 namespace ODK.Web.Razor.Pages.Groups.Group;
 
 /// <summary>
-/// Where an invitation link lands on this platform. Anonymous, because the member it names cannot sign in:
+/// Where an invite link lands on this platform. Anonymous, because the member it names cannot sign in:
 /// the account an import raised for them has no password until this page gives it one, and the same submit
 /// joins the group.
 /// </summary>
@@ -27,7 +27,7 @@ public class AcceptInviteModel : OdkGroupPageModel
         InviteToken = token;
 
         /* Somebody already signed in needs no account raising, so accepting is the ordinary join - and the
-           join page consumes their invitation for them. That is also where they come back to after following
+           join page consumes their invite for them. That is also where they come back to after following
            the sign-in prompt this page shows an invited member who already has an account. */
         if (CurrentMemberOrDefault != null)
         {
@@ -44,7 +44,7 @@ public class AcceptInviteModel : OdkGroupPageModel
         // The view loads against this, so a re-render below has to find it here as well as after OnGet.
         InviteToken = viewModel.Token;
 
-        var model = new InvitationAcceptModel
+        var model = new InviteAcceptModel
         {
             FirstName = viewModel.FirstName,
             LastName = viewModel.LastName,
@@ -55,7 +55,7 @@ public class AcceptInviteModel : OdkGroupPageModel
             Token = viewModel.Token
         };
 
-        var result = await _memberService.AcceptInvitation(ChapterServiceRequest, model);
+        var result = await _memberService.AcceptInvite(ChapterServiceRequest, model);
         if (!result.Success)
         {
             AddFeedback(result);

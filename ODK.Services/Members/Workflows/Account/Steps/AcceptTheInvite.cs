@@ -4,7 +4,7 @@ using ODK.Services.Members.Workflows.ChapterMembership;
 namespace ODK.Services.Members.Workflows.Account.Steps;
 
 /// <summary>
-/// Accepting an invitation joins the group, so this runs the membership machine as part of the acceptance.
+/// Accepting an invite joins the group, so this runs the membership machine as part of the acceptance.
 /// Both machines stage their writes into the same unit of work and one commit follows, because an account
 /// activated without the membership it was activated to reach would have accepted nothing.
 /// </summary>
@@ -13,13 +13,13 @@ namespace ODK.Services.Members.Workflows.Account.Steps;
 /// cannot see inside this step to enforce that, so
 /// <c>ChapterMembershipStateMachineTests.Create_Accept_StagesWritesAndNothingElse</c> does.
 /// </remarks>
-public sealed class AcceptTheInvitation : IStep<AccountContext>
+public sealed class AcceptTheInvite : IStep<AccountContext>
 {
     private readonly IChapterMembershipContextFactory _contextFactory;
     private readonly StateMachineRunner<
         ChapterMembershipState, ChapterMembershipTrigger, ChapterMembershipContext> _chapterMembershipWorkflow;
 
-    public AcceptTheInvitation(
+    public AcceptTheInvite(
         IChapterMembershipContextFactory contextFactory,
         StateMachineRunner<ChapterMembershipState, ChapterMembershipTrigger, ChapterMembershipContext>
             chapterMembershipWorkflow)
@@ -28,7 +28,7 @@ public sealed class AcceptTheInvitation : IStep<AccountContext>
         _contextFactory = contextFactory;
     }
 
-    public static string Description => "joins the group the invitation was to";
+    public static string Description => "joins the group the invite was to";
 
     public static StepKind Kind => StepKind.Write;
 

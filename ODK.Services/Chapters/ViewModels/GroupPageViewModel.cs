@@ -1,6 +1,5 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Members;
-using ODK.Core.Platforms;
 
 namespace ODK.Services.Chapters.ViewModels;
 
@@ -19,8 +18,6 @@ public class GroupPageViewModel
     public required bool IsAdmin { get; init; }
 
     public bool IsMember => CurrentMember?.IsMemberOf(Chapter.Id) == true;
-
-    public required PlatformType Platform { get; init; }
 
     public TimeZoneInfo TimeZone => CurrentMember?.TimeZone ?? Chapter.TimeZone;
 }

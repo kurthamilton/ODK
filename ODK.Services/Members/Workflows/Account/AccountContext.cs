@@ -25,8 +25,8 @@ public sealed class AccountContext
     private readonly WriteOnce<Member> _newMember = new("The account the transition creates");
 
     /// <summary>
-    /// The invitation an accept-invitation link named, resolved from the token it carried. Distinct from
-    /// <see cref="Invite"/>, which is one of the invitations read off an account a sign-up is discarding.
+    /// The invite an accept-invite link named, resolved from the token it carried. Distinct from
+    /// <see cref="Invite"/>, which is one of the invites read off an account a sign-up is discarding.
     /// </summary>
     public MemberChapterInvite? AcceptedInvite { get; init; }
 
@@ -43,7 +43,7 @@ public sealed class AccountContext
     public IReadOnlyCollection<ChapterAdminMember> AdminMembers { get; init; } = [];
 
     /// <summary>
-    /// Invitations held by an unactivated account that a sign-up is about to discard and recreate. They are
+    /// Invites held by an unactivated account that a sign-up is about to discard and recreate. They are
     /// read before the delete cascades them away, and re-raised against the new account.
     /// </summary>
     public IReadOnlyCollection<MemberChapterInvite> CarriedOverInvites { get; init; } = [];
@@ -66,7 +66,7 @@ public sealed class AccountContext
     public IReadOnlyCollection<ChapterProperty> ChapterProperties { get; init; } = [];
 
     /// <summary>
-    /// Whether the sign-up presented the token from an invitation sent to the address being registered.
+    /// Whether the sign-up presented the token from an invite sent to the address being registered.
     /// Holding it proves the sign-up reached that inbox, which is everything an activation email establishes.
     /// Derived here so the guard that picks the edge and the caller that reports the outcome read one rule.
     /// </summary>
@@ -74,15 +74,15 @@ public sealed class AccountContext
         !string.IsNullOrEmpty(Profile?.InviteToken) &&
         Invite.Token == Profile.InviteToken;
 
-    /// <summary>The invitation this group has outstanding for the address, where the sign-up carries one.</summary>
+    /// <summary>The invite this group has outstanding for the address, where the sign-up carries one.</summary>
     public MemberChapterInvite? Invite => CarriedOverInvites
         .FirstOrDefault(x => Chapter != null && x.ChapterId == Chapter.Id);
 
     /// <summary>The row an admin imported. Null for any trigger other than an import.</summary>
     public MemberImportModel? Import { get; init; }
 
-    /// <summary>What the accept-invitation form submitted. Null for any other trigger.</summary>
-    public InvitationAcceptModel? Invitation { get; init; }
+    /// <summary>What the accept-invite form submitted. Null for any other trigger.</summary>
+    public InviteAcceptModel? InviteAccept { get; init; }
 
     /// <summary>Null when no account exists for the address yet.</summary>
     public Member? Member { get; init; }
@@ -169,12 +169,12 @@ public sealed class AccountContext
     public Member RequiredAccount => NewMember ?? Member ?? throw new InvalidOperationException(
         "The transition names no account");
 
-    /// <summary>The invitation being accepted, on a transition only an acceptance can reach.</summary>
+    /// <summary>The invite being accepted, on a transition only an acceptance can reach.</summary>
     public MemberChapterInvite RequiredAcceptedInvite => AcceptedInvite ?? throw new InvalidOperationException(
-        "The transition accepts an invitation but none was resolved");
+        "The transition accepts an invite but none was resolved");
 
-    /// <summary>What the accept-invitation form submitted, on a transition only an acceptance can reach.</summary>
-    public InvitationAcceptModel RequiredInvitation => Invitation ?? throw new InvalidOperationException(
+    /// <summary>What the accept-invite form submitted, on a transition only an acceptance can reach.</summary>
+    public InviteAcceptModel RequiredInviteAccept => InviteAccept ?? throw new InvalidOperationException(
         "The transition is acting on an acceptance that submitted nothing");
 
     /// <summary>The password an activation submitted, on a transition that sets one.</summary>

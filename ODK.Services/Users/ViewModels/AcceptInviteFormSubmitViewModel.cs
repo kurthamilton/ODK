@@ -4,11 +4,11 @@ using System.ComponentModel.DataAnnotations;
 namespace ODK.Services.Users.ViewModels;
 
 /// <summary>
-/// Exactly what the accept-invitation form posts: the first password on the account an import raised, and the
+/// Exactly what the accept-invite form posts: the first password on the account an import raised, and the
 /// name the member confirmed.
 /// </summary>
 /// <remarks>
-/// The email address is deliberately absent. It is the invitation's trust anchor - the token proves the link
+/// The email address is deliberately absent. It is the invite's trust anchor - the token proves the link
 /// reached the address the import supplied - so a form that could change it would have the token prove nothing.
 /// </remarks>
 public class AcceptInviteFormSubmitViewModel
@@ -34,6 +34,6 @@ public class AcceptInviteFormSubmitViewModel
     [DisplayName("Privacy policy")]
     public bool PrivacyPolicy { get; set; }
 
-    /// <summary>The token the invitation link carried, posted back so the submit spends the same invitation.</summary>
+    /// <summary>The token the invite link carried, posted back so the submit spends the same invite.</summary>
     public string Token { get; set; } = string.Empty;
 }

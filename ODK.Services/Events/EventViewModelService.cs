@@ -152,7 +152,6 @@ public class EventViewModelService : IEventViewModelService
             HasQuestions = hasQuestions,
             IsAdmin = isAdmin,
             PaymentProvider = payment.PaymentProvider,
-            Platform = platform,
             Venue = canViewVenue ? venue : null,
         };
     }
@@ -314,7 +313,6 @@ public class EventViewModelService : IEventViewModelService
             SpacesLeft = responseDictionary.TryGetValue(EventResponseType.Yes, out var attendees)
                 ? @event.NumberOfSpacesLeft(attendees.Count)
                 : @event.NumberOfSpacesLeft(0),
-            Platform = platform,
             Venue = canViewVenue ? venue : null,
             VenueLocation = venueLocation,
             WaitlistLength = waitlist.Count

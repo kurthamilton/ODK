@@ -64,8 +64,8 @@ public class AccountViewModelService : IAccountViewModelService
                 ? x.MemberChapterInviteRepository.GetByToken(inviteToken)
                 : new DefaultDeferredQuerySingleOrDefault<MemberChapterInvite>());
 
-        /* A second round-trip only when there is an invitation to resolve: the member it names cannot be
-           batched with the query that finds it. An invitation for another chapter is ignored rather than
+        /* A second round-trip only when there is an invite to resolve: the member it names cannot be
+           batched with the query that finds it. An invite for another chapter is ignored rather than
            refused - the link is simply not for this page. */
         var invitedMember = invite != null && invite.ChapterId == chapter.Id
             ? await _unitOfWork.MemberRepository.GetByIdOrDefault(invite.MemberId).Run()
@@ -260,7 +260,6 @@ public class AccountViewModelService : IAccountViewModelService
         return new ChapterProfileFormViewModel
         {
             Chapter = chapter,
-            ChapterName = chapter.GetDisplayName(platform),
             ChapterProperties = chapterProperties,
             ChapterPropertyOptions = chapterPropertyOptions,
             SigningUp = signingUp,

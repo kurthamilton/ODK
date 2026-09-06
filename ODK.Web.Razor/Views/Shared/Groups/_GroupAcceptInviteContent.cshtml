@@ -11,7 +11,7 @@
     var returnUrl = $"{Context.Request.Path}{Context.Request.QueryString}";
 
     <p>
-        You already have an account, so sign in to accept your invitation.
+        You already have an account, so sign in to accept your invite.
     </p>
 
     @* data-invite-signin is an E2E selector - no CSS or script reads it. The header renders a "Sign in" link
@@ -25,7 +25,7 @@
 @if (Model.Form == null)
 {
     <div class="alert alert-danger">
-        This invitation link is no longer valid. It may already have been used.
+        This invite link is no longer valid. It may already have been used.
     </div>
 
     <a class="btn btn-primary" href="@OdkRoutes.Groups.Group(Model.Chapter)">Go to the group</a>
@@ -88,7 +88,6 @@
                             @await Html.PartialAsync("Account/_ChapterProfileForm", new ChapterProfileFormViewModel
                             {
                                 Chapter = Model.Chapter,
-                                ChapterName = Model.Chapter.GetDisplayName(Model.Platform),
                                 ChapterProperties = Model.Properties,
                                 ChapterPropertyOptions = Model.PropertyOptions,
                                 SigningUp = false
@@ -100,7 +99,7 @@
 
         <div class="mt-section">
             <button class="btn btn-primary" type="submit">
-                Accept invitation
+                Accept invite
             </button>
         </div>
     </form>

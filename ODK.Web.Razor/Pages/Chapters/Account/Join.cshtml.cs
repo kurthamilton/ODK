@@ -31,7 +31,7 @@ public class JoinModel : OdkPageModel
 
         /* A signed-in member already has an account and a picture, so this page joins them to the group rather
            than creating anything - the form posts only the group's questions for them. That is the route an
-           invitation takes when the member it names already had an account: they sign in and land back here. */
+           invite takes when the member it names already had an account: they sign in and land back here. */
         if (CurrentMemberOrDefault != null)
         {
             var joinResult = await _memberService.JoinChapter(MemberChapterServiceRequest, properties);
@@ -75,7 +75,7 @@ public class JoinModel : OdkPageModel
             return Page();
         }
 
-        /* An invitation the member registered the invited address with stands in for the activation email, so
+        /* An invite the member registered the invited address with stands in for the activation email, so
            there is nothing to wait for - they go straight to setting a password. */
         return Redirect(result.ActivationToken != null
             ? OdkRoutes.Account.Activate(Chapter, result.ActivationToken)

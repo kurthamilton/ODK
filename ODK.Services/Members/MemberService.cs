@@ -75,15 +75,15 @@ public class MemberService : IMemberService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ServiceResult> AcceptInvitation(
-        IChapterServiceRequest request, InvitationAcceptModel model)
+    public async Task<ServiceResult> AcceptInvite(
+        IChapterServiceRequest request, InviteAcceptModel model)
     {
         var invite = await _unitOfWork.MemberChapterInviteRepository
             .GetByToken(model.Token)
             .Run();
 
-        /* An invitation to another group is refused rather than honoured: the page it was posted to is this
-           group's, and the token names which invitation is being spent. */
+        /* An invite to another group is refused rather than honoured: the page it was posted to is this
+           group's, and the token names which invite is being spent. */
         if (invite == null || invite.ChapterId != request.Chapter.Id)
         {
             return ServiceResult.Failure("The link you followed is no longer valid");
@@ -99,7 +99,7 @@ public class MemberService : IMemberService
            means the account was activated between the two requests. */
         if (!result.Success && result.From == AccountState.Activated)
         {
-            return ServiceResult.Failure("Your account is already active. Sign in to accept your invitation.");
+            return ServiceResult.Failure("Your account is already active. Sign in to accept your invite.");
         }
 
         return result.ToServiceResult();
@@ -182,7 +182,7 @@ public class MemberService : IMemberService
             return CreateChapterAccountResult.FromResult(result.ToServiceResult());
         }
 
-        /* Holding the token from an invitation sent to the address being registered proves the sign-up reached
+        /* Holding the token from an invite sent to the address being registered proves the sign-up reached
            that inbox, which is all an activation email establishes - so no email was sent and the caller hands
            them straight to setting a password. Read from the same rule the machine picked the edge with. */
         return context.PresentedTheInviteToken

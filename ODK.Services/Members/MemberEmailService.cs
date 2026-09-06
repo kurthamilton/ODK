@@ -590,16 +590,12 @@ public class MemberEmailService : IMemberEmailService
     {
         var chapter = request.Chapter;
 
-        /* Where accepting an invitation happens, which differs by platform - see GroupRoutes.AcceptInvite.
-           The email's only parameter is named group.urls.join whatever page it resolves to: the name appears in
-           wording a group may have edited, so it is fixed rather than descriptive. The token identifies the
-           invitation to a member who cannot sign in yet, which is everyone it reaches who has no password. */
         var urlProvider = await _urlProviderFactory.Create(request);
-        var url = urlProvider.AcceptInviteUrl(chapter, inviteToken);
 
         var parameters = new MemberImportInviteParameters
         {
-            Url = url
+            RefuseUrl = urlProvider.RefuseInviteUrl(chapter, inviteToken),
+            Url = urlProvider.AcceptInviteUrl(chapter, inviteToken)
         };
 
         await _emailService.SendEmail(

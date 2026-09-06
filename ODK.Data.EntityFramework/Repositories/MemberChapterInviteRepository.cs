@@ -26,9 +26,21 @@ public class MemberChapterInviteRepository : WriteRepositoryBase<MemberChapterIn
         .Where(x => x.MemberId == memberId && x.ChapterId == chapterId)
         .DeferredSingleOrDefault();
 
+    public IDeferredQueryMultiple<MemberChapterInvite> GetByMemberIds(
+        IReadOnlyCollection<Guid> memberIds) => Set()
+        .Where(x => memberIds.Contains(x.MemberId))
+        .DeferredMultiple();
+
     public IDeferredQuerySingleOrDefault<MemberChapterInvite> GetByToken(string token) => Set()
         .Where(x => x.Token == token)
         .DeferredSingleOrDefault();
+
+    public IDeferredQueryMultiple<MemberChapterInvite> GetCreatedBefore(DateTime createdBeforeUtc) =>
+        (from invite in Set()
+         join member in Set<Member>() on invite.MemberId equals member.Id
+         where invite.CreatedUtc < createdBeforeUtc
+         select invite)
+        .DeferredMultiple();
 
     public IDeferredQueryMultiple<MemberChapterInviteDto> GetDtosByChapterId(Guid chapterId) =>
         (from invite in Set()

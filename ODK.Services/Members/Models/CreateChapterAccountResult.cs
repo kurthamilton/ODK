@@ -16,11 +16,6 @@ public class CreateChapterAccountResult : ServiceResult
         ActivationToken = activationToken;
     }
 
-    /// <summary>
-    /// Set when the sign-up itself proved the address - it arrived with an invitation sent there - so the account
-    /// can be activated straight away and no activation email was sent. Null on every other outcome, including
-    /// the successful ones, where an activation email carries the token instead.
-    /// </summary>
     public string? ActivationToken { get; }
 
     public new static CreateChapterAccountResult Failure(string message) => new(false, message);

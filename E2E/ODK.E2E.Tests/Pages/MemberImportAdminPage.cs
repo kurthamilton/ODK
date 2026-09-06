@@ -19,7 +19,7 @@ internal class MemberImportAdminPage
 
     /// <summary>
     /// Uploads the given rows as a CSV and confirms the import. Returns once the confirm has redirected to
-    /// the members list, which is the app's success path: by then the invitations are written, though the
+    /// the members list, which is the app's success path: by then the invites are written, though the
     /// emails follow on a background job - poll for those.
     /// </summary>
     public async Task Import(

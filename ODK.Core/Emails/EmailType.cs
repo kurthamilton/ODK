@@ -12,7 +12,7 @@ public enum EmailType
     [Display(Name = "Activate account")]
     ActivateAccount = 2,
 
-    [Display(Name = "Event invitation")]
+    [Display(Name = "Event invite")]
     EventInvite = 3,
 
     [Display(Name = "Contact message (admin)")]

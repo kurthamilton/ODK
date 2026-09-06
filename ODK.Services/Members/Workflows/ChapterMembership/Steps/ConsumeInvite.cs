@@ -4,19 +4,19 @@ using ODK.Data.Core;
 namespace ODK.Services.Members.Workflows.ChapterMembership.Steps;
 
 /// <summary>
-/// Consumes the invitation the member joined on. The membership row is now the record that they joined, so
-/// leaving the invitation behind would list them as invited to a group they are in.
+/// Consumes the invite the member joined on. The membership row is now the record that they joined, so
+/// leaving the invite behind would list them as invited to a group they are in.
 /// </summary>
-public sealed class ConsumeInvitation : IStep<ChapterMembershipContext>
+public sealed class ConsumeInvite : IStep<ChapterMembershipContext>
 {
     private readonly IUnitOfWork _unitOfWork;
 
-    public ConsumeInvitation(IUnitOfWork unitOfWork)
+    public ConsumeInvite(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
     }
 
-    public static string Description => "consumes the invitation";
+    public static string Description => "consumes the invite";
 
     public static StepKind Kind => StepKind.Write;
 

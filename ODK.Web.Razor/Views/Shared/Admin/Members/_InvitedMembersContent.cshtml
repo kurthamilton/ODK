@@ -2,10 +2,15 @@
 @using ODK.Services.Members.ViewModels
 @using ODK.Web.Razor.Mvc
 @model InvitedMembersAdminPageViewModel
+@{
+    var timeZone = Html.DisplayTimeZone(Model.Chapter.TimeZone);
+}
 
 @await Html.PartialAsync("Components/_AdminPageDescription",
     "People an import has asked to join who have yet to accept. They become members when they accept, so " +
-    "they are not in the members list until then.")
+    "they are not in the members list until then. An invite nobody accepts is deleted after " +
+    $"{Model.RetentionDays} days, along with the account raised for it - so a member who never replies " +
+    "leaves the group holding nothing about them.")
 
 @if (Model.Invited.Count > 0)
 {
@@ -15,6 +20,7 @@
                 <tr>
                     <th>Member</th>
                     <th>Invited</th>
+                    <th>Deleted</th>
                 </tr>
             </thead>
             <tbody>
@@ -26,11 +32,27 @@
                            and someone who has only been invited is not one yet. *@
                         <td>@invite.Member.FullName</td>
                         <td>
-                            @invite.CreatedUtc.ToFriendlyDateString(new FriendlyDateStringOptions
+                            @invite.InvitedUtc.ToFriendlyDateString(new FriendlyDateStringOptions
                             {
                                 IncludeDayOfWeek = true,
-                                TimeZone = Html.DisplayTimeZone(Model.Chapter.TimeZone)
+                                TimeZone = timeZone
                             })
+                        </td>
+                        <td>
+                            @if (invite.DaysRemaining > 0)
+                            {
+                                <text>In @invite.DaysRemaining @StringUtils.Pluralise(invite.DaysRemaining, "day")</text>
+                            }
+                            else
+                            {
+                                <text>Due</text>
+                            }
+                            <div class="text-muted">
+                                @invite.DeletedUtc.ToFriendlyDateString(new FriendlyDateStringOptions
+                                {
+                                    TimeZone = timeZone
+                                })
+                            </div>
                         </td>
                     </tr>
                 }
@@ -40,5 +62,5 @@
 }
 else
 {
-    <p>Nobody is waiting to accept an invitation</p>
+    <p>Nobody is waiting to accept an invite</p>
 }

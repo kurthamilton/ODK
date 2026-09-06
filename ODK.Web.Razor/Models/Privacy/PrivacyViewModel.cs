@@ -10,6 +10,8 @@ public class PrivacyViewModel
 
     public required string HostingProvider { get; init; }
 
+    public required int InviteRetentionDays { get; init; }
+
     public required DateOnly LastUpdated { get; init; }
 
     public required int LogRetentionDays { get; init; }

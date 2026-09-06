@@ -15,7 +15,7 @@ public enum AccountTrigger
     Activate = 3,
 
     /// <summary>
-    /// An invitation link is followed by the member it names and a password set, which activates the account
+    /// An invite link is followed by the member it names and a password set, which activates the account
     /// an import raised and joins the group in one act.
     /// </summary>
     AcceptInvite = 4

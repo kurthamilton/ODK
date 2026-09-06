@@ -17,6 +17,7 @@ public class ScheduledTasksController : OdkControllerBase
 {
     private readonly ILoggingService _loggingService;
     private readonly IMemberAdminService _memberAdminService;
+    private readonly IMemberInviteService _memberInviteService;
     private readonly ScheduledTasksControllerSettings _settings;
     private readonly ISiteSubscriptionService _siteSubscriptionService;
     private readonly ISocialMediaService _socialMediaService;
@@ -28,11 +29,13 @@ public class ScheduledTasksController : OdkControllerBase
         IMemberAdminService memberAdminService,
         ILoggingService loggingService,
         IRequestStore requestStore,
-        IOdkRoutes odkRoutes)
+        IOdkRoutes odkRoutes,
+        IMemberInviteService memberInviteService)
         : base(requestStore, odkRoutes)
     {
         _loggingService = loggingService;
         _memberAdminService = memberAdminService;
+        _memberInviteService = memberInviteService;
         _settings = settings;
         _siteSubscriptionService = siteSubscriptionService;
         _socialMediaService = socialMediaService;
@@ -46,6 +49,21 @@ public class ScheduledTasksController : OdkControllerBase
         try
         {
             await _memberAdminService.SendMemberSubscriptionReminderEmails(ServiceRequest);
+        }
+        catch
+        {
+            // do nothing
+        }
+    }
+
+    [HttpPost("members/invites/purge")]
+    public async Task PurgeExpiredInvitates()
+    {
+        AssertAuthorised();
+
+        try
+        {
+            await _memberInviteService.PurgeExpiredInvites();
         }
         catch
         {

@@ -31,7 +31,7 @@ public static class ChapterMembershipStateMachine
             .Then<CheckChapterCapacity>()
             .Then<CheckMemberProperties>()
             .Then<AddMemberToChapter>()
-            .Then<ConsumeInvitation>()
+            .Then<ConsumeInvite>()
             .Then<RaiseNewMemberNotifications>()
             .Then<Commit<ChapterMembershipContext>>()
             .Then<SendNewMemberAdminEmail>();
@@ -46,7 +46,7 @@ public static class ChapterMembershipStateMachine
                 ChapterMembershipState.NotJoined,
                 ChapterMembershipTrigger.Invite,
                 ChapterMembershipState.Invited,
-                x => x.Then<RaiseInvitation>())
+                x => x.Then<RaiseInvite>())
 
             /* Drunken Knitwits only: signing up to a group there is joining it, and the membership is written
                alongside the account, before it can sign in. */
@@ -77,7 +77,7 @@ public static class ChapterMembershipStateMachine
                 ChapterMembershipState.Joined,
                 x => join(x.When(Guard.Not(approvalIsRequired))))
 
-            /* An invitation is approval, so an invited member joining is never queued whatever the group's
+            /* An invite is approval, so an invited member joining is never queued whatever the group's
                setting says - which is why this edge carries no guard. */
             .Transition(
                 ChapterMembershipState.Invited,
@@ -90,7 +90,7 @@ public static class ChapterMembershipStateMachine
                activates the account, so - like SignUp above - it stages writes and stops there: that machine
                owns the commit and the email, because an account activated without its membership would have
                accepted nothing. No guard, for the same reason the Join edge out of Invited carries none: an
-               invitation is approval. */
+               invite is approval. */
             .Transition(
                 ChapterMembershipState.Invited,
                 ChapterMembershipTrigger.Accept,
@@ -99,7 +99,7 @@ public static class ChapterMembershipStateMachine
                     .Then<CheckChapterCapacity>()
                     .Then<CheckMemberProperties>()
                     .Then<AddMemberToChapter>()
-                    .Then<ConsumeInvitation>()
+                    .Then<ConsumeInvite>()
                     .Then<RaiseNewMemberNotifications>())
 
             /* An admin letting a queued member in. Record, commit, then tell them: the approval has to be

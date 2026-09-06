@@ -6,8 +6,6 @@ public class ChapterProfileFormViewModel : ChapterProfileFormSubmitViewModel
 {
     public required Chapter Chapter { get; init; }
 
-    public required string ChapterName { get; init; }
-
     public required IReadOnlyCollection<ChapterProperty> ChapterProperties { get; init; }
 
     public required IReadOnlyCollection<ChapterPropertyOption> ChapterPropertyOptions { get; init; }
@@ -18,7 +16,7 @@ public class ChapterProfileFormViewModel : ChapterProfileFormSubmitViewModel
     /// </summary>
     /// <remarks>
     /// Not the same question as whether anyone is signed in, which is what it used to be read from: an
-    /// invitation is answered by a visitor with no session whose account already exists, so that form asks
+    /// invite is answered by a visitor with no session whose account already exists, so that form asks
     /// for the group's questions and nothing else.
     /// </remarks>
     public required bool SigningUp { get; init; }

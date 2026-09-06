@@ -21,7 +21,7 @@ public enum ChapterMembershipTrigger
     Approve = 4,
 
     /// <summary>
-    /// An invited member follows their invitation link and accepts it, before their account can sign in.
+    /// An invited member follows their invite link and accepts it, before their account can sign in.
     /// Distinct from <see cref="Join"/>, which any signed-in member fires: this one runs as a step of the
     /// account machine's transition that activates the account, so it stages writes and commits nothing.
     /// </summary>

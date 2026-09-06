@@ -27,7 +27,7 @@ public static class ChapterMembershipStateResolverTests
     }
 
     [Test]
-    public static void Resolve_OutstandingInvitation_ReturnsInvited()
+    public static void Resolve_OutstandingInvite_ReturnsInvited()
     {
         // Arrange
         var context = Context(Member(), invited: true);
@@ -92,7 +92,7 @@ public static class ChapterMembershipStateResolverTests
         var results = contexts.Select(resolver.Resolve).ToArray();
 
         // Assert
-        // Two invitation states x three memberships (none, unapproved, approved).
+        // Two invite states x three memberships (none, unapproved, approved).
         contexts.Should().HaveCount(6);
         results.Should().OnlyContain(x => x != ChapterMembershipState.None);
     }
