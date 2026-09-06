@@ -1,4 +1,6 @@
-﻿namespace ODK.Core.Messages;
+﻿using ODK.Core.Platforms;
+
+namespace ODK.Core.Messages;
 
 public class SiteContactMessage : IDatabaseEntity
 {
@@ -9,6 +11,8 @@ public class SiteContactMessage : IDatabaseEntity
     public Guid Id { get; set; }
 
     public string Message { get; set; } = string.Empty;
+
+    public PlatformType Platform { get; set; }
 
     public double? RecaptchaScore { get; set; }
 

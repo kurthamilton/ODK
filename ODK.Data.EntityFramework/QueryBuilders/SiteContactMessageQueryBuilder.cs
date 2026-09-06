@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ODK.Core.Messages;
+using ODK.Core.Platforms;
 using ODK.Data.Core.QueryBuilders;
 
 namespace ODK.Data.EntityFramework.QueryBuilders;
@@ -13,6 +14,12 @@ public class SiteContactMessageQueryBuilder
     }
 
     protected override ISiteContactMessageQueryBuilder Builder => this;
+
+    public ISiteContactMessageQueryBuilder ForPlatform(PlatformType platform)
+    {
+        Query = Query.Where(x => x.Platform == platform);
+        return this;
+    }
 
     public ISiteContactMessageQueryBuilder ForStatus(MessageStatus status, double spamThreshold)
     {

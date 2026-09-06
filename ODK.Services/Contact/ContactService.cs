@@ -275,6 +275,7 @@ public class ContactService : IContactService
             CreatedUtc = DateTime.UtcNow,
             FromAddress = fromAddress,
             Message = message,
+            Platform = request.Platform,
             RecaptchaScore = result.Score
         };
 
