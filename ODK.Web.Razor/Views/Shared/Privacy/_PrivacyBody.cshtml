@@ -1,14 +1,24 @@
-﻿@using ODK.Web.Razor.Models.Components
+﻿@using ODK.Core.Platforms
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Privacy
+@model PrivacyViewModel
+@{
+    var isDrunkenKnitwits = Model.Platform == PlatformType.DrunkenKnitwits;
+    var headingType = HeadingType.H3;
+}
 
 <div class="container-md">
-    <div><em>Last Updated: 31 October 2018<br></em></div>
+    <p><em>Last updated: @Model.LastUpdated.ToString("D")</em></p>
     <p>
-        This Privacy Policy governs the collection, storage and use of personal data collected by us, the Drunken Knitwits,
-        when you use our site and register as a member using our website at drunkenknitwits.com (the "<strong>Website</strong>").
-        It provides you with details about the personal data we collect from you, how we use that personal data and your rights to control our use of personal data.
-        Please read this Privacy Policy carefully.
-        By visiting this Website (the "<strong>Services</strong>"), you confirm that you have read, understood and agree to this Privacy Policy in its entirety.
-        If you do not agree to this Privacy Policy in its entirety, you must not use the Services.
+        This Privacy Policy explains how we collect, store and use personal data when you visit
+        @Model.PlatformName (the "<strong>Website</strong>") and when you register as a member and use the
+        features it offers (together, the "<strong>Services</strong>").
+        It sets out what personal data we collect, why we collect it, who we share it with, and the rights
+        you have over it. Please read it carefully.
+    </p>
+    <p>
+        We are the data controller for the personal data described in this policy. That means we decide what
+        is collected and what it is used for, and we are responsible to you for it.
     </p>
 
     <div class="section-stack mt-section">
@@ -16,19 +26,22 @@
         {
             Heading = new HeadingViewModel
             {
-                Title = "1. The personal data we collect",
-                Type = HeadingType.H2
+                Title = "1. Who we are",
+                Type = headingType
             },
             BodyContentFunc =
                 @<div>
-                    <p>When you use and browse the Services we collect the following information:</p>
-                    <ul>
-                        <li>Your name;</li>
-                        <li>Your e-mail address;</li>
-                        <li>Your profile photo;</li>
-                    </ul>
+                    @if (!string.IsNullOrEmpty(Model.TraderName) && !string.IsNullOrEmpty(Model.TradingAddress))
+                    {
+                        <p>
+                            @Model.PlatformName is operated by @Model.TraderName, a sole trader whose trading
+                            address is @Model.TradingAddress.
+                        </p>
+                    }                    
                     <p>
-                        When you join the Website, the profile information you enter and photo you upload will become viewable only to other logged in members who are using the Services.
+                        If you have any question about this policy, or you want to exercise any of the rights
+                        described in it, contact us at
+                        <a href="mailto:@Model.ContactEmailAddress">@Model.ContactEmailAddress</a>.
                     </p>
                 </div>
         })
@@ -37,17 +50,274 @@
         {
             Heading = new HeadingViewModel
             {
-                Title = "2. How we may store and use information",
-                Type = HeadingType.H2
+                Title = "2. The personal data we collect",
+                Type = headingType
             },
             BodyContentFunc =
                 @<div>
-                    <p>We may collect, store and use personal data listed above relating to you for the following purposes:</p>
+                    <p>We collect the following personal data about you:</p>
                     <ul>
-                        <li>To make the Services available to you;</li>
-                        <li>To maintain and support any customer account that you have with us;</li>
+                        <li>
+                            <strong>Your account details</strong> - your first and last name, your e-mail
+                            address, and your password. Your password is stored only as a salted hash, so we
+                            never hold the password itself and cannot recover it.
+                        </li>
+                        <li>
+                            <strong>Your preferences</strong> - your time zone, your preferred date and
+                            number formatting, and your preferred distance units. We take these from your
+                            browser when you first visit and keep them up to date as you use the Services.
+                        </li>
+                        <li>
+                            <strong>Your profile</strong> - the profile photo you upload, and the answers you
+                            give to the profile questions asked by the groups you join.
+                        </li>
+                        <li>
+                            <strong>Your location</strong> - an approximate location and place name, where
+                            you choose to give one, so that we can show you groups and events near you. This
+                            is the location you enter or agree to share; we do not track your device.
+                        </li>
+                        <li>
+                            <strong>Your topics of interest</strong> - the topics you select to help us
+                            suggest relevant groups.
+                        </li>
+                        <li>
+                            <strong>Your group memberships</strong> - which groups you belong to, when you
+                            joined each one, whether your membership has been approved, and the status and
+                            expiry date of any membership subscription.
+                        </li>
+                        <li>
+                            <strong>Your events</strong> - the events you respond to and whether you said you
+                            were attending.
+                        </li>
+                        <li>
+                            <strong>Your messages</strong> - messages you send to a group's organisers, and
+                            messages you send to us through the Website.
+                        </li>
+                        <li>
+                            <strong>Your payments</strong> - a record of payments you make through the
+                            Services, including the amount, the currency, the date and what the payment was
+                            for. <strong>We never see or store your card details</strong>; these are handled
+                            entirely by our payment provider (see section 5).
+                        </li>
+                        <li>
+                            <strong>Technical data</strong> - your IP address, the pages you request and your
+                            browser's identifying information, recorded in our server logs. We also store the
+                            score our anti-automation check returned when your account was created.
+                        </li>
                     </ul>
-                    <p><strong>We will not disclose, sell or rent personal data about you to any third party. </strong></p>
+                    <p>
+                        Where a group's organisers invite or import you, we may receive your name and e-mail
+                        address from them before you have any account with us.
+                    </p>
+                </div>
+        })
+
+        @await Html.PartialAsync("Components/_Section", new SectionViewModel
+        {
+            Heading = new HeadingViewModel
+            {
+                Title = "3. How we use your personal data",
+                Type = headingType
+            },
+            BodyContentFunc =
+                @<div>
+                    <p>
+                        We only use your personal data where the law allows us to. In each case below we say
+                        what we do and the lawful basis we rely on.
+                    </p>
+                    <ul>
+                        <li>
+                            <strong>To provide the Services to you</strong> - creating and maintaining your
+                            account, showing you to the groups you have joined, managing your memberships and
+                            event responses, and delivering the e-mails the Services depend on, such as
+                            account activation, password resets and notices about your membership.
+                            <em>Lawful basis: performance of our contract with you.</em>
+                        </li>
+                        <li>
+                            <strong>To take and record payments</strong> - processing membership payments and
+                            keeping the records of them.
+                            <em>
+                                Lawful basis: performance of our contract with you, and our legal obligation
+                                to keep financial records.
+                            </em>
+                        </li>
+                        <li>
+                            <strong>To keep the Services secure</strong> - detecting and preventing automated
+                            sign-ups, checking that an e-mail address is deliverable, warning you if the
+                            password you have chosen has appeared in a known data breach, and investigating
+                            faults and abuse using our server logs.
+                            <em>
+                                Lawful basis: our legitimate interest in keeping the Services safe and
+                                working.
+                            </em>
+                        </li>
+                        <li>
+                            <strong>To send you group and event e-mails</strong> - so the groups you belong
+                            to can tell you about their events and news.
+                            <em>
+                                Lawful basis: your consent, which you can withdraw at any time from your
+                                account settings without affecting your membership.
+                            </em>
+                        </li>
+                    </ul>
+                    <p>
+                        We do not use your personal data to make any decision about you by automated means
+                        alone, and we do not profile you for advertising.
+                    </p>
+                </div>
+        })
+
+        @await Html.PartialAsync("Components/_Section", new SectionViewModel
+        {
+            Heading = new HeadingViewModel
+            {
+                Title = "4. What group organisers can see",
+                Type = headingType
+            },
+            BodyContentFunc =
+                @<div>
+                    <p>
+                        Groups on @Model.PlatformName are run by their own organisers. When you join a group,
+                        its organisers can see the following about you, <strong>for that group only</strong>:
+                    </p>
+                    <ul>
+                        <li>Your name and profile photo;</li>
+                        <li>
+                            Your answers to that group's profile questions, including any answers the group
+                            asks for on application and does not show to its other members;
+                        </li>
+                        <li>The date you joined, and whether your account has been activated;</li>
+                        <li>
+                            Your membership type, subscription status and expiry date, and the payments you
+                            have made to that group;
+                        </li>
+                        <li>The events of theirs you have responded to;</li>
+                        <li>Your conversations with that group's organisers;</li>
+                        <li>Whether you have chosen to receive that group's e-mails.</li>
+                    </ul>
+                    <p>
+                        <strong>Group organisers do not see your e-mail address.</strong> They can write to
+                        you through the Services, and we deliver the message on their behalf, but the address
+                        itself is not shown to them and is not included in the member list they can download.
+                    </p>
+                    <p>
+                        There are two exceptions to that. If an organiser added your e-mail address
+                        themselves in order to invite or import you, they already hold it. And if a group
+                        takes payments, it holds its own account with our payment provider, and the details
+                        you give when paying - including your e-mail address and billing information - are
+                        visible to that group in that account.
+                    </p>
+                    <p>
+                        Other members of a group you have joined can see your name, your profile photo, the
+                        date you joined and your answers to that group's profile questions, other than those
+                        the group has marked as being for organisers only. Your profile is not visible to
+                        anybody who is not signed in.
+                    </p>
+                    @if (!isDrunkenKnitwits)
+                    {
+                        <p>
+                            Group organisers decide for themselves what they ask you and how they use what
+                            you tell them, so for their own use of your information they are a data
+                            controller alongside us. If you want to know how a particular group handles your
+                            data, or you want it corrected or removed from that group, contact its organisers
+                            first - and tell us if you cannot resolve it with them.
+                        </p>
+                    }
+                </div>
+        })
+
+        @await Html.PartialAsync("Components/_Section", new SectionViewModel
+        {
+            Heading = new HeadingViewModel
+            {
+                Title = "5. Who else we share your data with",
+                Type = headingType
+            },
+            BodyContentFunc =
+                @<div>
+                    <p>
+                        <strong>
+                            We do not sell or rent your personal data to anybody, and we do not share it for
+                            anybody else's marketing.
+                        </strong>
+                    </p>
+                    <p>
+                        We do use a small number of service providers to run the Services. They act on our
+                        instructions and may only use your data to provide their service to us:
+                    </p>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Provider</th>
+                                    <th>What they do for us</th>
+                                    <th>What they receive</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Stripe</td>
+                                    <td>Takes and processes payments</td>
+                                    <td>
+                                        Your name, e-mail address, and the payment and card details you enter
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Brevo</td>
+                                    <td>Delivers our e-mails</td>
+                                    <td>Your name, e-mail address and the content of the e-mail</td>
+                                </tr>
+                                <tr>
+                                    <td>Google</td>
+                                    <td>
+                                        Maps and place look-up, sign-in with Google where you choose it, and
+                                        the reCAPTCHA check that protects our sign-up form
+                                    </td>
+                                    <td>
+                                        Your IP address and browser information; a location you search for;
+                                        and, if you sign in with Google, your name and e-mail address from
+                                        your Google account
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Reoon</td>
+                                    <td>Checks that an e-mail address is real and deliverable</td>
+                                    <td>Your e-mail address</td>
+                                </tr>
+                                <tr>
+                                    <td>Have I Been Pwned</td>
+                                    <td>
+                                        Tells us whether a chosen password is known to have been breached
+                                    </td>
+                                    <td>
+                                        The first five characters of a hash of the password only. Your
+                                        password, and your identity, are never sent
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Better Stack</td>
+                                    <td>
+                                        Stores our server logs so we can diagnose faults, for
+                                        @Model.BetterStackRetentionDays days
+                                    </td>
+                                    <td>Technical data, including your IP address</td>
+                                </tr>
+                                
+                                @if (!string.IsNullOrEmpty(Model.HostingProvider))
+                                {
+                                    <tr>
+                                        <td>@Model.HostingProvider</td>
+                                        <td>Hosts the Website and its database</td>
+                                        <td>All data held by the Services</td>
+                                    </tr>
+                                }                                
+                            </tbody>
+                        </table>
+                    </div>
+                    <p>
+                        We may also disclose your personal data where we are required to by law, or where it
+                        is necessary to establish, exercise or defend legal claims.
+                    </p>
                 </div>
         })
 
@@ -58,50 +328,39 @@
             Id = "cookies",
             Heading = new HeadingViewModel
             {
-                Title = "3. Cookies",
-                Type = HeadingType.H2
-            },
-            BodyContentFunc =
-                @<p>
-                    This Website uses cookies to collect information about you. Cookies are small data files which are placed on your computer by this
-                    Website and which collect certain personal data about you.
-                    This enables us to tailor our service offering (including the Website) to provide you with a better service.
-                    However, you may change your website browser settings to reject cookies, although please note that if you or they do this it may
-                    impair the functionality of the Services.
-                    As each website browser is different, please visit your browser's "Help" menu to learn how to change your cookie preferences.
-                </p>
-        })
-
-        @await Html.PartialAsync("Components/_Section", new SectionViewModel
-        {
-            Heading = new HeadingViewModel
-            {
-                Title = "4. Security",
-                Type = HeadingType.H2
-            },
-            BodyContentFunc =
-                @<p>
-                    Whilst we take appropriate technical and organizational measures to safeguard the personal data that you provide to us,
-                    no transmission over the Internet can ever be guaranteed secure.
-                    Consequently, please note that we cannot guarantee the security of any personal data that you or they transfer over the Internet to us.
-                </p>
-        })
-
-        @await Html.PartialAsync("Components/_Section", new SectionViewModel
-        {
-            Heading = new HeadingViewModel
-            {
-                Title = "5. Your rights",
-                Type = HeadingType.H2
+                Title = "6. Cookies",
+                Type = headingType
             },
             BodyContentFunc =
                 @<div>
-                    <p>You have the following rights:</p>
+                    <p>
+                        Cookies are small data files a website places on your device. We use only the cookies
+                        the Services need in order to work:
+                    </p>
                     <ul>
-                        <li>The right to ask us to provide you with copies of personal data that we hold about you at any time;</li>
-                        <li>The right to ask us to update and correct any out-of-date or incorrect personal data that we hold about you free of charge;</li>
-                        <li>The right to ask us to delete the personal data we hold about you;</li>
+                        <li>
+                            A <strong>sign-in cookie</strong>, so that you stay signed in as you move around
+                            the Website. It lasts up to 30 days, or until you sign out.
+                        </li>
+                        <li>
+                            A <strong>security cookie</strong>, which protects the forms on the Website
+                            against being submitted from somewhere else on your behalf.
+                        </li>
                     </ul>
+                    <p>
+                        <strong>We do not use any advertising, analytics or tracking cookies</strong>, and we
+                        do not allow anybody else to track you across other websites through ours.
+                    </p>
+                    <p>
+                        Some pages include services provided by Google - a map, or the reCAPTCHA check on our
+                        sign-up form - and these may set cookies of their own when those pages load. Their
+                        use of them is governed by Google's own privacy policy.
+                    </p>
+                    <p>
+                        You can set your browser to refuse cookies, but if you refuse the two cookies above
+                        you will not be able to sign in or submit forms. Each browser is different, so please
+                        see your browser's "Help" menu for how to change your cookie preferences.
+                    </p>
                 </div>
         })
 
@@ -109,11 +368,155 @@
         {
             Heading = new HeadingViewModel
             {
-                Title = "6. Changes to our Privacy Policy",
-                Type = HeadingType.H2
+                Title = "7. How long we keep your data",
+                Type = headingType
             },
             BodyContentFunc =
-                @<p>Any changes we make to our Privacy Policy in the future will be posted on this page.</p>
+                @<div>
+                    <p>
+                        We keep your personal data for as long as you have an account with us. You can delete
+                        your account at any time from your account settings, and doing so removes your
+                        personal data from the Services.
+                    </p>
+                    <p>
+                        If you leave a single group, we remove your membership of that group and the answers
+                        you gave to that group's questions, and your account itself is unaffected.
+                    </p>
+                    <p>
+                        Two things outlive your account. We keep records of payments for as long as tax and
+                        accounting law requires us to, currently six years. And our server logs, which record
+                        technical data rather than your profile, are kept for @Model.LogRetentionDays days
+                        and then deleted. A copy is also held by our logging provider for
+                        @Model.BetterStackRetentionDays days, as set out in section 5.
+                    </p>
+                </div>
+        })
+
+        @await Html.PartialAsync("Components/_Section", new SectionViewModel
+        {
+            Heading = new HeadingViewModel
+            {
+                Title = "8. Your rights",
+                Type = headingType
+            },
+            BodyContentFunc =
+                @<div>
+                    <p>You have the following rights over your personal data, free of charge:</p>
+                    <ul>
+                        <li>
+                            <strong>Access</strong> - to ask us for a copy of the personal data we hold about
+                            you;
+                        </li>
+                        <li>
+                            <strong>Correction</strong> - to have inaccurate or out-of-date data corrected.
+                            Most of it you can correct yourself in your account settings;
+                        </li>
+                        <li>
+                            <strong>Erasure</strong> - to ask us to delete the personal data we hold about
+                            you;
+                        </li>
+                        <li>
+                            <strong>Restriction</strong> - to ask us to stop using your data while a question
+                            about it is resolved;
+                        </li>
+                        <li>
+                            <strong>Portability</strong> - to receive the data you gave us in a common,
+                            machine-readable format, or to have us send it to somebody else;
+                        </li>
+                        <li>
+                            <strong>Objection</strong> - to object to our using your data where we rely on
+                            our legitimate interests;
+                        </li>
+                        <li>
+                            <strong>Withdrawing consent</strong> - to withdraw your consent to group and
+                            event e-mails at any time, without affecting your membership or anything done
+                            before you withdrew it.
+                        </li>
+                    </ul>
+                    <p>
+                        To exercise any of these, write to
+                        <a href="mailto:@Model.ContactEmailAddress">@Model.ContactEmailAddress</a>. We will
+                        respond within one month.
+                    </p>
+                    <p>
+                        If you are not satisfied with how we have handled your personal data, you can
+                        complain to the Information Commissioner's Office at
+                        <a href="https://ico.org.uk/make-a-complaint/" rel="noopener" target="_blank">ico.org.uk</a>,
+                        or by calling 0303 123 1113. We would be grateful for the chance to address your
+                        concern first.
+                    </p>
+                </div>
+        })
+
+        @await Html.PartialAsync("Components/_Section", new SectionViewModel
+        {
+            Heading = new HeadingViewModel
+            {
+                Title = "9. Security",
+                Type = headingType
+            },
+            BodyContentFunc =
+                @<div>
+                    <p>
+                        We take appropriate technical and organisational measures to protect your personal
+                        data. The Website is served over an encrypted connection, passwords are stored only
+                        as salted hashes, and card details never reach our systems.
+                    </p>
+                    <p>
+                        No transmission over the Internet can ever be guaranteed completely secure, so we
+                        cannot promise absolute security for data you send us over the Internet. If a breach
+                        of your personal data occurs that is likely to result in a risk to your rights, we
+                        will notify the Information Commissioner's Office, and you, as the law requires.
+                    </p>
+                </div>
+        })
+
+        @await Html.PartialAsync("Components/_Section", new SectionViewModel
+        {
+            Heading = new HeadingViewModel
+            {
+                Title = "10. Where your data is held",
+                Type = headingType
+            },
+            BodyContentFunc =
+                @<p>
+                    Your personal data is held in the United Kingdom and the European Economic Area. Some of
+                    the providers listed in section 5 are based outside the UK, so your data may be
+                    transferred to them there. Where it is, that transfer is covered by the safeguards UK
+                    data protection law requires - either an adequacy decision covering the country
+                    concerned, or the International Data Transfer Agreement.
+                </p>
+        })
+
+        @await Html.PartialAsync("Components/_Section", new SectionViewModel
+        {
+            Heading = new HeadingViewModel
+            {
+                Title = "11. Children",
+                Type = headingType
+            },
+            BodyContentFunc =
+                @<p>
+                    The Services are not intended for children, and you must be at least 16 years old to
+                    register as a member. We do not knowingly collect personal data about anybody younger. If you believe a child has given us their personal data, contact us at
+                    <a href="mailto:@Model.ContactEmailAddress">@Model.ContactEmailAddress</a> and we will
+                    delete it.
+                </p>
+        })
+
+        @await Html.PartialAsync("Components/_Section", new SectionViewModel
+        {
+            Heading = new HeadingViewModel
+            {
+                Title = "12. Changes to this Privacy Policy",
+                Type = headingType
+            },
+            BodyContentFunc =
+                @<p>
+                    Any changes we make to this Privacy Policy will be posted on this page, and the date at
+                    the top will be updated. Where a change materially affects how we use your personal
+                    data, we will tell you by e-mail before it takes effect.
+                </p>
         })
     </div>
 </div>

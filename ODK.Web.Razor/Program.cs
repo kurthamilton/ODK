@@ -30,6 +30,13 @@ namespace ODK.Web.Razor;
 
 public class Program
 {
+    /* Serilog rolls the date in where the last "." sits, so these produce Errors.20260906.txt and
+       Trace.20260906.txt. The retention limit only covers files Serilog rolls itself, so the date has to
+       be its rolling suffix rather than a value the path is built with. */
+    private const string ErrorLogPath = "Errors..txt";
+
+    private const string TraceLogPath = "Trace..txt";
+
     public static void Main(string[] args)
     {
         var (app, appSettings) = BuildApp(args);
@@ -255,6 +262,10 @@ public class Program
         builder.Services.AddSerilog();
 
         var logFileDirectory = ServedPlatform.Of(appSettings, appSettings.Logging.Platforms).Path;
+
+        /* The period the privacy policy states, so config is the one place it is set - a file kept longer
+           than the policy says makes the policy wrong. */
+        var logRetention = TimeSpan.FromDays(appSettings.Privacy.Logging.DefaultRetentionDays);
         var connectionString = appSettings.ConnectionStrings.Default;
 
         var outputTemplate = $"t:{{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}}|ip:{{{IP}}}|u:{{{Name}}}|m:{{Message:lj}}|ex:{{Exception}}{{NewLine}}";
@@ -268,13 +279,21 @@ public class Program
             .WriteTo.Logger(config => config
                 .Filter
                 .ByIncludingOnly(e => e.Level == LogEventLevel.Error)
-                .WriteTo.File(path: Path.Combine(logFileDirectory, $"Errors.{DateTime.Today:yyyyMMdd}.txt"), outputTemplate: outputTemplate)
+                .WriteTo.File(
+                    path: Path.Combine(logFileDirectory, ErrorLogPath),
+                    outputTemplate: outputTemplate,
+                    rollingInterval: RollingInterval.Day,
+                    retainedFileTimeLimit: logRetention)
                 .WriteTo.MSSqlServer(connectionString, new MSSqlServerSinkOptions
                 {
                     TableName = "Logs"
                 })
             )
-            .WriteTo.File(Path.Combine(logFileDirectory, $"Trace.{DateTime.Today:yyyyMMdd}.txt"), outputTemplate: outputTemplate)
+            .WriteTo.File(
+                path: Path.Combine(logFileDirectory, TraceLogPath),
+                outputTemplate: outputTemplate,
+                rollingInterval: RollingInterval.Day,
+                retainedFileTimeLimit: logRetention)
             .WriteTo.Console();
 
         /* A source is its token *and* the host that ingests it, so both have to be stated for the sink to be

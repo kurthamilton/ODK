@@ -25,6 +25,11 @@ public interface ILoggingService
 
     Task Info(string message);
 
+    /// <summary>
+    /// Deletes log rows past the configured retention period, returning how many went.
+    /// </summary>
+    Task<int> PurgeLogs();
+
     Task Warn(string message);
 
     Task Warn(string message, IDictionary<string, string?> properties);

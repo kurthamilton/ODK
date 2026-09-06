@@ -264,7 +264,8 @@ public static class DependencyRegistrar
                         Exceptions = [nameof(OdkNotFoundException)],
                         Paths = appSettings.RateLimiting.BlockPaths.ToArray()
                     })
-                    .ToArray()
+                    .ToArray(),
+                LogRetentionDays = appSettings.Privacy.Logging.DefaultRetentionDays
             })
             .AddScoped<IEmailService, EmailService>()
             .AddScoped<ITestEmailParametersFactory, TestEmailParametersFactory>()
@@ -463,9 +464,22 @@ public static class DependencyRegistrar
             BlockPatterns = rateLimiting.BlockPatterns
         });
 
+        var privacy = appSettings.Privacy;
+
+        services.AddSingleton(new PrivacyPageSettings
+        {
+            BetterStackRetentionDays = privacy.Logging.BetterStackRetentionDays,
+            EmailAddress = ServedPlatform.Of(appSettings, privacy.Platforms).EmailAddress,
+            HostingProvider = privacy.HostingProvider,
+            LogRetentionDays = privacy.Logging.DefaultRetentionDays,
+            TraderName = privacy.TraderName,
+            TradingAddress = privacy.TradingAddress
+        });
+
         services.AddSingleton(new ScheduledTasksControllerSettings
         {
-            ApiKey = appSettings.ScheduledTasks.ApiKey
+            ApiKey = appSettings.ScheduledTasks.ApiKey,
+            ApiKeyHeader = appSettings.ScheduledTasks.ApiKeyHeader
         });
 
         services.AddSingleton(new WebhooksControllerSettings

@@ -245,7 +245,8 @@ public static class SerilogLoggingServiceTests
 
         return new LoggingServiceSettings
         {
-            IgnoreExceptions = ignoreExceptions
+            IgnoreExceptions = ignoreExceptions,
+            LogRetentionDays = 90
         };
     }
 }

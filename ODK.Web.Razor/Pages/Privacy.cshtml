@@ -1,24 +1,42 @@
 ﻿@page "/privacy"
 @using ODK.Core.Platforms
 @using ODK.Services.Chapters
+@using ODK.Services.Platforms
+@using ODK.Web.Common.Settings
 @using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Privacy
 @model PrivacyModel
 @inject IChapterService ChapterService
+@inject IPlatformProvider PlatformProvider
+@inject PrivacyPageSettings PrivacySettings
 @{
     Layout = "_HomeLayout";
     Model.Title = "Privacy";
     Model.Description = "Privacy policy detailing how we handle data";
     Model.Path = "/privacy";
+
+    var viewModel = new PrivacyViewModel
+    {
+        BetterStackRetentionDays = PrivacySettings.BetterStackRetentionDays,
+        ContactEmailAddress = PrivacySettings.EmailAddress,
+        HostingProvider = PrivacySettings.HostingProvider,
+        LastUpdated = new DateOnly(2026, 9, 6),
+        LogRetentionDays = PrivacySettings.LogRetentionDays,
+        Platform = Model.Platform,
+        PlatformName = PlatformProvider.GetName(Model.Platform),
+        TraderName = PrivacySettings.TraderName,
+        TradingAddress = PrivacySettings.TradingAddress
+    };
 }
 
 @if (Model.Platform == PlatformType.DrunkenKnitwits)
 {
-    var viewModel = await ChapterService.GetOdkHomeHeaderViewModel();
-    @await Html.PartialAsync("Header/_OdkHomeHeader", viewModel)
+    var headerViewModel = await ChapterService.GetOdkHomeHeaderViewModel();
+    @await Html.PartialAsync("Header/_OdkHomeHeader", headerViewModel)
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Content = await Html.PartialAsync("Privacy/_PrivacyBody", null),
+    Content = await Html.PartialAsync("Privacy/_PrivacyBody", viewModel),
     Title = "Privacy"
 })

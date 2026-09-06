@@ -168,6 +168,16 @@ public class SerilogLoggingService : OdkAdminServiceBase, ILoggingService
     public Task Info(string message)
         => Log(LogEventLevel.Information, message);
 
+    public async Task<int> PurgeLogs()
+    {
+        /* The sink's TimeStamp is a datetime, so it carries no offset and the boundary is only as exact as
+           the server's own offset from UTC. That is an hour at most against a retention measured in months,
+           and it can only ever move the cutoff within rows that are already long past it. */
+        var before = DateTime.UtcNow.AddDays(-_settings.LogRetentionDays);
+
+        return await _unitOfWork.LogRepository.DeleteBefore(before);
+    }
+
     public Task Warn(string message)
         => Log(LogEventLevel.Warning, message);
 
