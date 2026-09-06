@@ -120,6 +120,9 @@
   <data name="MoveYourGroup" xml:space="preserve">
     <value>Move your existing group</value>
   </data>
+  <data name="SeeFullPricing" xml:space="preserve">
+    <value>See full pricing</value>
+  </data>
   <data name="SeeHowMigrationWorks" xml:space="preserve">
     <value>See how migration works</value>
   </data>

@@ -93,8 +93,8 @@ recover from an error.
 
 ### Rebuilding the CSS after an SCSS change
 
-Nothing watches `wwwroot/scss` while the app is running, so a change there has no effect until you compile
-it. In a **second** terminal (leave `dotnet watch` running in the first):
+Nothing watches `ODK.Web.Razor/scss` while the app is running, so a change there has no effect until you
+compile it. In a **second** terminal (leave `dotnet watch` running in the first):
 
 ```
 Scripts/app/build-css.bat
@@ -163,7 +163,15 @@ YAML is indentation-sensitive: within each endpoint, `name`, `url` and `upstream
 column, and `upstream`'s own `url` is indented one level further.
 
 ## CSS
-`.css` files are compiled into `wwwroot/css` from the `.scss` files in `wwwroot/scss`.
+`.css` files are compiled into `wwwroot/css` from the `.scss` files in `ODK.Web.Razor/scss`.
+
+The sources sit **outside `wwwroot`** and must stay there. Visual Studio saves a file by writing a temp file
+beside it and renaming over the original, so every save creates two files in the directory holding it — and
+`dotnet watch` dies on a file created anywhere under `wwwroot`
+([dotnet/roslyn#84062](https://github.com/dotnet/roslyn/issues/84062), *"Unexpected true - file
+HotReloadMSBuildWorkspace.cs line 158"*). No csproj item metadata prevents it; the crash happens before the
+watcher decides whether the file belongs to the project. `Scripts/app/watch-wwwroot.bat` logs what appears
+under `wwwroot` if you need to pin down another instance of it.
 
 `wwwroot/css` is **generated and gitignored**, the same as `wwwroot/lib` and the bundles. The
 `BuildClientAssets` target in the csproj compiles it on every build, so a plain `dotnet build`,
@@ -171,9 +179,9 @@ column, and `upstream`'s own `url` is indented one level further.
 depends on what someone last compiled locally. Don't edit anything in there by hand.
 
 To compile it on its own — which is what you want after editing a `.scss` mid-session, since nothing
-watches `wwwroot/scss` — run `Scripts/app/build-css.bat` (or `npm run build:css` from `ODK.Web.Razor`).
+watches the sources — run `Scripts/app/build-css.bat` (or `npm run build:css` from `ODK.Web.Razor`).
 
-`wwwroot/scss` imports Bootstrap's own Sass sources out of `wwwroot/lib`, so the compile needs the
+`scss/bootstrap/main.scss` imports Bootstrap's own Sass sources out of `wwwroot/lib`, so the compile needs the
 client-side libraries in place. `build:css` restores them first, so there is no order to remember; the
 csproj target orders the two itself.
 

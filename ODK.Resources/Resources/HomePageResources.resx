@@ -117,106 +117,154 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ASimplerFairerPlatformForRunningGroupsAndEvents" xml:space="preserve">
-    <value>A simpler, fairer platform for running groups and events - without high recurring fees or platform lock-in.</value>
+  <data name="ABetterHomeForYourCommunity" xml:space="preserve">
+    <value>A better home for your community.</value>
   </data>
-  <data name="BuildYourCommunity" xml:space="preserve">
-    <value>Build your community</value>
+  <data name="AddCoOrganisers" xml:space="preserve">
+    <value>Add co-organisers and give them access to the parts of the group they actually need - whether that’s organising events, managing members or helping run the community.</value>
   </data>
-  <data name="BuiltInNotifications" xml:space="preserve">
-    <value>Built-in notifications</value>
+  <data name="AlreadyHaveACommunityBringItWithYou" xml:space="preserve">
+    <value>Already have a community? Bring it with you.</value>
   </data>
   <data name="CommunitiesShouldntFeelLikeSubscriptions" xml:space="preserve">
     <value>Communities shouldn’t feel like subscriptions.</value>
   </data>
-  <data name="ControlOverYourMembers" xml:space="preserve">
-    <value>Control over your members</value>
+  <data name="ContactYourOrganisers" xml:space="preserve">
+    <value>Contact your organisers</value>
   </data>
-  <data name="CreateAndManageGroups" xml:space="preserve">
-    <value>Create and manage groups</value>
+  <data name="ControlWhoCan" xml:space="preserve">
+    <value>Control who can:</value>
   </data>
-  <data name="FlexiblePrivacyControls" xml:space="preserve">
-    <value>Flexible privacy controls</value>
+  <data name="EveryGroupIsDifferent" xml:space="preserve">
+    <value>Every group is different. You decide how yours works.</value>
   </data>
-  <data name="MemberRolesAndApprovals" xml:space="preserve">
-    <value>Member roles and approvals</value>
+  <data name="EverythingYouNeedToRunYourGroup" xml:space="preserve">
+    <value>Everything you need to run your group.</value>
   </data>
-  <data name="NoBloatedFeatures" xml:space="preserve">
-    <value>No bloated features. No confusing upgrades. Just solid infrastructure for real communities.</value>
+  <data name="FairPricingUsefulToolsNoUnnecessaryComplexity" xml:space="preserve">
+    <value>Fair pricing. Useful tools. No unnecessary complexity.</value>
   </data>
-  <data name="RunningALocalGroupShouldBeRewarding" xml:space="preserve">
-    <value>Running a local group, club, or meetup should be rewarding - not expensive or complicated.</value>
+  <data name="FeatureEvents" xml:space="preserve">
+    <value>Events</value>
   </data>
-  <data name="ScheduleEvents" xml:space="preserve">
-    <value>Schedule events with RSVP limits and waitlists</value>
+  <data name="FeatureEventsDescription" xml:space="preserve">
+    <value>Schedule events, manage RSVPs, set attendance limits and automatically handle waitlists.</value>
   </data>
-  <data name="TheProblem" xml:space="preserve">
-    <value>The problem</value>
+  <data name="FeatureGroups" xml:space="preserve">
+    <value>Groups</value>
   </data>
-  <data name="TooManyOrganisersFeelPricedOut" xml:space="preserve">
-    <value>Too many organisers feel priced out, boxed in, or dependent on platforms that don’t prioritise their community.</value>
+  <data name="FeatureGroupsDescription" xml:space="preserve">
+    <value>Create your group, manage membership and decide how it works.</value>
   </data>
-  <data name="TransparentPricing" xml:space="preserve">
-    <value>Transparent pricing</value>
+  <data name="FeatureMembers" xml:space="preserve">
+    <value>Members</value>
   </data>
-  <data name="HowWeEnableYou" xml:space="preserve">
-    <value>How we enable you</value>
+  <data name="FeatureMembersDescription" xml:space="preserve">
+    <value>Approve members, manage organisers and keep track of who’s part of your community.</value>
   </data>
-  <data name="PaymentPortal" xml:space="preserve">
-    <value>Payment portal</value>
+  <data name="FeatureNotifications" xml:space="preserve">
+    <value>Notifications</value>
   </data>
-  <data name="SimpleToolsThatJustWork" xml:space="preserve">
-    <value>Simple tools that just work</value>
+  <data name="FeatureNotificationsDescription" xml:space="preserve">
+    <value>Keep members informed about events, memberships and important group activity.</value>
   </data>
-  <data name="DesignedForOrganisers" xml:space="preserve">
-    <value>Designed for organisers</value>
+  <data name="FeaturePayments" xml:space="preserve">
+    <value>Payments</value>
   </data>
-  <data name="BuiltWithOrganisersInMind" xml:space="preserve">
-    <value>Built with organisers in mind</value>
+  <data name="FeaturePaymentsDescription" xml:space="preserve">
+    <value>Charge for memberships or events and manage payments from one place.</value>
   </data>
-  <data name="YouControl" xml:space="preserve">
-    <value>You control</value>
+  <data name="Free" xml:space="preserve">
+    <value>Free</value>
   </data>
-  <data name="WhoCanSeeEvents" xml:space="preserve">
-    <value>Who can see events</value>
+  <data name="FreeToGetStartedNoCreditCardRequired" xml:space="preserve">
+    <value>Free to get started. No credit card required.</value>
   </data>
-  <data name="WhoCanRespond" xml:space="preserve">
-    <value>Who can respond</value>
+  <data name="GiveOrganisersTheAccessTheyNeed" xml:space="preserve">
+    <value>Give organisers the access they need without giving everyone access to everything.</value>
   </data>
-  <data name="WhoCanSeeVenues" xml:space="preserve">
-    <value>Who can see venues</value>
+  <data name="GiveYourOrganisersTheRightAccess" xml:space="preserve">
+    <value>Give your organisers the right access.</value>
   </data>
-  <data name="HowMembersInteract" xml:space="preserve">
-    <value>How members interact</value>
+  <data name="ImportYourExistingMembers" xml:space="preserve">
+    <value>Import your existing members and move your group into a familiar group-and-event structure. Your members can then join you on {0} without you having to start from zero.</value>
   </data>
-  <data name="YouDecideHowYourGroupRuns" xml:space="preserve">
-    <value>Whether your group is public, private, paid, free, or somewhere in between - you decide how it runs.</value>
+  <data name="JoinYourGroup" xml:space="preserve">
+    <value>Join your group</value>
   </data>
-  <data name="MovingFromAnotherPlatform" xml:space="preserve">
-    <value>Moving from another platform?</value>
+  <data name="KeepSensitiveInformationRestricted" xml:space="preserve">
+    <value>Keep sensitive member and payment information restricted to the people who need it.</value>
   </data>
-  <data name="SwitchingPlatformsShouldntMeanStartingOver" xml:space="preserve">
-    <value>Switching platforms shouldn’t mean starting over.</value>
+  <data name="KeepYourMembersEventsAndCommunicationInOnePlace" xml:space="preserve">
+    <value>Keep your members, events and communication in one place. {0} gives you the essentials for running a real-world community - without making you manage a complicated platform.</value>
   </data>
-  <data name="WeSupport" xml:space="preserve">
-    <value>We support</value>
+  <data name="MembersOnlySeeWhatYourGroupChoosesToShare" xml:space="preserve">
+    <value>And because each group controls its own privacy settings, members only see what your group chooses to share.</value>
   </data>
-  <data name="FamiliarGroupAndEventStructures" xml:space="preserve">
-    <value>Familiar group and event structures</value>
+  <data name="NoHighRecurringFeesNoPlatformLockIn" xml:space="preserve">
+    <value>No high recurring fees. No platform lock-in.</value>
   </data>
-  <data name="SimpleOnboardingForExistingMembers" xml:space="preserve">
-    <value>Simple onboarding for existing members</value>
+  <data name="NoRebuildingYourMemberListNoStartingOver" xml:space="preserve">
+    <value>No rebuilding your member list. No starting over.</value>
   </data>
-  <data name="YourCommunityComesWithYou" xml:space="preserve">
-    <value>Your community comes with you.</value>
+  <data name="ReadyToRunYourCommunityYourWay" xml:space="preserve">
+    <value>Ready to run your community your way?</value>
   </data>
-  <data name="FairPricingNoSurprises" xml:space="preserve">
-    <value>Fair pricing. No surprises.</value>
+  <data name="RespondToEvents" xml:space="preserve">
+    <value>Respond to events</value>
   </data>
-  <data name="CommunitiesGrowBestWhenOrganisersArentStressedAboutMonthlyBills" xml:space="preserve">
-    <value>Communities grow best when organisers aren’t stressed about monthly bills.</value>
+  <data name="RunYourGroupsEventsAndMembershipsInOnePlace" xml:space="preserve">
+    <value>Run your groups, events and memberships in one place - with the tools you need, fair pricing, and control over your community.</value>
   </data>
-  <data name="OurGoalIsSimple" xml:space="preserve">
-    <value>Our goal is simple: make the platform sustainable to support your community.</value>
+  <data name="RunningACommunityRarelyMeansDoingEverythingYourself" xml:space="preserve">
+    <value>Running a community rarely means doing everything yourself.</value>
+  </data>
+  <data name="SeeEventVenues" xml:space="preserve">
+    <value>See event venues</value>
+  </data>
+  <data name="SeeMemberInformation" xml:space="preserve">
+    <value>See member information</value>
+  </data>
+  <data name="SeeYourEvents" xml:space="preserve">
+    <value>See your events</value>
+  </data>
+  <data name="SimpleForYourMembers" xml:space="preserve">
+    <value>Simple for your members.</value>
+  </data>
+  <data name="StartANewGroupOrBringAnExistingOneWithYou" xml:space="preserve">
+    <value>Start a new group or bring an existing one with you.</value>
+  </data>
+  <data name="StartForFreeUpgradeWhenYourCommunityNeedsMore" xml:space="preserve">
+    <value>Start for free. Upgrade when your community needs more.</value>
+  </data>
+  <data name="StraightforwardPricing" xml:space="preserve">
+    <value>Straightforward pricing.</value>
+  </data>
+  <data name="TheyGetAClearGroupPage" xml:space="preserve">
+    <value>They get a clear group page, upcoming events, simple RSVPs, waitlists and the information they need - all in one place.</value>
+  </data>
+  <data name="WeBuiltThisPlatformBecause" xml:space="preserve">
+    <value>We built {0} because running a community shouldn’t mean paying more and more just to keep the tools you’ve always used.</value>
+  </data>
+  <data name="WeProvideTheInfrastructureYouRunTheCommunity" xml:space="preserve">
+    <value>{0} provides the infrastructure. You run the community.</value>
+  </data>
+  <data name="YouRunTheCommunity" xml:space="preserve">
+    <value>You run the community. The platform just gives you the tools.</value>
+  </data>
+  <data name="YouShouldBeAbleToRunYourGroup" xml:space="preserve">
+    <value>You should be able to run your group, understand what you’re paying for, control your members’ experience and know that your community isn’t locked into a platform.</value>
+  </data>
+  <data name="YouShouldntHaveToRebuildYourCommunityFromScratch" xml:space="preserve">
+    <value>You shouldn’t have to rebuild your community from scratch just because you change platforms.</value>
+  </data>
+  <data name="YourCommunityYourRules" xml:space="preserve">
+    <value>Your community. Your rules.</value>
+  </data>
+  <data name="YourMembersEventsAndGroupInformationAreManagedThroughYourAccount" xml:space="preserve">
+    <value>Your members, events and group information are managed through your account, with privacy controls that let you decide what is visible and who can access it.</value>
+  </data>
+  <data name="YourMembersShouldntNeedToLearnAComplicatedPlatform" xml:space="preserve">
+    <value>Your members shouldn’t need to learn a complicated platform just to come to an event.</value>
   </data>
 </root>

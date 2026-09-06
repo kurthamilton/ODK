@@ -70,6 +70,15 @@ namespace ODK.Resources.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to See full pricing.
+        /// </summary>
+        public static string SeeFullPricing {
+            get {
+                return ResourceManager.GetString("SeeFullPricing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to See how migration works.
         /// </summary>
         public static string SeeHowMigrationWorks {

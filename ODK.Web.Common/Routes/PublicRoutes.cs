@@ -110,6 +110,11 @@ public class PublicRoutes
         },
         new()
         {
+            Path = SiteRoutes.Migrate,
+            Platform = PlatformType.Default
+        },
+        new()
+        {
             Path = SiteRoutes.Pricing,
             Platform = PlatformType.Default
         },

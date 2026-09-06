@@ -1,0 +1,17 @@
+﻿@page "/migrate"
+@using ODK.Web.Razor.Models.Components
+@model MigrateModel
+@{
+    Layout = "_HomeLayout";
+    Model.Title = "Move your group";
+    Model.Path = Model.OdkRoutes.Site.Migrate;
+}
+
+@* _HomeLayout renders no page structure of its own, so the content goes through _Body - the same way
+   /pricing and /refer do. Never reached on DrunkenKnitwits, so there's no platform header branch. *@
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Content = await Html.PartialAsync("Site/_SiteMigrateContent"),
+    Title = "Move your group",
+    WidthClass = "col-12 col-lg-8"
+})

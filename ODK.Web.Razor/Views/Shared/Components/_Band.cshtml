@@ -1,7 +1,15 @@
 ﻿@using ODK.Web.Razor.Models.Components
 @model BandViewModel
 @{
-    var bsTheme = Model.Theme == BandThemeType.Dark ? "dark" : "light";
+    // A grey band declares no theme: it paints its own background, and a theme here would have Bootstrap
+    // paint the components inside it for a white one. It pins the light theme's text colour in
+    // _bands.scss instead. Razor omits an attribute whose value is null.
+    var bsTheme = Model.Theme switch
+    {
+        BandThemeType.Dark => "dark",
+        BandThemeType.Grey => null,
+        _ => "light"
+    };
 
     var classes = new List<string>
     {
@@ -13,15 +21,7 @@
         classes.Add("band--hero");
     }
 
-    if (Model.Theme == BandThemeType.Dark)
-    {
-        classes.Add("band--dark");
-    }
-    else if (Model.Theme == BandThemeType.Light)
-    {
-        classes.Add("band--light");
-    }
-    else if (Model.Theme == BandThemeType.Grey)
+    if (Model.Theme == BandThemeType.Grey)
     {
         classes.Add("band--grey");
     }
@@ -30,6 +30,16 @@
     {
         classes.Add(Model.Class);
     }
+
+    // The band styles its own title, so the class comes from here rather than from every caller.
+    var heading = Model.Heading != null
+        ? new HeadingViewModel
+        {
+            Class = $"band__title {Model.Heading.Class}".TrimEnd(),
+            Title = Model.Heading.Title,
+            Type = Model.Heading.Type
+        }
+        : null;
 }
 
 <section class="@string.Join(' ', classes)"
@@ -40,13 +50,13 @@
     {
         <div class="band--hero__content">
             <div class="d-flex flex-column gap-3">
-                @if (!string.IsNullOrEmpty(Model.Title))
+                @if (heading != null)
                 {
-                    <h1>@Model.Title</h1>
+                    @await Html.PartialAsync("Components/_Heading", heading)
                 }
                 @if (!string.IsNullOrEmpty(Model.Subtitle))
                 {
-                    <h3>@Model.Subtitle</h3>
+                    <p class="band__subtitle">@Model.Subtitle</p>
                 }
                 @if (Model.Content != null)
                 {
@@ -60,13 +70,13 @@
     else
     {
         <div class="d-flex flex-column gap-3">
-            @if (!string.IsNullOrEmpty(Model.Title))
+            @if (heading != null)
             {
-                <h1>@Model.Title</h1>
+                @await Html.PartialAsync("Components/_Heading", heading)
             }
             @if (!string.IsNullOrEmpty(Model.Subtitle))
             {
-                <h3>@Model.Subtitle</h3>
+                <p class="band__subtitle">@Model.Subtitle</p>
             }
             @if (Model.Content != null)
             {

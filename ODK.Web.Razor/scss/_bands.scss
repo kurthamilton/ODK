@@ -1,0 +1,92 @@
+// A full-width strip down a marketing page: its own background, its own light/dark treatment, and a
+// centred column of copy. Only the home pages use one - a band divides a *page* into strips, where a
+// .section divides a page's content into parts.
+.band {
+    background: var(--bs-body-bg);
+    color: var(--bs-body-color);
+}
+
+.band--hero {
+    background-position-y: 0;
+    padding: 50px 20px;
+    align-items: center;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+}
+
+
+.band--hero__content {
+    font-size: 1.4rem;
+    max-width: 760px;
+}
+
+// A band whose content is a grid rather than a column of prose, so it needs the room a paragraph does not.
+.band--wide {
+    .band--hero__content {
+        max-width: 1140px;
+    }
+}
+
+
+// Sized by heading level rather than by a modifier, so the band that carries the page's h1 reads as the
+// largest without a caller choosing a level for how big it renders.
+.band__title {
+    font-size: 2.5rem;
+
+    &:not(:first-child) {
+        margin-top: 4rem;
+    }
+}
+
+h1.band__title {
+    font-size: 3rem;
+}
+
+// The lead under a band's title. A paragraph rather than a heading: the title above it is the band's entry
+// in the document outline, and a subtitle repeating that level would add a second one saying nothing.
+.band__subtitle {
+    font-size: 1.5rem;
+    margin-bottom: 0;
+}
+
+// A grid of cards inside a band. It sets its own type size and alignment: a band's copy is a centred lead
+// paragraph, which is the wrong shape for a card of body text.
+.band__grid {
+    font-size: 1rem;
+    text-align: left;
+}
+
+.band--chapters {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+// The one band that paints a background of its own rather than the theme's, so it states no data-bs-theme:
+// declaring the light theme here would have Bootstrap paint every component inside it for a white
+// background, which puts white strips and cards on the grey. Its own text colour is pinned to the light
+// theme's instead, and each component that sits in one is then given the grey background to work against -
+// one at a time, since what a component should do about it is particular to the component.
+.band--grey {
+    background-color: hsla(0,0%,88%,.6);
+    color: var(--odk-body-color-light);
+
+    // A card carries the band's background rather than painting its own, so it reads as an outlined tile on
+    // the grey. --bs-card-color is what reaches .card-body, where a card's content sits; the cap pair is the
+    // header and footer, whose default tint is mixed from --bs-body-color-rgb and so would invert with the
+    // page's theme.
+    .card {
+        --bs-card-bg: transparent;
+        --bs-card-border-color: var(--odk-border-color-light);
+        --bs-card-cap-bg: rgba(var(--odk-body-color-light-rgb), 0.03);
+        --bs-card-cap-color: var(--odk-body-color-light);
+        --bs-card-color: var(--odk-body-color-light);
+    }
+
+    // A list group carries the band's background rather than painting its own.
+    .list-group {
+        --bs-list-group-bg: transparent;
+        --bs-list-group-color: var(--odk-body-color-light);
+        --bs-list-group-border-color: var(--odk-border-color-light);
+    }
+}

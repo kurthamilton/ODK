@@ -1,7 +1,18 @@
 ﻿@using ODK.Web.Razor.Models.Components
 @model CardViewModel
+@{
+    var classes = new List<string>
+    {
+        "card"
+    };
 
-<div class="card" data-odk-component="_Card">
+    if (Model.FullHeight)
+    {
+        classes.Add("h-100");
+    }
+}
+
+<div class="@string.Join(' ', classes)" data-odk-component="_Card">
     @if (Model.HeaderContentFunc != null)
     {
         <div class="card-header">

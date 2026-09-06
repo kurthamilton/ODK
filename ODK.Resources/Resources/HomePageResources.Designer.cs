@@ -61,47 +61,29 @@ namespace ODK.Resources.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A simpler, fairer platform for running groups and events - without high recurring fees or platform lock-in..
+        ///   Looks up a localized string similar to A better home for your community..
         /// </summary>
-        public static string ASimplerFairerPlatformForRunningGroupsAndEvents {
+        public static string ABetterHomeForYourCommunity {
             get {
-                return ResourceManager.GetString("ASimplerFairerPlatformForRunningGroupsAndEvents", resourceCulture);
+                return ResourceManager.GetString("ABetterHomeForYourCommunity", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Build your community.
+        ///   Looks up a localized string similar to Add co-organisers and give them access to the parts of the group they actually need - whether that’s organising events, managing members or helping run the community..
         /// </summary>
-        public static string BuildYourCommunity {
+        public static string AddCoOrganisers {
             get {
-                return ResourceManager.GetString("BuildYourCommunity", resourceCulture);
+                return ResourceManager.GetString("AddCoOrganisers", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Built-in notifications.
+        ///   Looks up a localized string similar to Already have a community? Bring it with you..
         /// </summary>
-        public static string BuiltInNotifications {
+        public static string AlreadyHaveACommunityBringItWithYou {
             get {
-                return ResourceManager.GetString("BuiltInNotifications", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Built with organisers in mind.
-        /// </summary>
-        public static string BuiltWithOrganisersInMind {
-            get {
-                return ResourceManager.GetString("BuiltWithOrganisersInMind", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Communities grow best when organisers aren’t stressed about monthly bills..
-        /// </summary>
-        public static string CommunitiesGrowBestWhenOrganisersArentStressedAboutMonthlyBills {
-            get {
-                return ResourceManager.GetString("CommunitiesGrowBestWhenOrganisersArentStressedAboutMonthlyBills", resourceCulture);
+                return ResourceManager.GetString("AlreadyHaveACommunityBringItWithYou", resourceCulture);
             }
         }
         
@@ -115,254 +97,416 @@ namespace ODK.Resources.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Control over your members.
+        ///   Looks up a localized string similar to Contact your organisers.
         /// </summary>
-        public static string ControlOverYourMembers {
+        public static string ContactYourOrganisers {
             get {
-                return ResourceManager.GetString("ControlOverYourMembers", resourceCulture);
+                return ResourceManager.GetString("ContactYourOrganisers", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Create and manage groups.
+        ///   Looks up a localized string similar to Control who can:.
         /// </summary>
-        public static string CreateAndManageGroups {
+        public static string ControlWhoCan {
             get {
-                return ResourceManager.GetString("CreateAndManageGroups", resourceCulture);
+                return ResourceManager.GetString("ControlWhoCan", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Designed for organisers.
+        ///   Looks up a localized string similar to Every group is different. You decide how yours works..
         /// </summary>
-        public static string DesignedForOrganisers {
+        public static string EveryGroupIsDifferent {
             get {
-                return ResourceManager.GetString("DesignedForOrganisers", resourceCulture);
+                return ResourceManager.GetString("EveryGroupIsDifferent", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Fair pricing. No surprises..
+        ///   Looks up a localized string similar to Everything you need to run your group..
         /// </summary>
-        public static string FairPricingNoSurprises {
+        public static string EverythingYouNeedToRunYourGroup {
             get {
-                return ResourceManager.GetString("FairPricingNoSurprises", resourceCulture);
+                return ResourceManager.GetString("EverythingYouNeedToRunYourGroup", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Familiar group and event structures.
+        ///   Looks up a localized string similar to Fair pricing. Useful tools. No unnecessary complexity..
         /// </summary>
-        public static string FamiliarGroupAndEventStructures {
+        public static string FairPricingUsefulToolsNoUnnecessaryComplexity {
             get {
-                return ResourceManager.GetString("FamiliarGroupAndEventStructures", resourceCulture);
+                return ResourceManager.GetString("FairPricingUsefulToolsNoUnnecessaryComplexity", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Flexible privacy controls.
+        ///   Looks up a localized string similar to Events.
         /// </summary>
-        public static string FlexiblePrivacyControls {
+        public static string FeatureEvents {
             get {
-                return ResourceManager.GetString("FlexiblePrivacyControls", resourceCulture);
+                return ResourceManager.GetString("FeatureEvents", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to How members interact.
+        ///   Looks up a localized string similar to Schedule events, manage RSVPs, set attendance limits and automatically handle waitlists..
         /// </summary>
-        public static string HowMembersInteract {
+        public static string FeatureEventsDescription {
             get {
-                return ResourceManager.GetString("HowMembersInteract", resourceCulture);
+                return ResourceManager.GetString("FeatureEventsDescription", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to How we enable you.
+        ///   Looks up a localized string similar to Groups.
         /// </summary>
-        public static string HowWeEnableYou {
+        public static string FeatureGroups {
             get {
-                return ResourceManager.GetString("HowWeEnableYou", resourceCulture);
+                return ResourceManager.GetString("FeatureGroups", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Member roles and approvals.
+        ///   Looks up a localized string similar to Create your group, manage membership and decide how it works..
         /// </summary>
-        public static string MemberRolesAndApprovals {
+        public static string FeatureGroupsDescription {
             get {
-                return ResourceManager.GetString("MemberRolesAndApprovals", resourceCulture);
+                return ResourceManager.GetString("FeatureGroupsDescription", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Moving from another platform?.
+        ///   Looks up a localized string similar to Members.
         /// </summary>
-        public static string MovingFromAnotherPlatform {
+        public static string FeatureMembers {
             get {
-                return ResourceManager.GetString("MovingFromAnotherPlatform", resourceCulture);
+                return ResourceManager.GetString("FeatureMembers", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No bloated features. No confusing upgrades. Just solid infrastructure for real communities..
+        ///   Looks up a localized string similar to Approve members, manage organisers and keep track of who’s part of your community..
         /// </summary>
-        public static string NoBloatedFeatures {
+        public static string FeatureMembersDescription {
             get {
-                return ResourceManager.GetString("NoBloatedFeatures", resourceCulture);
+                return ResourceManager.GetString("FeatureMembersDescription", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Our goal is simple: make the platform sustainable to support your community..
+        ///   Looks up a localized string similar to Notifications.
         /// </summary>
-        public static string OurGoalIsSimple {
+        public static string FeatureNotifications {
             get {
-                return ResourceManager.GetString("OurGoalIsSimple", resourceCulture);
+                return ResourceManager.GetString("FeatureNotifications", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Payment portal.
+        ///   Looks up a localized string similar to Keep members informed about events, memberships and important group activity..
         /// </summary>
-        public static string PaymentPortal {
+        public static string FeatureNotificationsDescription {
             get {
-                return ResourceManager.GetString("PaymentPortal", resourceCulture);
+                return ResourceManager.GetString("FeatureNotificationsDescription", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Running a local group, club, or meetup should be rewarding - not expensive or complicated..
+        ///   Looks up a localized string similar to Payments.
         /// </summary>
-        public static string RunningALocalGroupShouldBeRewarding {
+        public static string FeaturePayments {
             get {
-                return ResourceManager.GetString("RunningALocalGroupShouldBeRewarding", resourceCulture);
+                return ResourceManager.GetString("FeaturePayments", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Schedule events with RSVP limits and waitlists.
+        ///   Looks up a localized string similar to Charge for memberships or events and manage payments from one place..
         /// </summary>
-        public static string ScheduleEvents {
+        public static string FeaturePaymentsDescription {
             get {
-                return ResourceManager.GetString("ScheduleEvents", resourceCulture);
+                return ResourceManager.GetString("FeaturePaymentsDescription", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Simple onboarding for existing members.
+        ///   Looks up a localized string similar to Free.
         /// </summary>
-        public static string SimpleOnboardingForExistingMembers {
+        public static string Free {
             get {
-                return ResourceManager.GetString("SimpleOnboardingForExistingMembers", resourceCulture);
+                return ResourceManager.GetString("Free", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Simple tools that just work.
+        ///   Looks up a localized string similar to Free to get started. No credit card required..
         /// </summary>
-        public static string SimpleToolsThatJustWork {
+        public static string FreeToGetStartedNoCreditCardRequired {
             get {
-                return ResourceManager.GetString("SimpleToolsThatJustWork", resourceCulture);
+                return ResourceManager.GetString("FreeToGetStartedNoCreditCardRequired", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Switching platforms shouldn’t mean starting over..
+        ///   Looks up a localized string similar to Give organisers the access they need without giving everyone access to everything..
         /// </summary>
-        public static string SwitchingPlatformsShouldntMeanStartingOver {
+        public static string GiveOrganisersTheAccessTheyNeed {
             get {
-                return ResourceManager.GetString("SwitchingPlatformsShouldntMeanStartingOver", resourceCulture);
+                return ResourceManager.GetString("GiveOrganisersTheAccessTheyNeed", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The problem.
+        ///   Looks up a localized string similar to Give your organisers the right access..
         /// </summary>
-        public static string TheProblem {
+        public static string GiveYourOrganisersTheRightAccess {
             get {
-                return ResourceManager.GetString("TheProblem", resourceCulture);
+                return ResourceManager.GetString("GiveYourOrganisersTheRightAccess", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Too many organisers feel priced out, boxed in, or dependent on platforms that don’t prioritise their community..
+        ///   Looks up a localized string similar to Import your existing members and move your group into a familiar group-and-event structure. Your members can then join you on {0} without you having to start from zero..
         /// </summary>
-        public static string TooManyOrganisersFeelPricedOut {
+        public static string ImportYourExistingMembers {
             get {
-                return ResourceManager.GetString("TooManyOrganisersFeelPricedOut", resourceCulture);
+                return ResourceManager.GetString("ImportYourExistingMembers", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Transparent pricing.
+        ///   Looks up a localized string similar to Join your group.
         /// </summary>
-        public static string TransparentPricing {
+        public static string JoinYourGroup {
             get {
-                return ResourceManager.GetString("TransparentPricing", resourceCulture);
+                return ResourceManager.GetString("JoinYourGroup", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to We support.
+        ///   Looks up a localized string similar to Keep sensitive member and payment information restricted to the people who need it..
         /// </summary>
-        public static string WeSupport {
+        public static string KeepSensitiveInformationRestricted {
             get {
-                return ResourceManager.GetString("WeSupport", resourceCulture);
+                return ResourceManager.GetString("KeepSensitiveInformationRestricted", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Who can respond.
+        ///   Looks up a localized string similar to Keep your members, events and communication in one place. {0} gives you the essentials for running a real-world community - without making you manage a complicated platform..
         /// </summary>
-        public static string WhoCanRespond {
+        public static string KeepYourMembersEventsAndCommunicationInOnePlace {
             get {
-                return ResourceManager.GetString("WhoCanRespond", resourceCulture);
+                return ResourceManager.GetString("KeepYourMembersEventsAndCommunicationInOnePlace", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Who can see events.
+        ///   Looks up a localized string similar to And because each group controls its own privacy settings, members only see what your group chooses to share..
         /// </summary>
-        public static string WhoCanSeeEvents {
+        public static string MembersOnlySeeWhatYourGroupChoosesToShare {
             get {
-                return ResourceManager.GetString("WhoCanSeeEvents", resourceCulture);
+                return ResourceManager.GetString("MembersOnlySeeWhatYourGroupChoosesToShare", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Who can see venues.
+        ///   Looks up a localized string similar to No high recurring fees. No platform lock-in..
         /// </summary>
-        public static string WhoCanSeeVenues {
+        public static string NoHighRecurringFeesNoPlatformLockIn {
             get {
-                return ResourceManager.GetString("WhoCanSeeVenues", resourceCulture);
+                return ResourceManager.GetString("NoHighRecurringFeesNoPlatformLockIn", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You control.
+        ///   Looks up a localized string similar to No rebuilding your member list. No starting over..
         /// </summary>
-        public static string YouControl {
+        public static string NoRebuildingYourMemberListNoStartingOver {
             get {
-                return ResourceManager.GetString("YouControl", resourceCulture);
+                return ResourceManager.GetString("NoRebuildingYourMemberListNoStartingOver", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Whether your group is public, private, paid, free, or somewhere in between - you decide how it runs..
+        ///   Looks up a localized string similar to Ready to run your community your way?.
         /// </summary>
-        public static string YouDecideHowYourGroupRuns {
+        public static string ReadyToRunYourCommunityYourWay {
             get {
-                return ResourceManager.GetString("YouDecideHowYourGroupRuns", resourceCulture);
+                return ResourceManager.GetString("ReadyToRunYourCommunityYourWay", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Your community comes with you..
+        ///   Looks up a localized string similar to Respond to events.
         /// </summary>
-        public static string YourCommunityComesWithYou {
+        public static string RespondToEvents {
             get {
-                return ResourceManager.GetString("YourCommunityComesWithYou", resourceCulture);
+                return ResourceManager.GetString("RespondToEvents", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Run your groups, events and memberships in one place - with the tools you need, fair pricing, and control over your community..
+        /// </summary>
+        public static string RunYourGroupsEventsAndMembershipsInOnePlace {
+            get {
+                return ResourceManager.GetString("RunYourGroupsEventsAndMembershipsInOnePlace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Running a community rarely means doing everything yourself..
+        /// </summary>
+        public static string RunningACommunityRarelyMeansDoingEverythingYourself {
+            get {
+                return ResourceManager.GetString("RunningACommunityRarelyMeansDoingEverythingYourself", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to See event venues.
+        /// </summary>
+        public static string SeeEventVenues {
+            get {
+                return ResourceManager.GetString("SeeEventVenues", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to See member information.
+        /// </summary>
+        public static string SeeMemberInformation {
+            get {
+                return ResourceManager.GetString("SeeMemberInformation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to See your events.
+        /// </summary>
+        public static string SeeYourEvents {
+            get {
+                return ResourceManager.GetString("SeeYourEvents", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Simple for your members..
+        /// </summary>
+        public static string SimpleForYourMembers {
+            get {
+                return ResourceManager.GetString("SimpleForYourMembers", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Start a new group or bring an existing one with you..
+        /// </summary>
+        public static string StartANewGroupOrBringAnExistingOneWithYou {
+            get {
+                return ResourceManager.GetString("StartANewGroupOrBringAnExistingOneWithYou", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Start for free. Upgrade when your community needs more..
+        /// </summary>
+        public static string StartForFreeUpgradeWhenYourCommunityNeedsMore {
+            get {
+                return ResourceManager.GetString("StartForFreeUpgradeWhenYourCommunityNeedsMore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Straightforward pricing..
+        /// </summary>
+        public static string StraightforwardPricing {
+            get {
+                return ResourceManager.GetString("StraightforwardPricing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to They get a clear group page, upcoming events, simple RSVPs, waitlists and the information they need - all in one place..
+        /// </summary>
+        public static string TheyGetAClearGroupPage {
+            get {
+                return ResourceManager.GetString("TheyGetAClearGroupPage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to We built {0} because running a community shouldn’t mean paying more and more just to keep the tools you’ve always used..
+        /// </summary>
+        public static string WeBuiltThisPlatformBecause {
+            get {
+                return ResourceManager.GetString("WeBuiltThisPlatformBecause", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} provides the infrastructure. You run the community..
+        /// </summary>
+        public static string WeProvideTheInfrastructureYouRunTheCommunity {
+            get {
+                return ResourceManager.GetString("WeProvideTheInfrastructureYouRunTheCommunity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You run the community. The platform just gives you the tools..
+        /// </summary>
+        public static string YouRunTheCommunity {
+            get {
+                return ResourceManager.GetString("YouRunTheCommunity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You should be able to run your group, understand what you’re paying for, control your members’ experience and know that your community isn’t locked into a platform..
+        /// </summary>
+        public static string YouShouldBeAbleToRunYourGroup {
+            get {
+                return ResourceManager.GetString("YouShouldBeAbleToRunYourGroup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You shouldn’t have to rebuild your community from scratch just because you change platforms..
+        /// </summary>
+        public static string YouShouldntHaveToRebuildYourCommunityFromScratch {
+            get {
+                return ResourceManager.GetString("YouShouldntHaveToRebuildYourCommunityFromScratch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Your community. Your rules..
+        /// </summary>
+        public static string YourCommunityYourRules {
+            get {
+                return ResourceManager.GetString("YourCommunityYourRules", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Your members, events and group information are managed through your account, with privacy controls that let you decide what is visible and who can access it..
+        /// </summary>
+        public static string YourMembersEventsAndGroupInformationAreManagedThroughYourAccount {
+            get {
+                return ResourceManager.GetString("YourMembersEventsAndGroupInformationAreManagedThroughYourAccount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Your members shouldn’t need to learn a complicated platform just to come to an event..
+        /// </summary>
+        public static string YourMembersShouldntNeedToLearnAComplicatedPlatform {
+            get {
+                return ResourceManager.GetString("YourMembersShouldntNeedToLearnAComplicatedPlatform", resourceCulture);
             }
         }
     }
