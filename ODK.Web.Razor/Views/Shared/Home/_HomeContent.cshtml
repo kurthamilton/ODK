@@ -1,18 +1,29 @@
 ﻿@using ODK.Resources.Resources
+@using ODK.Services.Platforms
 @using ODK.Web.Common.Routes
+@using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Home
+@model HomeContentViewModel
 @inject IOdkRoutes OdkRoutes
+@inject IPlatformProvider PlatformProvider
+@inject IRequestStore RequestStore
 @{
-    var themes = new[] { BandThemeType.Dark, BandThemeType.Light };
-    var i = 0;
+    var platformName = PlatformProvider.GetName(RequestStore.Platform);
+
+    // Claimed only while a plan that costs nothing is on sale, so the page never invites a visitor to start
+    // for free when everything on offer is paid.
+    var hasFreeSubscription = Model.SiteSubscriptions.Subscriptions.Any(x => x.Subscription.Free);
 }
+
 <main id="main">
     @await Html.PartialAsync("Components/_ToastAnchor", new ToastAnchorViewModel { PseudoContainer = true })
+
     @await Html.PartialAsync("Components/_Band", new BandViewModel
     {
-        Content = 
-            @<div>
+        Content =
+            @<div class="d-flex flex-column gap-3">
                 <div class="button-container justify-content-center">
                     @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
                     {
@@ -20,82 +31,195 @@
                         Icon = IconType.Rocket,
                         Route = OdkRoutes.GroupAdmin.Create(),
                         Text = ButtonResources.StartYourGroup
-                    })                    
+                    })
+                    <a class="btn btn-outline-primary" href="@OdkRoutes.Site.Migrate">
+                        @ButtonResources.MoveYourGroup
+                    </a>
                 </div>
+                <p class="mb-0">@HomePageResources.NoHighRecurringFeesNoPlatformLockIn</p>
             </div>,
+        Heading = new HeadingViewModel
+        {
+            Title = HomePageResources.ABetterHomeForYourCommunity,
+            Type = HeadingType.H1
+        },
         Hero = true,
-        Subtitle = HomePageResources.ASimplerFairerPlatformForRunningGroupsAndEvents,
-        Theme = themes[i++ % 2],
-        Title = $"{HomePageResources.BuildYourCommunity}."
+        Subtitle = HomePageResources.RunYourGroupsEventsAndMembershipsInOnePlace,
+        Theme = BandThemeType.Dark
     })
 
     @await Html.PartialAsync("Components/_Band", new BandViewModel
     {
-        Content = 
-            @<div>
-                <p>@HomePageResources.NoBloatedFeatures</p>
-                <ul class="list-group list-group-flush mb-3">
-                    <li class="list-group-item">@HomePageResources.CreateAndManageGroups</li>
-                    <li class="list-group-item">@HomePageResources.ScheduleEvents</li>
-                    <li class="list-group-item">@HomePageResources.FlexiblePrivacyControls</li>
-                    <li class="list-group-item">@HomePageResources.MemberRolesAndApprovals</li>
-                    <li class="list-group-item">@HomePageResources.BuiltInNotifications</li>
-                    <li class="list-group-item">@HomePageResources.PaymentPortal</li>
-                </ul>                
+        Class = "band--wide",
+        Content =
+            @<div class="d-flex flex-column gap-4">
+                <p class="mb-0">
+                    @string.Format(HomePageResources.KeepYourMembersEventsAndCommunicationInOnePlace, platformName)
+                </p>
+                @await Html.PartialAsync("Home/_HomeFeatures", null)
             </div>,
+        Heading = new HeadingViewModel
+        {
+            Title = HomePageResources.EverythingYouNeedToRunYourGroup,
+            Type = HeadingType.H2
+        },
         Hero = true,
-        Theme = themes[i++ % 2],
-        Title = $"{HomePageResources.HowWeEnableYou}."
+        Theme = BandThemeType.Light
     })
 
     @await Html.PartialAsync("Components/_Band", new BandViewModel
     {
-        Content = 
-            @<div>
-                <div>@HomePageResources.YouControl:</div>
-                <ul class="list-group list-group-flush mb-3">
-                    <li class="list-group-item">@HomePageResources.WhoCanSeeEvents</li>
-                    <li class="list-group-item">@HomePageResources.WhoCanRespond</li>
-                    <li class="list-group-item">@HomePageResources.WhoCanSeeVenues</li>
-                    <li class="list-group-item">@HomePageResources.HowMembersInteract</li>
-                </ul>
-                <p>@HomePageResources.YouDecideHowYourGroupRuns</p>
+        Content =
+            @<div class="d-flex flex-column gap-3">
+                <p class="mb-0">@HomePageResources.EveryGroupIsDifferent</p>
+                <div>
+                    <div>@HomePageResources.ControlWhoCan</div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">@HomePageResources.SeeYourEvents</li>
+                        <li class="list-group-item">@HomePageResources.RespondToEvents</li>
+                        <li class="list-group-item">@HomePageResources.SeeEventVenues</li>
+                        <li class="list-group-item">@HomePageResources.JoinYourGroup</li>
+                        <li class="list-group-item">@HomePageResources.SeeMemberInformation</li>
+                        <li class="list-group-item">@HomePageResources.ContactYourOrganisers</li>
+                    </ul>
+                </div>
+                <p class="mb-0">@HomePageResources.GiveOrganisersTheAccessTheyNeed</p>
+                <p class="mb-0 fw-bold">@HomePageResources.YouRunTheCommunity</p>
             </div>,
+        Heading = new HeadingViewModel
+        {
+            Title = HomePageResources.YourCommunityYourRules,
+            Type = HeadingType.H2
+        },
         Hero = true,
-        Theme = themes[i++ % 2],
-        Title = $"{HomePageResources.BuiltWithOrganisersInMind}."
+        Theme = BandThemeType.Grey
     })
 
     @await Html.PartialAsync("Components/_Band", new BandViewModel
     {
-        Content = 
-            @<div>
-                <p>@HomePageResources.SwitchingPlatformsShouldntMeanStartingOver</p>
-                <div>@HomePageResources.WeSupport:</div>
-                <ul class="list-group list-group-flush mb-3">
-                    <li class="list-group-item">@HomePageResources.FamiliarGroupAndEventStructures</li>
-                    <li class="list-group-item">@HomePageResources.SimpleOnboardingForExistingMembers</li>
-                </ul>
-                <p>
-                    <a class="btn btn-secondary">
+        Content =
+            @<div class="d-flex flex-column gap-3">
+                <p class="mb-0">@HomePageResources.YourMembersShouldntNeedToLearnAComplicatedPlatform</p>
+                <p class="mb-0">@HomePageResources.TheyGetAClearGroupPage</p>
+                <p class="mb-0">@HomePageResources.MembersOnlySeeWhatYourGroupChoosesToShare</p>
+            </div>,
+        Heading = new HeadingViewModel
+        {
+            Title = HomePageResources.SimpleForYourMembers,
+            Type = HeadingType.H2
+        },
+        Hero = true,
+        Theme = BandThemeType.Light
+    })
+
+    @await Html.PartialAsync("Components/_Band", new BandViewModel
+    {
+        Content =
+            @<div class="d-flex flex-column gap-3">
+                <p class="mb-0">@HomePageResources.YouShouldntHaveToRebuildYourCommunityFromScratch</p>
+                <p class="mb-0">@string.Format(HomePageResources.ImportYourExistingMembers, platformName)</p>
+                <div class="button-container justify-content-center">
+                    <a class="btn btn-primary" href="@OdkRoutes.Site.Migrate">
                         @ButtonResources.SeeHowMigrationWorks
                     </a>
-                </p>
+                </div>
+                <p class="mb-0">@HomePageResources.NoRebuildingYourMemberListNoStartingOver</p>
             </div>,
+        Heading = new HeadingViewModel
+        {
+            Title = HomePageResources.AlreadyHaveACommunityBringItWithYou,
+            Type = HeadingType.H2
+        },
         Hero = true,
-        Theme = themes[i++ % 2],
-        Title = $"{HomePageResources.MovingFromAnotherPlatform}"
+        Theme = BandThemeType.Dark
     })
 
     @await Html.PartialAsync("Components/_Band", new BandViewModel
     {
-        Content = 
-            @<div>
-                @*<p>@HomePageResources.CommunitiesGrowBestWhenOrganisersArentStressedAboutMonthlyBills</p>*@
-                <p>@HomePageResources.OurGoalIsSimple</p>
+        Content =
+            @<div class="d-flex flex-column gap-3">
+                <p class="mb-0">@HomePageResources.RunningACommunityRarelyMeansDoingEverythingYourself</p>
+                <p class="mb-0">@HomePageResources.AddCoOrganisers</p>
+                <p class="mb-0">@HomePageResources.KeepSensitiveInformationRestricted</p>
             </div>,
+        Heading = new HeadingViewModel
+        {
+            Title = HomePageResources.GiveYourOrganisersTheRightAccess,
+            Type = HeadingType.H2
+        },
         Hero = true,
-        Theme = themes[i++ % 2],
-        Title = $"{HomePageResources.FairPricingNoSurprises}"
+        Theme = BandThemeType.Light
+    })
+
+    @await Html.PartialAsync("Components/_Band", new BandViewModel
+    {
+        Class = "band--wide",
+        Content =
+            @<div class="d-flex flex-column gap-4">
+                <p class="mb-0">@HomePageResources.StartForFreeUpgradeWhenYourCommunityNeedsMore</p>
+                @await Html.PartialAsync("Home/_HomePricing", Model.SiteSubscriptions)
+                <div class="button-container justify-content-center">
+                    <a class="btn btn-primary" href="@OdkRoutes.Site.Pricing">
+                        @ButtonResources.SeeFullPricing
+                    </a>
+                </div>
+            </div>,
+        Heading = new HeadingViewModel
+        {
+            Title = HomePageResources.StraightforwardPricing,
+            Type = HeadingType.H2
+        },
+        Hero = true,
+        Theme = BandThemeType.Grey
+    })
+
+    @await Html.PartialAsync("Components/_Band", new BandViewModel
+    {
+        Content =
+            @<div class="d-flex flex-column gap-3">
+                <p class="mb-0">@string.Format(HomePageResources.WeBuiltThisPlatformBecause, platformName)</p>
+                <p class="mb-0">@HomePageResources.YouShouldBeAbleToRunYourGroup</p>
+                <p class="mb-0 fw-bold">@HomePageResources.FairPricingUsefulToolsNoUnnecessaryComplexity</p>
+                <p class="mb-0">@string.Format(HomePageResources.WeProvideTheInfrastructureYouRunTheCommunity, platformName)</p>
+                <p class="mb-0">@HomePageResources.YourMembersEventsAndGroupInformationAreManagedThroughYourAccount</p>
+            </div>,
+        Heading = new HeadingViewModel
+        {
+            Title = HomePageResources.CommunitiesShouldntFeelLikeSubscriptions,
+            Type = HeadingType.H2
+        },
+        Hero = true,
+        Theme = BandThemeType.Light
+    })
+
+    @await Html.PartialAsync("Components/_Band", new BandViewModel
+    {
+        Content =
+            @<div class="d-flex flex-column gap-3">
+                <p class="mb-0">@HomePageResources.StartANewGroupOrBringAnExistingOneWithYou</p>
+                <div class="button-container justify-content-center">
+                    @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                    {
+                        Class = "btn btn-primary",
+                        Icon = IconType.Rocket,
+                        Route = OdkRoutes.GroupAdmin.Create(),
+                        Text = ButtonResources.StartYourGroup
+                    })
+                    <a class="btn btn-outline-primary" href="@OdkRoutes.Site.Migrate">
+                        @ButtonResources.MoveYourGroup
+                    </a>
+                </div>
+                @if (hasFreeSubscription)
+                {
+                    <p class="mb-0">@HomePageResources.FreeToGetStartedNoCreditCardRequired</p>
+                }
+            </div>,
+        Heading = new HeadingViewModel
+        {
+            Title = HomePageResources.ReadyToRunYourCommunityYourWay,
+            Type = HeadingType.H2
+        },
+        Hero = true,
+        Theme = BandThemeType.Dark
     })
 </main>

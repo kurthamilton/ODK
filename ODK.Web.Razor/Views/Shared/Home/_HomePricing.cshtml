@@ -1,0 +1,58 @@
+﻿@using ODK.Core.Subscriptions
+@using ODK.Resources.Resources
+@using ODK.Services.Subscriptions.ViewModels
+@using ODK.Web.Razor.Models.Components
+@model SiteSubscriptionsViewModel
+@{
+    // A plan priced in several currencies shows one of them, so the prices here read as a single figure
+    // rather than a list. The view model names the member's or the chapter's currency where it knows one.
+    var currency = Model.Currency
+        ?? Model.Currencies.FirstOrDefault()
+        ?? Model.Subscriptions.SelectMany(x => x.Prices).Select(x => x.Currency).FirstOrDefault();
+
+    var subscriptions = Model
+        .Subscriptions
+        .OrderBy(x => x.Prices.Count > 0 ? x.Prices.Min(price => price.Amount) : 0)
+        .ToArray();
+}
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 band__grid"
+     data-odk-component="_HomePricing">
+    @foreach (var subscriptionViewModel in subscriptions)
+    {
+        var subscription = subscriptionViewModel.Subscription;
+        var prices = subscriptionViewModel
+            .Prices
+            .Where(x => currency == null || x.CurrencyId == currency.Id)
+            .OrderBy(x => x.Amount)
+            .ToArray();
+
+        <div class="col">
+            @await Html.PartialAsync("Components/_Card", new CardViewModel
+            {
+                BodyContentFunc =
+                    @<div class="d-flex flex-column gap-2 h-100">
+                        @await Html.PartialAsync("Components/_Heading", new HeadingViewModel
+                        {
+                            Class = "h5 mb-0",
+                            Title = subscription.Name,
+                            Type = HeadingType.H3
+                        })
+
+                        <div class="fs-5 fw-bold">
+                            @if (currency != null)
+                            {
+                                foreach (var price in prices)
+                                {
+                                    <div>@currency.ToAmountString(price.Amount)/@price.Frequency.PeriodUnit()</div>
+                                }
+                            }
+                        </div>
+
+                        <div>@Html.Raw(subscription.DescriptionHtml)</div>
+                    </div>,
+                FullHeight = true
+            })
+        </div>
+    }
+</div>

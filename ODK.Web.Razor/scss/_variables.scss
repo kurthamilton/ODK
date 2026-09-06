@@ -25,6 +25,14 @@ $odk-bg-dark-level-2-rgb: to-rgb($odk-bg-dark-level-2);
     --odk-bg-level-2: #{$odk-bg-light-level-2};
     --odk-bg-level-2-rgb: #{$odk-bg-light-level-2-rgb};
     --odk-bg-level-2-hover: #{lighten($odk-bg-light-level-2, 5%)};
+    /* Bootstrap's light-theme text and border colours, pinned. For something that paints its own background
+       and so has to keep light-theme text whatever theme the page is in - a grey band, which states no
+       data-bs-theme because that would paint the components inside it for a white background. Not
+       --bs-body-color / --bs-border-color: those follow the page's theme, which is the thing being opted
+       out of. */
+    --odk-body-color-light: #{$body-color};
+    --odk-body-color-light-rgb: #{to-rgb($body-color)};
+    --odk-border-color-light: #{$border-color};
     --odk-color-placeholder: var(--bs-secondary-color);
 
     // The space between adjacent sections. A custom property rather than a Sass variable so a page or a

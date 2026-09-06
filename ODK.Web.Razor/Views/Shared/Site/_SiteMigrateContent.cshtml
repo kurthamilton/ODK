@@ -1,0 +1,102 @@
+﻿@using ODK.Resources.Resources
+@using ODK.Services.Platforms
+@using ODK.Web.Common.Routes
+@using ODK.Web.Common.Services
+@using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Components
+@inject IOdkRoutes OdkRoutes
+@inject IPlatformProvider PlatformProvider
+@inject IRequestStore RequestStore
+@{
+    var platformName = PlatformProvider.GetName(RequestStore.Platform);
+}
+
+<div class="section-stack" data-odk-component="_SiteMigrateContent">
+    <p>
+        You shouldn't have to rebuild your community from scratch just because you change platforms.
+        Bring the members you already have, and pick up where you left off.
+    </p>
+
+    @await Html.PartialAsync("Components/_Section", new SectionViewModel
+    {
+        BodyContentFunc =
+            @<ol class="d-flex flex-column gap-3">
+                <li>
+                    <strong>Create your group.</strong>
+                    Name it, say where it meets and choose the topics it covers. Your group is yours to
+                    set up the way it already works.
+                </li>
+                <li>
+                    <strong>Import your members.</strong>
+                    Download the template, fill in your existing member list and upload it. You see a
+                    preview of exactly who will be invited before anything is saved - including anyone
+                    who already has an account here.
+                </li>
+                <li>
+                    <strong>Let your members join you.</strong>
+                    Everyone in the import is invited by email and activates their own account, so
+                    nobody is signed up on their behalf and no passwords change hands.
+                </li>
+                <li>
+                    <strong>Start scheduling events.</strong>
+                    Publish your first event and your members see it on your group page, with RSVPs,
+                    attendance limits and waitlists handled for you.
+                </li>
+            </ol>,
+        Heading = new HeadingViewModel
+        {
+            Title = "How it works",
+            Type = HeadingType.H3
+        }
+    })
+
+    @await Html.PartialAsync("Components/_Section", new SectionViewModel
+    {
+        BodyContentFunc =
+            @<div class="d-flex flex-column gap-3">
+                <p class="mb-0">
+                    The import takes a CSV file with a first name, last name and email address for each
+                    member. Anyone who already has an account is recognised rather than duplicated, and
+                    anyone already in your group is skipped.
+                </p>
+                <p class="mb-0">
+                    Events are not imported - your group starts with a clean calendar. Everything else
+                    about how your group runs is set up here: who can see your events, who can respond,
+                    who can join, and which organisers can do what.
+                </p>
+            </div>,
+        Heading = new HeadingViewModel
+        {
+            Title = "What comes across",
+            Type = HeadingType.H3
+        }
+    })
+
+    @await Html.PartialAsync("Components/_Section", new SectionViewModel
+    {
+        BodyContentFunc =
+            @<div class="d-flex flex-column gap-3">
+                <p class="mb-0">
+                    @string.Format(HomePageResources.WeProvideTheInfrastructureYouRunTheCommunity, platformName)
+                    @HomePageResources.NoRebuildingYourMemberListNoStartingOver
+                </p>
+                <div class="button-container">
+                    @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                    {
+                        Class = "btn btn-primary",
+                        Icon = IconType.Rocket,
+                        Route = OdkRoutes.GroupAdmin.Create(),
+                        Text = ButtonResources.StartYourGroup
+                    })
+                    <a class="btn btn-outline-primary" href="@OdkRoutes.Site.Pricing">
+                        @ButtonResources.SeeFullPricing
+                    </a>
+                </div>
+            </div>,
+        Heading = new HeadingViewModel
+        {
+            Title = "Ready when you are",
+            Type = HeadingType.H3
+        }
+    })
+</div>

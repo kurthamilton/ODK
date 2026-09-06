@@ -55,8 +55,8 @@ ODK.Web.Common              Web helpers shared across web projects (e.g. route b
 ODK.Web.Razor               The web app: Razor Pages, MVC controllers, views, wwwroot.
 ```
 
-Tests: `ODK.Core.Tests`, `ODK.Core.Workflows.Tests`, `ODK.Services.Tests`,
-`ODK.Services.Integrations.Tests`.
+Tests: `ODK.Core.Tests`, `ODK.Core.Workflows.Tests`, `ODK.Data.EntityFramework.Migrations.Tests`,
+`ODK.Services.Tests`, `ODK.Services.Integrations.Tests`, `ODK.Web.Razor.Tests`.
 
 ## Build / test / run
 
@@ -81,12 +81,19 @@ Tests: `ODK.Core.Tests`, `ODK.Core.Workflows.Tests`, `ODK.Services.Tests`,
   the one output path the build was given: without them the other instance's tree arrives as this build's
   Content, and — an artifacts path having relocated `obj` too — its generated `.cs` is compiled in, which
   duplicates every assembly attribute (`CS0579`). Measured at 410 Content and 175 Compile items.
-- **CSS:** `.scss` in `wwwroot/scss` compiles to `wwwroot/css`, which is **generated and gitignored** - the
-  `BuildClientAssets` csproj target compiles it on every build, so nothing deployed depends on a local
+- **CSS:** `.scss` in `ODK.Web.Razor/scss` compiles to `wwwroot/css`, which is **generated and gitignored** -
+  the `BuildClientAssets` csproj target compiles it on every build, so nothing deployed depends on a local
   build being current. `Scripts/app/build-css.bat` (or `npm run build:css` from `ODK.Web.Razor`) recompiles
-  it on its own, which is what you want mid-session, since `wwwroot/scss` is not watched. Don't hand-edit
+  it on its own, which is what you want mid-session, since the sources are not watched. Don't hand-edit
   compiled `.css`, and **don't run a Sass watcher alongside `dotnet watch`** - a stylesheet rewritten while
   MSBuild is evaluating the project takes `dotnet watch` down with it. See the README.
+  **The sources live outside `wwwroot` and have to stay there.** Visual Studio saves a file by writing a temp
+  file beside it and renaming over the original, so every save creates two files in that directory - and
+  `dotnet watch` dies on a file created anywhere under `wwwroot` (dotnet/roslyn#84062). No csproj item
+  metadata prevents it: the crash comes before the watcher decides whether the file belongs to the project.
+  The same hazard still applies to anything hand-edited that must live under `wwwroot`, `wwwroot/js/odk.*.js`
+  above all; `dotnet watch --no-hot-reload` is the way round it when that bites.
+  `Scripts/app/watch-wwwroot.bat` logs what appears under `wwwroot`, for pinning down another instance.
 - **CSS/JS bundles:** the four script bundles and the vendor stylesheet bundle the layouts reference are
   built by `ODK.Web.Razor/build/build-bundles.mjs` (esbuild) into `wwwroot/js/odk.bundle*.js` and
   `wwwroot/css/odk.bundle.lib.css`, and are generated and gitignored, like the compiled CSS. `BUNDLES` at the top of
@@ -278,6 +285,10 @@ Three components divide a page, and they are not interchangeable:
   tile, a sidebar card. Never reach for it merely to give a section a title.
 - **`Components/_Band`** — a full-width strip down a marketing page, with its own background and light/dark
   treatment. Home pages only. A band divides a *page* into strips; a section divides a page's *content*.
+  It titles itself through a `HeadingViewModel` like a section does, and the *page* owns the levels: the
+  first band carries the `H1` and the rest are `H2`, so a page of nine bands has one entry at the top of
+  its outline rather than nine. Size follows level - `h1.band__title` is larger in `_bands.scss` - so a
+  band that reads too big is still not a reason to lower its level.
 
 `SectionViewModel` and `PanelViewModel` are deliberately the same surface (`Heading`, `BodyContent` /
 `BodyContentFunc`, `TitleEndContentFunc`, `Class`), so promoting a section to a panel is a one-word change at

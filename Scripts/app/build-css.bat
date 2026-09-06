@@ -1,6 +1,6 @@
 @echo off
-rem Compiles wwwroot\scss to wwwroot\css. Run this after editing a .scss - nothing watches them while the
-rem app is running (see run.app.bat for why), then hard-refresh the browser.
+rem Compiles ODK.Web.Razor\scss to ODK.Web.Razor\wwwroot\css. Run this after editing a .scss - nothing
+rem watches them while the app is running (see run.bat for why), then hard-refresh the browser.
 setlocal
 
 rem Resolved from this script's own location, so it works whatever the current directory is.

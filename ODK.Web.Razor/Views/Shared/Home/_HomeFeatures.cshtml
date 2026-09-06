@@ -1,0 +1,48 @@
+﻿@using ODK.Resources.Resources
+@using ODK.Web.Razor.Models.Components
+@{
+    var features = new[]
+    {
+        (Icon: IconType.Groups,
+            Name: HomePageResources.FeatureGroups,
+            Description: HomePageResources.FeatureGroupsDescription),
+        (Icon: IconType.Calendar,
+            Name: HomePageResources.FeatureEvents,
+            Description: HomePageResources.FeatureEventsDescription),
+        (Icon: IconType.Members,
+            Name: HomePageResources.FeatureMembers,
+            Description: HomePageResources.FeatureMembersDescription),
+        (Icon: IconType.Dollar,
+            Name: HomePageResources.FeaturePayments,
+            Description: HomePageResources.FeaturePaymentsDescription),
+        (Icon: IconType.Bell,
+            Name: HomePageResources.FeatureNotifications,
+            Description: HomePageResources.FeatureNotificationsDescription)
+    };
+}
+
+<div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-3 band__grid justify-content-center"
+     data-odk-component="_HomeFeatures">
+    @foreach (var feature in features)
+    {
+        <div class="col">
+            @await Html.PartialAsync("Components/_Card", new CardViewModel
+            {                
+                BodyContentFunc =
+                    @<div class="d-flex flex-column gap-2 h-100">
+                        <div class="d-flex align-items-center gap-2">
+                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(feature.Icon))
+                            @await Html.PartialAsync("Components/_Heading", new HeadingViewModel
+                            {
+                                Class = "h5 mb-0",
+                                Title = feature.Name,
+                                Type = HeadingType.H3
+                            })
+                        </div>
+                        <p class="mb-0">@feature.Description</p>
+                    </div>,
+                FullHeight = true
+            })
+        </div>
+    }
+</div>

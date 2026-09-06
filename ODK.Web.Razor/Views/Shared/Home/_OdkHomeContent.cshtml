@@ -34,9 +34,13 @@
                 time, and method of construction cannot entirely be recalled.
                 If you want to follow us on our path, we can show you the way...
             </p>,
+        Heading = new HeadingViewModel
+        {
+            Title = "The Drunken Knitifesto",
+            Type = HeadingType.H1
+        },
         Hero = true,
-        Theme = BandThemeType.Dark,
-        Title = "The Drunken Knitifesto"
+        Theme = BandThemeType.Dark
     })
 
     @await Html.PartialAsync("Home/_ThreeTenetsBand", null)
@@ -56,9 +60,13 @@
                     or someone who's new to town and wants to take on a new hobby while making friends, then the Drunken Knitwits are the people you’ve been looking for.
                 </p>
             </div>,
+        Heading = new HeadingViewModel
+        {
+            Title = "About the Drunken Knitwits",
+            Type = HeadingType.H2
+        },
         Hero = true,
-        Theme = BandThemeType.Grey,
-        Title = "About the Drunken Knitwits"
+        Theme = BandThemeType.Grey
     })
 
     <img class="img--hero" src="assets/img/home-timeline.png" />

@@ -12,6 +12,12 @@ public class SiteRoutes
     /// </summary>
     public string Feedback => "/feedback";
 
+    /// <summary>
+    /// How an organiser brings a group here from another platform. Not available on the DrunkenKnitwits
+    /// platform, which has no member-owned groups to move one into.
+    /// </summary>
+    public string Migrate => "/migrate";
+
     public string Pricing => "/pricing";
 
     public string Privacy => "/privacy";

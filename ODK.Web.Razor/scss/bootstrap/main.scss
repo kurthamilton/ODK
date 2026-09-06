@@ -1,0 +1,56 @@
+@import "_variables";
+
+@import "../../wwwroot/lib/bootstrap/scss/mixins/banner";
+@include bsBanner("");
+
+
+// scss-docs-start import-stack
+// Configuration
+@import "../../wwwroot/lib/bootstrap/scss/functions";
+@import "../../wwwroot/lib/bootstrap/scss/variables";
+@import "../../wwwroot/lib/bootstrap/scss/variables-dark";
+@import "../../wwwroot/lib/bootstrap/scss/maps";
+@import "../../wwwroot/lib/bootstrap/scss/mixins";
+@import "../../wwwroot/lib/bootstrap/scss/utilities";
+
+@import "_postvariables";
+
+// Layout & components
+@import "../../wwwroot/lib/bootstrap/scss/root";
+@import "../../wwwroot/lib/bootstrap/scss/reboot";
+@import "../../wwwroot/lib/bootstrap/scss/type";
+@import "../../wwwroot/lib/bootstrap/scss/images";
+@import "../../wwwroot/lib/bootstrap/scss/containers";
+@import "../../wwwroot/lib/bootstrap/scss/grid";
+@import "../../wwwroot/lib/bootstrap/scss/tables";
+@import "../../wwwroot/lib/bootstrap/scss/forms";
+@import "../../wwwroot/lib/bootstrap/scss/buttons";
+@import "../../wwwroot/lib/bootstrap/scss/transitions";
+@import "../../wwwroot/lib/bootstrap/scss/dropdown";
+@import "../../wwwroot/lib/bootstrap/scss/button-group";
+@import "../../wwwroot/lib/bootstrap/scss/nav";
+@import "../../wwwroot/lib/bootstrap/scss/navbar";
+@import "../../wwwroot/lib/bootstrap/scss/card";
+@import "../../wwwroot/lib/bootstrap/scss/accordion";
+@import "../../wwwroot/lib/bootstrap/scss/breadcrumb";
+@import "../../wwwroot/lib/bootstrap/scss/pagination";
+@import "../../wwwroot/lib/bootstrap/scss/badge";
+@import "../../wwwroot/lib/bootstrap/scss/alert";
+@import "../../wwwroot/lib/bootstrap/scss/progress";
+@import "../../wwwroot/lib/bootstrap/scss/list-group";
+@import "../../wwwroot/lib/bootstrap/scss/close";
+@import "../../wwwroot/lib/bootstrap/scss/toasts";
+@import "../../wwwroot/lib/bootstrap/scss/modal";
+@import "../../wwwroot/lib/bootstrap/scss/tooltip";
+@import "../../wwwroot/lib/bootstrap/scss/popover";
+@import "../../wwwroot/lib/bootstrap/scss/carousel";
+@import "../../wwwroot/lib/bootstrap/scss/spinners";
+@import "../../wwwroot/lib/bootstrap/scss/offcanvas";
+@import "../../wwwroot/lib/bootstrap/scss/placeholders";
+
+// Helpers
+@import "../../wwwroot/lib/bootstrap/scss/helpers";
+
+// Utilities
+@import "../../wwwroot/lib/bootstrap/scss/utilities/api";
+// scss-docs-end import-stack

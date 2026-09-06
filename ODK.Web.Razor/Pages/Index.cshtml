@@ -1,8 +1,11 @@
 ﻿@page "/"
 @using ODK.Core.Platforms
 @using ODK.Services.Chapters
+@using ODK.Services.Subscriptions
+@using ODK.Web.Razor.Models.Home
 @model IndexModel
 @inject IChapterService ChapterService
+@inject ISiteSubscriptionService SiteSubscriptionService
 @{
     Layout = "_HomeLayout";
     Model.Path = "/";
@@ -10,7 +13,7 @@
 
 @if (Model.Platform == PlatformType.DrunkenKnitwits)
 {
-    var viewModel = await ChapterService.GetOdkHomeHeaderViewModel();    
+    var viewModel = await ChapterService.GetOdkHomeHeaderViewModel();
     <div class="home-page">
         @await Html.PartialAsync("Header/_OdkHomeHeader", viewModel)
     </div>
@@ -18,5 +21,11 @@
 }
 else
 {
-    @await Html.PartialAsync("Home/_HomeContent")
+    var siteSubscriptions = await SiteSubscriptionService
+        .GetSiteSubscriptionsViewModel(Model.ServiceRequest, chapterId: null);
+
+    @await Html.PartialAsync("Home/_HomeContent", new HomeContentViewModel
+    {
+        SiteSubscriptions = siteSubscriptions
+    })
 }

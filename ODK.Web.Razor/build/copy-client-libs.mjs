@@ -30,7 +30,7 @@ import { fileURLToPath } from 'node:url';
  */
 const COPIES = [
     /* Only the bundle build is served - it is the one build/build-bundles.mjs names. scss is
-       here because wwwroot/scss imports Bootstrap's own sources directly (see scss/bootstrap/main.scss)
+       here because the SCSS imports Bootstrap's own sources directly (see scss/bootstrap/main.scss)
        rather than overriding compiled CSS, so the package's compiled dist/css is never asked for. */
     ['bootstrap/dist/js/bootstrap.bundle.js', 'bootstrap/js/bootstrap.bundle.js'],
     ['bootstrap/scss', 'bootstrap/scss'],
@@ -57,7 +57,7 @@ const COPIES = [
     // The ES module build, which _Layout imports directly rather than through a bundle.
     ['cropperjs/dist/cropper.esm.min.js', 'cropperjs/cropper.esm.min.js'],
 
-    // Script only - the banner is styled by wwwroot/scss/_cookieconsent.scss, not by the package's CSS.
+    // Script only - the banner is styled by scss/_cookieconsent.scss, not by the package's CSS.
     ['cookieconsent/build/cookieconsent.min.js', 'cookieconsent/cookieconsent.min.js'],
 
     ['@eastdesire/jscolor/jscolor.js', 'jscolor/jscolor.js'],

@@ -31,20 +31,29 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<!-- The SCSS sources are a build *input*, not something the app serves: sass reads wwwroot\scss off
-		     disk directly, so nothing here needs them as items. Removing them from Content keeps them out of
-		     the publish output - where they were both dead weight and publicly fetchable under /scss/ - and
-		     out of the static web asset manifest the build enumerates and hashes. They come back as None so
-		     they stay visible in the IDE, with Watch="false" on both: a build compiles them, so nothing
-		     dotnet watch does should react to an edit (see run.build.css.bat, the fast path for recompiling
-		     mid-session), and a sass watcher must not run alongside dotnet watch (see run.app.bat).
+		<!-- The SCSS sources sit outside wwwroot, and have to. Visual Studio saves a file by writing a temp
+		     file beside it and renaming over the original, so every save of a .scss CREATES two files in the
+		     directory holding it - and dotnet watch dies on a file created anywhere under wwwroot
+		     (dotnet/roslyn#84062, "Unexpected true - file HotReloadMSBuildWorkspace.cs line 158"). No item
+		     metadata can prevent that: the crash comes before the watcher decides whether the file belongs
+		     to the project. Scripts\app\watch-wwwroot.bat logs what appears under wwwroot, if this needs
+		     establishing again.
+
+		     They belong out here anyway. Sass reads them off disk as a build input, so nothing serves them
+		     and no item has to carry them; under wwwroot they were both dead weight in the publish output
+		     and publicly fetchable under /scss/, as well as entries in the static web asset manifest the
+		     build enumerates and hashes. Out here the default None glob picks them up, which is why this
+		     updates rather than includes.
+
+		     Watch="false" on top of that, so nothing dotnet watch does reacts to an edit: a build is what
+		     compiles them (see Scripts\app\build-css.bat, the fast path for recompiling mid-session), and a
+		     sass watcher must not run alongside dotnet watch (see Scripts\app\run.bat).
 
 		     The generated CSS and bundles need no entry here. They are excluded from the default glob above
 		     and added by BuildClientAssets with Watch="false" already on them. The bundles' *sources* are
 		     deliberately left watched: a build is what regenerates a bundle, so a script edit has to be able
 		     to trigger one. -->
-		<Content Remove="wwwroot\scss\**" />
-		<None Include="wwwroot\scss\**" Watch="false" />
+		<None Update="scss\**" Watch="false" />
 	</ItemGroup>
 
 	<!-- Produces every generated client asset and hands it to the build as Content: restores the vendored

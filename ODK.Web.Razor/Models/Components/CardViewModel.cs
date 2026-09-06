@@ -8,5 +8,7 @@ public class CardViewModel
 
     public Func<object?, IHtmlContent>? FooterContentFunc { get; init; }
 
+    public bool FullHeight { get; init; }
+
     public Func<object?, IHtmlContent>? HeaderContentFunc { get; init; }
 }
