@@ -75,6 +75,16 @@ public class SiteAdminController : OdkControllerBase
         return Redirect(OdkRoutes.SiteAdmin.Geolocation.Path);
     }
 
+    [HttpPost("siteadmin/geolocation/write-test")]
+    public async Task<IActionResult> TestIpLocationDirectoryWrite([FromForm] string path)
+    {
+        var result = await _ipLocationDatabaseService.TestWrite(MemberServiceRequest, path);
+
+        AddFeedback(result);
+
+        return Redirect($"{OdkRoutes.SiteAdmin.Geolocation.Path}?path={Uri.EscapeDataString(path)}");
+    }
+
     [HttpPost("siteadmin/geolocation/update")]
     public async Task<IActionResult> UpdateIpLocationDatabase()
     {
