@@ -1,5 +1,4 @@
 ﻿using ODK.Core.Countries;
-using ODK.Core.Platforms;
 using ODK.Core.Topics;
 
 namespace ODK.Services.Chapters.ViewModels;
@@ -12,9 +11,9 @@ public class GroupsViewModel
 
     public required ILocation? Location { get; init; }
 
-    public required IReadOnlyCollection<ChapterWithDistanceViewModel> Groups { get; init; }
+    public required bool IpAddressUsed { get; init; }
 
-    public required PlatformType Platform { get; init; }
+    public required IReadOnlyCollection<ChapterWithDistanceViewModel> Groups { get; init; }
 
     public required IReadOnlyCollection<TopicGroup> TopicGroups { get; init; }
 

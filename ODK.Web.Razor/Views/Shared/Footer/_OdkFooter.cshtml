@@ -1,5 +1,6 @@
 ﻿@using ODK.Web.Common.Routes
 @using ODK.Web.Common.Services
+@using ODK.Web.Razor.Extensions
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Footer
 @model FooterViewModel
@@ -42,8 +43,14 @@
                             Twitter = Model.Links.TwitterName
                         })
                     </div>
-                }                
+                }
             </div>
+            @if (ViewData.ShowGeoIpAttribution)
+            {
+                <div class="mt-3">
+                    @await Html.PartialAsync("Components/_GeoIpAttribution")
+                </div>
+            }
         </div>
     </section>
 </footer>

@@ -10,6 +10,10 @@ public class PrivacyPageSettings
 
     public required string EmailAddress { get; init; }
 
+    public required string HostingLocation { get; init; }
+
+    public required string HostingPrivacyPolicyUrl { get; init; }
+
     public required string HostingProvider { get; init; }
 
     public required int InviteRetentionDays { get; init; }

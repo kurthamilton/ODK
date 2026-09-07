@@ -1,0 +1,84 @@
+﻿@using ODK.Services.Geolocation
+@using ODK.Web.Common.Routes
+@using ODK.Web.Common.Services
+@inject IIpLocationDatabaseService IpLocationDatabaseService
+@inject IOdkRoutes OdkRoutes
+@inject IRequestStore RequestStore
+@{
+    var viewModel = await IpLocationDatabaseService.GetViewModel(RequestStore.MemberServiceRequest);
+}
+
+<h2 class="content-heading">Geolocation</h2>
+
+<p>
+    IP addresses are resolved to an approximate town from a DB-IP City Lite database held on this server.
+    A new one is published monthly and fetched by the <code>geoip/update</code> scheduled task, which also
+    removes the file it replaces.
+</p>
+
+<dl class="row">
+    <dt class="col-sm-3">Directory</dt>
+    <dd class="col-sm-9">
+        @if (!string.IsNullOrEmpty(viewModel.Directory))
+        {
+            <code>@viewModel.Directory</code>
+        }
+        else
+        {
+            <span class="text-danger">Not configured</span>
+        }
+    </dd>
+    <dt class="col-sm-3">Loaded on startup</dt>
+    <dd class="col-sm-9">@(viewModel.Preloaded ? "Yes" : "No, on first lookup")</dd>
+</dl>
+
+<form class="mb-3" method="post" action="@OdkRoutes.SiteAdmin.GeolocationUpdate.Path">
+    @Html.AntiForgeryToken()
+    <button class="btn btn-primary">Download latest</button>
+</form>
+
+@if (viewModel.Files.Count == 0)
+{
+    <p class="text-danger">No database is present, so IP addresses will not resolve.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>File</th>
+                    <th>Size</th>
+                    <th>Modified (UTC)</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var file in viewModel.Files)
+                {
+                    <tr>
+                        <td>
+                            <code>@file.Name</code>
+                            @if (file.Loaded)
+                            {
+                                <span class="badge text-bg-success">In use</span>
+                            }
+                        </td>
+                        <td>@(file.SizeBytes / 1024 / 1024) MB</td>
+                        <td>@file.LastModifiedUtc.ToString("yyyy-MM-dd HH:mm")</td>
+                        <td>
+                            @if (!file.Loaded)
+                            {
+                                <form method="post" action="@OdkRoutes.SiteAdmin.GeolocationDelete.Path">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="fileName" value="@file.Name" />
+                                    <button class="btn btn-sm btn-danger">Delete</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

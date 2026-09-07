@@ -27,8 +27,8 @@
 
     Func<object?, IHtmlContent> content =
         @<div>
-            @await Html.PartialAsync("Conversations/_ConversationInboxTabs", new object(),
-                new ViewDataDictionary(ViewData) { ["SiteConversationsActive"] = true })
+            @await Html.PartialAsync("Conversations/_ConversationInboxTabs",
+                    new ConversationInboxTabsViewModel { SiteConversationsActive = true })
 
             @await Html.PartialAsync("Conversations/_SiteConversationsContent", new SiteConversationsViewModel
             {

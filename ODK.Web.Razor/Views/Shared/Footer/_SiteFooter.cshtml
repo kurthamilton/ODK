@@ -1,6 +1,7 @@
 ﻿@using ODK.Core.Platforms
 @using ODK.Web.Common.Routes
 @using ODK.Web.Common.Services
+@using ODK.Web.Razor.Extensions
 @using ODK.Web.Razor.Models.Footer
 @model FooterViewModel
 @inject IOdkRoutes OdkRoutes
@@ -41,5 +42,11 @@
                 <a href="@OdkRoutes.Site.Pricing">Pricing</a>
             </div>
         </div>
+        @if (ViewData.ShowGeoIpAttribution)
+        {
+            <div class="container-md mt-3">
+                @await Html.PartialAsync("Components/_GeoIpAttribution")
+            </div>
+        }
     </section>
 </footer>

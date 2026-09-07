@@ -14,10 +14,12 @@
     <PackageReference Include="Google.Apis.Auth" Version="1.76.0" />
     <PackageReference Include="HtmlSanitizer" Version="9.2.1039" />
     <PackageReference Include="MailKit" Version="4.17.0" />
+    <PackageReference Include="MaxMind.GeoIP2" Version="6.1.0" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.11" />
     <PackageReference Include="Serilog" Version="4.4.0" />
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
     <PackageReference Include="Stripe.net" Version="52.4.1" />
+    <PackageReference Include="TestableIO.System.IO.Abstractions.Wrappers" Version="22.2.0" />
   </ItemGroup>
 
   <ItemGroup>

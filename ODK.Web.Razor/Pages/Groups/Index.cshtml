@@ -22,6 +22,8 @@
     };
 
     var viewModel = await ChapterViewModelService.FindGroups(Model.ServiceRequest, filter);
+
+    Model.ShowGeoIpAttribution = viewModel.IpAddressUsed;
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

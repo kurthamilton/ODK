@@ -31,20 +31,20 @@ public abstract class OdkPageModel : PageModel
 
     public string? Description
     {
-        get => ViewData["Description"] as string;
-        set => ViewData["Description"] = value;
+        get => ViewData.Description;
+        set => ViewData.Description = value;
     }
 
     public ILocation? Location
     {
-        get => ViewData["Location"] as ILocation;
-        set => ViewData["Location"] = value;
+        get => ViewData.Location;
+        set => ViewData.Location = value;
     }
 
     public IReadOnlyCollection<string>? Keywords
     {
-        get => ViewData["Keywords"] as IReadOnlyCollection<string>;
-        set => ViewData["Keywords"] = value;
+        get => ViewData.Keywords;
+        set => ViewData.Keywords = value;
     }
 
     public IMemberChapterServiceRequest MemberChapterServiceRequest => RequestStore.MemberChapterServiceRequest;
@@ -56,8 +56,8 @@ public abstract class OdkPageModel : PageModel
 
     public string? Path
     {
-        get => ViewData["Path"] as string;
-        set => ViewData["Path"] = value;
+        get => ViewData.Path;
+        set => ViewData.Path = value;
     }
 
     public PlatformType Platform => RequestStore.Platform;
@@ -67,10 +67,18 @@ public abstract class OdkPageModel : PageModel
 
     public IServiceRequest ServiceRequest => RequestStore.ServiceRequest;
 
+    // Set by a page that reads the IP location database. The footer renders the DB-IP credit its CC BY
+    // licence requires on pages using the data.
+    public bool ShowGeoIpAttribution
+    {
+        get => ViewData.ShowGeoIpAttribution;
+        set => ViewData.ShowGeoIpAttribution = value;
+    }
+
     public string? Title
     {
-        get => ViewData["Title"] as string;
-        set => ViewData["Title"] = value;
+        get => ViewData.Title;
+        set => ViewData.Title = value;
     }
 
     protected void AddFeedback(string message, FeedbackType type = FeedbackType.Success)

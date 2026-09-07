@@ -1,12 +1,14 @@
-﻿using ODK.Core.Platforms;
-
-namespace ODK.Web.Razor.Models.Privacy;
+﻿namespace ODK.Web.Razor.Models.Privacy;
 
 public class PrivacyViewModel
 {
     public required int BetterStackRetentionDays { get; init; }
 
     public required string ContactEmailAddress { get; init; }
+
+    public required string HostingLocation { get; init; }
+
+    public required string HostingPrivacyPolicyUrl { get; init; }
 
     public required string HostingProvider { get; init; }
 
@@ -15,8 +17,6 @@ public class PrivacyViewModel
     public required DateOnly LastUpdated { get; init; }
 
     public required int LogRetentionDays { get; init; }
-
-    public required PlatformType Platform { get; init; }
 
     public required string PlatformName { get; init; }
 

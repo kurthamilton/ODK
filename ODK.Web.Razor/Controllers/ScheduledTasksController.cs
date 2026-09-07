@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Exceptions;
+using ODK.Services.Geolocation;
 using ODK.Services.Logging;
 using ODK.Services.Members;
 using ODK.Services.SocialMedia;
@@ -15,6 +16,7 @@ namespace ODK.Web.Razor.Controllers;
 [IgnoreAntiforgeryToken] // external cron POSTs; authenticated by the ScheduledTasks API key, not a token
 public class ScheduledTasksController : OdkControllerBase
 {
+    private readonly IIpLocationDatabaseService _ipLocationDatabaseService;
     private readonly ILoggingService _loggingService;
     private readonly IMemberAdminService _memberAdminService;
     private readonly IMemberInviteService _memberInviteService;
@@ -30,9 +32,11 @@ public class ScheduledTasksController : OdkControllerBase
         ILoggingService loggingService,
         IRequestStore requestStore,
         IOdkRoutes odkRoutes,
-        IMemberInviteService memberInviteService)
+        IMemberInviteService memberInviteService,
+        IIpLocationDatabaseService ipLocationDatabaseService)
         : base(requestStore, odkRoutes)
     {
+        _ipLocationDatabaseService = ipLocationDatabaseService;
         _loggingService = loggingService;
         _memberAdminService = memberAdminService;
         _memberInviteService = memberInviteService;
@@ -94,6 +98,21 @@ public class ScheduledTasksController : OdkControllerBase
         try
         {
             await _socialMediaService.ScrapeLatestInstagramPosts();
+        }
+        catch
+        {
+            // do nothing
+        }
+    }
+
+    [HttpPost("geoip/update")]
+    public async Task UpdateIpLocationDatabase()
+    {
+        AssertAuthorised();
+
+        try
+        {
+            await _ipLocationDatabaseService.Update();
         }
         catch
         {

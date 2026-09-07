@@ -14,6 +14,7 @@ namespace ODK.Services.Integrations.Geolocation;
 public class GeolocationService : IGeolocationService
 {
     private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IIpLocationLookup _ipLocationLookup;
     private readonly ILoggingService _loggingService;
     private readonly GeolocationServiceSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
@@ -22,9 +23,11 @@ public class GeolocationService : IGeolocationService
         IUnitOfWork unitOfWork,
         ILoggingService loggingService,
         GeolocationServiceSettings settings,
-        IHttpClientFactory httpClientFactory)
+        IHttpClientFactory httpClientFactory,
+        IIpLocationLookup ipLocationLookup)
     {
         _httpClientFactory = httpClientFactory;
+        _ipLocationLookup = ipLocationLookup;
         _loggingService = loggingService;
         _settings = settings;
         _unitOfWork = unitOfWork;
@@ -66,47 +69,19 @@ public class GeolocationService : IGeolocationService
 
     public async Task<Location?> GetLocationFromIpAddress(string ipAddress)
     {
-        if (_settings.GoogleDisabled)
-        {
-            await _loggingService.Warn("Skipping Google IP location: disabled");
-            return null;
-        }
-
         try
         {
-            var client = _httpClientFactory.CreateClient();
-
-            var url = $"http://ip-api.com/json/{ipAddress}";
-            var response = await client.GetAsync(url);
-            var responseJson = await response.Content.ReadAsStringAsync();
-
-            if (!response.IsSuccessStatusCode)
+            if (!_ipLocationLookup.DatabaseAvailable)
             {
-                await _loggingService.Error($"ip-api error response: {responseJson}");
+                await _loggingService.Error("IP location database could not be opened");
                 return null;
             }
 
-            if (!JsonUtils.TryDeserialize<IpApiResponse>(responseJson, out var ipApiResponse))
-            {
-                await _loggingService.Error($"Could not deserialize ip-api response: {responseJson}");
-                return null;
-            }
-
-            if (ipApiResponse.Latitude == null || ipApiResponse.Longitude == null)
-            {
-                await _loggingService.Error($"Lat/Long not in ip-api response: {responseJson}");
-                return null;
-            }
-
-            return new Location
-            {
-                LatLong = new LatLong(ipApiResponse.Latitude.Value, ipApiResponse.Longitude.Value),
-                Name = $"{ipApiResponse.City}, {ipApiResponse.CountryCode}"
-            };
+            return _ipLocationLookup.Find(ipAddress);
         }
         catch (Exception ex)
         {
-            await _loggingService.Error("Error calling ip-api", ex);
+            await _loggingService.Error("Error looking up IP location", ex);
             return null;
         }
     }

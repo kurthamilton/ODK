@@ -1,0 +1,10 @@
+﻿@page "/siteadmin/geolocation"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@model GeolocationModel
+@{
+    Layout = "_SiteAdminLayout";
+    Model.Title = "Geolocation | Site Admin";
+}
+
+@await Html.PartialAsync("SiteAdmin/_GeolocationContent")

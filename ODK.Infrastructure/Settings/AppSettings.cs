@@ -18,6 +18,8 @@ public class AppSettings
 
     public required EventsSettings Events { get; init; }
 
+    public required GeolocationSettings Geolocation { get; init; }
+
     public required GoogleSettings Google { get; init; }
 
     public required GroupsSettings Groups { get; init; }

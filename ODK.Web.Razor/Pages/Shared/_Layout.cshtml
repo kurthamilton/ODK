@@ -8,6 +8,7 @@
 @using ODK.Services.Platforms
 @using ODK.Web.Common.Routes
 @using ODK.Web.Common.Services
+@using ODK.Web.Razor.Extensions
 @using ODK.Web.Razor.Helpers
 @inject IAntiforgery Antiforgery
 @inject IFileVersionProvider FileVersionProvider
@@ -30,23 +31,21 @@
         title = $"{chapter.GetDisplayName(platform)} | {title}";
     }
 
-    var pageTitle = ViewData["Title"] as string;
+    var pageTitle = ViewData.Title;
     if (!string.IsNullOrEmpty(pageTitle))
     {
         title = $"{pageTitle} | {title}";
     }
     
     var requestUrl = Context.Request.GetDisplayUrl();
-    var canonicalUrlPath = ViewData["Path"] as string;
+    var canonicalUrlPath = ViewData.Path;
     var canonicalUrl = canonicalUrlPath != null
         ? UrlUtils.BaseUrl(requestUrl) + canonicalUrlPath
         : null;
 
-    var description = ViewData["Description"] as string;
-
-    var keywords = ViewData["Keywords"] as IReadOnlyCollection<string>;
-
-    var location = ViewData["Location"] as ILocation;
+    var description = ViewData.Description;
+    var keywords = ViewData.Keywords;
+    var location = ViewData.Location;
 
     var cropperModulePath = FileVersionProvider.AddFileVersionToPath(
         Context.Request.PathBase, "/lib/cropperjs/cropper.esm.min.js");
