@@ -16,9 +16,11 @@ public static class IpLocationDatabaseServiceTests
 {
     private const string Current = "dbip-city-lite-2026-09.mmdb";
 
-    private const string Directory = @"C:\geoip";
-
     private const string Previous = "dbip-city-lite-2026-08.mmdb";
+
+    // Rooted the way the running OS roots a path: CI builds and tests on Linux, where C:\ is not a root.
+    private static readonly string Directory =
+        System.IO.Path.Combine(System.IO.Path.GetTempPath(), "odk-geoip-tests");
 
     [TestCase("../../appsettings.json")]
     [TestCase(@"..\..\appsettings.json")]
