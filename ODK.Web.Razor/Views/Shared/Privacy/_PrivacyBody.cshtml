@@ -1,9 +1,7 @@
-﻿@using ODK.Core.Platforms
-@using ODK.Web.Razor.Models.Components
+﻿@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Privacy
 @model PrivacyViewModel
 @{
-    var isDrunkenKnitwits = Model.Platform == PlatformType.DrunkenKnitwits;
     var headingType = HeadingType.H3;
 }
 
@@ -17,8 +15,10 @@
         you have over it. Please read it carefully.
     </p>
     <p>
-        We are the data controller for the personal data described in this policy. That means we decide what
-        is collected and what it is used for, and we are responsible to you for it.
+        We are the data controller for the personal data held in the Services. That means we decide what may
+        be collected and what it is used for, how long it is kept and how it is protected, and we are
+        responsible to you for it. Section 4 sets out the part a group's organisers play in that, and the
+        position where they hold your details outside the Services.
     </p>
 
     <div class="section-stack mt-section">
@@ -37,7 +37,7 @@
                             @Model.PlatformName is operated by @Model.TraderName, a sole trader whose trading
                             address is @Model.TradingAddress.
                         </p>
-                    }                    
+                    }
                     <p>
                         If you have any question about this policy, or you want to exercise any of the rights
                         described in it, contact us at
@@ -75,6 +75,11 @@
                             <strong>Your location</strong> - an approximate location and place name, where
                             you choose to give one, so that we can show you groups and events near you. This
                             is the location you enter or agree to share; we do not track your device.
+                            Before you have given us one, we guess a town from your IP address in order to
+                            suggest groups near you and to choose between miles and kilometres. That guess is
+                            worked out on our own servers, from a database we hold: <strong>your IP address
+                            is not sent to anybody else for it</strong>, and the guess is not stored unless
+                            you save it as your location.
                         </li>
                         <li>
                             <strong>Your topics of interest</strong> - the topics you select to help us
@@ -214,16 +219,24 @@
                         the group has marked as being for organisers only. Your profile is not visible to
                         anybody who is not signed in.
                     </p>
-                    @if (!isDrunkenKnitwits)
-                    {
-                        <p>
-                            Group organisers decide for themselves what they ask you and how they use what
-                            you tell them, so for their own use of your information they are a data
-                            controller alongside us. If you want to know how a particular group handles your
-                            data, or you want it corrected or removed from that group, contact its organisers
-                            first - and tell us if you cannot resolve it with them.
-                        </p>
-                    }
+                    <p>
+                        Everything described above is held by us, and <strong>we are the data controller for
+                        it</strong> - including the answers you give to a group's questions. A group's
+                        organisers choose what their group asks and decide who joins it, but they do so
+                        inside the Services: they cannot take a copy of your answers or of your e-mail
+                        address, we decide how long any of it is kept and how it is protected, and a request
+                        to see, correct or delete it comes to us. Your rights under section 8 cover what a
+                        group holds about you here, and you exercise them with us.
+                    </p>
+                    <p>
+                        Where a group's organisers hold your details <strong>outside</strong> the Services,
+                        they are a data controller in their own right, and what they do with them is their
+                        responsibility rather than ours. That covers the two exceptions above - an e-mail
+                        address an organiser already had and used to invite or import you, and the details
+                        held in the group's own account with our payment provider - together with anything an
+                        organiser notes down or copies elsewhere. For any of those, contact the group's
+                        organisers, and tell us if you cannot resolve it with them.
+                    </p>
                 </div>
         })
 
@@ -243,50 +256,88 @@
                         </strong>
                     </p>
                     <p>
-                        We do use a small number of service providers to run the Services. They act on our
-                        instructions and may only use your data to provide their service to us:
+                        We use a small number of providers to run the Services, and they do not all stand in
+                        the same relationship to your data. The difference is worth knowing, because it
+                        decides who answers to you for what:
+                    </p>
+                    <ul>
+                        <li>
+                            A <strong>processor</strong> may use your data only to provide its service to us,
+                            on our instructions. We remain answerable to you for it, and a request about it
+                            comes to us.
+                        </li>
+                        <li>
+                            A <strong>controller</strong> decides for itself what it does with what it
+                            receives, under its own privacy policy and its own responsibilities. Where a
+                            provider is one, its own policy is the place to look.
+                        </li>
+                    </ul>
+                    <p>
+                        Each provider's name below links to its own privacy policy. Where the data is held is
+                        the country the data sits in, which is not always the country the provider comes
+                        from.
                     </p>
                     <div class="table-responsive">
                         <table class="table">
                             <thead>
                                 <tr>
                                     <th>Provider</th>
+                                    <th>Their role</th>
                                     <th>What they do for us</th>
                                     <th>What they receive</th>
+                                    <th>Where the data is held</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td>Stripe</td>
+                                    <td>
+                                        <a href="https://stripe.com/privacy" rel="noopener" target="_blank">Stripe</a>
+                                    </td>
+                                    <td>Controller and processor</td>
                                     <td>Takes and processes payments</td>
                                     <td>
                                         Your name, e-mail address, and the payment and card details you enter
                                     </td>
+                                    <td>Ireland, and the United States</td>
                                 </tr>
                                 <tr>
-                                    <td>Brevo</td>
+                                    <td>
+                                        <a href="https://www.brevo.com/legal/privacypolicy/" rel="noopener" target="_blank">Brevo</a>
+                                    </td>
+                                    <td>Processor</td>
                                     <td>Delivers our e-mails</td>
                                     <td>Your name, e-mail address and the content of the e-mail</td>
+                                    <td>France, Germany and Belgium</td>
                                 </tr>
                                 <tr>
-                                    <td>Google</td>
                                     <td>
-                                        Maps and place look-up, sign-in with Google where you choose it, and
-                                        the reCAPTCHA check that protects our sign-up form
+                                        <a href="https://policies.google.com/privacy" rel="noopener" target="_blank">Google</a>
+                                    </td>
+                                    <td>Controller</td>
+                                    <td>
+                                        Maps and place look-up, and sign-in with Google where you choose it
                                     </td>
                                     <td>
                                         Your IP address and browser information; a location you search for;
                                         and, if you sign in with Google, your name and e-mail address from
                                         your Google account
                                     </td>
+                                    <td>Ireland, and the United States</td>
                                 </tr>
                                 <tr>
-                                    <td>Reoon</td>
-                                    <td>Checks that an e-mail address is real and deliverable</td>
-                                    <td>Your e-mail address</td>
+                                    <td>Google reCAPTCHA</td>
+                                    <td>Processor</td>
+                                    <td>
+                                        The check that protects our sign-up form from automated abuse
+                                    </td>
+                                    <td>Your IP address and browser information</td>
+                                    <td>Ireland, and the United States</td>
                                 </tr>
                                 <tr>
-                                    <td>Have I Been Pwned</td>
+                                    <td>
+                                        <a href="https://haveibeenpwned.com/privacy" rel="noopener" target="_blank">Have I Been Pwned</a>
+                                    </td>
+                                    <td>Neither - receives nothing that identifies you</td>
                                     <td>
                                         Tells us whether a chosen password is known to have been breached
                                     </td>
@@ -294,27 +345,53 @@
                                         The first five characters of a hash of the password only. Your
                                         password, and your identity, are never sent
                                     </td>
+                                    <td>Not applicable</td>
                                 </tr>
                                 <tr>
-                                    <td>Better Stack</td>
+                                    <td>
+                                        <a href="https://betterstack.com/privacy" rel="noopener" target="_blank">Better Stack</a>
+                                    </td>
+                                    <td>Processor</td>
                                     <td>
                                         Stores our server logs so we can diagnose faults, for
                                         @Model.BetterStackRetentionDays days
                                     </td>
                                     <td>Technical data, including your IP address</td>
+                                    <td>European Union</td>
                                 </tr>
-                                
                                 @if (!string.IsNullOrEmpty(Model.HostingProvider))
                                 {
                                     <tr>
-                                        <td>@Model.HostingProvider</td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(Model.HostingPrivacyPolicyUrl))
+                                            {
+                                                <a href="@Model.HostingPrivacyPolicyUrl" rel="noopener" target="_blank">@Model.HostingProvider</a>
+                                            }
+                                            else
+                                            {
+                                                @Model.HostingProvider
+                                            }
+                                        </td>
+                                        <td>Processor</td>
                                         <td>Hosts the Website and its database</td>
                                         <td>All data held by the Services</td>
+                                        <td>@Model.HostingLocation</td>
                                     </tr>
-                                }                                
+                                }
                             </tbody>
                         </table>
                     </div>
+                    <p>
+                        <strong>Stripe is both, which is why it is listed as both.</strong> When it takes a
+                        payment for us it does so on our instructions, and there it is our processor. It also
+                        uses what it learns to prevent fraud and to meet the duties any payment company has
+                        under financial law, and for that it decides for itself and answers for itself.
+                    </p>
+                    <p>
+                        A group that takes payments holds its own account with Stripe, as section 4 explains.
+                        What that group does with the details in its own account is a matter for the group,
+                        not for us.
+                    </p>
                     <p>
                         We may also disclose your personal data where we are required to by law, or where it
                         is necessary to establish, exercise or defend legal claims.
@@ -354,8 +431,11 @@
                     </p>
                     <p>
                         Some pages include services provided by Google - a map, or the reCAPTCHA check on our
-                        sign-up form - and these may set cookies of their own when those pages load. Their
-                        use of them is governed by Google's own privacy policy.
+                        sign-up form - and these may set cookies of their own when those pages load. A cookie
+                        a map sets is Google's own, and what Google does with it is governed by Google's
+                        privacy policy. A cookie reCAPTCHA sets is not: Google provides that check to us as
+                        our processor, so what it collects may be used to run and secure the check and for
+                        nothing else of Google's own.
                     </p>
                     <p>
                         You can set your browser to refuse cookies, but if you refuse the two cookies above
@@ -488,13 +568,41 @@
                 Type = headingType
             },
             BodyContentFunc =
-                @<p>
-                    Your personal data is held in the United Kingdom and the European Economic Area. Some of
-                    the providers listed in section 5 are based outside the UK, so your data may be
-                    transferred to them there. Where it is, that transfer is covered by the safeguards UK
-                    data protection law requires - either an adequacy decision covering the country
-                    concerned, or the International Data Transfer Agreement.
-                </p>
+                @<div>
+                    <p>
+                        Your personal data is held in the United Kingdom and the European Economic Area,
+                        except where the table in section 5 names somewhere else. That table gives the
+                        country for every provider, so it is the place to look rather than this section.
+                    </p>
+                    @if (!string.IsNullOrEmpty(Model.HostingProvider) && !string.IsNullOrEmpty(Model.HostingLocation))
+                    {
+                        <p>
+                            The Website and the database behind it - which is where all of your personal data
+                            sits, other than the copies the providers in section 5 hold - are hosted by
+                            @Model.HostingProvider in @Model.HostingLocation.
+                        </p>
+                    }
+                    <p>
+                        <strong>
+                            Two of those providers hold data outside the UK and the EEA: Stripe and Google.
+                        </strong>
+                        We deal with the Irish company in each case, and each transfers onward to the United
+                        States. Where personal data goes to the United States, the transfer relies on the UK
+                        Extension to the EU-US Data Privacy Framework where the receiving company is
+                        certified under it, and otherwise on the International Data Transfer Agreement or the
+                        UK Addendum to the standard contractual clauses. Each of those binds the recipient to
+                        protect your data to the UK standard, and leaves you able to enforce it.
+                    </p>
+                    <p>
+                        <strong>Not every transfer in the chain is ours to make.</strong> A provider we send
+                        your data to inside the UK or the EEA may itself use another company further down the
+                        line, and where that company is outside the UK and the EEA, the transfer is one our
+                        provider makes under the contract it holds with us - it is not a transfer we make
+                        ourselves, and it is that provider's to account for. We require our providers to hold
+                        those onward transfers to the same standard we hold our own to, and the privacy
+                        policies linked in section 5 name the companies each of them uses.
+                    </p>
+                </div>
         })
 
         @await Html.PartialAsync("Components/_Section", new SectionViewModel

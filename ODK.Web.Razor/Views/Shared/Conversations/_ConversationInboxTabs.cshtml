@@ -1,6 +1,8 @@
 ﻿@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Conversations
 @inject IOdkRoutes OdkRoutes
+@model ConversationInboxTabsViewModel
 
 @* Which of a member's two inboxes they are looking at. A thread with a group and a thread with the site are
    the same idea against different people, so they sit as tabs on one screen rather than as separate pages a
@@ -11,13 +13,13 @@
     {
         new MenuItem
         {
-            Active = !(bool)ViewData["SiteConversationsActive"]!,
+            Active = !Model.SiteConversationsActive,
             Text = "Groups",
             Link = OdkRoutes.Account.Conversations(chapter: null)
         },
         new MenuItem
         {
-            Active = (bool)ViewData["SiteConversationsActive"]!,
+            Active = Model.SiteConversationsActive,
             Text = "Site",
             Link = OdkRoutes.Account.SiteConversations()
         }

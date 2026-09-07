@@ -15,4 +15,8 @@
     <ProjectReference Include="..\ODK.Web.Common\ODK.Web.Common.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="TestableIO.System.IO.Abstractions.Wrappers" Version="22.2.0" />
+  </ItemGroup>
+
 </Project>

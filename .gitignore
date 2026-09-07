@@ -8,10 +8,10 @@ appsettings.*.json
 /ODK.Web.Razor/wwwroot/lib
 /ODK.Web.Razor/wwwroot/css
 /ODK.Web.Razor/wwwroot/js/odk.bundle*.js
+/ODK.Web.Razor/geoip
 /ODK.Web.Razor/node_modules
 *.pubxml
 app_data
-/ODK.Web.Razor/Views/Shared/Groups/_GroupProfileMenu.cshtml
 
 /ngrok.yml
 
@@ -19,4 +19,4 @@ app_data
 TestResults/
 
 # Claude Code working files: session handovers and local agent config
-.claude/
+/.claude

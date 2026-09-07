@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.IO.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
 using ODK.Core.Countries;
 using ODK.Core.Emails;
 using ODK.Core.Exceptions;
@@ -94,6 +95,7 @@ public static class DependencyRegistrar
     {
         services
             .AddScoped<IDistanceUnitFactory, DistanceUnitFactory>()
+            .AddSingleton<IFileSystem, FileSystem>()
             .AddSingleton<IHtmlTextExtractor>(new HtmlTextExtractor())
             .AddSingleton<IHtmlValidator>(new HtmlValidator())
             .AddSingleton<ICsvReader, CsvReader>()
@@ -277,10 +279,16 @@ public static class DependencyRegistrar
                 DefaultHeaderColor = appSettings.Emails.Theme.Header.Color
             })
             .AddScoped<IGeolocationService, GeolocationService>()
+            .AddScoped<IIpLocationDatabaseService, IpLocationDatabaseService>()
+            .AddSingleton<IIpLocationLookup, IpLocationLookup>()
             .AddSingleton(new GeolocationServiceSettings
             {
                 GoogleApiKey = appSettings.Google.Geolocation.ApiKey,
-                GoogleDisabled = appSettings.Google.Geolocation.Disabled
+                GoogleDisabled = appSettings.Google.Geolocation.Disabled,
+                IpDatabaseDirectory = appSettings.Geolocation.IpDatabaseDirectory,
+                PreloadIpDatabase = ServedPlatform
+                    .Of(appSettings, appSettings.Geolocation.Platforms)
+                    .PreloadIpDatabase
             })
             .AddScoped<IInstagramClient, InstagramClient>()
             .AddSingleton(new InstagramClientSettings
@@ -477,7 +485,9 @@ public static class DependencyRegistrar
         {
             BetterStackRetentionDays = privacy.Logging.BetterStackRetentionDays,
             EmailAddress = ServedPlatform.Of(appSettings, privacy.Platforms).EmailAddress,
-            HostingProvider = privacy.HostingProvider,
+            HostingLocation = privacy.Hosting.Location,
+            HostingPrivacyPolicyUrl = privacy.Hosting.PrivacyPolicyUrl,
+            HostingProvider = privacy.Hosting.Name,
             InviteRetentionDays = appSettings.Privacy.Invites.RetentionDays,
             LogRetentionDays = privacy.Logging.DefaultRetentionDays,
             TraderName = privacy.TraderName,

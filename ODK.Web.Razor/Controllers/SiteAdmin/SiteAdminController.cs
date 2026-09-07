@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Authentication;
 using ODK.Services.Contact;
 using ODK.Services.Features;
+using ODK.Services.Geolocation;
 using ODK.Services.Logging;
 using ODK.Services.Payments;
 using ODK.Services.Payments.Models;
@@ -25,6 +26,7 @@ public class SiteAdminController : OdkControllerBase
 {
     private readonly IContactAdminService _contactAdminService;
     private readonly IFeatureService _featureService;
+    private readonly IIpLocationDatabaseService _ipLocationDatabaseService;
     private readonly ILoggingService _loggingService;
     private readonly IPaymentAdminService _paymentAdminService;
     private readonly ISiteSubscriptionAdminService _siteSubscriptionAdminService;
@@ -42,11 +44,13 @@ public class SiteAdminController : OdkControllerBase
         IStripeTransactionAdminService stripeTransactionAdminService,
         ITopicAdminService topicAdminService,
         IRequestStore requestStore,
-        IOdkRoutes odkRoutes)
+        IOdkRoutes odkRoutes,
+        IIpLocationDatabaseService ipLocationDatabaseService)
         : base(requestStore, odkRoutes)
     {
         _contactAdminService = contactAdminService;
         _featureService = featureService;
+        _ipLocationDatabaseService = ipLocationDatabaseService;
         _loggingService = loggingService;
         _paymentAdminService = paymentAdminService;
         _siteSubscriptionAdminService = siteSubscriptionAdminService;
@@ -59,6 +63,24 @@ public class SiteAdminController : OdkControllerBase
     public IActionResult Index()
     {
         return Redirect(OdkRoutes.SiteAdmin.Groups.Path);
+    }
+
+    [HttpPost("siteadmin/geolocation/delete")]
+    public async Task<IActionResult> DeleteIpLocationDatabase([FromForm] string fileName)
+    {
+        var result = await _ipLocationDatabaseService.Delete(MemberServiceRequest, fileName);
+
+        AddFeedback(result, "Database deleted");
+
+        return Redirect(OdkRoutes.SiteAdmin.Geolocation.Path);
+    }
+
+    [HttpPost("siteadmin/geolocation/update")]
+    public async Task<IActionResult> UpdateIpLocationDatabase()
+    {
+        var result = await _ipLocationDatabaseService.Update();
+        AddFeedback(result);
+        return Redirect(OdkRoutes.SiteAdmin.Geolocation.Path);
     }
 
     [HttpPost("siteadmin/errors/{id:guid}/delete")]

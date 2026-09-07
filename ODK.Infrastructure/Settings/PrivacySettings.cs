@@ -11,7 +11,7 @@
 /// </remarks>
 public class PrivacySettings
 {
-    public required string HostingProvider { get; init; }
+    public required PrivacyHostingSettings Hosting { get; init; }
 
     public required PrivacyInviteSettings Invites { get; init; }
 

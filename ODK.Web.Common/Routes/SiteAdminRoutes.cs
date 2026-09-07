@@ -17,6 +17,15 @@ public class SiteAdminRoutes
 
     public SiteAdminRoute Features => Path("/features");
 
+    /// <summary>
+    /// The IP location databases on disk, and the actions that fetch a new one or remove an old one.
+    /// </summary>
+    public SiteAdminRoute Geolocation => Path("/geolocation");
+
+    public SiteAdminRoute GeolocationDelete => Geolocation.Child("/delete");
+
+    public SiteAdminRoute GeolocationUpdate => Geolocation.Child("/update");
+
     public SiteAdminRoute Groups => Path("/groups");
 
     public SiteAdminRoute Impersonate => Path("/impersonate");
@@ -112,6 +121,7 @@ public class SiteAdminRoutes
         new(Errors, "Error log"),
         new(Questions, "FAQ"),
         new(Features, "Features"),
+        new(Geolocation, "Geolocation"),
         new(Groups, "Groups"),
         new(Impersonate, "Impersonate"),
         new(Members, "Members")

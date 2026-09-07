@@ -71,6 +71,8 @@ public class ChapterViewModelService : IChapterViewModelService
         var distance = filter.Distance ?? 30;
         var distanceUnitType = filter.DistanceUnit;
 
+        var ipAddressUsed = false;
+
         ILocation? location = filter.Location != null && filter.LocationName != null
             ? new Location
             {
@@ -106,6 +108,7 @@ public class ChapterViewModelService : IChapterViewModelService
             if (location == null && !string.IsNullOrEmpty(request.HttpRequestContext.IpAddress))
             {
                 location = await _geolocationService.GetLocationFromIpAddress(request.HttpRequestContext.IpAddress);
+                ipAddressUsed = true;
             }
         }
 
@@ -202,8 +205,8 @@ public class ChapterViewModelService : IChapterViewModelService
             Groups = groups
                 .OrderBy(x => x.Distance?.Value)
                 .ToArray(),
+            IpAddressUsed = ipAddressUsed,
             Location = location,
-            Platform = platform,
             TopicGroupId = topicGroupId,
             TopicGroups = topicGroups
         };
