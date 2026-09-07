@@ -30,9 +30,9 @@ public class SiteSubscriptionRepository
     public IDeferredQuerySingleOrDefault<SiteSubscription> GetByPriceIdOrDefault(Guid priceId)
         => ByPriceId(priceId).DeferredSingleOrDefault();
 
-    public IDeferredQuerySingle<SiteSubscription> GetDefault(PlatformType platform)
+    public IDeferredQuerySingle<SiteSubscription> GetDefault(EnvironmentType environment, PlatformType platform)
         => Set()
-            .Where(x => x.Platform == platform && x.Enabled && x.Default)
+            .Where(x => x.Platform == platform && x.Enabled && x.Default && x.Environment == environment)
             .DeferredSingle();
 
     public IDeferredQueryMultiple<SiteSubscriptionSummaryDto> GetSummaries(

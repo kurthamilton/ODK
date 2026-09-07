@@ -39,7 +39,7 @@ public class SiteSubscription : IDatabaseEntity
 
     public Guid SitePaymentProductId { get; set; }
 
-    public bool HasCapacity(int memberCount) => MemberLimit == null || memberCount < MemberLimit;
+    public bool HasCapacity(int memberCount) => RemainingCapacity(memberCount) != 0;
 
     /// <summary>
     /// Whether the subscription is usable: enabled, and either free or something a member can buy. A free
@@ -48,6 +48,15 @@ public class SiteSubscription : IDatabaseEntity
     /// </summary>
     public bool IsActive(IEnumerable<SiteSubscriptionPrice> prices)
         => Enabled && (Free || prices.Any());
+
+    /// <summary>
+    /// How many more members the group can take, or null when the plan sets no limit. Clamped at zero: a
+    /// group can hold more members than its plan allows, because a plan can be downgraded under a group
+    /// that is already fuller than the new limit.
+    /// </summary>
+    public uint? RemainingCapacity(int memberCount) => MemberLimit != null
+        ? (uint)Math.Max(0, MemberLimit.Value - memberCount)
+        : null;
 
     public string ToReference() => $"Subscription: {Name}";
 }

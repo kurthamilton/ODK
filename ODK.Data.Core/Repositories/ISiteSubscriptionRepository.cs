@@ -14,7 +14,7 @@ public interface ISiteSubscriptionRepository : IReadWriteRepository<SiteSubscrip
 
     IDeferredQuerySingleOrDefault<SiteSubscription> GetByPriceIdOrDefault(Guid priceId);
 
-    IDeferredQuerySingle<SiteSubscription> GetDefault(PlatformType platform);
+    IDeferredQuerySingle<SiteSubscription> GetDefault(EnvironmentType environment, PlatformType platform);
 
     IDeferredQueryMultiple<SiteSubscriptionSummaryDto> GetSummaries(
         PlatformType platform, SiteSubscriptionCooldown cooldown);

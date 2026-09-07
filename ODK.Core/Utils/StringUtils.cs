@@ -96,11 +96,10 @@ public static class StringUtils
         => WhitespaceRunRegex.Replace(text, " ").Trim();
 
     public static string Pluralise(int count, string single, string? plural = null)
-    {
-        return count == 1
-            ? single
-            : (!string.IsNullOrEmpty(plural) ? plural : $"{single}s");
-    }
+        => Pluralise(isSingle: count == 1, single, plural);
+
+    public static string Pluralise(uint count, string single, string? plural = null)
+        => Pluralise(isSingle: count == 1, single, plural);
 
     /// <summary>
     /// Generate a non-cryptographically secure string of a given length
@@ -135,4 +134,9 @@ public static class StringUtils
             yield return match.Groups[1].Value;
         }
     }
+
+    private static string Pluralise(bool isSingle, string single, string? plural = null)
+        => isSingle
+            ? single
+            : (!string.IsNullOrEmpty(plural) ? plural : $"{single}s");
 }
