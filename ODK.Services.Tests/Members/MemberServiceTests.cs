@@ -52,9 +52,7 @@ public static class MemberServiceTests
 
         var emailService = new Mock<IMemberEmailService>();
         var service = CreateMemberService(context, emailService.Object);
-        var request = Mock.Of<IServiceRequest>(x =>
-            x.Platform == PlatformType.Default &&
-            x.HttpRequestContext == Mock.Of<IHttpRequestContext>());
+        var request = CreateServiceRequest();
 
         // Act
         var result = await service.CreateAccount(request, CreateModel("existing@example.com", firstName: "New"));
@@ -83,9 +81,7 @@ public static class MemberServiceTests
 
         var emailService = new Mock<IMemberEmailService>();
         var service = CreateMemberService(context, emailService.Object, verifier.Object);
-        var request = Mock.Of<IServiceRequest>(x =>
-            x.Platform == PlatformType.Default &&
-            x.HttpRequestContext == Mock.Of<IHttpRequestContext>());
+        var request = CreateServiceRequest();
 
         // Act
         var result = await service.CreateAccount(request, CreateModel("rejected@example.com", firstName: "New"));
@@ -118,9 +114,7 @@ public static class MemberServiceTests
 
         var emailService = new Mock<IMemberEmailService>();
         var service = CreateMemberService(context, emailService.Object);
-        var request = Mock.Of<IServiceRequest>(x =>
-            x.Platform == PlatformType.Default &&
-            x.HttpRequestContext == Mock.Of<IHttpRequestContext>());
+        var request = CreateServiceRequest();
 
         // Act
         var result = await service.CreateAccount(request, CreateModel("existing@example.com", firstName: "New"));
@@ -157,9 +151,7 @@ public static class MemberServiceTests
 
         var emailService = new Mock<IMemberEmailService>();
         var service = CreateMemberService(context, emailService.Object);
-        var request = Mock.Of<IServiceRequest>(x =>
-            x.Platform == PlatformType.Default &&
-            x.HttpRequestContext == Mock.Of<IHttpRequestContext>());
+        var request = CreateServiceRequest();
 
         // Act
         var result = await service.CreateAccount(request, CreateModel("existing@example.com", firstName: "New"));
@@ -245,9 +237,7 @@ public static class MemberServiceTests
         SeedDefaultSiteSubscription(context);
 
         var service = CreateMemberService(context, new Mock<IMemberEmailService>().Object);
-        var request = Mock.Of<IServiceRequest>(x =>
-            x.Platform == PlatformType.Default &&
-            x.HttpRequestContext == Mock.Of<IHttpRequestContext>(c => c.Locale == "fr-FR"));
+        var request = CreateServiceRequest(httpRequestContext: Mock.Of<IHttpRequestContext>(c => c.Locale == "fr-FR"));
 
         // Act
         var result = await service.CreateAccount(request, CreateModel("new@example.com", firstName: "New"));
@@ -284,7 +274,9 @@ public static class MemberServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
         SeedDefaultSiteSubscription(context, PlatformType.DrunkenKnitwits);
-        var chapter = context.CreateChapter(siteSubscription: context.CreateSiteSubscription());
+        var chapter = context.CreateChapter(
+            siteSubscription: context.CreateSiteSubscription(platform: PlatformType.DrunkenKnitwits),
+            platform: PlatformType.DrunkenKnitwits);
 
         var existing = context.CreateMember(activated: true, afterCreate: x => x.EmailAddress = "existing@example.com");
 
@@ -311,7 +303,9 @@ public static class MemberServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
         SeedDefaultSiteSubscription(context, PlatformType.DrunkenKnitwits);
-        var chapter = context.CreateChapter(siteSubscription: context.CreateSiteSubscription());
+        var chapter = context.CreateChapter(
+            siteSubscription: context.CreateSiteSubscription(platform: PlatformType.DrunkenKnitwits),
+            platform: PlatformType.DrunkenKnitwits);
 
         var existing = context.CreateMember(activated: false, afterCreate: x =>
         {
@@ -355,8 +349,11 @@ public static class MemberServiceTests
            to. Holding the token proves they read mail at that address, which is the only thing an activation
            email establishes, so they are handed the token instead of being made to wait for one. */
         using var context = CreateMockOdkContext();
+
         SeedDefaultSiteSubscription(context, PlatformType.DrunkenKnitwits);
-        var chapter = context.CreateChapter(siteSubscription: context.CreateSiteSubscription());
+        var chapter = context.CreateChapter(
+            siteSubscription: context.CreateSiteSubscription(platform: PlatformType.DrunkenKnitwits),
+            platform: PlatformType.DrunkenKnitwits);
 
         var existing = context.CreateMember(activated: false, afterCreate: x =>
         {
@@ -409,7 +406,9 @@ public static class MemberServiceTests
            it was not sent to, so this falls back to proving the new one the usual way. */
         using var context = CreateMockOdkContext();
         SeedDefaultSiteSubscription(context, PlatformType.DrunkenKnitwits);
-        var chapter = context.CreateChapter(siteSubscription: context.CreateSiteSubscription());
+        var chapter = context.CreateChapter(
+            siteSubscription: context.CreateSiteSubscription(platform: PlatformType.DrunkenKnitwits),
+            platform: PlatformType.DrunkenKnitwits);
 
         var existing = context.CreateMember(activated: false, afterCreate: x =>
             x.EmailAddress = "invited@example.com");
@@ -448,8 +447,11 @@ public static class MemberServiceTests
            invite from a second group. It is re-raised with its own token so the link already emailed for that
            group still resolves. */
         using var context = CreateMockOdkContext();
+
         SeedDefaultSiteSubscription(context, PlatformType.DrunkenKnitwits);
-        var chapter = context.CreateChapter(siteSubscription: context.CreateSiteSubscription());
+        var chapter = context.CreateChapter(
+            siteSubscription: context.CreateSiteSubscription(platform: PlatformType.DrunkenKnitwits),
+            platform: PlatformType.DrunkenKnitwits);
         var otherChapter = context.CreateChapter();
 
         var existing = context.CreateMember(activated: false, afterCreate: x =>
@@ -500,7 +502,9 @@ public static class MemberServiceTests
            for an outbound reCAPTCHA call to decide that. Scoring belongs to the step that creates the account. */
         using var context = CreateMockOdkContext();
         SeedDefaultSiteSubscription(context, PlatformType.DrunkenKnitwits);
-        var chapter = context.CreateChapter(siteSubscription: context.CreateSiteSubscription());
+        var chapter = context.CreateChapter(
+            siteSubscription: context.CreateSiteSubscription(platform: PlatformType.DrunkenKnitwits),
+            platform: PlatformType.DrunkenKnitwits);
 
         context.CreateMember(activated: true, afterCreate: x => x.EmailAddress = "existing@example.com");
 
@@ -529,7 +533,9 @@ public static class MemberServiceTests
         SeedDefaultSiteSubscription(context, PlatformType.DrunkenKnitwits);
 
         var chapter = context.CreateChapter(
-            siteSubscription: context.CreateSiteSubscription(memberLimit: 1));
+            siteSubscription: context.CreateSiteSubscription(
+                memberLimit: 1, platform: PlatformType.DrunkenKnitwits),
+            platform: PlatformType.DrunkenKnitwits);
 
         // The one place the subscription allows is already taken.
         var existing = context.CreateMember(afterCreate: x => x.EmailAddress = "taken@example.com");
@@ -562,7 +568,9 @@ public static class MemberServiceTests
            questions the way JoinChapter does. */
         using var context = CreateMockOdkContext();
         SeedDefaultSiteSubscription(context, PlatformType.DrunkenKnitwits);
-        var chapter = context.CreateChapter(siteSubscription: context.CreateSiteSubscription());
+        var chapter = context.CreateChapter(
+            siteSubscription: context.CreateSiteSubscription(platform: PlatformType.DrunkenKnitwits),
+            platform: PlatformType.DrunkenKnitwits);
         context.Create(new ChapterProperty
         {
             ChapterId = chapter.Id,
@@ -973,7 +981,8 @@ public static class MemberServiceTests
         Mock.Of<IChapterServiceRequest>(x =>
             x.Platform == platform &&
             x.Chapter == chapter &&
-            x.HttpRequestContext == Mock.Of<IHttpRequestContext>());
+            x.HttpRequestContext == Mock.Of<IHttpRequestContext>() &&
+            x.Environment == EnvironmentType.Dev);
 
     private static MemberCreateProfile CreateChapterProfile(
         string emailAddress, string firstName, string? inviteToken = null) => new MemberCreateProfile
@@ -1030,7 +1039,8 @@ public static class MemberServiceTests
     private static IServiceRequest CreateSiteRequest(PlatformType platform = PlatformType.Default) =>
         Mock.Of<IServiceRequest>(x =>
             x.Platform == platform &&
-        x.HttpRequestContext == Mock.Of<IHttpRequestContext>());
+            x.Environment == EnvironmentType.Dev &&
+            x.HttpRequestContext == Mock.Of<IHttpRequestContext>());
 
     private static AccountCreateModel CreateModel(
         string emailAddress, string firstName, Guid? referralId = null) => new AccountCreateModel
@@ -1185,7 +1195,15 @@ public static class MemberServiceTests
             x.Platform == PlatformType.DrunkenKnitwits &&
             x.Chapter == chapter &&
             x.CurrentMember == member &&
-            x.HttpRequestContext == Mock.Of<IHttpRequestContext>());
+            x.HttpRequestContext == Mock.Of<IHttpRequestContext>() &&
+            x.Environment == EnvironmentType.Dev);
+
+    private static IServiceRequest CreateServiceRequest(
+        IHttpRequestContext? httpRequestContext = null) =>
+        Mock.Of<IServiceRequest>(x =>
+            x.Platform == PlatformType.Default &&
+            x.HttpRequestContext == (httpRequestContext ?? Mock.Of<IHttpRequestContext>()) &&
+            x.Environment == EnvironmentType.Dev);
 
     private static IAuthorizationService CreateMockAuthorizationService(bool chapterHasAccess)
     {
@@ -1227,7 +1245,10 @@ public static class MemberServiceTests
 
     private static MockOdkContext CreateMockOdkContext() => new MockOdkContext();
 
-    private static void SeedDefaultSiteSubscription(MockOdkContext context, PlatformType platform = PlatformType.Default)
+    private static void SeedDefaultSiteSubscription(
+        MockOdkContext context,
+        PlatformType platform = PlatformType.Default,
+        EnvironmentType environment = EnvironmentType.Dev)
     {
         context.Create(new SiteSubscription
         {
@@ -1237,7 +1258,8 @@ public static class MemberServiceTests
             GroupLimit = 10,
             Enabled = true,
             Default = true,
-            Platform = platform
+            Platform = platform,
+            Environment = environment
         });
     }
 }

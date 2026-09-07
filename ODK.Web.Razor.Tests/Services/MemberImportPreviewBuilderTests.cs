@@ -3,6 +3,7 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Moq;
 using NUnit.Framework;
+using ODK.Core.Subscriptions;
 using ODK.Services;
 using ODK.Services.Csv;
 using ODK.Services.Members;
@@ -61,7 +62,17 @@ public static class MemberImportPreviewBuilderTests
             .Setup(x => x.GetMemberImportPreview(
                 It.IsAny<IMemberChapterAdminServiceRequest>(),
                 It.IsAny<IReadOnlyCollection<MemberImportModel>>()))
-            .ReturnsAsync(new MemberImportPreview { Rows = [] });
+            .ReturnsAsync(new MemberImportPreview
+            {
+                Capacity = new MemberImportCapacity
+                {
+                    MemberCount = 0,
+                    OutstandingInviteCount = 0,
+                    OwnerSubscription = new SiteSubscription()
+                },
+                PlacesRequired = 0,
+                Rows = []
+            });
 
         var staging = new Mock<IMemberImportStagingService>();
         staging.Setup(x => x.Stage(It.IsAny<IReadOnlyCollection<MemberImportModel>>())).Returns("tok-123");

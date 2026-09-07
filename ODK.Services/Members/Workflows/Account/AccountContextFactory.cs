@@ -159,9 +159,11 @@ public sealed class AccountContextFactory : IAccountContextFactory
         IServiceRequest request,
         AccountCreateModel profile)
     {
+        var (environment, platform) = (request.Environment, request.Platform);
+
         var (existing, siteSubscription, topics, referral) = await _unitOfWork.Run(
             x => x.MemberRepository.GetByEmailAddress(profile.EmailAddress),
-            x => x.SiteSubscriptionRepository.GetDefault(request.Platform),
+            x => x.SiteSubscriptionRepository.GetDefault(environment, platform),
             x => x.TopicRepository.GetByIds(profile.TopicIds),
             x => profile.ReferralId != null
                 ? x.ReferralRepository.GetByIdOrDefault(profile.ReferralId.Value)
@@ -192,7 +194,7 @@ public sealed class AccountContextFactory : IAccountContextFactory
         IChapterServiceRequest request,
         MemberCreateProfile profile)
     {
-        var (platform, chapter) = (request.Platform, request.Chapter);
+        var (environment, platform, chapter) = (request.Environment, request.Chapter.Platform, request.Chapter);
 
         var (
             chapterProperties,
@@ -206,7 +208,7 @@ public sealed class AccountContextFactory : IAccountContextFactory
             x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.MemberRepository.GetByEmailAddress(profile.EmailAddress),
-            x => x.SiteSubscriptionRepository.GetDefault(platform),
+            x => x.SiteSubscriptionRepository.GetDefault(environment, platform),
             x => x.MemberSiteSubscriptionRecordRepository
                 .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
                 .SiteSubscription()

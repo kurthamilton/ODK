@@ -5,8 +5,10 @@
 @model MemberImportReviewViewModel
 @{
     var preview = Model.Preview;
+    var capacity = preview.Capacity;
     var importableRows = preview.ImportableRows.ToArray();
-    var canImport = importableRows.Length > 0;
+    var remaining = capacity.Remaining ?? 0;
+    var canImport = importableRows.Length > 0 && preview.FitsWithinCapacity;
 
     /* Whether the site already knows this person, not what the import does to them - everyone importable is
        invited, and the summary below says so. A label naming the action would have to say "invite" twice. */
@@ -50,6 +52,41 @@
     </table>
 </div>
 
+@if (importableRows.Length == 0)
+{
+    <div class="alert alert-info">There is nobody to invite from this file.</div>
+}
+
+@if (importableRows.Length > 0 && !preview.FitsWithinCapacity)
+{
+    <div class="alert alert-warning">
+        @if (!capacity.HasOwnerSubscription)
+        {
+            <span>This group's plan is not active, so it cannot invite new members.</span>
+        }
+        else
+        {
+            <p>
+                <span>This group has room for </span>
+                <strong>@remaining more @StringUtils.Pluralise(remaining, "member")</strong>
+                <span>
+                    - it has @capacity.MemberCount
+                    @StringUtils.Pluralise(capacity.MemberCount, "member") and
+                    @capacity.OutstandingInviteCount outstanding
+                    @StringUtils.Pluralise(capacity.OutstandingInviteCount, "invite"), against a limit of
+                    @capacity.Limit.
+                </span>
+                <span>This file needs <strong>@preview.PlacesRequired</strong>.</span>
+            </p>
+            <p class="mb-0">
+                Remove @(preview.PlacesRequired - remaining)
+                @StringUtils.Pluralise(preview.PlacesRequired - remaining, "row") from the file, or move to a
+                plan with a higher member limit.
+            </p>
+        }
+    </div>
+}
+
 @if (canImport)
 {
     <p>
@@ -79,6 +116,17 @@
             </li>
         }
     </ul>
+
+    @if (capacity.Limit != null)
+    {
+        var left = remaining - preview.PlacesRequired;
+
+        <p>
+            <span>After this the group can invite </span>
+            <strong>@left more @StringUtils.Pluralise(left, "member")</strong>
+            <span> on its current plan.</span>
+        </p>
+    }
 
     <form method="post" action="/groups/@Model.Chapter.Id/members/import">
         @Html.AntiForgeryToken()

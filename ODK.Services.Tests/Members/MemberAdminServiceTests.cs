@@ -754,7 +754,9 @@ public static class MemberAdminServiceTests
         using var context = CreateMockOdkContext();
 
         var currentMember = context.CreateMember();
-        var chapter = context.CreateChapter(owner: currentMember);
+        var chapter = context.CreateChapter(
+            owner: currentMember,
+            siteSubscription: context.CreateSiteSubscription());
 
         // A default site subscription is required for the platform when new members are created.
         context.Create(new SiteSubscription
@@ -803,7 +805,9 @@ public static class MemberAdminServiceTests
         using var context = CreateMockOdkContext();
 
         var currentMember = context.CreateMember();
-        var chapter = context.CreateChapter(owner: currentMember);
+        var chapter = context.CreateChapter(
+            owner: currentMember,
+            siteSubscription: context.CreateSiteSubscription());
 
         context.Create(new SiteSubscription
         {
@@ -861,7 +865,9 @@ public static class MemberAdminServiceTests
         using var context = CreateMockOdkContext();
 
         var currentMember = context.CreateMember();
-        var chapter = context.CreateChapter(owner: currentMember);
+        var chapter = context.CreateChapter(
+            owner: currentMember,
+            siteSubscription: context.CreateSiteSubscription());
         var invited = context.CreateMember();
         invited.EmailAddress = "invited@example.com";
 
@@ -922,7 +928,10 @@ public static class MemberAdminServiceTests
         using var context = CreateMockOdkContext();
 
         var currentMember = context.CreateMember();
-        var chapter = context.CreateChapter(owner: currentMember, platform: platform);
+        var chapter = context.CreateChapter(
+            owner: currentMember,
+            platform: platform,
+            siteSubscription: context.CreateSiteSubscription(platform: platform));
 
         SeedDefaultSiteSubscription(context, platform);
 
@@ -966,7 +975,8 @@ public static class MemberAdminServiceTests
         var currentMember = context.CreateMember();
         var chapter = context.CreateChapter(
             owner: currentMember,
-            platform: platform);
+            platform: platform,
+            siteSubscription: context.CreateSiteSubscription(platform: platform));
 
         SeedDefaultSiteSubscription(context, platform);
 
@@ -1000,7 +1010,9 @@ public static class MemberAdminServiceTests
         using var context = CreateMockOdkContext();
 
         var currentMember = context.CreateMember();
-        var chapter = context.CreateChapter(owner: currentMember);
+        var chapter = context.CreateChapter(
+            owner: currentMember,
+            siteSubscription: context.CreateSiteSubscription());
         var existing = context.CreateMember(afterCreate: x => x.EmailAddress = "existing@example.com");
 
         SeedDefaultSiteSubscription(context, PlatformType.Default);
@@ -1043,7 +1055,9 @@ public static class MemberAdminServiceTests
         using var context = CreateMockOdkContext();
 
         var currentMember = context.CreateMember();
-        var chapter = context.CreateChapter(owner: currentMember);
+        var chapter = context.CreateChapter(
+            owner: currentMember,
+            siteSubscription: context.CreateSiteSubscription());
 
         context.Create(new SiteSubscription
         {
@@ -1108,6 +1122,328 @@ public static class MemberAdminServiceTests
             .Status.Should().Be(MemberImportRowStatus.Invalid);
         result.Rows.Single(x => x.Member.EmailAddress == "good@example.com")
             .Status.Should().Be(MemberImportRowStatus.New);
+    }
+
+    [Test]
+    public static async Task ImportMembers_GroupAtItsMemberLimit_FailsWithoutWritingAnything()
+    {
+        // Arrange - the file is refused as a whole, before any account is raised or invite written.
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(
+            owner: currentMember,
+            siteSubscription: context.CreateSiteSubscription(memberLimit: 1));
+
+        // The one place the owner's plan allows is already taken.
+        var existing = context.CreateMember(afterCreate: x => x.EmailAddress = "taken@example.com");
+        context.Create(new MemberChapter
+        {
+            Approved = true,
+            ChapterId = chapter.Id,
+            CreatedUtc = DateTime.UtcNow,
+            Id = Guid.NewGuid(),
+            MemberId = existing.Id
+        });
+
+        SeedDefaultSiteSubscription(context, PlatformType.Default);
+
+        var service = CreateMemberAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberImport);
+
+        var members = new[]
+        {
+            new MemberImportModel { EmailAddress = "new@example.com", FirstName = "New", LastName = "Member" }
+        };
+
+        // Act
+        var result = await service.ImportMembers(request, members);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        context.Set<Member>().Any(x => x.EmailAddress == "new@example.com").Should().BeFalse();
+        context.Set<MemberChapterInvite>().Any(x => x.ChapterId == chapter.Id).Should().BeFalse();
+    }
+
+    [Test]
+    public static async Task ImportMembers_FileLargerThanRemainingCapacity_FailsWithoutWritingAnything()
+    {
+        /* Arrange - a file that only partly fits is refused whole rather than filled to the limit: which
+           rows would be dropped is the order they happen to arrive in. */
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(
+            owner: currentMember,
+            siteSubscription: context.CreateSiteSubscription(memberLimit: 2));
+
+        SeedDefaultSiteSubscription(context, PlatformType.Default);
+
+        var service = CreateMemberAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberImport);
+
+        // Two places, three rows.
+        var members = new[]
+        {
+            new MemberImportModel { EmailAddress = "one@example.com", FirstName = "One", LastName = "Member" },
+            new MemberImportModel { EmailAddress = "two@example.com", FirstName = "Two", LastName = "Member" },
+            new MemberImportModel { EmailAddress = "three@example.com", FirstName = "Three", LastName = "Member" }
+        };
+
+        // Act
+        var result = await service.ImportMembers(request, members);
+
+        // Assert - not even the two that would have fitted.
+        result.Success.Should().BeFalse();
+        context.Set<Member>()
+            .Count(x => x.EmailAddress == "one@example.com" ||
+                        x.EmailAddress == "two@example.com" ||
+                        x.EmailAddress == "three@example.com")
+            .Should().Be(0);
+        context.Set<MemberChapterInvite>().Any(x => x.ChapterId == chapter.Id).Should().BeFalse();
+    }
+
+    [Test]
+    public static async Task ImportMembers_OutstandingInvitesFillTheLimit_Fails()
+    {
+        /* Arrange - an invite is a place held for somebody who has not accepted yet, so it counts against
+           the limit. Counting members alone would let the file through and refuse each invitee instead. */
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(
+            owner: currentMember,
+            siteSubscription: context.CreateSiteSubscription(memberLimit: 1));
+
+        var invited = context.CreateMember(afterCreate: x => x.EmailAddress = "invited@example.com");
+        context.Create(new MemberChapterInvite
+        {
+            ChapterId = chapter.Id,
+            CreatedUtc = DateTime.UtcNow,
+            Id = Guid.NewGuid(),
+            MemberId = invited.Id
+        });
+
+        SeedDefaultSiteSubscription(context, PlatformType.Default);
+
+        var service = CreateMemberAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberImport);
+
+        var members = new[]
+        {
+            new MemberImportModel { EmailAddress = "new@example.com", FirstName = "New", LastName = "Member" }
+        };
+
+        // Act
+        var result = await service.ImportMembers(request, members);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        context.Set<Member>().Any(x => x.EmailAddress == "new@example.com").Should().BeFalse();
+    }
+
+    [Test]
+    public static async Task ImportMembers_AlreadyInvitedRow_TakesNoFurtherPlace()
+    {
+        /* Arrange - re-importing a file must not ask for a place the group is already holding, or a full
+           group refuses an import that would write nothing. */
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(
+            owner: currentMember,
+            siteSubscription: context.CreateSiteSubscription(memberLimit: 1));
+
+        var invited = context.CreateMember(afterCreate: x => x.EmailAddress = "invited@example.com");
+        context.Create(new MemberChapterInvite
+        {
+            ChapterId = chapter.Id,
+            CreatedUtc = DateTime.UtcNow,
+            Id = Guid.NewGuid(),
+            MemberId = invited.Id
+        });
+
+        SeedDefaultSiteSubscription(context, PlatformType.Default);
+
+        var service = CreateMemberAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberImport);
+
+        // The one row is the member already holding the group's only place.
+        var members = new[]
+        {
+            new MemberImportModel
+            {
+                EmailAddress = "invited@example.com", FirstName = "Invited", LastName = "Member"
+            }
+        };
+
+        // Act
+        var result = await service.ImportMembers(request, members);
+
+        // Assert
+        result.Success.Should().BeTrue();
+    }
+
+    [Test]
+    public static async Task ImportMembers_RowsAlreadyInTheGroup_DoNotCountAgainstTheLimit()
+    {
+        // Arrange - a row for somebody already in the group is skipped, so it asks for no place.
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(
+            owner: currentMember,
+            siteSubscription: context.CreateSiteSubscription(memberLimit: 1));
+
+        var existing = context.CreateMember(afterCreate: x => x.EmailAddress = "member@example.com");
+        context.Create(new MemberChapter
+        {
+            Approved = true,
+            ChapterId = chapter.Id,
+            CreatedUtc = DateTime.UtcNow,
+            Id = Guid.NewGuid(),
+            MemberId = existing.Id
+        });
+
+        SeedDefaultSiteSubscription(context, PlatformType.Default);
+
+        var service = CreateMemberAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberImport);
+
+        // The group is at its limit of one, and the file holds only that one member.
+        var members = new[]
+        {
+            new MemberImportModel
+            {
+                EmailAddress = "member@example.com", FirstName = "Member", LastName = "One"
+            }
+        };
+
+        // Act
+        var result = await service.ImportMembers(request, members);
+
+        // Assert
+        result.Success.Should().BeTrue();
+    }
+
+    [Test]
+    public static async Task ImportMembers_PlanWithNoMemberLimit_ImportsEveryRow()
+    {
+        // Arrange - a plan stating no limit permits any number, which is not the same as permitting none.
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(
+            owner: currentMember,
+            siteSubscription: context.CreateSiteSubscription(memberLimit: null));
+
+        SeedDefaultSiteSubscription(context, PlatformType.Default);
+
+        var service = CreateMemberAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberImport);
+
+        var members = new[]
+        {
+            new MemberImportModel { EmailAddress = "one@example.com", FirstName = "One", LastName = "Member" },
+            new MemberImportModel { EmailAddress = "two@example.com", FirstName = "Two", LastName = "Member" }
+        };
+
+        // Act
+        var result = await service.ImportMembers(request, members);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        context.Set<MemberChapterInvite>().Count(x => x.ChapterId == chapter.Id).Should().Be(2);
+    }
+
+    [Test]
+    public static async Task ImportMembers_OwnerHasNoActiveSubscription_Fails()
+    {
+        /* Arrange - a group whose owner has no active plan admits nobody by any route, so the import says so
+           to the admin rather than succeeding and refusing every invitee in turn. Pinned: the process that
+           guarantees an owner always has a plan has to change this deliberately. */
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(owner: currentMember);
+
+        SeedDefaultSiteSubscription(context, PlatformType.Default);
+
+        var service = CreateMemberAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberImport);
+
+        var members = new[]
+        {
+            new MemberImportModel { EmailAddress = "new@example.com", FirstName = "New", LastName = "Member" }
+        };
+
+        // Act
+        var result = await service.ImportMembers(request, members);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        context.Set<Member>().Any(x => x.EmailAddress == "new@example.com").Should().BeFalse();
+    }
+
+    [Test]
+    public static async Task GetMemberImportPreview_FileLargerThanRemainingCapacity_ReportsItDoesNotFit()
+    {
+        // Arrange - the preview is where the admin finds out, so the confirm step can be withheld.
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(
+            owner: currentMember,
+            siteSubscription: context.CreateSiteSubscription(memberLimit: 1));
+
+        var service = CreateMemberAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberImport);
+
+        var members = new[]
+        {
+            new MemberImportModel { EmailAddress = "one@example.com", FirstName = "One", LastName = "Member" },
+            new MemberImportModel { EmailAddress = "two@example.com", FirstName = "Two", LastName = "Member" }
+        };
+
+        // Act
+        var result = await service.GetMemberImportPreview(request, members);
+
+        // Assert
+        result.PlacesRequired.Should().Be(2);
+        result.Capacity.Remaining.Should().Be(1);
+        result.FitsWithinCapacity.Should().BeFalse();
     }
 
     [Test]

@@ -7,6 +7,7 @@ using ODK.Core.Members;
 using ODK.Core.Notifications;
 using ODK.Core.Payments;
 using ODK.Core.Subscriptions;
+using ODK.Core.Utils;
 using ODK.Core.Workflows;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
@@ -633,14 +634,23 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
-        var existingMembers = await GetChapterAdminRestrictedContent(request,
-            x => x.MemberRepository
-                .Query()
-                .HasEmailAddress(emailAddresses)
-                .GetAll());
+        var (existingMembers, memberCount, outstandingInvites, ownerSubscription) =
+            await GetChapterAdminRestrictedContent(request,
+                x => x.MemberRepository
+                    .Query()
+                    .HasEmailAddress(emailAddresses)
+                    .GetAll(),
+                x => x.MemberRepository.GetCountByChapterId(chapter.Id),
+                x => x.MemberChapterInviteRepository.GetByChapterId(chapter.Id),
+                x => x.MemberSiteSubscriptionRecordRepository
+                    .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
+                    .SiteSubscription()
+                    .GetSingleOrDefault());
 
         var existingMemberDictionary = existingMembers
             .ToDictionary(x => x.EmailAddress, StringComparer.OrdinalIgnoreCase);
+
+        var invitedMemberIds = InvitedMemberIds(outstandingInvites);
 
         var distinctMembers = DistinctByEmailAddress(members);
 
@@ -648,29 +658,36 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         // the daily quota on a single import. Format alone still catches the typos that matter.
         var validity = await ValidateImportEmailAddresses(distinctMembers);
 
-        var rows = distinctMembers
-            .Select(x =>
+        uint placesRequired = 0;
+        var rows = new List<MemberImportPreviewRow>(distinctMembers.Count);
+
+        foreach (var member in distinctMembers)
+        {
+            existingMemberDictionary.TryGetValue(member.EmailAddress, out var existing);
+
+            var status = GetImportRowStatus(validity[member.EmailAddress], existing, chapter.Id);
+
+            if (NeedsAPlace(status, existing, invitedMemberIds))
             {
-                existingMemberDictionary.TryGetValue(x.EmailAddress, out var member);
+                placesRequired++;
+            }
 
-                var status = !validity[x.EmailAddress]
-                    ? MemberImportRowStatus.Invalid
-                    : member == null
-                        ? MemberImportRowStatus.New
-                        : member.IsMemberOf(chapter.Id)
-                            ? MemberImportRowStatus.ExistingInGroup
-                            : MemberImportRowStatus.ExistingNotInGroup;
-
-                return new MemberImportPreviewRow
-                {
-                    Member = x,
-                    Status = status
-                };
-            })
-            .ToList();
+            rows.Add(new MemberImportPreviewRow
+            {
+                Member = member,
+                Status = status
+            });
+        }
 
         return new MemberImportPreview
         {
+            Capacity = new MemberImportCapacity
+            {
+                MemberCount = memberCount,
+                OutstandingInviteCount = outstandingInvites.Count,
+                OwnerSubscription = ownerSubscription
+            },
+            PlacesRequired = placesRequired,
             Rows = rows
         };
     }
@@ -739,15 +756,24 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
     public async Task<ServiceResult> ImportMembers(IMemberChapterAdminServiceRequest request, IReadOnlyCollection<MemberImportModel> members)
     {
-        var (platform, chapter) = (request.Platform, request.Chapter);
+        var (environment, platform, chapter) = (request.Environment, request.Chapter.Platform, request.Chapter);
 
         var emailAddresses = members
             .Select(x => x.EmailAddress)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
-        var (siteSubscription, chapterLocation, currency, country, existingMembers, outstandingInvites) = await GetChapterAdminRestrictedContent(request,
-            x => x.SiteSubscriptionRepository.GetDefault(platform),
+        var (
+            siteSubscription,
+            chapterLocation,
+            currency,
+            country,
+            existingMembers,
+            outstandingInvites,
+            memberCount,
+            ownerSubscription
+        ) = await GetChapterAdminRestrictedContent(request,
+            x => x.SiteSubscriptionRepository.GetDefault(environment, platform),
             x => x.ChapterLocationRepository.GetByChapterId(chapter.Id),
             x => x.CurrencyRepository.GetByChapterId(chapter.Id),
             x => x.CountryRepository.GetByChapterId(chapter.Id),
@@ -755,7 +781,12 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                 .Query()
                 .HasEmailAddress(emailAddresses)
                 .GetAll(),
-            x => x.MemberChapterInviteRepository.GetByChapterId(chapter.Id));
+            x => x.MemberChapterInviteRepository.GetByChapterId(chapter.Id),
+            x => x.MemberRepository.GetCountByChapterId(chapter.Id),
+            x => x.MemberSiteSubscriptionRecordRepository
+                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
+                .SiteSubscription()
+                .GetSingleOrDefault());
 
         // Read once for the whole file: every row's context is a projection of this, so a file of a thousand
         // rows costs the same queries as a file of one.
@@ -776,6 +807,32 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         // The same check the preview showed, so what gets imported matches what was displayed. Batched, because
         // it calls out to a verifier.
         var validity = await ValidateImportEmailAddresses(distinctMembers);
+
+        var capacity = new MemberImportCapacity
+        {
+            MemberCount = memberCount,
+            OutstandingInviteCount = outstandingInvites.Count,
+            OwnerSubscription = ownerSubscription
+        };
+
+        var invitedMemberIds = InvitedMemberIds(outstandingInvites);
+
+        var placesRequired = (uint)distinctMembers.Count(x =>
+        {
+            var existing = batch.ExistingMember(x.EmailAddress);
+
+            return NeedsAPlace(
+                GetImportRowStatus(validity[x.EmailAddress], existing, chapter.Id), existing, invitedMemberIds);
+        });
+
+        /* Refused as a whole file rather than filled to the limit, because which rows would be dropped is
+           the order they happen to arrive in. The preview withholds the confirm button for the same reason,
+           so reaching this means the group's remaining places were taken between the two. Nothing has been
+           staged yet, so there is nothing to unwind. */
+        if (!capacity.Fits(placesRequired))
+        {
+            return ServiceResult.Failure(ImportCapacityMessage(capacity, placesRequired));
+        }
 
         var inviteEmailMembers = new List<Member>();
 
@@ -1146,6 +1203,44 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             .GroupBy(x => x.EmailAddress, StringComparer.OrdinalIgnoreCase)
             .Select(g => g.First())
             .ToArray();
+
+    // Used by both the preview and the commit, so the two agree on what each row of a file is.
+    private static MemberImportRowStatus GetImportRowStatus(
+        bool validEmailAddress, Member? existing, Guid chapterId)
+        => !validEmailAddress
+            ? MemberImportRowStatus.Invalid
+            : existing == null
+                ? MemberImportRowStatus.New
+                : existing.IsMemberOf(chapterId)
+                    ? MemberImportRowStatus.ExistingInGroup
+                    : MemberImportRowStatus.ExistingNotInGroup;
+
+    private static string ImportCapacityMessage(MemberImportCapacity capacity, uint placesRequired)
+    {
+        if (!capacity.HasOwnerSubscription)
+        {
+            return "This group's plan is not active, so it cannot invite new members";
+        }
+
+        var remaining = capacity.Remaining ?? 0;
+
+        return remaining == 0
+            ? "This group has reached the member limit on its plan"
+            : $"This group has room for {remaining} more " +
+                $"{StringUtils.Pluralise(remaining, "member")}, and this file needs {placesRequired}";
+    }
+
+    private static HashSet<Guid> InvitedMemberIds(IEnumerable<MemberChapterInvite> outstandingInvites)
+        => outstandingInvites
+            .Select(x => x.MemberId)
+            .ToHashSet();
+
+    /* Whether a row takes one of the group's remaining places, used by both the preview and the commit so
+       the two agree on what a file asks for. An address that already holds an invite takes none: that invite
+       is already counted against the group, and re-importing a file must not ask for it twice. */
+    private static bool NeedsAPlace(
+        MemberImportRowStatus status, Member? existing, HashSet<Guid> invitedMemberIds)
+        => status.IsImportable() && (existing == null || !invitedMemberIds.Contains(existing.Id));
 
     // A preference row exists only once a member has expressed one, so an absent row is opted in.
     private static HashSet<Guid> OptedOutMemberIds(IEnumerable<MemberEmailPreference> preferences) => preferences
