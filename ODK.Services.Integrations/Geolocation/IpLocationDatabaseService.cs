@@ -113,7 +113,12 @@ public class IpLocationDatabaseService : OdkAdminServiceBase, IIpLocationDatabas
             return ServiceResult.Failure(message);
         }
 
-        _fileSystem.Directory.CreateDirectory(directory);
+        if (!_fileSystem.Directory.Exists(directory))
+        {
+            var message = $"IP location database directory '{directory}' does not exist";
+            await _loggingService.Error(message);
+            return ServiceResult.Failure(message);
+        }
 
         var months = Enumerable
             .Range(0, MonthsToTry)
