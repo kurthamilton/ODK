@@ -8,3 +8,7 @@
 }
 
 @await Html.PartialAsync("SiteAdmin/_GeolocationContent")
+
+<hr class="my-4" />
+
+@await Html.PartialAsync("SiteAdmin/_DirectoryBrowserContent", Model.BrowsePath)
