@@ -26,8 +26,6 @@ public class SiteAdminRoutes
 
     public SiteAdminRoute GeolocationUpdate => Geolocation.Child("/update");
 
-    public SiteAdminRoute GeolocationWriteTest => Geolocation.Child("/write-test");
-
     public SiteAdminRoute Groups => Path("/groups");
 
     public SiteAdminRoute Impersonate => Path("/impersonate");
