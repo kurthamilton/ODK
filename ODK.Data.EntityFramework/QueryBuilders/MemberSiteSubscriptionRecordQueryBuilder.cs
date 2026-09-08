@@ -2,6 +2,7 @@
 using ODK.Core.Chapters;
 using ODK.Core.Features;
 using ODK.Core.Members;
+using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Members;
@@ -35,6 +36,15 @@ public class MemberSiteSubscriptionRecordQueryBuilder :
         return this;
     }
 
+    public IMemberSiteSubscriptionRecordQueryBuilder Expired(SiteSubscriptionCooldown cooldown)
+    {
+        // Resolved here rather than in the predicate, which has to translate to SQL.
+        var activeAfterUtc = cooldown.ActiveAfterUtc(DateTime.UtcNow);
+
+        Query = Query.Where(x => x.ExpiresUtc != null && x.ExpiresUtc <= activeAfterUtc);
+        return this;
+    }
+
     public IMemberSiteSubscriptionRecordQueryBuilder ForChapterOwner(Guid chapterId)
     {
         Query =
@@ -42,6 +52,18 @@ public class MemberSiteSubscriptionRecordQueryBuilder :
             from chapter in Set<Chapter>()
                 .Where(x => x.OwnerId == record.MemberId)
             where chapter.Id == chapterId
+            select record;
+
+        return this;
+    }
+
+    public IMemberSiteSubscriptionRecordQueryBuilder ForEnvironment(EnvironmentType environment)
+    {
+        Query =
+            from record in Query
+            from siteSubscription in Set<SiteSubscription>()
+                .Where(x => x.Id == record.SiteSubscriptionId)
+            where siteSubscription.Environment == environment
             select record;
 
         return this;
@@ -71,6 +93,18 @@ public class MemberSiteSubscriptionRecordQueryBuilder :
         return this;
     }
 
+    public IMemberSiteSubscriptionRecordQueryBuilder ForPlatform(PlatformType platform)
+    {
+        Query =
+            from record in Query
+            from siteSubscription in Set<SiteSubscription>()
+                .Where(x => x.Id == record.SiteSubscriptionId)
+            where siteSubscription.Platform == platform
+            select record;
+
+        return this;
+    }
+
     public IMemberSiteSubscriptionRecordQueryBuilder ForSiteSubscription(Guid siteSubscriptionId)
     {
         Query = Query.Where(x => x.SiteSubscriptionId == siteSubscriptionId);
@@ -91,6 +125,15 @@ public class MemberSiteSubscriptionRecordQueryBuilder :
 
     public IDeferredQuery<bool> HasFeature(SiteFeatureType feature)
         => SiteSubscription().HasFeature(feature);
+
+    public IMemberSiteSubscriptionRecordQueryBuilder MostRecent()
+    {
+        Query = Query
+            .OrderByDescending(x => x.CreatedUtc)
+            .Take(1);
+
+        return this;
+    }
 
     public IQueryBuilder<SiteSubscriptionPrice> SiteSubscriptionPrices()
     {

@@ -42,6 +42,21 @@ internal class SiteSubscriptionAccountPage
         await _page.ClickAndWaitForDocument("button:has-text('Update')");
     }
 
+    /// <summary>
+    /// The plan named under "Current subscription" - the member's own answer to which plan they are on.
+    /// Found by its label rather than by position, because the page states several values the same way and
+    /// the label is what tells a reader which is which. Only the name, so a cancelled badge rendered beside
+    /// it does not arrive as part of it.
+    /// </summary>
+    public async Task<string> GetCurrentSubscriptionName()
+    {
+        var value = await _page
+            .Locator(".form-group:has(label:has-text('Current subscription')) .form-control-plaintext span")
+            .InnerTextAsync();
+
+        return value.Trim();
+    }
+
     /// <summary>Navigates to the page.</summary>
     public Task GoTo() => _page.Navigate(Path);
 

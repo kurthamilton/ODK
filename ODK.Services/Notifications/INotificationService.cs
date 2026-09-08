@@ -4,6 +4,7 @@ using ODK.Core.Members;
 using ODK.Core.Messages;
 using ODK.Core.Notifications;
 using ODK.Core.Payments;
+using ODK.Core.Subscriptions;
 using ODK.Core.Venues;
 using ODK.Services.Notifications.ViewModels;
 
@@ -52,6 +53,15 @@ public interface INotificationService
         SiteConversation conversation,
         Member member,
         IReadOnlyCollection<MemberNotificationSettings> settings);
+
+    /// <summary>
+    /// Tells members their lapsed site subscription has been moved onto <paramref name="siteSubscription"/>,
+    /// the platform's free plan. Raised by the sweep that moves them, so nothing they did prompts it.
+    /// </summary>
+    void AddSubscriptionDowngradedNotifications(
+        SiteSubscription siteSubscription,
+        IEnumerable<Member> members,
+        IEnumerable<MemberNotificationSettings> settings);
 
     Task AddSubscriptionRenewedNotification(
         Member member,

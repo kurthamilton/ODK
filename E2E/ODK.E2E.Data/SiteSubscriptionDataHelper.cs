@@ -43,6 +43,32 @@ public class SiteSubscriptionDataHelper : DataHelperBase
         return await builder.ExecuteScalar<int>() > 0;
     }
 
+    /// <summary>
+    /// The name of the platform's default plan in the given deployment, or null where it has none. Matched
+    /// on free as well as enabled and default, because that is what the app requires of a plan it puts
+    /// somebody on without a payment - an account at creation, a lapsed member at downgrade - so a default
+    /// plan that is priced is one the downgrade sweep refuses to use.
+    /// </summary>
+    public async Task<string?> GetDefaultFreeName(int platformTypeId, int environmentTypeId)
+    {
+        const string sql =
+            """
+            SELECT Name
+            FROM SiteSubscriptions
+            WHERE PlatformTypeId = @platformTypeId
+                AND EnvironmentTypeId = @environmentTypeId
+                AND Enabled = 1
+                AND [Default] = 1
+                AND Free = 1
+            """;
+
+        await using var builder = Builder(sql)
+            .AddParameter("@platformTypeId", platformTypeId)
+            .AddParameter("@environmentTypeId", environmentTypeId);
+
+        return await builder.ExecuteScalar<string?>();
+    }
+
     public async Task<Guid?> GetId(string name, int platformTypeId)
     {
         const string sql =

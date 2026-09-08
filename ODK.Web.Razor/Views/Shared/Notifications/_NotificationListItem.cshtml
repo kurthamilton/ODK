@@ -24,6 +24,7 @@
         NotificationType.NewMember => "New member",
         NotificationType.SiteConversationMemberMessage => "New conversation message",
         NotificationType.SiteConversationReplies => "New conversation message",
+        NotificationType.SubscriptionDowngraded => "Subscription downgraded",
         NotificationType.SubscriptionRenewed => "Subscription renewed",
         _ => null
     };
@@ -63,6 +64,8 @@
         NotificationType.SiteConversationReplies => notification.EntityId != null
             ? OdkRoutes.Account.SiteConversation(notification.EntityId.Value)
             : null,
+        // Only a site subscription is downgraded, and one belongs to no group.
+        NotificationType.SubscriptionDowngraded => OdkRoutes.Account.Subscription(chapter: null),
         // The subscription, not the payment that renewed it: what a member opens this for is what the
         // renewal left them with. A site subscription belongs to no group, hence the second branch.
         NotificationType.SubscriptionRenewed => chapter != null

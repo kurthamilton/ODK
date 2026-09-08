@@ -10,5 +10,7 @@ public static class NotificationTypeIds
 {
     public const int None = 0;
 
+    public const int SubscriptionDowngraded = 10;
+
     public const int SubscriptionRenewed = 9;
 }

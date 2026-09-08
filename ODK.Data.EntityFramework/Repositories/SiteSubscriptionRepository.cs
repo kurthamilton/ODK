@@ -31,9 +31,11 @@ public class SiteSubscriptionRepository
         => ByPriceId(priceId).DeferredSingleOrDefault();
 
     public IDeferredQuerySingle<SiteSubscription> GetDefault(EnvironmentType environment, PlatformType platform)
-        => Set()
-            .Where(x => x.Platform == platform && x.Enabled && x.Default && x.Environment == environment)
-            .DeferredSingle();
+        => Default(environment, platform).DeferredSingle();
+
+    public IDeferredQuerySingleOrDefault<SiteSubscription> GetDefaultOrDefault(
+        EnvironmentType environment, PlatformType platform)
+        => Default(environment, platform).DeferredSingleOrDefault();
 
     public IDeferredQueryMultiple<SiteSubscriptionSummaryDto> GetSummaries(
         PlatformType platform, SiteSubscriptionCooldown cooldown)
@@ -72,4 +74,7 @@ public class SiteSubscriptionRepository
                .Where(x => x.Id == price.SiteSubscriptionId)
            where price.Id == priceId
            select siteSubscription;
+
+    private IQueryable<SiteSubscription> Default(EnvironmentType environment, PlatformType platform)
+        => Set().Where(x => x.Platform == platform && x.Enabled && x.Default && x.Environment == environment);
 }
