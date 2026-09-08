@@ -2,6 +2,11 @@
 
 namespace ODK.Services.Web;
 
+/// <summary>
+/// Absolute URLs for work whose output is read elsewhere - an email, a payment provider's record of a group.
+/// Each is built against the platform that owns what the URL is about, so a method taking a
+/// <see cref="Chapter"/> follows the group and one taking none follows the platform serving the request.
+/// </summary>
 public interface IUrlProvider
 {
     /// <summary>
@@ -12,7 +17,11 @@ public interface IUrlProvider
 
     string ActivateAccountUrl(Chapter? chapter, string token);
 
-    string BaseUrl();
+    /// <summary>
+    /// The site's own address: the group's platform where the URL is about one, otherwise the platform
+    /// serving the request.
+    /// </summary>
+    string BaseUrl(Chapter? chapter);
 
     string ChapterSubscription(Chapter chapter);
 

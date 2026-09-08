@@ -194,6 +194,10 @@ public sealed class AccountContextFactory : IAccountContextFactory
         IChapterServiceRequest request,
         MemberCreateProfile profile)
     {
+        /* The group's platform, not the request's: a plan belongs to the platform that owns the group being
+           joined, so a Drunken Knitwits group signed up to from Group Squirrel still starts its members on
+           Drunken Knitwits' default plan. Deliberately unlike Member.Platform, which records the site the
+           account was created on and is a different question. */
         var (environment, platform, chapter) = (request.Environment, request.Chapter.Platform, request.Chapter);
 
         var (

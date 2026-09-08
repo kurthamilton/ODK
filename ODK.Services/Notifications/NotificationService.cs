@@ -167,8 +167,10 @@ public class NotificationService : INotificationService
         // than in whatever the background job that raised it is running as.
         var culture = await _memberLocaleService.GetCulture(member.Id);
 
+        /* The full name, not the display name: this text is persisted and read back with no request to say
+           which platform it is being read on, so it has to name the group unambiguously wherever it lands. */
         var renewed = chapter != null
-            ? $"Your membership of {chapter.GetDisplayName(chapter.Platform)} has been renewed."
+            ? $"Your membership of {chapter.FullName} has been renewed."
             : "Your subscription has been renewed.";
 
         var nextPayment = nextPaymentUtc?.ToFriendlyDateString(new FriendlyDateStringOptions

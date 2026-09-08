@@ -18,6 +18,6 @@ public interface ITestEmailParametersFactory
     /// The group to describe, which is not necessarily the group whose template is being sent - a site
     /// admin has no current group, so a group of theirs stands in for one. Null when they belong to none.
     /// </param>
-    Task<IEmailParameters> Create(
+    IEmailParameters Create(
         IServiceRequest request, EmailType type, Member member, CultureInfo culture, Chapter? chapter);
 }

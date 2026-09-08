@@ -1,6 +1,5 @@
 ﻿using ODK.Core.Extensions;
 using ODK.Core.Features;
-using ODK.Core.Platforms;
 using ODK.Core.SocialMedia;
 using ODK.Core.Subscriptions;
 using ODK.Core.Utils;
@@ -62,8 +61,16 @@ public class SocialMediaService : ISocialMediaService
     {
         await _loggingService.Info("Scraping latest Instagram posts for all groups");
 
+        /* Every platform's published chapters, deliberately: a scrape reads a group's own Instagram account
+           and stores what it finds against that group, so the answer does not depend on which site asked.
+           That makes this sweep platform-agnostic - it does the same work whichever deployment's cron
+           triggers it - and means it must be scheduled on exactly one of them, or every group is scraped
+           twice. Not OwnedByPlatform: scoping it would make the platform running the cron decide which
+           groups get scraped at all, which is the opposite of what is wanted here. */
         var chapters = await _unitOfWork.ChapterRepository
-            .GetAll(PlatformType.Default, includeUnpublished: false)
+            .Query()
+            .Published()
+            .GetAll()
             .Run();
 
         var chapterIds = chapters

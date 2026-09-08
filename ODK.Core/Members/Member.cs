@@ -24,6 +24,11 @@ public class Member : IVersioned, IDatabaseEntity, ITimeZoneEntity
 
     public string LastName { get; set; } = string.Empty;
 
+    /// <summary>
+    /// The site the account was created on, kept as a record of where it came from. Nothing branches on it:
+    /// the platform whose resources an account gets is the one that owns whatever it is being given - see
+    /// the default plan in <c>AccountContextFactory.CreateForGroupSignUp</c>, which reads the group's.
+    /// </summary>
     public PlatformType Platform { get; set; }
 
     /// <summary>

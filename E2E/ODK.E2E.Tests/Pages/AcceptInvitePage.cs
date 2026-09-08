@@ -31,7 +31,7 @@ internal class AcceptInvitePage
         await _page.FillAsync("#ConfirmPassword", password);
         await _page.CheckAsync("#PrivacyPolicy");
 
-        await _page.ClickAsync("button:has-text('Accept invitation')");
+        await _page.ClickAsync("button:has-text('Accept invite')");
 
         try
         {

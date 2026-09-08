@@ -76,10 +76,24 @@ public class ChapterRepository : WriteRepositoryBase<Chapter>, IChapterRepositor
             .ToChapterDto()
             .GetAll();
 
+    /* An unfiltered query, so OwnedBy is the only platform term and Published is stated outright. Scoping to
+       a platform as well would ask what it shows, which on Drunken Knitwits takes in its unpublished
+       chapters and on Group Squirrel takes in the other platform's. */
+    public IDeferredQueryMultiple<Chapter> GetOwnedByPlatform(PlatformType platform)
+        => Query()
+            .OwnedBy(platform)
+            .Published()
+            .GetAll();
+
+    // A name is unique across every platform, so this asks about all of them rather than about a site.
     public IDeferredQuery<bool> NameExists(string name)
-        => Query(PlatformType.Default, includeUnpublished: true)
+        => Query()
             .ForName(name)
             .Any();
+
+    public IChapterQueryBuilder Query()
+        => CreateQueryBuilder<IChapterQueryBuilder>(context
+            => new ChapterQueryBuilder(context, context.Set<Chapter>()));
 
     public IChapterQueryBuilder Query(PlatformType platform)
         => Query(platform, includeUnpublished: false);
@@ -93,8 +107,9 @@ public class ChapterRepository : WriteRepositoryBase<Chapter>, IChapterRepositor
             .Search(criteria)
             .GetAll();
 
+    // A slug is unique across every platform, so this asks about all of them rather than about a site.
     public IDeferredQuery<bool> SlugExists(string slug)
-        => Query(PlatformType.Default, includeUnpublished: true)
+        => Query()
             .ForSlug(slug)
             .Any();
 }

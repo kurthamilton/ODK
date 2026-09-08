@@ -292,6 +292,68 @@ public static class EmailServiceTests
         sent.Single().Subject.Should().Be("Admin comment");
     }
 
+    [Test]
+    public static async Task SendEmail_GroupOnAnotherPlatform_AddressesItAsTheGroupsPlatform()
+    {
+        /* Arrange - a Drunken Knitwits group, sent from Group Squirrel, which sees every platform's groups.
+           An email is read in an inbox rather than on a platform, so it is addressed from the platform that
+           owns the group whichever site triggered the send. */
+        using var context = new MockOdkContext();
+
+        var chapter = context.Create(new Chapter
+        {
+            Id = Guid.NewGuid(),
+            Name = "Bristol",
+            Platform = PlatformType.DrunkenKnitwits,
+            Slug = "bristol"
+        });
+
+        context.Create(new Email
+        {
+            BodyHtml = "{body}",
+            Subject = string.Empty,
+            Type = EmailType.Layout
+        });
+
+        context.Create(new Email
+        {
+            BodyHtml = "<p>welcome</p>",
+            RecipientType = EmailRecipientType.Members,
+            Subject = "Welcome",
+            Type = EmailType.NewMember
+        });
+
+        EmailClientEmail? sent = null;
+        var emailClient = new Mock<IEmailClient>();
+        emailClient
+            .Setup(x => x.SendEmail(It.IsAny<EmailClientEmail>()))
+            .Callback<EmailClientEmail>(x => sent = x)
+            .ReturnsAsync(new SendEmailResult(true) { ExternalId = "external-id" });
+
+        var service = CreateService(context, chapter, emailClient);
+
+        var request = new ServiceRequest
+        {
+            CurrentMemberOrDefault = null,
+            Environment = EnvironmentType.Dev,
+            HttpRequestContext = Mock.Of<IHttpRequestContext>(),
+            Platform = PlatformType.Default
+        };
+
+        // Act
+        await service.SendEmail(
+            request,
+            chapter,
+            new EmailAddressee("member@example.com", "Test Member"),
+            EmailType.NewMember,
+            parameters: null);
+
+        // Assert
+        sent.Should().NotBeNull();
+        sent!.From.Address.Should()
+            .Be(TestSiteEmailSettingsProvider.DrunkenKnitwitsFromEmailAddress);
+    }
+
     private static async Task<IReadOnlyCollection<EmailClientEmail>> SendEventComment(
         bool adminReceivesCommentEmails,
         bool withReplyToMember)
@@ -507,13 +569,14 @@ public static class EmailServiceTests
         Mock<IEmailClient> emailClient)
     {
         var urlProvider = new Mock<IUrlProvider>();
-        urlProvider.Setup(x => x.BaseUrl()).Returns("https://test.local");
+        urlProvider.Setup(x => x.BaseUrl(It.IsAny<Chapter?>())).Returns("https://test.local");
         urlProvider.Setup(x => x.GroupUrl(chapter)).Returns("https://test.local/groups/test-group");
 
+        // The send path asks for the email's platform, resolved once per render - see EmailService.
         var urlProviderFactory = new Mock<IUrlProviderFactory>();
         urlProviderFactory
-            .Setup(x => x.Create(It.IsAny<IServiceRequest>()))
-            .ReturnsAsync(urlProvider.Object);
+            .Setup(x => x.Create(It.IsAny<PlatformType>()))
+            .Returns(urlProvider.Object);
 
         return new EmailService(
             MockUnitOfWorkFactory.Create(context),

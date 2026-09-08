@@ -1,6 +1,5 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Members;
-using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
 using ODK.Services.Members.Models;
 
@@ -52,8 +51,6 @@ public sealed class ChapterMembershipContext
     public SiteSubscription? OwnerSubscription { get; init; }
 
     public required IReadOnlyCollection<SiteSubscriptionFeature> OwnerSubscriptionFeatures { get; init; }
-
-    public required PlatformType Platform { get; init; }
 
     /// <summary>The submitted answers as posted, which is what validation reports against.</summary>
     public required IReadOnlyCollection<MemberPropertyUpdateModel> Properties { get; init; }

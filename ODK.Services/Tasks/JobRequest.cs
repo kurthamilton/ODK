@@ -23,9 +23,6 @@ namespace ODK.Services.Tasks;
 /// </remarks>
 public sealed class JobRequest
 {
-    /// <summary>The site a job builds its URLs against. A job has no request to derive one from.</summary>
-    public required string BaseUrl { get; init; }
-
     public required Guid? ChapterId { get; init; }
 
     public required Guid? CurrentMemberId { get; init; }
@@ -41,7 +38,6 @@ public sealed class JobRequest
        overloads would leave the caller to pick, and picking wrong drops the chapter silently. */
     public static JobRequest Create(IServiceRequest request) => new()
     {
-        BaseUrl = request.HttpRequestContext.BaseUrl,
         ChapterId = (request as IChapterServiceRequest)?.Chapter.Id,
         CurrentMemberId = request.CurrentMemberIdOrDefault,
         Platform = request.Platform
@@ -49,13 +45,11 @@ public sealed class JobRequest
 
     /// <summary>
     /// The same job on a different platform, for work whose platform is decided by what it is about rather
-    /// than by the request that triggered it. The base URL moves with the platform because the two together
-    /// are what say which site a job runs as - one platform's URL under another's name would build links
-    /// against the wrong site.
+    /// than by the request that triggered it. The platform alone says which site a job runs as, because every
+    /// URL it builds comes from that platform's configured address - see <c>UrlProvider</c>.
     /// </summary>
-    public JobRequest ForPlatform(PlatformType platform, string baseUrl) => new()
+    public JobRequest ForPlatform(PlatformType platform) => new()
     {
-        BaseUrl = baseUrl,
         ChapterId = ChapterId,
         CurrentMemberId = CurrentMemberId,
         Platform = platform

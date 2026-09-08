@@ -20,7 +20,7 @@ namespace ODK.Services.Tests.Emails;
 public static class TestEmailParametersFactoryTests
 {
     [Test]
-    public static async Task Create_EventInvite_NamesTheEventAndTheVenue()
+    public static void Create_EventInvite_NamesTheEventAndTheVenue()
     {
         /* Arrange - built from bare entities these came through empty, which reads as a broken template
            rather than as a stand-in: the preview showed the template's own tokens where the event's name and
@@ -28,7 +28,7 @@ public static class TestEmailParametersFactoryTests
         var factory = new TestEmailParametersFactory(CreateUrlProviderFactory());
 
         // Act
-        var result = await factory.Create(
+        var result = factory.Create(
             CreateRequest(),
             EmailType.EventInvite,
             CreateMember(),
@@ -45,7 +45,7 @@ public static class TestEmailParametersFactoryTests
     }
 
     [TestCaseSource(nameof(EmailTypes))]
-    public static async Task Create_EveryTypeExceptTheLayout_SuppliesSomeOfItsOwnParameters(EmailType type)
+    public static void Create_EveryTypeExceptTheLayout_SuppliesSomeOfItsOwnParameters(EmailType type)
     {
         /* Arrange - a type with no entry in the factory sends a test email with its own tokens showing as
            literal braces. Nothing else refers to the factory, so adding an email type and leaving the
@@ -53,7 +53,7 @@ public static class TestEmailParametersFactoryTests
         var factory = new TestEmailParametersFactory(CreateUrlProviderFactory());
 
         // Act
-        var result = await factory.Create(
+        var result = factory.Create(
             CreateRequest(), type, CreateMember(), CultureInfo.InvariantCulture, CreateChapter());
 
         /* Assert - some rather than all of what the type declares: a few parameters need a subject the
@@ -100,7 +100,8 @@ public static class TestEmailParametersFactoryTests
         urlProvider.SetReturnsDefault("https://test.local/somewhere");
 
         var mock = new Mock<IUrlProviderFactory>();
-        mock.Setup(x => x.Create(It.IsAny<IServiceRequest>())).ReturnsAsync(urlProvider.Object);
+        mock.Setup(x => x.Create(It.IsAny<IServiceRequest>(), It.IsAny<Chapter?>()))
+            .Returns(urlProvider.Object);
         return mock.Object;
     }
 }

@@ -378,10 +378,9 @@ public class StripeTransactionAdminService : OdkAdminServiceBase, IStripeTransac
         var (members, chapters, chapterSubscriptions, siteSubscriptionPrices, checkoutSessions, currencies) =
             await _unitOfWork.Run(
                 x => x.MemberRepository.GetByIds(memberIds),
-                /* Default, which ChapterRepository reads as no platform filter, so this is a lookup by id
-                   alone. The question is whether a chapter exists, and one the metadata names exists
-                   whichever platform it belongs to. */
-                x => x.ChapterRepository.GetByIds(PlatformType.Default, chapterIds),
+                /* An unfiltered query: the question is whether a chapter exists, and one the metadata names
+                   exists whichever platform it belongs to. */
+                x => x.ChapterRepository.Query().ByIds(chapterIds).GetAll(),
                 x => x.ChapterSubscriptionRepository.GetByIds(
                     Ids(metadata, y => y.ChapterSubscriptionId).ToHashSet()),
                 x => x.SiteSubscriptionPriceRepository.GetByIds(

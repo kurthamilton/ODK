@@ -430,8 +430,8 @@ public static class MemberEmailServiceTests
     {
         var urlProviderFactory = new Mock<IUrlProviderFactory>();
         urlProviderFactory
-            .Setup(x => x.Create(It.IsAny<IServiceRequest>()))
-            .ReturnsAsync(urlProvider.Object);
+            .Setup(x => x.Create(It.IsAny<IServiceRequest>(), It.IsAny<Chapter?>()))
+            .Returns(urlProvider.Object);
 
         return new MemberEmailService(
             emailService.Object,

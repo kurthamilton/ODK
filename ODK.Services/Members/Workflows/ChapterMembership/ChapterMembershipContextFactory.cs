@@ -53,7 +53,6 @@ public sealed class ChapterMembershipContextFactory : IChapterMembershipContextF
             NotificationSettings = context.NotificationSettings,
             OwnerSubscription = context.OwnerSubscription,
             OwnerSubscriptionFeatures = context.OwnerSubscriptionFeatures,
-            Platform = context.Request.Platform,
             Properties = properties,
             Request = ChapterServiceRequest.Create(chapter, context.Request)
         };
@@ -77,7 +76,6 @@ public sealed class ChapterMembershipContextFactory : IChapterMembershipContextF
         MemberProperties = [],
         NotificationSettings = [],
         OwnerSubscriptionFeatures = [],
-        Platform = request.Platform,
         Properties = [],
         Request = request
     };
@@ -104,7 +102,6 @@ public sealed class ChapterMembershipContextFactory : IChapterMembershipContextF
         MemberProperties = [],
         NotificationSettings = [],
         OwnerSubscriptionFeatures = [],
-        Platform = request.Platform,
         Properties = [],
         Request = request
     };
@@ -131,7 +128,6 @@ public sealed class ChapterMembershipContextFactory : IChapterMembershipContextF
             NotificationSettings = [],
             OwnerSubscription = context.OwnerSubscription,
             OwnerSubscriptionFeatures = context.OwnerSubscriptionFeatures,
-            Platform = context.Request.Platform,
             Properties = properties,
             Request = (IChapterServiceRequest)context.Request
         };
@@ -185,7 +181,6 @@ public sealed class ChapterMembershipContextFactory : IChapterMembershipContextF
             NotificationSettings = notificationSettings,
             OwnerSubscription = ownerSubscription?.SiteSubscription,
             OwnerSubscriptionFeatures = features,
-            Platform = platform,
             Properties = propertyUpdates,
             Request = request
         };

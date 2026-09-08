@@ -756,6 +756,8 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
     public async Task<ServiceResult> ImportMembers(IMemberChapterAdminServiceRequest request, IReadOnlyCollection<MemberImportModel> members)
     {
+        // The group's platform, not the request's, for the same reason a group sign-up reads it - see
+        // AccountContextFactory.CreateForGroupSignUp.
         var (environment, platform, chapter) = (request.Environment, request.Chapter.Platform, request.Chapter);
 
         var emailAddresses = members
@@ -993,8 +995,10 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     {
         var platform = request.Platform;
 
+        /* The chapters this platform owns, not the ones it can see: a deployment reminding another
+           platform's members would send them a second copy of an email addressed as the wrong site. */
         var chapters = await _unitOfWork.ChapterRepository
-            .GetAll(platform, includeUnpublished: false)
+            .GetOwnedByPlatform(platform)
             .Run();
 
         var chapterIds = chapters.Select(x => x.Id).ToArray();

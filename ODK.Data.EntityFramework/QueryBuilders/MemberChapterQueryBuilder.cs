@@ -56,7 +56,7 @@ public class MemberChapterQueryBuilder
         return
             from memberChapter in context.Set<MemberChapter>()
             from chapter in context.Set<Chapter>()
-                .ForPlatform(platform, includeUnpublished: true)
+                .VisibleOn(platform, includeUnpublished: true)
                 .Where(x => x.Id == memberChapter.ChapterId)
             select memberChapter;
     }

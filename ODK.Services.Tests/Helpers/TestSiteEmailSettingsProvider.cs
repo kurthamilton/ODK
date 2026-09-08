@@ -13,6 +13,8 @@ internal static class TestSiteEmailSettingsProvider
 {
     internal const string AdminTitle = "Site admins";
 
+    internal const string DrunkenKnitwitsFromEmailAddress = "noreply@drunkenknitwits.example.com";
+
     internal const string FromEmailAddress = "noreply@example.com";
 
     internal const string MemberTitle = "Site members";
@@ -27,10 +29,12 @@ internal static class TestSiteEmailSettingsProvider
         string? adminTitle = null,
         string? memberTitle = null)
     {
-        var settings = new SiteEmailSettings
+        // A distinct address per platform, because that is what the real configuration holds and what lets a
+        // test tell which platform an email was addressed as.
+        SiteEmailSettings Settings(string fromEmailAddress) => new()
         {
             AdminTitle = adminTitle ?? AdminTitle,
-            FromEmailAddress = FromEmailAddress,
+            FromEmailAddress = fromEmailAddress,
             MemberTitle = memberTitle ?? MemberTitle
         };
 
@@ -38,8 +42,8 @@ internal static class TestSiteEmailSettingsProvider
         {
             Platforms = new Dictionary<PlatformType, SiteEmailSettings>
             {
-                { PlatformType.Default, settings },
-                { PlatformType.DrunkenKnitwits, settings }
+                { PlatformType.Default, Settings(FromEmailAddress) },
+                { PlatformType.DrunkenKnitwits, Settings(DrunkenKnitwitsFromEmailAddress) }
             }
         });
     }

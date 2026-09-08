@@ -1,7 +1,6 @@
 ﻿using System;
 using Moq;
 using ODK.Core.Members;
-using ODK.Core.Platforms;
 using ODK.Services;
 using ODK.Services.Members.Workflows.ChapterMembership;
 
@@ -29,7 +28,6 @@ internal static class ChapterMembershipContexts
         MemberProperties = [],
         NotificationSettings = [],
         OwnerSubscriptionFeatures = [],
-        Platform = PlatformType.DrunkenKnitwits,
         Properties = [],
         Request = Mock.Of<IChapterServiceRequest>()
     };
