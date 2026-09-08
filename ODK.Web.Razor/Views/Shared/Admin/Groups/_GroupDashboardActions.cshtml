@@ -1,4 +1,5 @@
-﻿@using ODK.Services.Chapters.ViewModels
+﻿@using ODK.Core.Utils
+@using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
@@ -20,7 +21,18 @@
     @if (Model.CanPublish)
     {
         <div class="alert alert-success d-flex justify-content-between align-items-center mb-0">
-            <span>This group is approved and ready to publish.</span>
+            <span>
+                <text>This group is approved and ready to publish.</text>
+                @if (Model.HeldInvites > 0)
+                {
+                    @* Publishing emails them, so the number is said before the button rather than after. *@
+                    <text>
+                        Publishing emails the
+                        <strong>@Model.HeldInvites @StringUtils.Pluralise(Model.HeldInvites, "invite")</strong>
+                        your import is holding.
+                    </text>
+                }
+            </span>
             <form action="/groups/@Model.Chapter.Id/publish" method="post" class="ms-3">
                 @Html.AntiForgeryToken()
                 <button class="btn btn-success text-nowrap">Publish</button>

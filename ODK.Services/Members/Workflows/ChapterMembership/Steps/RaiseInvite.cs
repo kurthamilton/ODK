@@ -11,8 +11,14 @@ namespace ODK.Services.Members.Workflows.ChapterMembership.Steps;
 /// a trial period starts when they join rather than when the file was uploaded.
 /// </summary>
 /// <remarks>
+/// <para>
 /// The token is what makes the invite usable by someone who cannot sign in yet, which on Drunken Knitwits
 /// is everyone it is sent to.
+/// </para>
+/// <para>
+/// Raised unsent, and left on the context for the caller to send: an unpublished group holds its invites
+/// until it is published, so whether this one is emailed is not this step's to decide.
+/// </para>
 /// </remarks>
 public sealed class RaiseInvite : IStep<ChapterMembershipContext>
 {
@@ -29,13 +35,17 @@ public sealed class RaiseInvite : IStep<ChapterMembershipContext>
 
     public Task<StepOutcome> Execute(ChapterMembershipContext context, CancellationToken cancellationToken)
     {
-        _unitOfWork.MemberChapterInviteRepository.Add(new MemberChapterInvite
+        var invite = new MemberChapterInvite
         {
             ChapterId = context.ChapterId,
             CreatedUtc = DateTime.UtcNow,
             MemberId = context.Member.Id,
             Token = TokenGenerator.GenerateBase64Token(64)
-        });
+        };
+
+        _unitOfWork.MemberChapterInviteRepository.Add(invite);
+
+        context.RaisedInvite = invite;
 
         return Task.FromResult(StepOutcome.Continue());
     }

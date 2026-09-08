@@ -80,7 +80,12 @@
         $pages.forEach($page => {
             const page = parseInt($page.getAttribute('data-wizard-page'));
 
+            /* This page's own events only. Bootstrap's collapse events bubble, so without the guard a
+               collapse nested anywhere inside a page's content reaches these handlers as though the page
+               itself were opening or closing - and the hide handler below would refuse to close it. */
             $page.addEventListener('show.bs.collapse', e => {
+                if (e.target !== $page) return;
+
                 const activePage = getActivePage();
 
                 if (page > activePage) {
@@ -92,6 +97,8 @@
             });
 
             $page.addEventListener('hide.bs.collapse', e => {
+                if (e.target !== $page) return;
+
                 const activePage = getActivePage();
                 if (activePage !== page) return;
                 e.preventDefault();

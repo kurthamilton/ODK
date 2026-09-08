@@ -1705,6 +1705,40 @@ public static class ChapterAdminServiceTests
     }
 
     [Test]
+    public static async Task PublishChapter_WhenPublished_SendsTheInvitesItWasHolding()
+    {
+        // Arrange - an unpublished group can prepare a member import, and publishing is what sends it.
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(
+            approvedUtc: DateTime.UtcNow,
+            owner: currentMember);
+
+        context.CreateChapterImage(chapter);
+
+        var memberAdminService = new Mock<IMemberAdminService>();
+        var service = CreateChapterAdminService(context, memberAdminService: memberAdminService.Object);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.Publish);
+
+        // Act
+        var result = await service.PublishChapter(request);
+
+        // Assert
+        result.Success.Should().BeTrue();
+
+        memberAdminService.Verify(
+            x => x.SendQueuedInviteEmails(
+                It.Is<IChapterServiceRequest>(y => y.Chapter.Id == chapter.Id)),
+            Times.Once);
+    }
+
+    [Test]
     public static async Task PublishChapter_WhenNoImage_ReturnsFailure()
     {
         // Arrange
@@ -1873,7 +1907,8 @@ public static class ChapterAdminServiceTests
         IGeolocationService? geolocationService = null,
         ILoggingService? loggingService = null,
         ChapterAdminServiceSettings? settings = null,
-        SiteSubscriptionCooldown? siteSubscriptionCooldown = null)
+        SiteSubscriptionCooldown? siteSubscriptionCooldown = null,
+        IMemberAdminService? memberAdminService = null)
     {
         var unitOfWork = CreateMockUnitOfWork(context);
         return new ChapterAdminService(
@@ -1897,7 +1932,7 @@ public static class ChapterAdminServiceTests
             // subscription features. A bare mock returns false from every check, which silently turns any
             // feature-gated path into "not permitted" and makes the arrangement look broken instead.
             new AuthorizationService(),
-            CreatePublicationRunner(unitOfWork));
+            CreatePublicationRunner(unitOfWork, memberAdminService ?? Mock.Of<IMemberAdminService>()));
     }
 
     /// <summary>
@@ -1906,12 +1941,14 @@ public static class ChapterAdminServiceTests
     /// </summary>
     private static StateMachineRunner<
         ChapterPublicationState, ChapterPublicationTrigger, ChapterPublicationContext> CreatePublicationRunner(
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IMemberAdminService memberAdminService)
     {
         var definition = ChapterPublicationStateMachine.Create();
 
         var services = new ServiceCollection()
             .AddSingleton(unitOfWork)
+            .AddSingleton(memberAdminService)
             .AddSingleton(definition)
             .AddScoped<
                 IStateResolver<ChapterPublicationState, ChapterPublicationContext>,

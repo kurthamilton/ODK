@@ -16,6 +16,9 @@ public class MemberInviteService : IMemberInviteService
 
     public async Task<int> PurgeExpiredInvites()
     {
+        /* Measured from when the invite was raised, not from when it was emailed: the retention period the
+           privacy policy states runs from the point the data was taken, so it cannot depend on something the
+           group controls the timing of. An invite a group holds unsent would otherwise be held indefinitely. */
         var createdBeforeUtc = DateTime.UtcNow.AddDays(-_settings.RetentionDays);
 
         var expired = await _unitOfWork.MemberChapterInviteRepository

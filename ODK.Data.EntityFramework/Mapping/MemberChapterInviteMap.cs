@@ -18,6 +18,9 @@ public class MemberChapterInviteMap : IEntityTypeConfiguration<MemberChapterInvi
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();
 
+        builder.Property(x => x.SentUtc)
+            .HasConversion<NullableUtcDateTimeConverter>();
+
         builder.HasIndex(x => x.Token)
             .IsUnique();
 

@@ -1,6 +1,7 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Core.Subscriptions;
+using ODK.Core.Workflows;
 using ODK.Services.Members.Models;
 
 namespace ODK.Services.Members.Workflows.ChapterMembership;
@@ -13,6 +14,8 @@ namespace ODK.Services.Members.Workflows.ChapterMembership;
 /// <remarks>Scoped to one member and one group.</remarks>
 public sealed class ChapterMembershipContext
 {
+    private readonly WriteOnce<MemberChapterInvite> _raisedInvite = new("The invite the transition raises");
+
     public required IReadOnlyCollection<ChapterAdminMember> AdminMembers { get; init; }
 
     /// <summary>
@@ -55,6 +58,21 @@ public sealed class ChapterMembershipContext
     /// <summary>The submitted answers as posted, which is what validation reports against.</summary>
     public required IReadOnlyCollection<MemberPropertyUpdateModel> Properties { get; init; }
 
+    /// <summary>
+    /// The invite the transition raises, set by the step that adds it so the caller can decide whether to
+    /// send it. Unsent when it is written - see <see cref="MemberChapterInvite.SentUtc"/>.
+    /// </summary>
+    /// <remarks>
+    /// The one value a transition's steps pass out of themselves, and the only writable member here. It does
+    /// not exist when the context is built, so it cannot be an input. A <see cref="WriteOnce{T}"/> slot: no
+    /// transition raises two invites, so a second write means a definition put two raise steps on one edge.
+    /// </remarks>
+    public MemberChapterInvite? RaisedInvite
+    {
+        get => _raisedInvite.Value;
+        set => _raisedInvite.Value = value;
+    }
+
     public required IChapterServiceRequest Request { get; init; }
 
     /// <summary>
@@ -63,4 +81,8 @@ public sealed class ChapterMembershipContext
     /// </summary>
     public MemberChapter RequiredMemberChapter => Member.MemberChapter(ChapterId)
         ?? throw new InvalidOperationException("The transition is acting on a member who has not joined");
+
+    /// <summary>The invite just raised, on a transition whose caller has to send it.</summary>
+    public MemberChapterInvite RequiredRaisedInvite => RaisedInvite ?? throw new InvalidOperationException(
+        "The transition was expected to raise an invite but none was written");
 }

@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Members;
 using ODK.Services.Members.Models;
 using ODK.Services.Security;
@@ -25,9 +25,10 @@ public class ImportModel : OdkGroupAdminPageModel
     {
     }
 
-    public async Task<IActionResult> OnPostAsync(IFormFile? file)
+    public async Task<IActionResult> OnPostAsync(IFormFile? file, string? supersededToken)
     {
-        var result = await _previewBuilder.Build(MemberChapterAdminServiceRequest, file);
+        var result = await _previewBuilder.Build(
+            MemberChapterAdminServiceRequest, file, supersededToken);
 
         if (!result.Success || result.Value == null)
         {

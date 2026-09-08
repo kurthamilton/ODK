@@ -19,4 +19,10 @@ public interface IMemberChapterInviteRepository : IWriteRepository<MemberChapter
     IDeferredQueryMultiple<MemberChapterInviteDto> GetDtosByChapterId(Guid chapterId);
 
     IDeferredQueryMultiple<MemberChapterInvite> GetCreatedBefore(DateTime createdBeforeUtc);
+
+    /// <summary>The group's invites whose email has yet to be sent - see <see cref="MemberChapterInvite.SentUtc"/>.</summary>
+    IDeferredQueryMultiple<MemberChapterInvite> GetUnsentByChapterId(Guid chapterId);
+
+    /// <summary>How many invites the group is holding, for a page that reports the number rather than them.</summary>
+    IDeferredQuery<int> GetUnsentCountByChapterId(Guid chapterId);
 }

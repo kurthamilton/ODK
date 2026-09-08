@@ -29,6 +29,12 @@ public class GroupDashboardViewModel
         MembersAwaitingApproval > 0 ||
         UnrepliedContactMessages > 0;
 
+    /// <summary>
+    /// How many invites the group is holding, which publishing sends. Zero unless publishing is the
+    /// outstanding action, since that is the only place it is reported.
+    /// </summary>
+    public required int HeldInvites { get; init; }
+
     public required int? MembersAwaitingApproval { get; init; }
 
     /// <summary>

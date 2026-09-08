@@ -1,4 +1,4 @@
-using ODK.Services;
+﻿using ODK.Services;
 using ODK.Services.Csv;
 using ODK.Services.Members;
 using ODK.Services.Members.Models;
@@ -29,7 +29,8 @@ public class MemberImportPreviewBuilder : IMemberImportPreviewBuilder
 
     public async Task<ServiceResult<MemberImportStagedPreview>> Build(
         IMemberChapterAdminServiceRequest request,
-        IFormFile? file)
+        IFormFile? file,
+        string? supersededToken = null)
     {
         if (!ValidateFile(file, out var error))
         {
@@ -58,6 +59,13 @@ public class MemberImportPreviewBuilder : IMemberImportPreviewBuilder
 
         // Stage the parsed rows so the confirm step posts only the token, not every row.
         var token = _stagingService.Stage(members);
+
+        /* Only now the replacement is staged, and only on the way out: every failure above returns before
+           this, leaving the upload it would have replaced still importable. */
+        if (!string.IsNullOrEmpty(supersededToken))
+        {
+            _stagingService.Remove(supersededToken);
+        }
 
         return ServiceResult<MemberImportStagedPreview>.Successful(new MemberImportStagedPreview
         {

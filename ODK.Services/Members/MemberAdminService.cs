@@ -831,7 +831,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             return ServiceResult.Failure(ImportCapacityMessage(capacity, placesRequired));
         }
 
-        var inviteEmailMembers = new List<Member>();
+        var raisedInvites = new List<MemberChapterInvite>();
 
         foreach (var importMember in distinctMembers)
         {
@@ -853,26 +853,35 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                 continue;
             }
 
+            var membershipContext = _chapterMembershipContextFactory.CreateForInvite(
+                request, member, batch.OutstandingInvite(member.Id));
+
             var invited = await _chapterMembershipWorkflow.Fire(
-                ChapterMembershipTrigger.Invite,
-                _chapterMembershipContextFactory.CreateForInvite(
-                    request, member, batch.OutstandingInvite(member.Id)));
+                ChapterMembershipTrigger.Invite, membershipContext);
 
             if (!invited.Success)
             {
                 continue;
             }
 
-            inviteEmailMembers.Add(member);
+            raisedInvites.Add(membershipContext.RequiredRaisedInvite);
+        }
+
+        /* An unpublished group prepares its import and sends nothing: the link an invite carries lands on a
+           group nobody outside it can see. The invites are still raised, so the file is imported once -
+           publishing the group sends what it is holding. */
+        var send = chapter.IsPublished();
+
+        if (send)
+        {
+            MarkInvitesSent(raisedInvites);
         }
 
         await _unitOfWork.SaveChanges();
 
-        var jobRequest = JobRequest.Create(request);
-
-        foreach (var member in inviteEmailMembers)
+        if (send)
         {
-            EnqueueSendImportInviteEmailJob(jobRequest, chapter.Id, member.Id);
+            EnqueueInviteEmails(request, chapter.Id, raisedInvites);
         }
 
         return ServiceResult.Successful();
@@ -883,6 +892,26 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
        so a change to it is a change every queued job of that kind has to survive. */
     public async Task SendImportInviteEmailJob(JobRequest request, Guid chapterId, Guid memberId)
         => await SendImportInviteEmail(await _serviceRequestFactory.Create(request), chapterId, memberId);
+
+    public async Task SendQueuedInviteEmails(IChapterServiceRequest request)
+    {
+        var chapter = request.Chapter;
+
+        var queued = await _unitOfWork.MemberChapterInviteRepository
+            .GetUnsentByChapterId(chapter.Id)
+            .Run();
+
+        if (queued.Count == 0)
+        {
+            return;
+        }
+
+        MarkInvitesSent(queued);
+
+        await _unitOfWork.SaveChanges();
+
+        EnqueueInviteEmails(request, chapter.Id, queued);
+    }
 
     public async Task<ServiceResult> RemoveMemberFromChapter(
         IMemberChapterAdminServiceRequest request,
@@ -1260,14 +1289,40 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                 : 0,
             DeletedUtc = deletedUtc,
             InvitedUtc = invite.CreatedUtc,
-            Member = invite.Member
+            Member = invite.Member,
+            SentUtc = invite.SentUtc
         };
+    }
+
+    private void EnqueueInviteEmails(
+        IServiceRequest request, Guid chapterId, IReadOnlyCollection<MemberChapterInvite> invites)
+    {
+        var jobRequest = JobRequest.Create(request);
+
+        foreach (var invite in invites)
+        {
+            EnqueueSendImportInviteEmailJob(jobRequest, chapterId, invite.MemberId);
+        }
     }
 
     private string EnqueueSendImportInviteEmailJob(JobRequest request, Guid chapterId, Guid memberId)
         => _backgroundTaskService.Enqueue(
             () => SendImportInviteEmailJob(request, chapterId, memberId),
             BackgroundTaskQueueType.Emails);
+
+    /* Recorded as sent before the jobs are queued, for the reason the split commit exists: the state is
+       persisted ahead of the send, so a failure between the two leaves an invite nobody emails rather than
+       one the next publication emails again. */
+    private void MarkInvitesSent(IReadOnlyCollection<MemberChapterInvite> invites)
+    {
+        var sentUtc = DateTime.UtcNow;
+
+        foreach (var invite in invites)
+        {
+            invite.SentUtc = sentUtc;
+            _unitOfWork.MemberChapterInviteRepository.Update(invite);
+        }
+    }
 
     private async Task SendImportInviteEmail(IServiceRequest request, Guid chapterId, Guid memberId)
     {

@@ -76,6 +76,16 @@ public interface IMemberAdminService
 
     Task SendMemberSubscriptionReminderEmails(IServiceRequest request);
 
+    /// <summary>
+    /// Sends the invite emails the group has been holding while it was unpublished, and records them as sent.
+    /// Idempotent - a group holding nothing sends nothing.
+    /// </summary>
+    /// <remarks>
+    /// Enforces no securable of its own: the publication transition that calls it has already established who
+    /// may publish the group, and the invites were authorised by the import that raised them.
+    /// </remarks>
+    Task SendQueuedInviteEmails(IChapterServiceRequest request);
+
     Task SetMemberVisibility(IMemberChapterServiceRequest request, Guid memberId, bool visible);
 
     Task<ServiceResult> UpdateMemberImage(

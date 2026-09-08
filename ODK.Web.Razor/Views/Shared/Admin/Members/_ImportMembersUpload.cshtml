@@ -35,6 +35,11 @@
         Text = "Download template"
     })
 </p>
+@if (!string.IsNullOrEmpty(Model.SupersededToken))
+{
+    @Html.HiddenFor(x => x.SupersededToken)
+}
+
 <div class="mb-3">
     @Html.TextBoxFor(x => x.File, new
     {
