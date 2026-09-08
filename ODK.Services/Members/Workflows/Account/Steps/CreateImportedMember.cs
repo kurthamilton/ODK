@@ -2,7 +2,6 @@
 using ODK.Core.Members;
 using ODK.Core.Workflows;
 using ODK.Data.Core;
-using ODK.Services.Subscriptions;
 
 namespace ODK.Services.Members.Workflows.Account.Steps;
 
@@ -14,20 +13,19 @@ namespace ODK.Services.Members.Workflows.Account.Steps;
 /// The activation token is deliberately not scoped to the group, because an import is not a sign-up to it. On
 /// Drunken Knitwits that leaves the token unusable by the chapter-scoped activation page, which is why nothing
 /// there emails it - a new member is sent the invite instead.
+/// <para>
+/// It takes no site subscription. An imported address cannot sign in yet, and the plan is taken when the
+/// account is activated - by following the link, or by accepting the invite.
+/// </para>
 /// </remarks>
 public sealed class CreateImportedMember : IStep<AccountContext>
 {
     private readonly IDistanceUnitFactory _distanceUnitFactory;
-    private readonly IMemberSiteSubscriptionWriter _memberSiteSubscriptionWriter;
     private readonly IUnitOfWork _unitOfWork;
 
-    public CreateImportedMember(
-        IUnitOfWork unitOfWork,
-        IDistanceUnitFactory distanceUnitFactory,
-        IMemberSiteSubscriptionWriter memberSiteSubscriptionWriter)
+    public CreateImportedMember(IUnitOfWork unitOfWork, IDistanceUnitFactory distanceUnitFactory)
     {
         _distanceUnitFactory = distanceUnitFactory;
-        _memberSiteSubscriptionWriter = memberSiteSubscriptionWriter;
         _unitOfWork = unitOfWork;
     }
 
@@ -80,17 +78,6 @@ public sealed class CreateImportedMember : IStep<AccountContext>
                 : _distanceUnitFactory.GetDefault().Type,
             MemberId = member.Id
         });
-
-        /* The overload that takes the existing record, passing none: the account was created a moment ago, so
-           there cannot be one. Looking it up would cost a query per row of the file. */
-        _memberSiteSubscriptionWriter.MakeRecordCurrent(
-            newRecord: new MemberSiteSubscriptionRecord
-            {
-                CreatedUtc = DateTime.UtcNow,
-                MemberId = member.Id,
-                SiteSubscriptionId = context.RequiredSiteSubscription.Id
-            },
-            existingCurrent: null);
 
         _unitOfWork.MemberActivationTokenRepository.Add(new MemberActivationToken
         {

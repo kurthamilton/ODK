@@ -1,7 +1,6 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Members;
-using ODK.Core.Subscriptions;
 
 namespace ODK.Services.Members.Workflows.Account;
 
@@ -20,8 +19,6 @@ public sealed class ImportBatch
     public Currency? Currency { get; init; }
 
     public required IReadOnlyCollection<Member> ExistingMembers { get; init; }
-
-    public required SiteSubscription SiteSubscription { get; init; }
 
     /// <summary>The account already registered against an address in the file, where there is one.</summary>
     public Member? ExistingMember(string emailAddress) => ExistingMembers

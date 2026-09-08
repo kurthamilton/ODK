@@ -22,12 +22,14 @@ public static class AccountStateMachine
 
         /* The half of activating that every edge does, in the order they must: nothing is written until the
            password is accepted, and the link is spent alongside the account it activates. Shared by the two
-           edges an activation link reaches and by the one an invite link does. */
+           edges an activation link reaches and by the one an invite link does. The default plan is taken
+           here, not when the account is created, so an account that never activates never holds one. */
         var activate = (TransitionBuilder<AccountContext> x) => x
             .Then<ValidateNewPassword>()
             .Then<MarkAccountActivated>()
             .Then<StoreMemberPassword>()
-            .Then<ConsumeActivationToken>();
+            .Then<ConsumeActivationToken>()
+            .Then<MakeSiteSubscriptionCurrent>();
 
         /* Creating the account a group sign-up asks for. Shared by the edge that has no account to start from
            and the two that discard an unactivated one, so the three cannot drift apart. The membership is
@@ -39,7 +41,6 @@ public static class AccountStateMachine
             .Then<CreateMemberPreferences>()
             .Then<JoinTheGroup>()
             .Then<AddMemberLocationFromChapter>()
-            .Then<MakeSiteSubscriptionCurrent>()
             .Then<StoreAvatar>()
             .Then<IssueActivationToken>()
             .Then<CarryOverInvites>()
@@ -50,7 +51,6 @@ public static class AccountStateMachine
            vouched for can sign in already, so it gets a welcome instead of an activation link and no token. */
         var createSiteAccount = (TransitionBuilder<AccountContext> x) => x
             .Then<CreateSiteMember>()
-            .Then<MakeSiteSubscriptionCurrent>()
             .Then<AddMemberTopics>()
             .Then<CarryOverInvites>();
 
@@ -105,6 +105,7 @@ public static class AccountStateMachine
                         .When(verifiedByOAuth)
                         .Then<ValidateSignUpEmailAddress>())
                     .Then<ActivateVerifiedAccount>()
+                    .Then<MakeSiteSubscriptionCurrent>()
                     .Then<CommitSignUp>()
                     .Then<AddNewMemberTopics>()
                     .Then<SendSiteWelcomeEmail>())

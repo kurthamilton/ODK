@@ -197,9 +197,9 @@ public sealed class AccountContext
     public string RequiredActivationToken => ActivationToken ?? throw new InvalidOperationException(
         "The transition issues an activation token but none was resolved");
 
-    /// <summary>The platform's default site subscription, on a transition that creates an account.</summary>
+    /// <summary>The platform's default site subscription, on a transition that activates an account.</summary>
     public SiteSubscription RequiredSiteSubscription => SiteSubscription ?? throw new InvalidOperationException(
-        "The transition creates an account but no default site subscription was resolved");
+        "The transition activates an account but no default site subscription was resolved");
 
     /// <summary>What a group sign-up submitted, on a transition only a group sign-up can reach.</summary>
     public MemberCreateProfile RequiredProfile => Profile ?? throw new InvalidOperationException(
