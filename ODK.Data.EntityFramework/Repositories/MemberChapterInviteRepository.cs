@@ -50,7 +50,16 @@ public class MemberChapterInviteRepository : WriteRepositoryBase<MemberChapterIn
          select new MemberChapterInviteDto
          {
              CreatedUtc = invite.CreatedUtc,
-             Member = member
+             Member = member,
+             SentUtc = invite.SentUtc
          })
         .DeferredMultiple();
+
+    public IDeferredQueryMultiple<MemberChapterInvite> GetUnsentByChapterId(Guid chapterId) => Set()
+        .Where(x => x.ChapterId == chapterId && x.SentUtc == null)
+        .DeferredMultiple();
+
+    public IDeferredQuery<int> GetUnsentCountByChapterId(Guid chapterId) => Set()
+        .Where(x => x.ChapterId == chapterId && x.SentUtc == null)
+        .DeferredCount();
 }

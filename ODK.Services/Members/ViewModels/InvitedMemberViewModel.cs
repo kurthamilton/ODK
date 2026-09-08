@@ -11,4 +11,7 @@ public class InvitedMemberViewModel
     public required DateTime InvitedUtc { get; init; }
 
     public required Member Member { get; init; }
+
+    /// <summary>When the invite was emailed, or null while the group is still holding it.</summary>
+    public required DateTime? SentUtc { get; init; }
 }

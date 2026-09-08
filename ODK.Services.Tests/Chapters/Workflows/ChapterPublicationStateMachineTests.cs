@@ -1,8 +1,11 @@
 ﻿using System.Linq;
 using FluentAssertions;
 using NUnit.Framework;
+using ODK.Core.Workflows;
 using ODK.Services.Chapters.Workflows;
 using ODK.Services.Chapters.Workflows.Guards;
+using ODK.Services.Chapters.Workflows.Steps;
+using ODK.Services.Workflows;
 
 namespace ODK.Services.Tests.Chapters.Workflows;
 
@@ -70,6 +73,28 @@ public static class ChapterPublicationStateMachineTests
 
         // Assert
         result.Should().BeEquivalentTo("Approved -> Published");
+    }
+
+    [Test]
+    public static void Create_Publish_SendsTheInvitesTheGroupWasHolding()
+    {
+        /* Arrange - a group can prepare a member import before anyone outside it can see it, so publishing is
+           where those invites go out. After the commit, so nothing is emailed against a publication that
+           went no further. */
+        var definition = ChapterPublicationStateMachine.Create();
+
+        // Act
+        var steps = definition.Transitions
+            .Single(x => x.Trigger == ChapterPublicationTrigger.Publish)
+            .Steps
+            .Select(x => x.StepType)
+            .ToArray();
+
+        // Assert
+        steps.Should().ContainInOrder(
+            typeof(MarkChapterPublished),
+            typeof(Commit<ChapterPublicationContext>),
+            typeof(SendQueuedInvites));
     }
 
     [Test]

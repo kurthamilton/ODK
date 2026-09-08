@@ -819,7 +819,14 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         var awaitingPublication = chapter.CanBePublished(hasImage: true)
             && adminMember.HasAccessTo(ChapterAdminSecurable.Publish, currentMember);
 
-        var (awaitingApproval, unrepliedMessages, upcomingEvents, image, newestMembers) = await _unitOfWork.Run(
+        var (
+            awaitingApproval,
+            unrepliedMessages,
+            upcomingEvents,
+            image,
+            newestMembers,
+            heldInvites
+        ) = await _unitOfWork.Run(
             x => canSeeApprovals
                 ? x.MemberChapterRepository.Query(platform).ForChapter(chapter.Id).Approved(false).Count()
                 : new DefaultDeferredQuery<int>(0),
@@ -842,7 +849,11 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
                 : new DefaultDeferredQuerySingleOrDefault<ChapterImageVersionDto>(),
             x => canSeeMembers
                 ? x.MemberRepository.GetLatestJoinedByChapterId(chapter.Id, DashboardNewestMemberCount)
-                : new DefaultDeferredQueryMultiple<MemberChapterWithAvatarDto>());
+                : new DefaultDeferredQueryMultiple<MemberChapterWithAvatarDto>(),
+            // Only where publishing is the outstanding action, which is the only place the number is shown.
+            x => awaitingPublication
+                ? x.MemberChapterInviteRepository.GetUnsentCountByChapterId(chapter.Id)
+                : new DefaultDeferredQuery<int>(0));
 
         var hasImage = image != null;
 
@@ -850,6 +861,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         {
             Chapter = chapter,
             CanPublish = awaitingPublication && hasImage,
+            HeldInvites = heldInvites,
             MembersAwaitingApproval = canSeeApprovals ? awaitingApproval : null,
             NeedsImage = canSeeImage && !hasImage,
             NeedsImageToPublish = awaitingPublication && !hasImage,

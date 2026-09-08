@@ -12,7 +12,8 @@ namespace ODK.Services.Members.Workflows.Account.Steps;
 /// </summary>
 /// <remarks>
 /// The original CreatedUtc is not recoverable and does not matter: nothing reads the date, and an invite's
-/// job is to say the member was asked to join, not when.
+/// job is to say the member was asked to join, not when. Whether it has been emailed does carry over, since
+/// this is the same invite under a new account and a group publishing itself sends the ones it is holding.
 /// </remarks>
 public sealed class CarryOverInvites : IStep<AccountContext>
 {
@@ -40,6 +41,7 @@ public sealed class CarryOverInvites : IStep<AccountContext>
                 ChapterId = invite.ChapterId,
                 CreatedUtc = DateTime.UtcNow,
                 MemberId = context.RequiredNewMember.Id,
+                SentUtc = invite.SentUtc,
                 Token = invite.Token
             });
         }

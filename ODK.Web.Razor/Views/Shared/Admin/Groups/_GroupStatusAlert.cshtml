@@ -1,5 +1,7 @@
 ﻿@using ODK.Core.Chapters
+@using ODK.Web.Common.Routes
 @model Chapter
+@inject IOdkRoutes OdkRoutes
 
 @if (!Model.Approved())
 {
@@ -9,7 +11,13 @@
 }
 else if (!Model.IsPublished())
 {
-    <div class="alert alert-danger">
-        This group is not published
-    </div>
+    var publishPath = OdkRoutes.GroupAdmin.Group(Model).Path;
+    var currentPath = Context.Request.Path;
+
+    if (!string.Equals(publishPath, currentPath, StringComparison.OrdinalIgnoreCase))
+    {
+        <div class="alert alert-warning">
+            This group is not published. <a href="@publishPath">Publish</a>
+        </div>
+    }    
 }

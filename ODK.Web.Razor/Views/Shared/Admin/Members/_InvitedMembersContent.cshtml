@@ -10,7 +10,10 @@
     "People an import has asked to join who have yet to accept. They become members when they accept, so " +
     "they are not in the members list until then. An invite nobody accepts is deleted after " +
     $"{Model.RetentionDays} days, along with the account raised for it - so a member who never replies " +
-    "leaves the group holding nothing about them.")
+    "leaves the group holding nothing about them." +
+    (Model.Chapter.IsPublished()
+        ? string.Empty
+        : " Nobody here has been emailed yet: the invites go out when you publish the group."))
 
 @if (Model.Invited.Count > 0)
 {
@@ -30,7 +33,13 @@
                     <tr>
                         @* Not linked to the member admin page: that page is about a member of the group,
                            and someone who has only been invited is not one yet. *@
-                        <td>@invite.Member.FullName</td>
+                        <td>
+                            <span>@invite.Member.FullName</span>
+                            @if (invite.SentUtc == null)
+                            {
+                                <span class="badge bg-secondary">Not emailed</span>
+                            }
+                        </td>
                         <td>
                             @invite.InvitedUtc.ToFriendlyDateString(new FriendlyDateStringOptions
                             {

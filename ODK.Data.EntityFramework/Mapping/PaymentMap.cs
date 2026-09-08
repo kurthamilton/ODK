@@ -39,7 +39,7 @@ public class PaymentMap : IEntityTypeConfiguration<Payment>
             .HasMaxLength(100);
 
         builder.Property(x => x.PaidUtc)
-            .HasConversion<UtcDateTimeConverter>();
+            .HasConversion<NullableUtcDateTimeConverter>();
 
         builder.Property(x => x.PaymentProvider)
             .HasColumnName("PaymentProviderTypeId")

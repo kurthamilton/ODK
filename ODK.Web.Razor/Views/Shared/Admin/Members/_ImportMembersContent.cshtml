@@ -8,7 +8,10 @@
 }
 
 @await Html.PartialAsync("Components/_AdminPageDescription",
-    "Invite members to the group from a CSV file. You can review what will happen before anything is sent.")
+    "Invite members to the group from a CSV file. You can review what will happen before anything is sent." +
+    (Model.Chapter.IsPublished()
+        ? string.Empty
+        : " This group isn't published yet, so the invites are held until you publish it."))
 
 <div data-wizard-form>
     @await Html.PartialAsync("Components/_Wizard", new WizardViewModel

@@ -924,14 +924,16 @@ public static class MemberAdminServiceTests
     {
         /* Arrange - both platforms have a page an invite's link lands on that a member with no password can
            use, so both send the invite. An activation link would take a new member straight past the group
-           they were invited to, into an account belonging to none. */
+           they were invited to, into an account belonging to none. Published, which is what decides whether
+           the invite is emailed now. */
         using var context = CreateMockOdkContext();
 
         var currentMember = context.CreateMember();
         var chapter = context.CreateChapter(
             owner: currentMember,
             platform: platform,
-            siteSubscription: context.CreateSiteSubscription(platform: platform));
+            siteSubscription: context.CreateSiteSubscription(platform: platform),
+            afterCreate: x => x.PublishedUtc = DateTime.UtcNow);
 
         SeedDefaultSiteSubscription(context, platform);
 
@@ -1012,7 +1014,8 @@ public static class MemberAdminServiceTests
         var currentMember = context.CreateMember();
         var chapter = context.CreateChapter(
             owner: currentMember,
-            siteSubscription: context.CreateSiteSubscription());
+            siteSubscription: context.CreateSiteSubscription(),
+            afterCreate: x => x.PublishedUtc = DateTime.UtcNow);
         var existing = context.CreateMember(afterCreate: x => x.EmailAddress = "existing@example.com");
 
         SeedDefaultSiteSubscription(context, PlatformType.Default);
@@ -1045,6 +1048,95 @@ public static class MemberAdminServiceTests
                 It.Is<Member>(m => m.Id == existing.Id),
                 It.IsAny<string>()),
             Times.Once);
+    }
+
+    [Test]
+    public static async Task ImportMembers_UnpublishedGroup_RaisesTheInviteAndHoldsIt()
+    {
+        /* Arrange - a group prepares its import before anyone outside it can see it, which is the point of
+           importing early. Emailing the invite now would send a link to a group the invitee cannot open. */
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(
+            owner: currentMember,
+            siteSubscription: context.CreateSiteSubscription());
+
+        SeedDefaultSiteSubscription(context, PlatformType.Default);
+
+        var emailService = new Mock<IMemberEmailService>();
+        var service = CreateMemberAdminService(context, memberEmailService: emailService.Object);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberImport);
+
+        var members = new[]
+        {
+            new MemberImportModel { EmailAddress = "new@example.com", FirstName = "New", LastName = "Member" }
+        };
+
+        // Act
+        var result = await service.ImportMembers(request, members);
+
+        // Assert - the invite is written, and recorded as unsent so publishing the group can find it.
+        result.Success.Should().BeTrue();
+
+        var member = context.Set<Member>().Single(x => x.EmailAddress == "new@example.com");
+
+        context.Set<MemberChapterInvite>()
+            .Single(x => x.MemberId == member.Id && x.ChapterId == chapter.Id)
+            .SentUtc
+            .Should()
+            .BeNull();
+
+        emailService.Verify(
+            x => x.SendMemberImportInviteEmail(
+                It.IsAny<IChapterServiceRequest>(), It.IsAny<Member>(), It.IsAny<string>()),
+            Times.Never);
+    }
+
+    [Test]
+    public static async Task ImportMembers_PublishedGroup_RecordsTheInviteAsSent()
+    {
+        // Arrange - the counterpart of the test above: a published group emails as it imports, and what it
+        // emailed has to be recorded, or publishing has no way of telling a held invite from a sent one.
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(
+            owner: currentMember,
+            siteSubscription: context.CreateSiteSubscription(),
+            afterCreate: x => x.PublishedUtc = DateTime.UtcNow);
+
+        SeedDefaultSiteSubscription(context, PlatformType.Default);
+
+        var service = CreateMemberAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberImport);
+
+        var members = new[]
+        {
+            new MemberImportModel { EmailAddress = "new@example.com", FirstName = "New", LastName = "Member" }
+        };
+
+        // Act
+        var result = await service.ImportMembers(request, members);
+
+        // Assert
+        result.Success.Should().BeTrue();
+
+        var member = context.Set<Member>().Single(x => x.EmailAddress == "new@example.com");
+
+        context.Set<MemberChapterInvite>()
+            .Single(x => x.MemberId == member.Id && x.ChapterId == chapter.Id)
+            .SentUtc
+            .Should()
+            .NotBeNull();
     }
 
     [Test]
@@ -1447,6 +1539,120 @@ public static class MemberAdminServiceTests
     }
 
     [Test]
+    public static async Task SendQueuedInviteEmails_GroupHoldingInvites_SendsThemAndRecordsThemAsSent()
+    {
+        // Arrange - what a group publishing itself does with the invites an earlier import left it holding.
+        using var context = CreateMockOdkContext(noTracking: true);
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(
+            owner: currentMember,
+            afterCreate: x => x.PublishedUtc = DateTime.UtcNow);
+
+        var invited = context.CreateMember();
+        var invite = CreateInvite(context, chapter.Id, invited.Id, DateTime.UtcNow.AddDays(-1));
+
+        var emailService = new Mock<IMemberEmailService>();
+        var service = CreateMemberAdminService(context, memberEmailService: emailService.Object);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        await service.SendQueuedInviteEmails(request);
+
+        // Assert
+        emailService.Verify(
+            x => x.SendMemberImportInviteEmail(
+                It.IsAny<IChapterServiceRequest>(),
+                It.Is<Member>(m => m.Id == invited.Id),
+                invite.Token),
+            Times.Once);
+
+        context.Set<MemberChapterInvite>()
+            .Single(x => x.Id == invite.Id)
+            .SentUtc
+            .Should()
+            .NotBeNull();
+    }
+
+    [Test]
+    public static async Task SendQueuedInviteEmails_InviteAlreadySent_DoesNotSendItAgain()
+    {
+        /* Arrange - the reason the invite records when it was sent. Publishing happens once, but a re-run of
+           the send must not email an invite the import already delivered. */
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(
+            owner: currentMember,
+            afterCreate: x => x.PublishedUtc = DateTime.UtcNow);
+
+        var invited = context.CreateMember();
+        CreateInvite(
+            context,
+            chapter.Id,
+            invited.Id,
+            DateTime.UtcNow.AddDays(-1),
+            sentUtc: DateTime.UtcNow.AddDays(-1));
+
+        var emailService = new Mock<IMemberEmailService>();
+        var service = CreateMemberAdminService(context, memberEmailService: emailService.Object);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        await service.SendQueuedInviteEmails(request);
+
+        // Assert
+        emailService.Verify(
+            x => x.SendMemberImportInviteEmail(
+                It.IsAny<IChapterServiceRequest>(), It.IsAny<Member>(), It.IsAny<string>()),
+            Times.Never);
+    }
+
+    [Test]
+    public static async Task SendQueuedInviteEmails_AnotherGroupsHeldInvite_LeavesItAlone()
+    {
+        // Arrange - two groups can each be holding invites, and publishing one says nothing about the other.
+        using var context = CreateMockOdkContext(noTracking: true);
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(
+            owner: currentMember,
+            afterCreate: x => x.PublishedUtc = DateTime.UtcNow);
+        var otherChapter = context.CreateChapter(owner: currentMember);
+
+        var invited = context.CreateMember();
+        var otherInvite = CreateInvite(context, otherChapter.Id, invited.Id, DateTime.UtcNow.AddDays(-1));
+
+        var emailService = new Mock<IMemberEmailService>();
+        var service = CreateMemberAdminService(context, memberEmailService: emailService.Object);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        await service.SendQueuedInviteEmails(request);
+
+        // Assert
+        emailService.Verify(
+            x => x.SendMemberImportInviteEmail(
+                It.IsAny<IChapterServiceRequest>(), It.IsAny<Member>(), It.IsAny<string>()),
+            Times.Never);
+
+        context.Set<MemberChapterInvite>()
+            .Single(x => x.Id == otherInvite.Id)
+            .SentUtc
+            .Should()
+            .BeNull();
+    }
+
+    [Test]
     public static async Task SendMemberSubscriptionReminderEmails_SendsRemindersAcrossAllChapters()
     {
         // Arrange - two published chapters, each with a member whose subscription expires within 7 days.
@@ -1644,7 +1850,11 @@ public static class MemberAdminServiceTests
         return services.BuildServiceProvider();
     }
 
-    private static MockOdkContext CreateMockOdkContext() => new MockOdkContext();
+    /* The real context reads without tracking, so a test whose subject reads a row and then writes it back
+       has to ask for that: tracking hands the service the instance the arrangement created, which passes
+       whether or not the write was staged. See MockOdkContext. */
+    private static MockOdkContext CreateMockOdkContext(bool noTracking = false) =>
+        new MockOdkContext(noTracking);
 
     private static IUnitOfWork CreateMockUnitOfWork(MockOdkContext? context = null) => MockUnitOfWorkFactory.Create(context);
 
@@ -1687,13 +1897,18 @@ public static class MemberAdminServiceTests
     }
 
     private static MemberChapterInvite CreateInvite(
-        MockOdkContext context, Guid chapterId, Guid memberId, DateTime createdUtc) => context.Create(
+        MockOdkContext context,
+        Guid chapterId,
+        Guid memberId,
+        DateTime createdUtc,
+        DateTime? sentUtc = null) => context.Create(
         new MemberChapterInvite
         {
             ChapterId = chapterId,
             CreatedUtc = createdUtc,
             Id = Guid.NewGuid(),
             MemberId = memberId,
+            SentUtc = sentUtc,
             Token = Guid.NewGuid().ToString()
         });
 

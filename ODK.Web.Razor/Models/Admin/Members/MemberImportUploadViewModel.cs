@@ -9,4 +9,10 @@ public class MemberImportUploadViewModel
 
     [Required]
     public IFormFile? File { get; init; }
+
+    /// <summary>
+    /// The staged upload this one replaces, on a re-upload from the review step. Null on a first upload,
+    /// where there is nothing to replace.
+    /// </summary>
+    public string? SupersededToken { get; init; }
 }
