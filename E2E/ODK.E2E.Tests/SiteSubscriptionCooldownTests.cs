@@ -35,15 +35,7 @@ public class SiteSubscriptionCooldownTests : DefaultPageTest
     private static MemberSiteSubscriptionDataHelper MemberSubscriptions => new(E2ESettings.ConnectionString);
 
     [SetUp]
-    public void RequireACooldown()
-    {
-        if (E2ESettings.SiteSubscriptionCooldownMonths <= 0)
-        {
-            Assert.Ignore(
-                "The app under test is configured with no site subscription cooldown " +
-                "(Subscriptions:DefaultCooldownMonths), so there is no window to be inside.");
-        }
-    }
+    public void RequireACooldown() => SiteSubscriptionCooldownWindow.Require();
 
     // Lapsed yesterday - inside the cooldown however short it is, so the feature is still the group's.
     [TestCase(true)]
@@ -70,7 +62,7 @@ public class SiteSubscriptionCooldownTests : DefaultPageTest
         await page.SetCustomWording(emailUrl, subject: $"E2E cooldown {Guid.NewGuid():N}");
 
         // Act - the subscription runs out, on one side of the cooldown or the other.
-        await MemberSubscriptions.Expire(ownerId, LapsedAt(withinCooldown));
+        await MemberSubscriptions.Expire(ownerId, SiteSubscriptionCooldownWindow.LapsedAt(withinCooldown));
         await page.Open(emailUrl);
 
         // Assert - the wording can still be written while the cooldown covers the group, and not once it
@@ -109,16 +101,6 @@ public class SiteSubscriptionCooldownTests : DefaultPageTest
     }
 
     /// <summary>
-    /// An expiry just inside the cooldown, or just beyond it. Inside is yesterday, which a cooldown of any
-    /// length covers; beyond is a day before the window opened. Both are a day clear of the boundary, so the
-    /// app resolving the window a moment later than this cannot land on the wrong side of it.
-    /// </summary>
-    private static DateTime LapsedAt(bool withinCooldown)
-        => withinCooldown
-            ? DateTime.UtcNow.AddDays(-1)
-            : DateTime.UtcNow.AddMonths(-E2ESettings.SiteSubscriptionCooldownMonths).AddDays(-1);
-
-    /// <summary>
     /// An account on a paid site subscription that has since run out, on the given side of the cooldown. It
     /// owns no group, so the group limit is never what a refused create is about. Which subscription it is
     /// does not matter here - creating a group turns on the expiry, not on any feature - so it reuses the one
@@ -132,7 +114,7 @@ public class SiteSubscriptionCooldownTests : DefaultPageTest
         var ownerId = await Members.GetMemberId(owner.Email);
 
         await MemberSubscriptions.EnsureActive(ownerId, subscription.Id, subscription.PriceId);
-        await MemberSubscriptions.Expire(ownerId, LapsedAt(withinCooldown));
+        await MemberSubscriptions.Expire(ownerId, SiteSubscriptionCooldownWindow.LapsedAt(withinCooldown));
 
         return owner;
     }

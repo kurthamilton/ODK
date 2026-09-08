@@ -17,5 +17,8 @@ public enum NotificationType
     SiteConversationReplies = 8,
 
     /// <summary>A subscription of the member's has been billed again by the payment provider.</summary>
-    SubscriptionRenewed = 9
+    SubscriptionRenewed = 9,
+
+    /// <summary>The member's lapsed site subscription has been moved onto the platform's free plan.</summary>
+    SubscriptionDowngraded = 10
 }

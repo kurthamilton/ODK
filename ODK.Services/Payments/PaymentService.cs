@@ -1206,6 +1206,35 @@ public class PaymentService : IPaymentService
             return PaymentWebhookProcessingResult.Failure();
         }
 
+        if (webhook.Type == PaymentProviderWebhookType.SubscriptionCancelled)
+        {
+            await _loggingService.Info(
+                $"Processing {webhook.PaymentProviderType} webhook '{webhook.Id}': " +
+                $"cancelling member site subscription record with external id '{webhook.SubscriptionId}'");
+
+            var memberSiteSubscriptionRecord = await _unitOfWork.MemberSiteSubscriptionRecordRepository
+                .Query()
+                .ForExternalId(webhook.SubscriptionId)
+                .MostRecent()
+                .GetSingleOrDefault()
+                .Run();
+            if (memberSiteSubscriptionRecord == null)
+            {
+                await _loggingService.Warn(
+                    $"No member site subscription record found for external id '{webhook.SubscriptionId}'; not cancelling");
+                return PaymentWebhookProcessingResult.Failure();
+            }
+
+            /* Only the cancellation is recorded. The expiry the last payment bought stands - a cancelled
+               subscription keeps what it paid for until it runs out, and the sweep that downgrades a lapsed
+               member reads that same expiry. */
+            memberSiteSubscriptionRecord.CancelledUtc = webhook.OriginatedUtc;
+            _unitOfWork.MemberSiteSubscriptionRecordRepository.Update(memberSiteSubscriptionRecord);
+            await _unitOfWork.SaveChanges();
+            return PaymentWebhookProcessingResult.Successful(
+                member: null, chapter: null, payment: null, currency: null, checkoutSession: null);
+        }
+
         return await ProcessCompletedSiteSubscription(
             metadata,
             completedUtc: webhook.OriginatedUtc,

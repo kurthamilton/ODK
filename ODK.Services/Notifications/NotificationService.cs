@@ -6,6 +6,7 @@ using ODK.Core.Messages;
 using ODK.Core.Notifications;
 using ODK.Core.Payments;
 using ODK.Core.Platforms;
+using ODK.Core.Subscriptions;
 using ODK.Core.Utils;
 using ODK.Core.Venues;
 using ODK.Data.Core;
@@ -153,6 +154,23 @@ public class NotificationService : INotificationService
             [member],
             settings,
             entityId: conversation.Id,
+            chapterId: null);
+    }
+
+    public void AddSubscriptionDowngradedNotifications(
+        SiteSubscription siteSubscription,
+        IEnumerable<Member> members,
+        IEnumerable<MemberNotificationSettings> settings)
+    {
+        /* No date, unlike the renewal: what a member needs from this is which plan they are on now, and the
+           expiry it names is a cooldown old by the time the sweep reaches it. That keeps the text free of
+           anything needing the member's culture, which a sweep would have to load per member. */
+        AddNotifications(
+            NotificationType.SubscriptionDowngraded,
+            _ => $"Your subscription has expired. You are now on the {siteSubscription.Name} plan.",
+            members,
+            settings,
+            entityId: null,
             chapterId: null);
     }
 

@@ -1,5 +1,6 @@
 ﻿using ODK.Core.Features;
 using ODK.Core.Members;
+using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Members;
@@ -16,7 +17,17 @@ public interface IMemberSiteSubscriptionRecordQueryBuilder :
 
     IMemberSiteSubscriptionRecordQueryBuilder Current();
 
+    /// <summary>
+    /// Records that have expired, treating one that expired within <paramref name="cooldown"/> as active.
+    /// The exact complement of <see cref="Active"/>: a record with no expiry never expires, so it belongs
+    /// to neither. The two have to stay in step.
+    /// </summary>
+    IMemberSiteSubscriptionRecordQueryBuilder Expired(SiteSubscriptionCooldown cooldown);
+
     IMemberSiteSubscriptionRecordQueryBuilder ForChapterOwner(Guid chapterId);
+
+    /// <summary>Records on a plan belonging to the environment - the plan's, not the member's.</summary>
+    IMemberSiteSubscriptionRecordQueryBuilder ForEnvironment(EnvironmentType environment);
 
     IMemberSiteSubscriptionRecordQueryBuilder ForExternalId(string externalId);
 
@@ -26,6 +37,12 @@ public interface IMemberSiteSubscriptionRecordQueryBuilder :
 
     IMemberSiteSubscriptionRecordQueryBuilder ForPayment(Guid paymentId);
 
+    /// <summary>
+    /// Records on a plan belonging to the platform. The plan's platform, not the member's: a plan belongs
+    /// to the platform that sells it, whichever site the member signed up on.
+    /// </summary>
+    IMemberSiteSubscriptionRecordQueryBuilder ForPlatform(PlatformType platform);
+
     IMemberSiteSubscriptionRecordQueryBuilder ForSiteSubscription(Guid siteSubscriptionId);
 
     IMemberSiteSubscriptionRecordQueryBuilder ForSiteSubscriptionPrice(Guid siteSubscriptionPriceId);
@@ -34,6 +51,13 @@ public interface IMemberSiteSubscriptionRecordQueryBuilder :
     IMemberSiteSubscriptionRecordQueryBuilder HasExternalId();
 
     IDeferredQuery<bool> HasFeature(SiteFeatureType feature);
+
+    /// <summary>
+    /// The most recently created of the matching records, and only that one. Not <see cref="Current"/>,
+    /// which is the flag saying which record is in force: this orders whatever a filter has left, so a
+    /// caller can take the newest record of some other kind.
+    /// </summary>
+    IMemberSiteSubscriptionRecordQueryBuilder MostRecent();
 
     ISiteSubscriptionQueryBuilder SiteSubscription();
 

@@ -16,6 +16,13 @@ public interface ISiteSubscriptionRepository : IReadWriteRepository<SiteSubscrip
 
     IDeferredQuerySingle<SiteSubscription> GetDefault(EnvironmentType environment, PlatformType platform);
 
+    /// <summary>
+    /// The platform's default plan, or null where it has none enabled - for a caller that has to decide
+    /// what to do about the absence rather than fail on it.
+    /// </summary>
+    IDeferredQuerySingleOrDefault<SiteSubscription> GetDefaultOrDefault(
+        EnvironmentType environment, PlatformType platform);
+
     IDeferredQueryMultiple<SiteSubscriptionSummaryDto> GetSummaries(
         PlatformType platform, SiteSubscriptionCooldown cooldown);
 }

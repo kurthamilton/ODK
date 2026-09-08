@@ -36,6 +36,17 @@ public static class E2ESettings
     public static int EnvironmentTypeId => EnvironmentTypeIds.FromName(GetRequired("Environment"));
 
     /// <summary>
+    /// The key the app under test authenticates its cron endpoints with (its
+    /// <c>ScheduledTasks:ApiKey</c>). Stated here because the app's own configuration is not readable from
+    /// these tests, and a scheduled task can only be run by asking for it - nothing in the UI triggers one
+    /// and the app runs none on a timer of its own - so the two have to agree.
+    /// </summary>
+    public static string ScheduledTasksApiKey => GetRequired("ScheduledTasks:ApiKey");
+
+    /// <summary>The header that key is sent in (the app's <c>ScheduledTasks:ApiKeyHeader</c>).</summary>
+    public static string ScheduledTasksApiKeyHeader => GetRequired("ScheduledTasks:ApiKeyHeader");
+
+    /// <summary>
     /// The site-subscription cooldown the app under test runs with (its
     /// <c>Subscriptions:DefaultCooldownMonths</c>): how long an expired site subscription keeps its access.
     /// Stated here because the app's own configuration is not readable from these tests, and a test that

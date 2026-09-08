@@ -331,14 +331,35 @@ means a new category and the E2E suite tracks the app's workflows rather than a 
 - **Naming:** `Method_Scenario_ExpectedResult`; Arrange/Act/Assert with comments; FluentAssertions
   (`x.Should()...`); one top-level type per file; `required` init props for models.
 - **Config:** `ODK.E2E.Tests/appsettings.json` holds `DefaultBaseUrl`, `DrunkenKnitwitsBaseUrl`,
-  `ConnectionString`, `Environment`, `SiteSubscriptionCooldownMonths` and a `Stripe` section; override
-  per-machine via git-ignored `appsettings.local.json` or `ODK_E2E_*` env vars. Per platform the `Stripe`
-  section states the secret key the app transacts with (`SecretApiKey`) and the connected account created
+  `ConnectionString`, `Environment`, `SiteSubscriptionCooldownMonths`, a `ScheduledTasks` section and a
+  `Stripe` section; override per-machine via git-ignored `appsettings.local.json` or `ODK_E2E_*` env vars.
+  Per platform the `Stripe` section states the secret key the app transacts with (`SecretApiKey`) and the
+  connected account created
   under that account (`ConnectedAccountId`), plus the shared ngrok `WebhookBaseUrl`. The key is a secret, so
   the tracked file states it as `""` and the real value lives in the git-ignored
   `appsettings.Development.json`. `Environment` names the deployment the app runs as, so seeded rows carry
-  what it reads back. These are values the app also states in its own configuration - see the notes under
-  *Running the app for E2E*.
+  what it reads back. `ScheduledTasks` (`ApiKey`, `ApiKeyHeader`) is what a test authenticates a cron
+  endpoint with - see *Running a scheduled task* below. These are values the app also states in its own
+  configuration - see the notes under *Running the app for E2E*.
+
+## Running a scheduled task
+
+Some behaviour has no trigger in the app at all: `ScheduledTasksController`'s endpoints are posted by an
+external cron, and the app runs none of them on a timer of its own. A test that covers one runs it through
+`Helpers/ScheduledTasks`, which posts the endpoint with the ScheduledTasks API key.
+
+Three consequences worth planning around:
+
+- **The app's `appsettings.e2e.json` needs a `ScheduledTasks` section stating the same key and header** as
+  `ODK.E2E.Tests/appsettings.json`. That file is git-ignored, so a fresh clone has to add it or every such
+  test fails on the API key - which `ScheduledTasks` reports as itself rather than as a mystifying
+  assertion.
+- **A sweep is platform-wide, so a fixture running one is `[NonParallelizable]`.** It acts on every row the
+  platform has in the state it sweeps for, including whatever another fixture has just arranged, so it
+  cannot run alongside one. NUnit runs non-parallel fixtures in a shift of their own, which is the
+  guarantee needed. `SiteSubscriptionDowngradeTests` is the worked example.
+- **The endpoints swallow what their task threw and answer 200 regardless**, so the response says only that
+  the request authenticated. What the task did has to be asserted from its effects.
 
 ## Test isolation: shared vs local provisioning
 

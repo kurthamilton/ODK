@@ -1255,6 +1255,57 @@ public static class PaymentServiceTests
     }
 
     [Test]
+    public static async Task ProcessWebhook_SiteSubscriptionCancelled_RecordsTheCancellationAndNothingElse()
+    {
+        /* Arrange - a cancellation event carries the same subscription metadata every event on that
+           subscription does, and reports itself complete, so nothing but the type distinguishes it from a
+           billing. Without the branch it is processed as one: a payment for the full price, and an expiry
+           extended by a plan the member has stopped paying for. */
+        using var context = CreateMockOdkContext();
+
+        var member = context.CreateMember();
+        var currency = context.CreateCurrency();
+        var siteSubscription = context.CreateSiteSubscription();
+        var siteSubscriptionPrice = context.CreateSiteSubscriptionPrice(
+            siteSubscription: siteSubscription,
+            currency: currency);
+
+        var expiresUtc = DateTime.UtcNow.AddMonths(6);
+        var record = context.CreateMemberSiteSubscription(
+            member,
+            siteSubscription,
+            expiresUtc: expiresUtc,
+            siteSubscriptionPrice: siteSubscriptionPrice,
+            externalId: "sub_123");
+
+        var webhook = CreatePaymentProviderWebhook(
+            id: "wh_cancelled",
+            type: PaymentProviderWebhookType.SubscriptionCancelled,
+            subscriptionId: "sub_123",
+            metadata: new PaymentMetadataModel(
+                PlatformType.Default,
+                PaymentReasonType.SiteSubscription,
+                member,
+                siteSubscriptionPrice,
+                Guid.NewGuid(),
+                context.CreatePayment(member: member, currency: currency).Id));
+
+        var service = CreatePaymentService(context);
+        var request = CreateServiceRequest();
+
+        // Act
+        await service.ProcessWebhook(request, webhook);
+
+        // Assert - the expiry the last payment bought stands, and the cooldown runs from it.
+        record.CancelledUtc.Should().Be(webhook.OriginatedUtc);
+        record.ExpiresUtc.Should().Be(expiresUtc);
+        record.IsCurrent.Should().BeTrue();
+
+        context.Set<MemberSiteSubscriptionRecord>().Count().Should().Be(1);
+        context.Set<Payment>().Should().NotContain(x => x.ExternalId == "sub_123");
+    }
+
+    [Test]
     public static async Task ProcessWebhook_SiteSubscriptionRenewal_ExtendsExpiryByPlanMonths()
     {
         // Arrange

@@ -13,7 +13,20 @@ public class SentEmailDataHelper : DataHelperBase
     {
     }
 
-    public async Task<IReadOnlyCollection<string>> GetSubjects(string emailAddress, int expectedCount)
+    public Task<IReadOnlyCollection<string>> GetSubjects(string emailAddress, int expectedCount)
+        => Poll(emailAddress, _ => true, expectedCount);
+
+    /// <summary>
+    /// The subjects carrying the given fragment, waiting for <paramref name="expectedCount"/> of them.
+    /// Counting only what a test is waiting for, rather than every email the address has, is what makes the
+    /// wait immune to an unrelated email the address was already owed arriving in the middle of it.
+    /// </summary>
+    public Task<IReadOnlyCollection<string>> GetSubjectsContaining(
+        string emailAddress, string subjectFragment, int expectedCount)
+        => Poll(emailAddress, x => x.Contains(subjectFragment), expectedCount);
+
+    private async Task<IReadOnlyCollection<string>> Poll(
+        string emailAddress, Func<string, bool> matches, int expectedCount)
     {
         const string sql =
             """
@@ -33,7 +46,7 @@ public class SentEmailDataHelper : DataHelperBase
 
         for (var attempt = 0; attempt < 20; attempt++)
         {
-            subjects = await builder.ReadMany(x => x.GetString(0));
+            subjects = [.. (await builder.ReadMany(x => x.GetString(0))).Where(matches)];
             if (subjects.Count >= expectedCount)
             {
                 return subjects;

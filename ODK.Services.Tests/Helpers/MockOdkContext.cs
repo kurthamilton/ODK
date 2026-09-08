@@ -286,19 +286,22 @@ internal class MockOdkContext : OdkContext
         return member;
     }
 
-    internal void CreateMemberSiteSubscription(
+    internal MemberSiteSubscriptionRecord CreateMemberSiteSubscription(
         Member member,
         SiteSubscription? siteSubscription = null,
         DateTime? expiresUtc = null,
-        SiteSubscriptionPrice? siteSubscriptionPrice = null)
+        SiteSubscriptionPrice? siteSubscriptionPrice = null,
+        string? externalId = null,
+        DateTime? createdUtc = null)
     {
         siteSubscription ??= CreateSiteSubscription();
 
         // The current MemberSiteSubscriptionLog record is the sole store read for feature gating.
-        Create(new MemberSiteSubscriptionRecord
+        return Create(new MemberSiteSubscriptionRecord
         {
-            CreatedUtc = DateTime.UtcNow,
+            CreatedUtc = createdUtc ?? DateTime.UtcNow,
             ExpiresUtc = expiresUtc,
+            ExternalId = externalId,
             Id = Guid.NewGuid(),
             IsCurrent = true,
             MemberId = member.Id,
@@ -372,21 +375,25 @@ internal class MockOdkContext : OdkContext
         bool free = false,
         int? memberLimit = null,
         PlatformType platform = PlatformType.Default,
-        SitePaymentProduct? sitePaymentProduct = null)
+        SitePaymentProduct? sitePaymentProduct = null,
+        bool isDefault = false,
+        bool enabled = true,
+        EnvironmentType environment = EnvironmentType.Dev,
+        string name = "Test Subscription")
     {
         sitePaymentProduct ??= CreateSitePaymentProduct(platform);
 
         var siteSubscription = Create(new SiteSubscription
         {
             Id = Guid.NewGuid(),
-            Name = "Test Subscription",
+            Name = name,
             DescriptionHtml = "Test subscription for testing",
             Free = free,
             GroupLimit = groupLimit ?? 10,
             MemberLimit = memberLimit,
-            Enabled = true,
-            Default = false,
-            Environment = EnvironmentType.Dev,
+            Enabled = enabled,
+            Default = isDefault,
+            Environment = environment,
             PaymentProvider = PaymentProviderType.Stripe,
             Platform = platform,
             SitePaymentProductId = sitePaymentProduct.Id
