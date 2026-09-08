@@ -29,7 +29,13 @@ public sealed class AccountContextFactory : IAccountContextFactory
     public async Task<AccountContext> CreateForAcceptInvite(
         IChapterServiceRequest request, MemberChapterInvite invite, InviteAcceptModel model)
     {
-        var (platform, chapter) = (request.Platform, request.Chapter);
+        var (environment, platform, chapter) = (request.Environment, request.Platform, request.Chapter);
+
+        /* The platform the plan comes from is the group's, not the request's: a plan belongs to the platform
+           that owns the group being joined, so a Drunken Knitwits group joined from Group Squirrel still puts
+           its members on Drunken Knitwits' default plan. Deliberately unlike Member.Platform, which records
+           the site the account was created on and is a different question. */
+        var planPlatform = chapter.Platform;
 
         var (
             adminMembers,
@@ -40,7 +46,8 @@ public sealed class AccountContextFactory : IAccountContextFactory
             chapterProperties,
             membershipSettings,
             ownerSubscription,
-            memberCount
+            memberCount,
+            siteSubscription
         ) = await _unitOfWork.Run(
             x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => x.MemberNotificationSettingsRepository.GetByChapterId(chapter.Id, NotificationType.NewMember),
@@ -54,7 +61,8 @@ public sealed class AccountContextFactory : IAccountContextFactory
                 .SiteSubscription()
                 .WithFeatures()
                 .GetSingleOrDefault(),
-            x => x.MemberRepository.GetCountByChapterId(chapter.Id));
+            x => x.MemberRepository.GetCountByChapterId(chapter.Id),
+            x => x.SiteSubscriptionRepository.GetDefault(environment, planPlatform));
 
         return new AccountContext
         {
@@ -76,6 +84,7 @@ public sealed class AccountContextFactory : IAccountContextFactory
             OwnerSubscriptionFeatures = ownerSubscription?.Features ?? [],
             PendingActivation = pendingActivation,
             Request = request,
+            SiteSubscription = siteSubscription,
             /* Nothing here is a sign-up, so no provider has vouched for anything - holding the invite is
                itself the proof the address was reachable. */
             VerifiedByOAuth = false
@@ -85,16 +94,27 @@ public sealed class AccountContextFactory : IAccountContextFactory
     public async Task<AccountContext> CreateForChapterActivation(
         IChapterServiceRequest request, MemberActivationToken token, string password)
     {
-        var (platform, chapter) = (request.Platform, request.Chapter);
+        var (environment, platform, chapter) = (request.Environment, request.Platform, request.Chapter);
 
-        var (adminMembers, notificationSettings, member, memberPassword, chapterProperties, memberProperties) =
-            await _unitOfWork.Run(
-                x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
-                x => x.MemberNotificationSettingsRepository.GetByChapterId(chapter.Id, NotificationType.NewMember),
-                x => x.MemberRepository.GetById(token.MemberId),
-                x => x.MemberPasswordRepository.GetByMemberId(token.MemberId),
-                x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
-                x => x.MemberPropertyRepository.GetByMemberId(token.MemberId, chapter.Id));
+        // The group's platform, not the request's - see CreateForAcceptInvite.
+        var planPlatform = chapter.Platform;
+
+        var (
+            adminMembers,
+            notificationSettings,
+            member,
+            memberPassword,
+            chapterProperties,
+            memberProperties,
+            siteSubscription
+        ) = await _unitOfWork.Run(
+            x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
+            x => x.MemberNotificationSettingsRepository.GetByChapterId(chapter.Id, NotificationType.NewMember),
+            x => x.MemberRepository.GetById(token.MemberId),
+            x => x.MemberPasswordRepository.GetByMemberId(token.MemberId),
+            x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
+            x => x.MemberPropertyRepository.GetByMemberId(token.MemberId, chapter.Id),
+            x => x.SiteSubscriptionRepository.GetDefault(environment, planPlatform));
 
         return new AccountContext
         {
@@ -108,6 +128,7 @@ public sealed class AccountContextFactory : IAccountContextFactory
             NotificationSettings = notificationSettings,
             PendingActivation = token,
             Request = request,
+            SiteSubscription = siteSubscription,
             /* Nothing here is a sign-up, so no provider has vouched for anything - following the link is
                itself the proof the address was reachable. */
             VerifiedByOAuth = false
@@ -117,9 +138,12 @@ public sealed class AccountContextFactory : IAccountContextFactory
     public async Task<AccountContext> CreateForSiteActivation(
         IServiceRequest request, MemberActivationToken token, string password)
     {
-        var (member, memberPassword) = await _unitOfWork.Run(
+        var (environment, platform) = (request.Environment, request.Platform);
+
+        var (member, memberPassword, siteSubscription) = await _unitOfWork.Run(
             x => x.MemberRepository.GetById(token.MemberId),
-            x => x.MemberPasswordRepository.GetByMemberId(token.MemberId));
+            x => x.MemberPasswordRepository.GetByMemberId(token.MemberId),
+            x => x.SiteSubscriptionRepository.GetDefault(environment, platform));
 
         return new AccountContext
         {
@@ -130,6 +154,7 @@ public sealed class AccountContextFactory : IAccountContextFactory
             NewPassword = password,
             PendingActivation = token,
             Request = request,
+            SiteSubscription = siteSubscription,
             VerifiedByOAuth = false
         };
     }
@@ -151,7 +176,6 @@ public sealed class AccountContextFactory : IAccountContextFactory
         Import = import,
         Member = batch.ExistingMember(import.EmailAddress),
         Request = request,
-        SiteSubscription = batch.SiteSubscription,
         VerifiedByOAuth = false
     };
 
@@ -163,6 +187,9 @@ public sealed class AccountContextFactory : IAccountContextFactory
 
         var (existing, siteSubscription, topics, referral) = await _unitOfWork.Run(
             x => x.MemberRepository.GetByEmailAddress(profile.EmailAddress),
+            /* Read here rather than at activation because a sign-up an OAuth provider has vouched for is
+               activated by the same transition that creates it, and the edge is not known until the machine
+               runs. Every other sign-up takes its plan when its activation link is followed. */
             x => x.SiteSubscriptionRepository.GetDefault(environment, platform),
             x => x.TopicRepository.GetByIds(profile.TopicIds),
             x => profile.ReferralId != null
@@ -194,17 +221,12 @@ public sealed class AccountContextFactory : IAccountContextFactory
         IChapterServiceRequest request,
         MemberCreateProfile profile)
     {
-        /* The group's platform, not the request's: a plan belongs to the platform that owns the group being
-           joined, so a Drunken Knitwits group signed up to from Group Squirrel still starts its members on
-           Drunken Knitwits' default plan. Deliberately unlike Member.Platform, which records the site the
-           account was created on and is a different question. */
-        var (environment, platform, chapter) = (request.Environment, request.Chapter.Platform, request.Chapter);
+        var chapter = request.Chapter;
 
         var (
             chapterProperties,
             membershipSettings,
             existing,
-            siteSubscription,
             ownerSubscription,
             chapterLocation,
             memberCount
@@ -212,7 +234,6 @@ public sealed class AccountContextFactory : IAccountContextFactory
             x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.MemberRepository.GetByEmailAddress(profile.EmailAddress),
-            x => x.SiteSubscriptionRepository.GetDefault(environment, platform),
             x => x.MemberSiteSubscriptionRecordRepository
                 .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
                 .SiteSubscription()
@@ -237,7 +258,6 @@ public sealed class AccountContextFactory : IAccountContextFactory
             OwnerSubscriptionFeatures = ownerSubscription?.Features ?? [],
             Profile = profile,
             Request = request,
-            SiteSubscription = siteSubscription,
             VerifiedByOAuth = false
         };
     }

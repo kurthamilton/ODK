@@ -756,9 +756,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
     public async Task<ServiceResult> ImportMembers(IMemberChapterAdminServiceRequest request, IReadOnlyCollection<MemberImportModel> members)
     {
-        // The group's platform, not the request's, for the same reason a group sign-up reads it - see
-        // AccountContextFactory.CreateForGroupSignUp.
-        var (environment, platform, chapter) = (request.Environment, request.Chapter.Platform, request.Chapter);
+        var chapter = request.Chapter;
 
         var emailAddresses = members
             .Select(x => x.EmailAddress)
@@ -766,7 +764,6 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             .ToArray();
 
         var (
-            siteSubscription,
             chapterLocation,
             currency,
             country,
@@ -775,7 +772,6 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             memberCount,
             ownerSubscription
         ) = await GetChapterAdminRestrictedContent(request,
-            x => x.SiteSubscriptionRepository.GetDefault(environment, platform),
             x => x.ChapterLocationRepository.GetByChapterId(chapter.Id),
             x => x.CurrencyRepository.GetByChapterId(chapter.Id),
             x => x.CountryRepository.GetByChapterId(chapter.Id),
@@ -798,8 +794,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             Country = country,
             Currency = currency,
             ExistingMembers = existingMembers,
-            OutstandingInvites = outstandingInvites,
-            SiteSubscription = siteSubscription
+            OutstandingInvites = outstandingInvites
         };
 
         // De-duplicate the incoming rows by email (case-insensitively) so a file that contains the
