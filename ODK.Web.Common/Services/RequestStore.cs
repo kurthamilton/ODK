@@ -110,7 +110,7 @@ public class RequestStore : IRequestStore
         => Load(context, currentMemberIdOrDefault, signedInMemberIds, verbose: false);
 
     public Task<IRequestStore> Load(JobRequest request) => Load(
-        new JobHttpRequestContext { BaseUrl = request.BaseUrl },
+        new JobHttpRequestContext(),
         request.Platform,
         x => request.ChapterId != null
             ? x.ChapterRepository.GetByIdOrDefault(request.Platform, request.ChapterId.Value)

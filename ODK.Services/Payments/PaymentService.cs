@@ -256,8 +256,7 @@ public class PaymentService : IPaymentService
            receipt is sent as and which site its links point at, so it is settled here, before the event is
            recorded - a platform with no configured URL throws while the provider will still redeliver. */
         var platform = PaymentMetadataModel.FromDictionary(webhook.Metadata).PlatformOrDrunkenKnitwits;
-        var actionRequest = JobRequest.Create(request)
-            .ForPlatform(platform, _platformProvider.GetBaseUrl(platform));
+        var actionRequest = JobRequest.Create(request).ForPlatform(platform);
 
         var existingEvent = await _unitOfWork.PaymentProviderWebhookEventRepository
             .GetByExternalId(webhook.PaymentProviderType, webhook.Id).Run();
@@ -926,11 +925,10 @@ public class PaymentService : IPaymentService
                 BackgroundTaskQueueType.Payments);
 
             var (chapter, currency) = await _unitOfWork.Run(
-                /* Default, which ForPlatform reads as no platform filter, so this is a lookup by id alone.
-                   Not the payment's own platform: the event already names its chapter, so a platform can only
-                   exclude it - and metadata carrying no platform resolves to Drunken Knitwits, which would
-                   then miss a Group Squirrel chapter. */
-                x => x.ChapterRepository.GetById(PlatformType.Default, @event.ChapterId),
+                /* An unfiltered query, not the payment's own platform: the event already names its chapter,
+                   so a platform can only exclude it - and metadata carrying no platform resolves to Drunken
+                   Knitwits, which would then miss a Group Squirrel chapter. */
+                x => x.ChapterRepository.Query().ById(@event.ChapterId).GetSingle(),
                 x => x.CurrencyRepository.GetById(payment.CurrencyId));
 
             return PaymentWebhookProcessingResult.Successful(

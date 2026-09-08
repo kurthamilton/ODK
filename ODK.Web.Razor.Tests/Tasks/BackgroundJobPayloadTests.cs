@@ -45,7 +45,6 @@ public static class BackgroundJobPayloadTests
            cannot break a job already holding one. */
         json.Should().Be(
             "{" +
-            "\"BaseUrl\":\"https://example.com\"," +
             "\"ChapterId\":\"11111111-1111-1111-1111-111111111111\"," +
             "\"CurrentMemberId\":\"22222222-2222-2222-2222-222222222222\"," +
             "\"Platform\":2" +
@@ -57,7 +56,7 @@ public static class BackgroundJobPayloadTests
     {
         /* Arrange - an added property is invisible to the pinned document above while its value is null, and
            null is what every job queued before it was added will supply. */
-        var expected = new[] { "BaseUrl", "ChapterId", "CurrentMemberId", "Platform" };
+        var expected = new[] { "ChapterId", "CurrentMemberId", "Platform" };
 
         // Act
         var properties = typeof(JobRequest).GetProperties().Select(x => x.Name);
@@ -77,7 +76,6 @@ public static class BackgroundJobPayloadTests
             SerializationHelper.Serialize(request, SerializationOption.User), SerializationOption.User);
 
         // Assert
-        result.BaseUrl.Should().Be(request.BaseUrl);
         result.ChapterId.Should().Be(request.ChapterId);
         result.CurrentMemberId.Should().Be(request.CurrentMemberId);
         result.Platform.Should().Be(request.Platform);
@@ -89,7 +87,6 @@ public static class BackgroundJobPayloadTests
         // Arrange - a job about no group, queued by nobody signed in.
         var request = new JobRequest
         {
-            BaseUrl = "https://example.com",
             ChapterId = null,
             CurrentMemberId = null,
             Platform = PlatformType.Default
@@ -178,7 +175,6 @@ public static class BackgroundJobPayloadTests
 
     private static JobRequest CreateJobRequest() => new()
     {
-        BaseUrl = "https://example.com",
         ChapterId = ChapterId,
         CurrentMemberId = MemberId,
         Platform = PlatformType.DrunkenKnitwits

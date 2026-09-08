@@ -82,16 +82,16 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         /* Built from the same type the send path fills in, so the values shown are the ones an email would
            actually carry and cannot drift from them. The group is fixed on this page, so everything about it
            already has a value; only what the email is about is still unknown. */
-        var urlProvider = await _urlProviderFactory.Create(request);
+        var urlProvider = _urlProviderFactory.Create(request, chapter);
 
         var coreParameters = new EmailParameters
         {
             GroupName = chapter.FullName,
             GroupUrl = urlProvider.GroupUrl(chapter),
-            PlatformUrl = urlProvider.BaseUrl()
+            PlatformUrl = urlProvider.BaseUrl(chapter)
         };
 
-        var customParameters = await _testEmailParametersFactory.Create(
+        var customParameters = _testEmailParametersFactory.Create(
             request,
             type,
             currentMember,
@@ -190,10 +190,10 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         /* The platform is the same whatever the email is about, so its URL has a value here. The group
            parameters deliberately do not: this is the template every group starts from, so showing one
            group's name would be showing a value the template does not have. */
-        var urlProvider = await _urlProviderFactory.Create(request);
+        var urlProvider = _urlProviderFactory.Create(request, chapter: null);
         var resolved = new EmailParameters
         {
-            PlatformUrl = urlProvider.BaseUrl()
+            PlatformUrl = urlProvider.BaseUrl(chapter: null)
         }.ToDictionary();
 
         return new EmailAdminPageViewModel

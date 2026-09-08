@@ -26,10 +26,10 @@ public class TestEmailParametersFactory : ITestEmailParametersFactory
         _urlProviderFactory = urlProviderFactory;
     }
 
-    public async Task<IEmailParameters> Create(
+    public IEmailParameters Create(
         IServiceRequest request, EmailType type, Member member, CultureInfo culture, Chapter? chapter)
     {
-        var urlProvider = await _urlProviderFactory.Create(request);
+        var urlProvider = _urlProviderFactory.Create(request, chapter);
 
         return new CombinedEmailParameters(
             GroupParameters(request, urlProvider, chapter),

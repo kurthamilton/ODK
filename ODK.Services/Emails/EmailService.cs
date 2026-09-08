@@ -3,6 +3,7 @@ using ODK.Core.Chapters;
 using ODK.Core.Emails;
 using ODK.Core.Events;
 using ODK.Core.Members;
+using ODK.Core.Platforms;
 using ODK.Core.Utils;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
@@ -66,7 +67,10 @@ public class EmailService : IEmailService
 
     public async Task<RenderedEmail> RenderEmail(IServiceRequest request, RenderEmailOptions options)
     {
-        var platform = request.Platform;
+        /* The group's platform, not the request's: an email is read in an inbox rather than on a platform,
+           so what it is addressed from and what it links to follow the group it is about, whichever site
+           triggered the send. An email about no group is the platform's own, and takes the served one. */
+        var platform = options.Chapter?.Platform ?? request.Platform;
         var chapterId = options.Chapter?.Id;
 
         var siteSettings = _siteEmailSettingsProvider.Get(platform);
@@ -84,8 +88,8 @@ public class EmailService : IEmailService
         // A send carrying its own body leaves Type at Layout, so it has no template of its own to render.
         var hasTemplate = options.Type != EmailType.Layout;
 
-        var parameters = await BuildParameters(
-            request,
+        var parameters = BuildParameters(
+            platform,
             options,
             siteSettings,
             chapterEmailSettings,
@@ -331,25 +335,25 @@ public class EmailService : IEmailService
         }
     }
 
-    private async Task<IReadOnlyDictionary<string, string>> BuildParameters(
-        IServiceRequest request,
+    private IReadOnlyDictionary<string, string> BuildParameters(
+        PlatformType platform,
         RenderEmailOptions options,
         SiteEmailSettings siteSettings,
         ChapterEmailSettings? chapterEmailSettings,
         string? templateHtml,
         EmailRecipientType recipientType)
     {
-        var urlProvider = await _urlProviderFactory.Create(request);
+        /* Built against the email's platform, not the request's, so a URL in it that names no group lands on
+           the same site as the ones that do - see the platform resolved in RenderEmail. */
+        var urlProvider = _urlProviderFactory.Create(platform);
 
         var core = new EmailParameters
         {
             GroupUrl = options.Chapter != null ? urlProvider.GroupUrl(options.Chapter) : null,
-            /* From the group's own platform rather than the request's: an email is read in an inbox rather
-               than on a platform, so the same chapter must not be named differently depending on which site
-               triggered the send. An email about no group is from the platform itself, and takes its name. */
+            // The group's own name, and the name of the platform that owns it where there is no group.
             GroupName = StringUtils.Coalesce(
-                options.Chapter?.FullName, _platformProvider.GetName(request.Platform)),
-            PlatformUrl = urlProvider.BaseUrl(),
+                options.Chapter?.FullName, _platformProvider.GetName(platform)),
+            PlatformUrl = urlProvider.BaseUrl(options.Chapter),
             ThemeBodyBackground = _settings.DefaultBodyBackground,
             ThemeBodyColor = _settings.DefaultBodyColor,
             ThemeHeaderBackground = StringUtils.Coalesce(

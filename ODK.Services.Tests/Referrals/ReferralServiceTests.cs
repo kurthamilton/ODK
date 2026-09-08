@@ -212,7 +212,8 @@ public static class ReferralServiceTests
         urlProvider.Setup(x => x.JoinUrl()).Returns(JoinUrl);
 
         var urlProviderFactory = new Mock<IUrlProviderFactory>();
-        urlProviderFactory.Setup(x => x.Create(It.IsAny<IServiceRequest>())).ReturnsAsync(urlProvider.Object);
+        urlProviderFactory.Setup(x => x.Create(It.IsAny<IServiceRequest>(), It.IsAny<Chapter?>()))
+            .Returns(urlProvider.Object);
 
         var service = new ReferralService(
             MockUnitOfWorkFactory.Create(context),

@@ -357,9 +357,13 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             return ServiceResult<ChapterPaymentAccount>.Failure("Payment account already exists");
         }
 
+        /* The host the request arrived on, not the platform's canonical URL: an admin is part-way through
+           onboarding on whichever host they signed in to, and these are where the provider sends their
+           browser back to. IUrlProvider is canonical for the opposite reason - what it builds is read
+           somewhere else. */
         var baseUrl = request.HttpRequestContext.BaseUrl;
 
-        var urlProvider = await _urlProviderFactory.Create(request);
+        var urlProvider = _urlProviderFactory.Create(request, chapter);
 
         var paymentProvider = _paymentProviderFactory.GetPaymentProvider(chapter.Platform);
 
@@ -742,6 +746,10 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             return ServiceResult<string>.Failure("Payment account does not exist");
         }
 
+        /* The host the request arrived on, not the platform's canonical URL: an admin is part-way through
+           onboarding on whichever host they signed in to, and these are where the provider sends their
+           browser back to. IUrlProvider is canonical for the opposite reason - what it builds is read
+           somewhere else. */
         var baseUrl = request.HttpRequestContext.BaseUrl;
 
         var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
@@ -1099,7 +1107,9 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         var allPages = new List<ChapterPage>();
 
-        var allPageTypes = _platformPages[request.Platform];
+        // The group's platform, not the request's: its set of pages is its own, so a Drunken Knitwits
+        // group keeps its About page when it is administered from Group Squirrel.
+        var allPageTypes = _platformPages[chapter.Platform];
         foreach (var pageType in allPageTypes)
         {
             chapterPageDictionary.TryGetValue(pageType, out var chapterPage);
@@ -1944,7 +1954,9 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         var chapterPageDictionary = chapterPages
             .ToDictionary(x => x.PageType);
 
-        var allPageTypes = _platformPages[request.Platform];
+        // The group's platform, not the request's: its set of pages is its own, so a Drunken Knitwits
+        // group keeps its About page when it is administered from Group Squirrel.
+        var allPageTypes = _platformPages[chapter.Platform];
 
         foreach (var pageUpdate in model.Pages)
         {

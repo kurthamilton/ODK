@@ -1626,7 +1626,9 @@ public static class PaymentServiceTests
         /* Arrange - a payment provider posts to whichever endpoint was registered with it, which may be one
            site's for both platforms, so the webhook arrives on the Default platform for a Drunken Knitwits
            payment. The receipt has to be sent as the platform the payment was made on: that decides the site
-           email settings it comes from and the site its links point at. */
+           email settings it comes from and, through that platform's configured address, the site its links
+           point at. The platform is the whole answer, which is why nothing here asserts a host - see
+           UrlProviderTests for where the address comes from. */
         using var context = CreateMockOdkContext();
 
         var member = context.CreateMember();
@@ -1656,9 +1658,7 @@ public static class PaymentServiceTests
         // Assert
         Mock.Get(memberEmailService).Verify(
             x => x.SendPaymentNotification(
-                It.Is<IServiceRequest>(x =>
-                    x.Platform == PlatformType.DrunkenKnitwits &&
-                    x.HttpRequestContext.BaseUrl == TestPlatformProvider.DrunkenKnitwitsBaseUrl),
+                It.Is<IServiceRequest>(x => x.Platform == PlatformType.DrunkenKnitwits),
                 It.Is<Member>(x => x.Id == member.Id),
                 It.Is<Chapter>(x => x.Id == chapter.Id),
                 It.IsAny<Payment>(),
@@ -3607,7 +3607,7 @@ public static class PaymentServiceTests
 
         // Set because anything queueing a job reads the base URL off it to build the job's request.
         mock.Setup(x => x.HttpRequestContext)
-            .Returns(new JobHttpRequestContext { BaseUrl = "https://example.com" });
+            .Returns(new JobHttpRequestContext());
 
         mock.Setup(x => x.Environment)
             .Returns(EnvironmentType.Dev);

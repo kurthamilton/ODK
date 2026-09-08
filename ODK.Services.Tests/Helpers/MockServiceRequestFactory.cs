@@ -42,7 +42,7 @@ internal class MockServiceRequestFactory : IServiceRequestFactory
             ? _context.Set<Member>().SingleOrDefault(x => x.Id == request.CurrentMemberId)
             : null,
         Environment = EnvironmentType.Dev,
-        HttpRequestContext = new JobHttpRequestContext { BaseUrl = request.BaseUrl },
+        HttpRequestContext = new JobHttpRequestContext(),
         Platform = request.Platform
     };
 }

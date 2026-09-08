@@ -209,7 +209,9 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
     public async Task<SiteAdminChapterViewModel> GetSiteAdminChapterViewModel(
         IMemberChapterServiceRequest request)
     {
-        var (platform, chapter) = (request.Platform, request.Chapter);
+        /* The group's platform, not the request's: an owner's plan is sold as belonging to their group, so
+           the plans on offer are the ones the group's own platform sells. */
+        var (platform, chapter) = (request.Chapter.Platform, request.Chapter);
 
         var (subscription, siteSubscriptions, prices) = await GetSiteAdminRestrictedContent(request,
             x => x.MemberSiteSubscriptionRecordRepository.Query().Current().ForChapterOwner(chapter.Id).ToState().GetSingleOrDefault(),
@@ -266,7 +268,8 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
         IMemberChapterServiceRequest request,
         SiteAdminChapterUpdateViewModel viewModel)
     {
-        var (platform, chapter) = (request.Platform, request.Chapter);
+        // The group's platform, for the same reason the view model reads it - see GetSiteAdminChapterViewModel.
+        var (platform, chapter) = (request.Chapter.Platform, request.Chapter);
 
         if (viewModel.SiteSubscriptionId == null)
         {

@@ -104,7 +104,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         }
 
         var date = Event.FromLocalTime(model.Date, chapter.TimeZone);
-        var @event = new Event
+        var @event = _unitOfWork.EventRepository.Add(new Event
         {
             AttendeeLimit = model.AttendeeLimit,
             ChapterId = chapter.Id,
@@ -121,7 +121,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             RsvpDisabled = model.RsvpDisabled,
             Time = model.Time,
             VenueId = model.VenueId
-        };
+        });
 
         if (hasEventTickets)
         {
@@ -141,13 +141,11 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             return validationResult;
         }
 
-        _unitOfWork.EventRepository.Add(@event);
-
         UpdateEventHosts(@event, model.Hosts, [], chapterAdminMembers);
 
         var eventEmail = ScheduleEventEmail(@event, chapter, settings);
 
-        if (@event.PublishedUtc != null)
+        if (@event.IsPublished)
         {
             await _notificationService.AddNewEventNotifications(@event, venue, members, notificationSettings);
         }
@@ -268,9 +266,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
                     _authorizationService.CanRespondToEvent(
                         @event,
                         x.Member,
-                        memberSubscriptionDictionary.ContainsKey(x.Member.Id)
-                            ? memberSubscriptionDictionary[x.Member.Id]
-                            : null,
+                        memberSubscriptionDictionary.TryGetValue(x.Member.Id, out MemberChapterSubscription? value)
+                            ? value : null,
                         chapterMembershipSettings,
                         chapterPrivacySettings))
                 .ToArray(),
@@ -1293,7 +1290,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
                 _authorizationService.CanRespondToEvent(
                     @event,
                     x,
-                    memberSubscriptionDictionary.ContainsKey(x.Id) ? memberSubscriptionDictionary[x.Id] : null,
+                    memberSubscriptionDictionary.TryGetValue(x.Id, out MemberChapterSubscription? value) ? value : null,
                     membershipSettings,
                     privacySettings) &&
                 !optOutMemberIds.Contains(x.Id) &&

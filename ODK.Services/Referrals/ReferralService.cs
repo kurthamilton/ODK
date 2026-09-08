@@ -72,7 +72,7 @@ public class ReferralService : IReferralService
             return Sent();
         }
 
-        var urlProvider = await _urlProviderFactory.Create(request);
+        var urlProvider = _urlProviderFactory.Create(request, chapter: null);
 
         await _emailService.SendEmail(
             request,

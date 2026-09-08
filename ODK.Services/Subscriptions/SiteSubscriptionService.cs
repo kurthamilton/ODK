@@ -139,11 +139,15 @@ public class SiteSubscriptionService : ISiteSubscriptionService
     public async Task<SiteSubscriptionCheckoutViewModel> StartSiteSubscriptionCheckout(
         IMemberServiceRequest request, Guid priceId, string returnPath)
     {
-        var (platform, currentMember) = (request.Platform, request.CurrentMember);
+        var platform = request.Platform;
 
         var (subscription, price) = await _unitOfWork.Run(
             x => x.SiteSubscriptionRepository.GetByPriceId(priceId),
             x => x.SiteSubscriptionPriceRepository.GetById(priceId));
+
+        /* The price id comes from the form, so it is checked against the platform selling it rather than
+           trusted - the list it was chosen from is this platform's, and nothing else confines it. */
+        OdkAssertions.MeetsCondition(subscription, x => x.Platform == platform);
 
         var (payment, externalCheckoutSession, publicApiKey) = await _paymentService.CreateSitePayment(
             request,

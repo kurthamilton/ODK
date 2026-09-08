@@ -459,9 +459,8 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
     {
         var platform = request.Platform;
 
-        var (subscriptions, prices) = await GetSiteAdminRestrictedContent(request,
-            x => x.SiteSubscriptionRepository.GetAll(platform),
-            x => x.SiteSubscriptionPriceRepository.GetAll(platform));
+        var subscriptions = await GetSiteAdminRestrictedContent(request,
+            x => x.SiteSubscriptionRepository.Query().ForPlatform(platform).GetAll());
 
         var subscription = subscriptions.FirstOrDefault(x => x.Id == siteSubscriptionId);
         OdkAssertions.Exists(subscription);
@@ -469,13 +468,13 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         /* Every new account is put on the default, so a default nobody can be on would fail every sign-up.
            Whether payments are switched on is not consulted: the check is about the plan being usable at
            all, and a paid plan whose provider is off is a temporary state rather than a broken default. */
-        if (!subscription.Free && !prices.Any(x => x.SiteSubscriptionId == subscription.Id))
+        if (!subscription.Free)
         {
             return ServiceResult.Failure("A subscription with no prices must be free to be the default");
         }
 
         var existingDefaults = subscriptions
-            .Where(x => x.Default)
+            .Where(x => x.Default && x.Environment == subscription.Environment)
             .ToArray();
 
         foreach (var existingDefault in existingDefaults)

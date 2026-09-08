@@ -83,7 +83,7 @@ public class ChapterAdminMemberQueryBuilder
     {
         var chapterQuery =
             from chapter in context.Set<Chapter>()
-                .ForPlatform(platform, includeUnpublished: true)
+                .VisibleOn(platform, includeUnpublished: true)
             select chapter;
 
         var query =

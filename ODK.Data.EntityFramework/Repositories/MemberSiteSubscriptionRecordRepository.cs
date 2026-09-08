@@ -22,11 +22,16 @@ public class MemberSiteSubscriptionRecordRepository :
     {
     }
 
+    /* The platform scopes the chapters only, never the plan their owner is on. A record is per member and
+       names whichever plan they hold, so a platform term on the subscription would drop the owner - this
+       being an inner join - rather than narrow what is read about them: on Group Squirrel, where the
+       chapter scope takes in Drunken Knitwits groups, every one of them would vanish from a list that had
+       already decided to show it. */
     public IDeferredQueryMultiple<MemberSiteSubscriptionDto> GetAllChapterOwnerSubscriptionDtos(PlatformType platform)
     {
         var query =
             from chapter in Set<Chapter>()
-                .ForPlatform(platform, includeUnpublished: true)
+                .VisibleOn(platform, includeUnpublished: true)
             from record in Set()
                 .Where(x => x.IsCurrent && x.MemberId == chapter.OwnerId)
             from siteSubscription in Set<SiteSubscription>()
@@ -34,7 +39,6 @@ public class MemberSiteSubscriptionRecordRepository :
             from siteSubscriptionPrice in Set<SiteSubscriptionPrice>()
                 .Where(x => x.Id == record.SiteSubscriptionPriceId)
                 .DefaultIfEmpty()
-            where siteSubscription.Platform == platform
             select new MemberSiteSubscriptionDto
             {
                 MemberSiteSubscription = new MemberSiteSubscriptionState

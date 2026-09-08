@@ -3,8 +3,8 @@
 namespace ODK.Services.Tasks;
 
 /// <summary>
-/// The request context a background job runs under, which is to say almost none: a job has a site to build
-/// URLs against and no HTTP request behind it.
+/// The request context a background job runs under, which is to say none: there is no HTTP request behind a
+/// job, and the URLs it builds come from its platform's configured address rather than from a host.
 /// </summary>
 /// <remarks>
 /// Empty rather than absent so the job path can reuse everything downstream of the request store
@@ -15,7 +15,7 @@ namespace ODK.Services.Tasks;
 /// </remarks>
 public class JobHttpRequestContext : IHttpRequestContext
 {
-    public required string BaseUrl { get; init; }
+    public string BaseUrl { get; } = string.Empty;
 
     public IReadOnlyDictionary<string, string[]> Headers { get; } = new Dictionary<string, string[]>();
 

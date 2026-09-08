@@ -287,6 +287,10 @@ public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
     public async Task<ServiceResult> RefundPayment(
         IMemberServiceRequest request, Guid paymentId, RefundPaymentModel model)
     {
+        /* Scoped to the platform even though the id names one payment: reconciliation is a platform's own
+           books - each has its own provider account - so a site admin, who is global, still acts on the
+           platform they are signed in to. Do not drop this to make a payment reachable from the other site;
+           the listing that leads here is scoped the same way. */
         var payment = await GetSiteAdminRestrictedContent(
             request,
             x => x.PaymentRepository
@@ -555,6 +559,7 @@ public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
     private async Task<ServiceResult> SetPaymentIgnored(
         IMemberServiceRequest request, Guid paymentId, bool ignored)
     {
+        // Scoped to the platform for the reason given in RefundPayment.
         var payment = await GetSiteAdminRestrictedContent(
             request,
             x => x.PaymentRepository

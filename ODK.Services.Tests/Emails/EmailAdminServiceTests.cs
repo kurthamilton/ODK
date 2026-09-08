@@ -834,7 +834,7 @@ public static class EmailAdminServiceTests
             It.IsAny<Member>(),
             It.IsAny<CultureInfo>(),
             It.IsAny<Chapter?>()))
-            .ReturnsAsync(CreateEmailParameters());
+            .Returns(CreateEmailParameters());
         return mock.Object;
     }
 
@@ -846,7 +846,7 @@ public static class EmailAdminServiceTests
         urlProvider.SetReturnsDefault("https://test.local/somewhere");
 
         return Mock.Of<IUrlProviderFactory>(x =>
-            x.Create(It.IsAny<IServiceRequest>()) == Task.FromResult(urlProvider.Object));
+            x.Create(It.IsAny<IServiceRequest>(), It.IsAny<Chapter?>()) == urlProvider.Object);
     }
 
     private static void CreateSiteEmail(

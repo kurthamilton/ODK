@@ -25,8 +25,8 @@ public interface IPaymentQueryBuilder : IDatabaseEntityQueryBuilder<Payment, IPa
     /// <summary>
     /// Payments taken for <paramref name="platform"/>, which is the platform of the group the payment was
     /// for and not the site the member paid through - a Drunken Knitwits group's payment is a Drunken
-    /// Knitwits payment wherever it was made. An exact match, so
-    /// <see cref="PlatformType.Default"/> means that platform's own payments and not every payment.
+    /// Knitwits payment wherever it was made. An exact match, always - a platform's payments are its own
+    /// books, so there is no reading of this that takes in another platform's.
     /// </summary>
     IPaymentQueryBuilder ForPlatform(PlatformType platform);
 

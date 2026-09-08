@@ -81,6 +81,12 @@ public class ChapterQueryBuilder : DatabaseEntityQueryBuilder<Chapter, IChapterQ
         return this;
     }
 
+    public IChapterQueryBuilder OwnedBy(PlatformType platform)
+    {
+        Query = Query.Where(x => x.Platform == platform);
+        return this;
+    }
+
     public IMemberQueryBuilder Owner()
     {
         var query =
@@ -90,6 +96,12 @@ public class ChapterQueryBuilder : DatabaseEntityQueryBuilder<Chapter, IChapterQ
             select member;
         return CreateQueryBuilder<IMemberQueryBuilder, Member>(
             context => new MemberQueryBuilder(context, query));
+    }
+
+    public IChapterQueryBuilder Published()
+    {
+        Query = Query.Published();
+        return this;
     }
 
     public IQueryBuilder<ChapterSearchResultDto> Search(ChapterSearchCriteria criteria)
@@ -175,5 +187,5 @@ public class ChapterQueryBuilder : DatabaseEntityQueryBuilder<Chapter, IChapterQ
     private static IQueryable<Chapter> BaseQuery(DbContext context, PlatformType platform, bool includeUnpublished)
         => context
             .Set<Chapter>()
-            .ForPlatform(platform, includeUnpublished);
+            .VisibleOn(platform, includeUnpublished);
 }

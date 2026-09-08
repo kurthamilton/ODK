@@ -1,5 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using ODK.Core.Chapters;
+using ODK.Core.Platforms;
 using ODK.Services;
+using ODK.Services.Platforms;
 using ODK.Services.Web;
 using ODK.Web.Common.Routes;
 
@@ -8,16 +10,19 @@ namespace ODK.Web.Common.Services;
 public class UrlProviderFactory : IUrlProviderFactory
 {
     private readonly IOdkRoutesFactory _odkRoutesFactory;
+    private readonly IPlatformProvider _platformProvider;
 
-    public UrlProviderFactory(IOdkRoutesFactory odkRoutesFactory)
+    public UrlProviderFactory(IOdkRoutesFactory odkRoutesFactory, IPlatformProvider platformProvider)
     {
         _odkRoutesFactory = odkRoutesFactory;
+        _platformProvider = platformProvider;
     }
 
-    public async Task<IUrlProvider> Create(IServiceRequest request)
-    {
-        var odkRoutes = await _odkRoutesFactory.Create(request.Platform);
+    public IUrlProvider Create(IServiceRequest request, Chapter? chapter)
+        => Create(chapter?.Platform ?? request.Platform);
 
-        return new UrlProvider(request, odkRoutes);
-    }
+    /* The factories are passed on rather than resolved here, because the platform a URL is built against is
+       decided per URL by what it is about - see UrlProvider. */
+    public IUrlProvider Create(PlatformType platform)
+        => new UrlProvider(platform, _odkRoutesFactory, _platformProvider);
 }

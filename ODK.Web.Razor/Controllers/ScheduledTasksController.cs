@@ -45,6 +45,11 @@ public class ScheduledTasksController : OdkControllerBase
         _socialMediaService = socialMediaService;
     }
 
+    /// <summary>
+    /// Reminds members whose group membership is expiring. Scoped to the chapters this platform owns, so it
+    /// belongs on the cron of *every* deployment - unlike the Instagram scrape below, which is
+    /// platform-agnostic and so belongs on exactly one.
+    /// </summary>
     [HttpPost("chapters/subscriptions/reminders")]
     public async Task SyncChapterSubscriptionReminders()
     {
@@ -90,6 +95,11 @@ public class ScheduledTasksController : OdkControllerBase
         }
     }
 
+    /// <summary>
+    /// Scrapes every group's Instagram account, whichever platform owns the group - see
+    /// <c>SocialMediaService.ScrapeLatestInstagramPosts</c>. Belongs on exactly one deployment's cron:
+    /// scheduling it on both scrapes every group twice.
+    /// </summary>
     [HttpPost("instagram")]
     public async Task ScrapeInstagramImages()
     {

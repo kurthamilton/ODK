@@ -32,10 +32,27 @@ public interface IChapterRepository : IWriteRepository<Chapter>
 
     IDeferredQueryMultiple<ChapterDto> GetDtosByMemberId(PlatformType platform, Guid memberId);
 
+    /// <summary>
+    /// The published chapters this platform owns. For work that acts on a group rather than displaying it -
+    /// a scheduled sweep, a reminder - so that exactly one deployment does it: what a platform *shows* takes
+    /// in the other's groups on Group Squirrel, which would have both deployments act on the same Drunken
+    /// Knitwits group.
+    /// </summary>
+    IDeferredQueryMultiple<Chapter> GetOwnedByPlatform(PlatformType platform);
+
     IDeferredQuery<bool> NameExists(string name);
 
+    /// <summary>
+    /// Every chapter, whatever platform owns it. For work that is about no one site - a uniqueness check, or
+    /// a lookup by an id that already names the chapter. Prefer an overload that names a platform wherever
+    /// the answer should depend on one.
+    /// </summary>
+    IChapterQueryBuilder Query();
+
+    /// <summary>The chapters <paramref name="platform"/> shows, published only.</summary>
     IChapterQueryBuilder Query(PlatformType platform);
 
+    /// <summary>The chapters <paramref name="platform"/> shows.</summary>
     IChapterQueryBuilder Query(PlatformType platform, bool includeUnpublished);
 
     IDeferredQueryMultiple<ChapterSearchResultDto> Search(PlatformType platform, ChapterSearchCriteria criteria);

@@ -15,6 +15,7 @@ using ODK.Core.Countries;
 using ODK.Core.DataTypes;
 using ODK.Core.Features;
 using ODK.Core.Members;
+using ODK.Core.Pages;
 using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
 using ODK.Core.Web;
@@ -1757,6 +1758,35 @@ public static class ChapterAdminServiceTests
         result.Success.Should().BeFalse();
         result.Message.Should().Be("This group cannot be published");
         chapter.IsPublished().Should().BeFalse();
+    }
+
+    [Test]
+    public static async Task GetChapterPagesViewModel_ChapterOnAnotherPlatform_OffersThatPlatformsPages()
+    {
+        /* Arrange - a Drunken Knitwits group, administered from Group Squirrel. Its set of pages is its own,
+           so the About page Drunken Knitwits groups have stays editable from either site. Group Squirrel's
+           own groups have no About page, which is what makes the two sets distinguishable here. */
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(
+            owner: currentMember,
+            platform: PlatformType.DrunkenKnitwits);
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            platform: PlatformType.Default,
+            securable: ChapterAdminSecurable.Pages);
+
+        // Act
+        var result = await service.GetChapterPagesViewModel(request);
+
+        // Assert
+        result.ChapterPages.Select(x => x.PageType).Should()
+            .BeEquivalentTo([PageType.About, PageType.Contact, PageType.Members]);
     }
 
     private static MockOdkContext CreateMockOdkContext()

@@ -290,6 +290,37 @@ public static class ChapterSiteAdminServiceTests
         current.SiteSubscriptionId.Should().Be(free.Id);
     }
 
+    [Test]
+    public static async Task GetSiteAdminChaptersViewModel_ChapterOnAnotherPlatform_CarriesItsOwnersPlan()
+    {
+        /* Arrange - a Drunken Knitwits group whose owner is on a Drunken Knitwits plan, read from Group
+           Squirrel, which sees every platform's groups. The plan is the owner's whichever platform it is on,
+           so a group the list has decided to show must not lose its subscription for being the other one's. */
+        using var context = CreateMockOdkContext();
+
+        var expiresUtc = DateTime.UtcNow.AddMonths(3);
+        var plan = context.CreateSiteSubscription(platform: PlatformType.DrunkenKnitwits);
+        var owner = context.CreateMember();
+        context.CreateMemberSiteSubscription(owner, plan, expiresUtc);
+
+        var chapter = context.CreateChapter(
+            owner: owner,
+            name: "Bristol",
+            platform: PlatformType.DrunkenKnitwits,
+            approvedUtc: DateTime.UtcNow.AddDays(-30));
+
+        var service = CreateService(context, Mock.Of<IMemberEmailService>());
+
+        // Act
+        var result = await service.GetSiteAdminChaptersViewModel(SiteAdminRequest(context));
+
+        // Assert
+        var row = result.Approved.Should().ContainSingle().Subject;
+        row.Chapter.Id.Should().Be(chapter.Id);
+        row.SiteSubscriptionName.Should().Be(plan.Name);
+        row.SiteSubscriptionExpiresUtc.Should().Be(expiresUtc);
+    }
+
     private static ChapterSiteAdminService CreateService(
         MockOdkContext context, IMemberEmailService memberEmailService, IImageService? imageService = null)
     {

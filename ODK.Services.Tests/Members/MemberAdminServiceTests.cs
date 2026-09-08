@@ -1500,6 +1500,58 @@ public static class MemberAdminServiceTests
             Times.Exactly(2));
     }
 
+    [Test]
+    public static async Task SendMemberSubscriptionReminderEmails_ChapterOnAnotherPlatform_SendsNothing()
+    {
+        /* Arrange - a Drunken Knitwits group with an expiring member, swept from Group Squirrel. Group
+           Squirrel can see the group, but the platform that owns it is the one that reminds its members:
+           reminding from here would send a second copy addressed as the wrong site. */
+        using var context = CreateMockOdkContext();
+
+        var now = DateTime.UtcNow;
+        var emailService = new Mock<IMemberEmailService>();
+
+        var member = context.CreateMember();
+        var chapter = context.CreateChapter(
+            members: [member],
+            platform: PlatformType.DrunkenKnitwits,
+            afterCreate: x => x.PublishedUtc = now);
+
+        context.Create(new ChapterMembershipSettings
+        {
+            ChapterId = chapter.Id,
+            Enabled = true,
+            MembershipDisabledAfterDaysExpired = 30
+        });
+
+        context.Create(new MemberSubscriptionRecord
+        {
+            ChapterId = chapter.Id,
+            ExpiresUtc = now.AddDays(3),
+            Id = Guid.NewGuid(),
+            IsCurrent = true,
+            MemberId = member.Id,
+            PurchasedUtc = now,
+            Type = SubscriptionType.Full
+        });
+
+        var service = CreateMemberAdminService(context, memberEmailService: emailService.Object);
+        var request = Mock.Of<IServiceRequest>(x => x.Platform == PlatformType.Default);
+
+        // Act
+        await service.SendMemberSubscriptionReminderEmails(request);
+
+        // Assert
+        emailService.Verify(
+            x => x.SendMemberChapterSubscriptionExpiringEmail(
+                It.IsAny<IChapterServiceRequest>(),
+                It.IsAny<Member>(),
+                It.IsAny<MemberChapterSubscription>(),
+                It.IsAny<DateTime>(),
+                It.IsAny<DateTime>()),
+            Times.Never);
+    }
+
     private static MemberAdminService CreateMemberAdminService(
         MockOdkContext context,
         IAuthorizationService? authorizationService = null,
