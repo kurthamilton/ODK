@@ -1,6 +1,6 @@
 ﻿namespace ODK.Services.Members.Models;
 
-public class MemberImportModel
+public class MemberImportCsvRow
 {
     public required string EmailAddress { get; init; }
 

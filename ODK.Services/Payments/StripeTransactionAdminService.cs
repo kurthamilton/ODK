@@ -77,12 +77,8 @@ public class StripeTransactionAdminService : OdkAdminServiceBase, IStripeTransac
 
         var (currency, chapterSubscription, siteSubscription) = await _unitOfWork.Run(
             x => x.CurrencyRepository.GetByCode(transaction.CurrencyCode),
-            x => backfill.ChapterSubscriptionId != null
-                ? x.ChapterSubscriptionRepository.GetByIdOrDefault(backfill.ChapterSubscriptionId.Value)
-                : new DefaultDeferredQuerySingleOrDefault<ChapterSubscription>(),
-            x => backfill.SiteSubscriptionPriceId != null
-                ? x.SiteSubscriptionRepository.GetByPriceIdOrDefault(backfill.SiteSubscriptionPriceId.Value)
-                : new DefaultDeferredQuerySingleOrDefault<SiteSubscription>());
+            x => x.ChapterSubscriptionRepository.GetByIdOrDefault(backfill.ChapterSubscriptionId),
+            x => x.SiteSubscriptionRepository.GetByPriceIdOrDefault(backfill.SiteSubscriptionPriceId));
 
         if (currency == null)
         {

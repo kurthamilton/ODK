@@ -19,6 +19,10 @@ namespace ODK.Services.Members.Workflows.ChapterMembership.Steps;
 /// Raised unsent, and left on the context for the caller to send: an unpublished group holds its invites
 /// until it is published, so whether this one is emailed is not this step's to decide.
 /// </para>
+/// <para>
+/// Dated from when the details were received rather than from now, so the retention period covers the
+/// holding as a whole - see <see cref="ChapterMembershipContext.ReceivedUtc"/>.
+/// </para>
 /// </remarks>
 public sealed class RaiseInvite : IStep<ChapterMembershipContext>
 {
@@ -38,7 +42,7 @@ public sealed class RaiseInvite : IStep<ChapterMembershipContext>
         var invite = new MemberChapterInvite
         {
             ChapterId = context.ChapterId,
-            CreatedUtc = DateTime.UtcNow,
+            CreatedUtc = context.RequiredReceivedUtc,
             MemberId = context.Member.Id,
             Token = TokenGenerator.GenerateBase64Token(64)
         };

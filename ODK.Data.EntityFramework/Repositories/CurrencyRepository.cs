@@ -49,8 +49,10 @@ public class CurrencyRepository : ReadWriteRepositoryBase<Currency>, ICurrencyRe
     public IDeferredQuerySingle<Currency> GetByChapterId(Guid chapterId)
         => ChapterQuery(chapterId).DeferredSingle();
 
-    public IDeferredQuerySingleOrDefault<Currency> GetByChapterIdOrDefault(Guid chapterId)
-        => ChapterQuery(chapterId).DeferredSingleOrDefault();
+    public IDeferredQuerySingleOrDefault<Currency> GetByChapterIdOrDefault(Guid? chapterId)
+        => chapterId != null
+            ? ChapterQuery(chapterId.Value).DeferredSingleOrDefault()
+            : DefaultDeferredQuerySingleOrDefault.For<Currency>();
 
     public IDeferredQuerySingle<Currency> GetByCountryId(Guid countryId)
     {
@@ -64,8 +66,10 @@ public class CurrencyRepository : ReadWriteRepositoryBase<Currency>, ICurrencyRe
         return query.DeferredSingle();
     }
 
-    public IDeferredQuerySingleOrDefault<Currency> GetByMemberIdOrDefault(Guid memberId)
-        => MemberQuery(memberId).DeferredSingleOrDefault();
+    public IDeferredQuerySingleOrDefault<Currency> GetByMemberIdOrDefault(Guid? memberId)
+        => memberId != null
+            ? MemberQuery(memberId.Value).DeferredSingleOrDefault()
+            : DefaultDeferredQuerySingleOrDefault.For<Currency>();
 
     private IQueryable<Currency> ChapterQuery(Guid chapterId)
         =>

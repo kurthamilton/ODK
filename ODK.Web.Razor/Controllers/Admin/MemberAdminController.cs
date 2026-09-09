@@ -19,13 +19,15 @@ public class MemberAdminController : AdminControllerBase
     private readonly IChapterAdminService _chapterAdminService;
     private readonly ICsvWriter _csvWriter;
     private readonly IMemberAdminService _memberAdminService;
-    private readonly IMemberImportStagingService _memberImportStagingService;
+    private readonly IMemberImportFileReader _memberImportFileReader;
+    private readonly IMemberImportService _memberImportService;
 
     public MemberAdminController(
         IMemberAdminService memberAdminService,
         IChapterAdminService chapterAdminService,
         ICsvWriter csvWriter,
-        IMemberImportStagingService memberImportStagingService,
+        IMemberImportFileReader memberImportFileReader,
+        IMemberImportService memberImportService,
         IRequestStore requestStore,
         IOdkRoutes odkRoutes)
         : base(requestStore, odkRoutes)
@@ -33,7 +35,8 @@ public class MemberAdminController : AdminControllerBase
         _chapterAdminService = chapterAdminService;
         _csvWriter = csvWriter;
         _memberAdminService = memberAdminService;
-        _memberImportStagingService = memberImportStagingService;
+        _memberImportFileReader = memberImportFileReader;
+        _memberImportService = memberImportService;
     }
 
     [HttpPost("groups/{chapterId:guid}/members/{id:guid}/approve")]
@@ -153,44 +156,67 @@ public class MemberAdminController : AdminControllerBase
     [HttpGet("groups/{chapterId:guid}/members/import/template")]
     public async Task<IActionResult> DownloadMemberImportTemplate(Guid chapterId)
     {
-        var request = MemberChapterAdminServiceRequest.Create(
-            ChapterAdminSecurable.MemberImport, MemberChapterServiceRequest);
-        var data = await _memberAdminService.GetMemberImportTemplate(request);
+        var data = await _memberImportService.GetMemberImportTemplate(MemberChapterAdminServiceRequest.Create(
+            ChapterAdminSecurable.MemberImport, MemberChapterServiceRequest));
 
         return DownloadCsv(data, "member-import.csv");
     }
 
     [HttpPost("groups/{chapterId:guid}/members/import")]
-    public async Task<IActionResult> ImportMembers(
+    public async Task<IActionResult> UploadMemberImport(
         Guid chapterId,
-        [FromForm] MemberImportSubmitViewModel viewModel)
+        [FromForm] MemberImportUploadSubmitViewModel viewModel)
     {
-        // The rows were staged server-side during the upload/preview step; the confirm form posts only
-        // the token. This avoids round-tripping (and the model-binding size limit on) every row.
-        var members = _memberImportStagingService.Retrieve(viewModel.Token);
-        if (members == null || members.Count == 0)
+        var read = _memberImportFileReader.Read(viewModel.File);
+        if (!read.Success || read.Value == null)
         {
-            AddFeedback("Your import has expired. Please upload the file again.", FeedbackType.Warning);
+            AddFeedback(read);
             return RedirectToReferrer();
         }
 
-        var request = MemberChapterAdminServiceRequest.Create(
-            ChapterAdminSecurable.MemberImport, MemberChapterServiceRequest);
-        var result = await _memberAdminService.ImportMembers(request, members);
+        var result = await _memberImportService.StageMembers(
+            MemberChapterAdminServiceRequest.Create(
+            ChapterAdminSecurable.MemberImport, MemberChapterServiceRequest), read.Value, viewModel.File?.FileName);
 
-        if (viewModel.Token != null)
-        {
-            _memberImportStagingService.Remove(viewModel.Token);
-        }
+        AddFeedback(result, UploadMessage(result));
 
-        AddFeedback(result, "Members imported");
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("groups/{chapterId:guid}/members/import/invite")]
+    public async Task<IActionResult> InviteStagedMembers(Guid chapterId)
+    {
+        var result = await _memberAdminService.InviteStagedMembers(MemberChapterAdminServiceRequest.Create(
+            ChapterAdminSecurable.MemberImport, MemberChapterServiceRequest));
+
+        AddFeedback(result, "Invites sent");
 
         if (!result.Success)
         {
             return RedirectToReferrer();
         }
 
-        return Redirect(OdkRoutes.GroupAdmin.Members(Chapter).Path);
+        return Redirect(OdkRoutes.GroupAdmin.MembersInvited(Chapter).Path);
+    }
+
+    [HttpPost("groups/{chapterId:guid}/members/import/{id:guid}/delete")]
+    public async Task<IActionResult> DeleteStagedMember(Guid chapterId, Guid id)
+    {
+        var result = await _memberImportService.DeleteStagedMember(MemberChapterAdminServiceRequest.Create(
+            ChapterAdminSecurable.MemberImport, MemberChapterServiceRequest), id);
+
+        AddFeedback(result, "Person removed");
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("groups/{chapterId:guid}/members/import/clear")]
+    public async Task<IActionResult> ClearStagedMembers(Guid chapterId)
+    {
+        var result = await _memberImportService.ClearStagedMembers(MemberChapterAdminServiceRequest.Create(
+            ChapterAdminSecurable.MemberImport, MemberChapterServiceRequest));
+
+        AddFeedback(result, "Everyone waiting to be invited was removed");
+        return RedirectToReferrer();
     }
 
     [HttpPost("groups/{chapterId:guid}/members/subscriptions/{id:guid}/delete")]
@@ -201,6 +227,36 @@ public class MemberAdminController : AdminControllerBase
         var result = await _chapterAdminService.DeleteChapterSubscription(request, id);
         AddFeedback(result, "Subscription deleted");
         return RedirectToReferrer();
+    }
+
+    private static string UploadMessage(StageMemberImportResult result)
+    {
+        var parts = new List<string>();
+
+        if (result.Staged > 0)
+        {
+            parts.Add($"{result.Staged} added");
+        }
+
+        if (result.Updated > 0)
+        {
+            parts.Add($"{result.Updated} updated");
+        }
+
+        if (result.AlreadyInGroup > 0)
+        {
+            parts.Add($"{result.AlreadyInGroup} already in the group");
+        }
+
+        if (result.AlreadyInvited > 0)
+        {
+            parts.Add($"{result.AlreadyInvited} already invited");
+        }
+
+        // Nothing to report only when the file held people the group already has or has already asked.
+        return parts.Count > 0
+            ? string.Join(", ", parts)
+            : "There was nobody new in that file";
     }
 
     private IActionResult DownloadCsv(IReadOnlyCollection<IReadOnlyCollection<string>> data, string fileName)

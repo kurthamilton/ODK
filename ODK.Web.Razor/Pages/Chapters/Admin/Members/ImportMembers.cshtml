@@ -1,11 +1,15 @@
-@page "/{chapterName}/admin/members/import"
+﻿@page "/{chapterName}/admin/members/import"
+@using ODK.Services.Members
 @using ODK.Web.Razor.Models.Admin
-@using ODK.Web.Razor.Models.Admin.Members
 @using ODK.Web.Razor.Models.Components
 @model ImportMembersModel
+@inject IMemberImportService MemberImportService
 @{
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Import members | Admin";
+
+    var viewModel = await MemberImportService.GetMemberImportViewModel(
+        Model.MemberChapterAdminServiceRequest);
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
@@ -20,14 +24,5 @@
             Icon = IconType.ArrowLeft
         }
     },
-    ContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_ImportMembersContent", new MemberImportViewModel
-    {
-        Chapter = Model.Chapter,
-        Preview = Model.Preview,
-        Token = Model.Token
-    })</div>
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_ImportMembersContent", viewModel)</div>
 })
-
-@section scripts {
-    <script src="~/js/odk.wizard.js" asp-append-version="true"></script>
-}

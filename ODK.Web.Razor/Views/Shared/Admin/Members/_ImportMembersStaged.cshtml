@@ -1,0 +1,210 @@
+﻿@using ODK.Core.Utils
+@using ODK.Services.Members.Models
+@using ODK.Services.Members.ViewModels
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Mvc
+@model MemberImportAdminPageViewModel
+@inject IOdkRoutes OdkRoutes
+@{
+    var chapter = Model.Chapter;
+    var capacity = Model.Capacity;
+    var readyCount = Model.ReadyRows.Count;
+    var remaining = capacity.Remaining ?? 0;
+    var canInvite = readyCount > 0 && Model.FitsWithinCapacity;
+    var timeZone = Html.DisplayTimeZone(chapter.TimeZone);
+
+    /* What the group has to do about the row, not what the site knows about the person: everyone ready is
+       invited, and the count above the table says how many that is. */
+    (string Label, string CssClass) StatusBadge(MemberImportRowStatus status) => status switch
+    {
+        MemberImportRowStatus.New => ("Ready", "bg-success"),
+        MemberImportRowStatus.ExistingNotInGroup => ("Ready", "bg-success"),
+        MemberImportRowStatus.AlreadyInvited => ("Already invited", "bg-secondary"),
+        MemberImportRowStatus.ExistingInGroup => ("Already in group", "bg-secondary"),
+        MemberImportRowStatus.Invalid => ("Bad email address", "bg-danger"),
+        _ => (status.ToString(), "bg-secondary")
+    };
+}
+
+@await Html.PartialAsync("Components/_Section", new SectionViewModel
+{
+    Heading = new HeadingViewModel
+    {
+        Title = "Waiting to be invited",
+        Type = HeadingType.H3
+    },
+    BodyContentFunc = @<div>
+        @if (Model.Rows.Count == 0)
+        {
+            <p>Nobody is waiting to be invited. Upload a file to get started.</p>
+        }
+        else
+        {
+            <p>
+                @* Anything not ready is a row the group has to act on, which is why it is still here. *@
+                <span class="badge bg-success">@readyCount ready</span>
+                @foreach (var group in Model.Rows
+                    .Where(x => !x.Status.IsImportable())
+                    .GroupBy(x => x.Status)
+                    .OrderBy(x => x.Key))
+                {
+                    var (label, cssClass) = StatusBadge(group.Key);
+                    <span class="badge @cssClass">@group.Count() @label.ToLowerInvariant()</span>
+                }
+            </p>
+
+            <div class="table-responsive">
+                <table class="table" data-table-striped>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                            <th>Uploaded</th>
+                            <th>Deleted</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in Model.Rows)
+                        {
+                            var (label, cssClass) = StatusBadge(row.Status);
+
+                            <tr class="@(row.Status.IsImportable() ? null : "text-muted")">
+                                <td>@row.FullName</td>
+                                <td>@row.EmailAddress</td>
+                                <td><span class="badge @cssClass">@label</span></td>
+                                <td>
+                                    @row.UploadedUtc.ToFriendlyDateString(new FriendlyDateStringOptions
+                                    {
+                                        TimeZone = timeZone
+                                    })
+                                </td>
+                                <td>
+                                    @if (row.DaysRemaining > 0)
+                                    {
+                                        <text>In @row.DaysRemaining @StringUtils.Pluralise(row.DaysRemaining, "day")</text>
+                                    }
+                                    else
+                                    {
+                                        <text>Due</text>
+                                    }
+                                    <div class="text-muted">
+                                        @row.DeletedUtc.ToFriendlyDateString(new FriendlyDateStringOptions
+                                        {
+                                            TimeZone = timeZone
+                                        })
+                                    </div>
+                                </td>
+                                <td class="text-end">
+                                    <form method="post"
+                                          action="@OdkRoutes.GroupAdmin.MembersImportDelete(chapter, row.Id).Path">
+                                        @Html.AntiForgeryToken()
+                                        @await Html.PartialAsync("Components/_Confirm", new ConfirmViewModel
+                                        {
+                                            Message = $"Are you sure you want to remove {row.EmailAddress}?",
+                                            Title = "Remove person"
+                                        })
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            Remove
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (readyCount == 0)
+            {
+                <div class="alert alert-info">
+                    There is nobody to invite. Correct the addresses above, remove them, or upload another
+                    file.
+                </div>
+            }
+
+            @if (readyCount > 0 && !Model.FitsWithinCapacity)
+            {
+                <div class="alert alert-warning">
+                    @if (!capacity.HasOwnerSubscription)
+                    {
+                        <span>This group's plan is not active, so it cannot invite new members.</span>
+                    }
+                    else
+                    {
+                        <p>
+                            <span>This group has room for </span>
+                            <strong>@remaining more @StringUtils.Pluralise(remaining, "member")</strong>
+                            <span>
+                                - it has @capacity.MemberCount
+                                @StringUtils.Pluralise(capacity.MemberCount, "member") and
+                                @capacity.OutstandingInviteCount outstanding
+                                @StringUtils.Pluralise(capacity.OutstandingInviteCount, "invite"), against a
+                                limit of @capacity.Limit.
+                            </span>
+                            <span>Inviting everyone ready needs <strong>@Model.PlacesRequired</strong>.</span>
+                        </p>
+                        <p class="mb-0">
+                            Remove @(Model.PlacesRequired - remaining)
+                            @StringUtils.Pluralise(Model.PlacesRequired - remaining, "person") from the list,
+                            or move to a plan with a higher member limit.
+                        </p>
+                    }
+                </div>
+            }
+
+            @if (canInvite)
+            {
+                <p>
+                    <span>You're about to invite </span>
+                    <strong>@readyCount @StringUtils.Pluralise(readyCount, "member")</strong>
+                    <span> to the group. They become members when they accept.</span>
+                </p>
+
+                @if (!chapter.IsPublished())
+                {
+                    <div class="alert alert-info">
+                        Nothing is emailed now: an invite's link lands on the group, and this one isn't
+                        published yet. The invites are held and go out when you publish it.
+                    </div>
+                }
+
+                @if (capacity.Limit != null)
+                {
+                    var left = remaining - Model.PlacesRequired;
+
+                    <p>
+                        <span>After this the group can invite </span>
+                        <strong>@left more @StringUtils.Pluralise(left, "member")</strong>
+                        <span> on its current plan.</span>
+                    </p>
+                }
+            }
+
+            <div class="d-flex align-items-center gap-3 mt-3">
+                @if (canInvite)
+                {
+                    <form method="post" action="@OdkRoutes.GroupAdmin.MembersImportInvite(chapter).Path">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-primary">
+                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Envelope))
+                            <span>Send invites</span>
+                        </button>
+                    </form>
+                }
+
+                <form method="post" action="@OdkRoutes.GroupAdmin.MembersImportClear(chapter).Path">
+                    @Html.AntiForgeryToken()
+                    @await Html.PartialAsync("Components/_Confirm", new ConfirmViewModel
+                    {
+                        Message = "Are you sure you want to remove everyone waiting to be invited?",
+                        Title = "Remove everyone"
+                    })
+                    <button type="submit" class="btn btn-link px-0">Remove everyone</button>
+                </form>
+            </div>
+        }
+    </div>
+})

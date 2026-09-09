@@ -15,6 +15,13 @@ public enum MemberImportRowStatus
     ExistingNotInGroup,
 
     /// <summary>
+    /// Email address belongs to a member the group has already invited. The row will be skipped - the
+    /// outstanding invite is the ask, and raising a second one would neither reach them again nor take
+    /// another of the group's places.
+    /// </summary>
+    AlreadyInvited,
+
+    /// <summary>
     /// Email address belongs to an existing member who is already in this group. The row will be skipped.
     /// </summary>
     ExistingInGroup,

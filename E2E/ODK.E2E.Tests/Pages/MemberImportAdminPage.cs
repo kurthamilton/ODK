@@ -1,12 +1,12 @@
-using System.Text;
+﻿using System.Text;
 using Microsoft.Playwright;
 
 namespace ODK.E2E.Tests.Pages;
 
 /// <summary>
-/// The member-import admin wizard (<c>.../members/import</c>): upload a CSV, review what it will do, then
-/// confirm. Platform-agnostic - the caller supplies the platform-correct URLs from
-/// <see cref="PlatformRoutes"/>.
+/// The member-import admin page (<c>.../members/import</c>): upload a CSV, which the group then holds, and
+/// send the invites for everyone it holds who is ready. Platform-agnostic - the caller supplies the
+/// platform-correct URLs from <see cref="PlatformRoutes"/>.
 /// </summary>
 internal class MemberImportAdminPage
 {
@@ -18,13 +18,13 @@ internal class MemberImportAdminPage
     }
 
     /// <summary>
-    /// Uploads the given rows as a CSV and confirms the import. Returns once the confirm has redirected to
-    /// the members list, which is the app's success path: by then the invites are written, though the
-    /// emails follow on a background job - poll for those.
+    /// Uploads the given rows as a CSV and sends the invites. Returns once sending has redirected to the
+    /// invited page, which is the app's success path: by then the invites are written, though the emails
+    /// follow on a background job - poll for those.
     /// </summary>
     public async Task Import(
         string importUrl,
-        string membersUrl,
+        string invitedUrl,
         IReadOnlyCollection<MemberImportRow> rows)
     {
         await _page.Navigate(importUrl);
@@ -36,21 +36,21 @@ internal class MemberImportAdminPage
             Buffer = Encoding.UTF8.GetBytes(BuildCsv(rows))
         });
 
-        /* The wizard's Next button submits the upload form by id (data-submit) and the POST re-renders the
-           page on the review step, so wait for the confirm button to exist rather than for the click. */
-        await _page.ClickAsync("button[data-submit='#upload-form']");
-        await _page.WaitForSelectorAsync("button:has-text('Import')", new() { Timeout = 15000 });
+        /* The upload posts to a controller and redirects back to this same address, so nothing about the URL
+           says it has happened - the committed document is the only signal. */
+        await _page.ClickAndWaitForDocument(
+            "[data-odk-component='_ImportMembersUpload'] button[type='submit']");
 
-        await _page.ClickAsync("button:has-text('Import')");
+        await _page.ClickAsync("button:has-text('Send invites')");
 
-        // EndsWith, not Contains: the import URL contains the members URL as a prefix, so Contains would
-        // match the page we are leaving.
+        /* Sending lands on a different address, so the URL does commit the navigation. EndsWith, not
+           Contains: the two URLs share a prefix, so Contains would match the page we are leaving. */
         await _page.WaitForURLAsync(
-            url => url.EndsWith(membersUrl, StringComparison.OrdinalIgnoreCase),
+            url => url.EndsWith(invitedUrl, StringComparison.OrdinalIgnoreCase),
             new() { Timeout = 15000 });
     }
 
-    // The header names the properties MemberImportModel binds, which is what the app's CSV reader matches on.
+    // The header names the properties MemberImportCsvRow binds, which is what the app's CSV reader matches on.
     private static string BuildCsv(IReadOnlyCollection<MemberImportRow> rows)
     {
         var lines = new List<string> { "FirstName,LastName,EmailAddress" };

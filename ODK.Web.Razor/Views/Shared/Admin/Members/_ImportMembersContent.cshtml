@@ -1,63 +1,30 @@
-﻿@using ODK.Web.Common.Routes
+﻿@using ODK.Services.Members.ViewModels
 @using ODK.Web.Razor.Models.Admin.Members
 @using ODK.Web.Razor.Models.Components
-@inject IOdkRoutes OdkRoutes
-@model MemberImportViewModel
-@{
-    var preview = Model.Preview;    
-}
+@model MemberImportAdminPageViewModel
 
 @await Html.PartialAsync("Components/_AdminPageDescription",
-    "Invite members to the group from a CSV file. You can review what will happen before anything is sent." +
+    "Invite members to the group from a CSV file. Nobody is emailed until you send the invites, and " +
+    "anyone the file has a problem with stays on this page until you deal with them." +
     (Model.Chapter.IsPublished()
         ? string.Empty
         : " This group isn't published yet, so the invites are held until you publish it."))
 
-<div data-wizard-form>
-    @await Html.PartialAsync("Components/_Wizard", new WizardViewModel
+<div class="section-stack" data-odk-component="_ImportMembersContent">
+    @await Html.PartialAsync("Components/_Section", new SectionViewModel
     {
-        Id = "member-import",
-        Pages = new[]
+        Heading = new HeadingViewModel
         {
-            new WizardPageViewModel
+            Title = "Upload a file",
+            Type = HeadingType.H3
+        },
+        BodyContentFunc = @<div>
+            @await Html.PartialAsync("Admin/Members/_ImportMembersUpload", new MemberImportUploadViewModel
             {
-                Title = "Upload",
-                ButtonSubmit = "#upload-form",
-                Selected = preview == null,
-                Url = OdkRoutes.GroupAdmin.MembersImport(Model.Chapter).Path,
-                ContentFunc = 
-                    @<div>
-                        @*Don't render the preview page if we are previewing to avoid messing up the outer form validation.
-                        This wizard page is reloaded by a navigation, so no need to persist data.*@
-                        @if (preview == null)
-                        {                 
-                            <form id="upload-form" method="post" enctype="multipart/form-data">
-                                @Html.AntiForgeryToken()
-                                @await Html.PartialAsync("Admin/Members/_ImportMembersUpload", new MemberImportUploadViewModel
-                                {
-                                    Chapter = Model.Chapter
-                                })
-                            </form>                        
-                        }                        
-                    </div>
-            },
-            new WizardPageViewModel
-            {
-                Title = "Review",
-                Selected = preview != null,
-                ContentFunc =
-                    @<div>
-                        @if (preview != null)
-                        {
-                            @await Html.PartialAsync("Admin/Members/_ImportMembersReview", new MemberImportReviewViewModel
-                            {
-                                Chapter = Model.Chapter,
-                                Preview = preview,
-                                Token = Model.Token ?? string.Empty
-                            })
-                        }                
-                    </div>
-            }
-        }
+                Chapter = Model.Chapter
+            })
+        </div>
     })
+
+    @await Html.PartialAsync("Admin/Members/_ImportMembersStaged", Model)
 </div>

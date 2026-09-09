@@ -114,7 +114,7 @@ public class RequestStore : IRequestStore
         request.Platform,
         x => request.ChapterId != null
             ? x.ChapterRepository.GetByIdOrDefault(request.Platform, request.ChapterId.Value)
-            : new DefaultDeferredQuerySingleOrDefault<Chapter>(),
+            : DefaultDeferredQuerySingleOrDefault.For<Chapter>(),
         request.CurrentMemberId,
         // A job runs as one member; there is no cookie behind it to hold any others.
         []);
@@ -197,7 +197,7 @@ public class RequestStore : IRequestStore
             _loggingService.Warn(message, properties);
         }
 
-        return new DefaultDeferredQuerySingleOrDefault<Chapter>();
+        return DefaultDeferredQuerySingleOrDefault.For<Chapter>();
     }
 
     private Task<IRequestStore> Load(
@@ -229,17 +229,13 @@ public class RequestStore : IRequestStore
 
         var (chapter, currentMember, memberPreferences, activeReferralCampaign, signedInMembers) = await _unitOfWork.Run(
             chapterQuery,
-            x => currentMemberIdOrDefault != null
-                ? x.MemberRepository.GetByIdOrDefault(currentMemberIdOrDefault.Value)
-                : new DefaultDeferredQuerySingleOrDefault<Member>(),
-            x => currentMemberIdOrDefault != null
-                ? x.MemberPreferencesRepository.GetByMemberIdOrDefault(currentMemberIdOrDefault.Value)
-                : new DefaultDeferredQuerySingleOrDefault<MemberPreferences>(),
+            x => x.MemberRepository.GetByIdOrDefault(currentMemberIdOrDefault),
+            x => x.MemberPreferencesRepository.GetByMemberIdOrDefault(currentMemberIdOrDefault),
             // Only signed-in members on a platform that offers referrals can act on a campaign, so
             // everyone else costs no query at all.
             x => currentMemberIdOrDefault != null && Platform != PlatformType.DrunkenKnitwits
                 ? x.ReferralCampaignRepository.GetMostRecentActive(DateTime.UtcNow)
-                : new DefaultDeferredQuerySingleOrDefault<ReferralCampaign>(),
+                : DefaultDeferredQuerySingleOrDefault.For<ReferralCampaign>(),
             // A single signed-in member is the current member, whom the query above already loads, so
             // only a cookie holding several costs a query here.
             x => signedInMemberIds.Count > 1

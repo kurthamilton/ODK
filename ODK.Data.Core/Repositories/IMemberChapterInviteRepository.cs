@@ -14,7 +14,7 @@ public interface IMemberChapterInviteRepository : IWriteRepository<MemberChapter
 
     IDeferredQueryMultiple<MemberChapterInvite> GetByMemberIds(IReadOnlyCollection<Guid> memberIds);
 
-    IDeferredQuerySingleOrDefault<MemberChapterInvite> GetByToken(string token);
+    IDeferredQuerySingleOrDefault<MemberChapterInvite> GetByToken(string? token);
 
     IDeferredQueryMultiple<MemberChapterInviteDto> GetDtosByChapterId(Guid chapterId);
 

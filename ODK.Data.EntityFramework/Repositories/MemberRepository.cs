@@ -1,10 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Members;
 using ODK.Data.Core.QueryBuilders;
 using ODK.Data.Core.QueryBuilders.QueryOptions;
 using ODK.Data.Core.Repositories;
+using ODK.Data.EntityFramework.Extensions;
 using ODK.Data.EntityFramework.QueryBuilders;
 
 namespace ODK.Data.EntityFramework.Repositories;
@@ -61,6 +63,23 @@ public class MemberRepository : ReadWriteRepositoryBase<Member, IMemberQueryBuil
         => Query()
             .InChapter(chapterId)
             .Count();
+
+    public IDeferredQuerySingleOrDefault<Member> GetInvitedByToken(string? token, Guid chapterId)
+    {
+        if (string.IsNullOrEmpty(token))
+        {
+            return DefaultDeferredQuerySingleOrDefault.For<Member>();
+        }
+
+        var query =
+            from invite in Set<MemberChapterInvite>()
+            join member in Set() on invite.MemberId equals member.Id
+            where invite.Token == token && invite.ChapterId == chapterId
+            orderby invite.CreatedUtc
+            select member;
+
+        return query.DeferredSingleOrDefault();
+    }
 
     public IDeferredQueryMultiple<MemberChapterWithAvatarDto> GetLatestJoinedByChapterId(Guid chapterId, int pageSize)
         => Query()

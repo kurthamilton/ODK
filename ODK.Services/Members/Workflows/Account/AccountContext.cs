@@ -79,7 +79,7 @@ public sealed class AccountContext
         .FirstOrDefault(x => Chapter != null && x.ChapterId == Chapter.Id);
 
     /// <summary>The row an admin imported. Null for any trigger other than an import.</summary>
-    public MemberImportModel? Import { get; init; }
+    public MemberChapterImport? Import { get; init; }
 
     /// <summary>What the accept-invite form submitted. Null for any other trigger.</summary>
     public InviteAcceptModel? InviteAccept { get; init; }
@@ -206,7 +206,7 @@ public sealed class AccountContext
         "The transition is acting on a group sign-up that submitted nothing");
 
     /// <summary>The imported row, on a transition only an import can reach.</summary>
-    public MemberImportModel RequiredImport => Import ?? throw new InvalidOperationException(
+    public MemberChapterImport RequiredImport => Import ?? throw new InvalidOperationException(
         "The transition is acting on an import that names no member");
 
     /// <summary>What a site sign-up submitted, on a transition only a site sign-up can reach.</summary>

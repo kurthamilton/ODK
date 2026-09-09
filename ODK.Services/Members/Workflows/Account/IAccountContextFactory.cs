@@ -24,7 +24,7 @@ public interface IAccountContextFactory
     Task<AccountContext> CreateForSiteActivation(
         IServiceRequest request, MemberActivationToken token, string password);
 
-    AccountContext CreateForImport(IChapterServiceRequest request, MemberImportModel import, ImportBatch batch);
+    AccountContext CreateForImport(IChapterServiceRequest request, MemberChapterImport import, ImportBatch batch);
 
     Task<AccountContext> CreateForGroupSignUp(IChapterServiceRequest request, MemberCreateProfile profile);
 

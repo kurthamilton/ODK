@@ -19,6 +19,7 @@ public class ScheduledTasksController : OdkControllerBase
     private readonly IIpLocationDatabaseService _ipLocationDatabaseService;
     private readonly ILoggingService _loggingService;
     private readonly IMemberAdminService _memberAdminService;
+    private readonly IMemberImportService _memberImportService;
     private readonly IMemberInviteService _memberInviteService;
     private readonly ScheduledTasksControllerSettings _settings;
     private readonly ISiteSubscriptionService _siteSubscriptionService;
@@ -32,6 +33,7 @@ public class ScheduledTasksController : OdkControllerBase
         ILoggingService loggingService,
         IRequestStore requestStore,
         IOdkRoutes odkRoutes,
+        IMemberImportService memberImportService,
         IMemberInviteService memberInviteService,
         IIpLocationDatabaseService ipLocationDatabaseService)
         : base(requestStore, odkRoutes)
@@ -39,6 +41,7 @@ public class ScheduledTasksController : OdkControllerBase
         _ipLocationDatabaseService = ipLocationDatabaseService;
         _loggingService = loggingService;
         _memberAdminService = memberAdminService;
+        _memberImportService = memberImportService;
         _memberInviteService = memberInviteService;
         _settings = settings;
         _siteSubscriptionService = siteSubscriptionService;
@@ -75,6 +78,8 @@ public class ScheduledTasksController : OdkControllerBase
             () => _memberAdminService.SendMemberSubscriptionReminderEmails(ServiceRequest));
     }
 
+    /* Both holdings, under one retention period and one cron entry: an address a group is holding and the
+       invite raised from it are the same details, dated from the same instant. */
     [HttpPost("members/invites/purge")]
     public async Task PurgeExpiredInvitates()
     {
@@ -82,7 +87,11 @@ public class ScheduledTasksController : OdkControllerBase
 
         await Run(
             nameof(PurgeExpiredInvitates),
-            () => _memberInviteService.PurgeExpiredInvites());
+            async () =>
+            {
+                await _memberInviteService.PurgeExpiredInvites();
+                await _memberImportService.PurgeExpiredImports();
+            });
     }
 
     [HttpPost("logs/purge")]

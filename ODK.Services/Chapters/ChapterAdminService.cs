@@ -813,6 +813,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         var canSeeMembers = adminMember.HasAccessTo(ChapterAdminSecurable.Members, currentMember);
         var canSeeMessages = adminMember.HasAccessTo(ChapterAdminSecurable.ContactMessages, currentMember);
         var canSeeEvents = adminMember.HasAccessTo(ChapterAdminSecurable.Events, currentMember);
+        var canSeeImports = adminMember.HasAccessTo(ChapterAdminSecurable.MemberImport, currentMember);
 
         // Approved and unpublished, so publishing is the outstanding action. Whether it can happen yet
         // depends on the picture.
@@ -825,7 +826,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             upcomingEvents,
             image,
             newestMembers,
-            heldInvites
+            heldInvites,
+            waitingToBeInvited
         ) = await _unitOfWork.Run(
             x => canSeeApprovals
                 ? x.MemberChapterRepository.Query(platform).ForChapter(chapter.Id).Approved(false).Count()
@@ -846,13 +848,16 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
                 : new DefaultDeferredQueryMultiple<EventSummaryDto>(),
             x => canSeeImage || awaitingPublication
                 ? x.ChapterImageRepository.GetVersionDtoByChapterId(chapter.Id)
-                : new DefaultDeferredQuerySingleOrDefault<ChapterImageVersionDto>(),
+                : DefaultDeferredQuerySingleOrDefault.For<ChapterImageVersionDto>(),
             x => canSeeMembers
                 ? x.MemberRepository.GetLatestJoinedByChapterId(chapter.Id, DashboardNewestMemberCount)
                 : new DefaultDeferredQueryMultiple<MemberChapterWithAvatarDto>(),
             // Only where publishing is the outstanding action, which is the only place the number is shown.
             x => awaitingPublication
                 ? x.MemberChapterInviteRepository.GetUnsentCountByChapterId(chapter.Id)
+                : new DefaultDeferredQuery<int>(0),
+            x => canSeeImports
+                ? x.MemberChapterImportRepository.Query(q => q.InChapter(chapter.Id)).Count()
                 : new DefaultDeferredQuery<int>(0));
 
         var hasImage = image != null;
@@ -867,6 +872,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             NeedsImageToPublish = awaitingPublication && !hasImage,
             NewestMembers = canSeeMembers ? newestMembers : null,
             UnrepliedContactMessages = canSeeMessages ? unrepliedMessages : null,
+            WaitingToBeInvited = canSeeImports ? waitingToBeInvited : null,
             UpcomingEvents = canSeeEvents ? upcomingEvents : null
         };
     }

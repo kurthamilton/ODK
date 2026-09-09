@@ -165,7 +165,7 @@ public sealed class AccountContextFactory : IAccountContextFactory
     /// </summary>
     public AccountContext CreateForImport(
         IChapterServiceRequest request,
-        MemberImportModel import,
+        MemberChapterImport import,
         ImportBatch batch) => new()
     {
         ActivationToken = TokenGenerator.GenerateBase64Token(64),
@@ -192,9 +192,7 @@ public sealed class AccountContextFactory : IAccountContextFactory
                runs. Every other sign-up takes its plan when its activation link is followed. */
             x => x.SiteSubscriptionRepository.GetDefault(environment, platform),
             x => x.TopicRepository.GetByIds(profile.TopicIds),
-            x => profile.ReferralId != null
-                ? x.ReferralRepository.GetByIdOrDefault(profile.ReferralId.Value)
-                : new DefaultDeferredQuerySingleOrDefault<Referral>());
+            x => x.ReferralRepository.GetByIdOrDefault(profile.ReferralId));
 
         var (reusableActivationToken, carriedOverInvites) = await ReadDiscardedAccount(existing);
 

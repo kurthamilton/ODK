@@ -307,13 +307,8 @@ public class AuthenticationService : IAuthenticationService
     /// </summary>
     private async Task CompleteReferral(Member member)
     {
-        if (member.ReferralId == null)
-        {
-            return;
-        }
-
         var referral = await _unitOfWork.ReferralRepository
-            .GetByIdOrDefault(member.ReferralId.Value)
+            .GetByIdOrDefault(member.ReferralId)
             .Run();
         if (referral == null || referral.CompletedUtc != null)
         {

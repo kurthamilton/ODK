@@ -87,7 +87,8 @@ public sealed class ChapterMembershipContextFactory : IChapterMembershipContextF
     public ChapterMembershipContext CreateForInvite(
         IChapterServiceRequest request,
         Member member,
-        MemberChapterInvite? outstandingInvite) => new()
+        MemberChapterInvite? outstandingInvite,
+        DateTime receivedUtc) => new()
     {
         /* An invite notifies nobody, queues nobody and asks nothing of the member, so everything the join
            transitions read is empty here. What the machine needs is the member, the group, and whether an
@@ -103,6 +104,7 @@ public sealed class ChapterMembershipContextFactory : IChapterMembershipContextF
         NotificationSettings = [],
         OwnerSubscriptionFeatures = [],
         Properties = [],
+        ReceivedUtc = receivedUtc,
         Request = request
     };
 

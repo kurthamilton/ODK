@@ -1630,6 +1630,52 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                     b.ToTable("MemberChapters", (string)null);
                 });
 
+            modelBuilder.Entity("ODK.Core.Members.MemberChapterImport", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ChapterId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("EmailAddress")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("SourceFileName")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime>("UploadedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
+
+                    b.HasIndex("ChapterId", "EmailAddress")
+                        .IsUnique();
+
+                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("ChapterId", "EmailAddress"));
+
+                    b.ToTable("MemberChapterImports", (string)null);
+                });
+
             modelBuilder.Entity("ODK.Core.Members.MemberChapterInvite", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3573,6 +3619,15 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                     b.HasOne("ODK.Core.Members.Member", null)
                         .WithMany("Chapters")
                         .HasForeignKey("MemberId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ODK.Core.Members.MemberChapterImport", b =>
+                {
+                    b.HasOne("ODK.Core.Chapters.Chapter", null)
+                        .WithMany()
+                        .HasForeignKey("ChapterId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

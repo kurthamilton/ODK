@@ -239,7 +239,7 @@ public class NotificationService : INotificationService
             x => x.NotificationRepository.GetUnreadDtosByMemberId(currentMember.Id),
             x => platform == PlatformType.DrunkenKnitwits
                 ? x.ChapterRepository.Query(platform).ForMember(currentMember.Id).GetSingleOrDefault()
-                : new DefaultDeferredQuerySingleOrDefault<Chapter>());
+                : DefaultDeferredQuerySingleOrDefault.For<Chapter>());
 
         return new UnreadNotificationsViewModel
         {

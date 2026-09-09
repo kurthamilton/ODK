@@ -6,12 +6,8 @@
 @model MemberImportUploadViewModel
 @inject IOdkRoutes OdkRoutes
 @{
-    var csvHeader = MemberImportModel.GetCsvHeaderRow();
+    var csvHeader = MemberImportCsvRow.GetCsvHeaderRow();
 }
-
-<p>
-    Upload a CSV file to preview which members will be invited before importing.
-</p>
 
 <p>
     <span>The file must contain </span>
@@ -24,7 +20,7 @@
             <span>, </span>
         }
     }
-    <span>columns.</span>
+    <span>columns. Uploading a file again updates the people it already holds rather than repeating them.</span>
 </p>
 
 <p>
@@ -35,17 +31,24 @@
         Text = "Download template"
     })
 </p>
-@if (!string.IsNullOrEmpty(Model.SupersededToken))
-{
-    @Html.HiddenFor(x => x.SupersededToken)
-}
 
-<div class="mb-3">
-    @Html.TextBoxFor(x => x.File, new
-    {
-        type = "file",
-        accept = ".csv",
-        @class = "form-control"
-    })
-    @Html.ValidationMessageFor(x => x.File)
-</div>
+<form method="post" enctype="multipart/form-data"
+      action="@OdkRoutes.GroupAdmin.MembersImportUpload(Model.Chapter).Path"
+      data-odk-component="_ImportMembersUpload">
+    @Html.AntiForgeryToken()
+
+    <div class="mb-3">
+        @Html.TextBoxFor(x => x.File, new
+        {
+            type = "file",
+            accept = ".csv",
+            @class = "form-control"
+        })
+        @Html.ValidationMessageFor(x => x.File)
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Upload))
+        <span>Upload</span>
+    </button>
+</form>

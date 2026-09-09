@@ -27,8 +27,10 @@ public class SiteSubscriptionRepository
     public IDeferredQuerySingle<SiteSubscription> GetByPriceId(Guid priceId)
         => ByPriceId(priceId).DeferredSingle();
 
-    public IDeferredQuerySingleOrDefault<SiteSubscription> GetByPriceIdOrDefault(Guid priceId)
-        => ByPriceId(priceId).DeferredSingleOrDefault();
+    public IDeferredQuerySingleOrDefault<SiteSubscription> GetByPriceIdOrDefault(Guid? priceId)
+        => priceId != null
+            ? ByPriceId(priceId.Value).DeferredSingleOrDefault()
+            : DefaultDeferredQuerySingleOrDefault.For<SiteSubscription>();
 
     public IDeferredQuerySingle<SiteSubscription> GetDefault(EnvironmentType environment, PlatformType platform)
         => Default(environment, platform).DeferredSingle();
