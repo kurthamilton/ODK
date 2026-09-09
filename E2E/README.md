@@ -69,9 +69,9 @@ plus the environment, port and `Platform` its launch profile supplies (`e2e-gs` 
 `ODK.Web.Razor/Properties/launchSettings.json`, beside the `gs` / `dk` dev pair).
 `appsettings.e2e.json` is what turns the outside world off:
 
-- `Emails:UseConsoleClient: true` — emails are logged rather than sent, and still recorded in `SentEmails`,
-  which is how a test asserts one was sent. There is no mail sink, so **an email's body is never readable** —
-  only its subject.
+- `Emails:Client: Console` — emails are logged rather than sent, and still recorded in `SentEmails`,
+  which is how a test asserts one was sent. This environment runs no mail sink - local development does, on
+  `Emails:Client: Smtp` - so **an email's body is never readable here**, only its subject.
 - `Hibp:Enabled: false` — no breach-check call during activation, so any password passes.
 - `Hangfire:InMemory: true` — the job queue is per process, so the two instances cannot run each other's jobs.
 - `ConnectionStrings:Default` — the local dev database.
