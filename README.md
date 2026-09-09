@@ -4,6 +4,7 @@
 - [Apps](#apps)
 - [Running locally](#running-locally)
 - [ngrok](#ngrok)
+- [Mailpit](#mailpit)
 - [CSS](#css)
 - [Client-side libraries](#client-side-libraries)
 - [Deployment](#deployment)
@@ -19,6 +20,8 @@
 3. Install the latest version of SQL Server
 4. Take a backup of the prod DB and restore locally
 5. Install [ngrok](https://ngrok.com/download) and create `ngrok.yml` in the repo root (see [ngrok](#ngrok))
+6. Install [Mailpit](https://mailpit.axllent.org) with `winget install axllent.mailpit` — the mail sink
+   local development delivers to instead of sending (see [Mailpit](#mailpit))
 
 ## Apps
 The project runs two different platforms off one codebase. A deployment serves the one its `Platform`
@@ -42,6 +45,10 @@ a tab each:
 
 Both tabs run `dotnet watch`, so an edit reloads both. Windows Terminal focuses the tab it opened last (DK),
 which is where `dotnet watch`'s **Ctrl+R** goes — those shortcuts only reach the focused tab.
+
+A third tab, **Mail**, runs the local mail sink both instances send through — see [Mailpit](#mailpit). It is
+opened *first* precisely so it is not the tab that ends up focused, and it is left alone by a re-run rather
+than restarted, so captured mail survives restarting the apps.
 
 ### How the two instances stay out of each other's way
 
@@ -161,6 +168,81 @@ endpoints:
 
 YAML is indentation-sensitive: within each endpoint, `name`, `url` and `upstream` must line up in the same
 column, and `upstream`'s own `url` is indented one level further.
+
+## Mailpit
+[Mailpit](https://mailpit.axllent.org) is an SMTP server that captures everything sent to it and serves it
+over a web UI, so local development can read the mail the app would have sent — every recipient, and the body
+as rendered — without a message reaching a real address or spending Brevo quota.
+
+Install it with winget; the package is a portable zip, so there is no service and no MSI:
+
+```
+winget install axllent.mailpit
+```
+
+**`mailpit` will not resolve by name straight after installing, and does not need to.** winget adds the
+package directory to your persisted user `PATH`, but a running process keeps the environment it started with
+— including the Windows Terminal process that opens the tabs, so a *new tab of an old terminal* still cannot
+see it. `Scripts/app/mailpit.bat` resolves the binary itself rather than calling it by name: `PATH` first, so
+a scoop or hand-unzipped install wins, then `%LOCALAPPDATA%\Microsoft\WinGet\Packages` for any winget
+version. So nothing has to be restarted after installing.
+
+It listens for SMTP on **1025**, which is what `Emails:Smtp` points the app at, and serves the UI on **8025**
+— [localhost:8025](http://localhost:8025).
+
+`Scripts/app/mailpit.bat` runs it, and `run.bat` opens it as the **Mail** tab. Two details of that script are
+deliberate:
+
+- **It binds `127.0.0.1`, not Mailpit's own default of `[::]`**, which would serve every captured message to
+  the whole network with no authentication.
+- **It starts nothing if something already holds 1025.** Unlike the app ports, which `run.bat` clears, a sink
+  that is already up is left running so captured mail survives restarting the apps. Its message store is
+  `mailpit.db` in the repo root, gitignored, which is what carries mail across restarts of the sink itself —
+  Mailpit's own default is memory only.
+
+Mailpit has no flag of its own for opening its web UI, so the script takes one: `mailpit.bat --ui`. On a cold
+start that open is gated on `mailpit readyz --wait` in a detached process rather than on a sleep, because the
+server holds the tab's foreground from the moment it starts — so the browser is never pointed at a port
+nothing has bound yet. It is **not** wired into `run.bat`, since the `gs` and `dk` launch profiles already
+open a browser tab each and a third every run is noise when the session is not about email; add `--ui` to the
+Mail tab's command there if you would rather always have it.
+
+### Which client an environment sends through
+`Emails:Client` names one of three, and `DependencyRegistrar` resolves the matching `IEmailClient`. An
+unstated value binds as `None` and fails at startup rather than defaulting into a real send.
+
+| `Emails:Client` | Client | Used by |
+|---|---|---|
+| `Brevo` | `BrevoApiEmailClient` | every deployed environment; the committed `appsettings.json` states it |
+| `Smtp` | `SmtpEmailClient` | local development, via `appsettings.Development.json` |
+| `Console` | `ConsoleEmailClient` | the E2E suite, via `appsettings.e2e.json` |
+
+`appsettings.Development.json` sets `Client` to `Smtp` and points `Emails:Smtp` at the sink:
+
+```json
+"Emails": {
+  "Client": "Smtp",
+  "Smtp": {
+    "Host": "127.0.0.1",
+    "Port": 1025
+  }
+}
+```
+
+`Host` is the loopback address rather than a hostname, so a send fails immediately when the sink is not
+running instead of waiting on a DNS lookup. The committed `appsettings.json` states the section emptied
+(`""` / `0`), since only an environment running a sink has anywhere to deliver.
+
+Two differences from a Brevo send are worth knowing, because both are visible in what you receive:
+
+- **`Emails:DebugEmailAddress` does not apply.** It is read by the Brevo client, which rewrites every
+  recipient to it. The SMTP client does not, which is the point — the sink shows the real recipient list, so
+  a fan-out like a per-locale batch of event invites can be checked recipient by recipient.
+- **A scheduled send goes immediately.** Brevo holds a message until `ScheduledUtc`; SMTP carries no
+  schedule, so the client logs the time that was asked for and sends now.
+
+**The E2E suite stays on the console client**, asserting against `SentEmails` rows rather than delivered
+mail, so a run needs no sink — see `E2E/README.md`.
 
 ## CSS
 `.css` files are compiled into `wwwroot/css` from the `.scss` files in `ODK.Web.Razor/scss`.

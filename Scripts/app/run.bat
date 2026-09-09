@@ -39,10 +39,11 @@ rem backslash - a trailing "\" before a closing quote is read by Windows Termina
 rem breaks the -d argument.
 set "ROOT=%CD%"
 
-rem Windows Terminal focuses the tab it opened most recently, so DK is the one that comes up in front. That
-rem matters for dotnet watch's shortcuts - Ctrl+R to force a restart - which only reach the tab with focus;
-rem swap the two if you would rather land on GS.
-wt new-tab --title "GS" -d "%ROOT%" cmd /k "dotnet watch --artifacts-path .\artifacts\gs run --launch-profile gs" ; new-tab --title "DK" -d "%ROOT%" cmd /k "dotnet watch --artifacts-path .\artifacts\dk run --launch-profile dk"
+rem Windows Terminal focuses the tab it opened most recently, so the mail tab is opened FIRST - opened
+rem last it would come up in front, and DK is the more useful thing to land on. That matters for dotnet
+rem watch's shortcuts - Ctrl+R to force a restart - which only reach the tab with focus; reorder GS and
+rem DK if you would rather land on GS.
+wt new-tab --title "Mail" -d "%ROOT%" cmd /k ""%~dp0mailpit.bat"" ; new-tab --title "GS" -d "%ROOT%" cmd /k "dotnet watch --artifacts-path .\artifacts\gs run --launch-profile gs" ; new-tab --title "DK" -d "%ROOT%" cmd /k "dotnet watch --artifacts-path .\artifacts\dk run --launch-profile dk"
 
 rem This launcher window closing immediately is normal - it just hands off to Windows Terminal. If the
 rem terminal never appears, wt itself failed, so surface that instead of vanishing silently.

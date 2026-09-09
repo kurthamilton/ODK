@@ -15,6 +15,10 @@ app_data
 
 /ngrok.yml
 
+# Mailpit's message store, so captured mail survives a restart of the sink. The glob covers SQLite's -shm
+# and -wal sidecars, which exist whenever the sink is running.
+/mailpit.db*
+
 # Test run output: the html report, plus the traces and screenshots OdkPageTest writes for failures
 TestResults/
 

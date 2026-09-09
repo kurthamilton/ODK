@@ -30,6 +30,7 @@ using ODK.Services.Integrations.Authentication;
 using ODK.Services.Integrations.Csv;
 using ODK.Services.Integrations.Emails.Brevo;
 using ODK.Services.Integrations.Emails.Reoon;
+using ODK.Services.Integrations.Emails.Smtp;
 using ODK.Services.Integrations.Geolocation;
 using ODK.Services.Integrations.Html;
 using ODK.Services.Integrations.Imaging;
@@ -204,9 +205,15 @@ public static class DependencyRegistrar
             .AddScoped<IEmailAdminService, EmailAdminService>()
             .AddScoped<BrevoApiEmailClient>()
             .AddScoped<ConsoleEmailClient>()
-            .AddScoped<IEmailClient>(serviceProvider => appSettings.Emails.UseConsoleClient
-                ? serviceProvider.GetRequiredService<ConsoleEmailClient>()
-                : serviceProvider.GetRequiredService<BrevoApiEmailClient>())
+            .AddScoped<SmtpEmailClient>()
+            .AddScoped<IEmailClient>(serviceProvider => appSettings.Emails.Client switch
+            {
+                EmailClientType.Brevo => serviceProvider.GetRequiredService<BrevoApiEmailClient>(),
+                EmailClientType.Console => serviceProvider.GetRequiredService<ConsoleEmailClient>(),
+                EmailClientType.Smtp => serviceProvider.GetRequiredService<SmtpEmailClient>(),
+                _ => throw new InvalidOperationException(
+                    $"Emails:Client names no email client ('{appSettings.Emails.Client}')")
+            })
             .AddSingleton(new BrevoApiEmailClientSettings
             {
                 ApiKey = appSettings.Brevo.ApiKey,
@@ -219,6 +226,11 @@ public static class DependencyRegistrar
             {
                 Environment = appSettings.Environment,
                 EnvironmentTagPrefix = appSettings.Brevo.EnvironmentTagPrefix
+            })
+            .AddSingleton(new SmtpEmailClientSettings
+            {
+                Host = appSettings.Emails.Smtp.Host,
+                Port = appSettings.Emails.Smtp.Port
             })
             .AddScoped<IEventAdminService, EventAdminService>()
             .AddSingleton(new EventAdminServiceSettings

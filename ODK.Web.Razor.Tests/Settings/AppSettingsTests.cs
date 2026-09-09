@@ -63,6 +63,8 @@ public static class AppSettingsTests
             source.SourceToken.Should().BeEmpty("a platform's log source is a secret, so it is never committed");
             source.IngestingHost.Should().BeEmpty("a platform's ingesting host belongs to its source");
         });
+        settings.Emails.Smtp.Host.Should().BeEmpty(
+            "only an environment running a mail sink has somewhere for the Smtp client to deliver");
     }
 
     [Test]
