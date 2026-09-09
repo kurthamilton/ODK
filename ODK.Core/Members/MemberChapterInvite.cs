@@ -4,6 +4,11 @@ public class MemberChapterInvite : IDatabaseEntity, IChapterEntity
 {
     public Guid ChapterId { get; set; }
 
+    /// <summary>
+    /// When the member's details were received, which is when an import staged the address rather than when
+    /// this invite was raised. The retention period runs from it, so it is carried rather than restamped:
+    /// re-raising an invite under a new account keeps the instant the original one held.
+    /// </summary>
     public DateTime CreatedUtc { get; set; }
 
     public Guid Id { get; set; }

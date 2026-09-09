@@ -21,10 +21,10 @@ public abstract class ReadWriteRepositoryBase<T> : ReadWriteRepositoryBase<T, ID
             .Where(x => x.Id == id)
             .DeferredSingle();
 
-    public override IDeferredQuerySingleOrDefault<T> GetByIdOrDefault(Guid id)
-        => Set()
-            .Where(x => x.Id == id)
-            .DeferredSingleOrDefault();
+    public override IDeferredQuerySingleOrDefault<T> GetByIdOrDefault(Guid? id)
+        => id != null
+            ? Set().Where(x => x.Id == id).DeferredSingleOrDefault()
+            : DefaultDeferredQuerySingleOrDefault.For<T>();
 
     public override IDeferredQueryMultiple<T> GetByIds(IReadOnlyCollection<Guid> ids)
         => Set()
@@ -67,10 +67,10 @@ public abstract class ReadWriteRepositoryBase<T, TBuilder> : WriteRepositoryBase
             .ById(id)
             .GetSingle();
 
-    public virtual IDeferredQuerySingleOrDefault<T> GetByIdOrDefault(Guid id)
-        => Query()
-            .ById(id)
-            .GetSingleOrDefault();
+    public virtual IDeferredQuerySingleOrDefault<T> GetByIdOrDefault(Guid? id)
+        => id != null
+            ? Query().ById(id.Value).GetSingleOrDefault()
+            : DefaultDeferredQuerySingleOrDefault.For<T>();
 
     public virtual IDeferredQueryMultiple<T> GetByIds(IReadOnlyCollection<Guid> ids)
         => Query()

@@ -15,7 +15,7 @@ public interface IReadWriteRepository<T, TBuilder> : IWriteRepository<T>
 {
     IDeferredQuerySingle<T> GetById(Guid id);
 
-    IDeferredQuerySingleOrDefault<T> GetByIdOrDefault(Guid id);
+    IDeferredQuerySingleOrDefault<T> GetByIdOrDefault(Guid? id);
 
     IDeferredQueryMultiple<T> GetByIds(IReadOnlyCollection<Guid> ids);
 

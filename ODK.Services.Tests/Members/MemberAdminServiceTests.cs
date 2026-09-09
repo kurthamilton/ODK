@@ -748,56 +748,7 @@ public static class MemberAdminServiceTests
     }
 
     [Test]
-    public static async Task ImportMembers_WhenFileHasDuplicateEmails_CreatesSingleMember()
-    {
-        // Arrange
-        using var context = CreateMockOdkContext();
-
-        var currentMember = context.CreateMember();
-        var chapter = context.CreateChapter(
-            owner: currentMember,
-            siteSubscription: context.CreateSiteSubscription());
-
-        // A default site subscription is required for the platform when new members are created.
-        context.Create(new SiteSubscription
-        {
-            Id = Guid.NewGuid(),
-            Name = "Default",
-            DescriptionHtml = "",
-            GroupLimit = 10,
-            Enabled = true,
-            Default = true,
-            Platform = PlatformType.Default
-        });
-
-        var service = CreateMemberAdminService(context);
-
-        var request = CreateMemberChapterAdminServiceRequest(
-            chapter: chapter,
-            currentMember: currentMember,
-            securable: ChapterAdminSecurable.MemberImport);
-
-        // The same address twice (differing only in case) must collapse to a single member.
-        var members = new[]
-        {
-            new MemberImportModel { EmailAddress = "new@example.com", FirstName = "New", LastName = "Member" },
-            new MemberImportModel { EmailAddress = "NEW@example.com", FirstName = "Dupe", LastName = "Member" }
-        };
-
-        // Act
-        var result = await service.ImportMembers(request, members);
-
-        // Assert
-        result.Success.Should().BeTrue();
-
-        context.Set<Member>()
-            .Count(x => x.EmailAddress == "new@example.com" || x.EmailAddress == "NEW@example.com")
-            .Should()
-            .Be(1);
-    }
-
-    [Test]
-    public static async Task ImportMembers_NewMember_InvitesThemWithoutGivingThemMembership()
+    public static async Task InviteStagedMembers_NewMember_InvitesThemWithoutGivingThemMembership()
     {
         /* Arrange - an imported member has no membership status until they activate their account and join, so
            the import records the invite and nothing else. Creating the membership here would make them a
@@ -827,13 +778,10 @@ public static class MemberAdminServiceTests
             currentMember: currentMember,
             securable: ChapterAdminSecurable.MemberImport);
 
-        var members = new[]
-        {
-            new MemberImportModel { EmailAddress = "new@example.com", FirstName = "New", LastName = "Member" }
-        };
+        StageImport(context, chapter, ("new@example.com", "New", "Member"));
 
         // Act
-        var result = await service.ImportMembers(request, members);
+        var result = await service.InviteStagedMembers(request);
 
         // Assert
         result.Success.Should().BeTrue();
@@ -858,7 +806,7 @@ public static class MemberAdminServiceTests
     }
 
     [Test]
-    public static async Task ImportMembers_AlreadyInvited_DoesNotInviteAgain()
+    public static async Task InviteStagedMembers_AlreadyInvited_DoesNotInviteAgain()
     {
         /* Arrange - re-importing the same file is a normal thing to do, and the unique index on
            (chapter, member) would reject a second invite rather than ignore it. */
@@ -898,16 +846,10 @@ public static class MemberAdminServiceTests
             currentMember: currentMember,
             securable: ChapterAdminSecurable.MemberImport);
 
-        var members = new[]
-        {
-            new MemberImportModel
-            {
-                EmailAddress = "invited@example.com", FirstName = "Invited", LastName = "Member"
-            }
-        };
+        StageImport(context, chapter, ("invited@example.com", "Invited", "Member"));
 
         // Act
-        var result = await service.ImportMembers(request, members);
+        var result = await service.InviteStagedMembers(request);
 
         // Assert
         result.Success.Should().BeTrue();
@@ -920,7 +862,7 @@ public static class MemberAdminServiceTests
 
     [TestCase(PlatformType.Default)]
     [TestCase(PlatformType.DrunkenKnitwits)]
-    public static async Task ImportMembers_NewMember_SendsTheInvite(PlatformType platform)
+    public static async Task InviteStagedMembers_NewMember_SendsTheInvite(PlatformType platform)
     {
         /* Arrange - both platforms have a page an invite's link lands on that a member with no password can
            use, so both send the invite. An activation link would take a new member straight past the group
@@ -946,13 +888,10 @@ public static class MemberAdminServiceTests
             platform: platform,
             securable: ChapterAdminSecurable.MemberImport);
 
-        var members = new[]
-        {
-            new MemberImportModel { EmailAddress = "new@example.com", FirstName = "New", LastName = "Member" }
-        };
+        StageImport(context, chapter, ("new@example.com", "New", "Member"));
 
         // Act
-        var result = await service.ImportMembers(request, members);
+        var result = await service.InviteStagedMembers(request);
 
         // Assert - the (mock) background task service runs the enqueued job synchronously, which reloads the
         // member, chapter and invite and sends the email exactly once.
@@ -968,7 +907,7 @@ public static class MemberAdminServiceTests
 
     [TestCase(PlatformType.Default)]
     [TestCase(PlatformType.DrunkenKnitwits)]
-    public static async Task ImportMembers_NewMember_SavesTheImportingAdminsPlatform(PlatformType platform)
+    public static async Task InviteStagedMembers_NewMember_SavesTheImportingAdminsPlatform(PlatformType platform)
     {
         // Arrange - an imported account is raised by an admin rather than by whoever it is for, so the
         // platform it records is the one the import ran on.
@@ -990,13 +929,10 @@ public static class MemberAdminServiceTests
             platform: platform,
             securable: ChapterAdminSecurable.MemberImport);
 
-        var members = new[]
-        {
-            new MemberImportModel { EmailAddress = "new@example.com", FirstName = "New", LastName = "Member" }
-        };
+        StageImport(context, chapter, ("new@example.com", "New", "Member"));
 
         // Act
-        var result = await service.ImportMembers(request, members);
+        var result = await service.InviteStagedMembers(request);
 
         // Assert
         result.Success.Should().BeTrue();
@@ -1005,7 +941,7 @@ public static class MemberAdminServiceTests
     }
 
     [Test]
-    public static async Task ImportMembers_ExistingMember_SendsTheInviteRatherThanRecreatingTheirAccount()
+    public static async Task InviteStagedMembers_ExistingMember_SendsTheInviteRatherThanRecreatingTheirAccount()
     {
         /* Arrange - someone who already has an account, on either platform: there is nothing to activate, so the
            invite is the only email that makes sense. */
@@ -1028,16 +964,10 @@ public static class MemberAdminServiceTests
             currentMember: currentMember,
             securable: ChapterAdminSecurable.MemberImport);
 
-        var members = new[]
-        {
-            new MemberImportModel
-            {
-                EmailAddress = "existing@example.com", FirstName = "Existing", LastName = "Member"
-            }
-        };
+        StageImport(context, chapter, ("existing@example.com", "Existing", "Member"));
 
         // Act
-        var result = await service.ImportMembers(request, members);
+        var result = await service.InviteStagedMembers(request);
 
         // Assert
         result.Success.Should().BeTrue();
@@ -1051,7 +981,7 @@ public static class MemberAdminServiceTests
     }
 
     [Test]
-    public static async Task ImportMembers_UnpublishedGroup_RaisesTheInviteAndHoldsIt()
+    public static async Task InviteStagedMembers_UnpublishedGroup_RaisesTheInviteAndHoldsIt()
     {
         /* Arrange - a group prepares its import before anyone outside it can see it, which is the point of
            importing early. Emailing the invite now would send a link to a group the invitee cannot open. */
@@ -1072,13 +1002,10 @@ public static class MemberAdminServiceTests
             currentMember: currentMember,
             securable: ChapterAdminSecurable.MemberImport);
 
-        var members = new[]
-        {
-            new MemberImportModel { EmailAddress = "new@example.com", FirstName = "New", LastName = "Member" }
-        };
+        StageImport(context, chapter, ("new@example.com", "New", "Member"));
 
         // Act
-        var result = await service.ImportMembers(request, members);
+        var result = await service.InviteStagedMembers(request);
 
         // Assert - the invite is written, and recorded as unsent so publishing the group can find it.
         result.Success.Should().BeTrue();
@@ -1098,7 +1025,7 @@ public static class MemberAdminServiceTests
     }
 
     [Test]
-    public static async Task ImportMembers_PublishedGroup_RecordsTheInviteAsSent()
+    public static async Task InviteStagedMembers_PublishedGroup_RecordsTheInviteAsSent()
     {
         // Arrange - the counterpart of the test above: a published group emails as it imports, and what it
         // emailed has to be recorded, or publishing has no way of telling a held invite from a sent one.
@@ -1119,13 +1046,10 @@ public static class MemberAdminServiceTests
             currentMember: currentMember,
             securable: ChapterAdminSecurable.MemberImport);
 
-        var members = new[]
-        {
-            new MemberImportModel { EmailAddress = "new@example.com", FirstName = "New", LastName = "Member" }
-        };
+        StageImport(context, chapter, ("new@example.com", "New", "Member"));
 
         // Act
-        var result = await service.ImportMembers(request, members);
+        var result = await service.InviteStagedMembers(request);
 
         // Assert
         result.Success.Should().BeTrue();
@@ -1140,7 +1064,7 @@ public static class MemberAdminServiceTests
     }
 
     [Test]
-    public static async Task ImportMembers_MalformedEmailAddress_SkipsThatRowAndImportsTheRest()
+    public static async Task InviteStagedMembers_MalformedEmailAddress_SkipsThatRowAndImportsTheRest()
     {
         // Arrange - a CSV is typed by hand, so a broken address is the likeliest thing in it. One bad row
         // must not create a member nobody can email, and must not stop the good rows importing either.
@@ -1169,14 +1093,11 @@ public static class MemberAdminServiceTests
             currentMember: currentMember,
             securable: ChapterAdminSecurable.MemberImport);
 
-        var members = new[]
-        {
-            new MemberImportModel { EmailAddress = "good@example.com", FirstName = "Good", LastName = "Member" },
-            new MemberImportModel { EmailAddress = "not an email", FirstName = "Bad", LastName = "Member" }
-        };
+        StageImport(
+            context, chapter, ("good@example.com", "Good", "Member"), ("not an email", "Bad", "Member"));
 
         // Act
-        var result = await service.ImportMembers(request, members);
+        var result = await service.InviteStagedMembers(request);
 
         // Assert
         result.Success.Should().BeTrue();
@@ -1185,39 +1106,7 @@ public static class MemberAdminServiceTests
     }
 
     [Test]
-    public static async Task GetMemberImportPreview_MalformedEmailAddress_FlagsTheRowAsInvalid()
-    {
-        // Arrange - the preview is where the admin gets to see the problem, before committing.
-        using var context = CreateMockOdkContext();
-
-        var currentMember = context.CreateMember();
-        var chapter = context.CreateChapter(owner: currentMember);
-
-        var service = CreateMemberAdminService(context);
-
-        var request = CreateMemberChapterAdminServiceRequest(
-            chapter: chapter,
-            currentMember: currentMember,
-            securable: ChapterAdminSecurable.MemberImport);
-
-        var members = new[]
-        {
-            new MemberImportModel { EmailAddress = "good@example.com", FirstName = "Good", LastName = "Member" },
-            new MemberImportModel { EmailAddress = "not an email", FirstName = "Bad", LastName = "Member" }
-        };
-
-        // Act
-        var result = await service.GetMemberImportPreview(request, members);
-
-        // Assert - and the good row keeps its real status rather than everything being flagged.
-        result.Rows.Single(x => x.Member.EmailAddress == "not an email")
-            .Status.Should().Be(MemberImportRowStatus.Invalid);
-        result.Rows.Single(x => x.Member.EmailAddress == "good@example.com")
-            .Status.Should().Be(MemberImportRowStatus.New);
-    }
-
-    [Test]
-    public static async Task ImportMembers_GroupAtItsMemberLimit_FailsWithoutWritingAnything()
+    public static async Task InviteStagedMembers_GroupAtItsMemberLimit_FailsWithoutWritingAnything()
     {
         // Arrange - the file is refused as a whole, before any account is raised or invite written.
         using var context = CreateMockOdkContext();
@@ -1247,13 +1136,10 @@ public static class MemberAdminServiceTests
             currentMember: currentMember,
             securable: ChapterAdminSecurable.MemberImport);
 
-        var members = new[]
-        {
-            new MemberImportModel { EmailAddress = "new@example.com", FirstName = "New", LastName = "Member" }
-        };
+        StageImport(context, chapter, ("new@example.com", "New", "Member"));
 
         // Act
-        var result = await service.ImportMembers(request, members);
+        var result = await service.InviteStagedMembers(request);
 
         // Assert
         result.Success.Should().BeFalse();
@@ -1262,7 +1148,7 @@ public static class MemberAdminServiceTests
     }
 
     [Test]
-    public static async Task ImportMembers_FileLargerThanRemainingCapacity_FailsWithoutWritingAnything()
+    public static async Task InviteStagedMembers_FileLargerThanRemainingCapacity_FailsWithoutWritingAnything()
     {
         /* Arrange - a file that only partly fits is refused whole rather than filled to the limit: which
            rows would be dropped is the order they happen to arrive in. */
@@ -1283,15 +1169,15 @@ public static class MemberAdminServiceTests
             securable: ChapterAdminSecurable.MemberImport);
 
         // Two places, three rows.
-        var members = new[]
-        {
-            new MemberImportModel { EmailAddress = "one@example.com", FirstName = "One", LastName = "Member" },
-            new MemberImportModel { EmailAddress = "two@example.com", FirstName = "Two", LastName = "Member" },
-            new MemberImportModel { EmailAddress = "three@example.com", FirstName = "Three", LastName = "Member" }
-        };
+        StageImport(
+            context,
+            chapter,
+            ("one@example.com", "One", "Member"),
+            ("two@example.com", "Two", "Member"),
+            ("three@example.com", "Three", "Member"));
 
         // Act
-        var result = await service.ImportMembers(request, members);
+        var result = await service.InviteStagedMembers(request);
 
         // Assert - not even the two that would have fitted.
         result.Success.Should().BeFalse();
@@ -1304,7 +1190,7 @@ public static class MemberAdminServiceTests
     }
 
     [Test]
-    public static async Task ImportMembers_OutstandingInvitesFillTheLimit_Fails()
+    public static async Task InviteStagedMembers_OutstandingInvitesFillTheLimit_Fails()
     {
         /* Arrange - an invite is a place held for somebody who has not accepted yet, so it counts against
            the limit. Counting members alone would let the file through and refuse each invitee instead. */
@@ -1333,13 +1219,10 @@ public static class MemberAdminServiceTests
             currentMember: currentMember,
             securable: ChapterAdminSecurable.MemberImport);
 
-        var members = new[]
-        {
-            new MemberImportModel { EmailAddress = "new@example.com", FirstName = "New", LastName = "Member" }
-        };
+        StageImport(context, chapter, ("new@example.com", "New", "Member"));
 
         // Act
-        var result = await service.ImportMembers(request, members);
+        var result = await service.InviteStagedMembers(request);
 
         // Assert
         result.Success.Should().BeFalse();
@@ -1347,7 +1230,7 @@ public static class MemberAdminServiceTests
     }
 
     [Test]
-    public static async Task ImportMembers_AlreadyInvitedRow_TakesNoFurtherPlace()
+    public static async Task InviteStagedMembers_AlreadyInvitedRow_TakesNoFurtherPlace()
     {
         /* Arrange - re-importing a file must not ask for a place the group is already holding, or a full
            group refuses an import that would write nothing. */
@@ -1377,23 +1260,17 @@ public static class MemberAdminServiceTests
             securable: ChapterAdminSecurable.MemberImport);
 
         // The one row is the member already holding the group's only place.
-        var members = new[]
-        {
-            new MemberImportModel
-            {
-                EmailAddress = "invited@example.com", FirstName = "Invited", LastName = "Member"
-            }
-        };
+        StageImport(context, chapter, ("invited@example.com", "Invited", "Member"));
 
         // Act
-        var result = await service.ImportMembers(request, members);
+        var result = await service.InviteStagedMembers(request);
 
         // Assert
         result.Success.Should().BeTrue();
     }
 
     [Test]
-    public static async Task ImportMembers_RowsAlreadyInTheGroup_DoNotCountAgainstTheLimit()
+    public static async Task InviteStagedMembers_RowsAlreadyInTheGroup_DoNotCountAgainstTheLimit()
     {
         // Arrange - a row for somebody already in the group is skipped, so it asks for no place.
         using var context = CreateMockOdkContext();
@@ -1423,23 +1300,17 @@ public static class MemberAdminServiceTests
             securable: ChapterAdminSecurable.MemberImport);
 
         // The group is at its limit of one, and the file holds only that one member.
-        var members = new[]
-        {
-            new MemberImportModel
-            {
-                EmailAddress = "member@example.com", FirstName = "Member", LastName = "One"
-            }
-        };
+        StageImport(context, chapter, ("member@example.com", "Member", "One"));
 
         // Act
-        var result = await service.ImportMembers(request, members);
+        var result = await service.InviteStagedMembers(request);
 
         // Assert
         result.Success.Should().BeTrue();
     }
 
     [Test]
-    public static async Task ImportMembers_PlanWithNoMemberLimit_ImportsEveryRow()
+    public static async Task InviteStagedMembers_PlanWithNoMemberLimit_ImportsEveryRow()
     {
         // Arrange - a plan stating no limit permits any number, which is not the same as permitting none.
         using var context = CreateMockOdkContext();
@@ -1458,14 +1329,11 @@ public static class MemberAdminServiceTests
             currentMember: currentMember,
             securable: ChapterAdminSecurable.MemberImport);
 
-        var members = new[]
-        {
-            new MemberImportModel { EmailAddress = "one@example.com", FirstName = "One", LastName = "Member" },
-            new MemberImportModel { EmailAddress = "two@example.com", FirstName = "Two", LastName = "Member" }
-        };
+        StageImport(
+            context, chapter, ("one@example.com", "One", "Member"), ("two@example.com", "Two", "Member"));
 
         // Act
-        var result = await service.ImportMembers(request, members);
+        var result = await service.InviteStagedMembers(request);
 
         // Assert
         result.Success.Should().BeTrue();
@@ -1473,7 +1341,7 @@ public static class MemberAdminServiceTests
     }
 
     [Test]
-    public static async Task ImportMembers_OwnerHasNoActiveSubscription_Fails()
+    public static async Task InviteStagedMembers_OwnerHasNoActiveSubscription_Fails()
     {
         /* Arrange - a group whose owner has no active plan admits nobody by any route, so the import says so
            to the admin rather than succeeding and refusing every invitee in turn. Pinned: the process that
@@ -1492,50 +1360,14 @@ public static class MemberAdminServiceTests
             currentMember: currentMember,
             securable: ChapterAdminSecurable.MemberImport);
 
-        var members = new[]
-        {
-            new MemberImportModel { EmailAddress = "new@example.com", FirstName = "New", LastName = "Member" }
-        };
+        StageImport(context, chapter, ("new@example.com", "New", "Member"));
 
         // Act
-        var result = await service.ImportMembers(request, members);
+        var result = await service.InviteStagedMembers(request);
 
         // Assert
         result.Success.Should().BeFalse();
         context.Set<Member>().Any(x => x.EmailAddress == "new@example.com").Should().BeFalse();
-    }
-
-    [Test]
-    public static async Task GetMemberImportPreview_FileLargerThanRemainingCapacity_ReportsItDoesNotFit()
-    {
-        // Arrange - the preview is where the admin finds out, so the confirm step can be withheld.
-        using var context = CreateMockOdkContext();
-
-        var currentMember = context.CreateMember();
-        var chapter = context.CreateChapter(
-            owner: currentMember,
-            siteSubscription: context.CreateSiteSubscription(memberLimit: 1));
-
-        var service = CreateMemberAdminService(context);
-
-        var request = CreateMemberChapterAdminServiceRequest(
-            chapter: chapter,
-            currentMember: currentMember,
-            securable: ChapterAdminSecurable.MemberImport);
-
-        var members = new[]
-        {
-            new MemberImportModel { EmailAddress = "one@example.com", FirstName = "One", LastName = "Member" },
-            new MemberImportModel { EmailAddress = "two@example.com", FirstName = "Two", LastName = "Member" }
-        };
-
-        // Act
-        var result = await service.GetMemberImportPreview(request, members);
-
-        // Assert
-        result.PlacesRequired.Should().Be(2);
-        result.Capacity.Remaining.Should().Be(1);
-        result.FitsWithinCapacity.Should().BeFalse();
     }
 
     [Test]
@@ -1756,6 +1588,119 @@ public static class MemberAdminServiceTests
                 It.IsAny<DateTime>(),
                 It.IsAny<DateTime>()),
             Times.Never);
+    }
+
+    [Test]
+    public static async Task InviteStagedMembers_DatesTheInviteFromWhenTheAddressArrived()
+    {
+        /* Arrange - the retention period runs from when the details were received, so an invite raised from
+           a row the group has held for a month expires a month sooner than one raised today. Stamping the
+           invite with UtcNow would give the group a fresh period every time it delayed. */
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(
+            owner: currentMember,
+            siteSubscription: context.CreateSiteSubscription());
+
+        SeedDefaultSiteSubscription(context, PlatformType.Default);
+
+        var service = CreateMemberAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberImport);
+
+        var receivedUtc = DateTime.UtcNow.AddDays(-30);
+        context.Create(new MemberChapterImport
+        {
+            ChapterId = chapter.Id,
+            CreatedUtc = receivedUtc,
+            EmailAddress = "new@example.com",
+            FirstName = "New",
+            LastName = "Member",
+            UploadedUtc = DateTime.UtcNow
+        });
+        context.SaveChanges();
+
+        // Act
+        var result = await service.InviteStagedMembers(request);
+
+        // Assert
+        result.Success.Should().BeTrue();
+
+        context.Set<MemberChapterInvite>()
+            .Single(x => x.ChapterId == chapter.Id)
+            .CreatedUtc
+            .Should()
+            .BeCloseTo(receivedUtc, TimeSpan.FromSeconds(1));
+    }
+
+    [Test]
+    public static async Task InviteStagedMembers_InvitedRow_StopsBeingHeld()
+    {
+        /* Arrange - a row exists only while there is something to do about it, and the invite is now the
+           record of the ask. Keeping both would hold the same details twice. */
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(
+            owner: currentMember,
+            siteSubscription: context.CreateSiteSubscription());
+
+        SeedDefaultSiteSubscription(context, PlatformType.Default);
+
+        var service = CreateMemberAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberImport);
+
+        StageImport(context, chapter, ("new@example.com", "New", "Member"));
+
+        // Act
+        var result = await service.InviteStagedMembers(request);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        context.Set<MemberChapterImport>().Should().BeEmpty();
+    }
+
+    [Test]
+    public static async Task InviteStagedMembers_MalformedEmailAddress_LeavesTheRowHeld()
+    {
+        /* Arrange - correcting the address is still an action, so the row stays. Dropping it would take the
+           only record of the problem with it, which is the whole reason the rows persist. */
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(
+            owner: currentMember,
+            siteSubscription: context.CreateSiteSubscription());
+
+        SeedDefaultSiteSubscription(context, PlatformType.Default);
+
+        var service = CreateMemberAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberImport);
+
+        StageImport(
+            context, chapter, ("good@example.com", "Good", "Member"), ("not an email", "Bad", "Member"));
+
+        // Act
+        var result = await service.InviteStagedMembers(request);
+
+        // Assert
+        result.Success.Should().BeTrue();
+
+        context.Set<MemberChapterImport>()
+            .Should().ContainSingle()
+            .Which.EmailAddress.Should().Be("not an email");
     }
 
     private static MemberAdminService CreateMemberAdminService(
@@ -1990,5 +1935,30 @@ public static class MemberAdminServiceTests
             Name = "Default",
             Platform = platform
         });
+    }
+
+    /// <summary>
+    /// Puts addresses in the group's holding, which is what an upload does and what an invite reads. Saved
+    /// here, so a test can stage after the service has been built.
+    /// </summary>
+    private static void StageImport(
+        MockOdkContext context,
+        Chapter chapter,
+        params (string EmailAddress, string FirstName, string LastName)[] rows)
+    {
+        foreach (var (emailAddress, firstName, lastName) in rows)
+        {
+            context.Create(new MemberChapterImport
+            {
+                ChapterId = chapter.Id,
+                CreatedUtc = DateTime.UtcNow,
+                EmailAddress = emailAddress,
+                FirstName = firstName,
+                LastName = lastName,
+                UploadedUtc = DateTime.UtcNow
+            });
+        }
+
+        context.SaveChanges();
     }
 }

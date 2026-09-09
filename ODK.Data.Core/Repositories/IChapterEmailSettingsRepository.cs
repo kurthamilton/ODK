@@ -5,5 +5,5 @@ namespace ODK.Data.Core.Repositories;
 
 public interface IChapterEmailSettingsRepository : IReadWriteRepository<ChapterEmailSettings>
 {
-    IDeferredQuerySingleOrDefault<ChapterEmailSettings> GetByChapterIdOrDefault(Guid chapterId);
+    IDeferredQuerySingleOrDefault<ChapterEmailSettings> GetByChapterIdOrDefault(Guid? chapterId);
 }

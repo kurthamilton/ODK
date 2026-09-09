@@ -1,10 +1,14 @@
 ﻿@page "/my/groups/{chapterId:guid}/members/import"
-@using ODK.Web.Razor.Models.Admin.Members
+@using ODK.Services.Members
 @using ODK.Web.Razor.Models.Components
 @model ImportModel
+@inject IMemberImportService MemberImportService
 @{
     Layout = "_GroupAdminLayout";
     Model.Title = "Import members";
+
+    var viewModel = await MemberImportService.GetMemberImportViewModel(
+        Model.MemberChapterAdminServiceRequest);
 }
 
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
@@ -22,17 +26,7 @@
             }
         }
     },
-    BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_ImportMembersContent", new MemberImportViewModel
-    {
-        Chapter = Model.Chapter,
-        Preview = Model.Preview,
-        Token = Model.Token
-    })</div>,
+    BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_ImportMembersContent", viewModel)</div>,
     MenuTitle = "Admin",
     MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu")
 })
-
-@section scripts 
-{
-    <script src="~/js/odk.wizard.js" asp-append-version="true"></script>
-}

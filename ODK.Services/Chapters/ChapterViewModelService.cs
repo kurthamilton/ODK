@@ -301,7 +301,7 @@ public class ChapterViewModelService : IChapterViewModelService
             propertyOptions,
             texts,
             chapterPages,
-            invite) = await _unitOfWork.Run(
+            invitedMember) = await _unitOfWork.Run(
             x => currentMember != null
                 ? x.ChapterAdminMemberRepository.IsAdmin(platform, chapter.Id, currentMember.Id)
                 : new DefaultDeferredQueryAny(false),
@@ -310,16 +310,7 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.ChapterPropertyOptionRepository.GetByChapterId(chapter.Id),
             x => x.ChapterTextsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPageRepository.GetByChapterId(chapter.Id),
-            x => !string.IsNullOrEmpty(inviteToken)
-                ? x.MemberChapterInviteRepository.GetByToken(inviteToken)
-                : new DefaultDeferredQuerySingleOrDefault<MemberChapterInvite>());
-
-        /* A second round-trip only when there is an invite to resolve: the member it names cannot be
-           batched with the query that finds it. An invite to another group is treated as no invite
-           rather than refused - the link is simply not for this page. */
-        var invitedMember = invite != null && invite.ChapterId == chapter.Id
-            ? await _unitOfWork.MemberRepository.GetByIdOrDefault(invite.MemberId).Run()
-            : null;
+            x => x.MemberRepository.GetInvitedByToken(inviteToken, chapter.Id));
 
         return new GroupAcceptInvitePageViewModel
         {
@@ -328,7 +319,7 @@ public class ChapterViewModelService : IChapterViewModelService
             CurrentMember = currentMember,
             /* Only an invite naming an account that has yet to be activated has a form to fill: one naming
                an account that can sign in is accepted by signing in, and no invite at all is a dead link. */
-            Form = invitedMember is { Activated: false }
+            Form = invitedMember?.Activated == false
                 ? new AcceptInviteFormViewModel
                 {
                     EmailAddress = invitedMember.EmailAddress,
@@ -486,7 +477,7 @@ public class ChapterViewModelService : IChapterViewModelService
                     .ForChapter(chapter.Id)
                     .ToChapterSubscription()
                     .GetSingleOrDefault()
-                : new DefaultDeferredQuerySingleOrDefault<MemberChapterSubscription>(),
+                : DefaultDeferredQuerySingleOrDefault.For<MemberChapterSubscription>(),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
             x => currentMember != null
@@ -580,7 +571,7 @@ public class ChapterViewModelService : IChapterViewModelService
                     .ForChapter(chapter.Id)
                     .ToChapterSubscription()
                     .GetSingleOrDefault()
-                : new DefaultDeferredQuerySingleOrDefault<MemberChapterSubscription>(),
+                : DefaultDeferredQuerySingleOrDefault.For<MemberChapterSubscription>(),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
             x => currentMember != null
@@ -658,7 +649,7 @@ public class ChapterViewModelService : IChapterViewModelService
                     .ForChapter(chapter.Id)
                     .ToChapterSubscription()
                     .GetSingleOrDefault()
-                : new DefaultDeferredQuerySingleOrDefault<MemberChapterSubscription>(),
+                : DefaultDeferredQuerySingleOrDefault.For<MemberChapterSubscription>(),
             x => x.MemberSiteSubscriptionRecordRepository
                 .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
                 .HasFeature(SiteFeatureType.InstagramFeed),
@@ -868,23 +859,14 @@ public class ChapterViewModelService : IChapterViewModelService
             hasProperties,
             hasQuestions,
             chapterPages,
-            invite) = await _unitOfWork.Run(
+            invitedMember) = await _unitOfWork.Run(
             x => currentMember != null
                 ? x.ChapterAdminMemberRepository.IsAdmin(platform, chapter.Id, currentMember.Id)
                 : new DefaultDeferredQueryAny(false),
             x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
             x => x.ChapterPageRepository.GetByChapterId(chapter.Id),
-            x => !string.IsNullOrEmpty(inviteToken)
-                ? x.MemberChapterInviteRepository.GetByToken(inviteToken)
-                : new DefaultDeferredQuerySingleOrDefault<MemberChapterInvite>());
-
-        /* A second round-trip only when there is an invite to resolve: the member it names cannot be
-           batched with the query that finds it. An invite to another group is treated as no invite
-           rather than refused - the link is simply not for this page. */
-        var invitedMember = invite != null && invite.ChapterId == chapter.Id
-            ? await _unitOfWork.MemberRepository.GetByIdOrDefault(invite.MemberId).Run()
-            : null;
+            x => x.MemberRepository.GetInvitedByToken(inviteToken, chapter.Id));
 
         return new GroupRefuseInvitePageViewModel
         {
@@ -990,7 +972,7 @@ public class ChapterViewModelService : IChapterViewModelService
                     .ForChapter(chapter.Id)
                     .ToChapterSubscription()
                     .GetSingleOrDefault()
-                : new DefaultDeferredQuerySingleOrDefault<MemberChapterSubscription>(),
+                : DefaultDeferredQuerySingleOrDefault.For<MemberChapterSubscription>(),
             x => x.MemberSiteSubscriptionRecordRepository
                 .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
                 .HasFeature(SiteFeatureType.InstagramFeed),

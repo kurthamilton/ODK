@@ -56,20 +56,11 @@ public class AccountViewModelService : IAccountViewModelService
             chapterProperties,
             chapterPropertyOptions,
             chapterTexts,
-            invite) = await _unitOfWork.Run(
+            invitedMember) = await _unitOfWork.Run(
             x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPropertyOptionRepository.GetByChapterId(chapter.Id),
             x => x.ChapterTextsRepository.GetByChapterId(chapter.Id),
-            x => !string.IsNullOrEmpty(inviteToken)
-                ? x.MemberChapterInviteRepository.GetByToken(inviteToken)
-                : new DefaultDeferredQuerySingleOrDefault<MemberChapterInvite>());
-
-        /* A second round-trip only when there is an invite to resolve: the member it names cannot be
-           batched with the query that finds it. An invite for another chapter is ignored rather than
-           refused - the link is simply not for this page. */
-        var invitedMember = invite != null && invite.ChapterId == chapter.Id
-            ? await _unitOfWork.MemberRepository.GetByIdOrDefault(invite.MemberId).Run()
-            : null;
+            x => x.MemberRepository.GetInvitedByToken(inviteToken, chapter.Id));
 
         return new ChapterJoinPageViewModel
         {

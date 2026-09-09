@@ -13,10 +13,10 @@ public class MemberPreferencesRepository : WriteRepositoryBase<MemberPreferences
     {
     }
 
-    public IDeferredQuerySingleOrDefault<MemberPreferences> GetByMemberIdOrDefault(Guid memberId)
-        => Set()
-            .Where(x => x.MemberId == memberId)
-            .DeferredSingleOrDefault();
+    public IDeferredQuerySingleOrDefault<MemberPreferences> GetByMemberIdOrDefault(Guid? memberId)
+        => memberId != null
+            ? Set().Where(x => x.MemberId == memberId).DeferredSingleOrDefault()
+            : DefaultDeferredQuerySingleOrDefault.For<MemberPreferences>();
 
     public IDeferredQueryMultiple<MemberPreferences> GetByMemberIds(IEnumerable<Guid> memberIds)
         => Set()

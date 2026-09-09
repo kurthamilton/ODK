@@ -27,7 +27,8 @@ public class GroupDashboardViewModel
         CanPublish ||
         NeedsImage ||
         MembersAwaitingApproval > 0 ||
-        UnrepliedContactMessages > 0;
+        UnrepliedContactMessages > 0 ||
+        WaitingToBeInvited > 0;
 
     /// <summary>
     /// How many invites the group is holding, which publishing sends. Zero unless publishing is the
@@ -61,4 +62,10 @@ public class GroupDashboardViewModel
     /// The next few events, soonest first. Null when the admin can't reach the events page.
     /// </summary>
     public required IReadOnlyCollection<EventSummaryDto>? UpcomingEvents { get; init; }
+
+    /// <summary>
+    /// How many uploaded addresses the group is holding, invited or not - the rows it still has something
+    /// to do about. Null when the admin can't reach the import page.
+    /// </summary>
+    public required int? WaitingToBeInvited { get; init; }
 }

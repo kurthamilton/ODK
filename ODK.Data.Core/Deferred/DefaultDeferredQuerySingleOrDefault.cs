@@ -2,6 +2,8 @@
 
 public static class DefaultDeferredQuerySingleOrDefault
 {
+    public static IDeferredQuerySingleOrDefault<T> For<T>() => For<T>(default);
+
     public static IDeferredQuerySingleOrDefault<T> For<T>(T? value)
         => new DefaultDeferredQuerySingleOrDefault<T>(value);
 }

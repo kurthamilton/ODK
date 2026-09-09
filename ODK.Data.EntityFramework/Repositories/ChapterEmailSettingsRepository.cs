@@ -13,8 +13,8 @@ public class ChapterEmailSettingsRepository : ReadWriteRepositoryBase<ChapterEma
     {
     }
 
-    public IDeferredQuerySingleOrDefault<ChapterEmailSettings> GetByChapterIdOrDefault(Guid chapterId)
-        => Set()
-            .Where(x => x.ChapterId == chapterId)
-            .DeferredSingleOrDefault();
+    public IDeferredQuerySingleOrDefault<ChapterEmailSettings> GetByChapterIdOrDefault(Guid? chapterId)
+        => chapterId != null
+            ? Set().Where(x => x.ChapterId == chapterId).DeferredSingleOrDefault()
+            : DefaultDeferredQuerySingleOrDefault.For<ChapterEmailSettings>();
 }

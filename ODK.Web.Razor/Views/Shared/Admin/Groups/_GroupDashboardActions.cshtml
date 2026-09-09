@@ -62,7 +62,8 @@
         </div>
     }
 
-    @if (Model.MembersAwaitingApproval > 0 || Model.UnrepliedContactMessages > 0)
+    @if (Model.MembersAwaitingApproval > 0 || Model.UnrepliedContactMessages > 0 ||
+         Model.WaitingToBeInvited > 0)
     {
         <div class="list-group">
             @if (Model.MembersAwaitingApproval > 0)
@@ -86,6 +87,18 @@
                         <span class="ms-2">Unanswered messages</span>
                     </span>
                     <span class="badge bg-danger rounded-pill">@Model.UnrepliedContactMessages</span>
+                </a>
+            }
+
+            @if (Model.WaitingToBeInvited > 0)
+            {
+                <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                   href="@OdkRoutes.GroupAdmin.MembersImport(Model.Chapter).Path">
+                    <span>
+                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Upload))
+                        <span class="ms-2">Uploaded members waiting to be invited</span>
+                    </span>
+                    <span class="badge bg-danger rounded-pill">@Model.WaitingToBeInvited</span>
                 </a>
             }
         </div>

@@ -231,8 +231,7 @@ public class Program
             .AddScoped<IPaymentUpdateBroadcaster, SignalRPaymentUpdateBroadcaster>();
 
         builder.Services
-            .AddScoped<IMemberImportStagingService, MemberImportStagingService>()
-            .AddScoped<IMemberImportPreviewBuilder, MemberImportPreviewBuilder>();
+            .AddScoped<IMemberImportFileReader, MemberImportFileReader>();
 
         builder.Services.AddLocalization();
 

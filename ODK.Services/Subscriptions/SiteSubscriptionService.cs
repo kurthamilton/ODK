@@ -195,18 +195,12 @@ public class SiteSubscriptionService : ISiteSubscriptionService
                 .WithFeatures()
                 .GetAll(),
             x => x.SiteSubscriptionPriceRepository.GetAllEnabled(platform),
-            x => memberId != null
-                ? x.MemberRepository.GetByIdOrDefault(memberId.Value)
-                : new DefaultDeferredQuerySingleOrDefault<Member>(),
+            x => x.MemberRepository.GetByIdOrDefault(memberId),
             x => memberId != null
                 ? x.MemberSiteSubscriptionRecordRepository.GetDtoByMemberId(memberId.Value)
-                : new DefaultDeferredQuerySingleOrDefault<MemberSiteSubscriptionDto>(),
-            x => memberId != null
-                ? x.CurrencyRepository.GetByMemberIdOrDefault(memberId.Value)
-                : new DefaultDeferredQuerySingleOrDefault<Currency>(),
-            x => chapterId != null
-                ? x.CurrencyRepository.GetByChapterIdOrDefault(chapterId.Value)
-                : new DefaultDeferredQuerySingleOrDefault<Currency>());
+                : DefaultDeferredQuerySingleOrDefault.For<MemberSiteSubscriptionDto>(),
+            x => x.CurrencyRepository.GetByMemberIdOrDefault(memberId),
+            x => x.CurrencyRepository.GetByChapterIdOrDefault(chapterId));
 
         var currency = memberCurrency ?? chapterCurrency;
 

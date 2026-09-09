@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Members;
@@ -31,9 +32,10 @@ public class MemberChapterInviteRepository : WriteRepositoryBase<MemberChapterIn
         .Where(x => memberIds.Contains(x.MemberId))
         .DeferredMultiple();
 
-    public IDeferredQuerySingleOrDefault<MemberChapterInvite> GetByToken(string token) => Set()
-        .Where(x => x.Token == token)
-        .DeferredSingleOrDefault();
+    public IDeferredQuerySingleOrDefault<MemberChapterInvite> GetByToken(string? token)
+        => !string.IsNullOrEmpty(token)
+            ? Set().Where(x => x.Token == token).DeferredSingleOrDefault()
+            : DefaultDeferredQuerySingleOrDefault.For<MemberChapterInvite>();
 
     public IDeferredQueryMultiple<MemberChapterInvite> GetCreatedBefore(DateTime createdBeforeUtc) =>
         (from invite in Set()
@@ -49,9 +51,8 @@ public class MemberChapterInviteRepository : WriteRepositoryBase<MemberChapterIn
          orderby invite.CreatedUtc
          select new MemberChapterInviteDto
          {
-             CreatedUtc = invite.CreatedUtc,
-             Member = member,
-             SentUtc = invite.SentUtc
+             Invite = invite,
+             Member = member
          })
         .DeferredMultiple();
 

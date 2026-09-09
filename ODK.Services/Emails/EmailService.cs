@@ -77,9 +77,7 @@ public class EmailService : IEmailService
 
         var (templates, chapterEmailSettings) = await _unitOfWork.Run(
             x => x.ChapterEmailRepository.GetDto(chapterId, options.Type),
-            x => chapterId != null
-                ? x.ChapterEmailSettingsRepository.GetByChapterIdOrDefault(chapterId.Value)
-                : new DefaultDeferredQuerySingleOrDefault<ChapterEmailSettings>());
+            x => x.ChapterEmailSettingsRepository.GetByChapterIdOrDefault(chapterId));
 
         // A supplied layout wins, so a preview shows an edited layout rather than the stored one.
         var layoutHtml = StringUtils.Coalesce(
@@ -171,7 +169,7 @@ public class EmailService : IEmailService
             x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => replyToMember != null
                 ? x.MemberEmailPreferenceRepository.GetByMemberId(replyToMember.Id, MemberEmailPreferenceType.EventMessages)
-                : new DefaultDeferredQuerySingleOrDefault<MemberEmailPreference>());
+                : DefaultDeferredQuerySingleOrDefault.For<MemberEmailPreference>());
 
         /* One send per audience, each reading its own template: admins are told a comment was left on an
            event they run, the replied-to member that someone answered them. The parameters are the same

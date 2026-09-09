@@ -311,6 +311,7 @@ public static class DependencyRegistrar
             .AddScoped<IMemberSiteSubscriptionWriter, MemberSiteSubscriptionWriter>()
             .AddScoped<IMemberEmailService, MemberEmailService>()
             .AddScoped<IMemberImageService, MemberImageService>()
+            .AddScoped<IMemberImportService, MemberImportService>()
             .AddScoped<IMemberInviteService, MemberInviteService>()
             .AddScoped<IMemberLocaleService, MemberLocaleService>()
             .AddSingleton(new MemberImageServiceSettings
@@ -446,6 +447,13 @@ public static class DependencyRegistrar
 
         // How long an expired site subscription keeps its access (Subscriptions:DefaultCooldownMonths).
         services.AddSingleton(new SiteSubscriptionCooldown(appSettings.Subscriptions.DefaultCooldownMonths));
+
+        /* One retention period covers the whole holding, so both read the same setting: an address a
+           group is holding and the invite raised from it are the same details under the same clock. */
+        services.AddSingleton(new MemberImportServiceSettings
+        {
+            RetentionDays = appSettings.Privacy.Invites.RetentionDays
+        });
 
         services.AddSingleton(new MemberInviteServiceSettings
         {

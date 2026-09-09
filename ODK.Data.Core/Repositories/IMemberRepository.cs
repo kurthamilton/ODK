@@ -1,5 +1,4 @@
 ﻿using ODK.Core.Members;
-using ODK.Core.Platforms;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Members;
 using ODK.Data.Core.QueryBuilders;
@@ -23,6 +22,8 @@ public interface IMemberRepository : IReadWriteRepository<Member, IMemberQueryBu
     IDeferredQuerySingle<Member> GetChapterOwner(Guid chapterId);
 
     IDeferredQuery<int> GetCountByChapterId(Guid chapterId);
+
+    IDeferredQuerySingleOrDefault<Member> GetInvitedByToken(string? token, Guid chapterId);
 
     /// <summary>
     /// The members who most recently joined a chapter, newest first. Ordered by the date they joined the

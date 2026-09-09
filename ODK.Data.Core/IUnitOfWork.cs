@@ -54,6 +54,7 @@ public interface IUnitOfWork
     IMemberActivationTokenRepository MemberActivationTokenRepository { get; }
     IMemberAvatarRepository MemberAvatarRepository { get; }
     IMemberChapterNotificationSettingsRepository MemberChapterNotificationSettingsRepository { get; }
+    IMemberChapterImportRepository MemberChapterImportRepository { get; }
     IMemberChapterInviteRepository MemberChapterInviteRepository { get; }
     IMemberChapterRepository MemberChapterRepository { get; }
     IMemberEmailAddressUpdateTokenRepository MemberEmailAddressUpdateTokenRepository { get; }

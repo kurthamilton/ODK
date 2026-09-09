@@ -770,18 +770,14 @@ public class PaymentService : IPaymentService
                 x => x.MemberRepository.GetById(metadata.MemberId.Value),
                 x => x.ChapterRepository.GetById(platform, metadata.ChapterId.Value),
                 x => x.ChapterSubscriptionRepository.GetById(metadata.ChapterSubscriptionId.Value),
-                x => metadata.PaymentId != null
-                    ? x.PaymentRepository.GetByIdOrDefault(metadata.PaymentId.Value)
-                    : new DefaultDeferredQuerySingleOrDefault<Payment>(),
-                x => metadata.PaymentCheckoutSessionId != null
-                    ? x.PaymentCheckoutSessionRepository.GetByIdOrDefault(metadata.PaymentCheckoutSessionId.Value)
-                    : new DefaultDeferredQuerySingleOrDefault<PaymentCheckoutSession>(),
+                x => x.PaymentRepository.GetByIdOrDefault(metadata.PaymentId),
+                x => x.PaymentCheckoutSessionRepository.GetByIdOrDefault(metadata.PaymentCheckoutSessionId),
                 x => !string.IsNullOrEmpty(initiatorId)
                     ? x.MemberSubscriptionRecordRepository
                         .Query()
                         .ForInitiator(initiatorId)
                         .GetSingleOrDefault()
-                    : new DefaultDeferredQuerySingleOrDefault<MemberSubscriptionRecord>());
+                    : DefaultDeferredQuerySingleOrDefault.For<MemberSubscriptionRecord>());
 
         /* Asked here as well as in UpdateMemberChapterSubscription, and asked first: a billing this event
            has already recorded must not get as far as deciding its payment, because deciding creates one,
@@ -977,18 +973,14 @@ public class PaymentService : IPaymentService
                 x => x.MemberRepository.GetById(metadata.MemberId.Value),
                 x => x.SiteSubscriptionRepository.GetByPriceId(metadata.SiteSubscriptionPriceId.Value),
                 x => x.SiteSubscriptionPriceRepository.GetById(metadata.SiteSubscriptionPriceId.Value),
-                x => metadata.PaymentId != null
-                    ? x.PaymentRepository.GetByIdOrDefault(metadata.PaymentId.Value)
-                    : new DefaultDeferredQuerySingleOrDefault<Payment>(),
-                x => metadata.PaymentCheckoutSessionId != null
-                    ? x.PaymentCheckoutSessionRepository.GetByIdOrDefault(metadata.PaymentCheckoutSessionId.Value)
-                    : new DefaultDeferredQuerySingleOrDefault<PaymentCheckoutSession>(),
+                x => x.PaymentRepository.GetByIdOrDefault(metadata.PaymentId),
+                x => x.PaymentCheckoutSessionRepository.GetByIdOrDefault(metadata.PaymentCheckoutSessionId),
                 x => !string.IsNullOrEmpty(initiatorId)
                     ? x.MemberSiteSubscriptionRecordRepository
                         .Query()
                         .ForInitiator(initiatorId)
                         .GetSingleOrDefault()
-                    : new DefaultDeferredQuerySingleOrDefault<MemberSiteSubscriptionRecord>());
+                    : DefaultDeferredQuerySingleOrDefault.For<MemberSiteSubscriptionRecord>());
 
         /* Asked here as well as in UpdateMemberSiteSubscription, and asked first: a billing this event has
            already recorded must not get as far as deciding its payment, because deciding creates one, and a
@@ -1798,7 +1790,7 @@ public class PaymentService : IPaymentService
                     .Query()
                     .ForInitiator(initiatorId)
                     .GetSingleOrDefault()
-                : new DefaultDeferredQuerySingleOrDefault<MemberSubscriptionRecord>(),
+                : DefaultDeferredQuerySingleOrDefault.For<MemberSubscriptionRecord>(),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId));
 
         // Idempotency: if this initiating event (the payment provider webhook id) has already recorded a
@@ -1885,7 +1877,7 @@ public class PaymentService : IPaymentService
         var (recordForInitiator, currentRecord) = await _unitOfWork.Run(
             x => !string.IsNullOrEmpty(initiatorId)
                 ? x.MemberSiteSubscriptionRecordRepository.Query().ForInitiator(initiatorId).GetSingleOrDefault()
-                : new DefaultDeferredQuerySingleOrDefault<MemberSiteSubscriptionRecord>(),
+                : DefaultDeferredQuerySingleOrDefault.For<MemberSiteSubscriptionRecord>(),
             x => x.MemberSiteSubscriptionRecordRepository.Query().Current().ForMember(memberId).GetSingleOrDefault());
 
         // Idempotency: if this initiating event (the payment provider webhook id) has already extended a

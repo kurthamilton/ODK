@@ -185,7 +185,7 @@ public class EventViewModelService : IEventViewModelService
                     .ForChapter(chapter.Id)
                     .ToChapterSubscription()
                     .GetSingleOrDefault()
-                : new DefaultDeferredQuerySingleOrDefault<MemberChapterSubscription>(),
+                : DefaultDeferredQuerySingleOrDefault.For<MemberChapterSubscription>(),
             x => x.EventHostRepository.GetByEventShortcode(shortcode),
             x => x.EventCommentRepository.GetByEventShortcode(shortcode),
             x => x.EventResponseRepository.GetByEventShortcode(shortcode),
@@ -338,7 +338,7 @@ public class EventViewModelService : IEventViewModelService
                     .ForChapter(chapter.Id)
                     .ToChapterSubscription()
                     .GetSingleOrDefault()
-                : new DefaultDeferredQuerySingleOrDefault<MemberChapterSubscription>(),
+                : DefaultDeferredQuerySingleOrDefault.For<MemberChapterSubscription>(),
             x => x.EventRepository
                 .Query(x => x.ForChapter(chapter.Id).After(afterUtc).Published())
                 .WithVenue()

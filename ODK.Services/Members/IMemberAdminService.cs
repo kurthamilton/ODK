@@ -26,12 +26,6 @@ public interface IMemberAdminService
     Task<IReadOnlyCollection<IReadOnlyCollection<string>>> GetMemberCsv(
         IMemberChapterAdminServiceRequest request);
 
-    Task<MemberImportPreview> GetMemberImportPreview(
-        IMemberChapterAdminServiceRequest request, IReadOnlyCollection<MemberImportModel> members);
-
-    Task<IReadOnlyCollection<IReadOnlyCollection<string>>> GetMemberImportTemplate(
-        IMemberChapterAdminServiceRequest request);
-
     Task<MemberDeleteAdminPageViewModel> GetMemberDeleteViewModel(
         IMemberChapterAdminServiceRequest request, Guid memberId);
 
@@ -57,7 +51,17 @@ public interface IMemberAdminService
 
     Task<MemberAdminPageViewModel> GetMemberViewModel(IMemberChapterAdminServiceRequest request, Guid memberId);
 
-    Task<ServiceResult> ImportMembers(IMemberChapterAdminServiceRequest request, IReadOnlyCollection<MemberImportModel> members);
+    /// <summary>
+    /// Raises invites for the addresses the group is holding that are ready to be invited, and drops the
+    /// rows it resolves - whether by inviting them or by finding they now need nothing. An unusable address
+    /// is left held, since correcting it is still an action.
+    /// </summary>
+    /// <remarks>
+    /// Refused as a whole batch when the group's remaining places do not cover it, rather than filled to
+    /// the limit in the order the rows happen to be read: the rows stay, so the admin removes some and
+    /// tries again.
+    /// </remarks>
+    Task<ServiceResult> InviteStagedMembers(IMemberChapterAdminServiceRequest request);
 
     Task<ServiceResult> RemoveMemberFromChapter(IMemberChapterAdminServiceRequest request, Guid memberId, string? reason);
 

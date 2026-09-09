@@ -12,7 +12,7 @@ public interface ISiteSubscriptionRepository : IReadWriteRepository<SiteSubscrip
 
     IDeferredQuerySingle<SiteSubscription> GetByPriceId(Guid priceId);
 
-    IDeferredQuerySingleOrDefault<SiteSubscription> GetByPriceIdOrDefault(Guid priceId);
+    IDeferredQuerySingleOrDefault<SiteSubscription> GetByPriceIdOrDefault(Guid? priceId);
 
     IDeferredQuerySingle<SiteSubscription> GetDefault(EnvironmentType environment, PlatformType platform);
 

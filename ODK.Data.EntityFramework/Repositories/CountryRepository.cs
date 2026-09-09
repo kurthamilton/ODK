@@ -45,7 +45,7 @@ public class CountryRepository : ReadWriteRepositoryBase<Country>, ICountryRepos
         }
         else
         {
-            return new DefaultDeferredQuerySingleOrDefault<Country>();
+            return DefaultDeferredQuerySingleOrDefault.For<Country>();
         }
 
         return query

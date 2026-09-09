@@ -178,7 +178,7 @@ internal static class Provisioning
     public static Task ImportMembers(
         TestAccount owner, PlatformRoutes routes, string baseUrl, IReadOnlyCollection<MemberImportRow> rows)
         => RunAs(owner, page => new MemberImportAdminPage(page).Import(
-            routes.MembersImport, routes.MembersAdmin, rows), baseUrl);
+            routes.MembersImport, routes.MembersInvited, rows), baseUrl);
 
     /// <summary>
     /// Answers a member's site conversation as a site admin, on a throwaway browser so the calling test's

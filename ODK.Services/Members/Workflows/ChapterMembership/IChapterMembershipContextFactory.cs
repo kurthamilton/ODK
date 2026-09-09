@@ -24,10 +24,15 @@ public interface IChapterMembershipContextFactory
     /// </summary>
     ChapterMembershipContext CreateForGroupSignUp(AccountContext context);
 
+    /// <param name="receivedUtc">
+    /// When the member's details were received, which the invite is dated from - see
+    /// <see cref="ChapterMembershipContext.ReceivedUtc"/>.
+    /// </param>
     ChapterMembershipContext CreateForInvite(
         IChapterServiceRequest request,
         Member member,
-        MemberChapterInvite? outstandingInvite);
+        MemberChapterInvite? outstandingInvite,
+        DateTime receivedUtc);
 
     Task<ChapterMembershipContext> CreateForJoin(
         IMemberChapterServiceRequest request,

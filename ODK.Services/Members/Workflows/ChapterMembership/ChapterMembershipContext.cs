@@ -73,6 +73,13 @@ public sealed class ChapterMembershipContext
         set => _raisedInvite.Value = value;
     }
 
+    /// <summary>
+    /// When the member's details were received, on a transition that raises an invite. The retention period
+    /// runs from it, so an invite raised from an imported address takes the instant the address arrived
+    /// rather than the instant the invite was raised.
+    /// </summary>
+    public DateTime? ReceivedUtc { get; init; }
+
     public required IChapterServiceRequest Request { get; init; }
 
     /// <summary>
@@ -85,4 +92,12 @@ public sealed class ChapterMembershipContext
     /// <summary>The invite just raised, on a transition whose caller has to send it.</summary>
     public MemberChapterInvite RequiredRaisedInvite => RaisedInvite ?? throw new InvalidOperationException(
         "The transition was expected to raise an invite but none was written");
+
+    /// <summary>
+    /// When the details were received, on a transition that raises an invite. Absent means a caller raised
+    /// an invite without saying when it got the address, which the retention period cannot be measured
+    /// from.
+    /// </summary>
+    public DateTime RequiredReceivedUtc => ReceivedUtc ?? throw new InvalidOperationException(
+        "The transition raises an invite but was not told when the details were received");
 }

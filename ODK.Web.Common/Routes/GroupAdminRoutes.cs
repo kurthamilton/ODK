@@ -208,12 +208,20 @@ public class GroupAdminRoutes
     public GroupAdminRoute MembersImport(Chapter chapter)
         => Members(chapter).Child("/import", ChapterAdminSecurable.MemberImport);
 
+    public GroupAdminRoute MembersImportClear(Chapter chapter)
+        => MembersImportEndpoint(chapter, "clear");
+
+    public GroupAdminRoute MembersImportDelete(Chapter chapter, Guid id)
+        => MembersImportEndpoint(chapter, $"{id}/delete");
+
+    public GroupAdminRoute MembersImportInvite(Chapter chapter)
+        => MembersImportEndpoint(chapter, "invite");
+
+    public GroupAdminRoute MembersImportUpload(Chapter chapter)
+        => MembersImportEndpoint(chapter, string.Empty);
+
     public GroupAdminRoute MembersImportTemplateDownload(Chapter chapter)
-        => new()
-        {
-            Path = $"/groups/{chapter.Id}/members/import/template",
-            Securable = ChapterAdminSecurable.MemberImport
-        };
+        => MembersImportEndpoint(chapter, "template");
 
     /// <summary>
     /// Who the group has asked to join and is waiting on. Keyed to the import securable rather than to
@@ -467,6 +475,14 @@ public class GroupAdminRoutes
 
     public GroupAdminRoute Venues(Chapter chapter, bool archived)
         => Events(chapter).Child($"/venues{(archived ? "?archived=true" : null)}", ChapterAdminSecurable.Venues);
+
+    /* A controller endpoint rather than a page, so one path serves both platforms - the page tree Base
+       builds differs between them, and a controller route does not. */
+    private GroupAdminRoute MembersImportEndpoint(Chapter chapter, string action) => new()
+    {
+        Path = $"/groups/{chapter.Id}/members/import" + (action.Length > 0 ? $"/{action}" : string.Empty),
+        Securable = ChapterAdminSecurable.MemberImport
+    };
 
     private GroupAdminRoute Base(Chapter chapter) => new()
     {
