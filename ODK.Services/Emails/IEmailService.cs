@@ -21,9 +21,13 @@ public interface IEmailService
         EmailType type,
         IEmailParameters? parameters);
 
-    /* The sends below carry their own subject and body, so there is no email row to say who they are
-       written for and each states its own recipient type. That is what {title} resolves through - see
-       EmailService.Title. */
+    /* The two sends carrying their own subject and body - this one and the SendEmail below it - have no
+       email row to say who they are written for, so each states its own recipient type, which is what
+       {title} resolves through.
+
+       They exist for copy an admin typed: a bulk email to a group's members, and a referral campaign's
+       own wording. Every notification the app itself sends reads from the Emails table - reach for the
+       EmailType overloads and add a row, not for these. */
     Task SendBulkEmail(
         IChapterServiceRequest request,
         IEnumerable<Member> to,
@@ -56,23 +60,6 @@ public interface IEmailService
         IServiceRequest request,
         Chapter? chapter,
         IEnumerable<EmailAddressee> to,
-        string subject,
-        string body,
-        EmailRecipientType recipientType);
-
-    Task<ServiceResult> SendEmail(
-        IServiceRequest request,
-        Chapter? chapter,
-        IEnumerable<EmailAddressee> to,
-        string subject,
-        string body,
-        EmailRecipientType recipientType,
-        IEmailParameters? parameters);
-
-    Task<ServiceResult> SendMemberEmail(
-        IServiceRequest request,
-        Chapter? chapter,
-        EmailAddressee to,
         string subject,
         string body,
         EmailRecipientType recipientType,

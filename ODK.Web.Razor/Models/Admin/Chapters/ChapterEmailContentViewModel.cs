@@ -1,5 +1,6 @@
 using ODK.Core.Chapters;
 using ODK.Core.Emails;
+using ODK.Core.Platforms;
 using ODK.Services.Emails.ViewModels;
 
 namespace ODK.Web.Razor.Models.Admin.Chapters;
@@ -22,13 +23,10 @@ public class ChapterEmailContentViewModel
     /// <summary>The parameters this template may use, listed for reference below the form.</summary>
     public required IReadOnlyCollection<EmailParameterViewModel> Parameters { get; init; }
 
+    public required PlatformType Platform { get; init; }
+
     public required EmailRecipientType RecipientType { get; init; }
 
     /// <summary>What each field the group has not overridden sends.</summary>
     public required Email SiteEmail { get; init; }
-
-    /// <summary>
-    /// What this email resolves <c>{title}</c> to, itself a template.
-    /// </summary>
-    public required string Title { get; init; }
 }

@@ -1,4 +1,5 @@
-﻿using ODK.Services.Subscriptions.ViewModels;
+﻿using ODK.Core.Chapters;
+using ODK.Services.Subscriptions.ViewModels;
 
 namespace ODK.Services.Subscriptions;
 
@@ -14,7 +15,7 @@ public interface ISiteSubscriptionService
     Task DowngradeLapsedSubscriptions(IServiceRequest request);
 
     Task<SiteSubscriptionsViewModel> GetSiteSubscriptionsViewModel(
-        IServiceRequest request, Guid? chapterId);
+        IServiceRequest request, Chapter? chapter);
 
     Task<SiteSubscriptionCheckoutViewModel> StartSiteSubscriptionCheckout(
         IMemberServiceRequest request, Guid priceId, string returnPath);

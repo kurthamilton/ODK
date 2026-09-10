@@ -1,4 +1,4 @@
-﻿@page "/Pricing"
+﻿@page "/pricing"
 @using ODK.Core.Platforms
 @using ODK.Services.Chapters
 @using ODK.Services.Subscriptions
@@ -13,7 +13,7 @@
     Model.Path = "/pricing";
 
     var siteSubscriptions = await SiteSubscriptionService
-        .GetSiteSubscriptionsViewModel(Model.ServiceRequest, chapterId: null);
+        .GetSiteSubscriptionsViewModel(Model.ServiceRequest, chapter: null);
 }
 
 @if (Model.Platform == PlatformType.DrunkenKnitwits)

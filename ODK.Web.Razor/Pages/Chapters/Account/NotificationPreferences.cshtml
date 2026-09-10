@@ -12,6 +12,7 @@
 
     var chapter = Model.Chapter;
     var request = Model.MemberServiceRequest;
+    var platform = Model.Platform;
     var viewModel = await NotificationService.GetNotificationsPageViewModel(request);
 }
 
@@ -24,7 +25,8 @@
         MenuTitle = "Account",
         MenuContentFunc = _ => Html.PartialAsync("Account/_AccountMenu", new AccountMenuViewModel
         {
-            Chapter = chapter
+            Chapter = chapter,
+            Platform = platform
         }),
         BodyContentFunc =
             @<div>

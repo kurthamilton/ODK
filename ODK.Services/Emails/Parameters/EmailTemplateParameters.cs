@@ -18,22 +18,43 @@ public static class EmailTemplateParameters
         {
             [EmailType.ActivateAccount] = ActivateAccountParameters.Names,
             [EmailType.ContactRequest] = ContactRequestParameters.Names,
+            // The group's reply and the site's carry the same values, and differ only in what they link to.
+            [EmailType.ContactRequestReply] = ContactRequestReplyParameters.Names,
+            [EmailType.ConversationMessage] = ConversationParameters.Names,
+            [EmailType.ConversationMessageAdmin] = ConversationParameters.Names,
             [EmailType.DuplicateEmail] = DuplicateEmailParameters.Names,
             [EmailType.EmailAddressUpdate] = EmailAddressUpdateParameters.Names,
             [EmailType.EventComment] = EventCommentParameters.Names,
             // The same values as the admin copy - only the audience and the wording differ.
             [EmailType.EventCommentReply] = EventCommentParameters.Names,
             [EmailType.EventInvite] = EventInviteParameters.Names,
+            [EmailType.EventWaitlistPromotion] = EventWaitlistPromotionParameters.Names,
+            /* Nothing of their own: both are about the group they are sent as, so the core parameters
+               already name it and link to it. Registered all the same, since an empty list is what this
+               type has and an absent one is a type nobody declared. */
+            [EmailType.GroupApproved] = [],
             [EmailType.Layout] = LayoutParameters.Names,
+            [EmailType.MemberApproved] = [],
             [EmailType.MemberImportActivation] = MemberImportActivationParameters.Names,
             [EmailType.MemberImportInvite] = MemberImportInviteParameters.Names,
+            [EmailType.MemberLeftAdmin] = MemberLeftParameters.Names,
+            [EmailType.MemberRemoved] = MemberRemovedParameters.Names,
+            [EmailType.NewGroupAdmin] = NewGroupAdminParameters.Names,
             [EmailType.NewMember] = NewMemberParameters.Names,
             [EmailType.NewMemberAdmin] = NewMemberAdminParameters.Names,
+            [EmailType.NewTopicAdmin] = NewTopicAdminParameters.Names,
             [EmailType.PasswordReset] = PasswordResetParameters.Names,
             [EmailType.PaymentNotification] = PaymentNotificationParameters.Names,
+            [EmailType.SiteContactRequestReply] = ContactRequestReplyParameters.Names,
+            [EmailType.SiteConversationMessage] = ConversationParameters.Names,
+            [EmailType.SiteConversationMessageAdmin] = ConversationParameters.Names,
+            [EmailType.SiteSubscriptionExpired] = SiteSubscriptionExpiredParameters.Names,
+            [EmailType.SiteWelcome] = SiteWelcomeParameters.Names,
             [EmailType.SubscriptionConfirmation] = SubscriptionConfirmationParameters.Names,
             [EmailType.SubscriptionExpired] = SubscriptionExpiryParameters.Names,
             [EmailType.SubscriptionExpiring] = SubscriptionExpiryParameters.Names,
+            [EmailType.TopicsApproved] = MemberTopicsParameters.Names,
+            [EmailType.TopicsRejected] = MemberTopicsParameters.Names,
             [EmailType.TrialExpired] = SubscriptionExpiryParameters.Names,
             [EmailType.TrialExpiring] = SubscriptionExpiryParameters.Names
         };

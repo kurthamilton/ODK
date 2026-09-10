@@ -10,6 +10,7 @@
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("Admin/Events/_SettingsForm", new EventSettingsFormViewModel
     {
+        Chapter = Model.Chapter,
         DefaultDayOfWeek = Model.Settings?.DefaultDayOfWeek,
         DefaultDescriptionHtml = Model.Settings?.DefaultDescriptionHtml,
         DefaultEndTime = TimeSpanUtils.ToString(Model.Settings?.DefaultEndTime),

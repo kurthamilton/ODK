@@ -1,15 +1,12 @@
 ﻿@using ODK.Core.Platforms
 @using ODK.Web.Common.Routes
-@using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
 @model AccountMenuViewModel
 @inject IOdkRoutes OdkRoutes
-@inject IRequestStore RequestStore
 @{
-    var platform = RequestStore.Platform;
-    var chapter = RequestStore.ChapterOrDefault;
-
+    var platform = Model.Platform;
+    var chapter = Model.Chapter;
 
     var menuItems = new MenuItem[]
     {

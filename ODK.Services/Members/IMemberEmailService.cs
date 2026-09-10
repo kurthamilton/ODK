@@ -120,8 +120,13 @@ public interface IMemberEmailService
         Member member,
         string? reason);
 
+    /// <summary>
+    /// Tells site admins a group has been created. <paramref name="chapter"/> is what the email is about,
+    /// not what it is sent as - it goes out as the site.
+    /// </summary>
     Task SendNewGroupEmail(
         IServiceRequest request,
+        Chapter chapter,
         IEnumerable<Member> siteAdmins);
 
     Task SendNewMemberAdminEmail(

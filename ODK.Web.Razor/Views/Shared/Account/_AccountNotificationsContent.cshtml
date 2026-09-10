@@ -1,11 +1,9 @@
 ﻿@using ODK.Core.Notifications
 @using ODK.Services.Notifications.ViewModels
-@using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Notifications
 @model NotificationsPageViewModel
-@inject IRequestStore RequestStore
 @{
-    var platform = RequestStore.Platform;
+    var platform = Model.Platform;
 
     var isAdmin = Model.AdminChapters.Count > 0;
 

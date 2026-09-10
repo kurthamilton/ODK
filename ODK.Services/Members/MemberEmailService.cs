@@ -7,7 +7,6 @@ using ODK.Core.Members;
 using ODK.Core.Messages;
 using ODK.Core.Payments;
 using ODK.Core.Topics;
-using ODK.Core.Utils;
 using ODK.Core.Venues;
 using ODK.Data.Core;
 using ODK.Services.Emails;
@@ -134,18 +133,6 @@ public class MemberEmailService : IMemberEmailService
     {
         var chapter = request.Chapter;
 
-        var subject = "{conversation.subject} - {title}";
-
-        if (isReply)
-        {
-            subject = $"Re: {subject}";
-        }
-
-        var body = new EmailBodyBuilder()
-            .AddParagraph("{conversation.message}")
-            .AddParagraphLink("conversation.url")
-            .ToString();
-
         var isToMember = message.MemberId != conversation.MemberId;
 
         if (isToMember)
@@ -167,18 +154,17 @@ public class MemberEmailService : IMemberEmailService
 
         var addressees = to.Select(x => x.ToEmailAddressee());
 
-        var parameters = new CustomEmailParameters
+        var parameters = new ConversationParameters
         {
-            { "conversation.subject", conversation.Subject },
-            { "conversation.message", message.Text },
-            { "conversation.url", url }
+            Message = message.Text,
+            Subject = ConversationSubject(conversation.Subject, isReply),
+            Url = url
         };
 
         // Same conversation, read by whichever side is being written to - hence the same choice as the url.
-        var recipientType = isToMember ? EmailRecipientType.Members : EmailRecipientType.Admins;
+        var type = isToMember ? EmailType.ConversationMessage : EmailType.ConversationMessageAdmin;
 
-        await _emailService.SendEmail(
-            request, chapter, addressees, subject, body, recipientType, parameters);
+        await _emailService.SendEmail(request, chapter, addressees, type, parameters);
     }
 
     public async Task SendSiteConversationEmail(
@@ -188,18 +174,6 @@ public class MemberEmailService : IMemberEmailService
         IReadOnlyCollection<Member> to,
         bool isReply)
     {
-        var subject = "{conversation.subject} - {title}";
-
-        if (isReply)
-        {
-            subject = $"Re: {subject}";
-        }
-
-        var body = new EmailBodyBuilder()
-            .AddParagraph("{conversation.message}")
-            .AddParagraphLink("conversation.url")
-            .ToString();
-
         var isToMember = message.MemberId != conversation.MemberId;
 
         if (isToMember)
@@ -223,17 +197,18 @@ public class MemberEmailService : IMemberEmailService
 
         var addressees = to.Select(x => x.ToEmailAddressee());
 
-        var parameters = new CustomEmailParameters
+        var parameters = new ConversationParameters
         {
-            { "conversation.subject", conversation.Subject },
-            { "conversation.message", message.Text },
-            { "conversation.url", url }
+            Message = message.Text,
+            Subject = ConversationSubject(conversation.Subject, isReply),
+            Url = url
         };
 
-        var recipientType = isToMember ? EmailRecipientType.Members : EmailRecipientType.Admins;
+        var type = isToMember
+            ? EmailType.SiteConversationMessage
+            : EmailType.SiteConversationMessageAdmin;
 
-        await _emailService.SendEmail(
-            request, chapter: null, addressees, subject, body, recipientType, parameters);
+        await _emailService.SendEmail(request, chapter: null, addressees, type, parameters);
     }
 
     public async Task SendChapterMessage(
@@ -272,35 +247,22 @@ public class MemberEmailService : IMemberEmailService
     {
         var chapter = request.Chapter;
 
-        var urlProvider = _urlProviderFactory.Create(request, chapter);
-        var url = urlProvider.GroupUrl(chapter);
-
         var to = new[]
         {
             new EmailAddressee(originalMessage.FromAddress, string.Empty)
         };
 
-        var body = new EmailBodyBuilder()
-            .AddText(reply)
-            .AddLine()
-            .AddParagraph("Your original message:")
-            .AddText(originalMessage.Message)
-            .AddParagraphLink("group.url")
-            .ToString();
-
-        var parameters = new CustomEmailParameters
+        var parameters = new ContactRequestReplyParameters
         {
-            { "group.url", url }
+            ReplyHtml = reply,
+            Text = originalMessage.Message
         };
 
         return await _emailService.SendEmail(
             request,
             chapter,
             to,
-            "Re: your message to {title}",
-            body,
-            // Goes to whoever contacted the group, who need not be a member of it.
-            EmailRecipientType.Members,
+            EmailType.ContactRequestReply,
             parameters);
     }
 
@@ -392,14 +354,6 @@ public class MemberEmailService : IMemberEmailService
         var urlProvider = _urlProviderFactory.Create(request, chapter);
         var url = urlProvider.EventUrl(chapter, @event.Shortcode);
 
-        var subject = "{title} - You're in! A spot opened up for {event.name}";
-
-        var body = new EmailBodyBuilder()
-            .AddParagraph("A spot has opened up for {event.name} on {event.date}.")
-            .AddParagraph("Please update your RSVP if you no longer wish to attend.")
-            .AddParagraphLink("event.url")
-            .ToString();
-
         // Each recipient's date is formatted in their own locale (default fallback), so group recipients by
         // culture and send one email per group.
         var memberList = members.ToArray();
@@ -407,17 +361,15 @@ public class MemberEmailService : IMemberEmailService
 
         foreach (var group in memberList.GroupBy(x => cultures[x.Id]))
         {
-            var parameters = new CustomEmailParameters
+            var parameters = new EventWaitlistPromotionParameters(chapter, @event, group.Key)
             {
-                { "event.url", url },
-                { "event.date", @event.DateUtc.ToString("dddd dd MMMM, yyyy", group.Key) },
-                { "event.name", @event.GetDisplayName() }
+                Url = url
             };
 
             var to = group.Select(x => x.ToEmailAddressee()).ToArray();
 
             await _emailService.SendEmail(
-                request, chapter, to, subject, body, EmailRecipientType.Members, parameters);
+                request, chapter, to, EmailType.EventWaitlistPromotion, parameters);
         }
     }
 
@@ -427,31 +379,14 @@ public class MemberEmailService : IMemberEmailService
     {
         var chapter = request.Chapter;
 
-        var urlProvider = _urlProviderFactory.Create(request, chapter);
-        var url = urlProvider.GroupUrl(chapter);
-
-        var subject = "{title} - Your group has been approved 🚀";
-
-        var body = new EmailBodyBuilder()
-            .AddParagraph("Your group <strong>{group.name}</strong> has been approved and you are ready to go!")
-            .AddParagraphLink("group.url")
-            .ToString();
-
-        var to = owner.ToEmailAddressee();
-
-        var parameters = new CustomEmailParameters
-        {
-            { "group.url", url }
-        };
-
-        await _emailService.SendMemberEmail(
+        /* No parameters: the group is the one the email is sent as, so its name and address are already
+           among the core values every email gets. */
+        await _emailService.SendEmail(
             request,
             chapter,
-            to,
-            subject,
-            body,
-            EmailRecipientType.Admins,
-            parameters);
+            owner.ToEmailAddressee(),
+            EmailType.GroupApproved,
+            parameters: null);
     }
 
     public async Task SendMemberApprovedEmail(
@@ -460,28 +395,13 @@ public class MemberEmailService : IMemberEmailService
     {
         var chapter = request.Chapter;
 
-        var urlProvider = _urlProviderFactory.Create(request, chapter);
-        var url = urlProvider.GroupUrl(chapter);
-
-        var parameters = new CustomEmailParameters
-        {
-            { "group.url", url }
-        };
-
-        var subject = "{title} - You have been approved by {group.name}";
-        var body = new EmailBodyBuilder()
-            .AddParagraph("Your application to join {group.name} has been approved")
-            .AddParagraphLink("group.url")
-            .ToString();
-
-        await _emailService.SendMemberEmail(
+        // No parameters, for the same reason as SendGroupApprovedEmail.
+        await _emailService.SendEmail(
             request,
             chapter,
             member.ToEmailAddressee(),
-            subject,
-            body,
-            EmailRecipientType.Members,
-            parameters);
+            EmailType.MemberApproved,
+            parameters: null);
     }
 
     public async Task SendMemberChapterSubscriptionConfirmationEmail(
@@ -554,32 +474,16 @@ public class MemberEmailService : IMemberEmailService
     {
         var chapter = request.Chapter;
 
-        var subject = "{title} - you have been removed from a group";
-
-        var bodyBuilder = new EmailBodyBuilder()
-            .AddParagraph("You have been removed from the {group.name} group");
-
-        if (!string.IsNullOrEmpty(reason))
+        var parameters = new MemberRemovedParameters
         {
-            bodyBuilder
-                .AddParagraph("The following reason was given:")
-                .AddParagraph("{reason}");
-        }
-
-        var body = bodyBuilder.ToString();
-
-        var parameters = new CustomEmailParameters
-        {
-            { "reason", reason ?? string.Empty }
+            Reason = reason
         };
 
         await _emailService.SendEmail(
             request,
             chapter,
-            [member.ToEmailAddressee()],
-            subject,
-            body,
-            EmailRecipientType.Members,
+            member.ToEmailAddressee(),
+            EmailType.MemberRemoved,
             parameters);
     }
 
@@ -623,25 +527,6 @@ public class MemberEmailService : IMemberEmailService
             return;
         }
 
-        var subject = "{title} - {member.name} has left {group.name}";
-
-        var bodyBuilder = new EmailBodyBuilder()
-            .AddParagraph("{member.name} has left {group.name}")
-            .AddParagraph("They had been a member since {member.joined}");
-
-        if (!string.IsNullOrEmpty(reason))
-        {
-            bodyBuilder
-                .AddParagraph("They gave the following reason:")
-                .AddParagraph("{reason}");
-        }
-        else
-        {
-            bodyBuilder.AddParagraph("They did not give a reason");
-        }
-
-        var body = bodyBuilder.ToString();
-
         var memberChapter = member.MemberChapter(chapter.Id);
 
         // Each recipient admin's "joined" date is formatted in their own locale (default fallback), so
@@ -650,62 +535,42 @@ public class MemberEmailService : IMemberEmailService
 
         foreach (var group in recipients.GroupBy(x => cultures[x.MemberId]))
         {
-            var parameters = new CustomEmailParameters
+            var parameters = new MemberLeftParameters(member, group.Key, chapter.TimeZone)
             {
-                { "member.name", member.FullName },
-                { "member.joined", memberChapter?.CreatedUtc.ToFriendlyDateString(new FriendlyDateStringOptions
-                {
-                    IncludeDayOfWeek = true,
-                    TimeZone = chapter.TimeZone,
-                    Culture = group.Key
-                }) ?? "-" },
-                { "reason", reason ?? string.Empty }
+                JoinedUtc = memberChapter?.CreatedUtc,
+                Reason = reason
             };
 
             var to = group.Select(x => x.ToEmailAddressee()).ToArray();
 
             await _emailService.SendEmail(
-                request,
-                chapter,
-                to,
-                subject: subject,
-                body: body,
-                recipientType: EmailRecipientType.Admins,
-                parameters: parameters);
+                request, chapter, to, EmailType.MemberLeftAdmin, parameters);
         }
     }
 
     public async Task SendNewGroupEmail(
         IServiceRequest request,
+        Chapter chapter,
         IEnumerable<Member> siteAdmins)
     {
         var urlProvider = _urlProviderFactory.Create(request, chapter: null);
-        var url = urlProvider.SiteAdminGroups();
 
-        var parameters = new CustomEmailParameters
+        var parameters = new NewGroupAdminParameters(chapter)
         {
-            { "siteadmin.urls.groups", url }
+            GroupsUrl = urlProvider.SiteAdminGroups()
         };
 
         var to = siteAdmins
             .Select(x => x.ToEmailAddressee())
             .ToArray();
 
-        var subject = "{title} - New group";
-
-        var body = new EmailBodyBuilder()
-            .AddParagraph("A group has just been created")
-            .AddParagraph("Name: {group.name}")
-            .AddParagraphLink("siteadmin.urls.groups")
-            .ToString();
-
+        /* Sent as the site and not as the new group: it goes to site admins, so it reads as the platform's
+           own and takes the site's template. The group it is about reaches it as a parameter. */
         await _emailService.SendEmail(
             request,
             chapter: null,
             to,
-            subject,
-            body,
-            EmailRecipientType.Admins,
+            EmailType.NewGroupAdmin,
             parameters);
     }
 
@@ -794,30 +659,11 @@ public class MemberEmailService : IMemberEmailService
         IEnumerable<Member> siteAdmins)
     {
         var urlProvider = _urlProviderFactory.Create(request, chapter: null);
-        var url = urlProvider.TopicApprovalUrl();
 
-        var parameters = new CustomEmailParameters
+        var parameters = new NewTopicAdminParameters(newTopics)
         {
-            { "siteadmin.urls.topics", url }
+            Url = urlProvider.TopicApprovalUrl()
         };
-
-        var subject = "{title} - New topics";
-
-        var tableBuilder = new EmailTableBuilder();
-        for (var i = 0; i < newTopics.Count; i++)
-        {
-            tableBuilder.AddRow($"{{topicgroup-{i}}}", $"{{topic-{i}}}");
-
-            var newTopic = newTopics.ElementAt(i);
-            parameters.Add($"topicgroup-{i}", newTopic.TopicGroup);
-            parameters.Add($"topic-{i}", newTopic.Topic);
-        }
-
-        var body = new EmailBodyBuilder()
-            .AddParagraph("The following topics require approval")
-            .AddTable(tableBuilder)
-            .AddParagraphLink("siteadmin.urls.topics")
-            .ToString();
 
         var to = siteAdmins.Select(x => x.ToEmailAddressee()).ToArray();
 
@@ -825,9 +671,7 @@ public class MemberEmailService : IMemberEmailService
             request,
             chapter: null,
             to,
-            subject,
-            body,
-            EmailRecipientType.Admins,
+            EmailType.NewTopicAdmin,
             parameters);
     }
 
@@ -910,23 +754,18 @@ public class MemberEmailService : IMemberEmailService
             new EmailAddressee(originalMessage.FromAddress, string.Empty)
         };
 
-        var subject = "Re: your message to {title}";
-
-        var body = new EmailBodyBuilder()
-            .AddText(reply)
-            .AddLine()
-            .AddParagraph("Your original message:")
-            .AddText(originalMessage.Message)
-            .ToString();
+        var parameters = new ContactRequestReplyParameters
+        {
+            ReplyHtml = reply,
+            Text = originalMessage.Message
+        };
 
         return await _emailService.SendEmail(
             request,
-            null,
+            chapter: null,
             to,
-            subject,
-            body,
-            // Goes to whoever contacted the site, who need not be a member.
-            EmailRecipientType.Members);
+            EmailType.SiteContactRequestReply,
+            parameters);
     }
 
     public async Task SendSiteSubscriptionExpiredEmail(
@@ -934,26 +773,17 @@ public class MemberEmailService : IMemberEmailService
         Member member)
     {
         var urlProvider = _urlProviderFactory.Create(request, chapter: null);
-        var url = urlProvider.MemberSiteSubscriptionUrl();
 
-        var subject = "{title} - Subscription Expired";
-        var body = new EmailBodyBuilder()
-            .AddParagraph("Your subscription has now expired")
-            .AddParagraphLink("account.urls.siteSubscription")
-            .ToString();
-
-        var parameters = new CustomEmailParameters
+        var parameters = new SiteSubscriptionExpiredParameters
         {
-            { "account.urls.siteSubscription", url }
+            SubscriptionUrl = urlProvider.MemberSiteSubscriptionUrl()
         };
 
         await _emailService.SendEmail(
             request,
-            null,
-            [member.ToEmailAddressee()],
-            subject,
-            body,
-            EmailRecipientType.Members,
+            chapter: null,
+            member.ToEmailAddressee(),
+            EmailType.SiteSubscriptionExpired,
             parameters);
     }
 
@@ -962,29 +792,17 @@ public class MemberEmailService : IMemberEmailService
         Member member)
     {
         var urlProvider = _urlProviderFactory.Create(request, chapter: null);
-        var url = urlProvider.GroupsUrl();
 
-        var subject = "{title} - Welcome!";
-
-        var body = new EmailBodyBuilder()
-            .AddParagraph("Welcome to {title} {member.firstName}!")
-            .AddParagraph("Enjoy creating or joining your first group, and please do share.")
-            .AddParagraphLink("admin.urls.groups")
-            .ToString();
-
-        var parameters = new CustomEmailParameters
+        var parameters = new SiteWelcomeParameters(member)
         {
-            { "member.firstName", member.FirstName },
-            { "admin.urls.groups", url }
+            GroupsUrl = urlProvider.GroupsUrl()
         };
 
-        await _emailService.SendMemberEmail(
+        await _emailService.SendEmail(
             request,
-            null,
+            chapter: null,
             member.ToEmailAddressee(),
-            subject,
-            body,
-            EmailRecipientType.Members,
+            EmailType.SiteWelcome,
             parameters);
     }
 
@@ -1004,129 +822,24 @@ public class MemberEmailService : IMemberEmailService
             parameters);
     }
 
-    public async Task SendTopicApprovedEmails(
+    public Task SendTopicApprovedEmails(
         IServiceRequest request,
         IReadOnlyCollection<INewTopic> newTopics,
         IReadOnlyCollection<Member> members)
-    {
-        if (newTopics.Count == 0)
-        {
-            return;
-        }
+        => SendTopicDecisionEmails(request, newTopics, members, EmailType.TopicsApproved);
 
-        var memberDictionary = members.ToDictionary(x => x.Id);
-        var newTopicDictionary = newTopics
-            .Where(x => memberDictionary.ContainsKey(x.MemberId))
-            .GroupBy(x => x.MemberId)
-            .ToDictionary(x => x.Key, x => x.ToArray());
-
-        foreach (var member in members)
-        {
-            newTopicDictionary.TryGetValue(member.Id, out var memberTopics);
-
-            if (memberTopics == null || memberTopics.Length == 0)
-            {
-                continue;
-            }
-
-            var subject = $"{{title}} - {StringUtils.Pluralise(memberTopics.Length, "Topic")} approved";
-
-            var parameters = new CustomEmailParameters();
-
-            var topicTableBuilder = new EmailTableBuilder();
-            for (var i = 0; i < memberTopics.Length; i++)
-            {
-                var topicGroupParam = $"topicgroup-{i}";
-                var topicParam = $"topic-{i}";
-
-                topicTableBuilder.AddRow($"{{{topicGroupParam}}}", $"{{{topicParam}}}");
-
-                var memberTopic = memberTopics.ElementAt(i);
-                parameters.Add(topicGroupParam, memberTopic.TopicGroup);
-                parameters.Add(topicParam, memberTopic.Topic);
-            }
-
-            var message =
-                $"The following {StringUtils.Pluralise(memberTopics.Length, "topic")} " +
-                $"{(memberTopics.Length == 1 ? "has" : "have")} been approved";
-
-            var body = new EmailBodyBuilder()
-                .AddParagraph(message)
-                .AddTable(topicTableBuilder)
-                .ToString();
-
-            await _emailService.SendMemberEmail(
-                request,
-                null,
-                member.ToEmailAddressee(),
-                subject,
-                body,
-                EmailRecipientType.Members,
-                parameters);
-        }
-    }
-
-    public async Task SendTopicRejectedEmails(
+    public Task SendTopicRejectedEmails(
         IServiceRequest request,
         IReadOnlyCollection<INewTopic> newTopics,
         IReadOnlyCollection<Member> members)
-    {
-        if (newTopics.Count == 0)
-        {
-            return;
-        }
+        => SendTopicDecisionEmails(request, newTopics, members, EmailType.TopicsRejected);
 
-        var memberDictionary = members.ToDictionary(x => x.Id);
-        var newTopicDictionary = newTopics
-            .Where(x => memberDictionary.ContainsKey(x.MemberId))
-            .GroupBy(x => x.MemberId)
-            .ToDictionary(x => x.Key, x => x.ToArray());
 
-        foreach (var member in members)
-        {
-            newTopicDictionary.TryGetValue(member.Id, out var memberTopics);
-
-            if (memberTopics == null || memberTopics.Length == 0)
-            {
-                continue;
-            }
-
-            var subject = $"{{title}} - {StringUtils.Pluralise(memberTopics.Length, "Topic")} rejected";
-
-            var parameters = new CustomEmailParameters();
-
-            var topicTableBuilder = new EmailTableBuilder();
-            for (var i = 0; i < memberTopics.Length; i++)
-            {
-                var topicGroupParam = $"topicgroup-{i}";
-                var topicParam = $"topic-{i}";
-
-                topicTableBuilder.AddRow($"{{{topicGroupParam}}}", $"{{{topicParam}}}");
-
-                var memberTopic = memberTopics.ElementAt(i);
-                parameters.Add(topicGroupParam, memberTopic.TopicGroup);
-                parameters.Add(topicParam, memberTopic.Topic);
-            }
-
-            var message =
-                $"The following {StringUtils.Pluralise(memberTopics.Length, "topic")} " +
-                $"{(memberTopics.Length == 1 ? "has" : "have")} been rejected";
-
-            var body = new EmailBodyBuilder()
-                .AddParagraph(message)
-                .AddTable(topicTableBuilder)
-                .ToString();
-
-            await _emailService.SendMemberEmail(
-                request,
-                null,
-                member.ToEmailAddressee(),
-                subject,
-                body,
-                EmailRecipientType.Members,
-                parameters);
-        }
-    }
+    /* The marker goes on the conversation's subject rather than on the whole line, because a stored
+       subject template cannot vary by whether a message is a reply. The default templates open with the
+       parameter, so the email reads as it always has. */
+    private static string ConversationSubject(string subject, bool isReply)
+        => isReply ? $"Re: {subject}" : subject;
 
     /* Ordered by name rather than by when they joined: this only stands in for a group the caller did not
        name, so any of theirs makes the email concrete and the ordering only has to be stable enough that
@@ -1141,6 +854,43 @@ public class MemberEmailService : IMemberEmailService
         return chapters
             .OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
             .FirstOrDefault();
+    }
+
+    /* One member's topics, one email, whichever way they were decided. Members with none of their own are
+       skipped rather than sent an empty table. */
+    private async Task SendTopicDecisionEmails(
+        IServiceRequest request,
+        IReadOnlyCollection<INewTopic> newTopics,
+        IReadOnlyCollection<Member> members,
+        EmailType type)
+    {
+        if (newTopics.Count == 0)
+        {
+            return;
+        }
+
+        var memberDictionary = members.ToDictionary(x => x.Id);
+        var newTopicDictionary = newTopics
+            .Where(x => memberDictionary.ContainsKey(x.MemberId))
+            .GroupBy(x => x.MemberId)
+            .ToDictionary(x => x.Key, x => x.ToArray());
+
+        foreach (var member in members)
+        {
+            newTopicDictionary.TryGetValue(member.Id, out var memberTopics);
+
+            if (memberTopics == null || memberTopics.Length == 0)
+            {
+                continue;
+            }
+
+            await _emailService.SendEmail(
+                request,
+                chapter: null,
+                member.ToEmailAddressee(),
+                type,
+                new MemberTopicsParameters(memberTopics));
+        }
     }
 
     private async Task<IEmailParameters> TestEmailParameters(

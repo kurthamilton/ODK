@@ -11,6 +11,7 @@ using ODK.Core.Emails;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Core.Web;
+using ODK.Services.Emails;
 using ODK.Services.Emails.Parameters;
 using ODK.Services.Web;
 
@@ -56,16 +57,25 @@ public static class TestEmailParametersFactoryTests
         var result = factory.Create(
             CreateRequest(), type, CreateMember(), CultureInfo.InvariantCulture, CreateChapter());
 
+        // The HTML prefix marks a value as pre-encoded; templates use the unprefixed name.
+        var supplied = result.ToDictionary().Keys
+            .Select(x => x.StartsWith(EmailParameters.HtmlPrefix, StringComparison.Ordinal)
+                ? x[EmailParameters.HtmlPrefix.Length..]
+                : x)
+            .ToArray();
+
         /* Assert - some rather than all of what the type declares: a few parameters need a subject the
            factory has no stand-in for, and are deliberately left for the token to show through. */
-        result.ToDictionary().Keys
-            .Should().IntersectWith(EmailTemplateParameters.ForType(type));
+        supplied.Should().IntersectWith(EmailTemplateParameters.ForType(type));
     }
 
     /* The layout is excluded because it has no parameters of its own - it is the document every other email
-       renders into, and takes its values from the email it wraps. */
+       renders into, and takes its values from the email it wraps. So are the types that declare none: there
+       is nothing for the factory to stand in for, and an intersection with an empty list can never hold. */
     private static IEnumerable<EmailType> EmailTypes() => Enum.GetValues<EmailType>()
-        .Where(x => x != EmailType.None && x != EmailType.Layout);
+        .Where(x => x != EmailType.None
+            && x != EmailType.Layout
+            && EmailTemplateParameters.ForType(x).Count > 0);
 
     private static Chapter CreateChapter() => new()
     {

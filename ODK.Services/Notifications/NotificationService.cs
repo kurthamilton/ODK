@@ -226,6 +226,7 @@ public class NotificationService : INotificationService
             AdminChapters = adminChapters,
             ChapterSettings = chapterSettings,
             MemberChapters = memberChapters,
+            Platform = platform,
             Settings = settings
         };
     }
