@@ -958,10 +958,15 @@ public static class ChapterAdminServiceTests
         // Act
         var result = await service.GetGroupDashboardViewModel(request);
 
-        // Assert
+        // Assert - waiting to be published, with the picture standing in the way.
         result.NeedsImage.Should().BeTrue();
         result.NeedsImageToPublish.Should().BeTrue();
         result.CanPublish.Should().BeFalse();
+        result.AwaitingPublication.Should().BeTrue();
+
+        // The blocker is reported by the publish section, so it isn't also an action needing attention.
+        result.NeedsImageAsAction.Should().BeFalse();
+        result.HasRequiredActions.Should().BeFalse();
     }
 
     [Test]
@@ -989,6 +994,7 @@ public static class ChapterAdminServiceTests
         // Assert - publishing has already happened, so the picture is outstanding without blocking it.
         result.NeedsImage.Should().BeTrue();
         result.NeedsImageToPublish.Should().BeFalse();
+        result.AwaitingPublication.Should().BeFalse();
     }
 
     [Test]
@@ -1018,6 +1024,10 @@ public static class ChapterAdminServiceTests
         result.CanPublish.Should().BeTrue();
         result.NeedsImage.Should().BeFalse();
         result.NeedsImageToPublish.Should().BeFalse();
+        result.AwaitingPublication.Should().BeTrue();
+
+        // Publishing is the publish section's business, not an action needing attention.
+        result.HasRequiredActions.Should().BeFalse();
     }
 
     [Test]
@@ -1046,6 +1056,126 @@ public static class ChapterAdminServiceTests
 
         // Assert
         result.HasRequiredActions.Should().BeFalse();
+    }
+
+    [Test]
+    public static async Task GetGroupDashboardViewModel_WhenNobodyElseHasJoined_PromptsMemberImport()
+    {
+        // Arrange - a group with nothing else outstanding, so the prompt stands on its own.
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(
+            approvedUtc: DateTime.UtcNow,
+            owner: currentMember,
+            afterCreate: x => x.PublishedUtc = DateTime.UtcNow);
+
+        context.CreateChapterImage(chapter);
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        var result = await service.GetGroupDashboardViewModel(request);
+
+        // Assert - an invitation rather than an outstanding action, so it doesn't make the group look busy.
+        result.PromptMemberImport.Should().BeTrue();
+        result.HasRequiredActions.Should().BeFalse();
+    }
+
+    [Test]
+    public static async Task GetGroupDashboardViewModel_WhenAnotherMemberHasJoined_DoesNotPromptMemberImport()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(
+            owner: currentMember,
+            members: [context.CreateMember()]);
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        var result = await service.GetGroupDashboardViewModel(request);
+
+        // Assert
+        result.PromptMemberImport.Should().BeFalse();
+    }
+
+    [Test]
+    public static async Task GetGroupDashboardViewModel_WhenAddressesHaveBeenUploaded_DoesNotPromptMemberImport()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(owner: currentMember);
+
+        context.Create(new MemberChapterImport
+        {
+            ChapterId = chapter.Id,
+            CreatedUtc = DateTime.UtcNow,
+            EmailAddress = "imported@example.com",
+            Id = Guid.NewGuid(),
+            UploadedUtc = DateTime.UtcNow
+        });
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        var result = await service.GetGroupDashboardViewModel(request);
+
+        // Assert - the import has already happened, and the held rows are reported as an outstanding action.
+        result.PromptMemberImport.Should().BeFalse();
+        result.WaitingToBeInvited.Should().Be(1);
+    }
+
+    [Test]
+    public static async Task GetGroupDashboardViewModel_WhenInvitesHaveBeenSent_DoesNotPromptMemberImport()
+    {
+        // Arrange - inviting an address deletes the import row it came from, so a group that has finished
+        // an import holds invites and nothing else until somebody accepts one.
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(owner: currentMember);
+
+        context.Create(new MemberChapterInvite
+        {
+            ChapterId = chapter.Id,
+            CreatedUtc = DateTime.UtcNow,
+            Id = Guid.NewGuid(),
+            MemberId = context.CreateMember().Id,
+            SentUtc = DateTime.UtcNow
+        });
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        var result = await service.GetGroupDashboardViewModel(request);
+
+        // Assert
+        result.PromptMemberImport.Should().BeFalse();
     }
 
     [Test]

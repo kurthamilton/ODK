@@ -10,26 +10,30 @@
 
     var sections = OdkRoutes.GroupAdmin.PermittedNavigation(chapter, chapterAdminMember, currentMember);
 
-    var menuItems = new[]
+    var menuItemGroups = new List<IReadOnlyCollection<MenuItem>>
     {
-        new MenuItem { Link = OdkRoutes.Groups.Group(chapter), Text = "Home" }
-    }
-    .Concat(sections.Select(section => new MenuItem
-    {
-        Link = section.Route.Path,
-        Text = section.Text,
-        Children = section.Items
-            .Select(item => new MenuItem { Link = item.Route.Path, Text = item.Text })
+        new []
+        {
+            new MenuItem { Link = OdkRoutes.Groups.Group(chapter), Text = "Home" }
+        },
+        sections
+            .Select(section => new MenuItem
+            {
+                Link = section.Route.Path,
+                Text = section.Text,
+                Children = section.Items
+                    .Select(item => new MenuItem { Link = item.Route.Path, Text = item.Text })
+                    .ToArray()
+            })
             .ToArray()
-    }))
-    .ToArray();
+    };
 }
 
 <div data-odk-component="_AdminSideMenu">
     @await Html.PartialAsync("Components/_SideMenu", new SideMenuViewModel
     {
         ExpandAll = true,
-        MenuItems = menuItems,
+        MenuItemGroups = menuItemGroups,
         Root = true
     })
 </div>

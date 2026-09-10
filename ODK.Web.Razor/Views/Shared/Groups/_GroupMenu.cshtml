@@ -3,9 +3,7 @@
 @using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Extensions
-@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
-@using ODK.Web.Razor.Models.Header
 @model GroupPageViewModel
 @inject IHttpContextAccessor HttpContextAccessor
 @inject IOdkRoutes OdkRoutes
@@ -95,7 +93,7 @@
     var adminMenuItems = Model.IsAdmin
         ? new[]
         {
-            new MenuItem { Icon = IconType.Settings, Text = "Admin", Link = OdkRoutes.GroupAdmin.Home(Model.Chapter).Path },
+            new MenuItem { Icon = IconType.Wrench, Text = "Admin", Link = OdkRoutes.GroupAdmin.GroupAdminLink(Model.Chapter).Path },
             new MenuItem { Icon = IconType.CalendarPlus, Text = "Create event", Link = OdkRoutes.GroupAdmin.EventCreate(Model.Chapter).Path },
             new MenuItem { Icon = IconType.Members, Text = "Members", Link = OdkRoutes.GroupAdmin.Members(Model.Chapter).Path }
         }
@@ -140,7 +138,8 @@
                         @if (adminMenuItems.Length > 0)
                         {
                             <li class="nav-item dropdown hide-below-md">
-                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" 
+                                    data-bs-toggle="dropdown" aria-expanded="false">
                                     @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Settings))
                                     <span>Manage</span>
                                 </a>

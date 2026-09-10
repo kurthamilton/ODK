@@ -10,7 +10,7 @@ public class SideMenuViewModel
     /// </summary>
     public bool ExpandAll { get; init; }
 
-    public required IReadOnlyCollection<MenuItem> MenuItems { get; init; }
+    public required IReadOnlyCollection<IReadOnlyCollection<MenuItem>> MenuItemGroups { get; init; }
 
     public bool Root { get; init; }
 }

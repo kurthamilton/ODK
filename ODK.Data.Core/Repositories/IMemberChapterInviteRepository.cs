@@ -16,6 +16,9 @@ public interface IMemberChapterInviteRepository : IWriteRepository<MemberChapter
 
     IDeferredQuerySingleOrDefault<MemberChapterInvite> GetByToken(string? token);
 
+    /// <summary>How many invites the group has raised, sent or not, for a page that reports the number.</summary>
+    IDeferredQuery<int> GetCountByChapterId(Guid chapterId);
+
     IDeferredQueryMultiple<MemberChapterInviteDto> GetDtosByChapterId(Guid chapterId);
 
     IDeferredQueryMultiple<MemberChapterInvite> GetCreatedBefore(DateTime createdBeforeUtc);

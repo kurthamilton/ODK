@@ -19,8 +19,8 @@
 
 <div data-odk-component="_ManageChapterLink">
     <a class="text-body-secondary link-hover d-flex gap-1 align-items-center @string.Join(' ', classes)" 
-        href="@OdkRoutes.GroupAdmin.Events(Model.Chapter).Path">
-        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Settings))
+        href="@OdkRoutes.GroupAdmin.GroupAdminLink(Model.Chapter).Path">
+        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Wrench))
         <span class="link-hover__underline">Manage</span>
     </a>
 </div>
